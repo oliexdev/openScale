@@ -1,0 +1,68 @@
+#######################################
+# Syntax Coloring Map LowPower
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+idle	KEYWORD2
+adcNoiseReduction	KEYWORD2
+powerDown	KEYWORD2
+powerSave	KEYWORD2
+powerStandby	KEYWORD2
+powerExtStandby	KEYWORD2
+
+#######################################
+# Instances (KEYWORD2)
+#######################################
+
+LowPower	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+SLEEP_15MS	LITERAL1
+SLEEP_30MS	LITERAL1
+SLEEP_60MS	LITERAL1
+SLEEP_120MS	LITERAL1
+SLEEP_250MS	LITERAL1
+SLEEP_500MS	LITERAL1
+SLEEP_1S	LITERAL1
+SLEEP_2S	LITERAL1
+SLEEP_4S	LITERAL1
+SLEEP_8S	LITERAL1
+SLEEP_FOREVER	LITERAL1
+ADC_OFF	LITERAL1
+ADC_ON	LITERAL1
+BOD_OFF	LITERAL1		
+BOD_ON	LITERAL1
+TIMER4_OFF	LITERAL1
+TIMER4_ON	LITERAL1
+TIMER3_OFF	LITERAL1
+TIMER3_ON	LITERAL1
+TIMER2_OFF	LITERAL1
+TIMER2_ON	LITERAL1
+TIMER1_OFF	LITERAL1
+TIMER1_ON	LITERAL1
+TIMER0_OFF	LITERAL1
+TIMER0_ON	LITERAL1
+USART3_OFF	LITERAL1
+USART3_ON	LITERAL1
+USART2_OFF	LITERAL1
+USART2_ON	LITERAL1
+USART1_OFF	LITERAL1
+USART1_ON	LITERAL1
+USART0_OFF	LITERAL1
+USART0_ON	LITERAL1
+SPI_OFF	LITERAL1
+SPI_ON	LITERAL1
+TWI_OFF	LITERAL1
+TWI_ON	LITERAL1
+USB_OFF	LITERAL1
+USB_ON	LITERAL1
