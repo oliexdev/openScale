@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res/com.health.openscale"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -21,14 +20,14 @@
                     android:id="@+id/textView1"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Weight" />
+                    android:text="@string/label_weight" />
 
                 <EditText
                     android:id="@+id/txtWeight"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:ems="10"
-                    android:hint="Enter value in kg"
+                    android:hint="@string/info_enter_value_unit"
                     android:inputType="numberDecimal" >
 
                     <requestFocus />
@@ -45,14 +44,14 @@
                     android:id="@+id/txtAvgWeight"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Fat" />
+                    android:text="@string/label_fat" />
 
                 <EditText
                     android:id="@+id/txtFat"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:ems="10"
-                    android:hint="Enter value in %"
+                    android:hint="@string/info_enter_value_percent"
                     android:inputType="numberDecimal" />
 
             </TableRow>
@@ -66,14 +65,14 @@
                     android:id="@+id/textView3"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Water" />
+                    android:text="@string/label_water" />
 
                 <EditText
                     android:id="@+id/txtWater"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:ems="10"
-                    android:hint="Enter value in %"
+                    android:hint="@string/info_enter_value_percent"
                     android:inputType="numberDecimal" />
 
             </TableRow>
@@ -87,14 +86,14 @@
                     android:id="@+id/txtAvgFat"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Muscle" />
+                    android:text="@string/label_muscle" />
 
                 <EditText
                     android:id="@+id/txtMuscle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:ems="10"
-                    android:hint="Enter value in %"
+                    android:hint="@string/info_enter_value_percent"
                     android:inputType="numberDecimal" />
 
             </TableRow>
@@ -108,7 +107,7 @@
                     android:id="@+id/textView5"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Date" />
+                    android:text="@string/label_date" />
 
                 <EditText
                     android:id="@+id/txtDate"
@@ -123,7 +122,7 @@
                     android:id="@+id/btnDateSet"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Set"
+                    android:text="@string/label_set"
                     android:textSize="15sp" />
 
             </TableRow>
@@ -137,7 +136,7 @@
                     android:id="@+id/txtAvgWater"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Time" />
+                    android:text="@string/label_time" />
 
                 <EditText
                     android:id="@+id/txtTime"
@@ -152,7 +151,7 @@
                     android:id="@+id/btnTimeSet"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Set"
+                    android:text="@string/label_set"
                     android:textSize="15sp" />
 
             </TableRow>
@@ -169,7 +168,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="5"
                 android:background="@drawable/flat_selector"
-                android:text="Add" />
+                android:text="@string/label_add" />
 
             <Space
                 android:layout_width="wrap_content"
@@ -182,7 +181,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="5"
                 android:background="@drawable/flat_selector"
-                android:text="Cancel" />
+                android:text="@string/label_cancel" />
         </LinearLayout>
 
     </LinearLayout>

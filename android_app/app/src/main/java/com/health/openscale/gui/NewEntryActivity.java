@@ -101,42 +101,42 @@ public class NewEntryActivity extends Activity {
 		
 		if( txtWeight.getText().toString().length() == 0 )
 		{
-			txtWeight.setError("Weight value ist required!");
+			txtWeight.setError(getResources().getString(R.string.error_weight_value_required));
 			validate = false;
 		} else if( !(Float.valueOf(txtWeight.getText().toString()) >= 0 && Float.valueOf(txtWeight.getText().toString()) <= 300) )
 		{
-			txtWeight.setError("Value must be in range from 0 to 300!");
+			txtWeight.setError(getResources().getString(R.string.error_value_range_0_300));
 			validate = false;
 		}
 		
 		if( txtFat.getText().toString().length() == 0 )
 		{
-			txtFat.setError("Fat value ist required!");
+			txtFat.setError(getResources().getString(R.string.error_fat_value_required));
 			validate = false;
 		} else if(!isInRange(txtFat.getText().toString()))
 		{
-			txtFat.setError("Value must be in range from 0 to 100");
+			txtFat.setError(getResources().getString(R.string.error_value_range_0_100));
 			validate = false;
 		}
 		
 		
 		if( txtWater.getText().toString().length() == 0 )
 		{
-			txtWater.setError("Water value ist required!");
+			txtWater.setError(getResources().getString(R.string.error_water_value_required));
 			validate = false;
 		} else if(!isInRange(txtWater.getText().toString()))
 		{
-			txtWater.setError("Value must be in range from 0 to 100");
+			txtWater.setError(getResources().getString(R.string.error_value_range_0_100));
 			validate = false;
 		}
 		
 		if( txtMuscle.getText().toString().length() == 0 )
 		{
-			txtMuscle.setError("Muscle value ist required!");
+			txtMuscle.setError(getResources().getString(R.string.error_muscle_value_required));
 			validate = false;
 		} else 	if(!isInRange(txtMuscle.getText().toString()))
 		{
-			txtMuscle.setError("Value must be in range from 0 to 100");
+			txtMuscle.setError(getResources().getString(R.string.error_value_range_0_100));
 			validate = false;
 		}
 		

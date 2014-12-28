@@ -125,32 +125,32 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 	{
     	AlertDialog.Builder filenameDialog = new AlertDialog.Builder(getActivity());
 
-    	filenameDialog.setTitle("Set filename on /sdcard ...");
+    	filenameDialog.setTitle(getResources().getString(R.string.info_set_filename) + " /sdcard ...");
 
     	final EditText txtFilename = new EditText(tableView.getContext());
     	txtFilename.setText("/openScale_data.csv");
     	
     	filenameDialog.setView(txtFilename);
 
-    	filenameDialog.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+    	filenameDialog.setPositiveButton(getResources().getString(R.string.label_ok), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
             	boolean isError = false;
             	
             	try {
 					OpenScale.getInstance(tableView.getContext()).importData(Environment.getExternalStorageDirectory().getPath() + txtFilename.getText().toString());
 				} catch (IOException e) {
-					Toast.makeText(tableView.getContext(), "Error importing " + e.getMessage(), Toast.LENGTH_SHORT).show();
+					Toast.makeText(tableView.getContext(), getResources().getString(R.string.error_importing) + " " + e.getMessage(), Toast.LENGTH_SHORT).show();
 					isError = true;
 				}
             	
             	if (!isError) {
-            		Toast.makeText(tableView.getContext(), "Data imported from /sdcard" + txtFilename.getText().toString(), Toast.LENGTH_SHORT).show();
+            		Toast.makeText(tableView.getContext(), getResources().getString(R.string.info_data_imported) + " /sdcard" + txtFilename.getText().toString(), Toast.LENGTH_SHORT).show();
             		updateOnView(OpenScale.getInstance(tableView.getContext()).getScaleDBEntries());
             	}
             }
         });
     	
-    	filenameDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+    	filenameDialog.setNegativeButton(getResources().getString(R.string.label_cancel), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
             	dialog.dismiss();
             }
@@ -164,31 +164,31 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 	{
     	AlertDialog.Builder filenameDialog = new AlertDialog.Builder(getActivity());
 
-    	filenameDialog.setTitle("Set filename on /sdcard ...");
+    	filenameDialog.setTitle(getResources().getString(R.string.info_set_filename) + " /sdcard ...");
 
     	final EditText txtFilename = new EditText(tableView.getContext());
     	txtFilename.setText("/openScale_data.csv");
     	
     	filenameDialog.setView(txtFilename);
 
-    	filenameDialog.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+    	filenameDialog.setPositiveButton(getResources().getString(R.string.label_ok), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
             	boolean isError = false;
             	
             	try {
 					OpenScale.getInstance(tableView.getContext()).exportData(Environment.getExternalStorageDirectory().getPath() + txtFilename.getText().toString());
 				} catch (IOException e) {
-					Toast.makeText(tableView.getContext(), "Error exporting " + e.getMessage(), Toast.LENGTH_SHORT).show();
+					Toast.makeText(tableView.getContext(), getResources().getString(R.string.error_exporting) + " " + e.getMessage(), Toast.LENGTH_SHORT).show();
 					isError = true;
 				} 
             	
             	if (!isError) {
-            		Toast.makeText(tableView.getContext(), "Data exported to /sdcard" + txtFilename.getText().toString(), Toast.LENGTH_SHORT).show();
+            		Toast.makeText(tableView.getContext(), getResources().getString(R.string.info_data_exported) + " /sdcard" + txtFilename.getText().toString(), Toast.LENGTH_SHORT).show();
             	}
             }
         });
     	
-    	filenameDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+    	filenameDialog.setNegativeButton(getResources().getString(R.string.label_cancel), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
             	dialog.dismiss();
             }
@@ -202,18 +202,18 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 	{
     	AlertDialog.Builder deleteAllDialog = new AlertDialog.Builder(getActivity());
     	
-    	deleteAllDialog.setMessage("Do you really want to delete all database entries?");
+    	deleteAllDialog.setMessage(getResources().getString(R.string.question_really_delete_all));
     	
-    	deleteAllDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+    	deleteAllDialog.setPositiveButton(getResources().getString(R.string.label_yes), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
             	OpenScale.getInstance(tableView.getContext()).deleteAllDBEntries();
             	
-            	Toast.makeText(tableView.getContext(), "All database entries deleted!", Toast.LENGTH_SHORT).show();
+            	Toast.makeText(tableView.getContext(), getResources().getString(R.string.info_data_deleted), Toast.LENGTH_SHORT).show();
         		updateOnView(OpenScale.getInstance(tableView.getContext()).getScaleDBEntries());
             }
         });
     	
-    	deleteAllDialog.setNegativeButton("No", new DialogInterface.OnClickListener() {
+    	deleteAllDialog.setNegativeButton(getResources().getString(R.string.label_no), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
             	dialog.dismiss();
             }

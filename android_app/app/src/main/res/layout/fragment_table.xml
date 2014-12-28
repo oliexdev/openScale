@@ -27,37 +27,37 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Date"
+                    android:text="@string/label_date"
                     android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Time"
+                    android:text="@string/label_time"
                     android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Weight"
+                    android:text="@string/label_weight"
                     android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Fat"
+                    android:text="@string/label_fat"
                     android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Water"
+                    android:text="@string/label_water"
                     android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Muscle"
+                    android:text="@string/label_muscle"
                     android:textStyle="bold" />
 
                 <Button
@@ -68,7 +68,7 @@
                     android:background="@drawable/flat_selector"
                     android:minHeight="0dp"
                     android:minWidth="0dp"
-                    android:text="Delete All"
+                    android:text="@string/label_delete_all"
                     android:textColor="@android:color/white"
                     android:textSize="10sp" />
 
@@ -89,7 +89,7 @@
            android:layout_height="wrap_content"
            android:layout_weight="5"
            android:background="@drawable/flat_selector"
-           android:text="Import"
+           android:text="@string/label_import"
            android:textColor="@android:color/white" />
 
        <Space
@@ -103,7 +103,7 @@
            android:layout_height="wrap_content"
            android:layout_weight="5"
            android:background="@drawable/flat_selector"
-           android:text="Export"
+           android:text="@string/label_export"
            android:textColor="@android:color/white" />
 
    </LinearLayout>

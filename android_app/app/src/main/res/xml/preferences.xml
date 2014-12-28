@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     
-    <PreferenceCategory android:title="Bluetooth"><CheckBoxPreference android:title="Enable Bluetooth Server" android:key="btEnable" android:defaultValue="true"/><EditTextPreference android:key="btDeviceName" android:defaultValue="openScale" android:title="Device Name"/>
-    
+<PreferenceCategory android:title="@string/label_bluetooth_title">
+    <CheckBoxPreference android:title="@string/label_bluetooth_enable" android:key="btEnable" android:defaultValue="true"/>
+    <EditTextPreference android:title="@string/label_device_name" android:key="btDeviceName" android:defaultValue="openScale" />
 </PreferenceCategory>
     
 

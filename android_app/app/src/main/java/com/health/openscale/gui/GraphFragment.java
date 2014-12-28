@@ -103,8 +103,8 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 	    
 	    axisY.setHasLines(true);
 	    
-	    axisX.setName("Zeit");
-	    axisY.setName("Wert");
+	    axisX.setName(getResources().getString(R.string.label_x_axis));
+	    axisY.setName(getResources().getString(R.string.label_y_axis));
 	    
 	    axisX.setTextColor(Color.BLACK);
 	    axisY.setTextColor(Color.BLACK);

@@ -63,7 +63,6 @@ public class MainActivity extends ActionBarActivity implements
 
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 	    if(prefs.getBoolean("btEnable", true)) {
-	    	Log.i("ASD", "BT TRZE");
 	    	String deviceName = prefs.getString("btDeviceName", "openScale");
 	    	OpenScale.getInstance(getApplicationContext()).startBluetoothServer(deviceName);
 	    }
@@ -74,8 +73,7 @@ public class MainActivity extends ActionBarActivity implements
 
 		// Create the adapter that will return a fragment for each of the three
 		// primary sections of the activity.
-		mSectionsPagerAdapter = new SectionsPagerAdapter(
-				getSupportFragmentManager(), this);
+		mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
 		// Set up the ViewPager with the sections adapter.
 		mViewPager = (ViewPager) findViewById(R.id.pager);
@@ -157,7 +155,7 @@ public class MainActivity extends ActionBarActivity implements
 		private GraphFragment graphFrag;
 		private TableFragment tableFrag;
 		
-		public SectionsPagerAdapter(FragmentManager fm, Context con) {
+		public SectionsPagerAdapter(FragmentManager fm) {
 			super(fm);
 			
 			overviewFrag = new OverviewFragment();

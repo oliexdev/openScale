@@ -77,14 +77,14 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 		
 		ScaleData lastEntry = scaleDBEntries.get(0);
 		
-		arcValues.add(new ArcValue((float) lastEntry.fat, Utils.COLOR_ORANGE));
-		arcValues.add(new ArcValue((float) lastEntry.water, Utils.COLOR_BLUE));
-		arcValues.add(new ArcValue((float) lastEntry.muscle, Utils.COLOR_GREEN));
+		arcValues.add(new ArcValue(lastEntry.fat, Utils.COLOR_ORANGE));
+		arcValues.add(new ArcValue(lastEntry.water, Utils.COLOR_BLUE));
+		arcValues.add(new ArcValue(lastEntry.muscle, Utils.COLOR_GREEN));
 		
 		PieChartData pieChartData = new PieChartData(arcValues);
 		pieChartData.setHasLabels(true);
 		pieChartData.setHasCenterCircle(true);
-		pieChartData.setCenterText1(Float.toString(lastEntry.weight) + " kg");
+		pieChartData.setCenterText1(Float.toString(lastEntry.weight) + " " + getResources().getString(R.string.weight_unit));
 		pieChartData.setCenterText1FontSize(35);
 		pieChartData.setCenterText2(new SimpleDateFormat("dd. MMM yyyy (EE)").format(lastEntry.date_time));
 		pieChartData.setCenterText2FontSize(15);
@@ -109,7 +109,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 		avgWater = avgWater / scaleDBEntries.size();
 		avgMuscle = avgMuscle / scaleDBEntries.size();
 		
-		txtAvgWeight.setText(String.format( "%.1f kg", avgWeight));
+		txtAvgWeight.setText(String.format( "%.1f " + getResources().getString(R.string.weight_unit), avgWeight));
 		txtAvgFat.setText(String.format( "%.1f %%", avgFat));
 		txtAvgWater.setText(String.format( "%.1f %%", avgWater));
 		txtAvgMuscle.setText(String.format( "%.1f %%", avgMuscle));

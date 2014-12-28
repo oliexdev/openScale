@@ -37,7 +37,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="3"
-                            android:text="Weight Ø"
+                            android:text="@string/label_weight_average"
                             android:textStyle="bold" />
 
                         <TextView
@@ -51,7 +51,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="3"
-                            android:text="Fat Ø"
+                            android:text="@string/label_fat_average"
                             android:textStyle="bold" />
 
                         <TextView
@@ -73,7 +73,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="3"
-                            android:text="Water Ø"
+                            android:text="@string/label_water_average"
                             android:textStyle="bold" />
 
                         <TextView
@@ -87,7 +87,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="3"
-                            android:text="Muscle Ø"
+                            android:text="@string/label_muscle"
                             android:textStyle="bold" />
 
                         <TextView

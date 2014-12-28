@@ -6,5 +6,54 @@
     <string name="title_graph">graph</string>
     <string name="title_frag">table</string>
     <string name="action_settings">Settings</string>
+    <string name="label_add">Add</string>
+    <string name="label_cancel">Cancel</string>
+    <string name="label_ok">Ok</string>
+    <string name="label_yes">Yes</string>
+    <string name="label_no">No</string>
 
+    <string name="label_weight">Weight</string>
+    <string name="label_fat">Fat</string>
+    <string name="label_water">Water</string>
+    <string name="label_muscle">Muscle</string>
+
+    <string name="weight_unit">kg</string>
+
+    <string name="label_date">Date</string>
+    <string name="label_time">Time</string>
+    <string name="label_set">Set</string>
+
+    <string name="label_weight_average">Weight Ø</string>
+    <string name="label_fat_average">Fat Ø</string>
+    <string name="label_water_average">Water Ø</string>
+    <string name="label_muscle_average">Muscle Ø</string>
+
+    <string name="label_import">Import</string>
+    <string name="label_export">Export</string>
+    <string name="label_delete_all">Delete all</string>
+
+    <string name="label_x_axis">Date</string>
+    <string name="label_y_axis">Value</string>
+
+    <string name="error_weight_value_required">Weight value is required!</string>
+    <string name="error_fat_value_required">Fat value is required!</string>
+    <string name="error_water_value_required">Water value is required!</string>
+    <string name="error_muscle_value_required">Muscle value is required!</string>
+    <string name="error_value_range_0_300">Value must be in range from 0 to 300!</string>
+    <string name="error_value_range_0_100">Value must be in range from 0 to 100!</string>
+    <string name="error_exporting">Error exporting</string>
+    <string name="error_importing">Error importing</string>
+
+    <string name="info_data_deleted">All database entries deleted!</string>
+    <string name="info_data_exported">Data exported to</string>
+    <string name="info_data_imported">Data imported from</string>
+    <string name="info_set_filename">Set filename to</string>
+    <string name="info_enter_value_percent">Enter value in %</string>
+    <string name="info_enter_value_unit">Enter value in kg</string>
+
+    <string name="question_really_delete_all">Do you really want to delete all database entries?</string>
+
+    <string name="label_bluetooth_title">Bluetooth</string>
+    <string name="label_bluetooth_enable">Enable Bluetooth Server</string>
+    <string name="label_device_name">Device Name</string>
 </resources>
