@@ -16,6 +16,7 @@
 package com.health.openscale.gui;
 
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -87,9 +88,18 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         pieChartData.setFormatter(new SimpleValueFormatter(1, false, null, " %".toCharArray()));
 		pieChartData.setHasCenterCircle(true);
 		pieChartData.setCenterText1(Float.toString(lastEntry.weight) + " " + getResources().getString(R.string.weight_unit));
-		pieChartData.setCenterText1FontSize(35);
 		pieChartData.setCenterText2(new SimpleDateFormat("dd. MMM yyyy (EE)").format(lastEntry.date_time));
-		pieChartData.setCenterText2FontSize(15);
+
+        if ((getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == Configuration.SCREENLAYOUT_SIZE_XLARGE ||
+           (getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == Configuration.SCREENLAYOUT_SIZE_LARGE) {
+            pieChartData.setCenterText1FontSize(33);
+            pieChartData.setCenterText2FontSize(14);
+        } else
+        {
+            pieChartData.setCenterText1FontSize(12);
+            pieChartData.setCenterText2FontSize(8);
+            pieChartData.setValueLabelTextSize(8);
+        }
 		
 		pieChart.setPieChartData(pieChartData);
 		

@@ -11,32 +11,33 @@
            <LinearLayout
                android:layout_width="match_parent"
                android:layout_height="match_parent"
-               android:orientation="vertical" >
+               android:orientation="vertical"
+               android:weightSum="100">
 
                 <lecho.lib.hellocharts.view.PieChartView
                     android:id="@+id/data_pie_chart"
                     android:layout_width="match_parent"
-                    android:layout_height="300dp"
+                    android:layout_height="0dp"
                     android:layout_gravity="top|center"
-                    android:layout_weight="0" />
+                    android:layout_weight="50" />
 
                 <TableLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="150dp"
-                    android:layout_marginRight="150dp"
-                    android:padding="10dp" >
+                    android:padding="10dp"
+                    android:layout_weight="40">
 
                     <TableRow
                         android:id="@+id/tableRow1"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:padding="10dp" >
+                        android:padding="10dp"
+                        android:weightSum="100">
 
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_weight="3"
+                            android:layout_weight="25"
                             android:text="@string/label_weight_average"
                             android:textStyle="bold" />
 
@@ -44,13 +45,13 @@
                             android:id="@+id/txtAvgWeight"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_weight="7"
+                            android:layout_weight="25"
                             android:text="0" />
 
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_weight="3"
+                            android:layout_weight="25"
                             android:text="@string/label_fat_average"
                             android:textStyle="bold" />
 
@@ -58,7 +59,7 @@
                             android:id="@+id/txtAvgFat"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_weight="7"
+                            android:layout_weight="25"
                             android:text="0" />
 
                     </TableRow>
@@ -67,12 +68,13 @@
                         android:id="@+id/tableRow2"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:padding="10dp" >
+                        android:padding="10dp"
+                        android:weightSum="100">
 
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_weight="3"
+                            android:layout_weight="25"
                             android:text="@string/label_water_average"
                             android:textStyle="bold" />
 
@@ -80,13 +82,13 @@
                             android:id="@+id/txtAvgWater"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_weight="7"
+                            android:layout_weight="25"
                             android:text="0" />
 
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_weight="3"
+                            android:layout_weight="25"
                             android:text="@string/label_muscle"
                             android:textStyle="bold" />
 
@@ -94,7 +96,7 @@
                             android:id="@+id/txtAvgMuscle"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_weight="7"
+                            android:layout_weight="25"
                             android:text="0" />
 
                     </TableRow>
@@ -103,7 +105,7 @@
                 <LinearLayout
 			        android:layout_width="match_parent"
 			        android:layout_height="0dip"
-			        android:layout_weight="1"
+			        android:layout_weight="10"
 			        android:gravity="center|bottom"
 			        android:orientation="vertical" >
                     

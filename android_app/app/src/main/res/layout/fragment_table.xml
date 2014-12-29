@@ -17,7 +17,8 @@
             android:id="@+id/tableDataView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:stretchColumns="*" >
+            android:stretchColumns="*"
+            android:shrinkColumns="*">
 
             <TableRow
                 android:id="@+id/tableHeader"
@@ -28,46 +29,51 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/label_date"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:id="@+id/txtDateTableHeader" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/label_time"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:id="@+id/txtTimeTableHeader" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/label_weight"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:id="@+id/txtWeightTableHeader" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/label_fat"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:id="@+id/txtFatTableHeader" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/label_water"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:id="@+id/txtWaterTableHeader" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/label_muscle"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:id="@+id/txtMuscleTableHeader" />
 
                 <Button
                     android:id="@+id/btnDeleteAll"
-                    android:layout_width="10dp"
-                    android:layout_height="20dp"
-                    android:layout_marginRight="10dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:background="@drawable/flat_selector"
-                    android:minHeight="0dp"
-                    android:minWidth="0dp"
+                    android:minHeight="20dp"
+                    android:minWidth="10dp"
                     android:text="@string/label_delete_all"
                     android:textColor="@android:color/white"
                     android:textSize="10sp" />

@@ -32,9 +32,6 @@
     <string name="label_export">Export</string>
     <string name="label_delete_all">Delete all</string>
 
-    <string name="label_x_axis">Day</string>
-    <string name="label_y_axis">Value</string>
-
     <string name="error_weight_value_required">Weight value is required!</string>
     <string name="error_fat_value_required">Fat value is required!</string>
     <string name="error_water_value_required">Water value is required!</string>

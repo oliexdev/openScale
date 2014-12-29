@@ -15,19 +15,17 @@
 */
 package com.health.openscale.gui;
 
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.Fragment;
-import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -38,6 +36,10 @@ import android.widget.Toast;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.ScaleData;
+
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 
 public class TableFragment extends Fragment implements FragmentUpdateListener {
 	private View tableView;
@@ -71,7 +73,26 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
             	openDeleteAllDialog();
             }
         });
-		
+
+        if ((getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) != Configuration.SCREENLAYOUT_SIZE_XLARGE &&
+            (getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) != Configuration.SCREENLAYOUT_SIZE_LARGE)
+        {
+            TextView txtDateTableHeader = (TextView)tableView.findViewById(R.id.txtDateTableHeader);
+            txtDateTableHeader.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
+            TextView txtTimeTableHeader = (TextView)tableView.findViewById(R.id.txtTimeTableHeader);
+            txtTimeTableHeader.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
+            TextView txtWeightTableHeader = (TextView)tableView.findViewById(R.id.txtWeightTableHeader);
+            txtWeightTableHeader.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
+            TextView txtFatTableHeader = (TextView)tableView.findViewById(R.id.txtFatTableHeader);
+            txtFatTableHeader.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
+            TextView txtWaterTableHeader = (TextView)tableView.findViewById(R.id.txtWaterTableHeader);
+            txtWaterTableHeader.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
+            TextView txtMuscleTableHeader = (TextView)tableView.findViewById(R.id.txtMuscleTableHeader);
+            txtMuscleTableHeader.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
+            Button btnDeleteAll = (Button)tableView.findViewById(R.id.btnDeleteAll);
+            btnDeleteAll.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
+        }
+
 		return tableView;
 	}
 	
@@ -88,35 +109,51 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 			dataRow.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 			
 			TextView dateTextView = new TextView(tableView.getContext());
-			dateTextView.setText(new SimpleDateFormat("dd. MMM yyyy (EE)").format(scaleEntry.date_time));
-			dateTextView.setPadding(5, 5, 5, 5);
+            if ((getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == Configuration.SCREENLAYOUT_SIZE_XLARGE ||
+                (getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == Configuration.SCREENLAYOUT_SIZE_LARGE) {
+                dateTextView.setText(new SimpleDateFormat("dd. MMM yyyy (EE)").format(scaleEntry.date_time));
+            } else{
+                dateTextView.setText(new SimpleDateFormat("dd/MM/yy").format(scaleEntry.date_time));
+            }
+			dateTextView.setPadding(0, 5, 5, 5);
 			dataRow.addView(dateTextView);
 			
 			TextView timeTextView = new TextView(tableView.getContext());
 			timeTextView.setText(new SimpleDateFormat("HH:mm").format(scaleEntry.date_time));
-			timeTextView.setPadding(5, 5, 5, 5);
+			timeTextView.setPadding(0, 5, 5, 5);
 			dataRow.addView(timeTextView);
 			
 			TextView weightView = new TextView(tableView.getContext());
 			weightView.setText(Float.toString(scaleEntry.weight));
-			weightView.setPadding(5, 5, 5, 5);
+			weightView.setPadding(0, 5, 5, 5);
 			dataRow.addView(weightView);
 			
 			TextView fatView = new TextView(tableView.getContext());
 			fatView.setText(Float.toString(scaleEntry.fat));
-			fatView.setPadding(5, 5, 5, 5);
+			fatView.setPadding(0, 5, 5, 5);
 			dataRow.addView(fatView);
 			
 			TextView waterView = new TextView(tableView.getContext());
 			waterView.setText(Float.toString(scaleEntry.water));
-			waterView.setPadding(5, 5, 5, 5);
+			waterView.setPadding(0, 5, 5, 5);
 			dataRow.addView(waterView);
 			
 			TextView muscleView = new TextView(tableView.getContext());
 			muscleView.setText(Float.toString(scaleEntry.muscle));
-			muscleView.setPadding(5, 5, 5, 5);
+			muscleView.setPadding(0, 5, 5, 5);
 			dataRow.addView(muscleView);
-			
+
+            if ((getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) != Configuration.SCREENLAYOUT_SIZE_XLARGE &&
+                (getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) != Configuration.SCREENLAYOUT_SIZE_LARGE)
+            {
+                dateTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
+                timeTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
+                weightView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
+                fatView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
+                waterView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
+                muscleView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
+            }
+
 			tableDataView.addView(dataRow, new TableLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 		}
 	}

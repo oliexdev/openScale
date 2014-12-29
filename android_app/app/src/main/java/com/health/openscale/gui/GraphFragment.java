@@ -167,15 +167,13 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         LineChartData lineData = new LineChartData(lines);
         lineData.setAxisXBottom(new Axis(axisValues).
                 setHasLines(true).
-                setTextColor(Color.BLACK).
-                setName(getResources().getString(R.string.label_x_axis))
+                setTextColor(Color.BLACK)
         );
 
         lineData.setAxisYLeft(new Axis().
                 setHasLines(true).
                 setMaxLabelChars(3).
-                setTextColor(Color.BLACK).
-                setName(getResources().getString(R.string.label_y_axis))
+                setTextColor(Color.BLACK)
         );
 
 
