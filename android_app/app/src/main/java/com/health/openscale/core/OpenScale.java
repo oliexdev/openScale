@@ -16,6 +16,11 @@
 
 package com.health.openscale.core;
 
+import android.content.Context;
+import android.os.Handler;
+import android.os.Message;
+import android.util.Log;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,11 +31,6 @@ import java.io.OutputStreamWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-
-import android.content.Context;
-import android.os.Handler;
-import android.os.Message;
-import android.util.Log;
 
 public class OpenScale {
 
@@ -144,6 +144,14 @@ public class OpenScale {
 		scaleDBEntries = scaleDB.getAllDBEntries();
 	}
 
+    public int[] getCountsOfMonth(int year) {
+        return scaleDB.getCountsOfAllMonth(year);
+    }
+
+    public ArrayList<ScaleData> getAllDataOfMonth(int year, int month) {
+        return scaleDB.getAllDBEntriesOfMonth(year, month);
+    }
+
 	public void startBluetoothServer(String deviceName) {
 		Log.d("OpenScale", "Bluetooth Server started! I am searching for device ...");
 
@@ -166,9 +174,6 @@ public class OpenScale {
 		}
 	}
 
-	/**
-	 * The Handler that gets information back from the BluetoothChatService
-	 */
 	private final Handler btHandler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {

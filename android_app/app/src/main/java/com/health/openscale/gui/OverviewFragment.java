@@ -15,18 +15,9 @@
 */
 package com.health.openscale.gui;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
-
-import lecho.lib.hellocharts.model.ArcValue;
-import lecho.lib.hellocharts.model.PieChartData;
-import lecho.lib.hellocharts.util.Utils;
-import lecho.lib.hellocharts.view.PieChartView;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,6 +26,16 @@ import android.widget.TextView;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.ScaleData;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
+
+import lecho.lib.hellocharts.model.ArcValue;
+import lecho.lib.hellocharts.model.PieChartData;
+import lecho.lib.hellocharts.model.SimpleValueFormatter;
+import lecho.lib.hellocharts.util.Utils;
+import lecho.lib.hellocharts.view.PieChartView;
 
 public class OverviewFragment extends Fragment implements FragmentUpdateListener {	
 	private View overviewView;
@@ -83,6 +84,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 		
 		PieChartData pieChartData = new PieChartData(arcValues);
 		pieChartData.setHasLabels(true);
+        pieChartData.setFormatter(new SimpleValueFormatter(1, false, null, " %".toCharArray()));
 		pieChartData.setHasCenterCircle(true);
 		pieChartData.setCenterText1(Float.toString(lastEntry.weight) + " " + getResources().getString(R.string.weight_unit));
 		pieChartData.setCenterText1FontSize(35);

@@ -16,19 +16,19 @@
 
 package com.health.openscale.core;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Locale;
-
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
 public class ScaleDatabase extends SQLiteOpenHelper {	
     private static final int DATABASE_VERSION = 1;
@@ -96,13 +96,106 @@ public class ScaleDatabase extends SQLiteOpenHelper {
 			Log.e("ScaleDatabase", "An error occured while inserting a new entry into the scale database");
 		}
 	}
-	
+
+    public int[] getCountsOfAllMonth(int year) {
+        int [] numOfMonth = new int[12];
+
+        SQLiteDatabase db = getReadableDatabase();
+
+        Calendar start_cal = Calendar.getInstance();
+        Calendar end_cal = Calendar.getInstance();
+
+        for (int i=0; i<12; i++) {
+            start_cal.set(year, i, 1, 0, 0, 0);
+            end_cal.set(year, i, 1, 0, 0, 0);
+            end_cal.add(Calendar.MONTH, 1);
+
+            Cursor cursorScaleDB = db.query(
+                    TABLE_NAME,    // The table to query
+                    new String[]{"count(*)"},    // The columns to return
+                    COLUMN_NAME_DATE_TIME + " >= ? AND " + COLUMN_NAME_DATE_TIME + " < ? ",            // The columns for the WHERE clause
+                    new String[]{formatDateTime.format(start_cal.getTime()), formatDateTime.format(end_cal.getTime())},            // The values for the WHERE clause
+                    null,            // don't group the rows
+                    null,            // don't filter by row groups
+                    null        // The sort order
+            );
+
+            cursorScaleDB.moveToFirst();
+
+            numOfMonth[i] = cursorScaleDB.getInt(0);
+        }
+
+        return numOfMonth;
+    }
+
+
+    public ArrayList<ScaleData> getAllDBEntriesOfMonth(int year, int month) {
+        SQLiteDatabase db = getReadableDatabase();
+        ArrayList<ScaleData> scaleDBEntries = new ArrayList<ScaleData>();
+
+        String[] projection = {
+                COLUMN_NAME_ID,
+                COLUMN_NAME_DATE_TIME,
+                COLUMN_NAME_WEIGHT,
+                COLUMN_NAME_FAT,
+                COLUMN_NAME_WATER,
+                COLUMN_NAME_MUSCLE
+        };
+
+        String sortOrder = COLUMN_NAME_DATE_TIME + " DESC";
+
+        Calendar start_cal = Calendar.getInstance();
+        Calendar end_cal = Calendar.getInstance();
+
+        start_cal.set(year, month, 1, 0, 0, 0);
+        end_cal.set(year, month, 1, 0, 0, 0);
+        end_cal.add(Calendar.MONTH, 1);
+
+        Cursor cursorScaleDB = db.query(
+                TABLE_NAME, 	// The table to query
+                projection, 	// The columns to return
+                COLUMN_NAME_DATE_TIME + " >= ? AND " + COLUMN_NAME_DATE_TIME + " < ? ",            // The columns for the WHERE clause
+                new String[]{formatDateTime.format(start_cal.getTime()), formatDateTime.format(end_cal.getTime())},            // The values for the WHERE clause
+                null, 			// don't group the rows
+                null,			// don't filter by row groups
+                sortOrder  		// The sort order
+        );
+
+        try {
+            cursorScaleDB.moveToFirst();
+
+            while (!cursorScaleDB.isAfterLast()) {
+                ScaleData dataEntry = new ScaleData();
+
+                dataEntry.id = cursorScaleDB.getLong(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_ID));
+                String date_time = cursorScaleDB.getString(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_DATE_TIME));
+                dataEntry.weight = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_WEIGHT));
+                dataEntry.fat = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_FAT));
+                dataEntry.water = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_WATER));
+                dataEntry.muscle = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_MUSCLE));
+
+                Date date = formatDateTime.parse(date_time);
+
+                dataEntry.date_time = date;
+
+                scaleDBEntries.add(dataEntry);
+
+                cursorScaleDB.moveToNext();
+            }
+        } catch (ParseException ex) {
+            Log.e("ScaleDatabase", "Can't parse the date time string: " + ex.getMessage());
+        }
+        catch ( IllegalArgumentException ex) {
+            Log.e("ScaleDatabase", "Illegal argument while reading from scale database: " + ex.getMessage());
+        }
+
+        return scaleDBEntries;
+    }
+
 	public ArrayList<ScaleData> getAllDBEntries() {
 		SQLiteDatabase db = getReadableDatabase();
 		ArrayList<ScaleData> scaleDBEntries = new ArrayList<ScaleData>();
-		
-		// Define a projection that specifies which columns from the database
-		// you will actually use after this query.
+
 		String[] projection = {
 				COLUMN_NAME_ID,
 				COLUMN_NAME_DATE_TIME,
@@ -112,7 +205,6 @@ public class ScaleDatabase extends SQLiteOpenHelper {
 				COLUMN_NAME_MUSCLE
 				};
 
-		// How you want the results sorted in the resulting Cursor
 		String sortOrder = COLUMN_NAME_DATE_TIME + " DESC";
 
 		Cursor cursorScaleDB = db.query(

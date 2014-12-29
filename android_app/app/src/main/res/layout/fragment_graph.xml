@@ -13,13 +13,63 @@
         android:layout_height="fill_parent"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
-        android:orientation="vertical" >
-        
-       <lecho.lib.hellocharts.view.LineChartView
-           android:id="@+id/data_chart"
-           android:layout_width="match_parent"
-           android:layout_height="match_parent" />
+        android:orientation="vertical"
+            android:id="@+id/linearLayout">
 
-    </LinearLayout>
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="5dp"
+                android:gravity="center">
+
+                <Button
+                    style="?android:attr/buttonStyleSmall"
+                    android:layout_width="wrap_content"
+                    android:layout_height="20dp"
+                    android:text="&lt;"
+                    android:id="@+id/btnLeftYear"
+                    android:background="@drawable/flat_selector"
+                    android:textColor="@android:color/white" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:text="year"
+                    android:id="@+id/txtYear"
+                    android:gravity="center"
+                    android:layout_weight="0"
+                    android:textStyle="bold"
+                    android:layout_marginLeft="30dp"
+                    android:layout_marginRight="30dp" />
+
+                <Button
+                    style="?android:attr/buttonStyleSmall"
+                    android:layout_width="wrap_content"
+                    android:layout_height="20dp"
+                    android:text=">"
+                    android:id="@+id/btnRightYear"
+                    android:background="@drawable/flat_selector"
+                    android:textColor="@android:color/white"
+                    android:layout_weight="0" />
+
+            </LinearLayout>
+
+            <lecho.lib.hellocharts.view.LineChartView
+           android:id="@+id/chart_top"
+           android:layout_width="match_parent"
+           android:layout_height="0dp"
+           android:layout_weight="1"
+           />
+
+        <lecho.lib.hellocharts.view.ColumnChartView
+            android:id="@+id/chart_bottom"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginTop="10dp" />
+
+        </LinearLayout>
 
 </RelativeLayout>
