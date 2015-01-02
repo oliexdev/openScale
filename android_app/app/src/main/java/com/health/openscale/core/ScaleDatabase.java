@@ -36,6 +36,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
 	
     private static final String TABLE_NAME = "scaledata";
     private static final String COLUMN_NAME_ID = "id";
+    private static final String COLUMN_NAME_USER_ID = "user_id";
     private static final String COLUMN_NAME_DATE_TIME = "date_time";
     private static final String COLUMN_NAME_WEIGHT = "weight";
     private static final String COLUMN_NAME_FAT = "fat";
@@ -45,6 +46,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
     private static final String SQL_CREATE_ENTRIES = 
     		"CREATE TABLE " + TABLE_NAME + " (" + 
     				COLUMN_NAME_ID + " INTEGER PRIMARY KEY," +
+                    COLUMN_NAME_USER_ID + " INTEGER," +
     				COLUMN_NAME_DATE_TIME + " TEXT UNIQUE," +
     				COLUMN_NAME_WEIGHT + " REAL," +
     				COLUMN_NAME_FAT + " REAL," +
@@ -89,6 +91,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
             return false;
         } else {
             ContentValues values = new ContentValues();
+            values.put(COLUMN_NAME_USER_ID, scaleData.user_id);
             values.put(COLUMN_NAME_DATE_TIME, formatDateTime.format(scaleData.date_time));
             values.put(COLUMN_NAME_WEIGHT, scaleData.weight);
             values.put(COLUMN_NAME_FAT, scaleData.fat);
@@ -195,6 +198,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
 
         String[] projection = {
                 COLUMN_NAME_ID,
+                COLUMN_NAME_USER_ID,
                 COLUMN_NAME_DATE_TIME,
                 COLUMN_NAME_WEIGHT,
                 COLUMN_NAME_FAT,
@@ -228,6 +232,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
                 ScaleData dataEntry = new ScaleData();
 
                 dataEntry.id = cursorScaleDB.getLong(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_ID));
+                dataEntry.user_id = cursorScaleDB.getInt(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_USER_ID));
                 String date_time = cursorScaleDB.getString(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_DATE_TIME));
                 dataEntry.weight = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_WEIGHT));
                 dataEntry.fat = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_FAT));
@@ -256,6 +261,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
 
 		String[] projection = {
 				COLUMN_NAME_ID,
+                COLUMN_NAME_USER_ID,
 				COLUMN_NAME_DATE_TIME,
 				COLUMN_NAME_WEIGHT,
 				COLUMN_NAME_FAT,
@@ -282,6 +288,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
 				ScaleData dataEntry = new ScaleData();
 				
 				dataEntry.id = cursorScaleDB.getLong(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_ID));
+                dataEntry.user_id = cursorScaleDB.getInt(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_USER_ID));
 				String date_time = cursorScaleDB.getString(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_DATE_TIME));
 				dataEntry.weight = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_WEIGHT));
 				dataEntry.fat = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_FAT));
@@ -291,7 +298,6 @@ public class ScaleDatabase extends SQLiteOpenHelper {
 				dataEntry.date_time = formatDateTime.parse(date_time);
 				
 				scaleDBEntries.add(dataEntry);
-				//Log.d("ScaleDatabase", dataEntry.toString());
 				
 				cursorScaleDB.moveToNext();
 			}

@@ -160,7 +160,8 @@ public class NewEntryActivity extends Activity {
 		if (validateInput())
 		{
 			OpenScale openScale = OpenScale.getInstance(context);
-			
+
+            int user_id = 0;
 			float weight = Float.valueOf(txtWeight.getText().toString());
 			float fat = Float.valueOf(txtFat.getText().toString());
 			float water = Float.valueOf(txtWater.getText().toString());
@@ -169,7 +170,7 @@ public class NewEntryActivity extends Activity {
 			String date = txtDate.getText().toString();
 			String time = txtTime.getText().toString();
 			
-			openScale.addScaleData(date + " " + time, weight, fat, water, muscle);
+			openScale.addScaleData(user_id, date + " " + time, weight, fat, water, muscle);
 			
 			finish();
 		}

@@ -61,11 +61,12 @@ public class OpenScale {
 		return scaleDBEntries;
 	}
 
-	public void addScaleData(String date_time, float weight, float fat,
+	public void addScaleData(int user_id, String date_time, float weight, float fat,
 			float water, float muscle) {
 		ScaleData scaleData = new ScaleData();
 
 		try {
+            scaleData.user_id = user_id;
 			scaleData.date_time = dateTimeFormat.parse(date_time);
 			scaleData.weight = weight;
 			scaleData.fat = fat;
@@ -103,11 +104,12 @@ public class OpenScale {
 
 				ScaleData newScaleData = new ScaleData();
 
-				newScaleData.date_time = dateTimeFormat.parse(csvField[0]);
-				newScaleData.weight = Float.parseFloat(csvField[1]);
-				newScaleData.fat = Float.parseFloat(csvField[2]);
-				newScaleData.water = Float.parseFloat(csvField[3]);
-				newScaleData.muscle = Float.parseFloat(csvField[4]);
+                newScaleData.user_id = Integer.parseInt(csvField[0]);
+				newScaleData.date_time = dateTimeFormat.parse(csvField[1]);
+				newScaleData.weight = Float.parseFloat(csvField[2]);
+				newScaleData.fat = Float.parseFloat(csvField[3]);
+				newScaleData.water = Float.parseFloat(csvField[4]);
+				newScaleData.muscle = Float.parseFloat(csvField[5]);
 
 				scaleDB.insertEntry(newScaleData);
 
@@ -133,6 +135,7 @@ public class OpenScale {
 		OutputStreamWriter csvWriter = new OutputStreamWriter(outputStream);
 
 		for (ScaleData scaleData : scaleDBEntries) {
+            csvWriter.append(Integer.toString(scaleData.user_id) + ",");
 			csvWriter.append(dateTimeFormat.format(scaleData.date_time) + ",");
 			csvWriter.append(Float.toString(scaleData.weight) + ",");
 			csvWriter.append(Float.toString(scaleData.fat) + ",");
@@ -237,6 +240,7 @@ public class OpenScale {
 				try {
 					int checksum = 0;
 
+                    checksum ^= Integer.parseInt(csvField[0]);
 					checksum ^= Integer.parseInt(csvField[1]);
 					checksum ^= Integer.parseInt(csvField[2]);
 					checksum ^= Integer.parseInt(csvField[3]);
@@ -250,7 +254,8 @@ public class OpenScale {
 					int btChecksum = Integer.parseInt(csvField[10]);
 
 					if (checksum == btChecksum) {
-						scaleBtData.id = Long.parseLong(csvField[0]);
+                        scaleBtData.id = -1;
+						scaleBtData.user_id = Integer.parseInt(csvField[0]);
 						String date_string = csvField[1] + "/" + csvField[2] + "/" + csvField[3] + "/" + csvField[4] + "/" + csvField[5];
 						scaleBtData.date_time = new SimpleDateFormat("yyyy/MM/dd/HH/mm").parse(date_string);
 

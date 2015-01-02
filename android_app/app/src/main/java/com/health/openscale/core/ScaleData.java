@@ -20,6 +20,7 @@ import java.util.Date;
 
 public class ScaleData {
 	public long id;
+    public int user_id;
 	public Date date_time;
 	public float weight;
 	public float fat;
@@ -29,6 +30,6 @@ public class ScaleData {
 	@Override
 	public String toString()
 	{
-		return "ID : " + id + " DATE_TIME: " + date_time.toString() + " WEIGHT: " + weight + " FAT: " + fat + " WATER: " + water + " MUSCLE: " + muscle;
+		return "ID : " + id + " USER_ID: " + user_id + " DATE_TIME: " + date_time.toString() + " WEIGHT: " + weight + " FAT: " + fat + " WATER: " + water + " MUSCLE: " + muscle;
 	}
 }
