@@ -15,16 +15,11 @@
 */
 package com.health.openscale.gui;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-
 import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.os.Bundle;
-import android.support.v4.app.FragmentTransaction;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -33,6 +28,10 @@ import android.widget.TimePicker;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 
 public class NewEntryActivity extends Activity {
 

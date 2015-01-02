@@ -16,13 +16,16 @@
 
 package com.health.openscale.gui;
 
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
@@ -54,15 +57,21 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 	private LineChartView chartTop;
     private ColumnChartView chartBottom;
     private TextView txtYear;
+    private SharedPreferences prefs;
 
     private OpenScale openScale;
 
     private Calendar yearCal;
 
+    private ArrayList<ScaleData> scaleDBEntries;
+
+    private enum lines {WEIGHT, FAT, WATER, MUSCLE}
+    private ArrayList<lines> activeLines;
+
 	public GraphFragment() {
         yearCal = Calendar.getInstance();
-	}
-	
+    }
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) 
 	{
@@ -70,6 +79,9 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 		
 		chartTop = (LineChartView) graphView.findViewById(R.id.chart_top);
         chartBottom = (ColumnChartView) graphView.findViewById(R.id.chart_bottom);
+
+        chartTop.setOnValueTouchListener(new ChartTopValueTouchListener());
+        chartBottom.setOnValueTouchListener(new ChartBottomValueTouchListener());
 
         txtYear = (TextView) graphView.findViewById(R.id.txtYear);
         txtYear.setText(Integer.toString(yearCal.get(Calendar.YEAR)));
@@ -91,6 +103,8 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         });
         openScale = OpenScale.getInstance(graphView.getContext());
 
+        prefs = PreferenceManager.getDefaultSharedPreferences(graphView.getContext());
+
 		return graphView;
 	}
 	
@@ -102,7 +116,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
     private void generateLineData(Calendar cal)
     {
-        ArrayList<ScaleData> scaleDBEntries = openScale.getAllDataOfMonth(yearCal.get(Calendar.YEAR), cal.get(Calendar.MONTH));
+        scaleDBEntries = openScale.getAllDataOfMonth(yearCal.get(Calendar.YEAR), cal.get(Calendar.MONTH));
 
         SimpleDateFormat day_date = new SimpleDateFormat("dd", Locale.getDefault());
 
@@ -131,38 +145,55 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         {
             calDB.setTime(scaleEntry.date_time);
 
-            valuesWeight.add(new PointValue(calDB.get(Calendar.DAY_OF_MONTH), scaleEntry.weight));
-            valuesFat.add(new PointValue(calDB.get(Calendar.DAY_OF_MONTH), scaleEntry.fat));
-            valuesWater.add(new PointValue(calDB.get(Calendar.DAY_OF_MONTH), scaleEntry.water));
-            valuesMuscle.add(new PointValue(calDB.get(Calendar.DAY_OF_MONTH), scaleEntry.muscle));
+            valuesWeight.add(new PointValue(calDB.get(Calendar.DAY_OF_MONTH)-1, scaleEntry.weight));
+            valuesFat.add(new PointValue(calDB.get(Calendar.DAY_OF_MONTH)-1, scaleEntry.fat));
+            valuesWater.add(new PointValue(calDB.get(Calendar.DAY_OF_MONTH)-1, scaleEntry.water));
+            valuesMuscle.add(new PointValue(calDB.get(Calendar.DAY_OF_MONTH)-1, scaleEntry.muscle));
         }
 
 
         Line lineWeight = new Line(valuesWeight).
                 setColor(Utils.COLOR_VIOLET).
                 setCubic(true).
-                setHasLabels(true).
+                setHasLabels(prefs.getBoolean("labelsEnable", true)).
                 setFormatter(new SimpleValueFormatter(1, false, null, null));
         Line lineFat = new Line(valuesFat).
                 setColor(Utils.COLOR_ORANGE).
                 setCubic(true).
-                setHasLabels(true).
+                setHasLabels(prefs.getBoolean("labelsEnable", true)).
                 setFormatter(new SimpleValueFormatter(1, false, null, null));
         Line lineWater = new Line(valuesWater).
                 setColor(Utils.COLOR_BLUE).
                 setCubic(true).
-                setHasLabels(true).
+                setHasLabels(prefs.getBoolean("labelsEnable", true)).
                 setFormatter(new SimpleValueFormatter(1, false, null, null));
         Line lineMuscle = new Line(valuesMuscle).
                 setColor(Utils.COLOR_GREEN).
                 setCubic(true).
-                setHasLabels(true).
+                setHasLabels(prefs.getBoolean("labelsEnable", true)).
                 setFormatter(new SimpleValueFormatter(1, false, null, null));
 
-        lines.add(lineWeight);
-        lines.add(lineFat);
-        lines.add(lineWater);
-        lines.add(lineMuscle);
+        activeLines = new ArrayList<lines>();
+
+        if(prefs.getBoolean("weightEnable", true)) {
+            lines.add(lineWeight);
+            activeLines.add(GraphFragment.lines.WEIGHT);
+        }
+
+        if(prefs.getBoolean("fatEnable", true)) {
+            lines.add(lineFat);
+            activeLines.add(GraphFragment.lines.FAT);
+        }
+
+        if(prefs.getBoolean("waterEnable", true)) {
+            lines.add(lineWater);
+            activeLines.add(GraphFragment.lines.WATER);
+        }
+
+        if(prefs.getBoolean("muscleEnable", true)) {
+            lines.add(lineMuscle);
+            activeLines.add(GraphFragment.lines.MUSCLE);
+        }
 
         LineChartData lineData = new LineChartData(lines);
         lineData.setAxisXBottom(new Axis(axisValues).
@@ -219,12 +250,11 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         chartBottom.setColumnChartData(columnData);
         chartBottom.setValueSelectionEnabled(true);
         chartBottom.setZoomType(ZoomType.HORIZONTAL);
-        chartBottom.setOnValueTouchListener(new ValueTouchListener());
 
         generateLineData(cal);
     }
 
-    private class ValueTouchListener implements ColumnChartView.ColumnChartOnValueTouchListener {
+    private class ChartBottomValueTouchListener implements ColumnChartView.ColumnChartOnValueTouchListener {
         @Override
         public void onValueTouched(int selectedLine, int selectedValue, ColumnValue value) {
             Calendar cal = Calendar.getInstance();
@@ -232,6 +262,36 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             cal.add(Calendar.MONTH, selectedLine);
 
             generateLineData(cal);
+        }
+
+        @Override
+        public void onNothingTouched() {
+
+        }
+    }
+
+    private class ChartTopValueTouchListener implements LineChartView.LineChartOnValueTouchListener {
+        @Override
+        public void onValueTouched(int lineIndex, int pointIndex, PointValue pointValue) {
+            ScaleData scaleEntry = scaleDBEntries.get(pointIndex);
+            lines selectedLine = activeLines.get(lineIndex);
+
+            String date_time = new SimpleDateFormat("dd. MMM yyyy (EE) HH:mm").format(scaleEntry.date_time);
+
+            switch (selectedLine) {
+                case WEIGHT:
+                    Toast.makeText(getActivity(), getResources().getString(R.string.info_your_weight) + " " + scaleEntry.weight + getResources().getString(R.string.weight_unit) + " " + getResources().getString(R.string.info_on_date) + " " + date_time, Toast.LENGTH_SHORT).show();
+                   break;
+                case FAT:
+                    Toast.makeText(getActivity(), getResources().getString(R.string.info_your_fat) + " " + scaleEntry.fat + "% " + getResources().getString(R.string.info_on_date) + " " + date_time, Toast.LENGTH_SHORT).show();
+                    break;
+                case WATER:
+                    Toast.makeText(getActivity(), getResources().getString(R.string.info_your_water) + " " + scaleEntry.water + "% " + getResources().getString(R.string.info_on_date) + " " + date_time, Toast.LENGTH_SHORT).show();
+                    break;
+                case MUSCLE:
+                    Toast.makeText(getActivity(), getResources().getString(R.string.info_your_muscle) + " " + scaleEntry.muscle + "% " + getResources().getString(R.string.info_on_date) + " " + date_time, Toast.LENGTH_SHORT).show();
+                    break;
+            }
         }
 
         @Override

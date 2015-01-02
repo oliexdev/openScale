@@ -8,10 +8,11 @@
     <string name="action_settings">Settings</string>
     <string name="label_add">Add</string>
     <string name="label_cancel">Cancel</string>
-    <string name="label_ok">Ok</string>
+    <string name="label_ok">OK</string>
     <string name="label_yes">Yes</string>
     <string name="label_no">No</string>
 
+    <string name="label_id">Id</string>
     <string name="label_weight">Weight</string>
     <string name="label_fat">Fat</string>
     <string name="label_water">Water</string>
@@ -41,16 +42,30 @@
     <string name="error_exporting">Error exporting</string>
     <string name="error_importing">Error importing</string>
 
-    <string name="info_data_deleted">All database entries deleted!</string>
+    <string name="info_data_deleted">Database entry deleted!</string>
+    <string name="info_data_all_deleted">All database entries deleted!</string>
     <string name="info_data_exported">Data exported to</string>
     <string name="info_data_imported">Data imported from</string>
     <string name="info_set_filename">Set filename to</string>
     <string name="info_enter_value_percent">Enter value in %</string>
     <string name="info_enter_value_unit">Enter value in kg</string>
+    <string name="info_new_bluetooth_data">New Bluetooth scale data received!</string>
 
     <string name="question_really_delete_all">Do you really want to delete all database entries?</string>
 
     <string name="label_bluetooth_title">Bluetooth</string>
     <string name="label_bluetooth_enable">Enable Bluetooth Server</string>
     <string name="label_device_name">Device Name</string>
+
+    <string name="label_enable_labels">Labels on data points</string>
+    <string name="label_enable_weight">Weight line</string>
+    <string name="label_enable_fat">Fat line</string>
+    <string name="label_enable_water">Water line</string>
+    <string name="label_enable_muscle">Muscle line</string>
+
+    <string name="info_your_weight">Your weight was</string>
+    <string name="info_your_fat">Your body fat was</string>
+    <string name="info_your_water">Your body water was</string>
+    <string name="info_your_muscle">Your body muscle was</string>
+    <string name="info_on_date">on</string>
 </resources>

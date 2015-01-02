@@ -18,10 +18,12 @@ package com.health.openscale.gui;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -56,23 +58,11 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 		
 		tableDataView = (TableLayout) tableView.findViewById(R.id.tableDataView);
 		
-		tableView.findViewById(R.id.btnImportData).setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-            	openImportDialog();
-            }
-        });
+		tableView.findViewById(R.id.btnImportData).setOnClickListener(new onClickListenerImport());
 		
-		tableView.findViewById(R.id.btnExportData).setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-            	openExportDialog();
-            }
-        });
+		tableView.findViewById(R.id.btnExportData).setOnClickListener(new onClickListenerExport());
 		
-		tableView.findViewById(R.id.btnDeleteAll).setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-            	openDeleteAllDialog();
-            }
-        });
+		tableView.findViewById(R.id.btnDeleteAll).setOnClickListener(new onClickListenerDeleteAll());
 
         if ((getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) != Configuration.SCREENLAYOUT_SIZE_XLARGE &&
             (getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) != Configuration.SCREENLAYOUT_SIZE_LARGE)
@@ -106,8 +96,13 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 		for(ScaleData scaleEntry: scaleDBEntries)
 		{
 			TableRow dataRow = new TableRow(tableView.getContext());
-			dataRow.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-			
+			dataRow.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+
+            TextView timeIdView = new TextView(tableView.getContext());
+            timeIdView.setText(Long.toString(scaleEntry.id));
+            timeIdView.setVisibility(View.GONE);
+            dataRow.addView(timeIdView);
+
 			TextView dateTextView = new TextView(tableView.getContext());
             if ((getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == Configuration.SCREENLAYOUT_SIZE_XLARGE ||
                 (getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == Configuration.SCREENLAYOUT_SIZE_LARGE) {
@@ -143,6 +138,19 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 			muscleView.setPadding(0, 5, 5, 5);
 			dataRow.addView(muscleView);
 
+            Button deleteButton = new Button(tableView.getContext());
+            deleteButton.setText("X");
+            deleteButton.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 10);
+            deleteButton.setTextColor(Color.WHITE);
+            deleteButton.setBackground(getResources().getDrawable(R.drawable.flat_selector));
+            deleteButton.setGravity(Gravity.CENTER);
+            deleteButton.setPadding(0, 0, 0, 0);
+            deleteButton.setMinimumHeight(35);
+            deleteButton.setHeight(35);
+            deleteButton.setOnClickListener(new onClickListenerDelete());
+            dataRow.addView(deleteButton);
+
+
             if ((getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) != Configuration.SCREENLAYOUT_SIZE_XLARGE &&
                 (getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) != Configuration.SCREENLAYOUT_SIZE_LARGE)
             {
@@ -154,108 +162,128 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
                 muscleView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
             }
 
-			tableDataView.addView(dataRow, new TableLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+			tableDataView.addView(dataRow, new TableLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
 		}
 	}
-	
-	public void openImportDialog() 
-	{
-    	AlertDialog.Builder filenameDialog = new AlertDialog.Builder(getActivity());
 
-    	filenameDialog.setTitle(getResources().getString(R.string.info_set_filename) + " /sdcard ...");
+    private class onClickListenerImport implements View.OnClickListener {
+        @Override
+        public void onClick(View v) {
+            AlertDialog.Builder filenameDialog = new AlertDialog.Builder(getActivity());
 
-    	final EditText txtFilename = new EditText(tableView.getContext());
-    	txtFilename.setText("/openScale_data.csv");
-    	
-    	filenameDialog.setView(txtFilename);
+            filenameDialog.setTitle(getResources().getString(R.string.info_set_filename) + " /sdcard ...");
 
-    	filenameDialog.setPositiveButton(getResources().getString(R.string.label_ok), new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-            	boolean isError = false;
-            	
-            	try {
-					OpenScale.getInstance(tableView.getContext()).importData(Environment.getExternalStorageDirectory().getPath() + txtFilename.getText().toString());
-				} catch (IOException e) {
-					Toast.makeText(tableView.getContext(), getResources().getString(R.string.error_importing) + " " + e.getMessage(), Toast.LENGTH_SHORT).show();
-					isError = true;
-				}
-            	
-            	if (!isError) {
-            		Toast.makeText(tableView.getContext(), getResources().getString(R.string.info_data_imported) + " /sdcard" + txtFilename.getText().toString(), Toast.LENGTH_SHORT).show();
-            		updateOnView(OpenScale.getInstance(tableView.getContext()).getScaleDBEntries());
-            	}
-            }
-        });
-    	
-    	filenameDialog.setNegativeButton(getResources().getString(R.string.label_cancel), new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-            	dialog.dismiss();
-            }
-        });
+            final EditText txtFilename = new EditText(tableView.getContext());
+            txtFilename.setText("/openScale_data.csv");
 
+            filenameDialog.setView(txtFilename);
 
-    	filenameDialog.show();
-	}
-	
-	public void openExportDialog() 
-	{
-    	AlertDialog.Builder filenameDialog = new AlertDialog.Builder(getActivity());
+            filenameDialog.setPositiveButton(getResources().getString(R.string.label_ok), new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    boolean isError = false;
 
-    	filenameDialog.setTitle(getResources().getString(R.string.info_set_filename) + " /sdcard ...");
+                    try {
+                        OpenScale.getInstance(tableView.getContext()).importData(Environment.getExternalStorageDirectory().getPath() + txtFilename.getText().toString());
+                    } catch (IOException e) {
+                        Toast.makeText(tableView.getContext(), getResources().getString(R.string.error_importing) + " " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        isError = true;
+                    }
 
-    	final EditText txtFilename = new EditText(tableView.getContext());
-    	txtFilename.setText("/openScale_data.csv");
-    	
-    	filenameDialog.setView(txtFilename);
+                    if (!isError) {
+                        Toast.makeText(tableView.getContext(), getResources().getString(R.string.info_data_imported) + " /sdcard" + txtFilename.getText().toString(), Toast.LENGTH_SHORT).show();
+                        updateOnView(OpenScale.getInstance(tableView.getContext()).getScaleDBEntries());
+                    }
+                }
+            });
 
-    	filenameDialog.setPositiveButton(getResources().getString(R.string.label_ok), new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-            	boolean isError = false;
-            	
-            	try {
-					OpenScale.getInstance(tableView.getContext()).exportData(Environment.getExternalStorageDirectory().getPath() + txtFilename.getText().toString());
-				} catch (IOException e) {
-					Toast.makeText(tableView.getContext(), getResources().getString(R.string.error_exporting) + " " + e.getMessage(), Toast.LENGTH_SHORT).show();
-					isError = true;
-				} 
-            	
-            	if (!isError) {
-            		Toast.makeText(tableView.getContext(), getResources().getString(R.string.info_data_exported) + " /sdcard" + txtFilename.getText().toString(), Toast.LENGTH_SHORT).show();
-            	}
-            }
-        });
-    	
-    	filenameDialog.setNegativeButton(getResources().getString(R.string.label_cancel), new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-            	dialog.dismiss();
-            }
-        });
+            filenameDialog.setNegativeButton(getResources().getString(R.string.label_cancel), new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    dialog.dismiss();
+                }
+            });
 
 
-    	filenameDialog.show();
-	}
-	
-	public void openDeleteAllDialog()
-	{
-    	AlertDialog.Builder deleteAllDialog = new AlertDialog.Builder(getActivity());
-    	
-    	deleteAllDialog.setMessage(getResources().getString(R.string.question_really_delete_all));
-    	
-    	deleteAllDialog.setPositiveButton(getResources().getString(R.string.label_yes), new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-            	OpenScale.getInstance(tableView.getContext()).deleteAllDBEntries();
-            	
-            	Toast.makeText(tableView.getContext(), getResources().getString(R.string.info_data_deleted), Toast.LENGTH_SHORT).show();
-        		updateOnView(OpenScale.getInstance(tableView.getContext()).getScaleDBEntries());
-            }
-        });
-    	
-    	deleteAllDialog.setNegativeButton(getResources().getString(R.string.label_no), new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-            	dialog.dismiss();
-            }
-        });
+            filenameDialog.show();
+        }
+    }
 
-    	deleteAllDialog.show();
-	}
+    private class onClickListenerExport implements View.OnClickListener {
+        @Override
+        public void onClick(View v) {
+            AlertDialog.Builder filenameDialog = new AlertDialog.Builder(getActivity());
+
+            filenameDialog.setTitle(getResources().getString(R.string.info_set_filename) + " /sdcard ...");
+
+            final EditText txtFilename = new EditText(tableView.getContext());
+            txtFilename.setText("/openScale_data.csv");
+
+            filenameDialog.setView(txtFilename);
+
+            filenameDialog.setPositiveButton(getResources().getString(R.string.label_ok), new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    boolean isError = false;
+
+                    try {
+                        OpenScale.getInstance(tableView.getContext()).exportData(Environment.getExternalStorageDirectory().getPath() + txtFilename.getText().toString());
+                    } catch (IOException e) {
+                        Toast.makeText(tableView.getContext(), getResources().getString(R.string.error_exporting) + " " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        isError = true;
+                    }
+
+                    if (!isError) {
+                        Toast.makeText(tableView.getContext(), getResources().getString(R.string.info_data_exported) + " /sdcard" + txtFilename.getText().toString(), Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+
+            filenameDialog.setNegativeButton(getResources().getString(R.string.label_cancel), new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    dialog.dismiss();
+                }
+            });
+
+
+            filenameDialog.show();
+        }
+    }
+
+    private class onClickListenerDeleteAll implements View.OnClickListener {
+        @Override
+        public void onClick(View v) {
+            AlertDialog.Builder deleteAllDialog = new AlertDialog.Builder(getActivity());
+
+            deleteAllDialog.setMessage(getResources().getString(R.string.question_really_delete_all));
+
+            deleteAllDialog.setPositiveButton(getResources().getString(R.string.label_yes), new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    OpenScale.getInstance(tableView.getContext()).deleteAllDBEntries();
+
+                    Toast.makeText(tableView.getContext(), getResources().getString(R.string.info_data_all_deleted), Toast.LENGTH_SHORT).show();
+                    updateOnView(OpenScale.getInstance(tableView.getContext()).getScaleDBEntries());
+                }
+            });
+
+            deleteAllDialog.setNegativeButton(getResources().getString(R.string.label_no), new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    dialog.dismiss();
+                }
+            });
+
+            deleteAllDialog.show();
+        }
+    }
+
+    private class onClickListenerDelete implements View.OnClickListener {
+        @Override
+        public void onClick(View v) {
+            TableRow dataRow = (TableRow)v.getParent();
+            TextView idTextView = (TextView) dataRow.getChildAt(0);
+            long id = Long.parseLong(idTextView.getText().toString());
+
+            OpenScale.getInstance(tableView.getContext()).deleteScaleData(id);
+
+            Toast.makeText(tableView.getContext(), getResources().getString(R.string.info_data_deleted), Toast.LENGTH_SHORT).show();
+            updateOnView(OpenScale.getInstance(tableView.getContext()).getScaleDBEntries());
+        }
+    }
 }

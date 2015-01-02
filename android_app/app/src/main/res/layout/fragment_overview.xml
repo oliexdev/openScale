@@ -14,7 +14,7 @@
                android:orientation="vertical"
                android:weightSum="100">
 
-                <lecho.lib.hellocharts.view.PieChartView
+               <lecho.lib.hellocharts.view.PieChartView
                     android:id="@+id/data_pie_chart"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
@@ -89,7 +89,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="25"
-                            android:text="@string/label_muscle"
+                            android:text="@string/label_muscle_average"
                             android:textStyle="bold" />
 
                         <TextView
@@ -119,6 +119,6 @@
 
                 </LinearLayout>
 
-            </LinearLayout>
+           </LinearLayout>
 
 </RelativeLayout>

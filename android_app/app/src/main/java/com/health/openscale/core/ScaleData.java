@@ -18,8 +18,6 @@ package com.health.openscale.core;
 
 import java.util.Date;
 
-import android.util.Log;
-
 public class ScaleData {
 	public long id;
 	public Date date_time;

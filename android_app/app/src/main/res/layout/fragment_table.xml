@@ -6,7 +6,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.health.openscale.MainActivity$PlaceholderFragment" >
+    tools:context="com.health.openscale.MainActivity$PlaceholderFragment">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -17,13 +17,22 @@
             android:id="@+id/tableDataView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:stretchColumns="*"
-            android:shrinkColumns="*">
+            android:shrinkColumns="*"
+            android:measureWithLargestChild="false"
+            android:stretchColumns="1,2,3,4,5,6">
 
             <TableRow
                 android:id="@+id/tableHeader"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_id"
+                    android:textStyle="bold"
+                    android:id="@+id/txtIdTableHeader"
+                    android:visibility="gone" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -76,7 +85,9 @@
                     android:minWidth="10dp"
                     android:text="@string/label_delete_all"
                     android:textColor="@android:color/white"
-                    android:textSize="10sp" />
+                    android:textSize="10sp"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="10dp" />
 
             </TableRow>
         </TableLayout>

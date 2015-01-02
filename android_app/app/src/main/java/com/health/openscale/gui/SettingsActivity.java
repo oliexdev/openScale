@@ -15,7 +15,6 @@
 */
 package com.health.openscale.gui;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
@@ -26,7 +25,6 @@ import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceGroup;
 import android.preference.PreferenceManager;
-import android.util.Log;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;

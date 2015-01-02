@@ -16,9 +16,6 @@
 
 package com.health.openscale.gui;
 
-import java.util.Locale;
-
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -30,12 +27,13 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
+
+import java.util.Locale;
 
 
 public class MainActivity extends ActionBarActivity implements
@@ -62,7 +60,7 @@ public class MainActivity extends ActionBarActivity implements
 		setContentView(R.layout.activity_main);
 
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-	    if(prefs.getBoolean("btEnable", true)) {
+	    if(prefs.getBoolean("btEnable", false)) {
 	    	String deviceName = prefs.getString("btDeviceName", "openScale");
 	    	OpenScale.getInstance(getApplicationContext()).startBluetoothServer(deviceName);
 	    }

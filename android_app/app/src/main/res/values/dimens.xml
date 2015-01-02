@@ -4,6 +4,6 @@
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="corner_radius">4dp</dimen>
-    <dimen name="layer_padding">3dp</dimen>
+    <dimen name="layer_padding">2dp</dimen>
 
 </resources>

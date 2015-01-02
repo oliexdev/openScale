@@ -80,6 +80,13 @@ public class OpenScale {
 		scaleDBEntries = scaleDB.getAllDBEntries();
 	}
 
+    public void deleteScaleData(long id)
+    {
+        scaleDB.deleteEntry(id);
+
+        scaleDBEntries = scaleDB.getAllDBEntries();
+    }
+
 	public void importData(String filename) throws IOException {
 		File file = new File(filename);
 
@@ -187,7 +194,7 @@ public class OpenScale {
 			case BluetoothCommunication.BT_SOCKET_CLOSED:
 				scaleDBEntries = scaleDB.getAllDBEntries();
 				
-				Log.i("OpenScale", "Socket closed! Restarting socket ");
+				Log.d("OpenScale", "Socket closed! Restarting socket ");
 
 				startBluetoothServer(btDeviceName);
 				break;
@@ -247,8 +254,7 @@ public class OpenScale {
 						scaleBtData.fat = Float.parseFloat(csvField[7]);
 						scaleBtData.water = Float.parseFloat(csvField[8]);
 						scaleBtData.muscle = Float.parseFloat(csvField[9]);
-						
-						Log.i("OpenScale", "MCU Data: " + scaleBtData);
+
 						scaleDB.insertEntry(scaleBtData);
 					} else {
 						Log.e("OpenScale", "Error calculated checksum (" + checksum + ") and received checksum (" + btChecksum + ") is different");

@@ -19,6 +19,7 @@ package com.health.openscale.core;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
@@ -27,7 +28,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Locale;
 
 public class ScaleDatabase extends SQLiteOpenHelper {	
@@ -78,24 +78,42 @@ public class ScaleDatabase extends SQLiteOpenHelper {
 		db.delete(TABLE_NAME, null, null);
 	}
 
-	public void insertEntry(ScaleData scaleData) {
+	public boolean insertEntry(ScaleData scaleData) {
 		SQLiteDatabase db = getWritableDatabase();
-		
-		// Create a new map of values, where column names are the keys
-		ContentValues values = new ContentValues();
-		values.put(COLUMN_NAME_DATE_TIME, formatDateTime.format(scaleData.date_time));
-		values.put(COLUMN_NAME_WEIGHT, scaleData.weight);
-		values.put(COLUMN_NAME_FAT, scaleData.fat);
-		values.put(COLUMN_NAME_WATER, scaleData.water);
-		values.put(COLUMN_NAME_MUSCLE, scaleData.muscle);
 
-		// Insert the new row, returning the primary key value of the new row
-		long newRowId = db.insert(TABLE_NAME, null, values);
-		
-		if (newRowId == -1) {
-			Log.e("ScaleDatabase", "An error occured while inserting a new entry into the scale database");
-		}
+        Cursor cursorScaleDB = db.query(TABLE_NAME, new String[] {COLUMN_NAME_DATE_TIME}, COLUMN_NAME_DATE_TIME + " = ?",
+                new String[] {formatDateTime.format(scaleData.date_time)}, null, null, null);
+
+        if (cursorScaleDB.getCount() > 0) {
+            // we don't want double entries
+            return false;
+        } else {
+            ContentValues values = new ContentValues();
+            values.put(COLUMN_NAME_DATE_TIME, formatDateTime.format(scaleData.date_time));
+            values.put(COLUMN_NAME_WEIGHT, scaleData.weight);
+            values.put(COLUMN_NAME_FAT, scaleData.fat);
+            values.put(COLUMN_NAME_WATER, scaleData.water);
+            values.put(COLUMN_NAME_MUSCLE, scaleData.muscle);
+
+            try
+            {
+                db.insertOrThrow(TABLE_NAME, null, values);
+            }
+            catch (SQLException e)
+            {
+                Log.e("ScaleDatabase", "An error occured while inserting a new entry into the scale database: " + e.toString());
+                return false;
+            }
+        }
+
+        return true;
 	}
+
+    public void deleteEntry(long id) {
+        SQLiteDatabase db = getWritableDatabase();
+
+        db.delete(TABLE_NAME, COLUMN_NAME_ID + "= ?", new String[] {String.valueOf(id)});
+    }
 
     public int[] getCountsOfAllMonth(int year) {
         int [] numOfMonth = new int[12];
@@ -174,9 +192,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
                 dataEntry.water = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_WATER));
                 dataEntry.muscle = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_MUSCLE));
 
-                Date date = formatDateTime.parse(date_time);
-
-                dataEntry.date_time = date;
+                dataEntry.date_time = formatDateTime.parse(date_time);
 
                 scaleDBEntries.add(dataEntry);
 
@@ -230,9 +246,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
 				dataEntry.water = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_WATER));
 				dataEntry.muscle = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_MUSCLE));
 				
-				Date date = formatDateTime.parse(date_time);
-				
-				dataEntry.date_time = date;
+				dataEntry.date_time = formatDateTime.parse(date_time);
 				
 				scaleDBEntries.add(dataEntry);
 				//Log.d("ScaleDatabase", dataEntry.toString());
