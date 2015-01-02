@@ -73,8 +73,6 @@ int no_activity_cycles = 0;
 
 volatile boolean sleep_state = true;
 
-volatile boolean repeat_state = false;
-
 int measured_weight = -1;
 int measured_fat = -1;
 int measured_water = -1;
