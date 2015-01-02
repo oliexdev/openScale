@@ -117,15 +117,16 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     private void generateLineData(Calendar cal)
     {
         scaleDBEntries = openScale.getAllDataOfMonth(yearCal.get(Calendar.YEAR), cal.get(Calendar.MONTH));
+        float maxValue = openScale.getMaxValueOfDBEntries(yearCal.get(Calendar.YEAR), cal.get(Calendar.MONTH));
 
         SimpleDateFormat day_date = new SimpleDateFormat("dd", Locale.getDefault());
 
         cal.set(Calendar.DAY_OF_MONTH, 1);
-        int max_days = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
+        int maxDays = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
 
         List<AxisValue> axisValues = new ArrayList<AxisValue>();
 
-        for (int i=0; i<max_days; i++) {
+        for (int i=0; i<maxDays; i++) {
             String day_name = day_date.format(cal.getTime());
 
             axisValues.add(new AxisValue(i, day_name.toCharArray()));
@@ -212,7 +213,13 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         chartTop.setLineChartData(lineData);
         chartTop.setViewportCalculationEnabled(false);
 
-        Viewport v = new Viewport(0, 110, max_days, 0);
+        if (maxValue == 0.0) {
+            maxValue = 100;
+        } else {
+            maxValue += 20;
+        }
+
+        Viewport v = new Viewport(0, (int)maxValue, maxDays, 0);
         chartTop.setMaximumViewport(v);
         chartTop.setCurrentViewport(v, true);
 

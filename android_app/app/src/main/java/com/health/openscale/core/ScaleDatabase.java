@@ -146,6 +146,48 @@ public class ScaleDatabase extends SQLiteOpenHelper {
         return numOfMonth;
     }
 
+    public float getMaxValueOfDBEntries(int year, int month) {
+        SQLiteDatabase db = getReadableDatabase();
+
+        Calendar start_cal = Calendar.getInstance();
+        Calendar end_cal = Calendar.getInstance();
+
+        start_cal.set(year, month, 1, 0, 0, 0);
+        end_cal.set(year, month, 1, 0, 0, 0);
+        end_cal.add(Calendar.MONTH, 1);
+
+        String[] projection = {
+                "MAX(" + COLUMN_NAME_WEIGHT + ")",
+                "MAX(" + COLUMN_NAME_FAT + ")",
+                "MAX(" + COLUMN_NAME_WATER + ")",
+                "MAX(" + COLUMN_NAME_MUSCLE + ")"
+        };
+
+        Cursor cursorScaleDB = db.query(
+                TABLE_NAME, 	// The table to query
+                projection, 	// The columns to return
+                COLUMN_NAME_DATE_TIME + " >= ? AND " + COLUMN_NAME_DATE_TIME + " < ? ",            // The columns for the WHERE clause
+                new String[]{formatDateTime.format(start_cal.getTime()), formatDateTime.format(end_cal.getTime())},            // The values for the WHERE clause
+                null, 			// don't group the rows
+                null,			// don't filter by row groups
+                null  		// The sort order
+        );
+
+        cursorScaleDB.moveToFirst();
+
+        float maxValue = -1;
+
+        for (int i=0; i<4; i++)
+        {
+            if (maxValue < cursorScaleDB.getFloat(i))
+            {
+                maxValue =  cursorScaleDB.getFloat(i);
+            }
+        }
+
+        return maxValue;
+    }
+
 
     public ArrayList<ScaleData> getAllDBEntriesOfMonth(int year, int month) {
         SQLiteDatabase db = getReadableDatabase();

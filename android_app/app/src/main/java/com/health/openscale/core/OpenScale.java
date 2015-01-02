@@ -159,6 +159,10 @@ public class OpenScale {
         return scaleDB.getAllDBEntriesOfMonth(year, month);
     }
 
+    public float getMaxValueOfDBEntries(int year, int month) {
+        return scaleDB.getMaxValueOfDBEntries(year, month);
+    }
+
 	public void startBluetoothServer(String deviceName) {
 		Log.d("OpenScale", "Bluetooth Server started! I am searching for device ...");
 
