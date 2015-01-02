@@ -219,7 +219,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             maxValue += 20;
         }
 
-        Viewport v = new Viewport(0, (int)maxValue, maxDays, 0);
+        Viewport v = new Viewport(0, (int)maxValue, maxDays-1, 0);
         chartTop.setMaximumViewport(v);
         chartTop.setCurrentViewport(v, true);
 
