@@ -256,7 +256,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         chartBottom.setColumnChartData(columnData);
         chartBottom.setValueSelectionEnabled(true);
-        chartBottom.setZoomType(ZoomType.HORIZONTAL);
+        chartBottom.setZoomEnabled(false);
 
         generateLineData(cal);
     }
