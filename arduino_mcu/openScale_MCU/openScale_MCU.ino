@@ -478,7 +478,7 @@ void loop()
      }
      
      if (seg_value_4 == 'P') {
-       measured_user_id = char_to_int(seg_value_1) - 1; // user id starts by 0
+       measured_user_id = char_to_int(seg_value_1) + char_to_int(seg_value_2)*10;
      }
 
     sample_count = 0; 
