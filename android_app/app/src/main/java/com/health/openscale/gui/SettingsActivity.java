@@ -15,6 +15,7 @@
 */
 package com.health.openscale.gui;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
@@ -23,11 +24,15 @@ import android.preference.ListPreference;
 import android.preference.MultiSelectListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
+import android.preference.PreferenceCategory;
 import android.preference.PreferenceGroup;
 import android.preference.PreferenceManager;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
+import com.health.openscale.core.ScaleUser;
+
+import java.util.ArrayList;
 
 public class SettingsActivity extends PreferenceActivity implements OnSharedPreferenceChangeListener {
 
@@ -36,7 +41,49 @@ protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     addPreferencesFromResource(R.xml.preferences);
     initSummary(getPreferenceScreen());
+
+    updateUserPreferences();
 }
+
+
+    private void updateUserPreferences()
+    {
+        PreferenceCategory usersCategory = (PreferenceCategory)findPreference("catUsers");
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        int selectedUserId  = prefs.getInt("selectedUserId", -1);
+
+        usersCategory.removeAll();
+
+        OpenScale openScale = OpenScale.getInstance(this);
+
+        ArrayList<ScaleUser> scaleUserList = openScale.getScaleUserList();
+
+        for (ScaleUser scaleUser : scaleUserList)
+        {
+            Preference prefUser = new Preference(this);
+            prefUser.setOnPreferenceClickListener(new onClickListenerUserSelect());
+
+            if (scaleUser.id == selectedUserId) {
+                prefUser.setTitle("> " + scaleUser.user_name);
+            } else
+            {
+                prefUser.setTitle(scaleUser.user_name);
+            }
+
+            prefUser.setKey(Integer.toString(scaleUser.id));
+
+            usersCategory.addPreference(prefUser);
+        }
+
+
+        Preference prefAddUser = new Preference(this);
+
+        prefAddUser.setOnPreferenceClickListener(new onClickListenerAddUser());
+        prefAddUser.setTitle("+ Add User");
+
+        usersCategory.addPreference(prefAddUser);
+    }
 
 @Override
 protected void onResume() {
@@ -108,5 +155,44 @@ private void updatePrefSummary(Preference p) {
     	findPreference("btDeviceName").setEnabled(false);
     }
 }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        if (requestCode == UserSettingsActivity.ADD_USER_REQUEST) {
+            if(resultCode == RESULT_OK){
+                updateUserPreferences();
+            }
+        }
+
+
+        if (requestCode == UserSettingsActivity.EDIT_USER_REQUEST) {
+            if(resultCode == RESULT_OK){
+                updateUserPreferences();
+            }
+        }
+    }
+
+    private class onClickListenerUserSelect implements Preference.OnPreferenceClickListener {
+        @Override
+        public boolean onPreferenceClick(Preference preference) {
+            Intent intent = new Intent(preference.getContext(), UserSettingsActivity.class);
+            intent.putExtra("mode", UserSettingsActivity.EDIT_USER_REQUEST);
+            intent.putExtra("id", Integer.parseInt(preference.getKey()));
+            startActivityForResult(intent, UserSettingsActivity.EDIT_USER_REQUEST);
+
+            return false;
+        }
+    }
+
+    private class onClickListenerAddUser implements Preference.OnPreferenceClickListener {
+        @Override
+        public boolean onPreferenceClick(Preference preference) {
+            Intent intent = new Intent(preference.getContext(), UserSettingsActivity.class);
+            intent.putExtra("mode", UserSettingsActivity.ADD_USER_REQUEST);
+            startActivityForResult(intent, UserSettingsActivity.ADD_USER_REQUEST);
+
+            return false;
+        }
+    }
 
 }

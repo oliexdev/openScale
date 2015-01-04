@@ -30,6 +30,7 @@ import android.widget.Toast;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.ScaleData;
+import com.health.openscale.core.ScaleUser;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -63,7 +64,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
     private Calendar yearCal;
 
-    private ArrayList<ScaleData> scaleDBEntries;
+    private ArrayList<ScaleData> scaleDataList;
 
     private enum lines {WEIGHT, FAT, WATER, MUSCLE}
     private ArrayList<lines> activeLines;
@@ -109,15 +110,15 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 	}
 	
 	@Override
-	public void updateOnView(ArrayList<ScaleData> scaleDBEntries)
+	public void updateOnView(ArrayList<ScaleData> scaleDataList)
 	{
         generateColumnData();
 	}
 
     private void generateLineData(Calendar cal)
     {
-        scaleDBEntries = openScale.getAllDataOfMonth(yearCal.get(Calendar.YEAR), cal.get(Calendar.MONTH));
-        float maxValue = openScale.getMaxValueOfDBEntries(yearCal.get(Calendar.YEAR), cal.get(Calendar.MONTH));
+        scaleDataList = openScale.getScaleDataOfMonth(yearCal.get(Calendar.YEAR), cal.get(Calendar.MONTH));
+        float maxValue = openScale.getMaxValueOfScaleData(yearCal.get(Calendar.YEAR), cal.get(Calendar.MONTH));
 
         SimpleDateFormat day_date = new SimpleDateFormat("dd", Locale.getDefault());
 
@@ -142,7 +143,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         Calendar calDB = Calendar.getInstance();
 
-        for(ScaleData scaleEntry: scaleDBEntries)
+        for(ScaleData scaleEntry: scaleDataList)
         {
             calDB.setTime(scaleEntry.date_time);
 
@@ -280,23 +281,23 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     private class ChartTopValueTouchListener implements LineChartView.LineChartOnValueTouchListener {
         @Override
         public void onValueTouched(int lineIndex, int pointIndex, PointValue pointValue) {
-            ScaleData scaleEntry = scaleDBEntries.get(pointIndex);
+            ScaleData scaleData = scaleDataList.get(pointIndex);
             lines selectedLine = activeLines.get(lineIndex);
 
-            String date_time = new SimpleDateFormat("dd. MMM yyyy (EE) HH:mm").format(scaleEntry.date_time);
+            String date_time = new SimpleDateFormat("dd. MMM yyyy (EE) HH:mm").format(scaleData.date_time);
 
             switch (selectedLine) {
                 case WEIGHT:
-                    Toast.makeText(getActivity(), getResources().getString(R.string.info_your_weight) + " " + scaleEntry.weight + getResources().getString(R.string.weight_unit) + " " + getResources().getString(R.string.info_on_date) + " " + date_time, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), getResources().getString(R.string.info_your_weight) + " " + scaleData.weight + ScaleUser.UNIT_STRING[OpenScale.getInstance(graphView.getContext()).getSelectedScaleUser().scale_unit] + " " + getResources().getString(R.string.info_on_date) + " " + date_time, Toast.LENGTH_SHORT).show();
                    break;
                 case FAT:
-                    Toast.makeText(getActivity(), getResources().getString(R.string.info_your_fat) + " " + scaleEntry.fat + "% " + getResources().getString(R.string.info_on_date) + " " + date_time, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), getResources().getString(R.string.info_your_fat) + " " + scaleData.fat + "% " + getResources().getString(R.string.info_on_date) + " " + date_time, Toast.LENGTH_SHORT).show();
                     break;
                 case WATER:
-                    Toast.makeText(getActivity(), getResources().getString(R.string.info_your_water) + " " + scaleEntry.water + "% " + getResources().getString(R.string.info_on_date) + " " + date_time, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), getResources().getString(R.string.info_your_water) + " " + scaleData.water + "% " + getResources().getString(R.string.info_on_date) + " " + date_time, Toast.LENGTH_SHORT).show();
                     break;
                 case MUSCLE:
-                    Toast.makeText(getActivity(), getResources().getString(R.string.info_your_muscle) + " " + scaleEntry.muscle + "% " + getResources().getString(R.string.info_on_date) + " " + date_time, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), getResources().getString(R.string.info_your_muscle) + " " + scaleData.muscle + "% " + getResources().getString(R.string.info_on_date) + " " + date_time, Toast.LENGTH_SHORT).show();
                     break;
             }
         }

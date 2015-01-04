@@ -14,12 +14,22 @@
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-package com.health.openscale.gui;
+package com.health.openscale.core;
 
-import com.health.openscale.core.ScaleData;
+import java.util.Date;
 
-import java.util.ArrayList;
+public class ScaleUser {
+    public static final String[] UNIT_STRING = new String[] {"kg", "lb", "st"};
 
-public interface FragmentUpdateListener {
-	public void updateOnView(ArrayList<ScaleData> scaleDataList);
+	public int id;
+    public String user_name;
+	public Date birthday;
+	public int body_height;
+	public int scale_unit;
+	
+	@Override
+	public String toString()
+	{
+		return "ID : " + id + " NAME: " + user_name + " BIRTHDAY: " + birthday.toString() + " BODY_HEIGHT: " + body_height + " SCALE_UNIT: " + UNIT_STRING[scale_unit];
+	}
 }

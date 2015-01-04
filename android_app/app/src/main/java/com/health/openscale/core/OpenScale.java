@@ -17,8 +17,10 @@
 package com.health.openscale.core;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Message;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import java.io.BufferedReader;
@@ -31,22 +33,29 @@ import java.io.OutputStreamWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class OpenScale {
 
 	private static OpenScale instance;
 
 	private ScaleDatabase scaleDB;
-	private ArrayList<ScaleData> scaleDBEntries;
+    private ScaleUserDatabase scaleUserDB;
+	private ArrayList<ScaleData> scaleDataList;
 
 	private BluetoothCommunication btCom;
 	private String btDeviceName;
 
 	private SimpleDateFormat dateTimeFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm");
 
+    private Context context;
+
 	private OpenScale(Context con) {
-		scaleDB = new ScaleDatabase(con);
-		scaleDBEntries = scaleDB.getAllDBEntries();
+        context = con;
+		scaleDB = new ScaleDatabase(context);
+        scaleUserDB = new ScaleUserDatabase(context);
+
+        updateScaleData();
 	}
 
 	public static OpenScale getInstance(Context con) {
@@ -57,8 +66,79 @@ public class OpenScale {
 		return instance;
 	}
 
-	public ArrayList<ScaleData> getScaleDBEntries() {
-		return scaleDBEntries;
+    public void addScaleUser(String name, String birthday, int body_height, int scale_unit)
+    {
+        ScaleUser scaleUser = new ScaleUser();
+
+        try {
+            scaleUser.user_name = name;
+            scaleUser.birthday = new SimpleDateFormat("dd.MM.yyyy").parse(birthday);
+            scaleUser.body_height = body_height;
+            scaleUser.scale_unit = scale_unit;
+
+        } catch (ParseException e) {
+            Log.e("OpenScale", "Can't parse date time string while adding to the database");
+        }
+
+        scaleUserDB.insertEntry(scaleUser);
+    }
+
+    public ArrayList<ScaleUser> getScaleUserList()
+    {
+        updateScaleData();
+
+        return scaleUserDB.getScaleUserList();
+    }
+
+    public ScaleUser getScaleUser(int userId)
+    {
+        return scaleUserDB.getScaleUser(userId);
+    }
+
+    public ScaleUser getSelectedScaleUser()
+    {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        int selectedUserId  = prefs.getInt("selectedUserId", -1);
+
+        if (selectedUserId == -1) {
+            ScaleUser scaleUser = new ScaleUser();
+
+            scaleUser.id = -1;
+            scaleUser.user_name = "anonymous";
+            scaleUser.birthday = new Date();
+            scaleUser.scale_unit = 1;
+            scaleUser.body_height = 1;
+
+            return scaleUser;
+        }
+
+        return scaleUserDB.getScaleUser(selectedUserId);
+    }
+
+    public void deleteScaleUser(int id)
+    {
+        scaleUserDB.deleteEntry(id);
+    }
+
+    public void updateScaleUser(int id, String name, String birthday, int body_height, int scale_unit)
+    {
+        ScaleUser scaleUser = new ScaleUser();
+
+        try {
+            scaleUser.id = id;
+            scaleUser.user_name = name;
+            scaleUser.birthday = new SimpleDateFormat("dd.MM.yyyy").parse(birthday);
+            scaleUser.body_height = body_height;
+            scaleUser.scale_unit = scale_unit;
+        } catch (ParseException e) {
+            Log.e("OpenScale", "Can't parse date time string while adding to the database");
+        }
+
+        scaleUserDB.updateScaleUser(scaleUser);
+    }
+
+	public ArrayList<ScaleData> getScaleDataList() {
+		return scaleDataList;
 	}
 
 	public void addScaleData(int user_id, String date_time, float weight, float fat,
@@ -78,14 +158,14 @@ public class OpenScale {
 
 		scaleDB.insertEntry(scaleData);
 
-		scaleDBEntries = scaleDB.getAllDBEntries();
+        updateScaleData();
 	}
 
     public void deleteScaleData(long id)
     {
         scaleDB.deleteEntry(id);
 
-        scaleDBEntries = scaleDB.getAllDBEntries();
+        updateScaleData();
     }
 
 	public void importData(String filename) throws IOException {
@@ -104,12 +184,13 @@ public class OpenScale {
 
 				ScaleData newScaleData = new ScaleData();
 
-                newScaleData.user_id = Integer.parseInt(csvField[0]);
-				newScaleData.date_time = dateTimeFormat.parse(csvField[1]);
-				newScaleData.weight = Float.parseFloat(csvField[2]);
-				newScaleData.fat = Float.parseFloat(csvField[3]);
-				newScaleData.water = Float.parseFloat(csvField[4]);
-				newScaleData.muscle = Float.parseFloat(csvField[5]);
+				newScaleData.date_time = dateTimeFormat.parse(csvField[0]);
+				newScaleData.weight = Float.parseFloat(csvField[1]);
+				newScaleData.fat = Float.parseFloat(csvField[2]);
+				newScaleData.water = Float.parseFloat(csvField[3]);
+				newScaleData.muscle = Float.parseFloat(csvField[4]);
+
+                newScaleData.user_id = getSelectedScaleUser().id;
 
 				scaleDB.insertEntry(newScaleData);
 
@@ -120,7 +201,7 @@ public class OpenScale {
 			throw new IOException("Can't parse date format. Please set the date time format as <dd.MM.yyyy HH:mm> (e.g. 31.10.2014 05:23)");
 		}
 
-		scaleDBEntries = scaleDB.getAllDBEntries();
+        updateScaleData();
 
 		csvReader.close();
 		inputReader.close();
@@ -134,8 +215,7 @@ public class OpenScale {
 
 		OutputStreamWriter csvWriter = new OutputStreamWriter(outputStream);
 
-		for (ScaleData scaleData : scaleDBEntries) {
-            csvWriter.append(Integer.toString(scaleData.user_id) + ",");
+		for (ScaleData scaleData : scaleDataList) {
 			csvWriter.append(dateTimeFormat.format(scaleData.date_time) + ",");
 			csvWriter.append(Float.toString(scaleData.weight) + ",");
 			csvWriter.append(Float.toString(scaleData.fat) + ",");
@@ -144,26 +224,39 @@ public class OpenScale {
 			csvWriter.append("\n");
 		}
 
+
 		csvWriter.close();
 		outputStream.close();
 	}
 
-	public void deleteAllDBEntries() {
-		scaleDB.deleteAllEntries();
+	public void clearScaleData() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        int selectedUserId  = prefs.getInt("selectedUserId", -1);
 
-		scaleDBEntries = scaleDB.getAllDBEntries();
+		scaleDB.clearScaleData(selectedUserId);
+
+        updateScaleData();
 	}
 
     public int[] getCountsOfMonth(int year) {
-        return scaleDB.getCountsOfAllMonth(year);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        int selectedUserId  = prefs.getInt("selectedUserId", -1);
+
+        return scaleDB.getCountsOfAllMonth(selectedUserId, year);
     }
 
-    public ArrayList<ScaleData> getAllDataOfMonth(int year, int month) {
-        return scaleDB.getAllDBEntriesOfMonth(year, month);
+    public ArrayList<ScaleData> getScaleDataOfMonth(int year, int month) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        int selectedUserId  = prefs.getInt("selectedUserId", -1);
+
+        return scaleDB.getScaleDataOfMonth(selectedUserId, year, month);
     }
 
-    public float getMaxValueOfDBEntries(int year, int month) {
-        return scaleDB.getMaxValueOfDBEntries(year, month);
+    public float getMaxValueOfScaleData(int year, int month) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        int selectedUserId  = prefs.getInt("selectedUserId", -1);
+
+        return scaleDB.getMaxValueOfScaleData(selectedUserId, year, month);
     }
 
 	public void startBluetoothServer(String deviceName) {
@@ -199,7 +292,7 @@ public class OpenScale {
 				parseBtString(line);
 				break;
 			case BluetoothCommunication.BT_SOCKET_CLOSED:
-				scaleDBEntries = scaleDB.getAllDBEntries();
+				updateScaleData();
 				
 				Log.d("OpenScale", "Socket closed! Restarting socket ");
 
@@ -279,4 +372,12 @@ public class OpenScale {
 				break;
 		}
 	}
+
+    private void updateScaleData()
+    {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        int selectedUserId  = prefs.getInt("selectedUserId", -1);
+
+        scaleDataList = scaleDB.getScaleDataList(selectedUserId);
+    }
 }

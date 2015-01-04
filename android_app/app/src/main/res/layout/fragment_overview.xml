@@ -14,8 +14,15 @@
                android:orientation="vertical"
                android:weightSum="100">
 
+               <TextView
+                   android:layout_width="fill_parent"
+                   android:layout_height="wrap_content"
+                   android:textAppearance="?android:attr/textAppearanceMedium"
+                   android:id="@+id/txtOverviewTitle"
+                   android:gravity="center" />
+
                <lecho.lib.hellocharts.view.PieChartView
-                    android:id="@+id/data_pie_chart"
+                    android:id="@+id/pieChart"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_gravity="top|center"

@@ -27,6 +27,7 @@ import android.widget.TextView;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.ScaleData;
+import com.health.openscale.core.ScaleUser;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -40,6 +41,8 @@ import lecho.lib.hellocharts.view.PieChartView;
 
 public class OverviewFragment extends Fragment implements FragmentUpdateListener {	
 	private View overviewView;
+
+    private TextView txtOverviewTitle;
 	private PieChartView pieChart;
 	private TextView txtAvgWeight;
 	private TextView txtAvgFat;
@@ -50,8 +53,9 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) 
 	{
 		overviewView = inflater.inflate(R.layout.fragment_overview, container, false);
-		
-		pieChart = (PieChartView) overviewView.findViewById(R.id.data_pie_chart);
+
+        txtOverviewTitle = (TextView) overviewView.findViewById(R.id.txtOverviewTitle);
+		pieChart = (PieChartView) overviewView.findViewById(R.id.pieChart);
 		txtAvgWeight = (TextView) overviewView.findViewById(R.id.txtAvgWeight);
 		txtAvgFat = (TextView) overviewView.findViewById(R.id.txtAvgFat);
 		txtAvgWater = (TextView) overviewView.findViewById(R.id.txtAvgWater);
@@ -63,32 +67,36 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             }
         });
 		
-		updateOnView(OpenScale.getInstance(overviewView.getContext()).getScaleDBEntries());
-		
+		updateOnView(OpenScale.getInstance(overviewView.getContext()).getScaleDataList());
+
 		return overviewView;
 	}
 	
 	@Override
-	public void updateOnView(ArrayList<ScaleData> scaleDBEntries)
-	{		
+	public void updateOnView(ArrayList<ScaleData> scaleDataList)
+	{
+        ScaleUser scaleUser = OpenScale.getInstance(overviewView.getContext()).getSelectedScaleUser();
+
+        txtOverviewTitle.setText(getResources().getString(R.string.label_overview_title_start) + " " + scaleUser.user_name + " " + getResources().getString(R.string.label_overview_title_end));
+
 		List<ArcValue> arcValues = new ArrayList<ArcValue>();
 		
-		if (scaleDBEntries.isEmpty()) {
+		if (scaleDataList.isEmpty()) {
 			return;
 		}
 		
-		ScaleData lastEntry = scaleDBEntries.get(0);
+		ScaleData lastScaleData = scaleDataList.get(0);
 		
-		arcValues.add(new ArcValue(lastEntry.fat, Utils.COLOR_ORANGE));
-		arcValues.add(new ArcValue(lastEntry.water, Utils.COLOR_BLUE));
-		arcValues.add(new ArcValue(lastEntry.muscle, Utils.COLOR_GREEN));
+		arcValues.add(new ArcValue(lastScaleData.fat, Utils.COLOR_ORANGE));
+		arcValues.add(new ArcValue(lastScaleData.water, Utils.COLOR_BLUE));
+		arcValues.add(new ArcValue(lastScaleData.muscle, Utils.COLOR_GREEN));
 		
 		PieChartData pieChartData = new PieChartData(arcValues);
 		pieChartData.setHasLabels(true);
         pieChartData.setFormatter(new SimpleValueFormatter(1, false, null, " %".toCharArray()));
 		pieChartData.setHasCenterCircle(true);
-		pieChartData.setCenterText1(Float.toString(lastEntry.weight) + " " + getResources().getString(R.string.weight_unit));
-		pieChartData.setCenterText2(new SimpleDateFormat("dd. MMM yyyy (EE)").format(lastEntry.date_time));
+		pieChartData.setCenterText1(Float.toString(lastScaleData.weight) + " " + ScaleUser.UNIT_STRING[scaleUser.scale_unit]);
+		pieChartData.setCenterText2(new SimpleDateFormat("dd. MMM yyyy (EE)").format(lastScaleData.date_time));
 
         if ((getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == Configuration.SCREENLAYOUT_SIZE_XLARGE ||
            (getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == Configuration.SCREENLAYOUT_SIZE_LARGE) {
@@ -108,7 +116,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 		double avgWater = 0;
 		double avgMuscle = 0;
 		
-		for (ScaleData scaleData : scaleDBEntries)
+		for (ScaleData scaleData : scaleDataList)
 		{
 			avgWeight += scaleData.weight;
 			avgFat += scaleData.fat;
@@ -116,21 +124,26 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 			avgMuscle += scaleData.muscle;
 		}
 		
-		avgWeight = avgWeight / scaleDBEntries.size();
-		avgFat = avgFat / scaleDBEntries.size();
-		avgWater = avgWater / scaleDBEntries.size();
-		avgMuscle = avgMuscle / scaleDBEntries.size();
+		avgWeight = avgWeight / scaleDataList.size();
+		avgFat = avgFat / scaleDataList.size();
+		avgWater = avgWater / scaleDataList.size();
+		avgMuscle = avgMuscle / scaleDataList.size();
 		
-		txtAvgWeight.setText(String.format( "%.1f " + getResources().getString(R.string.weight_unit), avgWeight));
+		txtAvgWeight.setText(String.format( "%.1f " + ScaleUser.UNIT_STRING[scaleUser.scale_unit], avgWeight));
 		txtAvgFat.setText(String.format( "%.1f %%", avgFat));
 		txtAvgWater.setText(String.format( "%.1f %%", avgWater));
 		txtAvgMuscle.setText(String.format( "%.1f %%", avgMuscle));
 	}
-	
+
 	public void btnOnClickInsertData()
 	{
 		Intent intent = new Intent(overviewView.getContext(), NewEntryActivity.class);
-		startActivity(intent);
+        startActivityForResult(intent, 1);
 	}
-	
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        updateOnView(OpenScale.getInstance(overviewView.getContext()).getScaleDataList());
+    }
 }

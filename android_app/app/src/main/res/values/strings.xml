@@ -5,12 +5,17 @@
     <string name="title_overview">Overview</string>
     <string name="title_graph">Chart</string>
     <string name="title_frag">Table</string>
+    <string name="title_user">User</string>
+    <string name="title_new_data_entry">Data Entry</string>
+
     <string name="action_settings">Settings</string>
+
     <string name="label_add">Add</string>
     <string name="label_cancel">Cancel</string>
     <string name="label_ok">OK</string>
     <string name="label_yes">Yes</string>
     <string name="label_no">No</string>
+    <string name="label_delete">Delete</string>
 
     <string name="label_id">Id</string>
     <string name="label_weight">Weight</string>
@@ -18,16 +23,20 @@
     <string name="label_water">Water</string>
     <string name="label_muscle">Muscle</string>
 
-    <string name="weight_unit">kg</string>
-
     <string name="label_date">Date</string>
     <string name="label_time">Time</string>
     <string name="label_set">Set</string>
+    <string name="label_birthday">Birthday</string>
+    <string name="label_user_name">Name</string>
+    <string name="label_body_height">Body height</string>
+    <string name="label_scale_unit">Scale unit</string>
 
     <string name="label_weight_average">Weight Ø</string>
     <string name="label_fat_average">Fat Ø</string>
     <string name="label_water_average">Water Ø</string>
     <string name="label_muscle_average">Muscle Ø</string>
+    <string name="label_overview_title_start">Hello</string>
+    <string name="label_overview_title_end">your last measurement is:</string>
 
     <string name="label_import">Import</string>
     <string name="label_export">Export</string>
@@ -41,6 +50,8 @@
     <string name="error_value_range_0_100">Value must be in range from 0 to 100!</string>
     <string name="error_exporting">Error exporting</string>
     <string name="error_importing">Error importing</string>
+    <string name="error_user_name_required">Error user name is required!</string>
+    <string name="error_body_height_required">Error body height is required!</string>
 
     <string name="info_data_deleted">Database entry deleted!</string>
     <string name="info_data_all_deleted">All database entries deleted!</string>
@@ -48,16 +59,24 @@
     <string name="info_data_imported">Data imported from</string>
     <string name="info_set_filename">Set filename to</string>
     <string name="info_enter_value_percent">Enter value in %</string>
-    <string name="info_enter_value_unit">Enter value in kg</string>
+    <string name="info_enter_value_unit">Enter value in</string>
+    <string name="info_is_visible">Is visible</string>
+    <string name="info_is_not_visible">Is not visible</string>
+    <string name="info_bluetooth_enable">Searching for Bluetooth bathroom scale is enabled</string>
+    <string name="info_bluetooth_disable">Searching for Bluetooth bathroom scale is disabled</string>
     <string name="info_new_bluetooth_data">New Bluetooth scale data received!</string>
+    <string name="info_enter_value_cm">Enter your height in cm</string>
+    <string name="info_enter_user_name">Enter your name</string>
+    <string name="info_no_selected_user">No user exist! Please create a new user in the settings</string>
 
     <string name="question_really_delete_all">Do you really want to delete all database entries?</string>
+    <string name="question_really_delete_user">Do you really want to delete the user? </string>
 
     <string name="label_bluetooth_title">Bluetooth</string>
-    <string name="label_bluetooth_enable">Enable Bluetooth Server</string>
+    <string name="label_bluetooth_enable">Search mode</string>
     <string name="label_device_name">Device Name</string>
 
-    <string name="label_enable_labels">Labels on data points</string>
+    <string name="label_enable_labels">Label on data point</string>
     <string name="label_enable_weight">Weight line</string>
     <string name="label_enable_fat">Fat line</string>
     <string name="label_enable_water">Water line</string>

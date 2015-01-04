@@ -16,10 +16,13 @@
 package com.health.openscale.gui;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -28,6 +31,7 @@ import android.widget.TimePicker;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
+import com.health.openscale.core.ScaleUser;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -54,6 +58,7 @@ public class NewEntryActivity extends Activity {
 		context = this;
 		
 		txtWeight = (EditText) findViewById(R.id.txtWeight);
+        txtWeight.setHint(getResources().getString(R.string.info_enter_value_unit) + " " + ScaleUser.UNIT_STRING[OpenScale.getInstance(context).getSelectedScaleUser().scale_unit]);
 		txtFat = (EditText) findViewById(R.id.txtFat);
 		txtWater = (EditText) findViewById(R.id.txtWater);
 		txtMuscle = (EditText) findViewById(R.id.txtMuscle);
@@ -161,18 +166,30 @@ public class NewEntryActivity extends Activity {
 		{
 			OpenScale openScale = OpenScale.getInstance(context);
 
-            int user_id = 0;
-			float weight = Float.valueOf(txtWeight.getText().toString());
-			float fat = Float.valueOf(txtFat.getText().toString());
-			float water = Float.valueOf(txtWater.getText().toString());
-			float muscle = Float.valueOf(txtMuscle.getText().toString());
-			
-			String date = txtDate.getText().toString();
-			String time = txtTime.getText().toString();
-			
-			openScale.addScaleData(user_id, date + " " + time, weight, fat, water, muscle);
-			
-			finish();
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+            int selectedUserId  = prefs.getInt("selectedUserId", -1);
+
+            if (selectedUserId == -1) {
+                AlertDialog.Builder infoDialog = new AlertDialog.Builder(context);
+
+                infoDialog.setMessage(getResources().getString(R.string.info_no_selected_user));
+
+                infoDialog.setPositiveButton(getResources().getString(R.string.label_ok), null);
+
+                infoDialog.show();
+            } else {
+                float weight = Float.valueOf(txtWeight.getText().toString());
+                float fat = Float.valueOf(txtFat.getText().toString());
+                float water = Float.valueOf(txtWater.getText().toString());
+                float muscle = Float.valueOf(txtMuscle.getText().toString());
+
+                String date = txtDate.getText().toString();
+                String time = txtTime.getText().toString();
+
+                openScale.addScaleData(selectedUserId, date + " " + time, weight, fat, water, muscle);
+
+                finish();
+            }
 		}
 	}
 

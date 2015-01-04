@@ -60,6 +60,7 @@ public class MainActivity extends ActionBarActivity implements
 		setContentView(R.layout.activity_main);
 
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+
 	    if(prefs.getBoolean("btEnable", false)) {
 	    	String deviceName = prefs.getString("btDeviceName", "openScale");
 	    	OpenScale.getInstance(getApplicationContext()).startBluetoothServer(deviceName);
@@ -87,7 +88,7 @@ public class MainActivity extends ActionBarActivity implements
 						
 			           FragmentUpdateListener fragment = (FragmentUpdateListener) mSectionsPagerAdapter.instantiateItem(mViewPager, position);
 			            if (fragment != null) {
-			                fragment.updateOnView(OpenScale.getInstance(mViewPager.getContext()).getScaleDBEntries());
+			                fragment.updateOnView(OpenScale.getInstance(mViewPager.getContext()).getScaleDataList());
 			            } 
 					}
 				});
@@ -102,6 +103,15 @@ public class MainActivity extends ActionBarActivity implements
 					.setText(mSectionsPagerAdapter.getPageTitle(i))
 					.setTabListener(this));
 		}
+
+
+        if (prefs.getBoolean("firstStart", true)) {
+            Intent intent = new Intent(this, UserSettingsActivity.class);
+            intent.putExtra("mode", UserSettingsActivity.ADD_USER_REQUEST);
+            startActivity(intent);
+
+            prefs.edit().putBoolean("firstStart", false).commit();
+        }
 	}
 
 	@Override
@@ -117,11 +127,13 @@ public class MainActivity extends ActionBarActivity implements
 		// automatically handle clicks on the Home/Up button, so long
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
-		if (id == R.id.action_settings) {
+
+		if (id == R.id.action_general_settings) {
 			Intent intent = new Intent(this, SettingsActivity.class);
 			startActivity(intent);
 			return true;
 		}
+
 		return super.onOptionsItemSelected(item);
 	}
 

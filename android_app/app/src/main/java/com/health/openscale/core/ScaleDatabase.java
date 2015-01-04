@@ -47,7 +47,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
     		"CREATE TABLE " + TABLE_NAME + " (" + 
     				COLUMN_NAME_ID + " INTEGER PRIMARY KEY," +
                     COLUMN_NAME_USER_ID + " INTEGER," +
-    				COLUMN_NAME_DATE_TIME + " TEXT UNIQUE," +
+    				COLUMN_NAME_DATE_TIME + " TEXT," +
     				COLUMN_NAME_WEIGHT + " REAL," +
     				COLUMN_NAME_FAT + " REAL," +
     				COLUMN_NAME_WATER + " REAL," + 
@@ -74,17 +74,17 @@ public class ScaleDatabase extends SQLiteOpenHelper {
         onCreate(db);
 	}
 	
-	public void deleteAllEntries() {
+	public void clearScaleData(int userId) {
 		SQLiteDatabase db = getWritableDatabase();
 		
-		db.delete(TABLE_NAME, null, null);
+		db.delete(TABLE_NAME, COLUMN_NAME_USER_ID + "=" + Integer.toString(userId), null);
 	}
 
 	public boolean insertEntry(ScaleData scaleData) {
 		SQLiteDatabase db = getWritableDatabase();
 
-        Cursor cursorScaleDB = db.query(TABLE_NAME, new String[] {COLUMN_NAME_DATE_TIME}, COLUMN_NAME_DATE_TIME + " = ?",
-                new String[] {formatDateTime.format(scaleData.date_time)}, null, null, null);
+        Cursor cursorScaleDB = db.query(TABLE_NAME, new String[] {COLUMN_NAME_DATE_TIME}, COLUMN_NAME_DATE_TIME + "=? AND " + COLUMN_NAME_USER_ID + "=?",
+                new String[] {formatDateTime.format(scaleData.date_time), Integer.toString(scaleData.user_id)}, null, null, null);
 
         if (cursorScaleDB.getCount() > 0) {
             // we don't want double entries
@@ -118,7 +118,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
         db.delete(TABLE_NAME, COLUMN_NAME_ID + "= ?", new String[] {String.valueOf(id)});
     }
 
-    public int[] getCountsOfAllMonth(int year) {
+    public int[] getCountsOfAllMonth(int userId, int year) {
         int [] numOfMonth = new int[12];
 
         SQLiteDatabase db = getReadableDatabase();
@@ -134,8 +134,8 @@ public class ScaleDatabase extends SQLiteOpenHelper {
             Cursor cursorScaleDB = db.query(
                     TABLE_NAME,    // The table to query
                     new String[]{"count(*)"},    // The columns to return
-                    COLUMN_NAME_DATE_TIME + " >= ? AND " + COLUMN_NAME_DATE_TIME + " < ? ",            // The columns for the WHERE clause
-                    new String[]{formatDateTime.format(start_cal.getTime()), formatDateTime.format(end_cal.getTime())},            // The values for the WHERE clause
+                    COLUMN_NAME_DATE_TIME + " >= ? AND " + COLUMN_NAME_DATE_TIME + " < ? AND " + COLUMN_NAME_USER_ID + "=?",            // The columns for the WHERE clause
+                    new String[]{formatDateTime.format(start_cal.getTime()), formatDateTime.format(end_cal.getTime()), Integer.toString(userId)},            // The values for the WHERE clause
                     null,            // don't group the rows
                     null,            // don't filter by row groups
                     null        // The sort order
@@ -149,7 +149,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
         return numOfMonth;
     }
 
-    public float getMaxValueOfDBEntries(int year, int month) {
+    public float getMaxValueOfScaleData(int userId, int year, int month) {
         SQLiteDatabase db = getReadableDatabase();
 
         Calendar start_cal = Calendar.getInstance();
@@ -169,8 +169,8 @@ public class ScaleDatabase extends SQLiteOpenHelper {
         Cursor cursorScaleDB = db.query(
                 TABLE_NAME, 	// The table to query
                 projection, 	// The columns to return
-                COLUMN_NAME_DATE_TIME + " >= ? AND " + COLUMN_NAME_DATE_TIME + " < ? ",            // The columns for the WHERE clause
-                new String[]{formatDateTime.format(start_cal.getTime()), formatDateTime.format(end_cal.getTime())},            // The values for the WHERE clause
+                COLUMN_NAME_DATE_TIME + " >= ? AND " + COLUMN_NAME_DATE_TIME + " < ? AND " + COLUMN_NAME_USER_ID + "=?",            // The columns for the WHERE clause
+                new String[]{formatDateTime.format(start_cal.getTime()), formatDateTime.format(end_cal.getTime()), Integer.toString(userId)},            // The values for the WHERE clause
                 null, 			// don't group the rows
                 null,			// don't filter by row groups
                 null  		// The sort order
@@ -192,9 +192,9 @@ public class ScaleDatabase extends SQLiteOpenHelper {
     }
 
 
-    public ArrayList<ScaleData> getAllDBEntriesOfMonth(int year, int month) {
+    public ArrayList<ScaleData> getScaleDataOfMonth(int userId, int year, int month) {
         SQLiteDatabase db = getReadableDatabase();
-        ArrayList<ScaleData> scaleDBEntries = new ArrayList<ScaleData>();
+        ArrayList<ScaleData> scaleDataList = new ArrayList<ScaleData>();
 
         String[] projection = {
                 COLUMN_NAME_ID,
@@ -218,8 +218,8 @@ public class ScaleDatabase extends SQLiteOpenHelper {
         Cursor cursorScaleDB = db.query(
                 TABLE_NAME, 	// The table to query
                 projection, 	// The columns to return
-                COLUMN_NAME_DATE_TIME + " >= ? AND " + COLUMN_NAME_DATE_TIME + " < ? ",            // The columns for the WHERE clause
-                new String[]{formatDateTime.format(start_cal.getTime()), formatDateTime.format(end_cal.getTime())},            // The values for the WHERE clause
+                COLUMN_NAME_DATE_TIME + " >= ? AND " + COLUMN_NAME_DATE_TIME + " < ? AND " + COLUMN_NAME_USER_ID + "=?",            // The columns for the WHERE clause
+                new String[]{formatDateTime.format(start_cal.getTime()), formatDateTime.format(end_cal.getTime()), Integer.toString(userId)},            // The values for the WHERE clause
                 null, 			// don't group the rows
                 null,			// don't filter by row groups
                 sortOrder  		// The sort order
@@ -229,19 +229,19 @@ public class ScaleDatabase extends SQLiteOpenHelper {
             cursorScaleDB.moveToFirst();
 
             while (!cursorScaleDB.isAfterLast()) {
-                ScaleData dataEntry = new ScaleData();
+                ScaleData scaleData = new ScaleData();
 
-                dataEntry.id = cursorScaleDB.getLong(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_ID));
-                dataEntry.user_id = cursorScaleDB.getInt(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_USER_ID));
+                scaleData.id = cursorScaleDB.getLong(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_ID));
+                scaleData.user_id = cursorScaleDB.getInt(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_USER_ID));
                 String date_time = cursorScaleDB.getString(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_DATE_TIME));
-                dataEntry.weight = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_WEIGHT));
-                dataEntry.fat = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_FAT));
-                dataEntry.water = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_WATER));
-                dataEntry.muscle = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_MUSCLE));
+                scaleData.weight = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_WEIGHT));
+                scaleData.fat = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_FAT));
+                scaleData.water = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_WATER));
+                scaleData.muscle = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_MUSCLE));
 
-                dataEntry.date_time = formatDateTime.parse(date_time);
+                scaleData.date_time = formatDateTime.parse(date_time);
 
-                scaleDBEntries.add(dataEntry);
+                scaleDataList.add(scaleData);
 
                 cursorScaleDB.moveToNext();
             }
@@ -252,12 +252,12 @@ public class ScaleDatabase extends SQLiteOpenHelper {
             Log.e("ScaleDatabase", "Illegal argument while reading from scale database: " + ex.getMessage());
         }
 
-        return scaleDBEntries;
+        return scaleDataList;
     }
 
-	public ArrayList<ScaleData> getAllDBEntries() {
+	public ArrayList<ScaleData> getScaleDataList(int userId) {
 		SQLiteDatabase db = getReadableDatabase();
-		ArrayList<ScaleData> scaleDBEntries = new ArrayList<ScaleData>();
+		ArrayList<ScaleData> scaleDataList = new ArrayList<ScaleData>();
 
 		String[] projection = {
 				COLUMN_NAME_ID,
@@ -274,8 +274,8 @@ public class ScaleDatabase extends SQLiteOpenHelper {
 		Cursor cursorScaleDB = db.query(
 		    TABLE_NAME, 	// The table to query
 		    projection, 	// The columns to return
-		    null, 			// The columns for the WHERE clause
-		    null, 			// The values for the WHERE clause
+            COLUMN_NAME_USER_ID + "=?", 			// The columns for the WHERE clause
+		    new String[]{Integer.toString(userId)}, 			// The values for the WHERE clause
 		    null, 			// don't group the rows
 		    null,			// don't filter by row groups
 		    sortOrder  		// The sort order
@@ -285,19 +285,19 @@ public class ScaleDatabase extends SQLiteOpenHelper {
 			cursorScaleDB.moveToFirst();
 			
 			while (!cursorScaleDB.isAfterLast()) {
-				ScaleData dataEntry = new ScaleData();
+				ScaleData scaleData = new ScaleData();
 				
-				dataEntry.id = cursorScaleDB.getLong(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_ID));
-                dataEntry.user_id = cursorScaleDB.getInt(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_USER_ID));
+				scaleData.id = cursorScaleDB.getLong(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_ID));
+                scaleData.user_id = cursorScaleDB.getInt(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_USER_ID));
 				String date_time = cursorScaleDB.getString(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_DATE_TIME));
-				dataEntry.weight = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_WEIGHT));
-				dataEntry.fat = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_FAT));
-				dataEntry.water = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_WATER));
-				dataEntry.muscle = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_MUSCLE));
+				scaleData.weight = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_WEIGHT));
+				scaleData.fat = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_FAT));
+				scaleData.water = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_WATER));
+				scaleData.muscle = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_MUSCLE));
 				
-				dataEntry.date_time = formatDateTime.parse(date_time);
+				scaleData.date_time = formatDateTime.parse(date_time);
 				
-				scaleDBEntries.add(dataEntry);
+				scaleDataList.add(scaleData);
 				
 				cursorScaleDB.moveToNext();
 			}
@@ -309,6 +309,6 @@ public class ScaleDatabase extends SQLiteOpenHelper {
 		}  
 		
 		
-		return scaleDBEntries;
+		return scaleDataList;
 	}
 }
