@@ -76,7 +76,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 	public GraphFragment() {
         calYears = Calendar.getInstance();
         calLastSelected = Calendar.getInstance();
-        valueLastSelected = new SelectedValue(0,0,0);
+        valueLastSelected = null;
     }
 
 	@Override
@@ -266,7 +266,10 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         chartBottom.setColumnChartData(columnData);
         chartBottom.setValueSelectionEnabled(true);
         chartBottom.setZoomEnabled(false);
-        chartBottom.selectValue(valueLastSelected);
+
+        if (valueLastSelected != null) {
+            chartBottom.selectValue(valueLastSelected);
+        }
 
         generateLineData(calLastSelected);
     }
