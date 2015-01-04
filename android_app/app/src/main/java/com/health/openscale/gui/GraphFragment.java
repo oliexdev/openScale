@@ -62,7 +62,8 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
     private OpenScale openScale;
 
-    private Calendar yearCal;
+    private Calendar calYears;
+    private Calendar calLastSelected;
 
     private ArrayList<ScaleData> scaleDataList;
 
@@ -70,7 +71,8 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     private ArrayList<lines> activeLines;
 
 	public GraphFragment() {
-        yearCal = Calendar.getInstance();
+        calYears = Calendar.getInstance();
+        calLastSelected = Calendar.getInstance();
     }
 
 	@Override
@@ -85,20 +87,20 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         chartBottom.setOnValueTouchListener(new ChartBottomValueTouchListener());
 
         txtYear = (TextView) graphView.findViewById(R.id.txtYear);
-        txtYear.setText(Integer.toString(yearCal.get(Calendar.YEAR)));
+        txtYear.setText(Integer.toString(calYears.get(Calendar.YEAR)));
 
         graphView.findViewById(R.id.btnLeftYear).setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
-                yearCal.roll(Calendar.YEAR, false);
-                txtYear.setText(Integer.toString(yearCal.get(Calendar.YEAR)));
+                calYears.roll(Calendar.YEAR, false);
+                txtYear.setText(Integer.toString(calYears.get(Calendar.YEAR)));
                 updateOnView(null);
             }
         });
 
         graphView.findViewById(R.id.btnRightYear).setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
-                yearCal.roll(Calendar.YEAR, true);
-                txtYear.setText(Integer.toString(yearCal.get(Calendar.YEAR)));
+                calYears.roll(Calendar.YEAR, true);
+                txtYear.setText(Integer.toString(calYears.get(Calendar.YEAR)));
                 updateOnView(null);
             }
         });
@@ -115,24 +117,26 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         generateColumnData();
 	}
 
-    private void generateLineData(Calendar cal)
+    private void generateLineData(Calendar calMonth)
     {
-        scaleDataList = openScale.getScaleDataOfMonth(yearCal.get(Calendar.YEAR), cal.get(Calendar.MONTH));
-        float maxValue = openScale.getMaxValueOfScaleData(yearCal.get(Calendar.YEAR), cal.get(Calendar.MONTH));
+        scaleDataList = openScale.getScaleDataOfMonth(calYears.get(Calendar.YEAR), calMonth.get(Calendar.MONTH));
+        float maxValue = openScale.getMaxValueOfScaleData(calYears.get(Calendar.YEAR), calMonth.get(Calendar.MONTH));
 
         SimpleDateFormat day_date = new SimpleDateFormat("dd", Locale.getDefault());
 
-        cal.set(Calendar.DAY_OF_MONTH, 1);
-        int maxDays = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
+        Calendar calDays = (Calendar)calMonth.clone();
+
+        calDays.set(Calendar.DAY_OF_MONTH, 1);
+        int maxDays = calDays.getActualMaximum(Calendar.DAY_OF_MONTH);
 
         List<AxisValue> axisValues = new ArrayList<AxisValue>();
 
         for (int i=0; i<maxDays; i++) {
-            String day_name = day_date.format(cal.getTime());
+            String day_name = day_date.format(calDays.getTime());
 
             axisValues.add(new AxisValue(i, day_name.toCharArray()));
 
-            cal.add(Calendar.DAY_OF_MONTH, 1);
+            calDays.add(Calendar.DAY_OF_MONTH, 1);
         }
 
         List<PointValue> valuesWeight = new ArrayList<PointValue>();
@@ -229,10 +233,10 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
     private void generateColumnData()
     {
-        int[] numOfMonth = openScale.getCountsOfMonth(yearCal.get(Calendar.YEAR));
+        int[] numOfMonth = openScale.getCountsOfMonth(calYears.get(Calendar.YEAR));
 
-        Calendar cal = Calendar.getInstance();
-        cal.set(Calendar.MONTH, Calendar.JANUARY);
+        Calendar calMonths = Calendar.getInstance();
+        calMonths.set(Calendar.MONTH, Calendar.JANUARY);
 
         SimpleDateFormat month_date = new SimpleDateFormat("MMM", Locale.getDefault());
 
@@ -240,7 +244,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         List<Column> columns = new ArrayList<Column>();
 
         for (int i=0; i<12; i++) {
-            String month_name = month_date.format(cal.getTime());
+            String month_name = month_date.format(calMonths.getTime());
 
             axisValues.add(new AxisValue(i, month_name.toCharArray()));
             List<ColumnValue> values = new ArrayList<ColumnValue>();
@@ -248,7 +252,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
             columns.add(new Column(values).setHasLabelsOnlyForSelected(true));
 
-            cal.add(Calendar.MONTH, 1);
+            calMonths.add(Calendar.MONTH, 1);
         }
 
         ColumnChartData columnData = new ColumnChartData(columns);
@@ -259,7 +263,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         chartBottom.setValueSelectionEnabled(true);
         chartBottom.setZoomEnabled(false);
 
-        generateLineData(cal);
+        generateLineData(calLastSelected);
     }
 
     private class ChartBottomValueTouchListener implements ColumnChartView.ColumnChartOnValueTouchListener {
@@ -268,6 +272,8 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             Calendar cal = Calendar.getInstance();
             cal.set(Calendar.MONTH, Calendar.JANUARY);
             cal.add(Calendar.MONTH, selectedLine);
+
+            calLastSelected = cal;
 
             generateLineData(cal);
         }
