@@ -47,6 +47,7 @@ import lecho.lib.hellocharts.model.ColumnValue;
 import lecho.lib.hellocharts.model.Line;
 import lecho.lib.hellocharts.model.LineChartData;
 import lecho.lib.hellocharts.model.PointValue;
+import lecho.lib.hellocharts.model.SelectedValue;
 import lecho.lib.hellocharts.model.SimpleValueFormatter;
 import lecho.lib.hellocharts.model.Viewport;
 import lecho.lib.hellocharts.util.Utils;
@@ -65,6 +66,8 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     private Calendar calYears;
     private Calendar calLastSelected;
 
+    private SelectedValue valueLastSelected;
+
     private ArrayList<ScaleData> scaleDataList;
 
     private enum lines {WEIGHT, FAT, WATER, MUSCLE}
@@ -73,6 +76,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 	public GraphFragment() {
         calYears = Calendar.getInstance();
         calLastSelected = Calendar.getInstance();
+        valueLastSelected = new SelectedValue(0,0,0);
     }
 
 	@Override
@@ -262,6 +266,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         chartBottom.setColumnChartData(columnData);
         chartBottom.setValueSelectionEnabled(true);
         chartBottom.setZoomEnabled(false);
+        chartBottom.selectValue(valueLastSelected);
 
         generateLineData(calLastSelected);
     }
@@ -274,6 +279,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             cal.add(Calendar.MONTH, selectedLine);
 
             calLastSelected = cal;
+            valueLastSelected = new SelectedValue(selectedLine, selectedValue, 0);
 
             generateLineData(cal);
         }
