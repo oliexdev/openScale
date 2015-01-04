@@ -66,8 +66,6 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     private Calendar calYears;
     private Calendar calLastSelected;
 
-    private SelectedValue valueLastSelected;
-
     private ArrayList<ScaleData> scaleDataList;
 
     private enum lines {WEIGHT, FAT, WATER, MUSCLE}
@@ -76,7 +74,6 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 	public GraphFragment() {
         calYears = Calendar.getInstance();
         calLastSelected = Calendar.getInstance();
-        valueLastSelected = null;
     }
 
 	@Override
@@ -97,7 +94,6 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             public void onClick(View view) {
                 calYears.roll(Calendar.YEAR, false);
                 txtYear.setText(Integer.toString(calYears.get(Calendar.YEAR)));
-                valueLastSelected = null;
                 updateOnView(null);
             }
         });
@@ -106,7 +102,6 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             public void onClick(View view) {
                 calYears.roll(Calendar.YEAR, true);
                 txtYear.setText(Integer.toString(calYears.get(Calendar.YEAR)));
-                valueLastSelected = null;
                 updateOnView(null);
             }
         });
@@ -268,10 +263,8 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         chartBottom.setColumnChartData(columnData);
         chartBottom.setValueSelectionEnabled(true);
         chartBottom.setZoomEnabled(false);
+        chartBottom.selectValue(new SelectedValue(calLastSelected.get(Calendar.MONTH), 0, 0));
 
-        if (valueLastSelected != null) {
-            chartBottom.selectValue(valueLastSelected);
-        }
 
         generateLineData(calLastSelected);
     }
@@ -284,7 +277,6 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             cal.add(Calendar.MONTH, selectedLine);
 
             calLastSelected = cal;
-            valueLastSelected = new SelectedValue(selectedLine, selectedValue, 0);
 
             generateLineData(cal);
         }
