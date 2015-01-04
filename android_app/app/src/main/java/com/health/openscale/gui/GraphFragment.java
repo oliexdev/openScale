@@ -97,6 +97,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             public void onClick(View view) {
                 calYears.roll(Calendar.YEAR, false);
                 txtYear.setText(Integer.toString(calYears.get(Calendar.YEAR)));
+                valueLastSelected = null;
                 updateOnView(null);
             }
         });
@@ -105,6 +106,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             public void onClick(View view) {
                 calYears.roll(Calendar.YEAR, true);
                 txtYear.setText(Integer.toString(calYears.get(Calendar.YEAR)));
+                valueLastSelected = null;
                 updateOnView(null);
             }
         });
