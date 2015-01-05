@@ -15,9 +15,11 @@
 */
 package com.health.openscale.gui;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -144,7 +146,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
             deleteButton.setText("X");
             deleteButton.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 10);
             deleteButton.setTextColor(Color.WHITE);
-            deleteButton.setBackground(getResources().getDrawable(R.drawable.flat_selector));
+            deleteButton.setBackgroundResource(R.drawable.flat_selector);
             deleteButton.setGravity(Gravity.CENTER);
             deleteButton.setPadding(0, 0, 0, 0);
             deleteButton.setMinimumHeight(35);
@@ -303,6 +305,15 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
             Toast.makeText(tableView.getContext(), getResources().getString(R.string.info_data_deleted), Toast.LENGTH_SHORT).show();
             updateOnView(OpenScale.getInstance(tableView.getContext()).getScaleDataList());
+        }
+    }
+
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if(isVisibleToUser) {
+            Activity a = getActivity();
+            if(a != null) a.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR);
         }
     }
 }
