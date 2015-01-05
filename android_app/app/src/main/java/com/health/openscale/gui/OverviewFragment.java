@@ -25,6 +25,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
@@ -50,7 +51,9 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 	private TextView txtAvgFat;
 	private TextView txtAvgWater;
 	private TextView txtAvgMuscle;
-	
+
+    private ScaleData lastScaleData;
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) 
 	{
@@ -62,7 +65,10 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 		txtAvgFat = (TextView) overviewView.findViewById(R.id.txtAvgFat);
 		txtAvgWater = (TextView) overviewView.findViewById(R.id.txtAvgWater);
 		txtAvgMuscle = (TextView) overviewView.findViewById(R.id.txtAvgMuscle);
-		
+
+        pieChart.setOnValueTouchListener(new PieChartTouchListener());
+        pieChart.setChartRotationEnabled(false);
+
 		overviewView.findViewById(R.id.btnInsertData).setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
             	btnOnClickInsertData();
@@ -82,12 +88,13 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         txtOverviewTitle.setText(getResources().getString(R.string.label_overview_title_start) + " " + scaleUser.user_name + " " + getResources().getString(R.string.label_overview_title_end));
 
 		List<ArcValue> arcValues = new ArrayList<ArcValue>();
-		
+
 		if (scaleDataList.isEmpty()) {
-			return;
-		}
-		
-		ScaleData lastScaleData = scaleDataList.get(0);
+            lastScaleData = null;
+            return;
+        }
+
+        lastScaleData = scaleDataList.get(0);
 		
 		arcValues.add(new ArcValue(lastScaleData.fat, Utils.COLOR_ORANGE));
 		arcValues.add(new ArcValue(lastScaleData.water, Utils.COLOR_BLUE));
@@ -142,6 +149,38 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 		Intent intent = new Intent(overviewView.getContext(), NewEntryActivity.class);
         startActivityForResult(intent, 1);
 	}
+
+    private class PieChartTouchListener implements PieChartView.PieChartOnValueTouchListener
+    {
+        @Override
+        public void onValueTouched(int i, ArcValue arcValue)
+        {
+            if (lastScaleData == null) {
+                return;
+            }
+
+
+            String date_time = new SimpleDateFormat("dd. MMM yyyy (EE) HH:mm").format(lastScaleData.date_time);
+
+            switch (i) {
+                case 0:
+                    Toast.makeText(getActivity(), getResources().getString(R.string.info_your_fat) + " " + lastScaleData.fat + "% " + getResources().getString(R.string.info_on_date) + " " + date_time, Toast.LENGTH_SHORT).show();
+                    break;
+                case 1:
+                    Toast.makeText(getActivity(), getResources().getString(R.string.info_your_water) + " " + lastScaleData.water + "% " + getResources().getString(R.string.info_on_date) + " " + date_time, Toast.LENGTH_SHORT).show();
+                    break;
+                case 2:
+                    Toast.makeText(getActivity(), getResources().getString(R.string.info_your_muscle) + " " + lastScaleData.muscle + "% " + getResources().getString(R.string.info_on_date) + " " + date_time, Toast.LENGTH_SHORT).show();
+                    break;
+            }
+        }
+
+        @Override
+        public void onNothingTouched()
+        {
+
+        }
+    }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data)
