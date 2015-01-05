@@ -31,6 +31,7 @@ import android.widget.TimePicker;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
+import com.health.openscale.core.ScaleData;
 import com.health.openscale.core.ScaleUser;
 
 import java.text.SimpleDateFormat;
@@ -94,7 +95,16 @@ public class NewEntryActivity extends Activity {
 				timePicker.show();
 			}
 		});
-		
+
+        if (!OpenScale.getInstance(this).getScaleDataList().isEmpty())
+        {
+            ScaleData lastScaleData = OpenScale.getInstance(this).getScaleDataList().get(0);
+
+            txtFat.setText(Float.toString(lastScaleData.fat));
+            txtWater.setText(Float.toString(lastScaleData.water));
+            txtMuscle.setText(Float.toString(lastScaleData.muscle));
+        }
+
 		txtDate.setText(dateFormat.format(new Date()));
 		txtTime.setText(timeFormat.format(new Date()));
 	}
