@@ -163,22 +163,18 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         Line lineWeight = new Line(valuesWeight).
                 setColor(Utils.COLOR_VIOLET).
-                setCubic(true).
                 setHasLabels(prefs.getBoolean("labelsEnable", true)).
                 setFormatter(new SimpleValueFormatter(1, false, null, null));
         Line lineFat = new Line(valuesFat).
                 setColor(Utils.COLOR_ORANGE).
-                setCubic(true).
                 setHasLabels(prefs.getBoolean("labelsEnable", true)).
                 setFormatter(new SimpleValueFormatter(1, false, null, null));
         Line lineWater = new Line(valuesWater).
                 setColor(Utils.COLOR_BLUE).
-                setCubic(true).
                 setHasLabels(prefs.getBoolean("labelsEnable", true)).
                 setFormatter(new SimpleValueFormatter(1, false, null, null));
         Line lineMuscle = new Line(valuesMuscle).
                 setColor(Utils.COLOR_GREEN).
-                setCubic(true).
                 setHasLabels(prefs.getBoolean("labelsEnable", true)).
                 setFormatter(new SimpleValueFormatter(1, false, null, null));
 
