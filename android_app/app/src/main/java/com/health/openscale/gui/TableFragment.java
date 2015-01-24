@@ -277,7 +277,10 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
             deleteAllDialog.setPositiveButton(getResources().getString(R.string.label_yes), new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
-                    OpenScale.getInstance(tableView.getContext()).clearScaleData();
+                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(tableView.getContext());
+                    int selectedUserId  = prefs.getInt("selectedUserId", -1);
+
+                    OpenScale.getInstance(tableView.getContext()).clearScaleData(selectedUserId);
 
                     Toast.makeText(tableView.getContext(), getResources().getString(R.string.info_data_all_deleted), Toast.LENGTH_SHORT).show();
                     updateOnView(OpenScale.getInstance(tableView.getContext()).getScaleDataList());

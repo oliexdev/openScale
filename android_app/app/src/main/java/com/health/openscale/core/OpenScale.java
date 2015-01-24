@@ -229,11 +229,8 @@ public class OpenScale {
 		outputStream.close();
 	}
 
-	public void clearScaleData() {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        int selectedUserId  = prefs.getInt("selectedUserId", -1);
-
-		scaleDB.clearScaleData(selectedUserId);
+	public void clearScaleData(int userId) {
+		scaleDB.clearScaleData(userId);
 
         updateScaleData();
 	}

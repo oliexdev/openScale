@@ -157,7 +157,7 @@ public class UserSettingsActivity extends Activity {
 
                     OpenScale openScale = OpenScale.getInstance(context);
                     openScale.deleteScaleUser(userId);
-                    openScale.clearScaleData();
+                    openScale.clearScaleData(userId);
 
                     ArrayList<ScaleUser> scaleUser = openScale.getScaleUserList();
 
