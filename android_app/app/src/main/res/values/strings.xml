@@ -64,7 +64,6 @@
     <string name="info_is_not_visible">Is not visible</string>
     <string name="info_bluetooth_enable">Searching for Bluetooth bathroom scale is enabled</string>
     <string name="info_bluetooth_disable">Searching for Bluetooth bathroom scale is disabled</string>
-    <string name="info_new_bluetooth_data">New Bluetooth scale data received!</string>
     <string name="info_enter_value_cm">Enter your height in cm</string>
     <string name="info_enter_user_name">Enter your name</string>
     <string name="info_no_selected_user">No user exist! Please create a new user in the settings</string>
