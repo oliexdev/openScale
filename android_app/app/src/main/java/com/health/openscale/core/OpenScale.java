@@ -235,6 +235,13 @@ public class OpenScale {
         updateScaleData();
 	}
 
+    public boolean clearBtScaleData() {
+        if (btCom != null)
+            return false;
+
+        return btCom.sendBtData("9");
+    }
+
     public int[] getCountsOfMonth(int year) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         int selectedUserId  = prefs.getInt("selectedUserId", -1);

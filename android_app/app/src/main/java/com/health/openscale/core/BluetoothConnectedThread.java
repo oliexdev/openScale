@@ -15,13 +15,13 @@
 */
 package com.health.openscale.core;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
 import android.bluetooth.BluetoothSocket;
 import android.os.Handler;
 import android.util.Log;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 public class BluetoothConnectedThread extends Thread {
     private BluetoothSocket btSocket;
@@ -70,7 +70,9 @@ public class BluetoothConnectedThread extends Thread {
     public void write(byte[] bytes) {
         try {
             btOutStream.write(bytes);
-        } catch (IOException e) { }
+        } catch (IOException e) {
+            Log.e("BluetoothConnectedThread", "Error while writing to bluetooth socket " + e.getMessage());
+        }
     }
  
     public void cancel() {

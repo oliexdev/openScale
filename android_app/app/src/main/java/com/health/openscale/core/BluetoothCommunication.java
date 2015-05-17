@@ -92,7 +92,18 @@ public class BluetoothCommunication extends Thread {
 			
 		}
     }
- 
+
+    public boolean sendBtData(String data){
+        if (btSocket.isConnected()) {
+            BluetoothConnectedThread btConnectThread = new BluetoothConnectedThread(btSocket, btHandler);
+            btConnectThread.write(data.getBytes());
+
+            return true;
+        }
+
+        return false;
+    }
+
     public void cancel() { 	
         try {
             btSocket.close();

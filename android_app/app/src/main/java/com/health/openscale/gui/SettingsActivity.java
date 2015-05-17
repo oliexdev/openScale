@@ -27,6 +27,7 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceGroup;
 import android.preference.PreferenceManager;
+import android.widget.Toast;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
@@ -41,6 +42,9 @@ protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     addPreferencesFromResource(R.xml.preferences);
     initSummary(getPreferenceScreen());
+
+    Preference prefClearBtData = (Preference) findPreference("btClearData");
+    prefClearBtData.setOnPreferenceClickListener(new onClickListenerClearBtData());
 
     updateUserPreferences();
 }
@@ -151,8 +155,10 @@ private void updatePrefSummary(Preference p) {
     if(prefs.getBoolean("btEnable", true))
     {
     	findPreference("btDeviceName").setEnabled(true);
+        findPreference("btClearData").setEnabled(true);
     } else {
     	findPreference("btDeviceName").setEnabled(false);
+        findPreference("btClearData").setEnabled(false);
     }
 }
     @Override
@@ -190,6 +196,20 @@ private void updatePrefSummary(Preference p) {
             Intent intent = new Intent(preference.getContext(), UserSettingsActivity.class);
             intent.putExtra("mode", UserSettingsActivity.ADD_USER_REQUEST);
             startActivityForResult(intent, UserSettingsActivity.ADD_USER_REQUEST);
+
+            return false;
+        }
+    }
+
+    private class onClickListenerClearBtData implements Preference.OnPreferenceClickListener {
+        @Override
+        public boolean onPreferenceClick(Preference preference) {
+
+            if (OpenScale.getInstance(getApplicationContext()).clearBtScaleData()) {
+                Toast.makeText(preference.getContext(), getResources().getString(R.string.info_delete_bluetooth_data_success), Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(preference.getContext(), getResources().getString(R.string.info_bluetooth_not_established), Toast.LENGTH_SHORT).show();
+            }
 
             return false;
         }

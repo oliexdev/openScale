@@ -7,6 +7,7 @@
 <PreferenceCategory android:title="@string/label_bluetooth_title">
     <CheckBoxPreference android:title="@string/label_bluetooth_enable" android:summaryOn="@string/info_bluetooth_enable" android:summaryOff="@string/info_bluetooth_disable" android:key="btEnable" android:defaultValue="false"/>
     <EditTextPreference android:title="@string/label_device_name" android:key="btDeviceName" android:defaultValue="openScale" />
+    <Preference android:title = "@string/info_delete_bluetooth_data" android:key="btClearData" />
 </PreferenceCategory>
 
 <PreferenceCategory android:title="@string/title_graph">
