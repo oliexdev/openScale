@@ -187,7 +187,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         txtGoalWeight.setText(currentScaleUser.goal_weight + " " + ScaleUser.UNIT_STRING[currentScaleUser.scale_unit]);
 
         double weight_diff = currentScaleUser.goal_weight - lastScaleData.weight;
-        txtGoalDiff.setText(weight_diff + " " + ScaleUser.UNIT_STRING[currentScaleUser.scale_unit]);
+        txtGoalDiff.setText(String.format("%.1f" + ScaleUser.UNIT_STRING[currentScaleUser.scale_unit], weight_diff));
 
         Calendar goalDate = Calendar.getInstance();
         Calendar curDate = Calendar.getInstance();
@@ -422,9 +422,9 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             pieChartData.setCenterText2FontSize(14);
         } else
         {
-            pieChartData.setCenterText1FontSize(10);
-            pieChartData.setCenterText2FontSize(8);
-            pieChartData.setValueLabelTextSize(8);
+            pieChartData.setCenterText1FontSize(20);
+            pieChartData.setCenterText2FontSize(12);
+            pieChartData.setValueLabelTextSize(12);
         }
 
         pieChartLast.setPieChartData(pieChartData);
@@ -488,7 +488,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
              if ((getActivity().getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) != Configuration.SCREENLAYOUT_SIZE_XLARGE &&
                 (getActivity().getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) != Configuration.SCREENLAYOUT_SIZE_LARGE) {
                 Activity a = getActivity();
-                if (a != null) a.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                if (a != null) a.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
             }
         }
     }
