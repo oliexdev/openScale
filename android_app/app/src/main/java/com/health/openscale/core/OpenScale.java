@@ -66,7 +66,7 @@ public class OpenScale {
 		return instance;
 	}
 
-    public void addScaleUser(String name, String birthday, int body_height, int scale_unit)
+    public void addScaleUser(String name, String birthday, int body_height, int scale_unit, int gender, double goal_weight, String goal_date)
     {
         ScaleUser scaleUser = new ScaleUser();
 
@@ -75,6 +75,9 @@ public class OpenScale {
             scaleUser.birthday = new SimpleDateFormat("dd.MM.yyyy").parse(birthday);
             scaleUser.body_height = body_height;
             scaleUser.scale_unit = scale_unit;
+            scaleUser.gender = gender;
+            scaleUser.goal_weight = goal_weight;
+            scaleUser.goal_date = new SimpleDateFormat("dd.MM.yyyy").parse(goal_date);
 
         } catch (ParseException e) {
             Log.e("OpenScale", "Can't parse date time string while adding to the database");
@@ -120,7 +123,7 @@ public class OpenScale {
         scaleUserDB.deleteEntry(id);
     }
 
-    public void updateScaleUser(int id, String name, String birthday, int body_height, int scale_unit)
+    public void updateScaleUser(int id, String name, String birthday, int body_height, int scale_unit, int gender, double goal_weight, String goal_date)
     {
         ScaleUser scaleUser = new ScaleUser();
 
@@ -130,6 +133,9 @@ public class OpenScale {
             scaleUser.birthday = new SimpleDateFormat("dd.MM.yyyy").parse(birthday);
             scaleUser.body_height = body_height;
             scaleUser.scale_unit = scale_unit;
+            scaleUser.gender = gender;
+            scaleUser.goal_weight = goal_weight;
+            scaleUser.goal_date = new SimpleDateFormat("dd.MM.yyyy").parse(goal_date);
         } catch (ParseException e) {
             Log.e("OpenScale", "Can't parse date time string while adding to the database");
         }
@@ -137,9 +143,16 @@ public class OpenScale {
         scaleUserDB.updateScaleUser(scaleUser);
     }
 
+
 	public ArrayList<ScaleData> getScaleDataList() {
 		return scaleDataList;
 	}
+
+
+    public ScaleData getScaleData(long id)
+    {
+        return scaleDB.getDataEntry(id);
+    }
 
 	public void addScaleData(int user_id, String date_time, float weight, float fat,
 			float water, float muscle) {
@@ -160,6 +173,19 @@ public class OpenScale {
 
         updateScaleData();
 	}
+
+    public void updateScaleData(long id, float weight, float fat, float water, float muscle) {
+        ScaleData scaleData = new ScaleData();
+
+        scaleData.weight = weight;
+        scaleData.fat = fat;
+        scaleData.water = water;
+        scaleData.muscle = muscle;
+
+        scaleDB.updateEntry(id, scaleData);
+
+        updateScaleData();
+    }
 
     public void deleteScaleData(long id)
     {

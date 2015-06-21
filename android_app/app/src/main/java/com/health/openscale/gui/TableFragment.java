@@ -18,6 +18,7 @@ package com.health.openscale.gui;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
@@ -154,6 +155,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
             deleteButton.setOnClickListener(new onClickListenerDelete());
             dataRow.addView(deleteButton);
 
+            dataRow.setOnClickListener(new onClickListenerRow());
 
             if ((getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) != Configuration.SCREENLAYOUT_SIZE_XLARGE &&
                 (getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) != Configuration.SCREENLAYOUT_SIZE_LARGE)
@@ -169,6 +171,20 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 			tableDataView.addView(dataRow, new TableLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
 		}
 	}
+
+    private class onClickListenerRow implements View.OnClickListener {
+
+        @Override
+        public void onClick(View v) {
+            TableRow dataRow = (TableRow)v;
+            TextView idTextView = (TextView) dataRow.getChildAt(0);
+            long id = Long.parseLong(idTextView.getText().toString());
+
+            Intent intent = new Intent(tableView.getContext(), EditDataActivity.class);
+            intent.putExtra("id", id);
+            startActivityForResult(intent, 1);
+        }
+    }
 
     private class onClickListenerImport implements View.OnClickListener {
         @Override

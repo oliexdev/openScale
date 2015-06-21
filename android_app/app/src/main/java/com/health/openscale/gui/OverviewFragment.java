@@ -17,10 +17,14 @@ package com.health.openscale.gui;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,47 +38,114 @@ import com.health.openscale.core.ScaleUser;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import lecho.lib.hellocharts.model.ArcValue;
+import lecho.lib.hellocharts.model.Axis;
+import lecho.lib.hellocharts.model.AxisValue;
+import lecho.lib.hellocharts.model.Line;
+import lecho.lib.hellocharts.model.LineChartData;
 import lecho.lib.hellocharts.model.PieChartData;
+import lecho.lib.hellocharts.model.PointValue;
 import lecho.lib.hellocharts.model.SimpleValueFormatter;
 import lecho.lib.hellocharts.util.Utils;
+import lecho.lib.hellocharts.view.LineChartView;
 import lecho.lib.hellocharts.view.PieChartView;
 
 public class OverviewFragment extends Fragment implements FragmentUpdateListener {	
 	private View overviewView;
 
-    private TextView txtOverviewTitle;
-	private PieChartView pieChart;
-	private TextView txtAvgWeight;
-	private TextView txtAvgFat;
-	private TextView txtAvgWater;
-	private TextView txtAvgMuscle;
+    private TextView txtTitleUser;
+    private TextView txtTitleLastMeasurement;
+    private TextView txtTitleGoal;
+    private TextView txtTitleStatistics;
+
+    private TextView txtWeightLast;
+    private TextView txtBMILast;
+    private TextView txtWaterLast;
+    private TextView txtMuscleLast;
+    private TextView txtFatLast;
+
+    private TextView txtGoalWeight;
+    private TextView txtGoalDiff;
+    private TextView txtGoalDayLeft;
+
+    private TextView txtAvgWeek;
+    private TextView txtAvgMonth;
+
+    private TextView txtLabelWeight;
+    private TextView txtLabelBMI;
+    private TextView txtLabelFat;
+    private TextView txtLabelMuscle;
+    private TextView txtLabelWater;
+
+    private TextView txtLabelGoalWeight;
+    private TextView txtLabelGoalDiff;
+    private TextView txtLabelDayLeft;
+
+    private TextView txtLabelAvgWeek;
+    private TextView txtLabelAvgMonth;
+
+	private PieChartView pieChartLast;
+    private LineChartView lineChartLast;
+
+    private SharedPreferences prefs;
 
     private ScaleData lastScaleData;
+    private ScaleUser currentScaleUser;
 
-	@Override
+    @Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) 
 	{
 		overviewView = inflater.inflate(R.layout.fragment_overview, container, false);
 
-        txtOverviewTitle = (TextView) overviewView.findViewById(R.id.txtOverviewTitle);
-		pieChart = (PieChartView) overviewView.findViewById(R.id.pieChart);
-		txtAvgWeight = (TextView) overviewView.findViewById(R.id.txtAvgWeight);
-		txtAvgFat = (TextView) overviewView.findViewById(R.id.txtAvgFat);
-		txtAvgWater = (TextView) overviewView.findViewById(R.id.txtAvgWater);
-		txtAvgMuscle = (TextView) overviewView.findViewById(R.id.txtAvgMuscle);
+        txtTitleUser = (TextView) overviewView.findViewById(R.id.txtTitleUser);
+        txtTitleLastMeasurement = (TextView) overviewView.findViewById(R.id.txtTitleLastMeasurment);
+        txtTitleGoal = (TextView) overviewView.findViewById(R.id.txtTitleGoal);
+        txtTitleStatistics = (TextView) overviewView.findViewById(R.id.txtTitleStatistics);
 
-        pieChart.setOnValueTouchListener(new PieChartTouchListener());
-        pieChart.setChartRotationEnabled(false);
+        txtWeightLast = (TextView) overviewView.findViewById(R.id.txtWeightLast);
+        txtBMILast = (TextView) overviewView.findViewById(R.id.txtBMILast);
+        txtWaterLast = (TextView) overviewView.findViewById(R.id.txtWaterLast);
+        txtMuscleLast = (TextView) overviewView.findViewById(R.id.txtMuscleLast);
+        txtFatLast = (TextView) overviewView.findViewById(R.id.txtFatLast);
+
+        txtGoalWeight = (TextView) overviewView.findViewById(R.id.txtGoalWeight);
+        txtGoalDiff = (TextView) overviewView.findViewById(R.id.txtGoalDiff);
+        txtGoalDayLeft = (TextView) overviewView.findViewById(R.id.txtGoalDayLeft);
+
+        txtAvgWeek = (TextView) overviewView.findViewById(R.id.txtAvgWeek);
+        txtAvgMonth = (TextView) overviewView.findViewById(R.id.txtAvgMonth);
+
+        txtLabelWeight = (TextView) overviewView.findViewById(R.id.txtLabelWeight);
+        txtLabelBMI = (TextView) overviewView.findViewById(R.id.txtLabelBMI);
+        txtLabelFat = (TextView) overviewView.findViewById(R.id.txtLabelFat);
+        txtLabelMuscle = (TextView) overviewView.findViewById(R.id.txtLabelMuscle);
+        txtLabelWater = (TextView) overviewView.findViewById(R.id.txtLabelWater);
+
+        txtLabelGoalWeight = (TextView) overviewView.findViewById(R.id.txtLabelGoalWeight);
+        txtLabelGoalDiff = (TextView) overviewView.findViewById(R.id.txtLabelGoalDiff);
+        txtLabelDayLeft = (TextView) overviewView.findViewById(R.id.txtLabelDayLeft);
+
+        txtLabelAvgWeek = (TextView) overviewView.findViewById(R.id.txtLabelAvgWeek);
+        txtLabelAvgMonth = (TextView) overviewView.findViewById(R.id.txtLabelAvgMonth);
+
+        pieChartLast = (PieChartView) overviewView.findViewById(R.id.pieChartLast);
+        lineChartLast = (LineChartView) overviewView.findViewById(R.id.lineChartLast);
+
+        pieChartLast.setOnValueTouchListener(new PieChartLastTouchListener());
+        pieChartLast.setChartRotationEnabled(false);
 
 		overviewView.findViewById(R.id.btnInsertData).setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
             	btnOnClickInsertData();
             }
         });
-		
+
+        prefs = PreferenceManager.getDefaultSharedPreferences(overviewView.getContext());
+
 		updateOnView(OpenScale.getInstance(overviewView.getContext()).getScaleDataList());
 
 		return overviewView;
@@ -83,66 +154,287 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 	@Override
 	public void updateOnView(ArrayList<ScaleData> scaleDataList)
 	{
-        ScaleUser scaleUser = OpenScale.getInstance(overviewView.getContext()).getSelectedScaleUser();
+        currentScaleUser = OpenScale.getInstance(overviewView.getContext()).getSelectedScaleUser();
 
-        txtOverviewTitle.setText(getResources().getString(R.string.label_overview_title_start) + " " + scaleUser.user_name + " " + getResources().getString(R.string.label_overview_title_end));
-
-		List<ArcValue> arcValues = new ArrayList<ArcValue>();
-
-		if (scaleDataList.isEmpty()) {
+        if (scaleDataList.isEmpty()) {
             lastScaleData = null;
             return;
         }
 
         lastScaleData = scaleDataList.get(0);
-		
-		arcValues.add(new ArcValue(lastScaleData.fat, Utils.COLOR_ORANGE));
-		arcValues.add(new ArcValue(lastScaleData.water, Utils.COLOR_BLUE));
-		arcValues.add(new ArcValue(lastScaleData.muscle, Utils.COLOR_GREEN));
-		
-		PieChartData pieChartData = new PieChartData(arcValues);
-		pieChartData.setHasLabels(true);
+
+        txtTitleUser.setText(getResources().getString(R.string.label_title_user).toUpperCase() + " " + currentScaleUser.user_name);
+        txtTitleLastMeasurement.setText(getResources().getString(R.string.label_title_last_measurement).toUpperCase());
+        txtTitleGoal.setText(getResources().getString(R.string.label_title_goal).toUpperCase());
+        txtTitleStatistics.setText(getResources().getString(R.string.label_title_statistics).toUpperCase());
+
+        updateLastPieChart();
+		updateLastLineChart(scaleDataList);
+        updateLastMeasurement();
+        updateGoal(scaleDataList);
+        updateStatistics(scaleDataList);
+    }
+
+    private void updateLastMeasurement() {
+        txtWeightLast.setText(lastScaleData.weight + " " + ScaleUser.UNIT_STRING[currentScaleUser.scale_unit]);
+        txtBMILast.setText(String.format("%.1f", currentScaleUser.getBMI(lastScaleData.weight)));
+        txtFatLast.setText(lastScaleData.fat + " %");
+        txtWaterLast.setText(lastScaleData.water + " %");
+        txtMuscleLast.setText(lastScaleData.muscle + " %");
+    }
+
+    private void updateGoal(ArrayList<ScaleData> scaleDataList) {
+        txtGoalWeight.setText(currentScaleUser.goal_weight + " " + ScaleUser.UNIT_STRING[currentScaleUser.scale_unit]);
+
+        double weight_diff = currentScaleUser.goal_weight - lastScaleData.weight;
+        txtGoalDiff.setText(weight_diff + " " + ScaleUser.UNIT_STRING[currentScaleUser.scale_unit]);
+
+        Calendar goalDate = Calendar.getInstance();
+        Calendar curDate = Calendar.getInstance();
+        goalDate.setTime(currentScaleUser.goal_date);
+
+        long days = daysBetween(curDate, goalDate);
+        txtGoalDayLeft.setText(days + " " + getResources().getString(R.string.label_days));
+
+        txtLabelGoalWeight.setText(Html.fromHtml(getResources().getString(R.string.label_weight_goal) + " <br> <font color='grey'><small>BMI " + String.format("%.1f", currentScaleUser.getBMI(currentScaleUser.goal_weight)) + " </small></font>"));
+        txtLabelGoalDiff.setText(Html.fromHtml(getResources().getString(R.string.label_weight_difference) + " <br> <font color='grey'><small>BMI " + String.format("%.1f", currentScaleUser.getBMI(lastScaleData.weight) - currentScaleUser.getBMI(currentScaleUser.goal_weight))  + " </small></font>"));
+        txtLabelDayLeft.setText(Html.fromHtml(getResources().getString(R.string.label_days_left) + " <br> <font color='grey'><small>" + getResources().getString(R.string.label_goal_date_is) + " " + new SimpleDateFormat("dd. MMM yyyy (EE)").format(currentScaleUser.goal_date) + " </small></font>"));
+
+        if (scaleDataList.size() > 2) {
+            ScaleData diffScaleData = scaleDataList.get(1);
+
+            double diffWeight = lastScaleData.weight - diffScaleData.weight;
+            double diffBMI = currentScaleUser.getBMI(lastScaleData.weight) - currentScaleUser.getBMI(diffScaleData.weight);
+            double diffFat = lastScaleData.fat - diffScaleData.fat;
+            double diffMuscle = lastScaleData.muscle - diffScaleData.muscle;
+            double diffWater = lastScaleData.water - diffScaleData.water;
+
+            if (diffWeight > 0.0)
+                txtLabelWeight.setText(Html.fromHtml(getResources().getString(R.string.label_weight) + " <br> <font color='grey'>&#x2197;<small> " + String.format("%.1f ", diffWeight) + ScaleUser.UNIT_STRING[currentScaleUser.scale_unit] + "</small></font>"));
+            else
+                txtLabelWeight.setText(Html.fromHtml(getResources().getString(R.string.label_weight) + " <br> <font color='grey'>&#x2198;<small> " + String.format("%.1f ", diffWeight) + ScaleUser.UNIT_STRING[currentScaleUser.scale_unit] + "</small></font>"));
+
+
+            if (diffBMI > 0.0)
+                txtLabelBMI.setText(Html.fromHtml(getResources().getString(R.string.label_bmi) + " <br> <font color='grey'>&#x2197;<small> " + String.format("%.1f", diffBMI) + "</small></font>"));
+            else
+                txtLabelBMI.setText(Html.fromHtml(getResources().getString(R.string.label_bmi) + " <br> <font color='grey'>&#x2198;<small> " + String.format("%.1f", diffBMI) + "</small></font>"));
+
+            if (diffFat > 0.0)
+                txtLabelFat.setText(Html.fromHtml(getResources().getString(R.string.label_fat) + " <br> <font color='grey'>&#x2197;<small> " + String.format("%.1f", diffFat) + "%</small></font>"));
+            else
+                txtLabelFat.setText(Html.fromHtml(getResources().getString(R.string.label_fat) + " <br> <font color='grey'>&#x2198;<small> " + String.format("%.1f", diffFat) + "%</small></font>"));
+
+            if (diffMuscle > 0.0)
+                txtLabelMuscle.setText(Html.fromHtml(getResources().getString(R.string.label_muscle) + " <br> <font color='grey'>&#x2197;<small> " + String.format("%.1f", diffMuscle) + "%</small></font>"));
+            else
+                txtLabelMuscle.setText(Html.fromHtml(getResources().getString(R.string.label_muscle) + " <br> <font color='grey'>&#x2198;<small> " + String.format("%.1f", diffMuscle) + "%</small></font>"));
+
+            if (diffWater > 0.0)
+                txtLabelWater.setText(Html.fromHtml(getResources().getString(R.string.label_water) + " <br> <font color='grey'>&#x2197;<small> " + String.format("%.1f", diffWater) + "%</small></font>"));
+            else
+                txtLabelWater.setText(Html.fromHtml(getResources().getString(R.string.label_water) + " <br> <font color='grey'>&#x2198;<small> " + String.format("%.1f", diffWater) + "%</small></font>"));
+        }
+    }
+
+    private void updateStatistics(ArrayList<ScaleData> scaleDataList) {
+        Calendar histDate = Calendar.getInstance();
+        Calendar weekPastDate = Calendar.getInstance();
+        Calendar monthPastDate = Calendar.getInstance();
+
+        weekPastDate.setTime(lastScaleData.date_time);
+        weekPastDate.add(Calendar.DATE, -7);
+
+        monthPastDate.setTime(lastScaleData.date_time);
+        monthPastDate.add(Calendar.DATE, -30);
+
+        int weekSize = 0;
+        float weekAvgWeight = 0;
+        float weekAvgBMI = 0;
+        float weekAvgFat = 0;
+        float weekAvgWater = 0;
+        float weekAvgMuscle = 0;
+
+        int monthSize = 0;
+        float monthAvgWeight = 0;
+        float monthAvgBMI = 0;
+        float monthAvgFat = 0;
+        float monthAvgWater = 0;
+        float monthAvgMuscle = 0;
+
+        for (ScaleData scaleData : scaleDataList)
+        {
+            histDate.setTime(scaleData.date_time);
+
+            if (weekPastDate.before(histDate)) {
+                weekSize++;
+
+                weekAvgWeight += scaleData.weight;
+                weekAvgBMI += currentScaleUser.getBMI(scaleData.weight);
+                weekAvgFat += scaleData.fat;
+                weekAvgWater += scaleData.water;
+                weekAvgMuscle += scaleData.muscle;
+            }
+
+            if (monthPastDate.before(histDate)) {
+                monthSize++;
+
+                monthAvgWeight += scaleData.weight;
+                monthAvgBMI += currentScaleUser.getBMI(scaleData.weight);
+                monthAvgFat += scaleData.fat;
+                monthAvgWater += scaleData.water;
+                monthAvgMuscle += scaleData.muscle;
+            } else {
+                break;
+            }
+        }
+
+        weekAvgWeight /= weekSize;
+        weekAvgBMI /= weekSize;
+        weekAvgFat /= weekSize;
+        weekAvgWater /= weekSize;
+        weekAvgMuscle /= weekSize;
+
+        monthAvgWeight /= monthSize;
+        monthAvgBMI /= monthSize;
+        monthAvgFat /= monthSize;
+        monthAvgWater /= monthSize;
+        monthAvgMuscle /= monthSize;
+
+        txtLabelAvgWeek.setText(Html.fromHtml(getResources().getString(R.string.label_last_week) + " <br> <font color='grey'><small> " + String.format("[Ø-"+getResources().getString(R.string.label_weight)+": %.1f" + ScaleUser.UNIT_STRING[currentScaleUser.scale_unit] + "]  [Ø-"+getResources().getString(R.string.label_bmi)+": %.1f]  [Ø-"+getResources().getString(R.string.label_fat)+": %.1f%%]  [Ø-"+getResources().getString(R.string.label_muscle)+": %.1f%%]  [Ø-"+getResources().getString(R.string.label_water)+": %.1f%%]", weekAvgWeight, weekAvgBMI, weekAvgFat, weekAvgMuscle, weekAvgWater) + "</small></font>"));
+        txtLabelAvgMonth.setText(Html.fromHtml(getResources().getString(R.string.label_last_month) + " <br> <font color='grey'><small> " + String.format("[Ø-"+getResources().getString(R.string.label_weight)+": %.1f" + ScaleUser.UNIT_STRING[currentScaleUser.scale_unit] + "]  [Ø-"+getResources().getString(R.string.label_bmi)+": %.1f]  [Ø-"+getResources().getString(R.string.label_fat)+": %.1f%%]  [Ø-"+getResources().getString(R.string.label_muscle)+": %.1f%%]  [Ø-"+getResources().getString(R.string.label_water)+": %.1f%%]", monthAvgWeight, monthAvgBMI, monthAvgFat, monthAvgMuscle, monthAvgWater) + "</small></font>"));
+
+        txtAvgWeek.setText(weekSize + " " + getResources().getString(R.string.label_measures));
+        txtAvgMonth.setText(monthSize + " " + getResources().getString(R.string.label_measures));
+    }
+
+    private void updateLastLineChart(ArrayList<ScaleData> scaleDataList) {
+        List<AxisValue> axisValues = new ArrayList<AxisValue>();
+
+        List<PointValue> valuesWeight = new ArrayList<PointValue>();
+        List<PointValue> valuesFat = new ArrayList<PointValue>();
+        List<PointValue> valuesWater = new ArrayList<PointValue>();
+        List<PointValue> valuesMuscle = new ArrayList<PointValue>();
+        List<Line> lines = new ArrayList<Line>();
+
+        int max_i = 7;
+
+        if (scaleDataList.size() < 7) {
+            max_i = scaleDataList.size();
+        }
+
+        Calendar histDate = Calendar.getInstance();
+        Calendar lastDate = Calendar.getInstance();
+
+        lastDate.setTime(scaleDataList.get(0).date_time);
+
+        for (int i=0; i<max_i; i++) {
+            ScaleData histData = scaleDataList.get(max_i - i - 1);
+
+            valuesWeight.add(new PointValue(i, histData.weight));
+            valuesFat.add(new PointValue(i, histData.fat));
+            valuesWater.add(new PointValue(i, histData.water));
+            valuesMuscle.add(new PointValue(i, histData.muscle));
+
+            histDate.setTime(histData.date_time);
+
+            long days = 0 - daysBetween(lastDate, histDate);
+
+            if (days == 0) {
+                axisValues.add(new AxisValue(i, new SimpleDateFormat("dd/MM/yy").format(lastScaleData.date_time).toCharArray()));
+            } else {
+                axisValues.add(new AxisValue(i, String.format("%d days", days).toCharArray()));
+            }
+        }
+
+        Line lineWeight = new Line(valuesWeight).
+                setColor(Utils.COLOR_VIOLET).
+                setHasLabels(prefs.getBoolean("labelsEnable", true)).
+                setFormatter(new SimpleValueFormatter(1, false, null, null));
+        Line lineFat = new Line(valuesFat).
+                setColor(Utils.COLOR_ORANGE).
+                setHasLabels(prefs.getBoolean("labelsEnable", true)).
+                setFormatter(new SimpleValueFormatter(1, false, null, null));
+        Line lineWater = new Line(valuesWater).
+                setColor(Utils.COLOR_BLUE).
+                setHasLabels(prefs.getBoolean("labelsEnable", true)).
+                setFormatter(new SimpleValueFormatter(1, false, null, null));
+        Line lineMuscle = new Line(valuesMuscle).
+                setColor(Utils.COLOR_GREEN).
+                setHasLabels(prefs.getBoolean("labelsEnable", true)).
+                setFormatter(new SimpleValueFormatter(1, false, null, null));
+
+        if(prefs.getBoolean("weightEnable", true)) {
+            lines.add(lineWeight);
+        }
+
+        if(prefs.getBoolean("fatEnable", true)) {
+            lines.add(lineFat);
+        }
+
+        if(prefs.getBoolean("waterEnable", true)) {
+            lines.add(lineWater);
+        }
+
+        if(prefs.getBoolean("muscleEnable", true)) {
+            lines.add(lineMuscle);
+        }
+
+        LineChartData lineData = new LineChartData(lines);
+        lineData.setAxisXBottom(new Axis(axisValues).
+                        setHasLines(true).
+                        setTextColor(Color.BLACK)
+        );
+
+        lineData.setAxisYLeft(new Axis().
+                        setHasLines(true).
+                        setMaxLabelChars(3).
+                        setTextColor(Color.BLACK)
+        );
+
+
+
+        lineChartLast.setLineChartData(lineData);
+        lineChartLast.setViewportCalculationEnabled(true);
+
+        lineChartLast.setZoomEnabled(false);
+    }
+
+    private void updateLastPieChart() {
+
+        List<ArcValue> arcValuesLast = new ArrayList<ArcValue>();
+
+        arcValuesLast.add(new ArcValue(lastScaleData.fat, Utils.COLOR_ORANGE));
+        arcValuesLast.add(new ArcValue(lastScaleData.water, Utils.COLOR_BLUE));
+        arcValuesLast.add(new ArcValue(lastScaleData.muscle, Utils.COLOR_GREEN));
+
+        PieChartData pieChartData = new PieChartData(arcValuesLast);
+        pieChartData.setHasLabels(false);
         pieChartData.setFormatter(new SimpleValueFormatter(1, false, null, " %".toCharArray()));
-		pieChartData.setHasCenterCircle(true);
-		pieChartData.setCenterText1(Float.toString(lastScaleData.weight) + " " + ScaleUser.UNIT_STRING[scaleUser.scale_unit]);
-		pieChartData.setCenterText2(new SimpleDateFormat("dd. MMM yyyy (EE)").format(lastScaleData.date_time));
+        pieChartData.setHasCenterCircle(true);
+        pieChartData.setCenterText1(Float.toString(lastScaleData.weight) + " " + ScaleUser.UNIT_STRING[currentScaleUser.scale_unit]);
+        pieChartData.setCenterText2(new SimpleDateFormat("dd. MMM yyyy").format(lastScaleData.date_time));
+
 
         if ((getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == Configuration.SCREENLAYOUT_SIZE_XLARGE ||
-           (getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == Configuration.SCREENLAYOUT_SIZE_LARGE) {
-            pieChartData.setCenterText1FontSize(33);
+                (getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == Configuration.SCREENLAYOUT_SIZE_LARGE) {
+            pieChartData.setCenterText1FontSize(25);
             pieChartData.setCenterText2FontSize(14);
         } else
         {
-            pieChartData.setCenterText1FontSize(12);
+            pieChartData.setCenterText1FontSize(10);
             pieChartData.setCenterText2FontSize(8);
             pieChartData.setValueLabelTextSize(8);
         }
-		
-		pieChart.setPieChartData(pieChartData);
-		
-		double avgWeight = 0;
-		double avgFat = 0;
-		double avgWater = 0;
-		double avgMuscle = 0;
-		
-		for (ScaleData scaleData : scaleDataList)
-		{
-			avgWeight += scaleData.weight;
-			avgFat += scaleData.fat;
-			avgWater += scaleData.water;
-			avgMuscle += scaleData.muscle;
-		}
-		
-		avgWeight = avgWeight / scaleDataList.size();
-		avgFat = avgFat / scaleDataList.size();
-		avgWater = avgWater / scaleDataList.size();
-		avgMuscle = avgMuscle / scaleDataList.size();
-		
-		txtAvgWeight.setText(String.format( "%.1f " + ScaleUser.UNIT_STRING[scaleUser.scale_unit], avgWeight));
-		txtAvgFat.setText(String.format( "%.1f %%", avgFat));
-		txtAvgWater.setText(String.format( "%.1f %%", avgWater));
-		txtAvgMuscle.setText(String.format( "%.1f %%", avgMuscle));
-	}
+
+        pieChartLast.setPieChartData(pieChartData);
+    }
+
+    private long daysBetween(Calendar startDate, Calendar endDate) {
+        long end = endDate.getTimeInMillis();
+        long start = startDate.getTimeInMillis();
+        return TimeUnit.MILLISECONDS.toDays(Math.abs(end - start));
+    }
 
 	public void btnOnClickInsertData()
 	{
@@ -150,7 +442,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         startActivityForResult(intent, 1);
 	}
 
-    private class PieChartTouchListener implements PieChartView.PieChartOnValueTouchListener
+    private class PieChartLastTouchListener implements PieChartView.PieChartOnValueTouchListener
     {
         @Override
         public void onValueTouched(int i, ArcValue arcValue)

@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.Locale;
 
 public class ScaleUserDatabase extends SQLiteOpenHelper {
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
     private static final String DATABASE_NAME = "openScaleUserDatabase.db";
 
     private static final String TABLE_NAME = "scaleuserdata";
@@ -39,6 +39,9 @@ public class ScaleUserDatabase extends SQLiteOpenHelper {
     private static final String COLUMN_NAME_BIRTHDAY = "birthday";
     private static final String COLUMN_NAME_BODY_HEIGHT = "body_height";
     private static final String COLUMN_NAME_SCALE_UNIT = "scale_unit";
+    private static final String COLUMN_NAME_GENDER = "gender";
+    private static final String COLUMN_NAME_GOAL_WEIGHT = "goal_weight";
+    private static final String COLUMN_NAME_GOAL_DATE = "goal_date";
 
     private static final String SQL_CREATE_ENTRIES =
     		"CREATE TABLE " + TABLE_NAME + " (" +
@@ -46,7 +49,10 @@ public class ScaleUserDatabase extends SQLiteOpenHelper {
                     COLUMN_NAME_USER_NAME + " TEXT," +
                     COLUMN_NAME_BIRTHDAY + " TEXT," +
                     COLUMN_NAME_BODY_HEIGHT + " INTEGER," +
-                    COLUMN_NAME_SCALE_UNIT + " INTEGER" +
+                    COLUMN_NAME_SCALE_UNIT + " INTEGER," +
+                    COLUMN_NAME_GENDER + " INTEGER," +
+                    COLUMN_NAME_GOAL_WEIGHT + " REAL," +
+                    COLUMN_NAME_GOAL_DATE + " TEXT" +
     				")";
 
     private static final String SQL_DELETE_ENTRIES =
@@ -65,8 +71,11 @@ public class ScaleUserDatabase extends SQLiteOpenHelper {
 
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-		db.execSQL(SQL_DELETE_ENTRIES);
-        onCreate(db);
+        if (oldVersion == 1 && newVersion == 2) {
+            db.execSQL("ALTER TABLE " + TABLE_NAME + " ADD COLUMN " + COLUMN_NAME_GENDER + " INTEGER DEFAULT 0");
+            db.execSQL("ALTER TABLE " + TABLE_NAME + " ADD COLUMN " + COLUMN_NAME_GOAL_WEIGHT + " REAL DEFAULT 0");
+            db.execSQL("ALTER TABLE " + TABLE_NAME + " ADD COLUMN " + COLUMN_NAME_GOAL_DATE + " TEXT DEFAULT '2014-01-01 00:00'");
+        }
 	}
 	
 	public void clearDatabase() {
@@ -83,6 +92,9 @@ public class ScaleUserDatabase extends SQLiteOpenHelper {
         values.put(COLUMN_NAME_BIRTHDAY, formatDateTime.format(scaleUser.birthday));
         values.put(COLUMN_NAME_BODY_HEIGHT, scaleUser.body_height);
         values.put(COLUMN_NAME_SCALE_UNIT, scaleUser.scale_unit);
+        values.put(COLUMN_NAME_GENDER, scaleUser.gender);
+        values.put(COLUMN_NAME_GOAL_WEIGHT, scaleUser.goal_weight);
+        values.put(COLUMN_NAME_GOAL_DATE, formatDateTime.format(scaleUser.goal_date));
 
         try
         {
@@ -112,6 +124,9 @@ public class ScaleUserDatabase extends SQLiteOpenHelper {
         values.put(COLUMN_NAME_BIRTHDAY, formatDateTime.format(scaleUser.birthday));
         values.put(COLUMN_NAME_BODY_HEIGHT, scaleUser.body_height);
         values.put(COLUMN_NAME_SCALE_UNIT, scaleUser.scale_unit);
+        values.put(COLUMN_NAME_GENDER, scaleUser.gender);
+        values.put(COLUMN_NAME_GOAL_WEIGHT, scaleUser.goal_weight);
+        values.put(COLUMN_NAME_GOAL_DATE, formatDateTime.format(scaleUser.goal_date));
 
         db.update(TABLE_NAME, values, COLUMN_NAME_ID + "=" + scaleUser.id, null);
     }
@@ -126,7 +141,10 @@ public class ScaleUserDatabase extends SQLiteOpenHelper {
                 COLUMN_NAME_USER_NAME,
                 COLUMN_NAME_BIRTHDAY,
                 COLUMN_NAME_BODY_HEIGHT,
-                COLUMN_NAME_SCALE_UNIT
+                COLUMN_NAME_SCALE_UNIT,
+                COLUMN_NAME_GENDER,
+                COLUMN_NAME_GOAL_WEIGHT,
+                COLUMN_NAME_GOAL_DATE
         };
 
         Cursor cursorScaleDB = db.query(
@@ -147,8 +165,12 @@ public class ScaleUserDatabase extends SQLiteOpenHelper {
             String birthday = cursorScaleDB.getString(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_BIRTHDAY));
             scaleUser.body_height = cursorScaleDB.getInt(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_BODY_HEIGHT));
             scaleUser.scale_unit = cursorScaleDB.getInt(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_SCALE_UNIT));
+            scaleUser.gender = cursorScaleDB.getInt(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_GENDER));
+            scaleUser.goal_weight = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_GOAL_WEIGHT));
+            String goal_date = cursorScaleDB.getString(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_GOAL_DATE));
 
             scaleUser.birthday = formatDateTime.parse(birthday);
+            scaleUser.goal_date = formatDateTime.parse(goal_date);
 
             cursorScaleDB.moveToNext();
 
@@ -171,7 +193,10 @@ public class ScaleUserDatabase extends SQLiteOpenHelper {
                 COLUMN_NAME_USER_NAME,
 				COLUMN_NAME_BIRTHDAY,
 				COLUMN_NAME_BODY_HEIGHT,
-				COLUMN_NAME_SCALE_UNIT
+				COLUMN_NAME_SCALE_UNIT,
+                COLUMN_NAME_GENDER,
+                COLUMN_NAME_GOAL_WEIGHT,
+                COLUMN_NAME_GOAL_DATE
 				};
 
 		String sortOrder = COLUMN_NAME_ID + " DESC";
@@ -197,8 +222,12 @@ public class ScaleUserDatabase extends SQLiteOpenHelper {
 				String birthday = cursorScaleDB.getString(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_BIRTHDAY));
 				scaleUser.body_height = cursorScaleDB.getInt(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_BODY_HEIGHT));
 				scaleUser.scale_unit = cursorScaleDB.getInt(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_SCALE_UNIT));
-				
-				scaleUser.birthday = formatDateTime.parse(birthday);
+                scaleUser.gender = cursorScaleDB.getInt(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_GENDER));
+                scaleUser.goal_weight = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_GOAL_WEIGHT));
+                String goal_date = cursorScaleDB.getString(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_GOAL_DATE));
+
+                scaleUser.birthday = formatDateTime.parse(birthday);
+                scaleUser.goal_date = formatDateTime.parse(goal_date);
 
 				scaleUserDBEntries.add(scaleUser);
 				

@@ -1,131 +1,535 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.health.openscale.MainActivity$PlaceholderFragment" >
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:layout_alignParentBottom="true"
+    android:layout_alignParentLeft="true"
+    android:layout_alignParentStart="true"
+    tools:context="com.health.openscale.MainActivity$PlaceholderFragment"
+    android:weightSum="100"
+    android:padding="10dp">
 
-           <LinearLayout
-               android:layout_width="match_parent"
-               android:layout_height="match_parent"
-               android:orientation="vertical"
-               android:weightSum="100">
 
-               <TextView
-                   android:layout_width="fill_parent"
-                   android:layout_height="wrap_content"
-                   android:textAppearance="?android:attr/textAppearanceMedium"
-                   android:id="@+id/txtOverviewTitle"
-                   android:gravity="center" />
+    <ScrollView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:id="@+id/scrollView"
+        android:layout_weight="100">
 
-               <lecho.lib.hellocharts.view.PieChartView
-                    android:id="@+id/pieChart"
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent">
+
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="USER"
+                android:id="@+id/txtTitleUser"
+                android:layout_weight="0"
+                android:textSize="20dp" />
+
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray"/>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0"
+                android:weightSum="100">
+
+                <lecho.lib.hellocharts.view.PieChartView
+                     android:id="@+id/pieChartLast"
+                     android:layout_width="300dp"
+                     android:layout_height="200dp"
+                    android:measureWithLargestChild="false"
+                    android:layout_weight="30" />
+
+                <lecho.lib.hellocharts.view.LineChartView
+                    android:id="@+id/lineChartLast"
                     android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_gravity="top|center"
-                    android:layout_weight="50" />
+                    android:layout_height="match_parent"
+                    android:layout_weight="70" />
 
-                <TableLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="10dp"
-                    android:layout_weight="40">
+            </LinearLayout>
 
-                    <TableRow
-                        android:id="@+id/tableRow1"
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="LAST MEASUREMENT"
+                android:id="@+id/txtTitleLastMeasurment"
+                android:autoText="false"
+                android:textSize="20dp"
+                android:typeface="monospace" />
+
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray"/>
+
+            <TableLayout
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_weight="90"
+                android:stretchColumns="1">
+
+                <TableRow
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="10dp" >
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:id="@+id/imageView11"
+                        android:src="@drawable/weight"
+                        android:layout_gravity="center" />
+
+                    <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:padding="10dp"
-                        android:weightSum="100">
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:text="Weight"
+                        android:id="@+id/txtLabelWeight"
+                        android:layout_column="1"
+                        android:textAlignment="center"
+                        android:singleLine="false"
+                        android:layout_marginLeft="20dp"
+                        android:password="false"
+                        android:phoneNumber="false"
+                        android:lines="2"
+                        android:layout_marginRight="50dp" />
 
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="25"
-                            android:text="@string/label_weight_average"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/txtAvgWeight"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="25"
-                            android:text="0" />
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="25"
-                            android:text="@string/label_fat_average"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/txtAvgFat"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="25"
-                            android:text="0" />
-
-                    </TableRow>
-
-                    <TableRow
-                        android:id="@+id/tableRow2"
+                    <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:padding="10dp"
-                        android:weightSum="100">
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:text="-1kg"
+                        android:id="@+id/txtWeightLast"
+                        android:layout_column="2"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginRight="20dp" />
+                </TableRow>
 
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="25"
-                            android:text="@string/label_water_average"
-                            android:textStyle="bold" />
+                <TableRow
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="10dp">
 
-                        <TextView
-                            android:id="@+id/txtAvgWater"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="25"
-                            android:text="0" />
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:id="@+id/imageView"
+                        android:src="@drawable/bmi"
+                        android:layout_gravity="center" />
 
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="25"
-                            android:text="@string/label_muscle_average"
-                            android:textStyle="bold" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:text="BMI"
+                        android:id="@+id/txtLabelBMI"
+                        android:layout_column="1"
+                        android:textAlignment="center"
+                        android:singleLine="false"
+                        android:layout_marginLeft="20dp"
+                        android:password="false"
+                        android:phoneNumber="false"
+                        android:lines="2"
+                        android:layout_marginRight="50dp" />
 
-                        <TextView
-                            android:id="@+id/txtAvgMuscle"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="25"
-                            android:text="0" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:text="-1"
+                        android:id="@+id/txtBMILast"
+                        android:layout_column="2"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginRight="20dp" />
+                </TableRow>
 
-                    </TableRow>
-                </TableLayout>
+                <TableRow
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:orientation="horizontal"
+                    android:id="@+id/tableRow"
+                    android:layout_marginBottom="10dp">
 
-                <LinearLayout
-			        android:layout_width="match_parent"
-			        android:layout_height="0dip"
-			        android:layout_weight="10"
-			        android:gravity="center|bottom"
-			        android:orientation="vertical" >
-                    
-                                     <Button
-                                         android:id="@+id/btnInsertData"
-                                         android:layout_width="fill_parent"
-                                         android:layout_height="wrap_content"
-                                         android:background="@drawable/flat_selector"
-                                         android:text="+"
-                                         android:textColor="@android:color/white" />
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:id="@+id/imageView2"
+                        android:src="@drawable/fat"
+                        android:layout_gravity="center" />
 
-                </LinearLayout>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:text="Fat"
+                        android:id="@+id/txtLabelFat"
+                        android:layout_column="1"
+                        android:textAlignment="center"
+                        android:singleLine="false"
+                        android:layout_marginLeft="20dp"
+                        android:password="false"
+                        android:phoneNumber="false"
+                        android:lines="2"
+                        android:layout_marginRight="50dp" />
 
-           </LinearLayout>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:text="-1 %"
+                        android:id="@+id/txtFatLast"
+                        android:layout_column="2"
+                        android:layout_gravity="center_vertical" />
+                </TableRow>
 
-</RelativeLayout>
+                <TableRow
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:orientation="horizontal"
+                    android:id="@+id/tableRow7"
+                    android:layout_marginBottom="10dp">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:id="@+id/imageView3"
+                        android:src="@drawable/muscle"
+                        android:layout_gravity="center" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:text="Muscle"
+                        android:id="@+id/txtLabelMuscle"
+                        android:layout_column="1"
+                        android:textAlignment="center"
+                        android:singleLine="false"
+                        android:layout_marginLeft="20dp"
+                        android:password="false"
+                        android:phoneNumber="false"
+                        android:lines="2"
+                        android:layout_marginRight="50dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:text="-1 %"
+                        android:id="@+id/txtMuscleLast"
+                        android:layout_column="2"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginRight="20dp" />
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:orientation="horizontal"
+                    android:id="@+id/tableRow8"
+                    android:layout_marginBottom="10dp">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:id="@+id/imageView4"
+                        android:src="@drawable/water"
+                        android:layout_gravity="center" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:text="Water"
+                        android:id="@+id/txtLabelWater"
+                        android:layout_column="1"
+                        android:textAlignment="center"
+                        android:singleLine="false"
+                        android:layout_marginLeft="20dp"
+                        android:password="false"
+                        android:phoneNumber="false"
+                        android:lines="2"
+                        android:layout_marginRight="50dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:text="-1 %"
+                        android:id="@+id/txtWaterLast"
+                        android:layout_column="2"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginRight="20dp" />
+                </TableRow>
+
+            </TableLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="GOAL"
+                android:id="@+id/txtTitleGoal"
+                android:autoText="false"
+                android:textSize="20dp"
+                android:typeface="monospace"
+                android:layout_marginTop="20dp" />
+
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray"/>
+
+            <TableLayout
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_weight="90"
+                android:stretchColumns="1">
+
+                <TableRow
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="10dp">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:id="@+id/imageView5"
+                        android:src="@drawable/target"
+                        android:layout_gravity="center" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:text="Target weight"
+                        android:id="@+id/txtLabelGoalWeight"
+                        android:layout_column="1"
+                        android:textAlignment="center"
+                        android:singleLine="false"
+                        android:layout_marginLeft="20dp"
+                        android:password="false"
+                        android:phoneNumber="false"
+                        android:lines="2"
+                        android:layout_marginRight="50dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:text="-1 kg"
+                        android:id="@+id/txtGoalWeight"
+                        android:layout_column="2"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginRight="20dp" />
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:orientation="horizontal"
+                    android:id="@+id/tableRow9"
+                    android:layout_marginBottom="10dp">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:id="@+id/imageView6"
+                        android:src="@drawable/difference"
+                        android:layout_gravity="center" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:text="Weight difference"
+                        android:id="@+id/txtLabelGoalDiff"
+                        android:layout_column="1"
+                        android:textAlignment="center"
+                        android:singleLine="false"
+                        android:layout_marginLeft="20dp"
+                        android:password="false"
+                        android:phoneNumber="false"
+                        android:lines="2"
+                        android:layout_marginRight="50dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:text="-1 kg"
+                        android:id="@+id/txtGoalDiff"
+                        android:layout_column="2"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginRight="20dp" />
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:orientation="horizontal"
+                    android:id="@+id/tableRow10"
+                    android:layout_marginBottom="10dp">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:id="@+id/imageView7"
+                        android:src="@drawable/daysleft"
+                        android:layout_gravity="center" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:text="Days left"
+                        android:id="@+id/txtLabelDayLeft"
+                        android:layout_column="1"
+                        android:textAlignment="center"
+                        android:singleLine="false"
+                        android:layout_marginLeft="20dp"
+                        android:password="false"
+                        android:phoneNumber="false"
+                        android:lines="2"
+                        android:layout_marginRight="50dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:text="-1 days"
+                        android:id="@+id/txtGoalDayLeft"
+                        android:layout_column="2"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginRight="20dp" />
+                </TableRow>
+
+            </TableLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="STATISTICS"
+                android:id="@+id/txtTitleStatistics"
+                android:autoText="false"
+                android:textSize="20dp"
+                android:typeface="monospace"
+                android:layout_marginTop="20dp" />
+
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray"/>
+
+            <TableLayout
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_weight="90"
+                android:stretchColumns="1">
+
+                <TableRow
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="10dp">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:id="@+id/imageView8"
+                        android:src="@drawable/lastweek"
+                        android:layout_gravity="center" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:text="Last 7 days"
+                        android:id="@+id/txtLabelAvgWeek"
+                        android:layout_column="1"
+                        android:textAlignment="center"
+                        android:singleLine="false"
+                        android:layout_marginLeft="20dp"
+                        android:password="false"
+                        android:phoneNumber="false"
+                        android:lines="2"
+                        android:layout_marginRight="50dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:text="-1"
+                        android:id="@+id/txtAvgWeek"
+                        android:layout_column="2"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginRight="20dp" />
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:orientation="horizontal"
+                    android:id="@+id/tableRow11"
+                    android:layout_marginBottom="10dp">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:id="@+id/imageView9"
+                        android:src="@drawable/lastmonth"
+                        android:layout_gravity="center" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:text="Last 30 days"
+                        android:id="@+id/txtLabelAvgMonth"
+                        android:layout_column="1"
+                        android:textAlignment="center"
+                        android:singleLine="false"
+                        android:layout_marginLeft="20dp"
+                        android:password="false"
+                        android:phoneNumber="false"
+                        android:lines="2"
+                        android:layout_marginRight="50dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:text="-1"
+                        android:id="@+id/txtAvgMonth"
+                        android:layout_column="2"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginRight="20dp" />
+                </TableRow>
+
+            </TableLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
+    <Button
+        android:id="@+id/btnInsertData"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/flat_selector"
+        android:text="+"
+        android:textColor="@android:color/white" />
+
+
+</LinearLayout>

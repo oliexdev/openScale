@@ -112,6 +112,68 @@ public class ScaleDatabase extends SQLiteOpenHelper {
         return true;
 	}
 
+    public void updateEntry(long id, ScaleData scaleData) {
+        SQLiteDatabase db = getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_NAME_WEIGHT, scaleData.weight);
+        values.put(COLUMN_NAME_FAT, scaleData.fat);
+        values.put(COLUMN_NAME_WATER, scaleData.water);
+        values.put(COLUMN_NAME_MUSCLE, scaleData.muscle);
+
+        db.update(TABLE_NAME, values, COLUMN_NAME_ID + "=" + id, null);
+    }
+
+    public ScaleData getDataEntry(long id)
+    {
+        SQLiteDatabase db = getReadableDatabase();
+        ScaleData scaleData = new ScaleData();
+
+        String[] projection = {
+                COLUMN_NAME_ID,
+                COLUMN_NAME_USER_ID,
+                COLUMN_NAME_DATE_TIME,
+                COLUMN_NAME_WEIGHT,
+                COLUMN_NAME_FAT,
+                COLUMN_NAME_WATER,
+                COLUMN_NAME_MUSCLE
+        };
+
+        Cursor cursorScaleDB = db.query(
+                TABLE_NAME, 	// The table to query
+                projection, 	// The columns to return
+                COLUMN_NAME_ID + "=?", 			// The columns for the WHERE clause
+                new String[] {Long.toString(id)}, 			// The values for the WHERE clause
+                null, 			// don't group the rows
+                null,			// don't filter by row groups
+                null  		// The sort order
+        );
+
+        try {
+            cursorScaleDB.moveToFirst();
+
+            scaleData.id = cursorScaleDB.getLong(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_ID));
+            scaleData.user_id = cursorScaleDB.getInt(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_USER_ID));
+            String date_time = cursorScaleDB.getString(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_DATE_TIME));
+            scaleData.weight = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_WEIGHT));
+            scaleData.fat = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_FAT));
+            scaleData.water = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_WATER));
+            scaleData.muscle = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_MUSCLE));
+
+            scaleData.date_time = formatDateTime.parse(date_time);
+
+            cursorScaleDB.moveToNext();
+
+        } catch (ParseException ex) {
+            Log.e("ScaleDatabase", "Can't parse the date time string: " + ex.getMessage());
+        }
+        catch ( IllegalArgumentException ex) {
+            Log.e("ScaleDatabase", "Illegal argument while reading from scale database: " + ex.getMessage());
+        }
+
+        return scaleData;
+    }
+
     public void deleteEntry(long id) {
         SQLiteDatabase db = getWritableDatabase();
 

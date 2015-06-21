@@ -26,10 +26,25 @@ public class ScaleUser {
 	public Date birthday;
 	public int body_height;
 	public int scale_unit;
-	
+    public int gender;
+    public double goal_weight;
+    public Date goal_date;
+
+    public boolean isMale()
+    {
+        if (gender == 0)
+            return true;
+
+        return false;
+    }
+
+    public double getBMI(double weight) {
+        return weight / ((body_height / 100.0)*(body_height / 100.0));
+    }
+
 	@Override
 	public String toString()
 	{
-		return "ID : " + id + " NAME: " + user_name + " BIRTHDAY: " + birthday.toString() + " BODY_HEIGHT: " + body_height + " SCALE_UNIT: " + UNIT_STRING[scale_unit];
+		return "ID : " + id + " NAME: " + user_name + " BIRTHDAY: " + birthday.toString() + " BODY_HEIGHT: " + body_height + " SCALE_UNIT: " + UNIT_STRING[scale_unit] + " GENDER " + gender + " GOAL WEIGHT " + goal_weight + " GOAL DATE " + goal_date.toString();
 	}
 }
