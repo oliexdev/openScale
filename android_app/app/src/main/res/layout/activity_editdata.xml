@@ -9,25 +9,36 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="5dp"
-            android:stretchColumns="*" >
+            android:stretchColumns="2" >
 
-            <TableRow
+        <TableRow
                 android:id="@+id/tableRow1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" >
+
+                <ImageView
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:id="@+id/imageView10"
+                    android:layout_column="0"
+                    android:src="@drawable/weight"
+                    android:layout_gravity="center"
+                    android:layout_marginRight="2dp" />
 
                 <TextView
                     android:id="@+id/textView1"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/label_weight" />
+                    android:text="@string/label_weight"
+                    android:layout_column="1" />
 
                 <EditText
                     android:id="@+id/txtWeight"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:ems="10"
-                    android:inputType="numberDecimal|numberSigned">
+                    android:inputType="numberDecimal|numberSigned"
+                    android:layout_column="2">
 
                     <requestFocus />
                 </EditText>
@@ -39,17 +50,28 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" >
 
+                <ImageView
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:id="@+id/imageView12"
+                    android:layout_column="0"
+                    android:src="@drawable/fat"
+                    android:layout_gravity="center"
+                    android:layout_marginRight="2dp" />
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/label_fat" />
+                    android:text="@string/label_fat"
+                    android:layout_column="1" />
 
                 <EditText
                     android:id="@+id/txtFat"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:ems="10"
-                    android:inputType="numberDecimal|numberSigned" />
+                    android:inputType="numberDecimal|numberSigned"
+                    android:layout_column="2" />
 
             </TableRow>
 
@@ -58,11 +80,21 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" >
 
+                <ImageView
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:id="@+id/imageView13"
+                    android:layout_column="0"
+                    android:src="@drawable/water"
+                    android:layout_gravity="center"
+                    android:layout_marginRight="2dp" />
+
                 <TextView
                     android:id="@+id/textView5"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/label_water" />
+                    android:text="@string/label_water"
+                    android:layout_column="1" />
 
                 <EditText
                     android:id="@+id/txtWater"
@@ -70,29 +102,71 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="5"
                     android:ems="10"
-                    android:inputType="numberDecimal|numberSigned" />
+                    android:inputType="numberDecimal|numberSigned"
+                    android:layout_column="2" />
 
             </TableRow>
 
-            <TableRow
+        <TableRow
                 android:id="@+id/tableRow6"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" >
 
-                <TextView
+            <ImageView
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:id="@+id/imageView14"
+                android:layout_column="0"
+                android:src="@drawable/muscle"
+                android:layout_gravity="center"
+                android:layout_marginRight="2dp" />
+
+            <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/label_muscle" />
+                    android:text="@string/label_muscle"
+                    android:layout_column="1" />
 
                 <EditText
                     android:id="@+id/txtMuscle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:ems="10"
-                    android:inputType="numberDecimal|numberSigned" />
-            </TableRow>
+                    android:inputType="numberDecimal|numberSigned"
+                    android:layout_column="2" />
 
-        </TableLayout>
+        </TableRow>
+
+        <TableRow
+            android:id="@+id/tableRow12"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:id="@+id/imageView15"
+                android:layout_column="0"
+                android:src="@drawable/comment"
+                android:layout_gravity="center"
+                android:layout_marginRight="2dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_comment"
+                android:layout_column="1" />
+
+            <EditText
+                android:id="@+id/txtComment"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:layout_column="2"
+                android:inputType="text|textImeMultiLine|textMultiLine|textAutoComplete|textAutoCorrect" />
+        </TableRow>
+
+    </TableLayout>
 
 
     <LinearLayout

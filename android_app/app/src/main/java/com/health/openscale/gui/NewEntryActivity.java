@@ -46,6 +46,7 @@ public class NewEntryActivity extends Activity {
 	private EditText txtMuscle;
 	private EditText txtDate;
 	private EditText txtTime;
+    private EditText txtComment;
 	
 	private SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
 	private SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
@@ -65,6 +66,7 @@ public class NewEntryActivity extends Activity {
 		txtMuscle = (EditText) findViewById(R.id.txtMuscle);
 		txtDate = (EditText) findViewById(R.id.txtDate);
 		txtTime = (EditText) findViewById(R.id.txtTime);
+        txtComment = (EditText) findViewById(R.id.txtComment);
 		Button btnDateSet = (Button) findViewById(R.id.btnDateSet);
 		Button btnTimeSet = (Button) findViewById(R.id.btnTimeSet);
 		
@@ -192,11 +194,12 @@ public class NewEntryActivity extends Activity {
                 float fat = Float.valueOf(txtFat.getText().toString());
                 float water = Float.valueOf(txtWater.getText().toString());
                 float muscle = Float.valueOf(txtMuscle.getText().toString());
+                String comment = txtComment.getText().toString();
 
                 String date = txtDate.getText().toString();
                 String time = txtTime.getText().toString();
 
-                openScale.addScaleData(selectedUserId, date + " " + time, weight, fat, water, muscle);
+                openScale.addScaleData(selectedUserId, date + " " + time, weight, fat, water, muscle, comment);
 
                 finish();
             }

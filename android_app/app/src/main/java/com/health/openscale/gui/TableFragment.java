@@ -84,6 +84,8 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
             txtWaterTableHeader.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
             TextView txtMuscleTableHeader = (TextView)tableView.findViewById(R.id.txtMuscleTableHeader);
             txtMuscleTableHeader.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
+            TextView txtCommentTableHeader = (TextView)tableView.findViewById(R.id.txtCommentTableHeader);
+            txtCommentTableHeader.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
             Button btnDeleteAll = (Button)tableView.findViewById(R.id.btnDeleteAll);
             btnDeleteAll.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
         }
@@ -143,6 +145,12 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 			muscleView.setPadding(0, 5, 5, 5);
 			dataRow.addView(muscleView);
 
+
+            TextView commentView = new TextView(tableView.getContext());
+            commentView.setText(scaleData.comment);
+            commentView.setPadding(0, 5, 5, 5);
+            dataRow.addView(commentView);
+
             Button deleteButton = new Button(tableView.getContext());
             deleteButton.setText("X");
             deleteButton.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 10);
@@ -166,6 +174,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
                 fatView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
                 waterView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
                 muscleView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
+                commentView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
             }
 
 			tableDataView.addView(dataRow, new TableLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));

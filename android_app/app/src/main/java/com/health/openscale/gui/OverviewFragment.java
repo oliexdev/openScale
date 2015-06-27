@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import lecho.lib.hellocharts.formatter.SimpleLineChartValueFormatter;
+import lecho.lib.hellocharts.listener.LineChartOnValueSelectListener;
 import lecho.lib.hellocharts.listener.PieChartOnValueSelectListener;
 import lecho.lib.hellocharts.model.Axis;
 import lecho.lib.hellocharts.model.AxisValue;
@@ -92,10 +93,15 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 	private PieChartView pieChartLast;
     private LineChartView lineChartLast;
 
+    private enum lines {WEIGHT, FAT, WATER, MUSCLE}
+    private ArrayList<lines> activeLines;
+
     private SharedPreferences prefs;
 
     private ScaleData lastScaleData;
     private ScaleUser currentScaleUser;
+
+    private List<ScaleData> scaleDataLastDays;
 
     @Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) 
@@ -135,6 +141,8 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
         pieChartLast = (PieChartView) overviewView.findViewById(R.id.pieChartLast);
         lineChartLast = (LineChartView) overviewView.findViewById(R.id.lineChartLast);
+
+        lineChartLast.setOnValueTouchListener(new LineChartTouchListener());
 
         pieChartLast.setOnValueTouchListener(new PieChartLastTouchListener());
         pieChartLast.setChartRotationEnabled(false);
@@ -329,8 +337,12 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
         lastDate.setTime(scaleDataList.get(0).date_time);
 
+        scaleDataLastDays = new ArrayList<ScaleData>();
+
         for (int i=0; i<max_i; i++) {
             ScaleData histData = scaleDataList.get(max_i - i - 1);
+
+            scaleDataLastDays.add(histData);
 
             valuesWeight.add(new PointValue(i, histData.weight));
             valuesFat.add(new PointValue(i, histData.fat));
@@ -365,20 +377,26 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
                 setHasLabels(prefs.getBoolean("labelsEnable", true)).
                 setFormatter(new SimpleLineChartValueFormatter(1));
 
+        activeLines = new ArrayList<lines>();
+
         if(prefs.getBoolean("weightEnable", true)) {
             lines.add(lineWeight);
+            activeLines.add(OverviewFragment.lines.WEIGHT);
         }
 
         if(prefs.getBoolean("fatEnable", true)) {
             lines.add(lineFat);
+            activeLines.add(OverviewFragment.lines.FAT);
         }
 
         if(prefs.getBoolean("waterEnable", true)) {
             lines.add(lineWater);
+            activeLines.add(OverviewFragment.lines.WATER);
         }
 
         if(prefs.getBoolean("muscleEnable", true)) {
             lines.add(lineMuscle);
+            activeLines.add(OverviewFragment.lines.MUSCLE);
         }
 
         LineChartData lineData = new LineChartData(lines);
@@ -488,6 +506,36 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
                 Activity a = getActivity();
                 if (a != null) a.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
             }
+        }
+    }
+
+    private class LineChartTouchListener implements LineChartOnValueSelectListener {
+        @Override
+        public void onValueSelected(int lineIndex, int pointIndex, PointValue pointValue) {
+            ScaleData scaleData = scaleDataLastDays.get(pointIndex);
+            lines selectedLine = activeLines.get(lineIndex);
+
+            String date_time = new SimpleDateFormat("dd. MMM yyyy (EE) HH:mm").format(scaleData.date_time);
+
+            switch (selectedLine) {
+                case WEIGHT:
+                    Toast.makeText(getActivity(), getResources().getString(R.string.info_your_weight) + " " + scaleData.weight + ScaleUser.UNIT_STRING[OpenScale.getInstance(overviewView.getContext()).getSelectedScaleUser().scale_unit] + " " + getResources().getString(R.string.info_on_date) + " " + date_time, Toast.LENGTH_SHORT).show();
+                    break;
+                case FAT:
+                    Toast.makeText(getActivity(), getResources().getString(R.string.info_your_fat) + " " + scaleData.fat + "% " + getResources().getString(R.string.info_on_date) + " " + date_time, Toast.LENGTH_SHORT).show();
+                    break;
+                case WATER:
+                    Toast.makeText(getActivity(), getResources().getString(R.string.info_your_water) + " " + scaleData.water + "% " + getResources().getString(R.string.info_on_date) + " " + date_time, Toast.LENGTH_SHORT).show();
+                    break;
+                case MUSCLE:
+                    Toast.makeText(getActivity(), getResources().getString(R.string.info_your_muscle) + " " + scaleData.muscle + "% " + getResources().getString(R.string.info_on_date) + " " + date_time, Toast.LENGTH_SHORT).show();
+                    break;
+            }
+        }
+
+        @Override
+        public void onValueDeselected() {
+
         }
     }
 }

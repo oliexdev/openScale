@@ -7,7 +7,7 @@
     <string name="title_frag">Table</string>
     <string name="title_user">User</string>
     <string name="title_new_data_entry">Data entry</string>
-    <string name="title_edit_data_entry">Edit data entry</string>
+    <string name="title_edit_data_entry">Edit</string>
 
     <string name="action_settings">Settings</string>
 
@@ -24,6 +24,7 @@
     <string name="label_fat">Fat</string>
     <string name="label_water">Water</string>
     <string name="label_muscle">Muscle</string>
+    <string name="label_comment">Comment</string>
 
     <string name="label_days">days</string>
     <string name="label_measures">measures</string>
@@ -75,6 +76,7 @@
     <string name="info_set_filename">Set filename to</string>
     <string name="info_enter_value_percent">Enter value in %</string>
     <string name="info_enter_value_unit">Enter value in</string>
+    <string name="info_enter_comment">Enter an optional comment</string>
     <string name="info_enter_goal_weight">Enter your goal weight in your scale unit</string>
     <string name="info_is_visible">Is visible</string>
     <string name="info_is_not_visible">Is not visible</string>

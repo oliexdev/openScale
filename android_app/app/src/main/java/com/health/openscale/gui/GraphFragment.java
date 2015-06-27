@@ -17,6 +17,7 @@
 package com.health.openscale.gui;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.graphics.Color;
@@ -27,12 +28,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.ScaleData;
-import com.health.openscale.core.ScaleUser;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -71,9 +70,6 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     private Calendar calLastSelected;
 
     private ArrayList<ScaleData> scaleDataList;
-
-    private enum lines {WEIGHT, FAT, WATER, MUSCLE}
-    private ArrayList<lines> activeLines;
 
 	public GraphFragment() {
         calYears = Calendar.getInstance();
@@ -180,26 +176,21 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                 setHasLabels(prefs.getBoolean("labelsEnable", true)).
                 setFormatter(new SimpleLineChartValueFormatter(1));
 
-        activeLines = new ArrayList<lines>();
 
         if(prefs.getBoolean("weightEnable", true)) {
             lines.add(lineWeight);
-            activeLines.add(GraphFragment.lines.WEIGHT);
         }
 
         if(prefs.getBoolean("fatEnable", true)) {
             lines.add(lineFat);
-            activeLines.add(GraphFragment.lines.FAT);
         }
 
         if(prefs.getBoolean("waterEnable", true)) {
             lines.add(lineWater);
-            activeLines.add(GraphFragment.lines.WATER);
         }
 
         if(prefs.getBoolean("muscleEnable", true)) {
             lines.add(lineMuscle);
-            activeLines.add(GraphFragment.lines.MUSCLE);
         }
 
         LineChartData lineData = new LineChartData(lines);
@@ -291,24 +282,12 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         @Override
         public void onValueSelected(int lineIndex, int pointIndex, PointValue pointValue) {
             ScaleData scaleData = scaleDataList.get(pointIndex);
-            lines selectedLine = activeLines.get(lineIndex);
 
-            String date_time = new SimpleDateFormat("dd. MMM yyyy (EE) HH:mm").format(scaleData.date_time);
+            long id = scaleData.id;
 
-            switch (selectedLine) {
-                case WEIGHT:
-                    Toast.makeText(getActivity(), getResources().getString(R.string.info_your_weight) + " " + scaleData.weight + ScaleUser.UNIT_STRING[OpenScale.getInstance(graphView.getContext()).getSelectedScaleUser().scale_unit] + " " + getResources().getString(R.string.info_on_date) + " " + date_time, Toast.LENGTH_SHORT).show();
-                    break;
-                case FAT:
-                    Toast.makeText(getActivity(), getResources().getString(R.string.info_your_fat) + " " + scaleData.fat + "% " + getResources().getString(R.string.info_on_date) + " " + date_time, Toast.LENGTH_SHORT).show();
-                    break;
-                case WATER:
-                    Toast.makeText(getActivity(), getResources().getString(R.string.info_your_water) + " " + scaleData.water + "% " + getResources().getString(R.string.info_on_date) + " " + date_time, Toast.LENGTH_SHORT).show();
-                    break;
-                case MUSCLE:
-                    Toast.makeText(getActivity(), getResources().getString(R.string.info_your_muscle) + " " + scaleData.muscle + "% " + getResources().getString(R.string.info_on_date) + " " + date_time, Toast.LENGTH_SHORT).show();
-                    break;
-            }
+            Intent intent = new Intent(graphView.getContext(), EditDataActivity.class);
+            intent.putExtra("id", id);
+            startActivityForResult(intent, 1);
         }
 
         @Override

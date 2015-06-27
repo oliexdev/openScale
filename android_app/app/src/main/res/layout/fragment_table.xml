@@ -17,9 +17,9 @@
             android:id="@+id/tableDataView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:shrinkColumns="*"
             android:measureWithLargestChild="false"
-            android:stretchColumns="1,2,3,4,5,6">
+            android:stretchColumns="1,2,3,4,5,6,7"
+            android:shrinkColumns="*">
 
             <TableRow
                 android:id="@+id/tableHeader"
@@ -75,6 +75,13 @@
                     android:text="@string/label_muscle"
                     android:textStyle="bold"
                     android:id="@+id/txtMuscleTableHeader" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_comment"
+                    android:textStyle="bold"
+                    android:id="@+id/txtCommentTableHeader" />
 
                 <Button
                     android:id="@+id/btnDeleteAll"

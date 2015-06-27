@@ -34,6 +34,7 @@ public class EditDataActivity extends Activity {
     private EditText txtFat;
     private EditText txtWater;
     private EditText txtMuscle;
+    private EditText txtComment;
 
     private Button btnOk;
     private Button btnCancel;
@@ -53,6 +54,7 @@ public class EditDataActivity extends Activity {
         txtFat = (EditText) findViewById(R.id.txtFat);
         txtWater = (EditText) findViewById(R.id.txtWater);
         txtMuscle = (EditText) findViewById(R.id.txtMuscle);
+        txtComment = (EditText) findViewById(R.id.txtComment);
 
         btnOk = (Button)findViewById(R.id.btnOk);
         btnCancel = (Button)findViewById(R.id.btnCancel);
@@ -70,25 +72,89 @@ public class EditDataActivity extends Activity {
         txtFat.setText(editScaleData.fat+"");
         txtWater.setText(editScaleData.water+"");
         txtMuscle.setText(editScaleData.muscle+"");
+        txtComment.setText(editScaleData.comment);
 
         setTitle(getResources().getString(R.string.title_edit_data_entry) + ": " + new SimpleDateFormat("dd. MMM yyyy (EE) HH:mm").format(editScaleData.date_time));
 
     }
 
+    private boolean validateInput()
+    {
+        boolean validate = true;
+
+        if( txtWeight.getText().toString().length() == 0 )
+        {
+            txtWeight.setError(getResources().getString(R.string.error_weight_value_required));
+            validate = false;
+        } else if( !(Float.valueOf(txtWeight.getText().toString()) >= 0 && Float.valueOf(txtWeight.getText().toString()) <= 300) )
+        {
+            txtWeight.setError(getResources().getString(R.string.error_value_range_0_300));
+            validate = false;
+        }
+
+        if( txtFat.getText().toString().length() == 0 )
+        {
+            txtFat.setError(getResources().getString(R.string.error_fat_value_required));
+            validate = false;
+        } else if(!isInRange(txtFat.getText().toString()))
+        {
+            txtFat.setError(getResources().getString(R.string.error_value_range_0_100));
+            validate = false;
+        }
+
+
+        if( txtWater.getText().toString().length() == 0 )
+        {
+            txtWater.setError(getResources().getString(R.string.error_water_value_required));
+            validate = false;
+        } else if(!isInRange(txtWater.getText().toString()))
+        {
+            txtWater.setError(getResources().getString(R.string.error_value_range_0_100));
+            validate = false;
+        }
+
+        if( txtMuscle.getText().toString().length() == 0 )
+        {
+            txtMuscle.setError(getResources().getString(R.string.error_muscle_value_required));
+            validate = false;
+        } else 	if(!isInRange(txtMuscle.getText().toString()))
+        {
+            txtMuscle.setError(getResources().getString(R.string.error_value_range_0_100));
+            validate = false;
+        }
+
+        return validate;
+    }
+
+    private boolean isInRange(String value)
+    {
+        if (value.length() == 0)
+            return false;
+
+        float val = Float.valueOf(value);
+
+        if (val >= 0 && val <= 100)
+            return true;
+
+        return false;
+    }
 
     private class onClickListenerOk implements View.OnClickListener {
         @Override
         public void onClick(View v) {
-            float weight = Float.valueOf(txtWeight.getText().toString());
-            float fat = Float.valueOf(txtFat.getText().toString());
-            float water = Float.valueOf(txtWater.getText().toString());
-            float muscle = Float.valueOf(txtMuscle.getText().toString());
+            if (validateInput()) {
+                float weight = Float.valueOf(txtWeight.getText().toString());
+                float fat = Float.valueOf(txtFat.getText().toString());
+                float water = Float.valueOf(txtWater.getText().toString());
+                float muscle = Float.valueOf(txtMuscle.getText().toString());
+                String comment = txtComment.getText().toString();
 
-            OpenScale openScale = OpenScale.getInstance(context);
+                OpenScale openScale = OpenScale.getInstance(context);
 
-            openScale.updateScaleData(id, weight, fat, water, muscle);
+                openScale.updateScaleData(id, weight, fat, water, muscle, comment);
 
-            finish();
+                finish();
+            }
         }
     }
 
