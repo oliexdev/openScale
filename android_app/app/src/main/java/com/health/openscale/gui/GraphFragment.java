@@ -40,19 +40,21 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
+import lecho.lib.hellocharts.formatter.SimpleLineChartValueFormatter;
 import lecho.lib.hellocharts.gesture.ZoomType;
+import lecho.lib.hellocharts.listener.ColumnChartOnValueSelectListener;
+import lecho.lib.hellocharts.listener.LineChartOnValueSelectListener;
 import lecho.lib.hellocharts.model.Axis;
 import lecho.lib.hellocharts.model.AxisValue;
 import lecho.lib.hellocharts.model.Column;
 import lecho.lib.hellocharts.model.ColumnChartData;
-import lecho.lib.hellocharts.model.ColumnValue;
 import lecho.lib.hellocharts.model.Line;
 import lecho.lib.hellocharts.model.LineChartData;
 import lecho.lib.hellocharts.model.PointValue;
 import lecho.lib.hellocharts.model.SelectedValue;
-import lecho.lib.hellocharts.model.SimpleValueFormatter;
+import lecho.lib.hellocharts.model.SubcolumnValue;
 import lecho.lib.hellocharts.model.Viewport;
-import lecho.lib.hellocharts.util.Utils;
+import lecho.lib.hellocharts.util.ChartUtils;
 import lecho.lib.hellocharts.view.ColumnChartView;
 import lecho.lib.hellocharts.view.LineChartView;
 
@@ -162,21 +164,21 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
 
         Line lineWeight = new Line(valuesWeight).
-                setColor(Utils.COLOR_VIOLET).
+                setColor(ChartUtils.COLOR_VIOLET).
                 setHasLabels(prefs.getBoolean("labelsEnable", true)).
-                setFormatter(new SimpleValueFormatter(1, false, null, null));
+                setFormatter(new SimpleLineChartValueFormatter(1));
         Line lineFat = new Line(valuesFat).
-                setColor(Utils.COLOR_ORANGE).
+                setColor(ChartUtils.COLOR_ORANGE).
                 setHasLabels(prefs.getBoolean("labelsEnable", true)).
-                setFormatter(new SimpleValueFormatter(1, false, null, null));
+                setFormatter(new SimpleLineChartValueFormatter(1));
         Line lineWater = new Line(valuesWater).
-                setColor(Utils.COLOR_BLUE).
+                setColor(ChartUtils.COLOR_BLUE).
                 setHasLabels(prefs.getBoolean("labelsEnable", true)).
-                setFormatter(new SimpleValueFormatter(1, false, null, null));
+                setFormatter(new SimpleLineChartValueFormatter(1));
         Line lineMuscle = new Line(valuesMuscle).
-                setColor(Utils.COLOR_GREEN).
+                setColor(ChartUtils.COLOR_GREEN).
                 setHasLabels(prefs.getBoolean("labelsEnable", true)).
-                setFormatter(new SimpleValueFormatter(1, false, null, null));
+                setFormatter(new SimpleLineChartValueFormatter(1));
 
         activeLines = new ArrayList<lines>();
 
@@ -225,7 +227,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         Viewport v = new Viewport(0, (int)maxValue, maxDays-1, 0);
         chartTop.setMaximumViewport(v);
-        chartTop.setCurrentViewport(v, true);
+        chartTop.setCurrentViewport(v);
 
         chartTop.setZoomType(ZoomType.HORIZONTAL);
     }
@@ -246,8 +248,8 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             String month_name = month_date.format(calMonths.getTime());
 
             axisValues.add(new AxisValue(i, month_name.toCharArray()));
-            List<ColumnValue> values = new ArrayList<ColumnValue>();
-            values.add(new ColumnValue(numOfMonth[i], Utils.COLORS[i % Utils.COLORS.length]));
+            List<SubcolumnValue> values = new ArrayList<SubcolumnValue>();
+            values.add(new SubcolumnValue(numOfMonth[i], ChartUtils.COLORS[i % ChartUtils.COLORS.length]));
 
             columns.add(new Column(values).setHasLabelsOnlyForSelected(true));
 
@@ -261,15 +263,15 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         chartBottom.setColumnChartData(columnData);
         chartBottom.setValueSelectionEnabled(true);
         chartBottom.setZoomEnabled(false);
-        chartBottom.selectValue(new SelectedValue(calLastSelected.get(Calendar.MONTH), 0, 0));
+        chartBottom.selectValue(new SelectedValue(calLastSelected.get(Calendar.MONTH), 0, SelectedValue.SelectedValueType.COLUMN));
 
 
         generateLineData(calLastSelected);
     }
 
-    private class ChartBottomValueTouchListener implements ColumnChartView.ColumnChartOnValueTouchListener {
+    private class ChartBottomValueTouchListener implements ColumnChartOnValueSelectListener {
         @Override
-        public void onValueTouched(int selectedLine, int selectedValue, ColumnValue value) {
+        public void onValueSelected(int selectedLine, int selectedValue, SubcolumnValue value) {
             Calendar cal = Calendar.getInstance();
             cal.set(Calendar.MONTH, Calendar.JANUARY);
             cal.add(Calendar.MONTH, selectedLine);
@@ -280,14 +282,14 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         }
 
         @Override
-        public void onNothingTouched() {
+        public void onValueDeselected() {
 
         }
     }
 
-    private class ChartTopValueTouchListener implements LineChartView.LineChartOnValueTouchListener {
+    private class ChartTopValueTouchListener implements LineChartOnValueSelectListener {
         @Override
-        public void onValueTouched(int lineIndex, int pointIndex, PointValue pointValue) {
+        public void onValueSelected(int lineIndex, int pointIndex, PointValue pointValue) {
             ScaleData scaleData = scaleDataList.get(pointIndex);
             lines selectedLine = activeLines.get(lineIndex);
 
@@ -296,7 +298,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             switch (selectedLine) {
                 case WEIGHT:
                     Toast.makeText(getActivity(), getResources().getString(R.string.info_your_weight) + " " + scaleData.weight + ScaleUser.UNIT_STRING[OpenScale.getInstance(graphView.getContext()).getSelectedScaleUser().scale_unit] + " " + getResources().getString(R.string.info_on_date) + " " + date_time, Toast.LENGTH_SHORT).show();
-                   break;
+                    break;
                 case FAT:
                     Toast.makeText(getActivity(), getResources().getString(R.string.info_your_fat) + " " + scaleData.fat + "% " + getResources().getString(R.string.info_on_date) + " " + date_time, Toast.LENGTH_SHORT).show();
                     break;
@@ -310,7 +312,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         }
 
         @Override
-        public void onNothingTouched() {
+        public void onValueDeselected() {
 
         }
     }

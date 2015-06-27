@@ -22,4 +22,5 @@ dependencies {
     compile 'com.android.support:support-v4:21.0.3'
     compile 'com.android.support:appcompat-v7:21.0.0'
     compile files('libs/hellocharts-library-1.2.jar')
+    compile files('libs/hellocharts-library-1.5.5.jar')
 }

@@ -42,15 +42,16 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import lecho.lib.hellocharts.model.ArcValue;
+import lecho.lib.hellocharts.formatter.SimpleLineChartValueFormatter;
+import lecho.lib.hellocharts.listener.PieChartOnValueSelectListener;
 import lecho.lib.hellocharts.model.Axis;
 import lecho.lib.hellocharts.model.AxisValue;
 import lecho.lib.hellocharts.model.Line;
 import lecho.lib.hellocharts.model.LineChartData;
 import lecho.lib.hellocharts.model.PieChartData;
 import lecho.lib.hellocharts.model.PointValue;
-import lecho.lib.hellocharts.model.SimpleValueFormatter;
-import lecho.lib.hellocharts.util.Utils;
+import lecho.lib.hellocharts.model.SliceValue;
+import lecho.lib.hellocharts.util.ChartUtils;
 import lecho.lib.hellocharts.view.LineChartView;
 import lecho.lib.hellocharts.view.PieChartView;
 
@@ -348,21 +349,21 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         }
 
         Line lineWeight = new Line(valuesWeight).
-                setColor(Utils.COLOR_VIOLET).
+                setColor(ChartUtils.COLOR_VIOLET).
                 setHasLabels(prefs.getBoolean("labelsEnable", true)).
-                setFormatter(new SimpleValueFormatter(1, false, null, null));
+                setFormatter(new SimpleLineChartValueFormatter(1));
         Line lineFat = new Line(valuesFat).
-                setColor(Utils.COLOR_ORANGE).
+                setColor(ChartUtils.COLOR_ORANGE).
                 setHasLabels(prefs.getBoolean("labelsEnable", true)).
-                setFormatter(new SimpleValueFormatter(1, false, null, null));
+                setFormatter(new SimpleLineChartValueFormatter(1));
         Line lineWater = new Line(valuesWater).
-                setColor(Utils.COLOR_BLUE).
+                setColor(ChartUtils.COLOR_BLUE).
                 setHasLabels(prefs.getBoolean("labelsEnable", true)).
-                setFormatter(new SimpleValueFormatter(1, false, null, null));
+                setFormatter(new SimpleLineChartValueFormatter(1));
         Line lineMuscle = new Line(valuesMuscle).
-                setColor(Utils.COLOR_GREEN).
+                setColor(ChartUtils.COLOR_GREEN).
                 setHasLabels(prefs.getBoolean("labelsEnable", true)).
-                setFormatter(new SimpleValueFormatter(1, false, null, null));
+                setFormatter(new SimpleLineChartValueFormatter(1));
 
         if(prefs.getBoolean("weightEnable", true)) {
             lines.add(lineWeight);
@@ -402,15 +403,14 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
     private void updateLastPieChart() {
 
-        List<ArcValue> arcValuesLast = new ArrayList<ArcValue>();
+        List<SliceValue> arcValuesLast = new ArrayList<SliceValue>();
 
-        arcValuesLast.add(new ArcValue(lastScaleData.fat, Utils.COLOR_ORANGE));
-        arcValuesLast.add(new ArcValue(lastScaleData.water, Utils.COLOR_BLUE));
-        arcValuesLast.add(new ArcValue(lastScaleData.muscle, Utils.COLOR_GREEN));
+        arcValuesLast.add(new SliceValue(lastScaleData.fat, ChartUtils.COLOR_ORANGE));
+        arcValuesLast.add(new SliceValue(lastScaleData.water, ChartUtils.COLOR_BLUE));
+        arcValuesLast.add(new SliceValue(lastScaleData.muscle, ChartUtils.COLOR_GREEN));
 
         PieChartData pieChartData = new PieChartData(arcValuesLast);
         pieChartData.setHasLabels(false);
-        pieChartData.setFormatter(new SimpleValueFormatter(1, false, null, " %".toCharArray()));
         pieChartData.setHasCenterCircle(true);
         pieChartData.setCenterText1(Float.toString(lastScaleData.weight) + " " + ScaleUser.UNIT_STRING[currentScaleUser.scale_unit]);
         pieChartData.setCenterText2(new SimpleDateFormat("dd. MMM yyyy").format(lastScaleData.date_time));
@@ -442,11 +442,10 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         startActivityForResult(intent, 1);
 	}
 
-    private class PieChartLastTouchListener implements PieChartView.PieChartOnValueTouchListener
+    private class PieChartLastTouchListener implements PieChartOnValueSelectListener
     {
         @Override
-        public void onValueTouched(int i, ArcValue arcValue)
-        {
+        public void onValueSelected(int i, SliceValue arcValue) {
             if (lastScaleData == null) {
                 return;
             }
@@ -468,8 +467,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         }
 
         @Override
-        public void onNothingTouched()
-        {
+        public void onValueDeselected() {
 
         }
     }
