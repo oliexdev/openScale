@@ -84,7 +84,7 @@ protected void onCreate(Bundle savedInstanceState) {
         Preference prefAddUser = new Preference(this);
 
         prefAddUser.setOnPreferenceClickListener(new onClickListenerAddUser());
-        prefAddUser.setTitle("+ Add User");
+        prefAddUser.setTitle("+ " + getResources().getString(R.string.label_add_user));
 
         usersCategory.addPreference(prefAddUser);
     }

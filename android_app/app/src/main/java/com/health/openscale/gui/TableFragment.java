@@ -45,6 +45,7 @@ import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.ScaleData;
 
 import java.io.IOException;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
@@ -113,9 +114,9 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 			TextView dateTextView = new TextView(tableView.getContext());
             if ((getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == Configuration.SCREENLAYOUT_SIZE_XLARGE ||
                 (getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == Configuration.SCREENLAYOUT_SIZE_LARGE) {
-                dateTextView.setText(new SimpleDateFormat("dd. MMM yyyy (EE)").format(scaleData.date_time));
+                dateTextView.setText(DateFormat.getDateInstance(DateFormat.MEDIUM).format(scaleData.date_time));
             } else{
-                dateTextView.setText(new SimpleDateFormat("dd/MM/yy").format(scaleData.date_time));
+                dateTextView.setText(DateFormat.getDateInstance(DateFormat.SHORT).format(scaleData.date_time));
             }
 			dateTextView.setPadding(0, 5, 5, 5);
 			dataRow.addView(dateTextView);

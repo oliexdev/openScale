@@ -26,7 +26,7 @@ import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.ScaleData;
 
-import java.text.SimpleDateFormat;
+import java.text.DateFormat;
 
 public class EditDataActivity extends Activity {
 
@@ -74,7 +74,7 @@ public class EditDataActivity extends Activity {
         txtMuscle.setText(editScaleData.muscle+"");
         txtComment.setText(editScaleData.comment);
 
-        setTitle(getResources().getString(R.string.title_edit_data_entry) + ": " + new SimpleDateFormat("dd. MMM yyyy (EE) HH:mm").format(editScaleData.date_time));
+        setTitle(getResources().getString(R.string.title_edit_data_entry) + ": " + DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.SHORT).format(editScaleData.date_time));
 
     }
 

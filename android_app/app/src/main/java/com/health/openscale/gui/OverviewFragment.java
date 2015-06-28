@@ -36,7 +36,7 @@ import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.ScaleData;
 import com.health.openscale.core.ScaleUser;
 
-import java.text.SimpleDateFormat;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -196,7 +196,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         txtGoalWeight.setText(currentScaleUser.goal_weight + " " + ScaleUser.UNIT_STRING[currentScaleUser.scale_unit]);
 
         double weight_diff = currentScaleUser.goal_weight - lastScaleData.weight;
-        txtGoalDiff.setText(String.format("%.1f" + ScaleUser.UNIT_STRING[currentScaleUser.scale_unit], weight_diff));
+        txtGoalDiff.setText(String.format("%.1f " + ScaleUser.UNIT_STRING[currentScaleUser.scale_unit], weight_diff));
 
         Calendar goalDate = Calendar.getInstance();
         Calendar curDate = Calendar.getInstance();
@@ -205,9 +205,9 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         long days = daysBetween(curDate, goalDate);
         txtGoalDayLeft.setText(days + " " + getResources().getString(R.string.label_days));
 
-        txtLabelGoalWeight.setText(Html.fromHtml(getResources().getString(R.string.label_weight_goal) + " <br> <font color='grey'><small>BMI " + String.format("%.1f", currentScaleUser.getBMI(currentScaleUser.goal_weight)) + " </small></font>"));
+        txtLabelGoalWeight.setText(Html.fromHtml(getResources().getString(R.string.label_goal_weight) + " <br> <font color='grey'><small>BMI " + String.format("%.1f", currentScaleUser.getBMI(currentScaleUser.goal_weight)) + " </small></font>"));
         txtLabelGoalDiff.setText(Html.fromHtml(getResources().getString(R.string.label_weight_difference) + " <br> <font color='grey'><small>BMI " + String.format("%.1f", currentScaleUser.getBMI(lastScaleData.weight) - currentScaleUser.getBMI(currentScaleUser.goal_weight))  + " </small></font>"));
-        txtLabelDayLeft.setText(Html.fromHtml(getResources().getString(R.string.label_days_left) + " <br> <font color='grey'><small>" + getResources().getString(R.string.label_goal_date_is) + " " + new SimpleDateFormat("dd. MMM yyyy (EE)").format(currentScaleUser.goal_date) + " </small></font>"));
+        txtLabelDayLeft.setText(Html.fromHtml(getResources().getString(R.string.label_days_left) + " <br> <font color='grey'><small>" + getResources().getString(R.string.label_goal_date_is) + " " + DateFormat.getDateInstance(DateFormat.LONG).format(currentScaleUser.goal_date) + " </small></font>")); // currentScaleUser.goal_date
 
         if (scaleDataList.size() > 2) {
             ScaleData diffScaleData = scaleDataList.get(1);
@@ -354,9 +354,9 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             long days = 0 - daysBetween(lastDate, histDate);
 
             if (days == 0) {
-                axisValues.add(new AxisValue(i, new SimpleDateFormat("dd/MM/yy").format(lastScaleData.date_time).toCharArray()));
+                axisValues.add(new AxisValue(i, DateFormat.getDateInstance(DateFormat.SHORT).format(lastScaleData.date_time).toCharArray()));
             } else {
-                axisValues.add(new AxisValue(i, String.format("%d days", days).toCharArray()));
+                axisValues.add(new AxisValue(i, String.format("%d " + getResources().getString(R.string.label_days), days).toCharArray()));
             }
         }
 
@@ -431,7 +431,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         pieChartData.setHasLabels(false);
         pieChartData.setHasCenterCircle(true);
         pieChartData.setCenterText1(Float.toString(lastScaleData.weight) + " " + ScaleUser.UNIT_STRING[currentScaleUser.scale_unit]);
-        pieChartData.setCenterText2(new SimpleDateFormat("dd. MMM yyyy").format(lastScaleData.date_time));
+        pieChartData.setCenterText2(DateFormat.getDateInstance(DateFormat.MEDIUM).format(lastScaleData.date_time));
 
 
         if ((getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == Configuration.SCREENLAYOUT_SIZE_XLARGE ||
@@ -468,8 +468,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
                 return;
             }
 
-
-            String date_time = new SimpleDateFormat("dd. MMM yyyy (EE) HH:mm").format(lastScaleData.date_time);
+            String date_time = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.SHORT).format(lastScaleData.date_time);
 
             switch (i) {
                 case 0:
@@ -515,7 +514,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             ScaleData scaleData = scaleDataLastDays.get(pointIndex);
             lines selectedLine = activeLines.get(lineIndex);
 
-            String date_time = new SimpleDateFormat("dd. MMM yyyy (EE) HH:mm").format(scaleData.date_time);
+            String date_time = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.SHORT).format(scaleData.date_time);
 
             switch (selectedLine) {
                 case WEIGHT:

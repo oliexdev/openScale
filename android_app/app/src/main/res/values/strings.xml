@@ -5,7 +5,7 @@
     <string name="title_overview">Overview</string>
     <string name="title_graph">Chart</string>
     <string name="title_frag">Table</string>
-    <string name="title_user">User</string>
+    <string name="title_users">Users</string>
     <string name="title_new_data_entry">Data entry</string>
     <string name="title_edit_data_entry">Edit</string>
 
@@ -17,20 +17,20 @@
     <string name="label_yes">Yes</string>
     <string name="label_no">No</string>
     <string name="label_delete">Delete</string>
+    <string name="label_add_user">Add user</string>
 
     <string name="label_id">Id</string>
     <string name="label_weight">Weight</string>
     <string name="label_bmi">BMI</string>
-    <string name="label_fat">Fat</string>
-    <string name="label_water">Water</string>
-    <string name="label_muscle">Muscle</string>
+    <string name="label_fat">Body fat percentage</string>
+    <string name="label_water">Water percentage</string>
+    <string name="label_muscle">Muscle percentage</string>
     <string name="label_comment">Comment</string>
 
     <string name="label_days">days</string>
     <string name="label_measures">measures</string>
     <string name="label_last_week">Last 7 days</string>
     <string name="label_last_month">Last 30 days</string>
-    <string name="label_weight_goal">Weight goal</string>
     <string name="label_weight_difference">Weight difference</string>
     <string name="label_goal_date_is">Goal date is</string>
     <string name="label_days_left">Days left</string>
@@ -58,12 +58,12 @@
     <string name="label_export">Export</string>
     <string name="label_delete_all">Delete all</string>
 
-    <string name="error_weight_value_required">Weight value is required!</string>
-    <string name="error_fat_value_required">Fat value is required!</string>
-    <string name="error_water_value_required">Water value is required!</string>
-    <string name="error_muscle_value_required">Muscle value is required!</string>
-    <string name="error_value_range_0_300">Value must be in range from 0 to 300!</string>
-    <string name="error_value_range_0_100">Value must be in range from 0 to 100!</string>
+    <string name="error_weight_value_required">Weight is required!</string>
+    <string name="error_fat_value_required">Body fat percentage is required!</string>
+    <string name="error_water_value_required">Water percentage is required!</string>
+    <string name="error_muscle_value_required">Muscle percentage is required!</string>
+    <string name="error_value_range_0_300">The value must be in range from 0 to 300!</string>
+    <string name="error_value_range_0_100">The value must be in range from 0 to 100!</string>
     <string name="error_exporting">Error exporting</string>
     <string name="error_importing">Error importing</string>
     <string name="error_user_name_required">Error user name is required!</string>
@@ -78,10 +78,10 @@
     <string name="info_enter_value_unit">Enter value in</string>
     <string name="info_enter_comment">Enter an optional comment</string>
     <string name="info_enter_goal_weight">Enter your goal weight in your scale unit</string>
-    <string name="info_is_visible">Is visible</string>
-    <string name="info_is_not_visible">Is not visible</string>
-    <string name="info_bluetooth_enable">Searching for Bluetooth bathroom scale is enabled</string>
-    <string name="info_bluetooth_disable">Searching for Bluetooth bathroom scale is disabled</string>
+    <string name="info_is_visible">is visible</string>
+    <string name="info_is_not_visible">is not visible</string>
+    <string name="info_bluetooth_enable">is enabled</string>
+    <string name="info_bluetooth_disable">is disabled</string>
     <string name="info_delete_bluetooth_data">Clear all Bluetooth data</string>
     <string name="info_delete_bluetooth_data_success">Bluetooth data was successful cleared</string>
     <string name="info_bluetooth_not_established">Bluetooth connection not established</string>
@@ -93,18 +93,18 @@
     <string name="question_really_delete_user">Do you really want to delete the user? </string>
 
     <string name="label_bluetooth_title">Bluetooth</string>
-    <string name="label_bluetooth_enable">Search mode</string>
+    <string name="label_bluetooth_enable">Search for Bluetooth scale</string>
     <string name="label_device_name">Device Name</string>
 
     <string name="label_enable_labels">Label on data point</string>
     <string name="label_enable_weight">Weight line</string>
-    <string name="label_enable_fat">Fat line</string>
-    <string name="label_enable_water">Water line</string>
-    <string name="label_enable_muscle">Muscle line</string>
+    <string name="label_enable_fat">Body fat percentage line</string>
+    <string name="label_enable_water">Water percentage line</string>
+    <string name="label_enable_muscle">Muscle percentage line</string>
 
     <string name="info_your_weight">Your weight was</string>
     <string name="info_your_fat">Your body fat was</string>
-    <string name="info_your_water">Your body water was</string>
-    <string name="info_your_muscle">Your body muscle was</string>
+    <string name="info_your_water">Your water percentage was</string>
+    <string name="info_your_muscle">Your muscle percentage was</string>
     <string name="info_on_date">on</string>
 </resources>
