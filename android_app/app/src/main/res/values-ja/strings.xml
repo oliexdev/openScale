@@ -68,9 +68,9 @@
     <string name="info_bluetooth_not_established">Bluetooth接続を確立できなかった場合</string>
     <string name="info_data_all_deleted">すべてのレコードが削除されます</string>
     <string name="info_data_deleted">データベースが削除されます</string>
-    <string name="info_data_exported">データにエクスポート</string>
+    <string name="info_data_exported">レコードのエクスポート</string>
     <string name="info_delete_bluetooth_data">すべてのBluetoothデータを削除します</string>
-    <string name="info_data_imported">データにインポート</string>
+    <string name="info_data_imported">レコードのインポート</string>
     <string name="info_delete_bluetooth_data_success">Bluetoothのデータが正常に削除されました</string>
     <string name="info_on_date">でした -</string>
     <string name="info_no_selected_user">ユーザーは存在しません！設定で新しいユーザを入れてください</string>
