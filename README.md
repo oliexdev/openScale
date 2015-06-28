@@ -1,18 +1,18 @@
 openScale
 =========
 
-openScale is an Open Source app for Android to keep a log of your body weight, fat, water and muscle.
+openScale is an Open Source app to keep a log of your weight, body fat, water percentage and muscle percentage.
 
 [![Google Play](https://developer.android.com/images/brand/en_generic_rgb_wo_45.png)](https://play.google.com/store/apps/details?id=com.health.openscale)
 
 ##Features
 
-- Logs your body weight, fat, water and muscle
-- Display all your body data on a chart and table
-- Import or export your body data from/into a CSV file
+- Logs your weight, body fat, water percentage and muscle percentage
+- Display all your data on a chart and table
+- Import or export your data from/into a CSV file
 - Support for multiple users
 - Connection to a custom made bluetooth scale (see [openScale wiki](https://github.com/oliexdev/openScale/wiki) for more information)
-- All body data belongs to you (no cloud service)
+- All data belongs to you (no cloud service)
 
 ##Screens
 
