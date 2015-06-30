@@ -54,6 +54,7 @@ public class OpenScale {
         context = con;
 		scaleDB = new ScaleDatabase(context);
         scaleUserDB = new ScaleUserDatabase(context);
+        btCom = null;
 
         updateScaleData();
 	}
@@ -266,7 +267,7 @@ public class OpenScale {
 	}
 
     public boolean clearBtScaleData() {
-        if (btCom != null)
+        if (btCom == null)
             return false;
 
         return btCom.sendBtData("9");
@@ -303,6 +304,7 @@ public class OpenScale {
 			btCom.findBT(btDeviceName);
 			btCom.start();
 		} catch (IOException e) {
+            btCom = null;
 			Log.e("OpenScale", "Error " + e.getMessage());
 		}
 	}

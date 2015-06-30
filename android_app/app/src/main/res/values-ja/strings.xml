@@ -92,4 +92,5 @@
     <string name="info_enter_value_unit">あなたの値を入力してください</string>
     <string name="question_really_delete_all">あなたは本当にすべてのレコードを削除しますか</string>
     <string name="question_really_delete_user">あなたが本当にユーザーを削除しますか</string>
+    <string name="error_goal_weight_required">目標体重が必要です</string>
 </resources>

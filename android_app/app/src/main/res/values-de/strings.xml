@@ -92,4 +92,5 @@
     <string name="title_overview">Übersicht</string>
     <string name="title_users">Benutzer</string>
     <string name="label_add_user">Benutzer hinzufügen</string>
+    <string name="error_goal_weight_required">Fehler Zielgewicht ist erforderlich!</string>
 </resources>

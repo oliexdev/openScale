@@ -5,212 +5,223 @@
     android:orientation="vertical"
     android:padding="5dp" >
 
-        <TableLayout
+    <ScrollView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/scrollView4" >
+
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="5dp"
-            android:stretchColumns="*" >
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="5dp" >
 
-            <TableRow
-                android:id="@+id/tableRow1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" >
+        <TableLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:stretchColumns="*" >
 
-                <TextView
-                    android:id="@+id/textView1"
+                <TableRow
+                    android:id="@+id/tableRow1"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/label_user_name" />
+                    android:layout_height="wrap_content" >
 
-                <EditText
-                    android:id="@+id/txtUserName"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:ems="10"
-                    android:inputType="text"
-                    android:hint="@string/info_enter_user_name">
-
-                    <requestFocus />
-                </EditText>
-
-            </TableRow>
-
-            <TableRow
-                android:id="@+id/tableRow2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" >
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/label_body_height" />
-
-                <EditText
-                    android:id="@+id/txtBodyHeight"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:ems="10"
-                    android:hint="@string/info_enter_value_cm"
-                    android:inputType="numberDecimal|numberSigned" />
-
-            </TableRow>
-
-            <TableRow
-                android:id="@+id/tableRow3"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" >
-
-                <TextView
-                    android:id="@+id/textView3"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/label_gender" />
-
-                <RadioGroup
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_column="1"
-                    android:orientation="horizontal"
-                    android:id="@+id/groupGender">
-
-                    <RadioButton
+                    <TextView
+                        android:id="@+id/textView1"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/label_male"
-                        android:id="@+id/btnRadioMale"
-                        android:checked="true" />
+                        android:text="@string/label_user_name" />
 
-                    <RadioButton
+                    <EditText
+                        android:id="@+id/txtUserName"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/label_woman"
-                        android:id="@+id/btnRadioWoman" />
+                        android:ems="10"
+                        android:inputType="text"
+                        android:hint="@string/info_enter_user_name">
 
-                </RadioGroup>
+                        <requestFocus />
+                    </EditText>
 
-            </TableRow>
+                </TableRow>
 
-            <TableRow
-                android:id="@+id/tableRow4"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" >
-
-                <TextView
-                    android:id="@+id/textView4"
+                <TableRow
+                    android:id="@+id/tableRow2"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/label_scale_unit" />
+                    android:layout_height="wrap_content" >
 
-                <RadioGroup
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_column="1"
-                    android:orientation="horizontal"
-                    android:id="@+id/groupScaleUnit">
-
-                    <RadioButton
+                    <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="kg"
-                        android:id="@+id/btnRadioKG"
-                        android:checked="true" />
+                        android:text="@string/label_body_height" />
 
-                    <RadioButton
+                    <EditText
+                        android:id="@+id/txtBodyHeight"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="lb"
-                        android:id="@+id/btnRadioLB" />
+                        android:ems="10"
+                        android:hint="@string/info_enter_value_cm"
+                        android:inputType="numberDecimal|numberSigned" />
 
-                    <RadioButton
+                </TableRow>
+
+                <TableRow
+                    android:id="@+id/tableRow3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" >
+
+                    <TextView
+                        android:id="@+id/textView3"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="st"
-                        android:id="@+id/btnRadioST" />
-                </RadioGroup>
+                        android:text="@string/label_gender" />
 
-            </TableRow>
+                    <RadioGroup
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_column="1"
+                        android:orientation="horizontal"
+                        android:id="@+id/groupGender">
 
-            <TableRow
-                android:id="@+id/tableRow5"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" >
+                        <RadioButton
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/label_male"
+                            android:id="@+id/btnRadioMale"
+                            android:checked="true" />
 
-                <TextView
-                    android:id="@+id/textView5"
+                        <RadioButton
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/label_woman"
+                            android:id="@+id/btnRadioWoman" />
+
+                    </RadioGroup>
+
+                </TableRow>
+
+                <TableRow
+                    android:id="@+id/tableRow4"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/label_birthday" />
+                    android:layout_height="wrap_content" >
 
-                <EditText
-                    android:id="@+id/txtBirthday"
+                    <TextView
+                        android:id="@+id/textView4"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/label_scale_unit" />
+
+                    <RadioGroup
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_column="1"
+                        android:orientation="horizontal"
+                        android:id="@+id/groupScaleUnit">
+
+                        <RadioButton
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="kg"
+                            android:id="@+id/btnRadioKG"
+                            android:checked="true" />
+
+                        <RadioButton
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="lb"
+                            android:id="@+id/btnRadioLB" />
+
+                        <RadioButton
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="st"
+                            android:id="@+id/btnRadioST" />
+                    </RadioGroup>
+
+                </TableRow>
+
+                <TableRow
+                    android:id="@+id/tableRow5"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="5"
-                    android:ems="10"
-                    android:enabled="false"
-                    android:inputType="date" />
+                    android:layout_height="wrap_content" >
 
-                <Button
-                    android:id="@+id/btnDateSet"
+                    <TextView
+                        android:id="@+id/textView5"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/label_birthday" />
+
+                    <EditText
+                        android:id="@+id/txtBirthday"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="5"
+                        android:ems="10"
+                        android:enabled="false"
+                        android:inputType="date" />
+
+                    <Button
+                        android:id="@+id/btnDateSet"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/label_set"
+                        android:textSize="15sp" />
+
+                </TableRow>
+
+                <TableRow
+                    android:id="@+id/tableRow6"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/label_set"
-                    android:textSize="15sp" />
+                    android:layout_height="wrap_content" >
 
-            </TableRow>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/label_goal_weight" />
 
-            <TableRow
-                android:id="@+id/tableRow6"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" >
+                    <EditText
+                        android:id="@+id/txtGoalWeight"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:ems="10"
+                        android:hint="@string/info_enter_goal_weight"
+                        android:inputType="numberDecimal|numberSigned" />
+                </TableRow>
 
-                <TextView
+                <TableRow
+                    android:id="@+id/tableRow7"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/label_goal_weight" />
+                    android:layout_height="wrap_content" >
 
-                <EditText
-                    android:id="@+id/txtGoalWeight"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:ems="10"
-                    android:hint="@string/info_enter_goal_weight"
-                    android:inputType="numberDecimal|numberSigned" />
-            </TableRow>
+                    <TextView
+                        android:id="@+id/textView7"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/label_goal_date" />
 
-            <TableRow
-                android:id="@+id/tableRow7"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" >
+                    <EditText
+                        android:id="@+id/txtGoalDate"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="5"
+                        android:ems="10"
+                        android:enabled="false"
+                        android:inputType="date" />
 
-                <TextView
-                    android:id="@+id/textView7"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/label_goal_date" />
+                    <Button
+                        android:id="@+id/btnGoalDateSet"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/label_set"
+                        android:textSize="15sp" />
 
-                <EditText
-                    android:id="@+id/txtGoalDate"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="5"
-                    android:ems="10"
-                    android:enabled="false"
-                    android:inputType="date" />
+                </TableRow>
 
-                <Button
-                    android:id="@+id/btnGoalDateSet"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/label_set"
-                    android:textSize="15sp" />
-
-            </TableRow>
-
-        </TableLayout>
+            </TableLayout>
 
 
-    <LinearLayout
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content" >
             <Button
@@ -240,5 +251,11 @@
                 android:text="@string/label_ok" />
         </LinearLayout>
 
-    </LinearLayout>
+</LinearLayout>
+    </ScrollView>
+
+
+
+
+</LinearLayout>
 

@@ -157,6 +157,12 @@ public class UserSettingsActivity extends Activity {
             validate = false;
         }
 
+        if( txtGoalWeight.getText().toString().length() == 0 )
+        {
+            txtGoalWeight.setError(getResources().getString(R.string.error_goal_weight_required));
+            validate = false;
+        }
+
         return validate;
     }
 
