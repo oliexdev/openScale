@@ -166,11 +166,13 @@ public class ScaleUserDatabase extends SQLiteOpenHelper {
             scaleUser.body_height = cursorScaleDB.getInt(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_BODY_HEIGHT));
             scaleUser.scale_unit = cursorScaleDB.getInt(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_SCALE_UNIT));
             scaleUser.gender = cursorScaleDB.getInt(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_GENDER));
-            scaleUser.goal_weight = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_GOAL_WEIGHT));
+            double goal_weight = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_GOAL_WEIGHT));
             String goal_date = cursorScaleDB.getString(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_GOAL_DATE));
 
             scaleUser.birthday = formatDateTime.parse(birthday);
             scaleUser.goal_date = formatDateTime.parse(goal_date);
+
+            scaleUser.goal_weight = Math.round(goal_weight * 100.0) / 100.0;
 
             cursorScaleDB.moveToNext();
 
@@ -223,13 +225,15 @@ public class ScaleUserDatabase extends SQLiteOpenHelper {
 				scaleUser.body_height = cursorScaleDB.getInt(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_BODY_HEIGHT));
 				scaleUser.scale_unit = cursorScaleDB.getInt(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_SCALE_UNIT));
                 scaleUser.gender = cursorScaleDB.getInt(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_GENDER));
-                scaleUser.goal_weight = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_GOAL_WEIGHT));
+                double goal_weight = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_GOAL_WEIGHT));
                 String goal_date = cursorScaleDB.getString(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_GOAL_DATE));
 
                 scaleUser.birthday = formatDateTime.parse(birthday);
                 scaleUser.goal_date = formatDateTime.parse(goal_date);
 
-				scaleUserDBEntries.add(scaleUser);
+                scaleUser.goal_weight = Math.round(goal_weight * 100.0) / 100.0;
+
+                scaleUserDBEntries.add(scaleUser);
 				
 				cursorScaleDB.moveToNext();
 			}

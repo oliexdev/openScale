@@ -62,7 +62,7 @@
                         android:layout_height="wrap_content"
                         android:ems="10"
                         android:hint="@string/info_enter_value_cm"
-                        android:inputType="numberDecimal|numberSigned" />
+                        android:inputType="numberSigned" />
 
                 </TableRow>
 

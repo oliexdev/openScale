@@ -49,7 +49,7 @@
                         android:layout_height="wrap_content"
                         android:ems="10"
                         android:hint="@string/info_enter_value_unit"
-                        android:inputType="numberDecimal"
+                        android:inputType="numberDecimal|numberSigned"
                         android:layout_column="2">
 
                         <requestFocus />
@@ -84,7 +84,7 @@
                         android:layout_height="wrap_content"
                         android:ems="10"
                         android:hint="@string/info_enter_value_percent"
-                        android:inputType="numberDecimal"
+                        android:inputType="numberDecimal|numberSigned"
                         android:layout_column="2" />
 
                 </TableRow>
@@ -116,7 +116,7 @@
                         android:layout_height="wrap_content"
                         android:ems="10"
                         android:hint="@string/info_enter_value_percent"
-                        android:inputType="numberDecimal"
+                        android:inputType="numberDecimal|numberSigned"
                         android:layout_column="2" />
 
                 </TableRow>
@@ -148,7 +148,7 @@
                         android:layout_height="wrap_content"
                         android:ems="10"
                         android:hint="@string/info_enter_value_percent"
-                        android:inputType="numberDecimal"
+                        android:inputType="numberDecimal|numberSigned"
                         android:layout_column="2" />
 
                 </TableRow>
