@@ -27,6 +27,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.TableRow;
 import android.widget.TimePicker;
 
 import com.health.openscale.R;
@@ -105,10 +106,31 @@ public class NewEntryActivity extends Activity {
             txtFat.setText(Float.toString(lastScaleData.fat));
             txtWater.setText(Float.toString(lastScaleData.water));
             txtMuscle.setText(Float.toString(lastScaleData.muscle));
+        } else {
+            txtFat.setText(Float.toString(0.0f));
+            txtWater.setText(Float.toString(0.0f));
+            txtMuscle.setText(Float.toString(0.0f));
         }
 
 		txtDate.setText(dateFormat.format(new Date()));
 		txtTime.setText(timeFormat.format(new Date()));
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+
+        if(!prefs.getBoolean("fatEnable", true)) {
+            TableRow row = (TableRow)findViewById(R.id.tableRowFat);
+            row.setVisibility(View.GONE);
+        }
+
+        if(!prefs.getBoolean("muscleEnable", true)) {
+            TableRow row = (TableRow)findViewById(R.id.tableRowMuscle);
+            row.setVisibility(View.GONE);
+        }
+
+        if(!prefs.getBoolean("waterEnable", true)) {
+            TableRow row = (TableRow)findViewById(R.id.tableRowWater);
+            row.setVisibility(View.GONE);
+        }
 	}
 
 	private boolean validateInput()

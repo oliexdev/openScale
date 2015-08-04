@@ -81,7 +81,8 @@
                     android:layout_width="fill_parent"
                     android:layout_height="fill_parent"
                     android:orientation="horizontal"
-                    android:layout_marginBottom="10dp" >
+                    android:layout_marginBottom="10dp"
+                    android:id="@+id/tableRowWeight">
 
                     <ImageView
                         android:layout_width="wrap_content"
@@ -120,7 +121,8 @@
                     android:layout_width="fill_parent"
                     android:layout_height="fill_parent"
                     android:orientation="horizontal"
-                    android:layout_marginBottom="10dp">
+                    android:layout_marginBottom="10dp"
+                    android:id="@+id/tableRowBMI">
 
                     <ImageView
                         android:layout_width="wrap_content"
@@ -159,7 +161,7 @@
                     android:layout_width="fill_parent"
                     android:layout_height="fill_parent"
                     android:orientation="horizontal"
-                    android:id="@+id/tableRow"
+                    android:id="@+id/tableRowFat"
                     android:layout_marginBottom="10dp">
 
                     <ImageView
@@ -198,7 +200,7 @@
                     android:layout_width="fill_parent"
                     android:layout_height="fill_parent"
                     android:orientation="horizontal"
-                    android:id="@+id/tableRow7"
+                    android:id="@+id/tableRowMuscle"
                     android:layout_marginBottom="10dp">
 
                     <ImageView
@@ -238,7 +240,7 @@
                     android:layout_width="fill_parent"
                     android:layout_height="fill_parent"
                     android:orientation="horizontal"
-                    android:id="@+id/tableRow8"
+                    android:id="@+id/tableRowWater"
                     android:layout_marginBottom="10dp">
 
                     <ImageView

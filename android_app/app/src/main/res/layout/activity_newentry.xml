@@ -23,7 +23,7 @@
                 android:stretchColumns="2" >
 
                 <TableRow
-                    android:id="@+id/tableRow1"
+                    android:id="@+id/tableRowWeight"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" >
 
@@ -58,7 +58,7 @@
                 </TableRow>
 
                 <TableRow
-                    android:id="@+id/tableRow2"
+                    android:id="@+id/tableRowFat"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" >
 
@@ -90,7 +90,7 @@
                 </TableRow>
 
                 <TableRow
-                    android:id="@+id/tableRow3"
+                    android:id="@+id/tableRowWater"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" >
 
@@ -122,7 +122,7 @@
                 </TableRow>
 
                 <TableRow
-                    android:id="@+id/tableRow4"
+                    android:id="@+id/tableRowMuscle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" >
 
@@ -154,7 +154,7 @@
                 </TableRow>
 
                 <TableRow
-                    android:id="@+id/tableRow13"
+                    android:id="@+id/tableRowComment"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" >
 
@@ -185,7 +185,7 @@
                 </TableRow>
 
                 <TableRow
-                    android:id="@+id/tableRow5"
+                    android:id="@+id/tableRowDate"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" >
 
@@ -226,7 +226,7 @@
                 </TableRow>
 
                 <TableRow
-                    android:id="@+id/tableRow6"
+                    android:id="@+id/tableRowTime"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" >
 

@@ -8,6 +8,7 @@
     <string name="title_users">Users</string>
     <string name="title_new_data_entry">Data entry</string>
     <string name="title_edit_data_entry">Edit</string>
+    <string name="title_data">Data</string>
 
     <string name="action_settings">Settings</string>
 
@@ -81,8 +82,8 @@
     <string name="info_enter_goal_weight">Enter your goal weight in your scale unit</string>
     <string name="info_is_visible">is visible</string>
     <string name="info_is_not_visible">is not visible</string>
-    <string name="info_bluetooth_enable">is enabled</string>
-    <string name="info_bluetooth_disable">is disabled</string>
+    <string name="info_is_enable">is enabled</string>
+    <string name="info_is_not_enable">is disabled</string>
     <string name="info_delete_bluetooth_data">Clear all Bluetooth data</string>
     <string name="info_delete_bluetooth_data_success">Bluetooth data was successful cleared</string>
     <string name="info_bluetooth_not_established">Bluetooth connection not established</string>
@@ -98,10 +99,10 @@
     <string name="label_device_name">Device Name</string>
 
     <string name="label_enable_labels">Label on data point</string>
-    <string name="label_enable_weight">Weight line</string>
-    <string name="label_enable_fat">Body fat percentage line</string>
-    <string name="label_enable_water">Water percentage line</string>
-    <string name="label_enable_muscle">Muscle percentage line</string>
+    <string name="label_enable_weight">Weight </string>
+    <string name="label_enable_fat">Body fat percentage </string>
+    <string name="label_enable_water">Water percentage </string>
+    <string name="label_enable_muscle">Muscle percentage </string>
 
     <string name="info_your_weight">Your weight was</string>
     <string name="info_your_fat">Your body fat was</string>

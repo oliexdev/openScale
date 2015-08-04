@@ -17,10 +17,13 @@ package com.health.openscale.gui;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TableRow;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
@@ -75,6 +78,23 @@ public class EditDataActivity extends Activity {
         txtComment.setText(editScaleData.comment);
 
         setTitle(getResources().getString(R.string.title_edit_data_entry) + ": " + DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.SHORT).format(editScaleData.date_time));
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+
+        if(!prefs.getBoolean("fatEnable", true)) {
+            TableRow row = (TableRow)findViewById(R.id.tableRowFat);
+            row.setVisibility(View.GONE);
+        }
+
+        if(!prefs.getBoolean("muscleEnable", true)) {
+            TableRow row = (TableRow)findViewById(R.id.tableRowMuscle);
+            row.setVisibility(View.GONE);
+        }
+
+        if(!prefs.getBoolean("waterEnable", true)) {
+            TableRow row = (TableRow)findViewById(R.id.tableRowWater);
+            row.setVisibility(View.GONE);
+        }
 
     }
 

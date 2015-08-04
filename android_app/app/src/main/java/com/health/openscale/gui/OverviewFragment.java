@@ -28,6 +28,7 @@ import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -157,7 +158,22 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
 		updateOnView(OpenScale.getInstance(overviewView.getContext()).getScaleDataList());
 
-		return overviewView;
+        if(!prefs.getBoolean("fatEnable", true)) {
+            TableRow row = (TableRow)overviewView.findViewById(R.id.tableRowFat);
+            row.setVisibility(View.GONE);
+        }
+
+        if(!prefs.getBoolean("muscleEnable", true)) {
+            TableRow row = (TableRow)overviewView.findViewById(R.id.tableRowMuscle);
+            row.setVisibility(View.GONE);
+        }
+
+        if(!prefs.getBoolean("waterEnable", true)) {
+            TableRow row = (TableRow)overviewView.findViewById(R.id.tableRowWater);
+            row.setVisibility(View.GONE);
+        }
+
+            return overviewView;
 	}
 	
 	@Override
@@ -423,9 +439,26 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
         List<SliceValue> arcValuesLast = new ArrayList<SliceValue>();
 
-        arcValuesLast.add(new SliceValue(lastScaleData.fat, ChartUtils.COLOR_ORANGE));
-        arcValuesLast.add(new SliceValue(lastScaleData.water, ChartUtils.COLOR_BLUE));
-        arcValuesLast.add(new SliceValue(lastScaleData.muscle, ChartUtils.COLOR_GREEN));
+        if (lastScaleData.fat == 0) {
+            arcValuesLast.add(new SliceValue(1, ChartUtils.COLOR_ORANGE));
+        }
+        else {
+            arcValuesLast.add(new SliceValue(lastScaleData.fat, ChartUtils.COLOR_ORANGE));
+        }
+
+        if (lastScaleData.water == 0) {
+            arcValuesLast.add(new SliceValue(1, ChartUtils.COLOR_BLUE));
+        }
+        else {
+            arcValuesLast.add(new SliceValue(lastScaleData.water, ChartUtils.COLOR_BLUE));
+        }
+
+        if (lastScaleData.muscle == 0) {
+            arcValuesLast.add(new SliceValue(1, ChartUtils.COLOR_GREEN));
+        }
+        else {
+            arcValuesLast.add(new SliceValue(lastScaleData.muscle, ChartUtils.COLOR_GREEN));
+        }
 
         PieChartData pieChartData = new PieChartData(arcValuesLast);
         pieChartData.setHasLabels(false);

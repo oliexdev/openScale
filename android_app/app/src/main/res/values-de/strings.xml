@@ -12,8 +12,6 @@
     <string name="error_value_range_0_300">Der Wert muss zwischen 0 und 300 liegen!</string>
     <string name="error_water_value_required">Wassergehalt ist erforderlich!</string>
     <string name="error_weight_value_required">Gewicht ist erforderlich!</string>
-    <string name="info_bluetooth_disable">ist ausgeschaltet</string>
-    <string name="info_bluetooth_enable">ist eingeschaltet</string>
     <string name="info_bluetooth_not_established">Bluetooth Verbindung konnte nicht hergestellt werden</string>
     <string name="info_data_all_deleted">Alle Datenbank Einträge wurden gelöscht!</string>
     <string name="info_data_deleted">Datenbank wurde gelöscht!</string>
@@ -50,11 +48,11 @@
     <string name="label_delete">Löschen</string>
     <string name="label_delete_all">Alles löschen</string>
     <string name="label_device_name">Gerätename</string>
-    <string name="label_enable_fat">Körperfettanteillinie</string>
+    <string name="label_enable_fat">Körperfettanteil</string>
     <string name="label_enable_labels">Notiz auf den Datenpunkten</string>
-    <string name="label_enable_muscle">Muskelanteillinie</string>
-    <string name="label_enable_water">Wassergehaltslinie</string>
-    <string name="label_enable_weight">Gewichtslinie</string>
+    <string name="label_enable_muscle">Muskelanteil</string>
+    <string name="label_enable_water">Wassergehalt</string>
+    <string name="label_enable_weight">Gewicht</string>
     <string name="label_export">Exportieren</string>
     <string name="label_fat">Körperfettanteil</string>
     <string name="label_gender">Geschlecht</string>
@@ -93,4 +91,7 @@
     <string name="title_users">Benutzer</string>
     <string name="label_add_user">Benutzer hinzufügen</string>
     <string name="error_goal_weight_required">Fehler Zielgewicht ist erforderlich!</string>
+    <string name="title_data">Daten</string>
+    <string name="info_is_not_enable">ist ausgeschaltet</string>
+    <string name="info_is_enable">ist eingeschaltet</string>
 </resources>

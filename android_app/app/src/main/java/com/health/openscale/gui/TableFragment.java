@@ -52,7 +52,8 @@ import java.util.ArrayList;
 public class TableFragment extends Fragment implements FragmentUpdateListener {
 	private View tableView;
 	private TableLayout tableDataView;
-	
+    private SharedPreferences prefs;
+
 	public TableFragment() {
 		
 	}
@@ -91,16 +92,47 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
             btnDeleteAll.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
         }
 
+        prefs = PreferenceManager.getDefaultSharedPreferences(tableView.getContext());
+
+        if(!prefs.getBoolean("fatEnable", true)) {
+            TextView txtFatTableHeader = (TextView)tableView.findViewById(R.id.txtFatTableHeader);
+            txtFatTableHeader.setVisibility(View.GONE);
+        }
+
+        if(!prefs.getBoolean("muscleEnable", true)) {
+            TextView txtMuscleTableHeader = (TextView)tableView.findViewById(R.id.txtMuscleTableHeader);
+            txtMuscleTableHeader.setVisibility(View.GONE);
+        }
+
+        if(!prefs.getBoolean("waterEnable", true)) {
+            TextView txtWaterTableHeader = (TextView)tableView.findViewById(R.id.txtWaterTableHeader);
+            txtWaterTableHeader.setVisibility(View.GONE);
+        }
+
 		return tableView;
 	}
 	
 	@Override
 	public void updateOnView(ArrayList<ScaleData> scaleDataList)
 	{
+        tableDataView.setColumnStretchable(1, true);
+        tableDataView.setColumnStretchable(2, true);
+        tableDataView.setColumnStretchable(3, true);
+        if(prefs.getBoolean("fatEnable", true)) {
+            tableDataView.setColumnStretchable(4, true);
+        }
+        if(prefs.getBoolean("waterEnable", true)) {
+            tableDataView.setColumnStretchable(5, true);
+        }
+        if(prefs.getBoolean("muscleEnable", true)) {
+            tableDataView.setColumnStretchable(6, true);
+        }
+        tableDataView.setColumnStretchable(7, true);
+
 		TableRow headerRow = (TableRow) tableView.findViewById(R.id.tableHeader);
 		tableDataView.removeAllViews();
 		tableDataView.addView(headerRow);
-		
+
 		for(ScaleData scaleData: scaleDataList)
 		{
 			TableRow dataRow = new TableRow(tableView.getContext());
@@ -134,17 +166,26 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 			TextView fatView = new TextView(tableView.getContext());
 			fatView.setText(Float.toString(scaleData.fat));
 			fatView.setPadding(0, 5, 5, 5);
+            if(!prefs.getBoolean("fatEnable", true)) {
+                fatView.setVisibility(View.GONE);
+            }
 			dataRow.addView(fatView);
 			
 			TextView waterView = new TextView(tableView.getContext());
 			waterView.setText(Float.toString(scaleData.water));
 			waterView.setPadding(0, 5, 5, 5);
-			dataRow.addView(waterView);
+            if(!prefs.getBoolean("waterEnable", true)) {
+                waterView.setVisibility(View.GONE);
+            }
+            dataRow.addView(waterView);
 			
 			TextView muscleView = new TextView(tableView.getContext());
 			muscleView.setText(Float.toString(scaleData.muscle));
 			muscleView.setPadding(0, 5, 5, 5);
-			dataRow.addView(muscleView);
+            if(!prefs.getBoolean("muscleEnable", true)) {
+                muscleView.setVisibility(View.GONE);
+            }
+            dataRow.addView(muscleView);
 
 
             TextView commentView = new TextView(tableView.getContext());

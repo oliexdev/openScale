@@ -5,17 +5,20 @@
 </PreferenceCategory>
 
 <PreferenceCategory android:title="@string/label_bluetooth_title">
-    <CheckBoxPreference android:title="@string/label_bluetooth_enable" android:summaryOn="@string/info_bluetooth_enable" android:summaryOff="@string/info_bluetooth_disable" android:key="btEnable" android:defaultValue="false"/>
+    <CheckBoxPreference android:title="@string/label_bluetooth_enable" android:summaryOn="@string/info_is_enable" android:summaryOff="@string/info_is_not_enable" android:key="btEnable" android:defaultValue="false"/>
     <EditTextPreference android:title="@string/label_device_name" android:key="btDeviceName" android:defaultValue="openScale" />
     <Preference android:title = "@string/info_delete_bluetooth_data" android:key="btClearData" />
 </PreferenceCategory>
 
 <PreferenceCategory android:title="@string/title_graph">
     <CheckBoxPreference android:title="@string/label_enable_labels" android:summaryOn="@string/info_is_visible" android:summaryOff="@string/info_is_not_visible" android:key="labelsEnable" android:defaultValue="true"/>
-    <CheckBoxPreference android:title="@string/label_enable_weight" android:summaryOn="@string/info_is_visible" android:summaryOff="@string/info_is_not_visible" android:key="weightEnable" android:defaultValue="true"/>
-    <CheckBoxPreference android:title="@string/label_enable_fat" android:summaryOn="@string/info_is_visible" android:summaryOff="@string/info_is_not_visible"  android:key="fatEnable" android:defaultValue="true"/>
-    <CheckBoxPreference android:title="@string/label_enable_water" android:summaryOn="@string/info_is_visible" android:summaryOff="@string/info_is_not_visible"  android:key="waterEnable" android:defaultValue="true"/>
-    <CheckBoxPreference android:title="@string/label_enable_muscle" android:summaryOn="@string/info_is_visible" android:summaryOff="@string/info_is_not_visible"  android:key="muscleEnable" android:defaultValue="true"/>
+</PreferenceCategory>
+
+<PreferenceCategory android:title="@string/title_data">
+    <CheckBoxPreference android:title="@string/label_enable_weight" android:summaryOn="@string/info_is_enable" android:summaryOff="@string/info_is_not_enable"  android:key="weightEnable" android:defaultValue="true"/>
+    <CheckBoxPreference android:title="@string/label_enable_fat" android:summaryOn="@string/info_is_enable" android:summaryOff="@string/info_is_not_enable" android:key="fatEnable" android:defaultValue="true"/>
+    <CheckBoxPreference android:title="@string/label_enable_water" android:summaryOn="@string/info_is_enable" android:summaryOff="@string/info_is_not_enable"   android:key="waterEnable" android:defaultValue="true"/>
+    <CheckBoxPreference android:title="@string/label_enable_muscle" android:summaryOn="@string/info_is_enable" android:summaryOff="@string/info_is_not_enable"  android:key="muscleEnable" android:defaultValue="true"/>
 </PreferenceCategory>
 
 </PreferenceScreen>
