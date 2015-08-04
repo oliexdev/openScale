@@ -40,7 +40,6 @@ import java.util.List;
 import java.util.Locale;
 
 import lecho.lib.hellocharts.formatter.SimpleLineChartValueFormatter;
-import lecho.lib.hellocharts.gesture.ZoomType;
 import lecho.lib.hellocharts.listener.ColumnChartOnValueSelectListener;
 import lecho.lib.hellocharts.listener.LineChartOnValueSelectListener;
 import lecho.lib.hellocharts.model.Axis;
@@ -121,7 +120,6 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     private void generateLineData(Calendar calMonth)
     {
         scaleDataList = openScale.getScaleDataOfMonth(calYears.get(Calendar.YEAR), calMonth.get(Calendar.MONTH));
-        float maxValue = openScale.getMaxValueOfScaleData(calYears.get(Calendar.YEAR), calMonth.get(Calendar.MONTH));
 
         SimpleDateFormat day_date = new SimpleDateFormat("dd", Locale.getDefault());
 
@@ -208,19 +206,11 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
 
         chartTop.setLineChartData(lineData);
-        chartTop.setViewportCalculationEnabled(false);
 
-        if (maxValue == 0.0) {
-            maxValue = 100;
-        } else {
-            maxValue += 20;
-        }
+        Viewport v = new Viewport(0, chartTop.getCurrentViewport().top+4, maxDays-1, chartTop.getCurrentViewport().bottom-4);
 
-        Viewport v = new Viewport(0, (int)maxValue, maxDays-1, 0);
         chartTop.setMaximumViewport(v);
         chartTop.setCurrentViewport(v);
-
-        chartTop.setZoomType(ZoomType.HORIZONTAL);
     }
 
     private void generateColumnData()
