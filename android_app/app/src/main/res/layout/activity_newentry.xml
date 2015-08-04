@@ -211,17 +211,8 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="5"
                         android:ems="10"
-                        android:enabled="false"
-                        android:inputType="date"
+                        android:inputType="none"
                         android:layout_column="2" />
-
-                    <Button
-                        android:id="@+id/btnDateSet"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/label_set"
-                        android:textSize="15sp"
-                        android:layout_column="3" />
 
                 </TableRow>
 
@@ -252,17 +243,8 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="5"
                         android:ems="10"
-                        android:enabled="false"
-                        android:inputType="time"
-                        android:layout_column="2" />
-
-                    <Button
-                        android:id="@+id/btnTimeSet"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/label_set"
-                        android:textSize="15sp"
-                        android:layout_column="3" />
+                        android:layout_column="2"
+                        android:inputType="none" />
 
                 </TableRow>
 
