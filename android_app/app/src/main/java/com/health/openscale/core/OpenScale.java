@@ -33,7 +33,6 @@ import java.io.OutputStreamWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 
 public class OpenScale {
 
@@ -106,12 +105,6 @@ public class OpenScale {
 
         if (selectedUserId == -1) {
             ScaleUser scaleUser = new ScaleUser();
-
-            scaleUser.id = -1;
-            scaleUser.user_name = "anonymous";
-            scaleUser.birthday = new Date();
-            scaleUser.scale_unit = 1;
-            scaleUser.body_height = 1;
 
             return scaleUser;
         }
@@ -209,7 +202,7 @@ public class OpenScale {
 
 		try {
 			while (line != null) {
-				String csvField[] = line.split(",");
+				String csvField[] = line.split(",", -1);
 
 				ScaleData newScaleData = new ScaleData();
 
@@ -251,7 +244,10 @@ public class OpenScale {
 			csvWriter.append(Float.toString(scaleData.fat) + ",");
 			csvWriter.append(Float.toString(scaleData.water) + ",");
 			csvWriter.append(Float.toString(scaleData.muscle) + ",");
-            csvWriter.append(scaleData.comment);
+            if (!scaleData.comment.isEmpty()) {
+                csvWriter.append(scaleData.comment);
+            }
+
 			csvWriter.append("\n");
 		}
 

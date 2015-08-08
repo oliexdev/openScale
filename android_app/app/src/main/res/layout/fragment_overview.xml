@@ -22,13 +22,27 @@
             android:layout_width="fill_parent"
             android:layout_height="fill_parent">
 
-            <TextView
+            <LinearLayout
+                android:orientation="horizontal"
                 android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:text="USER"
-                android:id="@+id/txtTitleUser"
-                android:layout_weight="0"
-                android:textSize="20dp" />
+                android:layout_height="fill_parent">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="USER"
+                    android:id="@+id/txtTitleUser"
+                    android:layout_weight="0"
+                    android:textSize="20dp"/>
+
+                <Spinner
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/spinUser"
+                    android:textSize="20dp" />
+
+
+            </LinearLayout>
 
             <View
                 android:layout_width="fill_parent"

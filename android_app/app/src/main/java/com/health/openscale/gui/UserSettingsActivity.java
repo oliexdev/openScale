@@ -77,8 +77,6 @@ public class UserSettingsActivity extends Activity {
         txtBirthday = (EditText) findViewById(R.id.txtBirthday);
         txtGoalDate = (EditText) findViewById(R.id.txtGoalDate);
 
-        btnBirthdaySet = (Button) findViewById(R.id.btnDateSet);
-        btnGoalDateSet = (Button) findViewById(R.id.btnGoalDateSet);
         btnDelete = (Button) findViewById(R.id.btnDelete);
         btnOk = (Button)findViewById(R.id.btnOk);
         btnCancel = (Button)findViewById(R.id.btnCancel);
@@ -86,12 +84,33 @@ public class UserSettingsActivity extends Activity {
         btnOk.setOnClickListener(new onClickListenerOk());
         btnCancel.setOnClickListener(new onClickListenerCancel());
         btnDelete.setOnClickListener(new onClickListenerDelete());
-		btnBirthdaySet.setOnClickListener(new onClickListenerBirthdaySet());
-        btnGoalDateSet.setOnClickListener(new onClickListenerGoalDateSet());
+
 
         txtBirthday.setText(dateFormat.format(new Date()));
-
         txtGoalDate.setText(dateFormat.format(new Date()));
+
+        txtBirthday.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+             @Override
+             public void onFocusChange(View v, boolean hasFocus) {
+                 if (hasFocus) {
+                     Calendar cal = Calendar.getInstance();
+                     DatePickerDialog datePicker = new DatePickerDialog(context, goalDatePickerListener, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
+                     datePicker.show();
+                 }
+             }
+        });
+
+        txtGoalDate.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus) {
+                    Calendar cal = Calendar.getInstance();
+                    DatePickerDialog datePicker = new DatePickerDialog(context, goalDatePickerListener, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
+                    datePicker.show();
+                }
+            }
+        });
+
 
         if (getIntent().getExtras().getInt("mode") == EDIT_USER_REQUEST)
         {
@@ -285,25 +304,6 @@ public class UserSettingsActivity extends Activity {
 
                 finish();
             }
-        }
-    }
-
-    private class onClickListenerBirthdaySet implements View.OnClickListener {
-        @Override
-        public void onClick(View v) {
-            Calendar cal = Calendar.getInstance();
-            DatePickerDialog datePicker = new DatePickerDialog(context, datePickerListener, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
-            datePicker.show();
-        }
-    }
-
-
-    private class onClickListenerGoalDateSet implements View.OnClickListener {
-        @Override
-        public void onClick(View v) {
-            Calendar cal = Calendar.getInstance();
-            DatePickerDialog datePicker = new DatePickerDialog(context, goalDatePickerListener, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
-            datePicker.show();
         }
     }
 

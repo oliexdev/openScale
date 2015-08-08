@@ -39,7 +39,6 @@
     <string name="label_title_goal">目標</string>
     <string name="label_goal_date">目標期日</string>
     <string name="label_scale_unit">単位</string>
-    <string name="label_set">Set</string>
     <string name="label_measures">計測</string>
     <string name="label_title_last_measurement">最終の計測</string>
     <string name="label_goal_date_is">目標期日は</string>

@@ -27,7 +27,19 @@ public class ScaleData {
 	public float water;
 	public float muscle;
     public String comment;
-	
+
+    public ScaleData()
+    {
+        id = -1;
+        user_id = -1;
+        date_time = new Date();
+        weight = -1.0f;
+        fat = -1.0f;
+        water = -1.0f;
+        muscle = 1.0f;
+        comment = new String();
+    }
+
 	@Override
 	public String toString()
 	{

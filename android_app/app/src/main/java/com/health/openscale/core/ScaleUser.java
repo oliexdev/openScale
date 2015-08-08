@@ -30,6 +30,17 @@ public class ScaleUser {
     public double goal_weight;
     public Date goal_date;
 
+    public ScaleUser() {
+        id = -1;
+        user_name = new String();
+        birthday = new Date();
+        body_height = -1;
+        scale_unit = -1;
+        gender = -1;
+        goal_weight = -1;
+        goal_date = new Date();
+    }
+
     public boolean isMale()
     {
         if (gender == 0)

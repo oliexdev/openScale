@@ -16,6 +16,7 @@
 package com.health.openscale.gui;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
@@ -28,6 +29,9 @@ import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -94,6 +98,8 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 	private PieChartView pieChartLast;
     private LineChartView lineChartLast;
 
+    private Spinner spinUser;
+
     private enum lines {WEIGHT, FAT, WATER, MUSCLE}
     private ArrayList<lines> activeLines;
 
@@ -104,10 +110,14 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
     private List<ScaleData> scaleDataLastDays;
 
+    private Context context;
+
     @Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) 
 	{
 		overviewView = inflater.inflate(R.layout.fragment_overview, container, false);
+
+        context = overviewView.getContext();
 
         txtTitleUser = (TextView) overviewView.findViewById(R.id.txtTitleUser);
         txtTitleLastMeasurement = (TextView) overviewView.findViewById(R.id.txtTitleLastMeasurment);
@@ -143,6 +153,8 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         pieChartLast = (PieChartView) overviewView.findViewById(R.id.pieChartLast);
         lineChartLast = (LineChartView) overviewView.findViewById(R.id.lineChartLast);
 
+        spinUser = (Spinner) overviewView.findViewById(R.id.spinUser);
+
         lineChartLast.setOnValueTouchListener(new LineChartTouchListener());
 
         pieChartLast.setOnValueTouchListener(new PieChartLastTouchListener());
@@ -155,6 +167,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         });
 
         prefs = PreferenceManager.getDefaultSharedPreferences(overviewView.getContext());
+        currentScaleUser = OpenScale.getInstance(overviewView.getContext()).getSelectedScaleUser();
 
 		updateOnView(OpenScale.getInstance(overviewView.getContext()).getScaleDataList());
 
@@ -173,14 +186,36 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             row.setVisibility(View.GONE);
         }
 
-            return overviewView;
+        spinUser.setOnItemSelectedListener(new spinUserSelectionListener());
+
+        ArrayList<String> userItems = new ArrayList<>();
+
+        ArrayList<ScaleUser> scaleUserList = OpenScale.getInstance(overviewView.getContext()).getScaleUserList();
+
+        int posUser = 0;
+        int pos = 0;
+
+        for (ScaleUser scaleUser : scaleUserList) {
+            userItems.add(scaleUser.user_name);
+
+            if (scaleUser.id == currentScaleUser.id) {
+                posUser = pos;
+            }
+
+            pos++;
+        }
+
+        ArrayAdapter<String> spinAdapter = new ArrayAdapter<>(overviewView.getContext(), R.layout.support_simple_spinner_dropdown_item, userItems);
+
+        spinUser.setAdapter(spinAdapter);
+        spinUser.setSelection(posUser);
+
+        return overviewView;
 	}
 	
 	@Override
 	public void updateOnView(ArrayList<ScaleData> scaleDataList)
 	{
-        currentScaleUser = OpenScale.getInstance(overviewView.getContext()).getSelectedScaleUser();
-
         if (scaleDataList.isEmpty()) {
             lastScaleData = null;
             return;
@@ -188,7 +223,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
         lastScaleData = scaleDataList.get(0);
 
-        txtTitleUser.setText(getResources().getString(R.string.label_title_user).toUpperCase() + " " + currentScaleUser.user_name);
+        txtTitleUser.setText(getResources().getString(R.string.label_title_user).toUpperCase());
         txtTitleLastMeasurement.setText(getResources().getString(R.string.label_title_last_measurement).toUpperCase());
         txtTitleGoal.setText(getResources().getString(R.string.label_title_goal).toUpperCase());
         txtTitleStatistics.setText(getResources().getString(R.string.label_title_statistics).toUpperCase());
@@ -225,7 +260,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         txtLabelGoalDiff.setText(Html.fromHtml(getResources().getString(R.string.label_weight_difference) + " <br> <font color='grey'><small>BMI " + String.format("%.1f", currentScaleUser.getBMI(lastScaleData.weight) - currentScaleUser.getBMI(currentScaleUser.goal_weight))  + " </small></font>"));
         txtLabelDayLeft.setText(Html.fromHtml(getResources().getString(R.string.label_days_left) + " <br> <font color='grey'><small>" + getResources().getString(R.string.label_goal_date_is) + " " + DateFormat.getDateInstance(DateFormat.LONG).format(currentScaleUser.goal_date) + " </small></font>")); // currentScaleUser.goal_date
 
-        if (scaleDataList.size() > 2) {
+        if (scaleDataList.size() >= 2) {
             ScaleData diffScaleData = scaleDataList.get(1);
 
             double diffWeight = lastScaleData.weight - diffScaleData.weight;
@@ -567,6 +602,28 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
         @Override
         public void onValueDeselected() {
+
+        }
+    }
+
+    private class spinUserSelectionListener implements AdapterView.OnItemSelectedListener {
+
+        @Override
+        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+             if (parent.getChildCount() > 0) {
+                 ((TextView) parent.getChildAt(0)).setTextColor(Color.GRAY);
+
+                 ArrayList<ScaleUser> scaleUserList = OpenScale.getInstance(overviewView.getContext()).getScaleUserList();
+
+                 ScaleUser scaleUser = scaleUserList.get(position);
+
+                 SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+                 prefs.edit().putInt("selectedUserId", scaleUser.id).commit();
+             }
+        }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> parent) {
 
         }
     }
