@@ -231,7 +231,8 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
             TextView idTextView = (TextView) dataRow.getChildAt(0);
             long id = Long.parseLong(idTextView.getText().toString());
 
-            Intent intent = new Intent(tableView.getContext(), EditDataActivity.class);
+            Intent intent = new Intent(tableView.getContext(), DataEntryActivity.class);
+            intent.putExtra("mode", DataEntryActivity.EDIT_DATA_REQUEST);
             intent.putExtra("id", id);
             startActivityForResult(intent, 1);
         }

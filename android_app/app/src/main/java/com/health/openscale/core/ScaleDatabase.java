@@ -55,10 +55,22 @@ public class ScaleDatabase extends SQLiteOpenHelper {
     				COLUMN_NAME_MUSCLE + " REAL," +
                     COLUMN_NAME_COMMENT + " TEXT" +
     				")";
-    
+
     private static final String SQL_DELETE_ENTRIES =
     		"DROP TABLE IF EXISTS " + TABLE_NAME;
-    
+
+
+    private static String[] projection = {
+            COLUMN_NAME_ID,
+            COLUMN_NAME_USER_ID,
+            COLUMN_NAME_DATE_TIME,
+            COLUMN_NAME_WEIGHT,
+            COLUMN_NAME_FAT,
+            COLUMN_NAME_WATER,
+            COLUMN_NAME_MUSCLE,
+            COLUMN_NAME_COMMENT
+    };
+
     private SimpleDateFormat formatDateTime = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US);
     
 	public ScaleDatabase(Context context) {
@@ -131,19 +143,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
 
     public ScaleData getDataEntry(long id)
     {
-        SQLiteDatabase db = getReadableDatabase();
-        ScaleData scaleData = new ScaleData();
-
-        String[] projection = {
-                COLUMN_NAME_ID,
-                COLUMN_NAME_USER_ID,
-                COLUMN_NAME_DATE_TIME,
-                COLUMN_NAME_WEIGHT,
-                COLUMN_NAME_FAT,
-                COLUMN_NAME_WATER,
-                COLUMN_NAME_MUSCLE,
-                COLUMN_NAME_COMMENT
-        };
+        SQLiteDatabase db = getReadableDatabase();;
 
         Cursor cursorScaleDB = db.query(
                 TABLE_NAME, 	// The table to query
@@ -155,30 +155,9 @@ public class ScaleDatabase extends SQLiteOpenHelper {
                 null  		// The sort order
         );
 
-        try {
-            cursorScaleDB.moveToFirst();
+        cursorScaleDB.moveToFirst();
 
-            scaleData.id = cursorScaleDB.getLong(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_ID));
-            scaleData.user_id = cursorScaleDB.getInt(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_USER_ID));
-            String date_time = cursorScaleDB.getString(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_DATE_TIME));
-            scaleData.weight = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_WEIGHT));
-            scaleData.fat = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_FAT));
-            scaleData.water = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_WATER));
-            scaleData.muscle = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_MUSCLE));
-            scaleData.comment = cursorScaleDB.getString(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_COMMENT));
-
-            scaleData.date_time = formatDateTime.parse(date_time);
-
-            cursorScaleDB.moveToNext();
-
-        } catch (ParseException ex) {
-            Log.e("ScaleDatabase", "Can't parse the date time string: " + ex.getMessage());
-        }
-        catch ( IllegalArgumentException ex) {
-            Log.e("ScaleDatabase", "Illegal argument while reading from scale database: " + ex.getMessage());
-        }
-
-        return scaleData;
+        return readAtCursor(cursorScaleDB);
     }
 
     public void deleteEntry(long id) {
@@ -218,63 +197,9 @@ public class ScaleDatabase extends SQLiteOpenHelper {
         return numOfMonth;
     }
 
-    public float getMaxValueOfScaleData(int userId, int year, int month) {
-        SQLiteDatabase db = getReadableDatabase();
-
-        Calendar start_cal = Calendar.getInstance();
-        Calendar end_cal = Calendar.getInstance();
-
-        start_cal.set(year, month, 1, 0, 0, 0);
-        end_cal.set(year, month, 1, 0, 0, 0);
-        end_cal.add(Calendar.MONTH, 1);
-
-        String[] projection = {
-                "MAX(" + COLUMN_NAME_WEIGHT + ")",
-                "MAX(" + COLUMN_NAME_FAT + ")",
-                "MAX(" + COLUMN_NAME_WATER + ")",
-                "MAX(" + COLUMN_NAME_MUSCLE + ")"
-        };
-
-        Cursor cursorScaleDB = db.query(
-                TABLE_NAME, 	// The table to query
-                projection, 	// The columns to return
-                COLUMN_NAME_DATE_TIME + " >= ? AND " + COLUMN_NAME_DATE_TIME + " < ? AND " + COLUMN_NAME_USER_ID + "=?",            // The columns for the WHERE clause
-                new String[]{formatDateTime.format(start_cal.getTime()), formatDateTime.format(end_cal.getTime()), Integer.toString(userId)},            // The values for the WHERE clause
-                null, 			// don't group the rows
-                null,			// don't filter by row groups
-                null  		// The sort order
-        );
-
-        cursorScaleDB.moveToFirst();
-
-        float maxValue = -1;
-
-        for (int i=0; i<4; i++)
-        {
-            if (maxValue < cursorScaleDB.getFloat(i))
-            {
-                maxValue =  cursorScaleDB.getFloat(i);
-            }
-        }
-
-        return maxValue;
-    }
-
-
     public ArrayList<ScaleData> getScaleDataOfMonth(int userId, int year, int month) {
         SQLiteDatabase db = getReadableDatabase();
         ArrayList<ScaleData> scaleDataList = new ArrayList<ScaleData>();
-
-        String[] projection = {
-                COLUMN_NAME_ID,
-                COLUMN_NAME_USER_ID,
-                COLUMN_NAME_DATE_TIME,
-                COLUMN_NAME_WEIGHT,
-                COLUMN_NAME_FAT,
-                COLUMN_NAME_WATER,
-                COLUMN_NAME_MUSCLE,
-                COLUMN_NAME_COMMENT
-        };
 
         String sortOrder = COLUMN_NAME_DATE_TIME + " DESC";
 
@@ -295,32 +220,12 @@ public class ScaleDatabase extends SQLiteOpenHelper {
                 sortOrder  		// The sort order
         );
 
-        try {
-            cursorScaleDB.moveToFirst();
+        cursorScaleDB.moveToFirst();
 
-            while (!cursorScaleDB.isAfterLast()) {
-                ScaleData scaleData = new ScaleData();
+        while (!cursorScaleDB.isAfterLast()) {
+            scaleDataList.add(readAtCursor(cursorScaleDB));
 
-                scaleData.id = cursorScaleDB.getLong(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_ID));
-                scaleData.user_id = cursorScaleDB.getInt(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_USER_ID));
-                String date_time = cursorScaleDB.getString(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_DATE_TIME));
-                scaleData.weight = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_WEIGHT));
-                scaleData.fat = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_FAT));
-                scaleData.water = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_WATER));
-                scaleData.muscle = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_MUSCLE));
-                scaleData.comment = cursorScaleDB.getString(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_COMMENT));
-
-                scaleData.date_time = formatDateTime.parse(date_time);
-
-                scaleDataList.add(scaleData);
-
-                cursorScaleDB.moveToNext();
-            }
-        } catch (ParseException ex) {
-            Log.e("ScaleDatabase", "Can't parse the date time string: " + ex.getMessage());
-        }
-        catch ( IllegalArgumentException ex) {
-            Log.e("ScaleDatabase", "Illegal argument while reading from scale database: " + ex.getMessage());
+            cursorScaleDB.moveToNext();
         }
 
         return scaleDataList;
@@ -329,17 +234,6 @@ public class ScaleDatabase extends SQLiteOpenHelper {
 	public ArrayList<ScaleData> getScaleDataList(int userId) {
 		SQLiteDatabase db = getReadableDatabase();
 		ArrayList<ScaleData> scaleDataList = new ArrayList<ScaleData>();
-
-		String[] projection = {
-				COLUMN_NAME_ID,
-                COLUMN_NAME_USER_ID,
-				COLUMN_NAME_DATE_TIME,
-				COLUMN_NAME_WEIGHT,
-				COLUMN_NAME_FAT,
-				COLUMN_NAME_WATER,
-				COLUMN_NAME_MUSCLE,
-                COLUMN_NAME_COMMENT
-				};
 
 		String sortOrder = COLUMN_NAME_DATE_TIME + " DESC";
 
@@ -352,36 +246,40 @@ public class ScaleDatabase extends SQLiteOpenHelper {
 		    null,			// don't filter by row groups
 		    sortOrder  		// The sort order
 		    );
-		
-		try {
+
 			cursorScaleDB.moveToFirst();
 			
 			while (!cursorScaleDB.isAfterLast()) {
-				ScaleData scaleData = new ScaleData();
-				
-				scaleData.id = cursorScaleDB.getLong(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_ID));
-                scaleData.user_id = cursorScaleDB.getInt(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_USER_ID));
-				String date_time = cursorScaleDB.getString(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_DATE_TIME));
-				scaleData.weight = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_WEIGHT));
-				scaleData.fat = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_FAT));
-				scaleData.water = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_WATER));
-				scaleData.muscle = cursorScaleDB.getFloat(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_MUSCLE));
-                scaleData.comment = cursorScaleDB.getString(cursorScaleDB.getColumnIndexOrThrow(COLUMN_NAME_COMMENT));
+                scaleDataList.add(readAtCursor(cursorScaleDB));
 
-                scaleData.date_time = formatDateTime.parse(date_time);
-				
-				scaleDataList.add(scaleData);
-				
-				cursorScaleDB.moveToNext();
-			}
-		} catch (ParseException ex) {
-			Log.e("ScaleDatabase", "Can't parse the date time string: " + ex.getMessage());
-		} 
-		  catch ( IllegalArgumentException ex) {
-			Log.e("ScaleDatabase", "Illegal argument while reading from scale database: " + ex.getMessage());
-		}  
-		
+                cursorScaleDB.moveToNext();
+            }
 		
 		return scaleDataList;
 	}
+
+
+    private ScaleData readAtCursor (Cursor cur) {
+        ScaleData scaleData = new ScaleData();
+
+        try {
+            scaleData.id = cur.getLong(cur.getColumnIndexOrThrow(COLUMN_NAME_ID));
+            scaleData.user_id = cur.getInt(cur.getColumnIndexOrThrow(COLUMN_NAME_USER_ID));
+            String date_time = cur.getString(cur.getColumnIndexOrThrow(COLUMN_NAME_DATE_TIME));
+            scaleData.weight = cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_WEIGHT));
+            scaleData.fat = cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_FAT));
+            scaleData.water = cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_WATER));
+            scaleData.muscle = cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_MUSCLE));
+            scaleData.comment = cur.getString(cur.getColumnIndexOrThrow(COLUMN_NAME_COMMENT));
+
+            scaleData.date_time = formatDateTime.parse(date_time);
+        } catch (ParseException ex) {
+            Log.e("ScaleDatabase", "Can't parse the date time string: " + ex.getMessage());
+        }
+        catch ( IllegalArgumentException ex) {
+            Log.e("ScaleDatabase", "Illegal argument while reading from scale database: " + ex.getMessage());
+        }
+
+        return scaleData;
+    }
 }

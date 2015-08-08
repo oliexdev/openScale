@@ -82,10 +82,8 @@
     <string name="label_yes">Ja</string>
     <string name="question_really_delete_user">Wollen Sie wirklich den Benutzer löschen?</string>
     <string name="question_really_delete_all">Wollen Sie wirklich alle Datenbankeinträge löschen?</string>
-    <string name="title_edit_data_entry">Bearbeiten</string>
     <string name="title_frag">Tabelle</string>
     <string name="title_graph">Diagramm</string>
-    <string name="title_new_data_entry">Dateneingabe</string>
     <string name="title_overview">Übersicht</string>
     <string name="title_users">Benutzer</string>
     <string name="label_add_user">Benutzer hinzufügen</string>

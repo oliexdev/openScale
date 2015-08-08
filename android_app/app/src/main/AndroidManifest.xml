@@ -23,8 +23,7 @@
             </intent-filter>
         </activity>
         <activity android:name="com.health.openscale.gui.SettingsActivity"></activity>
-        <activity android:name="com.health.openscale.gui.NewEntryActivity" android:theme="@android:style/Theme.Holo.Light.Dialog" android:label="@string/title_new_data_entry"></activity>
-        <activity android:name="com.health.openscale.gui.EditDataActivity" android:theme="@android:style/Theme.Holo.Light.Dialog" android:label="@string/title_edit_data_entry"></activity>
+        <activity android:name=".gui.DataEntryActivity" android:theme="@android:style/Theme.Holo.Light.Dialog"></activity>
         <activity android:name=".gui.UserSettingsActivity" android:theme="@android:style/Theme.Holo.Dialog" android:label="@string/label_title_user"></activity>
     </application>
 

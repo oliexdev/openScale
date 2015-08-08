@@ -283,13 +283,6 @@ public class OpenScale {
         return scaleDB.getScaleDataOfMonth(selectedUserId, year, month);
     }
 
-    public float getMaxValueOfScaleData(int year, int month) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        int selectedUserId  = prefs.getInt("selectedUserId", -1);
-
-        return scaleDB.getMaxValueOfScaleData(selectedUserId, year, month);
-    }
-
 	public void startBluetoothServer(String deviceName) {
 		Log.d("OpenScale", "Bluetooth Server started! I am searching for device ...");
 

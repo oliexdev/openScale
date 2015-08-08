@@ -6,8 +6,6 @@
     <string name="title_graph">Chart</string>
     <string name="title_frag">Table</string>
     <string name="title_users">Users</string>
-    <string name="title_new_data_entry">Data entry</string>
-    <string name="title_edit_data_entry">Edit</string>
     <string name="title_data">Data</string>
 
     <string name="action_settings">Settings</string>

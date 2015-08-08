@@ -4,7 +4,6 @@
     <string name="title_users">ユーザー</string>
     <string name="title_frag">早見表</string>
     <string name="title_graph">図表</string>
-    <string name="title_new_data_entry">データ入力</string>
     <string name="title_overview">概説</string>
     <string name="label_yes">はい</string>
     <string name="label_woman">女性</string>
@@ -48,7 +47,6 @@
     <string name="label_enable_fat">体脂肪</string>
     <string name="label_delete_all">全てデリート</string>
     <string name="label_bluetooth_enable">Bluetoothの体重計を探索する</string>
-    <string name="title_edit_data_entry">エディット</string>
     <string name="label_last_month">過去30日</string>
     <string name="label_last_week">過去7日</string>
     <string name="label_device_name">デバイス名</string>
