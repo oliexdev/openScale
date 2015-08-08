@@ -132,6 +132,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
         SQLiteDatabase db = getWritableDatabase();
 
         ContentValues values = new ContentValues();
+        values.put(COLUMN_NAME_DATE_TIME, formatDateTime.format(scaleData.date_time));
         values.put(COLUMN_NAME_WEIGHT, scaleData.weight);
         values.put(COLUMN_NAME_FAT, scaleData.fat);
         values.put(COLUMN_NAME_WATER, scaleData.water);

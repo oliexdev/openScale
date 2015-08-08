@@ -169,14 +169,19 @@ public class OpenScale {
         updateScaleData();
 	}
 
-    public void updateScaleData(long id, float weight, float fat, float water, float muscle, String comment) {
+    public void updateScaleData(long id, String date_time, float weight, float fat, float water, float muscle, String comment) {
         ScaleData scaleData = new ScaleData();
 
-        scaleData.weight = weight;
-        scaleData.fat = fat;
-        scaleData.water = water;
-        scaleData.muscle = muscle;
-        scaleData.comment = comment;
+        try {
+            scaleData.date_time = dateTimeFormat.parse(date_time);
+            scaleData.weight = weight;
+            scaleData.fat = fat;
+            scaleData.water = water;
+            scaleData.muscle = muscle;
+            scaleData.comment = comment;
+        } catch (ParseException e) {
+            Log.e("OpenScale", "Can't parse date time string while adding to the database");
+        }
 
         scaleDB.updateEntry(id, scaleData);
 

@@ -253,6 +253,23 @@ public class DataEntryActivity extends Activity {
 		return false;
 	}
 
+    private void saveScaleData() {
+        if (validateInput()) {
+            float weight = Float.valueOf(txtWeight.getText().toString());
+            float fat = Float.valueOf(txtFat.getText().toString());
+            float water = Float.valueOf(txtWater.getText().toString());
+            float muscle = Float.valueOf(txtMuscle.getText().toString());
+            String comment = txtComment.getText().toString();
+
+            String date = txtDate.getText().toString();
+            String time = txtTime.getText().toString();
+
+            OpenScale openScale = OpenScale.getInstance(context);
+
+            openScale.updateScaleData(id, date + " " + time, weight, fat, water, muscle, comment);
+        }
+    }
+
     private boolean moveLeft() {
         ArrayList<ScaleData> scaleDataList = OpenScale.getInstance(context).getScaleDataList();
 
@@ -265,6 +282,7 @@ public class DataEntryActivity extends Activity {
             if (scaleData.id == id)
             {
                 if (scaleDataIterator.hasNext()) {
+                    saveScaleData();
                     getIntent().putExtra("id",scaleDataIterator.next().id );
                     updateOnView();
                     return true;
@@ -291,6 +309,7 @@ public class DataEntryActivity extends Activity {
             if (scaleData.id == id)
             {
                 if (scaleDataIterator.hasPrevious()) {
+                    saveScaleData();
                     getIntent().putExtra("id", scaleDataIterator.previous().id);
                     updateOnView();
                     return true;
@@ -357,19 +376,8 @@ public class DataEntryActivity extends Activity {
     private class onClickListenerOk implements View.OnClickListener {
         @Override
         public void onClick(View v) {
-            if (validateInput()) {
-                float weight = Float.valueOf(txtWeight.getText().toString());
-                float fat = Float.valueOf(txtFat.getText().toString());
-                float water = Float.valueOf(txtWater.getText().toString());
-                float muscle = Float.valueOf(txtMuscle.getText().toString());
-                String comment = txtComment.getText().toString();
-
-                OpenScale openScale = OpenScale.getInstance(context);
-
-                openScale.updateScaleData(id, weight, fat, water, muscle, comment);
-
-                finish();
-            }
+            saveScaleData();
+            finish();
         }
     }
 
