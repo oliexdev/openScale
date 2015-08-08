@@ -65,7 +65,7 @@
     <string name="error_weight_value_required">体重が必要です</string>
     <string name="info_bluetooth_not_established">Bluetooth接続を確立できなかった場合</string>
     <string name="info_data_all_deleted">すべてのレコードが削除されます</string>
-    <string name="info_data_deleted">データベースが削除されます</string>
+    <string name="info_data_deleted">レコードが削除されます</string>
     <string name="info_data_exported">レコードのエクスポート</string>
     <string name="info_delete_bluetooth_data">すべてのBluetoothデータを削除します</string>
     <string name="info_data_imported">レコードのインポート</string>
