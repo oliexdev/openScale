@@ -320,14 +320,14 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
                 txtLabelWater.setText(Html.fromHtml(getResources().getString(R.string.label_water) + " <br> <font color='grey'>&#x2198;<small> " + String.format("%.1f", diffWater) + "%</small></font>"));
 
             if (diffWaist > 0.0)
-                txtLabelWaist.setText(Html.fromHtml(getResources().getString(R.string.label_waist) + " <br> <font color='grey'>&#x2197;<small> " + String.format("%.1f", diffWaist) + "%</small></font>"));
+                txtLabelWaist.setText(Html.fromHtml(getResources().getString(R.string.label_waist) + " <br> <font color='grey'>&#x2197;<small> " + String.format("%.1f", diffWaist) + "cm</small></font>"));
             else
-                txtLabelWaist.setText(Html.fromHtml(getResources().getString(R.string.label_waist) + " <br> <font color='grey'>&#x2198;<small> " + String.format("%.1f", diffWaist) + "%</small></font>"));
+                txtLabelWaist.setText(Html.fromHtml(getResources().getString(R.string.label_waist) + " <br> <font color='grey'>&#x2198;<small> " + String.format("%.1f", diffWaist) + "cm</small></font>"));
 
             if (diffHip > 0.0)
-                txtLabelHip.setText(Html.fromHtml(getResources().getString(R.string.label_hip) + " <br> <font color='grey'>&#x2197;<small> " + String.format("%.1f", diffHip) + "%</small></font>"));
+                txtLabelHip.setText(Html.fromHtml(getResources().getString(R.string.label_hip) + " <br> <font color='grey'>&#x2197;<small> " + String.format("%.1f", diffHip) + "cm</small></font>"));
             else
-                txtLabelHip.setText(Html.fromHtml(getResources().getString(R.string.label_hip) + " <br> <font color='grey'>&#x2198;<small> " + String.format("%.1f", diffHip) + "%</small></font>"));
+                txtLabelHip.setText(Html.fromHtml(getResources().getString(R.string.label_hip) + " <br> <font color='grey'>&#x2198;<small> " + String.format("%.1f", diffHip) + "cm</small></font>"));
         }
     }
 
@@ -440,14 +440,14 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         }
 
         if(prefs.getBoolean("waistEnable", true)) {
-            info_week +=  String.format("Ø-"+getResources().getString(R.string.label_waist)+": %.1f%% <br>", weekAvgWaist);
-            info_month += String.format("Ø-"+getResources().getString(R.string.label_waist)+": %.1f%% <br>", monthAvgWaist);
+            info_week +=  String.format("Ø-"+getResources().getString(R.string.label_waist)+": %.1fcm <br>", weekAvgWaist);
+            info_month += String.format("Ø-"+getResources().getString(R.string.label_waist)+": %.1fcm <br>", monthAvgWaist);
             lines++;
         }
 
         if(prefs.getBoolean("hipEnable", true)) {
-            info_week +=  String.format("Ø-"+getResources().getString(R.string.label_hip)+": %.1f%% <br>", weekAvgHip);
-            info_month += String.format("Ø-"+getResources().getString(R.string.label_hip)+": %.1f%% <br>",monthAvgHip);
+            info_week +=  String.format("Ø-"+getResources().getString(R.string.label_hip)+": %.1fcm <br>", weekAvgHip);
+            info_month += String.format("Ø-"+getResources().getString(R.string.label_hip)+": %.1fcm <br>",monthAvgHip);
             lines++;
         }
 
