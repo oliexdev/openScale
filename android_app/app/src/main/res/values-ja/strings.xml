@@ -91,4 +91,6 @@
     <string name="error_waist_value_required">胴囲が必要です</string>
     <string name="label_waist">胴囲</string>
     <string name="label_hip">腰囲</string>
+    <string name="info_your_waist">あなたは胴囲が</string>
+    <string name="info_your_hip">あなたは腰囲が</string>
 </resources>

@@ -91,4 +91,6 @@
     <string name="info_is_enable">ist eingeschaltet</string>
     <string name="label_waist">Bauchumfang</string>
     <string name="label_hip">Hüftumfang</string>
+    <string name="info_your_hip">Dein Hüftumfang war</string>
+    <string name="info_your_waist">Dein Bauchumfang war</string>
 </resources>

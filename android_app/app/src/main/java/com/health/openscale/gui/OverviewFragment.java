@@ -104,7 +104,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
     private Spinner spinUser;
 
-    private enum lines {WEIGHT, FAT, WATER, MUSCLE}
+    private enum lines {WEIGHT, FAT, WATER, MUSCLE, WAIST, HIP}
     private ArrayList<lines> activeLines;
 
     private SharedPreferences prefs;
@@ -557,10 +557,13 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
         if(prefs.getBoolean("waistEnable", true)) {
             lines.add(lineWaist);
+            activeLines.add(OverviewFragment.lines.WAIST);
+
         }
 
         if(prefs.getBoolean("hipEnable", true)) {
             lines.add(lineHip);
+            activeLines.add(OverviewFragment.lines.HIP);
         }
 
         LineChartData lineData = new LineChartData(lines);
@@ -708,6 +711,14 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
                     break;
                 case MUSCLE:
                     Toast.makeText(getActivity(), getResources().getString(R.string.info_your_muscle) + " " + scaleData.muscle + "% " + getResources().getString(R.string.info_on_date) + " " + date_time, Toast.LENGTH_SHORT).show();
+                    break;
+                case WAIST:
+                    Toast.makeText(getActivity(), getResources().getString(R.string.info_your_waist) + " " + scaleData.waist + "cm " + getResources().getString(R.string.info_on_date) + " " + date_time, Toast.LENGTH_SHORT).show();
+                    break;
+                case HIP:
+                    Toast.makeText(getActivity(), getResources().getString(R.string.info_your_hip) + " " + scaleData.hip + "cm " + getResources().getString(R.string.info_on_date) + " " + date_time, Toast.LENGTH_SHORT).show();
+                    break;
+                default:
                     break;
             }
         }

@@ -105,5 +105,7 @@
     <string name="info_your_fat">Your body fat was</string>
     <string name="info_your_water">Your water percentage was</string>
     <string name="info_your_muscle">Your muscle percentage was</string>
+    <string name="info_your_waist">Your waist circumference was</string>
+    <string name="info_your_hip">Your hip circumference was</string>
     <string name="info_on_date">on</string>
 </resources>
