@@ -149,7 +149,7 @@ public class OpenScale {
     }
 
 	public void addScaleData(int user_id, String date_time, float weight, float fat,
-			float water, float muscle, String comment) {
+			float water, float muscle, float waist, float hip, String comment) {
 		ScaleData scaleData = new ScaleData();
 
 		try {
@@ -159,6 +159,8 @@ public class OpenScale {
 			scaleData.fat = fat;
 			scaleData.water = water;
 			scaleData.muscle = muscle;
+            scaleData.waist = waist;
+            scaleData.hip = hip;
             scaleData.comment = comment;
 		} catch (ParseException e) {
 			Log.e("OpenScale", "Can't parse date time string while adding to the database");
@@ -169,7 +171,7 @@ public class OpenScale {
         updateScaleData();
 	}
 
-    public void updateScaleData(long id, String date_time, float weight, float fat, float water, float muscle, String comment) {
+    public void updateScaleData(long id, String date_time, float weight, float fat, float water, float muscle, float waist, float hip, String comment) {
         ScaleData scaleData = new ScaleData();
 
         try {
@@ -178,6 +180,8 @@ public class OpenScale {
             scaleData.fat = fat;
             scaleData.water = water;
             scaleData.muscle = muscle;
+            scaleData.waist = waist;
+            scaleData.hip = hip;
             scaleData.comment = comment;
         } catch (ParseException e) {
             Log.e("OpenScale", "Can't parse date time string while adding to the database");
@@ -216,7 +220,9 @@ public class OpenScale {
 				newScaleData.fat = Float.parseFloat(csvField[2]);
 				newScaleData.water = Float.parseFloat(csvField[3]);
 				newScaleData.muscle = Float.parseFloat(csvField[4]);
-                newScaleData.comment = csvField[5];
+                newScaleData.waist = Float.parseFloat(csvField[5]);
+                newScaleData.hip = Float.parseFloat(csvField[6]);
+                newScaleData.comment = csvField[7];
 
                 newScaleData.user_id = getSelectedScaleUser().id;
 
@@ -249,6 +255,8 @@ public class OpenScale {
 			csvWriter.append(Float.toString(scaleData.fat) + ",");
 			csvWriter.append(Float.toString(scaleData.water) + ",");
 			csvWriter.append(Float.toString(scaleData.muscle) + ",");
+            csvWriter.append(Float.toString(scaleData.waist) + ",");
+            csvWriter.append(Float.toString(scaleData.hip) + ",");
             if (!scaleData.comment.isEmpty()) {
                 csvWriter.append(scaleData.comment);
             }

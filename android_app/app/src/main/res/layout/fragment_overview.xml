@@ -290,6 +290,86 @@
                         android:layout_marginRight="20dp" />
                 </TableRow>
 
+                <TableRow
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:orientation="horizontal"
+                    android:id="@+id/tableRowWaist"
+                    android:layout_marginBottom="10dp">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:id="@+id/imageView45"
+                        android:src="@drawable/waist"
+                        android:layout_gravity="center" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:text="Waist"
+                        android:id="@+id/txtLabelWaist"
+                        android:layout_column="1"
+                        android:textAlignment="center"
+                        android:singleLine="false"
+                        android:layout_marginLeft="20dp"
+                        android:password="false"
+                        android:phoneNumber="false"
+                        android:lines="2"
+                        android:layout_marginRight="50dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:text="-1 %"
+                        android:id="@+id/txtWaistLast"
+                        android:layout_column="2"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginRight="20dp" />
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:orientation="horizontal"
+                    android:id="@+id/tableRowHip"
+                    android:layout_marginBottom="10dp">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:id="@+id/imageView16"
+                        android:src="@drawable/hip"
+                        android:layout_gravity="center" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:text="Hip"
+                        android:id="@+id/txtLabelHip"
+                        android:layout_column="1"
+                        android:textAlignment="center"
+                        android:singleLine="false"
+                        android:layout_marginLeft="20dp"
+                        android:password="false"
+                        android:phoneNumber="false"
+                        android:lines="2"
+                        android:layout_marginRight="50dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:text="-1 %"
+                        android:id="@+id/txtHipLast"
+                        android:layout_column="2"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginRight="20dp" />
+                </TableRow>
+
             </TableLayout>
 
             <TextView

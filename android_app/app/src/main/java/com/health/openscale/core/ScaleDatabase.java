@@ -31,7 +31,7 @@ import java.util.Calendar;
 import java.util.Locale;
 
 public class ScaleDatabase extends SQLiteOpenHelper {	
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 3;
     private static final String DATABASE_NAME = "openScaleDatabase.db";	
 	
     private static final String TABLE_NAME = "scaledata";
@@ -42,6 +42,8 @@ public class ScaleDatabase extends SQLiteOpenHelper {
     private static final String COLUMN_NAME_FAT = "fat";
     private static final String COLUMN_NAME_WATER = "water";
     private static final String COLUMN_NAME_MUSCLE = "muscle";
+    private static final String COLUMN_NAME_WAIST = "waist";
+    private static final String COLUMN_NAME_HIP = "hip";
     private static final String COLUMN_NAME_COMMENT = "comment";
     
     private static final String SQL_CREATE_ENTRIES = 
@@ -53,6 +55,8 @@ public class ScaleDatabase extends SQLiteOpenHelper {
     				COLUMN_NAME_FAT + " REAL," +
     				COLUMN_NAME_WATER + " REAL," + 
     				COLUMN_NAME_MUSCLE + " REAL," +
+                    COLUMN_NAME_WAIST + " REAL," +
+                    COLUMN_NAME_HIP + " REAL," +
                     COLUMN_NAME_COMMENT + " TEXT" +
     				")";
 
@@ -68,6 +72,8 @@ public class ScaleDatabase extends SQLiteOpenHelper {
             COLUMN_NAME_FAT,
             COLUMN_NAME_WATER,
             COLUMN_NAME_MUSCLE,
+            COLUMN_NAME_WAIST,
+            COLUMN_NAME_HIP,
             COLUMN_NAME_COMMENT
     };
 
@@ -86,6 +92,11 @@ public class ScaleDatabase extends SQLiteOpenHelper {
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         if (oldVersion == 1 && newVersion == 2) {
             db.execSQL("ALTER TABLE " + TABLE_NAME + " ADD COLUMN " + COLUMN_NAME_COMMENT + " TEXT DEFAULT ''");
+        }
+
+        if (oldVersion == 2 && newVersion == 3) {
+            db.execSQL("ALTER TABLE " + TABLE_NAME + " ADD COLUMN " + COLUMN_NAME_WAIST + " REAL DEFAULT 0");
+            db.execSQL("ALTER TABLE " + TABLE_NAME + " ADD COLUMN " + COLUMN_NAME_HIP + " REAL DEFAULT 0");
         }
 	}
 	
@@ -112,6 +123,8 @@ public class ScaleDatabase extends SQLiteOpenHelper {
             values.put(COLUMN_NAME_FAT, scaleData.fat);
             values.put(COLUMN_NAME_WATER, scaleData.water);
             values.put(COLUMN_NAME_MUSCLE, scaleData.muscle);
+            values.put(COLUMN_NAME_WAIST, scaleData.waist);
+            values.put(COLUMN_NAME_HIP, scaleData.hip);
             values.put(COLUMN_NAME_COMMENT, scaleData.comment);
 
             try
@@ -137,6 +150,8 @@ public class ScaleDatabase extends SQLiteOpenHelper {
         values.put(COLUMN_NAME_FAT, scaleData.fat);
         values.put(COLUMN_NAME_WATER, scaleData.water);
         values.put(COLUMN_NAME_MUSCLE, scaleData.muscle);
+        values.put(COLUMN_NAME_WAIST, scaleData.waist);
+        values.put(COLUMN_NAME_HIP, scaleData.hip);
         values.put(COLUMN_NAME_COMMENT, scaleData.comment);
 
         db.update(TABLE_NAME, values, COLUMN_NAME_ID + "=" + id, null);
@@ -271,6 +286,8 @@ public class ScaleDatabase extends SQLiteOpenHelper {
             scaleData.fat = cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_FAT));
             scaleData.water = cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_WATER));
             scaleData.muscle = cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_MUSCLE));
+            scaleData.waist = cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_WAIST));
+            scaleData.hip = cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_HIP));
             scaleData.comment = cur.getString(cur.getColumnIndexOrThrow(COLUMN_NAME_COMMENT));
 
             scaleData.date_time = formatDateTime.parse(date_time);

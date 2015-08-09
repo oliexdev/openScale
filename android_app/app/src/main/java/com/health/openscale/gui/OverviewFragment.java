@@ -74,6 +74,8 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
     private TextView txtWaterLast;
     private TextView txtMuscleLast;
     private TextView txtFatLast;
+    private TextView txtWaistLast;
+    private TextView txtHipLast;
 
     private TextView txtGoalWeight;
     private TextView txtGoalDiff;
@@ -87,6 +89,8 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
     private TextView txtLabelFat;
     private TextView txtLabelMuscle;
     private TextView txtLabelWater;
+    private TextView txtLabelWaist;
+    private TextView txtLabelHip;
 
     private TextView txtLabelGoalWeight;
     private TextView txtLabelGoalDiff;
@@ -129,6 +133,8 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         txtWaterLast = (TextView) overviewView.findViewById(R.id.txtWaterLast);
         txtMuscleLast = (TextView) overviewView.findViewById(R.id.txtMuscleLast);
         txtFatLast = (TextView) overviewView.findViewById(R.id.txtFatLast);
+        txtWaistLast = (TextView) overviewView.findViewById(R.id.txtWaistLast);
+        txtHipLast = (TextView) overviewView.findViewById(R.id.txtHipLast);
 
         txtGoalWeight = (TextView) overviewView.findViewById(R.id.txtGoalWeight);
         txtGoalDiff = (TextView) overviewView.findViewById(R.id.txtGoalDiff);
@@ -142,6 +148,9 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         txtLabelFat = (TextView) overviewView.findViewById(R.id.txtLabelFat);
         txtLabelMuscle = (TextView) overviewView.findViewById(R.id.txtLabelMuscle);
         txtLabelWater = (TextView) overviewView.findViewById(R.id.txtLabelWater);
+        txtLabelWaist = (TextView) overviewView.findViewById(R.id.txtLabelWaist);
+        txtLabelHip = (TextView) overviewView.findViewById(R.id.txtLabelHip);
+
 
         txtLabelGoalWeight = (TextView) overviewView.findViewById(R.id.txtLabelGoalWeight);
         txtLabelGoalDiff = (TextView) overviewView.findViewById(R.id.txtLabelGoalDiff);
@@ -183,6 +192,16 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
         if(!prefs.getBoolean("waterEnable", true)) {
             TableRow row = (TableRow)overviewView.findViewById(R.id.tableRowWater);
+            row.setVisibility(View.GONE);
+        }
+
+        if(!prefs.getBoolean("waistEnable", true)) {
+            TableRow row = (TableRow)overviewView.findViewById(R.id.tableRowWaist);
+            row.setVisibility(View.GONE);
+        }
+
+        if(!prefs.getBoolean("hipEnable", true)) {
+            TableRow row = (TableRow)overviewView.findViewById(R.id.tableRowHip);
             row.setVisibility(View.GONE);
         }
 
@@ -241,6 +260,8 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         txtFatLast.setText(lastScaleData.fat + " %");
         txtWaterLast.setText(lastScaleData.water + " %");
         txtMuscleLast.setText(lastScaleData.muscle + " %");
+        txtWaistLast.setText(lastScaleData.waist + " cm");
+        txtHipLast.setText(lastScaleData.hip + " cm");
     }
 
     private void updateGoal(ArrayList<ScaleData> scaleDataList) {
@@ -268,6 +289,9 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             double diffFat = lastScaleData.fat - diffScaleData.fat;
             double diffMuscle = lastScaleData.muscle - diffScaleData.muscle;
             double diffWater = lastScaleData.water - diffScaleData.water;
+            double diffWaist = lastScaleData.waist - diffScaleData.waist;
+            double diffHip = lastScaleData.hip - diffScaleData.hip;
+
 
             if (diffWeight > 0.0)
                 txtLabelWeight.setText(Html.fromHtml(getResources().getString(R.string.label_weight) + " <br> <font color='grey'>&#x2197;<small> " + String.format("%.1f ", diffWeight) + ScaleUser.UNIT_STRING[currentScaleUser.scale_unit] + "</small></font>"));
@@ -294,6 +318,16 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
                 txtLabelWater.setText(Html.fromHtml(getResources().getString(R.string.label_water) + " <br> <font color='grey'>&#x2197;<small> " + String.format("%.1f", diffWater) + "%</small></font>"));
             else
                 txtLabelWater.setText(Html.fromHtml(getResources().getString(R.string.label_water) + " <br> <font color='grey'>&#x2198;<small> " + String.format("%.1f", diffWater) + "%</small></font>"));
+
+            if (diffWaist > 0.0)
+                txtLabelWaist.setText(Html.fromHtml(getResources().getString(R.string.label_waist) + " <br> <font color='grey'>&#x2197;<small> " + String.format("%.1f", diffWaist) + "%</small></font>"));
+            else
+                txtLabelWaist.setText(Html.fromHtml(getResources().getString(R.string.label_waist) + " <br> <font color='grey'>&#x2198;<small> " + String.format("%.1f", diffWaist) + "%</small></font>"));
+
+            if (diffHip > 0.0)
+                txtLabelHip.setText(Html.fromHtml(getResources().getString(R.string.label_hip) + " <br> <font color='grey'>&#x2197;<small> " + String.format("%.1f", diffHip) + "%</small></font>"));
+            else
+                txtLabelHip.setText(Html.fromHtml(getResources().getString(R.string.label_hip) + " <br> <font color='grey'>&#x2198;<small> " + String.format("%.1f", diffHip) + "%</small></font>"));
         }
     }
 
@@ -314,6 +348,8 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         float weekAvgFat = 0;
         float weekAvgWater = 0;
         float weekAvgMuscle = 0;
+        float weekAvgWaist = 0;
+        float weekAvgHip = 0;
 
         int monthSize = 0;
         float monthAvgWeight = 0;
@@ -321,6 +357,9 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         float monthAvgFat = 0;
         float monthAvgWater = 0;
         float monthAvgMuscle = 0;
+        float monthAvgWaist = 0;
+        float monthAvgHip = 0;
+
 
         for (ScaleData scaleData : scaleDataList)
         {
@@ -334,6 +373,8 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
                 weekAvgFat += scaleData.fat;
                 weekAvgWater += scaleData.water;
                 weekAvgMuscle += scaleData.muscle;
+                weekAvgWaist += scaleData.waist;
+                weekAvgHip += scaleData.hip;
             }
 
             if (monthPastDate.before(histDate)) {
@@ -344,6 +385,8 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
                 monthAvgFat += scaleData.fat;
                 monthAvgWater += scaleData.water;
                 monthAvgMuscle += scaleData.muscle;
+                monthAvgWaist += scaleData.waist;
+                monthAvgHip += scaleData.hip;
             } else {
                 break;
             }
@@ -354,15 +397,65 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         weekAvgFat /= weekSize;
         weekAvgWater /= weekSize;
         weekAvgMuscle /= weekSize;
+        weekAvgWaist /= weekSize;
+        weekAvgHip /= weekSize;
 
         monthAvgWeight /= monthSize;
         monthAvgBMI /= monthSize;
         monthAvgFat /= monthSize;
         monthAvgWater /= monthSize;
         monthAvgMuscle /= monthSize;
+        monthAvgWaist /= monthSize;
+        monthAvgHip /= monthSize;
 
-        txtLabelAvgWeek.setText(Html.fromHtml(getResources().getString(R.string.label_last_week) + " <br> <font color='grey'><small> " + String.format("[Ø-"+getResources().getString(R.string.label_weight)+": %.1f" + ScaleUser.UNIT_STRING[currentScaleUser.scale_unit] + "]  [Ø-"+getResources().getString(R.string.label_bmi)+": %.1f]  [Ø-"+getResources().getString(R.string.label_fat)+": %.1f%%]  [Ø-"+getResources().getString(R.string.label_muscle)+": %.1f%%]  [Ø-"+getResources().getString(R.string.label_water)+": %.1f%%]", weekAvgWeight, weekAvgBMI, weekAvgFat, weekAvgMuscle, weekAvgWater) + "</small></font>"));
-        txtLabelAvgMonth.setText(Html.fromHtml(getResources().getString(R.string.label_last_month) + " <br> <font color='grey'><small> " + String.format("[Ø-"+getResources().getString(R.string.label_weight)+": %.1f" + ScaleUser.UNIT_STRING[currentScaleUser.scale_unit] + "]  [Ø-"+getResources().getString(R.string.label_bmi)+": %.1f]  [Ø-"+getResources().getString(R.string.label_fat)+": %.1f%%]  [Ø-"+getResources().getString(R.string.label_muscle)+": %.1f%%]  [Ø-"+getResources().getString(R.string.label_water)+": %.1f%%]", monthAvgWeight, monthAvgBMI, monthAvgFat, monthAvgMuscle, monthAvgWater) + "</small></font>"));
+        String info_week = new String();
+        String info_month = new String();
+
+        int lines = 1;
+
+        info_week += String.format("Ø-"+getResources().getString(R.string.label_weight)+": %.1f" + ScaleUser.UNIT_STRING[currentScaleUser.scale_unit] + "<br>", weekAvgWeight);
+        info_month += String.format("Ø-"+getResources().getString(R.string.label_weight)+": %.1f" + ScaleUser.UNIT_STRING[currentScaleUser.scale_unit] + "<br>", monthAvgWeight);
+        lines++;
+
+        info_week += String.format("Ø-"+getResources().getString(R.string.label_bmi)+": %.1f <br>", weekAvgBMI);
+        info_month += String.format("Ø-"+getResources().getString(R.string.label_bmi)+": %.1f <br>", monthAvgBMI);
+        lines++;
+
+        if(prefs.getBoolean("fatEnable", true)) {
+            info_week += String.format("Ø-"+getResources().getString(R.string.label_fat)+": %.1f%% <br>", weekAvgFat);
+            info_month +=  String.format("Ø-"+getResources().getString(R.string.label_fat)+": %.1f%% <br>", monthAvgFat);
+            lines++;
+        }
+
+        if(prefs.getBoolean("muscleEnable", true)) {
+            info_week += String.format("Ø-"+getResources().getString(R.string.label_muscle)+": %.1f%% <br>", weekAvgWater);
+            info_month += String.format("Ø-"+getResources().getString(R.string.label_muscle)+": %.1f%% <br>", monthAvgWater);
+            lines++;
+        }
+
+        if(prefs.getBoolean("waterEnable", true)) {
+            info_week +=  String.format("Ø-"+getResources().getString(R.string.label_water)+": %.1f%% <br>", weekAvgMuscle);
+            info_month += String.format("Ø-"+getResources().getString(R.string.label_water)+": %.1f%% <br>", monthAvgMuscle);
+            lines++;
+        }
+
+        if(prefs.getBoolean("waistEnable", true)) {
+            info_week +=  String.format("Ø-"+getResources().getString(R.string.label_waist)+": %.1f%% <br>", weekAvgWaist);
+            info_month += String.format("Ø-"+getResources().getString(R.string.label_waist)+": %.1f%% <br>", monthAvgWaist);
+            lines++;
+        }
+
+        if(prefs.getBoolean("hipEnable", true)) {
+            info_week +=  String.format("Ø-"+getResources().getString(R.string.label_hip)+": %.1f%% <br>", weekAvgHip);
+            info_month += String.format("Ø-"+getResources().getString(R.string.label_hip)+": %.1f%% <br>",monthAvgHip);
+            lines++;
+        }
+
+        txtLabelAvgWeek.setLines(lines);
+        txtLabelAvgMonth.setLines(lines);
+
+        txtLabelAvgWeek.setText(Html.fromHtml(getResources().getString(R.string.label_last_week) + " <br> <font color='grey'><small> " + info_week + "</small></font>"));
+        txtLabelAvgMonth.setText(Html.fromHtml(getResources().getString(R.string.label_last_month) + " <br> <font color='grey'><small> " + info_month + "</small></font>"));
 
         txtAvgWeek.setText(weekSize + " " + getResources().getString(R.string.label_measures));
         txtAvgMonth.setText(monthSize + " " + getResources().getString(R.string.label_measures));
@@ -375,6 +468,8 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         List<PointValue> valuesFat = new ArrayList<PointValue>();
         List<PointValue> valuesWater = new ArrayList<PointValue>();
         List<PointValue> valuesMuscle = new ArrayList<PointValue>();
+        List<PointValue> valuesWaist = new ArrayList<PointValue>();
+        List<PointValue> valuesHip = new ArrayList<PointValue>();
         List<Line> lines = new ArrayList<Line>();
 
         int max_i = 7;
@@ -399,6 +494,8 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             valuesFat.add(new PointValue(i, histData.fat));
             valuesWater.add(new PointValue(i, histData.water));
             valuesMuscle.add(new PointValue(i, histData.muscle));
+            valuesWaist.add(new PointValue(i, histData.waist));
+            valuesHip.add(new PointValue(i, histData.hip));
 
             histDate.setTime(histData.date_time);
 
@@ -427,6 +524,14 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
                 setColor(ChartUtils.COLOR_GREEN).
                 setHasLabels(prefs.getBoolean("labelsEnable", true)).
                 setFormatter(new SimpleLineChartValueFormatter(1));
+        Line lineWaist = new Line(valuesWaist).
+                setColor(Color.MAGENTA).
+                setHasLabels(prefs.getBoolean("labelsEnable", true)).
+                setFormatter(new SimpleLineChartValueFormatter(1));
+        Line lineHip = new Line(valuesHip).
+                setColor(Color.YELLOW).
+                setHasLabels(prefs.getBoolean("labelsEnable", true)).
+                setFormatter(new SimpleLineChartValueFormatter(1));
 
         activeLines = new ArrayList<lines>();
 
@@ -450,6 +555,14 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             activeLines.add(OverviewFragment.lines.MUSCLE);
         }
 
+        if(prefs.getBoolean("waistEnable", true)) {
+            lines.add(lineWaist);
+        }
+
+        if(prefs.getBoolean("hipEnable", true)) {
+            lines.add(lineHip);
+        }
+
         LineChartData lineData = new LineChartData(lines);
         lineData.setAxisXBottom(new Axis(axisValues).
                         setHasLines(true).
@@ -461,8 +574,6 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
                         setMaxLabelChars(3).
                         setTextColor(Color.BLACK)
         );
-
-
 
         lineChartLast.setLineChartData(lineData);
         lineChartLast.setViewportCalculationEnabled(true);

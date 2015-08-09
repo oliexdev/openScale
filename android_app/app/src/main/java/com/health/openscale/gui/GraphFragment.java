@@ -142,6 +142,8 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         List<PointValue> valuesFat = new ArrayList<PointValue>();
         List<PointValue> valuesWater = new ArrayList<PointValue>();
         List<PointValue> valuesMuscle = new ArrayList<PointValue>();
+        List<PointValue> valuesWaist = new ArrayList<PointValue>();
+        List<PointValue> valuesHip = new ArrayList<PointValue>();
         List<Line> lines = new ArrayList<Line>();
 
         Calendar calDB = Calendar.getInstance();
@@ -154,6 +156,9 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             valuesFat.add(new PointValue(calDB.get(Calendar.DAY_OF_MONTH)-1, scaleEntry.fat));
             valuesWater.add(new PointValue(calDB.get(Calendar.DAY_OF_MONTH)-1, scaleEntry.water));
             valuesMuscle.add(new PointValue(calDB.get(Calendar.DAY_OF_MONTH)-1, scaleEntry.muscle));
+            valuesWaist.add(new PointValue(calDB.get(Calendar.DAY_OF_MONTH)-1, scaleEntry.waist));
+            valuesHip.add(new PointValue(calDB.get(Calendar.DAY_OF_MONTH)-1, scaleEntry.hip));
+
         }
 
 
@@ -173,6 +178,14 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                 setColor(ChartUtils.COLOR_GREEN).
                 setHasLabels(prefs.getBoolean("labelsEnable", true)).
                 setFormatter(new SimpleLineChartValueFormatter(1));
+        Line lineWaist = new Line(valuesWaist).
+                setColor(Color.MAGENTA).
+                setHasLabels(prefs.getBoolean("labelsEnable", true)).
+                setFormatter(new SimpleLineChartValueFormatter(1));
+        Line lineHip = new Line(valuesHip).
+                setColor(Color.YELLOW).
+                setHasLabels(prefs.getBoolean("labelsEnable", true)).
+                setFormatter(new SimpleLineChartValueFormatter(1));
 
 
         if(prefs.getBoolean("weightEnable", true)) {
@@ -189,6 +202,14 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         if(prefs.getBoolean("muscleEnable", true)) {
             lines.add(lineMuscle);
+        }
+
+        if(prefs.getBoolean("waistEnable", true)) {
+            lines.add(lineWaist);
+        }
+
+        if(prefs.getBoolean("hipEnable", true)) {
+            lines.add(lineHip);
         }
 
         LineChartData lineData = new LineChartData(lines);

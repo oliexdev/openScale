@@ -24,6 +24,8 @@
     <string name="label_fat">Body fat percentage</string>
     <string name="label_water">Water percentage</string>
     <string name="label_muscle">Muscle percentage</string>
+    <string name="label_waist">Waist circumference</string>
+    <string name="label_hip">Hip circumference</string>
     <string name="label_comment">Comment</string>
 
     <string name="label_days">days</string>
@@ -67,12 +69,15 @@
     <string name="error_user_name_required">Error user name is required</string>
     <string name="error_body_height_required">Error body height is required</string>
     <string name="error_goal_weight_required">Error goal weight is required</string>
+    <string name="error_waist_value_required">waist circumference is required</string>
+    <string name="error_hip_value_required">hip circumference is required</string>
 
     <string name="info_data_deleted">Database entry deleted</string>
     <string name="info_data_all_deleted">All database entries deleted</string>
     <string name="info_data_exported">Data exported to</string>
     <string name="info_data_imported">Data imported from</string>
     <string name="info_set_filename">Set filename to</string>
+    <string name="info_enter_value_cm">Enter value in cm</string>
     <string name="info_enter_value_percent">Enter value in %</string>
     <string name="info_enter_value_unit">Enter value in</string>
     <string name="info_enter_comment">Enter an optional comment</string>
@@ -84,7 +89,6 @@
     <string name="info_delete_bluetooth_data">Clear all Bluetooth data</string>
     <string name="info_delete_bluetooth_data_success">Bluetooth data was successful cleared</string>
     <string name="info_bluetooth_not_established">Bluetooth connection not established</string>
-    <string name="info_enter_value_cm">Enter your height in cm</string>
     <string name="info_enter_user_name">Enter your name</string>
     <string name="info_no_selected_user">No user exist! Please create a new user in the settings</string>
 
@@ -96,10 +100,6 @@
     <string name="label_device_name">Device Name</string>
 
     <string name="label_enable_labels">Label on data point</string>
-    <string name="label_enable_weight">Weight </string>
-    <string name="label_enable_fat">Body fat percentage </string>
-    <string name="label_enable_water">Water percentage </string>
-    <string name="label_enable_muscle">Muscle percentage </string>
 
     <string name="info_your_weight">Your weight was</string>
     <string name="info_your_fat">Your body fat was</string>

@@ -78,6 +78,20 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:text="@string/label_waist"
+                    android:textStyle="bold"
+                    android:id="@+id/txtWaistTableHeader" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_hip"
+                    android:textStyle="bold"
+                    android:id="@+id/txtHipTableHeader" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:text="@string/label_comment"
                     android:textStyle="bold"
                     android:id="@+id/txtCommentTableHeader" />

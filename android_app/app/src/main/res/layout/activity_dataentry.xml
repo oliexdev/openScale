@@ -193,7 +193,69 @@
 
                 </TableRow>
 
-                <TableRow
+            <TableRow
+                android:id="@+id/tableRowWaist"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" >
+
+                <ImageView
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:id="@+id/imageView10"
+                    android:layout_column="0"
+                    android:src="@drawable/waist"
+                    android:layout_gravity="center"
+                    android:layout_marginRight="2dp" />
+
+                <TextView
+                    android:id="@+id/textView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_waist"
+                    android:layout_column="1" />
+
+                <EditText
+                    android:id="@+id/txtWaist"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ems="10"
+                    android:hint="@string/info_enter_value_cm"
+                    android:inputType="numberDecimal|numberSigned"
+                    android:layout_column="2" />
+            </TableRow>
+
+            <TableRow
+                android:id="@+id/tableRowHip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" >
+
+                <ImageView
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:id="@+id/imageView12"
+                    android:layout_column="0"
+                    android:src="@drawable/hip"
+                    android:layout_gravity="center"
+                    android:layout_marginRight="2dp" />
+
+                <TextView
+                    android:id="@+id/textView2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_hip"
+                    android:layout_column="1" />
+
+                <EditText
+                    android:id="@+id/txtHip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ems="10"
+                    android:hint="@string/info_enter_value_cm"
+                    android:inputType="numberDecimal|numberSigned"
+                    android:layout_column="2" />
+            </TableRow>
+
+            <TableRow
                     android:id="@+id/tableRowComment"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" >

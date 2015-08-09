@@ -54,6 +54,8 @@ public class DataEntryActivity extends Activity {
 	private EditText txtFat;
 	private EditText txtWater;
 	private EditText txtMuscle;
+    private EditText txtWaist;
+    private EditText txtHip;
 	private EditText txtDate;
 	private EditText txtTime;
     private EditText txtComment;
@@ -88,7 +90,9 @@ public class DataEntryActivity extends Activity {
 		txtFat = (EditText) findViewById(R.id.txtFat);
 		txtWater = (EditText) findViewById(R.id.txtWater);
 		txtMuscle = (EditText) findViewById(R.id.txtMuscle);
-		txtDate = (EditText) findViewById(R.id.txtDate);
+        txtWaist = (EditText) findViewById(R.id.txtWaist);
+        txtHip = (EditText) findViewById(R.id.txtHip);
+        txtDate = (EditText) findViewById(R.id.txtDate);
 		txtTime = (EditText) findViewById(R.id.txtTime);
         txtComment = (EditText) findViewById(R.id.txtComment);
 		
@@ -131,6 +135,16 @@ public class DataEntryActivity extends Activity {
             row.setVisibility(View.GONE);
         }
 
+        if(!prefs.getBoolean("waistEnable", true)) {
+            TableRow row = (TableRow)findViewById(R.id.tableRowWaist);
+            row.setVisibility(View.GONE);
+        }
+
+        if(!prefs.getBoolean("hipEnable", true)) {
+            TableRow row = (TableRow)findViewById(R.id.tableRowHip);
+            row.setVisibility(View.GONE);
+        }
+
         if (getIntent().getExtras().getInt("mode") == EDIT_DATA_REQUEST) {
             editMode();
         }
@@ -160,6 +174,8 @@ public class DataEntryActivity extends Activity {
         txtFat.setText(editScaleData.fat+"");
         txtWater.setText(editScaleData.water+"");
         txtMuscle.setText(editScaleData.muscle+"");
+        txtWaist.setText(editScaleData.waist+"");
+        txtHip.setText(editScaleData.hip+"");
         txtComment.setText(editScaleData.comment);
 
         txtDate.setText(dateFormat.format(editScaleData.date_time));
@@ -182,10 +198,14 @@ public class DataEntryActivity extends Activity {
             txtFat.setText(Float.toString(lastScaleData.fat));
             txtWater.setText(Float.toString(lastScaleData.water));
             txtMuscle.setText(Float.toString(lastScaleData.muscle));
+            txtWaist.setText(Float.toString(lastScaleData.waist));
+            txtHip.setText(Float.toString(lastScaleData.hip));
         } else {
             txtFat.setText(Float.toString(0.0f));
             txtWater.setText(Float.toString(0.0f));
             txtMuscle.setText(Float.toString(0.0f));
+            txtWaist.setText(Float.toString(0.0f));
+            txtHip.setText(Float.toString(0.0f));
         }
 
         txtDate.setText(dateFormat.format(new Date()));
@@ -200,7 +220,7 @@ public class DataEntryActivity extends Activity {
 		{
 			txtWeight.setError(getResources().getString(R.string.error_weight_value_required));
 			validate = false;
-		} else if( !(Float.valueOf(txtWeight.getText().toString()) >= 0 && Float.valueOf(txtWeight.getText().toString()) <= 300) )
+		} else if(!isInRange(txtWeight.getText().toString(), 300))
 		{
 			txtWeight.setError(getResources().getString(R.string.error_value_range_0_300));
 			validate = false;
@@ -210,7 +230,7 @@ public class DataEntryActivity extends Activity {
 		{
 			txtFat.setError(getResources().getString(R.string.error_fat_value_required));
 			validate = false;
-		} else if(!isInRange(txtFat.getText().toString()))
+		} else if(!isInRange(txtFat.getText().toString(), 100))
 		{
 			txtFat.setError(getResources().getString(R.string.error_value_range_0_100));
 			validate = false;
@@ -221,7 +241,7 @@ public class DataEntryActivity extends Activity {
 		{
 			txtWater.setError(getResources().getString(R.string.error_water_value_required));
 			validate = false;
-		} else if(!isInRange(txtWater.getText().toString()))
+		} else if(!isInRange(txtWater.getText().toString(), 100))
 		{
 			txtWater.setError(getResources().getString(R.string.error_value_range_0_100));
 			validate = false;
@@ -231,23 +251,43 @@ public class DataEntryActivity extends Activity {
 		{
 			txtMuscle.setError(getResources().getString(R.string.error_muscle_value_required));
 			validate = false;
-		} else 	if(!isInRange(txtMuscle.getText().toString()))
+		} else 	if(!isInRange(txtMuscle.getText().toString(), 100))
 		{
 			txtMuscle.setError(getResources().getString(R.string.error_value_range_0_100));
 			validate = false;
 		}
-		
+
+        if( txtWaist.getText().toString().length() == 0 )
+        {
+            txtWaist.setError(getResources().getString(R.string.error_waist_value_required));
+            validate = false;
+        } else 	if(!isInRange(txtWaist.getText().toString(), 300))
+        {
+            txtWaist.setError(getResources().getString(R.string.error_value_range_0_300));
+            validate = false;
+        }
+
+        if( txtHip.getText().toString().length() == 0 )
+        {
+            txtHip.setError(getResources().getString(R.string.error_hip_value_required));
+            validate = false;
+        } else 	if(!isInRange(txtHip.getText().toString(), 300))
+        {
+            txtHip.setError(getResources().getString(R.string.error_value_range_0_300));
+            validate = false;
+        }
+
 		return validate;
 	}
 	
-	private boolean isInRange(String value)
+	private boolean isInRange(String value, int maxValue)
 	{
 		if (value.length() == 0)
 			return false;
 		
 		float val = Float.valueOf(value);
 		
-		if (val >= 0 && val <= 100)
+		if (val >= 0 && val <= maxValue)
 			return true;
 		
 		return false;
@@ -259,6 +299,9 @@ public class DataEntryActivity extends Activity {
             float fat = Float.valueOf(txtFat.getText().toString());
             float water = Float.valueOf(txtWater.getText().toString());
             float muscle = Float.valueOf(txtMuscle.getText().toString());
+            float waist = Float.valueOf(txtWaist.getText().toString());
+            float hip = Float.valueOf(txtHip.getText().toString());
+
             String comment = txtComment.getText().toString();
 
             String date = txtDate.getText().toString();
@@ -266,7 +309,7 @@ public class DataEntryActivity extends Activity {
 
             OpenScale openScale = OpenScale.getInstance(context);
 
-            openScale.updateScaleData(id, date + " " + time, weight, fat, water, muscle, comment);
+            openScale.updateScaleData(id, date + " " + time, weight, fat, water, muscle, waist, hip, comment);
         }
     }
 
@@ -360,12 +403,14 @@ public class DataEntryActivity extends Activity {
                     float fat = Float.valueOf(txtFat.getText().toString());
                     float water = Float.valueOf(txtWater.getText().toString());
                     float muscle = Float.valueOf(txtMuscle.getText().toString());
+                    float waist = Float.valueOf(txtWaist.getText().toString());
+                    float hip = Float.valueOf(txtHip.getText().toString());
                     String comment = txtComment.getText().toString();
 
                     String date = txtDate.getText().toString();
                     String time = txtTime.getText().toString();
 
-                    openScale.addScaleData(selectedUserId, date + " " + time, weight, fat, water, muscle, comment);
+                    openScale.addScaleData(selectedUserId, date + " " + time, weight, fat, water, muscle, waist, hip, comment);
 
                     finish();
                 }
@@ -376,8 +421,10 @@ public class DataEntryActivity extends Activity {
     private class onClickListenerOk implements View.OnClickListener {
         @Override
         public void onClick(View v) {
-            saveScaleData();
-            finish();
+            if (validateInput()) {
+                saveScaleData();
+                finish();
+            }
         }
     }
 

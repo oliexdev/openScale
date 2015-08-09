@@ -41,10 +41,6 @@
     <string name="label_measures">計測</string>
     <string name="label_title_last_measurement">最終の計測</string>
     <string name="label_goal_date_is">目標期日は</string>
-    <string name="label_enable_muscle">筋肉率</string>
-    <string name="label_enable_water">体内の水分</string>
-    <string name="label_enable_weight">体重</string>
-    <string name="label_enable_fat">体脂肪</string>
     <string name="label_delete_all">全てデリート</string>
     <string name="label_bluetooth_enable">Bluetoothの体重計を探索する</string>
     <string name="label_last_month">過去30日</string>
@@ -82,7 +78,7 @@
     <string name="info_enter_user_name">あなたの名前を入力してください</string>
     <string name="info_enter_goal_weight">あなたの体重をあなたの単位で入力してください</string>
     <string name="info_enter_comment">任意でコメントを入力してください</string>
-    <string name="info_enter_value_cm">あなたの身長をcmで入力してください</string>
+    <string name="info_enter_value_cm">あなたの値をcmで入力してください</string>
     <string name="info_enter_value_percent">あなたの値を％で入力してください</string>
     <string name="info_enter_value_unit">あなたの値を入力してください</string>
     <string name="question_really_delete_all">あなたは本当にすべてのレコードを削除しますか</string>
@@ -91,4 +87,8 @@
     <string name="title_data">データ</string>
     <string name="info_is_not_enable">無効にします</string>
     <string name="info_is_enable">有効にします</string>
+    <string name="error_hip_value_required">腰囲が必要です</string>
+    <string name="error_waist_value_required">胴囲が必要です</string>
+    <string name="label_waist">胴囲</string>
+    <string name="label_hip">腰囲</string>
 </resources>

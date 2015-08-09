@@ -86,6 +86,10 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
             txtWaterTableHeader.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
             TextView txtMuscleTableHeader = (TextView)tableView.findViewById(R.id.txtMuscleTableHeader);
             txtMuscleTableHeader.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
+            TextView txtWaistTableHeader = (TextView)tableView.findViewById(R.id.txtWaistTableHeader);
+            txtWaistTableHeader.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
+            TextView txtHipTableHeader = (TextView)tableView.findViewById(R.id.txtHipTableHeader);
+            txtHipTableHeader.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
             TextView txtCommentTableHeader = (TextView)tableView.findViewById(R.id.txtCommentTableHeader);
             txtCommentTableHeader.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
             Button btnDeleteAll = (Button)tableView.findViewById(R.id.btnDeleteAll);
@@ -109,6 +113,16 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
             txtWaterTableHeader.setVisibility(View.GONE);
         }
 
+        if(!prefs.getBoolean("waistEnable", true)) {
+            TextView txtWaistTableHeader = (TextView)tableView.findViewById(R.id.txtWaistTableHeader);
+            txtWaistTableHeader.setVisibility(View.GONE);
+        }
+
+        if(!prefs.getBoolean("hipEnable", true)) {
+            TextView txtHipTableHeader = (TextView)tableView.findViewById(R.id.txtHipTableHeader);
+            txtHipTableHeader.setVisibility(View.GONE);
+        }
+
 		return tableView;
 	}
 	
@@ -127,7 +141,13 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
         if(prefs.getBoolean("muscleEnable", true)) {
             tableDataView.setColumnStretchable(6, true);
         }
-        tableDataView.setColumnStretchable(7, true);
+        if(prefs.getBoolean("waistEnable", true)) {
+            tableDataView.setColumnStretchable(7, true);
+        }
+        if(prefs.getBoolean("hipEnable", true)) {
+            tableDataView.setColumnStretchable(8, true);
+        }
+        tableDataView.setColumnStretchable(9, true);
 
 		TableRow headerRow = (TableRow) tableView.findViewById(R.id.tableHeader);
 		tableDataView.removeAllViews();
@@ -187,6 +207,21 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
             }
             dataRow.addView(muscleView);
 
+            TextView waistView = new TextView(tableView.getContext());
+            waistView.setText(Float.toString(scaleData.waist));
+            waistView.setPadding(0, 5, 5, 5);
+            if(!prefs.getBoolean("waistEnable", true)) {
+                waistView.setVisibility(View.GONE);
+            }
+            dataRow.addView(waistView);
+
+            TextView hipView = new TextView(tableView.getContext());
+            hipView.setText(Float.toString(scaleData.hip));
+            hipView.setPadding(0, 5, 5, 5);
+            if(!prefs.getBoolean("hipEnable", true)) {
+                hipView.setVisibility(View.GONE);
+            }
+            dataRow.addView(hipView);
 
             TextView commentView = new TextView(tableView.getContext());
             commentView.setText(scaleData.comment);
@@ -216,6 +251,8 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
                 fatView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
                 waterView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
                 muscleView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
+                waistView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
+                hipView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
                 commentView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
             }
 
