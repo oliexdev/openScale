@@ -216,6 +216,10 @@ public class OpenScale {
 			while (line != null) {
 				String csvField[] = line.split(",", -1);
 
+                if (csvField.length < 8) {
+                    throw new IOException("Can't parse CSV file. Field length is wrong.");
+                }
+
 				ScaleData newScaleData = new ScaleData();
 
 				newScaleData.date_time = dateTimeFormat.parse(csvField[0]);
@@ -236,7 +240,9 @@ public class OpenScale {
 
 		} catch (ParseException e) {
 			throw new IOException("Can't parse date format. Please set the date time format as <dd.MM.yyyy HH:mm> (e.g. 31.10.2014 05:23)");
-		}
+		} catch (NumberFormatException e) {
+            throw new IOException("Can't parse float number (" + e.getMessage()+")");
+        }
 
         updateScaleData();
 
