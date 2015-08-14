@@ -119,6 +119,8 @@ public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, Strin
     } else {
     	OpenScale.getInstance(getApplicationContext()).stopBluetoothServer();
     }
+
+    OpenScale.getInstance(getApplicationContext()).updateScaleData();
 }
 
 private void initSummary(Preference p) {

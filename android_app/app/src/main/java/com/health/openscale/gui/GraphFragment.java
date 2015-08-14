@@ -104,9 +104,11 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                 updateOnView(null);
             }
         });
-        openScale = OpenScale.getInstance(graphView.getContext());
 
         prefs = PreferenceManager.getDefaultSharedPreferences(graphView.getContext());
+
+        openScale = OpenScale.getInstance(graphView.getContext());
+        openScale.registerFragment(this);
 
 		return graphView;
 	}

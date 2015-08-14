@@ -158,7 +158,11 @@ public class ScaleUserDatabase extends SQLiteOpenHelper {
 
         cursorScaleDB.moveToFirst();
 
-        return readAtCursor(cursorScaleDB);
+        ScaleUser scaleUser = readAtCursor(cursorScaleDB);
+
+        cursorScaleDB.close();
+
+        return scaleUser;
     }
 
 	public ArrayList<ScaleUser> getScaleUserList() {
@@ -184,6 +188,8 @@ public class ScaleUserDatabase extends SQLiteOpenHelper {
 				
 				cursorScaleDB.moveToNext();
 			}
+
+        cursorScaleDB.close();
 		
 		return scaleUserDBEntries;
 	}
@@ -204,7 +210,7 @@ public class ScaleUserDatabase extends SQLiteOpenHelper {
             scaleUser.birthday = formatDateTime.parse(birthday);
             scaleUser.goal_date = formatDateTime.parse(goal_date);
 
-            scaleUser.goal_weight = Math.round(goal_weight * 100.0) / 100.0;
+            scaleUser.goal_weight = Math.round(goal_weight * 100.0f) / 100.0f;
         } catch (ParseException ex) {
             Log.e("ScaleDatabase", "Can't parse the date time string: " + ex.getMessage());
         }

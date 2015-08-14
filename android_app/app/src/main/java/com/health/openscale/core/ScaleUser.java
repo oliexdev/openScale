@@ -27,7 +27,7 @@ public class ScaleUser {
 	public int body_height;
 	public int scale_unit;
     public int gender;
-    public double goal_weight;
+    public float goal_weight;
     public Date goal_date;
 
     public ScaleUser() {
@@ -35,8 +35,8 @@ public class ScaleUser {
         user_name = new String();
         birthday = new Date();
         body_height = -1;
-        scale_unit = -1;
-        gender = -1;
+        scale_unit = 0;
+        gender = 0;
         goal_weight = -1;
         goal_date = new Date();
     }
@@ -49,8 +49,20 @@ public class ScaleUser {
         return false;
     }
 
-    public double getBMI(double weight) {
-        return weight / ((body_height / 100.0)*(body_height / 100.0));
+    public float getBMI(float weight) {
+        return weight / ((body_height / 100.0f)*(body_height / 100.0f));
+    }
+
+    public float getWHtR(float waist) {
+        return waist / (float)body_height;
+    }
+
+    public float getWHR(float waist, float hip) {
+        if (hip == 0) {
+            return 0;
+        }
+
+        return waist / hip;
     }
 
 	@Override

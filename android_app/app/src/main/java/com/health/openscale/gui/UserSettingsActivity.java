@@ -52,8 +52,6 @@ public class UserSettingsActivity extends Activity {
     private RadioGroup radioScaleUnit;
     private RadioGroup radioGender;
 
-    private Button btnBirthdaySet;
-    private Button btnGoalDateSet;
     private Button btnOk;
     private Button btnCancel;
     private Button btnDelete;
@@ -85,7 +83,6 @@ public class UserSettingsActivity extends Activity {
         btnCancel.setOnClickListener(new onClickListenerCancel());
         btnDelete.setOnClickListener(new onClickListenerDelete());
 
-
         txtBirthday.setText(dateFormat.format(new Date()));
         txtGoalDate.setText(dateFormat.format(new Date()));
 
@@ -94,7 +91,7 @@ public class UserSettingsActivity extends Activity {
              public void onFocusChange(View v, boolean hasFocus) {
                  if (hasFocus) {
                      Calendar cal = Calendar.getInstance();
-                     DatePickerDialog datePicker = new DatePickerDialog(context, goalDatePickerListener, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
+                     DatePickerDialog datePicker = new DatePickerDialog(context, datePickerListener, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
                      datePicker.show();
                  }
              }
@@ -211,8 +208,8 @@ public class UserSettingsActivity extends Activity {
                     int userId = getIntent().getExtras().getInt("id");
 
                     OpenScale openScale = OpenScale.getInstance(context);
-                    openScale.deleteScaleUser(userId);
                     openScale.clearScaleData(userId);
+                    openScale.deleteScaleUser(userId);
 
                     ArrayList<ScaleUser> scaleUser = openScale.getScaleUserList();
 
@@ -224,6 +221,8 @@ public class UserSettingsActivity extends Activity {
 
                     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
                     prefs.edit().putInt("selectedUserId", lastUserId).commit();
+
+                    openScale.updateScaleData();
 
                     Intent returnIntent = new Intent();
                     setResult(RESULT_OK, returnIntent);
@@ -253,7 +252,7 @@ public class UserSettingsActivity extends Activity {
                 int body_height = Integer.valueOf(txtBodyHeight.getText().toString());
                 int checkedRadioButtonId = radioScaleUnit.getCheckedRadioButtonId();
                 int checkedGenderId = radioGender.getCheckedRadioButtonId();
-                double goal_weight  = Double.valueOf(txtGoalWeight.getText().toString());
+                float goal_weight  = Float.valueOf(txtGoalWeight.getText().toString());
 
                 int scale_unit = -1;
 
@@ -298,6 +297,8 @@ public class UserSettingsActivity extends Activity {
 
                 SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
                 prefs.edit().putInt("selectedUserId", id).commit();
+
+                openScale.updateScaleData();
 
                 Intent returnIntent = new Intent();
                 setResult(RESULT_OK, returnIntent);

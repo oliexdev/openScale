@@ -89,11 +89,6 @@ public class MainActivity extends ActionBarActivity implements
 					@Override
 					public void onPageSelected(int position) {
 						actionBar.setSelectedNavigationItem(position);
-						
-			           FragmentUpdateListener fragment = (FragmentUpdateListener) mSectionsPagerAdapter.instantiateItem(mViewPager, position);
-			            if (fragment != null) {
-			                fragment.updateOnView(OpenScale.getInstance(mViewPager.getContext()).getScaleDataList());
-			            } 
 					}
 				});
 

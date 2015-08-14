@@ -23,6 +23,8 @@ import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import com.health.openscale.gui.FragmentUpdateListener;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -49,11 +51,14 @@ public class OpenScale {
 
     private Context context;
 
+    private ArrayList<FragmentUpdateListener> fragmentList;
+
 	private OpenScale(Context con) {
         context = con;
 		scaleDB = new ScaleDatabase(context);
         scaleUserDB = new ScaleUserDatabase(context);
         btCom = null;
+        fragmentList = new ArrayList<>();
 
         updateScaleData();
 	}
@@ -66,7 +71,7 @@ public class OpenScale {
 		return instance;
 	}
 
-    public void addScaleUser(String name, String birthday, int body_height, int scale_unit, int gender, double goal_weight, String goal_date)
+    public void addScaleUser(String name, String birthday, int body_height, int scale_unit, int gender, float goal_weight, String goal_date)
     {
         ScaleUser scaleUser = new ScaleUser();
 
@@ -88,8 +93,6 @@ public class OpenScale {
 
     public ArrayList<ScaleUser> getScaleUserList()
     {
-        updateScaleData();
-
         return scaleUserDB.getScaleUserList();
     }
 
@@ -117,7 +120,7 @@ public class OpenScale {
         scaleUserDB.deleteEntry(id);
     }
 
-    public void updateScaleUser(int id, String name, String birthday, int body_height, int scale_unit, int gender, double goal_weight, String goal_date)
+    public void updateScaleUser(int id, String name, String birthday, int body_height, int scale_unit, int gender, float goal_weight, String goal_date)
     {
         ScaleUser scaleUser = new ScaleUser();
 
@@ -312,11 +315,10 @@ public class OpenScale {
 	}
 
 	public void stopBluetoothServer() {
-		Log.d("OpenScale", "Bluetooth Server stopped!");
-
 		if (btCom != null) {
 			btCom.cancel();
-		}
+            Log.d("OpenScale", "Bluetooth Server stopped!");
+        }
 	}
 
 	private final Handler btHandler = new Handler() {
@@ -411,11 +413,22 @@ public class OpenScale {
 		}
 	}
 
-    private void updateScaleData()
+    public void registerFragment(FragmentUpdateListener fragment) {
+        fragmentList.add(fragment);
+        fragment.updateOnView(scaleDataList);
+    }
+
+    public void updateScaleData()
     {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         int selectedUserId  = prefs.getInt("selectedUserId", -1);
 
         scaleDataList = scaleDB.getScaleDataList(selectedUserId);
+
+        for(FragmentUpdateListener fragment : fragmentList) {
+            if (fragment != null) {
+                fragment.updateOnView(scaleDataList);
+            }
+        }
     }
 }

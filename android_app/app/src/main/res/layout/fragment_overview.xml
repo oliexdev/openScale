@@ -30,7 +30,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="USER"
+                    android:text="@string/label_title_user"
                     android:id="@+id/txtTitleUser"
                     android:layout_weight="0"
                     android:textSize="20dp"/>
@@ -74,7 +74,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="LAST MEASUREMENT"
+                android:text="@string/label_title_last_measurement"
                 android:id="@+id/txtTitleLastMeasurment"
                 android:autoText="false"
                 android:textSize="20dp"
@@ -109,7 +109,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textAppearance="?android:attr/textAppearanceLarge"
-                        android:text="Weight"
+                        android:text="@string/label_weight"
                         android:id="@+id/txtLabelWeight"
                         android:layout_column="1"
                         android:textAlignment="center"
@@ -129,6 +129,36 @@
                         android:layout_column="2"
                         android:layout_gravity="center_vertical"
                         android:layout_marginRight="20dp" />
+
+                    <ImageView
+                        android:layout_width="10dp"
+                        android:layout_height="fill_parent"
+                        android:id="@+id/indicatorWeight" />
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:orientation="horizontal"
+                    android:id="@+id/tableRowGaugeWeight"
+                    android:visibility="gone"
+                    android:layout_marginBottom="10dp">
+
+                    <Space
+                        android:layout_width="20px"
+                        android:layout_height="20px" />
+
+                    <com.health.openscale.core.LinearGaugeView
+                        android:layout_width="fill_parent" android:layout_height="wrap_content"
+                        android:id="@+id/linearGaugeWeight" />
+
+                    <Space
+                        android:layout_width="20px"
+                        android:layout_height="20px" />
+
+                    <Space
+                        android:layout_width="20px"
+                        android:layout_height="20px" />
                 </TableRow>
 
                 <TableRow
@@ -149,7 +179,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textAppearance="?android:attr/textAppearanceLarge"
-                        android:text="BMI"
+                        android:text="@string/label_bmi"
                         android:id="@+id/txtLabelBMI"
                         android:layout_column="1"
                         android:textAlignment="center"
@@ -169,7 +199,38 @@
                         android:layout_column="2"
                         android:layout_gravity="center_vertical"
                         android:layout_marginRight="20dp" />
+
+                    <ImageView
+                        android:layout_width="10dp"
+                        android:layout_height="fill_parent"
+                        android:id="@+id/indicatorBMI" />
                 </TableRow>
+
+                <TableRow
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="10dp"
+                    android:id="@+id/tableRowGaugeBMI"
+                    android:visibility="gone">
+
+                    <Space
+                        android:layout_width="20px"
+                        android:layout_height="20px" />
+
+                    <com.health.openscale.core.LinearGaugeView
+                        android:layout_width="fill_parent" android:layout_height="wrap_content"
+                        android:id="@+id/linearGaugeBMI" />
+
+                    <Space
+                        android:layout_width="20px"
+                        android:layout_height="20px" />
+
+                    <Space
+                        android:layout_width="20px"
+                        android:layout_height="20px" />
+                </TableRow>
+
 
                 <TableRow
                     android:layout_width="fill_parent"
@@ -189,7 +250,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textAppearance="?android:attr/textAppearanceLarge"
-                        android:text="Fat"
+                        android:text="@string/label_fat"
                         android:id="@+id/txtLabelFat"
                         android:layout_column="1"
                         android:textAlignment="center"
@@ -208,7 +269,38 @@
                         android:id="@+id/txtFatLast"
                         android:layout_column="2"
                         android:layout_gravity="center_vertical" />
+
+                    <ImageView
+                        android:layout_width="10dp"
+                        android:layout_height="fill_parent"
+                        android:id="@+id/indicatorFat" />
                 </TableRow>
+
+                <TableRow
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="10dp"
+                    android:id="@+id/tableRowGaugeFat"
+                    android:visibility="gone">
+
+                    <Space
+                        android:layout_width="20px"
+                        android:layout_height="20px" />
+
+                    <com.health.openscale.core.LinearGaugeView
+                        android:layout_width="fill_parent" android:layout_height="wrap_content"
+                        android:id="@+id/linearGaugeFat" />
+
+                    <Space
+                        android:layout_width="20px"
+                        android:layout_height="20px" />
+
+                    <Space
+                        android:layout_width="20px"
+                        android:layout_height="20px" />
+                </TableRow>
+
 
                 <TableRow
                     android:layout_width="fill_parent"
@@ -228,7 +320,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textAppearance="?android:attr/textAppearanceLarge"
-                        android:text="Muscle"
+                        android:text="@string/label_muscle"
                         android:id="@+id/txtLabelMuscle"
                         android:layout_column="1"
                         android:textAlignment="center"
@@ -248,7 +340,38 @@
                         android:layout_column="2"
                         android:layout_gravity="center_vertical"
                         android:layout_marginRight="20dp" />
+
+                    <ImageView
+                        android:layout_width="10dp"
+                        android:layout_height="fill_parent"
+                        android:id="@+id/indicatorMuscle" />
                 </TableRow>
+
+                <TableRow
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="10dp"
+                    android:id="@+id/tableRowGaugeMuscle"
+                    android:visibility="gone">
+
+                    <Space
+                        android:layout_width="20px"
+                        android:layout_height="20px" />
+
+                    <com.health.openscale.core.LinearGaugeView
+                        android:layout_width="fill_parent" android:layout_height="wrap_content"
+                        android:id="@+id/linearGaugeMuscle" />
+
+                    <Space
+                        android:layout_width="20px"
+                        android:layout_height="20px" />
+
+                    <Space
+                        android:layout_width="20px"
+                        android:layout_height="20px" />
+                </TableRow>
+
 
                 <TableRow
                     android:layout_width="fill_parent"
@@ -268,7 +391,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textAppearance="?android:attr/textAppearanceLarge"
-                        android:text="Water"
+                        android:text="@string/label_water"
                         android:id="@+id/txtLabelWater"
                         android:layout_column="1"
                         android:textAlignment="center"
@@ -288,7 +411,38 @@
                         android:layout_column="2"
                         android:layout_gravity="center_vertical"
                         android:layout_marginRight="20dp" />
+
+                    <ImageView
+                        android:layout_width="10dp"
+                        android:layout_height="fill_parent"
+                        android:id="@+id/indicatorWater" />
                 </TableRow>
+
+                <TableRow
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="10dp"
+                    android:id="@+id/tableRowGaugeWater"
+                    android:visibility="gone">
+
+                    <Space
+                        android:layout_width="20px"
+                        android:layout_height="20px" />
+
+                    <com.health.openscale.core.LinearGaugeView
+                        android:layout_width="fill_parent" android:layout_height="wrap_content"
+                        android:id="@+id/linearGaugeWater" />
+
+                    <Space
+                        android:layout_width="20px"
+                        android:layout_height="20px" />
+
+                    <Space
+                        android:layout_width="20px"
+                        android:layout_height="20px" />
+                </TableRow>
+
 
                 <TableRow
                     android:layout_width="fill_parent"
@@ -308,7 +462,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textAppearance="?android:attr/textAppearanceLarge"
-                        android:text="Waist"
+                        android:text="@string/label_waist"
                         android:id="@+id/txtLabelWaist"
                         android:layout_column="1"
                         android:textAlignment="center"
@@ -328,6 +482,106 @@
                         android:layout_column="2"
                         android:layout_gravity="center_vertical"
                         android:layout_marginRight="20dp" />
+
+                    <ImageView
+                        android:layout_width="10dp"
+                        android:layout_height="fill_parent"
+                        android:id="@+id/indicatorWaist" />
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="10dp"
+                    android:id="@+id/tableRowGaugeWaist"
+                    android:visibility="gone">
+
+                    <Space
+                        android:layout_width="20px"
+                        android:layout_height="20px" />
+
+                    <com.health.openscale.core.LinearGaugeView
+                        android:layout_width="fill_parent" android:layout_height="wrap_content"
+                        android:id="@+id/linearGaugeWaist" />
+
+                    <Space
+                        android:layout_width="20px"
+                        android:layout_height="20px" />
+
+                    <Space
+                        android:layout_width="20px"
+                        android:layout_height="20px" />
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:orientation="horizontal"
+                    android:id="@+id/tableRowWHtR"
+                    android:layout_marginBottom="10dp">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:id="@+id/imageView456"
+                        android:src="@drawable/whtr"
+                        android:layout_gravity="center" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:text="@string/label_whtr"
+                        android:id="@+id/txtLabelWHtR"
+                        android:layout_column="1"
+                        android:textAlignment="center"
+                        android:singleLine="false"
+                        android:layout_marginLeft="20dp"
+                        android:password="false"
+                        android:phoneNumber="false"
+                        android:lines="2"
+                        android:layout_marginRight="50dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:text="-1"
+                        android:id="@+id/txtWHtRLast"
+                        android:layout_column="2"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginRight="20dp" />
+
+                    <ImageView
+                        android:layout_width="10dp"
+                        android:layout_height="fill_parent"
+                        android:id="@+id/indicatorWHtR" />
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="10dp"
+                    android:id="@+id/tableRowGaugeWHtR"
+                    android:visibility="gone">
+
+                    <Space
+                        android:layout_width="20px"
+                        android:layout_height="20px" />
+
+                    <com.health.openscale.core.LinearGaugeView
+                        android:layout_width="fill_parent" android:layout_height="wrap_content"
+                        android:id="@+id/linearGaugeWHtR" />
+
+                    <Space
+                        android:layout_width="20px"
+                        android:layout_height="20px" />
+
+                    <Space
+                        android:layout_width="20px"
+                        android:layout_height="20px" />
                 </TableRow>
 
                 <TableRow
@@ -348,7 +602,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textAppearance="?android:attr/textAppearanceLarge"
-                        android:text="Hip"
+                        android:text="@string/label_hip"
                         android:id="@+id/txtLabelHip"
                         android:layout_column="1"
                         android:textAlignment="center"
@@ -368,6 +622,108 @@
                         android:layout_column="2"
                         android:layout_gravity="center_vertical"
                         android:layout_marginRight="20dp" />
+
+                    <ImageView
+                        android:layout_width="10dp"
+                        android:layout_height="fill_parent"
+                        android:id="@+id/indicatorHip" />
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="10dp"
+                    android:id="@+id/tableRowGaugeHip"
+                    android:visibility="gone">
+
+                    <Space
+                        android:layout_width="20px"
+                        android:layout_height="20px" />
+
+                    <com.health.openscale.core.LinearGaugeView
+                        android:layout_width="fill_parent" android:layout_height="wrap_content"
+                        android:id="@+id/linearGaugeHip" />
+
+                    <Space
+                        android:layout_width="20px"
+                        android:layout_height="20px" />
+
+                    <Space
+                        android:layout_width="20px"
+                        android:layout_height="20px" />
+                </TableRow>
+
+
+
+                <TableRow
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:orientation="horizontal"
+                    android:id="@+id/tableRowWHR"
+                    android:layout_marginBottom="10dp">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:id="@+id/imageView49"
+                        android:src="@drawable/whr"
+                        android:layout_gravity="center" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:text="@string/label_whr"
+                        android:id="@+id/txtLabelWHR"
+                        android:layout_column="1"
+                        android:textAlignment="center"
+                        android:singleLine="false"
+                        android:layout_marginLeft="20dp"
+                        android:password="false"
+                        android:phoneNumber="false"
+                        android:lines="2"
+                        android:layout_marginRight="50dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:text="-1"
+                        android:id="@+id/txtWHRLast"
+                        android:layout_column="2"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginRight="20dp" />
+
+                    <ImageView
+                        android:layout_width="10dp"
+                        android:layout_height="fill_parent"
+                        android:id="@+id/indicatorWHR" />
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="10dp"
+                    android:id="@+id/tableRowGaugeWHR"
+                    android:visibility="gone">
+
+                    <Space
+                        android:layout_width="20px"
+                        android:layout_height="20px" />
+
+                    <com.health.openscale.core.LinearGaugeView
+                        android:layout_width="fill_parent" android:layout_height="wrap_content"
+                        android:id="@+id/linearGaugeWHR" />
+
+                    <Space
+                        android:layout_width="20px"
+                        android:layout_height="20px" />
+
+                    <Space
+                        android:layout_width="20px"
+                        android:layout_height="20px" />
                 </TableRow>
 
             </TableLayout>
@@ -375,7 +731,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="GOAL"
+                android:text="@string/label_title_goal"
                 android:id="@+id/txtTitleGoal"
                 android:autoText="false"
                 android:textSize="20dp"
@@ -517,7 +873,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="STATISTICS"
+                android:text="@string/label_title_statistics"
                 android:id="@+id/txtTitleStatistics"
                 android:autoText="false"
                 android:textSize="20dp"

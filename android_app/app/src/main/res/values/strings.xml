@@ -27,6 +27,8 @@
     <string name="label_waist">Waist circumference</string>
     <string name="label_hip">Hip circumference</string>
     <string name="label_comment">Comment</string>
+    <string name="label_whtr">Waist-to-height ratio</string>
+    <string name="label_whr">Waist-hip ratio</string>
 
     <string name="label_days">days</string>
     <string name="label_measures">measures</string>
@@ -91,6 +93,7 @@
     <string name="info_bluetooth_not_established">Bluetooth connection not established</string>
     <string name="info_enter_user_name">Enter your name</string>
     <string name="info_no_selected_user">No user exist! Please create a new user in the settings</string>
+    <string name="info_no_evaluation_available">Can\'t evaluate the value</string>
 
     <string name="question_really_delete_all">Do you really want to delete all database entries?</string>
     <string name="question_really_delete_user">Do you really want to delete the user? </string>

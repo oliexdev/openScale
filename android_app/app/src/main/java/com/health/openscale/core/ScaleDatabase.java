@@ -77,6 +77,9 @@ public class ScaleDatabase extends SQLiteOpenHelper {
             COLUMN_NAME_COMMENT
     };
 
+    private final SQLiteDatabase dbWrite = getWritableDatabase();
+    private final SQLiteDatabase dbRead = getReadableDatabase();
+
     private SimpleDateFormat formatDateTime = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US);
     
 	public ScaleDatabase(Context context) {
@@ -101,9 +104,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
 	}
 	
 	public void clearScaleData(int userId) {
-		SQLiteDatabase db = getWritableDatabase();
-		
-		db.delete(TABLE_NAME, COLUMN_NAME_USER_ID + "=" + Integer.toString(userId), null);
+        dbWrite.delete(TABLE_NAME, COLUMN_NAME_USER_ID + "=" + Integer.toString(userId), null);
 	}
 
 	public boolean insertEntry(ScaleData scaleData) {
@@ -138,12 +139,12 @@ public class ScaleDatabase extends SQLiteOpenHelper {
             }
         }
 
+        cursorScaleDB.close();
+
         return true;
 	}
 
     public void updateEntry(long id, ScaleData scaleData) {
-        SQLiteDatabase db = getWritableDatabase();
-
         ContentValues values = new ContentValues();
         values.put(COLUMN_NAME_DATE_TIME, formatDateTime.format(scaleData.date_time));
         values.put(COLUMN_NAME_WEIGHT, scaleData.weight);
@@ -154,14 +155,12 @@ public class ScaleDatabase extends SQLiteOpenHelper {
         values.put(COLUMN_NAME_HIP, scaleData.hip);
         values.put(COLUMN_NAME_COMMENT, scaleData.comment);
 
-        db.update(TABLE_NAME, values, COLUMN_NAME_ID + "=" + id, null);
+        dbWrite.update(TABLE_NAME, values, COLUMN_NAME_ID + "=" + id, null);
     }
 
     public ScaleData getDataEntry(long id)
     {
-        SQLiteDatabase db = getReadableDatabase();;
-
-        Cursor cursorScaleDB = db.query(
+        Cursor cursorScaleDB = dbRead.query(
                 TABLE_NAME, 	// The table to query
                 projection, 	// The columns to return
                 COLUMN_NAME_ID + "=?", 			// The columns for the WHERE clause
@@ -173,19 +172,19 @@ public class ScaleDatabase extends SQLiteOpenHelper {
 
         cursorScaleDB.moveToFirst();
 
-        return readAtCursor(cursorScaleDB);
+        ScaleData scaleData = readAtCursor(cursorScaleDB);
+
+        cursorScaleDB.close();
+
+        return scaleData;
     }
 
     public void deleteEntry(long id) {
-        SQLiteDatabase db = getWritableDatabase();
-
-        db.delete(TABLE_NAME, COLUMN_NAME_ID + "= ?", new String[] {String.valueOf(id)});
+        dbWrite.delete(TABLE_NAME, COLUMN_NAME_ID + "= ?", new String[] {String.valueOf(id)});
     }
 
     public int[] getCountsOfAllMonth(int userId, int year) {
         int [] numOfMonth = new int[12];
-
-        SQLiteDatabase db = getReadableDatabase();
 
         Calendar start_cal = Calendar.getInstance();
         Calendar end_cal = Calendar.getInstance();
@@ -195,7 +194,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
             end_cal.set(year, i, 1, 0, 0, 0);
             end_cal.add(Calendar.MONTH, 1);
 
-            Cursor cursorScaleDB = db.query(
+            Cursor cursorScaleDB = dbRead.query(
                     TABLE_NAME,    // The table to query
                     new String[]{"count(*)"},    // The columns to return
                     COLUMN_NAME_DATE_TIME + " >= ? AND " + COLUMN_NAME_DATE_TIME + " < ? AND " + COLUMN_NAME_USER_ID + "=?",            // The columns for the WHERE clause
@@ -208,13 +207,14 @@ public class ScaleDatabase extends SQLiteOpenHelper {
             cursorScaleDB.moveToFirst();
 
             numOfMonth[i] = cursorScaleDB.getInt(0);
+
+            cursorScaleDB.close();
         }
 
         return numOfMonth;
     }
 
     public ArrayList<ScaleData> getScaleDataOfMonth(int userId, int year, int month) {
-        SQLiteDatabase db = getReadableDatabase();
         ArrayList<ScaleData> scaleDataList = new ArrayList<ScaleData>();
 
         String sortOrder = COLUMN_NAME_DATE_TIME + " DESC";
@@ -226,7 +226,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
         end_cal.set(year, month, 1, 0, 0, 0);
         end_cal.add(Calendar.MONTH, 1);
 
-        Cursor cursorScaleDB = db.query(
+        Cursor cursorScaleDB = dbRead.query(
                 TABLE_NAME, 	// The table to query
                 projection, 	// The columns to return
                 COLUMN_NAME_DATE_TIME + " >= ? AND " + COLUMN_NAME_DATE_TIME + " < ? AND " + COLUMN_NAME_USER_ID + "=?",            // The columns for the WHERE clause
@@ -244,16 +244,17 @@ public class ScaleDatabase extends SQLiteOpenHelper {
             cursorScaleDB.moveToNext();
         }
 
+        cursorScaleDB.close();
+
         return scaleDataList;
     }
 
 	public ArrayList<ScaleData> getScaleDataList(int userId) {
-		SQLiteDatabase db = getReadableDatabase();
 		ArrayList<ScaleData> scaleDataList = new ArrayList<ScaleData>();
 
 		String sortOrder = COLUMN_NAME_DATE_TIME + " DESC";
 
-		Cursor cursorScaleDB = db.query(
+		Cursor cursorScaleDB = dbRead.query(
 		    TABLE_NAME, 	// The table to query
 		    projection, 	// The columns to return
             COLUMN_NAME_USER_ID + "=?", 			// The columns for the WHERE clause
@@ -270,6 +271,8 @@ public class ScaleDatabase extends SQLiteOpenHelper {
 
                 cursorScaleDB.moveToNext();
             }
+
+        cursorScaleDB.close();
 		
 		return scaleDataList;
 	}

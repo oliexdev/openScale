@@ -96,32 +96,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
             btnDeleteAll.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
         }
 
-        prefs = PreferenceManager.getDefaultSharedPreferences(tableView.getContext());
-
-        if(!prefs.getBoolean("fatEnable", true)) {
-            TextView txtFatTableHeader = (TextView)tableView.findViewById(R.id.txtFatTableHeader);
-            txtFatTableHeader.setVisibility(View.GONE);
-        }
-
-        if(!prefs.getBoolean("muscleEnable", true)) {
-            TextView txtMuscleTableHeader = (TextView)tableView.findViewById(R.id.txtMuscleTableHeader);
-            txtMuscleTableHeader.setVisibility(View.GONE);
-        }
-
-        if(!prefs.getBoolean("waterEnable", true)) {
-            TextView txtWaterTableHeader = (TextView)tableView.findViewById(R.id.txtWaterTableHeader);
-            txtWaterTableHeader.setVisibility(View.GONE);
-        }
-
-        if(!prefs.getBoolean("waistEnable", true)) {
-            TextView txtWaistTableHeader = (TextView)tableView.findViewById(R.id.txtWaistTableHeader);
-            txtWaistTableHeader.setVisibility(View.GONE);
-        }
-
-        if(!prefs.getBoolean("hipEnable", true)) {
-            TextView txtHipTableHeader = (TextView)tableView.findViewById(R.id.txtHipTableHeader);
-            txtHipTableHeader.setVisibility(View.GONE);
-        }
+        OpenScale.getInstance(tableView.getContext()).registerFragment(this);
 
 		return tableView;
 	}
@@ -129,9 +104,52 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 	@Override
 	public void updateOnView(ArrayList<ScaleData> scaleDataList)
 	{
+        prefs = PreferenceManager.getDefaultSharedPreferences(tableView.getContext());
+
+        if(!prefs.getBoolean("fatEnable", true)) {
+            TextView txtFatTableHeader = (TextView)tableView.findViewById(R.id.txtFatTableHeader);
+            txtFatTableHeader.setVisibility(View.GONE);
+        } else {
+            TextView txtFatTableHeader = (TextView)tableView.findViewById(R.id.txtFatTableHeader);
+            txtFatTableHeader.setVisibility(View.VISIBLE);
+        }
+
+        if(!prefs.getBoolean("muscleEnable", true)) {
+            TextView txtMuscleTableHeader = (TextView)tableView.findViewById(R.id.txtMuscleTableHeader);
+            txtMuscleTableHeader.setVisibility(View.GONE);
+        } else {
+            TextView txtMuscleTableHeader = (TextView)tableView.findViewById(R.id.txtMuscleTableHeader);
+            txtMuscleTableHeader.setVisibility(View.VISIBLE);
+        }
+
+        if(!prefs.getBoolean("waterEnable", true)) {
+            TextView txtWaterTableHeader = (TextView)tableView.findViewById(R.id.txtWaterTableHeader);
+            txtWaterTableHeader.setVisibility(View.GONE);
+        } else {
+            TextView txtWaterTableHeader = (TextView)tableView.findViewById(R.id.txtWaterTableHeader);
+            txtWaterTableHeader.setVisibility(View.VISIBLE);
+        }
+
+        if(!prefs.getBoolean("waistEnable", true)) {
+            TextView txtWaistTableHeader = (TextView)tableView.findViewById(R.id.txtWaistTableHeader);
+            txtWaistTableHeader.setVisibility(View.GONE);
+        } else {
+            TextView txtWaistTableHeader = (TextView)tableView.findViewById(R.id.txtWaistTableHeader);
+            txtWaistTableHeader.setVisibility(View.VISIBLE);
+        }
+
+        if(!prefs.getBoolean("hipEnable", true)) {
+            TextView txtHipTableHeader = (TextView)tableView.findViewById(R.id.txtHipTableHeader);
+            txtHipTableHeader.setVisibility(View.GONE);
+        } else {
+            TextView txtHipTableHeader = (TextView)tableView.findViewById(R.id.txtHipTableHeader);
+            txtHipTableHeader.setVisibility(View.VISIBLE);
+        }
+
         tableDataView.setColumnStretchable(1, true);
         tableDataView.setColumnStretchable(2, true);
         tableDataView.setColumnStretchable(3, true);
+
         if(prefs.getBoolean("fatEnable", true)) {
             tableDataView.setColumnStretchable(4, true);
         }
@@ -149,9 +167,9 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
         }
         tableDataView.setColumnStretchable(9, true);
 
-		TableRow headerRow = (TableRow) tableView.findViewById(R.id.tableHeader);
-		tableDataView.removeAllViews();
-		tableDataView.addView(headerRow);
+        TableRow headerRow = (TableRow) tableView.findViewById(R.id.tableHeader);
+        tableDataView.removeAllViews();
+        tableDataView.addView(headerRow);
 
 		for(ScaleData scaleData: scaleDataList)
 		{

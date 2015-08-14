@@ -93,4 +93,7 @@
     <string name="label_hip">腰囲</string>
     <string name="info_your_waist">あなたは胴囲が</string>
     <string name="info_your_hip">あなたは腰囲が</string>
+    <string name="info_no_evaluation_available">値を評価することはできません</string>
+    <string name="label_whtr">腰と高さの比</string>
+    <string name="label_whr">ウエストヒップ比</string>
 </resources>
