@@ -693,7 +693,9 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         Calendar histDate = Calendar.getInstance();
         Calendar lastDate = Calendar.getInstance();
 
-        lastDate.setTime(lastScaleData.date_time);
+        if (!scaleDataList.isEmpty()) {
+            lastDate.setTime(scaleDataList.get(0).date_time);
+        }
 
         scaleDataLastDays = new ArrayList<ScaleData>();
 
@@ -713,8 +715,8 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
             long days = 0 - daysBetween(lastDate, histDate);
 
-            if (days == 0) {
-                axisValues.add(new AxisValue(i, DateFormat.getDateInstance(DateFormat.SHORT).format(lastScaleData.date_time).toCharArray()));
+            if (days == 0 && !scaleDataList.isEmpty()) {
+                axisValues.add(new AxisValue(i, DateFormat.getDateInstance(DateFormat.SHORT).format(scaleDataList.get(0).date_time).toCharArray()));
             } else {
                 axisValues.add(new AxisValue(i, String.format("%d " + getResources().getString(R.string.label_days), days).toCharArray()));
             }
@@ -820,11 +822,10 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
 
         if ((getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == Configuration.SCREENLAYOUT_SIZE_XLARGE ||
-                (getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == Configuration.SCREENLAYOUT_SIZE_LARGE) {
+            (getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == Configuration.SCREENLAYOUT_SIZE_LARGE) {
             pieChartData.setCenterText1FontSize(25);
             pieChartData.setCenterText2FontSize(14);
-        } else
-        {
+        } else {
             pieChartData.setCenterText1FontSize(20);
             pieChartData.setCenterText2FontSize(12);
             pieChartData.setValueLabelTextSize(12);

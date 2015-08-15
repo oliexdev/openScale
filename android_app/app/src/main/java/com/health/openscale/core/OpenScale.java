@@ -16,6 +16,7 @@
 
 package com.health.openscale.core;
 
+import android.support.v4.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Handler;
@@ -433,7 +434,9 @@ public class OpenScale {
 
         for(FragmentUpdateListener fragment : fragmentList) {
             if (fragment != null) {
-                fragment.updateOnView(scaleDataList);
+                if (((Fragment)fragment).isAdded()) {
+                    fragment.updateOnView(scaleDataList);
+                }
             }
         }
     }
