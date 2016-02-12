@@ -1,25 +1,25 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="5dp"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:padding="10dp"
     tools:context="com.health.openscale.MainActivity$PlaceholderFragment">
 
     <ScrollView
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:layout_marginBottom="50dp" >
+        android:layout_marginBottom="80dp" >
 
         <TableLayout
             android:id="@+id/tableDataView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
             android:shrinkColumns="*">
 
             <TableRow
                 android:id="@+id/tableHeader"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" >
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent" >
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -97,11 +97,13 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="@drawable/flat_selector"
-                    android:minHeight="10dp"
-                    android:minWidth="5dp"
+                    android:minHeight="20dp"
+                    android:minWidth="10dp"
                     android:text="@string/label_delete_all"
                     android:textColor="@android:color/white"
-                    android:textSize="5dp" />
+                    android:textSize="10sp"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="10dp" />
 
             </TableRow>
         </TableLayout>
@@ -111,7 +113,8 @@
        android:layout_width="fill_parent"
        android:layout_height="wrap_content"
        android:layout_alignParentBottom="true"
-       android:layout_centerHorizontal="true" >
+       android:layout_centerHorizontal="true"
+       android:layout_marginBottom="15dp" >
 
        <Button
            android:id="@+id/btnImportData"

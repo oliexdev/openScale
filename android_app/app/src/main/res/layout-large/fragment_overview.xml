@@ -8,7 +8,7 @@
     android:layout_alignParentStart="true"
     tools:context="com.health.openscale.MainActivity$PlaceholderFragment"
     android:weightSum="100"
-    android:padding="5dp">
+    android:padding="10dp">
 
 
     <ScrollView
@@ -49,19 +49,27 @@
                 android:layout_height="1dp"
                 android:background="@android:color/darker_gray"/>
 
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0"
+                android:weightSum="100">
 
                 <lecho.lib.hellocharts.view.PieChartView
                      android:id="@+id/pieChartLast"
-                     android:layout_width="200dp"
-                     android:layout_height="150dp"
-                    android:layout_gravity="center"/>
+                     android:layout_width="300dp"
+                     android:layout_height="200dp"
+                    android:measureWithLargestChild="false"
+                    android:layout_weight="30" />
 
                 <lecho.lib.hellocharts.view.LineChartView
                     android:id="@+id/lineChartLast"
                     android:layout_width="match_parent"
-                    android:layout_height="150dp"
-                    android:layout_gravity="center"/>
+                    android:layout_height="match_parent"
+                    android:layout_weight="70" />
 
+            </LinearLayout>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -80,51 +88,50 @@
             <TableLayout
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
+                android:layout_weight="90"
                 android:stretchColumns="1">
 
                 <TableRow
                     android:layout_width="fill_parent"
                     android:layout_height="fill_parent"
                     android:orientation="horizontal"
-                    android:layout_marginBottom="5dp"
-                    android:weightSum="100"
+                    android:layout_marginBottom="10dp"
                     android:id="@+id/tableRowWeight">
 
                     <ImageView
                         android:layout_width="wrap_content"
-                        android:layout_height="25dp"
+                        android:layout_height="40dp"
                         android:id="@+id/imageView11"
                         android:src="@drawable/weight"
-                        android:layout_gravity="center"/>
+                        android:layout_gravity="center" />
 
                     <TextView
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="80"
-                        android:textSize="15dp"
                         android:textAppearance="?android:attr/textAppearanceLarge"
                         android:text="@string/label_weight"
                         android:id="@+id/txtLabelWeight"
                         android:layout_column="1"
                         android:textAlignment="center"
                         android:singleLine="false"
+                        android:layout_marginLeft="20dp"
                         android:password="false"
                         android:phoneNumber="false"
-                        android:lines="2"/>
+                        android:lines="2"
+                        android:layout_marginRight="50dp" />
 
                     <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="fill_parent"
-                        android:layout_weight="20"
-                        android:textSize="15dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
                         android:textAppearance="?android:attr/textAppearanceLarge"
                         android:text="-1kg"
-                        android:layout_column="2"
                         android:id="@+id/txtWeightLast"
-                        android:layout_gravity="center_vertical"/>
+                        android:layout_column="2"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginRight="20dp" />
 
                     <ImageView
-                        android:layout_width="2dp"
+                        android:layout_width="10dp"
                         android:layout_height="fill_parent"
                         android:id="@+id/indicatorWeight" />
                 </TableRow>
@@ -159,45 +166,42 @@
                     android:layout_height="fill_parent"
                     android:orientation="horizontal"
                     android:layout_marginBottom="10dp"
-                    android:weightSum="100"
                     android:id="@+id/tableRowBMI">
 
                     <ImageView
                         android:layout_width="wrap_content"
-                        android:layout_height="25dp"
+                        android:layout_height="40dp"
                         android:id="@+id/imageView"
                         android:src="@drawable/bmi"
                         android:layout_gravity="center" />
 
                     <TextView
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="80"
-                        android:textSize="15dp"
                         android:textAppearance="?android:attr/textAppearanceLarge"
                         android:text="@string/label_bmi"
                         android:id="@+id/txtLabelBMI"
                         android:layout_column="1"
                         android:textAlignment="center"
                         android:singleLine="false"
-                        android:layout_marginLeft="5dp"
+                        android:layout_marginLeft="20dp"
                         android:password="false"
                         android:phoneNumber="false"
-                        android:lines="2" />
+                        android:lines="2"
+                        android:layout_marginRight="50dp" />
 
                     <TextView
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="20"
-                        android:textSize="15dp"
                         android:textAppearance="?android:attr/textAppearanceLarge"
                         android:text="-1"
                         android:id="@+id/txtBMILast"
                         android:layout_column="2"
-                        android:layout_gravity="center_vertical" />
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginRight="20dp" />
 
                     <ImageView
-                        android:layout_width="2dp"
+                        android:layout_width="10dp"
                         android:layout_height="fill_parent"
                         android:id="@+id/indicatorBMI" />
                 </TableRow>
@@ -207,7 +211,6 @@
                     android:layout_height="fill_parent"
                     android:orientation="horizontal"
                     android:layout_marginBottom="10dp"
-                    android:weightSum="100"
                     android:id="@+id/tableRowGaugeBMI"
                     android:visibility="gone">
 
@@ -234,37 +237,33 @@
                     android:layout_height="fill_parent"
                     android:orientation="horizontal"
                     android:id="@+id/tableRowFat"
-                    android:weightSum="100"
                     android:layout_marginBottom="10dp">
 
                     <ImageView
                         android:layout_width="match_parent"
-                        android:layout_height="25dp"
+                        android:layout_height="40dp"
                         android:id="@+id/imageView2"
                         android:src="@drawable/fat"
                         android:layout_gravity="center" />
 
                     <TextView
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="80"
-                        android:textSize="15dp"
                         android:textAppearance="?android:attr/textAppearanceLarge"
                         android:text="@string/label_fat"
                         android:id="@+id/txtLabelFat"
                         android:layout_column="1"
                         android:textAlignment="center"
                         android:singleLine="false"
-                        android:layout_marginLeft="5dp"
+                        android:layout_marginLeft="20dp"
                         android:password="false"
                         android:phoneNumber="false"
-                        android:lines="2"/>
+                        android:lines="2"
+                        android:layout_marginRight="50dp" />
 
                     <TextView
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="20"
-                        android:textSize="15dp"
                         android:textAppearance="?android:attr/textAppearanceLarge"
                         android:text="-1 %"
                         android:id="@+id/txtFatLast"
@@ -272,7 +271,7 @@
                         android:layout_gravity="center_vertical" />
 
                     <ImageView
-                        android:layout_width="2dp"
+                        android:layout_width="10dp"
                         android:layout_height="fill_parent"
                         android:id="@+id/indicatorFat" />
                 </TableRow>
@@ -308,45 +307,42 @@
                     android:layout_height="fill_parent"
                     android:orientation="horizontal"
                     android:id="@+id/tableRowMuscle"
-                    android:weightSum="100"
                     android:layout_marginBottom="10dp">
 
                     <ImageView
                         android:layout_width="match_parent"
-                        android:layout_height="25dp"
+                        android:layout_height="40dp"
                         android:id="@+id/imageView3"
                         android:src="@drawable/muscle"
                         android:layout_gravity="center" />
 
                     <TextView
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="80"
-                        android:textSize="15dp"
                         android:textAppearance="?android:attr/textAppearanceLarge"
                         android:text="@string/label_muscle"
                         android:id="@+id/txtLabelMuscle"
                         android:layout_column="1"
                         android:textAlignment="center"
                         android:singleLine="false"
-                        android:layout_marginLeft="5dp"
+                        android:layout_marginLeft="20dp"
                         android:password="false"
                         android:phoneNumber="false"
-                        android:lines="2" />
+                        android:lines="2"
+                        android:layout_marginRight="50dp" />
 
                     <TextView
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="20"
-                        android:textSize="15dp"
                         android:textAppearance="?android:attr/textAppearanceLarge"
                         android:text="-1 %"
                         android:id="@+id/txtMuscleLast"
                         android:layout_column="2"
-                        android:layout_gravity="center_vertical" />
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginRight="20dp" />
 
                     <ImageView
-                        android:layout_width="2dp"
+                        android:layout_width="10dp"
                         android:layout_height="fill_parent"
                         android:id="@+id/indicatorMuscle" />
                 </TableRow>
@@ -386,40 +382,38 @@
 
                     <ImageView
                         android:layout_width="match_parent"
-                        android:layout_height="25dp"
+                        android:layout_height="40dp"
                         android:id="@+id/imageView4"
                         android:src="@drawable/water"
                         android:layout_gravity="center" />
 
                     <TextView
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="80"
-                        android:textSize="15dp"
                         android:textAppearance="?android:attr/textAppearanceLarge"
                         android:text="@string/label_water"
                         android:id="@+id/txtLabelWater"
                         android:layout_column="1"
                         android:textAlignment="center"
                         android:singleLine="false"
-                        android:layout_marginLeft="5dp"
+                        android:layout_marginLeft="20dp"
                         android:password="false"
                         android:phoneNumber="false"
-                        android:lines="2"/>
+                        android:lines="2"
+                        android:layout_marginRight="50dp" />
 
                     <TextView
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="20"
-                        android:textSize="15dp"
                         android:textAppearance="?android:attr/textAppearanceLarge"
                         android:text="-1 %"
                         android:id="@+id/txtWaterLast"
                         android:layout_column="2"
-                        android:layout_gravity="center_vertical" />
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginRight="20dp" />
 
                     <ImageView
-                        android:layout_width="2dp"
+                        android:layout_width="10dp"
                         android:layout_height="fill_parent"
                         android:id="@+id/indicatorWater" />
                 </TableRow>
@@ -459,40 +453,38 @@
 
                     <ImageView
                         android:layout_width="match_parent"
-                        android:layout_height="25dp"
+                        android:layout_height="40dp"
                         android:id="@+id/imageView45"
                         android:src="@drawable/waist"
                         android:layout_gravity="center" />
 
                     <TextView
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="80"
-                        android:textSize="15dp"
                         android:textAppearance="?android:attr/textAppearanceLarge"
                         android:text="@string/label_waist"
                         android:id="@+id/txtLabelWaist"
                         android:layout_column="1"
                         android:textAlignment="center"
                         android:singleLine="false"
-                        android:layout_marginLeft="5dp"
+                        android:layout_marginLeft="20dp"
                         android:password="false"
                         android:phoneNumber="false"
-                        android:lines="2" />
+                        android:lines="2"
+                        android:layout_marginRight="50dp" />
 
                     <TextView
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="20"
-                        android:textSize="15dp"
                         android:textAppearance="?android:attr/textAppearanceLarge"
                         android:text="-1 %"
                         android:id="@+id/txtWaistLast"
                         android:layout_column="2"
-                        android:layout_gravity="center_vertical" />
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginRight="20dp" />
 
                     <ImageView
-                        android:layout_width="2dp"
+                        android:layout_width="10dp"
                         android:layout_height="fill_parent"
                         android:id="@+id/indicatorWaist" />
                 </TableRow>
@@ -531,40 +523,38 @@
 
                     <ImageView
                         android:layout_width="match_parent"
-                        android:layout_height="25dp"
+                        android:layout_height="40dp"
                         android:id="@+id/imageView456"
                         android:src="@drawable/whtr"
                         android:layout_gravity="center" />
 
                     <TextView
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="80"
-                        android:textSize="15dp"
                         android:textAppearance="?android:attr/textAppearanceLarge"
                         android:text="@string/label_whtr"
                         android:id="@+id/txtLabelWHtR"
                         android:layout_column="1"
                         android:textAlignment="center"
                         android:singleLine="false"
-                        android:layout_marginLeft="5dp"
+                        android:layout_marginLeft="20dp"
                         android:password="false"
                         android:phoneNumber="false"
-                        android:lines="2" />
+                        android:lines="2"
+                        android:layout_marginRight="50dp" />
 
                     <TextView
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="20"
-                        android:textSize="15dp"
                         android:textAppearance="?android:attr/textAppearanceLarge"
                         android:text="-1"
                         android:id="@+id/txtWHtRLast"
                         android:layout_column="2"
-                        android:layout_gravity="center_vertical" />
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginRight="20dp" />
 
                     <ImageView
-                        android:layout_width="2dp"
+                        android:layout_width="10dp"
                         android:layout_height="fill_parent"
                         android:id="@+id/indicatorWHtR" />
                 </TableRow>
@@ -603,37 +593,35 @@
 
                     <ImageView
                         android:layout_width="match_parent"
-                        android:layout_height="25dp"
+                        android:layout_height="40dp"
                         android:id="@+id/imageView16"
                         android:src="@drawable/hip"
                         android:layout_gravity="center" />
 
                     <TextView
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="80"
-                        android:textSize="15dp"
                         android:textAppearance="?android:attr/textAppearanceLarge"
                         android:text="@string/label_hip"
                         android:id="@+id/txtLabelHip"
                         android:layout_column="1"
                         android:textAlignment="center"
                         android:singleLine="false"
-                        android:layout_marginLeft="5dp"
+                        android:layout_marginLeft="20dp"
                         android:password="false"
                         android:phoneNumber="false"
-                        android:lines="2" />
+                        android:lines="2"
+                        android:layout_marginRight="50dp" />
 
                     <TextView
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="20"
-                        android:textSize="15dp"
                         android:textAppearance="?android:attr/textAppearanceLarge"
                         android:text="-1 %"
                         android:id="@+id/txtHipLast"
                         android:layout_column="2"
-                        android:layout_gravity="center_vertical"/>
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginRight="20dp" />
 
                     <ImageView
                         android:layout_width="10dp"
@@ -677,40 +665,38 @@
 
                     <ImageView
                         android:layout_width="match_parent"
-                        android:layout_height="25dp"
+                        android:layout_height="40dp"
                         android:id="@+id/imageView49"
                         android:src="@drawable/whr"
                         android:layout_gravity="center" />
 
                     <TextView
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="80"
-                        android:textSize="15dp"
                         android:textAppearance="?android:attr/textAppearanceLarge"
                         android:text="@string/label_whr"
                         android:id="@+id/txtLabelWHR"
                         android:layout_column="1"
                         android:textAlignment="center"
                         android:singleLine="false"
-                        android:layout_marginLeft="5dp"
+                        android:layout_marginLeft="20dp"
                         android:password="false"
                         android:phoneNumber="false"
-                        android:lines="2" />
+                        android:lines="2"
+                        android:layout_marginRight="50dp" />
 
                     <TextView
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="20"
-                        android:textSize="15dp"
                         android:textAppearance="?android:attr/textAppearanceLarge"
                         android:text="-1"
                         android:id="@+id/txtWHRLast"
                         android:layout_column="2"
-                        android:layout_gravity="center_vertical" />
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginRight="20dp" />
 
                     <ImageView
-                        android:layout_width="2dp"
+                        android:layout_width="10dp"
                         android:layout_height="fill_parent"
                         android:id="@+id/indicatorWHR" />
                 </TableRow>
@@ -748,9 +734,9 @@
                 android:text="@string/label_title_goal"
                 android:id="@+id/txtTitleGoal"
                 android:autoText="false"
-                android:textSize="25dp"
+                android:textSize="20dp"
                 android:typeface="monospace"
-                android:layout_marginTop="25dp" />
+                android:layout_marginTop="20dp" />
 
             <View
                 android:layout_width="fill_parent"
@@ -771,37 +757,35 @@
 
                     <ImageView
                         android:layout_width="match_parent"
-                        android:layout_height="25dp"
+                        android:layout_height="40dp"
                         android:id="@+id/imageView5"
                         android:src="@drawable/target"
                         android:layout_gravity="center" />
 
                     <TextView
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="80"
-                        android:textSize="15dp"
                         android:textAppearance="?android:attr/textAppearanceLarge"
                         android:text="Target weight"
                         android:id="@+id/txtLabelGoalWeight"
                         android:layout_column="1"
                         android:textAlignment="center"
                         android:singleLine="false"
-                        android:layout_marginLeft="5dp"
+                        android:layout_marginLeft="20dp"
                         android:password="false"
                         android:phoneNumber="false"
-                        android:lines="2" />
+                        android:lines="2"
+                        android:layout_marginRight="50dp" />
 
                     <TextView
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="20"
-                        android:textSize="15dp"
                         android:textAppearance="?android:attr/textAppearanceLarge"
                         android:text="-1 kg"
                         android:id="@+id/txtGoalWeight"
                         android:layout_column="2"
-                        android:layout_gravity="center_vertical"/>
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginRight="20dp" />
                 </TableRow>
 
                 <TableRow
@@ -813,37 +797,35 @@
 
                     <ImageView
                         android:layout_width="match_parent"
-                        android:layout_height="25dp"
+                        android:layout_height="40dp"
                         android:id="@+id/imageView6"
                         android:src="@drawable/difference"
                         android:layout_gravity="center" />
 
                     <TextView
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="80"
-                        android:textSize="15dp"
                         android:textAppearance="?android:attr/textAppearanceLarge"
                         android:text="Weight difference"
                         android:id="@+id/txtLabelGoalDiff"
                         android:layout_column="1"
                         android:textAlignment="center"
                         android:singleLine="false"
-                        android:layout_marginLeft="5dp"
+                        android:layout_marginLeft="20dp"
                         android:password="false"
                         android:phoneNumber="false"
-                        android:lines="2"/>
+                        android:lines="2"
+                        android:layout_marginRight="50dp" />
 
                     <TextView
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="20"
-                        android:textSize="15dp"
                         android:textAppearance="?android:attr/textAppearanceLarge"
                         android:text="-1 kg"
                         android:id="@+id/txtGoalDiff"
                         android:layout_column="2"
-                        android:layout_gravity="center_vertical"/>
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginRight="20dp" />
                 </TableRow>
 
                 <TableRow
@@ -855,37 +837,35 @@
 
                     <ImageView
                         android:layout_width="match_parent"
-                        android:layout_height="25dp"
+                        android:layout_height="40dp"
                         android:id="@+id/imageView7"
                         android:src="@drawable/daysleft"
                         android:layout_gravity="center" />
 
                     <TextView
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="80"
-                        android:textSize="15dp"
                         android:textAppearance="?android:attr/textAppearanceLarge"
                         android:text="Days left"
                         android:id="@+id/txtLabelDayLeft"
                         android:layout_column="1"
                         android:textAlignment="center"
                         android:singleLine="false"
-                        android:layout_marginLeft="5dp"
+                        android:layout_marginLeft="20dp"
                         android:password="false"
                         android:phoneNumber="false"
-                        android:lines="2"/>
+                        android:lines="2"
+                        android:layout_marginRight="50dp" />
 
                     <TextView
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="20"
-                        android:textSize="15dp"
                         android:textAppearance="?android:attr/textAppearanceLarge"
                         android:text="-1 days"
                         android:id="@+id/txtGoalDayLeft"
                         android:layout_column="2"
-                        android:layout_gravity="center_vertical"/>
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginRight="20dp" />
                 </TableRow>
 
             </TableLayout>
@@ -896,9 +876,9 @@
                 android:text="@string/label_title_statistics"
                 android:id="@+id/txtTitleStatistics"
                 android:autoText="false"
-                android:textSize="25dp"
+                android:textSize="20dp"
                 android:typeface="monospace"
-                android:layout_marginTop="25dp" />
+                android:layout_marginTop="20dp" />
 
             <View
                 android:layout_width="fill_parent"
@@ -919,37 +899,35 @@
 
                     <ImageView
                         android:layout_width="match_parent"
-                        android:layout_height="25dp"
+                        android:layout_height="40dp"
                         android:id="@+id/imageView8"
                         android:src="@drawable/lastweek"
                         android:layout_gravity="center" />
 
                     <TextView
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="80"
-                        android:textSize="15dp"
                         android:textAppearance="?android:attr/textAppearanceLarge"
                         android:text="Last 7 days"
                         android:id="@+id/txtLabelAvgWeek"
                         android:layout_column="1"
                         android:textAlignment="center"
                         android:singleLine="false"
-                        android:layout_marginLeft="5dp"
+                        android:layout_marginLeft="20dp"
                         android:password="false"
                         android:phoneNumber="false"
-                        android:lines="2"/>
+                        android:lines="2"
+                        android:layout_marginRight="50dp" />
 
                     <TextView
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="20"
-                        android:textSize="15dp"
                         android:textAppearance="?android:attr/textAppearanceLarge"
                         android:text="-1"
                         android:id="@+id/txtAvgWeek"
                         android:layout_column="2"
-                        android:layout_gravity="center_vertical" />
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginRight="20dp" />
                 </TableRow>
 
                 <TableRow
@@ -957,41 +935,39 @@
                     android:layout_height="fill_parent"
                     android:orientation="horizontal"
                     android:id="@+id/tableRow11"
-                    android:weightSum="100"
                     android:layout_marginBottom="10dp">
 
                     <ImageView
                         android:layout_width="match_parent"
-                        android:layout_height="25dp"
+                        android:layout_height="40dp"
                         android:id="@+id/imageView9"
                         android:src="@drawable/lastmonth"
                         android:layout_gravity="center" />
 
                     <TextView
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="80"
-                        android:textSize="15dp"
                         android:textAppearance="?android:attr/textAppearanceLarge"
                         android:text="Last 30 days"
                         android:id="@+id/txtLabelAvgMonth"
+                        android:layout_column="1"
                         android:textAlignment="center"
                         android:singleLine="false"
-                        android:layout_marginLeft="5dp"
+                        android:layout_marginLeft="20dp"
                         android:password="false"
                         android:phoneNumber="false"
-                        android:lines="2" />
+                        android:lines="2"
+                        android:layout_marginRight="50dp" />
 
                     <TextView
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="20"
-                        android:textSize="15dp"
                         android:textAppearance="?android:attr/textAppearanceLarge"
                         android:text="-1"
                         android:id="@+id/txtAvgMonth"
                         android:layout_column="2"
-                        android:layout_gravity="center_vertical" />
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginRight="20dp" />
                 </TableRow>
 
             </TableLayout>
