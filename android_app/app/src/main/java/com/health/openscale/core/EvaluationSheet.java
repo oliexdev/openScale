@@ -15,6 +15,8 @@
 */
 package com.health.openscale.core;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -292,7 +294,7 @@ public class EvaluationSheet {
 
         birthDate.setTime(dateOfBirth);
         if (birthDate.after(today)) {
-            throw new IllegalArgumentException("Can't be born in the future");
+            Log.e("EvaluationSheet", "Can't evaluate your body values because you can't be born in the future");
         }
 
         age = today.get(Calendar.YEAR) - birthDate.get(Calendar.YEAR);
