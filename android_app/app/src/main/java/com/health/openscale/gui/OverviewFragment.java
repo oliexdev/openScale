@@ -41,6 +41,7 @@ import com.health.openscale.core.EvaluationResult;
 import com.health.openscale.core.EvaluationSheet;
 import com.health.openscale.core.LinearGaugeView;
 import com.health.openscale.core.OpenScale;
+import com.health.openscale.core.ScaleCalculator;
 import com.health.openscale.core.ScaleData;
 import com.health.openscale.core.ScaleUser;
 
@@ -359,16 +360,20 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         linearGaugeHip.setMinMaxValue(30, 200);
         linearGaugeWHR.setMinMaxValue(0, 1);
 
+        ScaleCalculator calculator = new ScaleCalculator();
+        calculator.body_height = currentScaleUser.body_height;
+        calculator.setScaleData(lastScaleData);
+
         EvaluationSheet evalSheet = new EvaluationSheet(currentScaleUser);
 
         EvaluationResult sheetWeight = evalSheet.evaluateWeight(lastScaleData.weight);
-        EvaluationResult sheetBMI = evalSheet.evaluateBMI(currentScaleUser.getBMI(lastScaleData.weight));
+        EvaluationResult sheetBMI = evalSheet.evaluateBMI(calculator.getBMI());
         EvaluationResult sheetFat = evalSheet.evaluateBodyFat(lastScaleData.fat);
         EvaluationResult sheetMuscle = evalSheet.evaluateBodyMuscle(lastScaleData.muscle);
         EvaluationResult sheetWater = evalSheet.evaluateBodyWater(lastScaleData.water);
         EvaluationResult sheetWaist = evalSheet.evaluateWaist(lastScaleData.waist);
-        EvaluationResult sheetWHtR = evalSheet.evaluateWHtR(currentScaleUser.getWHtR(lastScaleData.waist));
-        EvaluationResult sheetWHR = evalSheet.evaluateWHR(currentScaleUser.getWHR(lastScaleData.waist, lastScaleData.hip));
+        EvaluationResult sheetWHtR = evalSheet.evaluateWHtR(calculator.getWHtR());
+        EvaluationResult sheetWHR = evalSheet.evaluateWHR(calculator.getWHR());
 
         updateIndicator((ImageView)overviewView.findViewById(R.id.indicatorWeight), sheetWeight.eval_state);
         updateIndicator((ImageView)overviewView.findViewById(R.id.indicatorBMI), sheetBMI.eval_state);
@@ -391,14 +396,14 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         linearGaugeWHR.setLimits(sheetWHR.lowLimit, sheetWHR.highLimit);
 
         linearGaugeWeight.setValue(lastScaleData.weight);
-        linearGaugeBMI.setValue(currentScaleUser.getBMI(lastScaleData.weight));
+        linearGaugeBMI.setValue(calculator.getBMI());
         linearGaugeFat.setValue(lastScaleData.fat);
         linearGaugeMuscle.setValue(lastScaleData.muscle);
         linearGaugeWater.setValue(lastScaleData.water);
         linearGaugeWaist.setValue(lastScaleData.waist);
-        linearGaugeWHtR.setValue(currentScaleUser.getWHtR(lastScaleData.waist));
+        linearGaugeWHtR.setValue(calculator.getWHtR());
         linearGaugeHip.setValue(lastScaleData.hip);
-        linearGaugeWHR.setValue(currentScaleUser.getWHR(lastScaleData.waist, lastScaleData.hip));
+        linearGaugeWHR.setValue(calculator.getWHR());
     }
 
     private void updateIndicator(ImageView view, EvaluationResult.EVAL_STATE state) {
@@ -420,15 +425,19 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
     }
 
     private void updateLastMeasurement() {
+        ScaleCalculator calculator = new ScaleCalculator();
+        calculator.body_height = currentScaleUser.body_height;
+        calculator.setScaleData(lastScaleData);
+
         txtWeightLast.setText(lastScaleData.weight + " " + ScaleUser.UNIT_STRING[currentScaleUser.scale_unit]);
-        txtBMILast.setText(String.format("%.1f", currentScaleUser.getBMI(lastScaleData.weight)));
+        txtBMILast.setText(String.format("%.1f", calculator.getBMI()));
         txtFatLast.setText(lastScaleData.fat + " %");
         txtWaterLast.setText(lastScaleData.water + " %");
         txtMuscleLast.setText(lastScaleData.muscle + " %");
         txtWaistLast.setText(lastScaleData.waist + " cm");
-        txtWHtRLast.setText(String.format("%.2f", currentScaleUser.getWHtR(lastScaleData.waist)));
+        txtWHtRLast.setText(String.format("%.2f", calculator.getWHtR()));
         txtHipLast.setText(lastScaleData.hip + " cm");
-        txtWHRLast.setText(String.format("%.2f", currentScaleUser.getWHR(lastScaleData.waist, lastScaleData.hip)));
+        txtWHRLast.setText(String.format("%.2f", calculator.getWHR()));
     }
 
     private void updateGoal(ArrayList<ScaleData> scaleDataList) {
@@ -444,9 +453,40 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         long days = daysBetween(curDate, goalDate);
         txtGoalDayLeft.setText(days + " " + getResources().getString(R.string.label_days));
 
-        txtLabelGoalWeight.setText(Html.fromHtml(getResources().getString(R.string.label_goal_weight) + " <br> <font color='grey'><small>BMI " + String.format("%.1f", currentScaleUser.getBMI(currentScaleUser.goal_weight)) + " </small></font>"));
-        txtLabelGoalDiff.setText(Html.fromHtml(getResources().getString(R.string.label_weight_difference) + " <br> <font color='grey'><small>BMI " + String.format("%.1f", currentScaleUser.getBMI(lastScaleData.weight) - currentScaleUser.getBMI(currentScaleUser.goal_weight))  + " </small></font>"));
-        txtLabelDayLeft.setText(Html.fromHtml(getResources().getString(R.string.label_days_left) + " <br> <font color='grey'><small>" + getResources().getString(R.string.label_goal_date_is) + " " + DateFormat.getDateInstance(DateFormat.LONG).format(currentScaleUser.goal_date) + " </small></font>")); // currentScaleUser.goal_date
+        ScaleCalculator currentCalculator = new ScaleCalculator();
+        currentCalculator.body_height = currentScaleUser.body_height;
+        currentCalculator.weight = lastScaleData.weight;
+
+        ScaleCalculator goalCalculator = new ScaleCalculator();
+        goalCalculator.body_height = currentScaleUser.body_height;
+        goalCalculator.weight = currentScaleUser.goal_weight;
+
+        txtLabelGoalWeight.setText(
+                Html.fromHtml(
+                        getResources().getString(R.string.label_goal_weight) +
+                        " <br> <font color='grey'><small>BMI " +
+                        String.format("%.1f", goalCalculator.getBMI()) +
+                        " </small></font>"
+                )
+        );
+        txtLabelGoalDiff.setText(
+                Html.fromHtml(
+                        getResources().getString(R.string.label_weight_difference) +
+                        " <br> <font color='grey'><small>BMI " +
+                        String.format("%.1f", currentCalculator.getBMI() - goalCalculator.getBMI())  +
+                        " </small></font>"
+                )
+        );
+        txtLabelDayLeft.setText(
+                Html.fromHtml(
+                        getResources().getString(R.string.label_days_left) +
+                                " <br> <font color='grey'><small>" +
+                                getResources().getString(R.string.label_goal_date_is) +
+                                " "
+                                + DateFormat.getDateInstance(DateFormat.LONG).format(currentScaleUser.goal_date) +
+                                " </small></font>"
+                )
+        ); // currentScaleUser.goal_date
 
         ListIterator<ScaleData> scaleDataIterator = scaleDataList.listIterator();
 
@@ -457,6 +497,14 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
                 if (scaleDataIterator.hasNext()) {
                     ScaleData diffScaleData = scaleDataIterator.next();
 
+                    ScaleCalculator lastScaleCalculator = new ScaleCalculator();
+                    lastScaleCalculator.body_height = currentScaleUser.body_height;
+                    lastScaleCalculator.setScaleData(lastScaleData);
+
+                    ScaleCalculator diffScaleCalculator = new ScaleCalculator();
+                    diffScaleCalculator.body_height = currentScaleUser.body_height;
+                    diffScaleCalculator.setScaleData(diffScaleData);
+
                     ScaleDiff.setDiff(
                             txtLabelWeight,
                             lastScaleData.weight - diffScaleData.weight,
@@ -466,7 +514,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
                     );
                     ScaleDiff.setDiff(
                             txtLabelBMI,
-                            currentScaleUser.getBMI(lastScaleData.weight) - currentScaleUser.getBMI(diffScaleData.weight),
+                            lastScaleCalculator.getBMI() - diffScaleCalculator.getBMI(),
                             getResources().getString(R.string.label_bmi),
                             "%.1f ",
                             ""
@@ -501,7 +549,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
                     );
                     ScaleDiff.setDiff(
                             txtLabelWHtR,
-                            currentScaleUser.getWHtR(lastScaleData.waist) - currentScaleUser.getWHtR(diffScaleData.waist),
+                            lastScaleCalculator.getWHtR() - diffScaleCalculator.getWHtR(),
                             getResources().getString(R.string.label_whtr),
                             "%.2f ",
                             ""
@@ -515,7 +563,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
                     );
                     ScaleDiff.setDiff(
                             txtLabelWHR,
-                            currentScaleUser.getWHR(lastScaleData.waist, lastScaleData.hip) - currentScaleUser.getWHR(diffScaleData.waist, diffScaleData.hip),
+                            lastScaleCalculator.getWHR() - diffScaleCalculator.getWHR(),
                             getResources().getString(R.string.label_whr),
                             "%.2f ",
                             ""
@@ -564,32 +612,36 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         {
             histDate.setTime(scaleData.date_time);
 
+            ScaleCalculator calculator = new ScaleCalculator();
+            calculator.body_height = currentScaleUser.body_height;
+            calculator.setScaleData(scaleData);
+
             if (weekPastDate.before(histDate)) {
                 weekSize++;
 
                 weekAvgWeight += scaleData.weight;
-                weekAvgBMI += currentScaleUser.getBMI(scaleData.weight);
+                weekAvgBMI += calculator.getBMI();
                 weekAvgFat += scaleData.fat;
                 weekAvgWater += scaleData.water;
                 weekAvgMuscle += scaleData.muscle;
                 weekAvgWaist += scaleData.waist;
                 weekAvgHip += scaleData.hip;
-                weekAvgWHtR += currentScaleUser.getWHtR(scaleData.waist);
-                weekAvgWHR += currentScaleUser.getWHR(scaleData.waist, scaleData.hip);
+                weekAvgWHtR += calculator.getWHtR();
+                weekAvgWHR += calculator.getWHR();
             }
 
             if (monthPastDate.before(histDate)) {
                 monthSize++;
 
                 monthAvgWeight += scaleData.weight;
-                monthAvgBMI += currentScaleUser.getBMI(scaleData.weight);
+                monthAvgBMI += calculator.getBMI();
                 monthAvgFat += scaleData.fat;
                 monthAvgWater += scaleData.water;
                 monthAvgMuscle += scaleData.muscle;
                 monthAvgWaist += scaleData.waist;
                 monthAvgHip += scaleData.hip;
-                monthAvgWHtR += currentScaleUser.getWHtR(scaleData.waist);
-                monthAvgWHR += currentScaleUser.getWHR(scaleData.waist, scaleData.hip);
+                monthAvgWHtR += calculator.getWHtR();
+                monthAvgWHR += calculator.getWHR();
             } else {
                 break;
             }
