@@ -457,62 +457,69 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
                 if (scaleDataIterator.hasNext()) {
                     ScaleData diffScaleData = scaleDataIterator.next();
 
-                    double diffWeight = lastScaleData.weight - diffScaleData.weight;
-                    double diffBMI = currentScaleUser.getBMI(lastScaleData.weight) - currentScaleUser.getBMI(diffScaleData.weight);
-                    double diffFat = lastScaleData.fat - diffScaleData.fat;
-                    double diffMuscle = lastScaleData.muscle - diffScaleData.muscle;
-                    double diffWater = lastScaleData.water - diffScaleData.water;
-                    double diffWaist = lastScaleData.waist - diffScaleData.waist;
-                    double diffWHtR = currentScaleUser.getWHtR(lastScaleData.waist) - currentScaleUser.getWHtR(diffScaleData.waist);
-                    double diffHip = lastScaleData.hip - diffScaleData.hip;
-                    double diffWHR = currentScaleUser.getWHR(lastScaleData.waist, lastScaleData.hip) - currentScaleUser.getWHR(diffScaleData.waist, diffScaleData.hip);
-
-
-                    if (diffWeight > 0.0)
-                        txtLabelWeight.setText(Html.fromHtml(getResources().getString(R.string.label_weight) + " <br> <font color='grey'>&#x2197;<small> " + String.format("%.1f ", diffWeight) + ScaleUser.UNIT_STRING[currentScaleUser.scale_unit] + "</small></font>"));
-                    else
-                        txtLabelWeight.setText(Html.fromHtml(getResources().getString(R.string.label_weight) + " <br> <font color='grey'>&#x2198;<small> " + String.format("%.1f ", diffWeight) + ScaleUser.UNIT_STRING[currentScaleUser.scale_unit] + "</small></font>"));
-
-
-                    if (diffBMI > 0.0)
-                        txtLabelBMI.setText(Html.fromHtml(getResources().getString(R.string.label_bmi) + " <br> <font color='grey'>&#x2197;<small> " + String.format("%.1f", diffBMI) + "</small></font>"));
-                    else
-                        txtLabelBMI.setText(Html.fromHtml(getResources().getString(R.string.label_bmi) + " <br> <font color='grey'>&#x2198;<small> " + String.format("%.1f", diffBMI) + "</small></font>"));
-
-                    if (diffFat > 0.0)
-                        txtLabelFat.setText(Html.fromHtml(getResources().getString(R.string.label_fat) + " <br> <font color='grey'>&#x2197;<small> " + String.format("%.1f", diffFat) + "%</small></font>"));
-                    else
-                        txtLabelFat.setText(Html.fromHtml(getResources().getString(R.string.label_fat) + " <br> <font color='grey'>&#x2198;<small> " + String.format("%.1f", diffFat) + "%</small></font>"));
-
-                    if (diffMuscle > 0.0)
-                        txtLabelMuscle.setText(Html.fromHtml(getResources().getString(R.string.label_muscle) + " <br> <font color='grey'>&#x2197;<small> " + String.format("%.1f", diffMuscle) + "%</small></font>"));
-                    else
-                        txtLabelMuscle.setText(Html.fromHtml(getResources().getString(R.string.label_muscle) + " <br> <font color='grey'>&#x2198;<small> " + String.format("%.1f", diffMuscle) + "%</small></font>"));
-
-                    if (diffWater > 0.0)
-                        txtLabelWater.setText(Html.fromHtml(getResources().getString(R.string.label_water) + " <br> <font color='grey'>&#x2197;<small> " + String.format("%.1f", diffWater) + "%</small></font>"));
-                    else
-                        txtLabelWater.setText(Html.fromHtml(getResources().getString(R.string.label_water) + " <br> <font color='grey'>&#x2198;<small> " + String.format("%.1f", diffWater) + "%</small></font>"));
-
-                    if (diffWaist > 0.0)
-                        txtLabelWaist.setText(Html.fromHtml(getResources().getString(R.string.label_waist) + " <br> <font color='grey'>&#x2197;<small> " + String.format("%.1f", diffWaist) + "cm</small></font>"));
-                    else
-                        txtLabelWaist.setText(Html.fromHtml(getResources().getString(R.string.label_waist) + " <br> <font color='grey'>&#x2198;<small> " + String.format("%.1f", diffWaist) + "cm</small></font>"));
-
-                    if (diffWHtR > 0.0)
-                        txtLabelWHtR.setText(Html.fromHtml(getResources().getString(R.string.label_whtr) + " <br> <font color='grey'>&#x2197;<small> " + String.format("%.2f", diffWHtR) + "</small></font>"));
-                    else
-                        txtLabelWHtR.setText(Html.fromHtml(getResources().getString(R.string.label_whtr) + " <br> <font color='grey'>&#x2198;<small> " + String.format("%.2f", diffWHtR) + "</small></font>"));
-
-                    if (diffHip > 0.0)
-                        txtLabelHip.setText(Html.fromHtml(getResources().getString(R.string.label_hip) + " <br> <font color='grey'>&#x2197;<small> " + String.format("%.1f", diffHip) + "cm</small></font>"));
-                    else
-                        txtLabelHip.setText(Html.fromHtml(getResources().getString(R.string.label_hip) + " <br> <font color='grey'>&#x2198;<small> " + String.format("%.1f", diffHip) + "cm</small></font>"));
-
-                    if (diffWHR > 0.0)
-                        txtLabelWHR.setText(Html.fromHtml(getResources().getString(R.string.label_whr) + " <br> <font color='grey'>&#x2197;<small> " + String.format("%.2f", diffWHR) + "</small></font>"));
-                    else
-                        txtLabelWHR.setText(Html.fromHtml(getResources().getString(R.string.label_whr) + " <br> <font color='grey'>&#x2198;<small> " + String.format("%.2f", diffWHR) + "</small></font>"));
+                    ScaleDiff.setDiff(
+                            txtLabelWeight,
+                            lastScaleData.weight - diffScaleData.weight,
+                            getResources().getString(R.string.label_weight),
+                            "%.1f ",
+                            ScaleUser.UNIT_STRING[currentScaleUser.scale_unit]
+                    );
+                    ScaleDiff.setDiff(
+                            txtLabelBMI,
+                            currentScaleUser.getBMI(lastScaleData.weight) - currentScaleUser.getBMI(diffScaleData.weight),
+                            getResources().getString(R.string.label_bmi),
+                            "%.1f ",
+                            ""
+                    );
+                    ScaleDiff.setDiff(
+                            txtLabelFat,
+                            lastScaleData.fat - diffScaleData.fat,
+                            getResources().getString(R.string.label_fat),
+                            "%.1f ",
+                            "%"
+                    );
+                    ScaleDiff.setDiff(
+                            txtLabelMuscle,
+                            lastScaleData.muscle - diffScaleData.muscle,
+                            getResources().getString(R.string.label_muscle),
+                            "%.1f ",
+                            "%"
+                    );
+                    ScaleDiff.setDiff(
+                            txtLabelWater,
+                            lastScaleData.water - diffScaleData.water,
+                            getResources().getString(R.string.label_water),
+                            "%.1f ",
+                            "%"
+                    );
+                    ScaleDiff.setDiff(
+                            txtLabelWaist,
+                            lastScaleData.waist - diffScaleData.waist,
+                            getResources().getString(R.string.label_waist),
+                            "%.1f ",
+                            "cm"
+                    );
+                    ScaleDiff.setDiff(
+                            txtLabelWHtR,
+                            currentScaleUser.getWHtR(lastScaleData.waist) - currentScaleUser.getWHtR(diffScaleData.waist),
+                            getResources().getString(R.string.label_whtr),
+                            "%.2f ",
+                            ""
+                    );
+                    ScaleDiff.setDiff(
+                            txtLabelHip,
+                            lastScaleData.hip - diffScaleData.hip,
+                            getResources().getString(R.string.label_hip),
+                            "%.1f ",
+                            "cm"
+                    );
+                    ScaleDiff.setDiff(
+                            txtLabelWHR,
+                            currentScaleUser.getWHR(lastScaleData.waist, lastScaleData.hip) - currentScaleUser.getWHR(diffScaleData.waist, diffScaleData.hip),
+                            getResources().getString(R.string.label_whr),
+                            "%.2f ",
+                            ""
+                    );
                 }
             }
         }
