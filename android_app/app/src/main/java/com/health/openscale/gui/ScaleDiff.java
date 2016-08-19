@@ -10,8 +10,7 @@ public class ScaleDiff {
     public static void setDiff(TextView txtLabel,
                         double diff,
                         String labelResource,
-                        String format,
-                        String unit) {
+                        String format) {
 
         String symbol;
 
@@ -28,7 +27,6 @@ public class ScaleDiff {
                                 symbol +
                                 "<small> " +
                                 String.format(format, diff) +
-                                unit +
                                 "</small></font>"
                 )
         );

@@ -67,6 +67,7 @@ import lecho.lib.hellocharts.view.LineChartView;
 import lecho.lib.hellocharts.view.PieChartView;
 
 public class OverviewFragment extends Fragment implements FragmentUpdateListener {
+
     private View overviewView;
 
     private TextView txtTitleUser;
@@ -74,15 +75,15 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
     private TextView txtTitleGoal;
     private TextView txtTitleStatistics;
 
-    private TextView txtWeightLast;
-    private TextView txtBMILast;
-    private TextView txtWaterLast;
-    private TextView txtMuscleLast;
-    private TextView txtFatLast;
-    private TextView txtWaistLast;
-    private TextView txtWHtRLast;
-    private TextView txtHipLast;
-    private TextView txtWHRLast;
+    private Measurement measurementWeightLast;
+    private Measurement measurementBMILast;
+    private Measurement measurementWaterLast;
+    private Measurement measurementMuscleLast;
+    private Measurement measurementFatLast;
+    private Measurement measurementWaistLast;
+    private Measurement measurementWHtRLast;
+    private Measurement measurementHipLast;
+    private Measurement measurementWHRLast;
 
     private TextView txtGoalWeight;
     private TextView txtGoalDiff;
@@ -90,16 +91,6 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
     private TextView txtAvgWeek;
     private TextView txtAvgMonth;
-
-    private TextView txtLabelWeight;
-    private TextView txtLabelBMI;
-    private TextView txtLabelFat;
-    private TextView txtLabelMuscle;
-    private TextView txtLabelWater;
-    private TextView txtLabelWaist;
-    private TextView txtLabelWHtR;
-    private TextView txtLabelHip;
-    private TextView txtLabelWHR;
 
     private TextView txtLabelGoalWeight;
     private TextView txtLabelGoalDiff;
@@ -112,16 +103,6 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
     private LineChartView lineChartLast;
 
     private Spinner spinUser;
-
-    private LinearGaugeView linearGaugeWeight;
-    private LinearGaugeView linearGaugeBMI;
-    private LinearGaugeView linearGaugeFat;
-    private LinearGaugeView linearGaugeMuscle;
-    private LinearGaugeView linearGaugeWater;
-    private LinearGaugeView linearGaugeWaist;
-    private LinearGaugeView linearGaugeWHtR;
-    private LinearGaugeView linearGaugeHip;
-    private LinearGaugeView linearGaugeWHR;
 
     private SharedPreferences prefs;
 
@@ -153,15 +134,15 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         txtTitleGoal = (TextView) overviewView.findViewById(R.id.txtTitleGoal);
         txtTitleStatistics = (TextView) overviewView.findViewById(R.id.txtTitleStatistics);
 
-        txtWeightLast = (TextView) overviewView.findViewById(R.id.txtWeightLast);
-        txtBMILast = (TextView) overviewView.findViewById(R.id.txtBMILast);
-        txtWaterLast = (TextView) overviewView.findViewById(R.id.txtWaterLast);
-        txtMuscleLast = (TextView) overviewView.findViewById(R.id.txtMuscleLast);
-        txtFatLast = (TextView) overviewView.findViewById(R.id.txtFatLast);
-        txtWaistLast = (TextView) overviewView.findViewById(R.id.txtWaistLast);
-        txtWHtRLast = (TextView) overviewView.findViewById(R.id.txtWHtRLast);
-        txtHipLast = (TextView) overviewView.findViewById(R.id.txtHipLast);
-        txtWHRLast = (TextView) overviewView.findViewById(R.id.txtWHRLast);
+        measurementWeightLast = new WeightMeasurement(overviewView);
+        measurementBMILast = new BMIMeasurement(overviewView);
+        measurementWaterLast = new WaterMeasurement(overviewView);
+        measurementMuscleLast = new MuscleMeasurement(overviewView);
+        measurementFatLast = new FatMeasurement(overviewView);
+        measurementWaistLast = new WaistMeasurement(overviewView);
+        measurementWHtRLast = new WHtRMeasurement(overviewView);
+        measurementHipLast = new HipMeasurement(overviewView);
+        measurementWHRLast = new WHRMeasurement(overviewView);
 
         txtGoalWeight = (TextView) overviewView.findViewById(R.id.txtGoalWeight);
         txtGoalDiff = (TextView) overviewView.findViewById(R.id.txtGoalDiff);
@@ -169,16 +150,6 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
         txtAvgWeek = (TextView) overviewView.findViewById(R.id.txtAvgWeek);
         txtAvgMonth = (TextView) overviewView.findViewById(R.id.txtAvgMonth);
-
-        txtLabelWeight = (TextView) overviewView.findViewById(R.id.txtLabelWeight);
-        txtLabelBMI = (TextView) overviewView.findViewById(R.id.txtLabelBMI);
-        txtLabelFat = (TextView) overviewView.findViewById(R.id.txtLabelFat);
-        txtLabelMuscle = (TextView) overviewView.findViewById(R.id.txtLabelMuscle);
-        txtLabelWater = (TextView) overviewView.findViewById(R.id.txtLabelWater);
-        txtLabelWaist = (TextView) overviewView.findViewById(R.id.txtLabelWaist);
-        txtLabelWHtR = (TextView) overviewView.findViewById(R.id.txtLabelWHtR);
-        txtLabelHip = (TextView) overviewView.findViewById(R.id.txtLabelHip);
-        txtLabelWHR = (TextView) overviewView.findViewById(R.id.txtLabelWHR);
 
         txtLabelGoalWeight = (TextView) overviewView.findViewById(R.id.txtLabelGoalWeight);
         txtLabelGoalDiff = (TextView) overviewView.findViewById(R.id.txtLabelGoalDiff);
@@ -192,16 +163,6 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
         spinUser = (Spinner) overviewView.findViewById(R.id.spinUser);
 
-        linearGaugeWeight = (LinearGaugeView) overviewView.findViewById(R.id.linearGaugeWeight);
-        linearGaugeBMI = (LinearGaugeView) overviewView.findViewById(R.id.linearGaugeBMI);
-        linearGaugeFat = (LinearGaugeView) overviewView.findViewById(R.id.linearGaugeFat);
-        linearGaugeMuscle = (LinearGaugeView) overviewView.findViewById(R.id.linearGaugeMuscle);
-        linearGaugeWater = (LinearGaugeView) overviewView.findViewById(R.id.linearGaugeWater);
-        linearGaugeWaist = (LinearGaugeView) overviewView.findViewById(R.id.linearGaugeWaist);
-        linearGaugeWHtR = (LinearGaugeView) overviewView.findViewById(R.id.linearGaugeWHtR);
-        linearGaugeHip = (LinearGaugeView) overviewView.findViewById(R.id.linearGaugeHip);
-        linearGaugeWHR = (LinearGaugeView) overviewView.findViewById(R.id.linearGaugeWHR);
-
         lineChartLast.setOnValueTouchListener(new LineChartTouchListener());
 
         pieChartLast.setOnValueTouchListener(new PieChartLastTouchListener());
@@ -212,16 +173,6 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
                 btnOnClickInsertData();
             }
         });
-
-        overviewView.findViewById(R.id.tableRowWeight).setOnClickListener(new onClickListenerEvaluation());
-        overviewView.findViewById(R.id.tableRowBMI).setOnClickListener(new onClickListenerEvaluation());
-        overviewView.findViewById(R.id.tableRowFat).setOnClickListener(new onClickListenerEvaluation());
-        overviewView.findViewById(R.id.tableRowMuscle).setOnClickListener(new onClickListenerEvaluation());
-        overviewView.findViewById(R.id.tableRowWater).setOnClickListener(new onClickListenerEvaluation());
-        overviewView.findViewById(R.id.tableRowWaist).setOnClickListener(new onClickListenerEvaluation());
-        overviewView.findViewById(R.id.tableRowWHtR).setOnClickListener(new onClickListenerEvaluation());
-        overviewView.findViewById(R.id.tableRowHip).setOnClickListener(new onClickListenerEvaluation());
-        overviewView.findViewById(R.id.tableRowWHR).setOnClickListener(new onClickListenerEvaluation());
 
         userSelectedData = null;
 
@@ -264,15 +215,24 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         updateVisibleRows();
         updateLastPieChart();
         updateLastLineChart(scaleDataList);
-        updateLastMeasurement();
+        updateLastValues();
         updateGoal(scaleDataList);
         updateStatistics(scaleDataList);
-        updateEvaluation();
     }
 
     private void updateUserSelection() {
 
         currentScaleUser =  OpenScale.getInstance(overviewView.getContext()).getSelectedScaleUser();
+
+        measurementWeightLast.scaleUser = currentScaleUser;
+        measurementBMILast.scaleUser = currentScaleUser;
+        measurementWaterLast.scaleUser = currentScaleUser;
+        measurementMuscleLast.scaleUser = currentScaleUser;
+        measurementFatLast.scaleUser = currentScaleUser;
+        measurementWaistLast.scaleUser = currentScaleUser;
+        measurementWHtRLast.scaleUser = currentScaleUser;
+        measurementHipLast.scaleUser = currentScaleUser;
+        measurementWHRLast.scaleUser = currentScaleUser;
 
         spinUserAdapter.clear();
         ArrayList<ScaleUser> scaleUserList = OpenScale.getInstance(overviewView.getContext()).getScaleUserList();
@@ -294,150 +254,31 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
     }
 
     private void updateVisibleRows() {
-        if(!prefs.getBoolean("fatEnable", true)) {
-            TableRow row = (TableRow)overviewView.findViewById(R.id.tableRowFat);
-            row.setVisibility(View.GONE);
-        } else {
-            TableRow row = (TableRow)overviewView.findViewById(R.id.tableRowFat);
-            row.setVisibility(View.VISIBLE);
-        }
-
-        if(!prefs.getBoolean("muscleEnable", true)) {
-            TableRow row = (TableRow)overviewView.findViewById(R.id.tableRowMuscle);
-            row.setVisibility(View.GONE);
-        } else {
-            TableRow row = (TableRow)overviewView.findViewById(R.id.tableRowMuscle);
-            row.setVisibility(View.VISIBLE);
-        }
-
-        if(!prefs.getBoolean("waterEnable", true)) {
-            TableRow row = (TableRow)overviewView.findViewById(R.id.tableRowWater);
-            row.setVisibility(View.GONE);
-        } else {
-            TableRow row = (TableRow)overviewView.findViewById(R.id.tableRowWater);
-            row.setVisibility(View.VISIBLE);
-        }
-
-        if(!prefs.getBoolean("waistEnable", true)) {
-            TableRow row = (TableRow)overviewView.findViewById(R.id.tableRowWaist);
-            row.setVisibility(View.GONE);
-
-            row = (TableRow)overviewView.findViewById(R.id.tableRowWHtR);
-            row.setVisibility(View.GONE);
-        } else {
-            TableRow row = (TableRow)overviewView.findViewById(R.id.tableRowWaist);
-            row.setVisibility(View.VISIBLE);
-
-            row = (TableRow)overviewView.findViewById(R.id.tableRowWHtR);
-            row.setVisibility(View.VISIBLE);
-        }
-
-        if(!prefs.getBoolean("hipEnable", true)) {
-            TableRow row = (TableRow)overviewView.findViewById(R.id.tableRowHip);
-            row.setVisibility(View.GONE);
-        } else {
-            TableRow row = (TableRow)overviewView.findViewById(R.id.tableRowHip);
-            row.setVisibility(View.VISIBLE);
-        }
-
-        if(!prefs.getBoolean("hipEnable", true) || !prefs.getBoolean("waistEnable", true)) {
-            TableRow row = (TableRow)overviewView.findViewById(R.id.tableRowWHR);
-            row.setVisibility(View.GONE);
-        } else {
-            TableRow row = (TableRow)overviewView.findViewById(R.id.tableRowWHR);
-            row.setVisibility(View.VISIBLE);
-        }
+        measurementWeightLast.updateVisibleRow(prefs);
+        measurementBMILast.updateVisibleRow(prefs);
+        measurementWaterLast.updateVisibleRow(prefs);
+        measurementMuscleLast.updateVisibleRow(prefs);
+        measurementHipLast.updateVisibleRow(prefs);
+        measurementFatLast.updateVisibleRow(prefs);
+        measurementWaistLast.updateVisibleRow(prefs);
+        measurementWHRLast.updateVisibleRow(prefs);
+        measurementWHtRLast.updateVisibleRow(prefs);
     }
 
-    private void updateEvaluation() {
-        linearGaugeWeight.setMinMaxValue(30, 300);
-        linearGaugeBMI.setMinMaxValue(10, 50);
-        linearGaugeFat.setMinMaxValue(10, 40);
-        linearGaugeMuscle.setMinMaxValue(10, 80);
-        linearGaugeWater.setMinMaxValue(30, 80);
-        linearGaugeWaist.setMinMaxValue(30, 200);
-        linearGaugeWHtR.setMinMaxValue(0, 1);
-        linearGaugeHip.setMinMaxValue(30, 200);
-        linearGaugeWHR.setMinMaxValue(0, 1);
-
+    private void updateLastValues() {
         ScaleCalculator calculator = new ScaleCalculator();
         calculator.body_height = currentScaleUser.body_height;
         calculator.setScaleData(lastScaleData);
 
-        EvaluationSheet evalSheet = new EvaluationSheet(currentScaleUser);
-
-        EvaluationResult sheetWeight = evalSheet.evaluateWeight(lastScaleData.weight);
-        EvaluationResult sheetBMI = evalSheet.evaluateBMI(calculator.getBMI());
-        EvaluationResult sheetFat = evalSheet.evaluateBodyFat(lastScaleData.fat);
-        EvaluationResult sheetMuscle = evalSheet.evaluateBodyMuscle(lastScaleData.muscle);
-        EvaluationResult sheetWater = evalSheet.evaluateBodyWater(lastScaleData.water);
-        EvaluationResult sheetWaist = evalSheet.evaluateWaist(lastScaleData.waist);
-        EvaluationResult sheetWHtR = evalSheet.evaluateWHtR(calculator.getWHtR());
-        EvaluationResult sheetWHR = evalSheet.evaluateWHR(calculator.getWHR());
-
-        updateIndicator((ImageView)overviewView.findViewById(R.id.indicatorWeight), sheetWeight.eval_state);
-        updateIndicator((ImageView)overviewView.findViewById(R.id.indicatorBMI), sheetBMI.eval_state);
-        updateIndicator((ImageView)overviewView.findViewById(R.id.indicatorFat), sheetFat.eval_state);
-        updateIndicator((ImageView)overviewView.findViewById(R.id.indicatorMuscle), sheetMuscle.eval_state);
-        updateIndicator((ImageView)overviewView.findViewById(R.id.indicatorWater), sheetWater.eval_state);
-        updateIndicator((ImageView) overviewView.findViewById(R.id.indicatorWaist), sheetWaist.eval_state);
-        updateIndicator((ImageView)overviewView.findViewById(R.id.indicatorWHtR), sheetWHtR.eval_state);
-        updateIndicator((ImageView)overviewView.findViewById(R.id.indicatorHip), EvaluationResult.EVAL_STATE.UNDEFINED);
-        updateIndicator((ImageView)overviewView.findViewById(R.id.indicatorWHR), sheetWHR.eval_state);
-
-        linearGaugeWeight.setLimits(sheetWeight.lowLimit, sheetWeight.highLimit);
-        linearGaugeBMI.setLimits(sheetBMI.lowLimit, sheetBMI.highLimit);
-        linearGaugeFat.setLimits(sheetFat.lowLimit, sheetFat.highLimit);
-        linearGaugeMuscle.setLimits(sheetMuscle.lowLimit, sheetMuscle.highLimit);
-        linearGaugeWater.setLimits(sheetWater.lowLimit, sheetWater.highLimit);
-        linearGaugeWaist.setLimits(sheetWaist.lowLimit, sheetWaist.highLimit);
-        linearGaugeWHtR.setLimits(sheetWHtR.lowLimit, sheetWHtR.highLimit);
-        linearGaugeHip.setLimits(-1f, -1f);
-        linearGaugeWHR.setLimits(sheetWHR.lowLimit, sheetWHR.highLimit);
-
-        linearGaugeWeight.setValue(lastScaleData.weight);
-        linearGaugeBMI.setValue(calculator.getBMI());
-        linearGaugeFat.setValue(lastScaleData.fat);
-        linearGaugeMuscle.setValue(lastScaleData.muscle);
-        linearGaugeWater.setValue(lastScaleData.water);
-        linearGaugeWaist.setValue(lastScaleData.waist);
-        linearGaugeWHtR.setValue(calculator.getWHtR());
-        linearGaugeHip.setValue(lastScaleData.hip);
-        linearGaugeWHR.setValue(calculator.getWHR());
-    }
-
-    private void updateIndicator(ImageView view, EvaluationResult.EVAL_STATE state) {
-        switch(state)
-        {
-            case LOW:
-                view.setBackgroundColor(ChartUtils.COLOR_BLUE);
-                break;
-            case NORMAL:
-                view.setBackgroundColor(ChartUtils.COLOR_GREEN);
-                break;
-            case HIGH:
-                view.setBackgroundColor(ChartUtils.COLOR_RED);
-                break;
-            case UNDEFINED:
-                view.setBackgroundColor(Color.GRAY);
-                break;
-        }
-    }
-
-    private void updateLastMeasurement() {
-        ScaleCalculator calculator = new ScaleCalculator();
-        calculator.body_height = currentScaleUser.body_height;
-        calculator.setScaleData(lastScaleData);
-
-        txtWeightLast.setText(lastScaleData.weight + " " + ScaleUser.UNIT_STRING[currentScaleUser.scale_unit]);
-        txtBMILast.setText(String.format("%.1f", calculator.getBMI()));
-        txtFatLast.setText(lastScaleData.fat + " %");
-        txtWaterLast.setText(lastScaleData.water + " %");
-        txtMuscleLast.setText(lastScaleData.muscle + " %");
-        txtWaistLast.setText(lastScaleData.waist + " cm");
-        txtWHtRLast.setText(String.format("%.2f", calculator.getWHtR()));
-        txtHipLast.setText(lastScaleData.hip + " cm");
-        txtWHRLast.setText(String.format("%.2f", calculator.getWHR()));
+        measurementWeightLast.updateValue(lastScaleData.weight);
+        measurementBMILast.updateValue(calculator.getBMI());
+        measurementFatLast.updateValue(lastScaleData.fat);
+        measurementWaterLast.updateValue(lastScaleData.water);
+        measurementMuscleLast.updateValue(lastScaleData.muscle);
+        measurementWaistLast.updateValue(lastScaleData.waist);
+        measurementWHtRLast.updateValue(calculator.getWHtR());
+        measurementHipLast.updateValue(lastScaleData.hip);
+        measurementWHRLast.updateValue(calculator.getWHR());
     }
 
     private void updateGoal(ArrayList<ScaleData> scaleDataList) {
@@ -505,69 +346,15 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
                     diffScaleCalculator.body_height = currentScaleUser.body_height;
                     diffScaleCalculator.setScaleData(diffScaleData);
 
-                    ScaleDiff.setDiff(
-                            txtLabelWeight,
-                            lastScaleData.weight - diffScaleData.weight,
-                            getResources().getString(R.string.label_weight),
-                            "%.1f ",
-                            ScaleUser.UNIT_STRING[currentScaleUser.scale_unit]
-                    );
-                    ScaleDiff.setDiff(
-                            txtLabelBMI,
-                            lastScaleCalculator.getBMI() - diffScaleCalculator.getBMI(),
-                            getResources().getString(R.string.label_bmi),
-                            "%.1f ",
-                            ""
-                    );
-                    ScaleDiff.setDiff(
-                            txtLabelFat,
-                            lastScaleData.fat - diffScaleData.fat,
-                            getResources().getString(R.string.label_fat),
-                            "%.1f ",
-                            "%"
-                    );
-                    ScaleDiff.setDiff(
-                            txtLabelMuscle,
-                            lastScaleData.muscle - diffScaleData.muscle,
-                            getResources().getString(R.string.label_muscle),
-                            "%.1f ",
-                            "%"
-                    );
-                    ScaleDiff.setDiff(
-                            txtLabelWater,
-                            lastScaleData.water - diffScaleData.water,
-                            getResources().getString(R.string.label_water),
-                            "%.1f ",
-                            "%"
-                    );
-                    ScaleDiff.setDiff(
-                            txtLabelWaist,
-                            lastScaleData.waist - diffScaleData.waist,
-                            getResources().getString(R.string.label_waist),
-                            "%.1f ",
-                            "cm"
-                    );
-                    ScaleDiff.setDiff(
-                            txtLabelWHtR,
-                            lastScaleCalculator.getWHtR() - diffScaleCalculator.getWHtR(),
-                            getResources().getString(R.string.label_whtr),
-                            "%.2f ",
-                            ""
-                    );
-                    ScaleDiff.setDiff(
-                            txtLabelHip,
-                            lastScaleData.hip - diffScaleData.hip,
-                            getResources().getString(R.string.label_hip),
-                            "%.1f ",
-                            "cm"
-                    );
-                    ScaleDiff.setDiff(
-                            txtLabelWHR,
-                            lastScaleCalculator.getWHR() - diffScaleCalculator.getWHR(),
-                            getResources().getString(R.string.label_whr),
-                            "%.2f ",
-                            ""
-                    );
+                    measurementWeightLast.setDiff(lastScaleData.weight, diffScaleData.weight);
+                    measurementBMILast.setDiff(lastScaleCalculator.getBMI(), diffScaleCalculator.getBMI());
+                    measurementMuscleLast.setDiff(lastScaleData.muscle, diffScaleData.muscle);
+                    measurementFatLast.setDiff(lastScaleData.fat, diffScaleData.fat);
+                    measurementWaterLast.setDiff(lastScaleData.water, diffScaleData.water);
+                    measurementWaistLast.setDiff(lastScaleData.waist, diffScaleData.waist);
+                    measurementWHtRLast.setDiff(lastScaleCalculator.getWHtR(), diffScaleCalculator.getWHtR());
+                    measurementHipLast.setDiff(lastScaleData.hip, diffScaleData.hip);
+                    measurementWHRLast.setDiff(lastScaleCalculator.getWHR(), diffScaleCalculator.getWHR());
                 }
             }
         }
@@ -970,21 +757,4 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         }
     }
 
-    private class onClickListenerEvaluation implements View.OnClickListener {
-        @Override
-        public void onClick(View v) {
-            TableRow row = (TableRow)v;
-
-            TableLayout tableLayout = (TableLayout)row.getParent();
-            int index = tableLayout.indexOfChild(row);
-
-            TableRow rowEvaluation = (TableRow)tableLayout.getChildAt(index+1);
-
-            if (rowEvaluation.getVisibility() == View.VISIBLE) {
-                rowEvaluation.setVisibility(View.GONE);
-            } else {
-                rowEvaluation.setVisibility(View.VISIBLE);
-            }
-        }
-    }
 }

@@ -267,6 +267,10 @@ public class EvaluationSheet {
         return evaluateSheet(whr, bodyEvaluateSheet);
     }
 
+    public EvaluationResult evaluateHip(float hip) {
+        return evaluateSheet(hip, new ArrayList<sheetEntry>());
+    }
+
     private EvaluationResult evaluateSheet(float value, List<sheetEntry> sheet) {
         for (int i=0; i < sheet.size(); i++) {
             sheetEntry curEntry = sheet.get(i);
