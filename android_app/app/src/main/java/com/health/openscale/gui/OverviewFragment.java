@@ -224,6 +224,8 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
         currentScaleUser =  OpenScale.getInstance(overviewView.getContext()).getSelectedScaleUser();
 
+        userSelectedData = null;
+
         measurementWeightLast.scaleUser = currentScaleUser;
         measurementBMILast.scaleUser = currentScaleUser;
         measurementWaterLast.scaleUser = currentScaleUser;
