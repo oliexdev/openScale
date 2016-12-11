@@ -49,22 +49,6 @@ public class ScaleUser {
         return false;
     }
 
-    public float getBMI(float weight) {
-        return weight / ((body_height / 100.0f)*(body_height / 100.0f));
-    }
-
-    public float getWHtR(float waist) {
-        return waist / (float)body_height;
-    }
-
-    public float getWHR(float waist, float hip) {
-        if (hip == 0) {
-            return 0;
-        }
-
-        return waist / hip;
-    }
-
 	@Override
 	public String toString()
 	{
