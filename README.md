@@ -11,6 +11,7 @@ openScale is an Open Source app to keep a log of your weight, body fat, water pe
 - Display all your data on a chart and table
 - Import or export your data from/into a CSV file
 - Support for multiple users
+- Support for Bluetooth Xiaomi Mi Scale
 - Connection to a custom made bluetooth scale (see [openScale wiki](https://github.com/oliexdev/openScale/wiki) for more information)
 - All data belongs to you (no cloud service)
 
