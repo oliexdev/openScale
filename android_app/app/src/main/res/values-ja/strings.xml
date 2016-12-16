@@ -74,6 +74,7 @@
     <string name="label_enable_labels">メモの上にデータ点</string>
     <string name="info_is_visible">表示されています</string>
     <string name="info_is_not_visible">表示されていません</string>
+    <string name="info_is_not_available">利用できません</string>
     <string name="info_enter_user_name">あなたの名前を入力してください</string>
     <string name="info_enter_goal_weight">あなたの体重をあなたの単位で入力してください</string>
     <string name="info_enter_comment">任意でコメントを入力してください</string>

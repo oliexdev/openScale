@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <string-array name="btDeviceTypes">
         <item>Xiaomi Mi Scale</item>
         <item>openScale Custom Scale</item>
