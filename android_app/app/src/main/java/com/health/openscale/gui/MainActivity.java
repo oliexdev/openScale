@@ -16,6 +16,7 @@
 
 package com.health.openscale.gui;
 
+import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -144,11 +145,12 @@ public class MainActivity extends ActionBarActivity implements
 		if (id == R.id.action_bluetooth_status) {
 			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
-			if (prefs.getBoolean("btEnable", false)) {
-				String deviceName = prefs.getString("btDeviceName", "openScale");
+			if (prefs.getBoolean("btEnable", false) && BluetoothAdapter.getDefaultAdapter().isEnabled()) {
+				String deviceName = prefs.getString("btDeviceName", "MI_SCALE");
 				Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_try_reconnection) + " " + deviceName, Toast.LENGTH_SHORT).show();
 				invokeSearchBluetoothDevice();
 			} else {
+				bluetoothStatus.setIcon(getResources().getDrawable(R.drawable.bluetooth_disabled));
 				Toast.makeText(getApplicationContext(), "Bluetooth " + getResources().getString(R.string.info_is_not_enable), Toast.LENGTH_SHORT).show();
 			}
 			return true;
@@ -165,10 +167,14 @@ public class MainActivity extends ActionBarActivity implements
 	}
 
 	private void invokeSearchBluetoothDevice() {
+		if (!BluetoothAdapter.getDefaultAdapter().isEnabled()) {
+			return;
+		}
+
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
 		if(prefs.getBoolean("btEnable", false)) {
-			String deviceName = prefs.getString("btDeviceName", "openScale");
+			String deviceName = prefs.getString("btDeviceName", "MI_SCALE");
 			String deviceType = prefs.getString("btDeviceTypes", "0");
 
 			// Check if Bluetooth 4.x is available
