@@ -16,12 +16,11 @@
 
 package com.health.openscale.core;
 
-import android.support.v4.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Handler;
-import android.os.Message;
 import android.preference.PreferenceManager;
+import android.support.v4.app.Fragment;
 import android.util.Log;
 
 import com.health.openscale.gui.FragmentUpdateListener;
@@ -36,6 +35,9 @@ import java.io.OutputStreamWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+
+import static com.health.openscale.core.BluetoothCommunication.BT_MI_SCALE;
+import static com.health.openscale.core.BluetoothCommunication.BT_OPEN_SCALE;
 
 public class OpenScale {
 
@@ -150,6 +152,11 @@ public class OpenScale {
     public ScaleData getScaleData(long id)
     {
         return scaleDB.getDataEntry(id);
+    }
+
+    public void addScaleData(ScaleData scaleData) {
+        addScaleData(scaleData.user_id, dateTimeFormat.format(scaleData.date_time).toString(), scaleData.weight, scaleData.fat,
+                scaleData.water, scaleData.muscle, scaleData.waist, scaleData.hip, scaleData.comment);
     }
 
 	public void addScaleData(int user_id, String date_time, float weight, float fat,
@@ -285,13 +292,6 @@ public class OpenScale {
         updateScaleData();
 	}
 
-    public boolean clearBtScaleData() {
-        if (btCom == null)
-            return false;
-
-        return btCom.sendBtData("9");
-    }
-
     public int[] getCountsOfMonth(int year) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         int selectedUserId  = prefs.getInt("selectedUserId", -1);
@@ -306,117 +306,31 @@ public class OpenScale {
         return scaleDB.getScaleDataOfMonth(selectedUserId, year, month);
     }
 
-	public void startBluetoothServer(String deviceName) {
+	public void startSearchingForBluetooth(int btScales, String deviceName, Handler callbackBtHandler) {
 		Log.d("OpenScale", "Bluetooth Server started! I am searching for device ...");
 
-		btCom = new BluetoothCommunication(btHandler);
+        switch (btScales) {
+            case BT_MI_SCALE:
+                btCom = new BluetoothMiScale(context);
+                break;
+            case BT_OPEN_SCALE:
+                btCom = new BluetoothCustomOpenScale();
+                break;
+            default:
+                Log.e("OpenScale", "No valid scale type selected");
+                return;
+        }
+
+		btCom.registerCallbackHandler(callbackBtHandler);
 		btDeviceName = deviceName;
 
-		try {
-			btCom.findBT(btDeviceName);
-			btCom.start();
-		} catch (IOException e) {
-            btCom = null;
-			Log.e("OpenScale", "Error " + e.getMessage());
-		}
+        btCom.startSearching(btDeviceName);
 	}
 
-	public void stopBluetoothServer() {
+	public void stopSearchingForBluetooth() {
 		if (btCom != null) {
-			btCom.cancel();
-            Log.d("OpenScale", "Bluetooth Server stopped!");
-        }
-	}
-
-	private final Handler btHandler = new Handler() {
-		@Override
-		public void handleMessage(Message msg) {
-
-			switch (msg.what) {
-			case BluetoothCommunication.BT_MESSAGE_READ:
-				String line = (String) msg.obj;
-
-				parseBtString(line);
-				break;
-			case BluetoothCommunication.BT_SOCKET_CLOSED:
-				updateScaleData();
-				
-				Log.d("OpenScale", "Socket closed! Restarting socket ");
-
-				startBluetoothServer(btDeviceName);
-				break;
-			case BluetoothCommunication.BT_NO_ADAPTER:
-				Log.e("OpenScale", "No bluetooth adapter found!");
-				break;
-			}
-		}
-	};
-
-	public void parseBtString(String btString) {
-		btString = btString.substring(0, btString.length() - 1); // delete newline '\n' of the string
-		
-		if (btString.charAt(0) != '$' && btString.charAt(2) != '$') {
-			Log.e("OpenScale", "Parse error of bluetooth string. String has not a valid format");
-			return;
-		}
-
-		String btMsg = btString.substring(3, btString.length()); // message string
-		
-		switch (btString.charAt(1)) {
-			case 'I':
-				Log.i("OpenScale", "MCU Information: " + btMsg);
-				break;
-			case 'E':
-				Log.e("OpenScale", "MCU Error: " + btMsg);
-				break;
-			case 'S':
-				Log.i("OpenScale", "MCU stored data size: " + btMsg);
-				break;
-			case 'D':
-				ScaleData scaleBtData = new ScaleData();
-
-				String[] csvField = btMsg.split(",");
-
-				try {
-					int checksum = 0;
-
-                    checksum ^= Integer.parseInt(csvField[0]);
-					checksum ^= Integer.parseInt(csvField[1]);
-					checksum ^= Integer.parseInt(csvField[2]);
-					checksum ^= Integer.parseInt(csvField[3]);
-					checksum ^= Integer.parseInt(csvField[4]);
-					checksum ^= Integer.parseInt(csvField[5]);
-					checksum ^= (int)Float.parseFloat(csvField[6]);
-					checksum ^= (int)Float.parseFloat(csvField[7]);
-					checksum ^= (int)Float.parseFloat(csvField[8]);
-					checksum ^= (int)Float.parseFloat(csvField[9]);
-
-					int btChecksum = Integer.parseInt(csvField[10]);
-
-					if (checksum == btChecksum) {
-                        scaleBtData.id = -1;
-						scaleBtData.user_id = Integer.parseInt(csvField[0]);
-						String date_string = csvField[1] + "/" + csvField[2] + "/" + csvField[3] + "/" + csvField[4] + "/" + csvField[5];
-						scaleBtData.date_time = new SimpleDateFormat("yyyy/MM/dd/HH/mm").parse(date_string);
-
-						scaleBtData.weight = Float.parseFloat(csvField[6]);
-						scaleBtData.fat = Float.parseFloat(csvField[7]);
-						scaleBtData.water = Float.parseFloat(csvField[8]);
-						scaleBtData.muscle = Float.parseFloat(csvField[9]);
-
-						scaleDB.insertEntry(scaleBtData);
-					} else {
-						Log.e("OpenScale", "Error calculated checksum (" + checksum + ") and received checksum (" + btChecksum + ") is different");
-					}
-				} catch (ParseException e) {
-					Log.e("OpenScale", "Error while decoding bluetooth date string (" + e.getMessage() + ")");
-				} catch (NumberFormatException e) {
-					Log.e("OpenScale", "Error while decoding a number of bluetooth string (" + e.getMessage() + ")");
-				}
-				break;
-			default:
-				Log.e("OpenScale", "Error unknown MCU command");
-				break;
+            btCom.stopSearching();
+            Log.d("OpenScale", "Bluetooth Server explicit stopped!");
 		}
 	}
 

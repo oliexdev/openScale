@@ -9,6 +9,7 @@
     <string name="title_data">Data</string>
 
     <string name="action_settings">Settings</string>
+    <string name="action_bluetooth_status">Bluetooth Status</string>
 
     <string name="label_add">Add</string>
     <string name="label_cancel">Cancel</string>
@@ -88,9 +89,15 @@
     <string name="info_is_not_visible">is not visible</string>
     <string name="info_is_enable">is enabled</string>
     <string name="info_is_not_enable">is disabled</string>
+    <string name="info_is_not_available">is not available</string>
     <string name="info_delete_bluetooth_data">Clear all Bluetooth data</string>
     <string name="info_delete_bluetooth_data_success">Bluetooth data was successful cleared</string>
-    <string name="info_bluetooth_not_established">Bluetooth connection not established</string>
+    <string name="info_bluetooth_try_reconnection">Trying to reconnect to</string>
+    <string name="info_bluetooth_connection_lost">Lost Bluetooth connection.</string>
+    <string name="info_bluetooth_no_device">No Bluetooth device found</string>
+    <string name="info_bluetooth_connection_successful">Connection successful established</string>
+    <string name="info_bluetooth_connection_error">Bluetooth has an unexpected error</string>
+
     <string name="info_enter_user_name">Enter your name</string>
     <string name="info_no_selected_user">No user exist! Please create a new user in the settings</string>
     <string name="info_no_evaluation_available">Can\'t evaluate the value</string>
@@ -101,6 +108,7 @@
     <string name="label_bluetooth_title">Bluetooth</string>
     <string name="label_bluetooth_enable">Search for Bluetooth scale</string>
     <string name="label_device_name">Device Name</string>
+    <string name="label_device_type">Device Type</string>
 
     <string name="label_enable_labels">Label on data point</string>
 

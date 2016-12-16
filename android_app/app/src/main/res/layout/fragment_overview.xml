@@ -6,7 +6,6 @@
     android:layout_alignParentBottom="true"
     android:layout_alignParentLeft="true"
     android:layout_alignParentStart="true"
-    tools:context="com.health.openscale.MainActivity$PlaceholderFragment"
     android:weightSum="100"
     android:padding="5dp">
 
@@ -141,7 +140,7 @@
                         android:layout_width="20px"
                         android:layout_height="20px" />
 
-                    <com.health.openscale.core.LinearGaugeView
+                    <com.health.openscale.gui.LinearGaugeView
                         android:layout_width="fill_parent" android:layout_height="wrap_content"
                         android:id="@+id/linearGaugeWeight" />
 
@@ -215,7 +214,7 @@
                         android:layout_width="20px"
                         android:layout_height="20px" />
 
-                    <com.health.openscale.core.LinearGaugeView
+                    <com.health.openscale.gui.LinearGaugeView
                         android:layout_width="fill_parent" android:layout_height="wrap_content"
                         android:id="@+id/linearGaugeBMI" />
 
@@ -289,7 +288,7 @@
                         android:layout_width="20px"
                         android:layout_height="20px" />
 
-                    <com.health.openscale.core.LinearGaugeView
+                    <com.health.openscale.gui.LinearGaugeView
                         android:layout_width="fill_parent" android:layout_height="wrap_content"
                         android:id="@+id/linearGaugeFat" />
 
@@ -363,7 +362,7 @@
                         android:layout_width="20px"
                         android:layout_height="20px" />
 
-                    <com.health.openscale.core.LinearGaugeView
+                    <com.health.openscale.gui.LinearGaugeView
                         android:layout_width="fill_parent" android:layout_height="wrap_content"
                         android:id="@+id/linearGaugeMuscle" />
 
@@ -436,7 +435,7 @@
                         android:layout_width="20px"
                         android:layout_height="20px" />
 
-                    <com.health.openscale.core.LinearGaugeView
+                    <com.health.openscale.gui.LinearGaugeView
                         android:layout_width="fill_parent" android:layout_height="wrap_content"
                         android:id="@+id/linearGaugeWater" />
 
@@ -509,7 +508,7 @@
                         android:layout_width="20px"
                         android:layout_height="20px" />
 
-                    <com.health.openscale.core.LinearGaugeView
+                    <com.health.openscale.gui.LinearGaugeView
                         android:layout_width="fill_parent" android:layout_height="wrap_content"
                         android:id="@+id/linearGaugeWaist" />
 
@@ -581,7 +580,7 @@
                         android:layout_width="20px"
                         android:layout_height="20px" />
 
-                    <com.health.openscale.core.LinearGaugeView
+                    <com.health.openscale.gui.LinearGaugeView
                         android:layout_width="fill_parent" android:layout_height="wrap_content"
                         android:id="@+id/linearGaugeWHtR" />
 
@@ -653,7 +652,7 @@
                         android:layout_width="20px"
                         android:layout_height="20px" />
 
-                    <com.health.openscale.core.LinearGaugeView
+                    <com.health.openscale.gui.LinearGaugeView
                         android:layout_width="fill_parent" android:layout_height="wrap_content"
                         android:id="@+id/linearGaugeHip" />
 
@@ -727,7 +726,7 @@
                         android:layout_width="20px"
                         android:layout_height="20px" />
 
-                    <com.health.openscale.core.LinearGaugeView
+                    <com.health.openscale.gui.LinearGaugeView
                         android:layout_width="fill_parent" android:layout_height="wrap_content"
                         android:id="@+id/linearGaugeWHR" />
 

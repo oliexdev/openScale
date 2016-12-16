@@ -1,6 +1,5 @@
 package com.health.openscale.gui;
 
-import android.app.Fragment;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.view.View;
@@ -12,7 +11,6 @@ import android.widget.TextView;
 import com.health.openscale.R;
 import com.health.openscale.core.EvaluationResult;
 import com.health.openscale.core.EvaluationSheet;
-import com.health.openscale.core.LinearGaugeView;
 import com.health.openscale.core.ScaleUser;
 
 import lecho.lib.hellocharts.util.ChartUtils;

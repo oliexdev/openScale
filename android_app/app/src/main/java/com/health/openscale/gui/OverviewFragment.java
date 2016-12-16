@@ -29,17 +29,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.ImageView;
 import android.widget.Spinner;
-import android.widget.TableLayout;
-import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.health.openscale.R;
-import com.health.openscale.core.EvaluationResult;
-import com.health.openscale.core.EvaluationSheet;
-import com.health.openscale.core.LinearGaugeView;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.ScaleCalculator;
 import com.health.openscale.core.ScaleData;

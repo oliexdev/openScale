@@ -299,6 +299,7 @@ public class EvaluationSheet {
         birthDate.setTime(dateOfBirth);
         if (birthDate.after(today)) {
             Log.e("EvaluationSheet", "Can't evaluate your body values because you can't be born in the future");
+            return 0;
         }
 
         age = today.get(Calendar.YEAR) - birthDate.get(Calendar.YEAR);

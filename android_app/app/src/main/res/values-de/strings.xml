@@ -14,7 +14,6 @@
     <string name="error_weight_value_required">Gewicht ist erforderlich</string>
     <string name="error_waist_value_required">Bauchumfang ist erforderlich</string>
     <string name="error_hip_value_required">Hüftumfang ist erforderlich</string>
-    <string name="info_bluetooth_not_established">Bluetooth Verbindung konnte nicht hergestellt werden</string>
     <string name="info_data_all_deleted">Alle Datenbank Einträge wurden gelöscht</string>
     <string name="info_data_deleted">Datenbank Eintrag wurde gelöscht</string>
     <string name="info_data_exported">Daten werden exportiert nach</string>
@@ -96,4 +95,11 @@
     <string name="info_no_evaluation_available">Kann den Wert nicht evaluieren</string>
     <string name="label_whtr">Taille-zu-Größe Verhältnis</string>
     <string name="label_whr">Taille-Hüft Verhältnis</string>
+    <string name="action_bluetooth_status">Bluetooth Status</string>
+    <string name="info_bluetooth_connection_error">Bluetooth hat ein unerwarteten Fehler</string>
+    <string name="info_bluetooth_connection_lost">Bluetooth Verbindung verloren</string>
+    <string name="info_bluetooth_connection_successful">Verbindung erfolgreich hergestellt</string>
+    <string name="info_bluetooth_no_device">Kein Bluetooth Gerät gefunden</string>
+    <string name="info_bluetooth_try_reconnection">Versuche Verbindung herzustellen zu</string>
+    <string name="label_device_type">Gerätetyp</string>
 </resources>

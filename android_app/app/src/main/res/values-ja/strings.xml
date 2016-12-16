@@ -56,7 +56,6 @@
     <string name="error_value_range_0_300">値は0から300の間でなければなりません</string>
     <string name="error_water_value_required">体内の水分が必要です</string>
     <string name="error_weight_value_required">体重が必要です</string>
-    <string name="info_bluetooth_not_established">Bluetooth接続を確立できなかった場合</string>
     <string name="info_data_all_deleted">すべてのレコードが削除されます</string>
     <string name="info_data_deleted">レコードが削除されます</string>
     <string name="info_data_exported">レコードのエクスポート</string>
@@ -96,4 +95,11 @@
     <string name="info_no_evaluation_available">値を評価することはできません</string>
     <string name="label_whtr">腰と高さの比</string>
     <string name="label_whr">ウエストヒップ比</string>
+    <string name="action_bluetooth_status">Bluetoothステータス</string>
+    <string name="info_bluetooth_no_device">Bluetooth接続を確立できなかった場合</string>
+    <string name="info_bluetooth_try_reconnection">再接続しようとしています</string>
+    <string name="info_bluetooth_connection_error">Bluetoothに予期しないエラーがあります</string>
+    <string name="info_bluetooth_connection_lost">Bluetooth接続を失いました</string>
+    <string name="info_bluetooth_connection_successful">接続に成功しました</string>
+    <string name="label_device_type">デバイスタイプ</string>
 </resources>

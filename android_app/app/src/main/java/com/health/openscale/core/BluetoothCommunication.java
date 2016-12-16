@@ -17,97 +17,31 @@
 package com.health.openscale.core;
 
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothSocket;
 import android.os.Handler;
-import android.util.Log;
 
-import java.io.IOException;
-import java.util.Set;
-import java.util.UUID;
+public abstract class BluetoothCommunication {
+    public static final int BT_MI_SCALE = 0;
+    public static final int BT_OPEN_SCALE = 1;
 
-public class BluetoothCommunication extends Thread {
-    public static final int BT_MESSAGE_READ = 0;
-    public static final int BT_SOCKET_CLOSED = 1;
-    public static final int BT_NO_ADAPTER = 2;
-	private final UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb"); // Standard SerialPortService ID
-	
-    private BluetoothSocket btSocket;
-    private BluetoothDevice btDevice;
-    private BluetoothAdapter btAdapter;
-    private Handler btHandler;
-    private volatile boolean isCancel;
- 
-    public BluetoothCommunication(Handler handler) {
-    	btHandler = handler;
-    	isCancel = false;
-    }
- 
-	void findBT(String deviceName) throws IOException {
-		btAdapter = BluetoothAdapter.getDefaultAdapter();
+    public static final int BT_RETRIEVE_SCALE_DATA = 0;
+    public static final int BT_CONNECTION_ESTABLISHED = 1;
+    public static final int BT_CONNECTION_LOST = 2;
+    public static final int BT_NO_DEVICE_FOUND = 3;
+    public static final int BT_UNEXPECTED_ERROR = 4;
 
-		if (btAdapter == null) {
-			btHandler.obtainMessage(BluetoothCommunication.BT_NO_ADAPTER).sendToTarget();
-			return;
-		}
+    protected Handler callbackBtHandler;
+    protected BluetoothAdapter btAdapter;
 
-		Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
-
-		for (BluetoothDevice device : pairedDevices) {
-			// check if we can found bluetooth device name in the pairing list
-			if (device.getName().equals(deviceName)) {
-				btDevice = device;
-				
-	            // Get a BluetoothSocket to connect with the given BluetoothDevice
-	        	btSocket = btDevice.createRfcommSocketToServiceRecord(uuid);
-				return;
-			}
-		}
-
-		throw new IOException("Bluetooth device not found");
-	}
-    
-    public void run() {    	
-		while (!isCancel) {
-			try {
-				if (!btSocket.isConnected()) {
-					// Connect the device through the socket. This will block
-					// until it succeeds or throws an exception
-					btSocket.connect();
-				}
-				
-				// Bluetooth connection was successful 
-				Log.d("BluetoothCommunication", "Bluetooth connection successful established!");
-				BluetoothConnectedThread btConnectThread = new BluetoothConnectedThread(btSocket, btHandler);
-				btConnectThread.start();
-				return;
-
-			} catch (IOException connectException) {
-				try {
-					sleep(4000);
-				} catch (InterruptedException e) {
-					Log.e("BluetoothCommuncation", "Sleep error " + e.getMessage());
-				}
-			}
-			
-		}
+    public BluetoothCommunication()
+    {
+        btAdapter = BluetoothAdapter.getDefaultAdapter();
     }
 
-    public boolean sendBtData(String data){
-        if (btSocket.isConnected()) {
-            BluetoothConnectedThread btConnectThread = new BluetoothConnectedThread(btSocket, btHandler);
-            btConnectThread.write(data.getBytes());
-
-            return true;
-        }
-
-        return false;
+    public void registerCallbackHandler(Handler cbBtHandler) {
+        callbackBtHandler = cbBtHandler;
     }
 
-    public void cancel() { 	
-        try {
-            btSocket.close();
-            isCancel = true;
-        } catch (IOException e) { }
-    }
+    abstract void startSearching(String deviceName);
+    abstract void stopSearching();
 }
+
