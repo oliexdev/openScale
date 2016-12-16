@@ -56,13 +56,16 @@ public class MainActivity extends ActionBarActivity implements
 	 */
 	private SectionsPagerAdapter mSectionsPagerAdapter;
 
+	private static boolean firstAppStart = false;
+	private static int bluetoothStatusIcon = 0;
+	private static MenuItem bluetoothStatus;
+
 	/**
 	 * The {@link ViewPager} that will host the section contents.
 	 */
 	private ViewPager mViewPager;
 
-	private MenuItem bluetoothStatus;
-	
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -124,7 +127,14 @@ public class MainActivity extends ActionBarActivity implements
 
 		bluetoothStatus = menu.findItem(R.id.action_bluetooth_status);
 
-		invokeSearchBluetoothDevice();
+		// Just search for a bluetooth device just once at the start of the app
+		if (!firstAppStart) {
+			invokeSearchBluetoothDevice();
+			firstAppStart = true;
+		} else {
+			// Set current bluetooth status icon while e.g. orientation changes
+			setBluetoothStatusIcon(bluetoothStatusIcon);
+		}
 
 		return true;
 	}
@@ -150,7 +160,7 @@ public class MainActivity extends ActionBarActivity implements
 				Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_try_reconnection) + " " + deviceName, Toast.LENGTH_SHORT).show();
 				invokeSearchBluetoothDevice();
 			} else {
-				bluetoothStatus.setIcon(getResources().getDrawable(R.drawable.bluetooth_disabled));
+				setBluetoothStatusIcon(R.drawable.bluetooth_disabled);
 				Toast.makeText(getApplicationContext(), "Bluetooth " + getResources().getString(R.string.info_is_not_enable), Toast.LENGTH_SHORT).show();
 			}
 			return true;
@@ -180,18 +190,18 @@ public class MainActivity extends ActionBarActivity implements
 			// Check if Bluetooth 4.x is available
 			if (Integer.parseInt(deviceType) == BluetoothCommunication.BT_MI_SCALE) {
 				if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-					bluetoothStatus.setIcon(getResources().getDrawable(R.drawable.bluetooth_disabled));
+					setBluetoothStatusIcon(R.drawable.bluetooth_disabled);
 					Toast.makeText(getApplicationContext(), "Bluetooth 4.x " + getResources().getString(R.string.info_is_not_available), Toast.LENGTH_SHORT).show();
 					return;
 				}
 			}
 
-			bluetoothStatus.setIcon(getResources().getDrawable(R.drawable.bluetooth_searching));
+			setBluetoothStatusIcon(R.drawable.bluetooth_searching);
 
 			OpenScale.getInstance(getApplicationContext()).stopSearchingForBluetooth();
 			OpenScale.getInstance(getApplicationContext()).startSearchingForBluetooth(Integer.parseInt(deviceType), deviceName, callbackBtHandler);
 		} else {
-			bluetoothStatus.setIcon(getResources().getDrawable(R.drawable.bluetooth_disabled));
+			setBluetoothStatusIcon(R.drawable.bluetooth_disabled);
 		}
 	}
 
@@ -201,7 +211,7 @@ public class MainActivity extends ActionBarActivity implements
 
 			switch (msg.what) {
 				case BluetoothCommunication.BT_RETRIEVE_SCALE_DATA:
-					bluetoothStatus.setIcon(getResources().getDrawable(R.drawable.bluetooth_connection_success));
+					setBluetoothStatusIcon(R.drawable.bluetooth_connection_success);
 					ScaleData scaleBtData = (ScaleData) msg.obj;
 
 					// if no user id is set, use the current user id
@@ -213,28 +223,33 @@ public class MainActivity extends ActionBarActivity implements
 					OpenScale.getInstance(getApplicationContext()).updateScaleData();
 					break;
 				case BluetoothCommunication.BT_CONNECTION_LOST:
-					bluetoothStatus.setIcon(getResources().getDrawable(R.drawable.bluetooth_connection_lost));
+					setBluetoothStatusIcon(R.drawable.bluetooth_connection_lost);
 					Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_connection_lost), Toast.LENGTH_SHORT).show();
 					Log.d("OpenScale", "Bluetooth connection lost");
 					break;
 				case BluetoothCommunication.BT_NO_DEVICE_FOUND:
-					bluetoothStatus.setIcon(getResources().getDrawable(R.drawable.bluetooth_connection_lost));
+					setBluetoothStatusIcon(R.drawable.bluetooth_connection_lost);
 					Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_no_device), Toast.LENGTH_SHORT).show();
 					Log.d("OpenScale", "No Bluetooth device found");
 					break;
 				case BluetoothCommunication.BT_CONNECTION_ESTABLISHED:
-					bluetoothStatus.setIcon(getResources().getDrawable(R.drawable.bluetooth_connection_success));
+					setBluetoothStatusIcon(R.drawable.bluetooth_connection_success);
 					Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_connection_successful), Toast.LENGTH_SHORT).show();
 					Log.d("OpenScale", "Bluetooth connection successful established");
 					break;
 				case BluetoothCommunication.BT_UNEXPECTED_ERROR:
-					bluetoothStatus.setIcon(getResources().getDrawable(R.drawable.bluetooth_connection_lost));
+					setBluetoothStatusIcon(R.drawable.bluetooth_connection_lost);
 					Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_connection_error) + ": " + msg.obj, Toast.LENGTH_SHORT).show();
 					Log.e("OpenScale", "Bluetooth unexpected error: " + msg.obj);
 					break;
 			}
 		}
 	};
+
+	private void setBluetoothStatusIcon(int iconRessource) {
+		bluetoothStatusIcon = iconRessource;
+		bluetoothStatus.setIcon(getResources().getDrawable(bluetoothStatusIcon));
+	}
 
 	@Override
 	public void onTabSelected(ActionBar.Tab tab,
