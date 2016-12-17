@@ -154,7 +154,11 @@ class BluetoothCustomOpenScale extends BluetoothCommunication {
                     btLine.append(btChar);
 
                     if (btLine.charAt(btLine.length() - 1) == '\n') {
-                        callbackBtHandler.obtainMessage(BluetoothCommunication.BT_RETRIEVE_SCALE_DATA, parseBtString(btLine.toString())).sendToTarget();
+                        ScaleData scaleData = parseBtString(btLine.toString());
+
+                        if (scaleData != null) {
+                            callbackBtHandler.obtainMessage(BluetoothCommunication.BT_RETRIEVE_SCALE_DATA, scaleData).sendToTarget();
+                        }
 
                         btLine.setLength(0);
                     }
@@ -215,6 +219,8 @@ class BluetoothCustomOpenScale extends BluetoothCommunication {
                             scaleBtData.fat = Float.parseFloat(csvField[7]);
                             scaleBtData.water = Float.parseFloat(csvField[8]);
                             scaleBtData.muscle = Float.parseFloat(csvField[9]);
+
+                            return scaleBtData;
                         } else {
                             callbackBtHandler.obtainMessage(BluetoothCommunication.BT_UNEXPECTED_ERROR, "Error calculated checksum (" + checksum + ") and received checksum (" + btChecksum + ") is different").sendToTarget();
                         }
@@ -228,7 +234,7 @@ class BluetoothCustomOpenScale extends BluetoothCommunication {
                     callbackBtHandler.obtainMessage(BluetoothCommunication.BT_UNEXPECTED_ERROR, "Error unknown MCU command").sendToTarget();
             }
 
-            return scaleBtData;
+            return null;
         }
 
         public void write(byte[] bytes) {
