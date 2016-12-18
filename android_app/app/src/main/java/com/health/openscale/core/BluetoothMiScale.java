@@ -14,6 +14,11 @@
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
+/*
+ * Modified version of Mnkai <https://github.com/Mnkai/OpenXiaomiScale> original BTUtils.java source code
+ * Copyright (C) Mnkai Apache 2.0 license <http://www.apache.org/licenses/LICENSE-2.0>
+ */
+
 package com.health.openscale.core;
 
 import android.bluetooth.BluetoothAdapter;
