@@ -53,8 +53,9 @@ public class BluetoothMiScale extends BluetoothCommunication {
     private Handler searchHandler;
     private Context context;
     private String btDeviceName;
-    private int nextState;
-    private boolean restartDiscovery;;
+    private int nextCmdState;
+    private int nextInitState;
+    private boolean initProcessOn;
 
     public BluetoothMiScale(Context con) {
         searchHandler = new Handler();
@@ -130,8 +131,9 @@ public class BluetoothMiScale extends BluetoothCommunication {
 
         @Override
         public void onServicesDiscovered(final BluetoothGatt gatt, int status) {
-            restartDiscovery = false;
-            nextState = 0;
+            nextCmdState = 0;
+            nextInitState = 0;
+            initProcessOn = false;
 
             invokeNextBluetoothCmd(gatt);
         }
@@ -140,9 +142,9 @@ public class BluetoothMiScale extends BluetoothCommunication {
             BluetoothGattCharacteristic characteristic;
             BluetoothGattDescriptor descriptor;
 
-            Log.d("BluetoothMiScale", "Bluetooth Cmd State: " + nextState);
+            Log.d("BluetoothMiScale", "Cmd State " + nextCmdState);
 
-            switch (nextState) {
+            switch (nextCmdState) {
                 case 0:
                     // read device time
                     characteristic = gatt.getService(WEIGHT_MEASUREMENT_SERVICE)
@@ -188,11 +190,65 @@ public class BluetoothMiScale extends BluetoothCommunication {
                     characteristic.setValue(new byte[]{0x03});
                     gatt.writeCharacteristic(characteristic);*/
                     break;
-                case 5:
-                    // Stop state machine
-                    break;
                 default:
                     Log.e("BluetoothMiScale", "Error invalid Bluetooth State");
+                    break;
+            }
+        }
+
+        private void invokeInitBluetoothCmd(BluetoothGatt gatt) {
+            BluetoothGattCharacteristic characteristic;
+            BluetoothGattDescriptor descriptor;
+
+            initProcessOn = true;
+
+            Log.d("BluetoothMiScale", "Init State " + nextInitState);
+
+            switch (nextInitState) {
+                case 0:
+                    // set current time
+                    characteristic = gatt.getService(WEIGHT_MEASUREMENT_SERVICE)
+                            .getCharacteristic(WEIGHT_MEASUREMENT_TIME_CHARACTERISTIC);
+
+                    Log.d("BluetoothMiScale", "Set current time on Mi scale");
+
+                    Calendar currentDateTime = Calendar.getInstance();
+                    int year = currentDateTime.get(Calendar.YEAR);
+                    byte month = (byte)(currentDateTime.get(Calendar.MONTH)+1);
+                    byte day = (byte)currentDateTime.get(Calendar.DAY_OF_MONTH);
+                    byte hour = (byte)currentDateTime.get(Calendar.HOUR_OF_DAY);
+                    byte min = (byte)currentDateTime.get(Calendar.MINUTE);
+                    byte sec = (byte)currentDateTime.get(Calendar.SECOND);
+
+                    byte[] dateTimeByte = {(byte)(year), (byte)(year >> 8), month, day, hour, min, sec, 0x03, 0x00, 0x00};
+
+                    characteristic.setValue(dateTimeByte);
+                    gatt.writeCharacteristic(characteristic);
+                    break;
+                case 1:
+                    // set notification on for weight measurement history
+                    characteristic = gatt.getService(WEIGHT_MEASUREMENT_SERVICE)
+                            .getCharacteristic(WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC);
+
+                    gatt.setCharacteristicNotification(characteristic, true);
+
+                    descriptor = characteristic.getDescriptor(WEIGHT_MEASUREMENT_CONFIG);
+                    descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+                    gatt.writeDescriptor(descriptor);
+                    break;
+                case 2:
+                    // Set on history weight measurement
+                    characteristic = gatt.getService(WEIGHT_MEASUREMENT_SERVICE)
+                            .getCharacteristic(WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC);
+
+                    characteristic.setValue(new byte[]{(byte)0x01, (byte)0x96, (byte)0x8a, (byte)0xbd, (byte)0x62});
+                    gatt.writeCharacteristic(characteristic);
+                    break;
+                case 3:
+                    initProcessOn = false;
+
+                    stopSearching();
+                    startSearching(btDeviceName);
                     break;
             }
         }
@@ -201,21 +257,26 @@ public class BluetoothMiScale extends BluetoothCommunication {
         public void onDescriptorWrite(BluetoothGatt gatt,
                                       BluetoothGattDescriptor descriptor,
                                       int status) {
-            nextState++;
-            invokeNextBluetoothCmd(gatt);
+            if (initProcessOn) {
+                nextInitState++;
+                invokeInitBluetoothCmd(gatt);
+            } else {
+                nextCmdState++;
+                invokeNextBluetoothCmd(gatt);
+            }
         }
 
         @Override
         public void onCharacteristicWrite (BluetoothGatt gatt,
                                     BluetoothGattCharacteristic characteristic,
                                     int status) {
-            if (restartDiscovery) {
-                stopSearching();
-                startSearching(btDeviceName);
+            if (initProcessOn) {
+                nextInitState++;
+                invokeInitBluetoothCmd(gatt);
+            } else {
+                nextCmdState++;
+                invokeNextBluetoothCmd(gatt);
             }
-
-            nextState++;
-            invokeNextBluetoothCmd(gatt);
         }
 
         @Override
@@ -229,9 +290,9 @@ public class BluetoothMiScale extends BluetoothCommunication {
 
             if (currentYear != scaleYear) {
                 Log.d("BluetoothMiScale", "Current year and scale year is different");
-                setCurrentTimeOnDevice(gatt);
+                invokeInitBluetoothCmd(gatt);
             } else {
-                nextState++;
+                nextCmdState++;
                 invokeNextBluetoothCmd(gatt);
             }
         }
@@ -240,10 +301,6 @@ public class BluetoothMiScale extends BluetoothCommunication {
         public void onCharacteristicChanged(BluetoothGatt gatt,
                                             BluetoothGattCharacteristic characteristic) {
             final byte[] data = characteristic.getValue();
-
-            Log.d("BluetoothMiScale", "Char changed");
-
-            printByteInHex(data);
 
             if (data != null && data.length > 0) {
                 if (data.length == 20) {
@@ -258,29 +315,6 @@ public class BluetoothMiScale extends BluetoothCommunication {
                 }
 
             }
-        }
-
-        private void setCurrentTimeOnDevice(BluetoothGatt gatt) {
-            // set current time
-            BluetoothGattCharacteristic characteristic = gatt.getService(WEIGHT_MEASUREMENT_SERVICE)
-                    .getCharacteristic(WEIGHT_MEASUREMENT_TIME_CHARACTERISTIC);
-
-            Log.d("BluetoothMiScale", "Set current time on Mi scale");
-
-            Calendar currentDateTime = Calendar.getInstance();
-            int year = currentDateTime.get(Calendar.YEAR);
-            byte month = (byte)(currentDateTime.get(Calendar.MONTH)+1);
-            byte day = (byte)currentDateTime.get(Calendar.DAY_OF_MONTH);
-            byte hour = (byte)currentDateTime.get(Calendar.HOUR_OF_DAY);
-            byte min = (byte)currentDateTime.get(Calendar.MINUTE);
-            byte sec = (byte)currentDateTime.get(Calendar.SECOND);
-
-            byte[] dateTimeByte = {(byte)(year), (byte)(year >> 8), month, day, hour, min, sec, 0x03, 0x00, 0x00};
-
-            restartDiscovery = true;
-
-            characteristic.setValue(dateTimeByte);
-            gatt.writeCharacteristic(characteristic);
         }
 
         private void parseBytes(byte[] weightBytes) {
@@ -322,17 +356,38 @@ public class BluetoothMiScale extends BluetoothCommunication {
                     String date_string = year + "/" + month + "/" + day + "/" + hours + "/" + min;
                     Date date_time = new SimpleDateFormat("yyyy/MM/dd/HH/mm").parse(date_string);
 
-                    ScaleData scaleBtData = new ScaleData();
+                    // Is the year plausible? Check if the year is in the range of 20 years...
+                    if (validateDate(date_time, 20)) {
+                        ScaleData scaleBtData = new ScaleData();
 
-                    scaleBtData.weight = weight;
-                    scaleBtData.date_time = date_time;
+                        scaleBtData.weight = weight;
+                        scaleBtData.date_time = date_time;
 
-                    callbackBtHandler.obtainMessage(BluetoothCommunication.BT_RETRIEVE_SCALE_DATA, scaleBtData).sendToTarget();
+                        callbackBtHandler.obtainMessage(BluetoothCommunication.BT_RETRIEVE_SCALE_DATA, scaleBtData).sendToTarget();
+                    } else {
+                        Log.e("BluetoothMiScale", "Invalid weight year " + year);
+                    }
                 }
             } catch (ParseException e) {
                 callbackBtHandler.obtainMessage(BluetoothCommunication.BT_UNEXPECTED_ERROR, "Error while decoding bluetooth date string (" + e.getMessage() + ")").sendToTarget();
             }
         }
+
+        public boolean validateDate(Date weightDate, int range) {
+
+            Calendar currentDatePos = Calendar.getInstance();
+            currentDatePos.add(Calendar.YEAR, range);
+
+            Calendar currentDateNeg = Calendar.getInstance();
+            currentDateNeg.add(Calendar.YEAR, -range);
+
+            if (weightDate.before(currentDatePos.getTime()) && weightDate.after(currentDateNeg.getTime())) {
+                return true;
+            }
+
+            return false;
+        }
+
         private boolean isBitSet(byte value, int bit) {
             return (value & (1 << bit)) != 0;
         }
