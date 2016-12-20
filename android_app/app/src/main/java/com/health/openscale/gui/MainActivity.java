@@ -220,7 +220,11 @@ public class MainActivity extends ActionBarActivity implements
 					}
 
 					OpenScale.getInstance(getApplicationContext()).addScaleData(scaleBtData);
-					OpenScale.getInstance(getApplicationContext()).updateScaleData();
+					break;
+				case BluetoothCommunication.BT_INIT_PROCESS:
+					setBluetoothStatusIcon(R.drawable.bluetooth_connection_success);
+					Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_init), Toast.LENGTH_SHORT).show();
+					Log.d("OpenScale", "Bluetooth initializing");
 					break;
 				case BluetoothCommunication.BT_CONNECTION_LOST:
 					setBluetoothStatusIcon(R.drawable.bluetooth_connection_lost);

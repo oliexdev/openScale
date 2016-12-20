@@ -96,6 +96,7 @@
     <string name="info_bluetooth_connection_lost">Lost Bluetooth connection.</string>
     <string name="info_bluetooth_no_device">No Bluetooth device found</string>
     <string name="info_bluetooth_connection_successful">Connection successful established</string>
+    <string name="info_bluetooth_init">Initialize Bluetooth device</string>
     <string name="info_bluetooth_connection_error">Bluetooth has an unexpected error</string>
 
     <string name="info_enter_user_name">Enter your name</string>

@@ -14,11 +14,6 @@
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-/*
- * Modified version of Mnkai <https://github.com/Mnkai/OpenXiaomiScale> original BTUtils.java source code
- * Copyright (C) Mnkai Apache 2.0 license <http://www.apache.org/licenses/LICENSE-2.0>
- */
-
 package com.health.openscale.core;
 
 import android.bluetooth.BluetoothAdapter;
@@ -77,7 +72,7 @@ public class BluetoothMiScale extends BluetoothCommunication {
                     if (device.getAddress().replace(":", "").startsWith("880f10") ||
                             device.getAddress().replace(":", "").startsWith("880F10")) // Xiaomi
                     {
-                        if (device.getName().equals(btDeviceName)) { // It really is scale
+                        if (device.getName().equals(btDeviceName)) {
                             Log.d("BluetoothMiScale", "Mi Scale found trying to connect...");
                             bluetoothGatt = device.connectGatt(context, false, gattCallback);
 
@@ -142,8 +137,6 @@ public class BluetoothMiScale extends BluetoothCommunication {
             BluetoothGattCharacteristic characteristic;
             BluetoothGattDescriptor descriptor;
 
-            Log.d("BluetoothMiScale", "Cmd State " + nextCmdState);
-
             switch (nextCmdState) {
                 case 0:
                     // read device time
@@ -202,10 +195,10 @@ public class BluetoothMiScale extends BluetoothCommunication {
 
             initProcessOn = true;
 
-            Log.d("BluetoothMiScale", "Init State " + nextInitState);
-
             switch (nextInitState) {
                 case 0:
+                    callbackBtHandler.obtainMessage(BluetoothCommunication.BT_INIT_PROCESS).sendToTarget();
+
                     // set current time
                     characteristic = gatt.getService(WEIGHT_MEASUREMENT_SERVICE)
                             .getCharacteristic(WEIGHT_MEASUREMENT_TIME_CHARACTERISTIC);
@@ -365,7 +358,7 @@ public class BluetoothMiScale extends BluetoothCommunication {
 
                         callbackBtHandler.obtainMessage(BluetoothCommunication.BT_RETRIEVE_SCALE_DATA, scaleBtData).sendToTarget();
                     } else {
-                        Log.e("BluetoothMiScale", "Invalid weight year " + year);
+                        Log.e("BluetoothMiScale", "Invalid Mi scale weight year " + year);
                     }
                 }
             } catch (ParseException e) {
