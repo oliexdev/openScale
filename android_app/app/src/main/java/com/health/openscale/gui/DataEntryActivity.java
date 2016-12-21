@@ -215,66 +215,67 @@ public class DataEntryActivity extends Activity {
 	private boolean validateInput()
 	{
 		boolean validate = true;
-		
-		if( txtWeight.getText().toString().length() == 0 )
-		{
-			txtWeight.setError(getResources().getString(R.string.error_weight_value_required));
-			validate = false;
-		} else if(!isInRange(txtWeight.getText().toString(), 300))
-		{
-			txtWeight.setError(getResources().getString(R.string.error_value_range_0_300));
-			validate = false;
-		}
-		
-		if( txtFat.getText().toString().length() == 0 )
-		{
-			txtFat.setError(getResources().getString(R.string.error_fat_value_required));
-			validate = false;
-		} else if(!isInRange(txtFat.getText().toString(), 100))
-		{
-			txtFat.setError(getResources().getString(R.string.error_value_range_0_100));
-			validate = false;
-		}
-		
-		
-		if( txtWater.getText().toString().length() == 0 )
-		{
-			txtWater.setError(getResources().getString(R.string.error_water_value_required));
-			validate = false;
-		} else if(!isInRange(txtWater.getText().toString(), 100))
-		{
-			txtWater.setError(getResources().getString(R.string.error_value_range_0_100));
-			validate = false;
-		}
-		
-		if( txtMuscle.getText().toString().length() == 0 )
-		{
-			txtMuscle.setError(getResources().getString(R.string.error_muscle_value_required));
-			validate = false;
-		} else 	if(!isInRange(txtMuscle.getText().toString(), 100))
-		{
-			txtMuscle.setError(getResources().getString(R.string.error_value_range_0_100));
-			validate = false;
-		}
 
-        if( txtWaist.getText().toString().length() == 0 )
-        {
-            txtWaist.setError(getResources().getString(R.string.error_waist_value_required));
-            validate = false;
-        } else 	if(!isInRange(txtWaist.getText().toString(), 300))
-        {
-            txtWaist.setError(getResources().getString(R.string.error_value_range_0_300));
-            validate = false;
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+
+        if (prefs.getBoolean("weightEnable", true)) {
+            if (txtWeight.getText().toString().length() == 0) {
+                txtWeight.setError(getResources().getString(R.string.error_weight_value_required));
+                validate = false;
+            } else if (!isInRange(txtWeight.getText().toString(), 300)) {
+                txtWeight.setError(getResources().getString(R.string.error_value_range_0_300));
+                validate = false;
+            }
         }
 
-        if( txtHip.getText().toString().length() == 0 )
-        {
-            txtHip.setError(getResources().getString(R.string.error_hip_value_required));
-            validate = false;
-        } else 	if(!isInRange(txtHip.getText().toString(), 300))
-        {
-            txtHip.setError(getResources().getString(R.string.error_value_range_0_300));
-            validate = false;
+        if (prefs.getBoolean("fatEnable", true)) {
+            if (txtFat.getText().toString().length() == 0) {
+                txtFat.setError(getResources().getString(R.string.error_fat_value_required));
+                validate = false;
+            } else if (!isInRange(txtFat.getText().toString(), 100)) {
+                txtFat.setError(getResources().getString(R.string.error_value_range_0_100));
+                validate = false;
+            }
+        }
+
+        if (prefs.getBoolean("waterEnable", true)) {
+            if (txtWater.getText().toString().length() == 0) {
+                txtWater.setError(getResources().getString(R.string.error_water_value_required));
+                validate = false;
+            } else if (!isInRange(txtWater.getText().toString(), 100)) {
+                txtWater.setError(getResources().getString(R.string.error_value_range_0_100));
+                validate = false;
+            }
+        }
+
+        if (prefs.getBoolean("muscleEnable", true)) {
+            if (txtMuscle.getText().toString().length() == 0) {
+                txtMuscle.setError(getResources().getString(R.string.error_muscle_value_required));
+                validate = false;
+            } else if (!isInRange(txtMuscle.getText().toString(), 100)) {
+                txtMuscle.setError(getResources().getString(R.string.error_value_range_0_100));
+                validate = false;
+            }
+        }
+
+        if (prefs.getBoolean("waistEnable", true)) {
+            if (txtWaist.getText().toString().length() == 0) {
+                txtWaist.setError(getResources().getString(R.string.error_waist_value_required));
+                validate = false;
+            } else if (!isInRange(txtWaist.getText().toString(), 300)) {
+                txtWaist.setError(getResources().getString(R.string.error_value_range_0_300));
+                validate = false;
+            }
+        }
+
+        if (prefs.getBoolean("hipEnable", true)) {
+            if (txtHip.getText().toString().length() == 0) {
+                txtHip.setError(getResources().getString(R.string.error_hip_value_required));
+                validate = false;
+            } else if (!isInRange(txtHip.getText().toString(), 300)) {
+                txtHip.setError(getResources().getString(R.string.error_value_range_0_300));
+                validate = false;
+            }
         }
 
 		return validate;
