@@ -74,6 +74,11 @@ public class BluetoothMiScale extends BluetoothCommunication {
                     {
                         if (device.getName().equals(btDeviceName)) {
                             Log.d("BluetoothMiScale", "Mi Scale found trying to connect...");
+
+                            final byte[] weightData = Arrays.copyOfRange(scanRecord, 21, 31);
+                            weightData[0] = 0x62; // Set weight remove to false to come through parse bytes
+                            parseBytes(weightData);
+
                             bluetoothGatt = device.connectGatt(context, false, gattCallback);
 
                             searchHandler.removeCallbacksAndMessages(null);
@@ -108,6 +113,96 @@ public class BluetoothMiScale extends BluetoothCommunication {
 
         searchHandler.removeCallbacksAndMessages(null);
         btAdapter.stopLeScan(scanCallback);
+    }
+
+
+    private void parseBytes(byte[] weightBytes) {
+        try {
+            float weight = 0.0f;
+
+            final byte ctrlByte = weightBytes[0];
+
+            final boolean isWeightRemoved = isBitSet(ctrlByte, 7);
+            final boolean isStabilized = isBitSet(ctrlByte, 5);
+            final boolean isLBSUnit = isBitSet(ctrlByte, 0);
+            final boolean isCattyUnit = isBitSet(ctrlByte, 4);
+
+            /*Log.d("GattCallback", "IsWeightRemoved: " + isBitSet(ctrlByte, 7));
+            Log.d("GattCallback", "6 LSB Unknown: " + isBitSet(ctrlByte, 6));
+            Log.d("GattCallback", "IsStabilized: " + isBitSet(ctrlByte, 5));
+            Log.d("GattCallback", "IsCattyOrKg: " + isBitSet(ctrlByte, 4));
+            Log.d("GattCallback", "3 LSB Unknown: " + isBitSet(ctrlByte, 3));
+            Log.d("GattCallback", "2 LSB Unknown: " + isBitSet(ctrlByte, 2));
+            Log.d("GattCallback", "1 LSB Unknown: " + isBitSet(ctrlByte, 1));
+            Log.d("GattCallback", "IsLBS: " + isBitSet(ctrlByte, 0)); */
+
+            // Only if the value is stabilized and the weight is *not* removed, the date is valid
+            if (isStabilized && !isWeightRemoved) {
+
+                final int year = ((weightBytes[4] & 0xFF) << 8) | (weightBytes[3] & 0xFF);
+                final int month = (int) weightBytes[5];
+                final int day = (int) weightBytes[6];
+                final int hours = (int) weightBytes[7];
+                final int min = (int) weightBytes[8];
+                final int sec = (int) weightBytes[9];
+
+                if (isLBSUnit || isCattyUnit) {
+                    weight = (float) (((weightBytes[2] & 0xFF) << 8) | (weightBytes[1] & 0xFF)) / 100.0f;
+                } else {
+                    weight = (float) (((weightBytes[2] & 0xFF) << 8) | (weightBytes[1] & 0xFF)) / 200.0f;
+                }
+
+                String date_string = year + "/" + month + "/" + day + "/" + hours + "/" + min;
+                Date date_time = new SimpleDateFormat("yyyy/MM/dd/HH/mm").parse(date_string);
+
+                // Is the year plausible? Check if the year is in the range of 20 years...
+                if (validateDate(date_time, 20)) {
+                    ScaleData scaleBtData = new ScaleData();
+
+                    scaleBtData.weight = weight;
+                    scaleBtData.date_time = date_time;
+
+                    callbackBtHandler.obtainMessage(BluetoothCommunication.BT_RETRIEVE_SCALE_DATA, scaleBtData).sendToTarget();
+                } else {
+                    Log.e("BluetoothMiScale", "Invalid Mi scale weight year " + year);
+                }
+            }
+        } catch (ParseException e) {
+            callbackBtHandler.obtainMessage(BluetoothCommunication.BT_UNEXPECTED_ERROR, "Error while decoding bluetooth date string (" + e.getMessage() + ")").sendToTarget();
+        }
+    }
+
+    private boolean validateDate(Date weightDate, int range) {
+
+        Calendar currentDatePos = Calendar.getInstance();
+        currentDatePos.add(Calendar.YEAR, range);
+
+        Calendar currentDateNeg = Calendar.getInstance();
+        currentDateNeg.add(Calendar.YEAR, -range);
+
+        if (weightDate.before(currentDatePos.getTime()) && weightDate.after(currentDateNeg.getTime())) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean isBitSet(byte value, int bit) {
+        return (value & (1 << bit)) != 0;
+    }
+
+    private void printByteInHex(byte[] data) {
+        if (data == null) {
+            Log.e("BluetoothMiScale", "Data is null");
+            return;
+        }
+
+        final StringBuilder stringBuilder = new StringBuilder(data.length);
+        for(byte byteChar : data) {
+            stringBuilder.append(String.format("%02X ", byteChar));
+        }
+
+        Log.d("BluetoothMiScale", "Raw hex data: " + stringBuilder);
     }
 
     private BluetoothGattCallback gattCallback= new BluetoothGattCallback() {
@@ -308,95 +403,6 @@ public class BluetoothMiScale extends BluetoothCommunication {
                 }
 
             }
-        }
-
-        private void parseBytes(byte[] weightBytes) {
-            try {
-                float weight = 0.0f;
-
-                final byte ctrlByte = weightBytes[0];
-
-                final boolean isWeightRemoved = isBitSet(ctrlByte, 7);
-                final boolean isStabilized = isBitSet(ctrlByte, 5);
-                final boolean isLBSUnit = isBitSet(ctrlByte, 0);
-                final boolean isCattyUnit = isBitSet(ctrlByte, 4);
-
-                /*Log.d("GattCallback", "IsWeightRemoved: " + isBitSet(ctrlByte, 7));
-                Log.d("GattCallback", "6 LSB Unknown: " + isBitSet(ctrlByte, 6));
-                Log.d("GattCallback", "IsStabilized: " + isBitSet(ctrlByte, 5));
-                Log.d("GattCallback", "IsCattyOrKg: " + isBitSet(ctrlByte, 4));
-                Log.d("GattCallback", "3 LSB Unknown: " + isBitSet(ctrlByte, 3));
-                Log.d("GattCallback", "2 LSB Unknown: " + isBitSet(ctrlByte, 2));
-                Log.d("GattCallback", "1 LSB Unknown: " + isBitSet(ctrlByte, 1));
-                Log.d("GattCallback", "IsLBS: " + isBitSet(ctrlByte, 0));*/
-
-                // Only if the value is stabilized and the weight is *not* removed, the date is valid
-                if (isStabilized && !isWeightRemoved) {
-
-                    final int year = ((weightBytes[4] & 0xFF) << 8) | (weightBytes[3] & 0xFF);
-                    final int month = (int) weightBytes[5];
-                    final int day = (int) weightBytes[6];
-                    final int hours = (int) weightBytes[7];
-                    final int min = (int) weightBytes[8];
-                    final int sec = (int) weightBytes[9];
-
-                    if (isLBSUnit || isCattyUnit) {
-                        weight = (float) (((weightBytes[2] & 0xFF) << 8) | (weightBytes[1] & 0xFF)) / 100.0f;
-                    } else {
-                        weight = (float) (((weightBytes[2] & 0xFF) << 8) | (weightBytes[1] & 0xFF)) / 200.0f;
-                    }
-
-                    String date_string = year + "/" + month + "/" + day + "/" + hours + "/" + min;
-                    Date date_time = new SimpleDateFormat("yyyy/MM/dd/HH/mm").parse(date_string);
-
-                    // Is the year plausible? Check if the year is in the range of 20 years...
-                    if (validateDate(date_time, 20)) {
-                        ScaleData scaleBtData = new ScaleData();
-
-                        scaleBtData.weight = weight;
-                        scaleBtData.date_time = date_time;
-
-                        callbackBtHandler.obtainMessage(BluetoothCommunication.BT_RETRIEVE_SCALE_DATA, scaleBtData).sendToTarget();
-                    } else {
-                        Log.e("BluetoothMiScale", "Invalid Mi scale weight year " + year);
-                    }
-                }
-            } catch (ParseException e) {
-                callbackBtHandler.obtainMessage(BluetoothCommunication.BT_UNEXPECTED_ERROR, "Error while decoding bluetooth date string (" + e.getMessage() + ")").sendToTarget();
-            }
-        }
-
-        public boolean validateDate(Date weightDate, int range) {
-
-            Calendar currentDatePos = Calendar.getInstance();
-            currentDatePos.add(Calendar.YEAR, range);
-
-            Calendar currentDateNeg = Calendar.getInstance();
-            currentDateNeg.add(Calendar.YEAR, -range);
-
-            if (weightDate.before(currentDatePos.getTime()) && weightDate.after(currentDateNeg.getTime())) {
-                return true;
-            }
-
-            return false;
-        }
-
-        private boolean isBitSet(byte value, int bit) {
-            return (value & (1 << bit)) != 0;
-        }
-
-        private void printByteInHex(byte[] data) {
-            if (data == null) {
-                Log.e("BluetoothMiScale", "Data is null");
-                return;
-            }
-
-            final StringBuilder stringBuilder = new StringBuilder(data.length);
-            for(byte byteChar : data) {
-                stringBuilder.append(String.format("%02X ", byteChar));
-            }
-
-            Log.d("BluetoothMiScale", "Raw hex data: " + stringBuilder);
         }
     };
 }
