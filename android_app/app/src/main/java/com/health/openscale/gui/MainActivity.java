@@ -171,13 +171,6 @@ public class MainActivity extends ActionBarActivity implements
 		return super.onOptionsItemSelected(item);
 	}
 
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		super.onActivityResult(requestCode, resultCode, data);
-
-		invokeSearchBluetoothDevice();
-	}
-
 	private void invokeSearchBluetoothDevice() {
 		if (!BluetoothAdapter.getDefaultAdapter().isEnabled()) {
 			return;
