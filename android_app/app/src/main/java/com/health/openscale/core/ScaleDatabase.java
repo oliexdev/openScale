@@ -135,6 +135,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
             values.put(COLUMN_NAME_WAIST, scaleData.waist);
             values.put(COLUMN_NAME_HIP, scaleData.hip);
             values.put(COLUMN_NAME_COMMENT, scaleData.comment);
+            values.put(COLUMN_NAME_ENABLE, 1);
 
             try
             {
@@ -163,6 +164,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
         values.put(COLUMN_NAME_WAIST, scaleData.waist);
         values.put(COLUMN_NAME_HIP, scaleData.hip);
         values.put(COLUMN_NAME_COMMENT, scaleData.comment);
+        values.put(COLUMN_NAME_ENABLE, 1);
 
         dbWrite.update(TABLE_NAME, values, COLUMN_NAME_ID + "=" + id, null);
     }
