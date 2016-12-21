@@ -113,8 +113,9 @@ public class ScaleDatabase extends SQLiteOpenHelper {
         Cursor cursorScaleDB = db.query(TABLE_NAME, new String[] {COLUMN_NAME_DATE_TIME}, COLUMN_NAME_DATE_TIME + "=? AND " + COLUMN_NAME_USER_ID + "=?",
                 new String[] {formatDateTime.format(scaleData.date_time), Integer.toString(scaleData.user_id)}, null, null, null);
 
+        // we don't want double entries
         if (cursorScaleDB.getCount() > 0) {
-            // we don't want double entries
+            cursorScaleDB.close();
             return false;
         } else {
             ContentValues values = new ContentValues();
@@ -135,6 +136,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
             catch (SQLException e)
             {
                 Log.e("ScaleDatabase", "An error occured while inserting a new entry into the scale database: " + e.toString());
+                cursorScaleDB.close();
                 return false;
             }
         }
