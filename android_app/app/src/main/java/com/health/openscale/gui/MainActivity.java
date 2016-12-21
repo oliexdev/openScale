@@ -56,8 +56,8 @@ public class MainActivity extends ActionBarActivity implements
 	 */
 	private SectionsPagerAdapter mSectionsPagerAdapter;
 
-	private static boolean firstAppStart = false;
-	private static int bluetoothStatusIcon = 0;
+	private static boolean firstAppStart = true;
+	private static int bluetoothStatusIcon = R.drawable.bluetooth_disabled;
 	private static MenuItem bluetoothStatus;
 
 	/**
@@ -127,10 +127,12 @@ public class MainActivity extends ActionBarActivity implements
 
 		bluetoothStatus = menu.findItem(R.id.action_bluetooth_status);
 
-		// Just search for a bluetooth device just once at the start of the app
-		if (!firstAppStart) {
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+
+		// Just search for a bluetooth device just once at the start of the app and if start preference enabled
+		if (firstAppStart && prefs.getBoolean("btEnable", false)) {
 			invokeSearchBluetoothDevice();
-			firstAppStart = true;
+			firstAppStart = false;
 		} else {
 			// Set current bluetooth status icon while e.g. orientation changes
 			setBluetoothStatusIcon(bluetoothStatusIcon);
@@ -155,9 +157,9 @@ public class MainActivity extends ActionBarActivity implements
 		if (id == R.id.action_bluetooth_status) {
 			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
-			if (prefs.getBoolean("btEnable", false) && BluetoothAdapter.getDefaultAdapter().isEnabled()) {
+			if (BluetoothAdapter.getDefaultAdapter().isEnabled()) {
 				String deviceName = prefs.getString("btDeviceName", "MI_SCALE");
-				Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_try_reconnection) + " " + deviceName, Toast.LENGTH_SHORT).show();
+				Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_try_connection) + " " + deviceName, Toast.LENGTH_SHORT).show();
 				invokeSearchBluetoothDevice();
 			} else {
 				setBluetoothStatusIcon(R.drawable.bluetooth_disabled);
@@ -183,26 +185,22 @@ public class MainActivity extends ActionBarActivity implements
 
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
-		if(prefs.getBoolean("btEnable", false)) {
-			String deviceName = prefs.getString("btDeviceName", "MI_SCALE");
-			String deviceType = prefs.getString("btDeviceTypes", "0");
+		String deviceName = prefs.getString("btDeviceName", "MI_SCALE");
+		String deviceType = prefs.getString("btDeviceTypes", "0");
 
-			// Check if Bluetooth 4.x is available
-			if (Integer.parseInt(deviceType) == BluetoothCommunication.BT_MI_SCALE) {
-				if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-					setBluetoothStatusIcon(R.drawable.bluetooth_disabled);
-					Toast.makeText(getApplicationContext(), "Bluetooth 4.x " + getResources().getString(R.string.info_is_not_available), Toast.LENGTH_SHORT).show();
-					return;
-				}
+		// Check if Bluetooth 4.x is available
+		if (Integer.parseInt(deviceType) == BluetoothCommunication.BT_MI_SCALE) {
+			if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+				setBluetoothStatusIcon(R.drawable.bluetooth_disabled);
+				Toast.makeText(getApplicationContext(), "Bluetooth 4.x " + getResources().getString(R.string.info_is_not_available), Toast.LENGTH_SHORT).show();
+				return;
 			}
-
-			setBluetoothStatusIcon(R.drawable.bluetooth_searching);
-
-			OpenScale.getInstance(getApplicationContext()).stopSearchingForBluetooth();
-			OpenScale.getInstance(getApplicationContext()).startSearchingForBluetooth(Integer.parseInt(deviceType), deviceName, callbackBtHandler);
-		} else {
-			setBluetoothStatusIcon(R.drawable.bluetooth_disabled);
 		}
+
+		setBluetoothStatusIcon(R.drawable.bluetooth_searching);
+
+		OpenScale.getInstance(getApplicationContext()).stopSearchingForBluetooth();
+		OpenScale.getInstance(getApplicationContext()).startSearchingForBluetooth(Integer.parseInt(deviceType), deviceName, callbackBtHandler);
 	}
 
 	private final Handler callbackBtHandler = new Handler() {

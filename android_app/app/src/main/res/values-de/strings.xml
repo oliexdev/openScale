@@ -38,7 +38,7 @@
     <string name="info_your_weight">Dein Gewicht war</string>
     <string name="label_add">Hinzufügen</string>
     <string name="label_birthday">Geburtstag</string>
-    <string name="label_bluetooth_enable">Suche nach Bluetooth Waage</string>
+    <string name="label_bluetooth_enable">Suche nach Waage beim Start</string>
     <string name="label_bluetooth_title">Bluetooth</string>
     <string name="label_bmi">BMI</string>
     <string name="label_body_height">Körpergröße</string>
@@ -101,7 +101,7 @@
     <string name="info_bluetooth_connection_lost">Bluetooth Verbindung verloren</string>
     <string name="info_bluetooth_connection_successful">Verbindung erfolgreich hergestellt</string>
     <string name="info_bluetooth_no_device">Kein Bluetooth Gerät gefunden</string>
-    <string name="info_bluetooth_try_reconnection">Versuche Verbindung herzustellen zu</string>
+    <string name="info_bluetooth_try_connection">Versuche Verbindung herzustellen zu</string>
     <string name="label_device_type">Gerätetyp</string>
     <string name="info_bluetooth_init">Initializiere Bluetooth Gerät</string>
 </resources>

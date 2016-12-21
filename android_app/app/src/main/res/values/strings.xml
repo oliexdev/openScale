@@ -92,7 +92,7 @@
     <string name="info_is_not_available">is not available</string>
     <string name="info_delete_bluetooth_data">Clear all Bluetooth data</string>
     <string name="info_delete_bluetooth_data_success">Bluetooth data was successful cleared</string>
-    <string name="info_bluetooth_try_reconnection">Trying to reconnect to</string>
+    <string name="info_bluetooth_try_connection">Trying to connect to</string>
     <string name="info_bluetooth_connection_lost">Lost Bluetooth connection.</string>
     <string name="info_bluetooth_no_device">No Bluetooth device found</string>
     <string name="info_bluetooth_connection_successful">Connection successful established</string>
@@ -107,7 +107,7 @@
     <string name="question_really_delete_user">Do you really want to delete the user? </string>
 
     <string name="label_bluetooth_title">Bluetooth</string>
-    <string name="label_bluetooth_enable">Search for Bluetooth scale</string>
+    <string name="label_bluetooth_enable">Search for scale on startup</string>
     <string name="label_device_name">Device Name</string>
     <string name="label_device_type">Device Type</string>
 

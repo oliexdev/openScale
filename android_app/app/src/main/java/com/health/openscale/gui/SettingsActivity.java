@@ -135,16 +135,6 @@ private void updatePrefSummary(Preference p) {
         EditTextPreference editTextPref = (EditTextPreference) p;
         p.setSummary(editTextPref.getText());
     }
-    
-	SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-    if(prefs.getBoolean("btEnable", true))
-    {
-    	findPreference("btDeviceName").setEnabled(true);
-        findPreference("btDeviceTypes").setEnabled(true);
-    } else {
-    	findPreference("btDeviceName").setEnabled(false);
-        findPreference("btDeviceTypes").setEnabled(false);
-    }
 }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
