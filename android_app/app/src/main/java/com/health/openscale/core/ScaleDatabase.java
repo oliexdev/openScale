@@ -31,7 +31,7 @@ import java.util.Calendar;
 import java.util.Locale;
 
 public class ScaleDatabase extends SQLiteOpenHelper {	
-    private static final int DATABASE_VERSION = 3;
+    private static final int DATABASE_VERSION = 4;
     private static final String DATABASE_NAME = "openScaleDatabase.db";	
 	
     private static final String TABLE_NAME = "scaledata";
@@ -45,6 +45,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
     private static final String COLUMN_NAME_WAIST = "waist";
     private static final String COLUMN_NAME_HIP = "hip";
     private static final String COLUMN_NAME_COMMENT = "comment";
+    private static final String COLUMN_NAME_ENABLE = "enable";
     
     private static final String SQL_CREATE_ENTRIES = 
     		"CREATE TABLE " + TABLE_NAME + " (" + 
@@ -57,7 +58,8 @@ public class ScaleDatabase extends SQLiteOpenHelper {
     				COLUMN_NAME_MUSCLE + " REAL," +
                     COLUMN_NAME_WAIST + " REAL," +
                     COLUMN_NAME_HIP + " REAL," +
-                    COLUMN_NAME_COMMENT + " TEXT" +
+                    COLUMN_NAME_COMMENT + " TEXT," +
+                    COLUMN_NAME_ENABLE + " INTEGER" +
     				")";
 
     private static final String SQL_DELETE_ENTRIES =
@@ -74,7 +76,8 @@ public class ScaleDatabase extends SQLiteOpenHelper {
             COLUMN_NAME_MUSCLE,
             COLUMN_NAME_WAIST,
             COLUMN_NAME_HIP,
-            COLUMN_NAME_COMMENT
+            COLUMN_NAME_COMMENT,
+            COLUMN_NAME_ENABLE
     };
 
     private final SQLiteDatabase dbWrite = getWritableDatabase();
@@ -100,6 +103,10 @@ public class ScaleDatabase extends SQLiteOpenHelper {
         if (oldVersion == 2 && newVersion == 3) {
             db.execSQL("ALTER TABLE " + TABLE_NAME + " ADD COLUMN " + COLUMN_NAME_WAIST + " REAL DEFAULT 0");
             db.execSQL("ALTER TABLE " + TABLE_NAME + " ADD COLUMN " + COLUMN_NAME_HIP + " REAL DEFAULT 0");
+        }
+
+        if (oldVersion == 3 && newVersion == 4) {
+            db.execSQL("ALTER TABLE " + TABLE_NAME + " ADD COLUMN " + COLUMN_NAME_ENABLE + " INTEGER DEFAULT 1");
         }
 	}
 	
@@ -182,7 +189,12 @@ public class ScaleDatabase extends SQLiteOpenHelper {
     }
 
     public void deleteEntry(long id) {
-        dbWrite.delete(TABLE_NAME, COLUMN_NAME_ID + "= ?", new String[] {String.valueOf(id)});
+        //dbWrite.delete(TABLE_NAME, COLUMN_NAME_ID + "= ?", new String[] {String.valueOf(id)});
+
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_NAME_ENABLE, 0);
+
+        dbWrite.update(TABLE_NAME, values, COLUMN_NAME_ID + "=" + id, null);
     }
 
     public int[] getCountsOfAllMonth(int userId, int year) {
@@ -199,7 +211,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
             Cursor cursorScaleDB = dbRead.query(
                     TABLE_NAME,    // The table to query
                     new String[]{"count(*)"},    // The columns to return
-                    COLUMN_NAME_DATE_TIME + " >= ? AND " + COLUMN_NAME_DATE_TIME + " < ? AND " + COLUMN_NAME_USER_ID + "=?",            // The columns for the WHERE clause
+                    COLUMN_NAME_DATE_TIME + " >= ? AND " + COLUMN_NAME_DATE_TIME + " < ? AND " + COLUMN_NAME_USER_ID + "=? AND "+ COLUMN_NAME_ENABLE + "=1", // The columns for the WHERE clause
                     new String[]{formatDateTime.format(start_cal.getTime()), formatDateTime.format(end_cal.getTime()), Integer.toString(userId)},            // The values for the WHERE clause
                     null,            // don't group the rows
                     null,            // don't filter by row groups
@@ -231,7 +243,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
         Cursor cursorScaleDB = dbRead.query(
                 TABLE_NAME, 	// The table to query
                 projection, 	// The columns to return
-                COLUMN_NAME_DATE_TIME + " >= ? AND " + COLUMN_NAME_DATE_TIME + " < ? AND " + COLUMN_NAME_USER_ID + "=?",            // The columns for the WHERE clause
+                COLUMN_NAME_DATE_TIME + " >= ? AND " + COLUMN_NAME_DATE_TIME + " < ? AND " + COLUMN_NAME_USER_ID + "=? AND " + COLUMN_NAME_ENABLE + "=1", // The columns for the WHERE clause
                 new String[]{formatDateTime.format(start_cal.getTime()), formatDateTime.format(end_cal.getTime()), Integer.toString(userId)},            // The values for the WHERE clause
                 null, 			// don't group the rows
                 null,			// don't filter by row groups
@@ -259,7 +271,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
 		Cursor cursorScaleDB = dbRead.query(
 		    TABLE_NAME, 	// The table to query
 		    projection, 	// The columns to return
-            COLUMN_NAME_USER_ID + "=?", 			// The columns for the WHERE clause
+            COLUMN_NAME_USER_ID + "=? AND " + COLUMN_NAME_ENABLE + "=1", // The columns for the WHERE clause
 		    new String[]{Integer.toString(userId)}, 			// The values for the WHERE clause
 		    null, 			// don't group the rows
 		    null,			// don't filter by row groups
