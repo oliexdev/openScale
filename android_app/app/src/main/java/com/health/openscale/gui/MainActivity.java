@@ -205,7 +205,7 @@ public class MainActivity extends ActionBarActivity implements
 					ScaleData scaleBtData = (ScaleData) msg.obj;
 
 					if (OpenScale.getInstance(getApplicationContext()).addScaleData(scaleBtData) == -1) {
-						Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_no_selected_user) + "(" + getResources().getString(R.string.label_weight) + ": " + scaleBtData.weight + ")", Toast.LENGTH_SHORT).show();
+						Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_no_selected_user), Toast.LENGTH_SHORT).show();
 					}
 					break;
 				case BluetoothCommunication.BT_INIT_PROCESS:
