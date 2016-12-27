@@ -104,4 +104,5 @@
     <string name="info_bluetooth_connection_successful">接続に成功しました</string>
     <string name="label_device_type">デバイスタイプ</string>
     <string name="info_bluetooth_init">Bluetooth接続を初期化する</string>
+    <string name="label_smartUserAssign">スマートユーザーのアサイン</string>
 </resources>

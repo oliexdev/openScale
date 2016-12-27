@@ -135,12 +135,12 @@ public class DataEntryActivity extends Activity {
             row.setVisibility(View.GONE);
         }
 
-        if(!prefs.getBoolean("waistEnable", true)) {
+        if(!prefs.getBoolean("waistEnable", false)) {
             TableRow row = (TableRow)findViewById(R.id.tableRowWaist);
             row.setVisibility(View.GONE);
         }
 
-        if(!prefs.getBoolean("hipEnable", true)) {
+        if(!prefs.getBoolean("hipEnable", false)) {
             TableRow row = (TableRow)findViewById(R.id.tableRowHip);
             row.setVisibility(View.GONE);
         }
@@ -258,7 +258,7 @@ public class DataEntryActivity extends Activity {
             }
         }
 
-        if (prefs.getBoolean("waistEnable", true)) {
+        if (prefs.getBoolean("waistEnable", false)) {
             if (txtWaist.getText().toString().length() == 0) {
                 txtWaist.setError(getResources().getString(R.string.error_waist_value_required));
                 validate = false;
@@ -268,7 +268,7 @@ public class DataEntryActivity extends Activity {
             }
         }
 
-        if (prefs.getBoolean("hipEnable", true)) {
+        if (prefs.getBoolean("hipEnable", false)) {
             if (txtHip.getText().toString().length() == 0) {
                 txtHip.setError(getResources().getString(R.string.error_hip_value_required));
                 validate = false;

@@ -17,6 +17,8 @@
 package com.health.openscale.gui;
 
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -143,9 +145,6 @@ public class MainActivity extends ActionBarActivity implements
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		// Handle action bar item clicks here. The action bar will
-		// automatically handle clicks on the Home/Up button, so long
-		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
 
 		if (id == R.id.action_general_settings) {
@@ -155,16 +154,7 @@ public class MainActivity extends ActionBarActivity implements
 		}
 
 		if (id == R.id.action_bluetooth_status) {
-			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-
-			if (BluetoothAdapter.getDefaultAdapter().isEnabled()) {
-				String deviceName = prefs.getString("btDeviceName", "MI_SCALE");
-				Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_try_connection) + " " + deviceName, Toast.LENGTH_SHORT).show();
-				invokeSearchBluetoothDevice();
-			} else {
-				setBluetoothStatusIcon(R.drawable.bluetooth_disabled);
-				Toast.makeText(getApplicationContext(), "Bluetooth " + getResources().getString(R.string.info_is_not_enable), Toast.LENGTH_SHORT).show();
-			}
+			invokeSearchBluetoothDevice();
 			return true;
 		}
 
@@ -172,7 +162,15 @@ public class MainActivity extends ActionBarActivity implements
 	}
 
 	private void invokeSearchBluetoothDevice() {
-		if (!BluetoothAdapter.getDefaultAdapter().isEnabled()) {
+		final BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+		BluetoothAdapter btAdapter = bluetoothManager.getAdapter();
+
+		if (btAdapter == null || !btAdapter.isEnabled()) {
+			setBluetoothStatusIcon(R.drawable.bluetooth_disabled);
+			Toast.makeText(getApplicationContext(), "Bluetooth " + getResources().getString(R.string.info_is_not_enable), Toast.LENGTH_SHORT).show();
+
+			Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+			startActivityForResult(enableBtIntent, 1);
 			return;
 		}
 
@@ -190,6 +188,7 @@ public class MainActivity extends ActionBarActivity implements
 			}
 		}
 
+		Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_try_connection) + " " + deviceName, Toast.LENGTH_SHORT).show();
 		setBluetoothStatusIcon(R.drawable.bluetooth_searching);
 
 		OpenScale.getInstance(getApplicationContext()).stopSearchingForBluetooth();
@@ -205,12 +204,9 @@ public class MainActivity extends ActionBarActivity implements
 					setBluetoothStatusIcon(R.drawable.bluetooth_connection_success);
 					ScaleData scaleBtData = (ScaleData) msg.obj;
 
-					// if no user id is set, use the current user id
-					if (scaleBtData.user_id == -1) {
-						scaleBtData.user_id = OpenScale.getInstance(getApplicationContext()).getSelectedScaleUser().id;
+					if (OpenScale.getInstance(getApplicationContext()).addScaleData(scaleBtData) == -1) {
+						Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_no_selected_user) + "(" + getResources().getString(R.string.label_weight) + ": " + scaleBtData.weight + ")", Toast.LENGTH_SHORT).show();
 					}
-
-					OpenScale.getInstance(getApplicationContext()).addScaleData(scaleBtData);
 					break;
 				case BluetoothCommunication.BT_INIT_PROCESS:
 					setBluetoothStatusIcon(R.drawable.bluetooth_connection_success);

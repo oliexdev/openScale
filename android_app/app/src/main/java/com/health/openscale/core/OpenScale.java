@@ -35,6 +35,8 @@ import java.io.OutputStreamWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.TreeMap;
 
 import static com.health.openscale.core.BluetoothCommunication.BT_MI_SCALE;
 import static com.health.openscale.core.BluetoothCommunication.BT_OPEN_SCALE;
@@ -154,14 +156,28 @@ public class OpenScale {
         return scaleDB.getDataEntry(id);
     }
 
-    public void addScaleData(ScaleData scaleData) {
-        addScaleData(scaleData.user_id, dateTimeFormat.format(scaleData.date_time).toString(), scaleData.weight, scaleData.fat,
+    public int addScaleData(ScaleData scaleData) {
+        return addScaleData(scaleData.user_id, dateTimeFormat.format(scaleData.date_time).toString(), scaleData.weight, scaleData.fat,
                 scaleData.water, scaleData.muscle, scaleData.waist, scaleData.hip, scaleData.comment);
     }
 
-	public void addScaleData(int user_id, String date_time, float weight, float fat,
+	public int addScaleData(int user_id, String date_time, float weight, float fat,
 			float water, float muscle, float waist, float hip, String comment) {
 		ScaleData scaleData = new ScaleData();
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+
+        if (user_id == -1) {
+            if (prefs.getBoolean("smartUserAssign", false)) {
+                user_id = getSmartUserAssignment(weight, 15.0f);
+            } else {
+                user_id = getSelectedScaleUser().id;
+            }
+
+            if (user_id == -1) {
+                return -1;
+            }
+        }
 
 		try {
             scaleData.user_id = user_id;
@@ -180,7 +196,33 @@ public class OpenScale {
 		if (scaleDB.insertEntry(scaleData)) {
             updateScaleData();
         }
+
+        return user_id;
 	}
+
+    private int getSmartUserAssignment(float weight, float range) {
+        ArrayList<ScaleUser> scaleUser = getScaleUserList();
+        Map<Float, Integer> inRangeWeights = new TreeMap<>();
+
+        for (int i = 0; i < scaleUser.size(); i++) {
+            ArrayList<ScaleData> scaleUserData = scaleDB.getScaleDataList(scaleUser.get(i).id);
+
+            if (scaleUserData.size() > 0) {
+                float lastWeight = scaleUserData.get(0).weight;
+
+                if ((lastWeight - range) <= weight && (lastWeight + range) >= weight) {
+                    inRangeWeights.put(Math.abs(lastWeight - weight), scaleUser.get(i).id);
+                }
+            }
+        }
+
+        if (inRangeWeights.size() > 0) {
+            // return the user id which is nearest to the weight (first element of the tree map)
+            return inRangeWeights.entrySet().iterator().next().getValue();
+        }
+
+        return getSelectedScaleUser().id;
+    }
 
     public void updateScaleData(long id, String date_time, float weight, float fat, float water, float muscle, float waist, float hip, String comment) {
         ScaleData scaleData = new ScaleData();

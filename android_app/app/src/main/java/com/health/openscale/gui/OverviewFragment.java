@@ -481,7 +481,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             lines++;
         }
 
-        if(prefs.getBoolean("waistEnable", true)) {
+        if(prefs.getBoolean("waistEnable", false)) {
             info_week +=  String.format("Ø-"+getResources().getString(R.string.label_waist)+": %.1fcm <br>", weekAvgWaist);
             info_month += String.format("Ø-"+getResources().getString(R.string.label_waist)+": %.1fcm <br>", monthAvgWaist);
             lines++;
@@ -491,13 +491,13 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             lines++;
         }
 
-        if(prefs.getBoolean("hipEnable", true)) {
+        if(prefs.getBoolean("hipEnable", false)) {
             info_week +=  String.format("Ø-"+getResources().getString(R.string.label_hip)+": %.1fcm <br>", weekAvgHip);
             info_month += String.format("Ø-"+getResources().getString(R.string.label_hip)+": %.1fcm <br>",monthAvgHip);
             lines++;
         }
 
-        if(prefs.getBoolean("hipEnable", true) && prefs.getBoolean("waistEnable", true)) {
+        if(prefs.getBoolean("hipEnable", false) && prefs.getBoolean("waistEnable", false)) {
             info_week +=  String.format("Ø-"+getResources().getString(R.string.label_whr)+": %.2f <br>", weekAvgWHR);
             info_month += String.format("Ø-"+getResources().getString(R.string.label_whr)+": %.2f <br>", monthAvgWHR);
             lines++;
@@ -603,11 +603,11 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             lines.add(lineMuscle);
         }
 
-        if(prefs.getBoolean("waistEnable", true)) {
+        if(prefs.getBoolean("waistEnable", false)) {
             lines.add(lineWaist);
         }
 
-        if(prefs.getBoolean("hipEnable", true)) {
+        if(prefs.getBoolean("hipEnable", false)) {
             lines.add(lineHip);
         }
 

@@ -29,7 +29,7 @@
     <string name="info_is_not_visible">ist nicht sichtbar</string>
     <string name="info_is_visible">ist sichtbar</string>
     <string name="info_is_not_available">ist nicht verfügbar</string>
-    <string name="info_no_selected_user">Kein Benutzer existiert! Bitte lege einen neuen Benutzer unter Einstellungen an</string>
+    <string name="info_no_selected_user">Kein Benutzer vorhanden. Bitte erzeugen Sie ein neuen Benutzer unter Einstellungen.</string>
     <string name="info_on_date">am</string>
     <string name="info_set_filename">Setzte Dateiname auf</string>
     <string name="info_your_fat">Dein Körperfett war</string>
@@ -104,4 +104,5 @@
     <string name="info_bluetooth_try_connection">Versuche Verbindung herzustellen zu</string>
     <string name="label_device_type">Gerätetyp</string>
     <string name="info_bluetooth_init">Initializiere Bluetooth Gerät</string>
+    <string name="label_smartUserAssign">Intelligente Benutzer Zuweisung</string>
 </resources>

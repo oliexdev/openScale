@@ -35,12 +35,12 @@ public class ScaleData {
         id = -1;
         user_id = -1;
         date_time = new Date();
-        weight = -1.0f;
-        fat = -1.0f;
-        water = -1.0f;
-        muscle = -1.0f;
-        waist = -1.0f;
-        hip = -1.0f;
+        weight = 0.0f;
+        fat = 0.0f;
+        water = 0.0f;
+        muscle = 0.0f;
+        waist = 0.0f;
+        hip = 0.0f;
         comment = new String();
     }
 
