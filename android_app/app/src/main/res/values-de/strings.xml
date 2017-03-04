@@ -111,4 +111,6 @@
     <string name="label_reminder_time">Zeit</string>
     <string name="label_reminder_weekdays">Wochentage</string>
     <string name="title_measurements">Messwerte</string>
+    <string name="label_delete_confirmation">Löschbestätigung</string>
+    <string name="question_really_delete">Wollen Sie wirklich den Datenbankeintrag löschen?</string>
 </resources>

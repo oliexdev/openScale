@@ -20,6 +20,7 @@ import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -453,6 +454,33 @@ public class DataEntryActivity extends Activity {
     private class onClickListenerDelete implements View.OnClickListener {
         @Override
         public void onClick(View v) {
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(v.getContext());
+            boolean deleteConfirmationEnable  = prefs.getBoolean("deleteConfirmationEnable", true);
+
+            if (deleteConfirmationEnable) {
+                AlertDialog.Builder deleteAllDialog = new AlertDialog.Builder(v.getContext());
+                deleteAllDialog.setMessage(getResources().getString(R.string.question_really_delete));
+
+                deleteAllDialog.setPositiveButton(getResources().getString(R.string.label_yes), new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        deleteMeasurement();
+                    }
+                });
+
+                deleteAllDialog.setNegativeButton(getResources().getString(R.string.label_no), new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.dismiss();
+                    }
+                });
+
+                deleteAllDialog.show();
+            }
+            else {
+                deleteMeasurement();
+            }
+        }
+
+        void deleteMeasurement() {
             long delId = id;
 
             boolean hasNext = moveLeft();

@@ -105,6 +105,7 @@
     <string name="info_no_selected_user">No user exists. Please create a new user in the settings.</string>
     <string name="info_no_evaluation_available">Can\'t evaluate the value</string>
 
+    <string name="question_really_delete">Do you really want to delete database entry?</string>
     <string name="question_really_delete_all">Do you really want to delete all database entries?</string>
     <string name="question_really_delete_user">Do you really want to delete the user? </string>
 
@@ -114,6 +115,8 @@
     <string name="label_device_type">Device Type</string>
 
     <string name="label_enable_labels">Label on data point</string>
+
+    <string name="label_delete_confirmation">Delete confirmation</string>
 
     <string name="label_reminder">Reminder</string>
     <string name="label_reminder_weekdays">Weekdays</string>

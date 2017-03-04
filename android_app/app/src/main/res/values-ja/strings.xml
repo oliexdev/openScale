@@ -111,4 +111,6 @@
     <string name="label_reminder_time">時刻</string>
     <string name="label_reminder_weekdays">平日</string>
     <string name="title_measurements">観測</string>
+    <string name="label_delete_confirmation">確認の削除</string>
+    <string name="question_really_delete">あなたは本当にレコードを削除しますか</string>
 </resources>

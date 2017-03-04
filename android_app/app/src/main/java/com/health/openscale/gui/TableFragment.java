@@ -421,13 +421,42 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
     }
 
     private class onClickListenerDelete implements View.OnClickListener {
+        private long row_id;
+
         @Override
         public void onClick(View v) {
             TableRow dataRow = (TableRow)v.getParent();
             TextView idTextView = (TextView) dataRow.getChildAt(0);
-            long id = Long.parseLong(idTextView.getText().toString());
+            row_id = Long.parseLong(idTextView.getText().toString());
 
-            OpenScale.getInstance(tableView.getContext()).deleteScaleData(id);
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(v.getContext());
+            boolean deleteConfirmationEnable  = prefs.getBoolean("deleteConfirmationEnable", true);
+
+            if (deleteConfirmationEnable) {
+                AlertDialog.Builder deleteAllDialog = new AlertDialog.Builder(getActivity());
+                deleteAllDialog.setMessage(getResources().getString(R.string.question_really_delete));
+
+                deleteAllDialog.setPositiveButton(getResources().getString(R.string.label_yes), new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        deleteMeasurement();
+                    }
+                });
+
+                deleteAllDialog.setNegativeButton(getResources().getString(R.string.label_no), new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.dismiss();
+                    }
+                });
+
+                deleteAllDialog.show();
+            }
+            else {
+                deleteMeasurement();
+            }
+        }
+
+        public void deleteMeasurement() {
+            OpenScale.getInstance(tableView.getContext()).deleteScaleData(row_id);
 
             Toast.makeText(tableView.getContext(), getResources().getString(R.string.info_data_deleted), Toast.LENGTH_SHORT).show();
             updateOnView(OpenScale.getInstance(tableView.getContext()).getScaleDataList());
