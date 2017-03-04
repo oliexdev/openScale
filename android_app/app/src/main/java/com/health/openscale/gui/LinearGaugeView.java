@@ -54,8 +54,8 @@ public class LinearGaugeView extends View {
     private Paint infoTextPaint;
 
     private float value;
-    private int minValue;
-    private int maxValue;
+    private float minValue;
+    private float maxValue;
     private float firstLimit;
     private float secondLimit;
 
@@ -109,13 +109,13 @@ public class LinearGaugeView extends View {
             return;
         }
 
-        firstPercent = (firstLimit / (float)maxValue) * 100.0f;
+        firstPercent = (firstLimit / maxValue) * 100.0f;
         firstPos = (getWidth() / 100.0f) * firstPercent;
 
-        secondPercent = (secondLimit / (float)maxValue) * 100.0f;
+        secondPercent = (secondLimit / maxValue) * 100.0f;
         secondPos = (getWidth() / 100.0f) * secondPercent;
 
-        valuePercent = (value / (float)maxValue) * 100.0f;
+        valuePercent = (value / maxValue) * 100.0f;
         valuePos = (getWidth() / 100.0f) * valuePercent;
 
         // Bar
@@ -136,7 +136,7 @@ public class LinearGaugeView extends View {
         canvas.drawRect(getWidth()-lineThickness, (getHeight() / 2.0f) - (limitLineHeight / 2.0f), getWidth(), (getHeight() / 2.0f) + (limitLineHeight / 2.0f), textPaint);
 
         // Text
-        canvas.drawText(Integer.toString(minValue), 0.0f, (getHeight() / 2.0f) - (barHeight / 2.0f) - textOffset, textPaint);
+        canvas.drawText(Float.toString(minValue), 0.0f, (getHeight() / 2.0f) - (barHeight / 2.0f) - textOffset, textPaint);
         if (firstLimit > 0) {
             canvas.drawText(Float.toString(firstLimit), firstPos - 5.0f, (getHeight() / 2.0f) - (barHeight / 2.0f) - textOffset, textPaint);
         }
@@ -198,7 +198,7 @@ public class LinearGaugeView extends View {
         setMeasuredDimension(width, height);
     }
 
-    public void setMinMaxValue(int min, int max) {
+    public void setMinMaxValue(float min, float max) {
         minValue = min;
         maxValue = max;
         invalidate();

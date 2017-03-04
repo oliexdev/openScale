@@ -53,9 +53,9 @@ abstract class Measurement {
 
     abstract EvaluationResult evaluateSheet(EvaluationSheet evalSheet, float value);
 
-    abstract int getMinValue();
+    abstract float getMinValue();
 
-    abstract int getMaxValue();
+    abstract float getMaxValue();
 
     private void setText(float value) {
         txtView.setText(String.format(getFormat(), value));
@@ -175,12 +175,12 @@ class WeightMeasurement extends Measurement {
     }
 
     @Override
-    int getMinValue() {
+    float getMinValue() {
         return 30;
     }
 
     @Override
-    int getMaxValue() {
+    float getMaxValue() {
         return 300;
     }
 }
@@ -238,12 +238,12 @@ class BMIMeasurement extends Measurement {
     }
 
     @Override
-    int getMinValue() {
+    float getMinValue() {
         return 10;
     }
 
     @Override
-    int getMaxValue() {
+    float getMaxValue() {
         return 50;
     }
 }
@@ -300,12 +300,12 @@ class WaterMeasurement extends Measurement {
     }
 
     @Override
-    int getMinValue() {
+    float getMinValue() {
         return 30;
     }
 
     @Override
-    int getMaxValue() {
+    float getMaxValue() {
         return 80;
     }
 }
@@ -362,12 +362,12 @@ class MuscleMeasurement extends Measurement {
     }
 
     @Override
-    int getMinValue() {
+    float getMinValue() {
         return 10;
     }
 
     @Override
-    int getMaxValue() {
+    float getMaxValue() {
         return 80;
     }
 }
@@ -424,12 +424,12 @@ class FatMeasurement extends Measurement {
     }
 
     @Override
-    int getMinValue() {
+    float getMinValue() {
         return 10;
     }
 
     @Override
-    int getMaxValue() {
+    float getMaxValue() {
         return 40;
     }
 }
@@ -486,12 +486,12 @@ class WaistMeasurement extends Measurement {
     }
 
     @Override
-    int getMinValue() {
+    float getMinValue() {
         return 30;
     }
 
     @Override
-    int getMaxValue() {
+    float getMaxValue() {
         return 200;
     }
 }
@@ -548,12 +548,12 @@ class WHtRMeasurement extends Measurement {
     }
 
     @Override
-    int getMinValue() {
+    float getMinValue() {
         return 0;
     }
 
     @Override
-    int getMaxValue() {
+    float getMaxValue() {
         return 1;
     }
 }
@@ -610,12 +610,12 @@ class HipMeasurement extends Measurement {
     }
 
     @Override
-    int getMinValue() {
+    float getMinValue() {
         return 30;
     }
 
     @Override
-    int getMaxValue() {
+    float getMaxValue() {
         return 200;
     }
 }
@@ -672,13 +672,13 @@ class WHRMeasurement extends Measurement {
     }
 
     @Override
-    int getMinValue() {
-        return 0;
+    float getMinValue() {
+        return 0.5f;
     }
 
     @Override
-    int getMaxValue() {
-        return 1;
+    float getMaxValue() {
+        return 1.5f;
     }
 
 }
