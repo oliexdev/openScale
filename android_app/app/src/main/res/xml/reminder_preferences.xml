@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <CheckBoxPreference android:title="@string/label_reminder" android:summaryOn="@string/info_is_enable" android:summaryOff="@string/info_is_not_enable" android:key="reminderEnable" android:defaultValue="false"/>
+
+    <MultiSelectListPreference
+        android:dialogTitle="@string/label_reminder_weekdays"
+        android:key="reminderWeekdays"
+        android:title="@string/label_reminder_weekdays"
+        android:entries="@array/weekdays_entries"
+        android:entryValues="@array/weekdays_values"
+        android:defaultValue="@array/weekdays_default"
+        android:enabled="false"
+        />
+
+    <com.health.openscale.gui.preferences.TimePreferenceDialog
+        android:title="@string/label_reminder_time"
+        android:key="reminderTime"
+        android:enabled="false"
+        />
+
+    <EditTextPreference
+        android:title="@string/label_reminder_notify_text"
+        android:key="reminderNotifyText"
+        android:defaultValue="@string/default_value_reminder_notify_text"
+        android:enabled="false"
+        />
+</PreferenceScreen>

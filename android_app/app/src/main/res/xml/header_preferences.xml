@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<preference-headers xmlns:android="http://schemas.android.com/apk/res/android">
+    <header
+        android:fragment="com.health.openscale.gui.preferences.UsersPreferences"
+        android:title="@string/title_users" />
+    <header
+        android:fragment="com.health.openscale.gui.preferences.BluetoothPreferences"
+        android:title="@string/label_bluetooth_title" />
+    <header
+        android:fragment="com.health.openscale.gui.preferences.MeasurementPreferences"
+        android:title="@string/title_measurements" />
+    <header
+        android:fragment="com.health.openscale.gui.preferences.GraphPreferences"
+        android:title="@string/title_graph" />
+    <header
+        android:fragment="com.health.openscale.gui.preferences.ReminderPreferences"
+        android:title="@string/label_reminder" />
+</preference-headers>

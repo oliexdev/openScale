@@ -105,4 +105,10 @@
     <string name="label_device_type">Gerätetyp</string>
     <string name="info_bluetooth_init">Initializiere Bluetooth Gerät</string>
     <string name="label_smartUserAssign">Intelligente Benutzer Zuweisung</string>
+    <string name="default_value_reminder_notify_text">Zeit zum Wiegen</string>
+    <string name="label_reminder">Erinnerung</string>
+    <string name="label_reminder_notify_text">Benachrichtigungstext</string>
+    <string name="label_reminder_time">Zeit</string>
+    <string name="label_reminder_weekdays">Wochentage</string>
+    <string name="title_measurements">Messwerte</string>
 </resources>

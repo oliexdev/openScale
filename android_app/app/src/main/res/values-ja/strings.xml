@@ -105,4 +105,10 @@
     <string name="label_device_type">デバイスタイプ</string>
     <string name="info_bluetooth_init">Bluetooth接続を初期化する</string>
     <string name="label_smartUserAssign">スマートユーザーのアサイン</string>
+    <string name="default_value_reminder_notify_text">重量までの時間</string>
+    <string name="label_reminder">リマインダー</string>
+    <string name="label_reminder_notify_text">通知テキスト</string>
+    <string name="label_reminder_time">時刻</string>
+    <string name="label_reminder_weekdays">平日</string>
+    <string name="title_measurements">観測</string>
 </resources>
