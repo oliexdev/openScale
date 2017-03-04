@@ -50,7 +50,7 @@
     <string name="label_delete">Löschen</string>
     <string name="label_delete_all">Alles löschen</string>
     <string name="label_device_name">Gerätename</string>
-    <string name="label_enable_labels">Notiz auf den Datenpunkten</string>
+    <string name="label_enable_labels">Notiz auf den Datenpunkt</string>
     <string name="label_export">Exportieren</string>
     <string name="label_fat">Körperfettanteil</string>
     <string name="label_gender">Geschlecht</string>
@@ -113,4 +113,5 @@
     <string name="title_measurements">Messwerte</string>
     <string name="label_delete_confirmation">Löschbestätigung</string>
     <string name="question_really_delete">Wollen Sie wirklich den Datenbankeintrag löschen?</string>
+    <string name="label_enable_points">Punkt auf den Datenpunkt</string>
 </resources>

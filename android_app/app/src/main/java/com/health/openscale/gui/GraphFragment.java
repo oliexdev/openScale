@@ -167,26 +167,32 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         Line lineWeight = new Line(valuesWeight).
                 setColor(ChartUtils.COLOR_VIOLET).
                 setHasLabels(prefs.getBoolean("labelsEnable", true)).
+                setHasPoints(prefs.getBoolean("pointsEnable", true)).
                 setFormatter(new SimpleLineChartValueFormatter(1));
         Line lineFat = new Line(valuesFat).
                 setColor(ChartUtils.COLOR_ORANGE).
                 setHasLabels(prefs.getBoolean("labelsEnable", true)).
+                setHasPoints(prefs.getBoolean("pointsEnable", true)).
                 setFormatter(new SimpleLineChartValueFormatter(1));
         Line lineWater = new Line(valuesWater).
                 setColor(ChartUtils.COLOR_BLUE).
                 setHasLabels(prefs.getBoolean("labelsEnable", true)).
+                setHasPoints(prefs.getBoolean("pointsEnable", true)).
                 setFormatter(new SimpleLineChartValueFormatter(1));
         Line lineMuscle = new Line(valuesMuscle).
                 setColor(ChartUtils.COLOR_GREEN).
                 setHasLabels(prefs.getBoolean("labelsEnable", true)).
+                setHasPoints(prefs.getBoolean("pointsEnable", true)).
                 setFormatter(new SimpleLineChartValueFormatter(1));
         Line lineWaist = new Line(valuesWaist).
                 setColor(Color.MAGENTA).
                 setHasLabels(prefs.getBoolean("labelsEnable", true)).
+                setHasPoints(prefs.getBoolean("pointsEnable", true)).
                 setFormatter(new SimpleLineChartValueFormatter(1));
         Line lineHip = new Line(valuesHip).
                 setColor(Color.YELLOW).
                 setHasLabels(prefs.getBoolean("labelsEnable", true)).
+                setHasPoints(prefs.getBoolean("pointsEnable", true)).
                 setFormatter(new SimpleLineChartValueFormatter(1));
 
 

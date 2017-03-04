@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <CheckBoxPreference android:title="@string/label_enable_labels" android:summaryOn="@string/info_is_visible" android:summaryOff="@string/info_is_not_visible" android:key="labelsEnable" android:defaultValue="true"/>
+    <CheckBoxPreference android:title="@string/label_enable_points" android:summaryOn="@string/info_is_visible" android:summaryOff="@string/info_is_not_visible" android:key="pointsEnable" android:defaultValue="true"/>
 </PreferenceScreen>

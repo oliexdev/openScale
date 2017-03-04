@@ -115,6 +115,7 @@
     <string name="label_device_type">Device Type</string>
 
     <string name="label_enable_labels">Label on data point</string>
+    <string name="label_enable_points">Point on data point</string>
 
     <string name="label_delete_confirmation">Delete confirmation</string>
 

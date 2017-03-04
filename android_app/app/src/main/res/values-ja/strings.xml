@@ -113,4 +113,5 @@
     <string name="title_measurements">観測</string>
     <string name="label_delete_confirmation">確認の削除</string>
     <string name="question_really_delete">あなたは本当にレコードを削除しますか</string>
+    <string name="label_enable_points">点の上にデータ点</string>
 </resources>
