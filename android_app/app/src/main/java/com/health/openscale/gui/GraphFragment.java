@@ -62,7 +62,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 	private View graphView;
 	private LineChartView chartTop;
     private ColumnChartView chartBottom;
-    private Viewport resetViewport;
+    private Viewport defaultTopViewport;
     private TextView txtYear;
     private SharedPreferences prefs;
 
@@ -240,10 +240,10 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         chartTop.setLineChartData(lineData);
 
-        resetViewport = new Viewport(0, chartTop.getCurrentViewport().top+4, maxDays-1, chartTop.getCurrentViewport().bottom-4);
+        defaultTopViewport = new Viewport(0, chartTop.getCurrentViewport().top+4, maxDays-1, chartTop.getCurrentViewport().bottom-4);
 
-        chartTop.setMaximumViewport(resetViewport);
-        chartTop.setCurrentViewport(resetViewport);
+        chartTop.setMaximumViewport(defaultTopViewport);
+        chartTop.setCurrentViewport(defaultTopViewport);
     }
 
     private void generateColumnData()
@@ -304,7 +304,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     private class ChartTopListener implements View.OnTouchListener {
         final GestureDetector gestureDetector = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
             public void onLongPress(MotionEvent e) {
-                chartTop.setCurrentViewport(resetViewport);
+                chartTop.setCurrentViewport(defaultTopViewport);
             }
         });
 
