@@ -24,7 +24,9 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -60,6 +62,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 	private View graphView;
 	private LineChartView chartTop;
     private ColumnChartView chartBottom;
+    private Viewport resetViewport;
     private TextView txtYear;
     private SharedPreferences prefs;
 
@@ -83,6 +86,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 		chartTop = (LineChartView) graphView.findViewById(R.id.chart_top);
         chartBottom = (ColumnChartView) graphView.findViewById(R.id.chart_bottom);
 
+        chartTop.setOnTouchListener(new ChartTopListener());
         chartTop.setOnValueTouchListener(new ChartTopValueTouchListener());
         chartBottom.setOnValueTouchListener(new ChartBottomValueTouchListener());
 
@@ -236,10 +240,10 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         chartTop.setLineChartData(lineData);
 
-        Viewport v = new Viewport(0, chartTop.getCurrentViewport().top+4, maxDays-1, chartTop.getCurrentViewport().bottom-4);
+        resetViewport = new Viewport(0, chartTop.getCurrentViewport().top+4, maxDays-1, chartTop.getCurrentViewport().bottom-4);
 
-        chartTop.setMaximumViewport(v);
-        chartTop.setCurrentViewport(v);
+        chartTop.setMaximumViewport(resetViewport);
+        chartTop.setCurrentViewport(resetViewport);
     }
 
     private void generateColumnData()
@@ -294,6 +298,19 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         @Override
         public void onValueDeselected() {
 
+        }
+    }
+
+    private class ChartTopListener implements View.OnTouchListener {
+        final GestureDetector gestureDetector = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
+            public void onLongPress(MotionEvent e) {
+                chartTop.setCurrentViewport(resetViewport);
+            }
+        });
+
+        @Override
+        public boolean onTouch (View v, MotionEvent event) {
+            return gestureDetector.onTouchEvent(event);
         }
     }
 
