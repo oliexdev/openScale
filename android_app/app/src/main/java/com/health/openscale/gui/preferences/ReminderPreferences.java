@@ -45,10 +45,13 @@ import java.util.Set;
 public class ReminderPreferences extends PreferenceFragment
         implements SharedPreferences.OnSharedPreferenceChangeListener
 {
+    public static final String INTENT_EXTRA_ALARM = "alarmIntent";
+    public static final String PREFERENCE_KEY_REMINDER_NOTIFY_TEXT = "reminderNotifyText";
+
     private static final String PREFERENCE_KEY_REMINDER_ENABLE = "reminderEnable";
     private static final String PREFERENCE_KEY_REMINDER_WEEKDAYS = "reminderWeekdays";
     private static final String PREFERENCE_KEY_REMINDER_TIME = "reminderTime";
-    private static final String PREFERENCE_KEY_REMINDER_NOTIFY_TEXT = "reminderNotifyText";
+
 
     private static ArrayList<PendingIntent> pendingAlarms = new ArrayList<>();
 
@@ -115,7 +118,7 @@ public class ReminderPreferences extends PreferenceFragment
         AlarmManager alarmMgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
         Intent alarmIntent = new Intent(context, ReminderBootReceiver.class);
-        alarmIntent.putExtra("alarmIntent", true);
+        alarmIntent.putExtra(INTENT_EXTRA_ALARM, true);
 
         PendingIntent alarmPendingIntent =
                 PendingIntent.getBroadcast(context, dayOfWeek, alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT);

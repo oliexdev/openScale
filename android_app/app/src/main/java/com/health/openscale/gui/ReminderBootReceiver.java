@@ -30,32 +30,28 @@ import com.health.openscale.gui.preferences.ReminderPreferences;
 
 import static android.content.Context.NOTIFICATION_SERVICE;
 
-public class ReminderBootReceiver extends BroadcastReceiver {
+public class ReminderBootReceiver extends BroadcastReceiver
+{
     @Override
-    public void onReceive(Context context, Intent intent) {
-
-        if (intent.hasExtra("alarmIntent")) {
-
+    public void onReceive(Context context, Intent intent)
+    {
+        if (intent.hasExtra(ReminderPreferences.INTENT_EXTRA_ALARM))
+        {
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
-            String notifyText = prefs.getString("reminderNotifyText", context.getResources().getString(R.string.default_value_reminder_notify_text));
+            String notifyText = prefs.getString(ReminderPreferences.PREFERENCE_KEY_REMINDER_NOTIFY_TEXT,
+                    context.getResources().getString(R.string.default_value_reminder_notify_text));
 
             NotificationCompat.Builder mBuilder =
-                    new NotificationCompat.Builder(context)
-                            .setSmallIcon(R.drawable.ic_launcher)
-                            .setContentTitle("openScale")
-                            .setContentText(notifyText)
-                            .setAutoCancel(true);
+                    new NotificationCompat.Builder(context).setSmallIcon(R.drawable.ic_launcher)
+                                                           .setContentTitle(context.getString(R.string.app_name))
+                                                           .setContentText(notifyText)
+                                                           .setAutoCancel(true);
 
             Intent notifyIntent = new Intent(context, MainActivity.class);
 
             PendingIntent notifyPendingIntent =
-                    PendingIntent.getActivity(
-                            context,
-                            0,
-                            notifyIntent,
-                            PendingIntent.FLAG_UPDATE_CURRENT
-                    );
+                    PendingIntent.getActivity(context, 0, notifyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
             mBuilder.setContentIntent(notifyPendingIntent);
 
@@ -63,8 +59,10 @@ public class ReminderBootReceiver extends BroadcastReceiver {
             mNotifyMgr.notify(0x01, mBuilder.build());
         }
 
-        if (intent.getAction() != null) {
-            if (intent.getAction().equals("android.intent.action.BOOT_COMPLETED")) {
+        if (intent.getAction() != null)
+        {
+            if (intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED))
+            {
                 ReminderPreferences.scheduleAlarms(context);
             }
         }
