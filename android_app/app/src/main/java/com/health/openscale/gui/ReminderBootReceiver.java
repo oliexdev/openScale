@@ -24,6 +24,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
+import android.util.Log;
 
 import com.health.openscale.R;
 import com.health.openscale.gui.preferences.ReminderPreferences;
@@ -37,6 +38,7 @@ public class ReminderBootReceiver extends BroadcastReceiver
     {
         if (intent.hasExtra(ReminderPreferences.INTENT_EXTRA_ALARM))
         {
+            Log.d(ReminderBootReceiver.class.getSimpleName(), "Received alarm intent");
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
             String notifyText = prefs.getString(ReminderPreferences.PREFERENCE_KEY_REMINDER_NOTIFY_TEXT,
@@ -59,12 +61,7 @@ public class ReminderBootReceiver extends BroadcastReceiver
             mNotifyMgr.notify(0x01, mBuilder.build());
         }
 
-        if (intent.getAction() != null)
-        {
-            if (intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED))
-            {
-                ReminderPreferences.scheduleAlarms(context);
-            }
-        }
+        if (intent.getAction() != null && intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED))
+            ReminderPreferences.scheduleAlarms(context);
     }
 }
