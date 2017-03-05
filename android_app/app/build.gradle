@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 21
-    buildToolsVersion "21.1.2"
+    compileSdkVersion 25
+    buildToolsVersion '25.0.2'
 
     defaultConfig {
         applicationId "com.health.openscale"
         minSdkVersion 18
-        targetSdkVersion 21
+        targetSdkVersion 25
     }
 
     buildTypes {
@@ -17,9 +17,12 @@ android {
         }
     }
 }
+ext {
+    supportLibVersion = '25.2.0'
+}
 
 dependencies {
-    compile 'com.android.support:support-v4:21.0.3'
-    compile 'com.android.support:appcompat-v7:21.0.0'
+    compile "com.android.support:support-v4:${supportLibVersion}"
+    compile "com.android.support:appcompat-v7:${supportLibVersion}"
     compile 'com.github.lecho:hellocharts-library:1.5.8@aar'
 }
