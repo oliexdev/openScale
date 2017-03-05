@@ -114,4 +114,11 @@
     <string name="label_delete_confirmation">Löschbestätigung</string>
     <string name="question_really_delete">Wollen Sie wirklich den Datenbankeintrag löschen?</string>
     <string name="label_enable_points">Punkt auf den Datenpunkt</string>
+    <string name="Monday">Montag</string>
+    <string name="Tuesday">Dienstag</string>
+    <string name="Wednesday">Mittwoch</string>
+    <string name="Thursday">Donnerstag</string>
+    <string name="Friday">Freitag</string>
+    <string name="Saturday">Samstag</string>
+    <string name="Sunday">Sonntag</string>
 </resources>

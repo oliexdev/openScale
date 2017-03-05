@@ -132,4 +132,12 @@
     <string name="info_your_waist">Your waist circumference was</string>
     <string name="info_your_hip">Your hip circumference was</string>
     <string name="info_on_date">on</string>
+
+    <string name="Monday">Monday</string>
+    <string name="Tuesday">Tuesday</string>
+    <string name="Wednesday">Wednesday</string>
+    <string name="Thursday">Thursday</string>
+    <string name="Friday">Friday</string>
+    <string name="Saturday">Saturday</string>
+    <string name="Sunday">Sunday</string>
 </resources>
