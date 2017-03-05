@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.health.openscale"
-    android:versionCode="10"
-    android:versionName="1.4.2" >
+    package="com.health.openscale" >
 
     <uses-permission android:name="android.permission.BLUETOOTH"/>
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
@@ -26,13 +24,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".gui.SettingsActivity"></activity>
-        <activity android:name=".gui.DataEntryActivity" android:theme="@android:style/Theme.Holo.Light.Dialog"></activity>
-        <activity android:name=".gui.UserSettingsActivity" android:theme="@android:style/Theme.Holo.Dialog" android:label="@string/label_title_user"></activity>
+        <activity android:name=".gui.SettingsActivity"/>
+        <activity android:name=".gui.DataEntryActivity" android:theme="@android:style/Theme.Holo.Light.Dialog"/>
+        <activity android:name=".gui.UserSettingsActivity" android:theme="@android:style/Theme.Holo.Dialog"
+                  android:label="@string/label_title_user"/>
 
         <receiver android:name=".gui.ReminderBootReceiver" android:enabled="false">
             <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED"></action>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
             </intent-filter>
         </receiver>
     </application>

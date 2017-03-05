@@ -8,6 +8,8 @@ android {
         applicationId "com.health.openscale"
         minSdkVersion 18
         targetSdkVersion 25
+        versionCode 10
+        versionName "1.4.2"
     }
 
     buildTypes {
