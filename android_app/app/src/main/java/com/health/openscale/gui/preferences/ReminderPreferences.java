@@ -196,22 +196,25 @@ public class ReminderPreferences extends PreferenceFragment  implements SharedPr
     }
 
     public static PendingIntent enableAlarm(Context context, int dayOfWeek, long timeInMillis) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.DAY_OF_WEEK, dayOfWeek);
+        Calendar alarmCal = Calendar.getInstance();
+        alarmCal.setTimeInMillis(timeInMillis);
+        alarmCal.set(Calendar.DAY_OF_WEEK, dayOfWeek);
 
         // Check we aren't setting it in the past which would trigger it to fire instantly
-        if(calendar.getTimeInMillis() < System.currentTimeMillis()) {
-            calendar.add(Calendar.DAY_OF_YEAR, 7);
+        if(alarmCal.getTimeInMillis() < System.currentTimeMillis()) {
+            alarmCal.add(Calendar.DAY_OF_YEAR, 7);
         }
+
+        //Log.d("ReminderPreferences", "Set alarm to " + calendar.getTime());
 
         AlarmManager alarmMgr = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
 
         Intent alarmIntent = new Intent(context, ReminderBootReceiver.class);
         alarmIntent.putExtra("alarmIntent", true);
 
-        PendingIntent alarmPendingIntent = PendingIntent.getBroadcast(context, 0, alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent alarmPendingIntent = PendingIntent.getBroadcast(context, dayOfWeek, alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        alarmMgr.setRepeating(AlarmManager.RTC_WAKEUP, timeInMillis,
+        alarmMgr.setInexactRepeating(AlarmManager.RTC_WAKEUP, alarmCal.getTimeInMillis(),
                 AlarmManager.INTERVAL_DAY * 7, alarmPendingIntent);
 
         return alarmPendingIntent;
