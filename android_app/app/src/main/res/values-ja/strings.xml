@@ -114,4 +114,11 @@
     <string name="label_delete_confirmation">確認の削除</string>
     <string name="question_really_delete">あなたは本当にレコードを削除しますか</string>
     <string name="label_enable_points">点の上にデータ点</string>
+    <string name="Friday">金曜日</string>
+    <string name="Saturday">土曜日</string>
+    <string name="Thursday">木曜日</string>
+    <string name="Wednesday">水曜日</string>
+    <string name="Tuesday">火曜日</string>
+    <string name="Monday">月曜日</string>
+    <string name="Sunday">日曜日</string>
 </resources>
