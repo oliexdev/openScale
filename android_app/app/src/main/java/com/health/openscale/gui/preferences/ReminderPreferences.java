@@ -31,7 +31,6 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceGroup;
 import android.preference.PreferenceManager;
-import android.util.Log;
 
 import com.health.openscale.R;
 import com.health.openscale.gui.ReminderBootReceiver;
@@ -114,7 +113,7 @@ public class ReminderPreferences extends PreferenceFragment
             alarmCal.add(Calendar.DAY_OF_YEAR, 7);
         }
 
-        Log.d(ReminderPreferences.class.getSimpleName(), "Set alarm to " + alarmCal.getTime());
+        //Log.d(ReminderPreferences.class.getSimpleName(), "Set alarm to " + alarmCal.getTime());
         AlarmManager alarmMgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
         Intent alarmIntent = new Intent(context, ReminderBootReceiver.class);
