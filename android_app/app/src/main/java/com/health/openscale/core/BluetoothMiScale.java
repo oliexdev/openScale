@@ -69,21 +69,19 @@ public class BluetoothMiScale extends BluetoothCommunication {
                 @Override
                 public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord)
                 {
-                    if (device.getAddress().replace(":", "").startsWith("880f10") ||
-                            device.getAddress().replace(":", "").startsWith("880F10")) // Xiaomi
-                    {
-                        if (device.getName().equals(btDeviceName)) {
-                            Log.d("BluetoothMiScale", "Mi Scale found trying to connect...");
+                    if (device.getName().equals(btDeviceName)) {
+                        Log.d("BluetoothMiScale", "Mi Scale found trying to connect...");
 
+                        if (scanRecord.length > 30) {
                             final byte[] weightData = Arrays.copyOfRange(scanRecord, 21, 31);
                             weightData[0] = 0x62; // Set weight remove to false to come through parse bytes
                             parseBytes(weightData);
-
-                            bluetoothGatt = device.connectGatt(context, false, gattCallback);
-
-                            searchHandler.removeCallbacksAndMessages(null);
-                            btAdapter.stopLeScan(scanCallback);
                         }
+
+                        bluetoothGatt = device.connectGatt(context, false, gattCallback);
+
+                        searchHandler.removeCallbacksAndMessages(null);
+                        btAdapter.stopLeScan(scanCallback);
                     }
                 }
             };
