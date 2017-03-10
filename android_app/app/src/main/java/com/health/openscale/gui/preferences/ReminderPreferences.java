@@ -103,17 +103,22 @@ public class ReminderPreferences extends PreferenceFragment
 
     public static PendingIntent enableAlarm(Context context, int dayOfWeek, long timeInMillis)
     {
+        // We just want the time *not* the date
+        Calendar timeCal = Calendar.getInstance();
+        timeCal.setTimeInMillis(timeInMillis);
+
         Calendar alarmCal = Calendar.getInstance();
-        alarmCal.setTimeInMillis(timeInMillis);
+        alarmCal.set(Calendar.HOUR_OF_DAY, timeCal.get(Calendar.HOUR_OF_DAY));
+        alarmCal.set(Calendar.MINUTE, timeCal.get(Calendar.MINUTE));
         alarmCal.set(Calendar.DAY_OF_WEEK, dayOfWeek);
 
         // Check we aren't setting it in the past which would trigger it to fire instantly
-        if (alarmCal.getTimeInMillis() < System.currentTimeMillis())
+        if (alarmCal.before(Calendar.getInstance()))
         {
             alarmCal.add(Calendar.DAY_OF_YEAR, 7);
         }
 
-        //Log.d(ReminderPreferences.class.getSimpleName(), "Set alarm to " + alarmCal.getTime());
+        //Log.d(ReminderPreferences.class.getSimpleName(), "Set " + dayOfWeek + " alarm to " + alarmCal.getTime());
         AlarmManager alarmMgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
         Intent alarmIntent = new Intent(context, ReminderBootReceiver.class);
