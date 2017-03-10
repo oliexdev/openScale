@@ -7,9 +7,9 @@ android {
     defaultConfig {
         applicationId "com.health.openscale"
         minSdkVersion 18
-        targetSdkVersion 25
-        versionCode 10
-        versionName "1.4.2"
+        targetSdkVersion 22 // don't set target sdk > 22 otherwise bluetooth le discovery need permission to ACCESS_COARSE_LOCATION
+        versionCode 11
+        versionName "1.4.3"
     }
 
     buildTypes {
