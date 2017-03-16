@@ -30,6 +30,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
+import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -69,15 +70,9 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
     private TextView txtTitleGoal;
     private TextView txtTitleStatistics;
 
-    private Measurement measurementWeightLast;
-    private Measurement measurementBMILast;
-    private Measurement measurementWaterLast;
-    private Measurement measurementMuscleLast;
-    private Measurement measurementFatLast;
-    private Measurement measurementWaistLast;
-    private Measurement measurementWHtRLast;
-    private Measurement measurementHipLast;
-    private Measurement measurementWHRLast;
+    private TableLayout tableOverviewLayout;
+
+    private ArrayList<MeasurementView> overviewMeasurements;
 
     private TextView txtGoalWeight;
     private TextView txtGoalDiff;
@@ -128,15 +123,23 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         txtTitleGoal = (TextView) overviewView.findViewById(R.id.txtTitleGoal);
         txtTitleStatistics = (TextView) overviewView.findViewById(R.id.txtTitleStatistics);
 
-        measurementWeightLast = new WeightMeasurement(overviewView);
-        measurementBMILast = new BMIMeasurement(overviewView);
-        measurementWaterLast = new WaterMeasurement(overviewView);
-        measurementMuscleLast = new MuscleMeasurement(overviewView);
-        measurementFatLast = new FatMeasurement(overviewView);
-        measurementWaistLast = new WaistMeasurement(overviewView);
-        measurementWHtRLast = new WHtRMeasurement(overviewView);
-        measurementHipLast = new HipMeasurement(overviewView);
-        measurementWHRLast = new WHRMeasurement(overviewView);
+        tableOverviewLayout = (TableLayout)overviewView.findViewById(R.id.tableLayoutMeasurements);
+
+        overviewMeasurements = new ArrayList<>();
+
+        overviewMeasurements.add(new WeightMeasurementView(context));
+        overviewMeasurements.add(new BMIMeasurementView(context));
+        overviewMeasurements.add(new WaterMeasurementView(context));
+        overviewMeasurements.add(new MuscleMeasurementView(context));
+        overviewMeasurements.add(new FatMeasurementView(context));
+        overviewMeasurements.add(new WaistMeasurementView(context));
+        overviewMeasurements.add(new WHtRMeasurementView(context));
+        overviewMeasurements.add(new HipMeasurementView(context));
+        overviewMeasurements.add(new WHRMeasurementView(context));
+
+        for (MeasurementView measuremt : overviewMeasurements) {
+            tableOverviewLayout.addView(measuremt);
+        }
 
         txtGoalWeight = (TextView) overviewView.findViewById(R.id.txtGoalWeight);
         txtGoalDiff = (TextView) overviewView.findViewById(R.id.txtGoalDiff);
@@ -194,7 +197,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             lastScaleData = userSelectedData;
         }
         else {
-                lastScaleData = scaleDataList.get(0);
+            lastScaleData = scaleDataList.get(0);
         }
 
 
@@ -206,12 +209,15 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         txtTitleStatistics.setText(getResources().getString(R.string.label_title_statistics).toUpperCase());
 
         updateUserSelection();
-        updateVisibleRows();
         updateLastPieChart();
         updateLastLineChart(scaleDataList);
-        updateLastValues();
         updateGoal(scaleDataList);
         updateStatistics(scaleDataList);
+
+        for (MeasurementView measuremt : overviewMeasurements) {
+            measuremt.updatePreferences(prefs);
+            measuremt.updateValue(lastScaleData);
+        }
     }
 
     private void updateUserSelection() {
@@ -220,15 +226,9 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
         userSelectedData = null;
 
-        measurementWeightLast.scaleUser = currentScaleUser;
-        measurementBMILast.scaleUser = currentScaleUser;
-        measurementWaterLast.scaleUser = currentScaleUser;
-        measurementMuscleLast.scaleUser = currentScaleUser;
-        measurementFatLast.scaleUser = currentScaleUser;
-        measurementWaistLast.scaleUser = currentScaleUser;
-        measurementWHtRLast.scaleUser = currentScaleUser;
-        measurementHipLast.scaleUser = currentScaleUser;
-        measurementWHRLast.scaleUser = currentScaleUser;
+        for (MeasurementView measuremt : overviewMeasurements) {
+            measuremt.updateScaleUser(currentScaleUser);
+        }
 
         spinUserAdapter.clear();
         ArrayList<ScaleUser> scaleUserList = OpenScale.getInstance(overviewView.getContext()).getScaleUserList();
@@ -249,34 +249,6 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         spinUser.setSelection(posUser, true);
     }
 
-    private void updateVisibleRows() {
-        measurementWeightLast.updateVisibleRow(prefs);
-        measurementBMILast.updateVisibleRow(prefs);
-        measurementWaterLast.updateVisibleRow(prefs);
-        measurementMuscleLast.updateVisibleRow(prefs);
-        measurementHipLast.updateVisibleRow(prefs);
-        measurementFatLast.updateVisibleRow(prefs);
-        measurementWaistLast.updateVisibleRow(prefs);
-        measurementWHRLast.updateVisibleRow(prefs);
-        measurementWHtRLast.updateVisibleRow(prefs);
-    }
-
-    private void updateLastValues() {
-        ScaleCalculator calculator = new ScaleCalculator();
-        calculator.body_height = currentScaleUser.body_height;
-        calculator.setScaleData(lastScaleData);
-
-        measurementWeightLast.updateValue(lastScaleData.weight);
-        measurementBMILast.updateValue(calculator.getBMI());
-        measurementFatLast.updateValue(lastScaleData.fat);
-        measurementWaterLast.updateValue(lastScaleData.water);
-        measurementMuscleLast.updateValue(lastScaleData.muscle);
-        measurementWaistLast.updateValue(lastScaleData.waist);
-        measurementWHtRLast.updateValue(calculator.getWHtR());
-        measurementHipLast.updateValue(lastScaleData.hip);
-        measurementWHRLast.updateValue(calculator.getWHR());
-    }
-
     private void updateGoal(ArrayList<ScaleData> scaleDataList) {
         txtGoalWeight.setText(currentScaleUser.goal_weight + " " + ScaleUser.UNIT_STRING[currentScaleUser.scale_unit]);
 
@@ -290,19 +262,17 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         long days = daysBetween(curDate, goalDate);
         txtGoalDayLeft.setText(days + " " + getResources().getString(R.string.label_days));
 
-        ScaleCalculator currentCalculator = new ScaleCalculator();
-        currentCalculator.body_height = currentScaleUser.body_height;
-        currentCalculator.weight = lastScaleData.weight;
+        ScaleCalculator currentCalculator = new ScaleCalculator(lastScaleData);
 
-        ScaleCalculator goalCalculator = new ScaleCalculator();
-        goalCalculator.body_height = currentScaleUser.body_height;
-        goalCalculator.weight = currentScaleUser.goal_weight;
+        ScaleData goalData = new ScaleData();
+        goalData.weight = currentScaleUser.goal_weight;
+        ScaleCalculator goalCalculator = new ScaleCalculator(goalData);
 
         txtLabelGoalWeight.setText(
                 Html.fromHtml(
                         getResources().getString(R.string.label_goal_weight) +
                         " <br> <font color='grey'><small>BMI " +
-                        String.format("%.1f", goalCalculator.getBMI()) +
+                        String.format("%.1f", goalCalculator.getBMI(currentScaleUser.body_height)) +
                         " </small></font>"
                 )
         );
@@ -310,7 +280,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
                 Html.fromHtml(
                         getResources().getString(R.string.label_weight_difference) +
                         " <br> <font color='grey'><small>BMI " +
-                        String.format("%.1f", currentCalculator.getBMI() - goalCalculator.getBMI())  +
+                        String.format("%.1f", currentCalculator.getBMI(currentScaleUser.body_height) - goalCalculator.getBMI(currentScaleUser.body_height))  +
                         " </small></font>"
                 )
         );
@@ -334,23 +304,9 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
                 if (scaleDataIterator.hasNext()) {
                     ScaleData diffScaleData = scaleDataIterator.next();
 
-                    ScaleCalculator lastScaleCalculator = new ScaleCalculator();
-                    lastScaleCalculator.body_height = currentScaleUser.body_height;
-                    lastScaleCalculator.setScaleData(lastScaleData);
-
-                    ScaleCalculator diffScaleCalculator = new ScaleCalculator();
-                    diffScaleCalculator.body_height = currentScaleUser.body_height;
-                    diffScaleCalculator.setScaleData(diffScaleData);
-
-                    measurementWeightLast.setDiff(lastScaleData.weight, diffScaleData.weight);
-                    measurementBMILast.setDiff(lastScaleCalculator.getBMI(), diffScaleCalculator.getBMI());
-                    measurementMuscleLast.setDiff(lastScaleData.muscle, diffScaleData.muscle);
-                    measurementFatLast.setDiff(lastScaleData.fat, diffScaleData.fat);
-                    measurementWaterLast.setDiff(lastScaleData.water, diffScaleData.water);
-                    measurementWaistLast.setDiff(lastScaleData.waist, diffScaleData.waist);
-                    measurementWHtRLast.setDiff(lastScaleCalculator.getWHtR(), diffScaleCalculator.getWHtR());
-                    measurementHipLast.setDiff(lastScaleData.hip, diffScaleData.hip);
-                    measurementWHRLast.setDiff(lastScaleCalculator.getWHR(), diffScaleCalculator.getWHR());
+                    for (MeasurementView measuremt : overviewMeasurements) {
+                        measuremt.updateDiff(lastScaleData, diffScaleData);
+                    }
                 }
             }
         }
@@ -395,21 +351,19 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         {
             histDate.setTime(scaleData.date_time);
 
-            ScaleCalculator calculator = new ScaleCalculator();
-            calculator.body_height = currentScaleUser.body_height;
-            calculator.setScaleData(scaleData);
+            ScaleCalculator calculator = new ScaleCalculator(scaleData);
 
             if (weekPastDate.before(histDate)) {
                 weekSize++;
 
                 weekAvgWeight += scaleData.weight;
-                weekAvgBMI += calculator.getBMI();
+                weekAvgBMI += calculator.getBMI(currentScaleUser.body_height);
                 weekAvgFat += scaleData.fat;
                 weekAvgWater += scaleData.water;
                 weekAvgMuscle += scaleData.muscle;
                 weekAvgWaist += scaleData.waist;
                 weekAvgHip += scaleData.hip;
-                weekAvgWHtR += calculator.getWHtR();
+                weekAvgWHtR += calculator.getWHtR(currentScaleUser.body_height);
                 weekAvgWHR += calculator.getWHR();
             }
 
@@ -417,13 +371,13 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
                 monthSize++;
 
                 monthAvgWeight += scaleData.weight;
-                monthAvgBMI += calculator.getBMI();
+                monthAvgBMI += calculator.getBMI(currentScaleUser.body_height);
                 monthAvgFat += scaleData.fat;
                 monthAvgWater += scaleData.water;
                 monthAvgMuscle += scaleData.muscle;
                 monthAvgWaist += scaleData.waist;
                 monthAvgHip += scaleData.hip;
-                monthAvgWHtR += calculator.getWHtR();
+                monthAvgWHtR += calculator.getWHtR(currentScaleUser.body_height);
                 monthAvgWHR += calculator.getWHR();
             } else {
                 break;

@@ -2,15 +2,14 @@ package com.health.openscale.core;
 
 public class ScaleCalculator {
 
-    public float weight;
-    public float fat;
-    public float water;
-    public float muscle;
-    public float waist;
-    public float hip;
-    public int body_height;
+    private float weight;
+    private float fat;
+    private float water;
+    private float muscle;
+    private float waist;
+    private float hip;
 
-    public void setScaleData(ScaleData scaleData) {
+    public ScaleCalculator(ScaleData scaleData) {
         weight = scaleData.weight;
         fat = scaleData.fat;
         water = scaleData.water;
@@ -19,11 +18,11 @@ public class ScaleCalculator {
         hip = scaleData.hip;
     }
 
-    public float getBMI() {
+    public float getBMI(int body_height) {
         return weight / ((body_height / 100.0f)*(body_height / 100.0f));
     }
 
-    public float getWHtR() {
+    public float getWHtR(int body_height) {
         return waist / (float)body_height;
     }
 
