@@ -79,7 +79,8 @@
             <TableLayout
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
-                android:stretchColumns="1">
+                android:stretchColumns="1"
+                android:id="@+id/tableLayoutMeasurements">
 
                 <TableRow
                     android:layout_width="fill_parent"
