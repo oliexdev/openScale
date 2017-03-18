@@ -49,13 +49,7 @@
     <string name="error_exporting">エクスポートに失敗しました</string>
     <string name="error_importing">インポートに失敗しました</string>
     <string name="error_body_height_required">身長が必要です</string>
-    <string name="error_fat_value_required">体脂肪率が必要です</string>
-    <string name="error_muscle_value_required">筋肉率が必要です</string>
     <string name="error_user_name_required">ユーザー名が必要です</string>
-    <string name="error_value_range_0_100">値は0から100の間でなければなりません</string>
-    <string name="error_value_range_0_300">値は0から300の間でなければなりません</string>
-    <string name="error_water_value_required">体内の水分が必要です</string>
-    <string name="error_weight_value_required">体重が必要です</string>
     <string name="info_data_all_deleted">すべてのレコードが削除されます</string>
     <string name="info_data_deleted">レコードが削除されます</string>
     <string name="info_data_exported">レコードのエクスポート</string>
@@ -88,7 +82,6 @@
     <string name="info_is_not_enable">無効にします</string>
     <string name="info_is_enable">有効にします</string>
     <string name="error_hip_value_required">腰囲が必要です</string>
-    <string name="error_waist_value_required">胴囲が必要です</string>
     <string name="label_waist">胴囲</string>
     <string name="label_hip">腰囲</string>
     <string name="info_your_waist">あなたは胴囲が</string>
@@ -121,4 +114,6 @@
     <string name="Tuesday">火曜日</string>
     <string name="Monday">月曜日</string>
     <string name="Sunday">日曜日</string>
+    <string name="error_value_required">値が必要です</string>
+    <string name="error_value_range">エラー値の範囲</string>
 </resources>

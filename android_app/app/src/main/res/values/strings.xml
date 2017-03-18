@@ -63,18 +63,13 @@
     <string name="label_export">Export</string>
     <string name="label_delete_all">Delete all</string>
 
-    <string name="error_weight_value_required">Weight is required</string>
-    <string name="error_fat_value_required">Body fat percentage is required</string>
-    <string name="error_water_value_required">Water percentage is required</string>
-    <string name="error_muscle_value_required">Muscle percentage is required</string>
-    <string name="error_value_range_0_300">The value must be in range from 0 to 300</string>
-    <string name="error_value_range_0_100">The value must be in range from 0 to 100</string>
+    <string name="error_value_required">Value is required</string>
+    <string name="error_value_range">The value is not in range</string>
     <string name="error_exporting">Error exporting</string>
     <string name="error_importing">Error importing</string>
     <string name="error_user_name_required">Error user name is required</string>
     <string name="error_body_height_required">Error body height is required</string>
     <string name="error_goal_weight_required">Error goal weight is required</string>
-    <string name="error_waist_value_required">waist circumference is required</string>
     <string name="error_hip_value_required">hip circumference is required</string>
 
     <string name="info_data_deleted">Database entry deleted</string>

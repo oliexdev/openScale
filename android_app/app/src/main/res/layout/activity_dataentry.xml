@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
     android:orientation="vertical"
     android:padding="5dp" >
 
     <LinearLayout
         android:orientation="horizontal"
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="5dp"
         android:gravity="center">
@@ -46,13 +46,12 @@
     </LinearLayout>
 
     <ScrollView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/scrollView3" >
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="5dp" >
 
@@ -60,301 +59,99 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="5dp"
-                android:stretchColumns="2" >
+                android:id="@+id/tableLayoutDataEntry">
 
-                <TableRow
-                    android:id="@+id/tableRowWeight"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" >
-
-                    <ImageView
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
-                        android:id="@+id/imageView16"
-                        android:layout_column="0"
-                        android:src="@drawable/weight"
-                        android:layout_gravity="center"
-                        android:layout_marginRight="2dp" />
-
-                    <TextView
-                        android:id="@+id/textView1"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/label_weight"
-                        android:layout_column="1" />
-
-                    <EditText
-                        android:id="@+id/txtWeight"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:ems="10"
-                        android:hint="@string/info_enter_value_unit"
-                        android:inputType="numberDecimal|numberSigned"
-                        android:layout_column="2">
-
-                        <requestFocus />
-                    </EditText>
-
-                </TableRow>
-
-                <TableRow
-                    android:id="@+id/tableRowFat"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" >
-
-                    <ImageView
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
-                        android:id="@+id/imageView17"
-                        android:layout_column="0"
-                        android:src="@drawable/fat"
-                        android:layout_gravity="center"
-                        android:layout_marginRight="2dp" />
-
-                    <TextView
-                        android:id="@+id/txtAvgWeight"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/label_fat"
-                        android:layout_column="1" />
-
-                    <EditText
-                        android:id="@+id/txtFat"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:ems="10"
-                        android:hint="@string/info_enter_value_percent"
-                        android:inputType="numberDecimal|numberSigned"
-                        android:layout_column="2" />
-
-                </TableRow>
-
-                <TableRow
-                    android:id="@+id/tableRowWater"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" >
-
-                    <ImageView
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
-                        android:id="@+id/imageView18"
-                        android:layout_column="0"
-                        android:src="@drawable/water"
-                        android:layout_gravity="center"
-                        android:layout_marginRight="2dp" />
-
-                    <TextView
-                        android:id="@+id/textView3"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/label_water"
-                        android:layout_column="1" />
-
-                    <EditText
-                        android:id="@+id/txtWater"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:ems="10"
-                        android:hint="@string/info_enter_value_percent"
-                        android:inputType="numberDecimal|numberSigned"
-                        android:layout_column="2" />
-
-                </TableRow>
-
-                <TableRow
-                    android:id="@+id/tableRowMuscle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" >
-
-                    <ImageView
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
-                        android:id="@+id/imageView21"
-                        android:layout_column="0"
-                        android:src="@drawable/muscle"
-                        android:layout_gravity="center"
-                        android:layout_marginRight="2dp" />
-
-                    <TextView
-                        android:id="@+id/txtAvgFat"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/label_muscle"
-                        android:layout_column="1" />
-
-                    <EditText
-                        android:id="@+id/txtMuscle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:ems="10"
-                        android:hint="@string/info_enter_value_percent"
-                        android:inputType="numberDecimal|numberSigned"
-                        android:layout_column="2" />
-
-                </TableRow>
 
             <TableRow
-                android:id="@+id/tableRowWaist"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" >
+                android:id="@+id/tableRowComment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:weightSum="1.0">
 
                 <ImageView
-                    android:layout_width="30dp"
                     android:layout_height="30dp"
-                    android:id="@+id/imageView10"
-                    android:layout_column="0"
-                    android:src="@drawable/waist"
-                    android:layout_gravity="center"
-                    android:layout_marginRight="2dp" />
+                    android:src="@drawable/comment"
+                    android:layout_gravity="center" />
 
                 <TextView
-                    android:id="@+id/textView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/label_waist"
-                    android:layout_column="1" />
+                    android:text="@string/label_comment"
+                    android:textSize="15sp"
+                    android:layout_weight="0.9"/>
 
                 <EditText
-                    android:id="@+id/txtWaist"
+                    android:id="@+id/txtComment"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:ems="10"
-                    android:hint="@string/info_enter_value_cm"
-                    android:inputType="numberDecimal|numberSigned"
-                    android:layout_column="2" />
+                    android:textSize="15sp"
+                    android:layout_weight="0.01"
+                    android:inputType="text|textImeMultiLine|textMultiLine|textAutoComplete|textAutoCorrect"
+                    android:hint="@string/info_enter_comment" />
             </TableRow>
 
             <TableRow
-                android:id="@+id/tableRowHip"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" >
+                android:id="@+id/tableRowDate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:weightSum="1.0">
 
                 <ImageView
-                    android:layout_width="30dp"
                     android:layout_height="30dp"
-                    android:id="@+id/imageView12"
-                    android:layout_column="0"
-                    android:src="@drawable/hip"
-                    android:layout_gravity="center"
-                    android:layout_marginRight="2dp" />
+                    android:src="@drawable/lastmonth"
+                    android:layout_gravity="center" />
 
                 <TextView
-                    android:id="@+id/textView2"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/label_hip"
-                    android:layout_column="1" />
+                    android:text="@string/label_date"
+                    android:textSize="15sp"
+                    android:layout_weight="0.9"/>
 
                 <EditText
-                    android:id="@+id/txtHip"
+                    android:id="@+id/txtDate"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:ems="10"
-                    android:hint="@string/info_enter_value_cm"
-                    android:inputType="numberDecimal|numberSigned"
-                    android:layout_column="2" />
+                    android:layout_weight="0.01"
+                    android:textSize="15sp"
+                    android:inputType="none"/>
+
             </TableRow>
 
             <TableRow
-                    android:id="@+id/tableRowComment"
+                android:id="@+id/tableRowTime"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
+
+                <ImageView
+                    android:layout_height="30dp"
+                    android:src="@drawable/daysleft"
+                    android:layout_gravity="center" />
+
+                <TextView
+                    android:id="@+id/txtAvgWater"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" >
+                    android:layout_height="wrap_content"
+                    android:textSize="15sp"
+                    android:layout_weight="0.9"
+                    android:text="@string/label_time" />
 
-                    <ImageView
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
-                        android:id="@+id/imageView22"
-                        android:layout_column="0"
-                        android:src="@drawable/comment"
-                        android:layout_gravity="center"
-                        android:layout_marginRight="2dp" />
-
-                    <TextView
-                        android:id="@+id/txtView22"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/label_comment"
-                        android:layout_column="1" />
-
-                    <EditText
-                        android:id="@+id/txtComment"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:ems="10"
-                        android:layout_column="2"
-                        android:inputType="text|textImeMultiLine|textMultiLine|textAutoComplete|textAutoCorrect"
-                        android:hint="@string/info_enter_comment" />
-                </TableRow>
-
-                <TableRow
-                    android:id="@+id/tableRowDate"
+                <EditText
+                    android:id="@+id/txtTime"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" >
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.01"
+                    android:textSize="15sp"
+                    android:inputType="none" />
 
-                    <ImageView
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
-                        android:id="@+id/imageView19"
-                        android:layout_column="0"
-                        android:src="@drawable/lastmonth"
-                        android:layout_gravity="center"
-                        android:layout_marginRight="2dp" />
+            </TableRow>
 
-                    <TextView
-                        android:id="@+id/textView5"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/label_date"
-                        android:layout_column="1" />
-
-                    <EditText
-                        android:id="@+id/txtDate"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="5"
-                        android:ems="10"
-                        android:inputType="none"
-                        android:layout_column="2" />
-
-                </TableRow>
-
-                <TableRow
-                    android:id="@+id/tableRowTime"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" >
-
-                    <ImageView
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
-                        android:id="@+id/imageView20"
-                        android:layout_column="0"
-                        android:src="@drawable/daysleft"
-                        android:layout_gravity="center"
-                        android:layout_marginRight="2dp" />
-
-                    <TextView
-                        android:id="@+id/txtAvgWater"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/label_time"
-                        android:layout_column="1" />
-
-                    <EditText
-                        android:id="@+id/txtTime"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="5"
-                        android:ems="10"
-                        android:layout_column="2"
-                        android:inputType="none" />
-
-                </TableRow>
-
-            </TableLayout>
+        </TableLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content" >
+
             <Button
                 android:id="@+id/btnCancel"
                 android:layout_width="wrap_content"
@@ -397,7 +194,7 @@
                 android:background="@drawable/flat_selector"
                 android:text="@string/label_ok" />
         </LinearLayout>
-</LinearLayout>
+        </LinearLayout>
     </ScrollView>
-    </LinearLayout>
+</LinearLayout>
 

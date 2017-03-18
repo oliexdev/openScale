@@ -4,15 +4,8 @@
     <string name="action_settings">Einstellungen</string>
     <string name="error_body_height_required">Fehler Körpergröße ist erforderlich</string>
     <string name="error_exporting">Fehler beim Exportieren</string>
-    <string name="error_fat_value_required">Fettanteil ist erforderlich</string>
     <string name="error_importing">Fehler beim Importieren</string>
-    <string name="error_muscle_value_required">Muskelanteil ist erforderlich</string>
     <string name="error_user_name_required">Fehler Benutzername ist erfoderlich</string>
-    <string name="error_value_range_0_100">Der Wert muss zwischen 0 und 100 liegen</string>
-    <string name="error_value_range_0_300">Der Wert muss zwischen 0 und 300 liegen</string>
-    <string name="error_water_value_required">Wassergehalt ist erforderlich</string>
-    <string name="error_weight_value_required">Gewicht ist erforderlich</string>
-    <string name="error_waist_value_required">Bauchumfang ist erforderlich</string>
     <string name="error_hip_value_required">Hüftumfang ist erforderlich</string>
     <string name="info_data_all_deleted">Alle Datenbank Einträge wurden gelöscht</string>
     <string name="info_data_deleted">Datenbank Eintrag wurde gelöscht</string>
@@ -121,4 +114,6 @@
     <string name="Friday">Freitag</string>
     <string name="Saturday">Samstag</string>
     <string name="Sunday">Sonntag</string>
+    <string name="error_value_range">Fehler beim Wertebereich</string>
+    <string name="error_value_required">Wert ist erforderlich</string>
 </resources>

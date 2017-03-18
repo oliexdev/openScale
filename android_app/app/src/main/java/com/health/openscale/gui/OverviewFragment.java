@@ -226,10 +226,6 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
         userSelectedData = null;
 
-        for (MeasurementView measuremt : overviewMeasurements) {
-            measuremt.updateScaleUser(currentScaleUser);
-        }
-
         spinUserAdapter.clear();
         ArrayList<ScaleUser> scaleUserList = OpenScale.getInstance(overviewView.getContext()).getScaleUserList();
 

@@ -6,7 +6,10 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.support.v4.content.ContextCompat;
 import android.text.Html;
+import android.text.InputType;
+import android.util.TypedValue;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Space;
 import android.widget.TableLayout;
@@ -16,6 +19,7 @@ import android.widget.TextView;
 import com.health.openscale.R;
 import com.health.openscale.core.EvaluationResult;
 import com.health.openscale.core.EvaluationSheet;
+import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.ScaleCalculator;
 import com.health.openscale.core.ScaleData;
 import com.health.openscale.core.ScaleUser;
@@ -37,12 +41,13 @@ abstract class MeasurementView extends TableLayout {
 
     private String nameText;
 
-    protected ScaleUser scaleUser;
+    private boolean editMode;
 
     public MeasurementView(Context context, String text, Drawable icon) {
         super(context);
         initView(context);
 
+        editMode = false;
         nameText = text;
         nameView.setText(text);
         iconView.setImageDrawable(icon);
@@ -69,17 +74,17 @@ abstract class MeasurementView extends TableLayout {
         addView(measurementRow);
         addView(evaluatorRow);
 
-        iconView.getLayoutParams().height = 80;
+        iconView.getLayoutParams().height = pxImageDp(30);
         iconView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
 
-        nameView.setTextSize(20);
+        nameView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
         nameView.setTextColor(Color.BLACK);
         nameView.setLines(2);
-        nameView.setLayoutParams(new TableRow.LayoutParams(0, LayoutParams.WRAP_CONTENT, 0.92f));
+        nameView.setLayoutParams(new TableRow.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, 0.90f));
 
-        valueView.setTextSize(20);
+        valueView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
         valueView.setTextColor(Color.BLACK);
-        valueView.setLayoutParams(new TableRow.LayoutParams(0, LayoutParams.MATCH_PARENT, 0.07f));
+        valueView.setLayoutParams(new TableRow.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT, 0.01f));
 
         indicatorView.setLayoutParams(new TableRow.LayoutParams(0, LayoutParams.MATCH_PARENT, 0.01f));
         indicatorView.setBackgroundColor(Color.GRAY);
@@ -100,14 +105,44 @@ abstract class MeasurementView extends TableLayout {
     abstract void updateValue(ScaleData updateData);
     abstract void updateDiff(ScaleData updateData, ScaleData lastData);
     abstract void updatePreferences(SharedPreferences preferences);
-    abstract String getFormat();
+    abstract String getUnit();
     abstract EvaluationResult evaluateSheet(EvaluationSheet evalSheet, float value);
     abstract float getMinValue();
     abstract float getMaxValue();
 
+    abstract int getInputType();
+
+    public float getValue() {
+        if (valueView.getText().length() == 0) {
+            return -1;
+        }
+
+        return Float.valueOf(valueView.getText().toString());
+    }
+
+    public void setEditMode(boolean mode) {
+        editMode = mode;
+
+        if (editMode) {
+            valueView = new EditText(getContext());
+            valueView.setInputType(getInputType());
+            valueView.setHint(getContext().getResources().getString(R.string.info_enter_value_unit) + " " + getUnit());
+            measurementRow.addView(valueView);
+            indicatorView.setVisibility(View.GONE);
+        }
+    }
+
+    protected boolean isEditModeOn() {
+        return editMode;
+    }
+
     protected void setValueOnView(float value) {
-        valueView.setText(String.format(getFormat(), value));
-        evaluate(value);
+        if (isEditModeOn()) {
+            valueView.setText(String.valueOf(value));
+        } else {
+            valueView.setText(String.format("%.2f ", value) + getUnit());
+            evaluate(value);
+        }
     }
 
     protected void setDiffOnView(float value, float lastValue) {
@@ -127,7 +162,7 @@ abstract class MeasurementView extends TableLayout {
                                 " <br> <font color='grey'>" +
                                 symbol +
                                 "<small> " +
-                                String.format(getFormat(), diffValue) +
+                                String.format("%.2f ", diffValue) + getUnit() +
                                 "</small></font>"
                 )
         );
@@ -141,8 +176,30 @@ abstract class MeasurementView extends TableLayout {
         }
     }
 
+    private int pxImageDp(float dp) {
+        return (int)(dp * getResources().getDisplayMetrics().density + 0.5f);
+    }
+
+    public boolean validateInput() {
+        if (measurementRow.getVisibility() == View.VISIBLE) {
+            if (valueView.getText().toString().length() == 0) {
+                valueView.setError(getResources().getString(R.string.error_value_required));
+                return false;
+            }
+
+            float value = Float.valueOf(valueView.getText().toString());
+
+            if (!(value >= 0 && value <= getMaxValue())) {
+                valueView.setError(getResources().getString(R.string.error_value_range));
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     private void evaluate(float value) {
-        EvaluationSheet evalSheet = new EvaluationSheet(scaleUser);
+        EvaluationSheet evalSheet = new EvaluationSheet(getScaleUser());
         EvaluationResult evalResult = evaluateSheet(evalSheet, value);
 
         evaluatorView.setMinMaxValue(getMinValue(), getMaxValue());
@@ -166,13 +223,19 @@ abstract class MeasurementView extends TableLayout {
         }
     }
 
-    public void updateScaleUser(ScaleUser user) {
-        scaleUser = user;
+    protected ScaleUser getScaleUser() {
+        OpenScale openScale = OpenScale.getInstance(getContext());
+
+        return openScale.getSelectedScaleUser();
     }
 
     private class onClickListenerEvaluation implements View.OnClickListener {
         @Override
         public void onClick(View v) {
+            if (isEditModeOn()) {
+                return;
+            }
+
             if (evaluatorRow.getVisibility() == View.VISIBLE) {
                 evaluatorRow.setVisibility(View.GONE);
             } else {
@@ -199,8 +262,8 @@ class WeightMeasurementView extends MeasurementView {
     }
 
     @Override
-    String getFormat() {
-        return "%.1f " + ScaleUser.UNIT_STRING[scaleUser.scale_unit];
+    String getUnit() {
+        return ScaleUser.UNIT_STRING[getScaleUser().scale_unit];
     }
 
     @Override
@@ -222,6 +285,11 @@ class WeightMeasurementView extends MeasurementView {
     float getMaxValue() {
         return 300;
     }
+
+    @Override
+    int getInputType() {
+        return InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_SIGNED;
+    }
 }
 
 class BMIMeasurementView extends MeasurementView {
@@ -233,19 +301,19 @@ class BMIMeasurementView extends MeasurementView {
     @Override
     void updateValue(ScaleData updateData) {
         ScaleCalculator updateCalculator = new ScaleCalculator(updateData);
-        setValueOnView(updateCalculator.getBMI(scaleUser.body_height));
+        setValueOnView(updateCalculator.getBMI(getScaleUser().body_height));
     }
 
     @Override
     void updateDiff(ScaleData updateData, ScaleData lastData) {
         ScaleCalculator updateCalculator = new ScaleCalculator(updateData);
         ScaleCalculator lastCalculator = new ScaleCalculator(lastData);
-        setDiffOnView(updateCalculator.getBMI(scaleUser.body_height), lastCalculator.getBMI(scaleUser.body_height));
+        setDiffOnView(updateCalculator.getBMI(getScaleUser().body_height), lastCalculator.getBMI(getScaleUser().body_height));
     }
 
     @Override
-    String getFormat() {
-        return "%.1f";
+    String getUnit() {
+        return "";
     }
 
     @Override
@@ -261,6 +329,11 @@ class BMIMeasurementView extends MeasurementView {
     @Override
     float getMaxValue() {
         return 50;
+    }
+
+    @Override
+    int getInputType() {
+        return 0;
     }
 
     @Override
@@ -286,8 +359,8 @@ class WaterMeasurementView extends MeasurementView {
     }
 
     @Override
-    String getFormat() {
-        return "%.1f %%";
+    String getUnit() {
+        return "%";
     }
 
     @Override
@@ -309,6 +382,11 @@ class WaterMeasurementView extends MeasurementView {
     float getMaxValue() {
         return 80;
     }
+
+    @Override
+    int getInputType() {
+        return InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_SIGNED;
+    }
 }
 
 class MuscleMeasurementView extends MeasurementView {
@@ -328,8 +406,8 @@ class MuscleMeasurementView extends MeasurementView {
     }
 
     @Override
-    String getFormat() {
-        return "%.1f %%";
+    String getUnit() {
+        return "%";
     }
 
     @Override
@@ -351,6 +429,11 @@ class MuscleMeasurementView extends MeasurementView {
     float getMaxValue() {
         return 80;
     }
+
+    @Override
+    int getInputType() {
+        return InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_SIGNED;
+    }
 }
 
 class FatMeasurementView extends MeasurementView {
@@ -370,8 +453,8 @@ class FatMeasurementView extends MeasurementView {
     }
 
     @Override
-    String getFormat() {
-        return "%.1f %%";
+    String getUnit() {
+        return "%";
     }
 
     @Override
@@ -393,6 +476,11 @@ class FatMeasurementView extends MeasurementView {
     float getMaxValue() {
         return 40;
     }
+
+    @Override
+    int getInputType() {
+        return InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_SIGNED;
+    }
 }
 
 class WaistMeasurementView extends MeasurementView {
@@ -412,8 +500,8 @@ class WaistMeasurementView extends MeasurementView {
     }
 
     @Override
-    String getFormat() {
-        return "%.1f cm";
+    String getUnit() {
+        return "cm";
     }
 
     @Override
@@ -435,6 +523,11 @@ class WaistMeasurementView extends MeasurementView {
     float getMaxValue() {
         return 200;
     }
+
+    @Override
+    int getInputType() {
+        return InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_SIGNED;
+    }
 }
 
 class WHtRMeasurementView extends MeasurementView {
@@ -446,19 +539,19 @@ class WHtRMeasurementView extends MeasurementView {
     @Override
     void updateValue(ScaleData updateData) {
         ScaleCalculator updateCalculator = new ScaleCalculator(updateData);
-        setValueOnView(updateCalculator.getWHtR(scaleUser.body_height));
+        setValueOnView(updateCalculator.getWHtR(getScaleUser().body_height));
     }
 
     @Override
     void updateDiff(ScaleData updateData, ScaleData lastData) {
         ScaleCalculator updateCalculator = new ScaleCalculator(updateData);
         ScaleCalculator lastCalculator = new ScaleCalculator(lastData);
-        setDiffOnView(updateCalculator.getWHtR(scaleUser.body_height), lastCalculator.getWHtR(scaleUser.body_height));
+        setDiffOnView(updateCalculator.getWHtR(getScaleUser().body_height), lastCalculator.getWHtR(getScaleUser().body_height));
     }
 
     @Override
-    String getFormat() {
-        return "%.2f";
+    String getUnit() {
+        return "";
     }
 
     @Override
@@ -480,6 +573,11 @@ class WHtRMeasurementView extends MeasurementView {
     float getMaxValue() {
         return 1;
     }
+
+    @Override
+    int getInputType() {
+        return 0;
+    }
 }
 
 class HipMeasurementView extends MeasurementView {
@@ -499,8 +597,8 @@ class HipMeasurementView extends MeasurementView {
     }
 
     @Override
-    String getFormat() {
-        return "%.1f cm";
+    String getUnit() {
+        return "cm";
     }
 
     @Override
@@ -521,6 +619,11 @@ class HipMeasurementView extends MeasurementView {
     @Override
     float getMaxValue() {
         return 200;
+    }
+
+    @Override
+    int getInputType() {
+        return InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_SIGNED;
     }
 }
 
@@ -544,8 +647,8 @@ class WHRMeasurementView extends MeasurementView {
     }
 
     @Override
-    String getFormat() {
-        return "%.2f";
+    String getUnit() {
+        return "";
     }
 
     @Override
@@ -566,6 +669,11 @@ class WHRMeasurementView extends MeasurementView {
     @Override
     float getMaxValue() {
         return 1.5f;
+    }
+
+    @Override
+    int getInputType() {
+        return 0;
     }
 
 }
