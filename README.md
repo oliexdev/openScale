@@ -3,9 +3,14 @@ openScale
 
 openScale is an Open Source app to keep a log of your weight, body fat, water percentage and muscle percentage.
 
+<a href="https://f-droid.org/repository/browse/?fdid=com.health.openscale" target="_blank">
+<img src="https://f-droid.org/badge/get-it-on.png" alt="Get it on F-Droid" height="80"/></a>
+<a href="https://play.google.com/store/apps/details?id=com.health.openscale" target="_blank">
+<img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png" alt="Get it on Google Play" height="80"/></a>
+
 [![Google Play](https://developer.android.com/images/brand/en_generic_rgb_wo_45.png)](https://play.google.com/store/apps/details?id=com.health.openscale)
 
-##Features
+# Features
 
 - Logs your weight, body fat, water percentage and muscle percentage
 - Display all your data on a chart and table
@@ -15,7 +20,7 @@ openScale is an Open Source app to keep a log of your weight, body fat, water pe
 - Connection to a custom made bluetooth scale (see [openScale wiki](https://github.com/oliexdev/openScale/wiki) for more information)
 - All data belongs to you (no cloud service)
 
-##Screens
+# Screens
 
 ![](doc/screens/screen_overview.png)
 
@@ -23,11 +28,11 @@ openScale is an Open Source app to keep a log of your weight, body fat, water pe
 
 ![](doc/screens/screen_table.png)
 
-##Contributing
+# Contributing
 
 If you found a bug, have an idea how to improve the openScale app or have a question, please create new issue or comment existing one. If you would like to contribute code fork the repository and send a pull request.
 
-#License
+# License
 
 openScale ist licensed under the GPL v3, see LICENSE file for full notice.
 
