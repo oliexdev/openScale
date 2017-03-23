@@ -8,8 +8,6 @@ openScale is an Open Source app to keep a log of your weight, body fat, water pe
 <a href="https://play.google.com/store/apps/details?id=com.health.openscale" target="_blank">
 <img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png" alt="Get it on Google Play" height="80"/></a>
 
-[![Google Play](https://developer.android.com/images/brand/en_generic_rgb_wo_45.png)](https://play.google.com/store/apps/details?id=com.health.openscale)
-
 # Features
 
 - Logs your weight, body fat, water percentage and muscle percentage
