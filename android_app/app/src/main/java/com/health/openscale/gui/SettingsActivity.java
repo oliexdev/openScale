@@ -16,6 +16,7 @@
 package com.health.openscale.gui;
 
 import android.preference.PreferenceActivity;
+import android.util.Log;
 
 import com.health.openscale.R;
 
@@ -24,6 +25,7 @@ import java.util.List;
 
 public class SettingsActivity extends PreferenceActivity {
     private static List<String> fragments = new ArrayList<String>();
+    static int backPressed = 0;
 
     @Override
     public void onBuildHeaders(List<Header> target) {
@@ -36,7 +38,17 @@ public class SettingsActivity extends PreferenceActivity {
     }
 
     @Override
-    protected boolean isValidFragment (String fragmentName) {
+    protected boolean isValidFragment(String fragmentName) {
         return fragments.contains(fragmentName);
+    }
+
+    public void onBackPressed() {
+        super.onBackPressed();
+        Log.d("### ", "on back pressed setting activity ******************");
+        backPressed++;
+        if (backPressed == 1) {
+            MainActivity.mSectionsPagerAdapter.notifyDataSetChanged();
+            backPressed = 0;
+        }
     }
 }

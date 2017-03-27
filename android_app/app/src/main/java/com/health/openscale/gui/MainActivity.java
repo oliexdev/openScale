@@ -56,7 +56,7 @@ public class MainActivity extends ActionBarActivity implements
 	 * becomes too memory intensive, it may be best to switch to a
 	 * {@link android.support.v4.app.FragmentStatePagerAdapter}.
 	 */
-	private SectionsPagerAdapter mSectionsPagerAdapter;
+	public static SectionsPagerAdapter mSectionsPagerAdapter;
 
 	private static boolean firstAppStart = true;
 	private static int bluetoothStatusIcon = R.drawable.bluetooth_disabled;
@@ -314,5 +314,18 @@ public class MainActivity extends ActionBarActivity implements
 			}
 			return null;
 		}
+
+        @Override
+        public int getItemPosition(Object object) {
+            return POSITION_NONE;
+        }
+
+        @Override
+        public void notifyDataSetChanged() {
+            super.notifyDataSetChanged();
+            tableFrag = new TableFragment();
+            graphFrag = new GraphFragment();
+            overviewFrag = new OverviewFragment();
+        }
 	}
 }
