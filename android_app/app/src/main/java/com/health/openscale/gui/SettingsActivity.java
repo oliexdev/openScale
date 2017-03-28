@@ -44,7 +44,6 @@ public class SettingsActivity extends PreferenceActivity {
 
     public void onBackPressed() {
         super.onBackPressed();
-        Log.d("### ", "on back pressed setting activity ******************");
         backPressed++;
         if (backPressed == 1) {
             MainActivity.mSectionsPagerAdapter.notifyDataSetChanged();
