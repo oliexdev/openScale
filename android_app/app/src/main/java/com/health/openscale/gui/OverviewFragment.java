@@ -267,7 +267,9 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         txtLabelGoalWeight.setText(
                 Html.fromHtml(
                         getResources().getString(R.string.label_goal_weight) +
-                        " <br> <font color='grey'><small>BMI " +
+                        " <br> <font color='grey'><small>" +
+                        getResources().getString(R.string.label_bmi) +
+                        ": " +
                         String.format("%.1f", goalCalculator.getBMI(currentScaleUser.body_height)) +
                         " </small></font>"
                 )
@@ -275,7 +277,9 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         txtLabelGoalDiff.setText(
                 Html.fromHtml(
                         getResources().getString(R.string.label_weight_difference) +
-                        " <br> <font color='grey'><small>BMI " +
+                        " <br> <font color='grey'><small>" +
+                        getResources().getString(R.string.label_bmi) +
+                        ": " +
                         String.format("%.1f", currentCalculator.getBMI(currentScaleUser.body_height) - goalCalculator.getBMI(currentScaleUser.body_height))  +
                         " </small></font>"
                 )
