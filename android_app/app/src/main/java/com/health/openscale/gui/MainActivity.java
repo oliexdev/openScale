@@ -149,7 +149,7 @@ public class MainActivity extends ActionBarActivity implements
 
 		if (id == R.id.action_general_settings) {
 			Intent intent = new Intent(this, SettingsActivity.class);
-			startActivityForResult(intent, 0);
+			startActivityForResult(intent, 1);
 			return true;
 		}
 
@@ -259,7 +259,15 @@ public class MainActivity extends ActionBarActivity implements
 	public void onTabReselected(ActionBar.Tab tab,
 			FragmentTransaction fragmentTransaction) {
 	}
-	
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+		if (requestCode == 1) {
+			mSectionsPagerAdapter.notifyDataSetChanged();
+		}
+	}
+
 	/**
 	 * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
 	 * one of the sections/tabs/pages.
@@ -314,5 +322,19 @@ public class MainActivity extends ActionBarActivity implements
 			}
 			return null;
 		}
+
+		@Override
+		public int getItemPosition(Object object) {
+			return POSITION_NONE;
+		}
+
+		@Override
+        public void notifyDataSetChanged() {
+			super.notifyDataSetChanged();
+
+            tableFrag = new TableFragment();
+            graphFrag = new GraphFragment();
+            overviewFrag = new OverviewFragment();
+        }
 	}
 }
