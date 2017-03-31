@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">openScale</string>
+    <string name="title_overview">Vue d\'ensemble</string>
+    <string name="title_graph">Diagramme</string>
+    <string name="title_frag">Tableau</string>
+    <string name="title_users">Utilisateurs</string>
+    <string name="title_data">Données</string>
+    <string name="title_measurements">Mesures</string>
+
+    <string name="action_settings">Paramètres</string>
+    <string name="action_bluetooth_status">État du Bluetooth</string>
+
+    <string name="label_add">Ajouter</string>
+    <string name="label_cancel">Annuler</string>
+    <string name="label_ok">OK</string>
+    <string name="label_yes">Oui</string>
+    <string name="label_no">Non</string>
+    <string name="label_delete">Supprimer</string>
+    <string name="label_add_user">Ajouter un utilisateur</string>
+
+    <string name="label_id">ID</string>
+    <string name="label_weight">Poids</string>
+    <string name="label_bmi">IMC</string>
+    <string name="label_fat">Taux de graisse corporelle</string>
+    <string name="label_water">Pourcentage d\'eau</string>
+    <string name="label_muscle">Pourcentage musculaire</string>
+    <string name="label_waist">Tour de taille</string>
+    <string name="label_hip">Tour de hanches</string>
+    <string name="label_comment">Commentaire</string>
+    <string name="label_whtr">Rapport hauteur / taille</string>
+    <string name="label_whr">Rapport taille-hanches</string>
+    <string name="label_smartUserAssign">Affectation intelligente de l\'Utilisateur</string>
+
+    <string name="label_days">jours</string>
+    <string name="label_measures">mesures</string>
+    <string name="label_last_week">7 derniers jours</string>
+    <string name="label_last_month">30 derniers jours</string>
+    <string name="label_weight_difference">Différence de poids</string>
+    <string name="label_goal_date_is">La date de l\'objectif est le</string>
+    <string name="label_days_left">Jours restants</string>
+
+    <string name="label_date">Date</string>
+    <string name="label_time">Heure</string>
+    <string name="label_birthday">Date de naissance</string>
+    <string name="label_user_name">Nom</string>
+    <string name="label_body_height">Hauteur du corps</string>
+    <string name="label_scale_unit">Unité d\'échelle</string>
+    <string name="label_gender">Sexe</string>
+    <string name="label_male">Homme</string>
+    <string name="label_woman">Femme</string>
+    <string name="label_goal_weight">Objectif de poids</string>
+    <string name="label_goal_date">Date de l\'objectif</string>
+
+
+    <string name="label_title_user">utilisateur</string>
+    <string name="label_title_last_measurement">dernière mesure</string>
+    <string name="label_title_goal">objectif</string>
+    <string name="label_title_statistics">statistiques</string>
+
+    <string name="label_import">Importer</string>
+    <string name="label_export">Exporter</string>
+    <string name="label_delete_all">Tout supprimer</string>
+
+    <string name="error_value_required">La valeur est requise</string>
+    <string name="error_value_range">La valeur n\'est pas dans la plage</string>
+    <string name="error_exporting">Erreur durant l\'exportation</string>
+    <string name="error_importing">Erreur durant l\'importation</string>
+    <string name="error_user_name_required">Erreur : le nom d\'utilisateur est requis</string>
+    <string name="error_body_height_required">Erreur : la hauteur du corps est requise</string>
+    <string name="error_goal_weight_required">Erreur : un objectif de poids est requis</string>
+    <string name="error_hip_value_required">Erreur : le tour de hanches est requis</string>
+
+    <string name="info_data_deleted">L\'entrée a été supprimée de la base de données</string>
+    <string name="info_data_all_deleted">Toutes les entrées ont été supprimées de la base de données</string>
+    <string name="info_data_exported">Données exportées vers</string>
+    <string name="info_data_imported">Donnéees importées depuis</string>
+    <string name="info_set_filename">Définir le nom du fichier vers</string>
+    <string name="info_enter_value_cm">Entrez la valeur en cm</string>
+    <string name="info_enter_value_percent">Entrez la valeur en %</string>
+    <string name="info_enter_value_unit">Entrez la valeur en</string>
+    <string name="info_enter_comment">Ajouter un commentaire optionnel</string>
+    <string name="info_enter_goal_weight">Entrez votre objectif de poids dans votre unité d\'échelle</string>
+    <string name="info_is_visible">est visible</string>
+    <string name="info_is_not_visible">n\'est pas visible</string>
+    <string name="info_is_enable">est activé</string>
+    <string name="info_is_not_enable">est désactivé</string>
+    <string name="info_is_not_available">n\'est pas disponible</string>
+    <string name="info_delete_bluetooth_data">Effacer toutes les données Bluetooth</string>
+    <string name="info_delete_bluetooth_data_success">Les données Bluetooth ont bien été effacées</string>
+    <string name="info_bluetooth_try_connection">Tentative de connexion à</string>
+    <string name="info_bluetooth_connection_lost">La connexion Bluetooth a été perdue</string>
+    <string name="info_bluetooth_no_device">Aucun appareil Bluetooth détecté</string>
+    <string name="info_bluetooth_connection_successful">Connexion établie</string>
+    <string name="info_bluetooth_init">Initialisation du périphérique Bluetooth</string>
+    <string name="info_bluetooth_connection_error">La connexion Bluetooth a rencontré une erreur inattendue</string>
+
+    <string name="info_enter_user_name">Entrez votre nom</string>
+    <string name="info_no_selected_user">Aucun utilisateur existant. Veuillez en créer un nouveau dans les paramètres.</string>
+    <string name="info_no_evaluation_available">Impossible d\'évaluer</string>
+
+    <string name="question_really_delete">Voulez-vous vraiment supprimer cette entrée de la base de données?</string>
+    <string name="question_really_delete_all">Voulez-vous vraiment supprimer toutes les entrées de la base de données?</string>
+    <string name="question_really_delete_user">Voulez-vous vraiment supprimer cet utilisateur?</string>
+
+    <string name="label_bluetooth_title">Bluetooth</string>
+    <string name="label_bluetooth_enable">Rechercher une balance au lancement de l\'application</string>
+    <string name="label_device_name">Nom de l\'appareil</string>
+    <string name="label_device_type">Type d\'appareil</string>
+
+    <string name="label_enable_labels">Étiquette sur point de données</string>
+    <string name="label_enable_points">Point sur point de données</string>
+
+    <string name="label_delete_confirmation">Supprimer la confirmation</string>
+
+    <string name="label_reminder">Rappel</string>
+    <string name="label_reminder_weekdays">Jours de la semaine</string>
+    <string name="label_reminder_time">Heure</string>
+    <string name="label_reminder_notify_text">Intitulé de la notification</string>
+    <string name="default_value_reminder_notify_text">C\'est l\'heure de se peser!</string>
+
+    <string name="info_your_weight">Votre poids était de</string>
+    <string name="info_your_fat">Votre taux de graisse corporelle était de</string>
+    <string name="info_your_water">Votre pourcentage d\'eau était de</string>
+    <string name="info_your_muscle">Votre pourcentage de muscle était de</string>
+    <string name="info_your_waist">Votre tour de taille était de</string>
+    <string name="info_your_hip">Votre circonférence de la hanche était de</string>
+    <string name="info_on_date">le</string>
+
+    <string name="Monday">Lundi</string>
+    <string name="Tuesday">Mardi</string>
+    <string name="Wednesday">Mercredi</string>
+    <string name="Thursday">Jeudi</string>
+    <string name="Friday">Vendredi</string>
+    <string name="Saturday">Samedi</string>
+    <string name="Sunday">Dimanche</string>
+</resources>
