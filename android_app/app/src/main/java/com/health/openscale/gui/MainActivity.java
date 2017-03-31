@@ -56,7 +56,7 @@ public class MainActivity extends ActionBarActivity implements
 	 * becomes too memory intensive, it may be best to switch to a
 	 * {@link android.support.v4.app.FragmentStatePagerAdapter}.
 	 */
-	public static SectionsPagerAdapter mSectionsPagerAdapter;
+	private SectionsPagerAdapter mSectionsPagerAdapter;
 
 	private static boolean firstAppStart = true;
 	private static int bluetoothStatusIcon = R.drawable.bluetooth_disabled;
@@ -149,7 +149,7 @@ public class MainActivity extends ActionBarActivity implements
 
 		if (id == R.id.action_general_settings) {
 			Intent intent = new Intent(this, SettingsActivity.class);
-			startActivityForResult(intent, 0);
+			startActivityForResult(intent, 1);
 			return true;
 		}
 
@@ -259,7 +259,15 @@ public class MainActivity extends ActionBarActivity implements
 	public void onTabReselected(ActionBar.Tab tab,
 			FragmentTransaction fragmentTransaction) {
 	}
-	
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+		if (requestCode == 1) {
+			mSectionsPagerAdapter.notifyDataSetChanged();
+		}
+	}
+
 	/**
 	 * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
 	 * one of the sections/tabs/pages.
@@ -315,14 +323,15 @@ public class MainActivity extends ActionBarActivity implements
 			return null;
 		}
 
-        @Override
-        public int getItemPosition(Object object) {
-            return POSITION_NONE;
-        }
+		@Override
+		public int getItemPosition(Object object) {
+			return POSITION_NONE;
+		}
 
-        @Override
+		@Override
         public void notifyDataSetChanged() {
-            super.notifyDataSetChanged();
+			super.notifyDataSetChanged();
+
             tableFrag = new TableFragment();
             graphFrag = new GraphFragment();
             overviewFrag = new OverviewFragment();
