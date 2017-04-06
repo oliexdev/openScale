@@ -15,11 +15,7 @@
 */
 package com.health.openscale.gui.preferences;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -30,120 +26,29 @@ import android.preference.MultiSelectListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceGroup;
-import android.preference.PreferenceManager;
 
 import com.health.openscale.R;
+import com.health.openscale.core.alarm.AlarmHandler;
 import com.health.openscale.gui.ReminderBootReceiver;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 public class ReminderPreferences extends PreferenceFragment
         implements SharedPreferences.OnSharedPreferenceChangeListener
 {
-    public static final String INTENT_EXTRA_ALARM = "alarmIntent";
+
     public static final String PREFERENCE_KEY_REMINDER_NOTIFY_TEXT = "reminderNotifyText";
-
+    public static final String PREFERENCE_KEY_REMINDER_WEEKDAYS = "reminderWeekdays";
+    public static final String PREFERENCE_KEY_REMINDER_TIME = "reminderTime";
     private static final String PREFERENCE_KEY_REMINDER_ENABLE = "reminderEnable";
-    private static final String PREFERENCE_KEY_REMINDER_WEEKDAYS = "reminderWeekdays";
-    private static final String PREFERENCE_KEY_REMINDER_TIME = "reminderTime";
-
-
-    private static ArrayList<PendingIntent> pendingAlarms = new ArrayList<>();
 
     private CheckBoxPreference reminderEnable;
     private MultiSelectListPreference reminderWeekdays;
     private TimePreferenceDialog reminderTime;
     private EditTextPreference reminderNotifyText;
 
-    public static void scheduleAlarms(Context context)
-    {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-
-        Set<String> reminderWeekdays = prefs.getStringSet(PREFERENCE_KEY_REMINDER_WEEKDAYS, new HashSet<String>());
-        Long reminderTimeInMillis = prefs.getLong(PREFERENCE_KEY_REMINDER_TIME, System.currentTimeMillis());
-
-        Iterator<String> iterWeekdays = reminderWeekdays.iterator();
-
-        disableAllAlarms(context);
-
-        while (iterWeekdays.hasNext())
-        {
-            String strWeekdays = iterWeekdays.next();
-            switch (strWeekdays)
-            {
-                case "Monday":
-                    pendingAlarms.add(enableAlarm(context, Calendar.MONDAY, reminderTimeInMillis));
-                    break;
-                case "Tuesday":
-                    pendingAlarms.add(enableAlarm(context, Calendar.TUESDAY, reminderTimeInMillis));
-                    break;
-                case "Wednesday":
-                    pendingAlarms.add(enableAlarm(context, Calendar.WEDNESDAY, reminderTimeInMillis));
-                    break;
-                case "Thursday":
-                    pendingAlarms.add(enableAlarm(context, Calendar.THURSDAY, reminderTimeInMillis));
-                    break;
-                case "Friday":
-                    pendingAlarms.add(enableAlarm(context, Calendar.FRIDAY, reminderTimeInMillis));
-                    break;
-                case "Saturday":
-                    pendingAlarms.add(enableAlarm(context, Calendar.SATURDAY, reminderTimeInMillis));
-                    break;
-                case "Sunday":
-                    pendingAlarms.add(enableAlarm(context, Calendar.SUNDAY, reminderTimeInMillis));
-                    break;
-            }
-        }
-    }
-
-    public static PendingIntent enableAlarm(Context context, int dayOfWeek, long timeInMillis)
-    {
-        // We just want the time *not* the date
-        Calendar timeCal = Calendar.getInstance();
-        timeCal.setTimeInMillis(timeInMillis);
-
-        Calendar alarmCal = Calendar.getInstance();
-        alarmCal.set(Calendar.HOUR_OF_DAY, timeCal.get(Calendar.HOUR_OF_DAY));
-        alarmCal.set(Calendar.MINUTE, timeCal.get(Calendar.MINUTE));
-        alarmCal.set(Calendar.DAY_OF_WEEK, dayOfWeek);
-
-        // Check we aren't setting it in the past which would trigger it to fire instantly
-        if (alarmCal.before(Calendar.getInstance()))
-        {
-            alarmCal.add(Calendar.DAY_OF_YEAR, 7);
-        }
-
-        //Log.d(ReminderPreferences.class.getSimpleName(), "Set " + dayOfWeek + " alarm to " + alarmCal.getTime());
-        AlarmManager alarmMgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-
-        Intent alarmIntent = new Intent(context, ReminderBootReceiver.class);
-        alarmIntent.putExtra(INTENT_EXTRA_ALARM, true);
-
-        PendingIntent alarmPendingIntent =
-                PendingIntent.getBroadcast(context, dayOfWeek, alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        alarmMgr.setInexactRepeating(AlarmManager.RTC_WAKEUP, alarmCal.getTimeInMillis(), AlarmManager.INTERVAL_DAY * 7,
-                alarmPendingIntent);
-
-        return alarmPendingIntent;
-    }
-
-    public static void disableAllAlarms(Context context)
-    {
-        AlarmManager alarmMgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-
-        for (int i = 0; i < pendingAlarms.size(); i++)
-        {
-            alarmMgr.cancel(pendingAlarms.get(i));
-        }
-
-        pendingAlarms.clear();
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -203,9 +108,10 @@ public class ReminderPreferences extends PreferenceFragment
         ComponentName receiver = new ComponentName(getActivity().getApplicationContext(), ReminderBootReceiver.class);
         PackageManager pm = getActivity().getApplicationContext().getPackageManager();
 
+        AlarmHandler alarmHandler = new AlarmHandler();
         if (reminderEnable.isChecked())
         {
-            scheduleAlarms(getActivity());
+            alarmHandler.scheduleAlarms(getActivity());
 
             pm.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
                     PackageManager.DONT_KILL_APP);
@@ -216,7 +122,7 @@ public class ReminderPreferences extends PreferenceFragment
         }
         else
         {
-            disableAllAlarms(getActivity());
+            alarmHandler.disableAllAlarms(getActivity());
 
             pm.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
                     PackageManager.DONT_KILL_APP);

@@ -23,6 +23,7 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 
+import com.health.openscale.core.alarm.AlarmDatabaseEntryListener;
 import com.health.openscale.gui.FragmentUpdateListener;
 
 import java.io.BufferedReader;
@@ -61,6 +62,7 @@ public class OpenScale {
 	private OpenScale(Context con) {
         context = con;
 		scaleDB = new ScaleDatabase(context);
+        scaleDB.addEntryListener(new AlarmDatabaseEntryListener());
         scaleUserDB = new ScaleUserDatabase(context);
         btCom = null;
         fragmentList = new ArrayList<>();

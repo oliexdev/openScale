@@ -16,51 +16,31 @@
 
 package com.health.openscale.gui;
 
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
-import android.support.v4.app.NotificationCompat;
 
-import com.health.openscale.R;
-import com.health.openscale.gui.preferences.ReminderPreferences;
-
-import static android.content.Context.NOTIFICATION_SERVICE;
+import com.health.openscale.core.alarm.AlarmHandler;
 
 public class ReminderBootReceiver extends BroadcastReceiver
 {
     @Override
     public void onReceive(Context context, Intent intent)
     {
-        if (intent.hasExtra(ReminderPreferences.INTENT_EXTRA_ALARM))
-        {
-            //Log.d(ReminderBootReceiver.class.getSimpleName(), "Received alarm intent");
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        if (intent.hasExtra(AlarmHandler.INTENT_EXTRA_ALARM)) handleAlarm(context);
 
-            String notifyText = prefs.getString(ReminderPreferences.PREFERENCE_KEY_REMINDER_NOTIFY_TEXT,
-                    context.getResources().getString(R.string.default_value_reminder_notify_text));
+        if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) scheduleAlarms(context);
+    }
 
-            NotificationCompat.Builder mBuilder =
-                    new NotificationCompat.Builder(context).setSmallIcon(R.drawable.ic_launcher)
-                                                           .setContentTitle(context.getString(R.string.app_name))
-                                                           .setContentText(notifyText)
-                                                           .setAutoCancel(true);
+    private void handleAlarm(Context context)
+    {
+        AlarmHandler alarmHandler = new AlarmHandler();
+        alarmHandler.showAlarmNotification(context);
+    }
 
-            Intent notifyIntent = new Intent(context, MainActivity.class);
-
-            PendingIntent notifyPendingIntent =
-                    PendingIntent.getActivity(context, 0, notifyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-            mBuilder.setContentIntent(notifyPendingIntent);
-
-            NotificationManager mNotifyMgr = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
-            mNotifyMgr.notify(0x01, mBuilder.build());
-        }
-
-        if (intent.getAction() != null && intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED))
-            ReminderPreferences.scheduleAlarms(context);
+    private void scheduleAlarms(Context context)
+    {
+        AlarmHandler alarmHandler = new AlarmHandler();
+        alarmHandler.scheduleAlarms(context);
     }
 }
