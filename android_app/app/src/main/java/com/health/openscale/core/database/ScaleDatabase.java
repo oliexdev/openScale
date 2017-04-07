@@ -14,7 +14,7 @@
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-package com.health.openscale.core;
+package com.health.openscale.core.database;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -24,12 +24,12 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import com.health.openscale.core.datatypes.ScaleData;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Locale;
 
 public class ScaleDatabase extends SQLiteOpenHelper {	
@@ -87,13 +87,8 @@ public class ScaleDatabase extends SQLiteOpenHelper {
 
     private SimpleDateFormat formatDateTime = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US);
 
-    private Context context;
-    private List<IScaleDatabaseEntryListener> entryListeners;
-    
 	public ScaleDatabase(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
-        this.context = context;
-        entryListeners = new LinkedList<>();
 	}
 
 	@Override
@@ -147,7 +142,6 @@ public class ScaleDatabase extends SQLiteOpenHelper {
             try
             {
                 db.insertOrThrow(TABLE_NAME, null, values);
-                notifyEntryListeners(scaleData);
             }
             catch (SQLException e)
             {
@@ -175,7 +169,6 @@ public class ScaleDatabase extends SQLiteOpenHelper {
         values.put(COLUMN_NAME_ENABLE, 1);
 
         dbWrite.update(TABLE_NAME, values, COLUMN_NAME_ID + "=" + id, null);
-        notifyEntryListeners(scaleData);
     }
 
     public ScaleData getDataEntry(long id)
@@ -327,21 +320,5 @@ public class ScaleDatabase extends SQLiteOpenHelper {
         }
 
         return scaleData;
-    }
-
-    public void addEntryListener(IScaleDatabaseEntryListener listener)
-    {
-        if (!entryListeners.contains(listener)) entryListeners.add(listener);
-    }
-
-    public void removeEntryListener( IScaleDatabaseEntryListener listener)
-    {
-        entryListeners.remove(listener);
-    }
-
-    private void notifyEntryListeners(ScaleData data)
-    {
-        for (IScaleDatabaseEntryListener listener : entryListeners)
-            listener.entryChanged(context, data);
     }
 }

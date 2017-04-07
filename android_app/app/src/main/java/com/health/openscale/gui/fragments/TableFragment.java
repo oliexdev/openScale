@@ -13,7 +13,7 @@
 *    You should have received a copy of the GNU General Public License
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-package com.health.openscale.gui;
+package com.health.openscale.gui.fragments;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -42,7 +42,8 @@ import android.widget.Toast;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
-import com.health.openscale.core.ScaleData;
+import com.health.openscale.core.datatypes.ScaleData;
+import com.health.openscale.gui.activities.DataEntryActivity;
 
 import java.io.IOException;
 import java.text.DateFormat;

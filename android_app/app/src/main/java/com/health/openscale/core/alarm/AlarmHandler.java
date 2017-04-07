@@ -12,9 +12,8 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import com.health.openscale.R;
-import com.health.openscale.core.Util;
+import com.health.openscale.core.datatypes.ScaleData;
 import com.health.openscale.gui.MainActivity;
-import com.health.openscale.gui.ReminderBootReceiver;
 
 import java.util.Calendar;
 import java.util.LinkedList;
@@ -36,6 +35,30 @@ public class AlarmHandler
 
         disableAllAlarms(context);
         enableAlarms(context, alarmEntries);
+    }
+
+    public void entryChanged(Context context, ScaleData data)
+    {
+        long dataMillis = data.date_time.getTime();
+
+        Calendar dataTimestamp = Calendar.getInstance();
+        dataTimestamp.setTimeInMillis(dataMillis);
+
+        if(AlarmHandler.isSameDate(dataTimestamp, Calendar.getInstance()))
+        {
+            cancelAlarmNotification(context);
+            cancelAndRescheduleAlarmForNextWeek( context, dataTimestamp );
+        }
+    }
+
+    public static boolean isSameDate(Calendar c1, Calendar c2)
+    {
+        int[] dateFields = {Calendar.YEAR, Calendar.MONTH, Calendar.DAY_OF_MONTH};
+        for (int dateField : dateFields)
+        {
+            if (c1.get(dateField) != c2.get(dateField)) return false;
+        }
+        return true;
     }
 
     private void enableAlarms(Context context, Set<AlarmEntry> alarmEntries)
@@ -96,7 +119,7 @@ public class AlarmHandler
         {
             Calendar nextAlarmTimestamp = entry.getNextTimestamp();
 
-            if (Util.isSameDate(timestamp, nextAlarmTimestamp))
+            if (isSameDate(timestamp, nextAlarmTimestamp))
             {
                 int dayOfWeek = entry.getDayOfWeek();
                 PendingIntent alarmPendingIntent = getPendingAlarmIntent(context, dayOfWeek);

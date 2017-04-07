@@ -29,7 +29,7 @@ import android.preference.PreferenceGroup;
 
 import com.health.openscale.R;
 import com.health.openscale.core.alarm.AlarmHandler;
-import com.health.openscale.gui.ReminderBootReceiver;
+import com.health.openscale.core.alarm.ReminderBootReceiver;
 
 import java.util.ArrayList;
 import java.util.List;

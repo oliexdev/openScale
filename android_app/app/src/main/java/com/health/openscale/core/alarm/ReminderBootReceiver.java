@@ -14,13 +14,11 @@
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-package com.health.openscale.gui;
+package com.health.openscale.core.alarm;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-
-import com.health.openscale.core.alarm.AlarmHandler;
 
 public class ReminderBootReceiver extends BroadcastReceiver
 {

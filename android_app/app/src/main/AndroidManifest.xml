@@ -24,12 +24,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".gui.SettingsActivity"/>
-        <activity android:name=".gui.DataEntryActivity" android:theme="@android:style/Theme.Holo.Light.Dialog"/>
-        <activity android:name=".gui.UserSettingsActivity" android:theme="@android:style/Theme.Holo.Dialog"
+        <activity android:name=".gui.activities.SettingsActivity"/>
+        <activity android:name=".gui.activities.DataEntryActivity" android:theme="@android:style/Theme.Holo.Light.Dialog"/>
+        <activity android:name=".gui.activities.UserSettingsActivity" android:theme="@android:style/Theme.Holo.Dialog"
                   android:label="@string/label_title_user"/>
 
-        <receiver android:name=".gui.ReminderBootReceiver" android:enabled="false">
+        <receiver android:name=".core.alarm.ReminderBootReceiver" android:enabled="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
             </intent-filter>

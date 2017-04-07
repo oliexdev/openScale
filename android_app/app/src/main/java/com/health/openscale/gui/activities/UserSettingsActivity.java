@@ -13,7 +13,7 @@
 *    You should have received a copy of the GNU General Public License
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-package com.health.openscale.gui;
+package com.health.openscale.gui.activities;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -32,7 +32,7 @@ import android.widget.RadioGroup;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
-import com.health.openscale.core.ScaleUser;
+import com.health.openscale.core.datatypes.ScaleUser;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;

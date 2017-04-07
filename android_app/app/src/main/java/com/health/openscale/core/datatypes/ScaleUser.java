@@ -14,7 +14,7 @@
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-package com.health.openscale.core;
+package com.health.openscale.core.datatypes;
 
 import java.util.Date;
 

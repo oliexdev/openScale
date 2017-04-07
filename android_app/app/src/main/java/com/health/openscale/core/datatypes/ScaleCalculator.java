@@ -1,4 +1,4 @@
-package com.health.openscale.core;
+package com.health.openscale.core.datatypes;
 
 public class ScaleCalculator {
 

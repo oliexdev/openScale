@@ -13,9 +13,11 @@
 *    You should have received a copy of the GNU General Public License
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-package com.health.openscale.core;
+package com.health.openscale.core.evaluation;
 
 import android.util.Log;
+
+import com.health.openscale.core.datatypes.ScaleUser;
 
 import java.util.ArrayList;
 import java.util.Calendar;

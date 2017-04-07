@@ -14,7 +14,7 @@
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-package com.health.openscale.core;
+package com.health.openscale.core.bluetooth;
 
 import android.bluetooth.BluetoothAdapter;
 import android.os.Handler;
@@ -42,7 +42,7 @@ public abstract class BluetoothCommunication {
         callbackBtHandler = cbBtHandler;
     }
 
-    abstract void startSearching(String deviceName);
-    abstract void stopSearching();
+    abstract public void startSearching(String deviceName);
+    abstract public void stopSearching();
 }
 
