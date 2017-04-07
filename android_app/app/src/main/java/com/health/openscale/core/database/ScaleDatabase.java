@@ -14,7 +14,7 @@
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-package com.health.openscale.core;
+package com.health.openscale.core.database;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -23,6 +23,8 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
+
+import com.health.openscale.core.datatypes.ScaleData;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -84,7 +86,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
     private final SQLiteDatabase dbRead = getReadableDatabase();
 
     private SimpleDateFormat formatDateTime = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US);
-    
+
 	public ScaleDatabase(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
 	}

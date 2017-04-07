@@ -39,9 +39,14 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.health.openscale.R;
-import com.health.openscale.core.BluetoothCommunication;
+import com.health.openscale.core.bluetooth.BluetoothCommunication;
 import com.health.openscale.core.OpenScale;
-import com.health.openscale.core.ScaleData;
+import com.health.openscale.core.datatypes.ScaleData;
+import com.health.openscale.gui.activities.SettingsActivity;
+import com.health.openscale.gui.activities.UserSettingsActivity;
+import com.health.openscale.gui.fragments.GraphFragment;
+import com.health.openscale.gui.fragments.OverviewFragment;
+import com.health.openscale.gui.fragments.TableFragment;
 
 import java.util.Locale;
 

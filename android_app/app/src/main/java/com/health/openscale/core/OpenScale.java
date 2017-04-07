@@ -23,7 +23,15 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 
-import com.health.openscale.gui.FragmentUpdateListener;
+import com.health.openscale.core.alarm.AlarmHandler;
+import com.health.openscale.core.bluetooth.BluetoothCommunication;
+import com.health.openscale.core.bluetooth.BluetoothCustomOpenScale;
+import com.health.openscale.core.bluetooth.BluetoothMiScale;
+import com.health.openscale.core.database.ScaleDatabase;
+import com.health.openscale.core.database.ScaleUserDatabase;
+import com.health.openscale.core.datatypes.ScaleData;
+import com.health.openscale.core.datatypes.ScaleUser;
+import com.health.openscale.gui.fragments.FragmentUpdateListener;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -38,8 +46,8 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
 
-import static com.health.openscale.core.BluetoothCommunication.BT_MI_SCALE;
-import static com.health.openscale.core.BluetoothCommunication.BT_OPEN_SCALE;
+import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_MI_SCALE;
+import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_OPEN_SCALE;
 
 public class OpenScale {
 
@@ -51,6 +59,7 @@ public class OpenScale {
 
 	private BluetoothCommunication btCom;
 	private String btDeviceName;
+    private AlarmHandler alarmHandler;
 
 	private SimpleDateFormat dateTimeFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm");
 
@@ -62,6 +71,7 @@ public class OpenScale {
         context = con;
 		scaleDB = new ScaleDatabase(context);
         scaleUserDB = new ScaleUserDatabase(context);
+        alarmHandler = new AlarmHandler();
         btCom = null;
         fragmentList = new ArrayList<>();
 
@@ -194,6 +204,7 @@ public class OpenScale {
 		}
 
 		if (scaleDB.insertEntry(scaleData)) {
+            alarmHandler.entryChanged(context, scaleData);
             updateScaleData();
         }
 
@@ -241,6 +252,7 @@ public class OpenScale {
         }
 
         scaleDB.updateEntry(id, scaleData);
+        alarmHandler.entryChanged(context, scaleData);
 
         updateScaleData();
     }

@@ -13,30 +13,13 @@
 *    You should have received a copy of the GNU General Public License
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-package com.health.openscale.gui;
 
-import android.preference.PreferenceActivity;
+package com.health.openscale.gui.fragments;
 
-import com.health.openscale.R;
+import com.health.openscale.core.datatypes.ScaleData;
 
 import java.util.ArrayList;
-import java.util.List;
 
-public class SettingsActivity extends PreferenceActivity {
-    private static List<String> fragments = new ArrayList<String>();
-
-    @Override
-    public void onBuildHeaders(List<Header> target) {
-        loadHeadersFromResource(R.xml.header_preferences, target);
-
-        fragments.clear();
-        for (Header header : target) {
-            fragments.add(header.fragment);
-        }
-    }
-
-    @Override
-    protected boolean isValidFragment(String fragmentName) {
-        return fragments.contains(fragmentName);
-    }
+public interface FragmentUpdateListener {
+	public void updateOnView(ArrayList<ScaleData> scaleDataList);
 }

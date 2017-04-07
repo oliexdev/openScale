@@ -14,7 +14,7 @@
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-package com.health.openscale.core;
+package com.health.openscale.core.bluetooth;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -26,6 +26,8 @@ import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.os.Handler;
 import android.util.Log;
+
+import com.health.openscale.core.datatypes.ScaleData;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -59,7 +61,7 @@ public class BluetoothMiScale extends BluetoothCommunication {
     }
 
     @Override
-    void startSearching(String deviceName) {
+    public void startSearching(String deviceName) {
         btDeviceName = deviceName;
 
         if (scanCallback == null)
@@ -103,7 +105,7 @@ public class BluetoothMiScale extends BluetoothCommunication {
     }
 
     @Override
-    void stopSearching() {
+    public void stopSearching() {
         if (bluetoothGatt != null)
         {
             bluetoothGatt.close();

@@ -14,12 +14,22 @@
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-package com.health.openscale.gui;
+package com.health.openscale.core.evaluation;
 
-import com.health.openscale.core.ScaleData;
+public class EvaluationResult {
+    public  static enum EVAL_STATE {LOW, NORMAL, HIGH, UNDEFINED};
 
-import java.util.ArrayList;
+    public float value;
+    public float lowLimit;
+    public float highLimit;
+    public EVAL_STATE eval_state;
 
-public interface FragmentUpdateListener {
-	public void updateOnView(ArrayList<ScaleData> scaleDataList);
+    public EvaluationResult(float value, float lowLimit, float highLimit, EVAL_STATE eval_state)
+    {
+        this.value = value;
+        this.lowLimit = lowLimit;
+        this.highLimit = highLimit;
+        this.eval_state = eval_state;
+    }
+
 }

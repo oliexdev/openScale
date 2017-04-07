@@ -13,23 +13,30 @@
 *    You should have received a copy of the GNU General Public License
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
+package com.health.openscale.gui.activities;
 
-package com.health.openscale.core;
+import android.preference.PreferenceActivity;
 
-public class EvaluationResult {
-    public  static enum EVAL_STATE {LOW, NORMAL, HIGH, UNDEFINED};
+import com.health.openscale.R;
 
-    public float value;
-    public float lowLimit;
-    public float highLimit;
-    public EVAL_STATE eval_state;
+import java.util.ArrayList;
+import java.util.List;
 
-    public EvaluationResult(float value, float lowLimit, float highLimit, EVAL_STATE eval_state)
-    {
-        this.value = value;
-        this.lowLimit = lowLimit;
-        this.highLimit = highLimit;
-        this.eval_state = eval_state;
+public class SettingsActivity extends PreferenceActivity {
+    private static List<String> fragments = new ArrayList<String>();
+
+    @Override
+    public void onBuildHeaders(List<Header> target) {
+        loadHeadersFromResource(R.xml.header_preferences, target);
+
+        fragments.clear();
+        for (Header header : target) {
+            fragments.add(header.fragment);
+        }
     }
 
+    @Override
+    protected boolean isValidFragment(String fragmentName) {
+        return fragments.contains(fragmentName);
+    }
 }

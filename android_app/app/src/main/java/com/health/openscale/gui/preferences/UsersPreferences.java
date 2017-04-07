@@ -24,8 +24,8 @@ import android.preference.PreferenceManager;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
-import com.health.openscale.core.ScaleUser;
-import com.health.openscale.gui.UserSettingsActivity;
+import com.health.openscale.core.datatypes.ScaleUser;
+import com.health.openscale.gui.activities.UserSettingsActivity;
 
 import java.util.ArrayList;
 

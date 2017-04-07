@@ -13,11 +13,13 @@
 *    You should have received a copy of the GNU General Public License
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-package com.health.openscale.core;
+package com.health.openscale.core.bluetooth;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.util.Log;
+
+import com.health.openscale.core.datatypes.ScaleData;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,7 +29,7 @@ import java.text.SimpleDateFormat;
 import java.util.Set;
 import java.util.UUID;
 
-class BluetoothCustomOpenScale extends BluetoothCommunication {
+public class BluetoothCustomOpenScale extends BluetoothCommunication {
     private final UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb"); // Standard SerialPortService ID
 
     private BluetoothSocket btSocket = null;
@@ -36,7 +38,7 @@ class BluetoothCustomOpenScale extends BluetoothCommunication {
     private BluetoothConnectedThread btConnectThread = null;
 
     @Override
-    void startSearching(String deviceName) {
+    public void startSearching(String deviceName) {
 
         if (btAdapter == null) {
             callbackBtHandler.obtainMessage(BluetoothCommunication.BT_NO_DEVICE_FOUND).sendToTarget();
