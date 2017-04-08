@@ -25,6 +25,7 @@ import android.support.v4.content.ContextCompat;
 import android.text.Html;
 import android.text.InputType;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -106,11 +107,13 @@ public abstract class MeasurementView extends TableLayout {
         nameView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
         nameView.setTextColor(Color.BLACK);
         nameView.setLines(2);
-        nameView.setLayoutParams(new TableRow.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, 0.90f));
+        nameView.setLayoutParams(new TableRow.LayoutParams(0, LayoutParams.WRAP_CONTENT, 0.60f));
 
         valueView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
         valueView.setTextColor(Color.BLACK);
-        valueView.setLayoutParams(new TableRow.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT, 0.01f));
+        valueView.setGravity(Gravity.RIGHT | Gravity.CENTER);
+        valueView.setPadding(0,0,20,0);
+        valueView.setLayoutParams(new TableRow.LayoutParams(0, LayoutParams.MATCH_PARENT, 0.29f));
 
         editModeView.getLayoutParams().height = pxImageDp(20);
         editModeView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
