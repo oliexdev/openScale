@@ -114,7 +114,7 @@ public abstract class MeasurementView extends TableLayout {
 
         editModeView.getLayoutParams().height = pxImageDp(20);
         editModeView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-        editModeView.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.edit));
+        editModeView.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.editable));
         editModeView.setVisibility(View.GONE);
 
         indicatorView.setLayoutParams(new TableRow.LayoutParams(0, LayoutParams.MATCH_PARENT, 0.01f));
@@ -167,9 +167,12 @@ public abstract class MeasurementView extends TableLayout {
                 break;
             case EDIT:
             case ADD:
-                if (isEditable()) {
-                    editModeView.setVisibility(View.VISIBLE);
+                editModeView.setVisibility(View.VISIBLE);
+
+                if (!isEditable()) {
+                    editModeView.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.noteditable));
                 }
+
                 indicatorView.setVisibility(View.GONE);
                 evaluatorRow.setVisibility(View.GONE);
                 break;

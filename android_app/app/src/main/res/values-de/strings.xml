@@ -116,4 +116,5 @@
     <string name="Sunday">Sonntag</string>
     <string name="error_value_range">Fehler beim Wertebereich</string>
     <string name="error_value_required">Wert ist erforderlich</string>
+    <string name="label_editmode">Bearbeiten</string>
 </resources>

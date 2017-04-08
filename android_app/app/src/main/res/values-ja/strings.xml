@@ -116,4 +116,5 @@
     <string name="Sunday">日曜日</string>
     <string name="error_value_required">値が必要です</string>
     <string name="error_value_range">エラー値の範囲</string>
+    <string name="label_editmode">編集</string>
 </resources>
