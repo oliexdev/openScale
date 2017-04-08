@@ -23,7 +23,6 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
-import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,7 +35,6 @@ import android.widget.Toast;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
-import com.health.openscale.core.datatypes.ScaleCalculator;
 import com.health.openscale.core.datatypes.ScaleData;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.gui.activities.DataEntryActivity;
@@ -78,26 +76,10 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
     private TextView txtTitleUser;
     private TextView txtTitleLastMeasurement;
-    private TextView txtTitleGoal;
-    private TextView txtTitleStatistics;
 
     private TableLayout tableOverviewLayout;
 
     private ArrayList<MeasurementView> overviewMeasurements;
-
-    private TextView txtGoalWeight;
-    private TextView txtGoalDiff;
-    private TextView txtGoalDayLeft;
-
-    private TextView txtAvgWeek;
-    private TextView txtAvgMonth;
-
-    private TextView txtLabelGoalWeight;
-    private TextView txtLabelGoalDiff;
-    private TextView txtLabelDayLeft;
-
-    private TextView txtLabelAvgWeek;
-    private TextView txtLabelAvgMonth;
 
     private PieChartView pieChartLast;
     private LineChartView lineChartLast;
@@ -131,8 +113,6 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
         txtTitleUser = (TextView) overviewView.findViewById(R.id.txtTitleUser);
         txtTitleLastMeasurement = (TextView) overviewView.findViewById(R.id.txtTitleLastMeasurment);
-        txtTitleGoal = (TextView) overviewView.findViewById(R.id.txtTitleGoal);
-        txtTitleStatistics = (TextView) overviewView.findViewById(R.id.txtTitleStatistics);
 
         tableOverviewLayout = (TableLayout)overviewView.findViewById(R.id.tableLayoutMeasurements);
 
@@ -151,20 +131,6 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         for (MeasurementView measuremt : overviewMeasurements) {
             tableOverviewLayout.addView(measuremt);
         }
-
-        txtGoalWeight = (TextView) overviewView.findViewById(R.id.txtGoalWeight);
-        txtGoalDiff = (TextView) overviewView.findViewById(R.id.txtGoalDiff);
-        txtGoalDayLeft = (TextView) overviewView.findViewById(R.id.txtGoalDayLeft);
-
-        txtAvgWeek = (TextView) overviewView.findViewById(R.id.txtAvgWeek);
-        txtAvgMonth = (TextView) overviewView.findViewById(R.id.txtAvgMonth);
-
-        txtLabelGoalWeight = (TextView) overviewView.findViewById(R.id.txtLabelGoalWeight);
-        txtLabelGoalDiff = (TextView) overviewView.findViewById(R.id.txtLabelGoalDiff);
-        txtLabelDayLeft = (TextView) overviewView.findViewById(R.id.txtLabelDayLeft);
-
-        txtLabelAvgWeek = (TextView) overviewView.findViewById(R.id.txtLabelAvgWeek);
-        txtLabelAvgMonth = (TextView) overviewView.findViewById(R.id.txtLabelAvgMonth);
 
         pieChartLast = (PieChartView) overviewView.findViewById(R.id.pieChartLast);
         lineChartLast = (LineChartView) overviewView.findViewById(R.id.lineChartLast);
@@ -216,14 +182,26 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
         txtTitleUser.setText(getResources().getString(R.string.label_title_user).toUpperCase());
         txtTitleLastMeasurement.setText(getResources().getString(R.string.label_title_last_measurement).toUpperCase());
-        txtTitleGoal.setText(getResources().getString(R.string.label_title_goal).toUpperCase());
-        txtTitleStatistics.setText(getResources().getString(R.string.label_title_statistics).toUpperCase());
 
         updateUserSelection();
         updateLastPieChart();
         updateLastLineChart(scaleDataList);
-        updateGoal(scaleDataList);
-        updateStatistics(scaleDataList);
+
+        ListIterator<ScaleData> scaleDataIterator = scaleDataList.listIterator();
+
+        while(scaleDataIterator.hasNext()) {
+            ScaleData scaleData = scaleDataIterator.next();
+
+            if (scaleData.id == lastScaleData.id) {
+                if (scaleDataIterator.hasNext()) {
+                    ScaleData diffScaleData = scaleDataIterator.next();
+
+                    for (MeasurementView measuremt : overviewMeasurements) {
+                        measuremt.updateDiff(lastScaleData, diffScaleData);
+                    }
+                }
+            }
+        }
 
         for (MeasurementView measuremt : overviewMeasurements) {
             measuremt.updatePreferences(prefs);
@@ -256,227 +234,6 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         spinUser.setSelection(posUser, true);
     }
 
-    private void updateGoal(ArrayList<ScaleData> scaleDataList) {
-        txtGoalWeight.setText(currentScaleUser.goal_weight + " " + ScaleUser.UNIT_STRING[currentScaleUser.scale_unit]);
-
-        double weight_diff = currentScaleUser.goal_weight - lastScaleData.weight;
-        txtGoalDiff.setText(String.format("%.1f " + ScaleUser.UNIT_STRING[currentScaleUser.scale_unit], weight_diff));
-
-        Calendar goalDate = Calendar.getInstance();
-        Calendar curDate = Calendar.getInstance();
-        goalDate.setTime(currentScaleUser.goal_date);
-
-        long days = daysBetween(curDate, goalDate);
-        txtGoalDayLeft.setText(days + " " + getResources().getString(R.string.label_days));
-
-        ScaleCalculator currentCalculator = new ScaleCalculator(lastScaleData);
-
-        ScaleData goalData = new ScaleData();
-        goalData.weight = currentScaleUser.goal_weight;
-        ScaleCalculator goalCalculator = new ScaleCalculator(goalData);
-
-        txtLabelGoalWeight.setText(
-                Html.fromHtml(
-                        getResources().getString(R.string.label_goal_weight) +
-                        " <br> <font color='grey'><small>" +
-                        getResources().getString(R.string.label_bmi) +
-                        ": " +
-                        String.format("%.1f", goalCalculator.getBMI(currentScaleUser.body_height)) +
-                        " </small></font>"
-                )
-        );
-        txtLabelGoalDiff.setText(
-                Html.fromHtml(
-                        getResources().getString(R.string.label_weight_difference) +
-                        " <br> <font color='grey'><small>" +
-                        getResources().getString(R.string.label_bmi) +
-                        ": " +
-                        String.format("%.1f", currentCalculator.getBMI(currentScaleUser.body_height) - goalCalculator.getBMI(currentScaleUser.body_height))  +
-                        " </small></font>"
-                )
-        );
-        txtLabelDayLeft.setText(
-                Html.fromHtml(
-                        getResources().getString(R.string.label_days_left) +
-                                " <br> <font color='grey'><small>" +
-                                getResources().getString(R.string.label_goal_date_is) +
-                                " "
-                                + DateFormat.getDateInstance(DateFormat.LONG).format(currentScaleUser.goal_date) +
-                                " </small></font>"
-                )
-        ); // currentScaleUser.goal_date
-
-        ListIterator<ScaleData> scaleDataIterator = scaleDataList.listIterator();
-
-        while(scaleDataIterator.hasNext()) {
-            ScaleData scaleData = scaleDataIterator.next();
-
-            if (scaleData.id == lastScaleData.id) {
-                if (scaleDataIterator.hasNext()) {
-                    ScaleData diffScaleData = scaleDataIterator.next();
-
-                    for (MeasurementView measuremt : overviewMeasurements) {
-                        measuremt.updateDiff(lastScaleData, diffScaleData);
-                    }
-                }
-            }
-        }
-
-
-    }
-
-    private void updateStatistics(ArrayList<ScaleData> scaleDataList) {
-        Calendar histDate = Calendar.getInstance();
-        Calendar weekPastDate = Calendar.getInstance();
-        Calendar monthPastDate = Calendar.getInstance();
-
-        weekPastDate.setTime(lastScaleData.date_time);
-        weekPastDate.add(Calendar.DATE, -7);
-
-        monthPastDate.setTime(lastScaleData.date_time);
-        monthPastDate.add(Calendar.DATE, -30);
-
-        int weekSize = 0;
-        float weekAvgWeight = 0;
-        float weekAvgBMI = 0;
-        float weekAvgFat = 0;
-        float weekAvgWater = 0;
-        float weekAvgMuscle = 0;
-        float weekAvgWaist = 0;
-        float weekAvgWHtR = 0;
-        float weekAvgHip = 0;
-        float weekAvgWHR = 0;
-
-        int monthSize = 0;
-        float monthAvgWeight = 0;
-        float monthAvgBMI = 0;
-        float monthAvgFat = 0;
-        float monthAvgWater = 0;
-        float monthAvgMuscle = 0;
-        float monthAvgWaist = 0;
-        float monthAvgWHtR = 0;
-        float monthAvgHip = 0;
-        float monthAvgWHR = 0;
-
-        for (ScaleData scaleData : scaleDataList)
-        {
-            histDate.setTime(scaleData.date_time);
-
-            ScaleCalculator calculator = new ScaleCalculator(scaleData);
-
-            if (weekPastDate.before(histDate)) {
-                weekSize++;
-
-                weekAvgWeight += scaleData.weight;
-                weekAvgBMI += calculator.getBMI(currentScaleUser.body_height);
-                weekAvgFat += scaleData.fat;
-                weekAvgWater += scaleData.water;
-                weekAvgMuscle += scaleData.muscle;
-                weekAvgWaist += scaleData.waist;
-                weekAvgHip += scaleData.hip;
-                weekAvgWHtR += calculator.getWHtR(currentScaleUser.body_height);
-                weekAvgWHR += calculator.getWHR();
-            }
-
-            if (monthPastDate.before(histDate)) {
-                monthSize++;
-
-                monthAvgWeight += scaleData.weight;
-                monthAvgBMI += calculator.getBMI(currentScaleUser.body_height);
-                monthAvgFat += scaleData.fat;
-                monthAvgWater += scaleData.water;
-                monthAvgMuscle += scaleData.muscle;
-                monthAvgWaist += scaleData.waist;
-                monthAvgHip += scaleData.hip;
-                monthAvgWHtR += calculator.getWHtR(currentScaleUser.body_height);
-                monthAvgWHR += calculator.getWHR();
-            } else {
-                break;
-            }
-        }
-
-        weekAvgWeight /= weekSize;
-        weekAvgBMI /= weekSize;
-        weekAvgFat /= weekSize;
-        weekAvgWater /= weekSize;
-        weekAvgMuscle /= weekSize;
-        weekAvgWaist /= weekSize;
-        weekAvgWHtR /= weekSize;
-        weekAvgHip /= weekSize;
-        weekAvgWHR /= weekSize;
-
-        monthAvgWeight /= monthSize;
-        monthAvgBMI /= monthSize;
-        monthAvgFat /= monthSize;
-        monthAvgWater /= monthSize;
-        monthAvgMuscle /= monthSize;
-        monthAvgWaist /= monthSize;
-        monthAvgWHtR /= monthSize;
-        monthAvgHip /= monthSize;
-        monthAvgWHR /= monthSize;
-
-        String info_week = new String();
-        String info_month = new String();
-
-        int lines = 1;
-
-        info_week += String.format("Ø-"+getResources().getString(R.string.label_weight)+": %.1f" + ScaleUser.UNIT_STRING[currentScaleUser.scale_unit] + "<br>", weekAvgWeight);
-        info_month += String.format("Ø-"+getResources().getString(R.string.label_weight)+": %.1f" + ScaleUser.UNIT_STRING[currentScaleUser.scale_unit] + "<br>", monthAvgWeight);
-        lines++;
-
-        info_week += String.format("Ø-"+getResources().getString(R.string.label_bmi)+": %.1f <br>", weekAvgBMI);
-        info_month += String.format("Ø-"+getResources().getString(R.string.label_bmi)+": %.1f <br>", monthAvgBMI);
-        lines++;
-
-        if(prefs.getBoolean("fatEnable", true)) {
-            info_week += String.format("Ø-"+getResources().getString(R.string.label_fat)+": %.1f%% <br>", weekAvgFat);
-            info_month +=  String.format("Ø-"+getResources().getString(R.string.label_fat)+": %.1f%% <br>", monthAvgFat);
-            lines++;
-        }
-
-        if(prefs.getBoolean("muscleEnable", true)) {
-            info_week += String.format("Ø-"+getResources().getString(R.string.label_muscle)+": %.1f%% <br>", weekAvgMuscle);
-            info_month += String.format("Ø-"+getResources().getString(R.string.label_muscle)+": %.1f%% <br>", monthAvgMuscle);
-            lines++;
-        }
-
-        if(prefs.getBoolean("waterEnable", true)) {
-            info_week +=  String.format("Ø-"+getResources().getString(R.string.label_water)+": %.1f%% <br>", weekAvgWater);
-            info_month += String.format("Ø-"+getResources().getString(R.string.label_water)+": %.1f%% <br>", monthAvgWater);
-            lines++;
-        }
-
-        if(prefs.getBoolean("waistEnable", false)) {
-            info_week +=  String.format("Ø-"+getResources().getString(R.string.label_waist)+": %.1fcm <br>", weekAvgWaist);
-            info_month += String.format("Ø-"+getResources().getString(R.string.label_waist)+": %.1fcm <br>", monthAvgWaist);
-            lines++;
-
-            info_week +=  String.format("Ø-"+getResources().getString(R.string.label_whtr)+": %.2f <br>", weekAvgWHtR);
-            info_month += String.format("Ø-"+getResources().getString(R.string.label_whtr)+": %.2f <br>", monthAvgWHtR);
-            lines++;
-        }
-
-        if(prefs.getBoolean("hipEnable", false)) {
-            info_week +=  String.format("Ø-"+getResources().getString(R.string.label_hip)+": %.1fcm <br>", weekAvgHip);
-            info_month += String.format("Ø-"+getResources().getString(R.string.label_hip)+": %.1fcm <br>",monthAvgHip);
-            lines++;
-        }
-
-        if(prefs.getBoolean("hipEnable", false) && prefs.getBoolean("waistEnable", false)) {
-            info_week +=  String.format("Ø-"+getResources().getString(R.string.label_whr)+": %.2f <br>", weekAvgWHR);
-            info_month += String.format("Ø-"+getResources().getString(R.string.label_whr)+": %.2f <br>", monthAvgWHR);
-            lines++;
-        }
-
-        txtLabelAvgWeek.setLines(lines);
-        txtLabelAvgMonth.setLines(lines);
-
-        txtLabelAvgWeek.setText(Html.fromHtml(getResources().getString(R.string.label_last_week) + " <br> <font color='grey'><small> " + info_week + "</small></font>"));
-        txtLabelAvgMonth.setText(Html.fromHtml(getResources().getString(R.string.label_last_month) + " <br> <font color='grey'><small> " + info_month + "</small></font>"));
-
-        txtAvgWeek.setText(weekSize + " " + getResources().getString(R.string.label_measures));
-        txtAvgMonth.setText(monthSize + " " + getResources().getString(R.string.label_measures));
-    }
 
     private void updateLastLineChart(ArrayList<ScaleData> scaleDataList) {
         List<AxisValue> axisValues = new ArrayList<AxisValue>();

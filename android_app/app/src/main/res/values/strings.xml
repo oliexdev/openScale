@@ -4,7 +4,8 @@
     <string name="app_name">openScale</string>
     <string name="title_overview">Overview</string>
     <string name="title_graph">Chart</string>
-    <string name="title_frag">Table</string>
+    <string name="title_table">Table</string>
+    <string name="title_statistics">Statistics</string>
     <string name="title_users">Users</string>
     <string name="title_data">Data</string>
     <string name="title_measurements">Measurements</string>

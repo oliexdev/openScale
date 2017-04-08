@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">openScale</string>
     <string name="title_users">ユーザー</string>
-    <string name="title_frag">早見表</string>
+    <string name="title_table">早見表</string>
     <string name="title_graph">図表</string>
     <string name="title_overview">概説</string>
     <string name="label_yes">はい</string>
@@ -117,4 +117,5 @@
     <string name="error_value_required">値が必要です</string>
     <string name="error_value_range">エラー値の範囲</string>
     <string name="label_editmode">編集</string>
+    <string name="title_statistics">統計</string>
 </resources>

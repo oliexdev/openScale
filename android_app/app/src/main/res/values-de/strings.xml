@@ -73,7 +73,7 @@
     <string name="label_yes">Ja</string>
     <string name="question_really_delete_user">Wollen Sie wirklich den Benutzer löschen?</string>
     <string name="question_really_delete_all">Wollen Sie wirklich alle Datenbankeinträge löschen?</string>
-    <string name="title_frag">Tabelle</string>
+    <string name="title_table">Tabelle</string>
     <string name="title_graph">Diagramm</string>
     <string name="title_overview">Übersicht</string>
     <string name="title_users">Benutzer</string>
@@ -117,4 +117,5 @@
     <string name="error_value_range">Fehler beim Wertebereich</string>
     <string name="error_value_required">Wert ist erforderlich</string>
     <string name="label_editmode">Bearbeiten</string>
+    <string name="title_statistics">Statistiken</string>
 </resources>

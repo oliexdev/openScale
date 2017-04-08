@@ -4,7 +4,7 @@
     <string name="app_name">openScale</string>
     <string name="title_overview">Vue d\'ensemble</string>
     <string name="title_graph">Diagramme</string>
-    <string name="title_frag">Tableau</string>
+    <string name="title_table">Tableau</string>
     <string name="title_users">Utilisateurs</string>
     <string name="title_data">Données</string>
     <string name="title_measurements">Mesures</string>
@@ -136,4 +136,5 @@
     <string name="Saturday">Samedi</string>
     <string name="Sunday">Dimanche</string>
     <string name="label_editmode">Modifier</string>
+    <string name="title_statistics">Statistiques</string>
 </resources>

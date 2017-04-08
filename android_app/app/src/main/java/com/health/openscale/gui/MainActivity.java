@@ -46,6 +46,7 @@ import com.health.openscale.gui.activities.SettingsActivity;
 import com.health.openscale.gui.activities.UserSettingsActivity;
 import com.health.openscale.gui.fragments.GraphFragment;
 import com.health.openscale.gui.fragments.OverviewFragment;
+import com.health.openscale.gui.fragments.StatisticsFragment;
 import com.health.openscale.gui.fragments.TableFragment;
 
 import java.util.Locale;
@@ -282,6 +283,7 @@ public class MainActivity extends ActionBarActivity implements
 		private OverviewFragment overviewFrag;
 		private GraphFragment graphFrag;
 		private TableFragment tableFrag;
+		private StatisticsFragment statisticsFrag;
 		
 		public SectionsPagerAdapter(FragmentManager fm) {
 			super(fm);
@@ -289,6 +291,7 @@ public class MainActivity extends ActionBarActivity implements
 			overviewFrag = new OverviewFragment();
 			graphFrag = new GraphFragment();
 			tableFrag = new TableFragment();
+			statisticsFrag = new StatisticsFragment();
 		}
 
 		@Override
@@ -298,12 +301,14 @@ public class MainActivity extends ActionBarActivity implements
 			// below).
 			
 			switch (position) {
-			case 0:
-				return overviewFrag;
-			case 1:
-				return graphFrag;
-			case 2:
-				return tableFrag;
+				case 0:
+					return overviewFrag;
+				case 1:
+					return graphFrag;
+				case 2:
+					return tableFrag;
+				case 3:
+					return statisticsFrag;
 			}
 
 			return null;
@@ -311,19 +316,21 @@ public class MainActivity extends ActionBarActivity implements
 
 		@Override
 		public int getCount() {
-			return 3;
+			return 4;
 		}
 
 		@Override
 		public CharSequence getPageTitle(int position) {
 			Locale l = Locale.getDefault();
 			switch (position) {
-			case 0:
-				return getString(R.string.title_overview).toUpperCase(l);
-			case 1:
-				return getString(R.string.title_graph).toUpperCase(l);
-			case 2:
-				return getString(R.string.title_frag).toUpperCase(l);				
+                case 0:
+                    return getString(R.string.title_overview).toUpperCase(l);
+                case 1:
+                    return getString(R.string.title_graph).toUpperCase(l);
+                case 2:
+                    return getString(R.string.title_table).toUpperCase(l);
+                case 3:
+                    return getString(R.string.title_statistics).toUpperCase(l);
 			}
 			return null;
 		}
@@ -340,6 +347,7 @@ public class MainActivity extends ActionBarActivity implements
             tableFrag = new TableFragment();
             graphFrag = new GraphFragment();
             overviewFrag = new OverviewFragment();
+            statisticsFrag = new StatisticsFragment();
         }
 	}
 }
