@@ -4,266 +4,269 @@
     android:layout_height="match_parent"
     android:padding="5dp" >
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_height="fill_parent"
+        android:id="@+id/scrollView"
+        android:layout_weight="100">
 
-
-        <TextView
-            android:id="@+id/txtTitleGoal"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="25dp"
-            android:autoText="false"
-            android:text="@string/label_title_goal"
-            android:textSize="25dp"
-            android:typeface="monospace" />
+            android:orientation="vertical">
 
-        <View
-            android:layout_width="fill_parent"
-            android:layout_height="1dp"
-            android:background="@android:color/darker_gray" />
+            <TextView
+                android:id="@+id/txtTitleGoal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="25dp"
+                android:autoText="false"
+                android:text="@string/label_title_goal"
+                android:textSize="25dp"
+                android:typeface="monospace" />
 
-        <TableLayout
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:layout_weight="90"
-            android:stretchColumns="1">
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray" />
 
-            <TableRow
+            <TableLayout
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
-                android:layout_marginBottom="10dp"
-                android:orientation="horizontal">
+                android:layout_weight="90"
+                android:stretchColumns="1">
 
-                <ImageView
-                    android:id="@+id/imageView5"
-                    android:layout_width="match_parent"
-                    android:layout_height="25dp"
-                    android:layout_gravity="center"
-                    android:src="@drawable/target" />
+                <TableRow
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:layout_marginBottom="10dp"
+                    android:orientation="horizontal">
 
-                <TextView
-                    android:id="@+id/txtLabelGoalWeight"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_column="1"
-                    android:layout_marginLeft="5dp"
-                    android:layout_weight="80"
-                    android:lines="2"
-                    android:password="false"
-                    android:phoneNumber="false"
-                    android:singleLine="false"
-                    android:text="Target weight"
-                    android:textAlignment="center"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:textSize="15dp" />
+                    <ImageView
+                        android:id="@+id/imageView5"
+                        android:layout_width="match_parent"
+                        android:layout_height="25dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/target" />
 
-                <TextView
-                    android:id="@+id/txtGoalWeight"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_column="2"
-                    android:layout_gravity="center_vertical"
-                    android:layout_weight="20"
-                    android:text="-1 kg"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:textSize="15dp" />
-            </TableRow>
+                    <TextView
+                        android:id="@+id/txtLabelGoalWeight"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_column="1"
+                        android:layout_marginLeft="5dp"
+                        android:layout_weight="80"
+                        android:lines="2"
+                        android:password="false"
+                        android:phoneNumber="false"
+                        android:singleLine="false"
+                        android:text="Target weight"
+                        android:textAlignment="center"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:textSize="15dp" />
 
-            <TableRow
-                android:id="@+id/tableRow9"
+                    <TextView
+                        android:id="@+id/txtGoalWeight"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_column="2"
+                        android:layout_gravity="center_vertical"
+                        android:layout_weight="20"
+                        android:text="-1 kg"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:textSize="15dp" />
+                </TableRow>
+
+                <TableRow
+                    android:id="@+id/tableRow9"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:layout_marginBottom="10dp"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:id="@+id/imageView6"
+                        android:layout_width="match_parent"
+                        android:layout_height="25dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/difference" />
+
+                    <TextView
+                        android:id="@+id/txtLabelGoalDiff"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_column="1"
+                        android:layout_marginLeft="5dp"
+                        android:layout_weight="80"
+                        android:lines="2"
+                        android:password="false"
+                        android:phoneNumber="false"
+                        android:singleLine="false"
+                        android:text="Weight difference"
+                        android:textAlignment="center"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:textSize="15dp" />
+
+                    <TextView
+                        android:id="@+id/txtGoalDiff"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_column="2"
+                        android:layout_gravity="center_vertical"
+                        android:layout_weight="20"
+                        android:text="-1 kg"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:textSize="15dp" />
+                </TableRow>
+
+                <TableRow
+                    android:id="@+id/tableRow10"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:layout_marginBottom="10dp"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:id="@+id/imageView7"
+                        android:layout_width="match_parent"
+                        android:layout_height="25dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/daysleft" />
+
+                    <TextView
+                        android:id="@+id/txtLabelDayLeft"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_column="1"
+                        android:layout_marginLeft="5dp"
+                        android:layout_weight="80"
+                        android:lines="2"
+                        android:password="false"
+                        android:phoneNumber="false"
+                        android:singleLine="false"
+                        android:text="Days left"
+                        android:textAlignment="center"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:textSize="15dp" />
+
+                    <TextView
+                        android:id="@+id/txtGoalDayLeft"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_column="2"
+                        android:layout_gravity="center_vertical"
+                        android:layout_weight="20"
+                        android:text="-1 days"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:textSize="15dp" />
+                </TableRow>
+
+            </TableLayout>
+
+            <TextView
+                android:id="@+id/txtTitleStatistics"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="25dp"
+                android:autoText="false"
+                android:text="@string/label_title_statistics"
+                android:textSize="25dp"
+                android:typeface="monospace" />
+
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray" />
+
+            <TableLayout
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
-                android:layout_marginBottom="10dp"
-                android:orientation="horizontal">
+                android:layout_weight="90"
+                android:stretchColumns="1">
 
-                <ImageView
-                    android:id="@+id/imageView6"
-                    android:layout_width="match_parent"
-                    android:layout_height="25dp"
-                    android:layout_gravity="center"
-                    android:src="@drawable/difference" />
+                <TableRow
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:layout_marginBottom="10dp"
+                    android:orientation="horizontal">
 
-                <TextView
-                    android:id="@+id/txtLabelGoalDiff"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_column="1"
-                    android:layout_marginLeft="5dp"
-                    android:layout_weight="80"
-                    android:lines="2"
-                    android:password="false"
-                    android:phoneNumber="false"
-                    android:singleLine="false"
-                    android:text="Weight difference"
-                    android:textAlignment="center"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:textSize="15dp" />
+                    <ImageView
+                        android:id="@+id/imageView8"
+                        android:layout_width="match_parent"
+                        android:layout_height="25dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/lastweek" />
 
-                <TextView
-                    android:id="@+id/txtGoalDiff"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_column="2"
-                    android:layout_gravity="center_vertical"
-                    android:layout_weight="20"
-                    android:text="-1 kg"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:textSize="15dp" />
-            </TableRow>
+                    <TextView
+                        android:id="@+id/txtLabelAvgWeek"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_column="1"
+                        android:layout_marginLeft="5dp"
+                        android:layout_weight="80"
+                        android:lines="2"
+                        android:password="false"
+                        android:phoneNumber="false"
+                        android:singleLine="false"
+                        android:text="Last 7 days"
+                        android:textAlignment="center"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:textSize="15dp" />
 
-            <TableRow
-                android:id="@+id/tableRow10"
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
-                android:layout_marginBottom="10dp"
-                android:orientation="horizontal">
+                    <TextView
+                        android:id="@+id/txtAvgWeek"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_column="2"
+                        android:layout_gravity="center_vertical"
+                        android:layout_weight="20"
+                        android:text="-1"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:textSize="15dp" />
+                </TableRow>
 
-                <ImageView
-                    android:id="@+id/imageView7"
-                    android:layout_width="match_parent"
-                    android:layout_height="25dp"
-                    android:layout_gravity="center"
-                    android:src="@drawable/daysleft" />
+                <TableRow
+                    android:id="@+id/tableRow11"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:layout_marginBottom="10dp"
+                    android:orientation="horizontal"
+                    android:weightSum="100">
 
-                <TextView
-                    android:id="@+id/txtLabelDayLeft"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_column="1"
-                    android:layout_marginLeft="5dp"
-                    android:layout_weight="80"
-                    android:lines="2"
-                    android:password="false"
-                    android:phoneNumber="false"
-                    android:singleLine="false"
-                    android:text="Days left"
-                    android:textAlignment="center"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:textSize="15dp" />
+                    <ImageView
+                        android:id="@+id/imageView9"
+                        android:layout_width="match_parent"
+                        android:layout_height="25dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/lastmonth" />
 
-                <TextView
-                    android:id="@+id/txtGoalDayLeft"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_column="2"
-                    android:layout_gravity="center_vertical"
-                    android:layout_weight="20"
-                    android:text="-1 days"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:textSize="15dp" />
-            </TableRow>
+                    <TextView
+                        android:id="@+id/txtLabelAvgMonth"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="5dp"
+                        android:layout_weight="80"
+                        android:lines="2"
+                        android:password="false"
+                        android:phoneNumber="false"
+                        android:singleLine="false"
+                        android:text="Last 30 days"
+                        android:textAlignment="center"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:textSize="15dp" />
 
-        </TableLayout>
-
-        <TextView
-            android:id="@+id/txtTitleStatistics"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="25dp"
-            android:autoText="false"
-            android:text="@string/label_title_statistics"
-            android:textSize="25dp"
-            android:typeface="monospace" />
-
-        <View
-            android:layout_width="fill_parent"
-            android:layout_height="1dp"
-            android:background="@android:color/darker_gray" />
-
-        <TableLayout
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:layout_weight="90"
-            android:stretchColumns="1">
-
-            <TableRow
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
-                android:layout_marginBottom="10dp"
-                android:orientation="horizontal">
-
-                <ImageView
-                    android:id="@+id/imageView8"
-                    android:layout_width="match_parent"
-                    android:layout_height="25dp"
-                    android:layout_gravity="center"
-                    android:src="@drawable/lastweek" />
-
-                <TextView
-                    android:id="@+id/txtLabelAvgWeek"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_column="1"
-                    android:layout_marginLeft="5dp"
-                    android:layout_weight="80"
-                    android:lines="2"
-                    android:password="false"
-                    android:phoneNumber="false"
-                    android:singleLine="false"
-                    android:text="Last 7 days"
-                    android:textAlignment="center"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:textSize="15dp" />
-
-                <TextView
-                    android:id="@+id/txtAvgWeek"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_column="2"
-                    android:layout_gravity="center_vertical"
-                    android:layout_weight="20"
-                    android:text="-1"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:textSize="15dp" />
-            </TableRow>
-
-            <TableRow
-                android:id="@+id/tableRow11"
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
-                android:layout_marginBottom="10dp"
-                android:orientation="horizontal"
-                android:weightSum="100">
-
-                <ImageView
-                    android:id="@+id/imageView9"
-                    android:layout_width="match_parent"
-                    android:layout_height="25dp"
-                    android:layout_gravity="center"
-                    android:src="@drawable/lastmonth" />
-
-                <TextView
-                    android:id="@+id/txtLabelAvgMonth"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="5dp"
-                    android:layout_weight="80"
-                    android:lines="2"
-                    android:password="false"
-                    android:phoneNumber="false"
-                    android:singleLine="false"
-                    android:text="Last 30 days"
-                    android:textAlignment="center"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:textSize="15dp" />
-
-                <TextView
-                    android:id="@+id/txtAvgMonth"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_column="2"
-                    android:layout_gravity="center_vertical"
-                    android:layout_weight="20"
-                    android:text="-1"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:textSize="15dp" />
-            </TableRow>
-
-        </TableLayout>
-
-    </LinearLayout>
-
+                    <TextView
+                        android:id="@+id/txtAvgMonth"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_column="2"
+                        android:layout_gravity="center_vertical"
+                        android:layout_weight="20"
+                        android:text="-1"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:textSize="15dp" />
+                </TableRow>
+            </TableLayout>
+        </LinearLayout>
+    </ScrollView>
 </RelativeLayout>
