@@ -92,6 +92,7 @@ public abstract class MeasurementView extends TableLayout {
         evaluatorView = new LinearGaugeView(context);
 
         measurementRow.setLayoutParams(new TableRow.LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.WRAP_CONTENT, 1.0f));
+        measurementRow.setGravity(Gravity.CENTER);
         measurementRow.addView(iconView);
         measurementRow.addView(nameView);
         measurementRow.addView(valueView);
@@ -116,8 +117,8 @@ public abstract class MeasurementView extends TableLayout {
         valueView.setLayoutParams(new TableRow.LayoutParams(0, LayoutParams.MATCH_PARENT, 0.29f));
 
         editModeView.getLayoutParams().height = pxImageDp(20);
-        editModeView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
         editModeView.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.editable));
+        editModeView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
         editModeView.setVisibility(View.GONE);
 
         indicatorView.setLayoutParams(new TableRow.LayoutParams(0, LayoutParams.MATCH_PARENT, 0.01f));
