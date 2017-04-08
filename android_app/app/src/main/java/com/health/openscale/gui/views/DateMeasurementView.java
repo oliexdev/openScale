@@ -15,63 +15,77 @@
 */
 package com.health.openscale.gui.views;
 
+import android.app.AlertDialog;
+import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.v4.content.ContextCompat;
+import android.widget.DatePicker;
 
 import com.health.openscale.R;
-import com.health.openscale.core.datatypes.ScaleCalculator;
 import com.health.openscale.core.datatypes.ScaleData;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 
-public class WHRMeasurementView extends MeasurementView {
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
-    public WHRMeasurementView(Context context) {
-        super(context, context.getResources().getString(R.string.label_whr), ContextCompat.getDrawable(context, R.drawable.whr));
+public class DateMeasurementView extends MeasurementView {
+    private SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
+
+    public DateMeasurementView(Context context) {
+        super(context, context.getResources().getString(R.string.label_date), ContextCompat.getDrawable(context, R.drawable.lastmonth));
     }
 
+    private DatePickerDialog.OnDateSetListener datePickerListener = new DatePickerDialog.OnDateSetListener() {
+        @Override
+        public void onDateSet(DatePicker view, int selectedYear, int selectedMonth, int selectedDay) {
+            setValueOnView(String.format("%02d.%02d.%04d", selectedDay, selectedMonth+1, selectedYear));
+        }
+    };
+
     @Override
-    public boolean isEditable() {
-        return false;
+    protected AlertDialog getInputDialog() {
+        Calendar cal = Calendar.getInstance();
+
+        DatePickerDialog datePicker = new DatePickerDialog(getContext(), datePickerListener, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
+
+        return datePicker;
     }
 
     @Override
     public void updateValue(ScaleData updateData) {
-        ScaleCalculator updateCalculator = new ScaleCalculator(updateData);
-        setValueOnView(updateCalculator.getWHR());
+        setValueOnView(dateFormat.format(updateData.date_time));
     }
 
     @Override
     public void updateDiff(ScaleData updateData, ScaleData lastData) {
-        ScaleCalculator updateCalculator = new ScaleCalculator(updateData);
-        ScaleCalculator lastCalculator = new ScaleCalculator(lastData);
-        setDiffOnView(updateCalculator.getWHR(), lastCalculator.getWHR());
-    }
 
-    @Override
-    public String getUnit() {
-        return "";
     }
 
     @Override
     public void updatePreferences(SharedPreferences preferences) {
-        setVisible(preferences.getBoolean("hipEnable", true) && preferences.getBoolean("waistEnable", true));
+
+    }
+
+    @Override
+    public String getUnit() {
+        return null;
     }
 
     @Override
     public EvaluationResult evaluateSheet(EvaluationSheet evalSheet, float value) {
-        return evalSheet.evaluateWHR(value);
+        return null;
     }
 
     @Override
     public float getMinValue() {
-        return 0.5f;
+        return 0;
     }
 
     @Override
     public float getMaxValue() {
-        return 1.5f;
+        return 0;
     }
 
 }

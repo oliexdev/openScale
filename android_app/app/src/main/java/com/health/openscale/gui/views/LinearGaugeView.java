@@ -96,6 +96,9 @@ public class LinearGaugeView extends View {
         infoTextPaint.setColor(Color.GRAY);
         infoTextPaint.setTextSize(30);
         infoTextPaint.setTextAlign(Paint.Align.CENTER);
+
+        firstLimit = -1.0f;
+        secondLimit = -1.0f;
     }
 
     @Override

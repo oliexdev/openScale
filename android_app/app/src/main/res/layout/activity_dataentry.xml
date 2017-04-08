@@ -3,198 +3,118 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical"
-    android:padding="5dp" >
+    android:padding="5dp">
 
     <LinearLayout
-        android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="5dp"
-        android:gravity="center">
+        android:gravity="center"
+        android:orientation="horizontal">
 
         <Button
+            android:id="@+id/btnLeft"
             style="?android:attr/buttonStyleSmall"
             android:layout_width="wrap_content"
             android:layout_height="20dp"
-            android:text="&lt;"
-            android:id="@+id/btnLeft"
             android:background="@drawable/flat_selector"
+            android:text="&lt;"
             android:textColor="@android:color/white" />
 
         <TextView
+            android:id="@+id/txtDataNr"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:text="date/time"
-            android:id="@+id/txtDataNr"
-            android:gravity="center"
-            android:layout_weight="0"
-            android:textStyle="bold"
             android:layout_marginLeft="30dp"
-            android:layout_marginRight="30dp" />
+            android:layout_marginRight="30dp"
+            android:layout_weight="0"
+            android:gravity="center"
+            android:text="date/time"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textStyle="bold" />
 
         <Button
+            android:id="@+id/btnRight"
             style="?android:attr/buttonStyleSmall"
             android:layout_width="wrap_content"
             android:layout_height="20dp"
-            android:text=">"
-            android:id="@+id/btnRight"
+            android:layout_weight="0"
             android:background="@drawable/flat_selector"
-            android:textColor="@android:color/white"
-            android:layout_weight="0" />
+            android:text=">"
+            android:textColor="@android:color/white" />
 
     </LinearLayout>
 
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/imgViewDelete"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_alignParentLeft="true"
+            android:scaleType="fitCenter"
+            android:src="@drawable/delete" />
+
+        <Switch
+            android:id="@+id/switchEditMode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:text="@string/label_editmode" />
+
+    </RelativeLayout>
+
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="5dp" >
+        android:layout_height="wrap_content">
 
         <TableLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="5dp"
-                android:id="@+id/tableLayoutDataEntry">
-
-
-            <TableRow
-                android:id="@+id/tableRowComment"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:weightSum="1.0">
-
-                <ImageView
-                    android:layout_height="30dp"
-                    android:src="@drawable/comment"
-                    android:layout_gravity="center" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/label_comment"
-                    android:textSize="15sp"
-                    android:layout_weight="0.9"/>
-
-                <EditText
-                    android:id="@+id/txtComment"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="15sp"
-                    android:layout_weight="0.01"
-                    android:inputType="text|textImeMultiLine|textMultiLine|textAutoComplete|textAutoCorrect"
-                    android:hint="@string/info_enter_comment" />
-            </TableRow>
-
-            <TableRow
-                android:id="@+id/tableRowDate"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:weightSum="1.0">
-
-                <ImageView
-                    android:layout_height="30dp"
-                    android:src="@drawable/lastmonth"
-                    android:layout_gravity="center" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/label_date"
-                    android:textSize="15sp"
-                    android:layout_weight="0.9"/>
-
-                <EditText
-                    android:id="@+id/txtDate"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.01"
-                    android:textSize="15sp"
-                    android:inputType="none"/>
-
-            </TableRow>
-
-            <TableRow
-                android:id="@+id/tableRowTime"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" >
-
-                <ImageView
-                    android:layout_height="30dp"
-                    android:src="@drawable/daysleft"
-                    android:layout_gravity="center" />
-
-                <TextView
-                    android:id="@+id/txtAvgWater"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="15sp"
-                    android:layout_weight="0.9"
-                    android:text="@string/label_time" />
-
-                <EditText
-                    android:id="@+id/txtTime"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.01"
-                    android:textSize="15sp"
-                    android:inputType="none" />
-
-            </TableRow>
-
-        </TableLayout>
-
-        <LinearLayout
+            android:id="@+id/tableLayoutDataEntry"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
+            android:layout_height="wrap_content"
+            android:padding="5dp"/>
 
-            <Button
-                android:id="@+id/btnCancel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="5"
-                android:background="@drawable/flat_selector"
-                android:text="@string/label_cancel" />
-
-            <Space
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_weight="0.5" />
-
-            <Button
-                android:id="@+id/btnDelete"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="5"
-                android:background="@drawable/flat_selector"
-                android:text="@string/label_delete"/>
-
-            <Space
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_weight="0.5" />
-
-            <Button
-                android:id="@+id/btnAdd"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="5"
-                android:background="@drawable/flat_selector"
-                android:text="@string/label_add" />
-
-            <Button
-                android:id="@+id/btnOk"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="5"
-                android:background="@drawable/flat_selector"
-                android:text="@string/label_ok" />
-        </LinearLayout>
-        </LinearLayout>
     </ScrollView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="bottom"
+        android:gravity="bottom">
+
+        <Button
+            android:id="@+id/btnCancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="5"
+            android:background="@drawable/flat_selector"
+            android:text="@string/label_cancel"
+            android:textColor="@android:color/white" />
+
+        <Space
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="0.5" />
+
+        <Button
+            android:id="@+id/btnAdd"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="5"
+            android:background="@drawable/flat_selector"
+            android:text="@string/label_add"
+            android:textColor="@android:color/white" />
+
+        <Button
+            android:id="@+id/btnOk"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="5"
+            android:background="@drawable/flat_selector"
+            android:text="@string/label_ok"
+            android:textColor="@android:color/white" />
+    </LinearLayout>
 </LinearLayout>
 

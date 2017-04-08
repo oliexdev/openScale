@@ -18,60 +18,67 @@ package com.health.openscale.gui.views;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.v4.content.ContextCompat;
+import android.text.InputType;
+import android.widget.EditText;
 
 import com.health.openscale.R;
-import com.health.openscale.core.datatypes.ScaleCalculator;
 import com.health.openscale.core.datatypes.ScaleData;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 
-public class WHRMeasurementView extends MeasurementView {
+public class CommentMeasurementView extends MeasurementView {
 
-    public WHRMeasurementView(Context context) {
-        super(context, context.getResources().getString(R.string.label_whr), ContextCompat.getDrawable(context, R.drawable.whr));
+    public CommentMeasurementView(Context context) {
+        super(context, context.getResources().getString(R.string.label_comment), ContextCompat.getDrawable(context, R.drawable.comment));
     }
 
     @Override
-    public boolean isEditable() {
-        return false;
+    public boolean validateInput(EditText view) {
+        return true;
+    }
+
+    protected int getInputType() {
+        return InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_AUTO_COMPLETE | InputType.TYPE_TEXT_FLAG_MULTI_LINE;
+    }
+
+    @Override
+    protected String getHintText() {
+        return getResources().getString(R.string.info_enter_comment);
     }
 
     @Override
     public void updateValue(ScaleData updateData) {
-        ScaleCalculator updateCalculator = new ScaleCalculator(updateData);
-        setValueOnView(updateCalculator.getWHR());
+        setValueOnView(updateData.comment);
     }
 
     @Override
     public void updateDiff(ScaleData updateData, ScaleData lastData) {
-        ScaleCalculator updateCalculator = new ScaleCalculator(updateData);
-        ScaleCalculator lastCalculator = new ScaleCalculator(lastData);
-        setDiffOnView(updateCalculator.getWHR(), lastCalculator.getWHR());
-    }
 
-    @Override
-    public String getUnit() {
-        return "";
     }
 
     @Override
     public void updatePreferences(SharedPreferences preferences) {
-        setVisible(preferences.getBoolean("hipEnable", true) && preferences.getBoolean("waistEnable", true));
+
+    }
+
+    @Override
+    public String getUnit() {
+        return null;
     }
 
     @Override
     public EvaluationResult evaluateSheet(EvaluationSheet evalSheet, float value) {
-        return evalSheet.evaluateWHR(value);
+        return null;
     }
 
     @Override
     public float getMinValue() {
-        return 0.5f;
+        return 0;
     }
 
     @Override
     public float getMaxValue() {
-        return 1.5f;
+        return 0;
     }
 
 }

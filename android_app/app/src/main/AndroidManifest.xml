@@ -25,7 +25,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".gui.activities.SettingsActivity"/>
-        <activity android:name=".gui.activities.DataEntryActivity" android:theme="@android:style/Theme.Holo.Light.Dialog"/>
+        <activity android:name=".gui.activities.DataEntryActivity"/>
         <activity android:name=".gui.activities.UserSettingsActivity" android:theme="@android:style/Theme.Holo.Dialog"
                   android:label="@string/label_title_user"/>
 

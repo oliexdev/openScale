@@ -2,8 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:padding="10dp"
-    tools:context="com.health.openscale.MainActivity$PlaceholderFragment">
+    android:padding="10dp">
 
     <ScrollView
         android:layout_width="fill_parent"
@@ -29,81 +28,99 @@
                     android:id="@+id/txtIdTableHeader"
                     android:visibility="gone" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                <ImageView
+                    android:id="@+id/txtDateTableHeader"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:scaleType="fitStart"
+                    android:src="@drawable/lastmonth"
                     android:text="@string/label_date"
-                    android:textStyle="bold"
-                    android:id="@+id/txtDateTableHeader" />
+                    android:textStyle="bold" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                <ImageView
+                    android:id="@+id/txtTimeTableHeader"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:scaleType="fitStart"
+                    android:src="@drawable/daysleft"
                     android:text="@string/label_time"
-                    android:textStyle="bold"
-                    android:id="@+id/txtTimeTableHeader" />
+                    android:textStyle="bold" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                <ImageView
+                    android:id="@+id/txtWeightTableHeader"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:scaleType="fitStart"
+                    android:src="@drawable/weight"
                     android:text="@string/label_weight"
-                    android:textStyle="bold"
-                    android:id="@+id/txtWeightTableHeader" />
+                    android:textStyle="bold" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                <ImageView
+                    android:id="@+id/txtFatTableHeader"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:scaleType="fitStart"
+                    android:src="@drawable/fat"
                     android:text="@string/label_fat"
-                    android:textStyle="bold"
-                    android:id="@+id/txtFatTableHeader" />
+                    android:textStyle="bold" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                <ImageView
+                    android:id="@+id/txtWaterTableHeader"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:scaleType="fitStart"
+                    android:src="@drawable/water"
                     android:text="@string/label_water"
-                    android:textStyle="bold"
-                    android:id="@+id/txtWaterTableHeader" />
+                    android:textStyle="bold" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                <ImageView
+                    android:id="@+id/txtMuscleTableHeader"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:scaleType="fitStart"
+                    android:src="@drawable/muscle"
                     android:text="@string/label_muscle"
-                    android:textStyle="bold"
-                    android:id="@+id/txtMuscleTableHeader" />
+                    android:textStyle="bold" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                <ImageView
+                    android:id="@+id/txtWaistTableHeader"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:scaleType="fitStart"
+                    android:src="@drawable/waist"
                     android:text="@string/label_waist"
-                    android:textStyle="bold"
-                    android:id="@+id/txtWaistTableHeader" />
+                    android:textStyle="bold" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                <ImageView
+                    android:id="@+id/txtHipTableHeader"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:scaleType="fitStart"
+                    android:src="@drawable/hip"
                     android:text="@string/label_hip"
-                    android:textStyle="bold"
-                    android:id="@+id/txtHipTableHeader" />
+                    android:textStyle="bold" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                <ImageView
+                    android:id="@+id/txtCommentTableHeader"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:scaleType="fitStart"
+                    android:src="@drawable/comment"
                     android:text="@string/label_comment"
-                    android:textStyle="bold"
-                    android:id="@+id/txtCommentTableHeader" />
+                    android:textStyle="bold" />
 
                 <Button
                     android:id="@+id/btnDeleteAll"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="@drawable/flat_selector"
-                    android:minHeight="20dp"
+                    android:minHeight="22dp"
                     android:minWidth="10dp"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="10dp"
                     android:text="@string/label_delete_all"
                     android:textColor="@android:color/white"
-                    android:textSize="10sp"
-                    android:paddingLeft="10dp"
-                    android:paddingRight="10dp" />
+                    android:textSize="10sp" />
 
             </TableRow>
         </TableLayout>

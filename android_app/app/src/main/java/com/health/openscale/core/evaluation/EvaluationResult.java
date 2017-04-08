@@ -24,6 +24,13 @@ public class EvaluationResult {
     public float highLimit;
     public EVAL_STATE eval_state;
 
+    public EvaluationResult() {
+        this.value = -1.0f;
+        this.lowLimit = -1.0f;
+        this.highLimit = -1.0f;
+        this.eval_state = EVAL_STATE.UNDEFINED;
+    }
+
     public EvaluationResult(float value, float lowLimit, float highLimit, EVAL_STATE eval_state)
     {
         this.value = value;

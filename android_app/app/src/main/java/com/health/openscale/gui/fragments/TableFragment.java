@@ -22,18 +22,17 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.util.TypedValue;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TableRow.LayoutParams;
@@ -72,31 +71,6 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 		
 		tableView.findViewById(R.id.btnDeleteAll).setOnClickListener(new onClickListenerDeleteAll());
 
-        if ((getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) != Configuration.SCREENLAYOUT_SIZE_XLARGE &&
-            (getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) != Configuration.SCREENLAYOUT_SIZE_LARGE)
-        {
-            TextView txtDateTableHeader = (TextView)tableView.findViewById(R.id.txtDateTableHeader);
-            txtDateTableHeader.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
-            TextView txtTimeTableHeader = (TextView)tableView.findViewById(R.id.txtTimeTableHeader);
-            txtTimeTableHeader.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
-            TextView txtWeightTableHeader = (TextView)tableView.findViewById(R.id.txtWeightTableHeader);
-            txtWeightTableHeader.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
-            TextView txtFatTableHeader = (TextView)tableView.findViewById(R.id.txtFatTableHeader);
-            txtFatTableHeader.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
-            TextView txtWaterTableHeader = (TextView)tableView.findViewById(R.id.txtWaterTableHeader);
-            txtWaterTableHeader.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
-            TextView txtMuscleTableHeader = (TextView)tableView.findViewById(R.id.txtMuscleTableHeader);
-            txtMuscleTableHeader.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
-            TextView txtWaistTableHeader = (TextView)tableView.findViewById(R.id.txtWaistTableHeader);
-            txtWaistTableHeader.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
-            TextView txtHipTableHeader = (TextView)tableView.findViewById(R.id.txtHipTableHeader);
-            txtHipTableHeader.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
-            TextView txtCommentTableHeader = (TextView)tableView.findViewById(R.id.txtCommentTableHeader);
-            txtCommentTableHeader.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
-            Button btnDeleteAll = (Button)tableView.findViewById(R.id.btnDeleteAll);
-            btnDeleteAll.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
-        }
-
         OpenScale.getInstance(tableView.getContext()).registerFragment(this);
 
 		return tableView;
@@ -108,42 +82,42 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
         prefs = PreferenceManager.getDefaultSharedPreferences(tableView.getContext());
 
         if(!prefs.getBoolean("fatEnable", true)) {
-            TextView txtFatTableHeader = (TextView)tableView.findViewById(R.id.txtFatTableHeader);
+            ImageView txtFatTableHeader = (ImageView)tableView.findViewById(R.id.txtFatTableHeader);
             txtFatTableHeader.setVisibility(View.GONE);
         } else {
-            TextView txtFatTableHeader = (TextView)tableView.findViewById(R.id.txtFatTableHeader);
+            ImageView txtFatTableHeader = (ImageView)tableView.findViewById(R.id.txtFatTableHeader);
             txtFatTableHeader.setVisibility(View.VISIBLE);
         }
 
         if(!prefs.getBoolean("muscleEnable", true)) {
-            TextView txtMuscleTableHeader = (TextView)tableView.findViewById(R.id.txtMuscleTableHeader);
+            ImageView txtMuscleTableHeader = (ImageView)tableView.findViewById(R.id.txtMuscleTableHeader);
             txtMuscleTableHeader.setVisibility(View.GONE);
         } else {
-            TextView txtMuscleTableHeader = (TextView)tableView.findViewById(R.id.txtMuscleTableHeader);
+            ImageView txtMuscleTableHeader = (ImageView)tableView.findViewById(R.id.txtMuscleTableHeader);
             txtMuscleTableHeader.setVisibility(View.VISIBLE);
         }
 
         if(!prefs.getBoolean("waterEnable", true)) {
-            TextView txtWaterTableHeader = (TextView)tableView.findViewById(R.id.txtWaterTableHeader);
+            ImageView txtWaterTableHeader = (ImageView)tableView.findViewById(R.id.txtWaterTableHeader);
             txtWaterTableHeader.setVisibility(View.GONE);
         } else {
-            TextView txtWaterTableHeader = (TextView)tableView.findViewById(R.id.txtWaterTableHeader);
+            ImageView txtWaterTableHeader = (ImageView)tableView.findViewById(R.id.txtWaterTableHeader);
             txtWaterTableHeader.setVisibility(View.VISIBLE);
         }
 
         if(!prefs.getBoolean("waistEnable", true)) {
-            TextView txtWaistTableHeader = (TextView)tableView.findViewById(R.id.txtWaistTableHeader);
+            ImageView txtWaistTableHeader = (ImageView)tableView.findViewById(R.id.txtWaistTableHeader);
             txtWaistTableHeader.setVisibility(View.GONE);
         } else {
-            TextView txtWaistTableHeader = (TextView)tableView.findViewById(R.id.txtWaistTableHeader);
+            ImageView txtWaistTableHeader = (ImageView)tableView.findViewById(R.id.txtWaistTableHeader);
             txtWaistTableHeader.setVisibility(View.VISIBLE);
         }
 
         if(!prefs.getBoolean("hipEnable", true)) {
-            TextView txtHipTableHeader = (TextView)tableView.findViewById(R.id.txtHipTableHeader);
+            ImageView txtHipTableHeader = (ImageView)tableView.findViewById(R.id.txtHipTableHeader);
             txtHipTableHeader.setVisibility(View.GONE);
         } else {
-            TextView txtHipTableHeader = (TextView)tableView.findViewById(R.id.txtHipTableHeader);
+            ImageView txtHipTableHeader = (ImageView)tableView.findViewById(R.id.txtHipTableHeader);
             txtHipTableHeader.setVisibility(View.VISIBLE);
         }
 
@@ -247,17 +221,11 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
             commentView.setPadding(0, 5, 5, 5);
             dataRow.addView(commentView);
 
-            Button deleteButton = new Button(tableView.getContext());
-            deleteButton.setText("X");
-            deleteButton.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 10);
-            deleteButton.setTextColor(Color.WHITE);
-            deleteButton.setBackgroundResource(R.drawable.flat_selector);
-            deleteButton.setGravity(Gravity.CENTER);
-            deleteButton.setPadding(0, 0, 0, 0);
-            deleteButton.setMinimumHeight(35);
-            deleteButton.setHeight(35);
-            deleteButton.setOnClickListener(new onClickListenerDelete());
-            dataRow.addView(deleteButton);
+            ImageView deleteImageView = new ImageView(tableView.getContext());
+            dataRow.addView(deleteImageView);
+            deleteImageView.setImageDrawable(ContextCompat.getDrawable(tableView.getContext(), R.drawable.delete));
+            deleteImageView.getLayoutParams().height = pxImageDp(20);
+            deleteImageView.setOnClickListener(new onClickListenerDelete());
 
             dataRow.setOnClickListener(new onClickListenerRow());
 
@@ -278,6 +246,10 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 			tableDataView.addView(dataRow, new TableLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
 		}
 	}
+
+    private int pxImageDp(float dp) {
+        return (int)(dp * getResources().getDisplayMetrics().density + 0.5f);
+    }
 
     private class onClickListenerRow implements View.OnClickListener {
 
