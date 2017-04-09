@@ -411,7 +411,6 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 	public void btnOnClickInsertData()
 	{
 		Intent intent = new Intent(overviewView.getContext(), DataEntryActivity.class);
-        intent.putExtra("mode", DataEntryActivity.ADD_DATA_REQUEST);
         startActivityForResult(intent, 1);
 	}
 

@@ -20,14 +20,13 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.design.widget.FloatingActionButton;
 import android.view.View;
-import android.view.Window;
 import android.widget.Button;
-import android.widget.CompoundButton;
-import android.widget.ImageView;
-import android.widget.Switch;
 import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -55,10 +54,9 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.ListIterator;
 
-public class DataEntryActivity extends Activity {
-    public static final int ADD_DATA_REQUEST = 0;
-    public static final int EDIT_DATA_REQUEST = 1;
+import lecho.lib.hellocharts.util.ChartUtils;
 
+public class DataEntryActivity extends Activity {
     private ArrayList<MeasurementView> dataEntryMeasurements;
     private TableLayout tableLayoutDataEntry;
 
@@ -81,22 +79,25 @@ public class DataEntryActivity extends Activity {
     private Button btnCancel;
     private Button btnLeft;
     private Button btnRight;
-    private ImageView imageViewDelete;
-    private Switch switchEditMode;
+    private FloatingActionButton imageViewDelete;
+    private FloatingActionButton switchEditMode;
+    private FloatingActionButton expandButton;
 
     private long id;
 
 	private Context context;
+    private boolean editMode;
+    private boolean isExpand;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
-
 		setContentView(R.layout.activity_dataentry);
 
 		context = this;
+        editMode = false;
+        isExpand = false;
 
         tableLayoutDataEntry = (TableLayout) findViewById(R.id.tableLayoutDataEntry);
 
@@ -140,8 +141,9 @@ public class DataEntryActivity extends Activity {
         btnCancel = (Button) findViewById(R.id.btnCancel);
         btnLeft = (Button) findViewById(R.id.btnLeft);
         btnRight = (Button) findViewById(R.id.btnRight);
-        imageViewDelete = (ImageView) findViewById(R.id.imgViewDelete);
-        switchEditMode = (Switch) findViewById(R.id.switchEditMode);
+        imageViewDelete = (FloatingActionButton) findViewById(R.id.imgViewDelete);
+        switchEditMode = (FloatingActionButton) findViewById(R.id.switchEditMode);
+        expandButton = (FloatingActionButton) findViewById(R.id.expandButton);
 
         btnAdd.setOnClickListener(new onClickListenerAdd());
         btnOk.setOnClickListener(new onClickListenerOk());
@@ -149,7 +151,8 @@ public class DataEntryActivity extends Activity {
         imageViewDelete.setOnClickListener(new onClickListenerDelete());
         btnLeft.setOnClickListener(new onClickListenerLeft());
         btnRight.setOnClickListener(new onClickListenerRight());
-        switchEditMode.setOnCheckedChangeListener(new onCheckedChangeEditMode());
+        switchEditMode.setOnClickListener(new onCheckedChangeEditMode());
+        expandButton.setOnClickListener(new onClickListenerExpand());
 
         updateOnView();
 	}
@@ -163,14 +166,26 @@ public class DataEntryActivity extends Activity {
             measuremt.updatePreferences(prefs);
         }
 
-        id = getIntent().getExtras().getLong("id");
+        if (getIntent().hasExtra("id")) {
+            id = getIntent().getExtras().getLong("id");
+        }
 
         if (id > 0) {
-            if (switchEditMode.isChecked()) {
+            // keep edit mode state if we are moving to left or right
+            if (editMode) {
                 setViewMode(MeasurementView.MeasurementViewMode.EDIT);
+                switchEditMode.setBackgroundTintList(ColorStateList.valueOf(ChartUtils.COLOR_GREEN));
             } else {
                 setViewMode(MeasurementView.MeasurementViewMode.VIEW);
+                switchEditMode.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#D3D3D3")));
             }
+
+            if (isExpand) {
+                expandButton.setBackgroundTintList(ColorStateList.valueOf(ChartUtils.COLOR_ORANGE));
+            } else {
+                expandButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#D3D3D3")));
+            }
+
             OpenScale openScale = OpenScale.getInstance(context);
 
             ScaleData selectedScaleData = openScale.getScaleData(id);
@@ -194,6 +209,7 @@ public class DataEntryActivity extends Activity {
 
             // show selected scale data
             for (MeasurementView measuremt : dataEntryMeasurements) {
+                measuremt.setExpand(isExpand);
                 measuremt.updateValue(selectedScaleData);
                 measuremt.updateDiff(selectedScaleData, lastData);
             }
@@ -426,14 +442,21 @@ public class DataEntryActivity extends Activity {
         }
     }
 
-    private class onCheckedChangeEditMode implements CompoundButton.OnCheckedChangeListener {
+    private class onCheckedChangeEditMode implements View.OnClickListener {
         @Override
-        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-            if (isChecked) {
-                setViewMode(MeasurementView.MeasurementViewMode.EDIT);
-            } else {
-                setViewMode(MeasurementView.MeasurementViewMode.VIEW);
-            }
+        public void onClick(View v) {
+            editMode = !editMode;
+
+            updateOnView();
+        }
+    }
+
+    private class onClickListenerExpand implements View.OnClickListener {
+        @Override
+        public void onClick(View v) {
+            isExpand = !isExpand;
+
+            updateOnView();
         }
     }
 }

@@ -223,6 +223,14 @@ public abstract class MeasurementView extends TableLayout {
         );
     }
 
+    public void setExpand(boolean state) {
+        if (state && measurementRow.getVisibility() == View.VISIBLE && evaluateSheet(new EvaluationSheet(getScaleUser()), 0.0f) != null) {
+            evaluatorRow.setVisibility(View.VISIBLE);
+        } else {
+            evaluatorRow.setVisibility(View.GONE);
+        }
+    }
+
     protected void setVisible(boolean isVisible){
         if(isVisible) {
             measurementRow.setVisibility(View.VISIBLE);

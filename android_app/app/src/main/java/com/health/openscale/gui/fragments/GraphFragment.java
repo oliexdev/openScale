@@ -323,7 +323,6 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             long id = scaleData.id;
 
             Intent intent = new Intent(graphView.getContext(), DataEntryActivity.class);
-            intent.putExtra("mode", DataEntryActivity.EDIT_DATA_REQUEST);
             intent.putExtra("id", id);
             startActivityForResult(intent, 1);
         }
