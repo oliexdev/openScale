@@ -86,8 +86,6 @@ public class DataEntryActivity extends Activity {
     private long id;
 
 	private Context context;
-    private boolean editMode;
-    private boolean isExpand;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -96,8 +94,6 @@ public class DataEntryActivity extends Activity {
 		setContentView(R.layout.activity_dataentry);
 
 		context = this;
-        editMode = false;
-        isExpand = false;
 
         tableLayoutDataEntry = (TableLayout) findViewById(R.id.tableLayoutDataEntry);
 
@@ -151,8 +147,8 @@ public class DataEntryActivity extends Activity {
         imageViewDelete.setOnClickListener(new onClickListenerDelete());
         btnLeft.setOnClickListener(new onClickListenerLeft());
         btnRight.setOnClickListener(new onClickListenerRight());
-        switchEditMode.setOnClickListener(new onCheckedChangeEditMode());
-        expandButton.setOnClickListener(new onClickListenerExpand());
+        switchEditMode.setOnClickListener(new onClickListenerToggleButton());
+        expandButton.setOnClickListener(new onClickListenerToggleButton());
 
         updateOnView();
 	}
@@ -172,7 +168,7 @@ public class DataEntryActivity extends Activity {
 
         if (id > 0) {
             // keep edit mode state if we are moving to left or right
-            if (editMode) {
+            if (prefs.getBoolean(String.valueOf(switchEditMode.getId()), false)) {
                 setViewMode(MeasurementView.MeasurementViewMode.EDIT);
                 switchEditMode.setBackgroundTintList(ColorStateList.valueOf(ChartUtils.COLOR_GREEN));
             } else {
@@ -180,7 +176,7 @@ public class DataEntryActivity extends Activity {
                 switchEditMode.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#D3D3D3")));
             }
 
-            if (isExpand) {
+            if (prefs.getBoolean(String.valueOf(expandButton.getId()), false)) {
                 expandButton.setBackgroundTintList(ColorStateList.valueOf(ChartUtils.COLOR_ORANGE));
             } else {
                 expandButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#D3D3D3")));
@@ -209,7 +205,7 @@ public class DataEntryActivity extends Activity {
 
             // show selected scale data
             for (MeasurementView measuremt : dataEntryMeasurements) {
-                measuremt.setExpand(isExpand);
+                measuremt.setExpand(prefs.getBoolean(String.valueOf(expandButton.getId()), false));
                 measuremt.updateValue(selectedScaleData);
                 measuremt.updateDiff(selectedScaleData, lastData);
             }
@@ -442,19 +438,18 @@ public class DataEntryActivity extends Activity {
         }
     }
 
-    private class onCheckedChangeEditMode implements View.OnClickListener {
+    private class onClickListenerToggleButton implements View.OnClickListener {
         @Override
         public void onClick(View v) {
-            editMode = !editMode;
+            FloatingActionButton actionButton = (FloatingActionButton) v;
 
-            updateOnView();
-        }
-    }
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(v.getContext());
 
-    private class onClickListenerExpand implements View.OnClickListener {
-        @Override
-        public void onClick(View v) {
-            isExpand = !isExpand;
+            if (prefs.getBoolean(String.valueOf(actionButton.getId()), false)) {
+                prefs.edit().putBoolean(String.valueOf(actionButton.getId()), false).commit();
+            } else {
+                prefs.edit().putBoolean(String.valueOf(actionButton.getId()), true).commit();
+            }
 
             updateOnView();
         }

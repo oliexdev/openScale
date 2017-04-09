@@ -247,28 +247,46 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                 setFormatter(new SimpleLineChartValueFormatter(1));
 
 
-        if(prefs.getBoolean("weightEnable", true) && diagramWeight.getBackgroundTintList().getDefaultColor() != Color.parseColor("#d3d3d3")) {
+        if(prefs.getBoolean("weightEnable", true) && prefs.getBoolean(String.valueOf(diagramWeight.getId()), true)) {
             lines.add(lineWeight);
+            diagramWeight.setBackgroundTintList(ColorStateList.valueOf(ChartUtils.COLOR_VIOLET));
+        } else {
+            diagramWeight.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#d3d3d3")));
         }
 
-        if(prefs.getBoolean("fatEnable", true) && diagramFat.getBackgroundTintList().getDefaultColor() != Color.parseColor("#d3d3d3")) {
+        if(prefs.getBoolean("fatEnable", true) && prefs.getBoolean(String.valueOf(diagramFat.getId()), true)) {
             lines.add(lineFat);
+            diagramFat.setBackgroundTintList(ColorStateList.valueOf(ChartUtils.COLOR_ORANGE));
+        } else {
+            diagramFat.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#d3d3d3")));
         }
 
-        if(prefs.getBoolean("waterEnable", true) && diagramWater.getBackgroundTintList().getDefaultColor() != Color.parseColor("#d3d3d3")) {
+        if(prefs.getBoolean("waterEnable", true) && prefs.getBoolean(String.valueOf(diagramWater.getId()), true)) {
             lines.add(lineWater);
+            diagramWater.setBackgroundTintList(ColorStateList.valueOf(ChartUtils.COLOR_BLUE));
+        } else {
+            diagramWater.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#d3d3d3")));
         }
 
-        if(prefs.getBoolean("muscleEnable", true) && diagramMuscle.getBackgroundTintList().getDefaultColor() != Color.parseColor("#d3d3d3")) {
+        if(prefs.getBoolean("muscleEnable", true) && prefs.getBoolean(String.valueOf(diagramMuscle.getId()), true)) {
             lines.add(lineMuscle);
+            diagramMuscle.setBackgroundTintList(ColorStateList.valueOf(ChartUtils.COLOR_GREEN));
+        } else {
+            diagramMuscle.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#d3d3d3")));
         }
 
-        if(prefs.getBoolean("waistEnable", false) && diagramWaist.getBackgroundTintList().getDefaultColor() != Color.parseColor("#d3d3d3")) {
+        if(prefs.getBoolean("waistEnable", false) && prefs.getBoolean(String.valueOf(diagramWaist.getId()), false)) {
             lines.add(lineWaist);
+            diagramWaist.setBackgroundTintList(ColorStateList.valueOf(Color.MAGENTA));
+        } else {
+            diagramWaist.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#d3d3d3")));
         }
 
-        if(prefs.getBoolean("hipEnable", false) && diagramHip.getBackgroundTintList().getDefaultColor() != Color.parseColor("#d3d3d3")) {
+        if(prefs.getBoolean("hipEnable", false) && prefs.getBoolean(String.valueOf(diagramHip.getId()), false)) {
             lines.add(lineHip);
+            diagramHip.setBackgroundTintList(ColorStateList.valueOf(Color.YELLOW));
+        } else {
+            diagramHip.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#d3d3d3")));
         }
 
         LineChartData lineData = new LineChartData(lines);
@@ -393,10 +411,12 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         public void onClick(View v) {
             FloatingActionButton actionButton = (FloatingActionButton) v;
 
-            if (actionButton.getBackgroundTintList().getDefaultColor() != Color.parseColor("#d3d3d3")) {
-                actionButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#d3d3d3")));
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+
+            if (prefs.getBoolean(String.valueOf(actionButton.getId()), true)) {
+                prefs.edit().putBoolean(String.valueOf(actionButton.getId()), false).commit();
             } else {
-                actionButton.setBackgroundTintList(ColorStateList.valueOf(actionButton.getRippleColor()));
+                prefs.edit().putBoolean(String.valueOf(actionButton.getId()), true).commit();
             }
 
             generateColumnData();
