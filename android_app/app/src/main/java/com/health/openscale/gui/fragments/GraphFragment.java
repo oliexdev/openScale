@@ -20,9 +20,11 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
@@ -65,6 +67,12 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     private ColumnChartView chartBottom;
     private Viewport defaultTopViewport;
     private TextView txtYear;
+    private FloatingActionButton diagramWeight;
+    private FloatingActionButton diagramFat;
+    private FloatingActionButton diagramWater;
+    private FloatingActionButton diagramMuscle;
+    private FloatingActionButton diagramWaist;
+    private FloatingActionButton diagramHip;
     private SharedPreferences prefs;
 
     private OpenScale openScale;
@@ -94,6 +102,46 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         txtYear = (TextView) graphView.findViewById(R.id.txtYear);
         txtYear.setText(Integer.toString(calYears.get(Calendar.YEAR)));
 
+        diagramWeight = (FloatingActionButton) graphView.findViewById(R.id.diagramWeight);
+        diagramFat = (FloatingActionButton) graphView.findViewById(R.id.diagramFat);
+        diagramWater = (FloatingActionButton) graphView.findViewById(R.id.diagramWater);
+        diagramMuscle = (FloatingActionButton) graphView.findViewById(R.id.diagramMuscle);
+        diagramWaist = (FloatingActionButton) graphView.findViewById(R.id.diagramWaist);
+        diagramHip = (FloatingActionButton) graphView.findViewById(R.id.diagramHip);
+
+        diagramWeight.setOnClickListener(new onClickListenerDiagramLines());
+        diagramFat.setOnClickListener(new onClickListenerDiagramLines());
+        diagramWater.setOnClickListener(new onClickListenerDiagramLines());
+        diagramMuscle.setOnClickListener(new onClickListenerDiagramLines());
+        diagramWaist.setOnClickListener(new onClickListenerDiagramLines());
+        diagramHip.setOnClickListener(new onClickListenerDiagramLines());
+
+        prefs = PreferenceManager.getDefaultSharedPreferences(graphView.getContext());
+
+        if(!prefs.getBoolean("weightEnable", true)) {
+            diagramWeight.setVisibility(View.GONE);
+        }
+
+        if(!prefs.getBoolean("fatEnable", true)) {
+            diagramFat.setVisibility(View.GONE);
+        }
+
+        if(!prefs.getBoolean("waterEnable", true)) {
+            diagramWater.setVisibility(View.GONE);
+        }
+
+        if(!prefs.getBoolean("muscleEnable", true)) {
+            diagramMuscle.setVisibility(View.GONE);
+        }
+
+        if(!prefs.getBoolean("waistEnable", false)) {
+            diagramWaist.setVisibility(View.GONE);
+        }
+
+        if(!prefs.getBoolean("hipEnable", false)) {
+            diagramHip.setVisibility(View.GONE);
+        }
+
         graphView.findViewById(R.id.btnLeftYear).setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
                 calYears.roll(Calendar.YEAR, false);
@@ -109,8 +157,6 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                 updateOnView(null);
             }
         });
-
-        prefs = PreferenceManager.getDefaultSharedPreferences(graphView.getContext());
 
         openScale = OpenScale.getInstance(graphView.getContext());
         openScale.registerFragment(this);
@@ -201,27 +247,27 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                 setFormatter(new SimpleLineChartValueFormatter(1));
 
 
-        if(prefs.getBoolean("weightEnable", true)) {
+        if(prefs.getBoolean("weightEnable", true) && diagramWeight.getBackgroundTintList().getDefaultColor() != Color.parseColor("#d3d3d3")) {
             lines.add(lineWeight);
         }
 
-        if(prefs.getBoolean("fatEnable", true)) {
+        if(prefs.getBoolean("fatEnable", true) && diagramFat.getBackgroundTintList().getDefaultColor() != Color.parseColor("#d3d3d3")) {
             lines.add(lineFat);
         }
 
-        if(prefs.getBoolean("waterEnable", true)) {
+        if(prefs.getBoolean("waterEnable", true) && diagramWater.getBackgroundTintList().getDefaultColor() != Color.parseColor("#d3d3d3")) {
             lines.add(lineWater);
         }
 
-        if(prefs.getBoolean("muscleEnable", true)) {
+        if(prefs.getBoolean("muscleEnable", true) && diagramMuscle.getBackgroundTintList().getDefaultColor() != Color.parseColor("#d3d3d3")) {
             lines.add(lineMuscle);
         }
 
-        if(prefs.getBoolean("waistEnable", true)) {
+        if(prefs.getBoolean("waistEnable", false) && diagramWaist.getBackgroundTintList().getDefaultColor() != Color.parseColor("#d3d3d3")) {
             lines.add(lineWaist);
         }
 
-        if(prefs.getBoolean("hipEnable", true)) {
+        if(prefs.getBoolean("hipEnable", false) && diagramHip.getBackgroundTintList().getDefaultColor() != Color.parseColor("#d3d3d3")) {
             lines.add(lineHip);
         }
 
@@ -339,6 +385,21 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         if(isVisibleToUser) {
             Activity a = getActivity();
             if(a != null) a.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR);
+        }
+    }
+
+    private class onClickListenerDiagramLines implements View.OnClickListener {
+        @Override
+        public void onClick(View v) {
+            FloatingActionButton actionButton = (FloatingActionButton) v;
+
+            if (actionButton.getBackgroundTintList().getDefaultColor() != Color.parseColor("#d3d3d3")) {
+                actionButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#d3d3d3")));
+            } else {
+                actionButton.setBackgroundTintList(ColorStateList.valueOf(actionButton.getRippleColor()));
+            }
+
+            generateColumnData();
         }
     }
 }

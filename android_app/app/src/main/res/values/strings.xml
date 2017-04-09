@@ -33,7 +33,6 @@
     <string name="label_whtr">Waist-to-height ratio</string>
     <string name="label_whr">Waist-hip ratio</string>
     <string name="label_smartUserAssign">Smart User assignment</string>
-    <string name="label_editmode">Edit</string>
 
     <string name="label_days">days</string>
     <string name="label_measures">measures</string>

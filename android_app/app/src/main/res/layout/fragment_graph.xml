@@ -1,69 +1,141 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="5dp" >
+    android:orientation="vertical"
+    android:weightSum="1">
 
-        <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:orientation="vertical"
-            android:id="@+id/linearLayout">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorPrimary"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:padding="5dp">
 
-            <LinearLayout
-                android:orientation="horizontal"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="5dp"
-                android:gravity="center">
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/diagramWeight"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="10dp"
+            android:clickable="true"
+            android:src="@drawable/weight"
+            app:backgroundTint="#AA66CC"
+            app:fabSize="mini"
+            app:rippleColor="#AA66CC" />
 
-                <Button
-                    style="?android:attr/buttonStyleSmall"
-                    android:layout_width="wrap_content"
-                    android:layout_height="20dp"
-                    android:text="&lt;"
-                    android:id="@+id/btnLeftYear"
-                    android:background="@drawable/flat_selector"
-                    android:textColor="@android:color/white" />
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/diagramFat"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="10dp"
+            android:clickable="true"
+            android:src="@drawable/fat"
+            app:backgroundTint="#FFBB33"
+            app:fabSize="mini"
+            app:rippleColor="#FFBB33" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:text="year"
-                    android:id="@+id/txtYear"
-                    android:gravity="center"
-                    android:layout_weight="0"
-                    android:textStyle="bold"
-                    android:layout_marginLeft="30dp"
-                    android:layout_marginRight="30dp" />
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/diagramWater"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="10dp"
+            android:clickable="true"
+            android:src="@drawable/water"
+            app:backgroundTint="#33B5E5"
+            app:fabSize="mini"
+            app:rippleColor="#33B5E5" />
 
-                <Button
-                    style="?android:attr/buttonStyleSmall"
-                    android:layout_width="wrap_content"
-                    android:layout_height="20dp"
-                    android:text=">"
-                    android:id="@+id/btnRightYear"
-                    android:background="@drawable/flat_selector"
-                    android:textColor="@android:color/white"
-                    android:layout_weight="0" />
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/diagramMuscle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="10dp"
+            android:clickable="true"
+            android:src="@drawable/muscle"
+            app:backgroundTint="#99CC00"
+            app:fabSize="mini"
+            app:rippleColor="#99CC00" />
 
-            </LinearLayout>
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/diagramWaist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="10dp"
+            android:clickable="true"
+            android:src="@drawable/waist"
+            app:backgroundTint="#D3D3D3"
+            app:fabSize="mini"
+            app:rippleColor="#FF00FF" />
 
-            <lecho.lib.hellocharts.view.LineChartView
-           android:id="@+id/chart_top"
-           android:layout_width="match_parent"
-           android:layout_height="0dp"
-           android:layout_weight="1"
-           />
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/diagramHip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="10dp"
+            android:clickable="true"
+            android:src="@drawable/hip"
+            app:backgroundTint="#D3D3D3"
+            app:fabSize="mini"
+            app:rippleColor="#FFFF00" />
 
-        <lecho.lib.hellocharts.view.ColumnChartView
-            android:id="@+id/chart_bottom"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:layout_marginTop="10dp" />
+    </LinearLayout>
 
-        </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="5dp"
+        android:background="?attr/colorPrimary"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:padding="5dp">
 
-</RelativeLayout>
+        <Button
+            android:id="@+id/btnLeftYear"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="20dp"
+            android:background="@drawable/flat_selector"
+            android:text="&lt;"
+            android:textColor="@android:color/white" />
+
+        <TextView
+            android:id="@+id/txtYear"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="30dp"
+            android:layout_marginRight="30dp"
+            android:layout_weight="0"
+            android:gravity="center"
+            android:text="year"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btnRightYear"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="20dp"
+            android:layout_weight="0"
+            android:background="@drawable/flat_selector"
+            android:text=">"
+            android:textColor="@android:color/white" />
+
+    </LinearLayout>
+
+    <lecho.lib.hellocharts.view.LineChartView
+        android:id="@+id/chart_top"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.7" />
+
+    <lecho.lib.hellocharts.view.ColumnChartView
+        android:id="@+id/chart_bottom"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="10dp"
+        android:layout_weight="0.3" />
+
+</LinearLayout>

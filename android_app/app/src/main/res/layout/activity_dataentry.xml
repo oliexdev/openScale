@@ -3,15 +3,55 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:orientation="vertical"
-    android:padding="5dp">
+    android:orientation="vertical">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="5dp"
+        android:background="?attr/colorPrimary"
+        android:gravity="right"
+        android:orientation="horizontal"
+        android:padding="5dp">
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/switchEditMode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="10dp"
+            android:clickable="true"
+            android:src="@drawable/editable"
+            app:backgroundTint="#D3D3D3"
+            app:fabSize="mini" />
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/expandButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="10dp"
+            android:clickable="true"
+            android:src="@drawable/expand"
+            app:backgroundTint="#D3D3D3"
+            app:fabSize="mini" />
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/imgViewDelete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="10dp"
+            android:clickable="true"
+            android:src="@drawable/delete"
+            app:backgroundTint="#FF4444"
+            app:fabSize="mini" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorPrimary"
         android:gravity="center"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:padding="5dp">
 
         <Button
             android:id="@+id/btnLeft"
@@ -32,6 +72,7 @@
             android:gravity="center"
             android:text="date/time"
             android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="#FFFFFF"
             android:textStyle="bold" />
 
         <Button
@@ -46,44 +87,6 @@
 
     </LinearLayout>
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="right"
-        android:orientation="horizontal">
-
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/switchEditMode"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:backgroundTint="#D3D3D3"
-            android:clickable="true"
-            android:src="@drawable/editable"
-            app:fabSize="mini"
-            android:layout_marginRight="10dp"/>
-
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/expandButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:backgroundTint="#D3D3D3"
-            android:clickable="true"
-            android:src="@drawable/expand"
-            app:fabSize="mini"
-            android:layout_marginRight="10dp"/>
-
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/imgViewDelete"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:backgroundTint="#FF4444"
-            android:clickable="true"
-            android:src="@drawable/delete"
-            app:fabSize="mini"
-            android:layout_marginRight="10dp"/>
-
-    </LinearLayout>
-
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -91,7 +94,7 @@
         <TableLayout
             android:id="@+id/tableLayoutDataEntry"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content" />
 
     </ScrollView>
 
@@ -99,7 +102,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="bottom"
-        android:gravity="bottom">
+        android:gravity="bottom"
+        android:padding="5dp">
 
         <Button
             android:id="@+id/btnCancel"

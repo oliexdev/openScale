@@ -35,7 +35,6 @@
     <string name="label_bluetooth_title">Bluetooth</string>
     <string name="label_bmi">BMI</string>
     <string name="label_body_height">Körpergröße</string>
-    <string name="label_cancel">Abbrechen</string>
     <string name="label_comment">Kommentar</string>
     <string name="label_date">Datum</string>
     <string name="label_days">Tage</string>
@@ -116,6 +115,6 @@
     <string name="Sunday">Sonntag</string>
     <string name="error_value_range">Fehler beim Wertebereich</string>
     <string name="error_value_required">Wert ist erforderlich</string>
-    <string name="label_editmode">Bearbeiten</string>
     <string name="title_statistics">Statistiken</string>
+    <string name="label_cancel">Abbrechen</string>
 </resources>

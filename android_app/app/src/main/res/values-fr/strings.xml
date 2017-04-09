@@ -135,6 +135,5 @@
     <string name="Friday">Vendredi</string>
     <string name="Saturday">Samedi</string>
     <string name="Sunday">Dimanche</string>
-    <string name="label_editmode">Modifier</string>
     <string name="title_statistics">Statistiques</string>
 </resources>
