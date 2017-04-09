@@ -217,6 +217,7 @@ public class DataEntryActivity extends Activity {
         if (!OpenScale.getInstance(this).getScaleDataList().isEmpty())
         {
             setViewMode(MeasurementView.MeasurementViewMode.ADD);
+            txtDataNr.setText(DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.SHORT).format(new Date()));
             ScaleData lastScaleData = OpenScale.getInstance(this).getScaleDataList().get(0);
 
             // show as default last scale data
@@ -238,13 +239,23 @@ public class DataEntryActivity extends Activity {
     {
         switch (viewMode) {
             case VIEW:
+                btnOk.setVisibility(View.VISIBLE);
+                btnAdd.setVisibility(View.GONE);
+                imageViewDelete.setVisibility(View.VISIBLE);
+                btnLeft.setVisibility(View.VISIBLE);
+                btnRight.setVisibility(View.VISIBLE);
+                expandButton.setVisibility(View.VISIBLE);
+                switchEditMode.setVisibility(View.VISIBLE);
+                dateMeasurement.setVisibility(View.GONE);
+                timeMeasurement.setVisibility(View.GONE);
+                break;
             case EDIT:
                 btnOk.setVisibility(View.VISIBLE);
                 btnAdd.setVisibility(View.GONE);
                 imageViewDelete.setVisibility(View.VISIBLE);
                 btnLeft.setVisibility(View.VISIBLE);
                 btnRight.setVisibility(View.VISIBLE);
-                txtDataNr.setVisibility(View.VISIBLE);
+                expandButton.setVisibility(View.VISIBLE);
                 switchEditMode.setVisibility(View.VISIBLE);
                 dateMeasurement.setVisibility(View.VISIBLE);
                 timeMeasurement.setVisibility(View.VISIBLE);
@@ -255,7 +266,7 @@ public class DataEntryActivity extends Activity {
                 imageViewDelete.setVisibility(View.GONE);
                 btnLeft.setVisibility(View.GONE);
                 btnRight.setVisibility(View.GONE);
-                txtDataNr.setVisibility(View.GONE);
+                expandButton.setVisibility(View.GONE);
                 switchEditMode.setVisibility(View.GONE);
                 dateMeasurement.setVisibility(View.GONE);
                 timeMeasurement.setVisibility(View.GONE);
