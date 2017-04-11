@@ -1,7 +1,7 @@
 openScale
 =========
 
-openScale is an Open Source app to keep a log of your weight, body fat, water percentage and muscle percentage.
+openScale is an open source app to keep a log of your weight, body fat, water percentage and muscle percentage.
 
 <a href="https://f-droid.org/repository/browse/?fdid=com.health.openscale" target="_blank">
 <img src="https://f-droid.org/badge/get-it-on.png" alt="Get it on F-Droid" height="80"/></a>
@@ -20,19 +20,51 @@ openScale is an Open Source app to keep a log of your weight, body fat, water pe
 
 # Screens
 
-![](doc/screens/screen_overview.png)
-
-![](doc/screens/screen_graph.png)
-
-![](doc/screens/screen_table.png)
+<table>
+  <tr>
+    <th>
+        <a href="doc/screens/screen_overview.png" target="_blank">
+        <img src='doc/screens/screen_overview.png' width='200px' alt='image missing' /> </a> <br>
+        <sub><b>overview page</b></sub>
+    </th>
+    <th>
+        <a href="doc/screens/screen_graph.png" target="_blank">
+        <img src='doc/screens/screen_graph.png' width='250px' alt='image missing' /> </a> <br>
+        <sub><b>graph page</b></sub>
+    </th>
+  </tr>
+  
+  <tr>
+    <td>
+        <a href="doc/screens/screen_table.png" target="_blank">
+        <img src='doc/screens/screen_table.png' width='250px' alt='image missing' /> </a> <br>
+        <sub><b>table page</b></sub>
+    </td>
+    <td>
+        <a href="doc/screens/screen_statistics.png" target="_blank">
+        <img src='doc/screens/screen_statistics.png' width='250px' alt='image missing' /> </a> <br>
+        <sub><b>statistics page</b></sub>
+    </td>
+  </tr>
+  <tr>
+    <td>
+        <a href="doc/screens/screen_dataentry.png" target="_blank">
+        <img src='doc/screens/screen_dataentry.png' width='200px' alt='image missing' /> </a> <br>
+        <sub><b>data entry page</b></sub>
+    </td>
+    <td>
+    <!-- empty cell -->
+    </td>
+  </tr>
+</table>
 
 # Contributing
 
-If you found a bug, have an idea how to improve the openScale app or have a question, please create new issue or comment existing one. If you would like to contribute code fork the repository and send a pull request.
+If you found a bug, have an idea how to improve the openScale app or have a question, please create new issue or comment existing one. If you would like to contribute code, fork the repository and send a pull request.
 
 # License
 
-openScale ist licensed under the GPL v3, see LICENSE file for full notice.
+openScale is licensed under the GPL v3, see LICENSE file for full notice.
 
     Copyright (C) 2014  olie.xdev <olie.xdev@googlemail.com>
     
