@@ -65,7 +65,7 @@
             android:layout_marginRight="10dp"
             android:clickable="true"
             android:src="@drawable/waist"
-            app:backgroundTint="#D3D3D3"
+            app:backgroundTint="#FF00FF"
             app:fabSize="mini"
             app:rippleColor="#FF00FF" />
 
@@ -76,7 +76,7 @@
             android:layout_marginRight="10dp"
             android:clickable="true"
             android:src="@drawable/hip"
-            app:backgroundTint="#D3D3D3"
+            app:backgroundTint="#FFFF00"
             app:fabSize="mini"
             app:rippleColor="#FFFF00" />
 

@@ -275,14 +275,14 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             diagramMuscle.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#d3d3d3")));
         }
 
-        if(prefs.getBoolean("waistEnable", false) && prefs.getBoolean(String.valueOf(diagramWaist.getId()), false)) {
+        if(prefs.getBoolean("waistEnable", false) && prefs.getBoolean(String.valueOf(diagramWaist.getId()), true)) {
             lines.add(lineWaist);
             diagramWaist.setBackgroundTintList(ColorStateList.valueOf(Color.MAGENTA));
         } else {
             diagramWaist.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#d3d3d3")));
         }
 
-        if(prefs.getBoolean("hipEnable", false) && prefs.getBoolean(String.valueOf(diagramHip.getId()), false)) {
+        if(prefs.getBoolean("hipEnable", false) && prefs.getBoolean(String.valueOf(diagramHip.getId()), true)) {
             lines.add(lineHip);
             diagramHip.setBackgroundTintList(ColorStateList.valueOf(Color.YELLOW));
         } else {

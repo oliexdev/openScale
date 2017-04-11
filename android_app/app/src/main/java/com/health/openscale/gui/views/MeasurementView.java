@@ -295,7 +295,7 @@ public abstract class MeasurementView extends TableLayout {
     }
 
     protected int getInputType() {
-        return InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_SIGNED;
+        return InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_SIGNED | InputType.TYPE_NUMBER_FLAG_DECIMAL;
     }
 
     protected String getHintText() {
