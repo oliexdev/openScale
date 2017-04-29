@@ -46,6 +46,8 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
 
+import static android.R.attr.id;
+import static com.health.openscale.R.drawable.weight;
 import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_MI_SCALE;
 import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_OPEN_SCALE;
 
@@ -67,8 +69,8 @@ public class OpenScale {
 
     private ArrayList<FragmentUpdateListener> fragmentList;
 
-	private OpenScale(Context con) {
-        context = con;
+	private OpenScale(Context context) {
+        this.context = context;
 		scaleDB = new ScaleDatabase(context);
         scaleUserDB = new ScaleUserDatabase(context);
         alarmHandler = new AlarmHandler();
@@ -78,9 +80,9 @@ public class OpenScale {
         updateScaleData();
 	}
 
-	public static OpenScale getInstance(Context con) {
+	public static OpenScale getInstance(Context context) {
 		if (instance == null) {
-			instance = new OpenScale(con);
+			instance = new OpenScale(context);
 		}
 
 		return instance;
@@ -166,49 +168,28 @@ public class OpenScale {
         return scaleDB.getDataEntry(id);
     }
 
-    public int addScaleData(ScaleData scaleData) {
-        return addScaleData(scaleData.user_id, dateTimeFormat.format(scaleData.date_time).toString(), scaleData.weight, scaleData.fat,
-                scaleData.water, scaleData.muscle, scaleData.waist, scaleData.hip, scaleData.comment);
-    }
-
-	public int addScaleData(int user_id, String date_time, float weight, float fat,
-			float water, float muscle, float waist, float hip, String comment) {
-		ScaleData scaleData = new ScaleData();
+	public int addScaleData(ScaleData scaleData) {
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
-        if (user_id == -1) {
+        if (scaleData.getUserId() == -1) {
             if (prefs.getBoolean("smartUserAssign", false)) {
-                user_id = getSmartUserAssignment(weight, 15.0f);
+                scaleData.setUserId(getSmartUserAssignment(weight, 15.0f));
             } else {
-                user_id = getSelectedScaleUser().id;
+                scaleData.setUserId(getSelectedScaleUser().id);
             }
 
-            if (user_id == -1) {
+            if (scaleData.getUserId() == -1) {
                 return -1;
             }
         }
-
-		try {
-            scaleData.user_id = user_id;
-			scaleData.date_time = dateTimeFormat.parse(date_time);
-			scaleData.weight = weight;
-			scaleData.fat = fat;
-			scaleData.water = water;
-			scaleData.muscle = muscle;
-            scaleData.waist = waist;
-            scaleData.hip = hip;
-            scaleData.comment = comment;
-		} catch (ParseException e) {
-			Log.e("OpenScale", "Can't parse date time string while adding to the database");
-		}
 
 		if (scaleDB.insertEntry(scaleData)) {
             alarmHandler.entryChanged(context, scaleData);
             updateScaleData();
         }
 
-        return user_id;
+        return scaleData.getUserId();
 	}
 
     private int getSmartUserAssignment(float weight, float range) {
@@ -219,7 +200,7 @@ public class OpenScale {
             ArrayList<ScaleData> scaleUserData = scaleDB.getScaleDataList(scaleUser.get(i).id);
 
             if (scaleUserData.size() > 0) {
-                float lastWeight = scaleUserData.get(0).weight;
+                float lastWeight = scaleUserData.get(0).getConvertedWeight(getSelectedScaleUser().scale_unit);
 
                 if ((lastWeight - range) <= weight && (lastWeight + range) >= weight) {
                     inRangeWeights.put(Math.abs(lastWeight - weight), scaleUser.get(i).id);
@@ -235,22 +216,7 @@ public class OpenScale {
         return getSelectedScaleUser().id;
     }
 
-    public void updateScaleData(long id, String date_time, float weight, float fat, float water, float muscle, float waist, float hip, String comment) {
-        ScaleData scaleData = new ScaleData();
-
-        try {
-            scaleData.date_time = dateTimeFormat.parse(date_time);
-            scaleData.weight = weight;
-            scaleData.fat = fat;
-            scaleData.water = water;
-            scaleData.muscle = muscle;
-            scaleData.waist = waist;
-            scaleData.hip = hip;
-            scaleData.comment = comment;
-        } catch (ParseException e) {
-            Log.e("OpenScale", "Can't parse date time string while adding to the database");
-        }
-
+    public void updateScaleData(ScaleData scaleData) {
         scaleDB.updateEntry(id, scaleData);
         alarmHandler.entryChanged(context, scaleData);
 
@@ -284,16 +250,16 @@ public class OpenScale {
 
 				ScaleData newScaleData = new ScaleData();
 
-				newScaleData.date_time = dateTimeFormat.parse(csvField[0]);
-				newScaleData.weight = Float.parseFloat(csvField[1]);
-				newScaleData.fat = Float.parseFloat(csvField[2]);
-				newScaleData.water = Float.parseFloat(csvField[3]);
-				newScaleData.muscle = Float.parseFloat(csvField[4]);
-                newScaleData.waist = Float.parseFloat(csvField[5]);
-                newScaleData.hip = Float.parseFloat(csvField[6]);
-                newScaleData.comment = csvField[7];
+				newScaleData.setDateTime(dateTimeFormat.parse(csvField[0]));
+				newScaleData.setWeight(Float.parseFloat(csvField[1]));
+				newScaleData.setFat(Float.parseFloat(csvField[2]));
+				newScaleData.setWater(Float.parseFloat(csvField[3]));
+				newScaleData.setMuscle(Float.parseFloat(csvField[4]));
+                newScaleData.setWaist(Float.parseFloat(csvField[5]));
+                newScaleData.setHip(Float.parseFloat(csvField[6]));
+                newScaleData.setComment(csvField[7]);
 
-                newScaleData.user_id = getSelectedScaleUser().id;
+                newScaleData.setUserId(getSelectedScaleUser().id);
 
 				scaleDB.insertEntry(newScaleData);
 
@@ -321,15 +287,15 @@ public class OpenScale {
 		OutputStreamWriter csvWriter = new OutputStreamWriter(outputStream);
 
 		for (ScaleData scaleData : scaleDataList) {
-			csvWriter.append(dateTimeFormat.format(scaleData.date_time) + ",");
-			csvWriter.append(Float.toString(scaleData.weight) + ",");
-			csvWriter.append(Float.toString(scaleData.fat) + ",");
-			csvWriter.append(Float.toString(scaleData.water) + ",");
-			csvWriter.append(Float.toString(scaleData.muscle) + ",");
-            csvWriter.append(Float.toString(scaleData.waist) + ",");
-            csvWriter.append(Float.toString(scaleData.hip) + ",");
-            if (!scaleData.comment.isEmpty()) {
-                csvWriter.append(scaleData.comment);
+			csvWriter.append(dateTimeFormat.format(scaleData.getDateTime()) + ",");
+			csvWriter.append(Float.toString(scaleData.getWeight()) + ",");
+			csvWriter.append(Float.toString(scaleData.getFat()) + ",");
+			csvWriter.append(Float.toString(scaleData.getWater()) + ",");
+			csvWriter.append(Float.toString(scaleData.getMuscle()) + ",");
+            csvWriter.append(Float.toString(scaleData.getWaist()) + ",");
+            csvWriter.append(Float.toString(scaleData.getHip()) + ",");
+            if (!scaleData.getComment().isEmpty()) {
+                csvWriter.append(scaleData.getComment());
             }
 
 			csvWriter.append("\n");

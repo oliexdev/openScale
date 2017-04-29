@@ -32,12 +32,12 @@ public class MuscleMeasurementView extends MeasurementView {
 
     @Override
     public void updateValue(ScaleData updateData) {
-        setValueOnView(updateData.muscle);
+        setValueOnView(updateData.getMuscle());
     }
 
     @Override
     public void updateDiff(ScaleData updateData, ScaleData lastData) {
-        setDiffOnView(updateData.muscle, lastData.muscle);
+        setDiffOnView(updateData.getMuscle(), lastData.getMuscle());
     }
 
     @Override

@@ -33,7 +33,7 @@ public class WeightMeasurementView extends MeasurementView {
 
     @Override
     public void updateValue(ScaleData updateData) {
-        setValueOnView(updateData.weight);
+        setValueOnView(updateData.getConvertedWeight(getScaleUser().scale_unit));
 
         if (getMeasurementMode() == MeasurementViewMode.ADD) {
             getInputDialog().show();
@@ -42,7 +42,7 @@ public class WeightMeasurementView extends MeasurementView {
 
     @Override
     public void updateDiff(ScaleData updateData, ScaleData lastData) {
-        setDiffOnView(updateData.weight, lastData.weight);
+        setDiffOnView(updateData.getConvertedWeight(getScaleUser().scale_unit), lastData.getConvertedWeight(getScaleUser().scale_unit));
     }
 
     @Override

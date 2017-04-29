@@ -32,12 +32,12 @@ public class FatMeasurementView extends MeasurementView {
 
     @Override
     public void updateValue(ScaleData updateData) {
-        setValueOnView(updateData.fat);
+        setValueOnView(updateData.getFat());
     }
 
     @Override
     public void updateDiff(ScaleData updateData, ScaleData lastData) {
-        setDiffOnView(updateData.fat, lastData.fat);
+        setDiffOnView(updateData.getFat(), lastData.getFat());
     }
 
     @Override

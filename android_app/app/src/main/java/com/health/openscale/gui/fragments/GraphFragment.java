@@ -164,7 +164,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             }
         });
 
-        openScale = OpenScale.getInstance(graphView.getContext());
+        openScale = OpenScale.getInstance(getContext());
         openScale.registerFragment(this);
 
 		return graphView;
@@ -211,14 +211,14 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         for(ScaleData scaleEntry: scaleDataList)
         {
-            calDB.setTime(scaleEntry.date_time);
+            calDB.setTime(scaleEntry.getDateTime());
 
-            valuesWeight.add(new PointValue(calDB.get(field)-1, scaleEntry.weight));
-            valuesFat.add(new PointValue(calDB.get(field)-1, scaleEntry.fat));
-            valuesWater.add(new PointValue(calDB.get(field)-1, scaleEntry.water));
-            valuesMuscle.add(new PointValue(calDB.get(field)-1, scaleEntry.muscle));
-            valuesWaist.add(new PointValue(calDB.get(field)-1, scaleEntry.waist));
-            valuesHip.add(new PointValue(calDB.get(field)-1, scaleEntry.hip));
+            valuesWeight.add(new PointValue(calDB.get(field)-1, scaleEntry.getConvertedWeight(openScale.getSelectedScaleUser().scale_unit)));
+            valuesFat.add(new PointValue(calDB.get(field)-1, scaleEntry.getFat()));
+            valuesWater.add(new PointValue(calDB.get(field)-1, scaleEntry.getWater()));
+            valuesMuscle.add(new PointValue(calDB.get(field)-1, scaleEntry.getMuscle()));
+            valuesWaist.add(new PointValue(calDB.get(field)-1, scaleEntry.getWaist()));
+            valuesHip.add(new PointValue(calDB.get(field)-1, scaleEntry.getHip()));
 
         }
 
@@ -414,7 +414,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         public void onValueSelected(int lineIndex, int pointIndex, PointValue pointValue) {
             ScaleData scaleData = scaleDataList.get(pointIndex);
 
-            long id = scaleData.id;
+            long id = scaleData.getId();
 
             Intent intent = new Intent(graphView.getContext(), DataEntryActivity.class);
             intent.putExtra("id", id);

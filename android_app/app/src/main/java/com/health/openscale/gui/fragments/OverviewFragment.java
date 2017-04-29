@@ -161,7 +161,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             }
         });
 
-        OpenScale.getInstance(overviewView.getContext()).registerFragment(this);
+        OpenScale.getInstance(getContext()).registerFragment(this);
 
         return overviewView;
     }
@@ -192,7 +192,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         while(scaleDataIterator.hasNext()) {
             ScaleData scaleData = scaleDataIterator.next();
 
-            if (scaleData.id == lastScaleData.id) {
+            if (scaleData.getId() == lastScaleData.getId()) {
                 if (scaleDataIterator.hasNext()) {
                     ScaleData diffScaleData = scaleDataIterator.next();
 
@@ -211,12 +211,12 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
     private void updateUserSelection() {
 
-        currentScaleUser =  OpenScale.getInstance(overviewView.getContext()).getSelectedScaleUser();
+        currentScaleUser =  OpenScale.getInstance(getContext()).getSelectedScaleUser();
 
         userSelectedData = null;
 
         spinUserAdapter.clear();
-        ArrayList<ScaleUser> scaleUserList = OpenScale.getInstance(overviewView.getContext()).getScaleUserList();
+        ArrayList<ScaleUser> scaleUserList = OpenScale.getInstance(getContext()).getScaleUserList();
 
         int posUser = 0;
         int pos = 0;
@@ -256,7 +256,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         Calendar lastDate = Calendar.getInstance();
 
         if (!scaleDataList.isEmpty()) {
-            lastDate.setTime(scaleDataList.get(0).date_time);
+            lastDate.setTime(scaleDataList.get(0).getDateTime());
         }
 
         scaleDataLastDays = new ArrayList<ScaleData>();
@@ -266,19 +266,19 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
             scaleDataLastDays.add(histData);
 
-            valuesWeight.add(new PointValue(i, histData.weight));
-            valuesFat.add(new PointValue(i, histData.fat));
-            valuesWater.add(new PointValue(i, histData.water));
-            valuesMuscle.add(new PointValue(i, histData.muscle));
-            valuesWaist.add(new PointValue(i, histData.waist));
-            valuesHip.add(new PointValue(i, histData.hip));
+            valuesWeight.add(new PointValue(i, histData.getConvertedWeight(currentScaleUser.scale_unit)));
+            valuesFat.add(new PointValue(i, histData.getFat()));
+            valuesWater.add(new PointValue(i, histData.getWater()));
+            valuesMuscle.add(new PointValue(i, histData.getMuscle()));
+            valuesWaist.add(new PointValue(i, histData.getWaist()));
+            valuesHip.add(new PointValue(i, histData.getHip()));
 
-            histDate.setTime(histData.date_time);
+            histDate.setTime(histData.getDateTime());
 
             long days = 0 - daysBetween(lastDate, histDate);
 
             if (days == 0 && !scaleDataList.isEmpty()) {
-                axisValues.add(new AxisValue(i, DateFormat.getDateInstance(DateFormat.SHORT).format(scaleDataList.get(0).date_time).toCharArray()));
+                axisValues.add(new AxisValue(i, DateFormat.getDateInstance(DateFormat.SHORT).format(scaleDataList.get(0).getDateTime()).toCharArray()));
             } else {
                 axisValues.add(new AxisValue(i, String.format("%d " + getResources().getString(R.string.label_days), days).toCharArray()));
             }
@@ -361,32 +361,32 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
         List<SliceValue> arcValuesLast = new ArrayList<SliceValue>();
 
-        if (lastScaleData.fat == 0) {
+        if (lastScaleData.getFat() == 0) {
             arcValuesLast.add(new SliceValue(1, ChartUtils.COLOR_ORANGE));
         }
         else {
-            arcValuesLast.add(new SliceValue(lastScaleData.fat, ChartUtils.COLOR_ORANGE));
+            arcValuesLast.add(new SliceValue(lastScaleData.getFat(), ChartUtils.COLOR_ORANGE));
         }
 
-        if (lastScaleData.water == 0) {
+        if (lastScaleData.getWater() == 0) {
             arcValuesLast.add(new SliceValue(1, ChartUtils.COLOR_BLUE));
         }
         else {
-            arcValuesLast.add(new SliceValue(lastScaleData.water, ChartUtils.COLOR_BLUE));
+            arcValuesLast.add(new SliceValue(lastScaleData.getWater(), ChartUtils.COLOR_BLUE));
         }
 
-        if (lastScaleData.muscle == 0) {
+        if (lastScaleData.getMuscle() == 0) {
             arcValuesLast.add(new SliceValue(1, ChartUtils.COLOR_GREEN));
         }
         else {
-            arcValuesLast.add(new SliceValue(lastScaleData.muscle, ChartUtils.COLOR_GREEN));
+            arcValuesLast.add(new SliceValue(lastScaleData.getMuscle(), ChartUtils.COLOR_GREEN));
         }
 
         PieChartData pieChartData = new PieChartData(arcValuesLast);
         pieChartData.setHasLabels(false);
         pieChartData.setHasCenterCircle(true);
-        pieChartData.setCenterText1(Float.toString(lastScaleData.weight) + " " + ScaleUser.UNIT_STRING[currentScaleUser.scale_unit]);
-        pieChartData.setCenterText2(DateFormat.getDateInstance(DateFormat.MEDIUM).format(lastScaleData.date_time));
+        pieChartData.setCenterText1(String.format("%.2f %s", lastScaleData.getConvertedWeight(currentScaleUser.scale_unit), ScaleUser.UNIT_STRING[currentScaleUser.scale_unit]));
+        pieChartData.setCenterText2(DateFormat.getDateInstance(DateFormat.MEDIUM).format(lastScaleData.getDateTime()));
 
 
         if ((getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == Configuration.SCREENLAYOUT_SIZE_XLARGE ||
@@ -422,17 +422,17 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
                 return;
             }
 
-            String date_time = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.SHORT).format(lastScaleData.date_time);
+            String date_time = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.SHORT).format(lastScaleData.getDateTime());
 
             switch (i) {
                 case 0:
-                    Toast.makeText(getActivity(), getResources().getString(R.string.info_your_fat) + " " + lastScaleData.fat + "% " + getResources().getString(R.string.info_on_date) + " " + date_time, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), getResources().getString(R.string.info_your_fat) + " " + lastScaleData.getFat() + "% " + getResources().getString(R.string.info_on_date) + " " + date_time, Toast.LENGTH_SHORT).show();
                     break;
                 case 1:
-                    Toast.makeText(getActivity(), getResources().getString(R.string.info_your_water) + " " + lastScaleData.water + "% " + getResources().getString(R.string.info_on_date) + " " + date_time, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), getResources().getString(R.string.info_your_water) + " " + lastScaleData.getWater() + "% " + getResources().getString(R.string.info_on_date) + " " + date_time, Toast.LENGTH_SHORT).show();
                     break;
                 case 2:
-                    Toast.makeText(getActivity(), getResources().getString(R.string.info_your_muscle) + " " + lastScaleData.muscle + "% " + getResources().getString(R.string.info_on_date) + " " + date_time, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), getResources().getString(R.string.info_your_muscle) + " " + lastScaleData.getMuscle() + "% " + getResources().getString(R.string.info_on_date) + " " + date_time, Toast.LENGTH_SHORT).show();
                     break;
             }
         }
@@ -448,7 +448,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         public void onValueSelected(int lineIndex, int pointIndex, PointValue pointValue) {
             userSelectedData = scaleDataLastDays.get(pointIndex);
 
-            updateOnView( OpenScale.getInstance(overviewView.getContext()).getScaleDataList());
+            updateOnView( OpenScale.getInstance(getContext()).getScaleDataList());
         }
 
         @Override
@@ -464,13 +464,13 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
              if (parent.getChildCount() > 0) {
                  ((TextView) parent.getChildAt(0)).setTextColor(Color.GRAY);
 
-                 ArrayList<ScaleUser> scaleUserList = OpenScale.getInstance(overviewView.getContext()).getScaleUserList();
+                 ArrayList<ScaleUser> scaleUserList = OpenScale.getInstance(getContext()).getScaleUserList();
 
                  ScaleUser scaleUser = scaleUserList.get(position);
 
                  SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
                  prefs.edit().putInt("selectedUserId", scaleUser.id).commit();
-                 OpenScale.getInstance(overviewView.getContext()).updateScaleData();
+                 OpenScale.getInstance(getContext()).updateScaleData();
              }
         }
 

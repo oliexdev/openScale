@@ -32,12 +32,12 @@ public class HipMeasurementView extends MeasurementView {
 
     @Override
     public void updateValue(ScaleData updateData) {
-        setValueOnView(updateData.hip);
+        setValueOnView(updateData.getHip());
     }
 
     @Override
     public void updateDiff(ScaleData updateData, ScaleData lastData) {
-        setDiffOnView(updateData.hip, lastData.hip);
+        setDiffOnView(updateData.getHip(), lastData.getHip());
     }
 
     @Override

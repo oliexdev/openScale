@@ -88,7 +88,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
     private SimpleDateFormat formatDateTime = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US);
 
 	public ScaleDatabase(Context context) {
-		super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        super(context, DATABASE_NAME, null, DATABASE_VERSION);
 	}
 
 	@Override
@@ -120,7 +120,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
 		SQLiteDatabase db = getWritableDatabase();
 
         Cursor cursorScaleDB = db.query(TABLE_NAME, new String[] {COLUMN_NAME_DATE_TIME}, COLUMN_NAME_DATE_TIME + "=? AND " + COLUMN_NAME_USER_ID + "=?",
-                new String[] {formatDateTime.format(scaleData.date_time), Integer.toString(scaleData.user_id)}, null, null, null);
+                new String[] {formatDateTime.format(scaleData.getDateTime()), Integer.toString(scaleData.getUserId())}, null, null, null);
 
         // we don't want double entries
         if (cursorScaleDB.getCount() > 0) {
@@ -128,15 +128,15 @@ public class ScaleDatabase extends SQLiteOpenHelper {
             return false;
         } else {
             ContentValues values = new ContentValues();
-            values.put(COLUMN_NAME_USER_ID, scaleData.user_id);
-            values.put(COLUMN_NAME_DATE_TIME, formatDateTime.format(scaleData.date_time));
-            values.put(COLUMN_NAME_WEIGHT, scaleData.weight);
-            values.put(COLUMN_NAME_FAT, scaleData.fat);
-            values.put(COLUMN_NAME_WATER, scaleData.water);
-            values.put(COLUMN_NAME_MUSCLE, scaleData.muscle);
-            values.put(COLUMN_NAME_WAIST, scaleData.waist);
-            values.put(COLUMN_NAME_HIP, scaleData.hip);
-            values.put(COLUMN_NAME_COMMENT, scaleData.comment);
+            values.put(COLUMN_NAME_USER_ID, scaleData.getUserId());
+            values.put(COLUMN_NAME_DATE_TIME, formatDateTime.format(scaleData.getDateTime()));
+            values.put(COLUMN_NAME_WEIGHT, scaleData.getWeight());
+            values.put(COLUMN_NAME_FAT, scaleData.getFat());
+            values.put(COLUMN_NAME_WATER, scaleData.getWater());
+            values.put(COLUMN_NAME_MUSCLE, scaleData.getMuscle());
+            values.put(COLUMN_NAME_WAIST, scaleData.getWaist());
+            values.put(COLUMN_NAME_HIP, scaleData.getHip());
+            values.put(COLUMN_NAME_COMMENT, scaleData.getComment());
             values.put(COLUMN_NAME_ENABLE, 1);
 
             try
@@ -158,14 +158,14 @@ public class ScaleDatabase extends SQLiteOpenHelper {
 
     public void updateEntry(long id, ScaleData scaleData) {
         ContentValues values = new ContentValues();
-        values.put(COLUMN_NAME_DATE_TIME, formatDateTime.format(scaleData.date_time));
-        values.put(COLUMN_NAME_WEIGHT, scaleData.weight);
-        values.put(COLUMN_NAME_FAT, scaleData.fat);
-        values.put(COLUMN_NAME_WATER, scaleData.water);
-        values.put(COLUMN_NAME_MUSCLE, scaleData.muscle);
-        values.put(COLUMN_NAME_WAIST, scaleData.waist);
-        values.put(COLUMN_NAME_HIP, scaleData.hip);
-        values.put(COLUMN_NAME_COMMENT, scaleData.comment);
+        values.put(COLUMN_NAME_DATE_TIME, formatDateTime.format(scaleData.getDateTime()));
+        values.put(COLUMN_NAME_WEIGHT, scaleData.getWeight());
+        values.put(COLUMN_NAME_FAT, scaleData.getFat());
+        values.put(COLUMN_NAME_WATER, scaleData.getWater());
+        values.put(COLUMN_NAME_MUSCLE, scaleData.getMuscle());
+        values.put(COLUMN_NAME_WAIST, scaleData.getWaist());
+        values.put(COLUMN_NAME_HIP, scaleData.getHip());
+        values.put(COLUMN_NAME_COMMENT, scaleData.getComment());
         values.put(COLUMN_NAME_ENABLE, 1);
 
         dbWrite.update(TABLE_NAME, values, COLUMN_NAME_ID + "=" + id, null);
@@ -334,18 +334,18 @@ public class ScaleDatabase extends SQLiteOpenHelper {
         ScaleData scaleData = new ScaleData();
 
         try {
-            scaleData.id = cur.getLong(cur.getColumnIndexOrThrow(COLUMN_NAME_ID));
-            scaleData.user_id = cur.getInt(cur.getColumnIndexOrThrow(COLUMN_NAME_USER_ID));
+            scaleData.setId(cur.getLong(cur.getColumnIndexOrThrow(COLUMN_NAME_ID)));
+            scaleData.setUserId(cur.getInt(cur.getColumnIndexOrThrow(COLUMN_NAME_USER_ID)));
             String date_time = cur.getString(cur.getColumnIndexOrThrow(COLUMN_NAME_DATE_TIME));
-            scaleData.weight = cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_WEIGHT));
-            scaleData.fat = cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_FAT));
-            scaleData.water = cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_WATER));
-            scaleData.muscle = cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_MUSCLE));
-            scaleData.waist = cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_WAIST));
-            scaleData.hip = cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_HIP));
-            scaleData.comment = cur.getString(cur.getColumnIndexOrThrow(COLUMN_NAME_COMMENT));
+            scaleData.setWeight(cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_WEIGHT)));
+            scaleData.setFat(cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_FAT)));
+            scaleData.setWater(cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_WATER)));
+            scaleData.setMuscle(cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_MUSCLE)));
+            scaleData.setWaist(cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_WAIST)));
+            scaleData.setHip(cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_HIP)));
+            scaleData.setComment(cur.getString(cur.getColumnIndexOrThrow(COLUMN_NAME_COMMENT)));
 
-            scaleData.date_time = formatDateTime.parse(date_time);
+            scaleData.setDateTime(formatDateTime.parse(date_time));
         } catch (ParseException ex) {
             Log.e("ScaleDatabase", "Can't parse the date time string: " + ex.getMessage());
         }

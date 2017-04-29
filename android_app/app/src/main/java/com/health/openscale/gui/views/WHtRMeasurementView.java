@@ -20,7 +20,6 @@ import android.content.SharedPreferences;
 import android.support.v4.content.ContextCompat;
 
 import com.health.openscale.R;
-import com.health.openscale.core.datatypes.ScaleCalculator;
 import com.health.openscale.core.datatypes.ScaleData;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
@@ -38,15 +37,12 @@ public class WHtRMeasurementView extends MeasurementView {
 
     @Override
     public void updateValue(ScaleData updateData) {
-        ScaleCalculator updateCalculator = new ScaleCalculator(updateData);
-        setValueOnView(updateCalculator.getWHtR(getScaleUser().body_height));
+        setValueOnView(updateData.getWHtR(getScaleUser().body_height));
     }
 
     @Override
     public void updateDiff(ScaleData updateData, ScaleData lastData) {
-        ScaleCalculator updateCalculator = new ScaleCalculator(updateData);
-        ScaleCalculator lastCalculator = new ScaleCalculator(lastData);
-        setDiffOnView(updateCalculator.getWHtR(getScaleUser().body_height), lastCalculator.getWHtR(getScaleUser().body_height));
+        setDiffOnView(updateData.getWHtR(getScaleUser().body_height), lastData.getWHtR(getScaleUser().body_height));
     }
 
     @Override

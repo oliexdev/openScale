@@ -71,7 +71,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 		
 		tableView.findViewById(R.id.btnDeleteAll).setOnClickListener(new onClickListenerDeleteAll());
 
-        OpenScale.getInstance(tableView.getContext()).registerFragment(this);
+        OpenScale.getInstance(getContext()).registerFragment(this);
 
 		return tableView;
 	}
@@ -152,32 +152,32 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 			dataRow.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
 
             TextView idView = new TextView(tableView.getContext());
-            idView.setText(Long.toString(scaleData.id));
+            idView.setText(Long.toString(scaleData.getId()));
             idView.setVisibility(View.GONE);
             dataRow.addView(idView);
 
 			TextView dateTextView = new TextView(tableView.getContext());
             if ((getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == Configuration.SCREENLAYOUT_SIZE_XLARGE ||
                 (getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == Configuration.SCREENLAYOUT_SIZE_LARGE) {
-                dateTextView.setText(DateFormat.getDateInstance(DateFormat.MEDIUM).format(scaleData.date_time));
+                dateTextView.setText(DateFormat.getDateInstance(DateFormat.MEDIUM).format(scaleData.getDateTime()));
             } else{
-                dateTextView.setText(DateFormat.getDateInstance(DateFormat.SHORT).format(scaleData.date_time));
+                dateTextView.setText(DateFormat.getDateInstance(DateFormat.SHORT).format(scaleData.getDateTime()));
             }
 			dateTextView.setPadding(0, 5, 5, 5);
 			dataRow.addView(dateTextView);
 			
 			TextView timeTextView = new TextView(tableView.getContext());
-			timeTextView.setText(new SimpleDateFormat("HH:mm").format(scaleData.date_time));
+			timeTextView.setText(new SimpleDateFormat("HH:mm").format(scaleData.getDateTime()));
 			timeTextView.setPadding(0, 5, 5, 5);
 			dataRow.addView(timeTextView);
 			
 			TextView weightView = new TextView(tableView.getContext());
-			weightView.setText(Float.toString(scaleData.weight));
+			weightView.setText(String.format("%.2f", scaleData.getConvertedWeight(OpenScale.getInstance(getContext()).getSelectedScaleUser().scale_unit)));
 			weightView.setPadding(0, 5, 5, 5);
 			dataRow.addView(weightView);
 			
 			TextView fatView = new TextView(tableView.getContext());
-			fatView.setText(Float.toString(scaleData.fat));
+			fatView.setText(Float.toString(scaleData.getFat()));
 			fatView.setPadding(0, 5, 5, 5);
             if(!prefs.getBoolean("fatEnable", true)) {
                 fatView.setVisibility(View.GONE);
@@ -185,7 +185,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 			dataRow.addView(fatView);
 			
 			TextView waterView = new TextView(tableView.getContext());
-			waterView.setText(Float.toString(scaleData.water));
+			waterView.setText(Float.toString(scaleData.getWater()));
 			waterView.setPadding(0, 5, 5, 5);
             if(!prefs.getBoolean("waterEnable", true)) {
                 waterView.setVisibility(View.GONE);
@@ -193,7 +193,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
             dataRow.addView(waterView);
 			
 			TextView muscleView = new TextView(tableView.getContext());
-			muscleView.setText(Float.toString(scaleData.muscle));
+			muscleView.setText(Float.toString(scaleData.getMuscle()));
 			muscleView.setPadding(0, 5, 5, 5);
             if(!prefs.getBoolean("muscleEnable", true)) {
                 muscleView.setVisibility(View.GONE);
@@ -201,7 +201,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
             dataRow.addView(muscleView);
 
             TextView waistView = new TextView(tableView.getContext());
-            waistView.setText(Float.toString(scaleData.waist));
+            waistView.setText(Float.toString(scaleData.getWaist()));
             waistView.setPadding(0, 5, 5, 5);
             if(!prefs.getBoolean("waistEnable", true)) {
                 waistView.setVisibility(View.GONE);
@@ -209,7 +209,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
             dataRow.addView(waistView);
 
             TextView hipView = new TextView(tableView.getContext());
-            hipView.setText(Float.toString(scaleData.hip));
+            hipView.setText(Float.toString(scaleData.getHip()));
             hipView.setPadding(0, 5, 5, 5);
             if(!prefs.getBoolean("hipEnable", true)) {
                 hipView.setVisibility(View.GONE);
@@ -217,7 +217,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
             dataRow.addView(hipView);
 
             TextView commentView = new TextView(tableView.getContext());
-            commentView.setText(scaleData.comment);
+            commentView.setText(scaleData.getComment());
             commentView.setPadding(0, 5, 5, 5);
             dataRow.addView(commentView);
 
@@ -289,7 +289,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
                     filenameDialog.setTitle(getResources().getString(R.string.info_set_filename) + " /sdcard ...");
 
                     final EditText txtFilename = new EditText(tableView.getContext());
-                    txtFilename.setText("/openScale_data_" + OpenScale.getInstance(tableView.getContext()).getSelectedScaleUser().user_name + ".csv");
+                    txtFilename.setText("/openScale_data_" + OpenScale.getInstance(getContext()).getSelectedScaleUser().user_name + ".csv");
 
                     filenameDialog.setView(txtFilename);
 
@@ -298,7 +298,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
                             boolean isError = false;
 
                             try {
-                                OpenScale.getInstance(tableView.getContext()).importData(Environment.getExternalStorageDirectory().getPath() + txtFilename.getText().toString());
+                                OpenScale.getInstance(getContext()).importData(Environment.getExternalStorageDirectory().getPath() + txtFilename.getText().toString());
                             } catch (IOException e) {
                                 Toast.makeText(tableView.getContext(), getResources().getString(R.string.error_importing) + " " + e.getMessage(), Toast.LENGTH_SHORT).show();
                                 isError = true;
@@ -306,7 +306,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
                             if (!isError) {
                                 Toast.makeText(tableView.getContext(), getResources().getString(R.string.info_data_imported) + " /sdcard" + txtFilename.getText().toString(), Toast.LENGTH_SHORT).show();
-                                updateOnView(OpenScale.getInstance(tableView.getContext()).getScaleDataList());
+                                updateOnView(OpenScale.getInstance(getContext()).getScaleDataList());
                             }
                         }
                     });
@@ -331,7 +331,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
             filenameDialog.setTitle(getResources().getString(R.string.info_set_filename) + " /sdcard ...");
 
             final EditText txtFilename = new EditText(tableView.getContext());
-            txtFilename.setText("/openScale_data_" + OpenScale.getInstance(tableView.getContext()).getSelectedScaleUser().user_name + ".csv");
+            txtFilename.setText("/openScale_data_" + OpenScale.getInstance(getContext()).getSelectedScaleUser().user_name + ".csv");
 
             filenameDialog.setView(txtFilename);
 
@@ -340,7 +340,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
                     boolean isError = false;
 
                     try {
-                        OpenScale.getInstance(tableView.getContext()).exportData(Environment.getExternalStorageDirectory().getPath() + txtFilename.getText().toString());
+                        OpenScale.getInstance(getContext()).exportData(Environment.getExternalStorageDirectory().getPath() + txtFilename.getText().toString());
                     } catch (IOException e) {
                         Toast.makeText(tableView.getContext(), getResources().getString(R.string.error_exporting) + " " + e.getMessage(), Toast.LENGTH_SHORT).show();
                         isError = true;
@@ -375,10 +375,10 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
                     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(tableView.getContext());
                     int selectedUserId  = prefs.getInt("selectedUserId", -1);
 
-                    OpenScale.getInstance(tableView.getContext()).clearScaleData(selectedUserId);
+                    OpenScale.getInstance(getContext()).clearScaleData(selectedUserId);
 
                     Toast.makeText(tableView.getContext(), getResources().getString(R.string.info_data_all_deleted), Toast.LENGTH_SHORT).show();
-                    updateOnView(OpenScale.getInstance(tableView.getContext()).getScaleDataList());
+                    updateOnView(OpenScale.getInstance(getContext()).getScaleDataList());
                 }
             });
 
@@ -428,10 +428,10 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
         }
 
         public void deleteMeasurement() {
-            OpenScale.getInstance(tableView.getContext()).deleteScaleData(row_id);
+            OpenScale.getInstance(getContext()).deleteScaleData(row_id);
 
             Toast.makeText(tableView.getContext(), getResources().getString(R.string.info_data_deleted), Toast.LENGTH_SHORT).show();
-            updateOnView(OpenScale.getInstance(tableView.getContext()).getScaleDataList());
+            updateOnView(OpenScale.getInstance(getContext()).getScaleDataList());
         }
     }
 

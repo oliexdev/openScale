@@ -123,7 +123,7 @@ public class UserSettingsActivity extends Activity {
     {
         int id = getIntent().getExtras().getInt("id");
 
-        OpenScale openScale = OpenScale.getInstance(context);
+        OpenScale openScale = OpenScale.getInstance(getApplicationContext());
 
         ScaleUser scaleUser = openScale.getScaleUser(id);
 
@@ -207,7 +207,7 @@ public class UserSettingsActivity extends Activity {
                 public void onClick(DialogInterface dialog, int id) {
                     int userId = getIntent().getExtras().getInt("id");
 
-                    OpenScale openScale = OpenScale.getInstance(context);
+                    OpenScale openScale = OpenScale.getInstance(getApplicationContext());
                     openScale.clearScaleData(userId);
                     openScale.deleteScaleUser(userId);
 
@@ -246,7 +246,7 @@ public class UserSettingsActivity extends Activity {
         public void onClick(View v) {
             if (validateInput())
             {
-                OpenScale openScale = OpenScale.getInstance(context);
+                OpenScale openScale = OpenScale.getInstance(getApplicationContext());
 
                 String name = txtUserName.getText().toString();
                 int body_height = Integer.valueOf(txtBodyHeight.getText().toString());

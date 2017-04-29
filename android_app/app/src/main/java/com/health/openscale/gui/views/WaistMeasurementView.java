@@ -32,12 +32,12 @@ public class WaistMeasurementView extends MeasurementView {
 
     @Override
     public void updateValue(ScaleData updateData) {
-        setValueOnView(updateData.waist);
+        setValueOnView(updateData.getWaist());
     }
 
     @Override
     public void updateDiff(ScaleData updateData, ScaleData lastData) {
-        setDiffOnView(updateData.waist, lastData.waist);
+        setDiffOnView(updateData.getWaist(), lastData.getWaist());
     }
 
     @Override

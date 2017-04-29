@@ -212,15 +212,15 @@ public class BluetoothCustomOpenScale extends BluetoothCommunication {
                         int btChecksum = Integer.parseInt(csvField[10]);
 
                         if (checksum == btChecksum) {
-                            scaleBtData.id = -1;
-                            scaleBtData.user_id = Integer.parseInt(csvField[0]);
+                            scaleBtData.setId(-1);
+                            scaleBtData.setUserId(Integer.parseInt(csvField[0]));
                             String date_string = csvField[1] + "/" + csvField[2] + "/" + csvField[3] + "/" + csvField[4] + "/" + csvField[5];
-                            scaleBtData.date_time = new SimpleDateFormat("yyyy/MM/dd/HH/mm").parse(date_string);
+                            scaleBtData.setDateTime(new SimpleDateFormat("yyyy/MM/dd/HH/mm").parse(date_string));
 
-                            scaleBtData.weight = Float.parseFloat(csvField[6]);
-                            scaleBtData.fat = Float.parseFloat(csvField[7]);
-                            scaleBtData.water = Float.parseFloat(csvField[8]);
-                            scaleBtData.muscle = Float.parseFloat(csvField[9]);
+                            scaleBtData.setWeight(Float.parseFloat(csvField[6]));
+                            scaleBtData.setFat(Float.parseFloat(csvField[7]));
+                            scaleBtData.setWater(Float.parseFloat(csvField[8]));
+                            scaleBtData.setMuscle(Float.parseFloat(csvField[9]));
 
                             return scaleBtData;
                         } else {

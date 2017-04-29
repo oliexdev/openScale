@@ -28,7 +28,6 @@ import android.widget.TextView;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
-import com.health.openscale.core.datatypes.ScaleCalculator;
 import com.health.openscale.core.datatypes.ScaleData;
 import com.health.openscale.core.datatypes.ScaleUser;
 
@@ -83,7 +82,7 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
         txtLabelAvgWeek = (TextView) statisticsView.findViewById(R.id.txtLabelAvgWeek);
         txtLabelAvgMonth = (TextView) statisticsView.findViewById(R.id.txtLabelAvgMonth);
 
-        OpenScale.getInstance(statisticsView.getContext()).registerFragment(this);
+        OpenScale.getInstance(getContext()).registerFragment(this);
 
         return statisticsView;
     }
@@ -100,16 +99,19 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
         txtTitleStatistics.setText(getResources().getString(R.string.label_title_statistics).toUpperCase());
 
         prefs = PreferenceManager.getDefaultSharedPreferences(statisticsView.getContext());
-        currentScaleUser =  OpenScale.getInstance(statisticsView.getContext()).getSelectedScaleUser();
+        currentScaleUser =  OpenScale.getInstance(getContext()).getSelectedScaleUser();
 
         updateStatistics(scaleDataList);
         updateGoal(scaleDataList);
     }
 
     private void updateGoal(ArrayList<ScaleData> scaleDataList) {
-        txtGoalWeight.setText(currentScaleUser.goal_weight + " " + ScaleUser.UNIT_STRING[currentScaleUser.scale_unit]);
+        ScaleData goalScaleData = new ScaleData();
+        goalScaleData.setConvertedWeight(currentScaleUser.goal_weight, currentScaleUser.scale_unit);
 
-        double weight_diff = currentScaleUser.goal_weight - lastScaleData.weight;
+        txtGoalWeight.setText(goalScaleData.getConvertedWeight(currentScaleUser.scale_unit) + " " + ScaleUser.UNIT_STRING[currentScaleUser.scale_unit]);
+
+        double weight_diff = goalScaleData.getConvertedWeight(currentScaleUser.scale_unit) - lastScaleData.getConvertedWeight(currentScaleUser.scale_unit);
         txtGoalDiff.setText(String.format("%.1f " + ScaleUser.UNIT_STRING[currentScaleUser.scale_unit], weight_diff));
 
         Calendar goalDate = Calendar.getInstance();
@@ -119,11 +121,11 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
         long days = daysBetween(curDate, goalDate);
         txtGoalDayLeft.setText(days + " " + getResources().getString(R.string.label_days));
 
-        ScaleCalculator currentCalculator = new ScaleCalculator(lastScaleData);
+        lastScaleData.setUserId(currentScaleUser.id);
 
         ScaleData goalData = new ScaleData();
-        goalData.weight = currentScaleUser.goal_weight;
-        ScaleCalculator goalCalculator = new ScaleCalculator(goalData);
+        goalData.setConvertedWeight(currentScaleUser.goal_weight, currentScaleUser.scale_unit);
+        goalData.setUserId(currentScaleUser.id);
 
         txtLabelGoalWeight.setText(
                 Html.fromHtml(
@@ -131,7 +133,7 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
                                 " <br> <font color='grey'><small>" +
                                 getResources().getString(R.string.label_bmi) +
                                 ": " +
-                                String.format("%.1f", goalCalculator.getBMI(currentScaleUser.body_height)) +
+                                String.format("%.1f", goalData.getBMI(currentScaleUser.body_height)) +
                                 " </small></font>"
                 )
         );
@@ -141,7 +143,7 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
                                 " <br> <font color='grey'><small>" +
                                 getResources().getString(R.string.label_bmi) +
                                 ": " +
-                                String.format("%.1f", currentCalculator.getBMI(currentScaleUser.body_height) - goalCalculator.getBMI(currentScaleUser.body_height))  +
+                                String.format("%.1f", lastScaleData.getBMI(currentScaleUser.body_height) - goalData.getBMI(currentScaleUser.body_height))  +
                                 " </small></font>"
                 )
         );
@@ -162,10 +164,10 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
         Calendar weekPastDate = Calendar.getInstance();
         Calendar monthPastDate = Calendar.getInstance();
 
-        weekPastDate.setTime(lastScaleData.date_time);
+        weekPastDate.setTime(lastScaleData.getDateTime());
         weekPastDate.add(Calendar.DATE, -7);
 
-        monthPastDate.setTime(lastScaleData.date_time);
+        monthPastDate.setTime(lastScaleData.getDateTime());
         monthPastDate.add(Calendar.DATE, -30);
 
         int weekSize = 0;
@@ -192,36 +194,34 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
 
         for (ScaleData scaleData : scaleDataList)
         {
-            histDate.setTime(scaleData.date_time);
-
-            ScaleCalculator calculator = new ScaleCalculator(scaleData);
+            histDate.setTime(scaleData.getDateTime());
 
             if (weekPastDate.before(histDate)) {
                 weekSize++;
 
-                weekAvgWeight += scaleData.weight;
-                weekAvgBMI += calculator.getBMI(currentScaleUser.body_height);
-                weekAvgFat += scaleData.fat;
-                weekAvgWater += scaleData.water;
-                weekAvgMuscle += scaleData.muscle;
-                weekAvgWaist += scaleData.waist;
-                weekAvgHip += scaleData.hip;
-                weekAvgWHtR += calculator.getWHtR(currentScaleUser.body_height);
-                weekAvgWHR += calculator.getWHR();
+                weekAvgWeight += scaleData.getConvertedWeight(currentScaleUser.scale_unit);
+                weekAvgBMI += scaleData.getBMI(currentScaleUser.body_height);
+                weekAvgFat += scaleData.getFat();
+                weekAvgWater += scaleData.getWater();
+                weekAvgMuscle += scaleData.getMuscle();
+                weekAvgWaist += scaleData.getWaist();
+                weekAvgHip += scaleData.getHip();
+                weekAvgWHtR += scaleData.getWHtR(currentScaleUser.body_height);
+                weekAvgWHR += scaleData.getWHR();
             }
 
             if (monthPastDate.before(histDate)) {
                 monthSize++;
 
-                monthAvgWeight += scaleData.weight;
-                monthAvgBMI += calculator.getBMI(currentScaleUser.body_height);
-                monthAvgFat += scaleData.fat;
-                monthAvgWater += scaleData.water;
-                monthAvgMuscle += scaleData.muscle;
-                monthAvgWaist += scaleData.waist;
-                monthAvgHip += scaleData.hip;
-                monthAvgWHtR += calculator.getWHtR(currentScaleUser.body_height);
-                monthAvgWHR += calculator.getWHR();
+                monthAvgWeight += scaleData.getConvertedWeight(currentScaleUser.scale_unit);
+                monthAvgBMI += scaleData.getBMI(currentScaleUser.body_height);
+                monthAvgFat += scaleData.getFat();
+                monthAvgWater += scaleData.getWater();
+                monthAvgMuscle += scaleData.getMuscle();
+                monthAvgWaist += scaleData.getWaist();
+                monthAvgHip += scaleData.getHip();
+                monthAvgWHtR += scaleData.getWHtR(currentScaleUser.body_height);
+                monthAvgWHR += scaleData.getWHR();
             } else {
                 break;
             }

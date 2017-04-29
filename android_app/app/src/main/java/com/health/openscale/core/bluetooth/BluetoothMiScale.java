@@ -160,8 +160,8 @@ public class BluetoothMiScale extends BluetoothCommunication {
                 if (validateDate(date_time, 20)) {
                     ScaleData scaleBtData = new ScaleData();
 
-                    scaleBtData.weight = weight;
-                    scaleBtData.date_time = date_time;
+                    scaleBtData.setWeight(weight);
+                    scaleBtData.setDateTime(date_time);
 
                     callbackBtHandler.obtainMessage(BluetoothCommunication.BT_RETRIEVE_SCALE_DATA, scaleBtData).sendToTarget();
                 } else {

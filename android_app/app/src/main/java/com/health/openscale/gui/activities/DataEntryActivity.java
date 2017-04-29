@@ -186,7 +186,7 @@ public class DataEntryActivity extends Activity {
 
             ScaleData selectedScaleData = openScale.getScaleData(id);
 
-            txtDataNr.setText(DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.SHORT).format(selectedScaleData.date_time));
+            txtDataNr.setText(DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.SHORT).format(selectedScaleData.getDateTime()));
 
             ArrayList<ScaleData> scaleDataList = OpenScale.getInstance(context).getScaleDataList();
             ListIterator<ScaleData> scaleDataIterator = scaleDataList.listIterator();
@@ -196,7 +196,7 @@ public class DataEntryActivity extends Activity {
             while(scaleDataIterator.hasNext()) {
                 ScaleData scaleData = scaleDataIterator.next();
 
-                if (scaleData.id == id) {
+                if (scaleData.getId() == id) {
                     if (scaleDataIterator.hasNext()) {
                         lastData = scaleDataIterator.next();
                     }
@@ -214,16 +214,16 @@ public class DataEntryActivity extends Activity {
         }
 
 
-        if (!OpenScale.getInstance(this).getScaleDataList().isEmpty())
+        if (!OpenScale.getInstance(getApplicationContext()).getScaleDataList().isEmpty())
         {
             setViewMode(MeasurementView.MeasurementViewMode.ADD);
             txtDataNr.setText(DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.SHORT).format(new Date()));
-            ScaleData lastScaleData = OpenScale.getInstance(this).getScaleDataList().get(0);
+            ScaleData lastScaleData = OpenScale.getInstance(getApplicationContext()).getScaleDataList().get(0);
 
             // show as default last scale data
             for (MeasurementView measuremt : dataEntryMeasurements) {
-                lastScaleData.date_time = new Date();
-                lastScaleData.comment = "";
+                lastScaleData.setDateTime(new Date());
+                lastScaleData.setComment("");
                 measuremt.updateValue(lastScaleData);
             }
         } else {
@@ -279,21 +279,26 @@ public class DataEntryActivity extends Activity {
     }
 
     private void saveScaleData() {
-        OpenScale openScale = OpenScale.getInstance(context);
+        OpenScale openScale = OpenScale.getInstance(getApplicationContext());
 
-        openScale.updateScaleData(id,
-                dateMeasurement.getValueAsString() + " " + timeMeasurement.getValueAsString(),
-                weightMeasurement.getValue(),
-                fatMeasurement.getValue(),
-                waterMeasurement.getValue(),
-                muscleMeasurement.getValue(),
-                waistMeasurement.getValue(),
-                hipMeasurement.getValue(),
-                commentMeasurement.getValueAsString());
+        ScaleData scaleData = new ScaleData();
+
+        scaleData.setId(id);
+        scaleData.setUserId(openScale.getSelectedScaleUser().id);
+        scaleData.setDateTime(dateMeasurement.getValueAsString() + " " + timeMeasurement.getValueAsString());
+        scaleData.setConvertedWeight(weightMeasurement.getValue(), openScale.getSelectedScaleUser().scale_unit);
+        scaleData.setFat(fatMeasurement.getValue());
+        scaleData.setWater(waterMeasurement.getValue());
+        scaleData.setMuscle(muscleMeasurement.getValue());
+        scaleData.setWaist(waistMeasurement.getValue());
+        scaleData.setHip(hipMeasurement.getValue());
+        scaleData.setComment(commentMeasurement.getValueAsString());
+
+        openScale.updateScaleData(scaleData);
     }
 
     private boolean moveLeft() {
-        ArrayList<ScaleData> scaleDataList = OpenScale.getInstance(context).getScaleDataList();
+        ArrayList<ScaleData> scaleDataList = OpenScale.getInstance(getApplicationContext()).getScaleDataList();
 
         ListIterator<ScaleData> scaleDataIterator = scaleDataList.listIterator();
 
@@ -301,11 +306,11 @@ public class DataEntryActivity extends Activity {
         {
             ScaleData scaleData = scaleDataIterator.next();
 
-            if (scaleData.id == id)
+            if (scaleData.getId() == id)
             {
                 if (scaleDataIterator.hasNext()) {
                     saveScaleData();
-                    getIntent().putExtra("id",scaleDataIterator.next().id );
+                    getIntent().putExtra("id",scaleDataIterator.next().getId() );
                     updateOnView();
                     return true;
                 } else {
@@ -320,7 +325,7 @@ public class DataEntryActivity extends Activity {
 
     private boolean moveRight()
     {
-        ArrayList<ScaleData> scaleDataList = OpenScale.getInstance(context).getScaleDataList();
+        ArrayList<ScaleData> scaleDataList = OpenScale.getInstance(getApplicationContext()).getScaleDataList();
 
         ListIterator<ScaleData> scaleDataIterator = scaleDataList.listIterator(scaleDataList.size());
 
@@ -328,11 +333,11 @@ public class DataEntryActivity extends Activity {
         {
             ScaleData scaleData = scaleDataIterator.previous();
 
-            if (scaleData.id == id)
+            if (scaleData.getId() == id)
             {
                 if (scaleDataIterator.hasPrevious()) {
                     saveScaleData();
-                    getIntent().putExtra("id", scaleDataIterator.previous().id);
+                    getIntent().putExtra("id", scaleDataIterator.previous().getId());
                     updateOnView();
                     return true;
                 } else {
@@ -348,7 +353,7 @@ public class DataEntryActivity extends Activity {
     private class onClickListenerAdd implements View.OnClickListener {
         @Override
         public void onClick(View v) {
-            OpenScale openScale = OpenScale.getInstance(context);
+            OpenScale openScale = OpenScale.getInstance(getApplicationContext());
 
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
             int selectedUserId  = prefs.getInt("selectedUserId", -1);
@@ -362,15 +367,19 @@ public class DataEntryActivity extends Activity {
 
                 infoDialog.show();
             } else {
-                openScale.addScaleData(selectedUserId,
-                        dateMeasurement.getValueAsString() + " " + timeMeasurement.getValueAsString(),
-                        weightMeasurement.getValue(),
-                        fatMeasurement.getValue(),
-                        waterMeasurement.getValue(),
-                        muscleMeasurement.getValue(),
-                        waistMeasurement.getValue(),
-                        hipMeasurement.getValue(),
-                        commentMeasurement.getValueAsString());
+                ScaleData scaleData = new ScaleData();
+
+                scaleData.setUserId(selectedUserId);
+                scaleData.setDateTime( dateMeasurement.getValueAsString() + " " + timeMeasurement.getValueAsString());
+                scaleData.setConvertedWeight(weightMeasurement.getValue(), openScale.getSelectedScaleUser().scale_unit);
+                scaleData.setFat(fatMeasurement.getValue());
+                scaleData.setWater(waterMeasurement.getValue());
+                scaleData.setMuscle(muscleMeasurement.getValue());
+                scaleData.setWaist(waistMeasurement.getValue());
+                scaleData.setHip(hipMeasurement.getValue());
+                scaleData.setComment(commentMeasurement.getValueAsString());
+
+                openScale.addScaleData(scaleData);
 
                 finish();
             }
@@ -440,7 +449,7 @@ public class DataEntryActivity extends Activity {
 
             boolean hasNext = moveLeft();
 
-            OpenScale.getInstance(context).deleteScaleData(delId);
+            OpenScale.getInstance(getApplicationContext()).deleteScaleData(delId);
             Toast.makeText(context, getResources().getString(R.string.info_data_deleted), Toast.LENGTH_SHORT).show();
 
             if (!hasNext) {

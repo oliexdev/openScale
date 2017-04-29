@@ -55,7 +55,7 @@ public class TimeMeasurementView extends MeasurementView {
 
     @Override
     public void updateValue(ScaleData updateData) {
-        setValueOnView(timeFormat.format(updateData.date_time));
+        setValueOnView(timeFormat.format(updateData.getDateTime()));
     }
 
     @Override

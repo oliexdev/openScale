@@ -54,7 +54,7 @@ public class AlarmHandler
 
     public void entryChanged(Context context, ScaleData data)
     {
-        long dataMillis = data.date_time.getTime();
+        long dataMillis = data.getDateTime().getTime();
 
         Calendar dataTimestamp = Calendar.getInstance();
         dataTimestamp.setTimeInMillis(dataMillis);

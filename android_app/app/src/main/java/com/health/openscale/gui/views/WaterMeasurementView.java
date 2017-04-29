@@ -32,12 +32,12 @@ public class WaterMeasurementView extends MeasurementView {
 
     @Override
     public void updateValue(ScaleData updateData) {
-        setValueOnView(updateData.water);
+        setValueOnView(updateData.getWater());
     }
 
     @Override
     public void updateDiff(ScaleData updateData, ScaleData lastData) {
-        setDiffOnView(updateData.water, lastData.water);
+        setDiffOnView(updateData.getWater(), lastData.getWater());
     }
 
     @Override
