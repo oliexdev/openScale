@@ -46,8 +46,6 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
 
-import static android.R.attr.id;
-import static com.health.openscale.R.drawable.weight;
 import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_MI_SCALE;
 import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_OPEN_SCALE;
 
@@ -174,7 +172,7 @@ public class OpenScale {
 
         if (scaleData.getUserId() == -1) {
             if (prefs.getBoolean("smartUserAssign", false)) {
-                scaleData.setUserId(getSmartUserAssignment(weight, 15.0f));
+                scaleData.setUserId(getSmartUserAssignment(scaleData.getWeight(), 15.0f));
             } else {
                 scaleData.setUserId(getSelectedScaleUser().id);
             }
@@ -200,7 +198,7 @@ public class OpenScale {
             ArrayList<ScaleData> scaleUserData = scaleDB.getScaleDataList(scaleUser.get(i).id);
 
             if (scaleUserData.size() > 0) {
-                float lastWeight = scaleUserData.get(0).getConvertedWeight(getSelectedScaleUser().scale_unit);
+                float lastWeight = scaleUserData.get(0).getWeight();
 
                 if ((lastWeight - range) <= weight && (lastWeight + range) >= weight) {
                     inRangeWeights.put(Math.abs(lastWeight - weight), scaleUser.get(i).id);
@@ -217,7 +215,7 @@ public class OpenScale {
     }
 
     public void updateScaleData(ScaleData scaleData) {
-        scaleDB.updateEntry(id, scaleData);
+        scaleDB.updateEntry(scaleData.getId(), scaleData);
         alarmHandler.entryChanged(context, scaleData);
 
         updateScaleData();

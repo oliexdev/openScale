@@ -158,6 +158,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
 
     public void updateEntry(long id, ScaleData scaleData) {
         ContentValues values = new ContentValues();
+
         values.put(COLUMN_NAME_DATE_TIME, formatDateTime.format(scaleData.getDateTime()));
         values.put(COLUMN_NAME_WEIGHT, scaleData.getWeight());
         values.put(COLUMN_NAME_FAT, scaleData.getFat());
