@@ -31,6 +31,7 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.health.openscale.R;
@@ -73,6 +74,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     private FloatingActionButton diagramMuscle;
     private FloatingActionButton diagramWaist;
     private FloatingActionButton diagramHip;
+    private FloatingActionButton enableMonth;
     private SharedPreferences prefs;
 
     private OpenScale openScale;
@@ -109,12 +111,16 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         diagramWaist = (FloatingActionButton) graphView.findViewById(R.id.diagramWaist);
         diagramHip = (FloatingActionButton) graphView.findViewById(R.id.diagramHip);
 
+        enableMonth = (FloatingActionButton) graphView.findViewById(R.id.enableMonth);
+
         diagramWeight.setOnClickListener(new onClickListenerDiagramLines());
         diagramFat.setOnClickListener(new onClickListenerDiagramLines());
         diagramWater.setOnClickListener(new onClickListenerDiagramLines());
         diagramMuscle.setOnClickListener(new onClickListenerDiagramLines());
         diagramWaist.setOnClickListener(new onClickListenerDiagramLines());
         diagramHip.setOnClickListener(new onClickListenerDiagramLines());
+
+        enableMonth.setOnClickListener(new onClickListenerDiagramLines());
 
         prefs = PreferenceManager.getDefaultSharedPreferences(graphView.getContext());
 
@@ -167,19 +173,21 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 	@Override
 	public void updateOnView(ArrayList<ScaleData> scaleDataList)
 	{
-        generateColumnData();
+        generateGraphs();
 	}
 
-    private void generateLineData(Calendar calMonth)
+    private void generateLineData(int field)
     {
-        scaleDataList = openScale.getScaleDataOfMonth(calYears.get(Calendar.YEAR), calMonth.get(Calendar.MONTH));
+        SimpleDateFormat day_date = new SimpleDateFormat("D", Locale.getDefault());
 
-        SimpleDateFormat day_date = new SimpleDateFormat("dd", Locale.getDefault());
+        if (field == Calendar.DAY_OF_MONTH) {
+            day_date = new SimpleDateFormat("dd", Locale.getDefault());
+        }
 
-        Calendar calDays = (Calendar)calMonth.clone();
+        Calendar calDays = (Calendar)calLastSelected.clone();
 
-        calDays.set(Calendar.DAY_OF_MONTH, 1);
-        int maxDays = calDays.getActualMaximum(Calendar.DAY_OF_MONTH);
+        calDays.set(field, 1);
+        int maxDays = calDays.getActualMaximum(field);
 
         List<AxisValue> axisValues = new ArrayList<AxisValue>();
 
@@ -188,7 +196,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
             axisValues.add(new AxisValue(i, day_name.toCharArray()));
 
-            calDays.add(Calendar.DAY_OF_MONTH, 1);
+            calDays.add(field, 1);
         }
 
         List<PointValue> valuesWeight = new ArrayList<PointValue>();
@@ -205,12 +213,12 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         {
             calDB.setTime(scaleEntry.date_time);
 
-            valuesWeight.add(new PointValue(calDB.get(Calendar.DAY_OF_MONTH)-1, scaleEntry.weight));
-            valuesFat.add(new PointValue(calDB.get(Calendar.DAY_OF_MONTH)-1, scaleEntry.fat));
-            valuesWater.add(new PointValue(calDB.get(Calendar.DAY_OF_MONTH)-1, scaleEntry.water));
-            valuesMuscle.add(new PointValue(calDB.get(Calendar.DAY_OF_MONTH)-1, scaleEntry.muscle));
-            valuesWaist.add(new PointValue(calDB.get(Calendar.DAY_OF_MONTH)-1, scaleEntry.waist));
-            valuesHip.add(new PointValue(calDB.get(Calendar.DAY_OF_MONTH)-1, scaleEntry.hip));
+            valuesWeight.add(new PointValue(calDB.get(field)-1, scaleEntry.weight));
+            valuesFat.add(new PointValue(calDB.get(field)-1, scaleEntry.fat));
+            valuesWater.add(new PointValue(calDB.get(field)-1, scaleEntry.water));
+            valuesMuscle.add(new PointValue(calDB.get(field)-1, scaleEntry.muscle));
+            valuesWaist.add(new PointValue(calDB.get(field)-1, scaleEntry.waist));
+            valuesHip.add(new PointValue(calDB.get(field)-1, scaleEntry.hip));
 
         }
 
@@ -289,6 +297,12 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             diagramHip.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#d3d3d3")));
         }
 
+        if(prefs.getBoolean(String.valueOf(enableMonth.getId()), true)) {
+            enableMonth.setBackgroundTintList(ColorStateList.valueOf(ChartUtils.COLOR_BLUE));
+        } else {
+            enableMonth.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#d3d3d3")));
+        }
+
         LineChartData lineData = new LineChartData(lines);
         lineData.setAxisXBottom(new Axis(axisValues).
                 setHasLines(true).
@@ -301,11 +315,8 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                 setTextColor(Color.BLACK)
         );
 
-
-
         chartTop.setLineChartData(lineData);
-
-        defaultTopViewport = new Viewport(0, chartTop.getCurrentViewport().top+4, maxDays-1, chartTop.getCurrentViewport().bottom-4);
+        defaultTopViewport = new Viewport(0, chartTop.getCurrentViewport().top+4, axisValues.size()-1, chartTop.getCurrentViewport().bottom-4);
 
         chartTop.setMaximumViewport(defaultTopViewport);
         chartTop.setCurrentViewport(defaultTopViewport);
@@ -343,9 +354,27 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         chartBottom.setValueSelectionEnabled(true);
         chartBottom.setZoomEnabled(false);
         chartBottom.selectValue(new SelectedValue(calLastSelected.get(Calendar.MONTH), 0, SelectedValue.SelectedValueType.COLUMN));
+    }
 
+    private void generateGraphs() {
+        // show monthly diagram
+        if (prefs.getBoolean(String.valueOf(enableMonth.getId()), true)) {
+            chartBottom.setVisibility(View.VISIBLE);
+            chartTop.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 0.7f));
 
-        generateLineData(calLastSelected);
+            generateColumnData();
+            scaleDataList = openScale.getScaleDataOfMonth(calYears.get(Calendar.YEAR), calLastSelected.get(Calendar.MONTH));
+
+            generateLineData(Calendar.DAY_OF_MONTH);
+        // show only yearly diagram and hide monthly diagram
+        } else {
+            chartBottom.setVisibility(View.GONE);
+            chartTop.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
+
+            scaleDataList = openScale.getScaleDataOfYear(calYears.get(Calendar.YEAR));
+
+            generateLineData(Calendar.DAY_OF_YEAR);
+        }
     }
 
     private class ChartBottomValueTouchListener implements ColumnChartOnValueSelectListener {
@@ -357,7 +386,8 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
             calLastSelected = cal;
 
-            generateLineData(cal);
+            scaleDataList = openScale.getScaleDataOfMonth(calYears.get(Calendar.YEAR), calLastSelected.get(Calendar.MONTH));
+            generateLineData(Calendar.DAY_OF_MONTH);
         }
 
         @Override
@@ -419,7 +449,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                 prefs.edit().putBoolean(String.valueOf(actionButton.getId()), true).commit();
             }
 
-            generateColumnData();
+            generateGraphs();
         }
     }
 }

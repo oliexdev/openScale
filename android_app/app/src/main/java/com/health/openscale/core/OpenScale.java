@@ -360,6 +360,13 @@ public class OpenScale {
         return scaleDB.getScaleDataOfMonth(selectedUserId, year, month);
     }
 
+    public ArrayList<ScaleData> getScaleDataOfYear(int year) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        int selectedUserId  = prefs.getInt("selectedUserId", -1);
+
+        return scaleDB.getScaleDataOfYear(selectedUserId, year);
+    }
+
 	public void startSearchingForBluetooth(int btScales, String deviceName, Handler callbackBtHandler) {
 		Log.d("OpenScale", "Bluetooth Server started! I am searching for device ...");
 

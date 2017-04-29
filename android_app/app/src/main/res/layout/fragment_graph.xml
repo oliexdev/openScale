@@ -1,10 +1,15 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:weightSum="1">
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:weightSum="1">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -138,4 +143,18 @@
         android:layout_marginTop="10dp"
         android:layout_weight="0.3" />
 
-</LinearLayout>
+    </LinearLayout>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/enableMonth"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:clickable="true"
+        android:src="@drawable/lastmonth"
+        app:backgroundTint="#33B5E5"
+        app:rippleColor="#33B5E5"
+        app:layout_anchor="@id/chart_top"
+        app:layout_anchorGravity="top|right|end" />
+
+</android.support.design.widget.CoordinatorLayout>

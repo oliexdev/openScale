@@ -267,6 +267,40 @@ public class ScaleDatabase extends SQLiteOpenHelper {
         return scaleDataList;
     }
 
+    public ArrayList<ScaleData> getScaleDataOfYear(int userId, int year) {
+        ArrayList<ScaleData> scaleDataList = new ArrayList<ScaleData>();
+
+        String sortOrder = COLUMN_NAME_DATE_TIME + " DESC";
+
+        Calendar start_cal = Calendar.getInstance();
+        Calendar end_cal = Calendar.getInstance();
+
+        start_cal.set(year, Calendar.JANUARY, 1, 0, 0, 0);
+        end_cal.set(year, Calendar.DECEMBER, 1, 0, 0, 0);
+
+        Cursor cursorScaleDB = dbRead.query(
+                TABLE_NAME, 	// The table to query
+                projection, 	// The columns to return
+                COLUMN_NAME_DATE_TIME + " >= ? AND " + COLUMN_NAME_DATE_TIME + " < ? AND " + COLUMN_NAME_USER_ID + "=? AND " + COLUMN_NAME_ENABLE + "=1", // The columns for the WHERE clause
+                new String[]{formatDateTime.format(start_cal.getTime()), formatDateTime.format(end_cal.getTime()), Integer.toString(userId)},            // The values for the WHERE clause
+                null, 			// don't group the rows
+                null,			// don't filter by row groups
+                sortOrder  		// The sort order
+        );
+
+        cursorScaleDB.moveToFirst();
+
+        while (!cursorScaleDB.isAfterLast()) {
+            scaleDataList.add(readAtCursor(cursorScaleDB));
+
+            cursorScaleDB.moveToNext();
+        }
+
+        cursorScaleDB.close();
+
+        return scaleDataList;
+    }
+
 	public ArrayList<ScaleData> getScaleDataList(int userId) {
 		ArrayList<ScaleData> scaleDataList = new ArrayList<ScaleData>();
 
