@@ -172,25 +172,72 @@ public class ScaleDatabase extends SQLiteOpenHelper {
         dbWrite.update(TABLE_NAME, values, COLUMN_NAME_ID + "=" + id, null);
     }
 
-    public ScaleData getDataEntry(long id)
+    public ScaleData[] getTupleDataEntry(long id)
     {
-        Cursor cursorScaleDB = dbRead.query(
+        Cursor cursorScaleDB;
+
+        ScaleData[] tupleScaleData = new ScaleData[3];
+
+        // selected scale data entry
+        cursorScaleDB = dbRead.query(
                 TABLE_NAME, 	// The table to query
                 projection, 	// The columns to return
                 COLUMN_NAME_ID + "=?", 			// The columns for the WHERE clause
                 new String[] {Long.toString(id)}, 			// The values for the WHERE clause
                 null, 			// don't group the rows
                 null,			// don't filter by row groups
-                null  		// The sort order
+                null,  		// The sort order
+                "1"         // Limit
         );
 
-        cursorScaleDB.moveToFirst();
+        if (cursorScaleDB.getCount() == 1) {
+            cursorScaleDB.moveToFirst();
+            tupleScaleData[1] = readAtCursor(cursorScaleDB);
+        } else {
+            tupleScaleData[1] = null;
+        }
 
-        ScaleData scaleData = readAtCursor(cursorScaleDB);
+        // previous scale entry
+        cursorScaleDB = dbRead.query(
+                TABLE_NAME, 	// The table to query
+                projection, 	// The columns to return
+                COLUMN_NAME_DATE_TIME + "<? AND " + COLUMN_NAME_ENABLE + "=1", 			// The columns for the WHERE clause
+                new String[] {formatDateTime.format(tupleScaleData[1].getDateTime())}, 			// The values for the WHERE clause
+                null, 			// don't group the rows
+                null,			// don't filter by row groups
+                COLUMN_NAME_DATE_TIME + " DESC",  	// The sort order
+                "1"             // Limit
+        );
+
+        if (cursorScaleDB.getCount() == 1) {
+            cursorScaleDB.moveToFirst();
+            tupleScaleData[0] = readAtCursor(cursorScaleDB);
+        } else {
+            tupleScaleData[0] = null;
+        }
 
         cursorScaleDB.close();
 
-        return scaleData;
+        // next scale data entry
+        cursorScaleDB = dbRead.query(
+                TABLE_NAME, 	// The table to query
+                projection, 	// The columns to return
+                COLUMN_NAME_DATE_TIME + ">? AND " + COLUMN_NAME_ENABLE + "=1", 			// The columns for the WHERE clause
+                new String[] {formatDateTime.format(tupleScaleData[1].getDateTime())}, 			// The values for the WHERE clause
+                null, 			// don't group the rows
+                null,			// don't filter by row groups
+                COLUMN_NAME_DATE_TIME, // The sort order
+                "1"             // Limit
+        );
+
+        if (cursorScaleDB.getCount() == 1) {
+            cursorScaleDB.moveToFirst();
+            tupleScaleData[2] = readAtCursor(cursorScaleDB);
+        } else {
+            tupleScaleData[2] = null;
+        }
+
+        return tupleScaleData;
     }
 
     public void deleteEntry(long id) {

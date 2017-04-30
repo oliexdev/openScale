@@ -52,7 +52,6 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.ListIterator;
 
 import lecho.lib.hellocharts.util.ChartUtils;
 
@@ -184,30 +183,21 @@ public class DataEntryActivity extends Activity {
 
             OpenScale openScale = OpenScale.getInstance(context);
 
-            ScaleData selectedScaleData = openScale.getScaleData(id);
+            ScaleData[] tupleScaleData = openScale.getTupleScaleData(id);
+            ScaleData prevScaleData = tupleScaleData[0];
+            ScaleData selectedScaleData = tupleScaleData[1];
+
+            if (prevScaleData == null) {
+                prevScaleData = new ScaleData();
+            }
 
             txtDataNr.setText(DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.SHORT).format(selectedScaleData.getDateTime()));
-
-            ArrayList<ScaleData> scaleDataList = OpenScale.getInstance(context).getScaleDataList();
-            ListIterator<ScaleData> scaleDataIterator = scaleDataList.listIterator();
-
-            ScaleData lastData = new ScaleData();
-
-            while(scaleDataIterator.hasNext()) {
-                ScaleData scaleData = scaleDataIterator.next();
-
-                if (scaleData.getId() == id) {
-                    if (scaleDataIterator.hasNext()) {
-                        lastData = scaleDataIterator.next();
-                    }
-                }
-            }
 
             // show selected scale data
             for (MeasurementView measuremt : dataEntryMeasurements) {
                 measuremt.setExpand(prefs.getBoolean(String.valueOf(expandButton.getId()), false));
                 measuremt.updateValue(selectedScaleData);
-                measuremt.updateDiff(selectedScaleData, lastData);
+                measuremt.updateDiff(selectedScaleData, prevScaleData);
             }
 
             return;
@@ -298,26 +288,14 @@ public class DataEntryActivity extends Activity {
     }
 
     private boolean moveLeft() {
-        ArrayList<ScaleData> scaleDataList = OpenScale.getInstance(getApplicationContext()).getScaleDataList();
+        ScaleData[] tupleScaleData = OpenScale.getInstance(getApplicationContext()).getTupleScaleData(id);
+        ScaleData prevScaleData = tupleScaleData[0];
 
-        ListIterator<ScaleData> scaleDataIterator = scaleDataList.listIterator();
-
-        while(scaleDataIterator.hasNext())
-        {
-            ScaleData scaleData = scaleDataIterator.next();
-
-            if (scaleData.getId() == id)
-            {
-                if (scaleDataIterator.hasNext()) {
-                    saveScaleData();
-                    getIntent().putExtra("id",scaleDataIterator.next().getId() );
-                    updateOnView();
-                    return true;
-                } else {
-                    return false;
-                }
-
-            }
+        if (prevScaleData != null) {
+            saveScaleData();
+            getIntent().putExtra("id", prevScaleData.getId());
+            updateOnView();
+            return true;
         }
 
         return false;
@@ -325,25 +303,14 @@ public class DataEntryActivity extends Activity {
 
     private boolean moveRight()
     {
-        ArrayList<ScaleData> scaleDataList = OpenScale.getInstance(getApplicationContext()).getScaleDataList();
+        ScaleData[] tupleScaleData = OpenScale.getInstance(getApplicationContext()).getTupleScaleData(id);
+        ScaleData nextScaleData = tupleScaleData[2];
 
-        ListIterator<ScaleData> scaleDataIterator = scaleDataList.listIterator(scaleDataList.size());
-
-        while(scaleDataIterator.hasPrevious())
-        {
-            ScaleData scaleData = scaleDataIterator.previous();
-
-            if (scaleData.getId() == id)
-            {
-                if (scaleDataIterator.hasPrevious()) {
-                    saveScaleData();
-                    getIntent().putExtra("id", scaleDataIterator.previous().getId());
-                    updateOnView();
-                    return true;
-                } else {
-                    return false;
-                }
-            }
+        if (nextScaleData != null) {
+            saveScaleData();
+            getIntent().putExtra("id", nextScaleData.getId());
+            updateOnView();
+            return true;
         }
 
         return false;

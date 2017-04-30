@@ -161,9 +161,9 @@ public class OpenScale {
 	}
 
 
-    public ScaleData getScaleData(long id)
+    public ScaleData[] getTupleScaleData(long id)
     {
-        return scaleDB.getDataEntry(id);
+        return scaleDB.getTupleDataEntry(id);
     }
 
 	public int addScaleData(ScaleData scaleData) {
