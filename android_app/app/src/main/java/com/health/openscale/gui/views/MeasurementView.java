@@ -312,6 +312,8 @@ public abstract class MeasurementView extends TableLayout {
 
         input.setInputType(getInputType());
         input.setHint(getHintText());
+        input.setText(value);
+        input.setSelection(value.length());
         builder.setView(input);
 
         builder.setPositiveButton(getResources().getString(R.string.label_ok), null);
