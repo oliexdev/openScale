@@ -53,7 +53,6 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.concurrent.TimeUnit;
 
 import lecho.lib.hellocharts.formatter.SimpleLineChartValueFormatter;
@@ -187,25 +186,17 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         updateLastPieChart();
         updateLastLineChart(scaleDataList);
 
-        ListIterator<ScaleData> scaleDataIterator = scaleDataList.listIterator();
+        ScaleData[] tupleScaleData = OpenScale.getInstance(context).getTupleScaleData(lastScaleData.getId());
+        ScaleData prevScaleData = tupleScaleData[0];
 
-        while(scaleDataIterator.hasNext()) {
-            ScaleData scaleData = scaleDataIterator.next();
-
-            if (scaleData.getId() == lastScaleData.getId()) {
-                if (scaleDataIterator.hasNext()) {
-                    ScaleData diffScaleData = scaleDataIterator.next();
-
-                    for (MeasurementView measuremt : overviewMeasurements) {
-                        measuremt.updateDiff(lastScaleData, diffScaleData);
-                    }
-                }
-            }
+        if (prevScaleData == null) {
+            prevScaleData = new ScaleData();
         }
 
         for (MeasurementView measuremt : overviewMeasurements) {
             measuremt.updatePreferences(prefs);
             measuremt.updateValue(lastScaleData);
+            measuremt.updateDiff(lastScaleData, prevScaleData);
         }
     }
 

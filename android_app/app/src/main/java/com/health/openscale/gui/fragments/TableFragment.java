@@ -22,20 +22,22 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
-import android.util.TypedValue;
+import android.text.Html;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
-import android.widget.TableRow.LayoutParams;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -43,16 +45,32 @@ import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleData;
 import com.health.openscale.gui.activities.DataEntryActivity;
+import com.health.openscale.gui.views.BMIMeasurementView;
+import com.health.openscale.gui.views.CommentMeasurementView;
+import com.health.openscale.gui.views.DateMeasurementView;
+import com.health.openscale.gui.views.FatMeasurementView;
+import com.health.openscale.gui.views.HipMeasurementView;
+import com.health.openscale.gui.views.MeasurementView;
+import com.health.openscale.gui.views.MuscleMeasurementView;
+import com.health.openscale.gui.views.TimeMeasurementView;
+import com.health.openscale.gui.views.WHRMeasurementView;
+import com.health.openscale.gui.views.WHtRMeasurementView;
+import com.health.openscale.gui.views.WaistMeasurementView;
+import com.health.openscale.gui.views.WaterMeasurementView;
+import com.health.openscale.gui.views.WeightMeasurementView;
 
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.ListIterator;
+
+import static android.util.TypedValue.COMPLEX_UNIT_DIP;
 
 public class TableFragment extends Fragment implements FragmentUpdateListener {
 	private View tableView;
 	private TableLayout tableDataView;
     private SharedPreferences prefs;
+
+    private ArrayList <MeasurementView> measurementsList;
 
 	public TableFragment() {
 		
@@ -64,12 +82,30 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 		tableView = inflater.inflate(R.layout.fragment_table, container, false);
 		
 		tableDataView = (TableLayout) tableView.findViewById(R.id.tableDataView);
-		
+
 		tableView.findViewById(R.id.btnImportData).setOnClickListener(new onClickListenerImport());
-		
 		tableView.findViewById(R.id.btnExportData).setOnClickListener(new onClickListenerExport());
-		
-		tableView.findViewById(R.id.btnDeleteAll).setOnClickListener(new onClickListenerDeleteAll());
+
+        measurementsList = new ArrayList<>();
+
+        measurementsList.add(new DateMeasurementView(tableView.getContext()));
+        measurementsList.add(new TimeMeasurementView(tableView.getContext()));
+        measurementsList.add(new WeightMeasurementView(tableView.getContext()));
+        measurementsList.add(new BMIMeasurementView(tableView.getContext()));
+        measurementsList.add(new WaterMeasurementView(tableView.getContext()));
+        measurementsList.add(new MuscleMeasurementView(tableView.getContext()));
+        measurementsList.add(new FatMeasurementView(tableView.getContext()));
+        measurementsList.add(new WaistMeasurementView(tableView.getContext()));
+        measurementsList.add(new WHtRMeasurementView(tableView.getContext()));
+        measurementsList.add(new HipMeasurementView(tableView.getContext()));
+        measurementsList.add(new WHRMeasurementView(tableView.getContext()));
+        measurementsList.add(new CommentMeasurementView(tableView.getContext()));
+
+        for (MeasurementView measurement : measurementsList) {
+            measurement.setEditMode(MeasurementView.MeasurementViewMode.EDIT);
+        }
+
+        prefs = PreferenceManager.getDefaultSharedPreferences(tableView.getContext());
 
         OpenScale.getInstance(getContext()).registerFragment(this);
 
@@ -79,172 +115,100 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 	@Override
 	public void updateOnView(ArrayList<ScaleData> scaleDataList)
 	{
-        prefs = PreferenceManager.getDefaultSharedPreferences(tableView.getContext());
-
-        if(!prefs.getBoolean("fatEnable", true)) {
-            ImageView txtFatTableHeader = (ImageView)tableView.findViewById(R.id.txtFatTableHeader);
-            txtFatTableHeader.setVisibility(View.GONE);
-        } else {
-            ImageView txtFatTableHeader = (ImageView)tableView.findViewById(R.id.txtFatTableHeader);
-            txtFatTableHeader.setVisibility(View.VISIBLE);
-        }
-
-        if(!prefs.getBoolean("muscleEnable", true)) {
-            ImageView txtMuscleTableHeader = (ImageView)tableView.findViewById(R.id.txtMuscleTableHeader);
-            txtMuscleTableHeader.setVisibility(View.GONE);
-        } else {
-            ImageView txtMuscleTableHeader = (ImageView)tableView.findViewById(R.id.txtMuscleTableHeader);
-            txtMuscleTableHeader.setVisibility(View.VISIBLE);
-        }
-
-        if(!prefs.getBoolean("waterEnable", true)) {
-            ImageView txtWaterTableHeader = (ImageView)tableView.findViewById(R.id.txtWaterTableHeader);
-            txtWaterTableHeader.setVisibility(View.GONE);
-        } else {
-            ImageView txtWaterTableHeader = (ImageView)tableView.findViewById(R.id.txtWaterTableHeader);
-            txtWaterTableHeader.setVisibility(View.VISIBLE);
-        }
-
-        if(!prefs.getBoolean("waistEnable", true)) {
-            ImageView txtWaistTableHeader = (ImageView)tableView.findViewById(R.id.txtWaistTableHeader);
-            txtWaistTableHeader.setVisibility(View.GONE);
-        } else {
-            ImageView txtWaistTableHeader = (ImageView)tableView.findViewById(R.id.txtWaistTableHeader);
-            txtWaistTableHeader.setVisibility(View.VISIBLE);
-        }
-
-        if(!prefs.getBoolean("hipEnable", true)) {
-            ImageView txtHipTableHeader = (ImageView)tableView.findViewById(R.id.txtHipTableHeader);
-            txtHipTableHeader.setVisibility(View.GONE);
-        } else {
-            ImageView txtHipTableHeader = (ImageView)tableView.findViewById(R.id.txtHipTableHeader);
-            txtHipTableHeader.setVisibility(View.VISIBLE);
-        }
-
-        tableDataView.setColumnStretchable(1, true);
-        tableDataView.setColumnStretchable(2, true);
-        tableDataView.setColumnStretchable(3, true);
-
-        if(prefs.getBoolean("fatEnable", true)) {
-            tableDataView.setColumnStretchable(4, true);
-        }
-        if(prefs.getBoolean("waterEnable", true)) {
-            tableDataView.setColumnStretchable(5, true);
-        }
-        if(prefs.getBoolean("muscleEnable", true)) {
-            tableDataView.setColumnStretchable(6, true);
-        }
-        if(prefs.getBoolean("waistEnable", true)) {
-            tableDataView.setColumnStretchable(7, true);
-        }
-        if(prefs.getBoolean("hipEnable", true)) {
-            tableDataView.setColumnStretchable(8, true);
-        }
-        tableDataView.setColumnStretchable(9, true);
-
-        TableRow headerRow = (TableRow) tableView.findViewById(R.id.tableHeader);
         tableDataView.removeAllViews();
-        tableDataView.addView(headerRow);
 
-		for(ScaleData scaleData: scaleDataList)
-		{
-			TableRow dataRow = new TableRow(tableView.getContext());
-			dataRow.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+        TableRow tableHeader = new TableRow(tableView.getContext());
+        tableHeader.setPadding(0, 10, 0, 10);
 
-            TextView idView = new TextView(tableView.getContext());
-            idView.setText(Long.toString(scaleData.getId()));
+        // inside dummy id in table header to have the same amount of table columns for header and data
+        TextView idView = new TextView(tableView.getContext());
             idView.setVisibility(View.GONE);
+        tableHeader.addView(idView);
+
+        for (MeasurementView measurement : measurementsList) {
+            measurement.updatePreferences(prefs);
+
+            if (measurement.isVisible()) {
+                ImageView headerIcon = new ImageView(tableView.getContext());
+                headerIcon.setImageDrawable(measurement.getIcon());
+                headerIcon.setLayoutParams(new TableRow.LayoutParams(TableLayout.LayoutParams.WRAP_CONTENT, TableLayout.LayoutParams.WRAP_CONTENT));
+                headerIcon.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+                headerIcon.getLayoutParams().height = pxImageDp(20);
+
+                tableHeader.addView(headerIcon);
+            }
+        }
+
+        Button deleteAll = new Button(tableView.getContext());
+            deleteAll.setOnClickListener(new onClickListenerDeleteAll());
+            deleteAll.setText(tableView.getContext().getResources().getString(R.string.label_delete_all));
+            deleteAll.setBackground(ContextCompat.getDrawable(tableView.getContext(), R.drawable.flat_selector));
+            deleteAll.setLayoutParams(new TableRow.LayoutParams(TableLayout.LayoutParams.WRAP_CONTENT, TableLayout.LayoutParams.WRAP_CONTENT));
+            deleteAll.getLayoutParams().height = pxImageDp(24);
+            deleteAll.setTextColor(Color.WHITE);
+            deleteAll.setPadding(0,0,0,0);
+            deleteAll.setTextSize(COMPLEX_UNIT_DIP, 8);
+        tableHeader.addView(deleteAll);
+
+        tableDataView.addView(tableHeader);
+
+        ListIterator<ScaleData> scaleDataItr = scaleDataList.listIterator();
+
+        while (scaleDataItr.hasNext()) {
+            ScaleData scaleData = scaleDataItr.next();
+            ScaleData prevScaleData;
+
+            if (scaleDataItr.hasNext()) {
+                prevScaleData = scaleDataItr.next();
+                scaleDataItr.previous();
+            } else {
+                prevScaleData = new ScaleData();
+            }
+
+            TableRow dataRow = new TableRow(tableView.getContext());
+
+            idView = new TextView(tableView.getContext());
+            idView.setVisibility(View.GONE);
+            idView.setText(Long.toString(scaleData.getId()));
             dataRow.addView(idView);
 
-			TextView dateTextView = new TextView(tableView.getContext());
-            if ((getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == Configuration.SCREENLAYOUT_SIZE_XLARGE ||
-                (getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == Configuration.SCREENLAYOUT_SIZE_LARGE) {
-                dateTextView.setText(DateFormat.getDateInstance(DateFormat.MEDIUM).format(scaleData.getDateTime()));
-            } else{
-                dateTextView.setText(DateFormat.getDateInstance(DateFormat.SHORT).format(scaleData.getDateTime()));
-            }
-			dateTextView.setPadding(0, 5, 5, 5);
-			dataRow.addView(dateTextView);
-			
-			TextView timeTextView = new TextView(tableView.getContext());
-			timeTextView.setText(new SimpleDateFormat("HH:mm").format(scaleData.getDateTime()));
-			timeTextView.setPadding(0, 5, 5, 5);
-			dataRow.addView(timeTextView);
-			
-			TextView weightView = new TextView(tableView.getContext());
-			weightView.setText(String.format("%.2f", scaleData.getConvertedWeight(OpenScale.getInstance(getContext()).getSelectedScaleUser().scale_unit)));
-			weightView.setPadding(0, 5, 5, 5);
-			dataRow.addView(weightView);
-			
-			TextView fatView = new TextView(tableView.getContext());
-			fatView.setText(Float.toString(scaleData.getFat()));
-			fatView.setPadding(0, 5, 5, 5);
-            if(!prefs.getBoolean("fatEnable", true)) {
-                fatView.setVisibility(View.GONE);
-            }
-			dataRow.addView(fatView);
-			
-			TextView waterView = new TextView(tableView.getContext());
-			waterView.setText(Float.toString(scaleData.getWater()));
-			waterView.setPadding(0, 5, 5, 5);
-            if(!prefs.getBoolean("waterEnable", true)) {
-                waterView.setVisibility(View.GONE);
-            }
-            dataRow.addView(waterView);
-			
-			TextView muscleView = new TextView(tableView.getContext());
-			muscleView.setText(Float.toString(scaleData.getMuscle()));
-			muscleView.setPadding(0, 5, 5, 5);
-            if(!prefs.getBoolean("muscleEnable", true)) {
-                muscleView.setVisibility(View.GONE);
-            }
-            dataRow.addView(muscleView);
+            for (MeasurementView measurement : measurementsList) {
+               measurement.updateValue(scaleData);
+               measurement.updateDiff(scaleData, prevScaleData);
 
-            TextView waistView = new TextView(tableView.getContext());
-            waistView.setText(Float.toString(scaleData.getWaist()));
-            waistView.setPadding(0, 5, 5, 5);
-            if(!prefs.getBoolean("waistEnable", true)) {
-                waistView.setVisibility(View.GONE);
-            }
-            dataRow.addView(waistView);
+                if (measurement.isVisible()) {
+                    TextView measurementView = new TextView(tableView.getContext());
+                    measurementView.setGravity(Gravity.CENTER);
 
-            TextView hipView = new TextView(tableView.getContext());
-            hipView.setText(Float.toString(scaleData.getHip()));
-            hipView.setPadding(0, 5, 5, 5);
-            if(!prefs.getBoolean("hipEnable", true)) {
-                hipView.setVisibility(View.GONE);
-            }
-            dataRow.addView(hipView);
+                    measurementView.setText(Html.fromHtml(measurement.getValueAsString() + "<br>" + measurement.getDiffValue()));
 
-            TextView commentView = new TextView(tableView.getContext());
-            commentView.setText(scaleData.getComment());
-            commentView.setPadding(0, 5, 5, 5);
-            dataRow.addView(commentView);
+                    if ((getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) != Configuration.SCREENLAYOUT_SIZE_XLARGE &&
+                       (getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) != Configuration.SCREENLAYOUT_SIZE_LARGE) {
+                        measurementView.setTextSize(COMPLEX_UNIT_DIP, 10);
+                    }
+
+                    dataRow.addView(measurementView);
+                }
+            }
 
             ImageView deleteImageView = new ImageView(tableView.getContext());
+                deleteImageView.setImageDrawable(ContextCompat.getDrawable(tableView.getContext(), R.drawable.delete));
+                deleteImageView.setLayoutParams(new TableRow.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableLayout.LayoutParams.MATCH_PARENT));
+                deleteImageView.getLayoutParams().height = pxImageDp(16);
+                deleteImageView.setOnClickListener(new onClickListenerDelete());
             dataRow.addView(deleteImageView);
-            deleteImageView.setImageDrawable(ContextCompat.getDrawable(tableView.getContext(), R.drawable.delete));
-            deleteImageView.getLayoutParams().height = pxImageDp(20);
-            deleteImageView.setOnClickListener(new onClickListenerDelete());
 
             dataRow.setOnClickListener(new onClickListenerRow());
+            dataRow.setLayoutParams(new TableLayout.LayoutParams(TableLayout.LayoutParams.WRAP_CONTENT, TableLayout.LayoutParams.WRAP_CONTENT));
+            dataRow.setPadding(0,0,0,10);
 
-            if ((getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) != Configuration.SCREENLAYOUT_SIZE_XLARGE &&
-                (getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) != Configuration.SCREENLAYOUT_SIZE_LARGE)
-            {
-                dateTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
-                timeTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
-                weightView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
-                fatView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
-                waterView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
-                muscleView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
-                waistView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
-                hipView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
-                commentView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
-            }
+            // doesn't work if we use a horizontal scroll view
+            /*for (int i=1; i<dataRow.getChildCount()-1; i++) {
+                tableDataView.setColumnStretchable(i, true);
+            }*/
 
-			tableDataView.addView(dataRow, new TableLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
-		}
+            tableDataView.addView(dataRow);
+        }
 	}
 
     private int pxImageDp(float dp) {

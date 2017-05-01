@@ -46,10 +46,12 @@ import lecho.lib.hellocharts.util.ChartUtils;
 
 import static com.health.openscale.gui.views.MeasurementView.MeasurementViewMode.ADD;
 import static com.health.openscale.gui.views.MeasurementView.MeasurementViewMode.EDIT;
+import static com.health.openscale.gui.views.MeasurementView.MeasurementViewMode.VIEW;
 
 public abstract class MeasurementView extends TableLayout {
     public enum MeasurementViewMode {VIEW, EDIT, ADD};
     private static String SYMBOL_UP = "&#x2197;";
+    private static String SYMBOL_NEUTRAL = "&#x2192";
     private static String SYMBOL_DOWN = "&#x2198;";
 
     private TableRow measurementRow;
@@ -65,6 +67,7 @@ public abstract class MeasurementView extends TableLayout {
     private String nameText;
 
     private String value;
+    private String diffValue;
 
     private MeasurementViewMode measurementMode;
 
@@ -72,9 +75,10 @@ public abstract class MeasurementView extends TableLayout {
         super(context);
         initView(context);
 
-        measurementMode = MeasurementViewMode.VIEW;
+        measurementMode = VIEW;
         nameText = text;
         value = new String();
+        diffValue = new String();
         nameView.setText(text);
         iconView.setImageDrawable(icon);
     }
@@ -157,6 +161,10 @@ public abstract class MeasurementView extends TableLayout {
         return value;
     }
 
+    public Drawable getIcon() { return iconView.getDrawable(); }
+
+    public String getDiffValue() { return diffValue; }
+
     protected boolean isEditable() {
         return true;
     }
@@ -192,24 +200,33 @@ public abstract class MeasurementView extends TableLayout {
 
         try{
             Float floatValue = Float.parseFloat(value);
-            evaluate(floatValue);
+            if (measurementMode == VIEW) {
+                evaluate(floatValue);
+            }
             valueView.setText(String.format("%.2f ", floatValue) + getUnit());
+            value = String.valueOf(Math.round(floatValue*100.0f)/100.0f);
         } catch (NumberFormatException e) {
-
             valueView.setText(value);
         }
     }
 
-    protected void setDiffOnView(float value, float lastValue) {
-        float diffValue = value - lastValue;
+    protected void setDiffOnView(float value, float prevValue) {
+        float diff = value - prevValue;
 
         String symbol;
+        String symbol_color;
 
-        if (diffValue > 0.0) {
+        if (diff > 0.0) {
             symbol = SYMBOL_UP;
-        } else {
+            symbol_color = "<font color='green'>" + SYMBOL_UP + "</font>";
+        } else if (diff < 0.0){
             symbol = SYMBOL_DOWN;
+            symbol_color = "<font color='red'>" + SYMBOL_DOWN + "</font>";
+        } else {
+            symbol = SYMBOL_NEUTRAL;
+            symbol_color = "<font color='grey'>" + SYMBOL_NEUTRAL + "</font>";
         }
+        diffValue = symbol_color + "<font color='grey'><small>" + String.format("%.2f", diff) + "</small></font>";
 
         nameView.setText(
                 Html.fromHtml(
@@ -217,7 +234,7 @@ public abstract class MeasurementView extends TableLayout {
                                 " <br> <font color='grey'>" +
                                 symbol +
                                 "<small> " +
-                                String.format("%.2f ", diffValue) + getUnit() +
+                                String.format("%.2f ", diff) + getUnit() +
                                 "</small></font>"
                 )
         );
@@ -237,6 +254,14 @@ public abstract class MeasurementView extends TableLayout {
         } else {
             measurementRow.setVisibility(View.GONE);
         }
+    }
+
+    public boolean isVisible() {
+        if (measurementRow.getVisibility() == View.GONE) {
+            return false;
+        }
+
+        return true;
     }
 
     private int pxImageDp(float dp) {

@@ -1,160 +1,63 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="5dp">
+    android:orientation="vertical"
+    android:weightSum="1">
 
-    <ScrollView
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_marginBottom="50dp" >
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="0.9"
+        android:gravity="bottom"
+        android:orientation="horizontal">
 
-        <TableLayout
-            android:id="@+id/tableDataView"
-            android:layout_width="wrap_content"
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TableLayout
+                    android:id="@+id/tableDataView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"></TableLayout>
+
+            </ScrollView>
+        </HorizontalScrollView>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:layout_weight="0.1"
+        android:gravity="bottom"
+        android:orientation="horizontal"
+        android:weightSum="1">
+
+        <Button
+            android:id="@+id/btnImportData"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:shrinkColumns="*">
+            android:layout_marginRight="5dp"
+            android:layout_weight="0.5"
+            android:background="@drawable/flat_selector"
+            android:text="@string/label_import"
+            android:textColor="@android:color/white" />
 
-            <TableRow
-                android:id="@+id/tableHeader"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" >
+        <Button
+            android:id="@+id/btnExportData"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:layout_weight="0.5"
+            android:background="@drawable/flat_selector"
+            android:text="@string/label_export"
+            android:textColor="@android:color/white" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/label_id"
-                    android:textStyle="bold"
-                    android:id="@+id/txtIdTableHeader"
-                    android:visibility="gone" />
+    </LinearLayout>
 
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:scaleType="fitStart"
-                    android:text="@string/label_date"
-                    android:textStyle="bold"
-                    android:src="@drawable/lastmonth"
-                    android:id="@+id/txtDateTableHeader" />
-
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:scaleType="fitStart"
-                    android:text="@string/label_time"
-                    android:textStyle="bold"
-                    android:src="@drawable/daysleft"
-                    android:id="@+id/txtTimeTableHeader" />
-
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:scaleType="fitStart"
-                    android:text="@string/label_weight"
-                    android:textStyle="bold"
-                    android:src="@drawable/weight"
-                    android:id="@+id/txtWeightTableHeader" />
-
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:scaleType="fitStart"
-                    android:text="@string/label_fat"
-                    android:textStyle="bold"
-                    android:src="@drawable/fat"
-                    android:id="@+id/txtFatTableHeader" />
-
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:scaleType="fitStart"
-                    android:text="@string/label_water"
-                    android:textStyle="bold"
-                    android:src="@drawable/water"
-                    android:id="@+id/txtWaterTableHeader" />
-
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:scaleType="fitStart"
-                    android:text="@string/label_muscle"
-                    android:textStyle="bold"
-                    android:src="@drawable/muscle"
-                    android:id="@+id/txtMuscleTableHeader" />
-
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:scaleType="fitStart"
-                    android:text="@string/label_waist"
-                    android:textStyle="bold"
-                    android:src="@drawable/waist"
-                    android:id="@+id/txtWaistTableHeader" />
-
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:scaleType="fitStart"
-                    android:text="@string/label_hip"
-                    android:textStyle="bold"
-                    android:src="@drawable/hip"
-                    android:id="@+id/txtHipTableHeader" />
-
-                <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:scaleType="fitStart"
-                    android:text="@string/label_comment"
-                    android:textStyle="bold"
-                    android:src="@drawable/comment"
-                    android:id="@+id/txtCommentTableHeader" />
-
-                <Button
-                    android:id="@+id/btnDeleteAll"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/flat_selector"
-                    android:minHeight="14dp"
-                    android:minWidth="5dp"
-                    android:paddingLeft="10dp"
-                    android:paddingRight="10dp"
-                    android:text="@string/label_delete_all"
-                    android:textColor="@android:color/white"
-                    android:textSize="8dp" />
-
-            </TableRow>
-        </TableLayout>
-    </ScrollView>
-
-   <LinearLayout
-       android:layout_width="fill_parent"
-       android:layout_height="wrap_content"
-       android:layout_alignParentBottom="true"
-       android:layout_centerHorizontal="true" >
-
-       <Button
-           android:id="@+id/btnImportData"
-           android:layout_width="0dp"
-           android:layout_height="wrap_content"
-           android:layout_weight="5"
-           android:background="@drawable/flat_selector"
-           android:text="@string/label_import"
-           android:textColor="@android:color/white" />
-
-       <Space
-           android:layout_width="0dp"
-           android:layout_height="match_parent"
-           android:layout_weight="0.5" />
-
-       <Button
-           android:id="@+id/btnExportData"
-           android:layout_width="0dp"
-           android:layout_height="wrap_content"
-           android:layout_weight="5"
-           android:background="@drawable/flat_selector"
-           android:text="@string/label_export"
-           android:textColor="@android:color/white" />
-
-   </LinearLayout>
-
-</RelativeLayout>
+</LinearLayout>
