@@ -267,11 +267,16 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             scaleDataLastDays.add(histData);
 
             valuesWeight.add(new PointValue(i, histData.getConvertedWeight(currentScaleUser.scale_unit)));
-            valuesFat.add(new PointValue(i, histData.getFat()));
-            valuesWater.add(new PointValue(i, histData.getWater()));
-            valuesMuscle.add(new PointValue(i, histData.getMuscle()));
-            valuesWaist.add(new PointValue(i, histData.getWaist()));
-            valuesHip.add(new PointValue(i, histData.getHip()));
+            if (histData.getFat() != 0.0f)
+                valuesFat.add(new PointValue(i, histData.getFat()));
+            if (histData.getWater() != 0.0f)
+                valuesWater.add(new PointValue(i, histData.getWater()));
+            if (histData.getMuscle() != 0.0f)
+                valuesMuscle.add(new PointValue(i, histData.getMuscle()));
+            if (histData.getWaist() != 0.0f)
+                valuesWaist.add(new PointValue(i, histData.getWaist()));
+            if (histData.getHip() != 0.0f)
+                valuesHip.add(new PointValue(i, histData.getHip()));
 
             histDate.setTime(histData.getDateTime());
 
