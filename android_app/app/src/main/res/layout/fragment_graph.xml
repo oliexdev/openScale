@@ -130,18 +130,18 @@
 
     </LinearLayout>
 
-    <lecho.lib.hellocharts.view.LineChartView
-        android:id="@+id/chart_top"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="0.7" />
+        <lecho.lib.hellocharts.view.ColumnChartView
+            android:id="@+id/chart_top"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="10dp"
+            android:layout_weight="0.3" />
 
-    <lecho.lib.hellocharts.view.ColumnChartView
-        android:id="@+id/chart_bottom"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginTop="10dp"
-        android:layout_weight="0.3" />
+        <lecho.lib.hellocharts.view.LineChartView
+            android:id="@+id/chart_bottom"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0.7" />
 
     </LinearLayout>
 
@@ -153,8 +153,8 @@
         android:clickable="true"
         android:src="@drawable/lastmonth"
         app:backgroundTint="#33B5E5"
-        app:rippleColor="#33B5E5"
         app:layout_anchor="@id/chart_top"
-        app:layout_anchorGravity="top|right|end" />
+        app:layout_anchorGravity="top|right|end"
+        app:rippleColor="#33B5E5" />
 
 </android.support.design.widget.CoordinatorLayout>
