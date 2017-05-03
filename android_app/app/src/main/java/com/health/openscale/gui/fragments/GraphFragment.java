@@ -214,12 +214,16 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             calDB.setTime(scaleEntry.getDateTime());
 
             valuesWeight.add(new PointValue(calDB.get(field)-1, scaleEntry.getConvertedWeight(openScale.getSelectedScaleUser().scale_unit)));
-            valuesFat.add(new PointValue(calDB.get(field)-1, scaleEntry.getFat()));
-            valuesWater.add(new PointValue(calDB.get(field)-1, scaleEntry.getWater()));
-            valuesMuscle.add(new PointValue(calDB.get(field)-1, scaleEntry.getMuscle()));
-            valuesWaist.add(new PointValue(calDB.get(field)-1, scaleEntry.getWaist()));
-            valuesHip.add(new PointValue(calDB.get(field)-1, scaleEntry.getHip()));
-
+            if (scaleEntry.getFat() != 0.0f)
+                valuesFat.add(new PointValue(calDB.get(field)-1, scaleEntry.getFat()));
+            if (scaleEntry.getWater() != 0.0f)
+                valuesWater.add(new PointValue(calDB.get(field)-1, scaleEntry.getWater()));
+            if (scaleEntry.getMuscle() != 0.0f)
+                valuesMuscle.add(new PointValue(calDB.get(field)-1, scaleEntry.getMuscle()));
+            if (scaleEntry.getWaist() != 0.0f)
+                valuesWaist.add(new PointValue(calDB.get(field)-1, scaleEntry.getWaist()));
+            if (scaleEntry.getHip() != 0.0f)
+                valuesHip.add(new PointValue(calDB.get(field)-1, scaleEntry.getHip()));
         }
 
 
