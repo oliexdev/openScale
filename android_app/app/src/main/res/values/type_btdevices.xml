@@ -3,10 +3,12 @@
     <string-array name="bt_device_entries">
         <item>Xiaomi Mi Scale v1</item>
         <item>openScale Custom Scale</item>
+        <item>Sanitas SBF-70</item>
     </string-array>
 
     <string-array name="bt_device_values">
         <item>0</item>
         <item>1</item>
+        <item>2</item>
     </string-array>
 </resources>

@@ -27,6 +27,7 @@ import com.health.openscale.core.alarm.AlarmHandler;
 import com.health.openscale.core.bluetooth.BluetoothCommunication;
 import com.health.openscale.core.bluetooth.BluetoothCustomOpenScale;
 import com.health.openscale.core.bluetooth.BluetoothMiScale;
+import com.health.openscale.core.bluetooth.BluetoothSanitasSbf70;
 import com.health.openscale.core.database.ScaleDatabase;
 import com.health.openscale.core.database.ScaleUserDatabase;
 import com.health.openscale.core.datatypes.ScaleData;
@@ -48,6 +49,7 @@ import java.util.TreeMap;
 
 import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_MI_SCALE;
 import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_OPEN_SCALE;
+import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_SANITAS_SBF70;
 
 public class OpenScale {
 
@@ -299,7 +301,6 @@ public class OpenScale {
 			csvWriter.append("\n");
 		}
 
-
 		csvWriter.close();
 		outputStream.close();
 	}
@@ -340,6 +341,9 @@ public class OpenScale {
                 break;
             case BT_OPEN_SCALE:
                 btCom = new BluetoothCustomOpenScale();
+                break;
+            case BT_SANITAS_SBF70:
+                btCom = new BluetoothSanitasSbf70(context);
                 break;
             default:
                 Log.e("OpenScale", "No valid scale type selected");
