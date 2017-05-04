@@ -64,8 +64,8 @@ import lecho.lib.hellocharts.view.LineChartView;
 
 public class GraphFragment extends Fragment implements FragmentUpdateListener {	
 	private View graphView;
-	private LineChartView chartTop;
-    private ColumnChartView chartBottom;
+	private LineChartView chartBottom;
+    private ColumnChartView chartTop;
     private Viewport defaultTopViewport;
     private TextView txtYear;
     private FloatingActionButton diagramWeight;
@@ -94,12 +94,12 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 	{
 		graphView = inflater.inflate(R.layout.fragment_graph, container, false);
 		
-		chartTop = (LineChartView) graphView.findViewById(R.id.chart_top);
-        chartBottom = (ColumnChartView) graphView.findViewById(R.id.chart_bottom);
+		chartBottom = (LineChartView) graphView.findViewById(R.id.chart_bottom);
+        chartTop = (ColumnChartView) graphView.findViewById(R.id.chart_top);
 
-        chartTop.setOnTouchListener(new ChartTopListener());
-        chartTop.setOnValueTouchListener(new ChartTopValueTouchListener());
-        chartBottom.setOnValueTouchListener(new ChartBottomValueTouchListener());
+        chartBottom.setOnTouchListener(new chartBottomListener());
+        chartBottom.setOnValueTouchListener(new chartBottomValueTouchListener());
+        chartTop.setOnValueTouchListener(new chartTopValueTouchListener());
 
         txtYear = (TextView) graphView.findViewById(R.id.txtYear);
         txtYear.setText(Integer.toString(calYears.get(Calendar.YEAR)));
@@ -319,11 +319,11 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                 setTextColor(Color.BLACK)
         );
 
-        chartTop.setLineChartData(lineData);
-        defaultTopViewport = new Viewport(0, chartTop.getCurrentViewport().top+4, axisValues.size()-1, chartTop.getCurrentViewport().bottom-4);
+        chartBottom.setLineChartData(lineData);
+        defaultTopViewport = new Viewport(0, chartBottom.getCurrentViewport().top+4, axisValues.size()-1, chartBottom.getCurrentViewport().bottom-4);
 
-        chartTop.setMaximumViewport(defaultTopViewport);
-        chartTop.setCurrentViewport(defaultTopViewport);
+        chartBottom.setMaximumViewport(defaultTopViewport);
+        chartBottom.setCurrentViewport(defaultTopViewport);
     }
 
     private void generateColumnData()
@@ -354,17 +354,17 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         columnData.setAxisXBottom(new Axis(axisValues).setHasLines(true).setTextColor(Color.BLACK));
 
-        chartBottom.setColumnChartData(columnData);
-        chartBottom.setValueSelectionEnabled(true);
-        chartBottom.setZoomEnabled(false);
-        chartBottom.selectValue(new SelectedValue(calLastSelected.get(Calendar.MONTH), 0, SelectedValue.SelectedValueType.COLUMN));
+        chartTop.setColumnChartData(columnData);
+        chartTop.setValueSelectionEnabled(true);
+        chartTop.setZoomEnabled(false);
+        chartTop.selectValue(new SelectedValue(calLastSelected.get(Calendar.MONTH), 0, SelectedValue.SelectedValueType.COLUMN));
     }
 
     private void generateGraphs() {
         // show monthly diagram
         if (prefs.getBoolean(String.valueOf(enableMonth.getId()), true)) {
-            chartBottom.setVisibility(View.VISIBLE);
-            chartTop.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 0.7f));
+            chartTop.setVisibility(View.VISIBLE);
+            chartBottom.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 0.7f));
 
             generateColumnData();
             scaleDataList = openScale.getScaleDataOfMonth(calYears.get(Calendar.YEAR), calLastSelected.get(Calendar.MONTH));
@@ -372,8 +372,8 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             generateLineData(Calendar.DAY_OF_MONTH);
         // show only yearly diagram and hide monthly diagram
         } else {
-            chartBottom.setVisibility(View.GONE);
-            chartTop.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
+            chartTop.setVisibility(View.GONE);
+            chartBottom.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
 
             scaleDataList = openScale.getScaleDataOfYear(calYears.get(Calendar.YEAR));
 
@@ -381,7 +381,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         }
     }
 
-    private class ChartBottomValueTouchListener implements ColumnChartOnValueSelectListener {
+    private class chartTopValueTouchListener implements ColumnChartOnValueSelectListener {
         @Override
         public void onValueSelected(int selectedLine, int selectedValue, SubcolumnValue value) {
             Calendar cal = Calendar.getInstance();
@@ -400,10 +400,10 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         }
     }
 
-    private class ChartTopListener implements View.OnTouchListener {
+    private class chartBottomListener implements View.OnTouchListener {
         final GestureDetector gestureDetector = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
             public void onLongPress(MotionEvent e) {
-                chartTop.setCurrentViewport(defaultTopViewport);
+                chartBottom.setCurrentViewport(defaultTopViewport);
             }
         });
 
@@ -413,7 +413,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         }
     }
 
-    private class ChartTopValueTouchListener implements LineChartOnValueSelectListener {
+    private class chartBottomValueTouchListener implements LineChartOnValueSelectListener {
         @Override
         public void onValueSelected(int lineIndex, int pointIndex, PointValue pointValue) {
             ScaleData scaleData = scaleDataList.get(pointIndex);
