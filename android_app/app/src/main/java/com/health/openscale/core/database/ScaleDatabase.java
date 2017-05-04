@@ -324,7 +324,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
         Calendar end_cal = Calendar.getInstance();
 
         start_cal.set(year, Calendar.JANUARY, 1, 0, 0, 0);
-        end_cal.set(year, Calendar.DECEMBER, 1, 0, 0, 0);
+        end_cal.set(year+1, Calendar.JANUARY, 1, 0, 0, 0);
 
         Cursor cursorScaleDB = dbRead.query(
                 TABLE_NAME, 	// The table to query

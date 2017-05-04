@@ -23,6 +23,7 @@ import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
@@ -36,6 +37,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -61,7 +63,8 @@ import com.health.openscale.gui.views.WeightMeasurementView;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.ListIterator;
+
+import lecho.lib.hellocharts.util.ChartUtils;
 
 import static android.util.TypedValue.COMPLEX_UNIT_DIP;
 
@@ -69,8 +72,11 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 	private View tableView;
 	private TableLayout tableDataView;
     private SharedPreferences prefs;
+    private LinearLayout subpageView;
 
     private ArrayList <MeasurementView> measurementsList;
+
+    private int selectedSubpageNr;
 
 	public TableFragment() {
 		
@@ -80,7 +86,9 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 	{
 		tableView = inflater.inflate(R.layout.fragment_table, container, false);
-		
+
+        subpageView = (LinearLayout) tableView.findViewById(R.id.subpageView);
+
 		tableDataView = (TableLayout) tableView.findViewById(R.id.tableDataView);
 
 		tableView.findViewById(R.id.btnImportData).setOnClickListener(new onClickListenerImport());
@@ -109,12 +117,55 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
         OpenScale.getInstance(getContext()).registerFragment(this);
 
+        selectedSubpageNr = 0;
+
 		return tableView;
 	}
 	
 	@Override
 	public void updateOnView(ArrayList<ScaleData> scaleDataList)
-	{
+    {
+        final int maxSize = 20;
+
+        int subpageCount = (int)Math.ceil(scaleDataList.size() / (double)maxSize);
+
+        subpageView.removeAllViews();
+
+        Button moveSubpageLeft = new Button(tableView.getContext());
+        moveSubpageLeft.setText("<");
+        moveSubpageLeft.setPadding(0,0,0,0);
+        moveSubpageLeft.setTextColor(Color.WHITE);
+        moveSubpageLeft.setBackground(ContextCompat.getDrawable(tableView.getContext(), R.drawable.flat_selector));
+        moveSubpageLeft.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        moveSubpageLeft.getLayoutParams().height = pxImageDp(20);
+        moveSubpageLeft.getLayoutParams().width = pxImageDp(50);
+        moveSubpageLeft.setOnClickListener(new onClickListenerMoveSubpageLeft());
+        subpageView.addView(moveSubpageLeft);
+
+        for (int i=0; i<subpageCount; i++) {
+            TextView subpageNrView = new TextView(tableView.getContext());
+            subpageNrView.setOnClickListener(new onClickListenerSubpageSelect());
+            subpageNrView.setText(Integer.toString(i+1));
+            subpageNrView.setPadding(10, 10, 20, 10);
+
+            subpageView.addView(subpageNrView);
+        }
+
+        TextView selectedSubpageNrView = (TextView) subpageView.getChildAt(selectedSubpageNr+1);
+        selectedSubpageNrView.setTypeface(null, Typeface.BOLD);
+        selectedSubpageNrView.setTextColor(ChartUtils.COLOR_BLUE);
+
+        Button moveSubpageRight = new Button(tableView.getContext());
+        moveSubpageRight.setText(">");
+        moveSubpageRight.setPadding(0,0,0,0);
+        moveSubpageRight.setTextColor(Color.WHITE);
+        moveSubpageRight.setBackground(ContextCompat.getDrawable(tableView.getContext(), R.drawable.flat_selector));
+        moveSubpageRight.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        moveSubpageRight.getLayoutParams().height = pxImageDp(20);
+        moveSubpageRight.getLayoutParams().width = pxImageDp(50);
+        moveSubpageRight.setOnClickListener(new onClickListenerMoveSubpageRight());
+        subpageView.addView(moveSubpageRight);
+
         tableDataView.removeAllViews();
 
         TableRow tableHeader = new TableRow(tableView.getContext());
@@ -152,17 +203,17 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
         tableDataView.addView(tableHeader);
 
-        ListIterator<ScaleData> scaleDataItr = scaleDataList.listIterator();
+        int displayCount = 0;
 
-        while (scaleDataItr.hasNext()) {
-            ScaleData scaleData = scaleDataItr.next();
+        for (int i = (maxSize * selectedSubpageNr); i<scaleDataList.size(); i++) {
+            ScaleData scaleData = scaleDataList.get(i);
+
             ScaleData prevScaleData;
 
-            if (scaleDataItr.hasNext()) {
-                prevScaleData = scaleDataItr.next();
-                scaleDataItr.previous();
-            } else {
+            if (i >= scaleDataList.size()-1) {
                 prevScaleData = new ScaleData();
+            } else {
+                prevScaleData = scaleDataList.get(i+1);
             }
 
             TableRow dataRow = new TableRow(tableView.getContext());
@@ -208,6 +259,13 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
             }*/
 
             tableDataView.addView(dataRow);
+
+            displayCount++;
+
+            if (maxSize <= displayCount) {
+                break;
+            }
+
         }
 	}
 
@@ -399,7 +457,37 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
         }
     }
 
-    @Override
+    private class onClickListenerMoveSubpageLeft implements View.OnClickListener {
+        @Override
+        public void onClick(View v) {
+            if (selectedSubpageNr > 0) {
+                selectedSubpageNr--;
+                updateOnView(OpenScale.getInstance(getContext()).getScaleDataList());
+            }
+        }
+    }
+
+    private class onClickListenerMoveSubpageRight implements View.OnClickListener {
+        @Override
+        public void onClick(View v) {
+            if (selectedSubpageNr < (subpageView.getChildCount() - 3)) {
+                selectedSubpageNr++;
+                updateOnView(OpenScale.getInstance(getContext()).getScaleDataList());
+            }
+        }
+    }
+
+    private class onClickListenerSubpageSelect implements View.OnClickListener {
+        @Override
+        public void onClick(View v) {
+            TextView nrView = (TextView)v;
+
+            selectedSubpageNr = Integer.parseInt(nrView.getText().toString())-1;
+            updateOnView(OpenScale.getInstance(getContext()).getScaleDataList());
+        }
+    }
+
+        @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
         if(isVisibleToUser) {
