@@ -153,8 +153,8 @@
         android:clickable="true"
         android:src="@drawable/lastmonth"
         app:backgroundTint="#33B5E5"
-        app:layout_anchor="@id/chart_top"
-        app:layout_anchorGravity="top|right|end"
+        app:layout_anchor="@id/chart_bottom"
+        app:layout_anchorGravity="bottom|right|end"
         app:rippleColor="#33B5E5" />
 
 </android.support.design.widget.CoordinatorLayout>
