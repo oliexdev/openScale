@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 25
+    compileSdkVersion 24
     buildToolsVersion '25.0.2'
 
     defaultConfig {
@@ -20,7 +20,7 @@ android {
     }
 }
 ext {
-    supportLibVersion = '25.2.0'
+    supportLibVersion = '24.1.1' //  lib version > 24.1.1 has a floating button bug, which move the button randomly
 }
 
 dependencies {
