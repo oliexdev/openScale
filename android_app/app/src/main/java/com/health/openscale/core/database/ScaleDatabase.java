@@ -194,7 +194,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
             cursorScaleDB.moveToFirst();
             tupleScaleData[1] = readAtCursor(cursorScaleDB);
         } else {
-            tupleScaleData[1] = null;
+            tupleScaleData[1] = new ScaleData();
         }
 
         // previous scale entry

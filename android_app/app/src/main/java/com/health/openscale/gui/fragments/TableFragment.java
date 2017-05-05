@@ -34,10 +34,13 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -63,6 +66,7 @@ import com.health.openscale.gui.views.WeightMeasurementView;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import lecho.lib.hellocharts.util.ChartUtils;
 
@@ -70,7 +74,8 @@ import static android.util.TypedValue.COMPLEX_UNIT_DIP;
 
 public class TableFragment extends Fragment implements FragmentUpdateListener {
 	private View tableView;
-	private TableLayout tableDataView;
+	private ListView tableDataView;
+    private LinearLayout tableHeaderView;
     private SharedPreferences prefs;
     private LinearLayout subpageView;
 
@@ -89,7 +94,8 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
         subpageView = (LinearLayout) tableView.findViewById(R.id.subpageView);
 
-		tableDataView = (TableLayout) tableView.findViewById(R.id.tableDataView);
+		tableDataView = (ListView) tableView.findViewById(R.id.tableDataView);
+        tableHeaderView = (LinearLayout) tableView.findViewById(R.id.tableHeaderView);
 
 		tableView.findViewById(R.id.btnImportData).setOnClickListener(new onClickListenerImport());
 		tableView.findViewById(R.id.btnExportData).setOnClickListener(new onClickListenerExport());
@@ -150,10 +156,11 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
             subpageView.addView(subpageNrView);
         }
-
-        TextView selectedSubpageNrView = (TextView) subpageView.getChildAt(selectedSubpageNr+1);
-        selectedSubpageNrView.setTypeface(null, Typeface.BOLD);
-        selectedSubpageNrView.setTextColor(ChartUtils.COLOR_BLUE);
+        if (subpageView.getChildCount() > 1) {
+            TextView selectedSubpageNrView = (TextView) subpageView.getChildAt(selectedSubpageNr + 1);
+            selectedSubpageNrView.setTypeface(null, Typeface.BOLD);
+            selectedSubpageNrView.setTextColor(ChartUtils.COLOR_BLUE);
+        }
 
         Button moveSubpageRight = new Button(tableView.getContext());
         moveSubpageRight.setText(">");
@@ -166,15 +173,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
         moveSubpageRight.setOnClickListener(new onClickListenerMoveSubpageRight());
         subpageView.addView(moveSubpageRight);
 
-        tableDataView.removeAllViews();
-
-        TableRow tableHeader = new TableRow(tableView.getContext());
-        tableHeader.setPadding(0, 10, 0, 10);
-
-        // inside dummy id in table header to have the same amount of table columns for header and data
-        TextView idView = new TextView(tableView.getContext());
-            idView.setVisibility(View.GONE);
-        tableHeader.addView(idView);
+        tableHeaderView.removeAllViews();
 
         for (MeasurementView measurement : measurementsList) {
             measurement.updatePreferences(prefs);
@@ -182,26 +181,16 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
             if (measurement.isVisible()) {
                 ImageView headerIcon = new ImageView(tableView.getContext());
                 headerIcon.setImageDrawable(measurement.getIcon());
-                headerIcon.setLayoutParams(new TableRow.LayoutParams(TableLayout.LayoutParams.WRAP_CONTENT, TableLayout.LayoutParams.WRAP_CONTENT));
+                headerIcon.setLayoutParams(new TableRow.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableLayout.LayoutParams.MATCH_PARENT, 1));
+                headerIcon.getLayoutParams().width = 0;
                 headerIcon.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
                 headerIcon.getLayoutParams().height = pxImageDp(20);
 
-                tableHeader.addView(headerIcon);
+                tableHeaderView.addView(headerIcon);
             }
         }
 
-        Button deleteAll = new Button(tableView.getContext());
-            deleteAll.setOnClickListener(new onClickListenerDeleteAll());
-            deleteAll.setText(tableView.getContext().getResources().getString(R.string.label_delete_all));
-            deleteAll.setBackground(ContextCompat.getDrawable(tableView.getContext(), R.drawable.flat_selector));
-            deleteAll.setLayoutParams(new TableRow.LayoutParams(TableLayout.LayoutParams.WRAP_CONTENT, TableLayout.LayoutParams.WRAP_CONTENT));
-            deleteAll.getLayoutParams().height = pxImageDp(24);
-            deleteAll.setTextColor(Color.WHITE);
-            deleteAll.setPadding(0,0,0,0);
-            deleteAll.setTextSize(COMPLEX_UNIT_DIP, 8);
-        tableHeader.addView(deleteAll);
-
-        tableDataView.addView(tableHeader);
+        ArrayList<HashMap<Integer,String>> dataRowList = new ArrayList<>();
 
         int displayCount = 0;
 
@@ -216,75 +205,48 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
                 prevScaleData = scaleDataList.get(i+1);
             }
 
-            TableRow dataRow = new TableRow(tableView.getContext());
 
-            idView = new TextView(tableView.getContext());
-            idView.setVisibility(View.GONE);
-            idView.setText(Long.toString(scaleData.getId()));
-            dataRow.addView(idView);
+            HashMap<Integer,String> dataRow = new HashMap<>();
 
-            for (MeasurementView measurement : measurementsList) {
-               measurement.updateValue(scaleData);
-               measurement.updateDiff(scaleData, prevScaleData);
+            dataRow.put(0, Long.toString(scaleData.getId()));
+
+            for (int j=0; j< measurementsList.size(); j++) {
+                MeasurementView measurement = measurementsList.get(j);
+                measurement.updateValue(scaleData);
+                measurement.updateDiff(scaleData, prevScaleData);
 
                 if (measurement.isVisible()) {
-                    TextView measurementView = new TextView(tableView.getContext());
-                    measurementView.setGravity(Gravity.CENTER);
-
-                    measurementView.setText(Html.fromHtml(measurement.getValueAsString() + "<br>" + measurement.getDiffValue()));
-
-                    if ((getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) != Configuration.SCREENLAYOUT_SIZE_XLARGE &&
-                       (getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) != Configuration.SCREENLAYOUT_SIZE_LARGE) {
-                        measurementView.setTextSize(COMPLEX_UNIT_DIP, 10);
-                    }
-
-                    dataRow.addView(measurementView);
+                    dataRow.put(j+1,measurement.getValueAsString() + "<br>" + measurement.getDiffValue());
                 }
             }
 
-            ImageView deleteImageView = new ImageView(tableView.getContext());
-                deleteImageView.setImageDrawable(ContextCompat.getDrawable(tableView.getContext(), R.drawable.delete));
-                deleteImageView.setLayoutParams(new TableRow.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableLayout.LayoutParams.MATCH_PARENT));
-                deleteImageView.getLayoutParams().height = pxImageDp(16);
-                deleteImageView.setOnClickListener(new onClickListenerDelete());
-            dataRow.addView(deleteImageView);
-
-            dataRow.setOnClickListener(new onClickListenerRow());
-            dataRow.setLayoutParams(new TableLayout.LayoutParams(TableLayout.LayoutParams.WRAP_CONTENT, TableLayout.LayoutParams.WRAP_CONTENT));
-            dataRow.setPadding(0,0,0,10);
-
-            // doesn't work if we use a horizontal scroll view
-            /*for (int i=1; i<dataRow.getChildCount()-1; i++) {
-                tableDataView.setColumnStretchable(i, true);
-            }*/
-
-            tableDataView.addView(dataRow);
+            dataRowList.add(dataRow);
 
             displayCount++;
 
             if (maxSize <= displayCount) {
                 break;
             }
-
         }
+
+        tableDataView.setAdapter(new ListViewAdapter(dataRowList));
+        tableDataView.setOnItemClickListener(new onClickListenerRow());
 	}
 
     private int pxImageDp(float dp) {
         return (int)(dp * getResources().getDisplayMetrics().density + 0.5f);
     }
 
-    private class onClickListenerRow implements View.OnClickListener {
-
+    private class onClickListenerRow implements AdapterView.OnItemClickListener {
         @Override
-        public void onClick(View v) {
-            TableRow dataRow = (TableRow)v;
+        public void onItemClick(AdapterView<?> parent, View view, int position, long click_id) {
+            LinearLayout dataRow = (LinearLayout)view;
             TextView idTextView = (TextView) dataRow.getChildAt(0);
             long id = Long.parseLong(idTextView.getText().toString());
 
             Intent intent = new Intent(tableView.getContext(), DataEntryActivity.class);
             intent.putExtra("id", id);
-            startActivityForResult(intent, 1);
-        }
+            startActivityForResult(intent, 1);        }
     }
 
     private class onClickListenerImport implements View.OnClickListener {
@@ -385,78 +347,6 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
         }
     }
 
-    private class onClickListenerDeleteAll implements View.OnClickListener {
-        @Override
-        public void onClick(View v) {
-            AlertDialog.Builder deleteAllDialog = new AlertDialog.Builder(getActivity());
-
-            deleteAllDialog.setMessage(getResources().getString(R.string.question_really_delete_all));
-
-            deleteAllDialog.setPositiveButton(getResources().getString(R.string.label_yes), new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(tableView.getContext());
-                    int selectedUserId  = prefs.getInt("selectedUserId", -1);
-
-                    OpenScale.getInstance(getContext()).clearScaleData(selectedUserId);
-
-                    Toast.makeText(tableView.getContext(), getResources().getString(R.string.info_data_all_deleted), Toast.LENGTH_SHORT).show();
-                    updateOnView(OpenScale.getInstance(getContext()).getScaleDataList());
-                }
-            });
-
-            deleteAllDialog.setNegativeButton(getResources().getString(R.string.label_no), new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-                    dialog.dismiss();
-                }
-            });
-
-            deleteAllDialog.show();
-        }
-    }
-
-    private class onClickListenerDelete implements View.OnClickListener {
-        private long row_id;
-
-        @Override
-        public void onClick(View v) {
-            TableRow dataRow = (TableRow)v.getParent();
-            TextView idTextView = (TextView) dataRow.getChildAt(0);
-            row_id = Long.parseLong(idTextView.getText().toString());
-
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(v.getContext());
-            boolean deleteConfirmationEnable  = prefs.getBoolean("deleteConfirmationEnable", true);
-
-            if (deleteConfirmationEnable) {
-                AlertDialog.Builder deleteAllDialog = new AlertDialog.Builder(getActivity());
-                deleteAllDialog.setMessage(getResources().getString(R.string.question_really_delete));
-
-                deleteAllDialog.setPositiveButton(getResources().getString(R.string.label_yes), new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        deleteMeasurement();
-                    }
-                });
-
-                deleteAllDialog.setNegativeButton(getResources().getString(R.string.label_no), new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        dialog.dismiss();
-                    }
-                });
-
-                deleteAllDialog.show();
-            }
-            else {
-                deleteMeasurement();
-            }
-        }
-
-        public void deleteMeasurement() {
-            OpenScale.getInstance(getContext()).deleteScaleData(row_id);
-
-            Toast.makeText(tableView.getContext(), getResources().getString(R.string.info_data_deleted), Toast.LENGTH_SHORT).show();
-            updateOnView(OpenScale.getInstance(getContext()).getScaleDataList());
-        }
-    }
-
     private class onClickListenerMoveSubpageLeft implements View.OnClickListener {
         @Override
         public void onClick(View v) {
@@ -494,5 +384,75 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
             Activity a = getActivity();
             if(a != null) a.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR);
         }
+    }
+
+    private class ListViewAdapter extends BaseAdapter {
+
+        private ArrayList<HashMap<Integer, String>> dataList;
+        private LinearLayout row;
+
+        public ListViewAdapter(ArrayList<HashMap<Integer, String>> list){
+            super();
+            this.dataList =list;
+        }
+
+        @Override
+        public int getCount() {
+            return dataList.size();
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return dataList.get(position);
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return 0;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            if (dataList.isEmpty()) {
+                return convertView;
+            }
+
+            if(convertView == null){
+                row = new LinearLayout(getContext());
+                row.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
+
+                convertView = row;
+
+                for (int i = 0; i< dataList.get(0).size(); i++) {
+                    TextView column = new TextView(getContext());
+                    column.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
+                    column.getLayoutParams().width = 0;
+                    column.setGravity(Gravity.CENTER);
+
+                    if ((getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) != Configuration.SCREENLAYOUT_SIZE_XLARGE &&
+                       (getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) != Configuration.SCREENLAYOUT_SIZE_LARGE) {
+                        column.setTextSize(COMPLEX_UNIT_DIP, 9);
+                    }
+
+                    if (i == 0) {
+                        column.setVisibility(View.GONE);
+                    }
+
+                    row.addView(column);
+                }
+            }
+
+            LinearLayout convView = (LinearLayout)convertView;
+
+            HashMap<Integer, String> map = dataList.get(position);
+
+            for (int i = 0; i< dataList.get(0).size(); i++) {
+                TextView column = (TextView)convView.getChildAt(i);
+                column.setText(Html.fromHtml(map.get(i)));
+            }
+
+            return convertView;
+        }
+
     }
 }
