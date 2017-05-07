@@ -117,4 +117,8 @@
     <string name="error_value_required">Wert ist erforderlich</string>
     <string name="title_statistics">Statistiken</string>
     <string name="label_cancel">Abbrechen</string>
+    <string name="label_bt_device_data_history">Bt Waage Datenhistorie</string>
+    <string name="label_bt_device_data_transfer">Bt Waage Datentransfer</string>
+    <string name="label_bt_device_initialization">Bt Waage Initialisierung</string>
+    <string name="label_bt_device_support">Folgendes wird unterstützt</string>
 </resources>

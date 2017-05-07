@@ -136,4 +136,8 @@
     <string name="Friday">Friday</string>
     <string name="Saturday">Saturday</string>
     <string name="Sunday">Sunday</string>
+    <string name="label_bt_device_initialization">Bt scale initialization</string>
+    <string name="label_bt_device_data_transfer">Bt scale data transfer</string>
+    <string name="label_bt_device_data_history">Bt scale data history</string>
+    <string name="label_bt_device_support">Following will supported</string>
 </resources>

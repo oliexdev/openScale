@@ -11,4 +11,23 @@
         <item>1</item>
         <item>2</item>
     </string-array>
+
+    <string-array name="bt_device_support_initializing">
+        <item>@string/label_yes</item>
+        <item>@string/label_yes</item>
+        <item>@string/label_no</item>
+    </string-array>
+
+    <string-array name="bt_device_support_data_transfer">
+        <item>@string/label_yes</item>
+        <item>@string/label_yes</item>
+        <item>@string/label_yes</item>
+    </string-array>
+
+    <string-array name="bt_device_support_data_history">
+        <item>@string/label_yes</item>
+        <item>@string/label_yes</item>
+        <item>@string/label_no</item>
+    </string-array>
+
 </resources>

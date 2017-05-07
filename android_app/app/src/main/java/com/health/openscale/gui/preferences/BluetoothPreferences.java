@@ -23,6 +23,7 @@ import android.preference.MultiSelectListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceGroup;
+import android.text.Html;
 
 import com.health.openscale.R;
 
@@ -31,11 +32,20 @@ import java.util.List;
 import java.util.Set;
 
 public class BluetoothPreferences extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
+
+    String[] btDeviceSupportInit;
+    String[] btDeviceSupportDataTransfer;
+    String[] btDeviceSupportDataHistory;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         addPreferencesFromResource(R.xml.bluetooth_preferences);
+
+        btDeviceSupportInit = getResources().getStringArray(R.array.bt_device_support_initializing);
+        btDeviceSupportDataTransfer = getResources().getStringArray(R.array.bt_device_support_data_transfer);
+        btDeviceSupportDataHistory = getResources().getStringArray(R.array.bt_device_support_data_history);
 
         initSummary(getPreferenceScreen());
     }
@@ -72,7 +82,15 @@ public class BluetoothPreferences extends PreferenceFragment implements SharedPr
     private void updatePrefSummary(Preference p) {
         if (p instanceof ListPreference) {
             ListPreference listPref = (ListPreference) p;
-            p.setSummary(listPref.getEntry());
+
+            int i = Integer.parseInt(listPref.getValue());
+
+            p.setSummary(Html.fromHtml(listPref.getEntry() + "<br>" +
+                                    getResources().getString(R.string.label_bt_device_support) + ":" + "<br>" +
+                                    getResources().getString(R.string.label_bt_device_initialization) + ": " + btDeviceSupportInit[i] + "<br>" +
+                                    getResources().getString(R.string.label_bt_device_data_transfer) + ": " + btDeviceSupportDataTransfer[i] + "<br>" +
+                                    getResources().getString(R.string.label_bt_device_data_history) + ": " + btDeviceSupportDataHistory[i]
+            ));
         }
 
         if (p instanceof EditTextPreference) {
