@@ -365,6 +365,12 @@ public class OpenScale {
 
     public void registerFragment(FragmentUpdateListener fragment) {
         fragmentList.add(fragment);
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        int selectedUserId  = prefs.getInt("selectedUserId", -1);
+
+        scaleDataList = scaleDB.getScaleDataList(selectedUserId);
+
         fragment.updateOnView(scaleDataList);
     }
 

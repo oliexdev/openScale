@@ -387,10 +387,10 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
         if ((getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == Configuration.SCREENLAYOUT_SIZE_XLARGE ||
             (getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == Configuration.SCREENLAYOUT_SIZE_LARGE) {
-            pieChartData.setCenterText1FontSize(25);
+            pieChartData.setCenterText1FontSize(20);
             pieChartData.setCenterText2FontSize(14);
         } else {
-            pieChartData.setCenterText1FontSize(20);
+            pieChartData.setCenterText1FontSize(15);
             pieChartData.setCenterText2FontSize(12);
             pieChartData.setValueLabelTextSize(12);
         }

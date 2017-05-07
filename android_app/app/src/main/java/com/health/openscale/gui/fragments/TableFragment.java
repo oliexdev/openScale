@@ -208,7 +208,8 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
             HashMap<Integer,String> dataRow = new HashMap<>();
 
-            dataRow.put(0, Long.toString(scaleData.getId()));
+            int columnNr = 0;
+            dataRow.put(columnNr, Long.toString(scaleData.getId()));
 
             for (int j=0; j< measurementsList.size(); j++) {
                 MeasurementView measurement = measurementsList.get(j);
@@ -216,7 +217,8 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
                 measurement.updateDiff(scaleData, prevScaleData);
 
                 if (measurement.isVisible()) {
-                    dataRow.put(j+1,measurement.getValueAsString() + "<br>" + measurement.getDiffValue());
+                    columnNr++;
+                    dataRow.put(columnNr, measurement.getValueAsString() + "<br>" + measurement.getDiffValue());
                 }
             }
 
