@@ -421,8 +421,6 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
             if(convertView == null){
                 row = new LinearLayout(getContext());
-                row.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
-
                 convertView = row;
 
                 for (int i = 0; i< dataList.get(0).size(); i++) {

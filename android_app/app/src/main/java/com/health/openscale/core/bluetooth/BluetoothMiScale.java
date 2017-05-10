@@ -375,9 +375,13 @@ public class BluetoothMiScale extends BluetoothCommunication {
             byte[] data = characteristic.getValue();
 
             int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+            int currentMonth = Calendar.getInstance().get(Calendar.MONTH)+1;
+            int currentDay = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
             int scaleYear = ((data[1] & 0xFF) << 8) | (data[0] & 0xFF);
+            int scaleMonth = (int) data[2];
+            int scaleDay = (int) data[3];
 
-            if (currentYear != scaleYear) {
+            if (currentYear != scaleYear || currentMonth != scaleMonth || currentDay != scaleDay) {
                 Log.d("BluetoothMiScale", "Current year and scale year is different");
                 invokeInitBluetoothCmd(gatt);
             } else {
