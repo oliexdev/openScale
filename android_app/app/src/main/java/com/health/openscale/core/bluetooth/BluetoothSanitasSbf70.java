@@ -289,6 +289,7 @@ public class BluetoothSanitasSbf70 extends BluetoothCommunication {
                     return;
                 }
                 // stabilized value
+                // little endian
                 float weight = ((float)(
                         ((int)(data[3] & 0xFF) << 8) + ((int)(data[4] & 0xFF))
                 )) * 50.0f / 1000.0f; // unit is 50g
@@ -305,24 +306,27 @@ public class BluetoothSanitasSbf70 extends BluetoothCommunication {
                 });
 
                 if ((data[2] & 0xFF) == 0x03 && (data[3] & 0xFF) == 0x02) {
+                    // big endian
                     float fat = ((float)(
-                            ((int)(data[14] & 0xFF) << 8) + ((int)(data[13] & 0xFF))
+                            ((int)(data[12] & 0xFF) << 8) + ((int)(data[13] & 0xFF))
                     )) / 10.0f; // unit is 0.1kg
-                    Log.i(TAG, "Got fat: " + fat + "kg");
+                    Log.i(TAG, "Got fat: " + fat + "%");
                     scaleBtData.setFat(fat);
                 }
 
                 if ((data[2] & 0xFF) == 0x03 && (data[3] & 0xFF) == 0x03) {
+                    // little endian
                     float water = ((float)(
                             ((int)(data[5] & 0xFF) << 8) + ((int)(data[4] & 0xFF))
                     )) / 10.0f; // unit is 0.1kg
-                    Log.i(TAG, "Got water: " + water + "kg");
+                    Log.i(TAG, "Got water: " + water + "%");
                     scaleBtData.setWater(water);
 
+                    // little endian
                     float muscle = ((float)(
                             ((int)(data[7] & 0xFF) << 8) + ((int)(data[6] & 0xFF))
                     )) / 10.0f; // unit is 0.1kg
-                    Log.i(TAG, "Got muscle: " + muscle + "kg");
+                    Log.i(TAG, "Got muscle: " + muscle + "%");
                     scaleBtData.setMuscle(muscle);
 
                     callbackBtHandler.obtainMessage(
