@@ -51,9 +51,9 @@ import static com.health.openscale.gui.views.MeasurementView.MeasurementViewMode
 
 public abstract class MeasurementView extends TableLayout {
     public enum MeasurementViewMode {VIEW, EDIT, ADD};
-    private static String SYMBOL_UP = "&#x2197;";
-    private static String SYMBOL_NEUTRAL = "&#x2192";
-    private static String SYMBOL_DOWN = "&#x2198;";
+    private static String SYMBOL_UP = "&#10138;";
+    private static String SYMBOL_NEUTRAL = "&#10137;";
+    private static String SYMBOL_DOWN = "&#10136;";
 
     private TableRow measurementRow;
     private ImageView iconView;

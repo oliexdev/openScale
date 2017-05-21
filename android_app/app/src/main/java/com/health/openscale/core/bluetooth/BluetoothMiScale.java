@@ -52,7 +52,9 @@ public class BluetoothMiScale extends BluetoothCommunication {
     private String btDeviceName;
     private int nextCmdState;
     private int nextInitState;
+    private int nextClearUpState;
     private boolean initProcessOn;
+    private boolean clearUpProcessOn;
 
     public BluetoothMiScale(Context con) {
         searchHandler = new Handler();
@@ -75,10 +77,6 @@ public class BluetoothMiScale extends BluetoothCommunication {
                     {
                         if (device.getName().equals(btDeviceName)) {
                             Log.d("BluetoothMiScale", "Mi Scale found trying to connect...");
-
-                            final byte[] weightData = Arrays.copyOfRange(scanRecord, 21, 31);
-                            weightData[0] = 0x62; // Set weight remove to false to come through parse bytes
-                            parseBytes(weightData);
 
                             bluetoothGatt = device.connectGatt(context, false, gattCallback);
 
@@ -135,7 +133,7 @@ public class BluetoothMiScale extends BluetoothCommunication {
             Log.d("GattCallback", "3 LSB Unknown: " + isBitSet(ctrlByte, 3));
             Log.d("GattCallback", "2 LSB Unknown: " + isBitSet(ctrlByte, 2));
             Log.d("GattCallback", "1 LSB Unknown: " + isBitSet(ctrlByte, 1));
-            Log.d("GattCallback", "IsLBS: " + isBitSet(ctrlByte, 0)); */
+            Log.d("GattCallback", "IsLBS: " + isBitSet(ctrlByte, 0));*/
 
             // Only if the value is stabilized and the weight is *not* removed, the date is valid
             if (isStabilized && !isWeightRemoved) {
@@ -224,7 +222,10 @@ public class BluetoothMiScale extends BluetoothCommunication {
         public void onServicesDiscovered(final BluetoothGatt gatt, int status) {
             nextCmdState = 0;
             nextInitState = 0;
+            nextClearUpState = 0;
+
             initProcessOn = false;
+            clearUpProcessOn = false;
 
             invokeNextBluetoothCmd(gatt);
         }
@@ -264,20 +265,76 @@ public class BluetoothMiScale extends BluetoothCommunication {
                     gatt.writeDescriptor(descriptor);
                     break;
                 case 3:
-                    // Invoke receiving history data
+                    // configure scale to get only last measurements
+                    characteristic = gatt.getService(WEIGHT_MEASUREMENT_SERVICE)
+                            .getCharacteristic(WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC);
+
+                    characteristic.setValue(new byte[]{(byte)0x01, (byte)0xFF, (byte)0xFF, (byte)0xFF, (byte)0xFF});
+                    gatt.writeCharacteristic(characteristic);
+                    break;
+                case 4:
+                    // set notification off for weight measurement history
+                    characteristic = gatt.getService(WEIGHT_MEASUREMENT_SERVICE)
+                            .getCharacteristic(WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC);
+
+                    gatt.setCharacteristicNotification(characteristic, false);
+
+                    descriptor = characteristic.getDescriptor(WEIGHT_MEASUREMENT_CONFIG);
+                    descriptor.setValue(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
+                    gatt.writeDescriptor(descriptor);
+                    break;
+                case 5:
+                    // set notification on for weight measurement history
+                    characteristic = gatt.getService(WEIGHT_MEASUREMENT_SERVICE)
+                            .getCharacteristic(WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC);
+
+                    gatt.setCharacteristicNotification(characteristic, true);
+
+                    descriptor = characteristic.getDescriptor(WEIGHT_MEASUREMENT_CONFIG);
+                    descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+                    gatt.writeDescriptor(descriptor);
+                    break;
+                case 6:
+                    // invoke receiving history data
                     characteristic = gatt.getService(WEIGHT_MEASUREMENT_SERVICE)
                             .getCharacteristic(WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC);
 
                     characteristic.setValue(new byte[]{0x02});
                     gatt.writeCharacteristic(characteristic);
                     break;
-                case 4:
-                    // Stop receiving history data
-                    /*characteristic = gatt.getService(WEIGHT_MEASUREMENT_SERVICE)
+                case 7:
+                    // end of command mode
+                    break;
+                default:
+                    Log.e("BluetoothMiScale", "Error invalid Bluetooth State");
+                    break;
+            }
+        }
+
+        private void invokeClearUpBluetooth(BluetoothGatt gatt) {
+            BluetoothGattCharacteristic characteristic;
+
+            clearUpProcessOn = true;
+
+            switch (nextClearUpState) {
+                case 0:
+                    // send stop command to mi scale
+                    characteristic = gatt.getService(WEIGHT_MEASUREMENT_SERVICE)
                             .getCharacteristic(WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC);
 
                     characteristic.setValue(new byte[]{0x03});
-                    gatt.writeCharacteristic(characteristic);*/
+                    gatt.writeCharacteristic(characteristic);
+                    break;
+                case 1:
+                    // acknowledge that you received the last history data
+                    characteristic = gatt.getService(WEIGHT_MEASUREMENT_SERVICE)
+                            .getCharacteristic(WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC);
+
+                    characteristic.setValue(new byte[]{(byte)0x04, (byte)0xFF, (byte)0xFF, (byte)0xFF, (byte)0xFF});
+                    gatt.writeCharacteristic(characteristic);
+                    break;
+                case 2:
+                    // end of clear up process
                     break;
                 default:
                     Log.e("BluetoothMiScale", "Error invalid Bluetooth State");
@@ -349,7 +406,11 @@ public class BluetoothMiScale extends BluetoothCommunication {
             if (initProcessOn) {
                 nextInitState++;
                 invokeInitBluetoothCmd(gatt);
-            } else {
+            } else if (clearUpProcessOn) {
+                nextClearUpState++;
+                invokeClearUpBluetooth(gatt);
+            }
+            else {
                 nextCmdState++;
                 invokeNextBluetoothCmd(gatt);
             }
@@ -362,7 +423,10 @@ public class BluetoothMiScale extends BluetoothCommunication {
             if (initProcessOn) {
                 nextInitState++;
                 invokeInitBluetoothCmd(gatt);
-            } else {
+            } else if (clearUpProcessOn) {
+                nextClearUpState++;
+                invokeClearUpBluetooth(gatt);
+            }else {
                 nextCmdState++;
                 invokeNextBluetoothCmd(gatt);
             }
@@ -396,6 +460,12 @@ public class BluetoothMiScale extends BluetoothCommunication {
             final byte[] data = characteristic.getValue();
 
             if (data != null && data.length > 0) {
+
+                // Stop command from mi scale received
+                if (data[0] == 0x03) {
+                    invokeClearUpBluetooth(gatt);
+                }
+
                 if (data.length == 20) {
                     final byte[] firstWeight = Arrays.copyOfRange(data, 0, 10);
                     final byte[] secondWeight = Arrays.copyOfRange(data, 10, 20);
