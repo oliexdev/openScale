@@ -15,12 +15,10 @@
 */
 package com.health.openscale.gui.fragments;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -376,15 +374,6 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
             selectedSubpageNr = Integer.parseInt(nrView.getText().toString())-1;
             updateOnView(OpenScale.getInstance(getContext()).getScaleDataList());
-        }
-    }
-
-        @Override
-    public void setUserVisibleHint(boolean isVisibleToUser) {
-        super.setUserVisibleHint(isVisibleToUser);
-        if(isVisibleToUser) {
-            Activity a = getActivity();
-            if(a != null) a.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR);
         }
     }
 
