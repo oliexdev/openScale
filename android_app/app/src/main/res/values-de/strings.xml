@@ -121,4 +121,9 @@
     <string name="label_bt_device_data_transfer">Bt Waage Datentransfer</string>
     <string name="label_bt_device_initialization">Bt Waage Initialisierung</string>
     <string name="label_bt_device_support">Folgendes wird unterstützt</string>
+    <string name="label_backup">Datensicherung</string>
+    <string name="label_exportBackup">Exportiere Datensicherung</string>
+    <string name="label_importBackup">Importiere Datensicherung</string>
+    <string name="label_export_dir">Export Ordner</string>
+    <string name="label_not_found">nicht gefunden</string>
 </resources>

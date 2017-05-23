@@ -20,4 +20,8 @@
         android:fragment="com.health.openscale.gui.preferences.ReminderPreferences"
         android:title="@string/label_reminder"
         android:icon="@drawable/preferences_reminder"/>
+    <header
+        android:fragment="com.health.openscale.gui.preferences.BackupPreferences"
+        android:title="@string/label_backup"
+        android:icon="@drawable/preferences_backup"/>
 </preference-headers>

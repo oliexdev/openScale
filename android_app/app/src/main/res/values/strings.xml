@@ -140,4 +140,9 @@
     <string name="label_bt_device_data_transfer">Bt scale data transfer</string>
     <string name="label_bt_device_data_history">Bt scale data history</string>
     <string name="label_bt_device_support">Following will supported</string>
+    <string name="label_exportBackup">Export backup</string>
+    <string name="label_importBackup">Import backup</string>
+    <string name="label_backup">Backup</string>
+    <string name="label_export_dir">Export dir</string>
+    <string name="label_not_found">not found</string>
 </resources>

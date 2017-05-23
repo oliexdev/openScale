@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <EditTextPreference android:title="@string/label_export_dir" android:key="exportDir" android:defaultValue="openScale backup" />
+    <Preference android:title="@string/label_exportBackup" android:key="exportBackup"/>
+    <Preference android:title="@string/label_importBackup" android:key="importBackup"/>
+</PreferenceScreen>
