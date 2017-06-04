@@ -292,7 +292,7 @@ public class UserSettingsActivity extends Activity {
                 {
                     openScale.addScaleUser(name, date, body_height, scale_unit, gender, goal_weight, goal_date);
 
-                    id = openScale.getScaleUserList().get(0).id;
+                    id = openScale.getScaleUserList().get(openScale.getScaleUserList().size()-1).id;
                 }
 
                 SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);

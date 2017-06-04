@@ -171,7 +171,7 @@ public class ScaleUserDatabase extends SQLiteOpenHelper {
 		SQLiteDatabase db = getReadableDatabase();
 		ArrayList<ScaleUser> scaleUserDBEntries = new ArrayList<ScaleUser>();
 
-		String sortOrder = COLUMN_NAME_ID + " DESC";
+		String sortOrder = COLUMN_NAME_ID + " ASC";
 
 		Cursor cursorScaleDB = db.query(
 		    TABLE_NAME, 	// The table to query
