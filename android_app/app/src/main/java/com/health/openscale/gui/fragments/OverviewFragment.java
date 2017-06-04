@@ -53,7 +53,6 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import lecho.lib.hellocharts.formatter.SimpleLineChartValueFormatter;
 import lecho.lib.hellocharts.listener.LineChartOnValueSelectListener;
@@ -273,11 +272,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
             long days = 0 - daysBetween(lastDate, histDate);
 
-            if (days == 0 && !scaleDataList.isEmpty()) {
-                axisValues.add(new AxisValue(i, DateFormat.getDateInstance(DateFormat.SHORT).format(scaleDataList.get(0).getDateTime()).toCharArray()));
-            } else {
-                axisValues.add(new AxisValue(i, String.format("%d " + getResources().getString(R.string.label_days), days).toCharArray()));
-            }
+            axisValues.add(new AxisValue(i, String.format("%d " + getResources().getString(R.string.label_days), days).toCharArray()));
         }
 
         Line lineWeight = new Line(valuesWeight).
@@ -343,7 +338,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
         lineData.setAxisYLeft(new Axis().
                         setHasLines(true).
-                        setMaxLabelChars(3).
+                        setMaxLabelChars(5).
                         setTextColor(Color.BLACK)
         );
 
@@ -399,9 +394,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
     }
 
     private long daysBetween(Calendar startDate, Calendar endDate) {
-        long end = endDate.getTimeInMillis();
-        long start = startDate.getTimeInMillis();
-        return TimeUnit.MILLISECONDS.toDays(Math.abs(end - start));
+        return startDate.get(Calendar.DAY_OF_YEAR) - endDate.get(Calendar.DAY_OF_YEAR);
     }
 
 	public void btnOnClickInsertData()
