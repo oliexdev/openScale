@@ -24,7 +24,9 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.health.openscale.core.datatypes.ScaleData;
@@ -34,6 +36,7 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Random;
 import java.util.UUID;
 
 public class BluetoothMiScale extends BluetoothCommunication {
@@ -190,6 +193,25 @@ public class BluetoothMiScale extends BluetoothCommunication {
         return (value & (1 << bit)) != 0;
     }
 
+    private int getUniqueNumber() {
+        int uniqueNumber;
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+
+        uniqueNumber = prefs.getInt("uniqueNumber", 0x00);
+
+        if (uniqueNumber == 0x00) {
+            Random r = new Random();
+            uniqueNumber = r.nextInt(65535 - 100 + 1) + 100;
+
+            prefs.edit().putInt("uniqueNumber", uniqueNumber).commit();
+        }
+
+        int userId = prefs.getInt("selectedUserId", -1);
+
+        return uniqueNumber + userId;
+    }
+
     private void printByteInHex(byte[] data) {
         if (data == null) {
             Log.e("BluetoothMiScale", "Data is null");
@@ -269,7 +291,9 @@ public class BluetoothMiScale extends BluetoothCommunication {
                     characteristic = gatt.getService(WEIGHT_MEASUREMENT_SERVICE)
                             .getCharacteristic(WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC);
 
-                    characteristic.setValue(new byte[]{(byte)0x01, (byte)0xFF, (byte)0xFF, (byte)0xFF, (byte)0xFF});
+                    int uniqueNumber = getUniqueNumber();
+
+                    characteristic.setValue(new byte[]{(byte)0x01, (byte)0xFF, (byte)0xFF, (byte) ((uniqueNumber & 0xFF00) >> 8), (byte) ((uniqueNumber & 0xFF) >> 0)});
                     gatt.writeCharacteristic(characteristic);
                     break;
                 case 4:
@@ -330,7 +354,9 @@ public class BluetoothMiScale extends BluetoothCommunication {
                     characteristic = gatt.getService(WEIGHT_MEASUREMENT_SERVICE)
                             .getCharacteristic(WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC);
 
-                    characteristic.setValue(new byte[]{(byte)0x04, (byte)0xFF, (byte)0xFF, (byte)0xFF, (byte)0xFF});
+                    int uniqueNumber = getUniqueNumber();
+
+                    characteristic.setValue(new byte[]{(byte)0x04, (byte)0xFF, (byte)0xFF, (byte) ((uniqueNumber & 0xFF00) >> 8), (byte) ((uniqueNumber & 0xFF) >> 0)});
                     gatt.writeCharacteristic(characteristic);
                     break;
                 case 2:
