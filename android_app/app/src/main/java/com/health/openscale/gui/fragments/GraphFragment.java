@@ -313,7 +313,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         lineData.setAxisYLeft(new Axis().
                 setHasLines(true).
-                setMaxLabelChars(3).
+                setMaxLabelChars(5).
                 setTextColor(Color.BLACK)
         );
 
