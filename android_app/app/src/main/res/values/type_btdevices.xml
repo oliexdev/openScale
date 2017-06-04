@@ -3,22 +3,33 @@
     <string-array name="bt_device_entries">
         <item>Xiaomi Mi Scale v1</item>
         <item>openScale Custom Scale</item>
-        <item>Sanitas SBF-70</item>
+        <item>Sanitas SBF-70</item>#
+        <item>Medisana BS444 Connect</item>
     </string-array>
 
     <string-array name="bt_device_values">
         <item>0</item>
         <item>1</item>
         <item>2</item>
+        <item>3</item>
+    </string-array>
+
+    <string-array name="bt_device_default_name">
+        <item>MI_SCALE</item>
+        <item>openScale_MCU</item>
+        <item>SANITAS SBF70</item>
+        <item>Medisana BS444</item>
     </string-array>
 
     <string-array name="bt_device_support_initializing">
         <item>@string/label_yes</item>
         <item>@string/label_yes</item>
         <item>@string/label_no</item>
+        <item>@string/label_no</item>
     </string-array>
 
     <string-array name="bt_device_support_data_transfer">
+        <item>@string/label_yes</item>
         <item>@string/label_yes</item>
         <item>@string/label_yes</item>
         <item>@string/label_yes</item>
@@ -28,6 +39,7 @@
         <item>@string/label_yes</item>
         <item>@string/label_yes</item>
         <item>@string/label_no</item>
+        <item>@string/label_yes</item>
     </string-array>
 
 </resources>

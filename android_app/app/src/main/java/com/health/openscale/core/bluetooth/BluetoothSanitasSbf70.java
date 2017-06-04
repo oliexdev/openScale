@@ -385,16 +385,18 @@ public class BluetoothSanitasSbf70 extends BluetoothCommunication {
                             + device.getAddress() + " : " + device.getName()
                     );
                     // Texas Instrument (Sanitas)
-                    if (!device.getAddress().replace(":", "").toUpperCase().startsWith("C4BE84"))
-                        return;
-                    if (!device.getName().toLowerCase().equals(btDeviceName.toLowerCase()))
-                        return;
-                    Log.d(TAG, "Sanitas scale found. Connecting...");
+                    if (device.getAddress().replace(":", "").toUpperCase().startsWith("C4BE84") ||
+                            device.getAddress().replace(":", "").toUpperCase().startsWith("209148")) {
 
-                    bluetoothGatt = device.connectGatt(context, false, gattCallback);
+                        if (!device.getName().toLowerCase().equals(btDeviceName.toLowerCase()))
+                            return;
+                        Log.d(TAG, "Sanitas scale found. Connecting...");
 
-                    searchHandler.removeCallbacksAndMessages(null);
-                    btAdapter.stopLeScan(scanCallback);
+                        bluetoothGatt = device.connectGatt(context, false, gattCallback);
+
+                        searchHandler.removeCallbacksAndMessages(null);
+                        btAdapter.stopLeScan(scanCallback);
+                    }
                 }
             };
         }

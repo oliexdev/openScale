@@ -23,6 +23,7 @@ public abstract class BluetoothCommunication {
     public static final int BT_MI_SCALE = 0;
     public static final int BT_OPEN_SCALE = 1;
     public static final int BT_SANITAS_SBF70 = 2;
+    public static final int BT_MEDISANA_BS444 = 3;
 
     public static final int BT_RETRIEVE_SCALE_DATA = 0;
     public static final int BT_INIT_PROCESS = 1;

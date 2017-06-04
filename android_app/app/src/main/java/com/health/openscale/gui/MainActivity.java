@@ -187,8 +187,7 @@ public class MainActivity extends ActionBarActivity implements
 		String deviceType = prefs.getString("btDeviceTypes", "0");
 
 		// Check if Bluetooth 4.x is available
-		if (Integer.parseInt(deviceType) == BluetoothCommunication.BT_MI_SCALE
-				|| Integer.parseInt(deviceType) == BluetoothCommunication.BT_SANITAS_SBF70) {
+		if (Integer.parseInt(deviceType) != BluetoothCommunication.BT_OPEN_SCALE) {
 			if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
 				setBluetoothStatusIcon(R.drawable.bluetooth_disabled);
 				Toast.makeText(getApplicationContext(), "Bluetooth 4.x " + getResources().getString(R.string.info_is_not_available), Toast.LENGTH_SHORT).show();

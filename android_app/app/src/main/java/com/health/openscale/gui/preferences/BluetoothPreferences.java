@@ -36,6 +36,7 @@ public class BluetoothPreferences extends PreferenceFragment implements SharedPr
     String[] btDeviceSupportInit;
     String[] btDeviceSupportDataTransfer;
     String[] btDeviceSupportDataHistory;
+    String[] btDeviceDefaultName;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -46,6 +47,7 @@ public class BluetoothPreferences extends PreferenceFragment implements SharedPr
         btDeviceSupportInit = getResources().getStringArray(R.array.bt_device_support_initializing);
         btDeviceSupportDataTransfer = getResources().getStringArray(R.array.bt_device_support_data_transfer);
         btDeviceSupportDataHistory = getResources().getStringArray(R.array.bt_device_support_data_history);
+        btDeviceDefaultName = getResources().getStringArray(R.array.bt_device_default_name);
 
         initSummary(getPreferenceScreen());
     }
@@ -91,6 +93,11 @@ public class BluetoothPreferences extends PreferenceFragment implements SharedPr
                                     getResources().getString(R.string.label_bt_device_data_transfer) + ": " + btDeviceSupportDataTransfer[i] + "<br>" +
                                     getResources().getString(R.string.label_bt_device_data_history) + ": " + btDeviceSupportDataHistory[i]
             ));
+
+            getPreferenceManager().getDefaultSharedPreferences(getActivity().getApplicationContext()).edit().putString("btDeviceName", btDeviceDefaultName[i]).commit();
+            EditTextPreference prefDeviceName = (EditTextPreference)findPreference("btDeviceName");
+            prefDeviceName.setSummary(btDeviceDefaultName[i]);
+            prefDeviceName.setText(btDeviceDefaultName[i]);
         }
 
         if (p instanceof EditTextPreference) {
