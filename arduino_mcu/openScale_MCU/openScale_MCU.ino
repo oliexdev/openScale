@@ -21,21 +21,23 @@
 #include <DS3232RTC.h> 
 #include <I2C_eeprom.h>
 
-#define SEG_1_1 4
-#define SEG_1_2 5
-#define SEG_2_1 6
-#define SEG_2_2 7
-#define SEG_3_1 8
-#define SEG_3_2 9
-#define SEG_4_1 10
-#define SEG_4_2 11
-#define UP 12
-#define C0 A0
-#define C1 A1
-#define C2 A2
-#define C3 A3
-#define WAKEUP_PIN 3
-#define EXT_SWITCH_PIN 13
+
+// Definition of IO pins ESP32
+#define SEG_1_1 12
+#define SEG_1_2 14
+#define SEG_2_1 27
+#define SEG_2_2 26
+#define SEG_3_1 25
+#define SEG_3_2 33
+#define SEG_4_1 32
+#define SEG_4_2 35
+#define UP 39
+#define C0 36
+#define C1 0
+#define C2 4
+#define C3 16
+#define WAKEUP_PIN 17
+#define EXT_SWITCH_PIN 5
 
 #define MAX_SAMPLE_SIZE 6
 #define MAX_NO_ACTIVITY_CYCLES 32
