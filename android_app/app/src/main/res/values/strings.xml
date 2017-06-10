@@ -70,6 +70,7 @@
     <string name="error_importing">Error importing</string>
     <string name="error_user_name_required">Error user name is required</string>
     <string name="error_body_height_required">Error body height is required</string>
+    <string name="error_initial_weight_required">Error initial weight is required</string>
     <string name="error_goal_weight_required">Error goal weight is required</string>
     <string name="error_hip_value_required">hip circumference is required</string>
 
@@ -82,6 +83,7 @@
     <string name="info_enter_value_percent">Enter value in %</string>
     <string name="info_enter_value_unit">Enter value in</string>
     <string name="info_enter_comment">Enter an optional comment</string>
+    <string name="info_enter_initial_weight">Enter your initial weight in your scale unit</string>
     <string name="info_enter_goal_weight">Enter your goal weight in your scale unit</string>
     <string name="info_is_visible">is visible</string>
     <string name="info_is_not_visible">is not visible</string>
@@ -146,4 +148,5 @@
     <string name="label_export_dir">Export dir</string>
     <string name="label_not_found">not found</string>
     <string name="label_ignoreOutOfRange">Ignore data that are out of range</string>
+    <string name="label_initial_weight">Initial weight</string>
 </resources>

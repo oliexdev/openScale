@@ -136,4 +136,5 @@
     <string name="Saturday">Samedi</string>
     <string name="Sunday">Dimanche</string>
     <string name="title_statistics">Statistiques</string>
+    <string name="info_enter_initial_weight">Entrez votre objectif de poids dans votre unité d\'échelle</string>
 </resources>

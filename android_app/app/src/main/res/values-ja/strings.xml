@@ -117,4 +117,5 @@
     <string name="error_value_required">値が必要です</string>
     <string name="error_value_range">エラー値の範囲</string>
     <string name="title_statistics">統計</string>
+    <string name="info_enter_initial_weight">あなたの体重をあなたの単位で入力してください</string>
 </resources>

@@ -27,6 +27,7 @@ public class ScaleUser {
 	public int body_height;
 	public int scale_unit;
     public int gender;
+    public float initial_weight;
     public float goal_weight;
     public Date goal_date;
 
@@ -37,6 +38,7 @@ public class ScaleUser {
         body_height = -1;
         scale_unit = 0;
         gender = 0;
+        initial_weight = -1;
         goal_weight = -1;
         goal_date = new Date();
     }
@@ -52,6 +54,6 @@ public class ScaleUser {
 	@Override
 	public String toString()
 	{
-		return "ID : " + id + " NAME: " + user_name + " BIRTHDAY: " + birthday.toString() + " BODY_HEIGHT: " + body_height + " SCALE_UNIT: " + UNIT_STRING[scale_unit] + " GENDER " + gender + " GOAL WEIGHT " + goal_weight + " GOAL DATE " + goal_date.toString();
+		return "ID : " + id + " NAME: " + user_name + " BIRTHDAY: " + birthday.toString() + " BODY_HEIGHT: " + body_height + " SCALE_UNIT: " + UNIT_STRING[scale_unit] + " GENDER " + gender + " INITIAL WEIGHT " + initial_weight + " GOAL WEIGHT " + goal_weight + " GOAL DATE " + goal_date.toString();
 	}
 }

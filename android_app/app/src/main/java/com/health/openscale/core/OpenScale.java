@@ -90,7 +90,7 @@ public class OpenScale {
 		return instance;
 	}
 
-    public void addScaleUser(String name, String birthday, int body_height, int scale_unit, int gender, float goal_weight, String goal_date)
+    public void addScaleUser(String name, String birthday, int body_height, int scale_unit, int gender, float initial_weight, float goal_weight, String goal_date)
     {
         ScaleUser scaleUser = new ScaleUser();
 
@@ -100,6 +100,7 @@ public class OpenScale {
             scaleUser.body_height = body_height;
             scaleUser.scale_unit = scale_unit;
             scaleUser.gender = gender;
+            scaleUser.initial_weight = initial_weight;
             scaleUser.goal_weight = goal_weight;
             scaleUser.goal_date = new SimpleDateFormat("dd.MM.yyyy").parse(goal_date);
 
@@ -139,7 +140,7 @@ public class OpenScale {
         scaleUserDB.deleteEntry(id);
     }
 
-    public void updateScaleUser(int id, String name, String birthday, int body_height, int scale_unit, int gender, float goal_weight, String goal_date)
+    public void updateScaleUser(int id, String name, String birthday, int body_height, int scale_unit, int gender, float initial_weight, float goal_weight, String goal_date)
     {
         ScaleUser scaleUser = new ScaleUser();
 
@@ -150,6 +151,7 @@ public class OpenScale {
             scaleUser.body_height = body_height;
             scaleUser.scale_unit = scale_unit;
             scaleUser.gender = gender;
+            scaleUser.initial_weight = initial_weight;
             scaleUser.goal_weight = goal_weight;
             scaleUser.goal_date = new SimpleDateFormat("dd.MM.yyyy").parse(goal_date);
         } catch (ParseException e) {
@@ -202,12 +204,16 @@ public class OpenScale {
         for (int i = 0; i < scaleUser.size(); i++) {
             ArrayList<ScaleData> scaleUserData = scaleDB.getScaleDataList(scaleUser.get(i).id);
 
-            if (scaleUserData.size() > 0) {
-                float lastWeight = scaleUserData.get(0).getWeight();
+            float lastWeight = 0;
 
-                if ((lastWeight - range) <= weight && (lastWeight + range) >= weight) {
-                    inRangeWeights.put(Math.abs(lastWeight - weight), scaleUser.get(i).id);
-                }
+            if (scaleUserData.size() > 0) {
+                lastWeight = scaleUserData.get(0).getWeight();
+            } else {
+                lastWeight = scaleUser.get(i).initial_weight;
+            }
+
+            if ((lastWeight - range) <= weight && (lastWeight + range) >= weight) {
+                inRangeWeights.put(Math.abs(lastWeight - weight), scaleUser.get(i).id);
             }
         }
 

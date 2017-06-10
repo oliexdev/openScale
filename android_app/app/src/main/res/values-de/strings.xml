@@ -14,7 +14,6 @@
     <string name="info_delete_bluetooth_data">Lösche alle Bluetooth Daten</string>
     <string name="info_delete_bluetooth_data_success">Bluetooth Daten wurden erfolgreich gelöscht</string>
     <string name="info_enter_comment">Gebe ein optionalen Kommentar ein</string>
-    <string name="info_enter_goal_weight">Gebe dein Gewicht in deiner Einheit an</string>
     <string name="info_enter_user_name">Gebe dein Namen ein</string>
     <string name="info_enter_value_cm">Gebe dein Wert in cm an</string>
     <string name="info_enter_value_percent">Gebe dein Wert in % an</string>
@@ -127,4 +126,8 @@
     <string name="label_export_dir">Export Ordner</string>
     <string name="label_not_found">nicht gefunden</string>
     <string name="label_ignoreOutOfRange">Ignoriere Daten außerhalb des zulässigen Bereiches</string>
+    <string name="label_initial_weight">Anfangsgewicht</string>
+    <string name="info_enter_initial_weight">Gebe dein Gewicht in deiner Einheit an</string>
+    <string name="info_enter_goal_weight">Gebe dein Gewicht in deiner Einheit an</string>
+    <string name="error_initial_weight_required">Fehler Anfangsgewicht ist erforderlich</string>
 </resources>
