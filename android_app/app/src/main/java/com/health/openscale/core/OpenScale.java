@@ -308,6 +308,8 @@ public class OpenScale {
 	}
 
 	public void clearScaleData(int userId) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        prefs.edit().putInt("uniqueNumber", 0x00).commit();
 		scaleDB.clearScaleData(userId);
 
         updateScaleData();
