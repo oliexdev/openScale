@@ -7,7 +7,7 @@
   git clone --quiet --branch=master  https://oliexdev:$GITHUB_API_KEY@github.com/oliexdev/openScale  master > /dev/null
 
   #copy generated apk from build folder to repository
-  cp app/build/outputs/apk/app-debug.apk $HOME/master/openScale-dev-build.apk
+  cp oliexdev/openScale/android_app/app/build/outputs/apk/app-debug.apk $HOME/master/openScale-dev-build.apk
 
   #go into repository 
   cd master
