@@ -10,7 +10,7 @@ android:
     - extra-android-m2repository
 
 after_success:
- - chmod +x ./android_app/upload_apk.sh
- - ./android_app/upload_apk.sh
+ - chmod +x ./upload_apk.sh
+ - ./upload_apk.sh
 
 script: cd android_app && ./gradlew assembleDebug
