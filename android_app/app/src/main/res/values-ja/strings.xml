@@ -119,4 +119,5 @@
     <string name="title_statistics">統計</string>
     <string name="info_enter_initial_weight">あなたの体重をあなたの単位で入力してください</string>
     <string name="error_initial_weight_required">エラー初期重量が必要です</string>
+    <string name="label_initial_weight">初期体重</string>
 </resources>
