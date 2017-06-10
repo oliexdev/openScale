@@ -156,8 +156,10 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
         }
         if (subpageView.getChildCount() > 1) {
             TextView selectedSubpageNrView = (TextView) subpageView.getChildAt(selectedSubpageNr + 1);
-            selectedSubpageNrView.setTypeface(null, Typeface.BOLD);
-            selectedSubpageNrView.setTextColor(ChartUtils.COLOR_BLUE);
+            if (selectedSubpageNrView != null) {
+                selectedSubpageNrView.setTypeface(null, Typeface.BOLD);
+                selectedSubpageNrView.setTextColor(ChartUtils.COLOR_BLUE);
+            }
         }
 
         Button moveSubpageRight = new Button(tableView.getContext());
