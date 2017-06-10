@@ -1,0 +1,16 @@
+language: android
+jdk: oraclejdk8
+
+android:
+  components:
+    - platform-tools
+    - tools
+    - build-tools-25.0.2
+    - android-24
+    - extra-android-m2repository
+
+after_success:
+ - chmod +x ./android_app/upload_apk.sh
+ - ./android_app/upload_apk.sh
+
+script: ./android_app/gradlew build
