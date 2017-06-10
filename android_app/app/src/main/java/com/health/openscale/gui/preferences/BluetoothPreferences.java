@@ -17,6 +17,7 @@ package com.health.openscale.gui.preferences;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.MultiSelectListPreference;
@@ -33,16 +34,25 @@ import java.util.Set;
 
 public class BluetoothPreferences extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
 
-    String[] btDeviceSupportInit;
-    String[] btDeviceSupportDataTransfer;
-    String[] btDeviceSupportDataHistory;
-    String[] btDeviceDefaultName;
+    public static final String PREFERENCE_KEY_BLUETOOTH_SMARTUSERASSIGN = "smartUserAssign";
+    private static final String PREFERENCE_KEY_BLUETOOTH_IGNOREOUTOFRANGE = "ignoreOutOfRange";
+
+    private CheckBoxPreference smartAssignEnable;
+    private CheckBoxPreference ignoreOutOfRangeEnable;
+
+    private String[] btDeviceSupportInit;
+    private String[] btDeviceSupportDataTransfer;
+    private String[] btDeviceSupportDataHistory;
+    private String[] btDeviceDefaultName;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         addPreferencesFromResource(R.xml.bluetooth_preferences);
+
+        smartAssignEnable = (CheckBoxPreference) findPreference(PREFERENCE_KEY_BLUETOOTH_SMARTUSERASSIGN);
+        ignoreOutOfRangeEnable = (CheckBoxPreference) findPreference(PREFERENCE_KEY_BLUETOOTH_IGNOREOUTOFRANGE);
 
         btDeviceSupportInit = getResources().getStringArray(R.array.bt_device_support_initializing);
         btDeviceSupportDataTransfer = getResources().getStringArray(R.array.bt_device_support_data_transfer);
@@ -82,6 +92,12 @@ public class BluetoothPreferences extends PreferenceFragment implements SharedPr
     }
 
     private void updatePrefSummary(Preference p) {
+        if (smartAssignEnable.isChecked()) {
+            ignoreOutOfRangeEnable.setEnabled(true);
+        } else {
+            ignoreOutOfRangeEnable.setEnabled(false);
+        }
+
         if (p instanceof ListPreference) {
             ListPreference listPref = (ListPreference) p;
 

@@ -181,6 +181,7 @@ public class OpenScale {
                 scaleData.setUserId(getSelectedScaleUser().id);
             }
 
+            // don't add scale data if no user is selected
             if (scaleData.getUserId() == -1) {
                 return -1;
             }
@@ -215,6 +216,14 @@ public class OpenScale {
             return inRangeWeights.entrySet().iterator().next().getValue();
         }
 
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+
+        // if ignore out of range preference is true don't add this data
+        if (prefs.getBoolean("ignoreOfOutRange", false)) {
+            return -1;
+        }
+
+        // return selected scale user id if not out of range preference is checked and weight is out of range of any user
         return getSelectedScaleUser().id;
     }
 

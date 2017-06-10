@@ -145,4 +145,5 @@
     <string name="label_backup">Backup</string>
     <string name="label_export_dir">Export dir</string>
     <string name="label_not_found">not found</string>
+    <string name="label_ignoreOutOfRange">Ignore data that are out of range</string>
 </resources>

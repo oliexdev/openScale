@@ -126,4 +126,5 @@
     <string name="label_importBackup">Importiere Datensicherung</string>
     <string name="label_export_dir">Export Ordner</string>
     <string name="label_not_found">nicht gefunden</string>
+    <string name="label_ignoreOutOfRange">Ignoriere Daten außerhalb des zulässigen Bereiches</string>
 </resources>
