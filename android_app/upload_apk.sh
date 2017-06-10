@@ -1,3 +1,6 @@
+  # copy apk file to home
+  cp app/build/outputs/apk/app-debug.apk $HOME/openScale-dev-build.apk
+
   #go to home and setup git  
   cd $HOME
   git config --global user.email "olie.xdev@googlemail.com"
@@ -7,7 +10,7 @@
   git clone --quiet --branch=master  https://oliexdev:$GITHUB_API_KEY@github.com/oliexdev/openScale  master > /dev/null
 
   #copy generated apk from build folder to repository
-  cp oliexdev/openScale/android_app/app/build/outputs/apk/app-debug.apk $HOME/master/openScale-dev-build.apk
+  cp $HOME/openScale-dev-build.apk $HOME/master/openScale-dev-build.apk
 
   #go into repository 
   cd master
