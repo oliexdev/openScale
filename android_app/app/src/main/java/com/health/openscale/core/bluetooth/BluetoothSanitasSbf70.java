@@ -16,26 +16,23 @@
 */
 package com.health.openscale.core.bluetooth;
 
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
-import android.os.Handler;
 import android.util.Log;
 
 import com.health.openscale.core.datatypes.ScaleData;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.UUID;
 
 import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_STATUS_CODE.BT_CONNECTION_ESTABLISHED;
 import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_STATUS_CODE.BT_CONNECTION_LOST;
-import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_STATUS_CODE.BT_NO_DEVICE_FOUND;
 import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_STATUS_CODE.BT_UNEXPECTED_ERROR;
 
 public class BluetoothSanitasSbf70 extends BluetoothCommunication {
@@ -99,17 +96,9 @@ public class BluetoothSanitasSbf70 extends BluetoothCommunication {
     private static final UUID CUSTOM_CHARACTERISTIC_IMG_BLOCK = // write-only, notify
             UUID.fromString("F000FFC2-0451-4000-8000-000000000000");
 
-    private BluetoothAdapter.LeScanCallback scanCallback = null;
-    // default name is usually "SANITAS SBF70"
-    private String btDeviceName = null;
-
-    private Handler searchHandler = null;
-    private BluetoothGattCallback gattCallback = null;
-    private BluetoothGatt bluetoothGatt;
-
     public BluetoothSanitasSbf70(Context context) {
         super(context);
-        searchHandler = new Handler();
+        gattCallback = new BluetoothSanitasGattCallback();
     }
 
     @Override
@@ -122,26 +111,32 @@ public class BluetoothSanitasSbf70 extends BluetoothCommunication {
         return "SANITAS SBF70";
     }
 
-    public boolean initSupported() {
+    @Override
+    public ArrayList<String> hwAddresses() {
+        ArrayList hwAddresses = new ArrayList();
+        hwAddresses.add("C4BE84");
+        hwAddresses.add("209148");
+
+        return hwAddresses;
+    }
+
+    @Override
+    boolean nextInitCmd(int stateNr) {
         return false;
     }
 
-    private static final String HEX_DIGITS = "0123456789ABCDEF";
+    @Override
+    boolean nextBluetoothCmd(int stateNr) {
+        return false;
+    }
 
-    /**
-     * @brief for debugging purpose
-     * @param data data we want to make human-readable (hex)
-     * @return a human-readable string representing the content of 'data'
-     */
-    public static String toHex(byte[] data) {
-        StringBuffer buf = new StringBuffer();
-        for (int i = 0; i != data.length; i++) {
-            int v = data[i] & 0xff;
-            buf.append(HEX_DIGITS.charAt(v >> 4));
-            buf.append(HEX_DIGITS.charAt(v & 0xf));
-            buf.append(" ");
-        }
-        return buf.toString();
+    @Override
+    boolean nextCleanUpCmd(int stateNr) {
+        return false;
+    }
+
+    public boolean initSupported() {
+        return false;
     }
 
     private class BluetoothSanitasGattCallback extends BluetoothGattCallback {
@@ -278,7 +273,7 @@ public class BluetoothSanitasSbf70 extends BluetoothCommunication {
             final UUID uuid = characteristic.getUuid();
             final byte[] data = characteristic.getValue();
 
-            Log.d(TAG, "onCharacteristicChanged(" + uuid + "): " + toHex(data));
+            Log.d(TAG, "onCharacteristicChanged(" + uuid + "): " + byteInHex(data));
 
             if (!uuid.equals(CUSTOM_CHARACTERISTIC_WEIGHT)) {
                 Log.d(TAG, "Got characteristic changed from unexpected UUID ?");
@@ -378,65 +373,5 @@ public class BluetoothSanitasSbf70 extends BluetoothCommunication {
                 return;
             }
         }
-    }
-
-    @Override
-    public void startSearching(String deviceName) {
-        btDeviceName = deviceName;
-
-        if (gattCallback == null) {
-            gattCallback = new BluetoothSanitasGattCallback();
-        }
-
-        if (scanCallback == null)
-        {
-            scanCallback = new BluetoothAdapter.LeScanCallback()
-            {
-                @Override
-                public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord) {
-                    Log.d(TAG,
-                            "LeScan: device found: "
-                            + device.getAddress() + " : " + device.getName()
-                    );
-                    // Texas Instrument (Sanitas)
-                    if (device.getAddress().replace(":", "").toUpperCase().startsWith("C4BE84") ||
-                            device.getAddress().replace(":", "").toUpperCase().startsWith("209148")) {
-
-                        if (!device.getName().toLowerCase().equals(btDeviceName.toLowerCase()))
-                            return;
-                        Log.d(TAG, "Sanitas scale found. Connecting...");
-
-                        bluetoothGatt = device.connectGatt(context, false, gattCallback);
-
-                        searchHandler.removeCallbacksAndMessages(null);
-                        btAdapter.stopLeScan(scanCallback);
-                    }
-                }
-            };
-        }
-
-        searchHandler.postDelayed(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                btAdapter.stopLeScan(scanCallback);
-                setBtStatus(BT_NO_DEVICE_FOUND);
-            }
-        }, 10000);
-
-        btAdapter.startLeScan(scanCallback);
-    }
-
-    @Override
-    public void stopSearching() {
-        if (bluetoothGatt != null)
-        {
-            bluetoothGatt.close();
-            bluetoothGatt = null;
-        }
-
-        searchHandler.removeCallbacksAndMessages(null);
-        btAdapter.stopLeScan(scanCallback);
     }
 }
