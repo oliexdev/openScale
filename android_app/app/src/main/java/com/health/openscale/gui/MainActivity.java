@@ -39,8 +39,8 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.health.openscale.R;
-import com.health.openscale.core.bluetooth.BluetoothCommunication;
 import com.health.openscale.core.OpenScale;
+import com.health.openscale.core.bluetooth.BluetoothCommunication;
 import com.health.openscale.core.datatypes.ScaleData;
 import com.health.openscale.gui.activities.SettingsActivity;
 import com.health.openscale.gui.activities.UserSettingsActivity;
@@ -184,10 +184,10 @@ public class MainActivity extends ActionBarActivity implements
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
 		String deviceName = prefs.getString("btDeviceName", "MI_SCALE");
-		String deviceType = prefs.getString("btDeviceTypes", "0");
+		int deviceType = Integer.parseInt(prefs.getString("btDeviceTypes", "0"));
 
 		// Check if Bluetooth 4.x is available
-		if (Integer.parseInt(deviceType) != BluetoothCommunication.BT_OPEN_SCALE) {
+		if (BluetoothCommunication.getBtDevice(getApplicationContext(), deviceType).isBLE()) {
 			if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
 				setBluetoothStatusIcon(R.drawable.bluetooth_disabled);
 				Toast.makeText(getApplicationContext(), "Bluetooth 4.x " + getResources().getString(R.string.info_is_not_available), Toast.LENGTH_SHORT).show();
@@ -199,15 +199,17 @@ public class MainActivity extends ActionBarActivity implements
 		setBluetoothStatusIcon(R.drawable.bluetooth_searching);
 
 		OpenScale.getInstance(getApplicationContext()).stopSearchingForBluetooth();
-		OpenScale.getInstance(getApplicationContext()).startSearchingForBluetooth(Integer.parseInt(deviceType), deviceName, callbackBtHandler);
+		OpenScale.getInstance(getApplicationContext()).startSearchingForBluetooth(deviceType, deviceName, callbackBtHandler);
 	}
 
 	private final Handler callbackBtHandler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
 
-			switch (msg.what) {
-				case BluetoothCommunication.BT_RETRIEVE_SCALE_DATA:
+            BluetoothCommunication.BT_STATUS_CODE btStatusCode = BluetoothCommunication.BT_STATUS_CODE.values()[msg.what];
+
+			switch (btStatusCode) {
+				case BT_RETRIEVE_SCALE_DATA:
 					setBluetoothStatusIcon(R.drawable.bluetooth_connection_success);
 					ScaleData scaleBtData = (ScaleData) msg.obj;
 
@@ -217,27 +219,27 @@ public class MainActivity extends ActionBarActivity implements
 						Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_no_selected_user), Toast.LENGTH_SHORT).show();
 					}
 					break;
-				case BluetoothCommunication.BT_INIT_PROCESS:
+				case BT_INIT_PROCESS:
 					setBluetoothStatusIcon(R.drawable.bluetooth_connection_success);
 					Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_init), Toast.LENGTH_SHORT).show();
 					Log.d("OpenScale", "Bluetooth initializing");
 					break;
-				case BluetoothCommunication.BT_CONNECTION_LOST:
+				case BT_CONNECTION_LOST:
 					setBluetoothStatusIcon(R.drawable.bluetooth_connection_lost);
 					Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_connection_lost), Toast.LENGTH_SHORT).show();
 					Log.d("OpenScale", "Bluetooth connection lost");
 					break;
-				case BluetoothCommunication.BT_NO_DEVICE_FOUND:
+				case BT_NO_DEVICE_FOUND:
 					setBluetoothStatusIcon(R.drawable.bluetooth_connection_lost);
 					Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_no_device), Toast.LENGTH_SHORT).show();
 					Log.d("OpenScale", "No Bluetooth device found");
 					break;
-				case BluetoothCommunication.BT_CONNECTION_ESTABLISHED:
+				case BT_CONNECTION_ESTABLISHED:
 					setBluetoothStatusIcon(R.drawable.bluetooth_connection_success);
 					Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_connection_successful), Toast.LENGTH_SHORT).show();
 					Log.d("OpenScale", "Bluetooth connection successful established");
 					break;
-				case BluetoothCommunication.BT_UNEXPECTED_ERROR:
+				case BT_UNEXPECTED_ERROR:
 					setBluetoothStatusIcon(R.drawable.bluetooth_connection_lost);
 					Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_connection_error) + ": " + msg.obj, Toast.LENGTH_SHORT).show();
 					Log.e("OpenScale", "Bluetooth unexpected error: " + msg.obj);

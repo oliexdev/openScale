@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-        <ListPreference android:title="@string/label_device_type" android:key="btDeviceTypes" android:entries="@array/bt_device_entries" android:entryValues="@array/bt_device_values" android:defaultValue="0"/>
-        <EditTextPreference android:title="@string/label_device_name" android:key="btDeviceName" android:defaultValue="MI_SCALE" />
+        <ListPreference android:title="@string/label_device_type" android:key="btDeviceTypes"/>
+        <EditTextPreference android:title="@string/label_device_name" android:key="btDeviceName"/>
         <CheckBoxPreference android:title="@string/label_bluetooth_enable" android:summaryOn="@string/info_is_enable" android:summaryOff="@string/info_is_not_enable" android:key="btEnable" android:defaultValue="false"/>
         <CheckBoxPreference android:title="@string/label_smartUserAssign" android:summaryOn="@string/info_is_enable" android:summaryOff="@string/info_is_not_enable"  android:key="smartUserAssign" android:defaultValue="false"/>
         <CheckBoxPreference android:title="@string/label_ignoreOutOfRange" android:summaryOn="@string/info_is_enable" android:summaryOff="@string/info_is_not_enable"  android:key="ignoreOutOfRange" android:enabled="false" android:defaultValue="false"/>

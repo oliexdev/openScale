@@ -17,6 +17,7 @@ package com.health.openscale.core.bluetooth;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.Context;
 import android.util.Log;
 
 import com.health.openscale.core.datatypes.ScaleData;
@@ -29,6 +30,11 @@ import java.text.SimpleDateFormat;
 import java.util.Set;
 import java.util.UUID;
 
+import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_STATUS_CODE.BT_CONNECTION_ESTABLISHED;
+import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_STATUS_CODE.BT_CONNECTION_LOST;
+import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_STATUS_CODE.BT_NO_DEVICE_FOUND;
+import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_STATUS_CODE.BT_UNEXPECTED_ERROR;
+
 public class BluetoothCustomOpenScale extends BluetoothCommunication {
     private final UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb"); // Standard SerialPortService ID
 
@@ -37,11 +43,29 @@ public class BluetoothCustomOpenScale extends BluetoothCommunication {
 
     private BluetoothConnectedThread btConnectThread = null;
 
+    public BluetoothCustomOpenScale(Context context) {
+        super(context);
+    }
+
     @Override
+    public String deviceName() {
+        return "Custom Open Scale";
+    }
+
+    @Override
+    public String defaultDeviceName() {
+        return "openScale_MCU";
+    }
+
+    public boolean isBLE() {
+        return false;
+    }
+
+        @Override
     public void startSearching(String deviceName) {
 
         if (btAdapter == null) {
-            callbackBtHandler.obtainMessage(BluetoothCommunication.BT_NO_DEVICE_FOUND).sendToTarget();
+            setBtStatus(BT_NO_DEVICE_FOUND);
             return;
         }
 
@@ -56,7 +80,7 @@ public class BluetoothCustomOpenScale extends BluetoothCommunication {
                     // Get a BluetoothSocket to connect with the given BluetoothDevice
                     btSocket = btDevice.createRfcommSocketToServiceRecord(uuid);
                 } catch (IOException e) {
-                    callbackBtHandler.obtainMessage(BluetoothCommunication.BT_UNEXPECTED_ERROR, "Can't get a bluetooth socket").sendToTarget();
+                    setBtStatus(BT_UNEXPECTED_ERROR, "Can't get a bluetooth socket");
                 }
 
                 Thread socketThread = new Thread() {
@@ -69,7 +93,7 @@ public class BluetoothCustomOpenScale extends BluetoothCommunication {
                                 btSocket.connect();
 
                                 // Bluetooth connection was successful
-                                callbackBtHandler.obtainMessage(BluetoothCommunication.BT_CONNECTION_ESTABLISHED).sendToTarget();
+                                setBtStatus(BT_CONNECTION_ESTABLISHED);
 
                                 btConnectThread = new BluetoothConnectedThread();
                                 btConnectThread.start();
@@ -77,7 +101,7 @@ public class BluetoothCustomOpenScale extends BluetoothCommunication {
                         } catch (IOException connectException) {
                             // Unable to connect; close the socket and get out
                             stopSearching();
-                            callbackBtHandler.obtainMessage(BluetoothCommunication.BT_NO_DEVICE_FOUND).sendToTarget();
+                            setBtStatus(BT_NO_DEVICE_FOUND);
                         }
                     }
                 };
@@ -87,7 +111,7 @@ public class BluetoothCustomOpenScale extends BluetoothCommunication {
             }
         }
 
-        callbackBtHandler.obtainMessage(BluetoothCommunication.BT_NO_DEVICE_FOUND).sendToTarget();
+        setBtStatus(BT_NO_DEVICE_FOUND);
     }
 
     @Override
@@ -98,7 +122,7 @@ public class BluetoothCustomOpenScale extends BluetoothCommunication {
                     btSocket.close();
                     btSocket = null;
                 } catch (IOException closeException) {
-                    callbackBtHandler.obtainMessage(BluetoothCommunication.BT_UNEXPECTED_ERROR, "Can't close bluetooth socket").sendToTarget();
+                    setBtStatus(BT_UNEXPECTED_ERROR, "Can't close bluetooth socket");
                 }
             }
         }
@@ -140,7 +164,7 @@ public class BluetoothCustomOpenScale extends BluetoothCommunication {
                 btInStream = btSocket.getInputStream();
                 btOutStream = btSocket.getOutputStream();
             } catch (IOException e) {
-                callbackBtHandler.obtainMessage(BluetoothCommunication.BT_UNEXPECTED_ERROR, "Can't get bluetooth input or output stream " + e.getMessage()).sendToTarget();
+                setBtStatus(BT_UNEXPECTED_ERROR, "Can't get bluetooth input or output stream " + e.getMessage());
             }
         }
 
@@ -159,7 +183,7 @@ public class BluetoothCustomOpenScale extends BluetoothCommunication {
                         ScaleData scaleData = parseBtString(btLine.toString());
 
                         if (scaleData != null) {
-                            callbackBtHandler.obtainMessage(BluetoothCommunication.BT_RETRIEVE_SCALE_DATA, scaleData).sendToTarget();
+                            addScaleData(scaleData);
                         }
 
                         btLine.setLength(0);
@@ -167,7 +191,7 @@ public class BluetoothCustomOpenScale extends BluetoothCommunication {
 
                 } catch (IOException e) {
                     cancel();
-                    callbackBtHandler.obtainMessage(BluetoothCommunication.BT_CONNECTION_LOST).sendToTarget();
+                    setBtStatus(BT_CONNECTION_LOST);
                 }
             }
         }
@@ -177,7 +201,7 @@ public class BluetoothCustomOpenScale extends BluetoothCommunication {
             btString = btString.substring(0, btString.length() - 1); // delete newline '\n' of the string
 
             if (btString.charAt(0) != '$' && btString.charAt(2) != '$') {
-                callbackBtHandler.obtainMessage(BluetoothCommunication.BT_UNEXPECTED_ERROR, "Parse error of bluetooth string. String has not a valid format").sendToTarget();
+                setBtStatus(BT_UNEXPECTED_ERROR, "Parse error of bluetooth string. String has not a valid format");
             }
 
             String btMsg = btString.substring(3, btString.length()); // message string
@@ -224,16 +248,16 @@ public class BluetoothCustomOpenScale extends BluetoothCommunication {
 
                             return scaleBtData;
                         } else {
-                            callbackBtHandler.obtainMessage(BluetoothCommunication.BT_UNEXPECTED_ERROR, "Error calculated checksum (" + checksum + ") and received checksum (" + btChecksum + ") is different").sendToTarget();
+                            setBtStatus(BT_UNEXPECTED_ERROR, "Error calculated checksum (" + checksum + ") and received checksum (" + btChecksum + ") is different");
                         }
                     } catch (ParseException e) {
-                        callbackBtHandler.obtainMessage(BluetoothCommunication.BT_UNEXPECTED_ERROR, "Error while decoding bluetooth date string (" + e.getMessage() + ")").sendToTarget();
+                        setBtStatus(BT_UNEXPECTED_ERROR, "Error while decoding bluetooth date string (" + e.getMessage() + ")");
                     } catch (NumberFormatException e) {
-                        callbackBtHandler.obtainMessage(BluetoothCommunication.BT_UNEXPECTED_ERROR, "Error while decoding a number of bluetooth string (" + e.getMessage() + ")").sendToTarget();
+                        setBtStatus(BT_UNEXPECTED_ERROR, "Error while decoding a number of bluetooth string (" + e.getMessage() + ")");
                     }
                     break;
                 default:
-                    callbackBtHandler.obtainMessage(BluetoothCommunication.BT_UNEXPECTED_ERROR, "Error unknown MCU command").sendToTarget();
+                    setBtStatus(BT_UNEXPECTED_ERROR, "Error unknown MCU command");
             }
 
             return null;
@@ -243,7 +267,7 @@ public class BluetoothCustomOpenScale extends BluetoothCommunication {
             try {
                 btOutStream.write(bytes);
             } catch (IOException e) {
-                callbackBtHandler.obtainMessage(BluetoothCommunication.BT_UNEXPECTED_ERROR, "Error while writing to bluetooth socket " + e.getMessage()).sendToTarget();
+                setBtStatus(BT_UNEXPECTED_ERROR, "Error while writing to bluetooth socket " + e.getMessage());
             }
         }
 

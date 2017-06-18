@@ -25,10 +25,6 @@ import android.util.Log;
 
 import com.health.openscale.core.alarm.AlarmHandler;
 import com.health.openscale.core.bluetooth.BluetoothCommunication;
-import com.health.openscale.core.bluetooth.BluetoothCustomOpenScale;
-import com.health.openscale.core.bluetooth.BluetoothMedisanaBS444;
-import com.health.openscale.core.bluetooth.BluetoothMiScale;
-import com.health.openscale.core.bluetooth.BluetoothSanitasSbf70;
 import com.health.openscale.core.database.ScaleDatabase;
 import com.health.openscale.core.database.ScaleUserDatabase;
 import com.health.openscale.core.datatypes.ScaleData;
@@ -47,11 +43,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
-
-import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_MEDISANA_BS444;
-import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_MI_SCALE;
-import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_OPEN_SCALE;
-import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_SANITAS_SBF70;
 
 public class OpenScale {
 
@@ -354,24 +345,7 @@ public class OpenScale {
 	public void startSearchingForBluetooth(int btScales, String deviceName, Handler callbackBtHandler) {
 		Log.d("OpenScale", "Bluetooth Server started! I am searching for device ...");
 
-        switch (btScales) {
-            case BT_MI_SCALE:
-                btCom = new BluetoothMiScale(context);
-                break;
-            case BT_OPEN_SCALE:
-                btCom = new BluetoothCustomOpenScale();
-                break;
-            case BT_SANITAS_SBF70:
-                btCom = new BluetoothSanitasSbf70(context);
-                break;
-            case BT_MEDISANA_BS444:
-                btCom = new BluetoothMedisanaBS444(context);
-                break;
-            default:
-                Log.e("OpenScale", "No valid scale type selected");
-                return;
-        }
-
+        btCom = BluetoothCommunication.getBtDevice(context, btScales);
 		btCom.registerCallbackHandler(callbackBtHandler);
 		btDeviceName = deviceName;
 

@@ -31,6 +31,10 @@ import com.health.openscale.core.datatypes.ScaleData;
 import java.util.Date;
 import java.util.UUID;
 
+import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_STATUS_CODE.BT_CONNECTION_ESTABLISHED;
+import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_STATUS_CODE.BT_CONNECTION_LOST;
+import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_STATUS_CODE.BT_NO_DEVICE_FOUND;
+
 public class BluetoothMedisanaBS444 extends BluetoothCommunication {
     private BluetoothGatt bluetoothGatt;
     private BluetoothAdapter.LeScanCallback scanCallback;
@@ -45,15 +49,28 @@ public class BluetoothMedisanaBS444 extends BluetoothCommunication {
 
     private String btDeviceName;
     private Handler searchHandler;
-    private Context context;
     private ScaleData btScaleData;
     private int nextCmdState;
 
     public BluetoothMedisanaBS444(Context context) {
-        this.context = context;
+        super(context);
         searchHandler = new Handler();
         btScaleData = new ScaleData();
         scanCallback = null;
+    }
+
+    @Override
+    public String deviceName() {
+        return "Medisana BS444";
+    }
+
+    @Override
+    public String defaultDeviceName() {
+        return "Medisana BS444";
+    }
+
+    public boolean initSupported() {
+        return false;
     }
 
     @Override
@@ -82,7 +99,7 @@ public class BluetoothMedisanaBS444 extends BluetoothCommunication {
             public void run()
             {
                 btAdapter.stopLeScan(scanCallback);
-                callbackBtHandler.obtainMessage(BluetoothCommunication.BT_NO_DEVICE_FOUND).sendToTarget();
+                setBtStatus(BT_NO_DEVICE_FOUND);
             }
         }, 10000);
 
@@ -105,10 +122,10 @@ public class BluetoothMedisanaBS444 extends BluetoothCommunication {
         @Override
         public void onConnectionStateChange(final BluetoothGatt gatt, int status, int newState) {
             if (newState == BluetoothProfile.STATE_CONNECTED) {
-                callbackBtHandler.obtainMessage(BluetoothCommunication.BT_CONNECTION_ESTABLISHED).sendToTarget();
+                setBtStatus(BT_CONNECTION_ESTABLISHED);
                 gatt.discoverServices();
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                callbackBtHandler.obtainMessage(BluetoothCommunication.BT_CONNECTION_LOST).sendToTarget();
+                setBtStatus(BT_CONNECTION_LOST);
                 stopSearching();
             }
         }
@@ -204,7 +221,7 @@ public class BluetoothMedisanaBS444 extends BluetoothCommunication {
             if (characteristic.getUuid().equals(FEATURE_MEASUREMENT_CHARACTERISTIC)) {
                 parseFeatureData(data);
 
-                callbackBtHandler.obtainMessage(BluetoothCommunication.BT_RETRIEVE_SCALE_DATA, btScaleData).sendToTarget();
+                addScaleData(btScaleData);
             }
         }
     };

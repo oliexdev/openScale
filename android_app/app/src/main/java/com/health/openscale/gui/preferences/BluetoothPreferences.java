@@ -27,23 +27,24 @@ import android.preference.PreferenceGroup;
 import android.text.Html;
 
 import com.health.openscale.R;
+import com.health.openscale.core.bluetooth.BluetoothCommunication;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public class BluetoothPreferences extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
+import static com.health.openscale.core.bluetooth.BluetoothCommunication.getBtDevice;
 
-    public static final String PREFERENCE_KEY_BLUETOOTH_SMARTUSERASSIGN = "smartUserAssign";
+public class BluetoothPreferences extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
+    private static final String PREFERENCE_KEY_BLUETOOTH_DEVICE_TYPE = "btDeviceTypes";
+    private static final String PREFERENCE_KEY_BLUETOOTH_DEVICE_NAME = "btDeviceName";
+    private static final String PREFERENCE_KEY_BLUETOOTH_SMARTUSERASSIGN = "smartUserAssign";
     private static final String PREFERENCE_KEY_BLUETOOTH_IGNOREOUTOFRANGE = "ignoreOutOfRange";
 
+    private ListPreference deviceTypes;
+    private EditTextPreference deviceName;
     private CheckBoxPreference smartAssignEnable;
     private CheckBoxPreference ignoreOutOfRangeEnable;
-
-    private String[] btDeviceSupportInit;
-    private String[] btDeviceSupportDataTransfer;
-    private String[] btDeviceSupportDataHistory;
-    private String[] btDeviceDefaultName;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -51,14 +52,12 @@ public class BluetoothPreferences extends PreferenceFragment implements SharedPr
 
         addPreferencesFromResource(R.xml.bluetooth_preferences);
 
+        deviceTypes = (ListPreference)findPreference(PREFERENCE_KEY_BLUETOOTH_DEVICE_TYPE);
+        deviceName = (EditTextPreference)findPreference(PREFERENCE_KEY_BLUETOOTH_DEVICE_NAME);
         smartAssignEnable = (CheckBoxPreference) findPreference(PREFERENCE_KEY_BLUETOOTH_SMARTUSERASSIGN);
         ignoreOutOfRangeEnable = (CheckBoxPreference) findPreference(PREFERENCE_KEY_BLUETOOTH_IGNOREOUTOFRANGE);
 
-        btDeviceSupportInit = getResources().getStringArray(R.array.bt_device_support_initializing);
-        btDeviceSupportDataTransfer = getResources().getStringArray(R.array.bt_device_support_data_transfer);
-        btDeviceSupportDataHistory = getResources().getStringArray(R.array.bt_device_support_data_history);
-        btDeviceDefaultName = getResources().getStringArray(R.array.bt_device_default_name);
-
+        updateBluetoothPreferences();
         initSummary(getPreferenceScreen());
     }
 
@@ -71,6 +70,29 @@ public class BluetoothPreferences extends PreferenceFragment implements SharedPr
         } else {
             updatePrefSummary(p);
         }
+    }
+
+    public void updateBluetoothPreferences() {
+        int i = 0;
+
+        ArrayList<String> btEntries = new ArrayList();
+        ArrayList<String> btEntryValues = new ArrayList();
+
+        while (true) {
+            BluetoothCommunication btCom = getBtDevice(getActivity().getApplicationContext(), i);
+
+            if (btCom == null) {
+                break;
+            }
+
+            btEntries.add(btCom.deviceName());
+            btEntryValues.add(String.valueOf(i));
+
+            i++;
+        }
+
+        deviceTypes.setEntries(btEntries.toArray(new CharSequence[btEntries.size()]));
+        deviceTypes.setEntryValues(btEntryValues.toArray(new CharSequence[btEntryValues.size()]));
     }
 
     @Override
@@ -103,17 +125,35 @@ public class BluetoothPreferences extends PreferenceFragment implements SharedPr
 
             int i = Integer.parseInt(listPref.getValue());
 
-            p.setSummary(Html.fromHtml(listPref.getEntry() + "<br>" +
-                                    getResources().getString(R.string.label_bt_device_support) + ":" + "<br>" +
-                                    getResources().getString(R.string.label_bt_device_initialization) + ": " + btDeviceSupportInit[i] + "<br>" +
-                                    getResources().getString(R.string.label_bt_device_data_transfer) + ": " + btDeviceSupportDataTransfer[i] + "<br>" +
-                                    getResources().getString(R.string.label_bt_device_data_history) + ": " + btDeviceSupportDataHistory[i]
-            ));
+            BluetoothCommunication btCom = BluetoothCommunication.getBtDevice(getActivity().getApplicationContext(), i);
 
-            getPreferenceManager().getDefaultSharedPreferences(getActivity().getApplicationContext()).edit().putString("btDeviceName", btDeviceDefaultName[i]).commit();
-            EditTextPreference prefDeviceName = (EditTextPreference)findPreference("btDeviceName");
-            prefDeviceName.setSummary(btDeviceDefaultName[i]);
-            prefDeviceName.setText(btDeviceDefaultName[i]);
+            String summary = new String();
+
+            summary += listPref.getEntry() + "<br>" +
+                    getResources().getString(R.string.label_bt_device_support) + ":" + "<br>";
+
+            if (btCom.initSupported()) {
+                summary += getResources().getString(R.string.label_bt_device_initialization) + ": " + getResources().getString(R.string.label_yes)+ "<br>";
+            } else {
+                summary += getResources().getString(R.string.label_bt_device_initialization) + ": " + getResources().getString(R.string.label_no)+ "<br>";
+            }
+
+            if (btCom.transferSupported()) {
+                summary += getResources().getString(R.string.label_bt_device_data_transfer) + ": " + getResources().getString(R.string.label_yes)+ "<br>";
+            } else {
+                summary += getResources().getString(R.string.label_bt_device_data_transfer) + ": " + getResources().getString(R.string.label_no)+ "<br>";
+            }
+
+            if (btCom.historySupported()) {
+                summary += getResources().getString(R.string.label_bt_device_data_history) + ": " + getResources().getString(R.string.label_yes);
+            } else {
+                summary += getResources().getString(R.string.label_bt_device_data_history) + ": " + getResources().getString(R.string.label_no);
+            }
+
+            p.setSummary(Html.fromHtml(summary));
+
+            deviceName.setSummary(btCom.defaultDeviceName());
+            deviceName.setText(btCom.defaultDeviceName());
         }
 
         if (p instanceof EditTextPreference) {

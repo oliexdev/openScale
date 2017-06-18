@@ -33,6 +33,11 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.UUID;
 
+import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_STATUS_CODE.BT_CONNECTION_ESTABLISHED;
+import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_STATUS_CODE.BT_CONNECTION_LOST;
+import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_STATUS_CODE.BT_NO_DEVICE_FOUND;
+import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_STATUS_CODE.BT_UNEXPECTED_ERROR;
+
 public class BluetoothSanitasSbf70 extends BluetoothCommunication {
     public final static String TAG = "BluetoothSanitasSbf70";
 
@@ -94,7 +99,6 @@ public class BluetoothSanitasSbf70 extends BluetoothCommunication {
     private static final UUID CUSTOM_CHARACTERISTIC_IMG_BLOCK = // write-only, notify
             UUID.fromString("F000FFC2-0451-4000-8000-000000000000");
 
-    private Context context;
     private BluetoothAdapter.LeScanCallback scanCallback = null;
     // default name is usually "SANITAS SBF70"
     private String btDeviceName = null;
@@ -104,9 +108,22 @@ public class BluetoothSanitasSbf70 extends BluetoothCommunication {
     private BluetoothGatt bluetoothGatt;
 
     public BluetoothSanitasSbf70(Context context) {
-        super();
-        this.context = context;
+        super(context);
         searchHandler = new Handler();
+    }
+
+    @Override
+    public String deviceName() {
+        return "Sanitas SBF70";
+    }
+
+    @Override
+    public String defaultDeviceName() {
+        return "SANITAS SBF70";
+    }
+
+    public boolean initSupported() {
+        return false;
     }
 
     private static final String HEX_DIGITS = "0123456789ABCDEF";
@@ -164,11 +181,11 @@ public class BluetoothSanitasSbf70 extends BluetoothCommunication {
             Log.d(TAG, "onConnectionStatechange(" + status + ", " + newState + ")");
             if (newState == BluetoothProfile.STATE_CONNECTED) {
                 Log.d(TAG, "Connection established");
-                callbackBtHandler.obtainMessage(BluetoothCommunication.BT_CONNECTION_ESTABLISHED).sendToTarget();
+                setBtStatus(BT_CONNECTION_ESTABLISHED);
                 gatt.discoverServices();
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 Log.d(TAG, "Connection lost");
-                callbackBtHandler.obtainMessage(BluetoothCommunication.BT_CONNECTION_LOST).sendToTarget();
+                setBtStatus(BT_CONNECTION_LOST);
                 stopSearching();
             }
         }
@@ -329,9 +346,7 @@ public class BluetoothSanitasSbf70 extends BluetoothCommunication {
                     Log.i(TAG, "Got muscle: " + muscle + "%");
                     scaleBtData.setMuscle(muscle);
 
-                    callbackBtHandler.obtainMessage(
-                            BluetoothCommunication.BT_RETRIEVE_SCALE_DATA, scaleBtData
-                    ).sendToTarget();
+                    addScaleData(scaleBtData);
 
                     Log.d(TAG, "ACK Extra data (end)");
                     msgQueue.add(new byte[] {
@@ -359,8 +374,7 @@ public class BluetoothSanitasSbf70 extends BluetoothCommunication {
             } else {
                 Log.w(TAG, "Unidentified notification !");
 
-                callbackBtHandler.obtainMessage(BluetoothCommunication.BT_UNEXPECTED_ERROR,
-                        "Error while decoding bluetooth value").sendToTarget();
+                setBtStatus(BT_UNEXPECTED_ERROR, "Error while decoding bluetooth value");
                 return;
             }
         }
@@ -407,7 +421,7 @@ public class BluetoothSanitasSbf70 extends BluetoothCommunication {
             public void run()
             {
                 btAdapter.stopLeScan(scanCallback);
-                callbackBtHandler.obtainMessage(BluetoothCommunication.BT_NO_DEVICE_FOUND).sendToTarget();
+                setBtStatus(BT_NO_DEVICE_FOUND);
             }
         }, 10000);
 

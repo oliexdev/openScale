@@ -39,6 +39,12 @@ import java.util.Date;
 import java.util.Random;
 import java.util.UUID;
 
+import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_STATUS_CODE.BT_CONNECTION_ESTABLISHED;
+import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_STATUS_CODE.BT_CONNECTION_LOST;
+import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_STATUS_CODE.BT_INIT_PROCESS;
+import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_STATUS_CODE.BT_NO_DEVICE_FOUND;
+import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_STATUS_CODE.BT_UNEXPECTED_ERROR;
+
 public class BluetoothMiScale extends BluetoothCommunication {
 
     private BluetoothGatt bluetoothGatt;
@@ -51,7 +57,6 @@ public class BluetoothMiScale extends BluetoothCommunication {
     private final UUID WEIGHT_MEASUREMENT_CONFIG = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
 
     private Handler searchHandler;
-    private Context context;
     private String btDeviceName;
     private int nextCmdState;
     private int nextInitState;
@@ -59,10 +64,21 @@ public class BluetoothMiScale extends BluetoothCommunication {
     private boolean initProcessOn;
     private boolean clearUpProcessOn;
 
-    public BluetoothMiScale(Context con) {
+    public BluetoothMiScale(Context context) {
+        super(context);
+
         searchHandler = new Handler();
-        context = con;
         scanCallback = null;
+    }
+
+    @Override
+    public String deviceName() {
+        return "Xiaomi Mi Scale";
+    }
+
+    @Override
+    public String defaultDeviceName() {
+        return "MI_SCALE";
     }
 
     @Override
@@ -98,7 +114,7 @@ public class BluetoothMiScale extends BluetoothCommunication {
             public void run()
             {
                 btAdapter.stopLeScan(scanCallback);
-                callbackBtHandler.obtainMessage(BluetoothCommunication.BT_NO_DEVICE_FOUND).sendToTarget();
+                setBtStatus(BT_NO_DEVICE_FOUND);
             }
         }, 10000);
 
@@ -164,13 +180,13 @@ public class BluetoothMiScale extends BluetoothCommunication {
                     scaleBtData.setWeight(weight);
                     scaleBtData.setDateTime(date_time);
 
-                    callbackBtHandler.obtainMessage(BluetoothCommunication.BT_RETRIEVE_SCALE_DATA, scaleBtData).sendToTarget();
+                    addScaleData(scaleBtData);
                 } else {
                     Log.e("BluetoothMiScale", "Invalid Mi scale weight year " + year);
                 }
             }
         } catch (ParseException e) {
-            callbackBtHandler.obtainMessage(BluetoothCommunication.BT_UNEXPECTED_ERROR, "Error while decoding bluetooth date string (" + e.getMessage() + ")").sendToTarget();
+            setBtStatus(BT_UNEXPECTED_ERROR, "Error while decoding bluetooth date string (" + e.getMessage() + ")");
         }
     }
 
@@ -231,11 +247,11 @@ public class BluetoothMiScale extends BluetoothCommunication {
         public void onConnectionStateChange(final BluetoothGatt gatt, int status, int newState) {
             if (newState == BluetoothProfile.STATE_CONNECTED) {
                 Log.d("BluetoothMiScale", "Connection established");
-                callbackBtHandler.obtainMessage(BluetoothCommunication.BT_CONNECTION_ESTABLISHED).sendToTarget();
+                setBtStatus(BT_CONNECTION_ESTABLISHED);
                 gatt.discoverServices();
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 Log.d("BluetoothMiScale", "Connection lost");
-                callbackBtHandler.obtainMessage(BluetoothCommunication.BT_CONNECTION_LOST).sendToTarget();
+                setBtStatus(BT_CONNECTION_LOST);
                 stopSearching();
             }
         }
@@ -376,7 +392,7 @@ public class BluetoothMiScale extends BluetoothCommunication {
 
             switch (nextInitState) {
                 case 0:
-                    callbackBtHandler.obtainMessage(BluetoothCommunication.BT_INIT_PROCESS).sendToTarget();
+                    setBtStatus(BT_INIT_PROCESS);
 
                     // set current time
                     characteristic = gatt.getService(WEIGHT_MEASUREMENT_SERVICE)

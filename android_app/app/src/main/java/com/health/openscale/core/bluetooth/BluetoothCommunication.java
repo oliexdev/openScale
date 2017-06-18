@@ -17,34 +17,79 @@
 package com.health.openscale.core.bluetooth;
 
 import android.bluetooth.BluetoothAdapter;
+import android.content.Context;
 import android.os.Handler;
 
+import com.health.openscale.core.datatypes.ScaleData;
+
+import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_STATUS_CODE.BT_RETRIEVE_SCALE_DATA;
+
 public abstract class BluetoothCommunication {
-    public static final int BT_MI_SCALE = 0;
-    public static final int BT_OPEN_SCALE = 1;
-    public static final int BT_SANITAS_SBF70 = 2;
-    public static final int BT_MEDISANA_BS444 = 3;
+    public enum BT_STATUS_CODE {BT_RETRIEVE_SCALE_DATA, BT_INIT_PROCESS, BT_CONNECTION_ESTABLISHED, BT_CONNECTION_LOST, BT_NO_DEVICE_FOUND, BT_UNEXPECTED_ERROR };
 
-    public static final int BT_RETRIEVE_SCALE_DATA = 0;
-    public static final int BT_INIT_PROCESS = 1;
-    public static final int BT_CONNECTION_ESTABLISHED = 2;
-    public static final int BT_CONNECTION_LOST = 3;
-    public static final int BT_NO_DEVICE_FOUND = 4;
-    public static final int BT_UNEXPECTED_ERROR = 5;
-
-    protected Handler callbackBtHandler;
+    private Handler callbackBtHandler;
     protected BluetoothAdapter btAdapter;
 
-    public BluetoothCommunication()
+    protected Context context;
+
+    public BluetoothCommunication(Context context)
     {
+        this.context = context;
         btAdapter = BluetoothAdapter.getDefaultAdapter();
+    }
+
+    public static BluetoothCommunication getBtDevice(Context context, int i) {
+        switch (i) {
+            case 0:
+                return new BluetoothCustomOpenScale(context);
+            case 1:
+                return new BluetoothMiScale(context);
+            case 2:
+                return new BluetoothSanitasSbf70(context);
+            case 3:
+                return new BluetoothMedisanaBS444(context);
+        }
+
+        return null;
     }
 
     public void registerCallbackHandler(Handler cbBtHandler) {
         callbackBtHandler = cbBtHandler;
     }
 
+
+    protected void setBtStatus(BT_STATUS_CODE statusCode) {
+        setBtStatus(statusCode, "");
+    }
+
+    protected void setBtStatus(BT_STATUS_CODE statusCode, String infoText) {
+        callbackBtHandler.obtainMessage(statusCode.ordinal(), infoText).sendToTarget();
+    }
+
+    protected void addScaleData(ScaleData scaleData) {
+        callbackBtHandler.obtainMessage(BT_RETRIEVE_SCALE_DATA.ordinal(), scaleData).sendToTarget();
+    }
+
+    abstract public String deviceName();
+    abstract public String defaultDeviceName();
+
     abstract public void startSearching(String deviceName);
     abstract public void stopSearching();
+
+    public boolean initSupported() {
+        return true;
+    }
+
+    public boolean transferSupported() {
+        return true;
+    }
+
+    public boolean historySupported() {
+        return true;
+    }
+
+    public boolean isBLE() {
+        return true;
+    }
 }
 
