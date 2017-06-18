@@ -93,6 +93,7 @@ public class BluetoothPreferences extends PreferenceFragment implements SharedPr
 
         deviceTypes.setEntries(btEntries.toArray(new CharSequence[btEntries.size()]));
         deviceTypes.setEntryValues(btEntryValues.toArray(new CharSequence[btEntryValues.size()]));
+        deviceTypes.setValueIndex(0);
     }
 
     @Override
