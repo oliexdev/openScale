@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.Stack;
 
 import lecho.lib.hellocharts.formatter.SimpleLineChartValueFormatter;
 import lecho.lib.hellocharts.listener.ColumnChartOnValueSelectListener;
@@ -81,6 +82,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     private Calendar calLastSelected;
 
     private ArrayList<ScaleData> scaleDataList;
+    private ArrayList<ScaleData> pointIndexScaleDataList;
 
 	public GraphFragment() {
         calYears = Calendar.getInstance();
@@ -174,54 +176,79 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         generateGraphs();
 	}
 
+    /**
+     * Add a point to a point value stack.
+     *
+     * Average y value of point if x value is already on the stack and option "averageData" is enabled.
+     *
+     * @param pointValues stack of point values
+     * @param value_x x value of the point
+     * @param value_y y value of the point
+     * @return true if a new point was added otherwise false if point was average added to an existing point
+     */
+    private boolean addPointValue(Stack<PointValue> pointValues, float value_x, float value_y) {
+        if (prefs.getBoolean("averageData", true) && !pointValues.isEmpty() && pointValues.peek().getX() == value_x) {
+            pointValues.push(new PointValue(value_x, (pointValues.pop().getY() + value_y) / 2.0f));
+        } else {
+            if (value_y != 0.0f) { // don't show zero values
+                pointValues.add(new PointValue(value_x, value_y));
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private void generateLineData(int field)
     {
         SimpleDateFormat day_date = new SimpleDateFormat("D", Locale.getDefault());
 
         if (field == Calendar.DAY_OF_MONTH) {
             day_date = new SimpleDateFormat("dd", Locale.getDefault());
+        } else if (field == Calendar.MONTH) {
+            day_date = new SimpleDateFormat("MMM", Locale.getDefault());
         }
 
         Calendar calDays = (Calendar)calLastSelected.clone();
 
-        calDays.set(field, 1);
+        calDays.set(field, calDays.getActualMinimum(field));
         int maxDays = calDays.getActualMaximum(field);
 
         List<AxisValue> axisValues = new ArrayList<AxisValue>();
 
-        for (int i=0; i<maxDays; i++) {
+        for (int i=0; i<maxDays+1; i++) {
             String day_name = day_date.format(calDays.getTime());
 
-            axisValues.add(new AxisValue(i, day_name.toCharArray()));
+            axisValues.add(new AxisValue(i+calDays.getActualMinimum(field), day_name.toCharArray()));
 
             calDays.add(field, 1);
         }
 
-        List<PointValue> valuesWeight = new ArrayList<PointValue>();
-        List<PointValue> valuesFat = new ArrayList<PointValue>();
-        List<PointValue> valuesWater = new ArrayList<PointValue>();
-        List<PointValue> valuesMuscle = new ArrayList<PointValue>();
-        List<PointValue> valuesWaist = new ArrayList<PointValue>();
-        List<PointValue> valuesHip = new ArrayList<PointValue>();
+        Stack<PointValue> valuesWeight = new Stack<PointValue>();
+        Stack<PointValue> valuesFat = new Stack<PointValue>();
+        Stack<PointValue> valuesWater = new Stack<PointValue>();
+        Stack<PointValue> valuesMuscle = new Stack<PointValue>();
+        Stack<PointValue> valuesWaist = new Stack<PointValue>();
+        Stack<PointValue> valuesHip = new Stack<PointValue>();
         List<Line> lines = new ArrayList<Line>();
 
         Calendar calDB = Calendar.getInstance();
+
+        pointIndexScaleDataList = new ArrayList<>();
 
         for(ScaleData scaleEntry: scaleDataList)
         {
             calDB.setTime(scaleEntry.getDateTime());
 
-            valuesWeight.add(new PointValue(calDB.get(field)-1, scaleEntry.getConvertedWeight(openScale.getSelectedScaleUser().scale_unit)));
-            if (scaleEntry.getFat() != 0.0f)
-                valuesFat.add(new PointValue(calDB.get(field)-1, scaleEntry.getFat()));
-            if (scaleEntry.getWater() != 0.0f)
-                valuesWater.add(new PointValue(calDB.get(field)-1, scaleEntry.getWater()));
-            if (scaleEntry.getMuscle() != 0.0f)
-                valuesMuscle.add(new PointValue(calDB.get(field)-1, scaleEntry.getMuscle()));
-            if (scaleEntry.getWaist() != 0.0f)
-                valuesWaist.add(new PointValue(calDB.get(field)-1, scaleEntry.getWaist()));
-            if (scaleEntry.getHip() != 0.0f)
-                valuesHip.add(new PointValue(calDB.get(field)-1, scaleEntry.getHip()));
+            if (addPointValue(valuesWeight, calDB.get(field), scaleEntry.getConvertedWeight(openScale.getSelectedScaleUser().scale_unit))) {
+                pointIndexScaleDataList.add(scaleEntry); // if new point was added, add this point to pointIndexScaleDataList to get the correct point index after selecting an point
+            }
+
+            addPointValue(valuesFat, calDB.get(field), scaleEntry.getFat());
+            addPointValue(valuesWater, calDB.get(field), scaleEntry.getWater());
+            addPointValue(valuesMuscle, calDB.get(field), scaleEntry.getMuscle());
+            addPointValue(valuesWaist, calDB.get(field), scaleEntry.getWaist());
+            addPointValue(valuesHip, calDB.get(field), scaleEntry.getHip());
         }
 
 
@@ -375,7 +402,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
             scaleDataList = openScale.getScaleDataOfYear(calYears.get(Calendar.YEAR));
 
-            generateLineData(Calendar.DAY_OF_YEAR);
+            generateLineData(Calendar.MONTH);
         }
     }
 
@@ -414,7 +441,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     private class chartBottomValueTouchListener implements LineChartOnValueSelectListener {
         @Override
         public void onValueSelected(int lineIndex, int pointIndex, PointValue pointValue) {
-            ScaleData scaleData = scaleDataList.get(pointIndex);
+            ScaleData scaleData = pointIndexScaleDataList.get(pointIndex);
 
             long id = scaleData.getId();
 

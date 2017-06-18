@@ -258,8 +258,8 @@ public class DataEntryActivity extends Activity {
                 btnRight.setVisibility(View.GONE);
                 expandButton.setVisibility(View.GONE);
                 switchEditMode.setVisibility(View.GONE);
-                dateMeasurement.setVisibility(View.GONE);
-                timeMeasurement.setVisibility(View.GONE);
+                dateMeasurement.setVisibility(View.VISIBLE);
+                timeMeasurement.setVisibility(View.VISIBLE);
                 break;
         }
 

@@ -292,7 +292,7 @@ public class UserSettingsActivity extends Activity {
                 String date = txtBirthday.getText().toString();
                 String goal_date = txtGoalDate.getText().toString();
 
-                int id = -1;
+                int id = 0;
 
                 if (getIntent().getExtras().getInt("mode") == EDIT_USER_REQUEST)
                 {
@@ -302,7 +302,7 @@ public class UserSettingsActivity extends Activity {
                 {
                     openScale.addScaleUser(name, date, body_height, scale_unit, gender, initial_weight, goal_weight, goal_date);
 
-                    id = openScale.getScaleUserList().get(openScale.getScaleUserList().size()-1).id;
+                    id = openScale.getScaleUserList().get(openScale.getScaleUserList().size() - 1).id;
                 }
 
                 SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
