@@ -13,7 +13,7 @@ Install [openScale-dev-build.apk](https://github.com/oliexdev/openScale/blob/mas
 # Features
 
 - Logs your weight, body fat, water percentage and muscle percentage
-- Display all your data on a chart and table
+- Display all your data on a chart and table 
 - Import or export your data from/into a CSV file
 - Support for multiple users
 - Support for Bluetooth Xiaomi Mi Scale, Sanitas SBF70, Medisana BS444
