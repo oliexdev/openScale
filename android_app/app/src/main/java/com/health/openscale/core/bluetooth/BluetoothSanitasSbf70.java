@@ -135,7 +135,13 @@ public class BluetoothSanitasSbf70 extends BluetoothCommunication {
         return false;
     }
 
+    @Override
     public boolean initSupported() {
+        return false;
+    }
+
+    @Override
+    public boolean historySupported() {
         return false;
     }
 
