@@ -57,6 +57,8 @@ public class BluetoothPreferences extends PreferenceFragment implements SharedPr
         smartAssignEnable = (CheckBoxPreference) findPreference(PREFERENCE_KEY_BLUETOOTH_SMARTUSERASSIGN);
         ignoreOutOfRangeEnable = (CheckBoxPreference) findPreference(PREFERENCE_KEY_BLUETOOTH_IGNOREOUTOFRANGE);
 
+        deviceTypes.setOnPreferenceChangeListener(new deviceTypeOnPreferenceChangeListener());
+
         updateBluetoothPreferences();
         initSummary(getPreferenceScreen());
     }
@@ -93,7 +95,6 @@ public class BluetoothPreferences extends PreferenceFragment implements SharedPr
 
         deviceTypes.setEntries(btEntries.toArray(new CharSequence[btEntries.size()]));
         deviceTypes.setEntryValues(btEntryValues.toArray(new CharSequence[btEntryValues.size()]));
-        deviceTypes.setValueIndex(0);
     }
 
     @Override
@@ -152,9 +153,6 @@ public class BluetoothPreferences extends PreferenceFragment implements SharedPr
             }
 
             p.setSummary(Html.fromHtml(summary));
-
-            deviceName.setSummary(btCom.defaultDeviceName());
-            deviceName.setText(btCom.defaultDeviceName());
         }
 
         if (p instanceof EditTextPreference) {
@@ -180,6 +178,21 @@ public class BluetoothPreferences extends PreferenceFragment implements SharedPr
                     currentEntries.add(entries[i].toString());
 
             p.setSummary(currentEntries.toString());
+        }
+    }
+
+    private class deviceTypeOnPreferenceChangeListener implements Preference.OnPreferenceChangeListener {
+
+        @Override
+        public boolean onPreferenceChange(Preference p, Object o) {
+            int i = Integer.parseInt((String)o);
+
+            BluetoothCommunication btCom = BluetoothCommunication.getBtDevice(getActivity().getApplicationContext(), i);
+
+            deviceName.setSummary(btCom.defaultDeviceName());
+            deviceName.setText(btCom.defaultDeviceName());
+
+            return true;
         }
     }
 }
