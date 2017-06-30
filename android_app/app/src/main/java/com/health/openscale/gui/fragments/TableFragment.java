@@ -129,6 +129,10 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 	@Override
 	public void updateOnView(ArrayList<ScaleData> scaleDataList)
     {
+        if (scaleDataList.isEmpty()) {
+            return;
+        }
+
         final int maxSize = 20;
 
         int subpageCount = (int)Math.ceil(scaleDataList.size() / (double)maxSize);

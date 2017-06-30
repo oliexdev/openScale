@@ -184,6 +184,7 @@ public abstract class BluetoothCommunication {
      * Return all hardware addresses of the Bluetooth device.
      *
      * The format should be the first six hex values of a know Bluetooth hardware address without any colon e.g. 12:AB:65:12:34:52 becomes "12AB65"
+     * @note add hw address "FFFFFF" to skip check
      *
      * @return a list of all hardware addresses that are known for this device.
      */
@@ -379,8 +380,12 @@ public abstract class BluetoothCommunication {
             {
                 @Override
                 public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord) {
+                    if (device.getName() == null) {
+                        return;
+                    }
+
                     for (int i=0; i<hwAddresses().size(); i++) {
-                        if (device.getAddress().replace(":", "").toUpperCase().startsWith(hwAddresses().get(i)))
+                        if (device.getAddress().replace(":", "").toUpperCase().startsWith(hwAddresses().get(i)) || hwAddresses().get(i) == "FFFFFF")
                         {
                             if (isDeviceNameCheck()) {
                                 if (!device.getName().toLowerCase().equals(btDeviceName.toLowerCase())) {
@@ -388,7 +393,7 @@ public abstract class BluetoothCommunication {
                                 }
                             }
 
-                            Log.d("BluetoothMiScale", "Mi Scale found trying to connect...");
+                            Log.d("BluetoothCommunication", btDeviceName + " found trying to connect...");
 
                             bluetoothGatt = device.connectGatt(context, false, gattCallback);
 

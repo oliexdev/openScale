@@ -114,9 +114,7 @@ public class BluetoothSanitasSbf70 extends BluetoothCommunication {
     @Override
     public ArrayList<String> hwAddresses() {
         ArrayList hwAddresses = new ArrayList();
-        hwAddresses.add("C4BE84");
-        hwAddresses.add("209148");
-        hwAddresses.add("F4B85E");
+        hwAddresses.add("FFFFFF");
 
         return hwAddresses;
     }
