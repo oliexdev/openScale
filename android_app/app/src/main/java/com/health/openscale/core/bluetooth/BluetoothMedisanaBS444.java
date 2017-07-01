@@ -92,14 +92,15 @@ public class BluetoothMedisanaBS444 extends BluetoothCommunication {
             case 3:
                 // send magic number to receive weight data
                 Date date = new Date();
-                long unix_timestamp = date.getTime() - 1262304000; // -40 years because unix time starts in year 1970
+                int unix_timestamp = (int) ((date.getTime() / 1000) - 1262304000) ; // -40 years because unix time starts in year 1970
 
-                byte[] magicBytes = new byte[5];
-                magicBytes[0] = (byte)0x02;
-                for (int i = 4; i >= 1; i--) {
-                  magicBytes[i] = (byte)(unix_timestamp & 0xFF);
-                  unix_timestamp >>= 8;
-                }
+                byte[] magicBytes = new byte[] {
+                        (byte)0x02,
+                        (byte)(unix_timestamp),
+                        (byte)(unix_timestamp >>> 8),
+                        (byte)(unix_timestamp >>> 16),
+                        (byte)(unix_timestamp >>> 24)
+                };
                 //byte[] magicBytes = new byte[]{(byte)0x02, (byte)0x7B, (byte)0x7B, (byte)0xF6, (byte)0x0D}; // 02:7b:7b:f6:0d
 
                 writeBytes(WEIGHT_MEASUREMENT_SERVICE, CMD_MEASUREMENT_CHARACTERISTIC, magicBytes);
