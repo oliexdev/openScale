@@ -60,6 +60,7 @@ public class BluetoothMedisanaBS444 extends BluetoothCommunication {
     public ArrayList<String> hwAddresses() {
         ArrayList hwAddresses = new ArrayList();
         hwAddresses.add("E454EB");
+        hwAddresses.add("F13A88");
 
         return hwAddresses;
     }
@@ -90,7 +91,17 @@ public class BluetoothMedisanaBS444 extends BluetoothCommunication {
                 break;
             case 3:
                 // send magic number to receive weight data
-                byte[] magicBytes = new byte[]{(byte)0x02, (byte)0x7B, (byte)0x7B, (byte)0xF6, (byte)0x0D}; // 02:7b:7b:f6:0d
+                Date date = new Date();
+                int unix_timestamp = (int) ((date.getTime() / 1000) - 1262304000) ; // -40 years because unix time starts in year 1970
+
+                byte[] magicBytes = new byte[] {
+                        (byte)0x02,
+                        (byte)(unix_timestamp),
+                        (byte)(unix_timestamp >>> 8),
+                        (byte)(unix_timestamp >>> 16),
+                        (byte)(unix_timestamp >>> 24)
+                };
+                //byte[] magicBytes = new byte[]{(byte)0x02, (byte)0x7B, (byte)0x7B, (byte)0xF6, (byte)0x0D}; // 02:7b:7b:f6:0d
 
                 writeBytes(WEIGHT_MEASUREMENT_SERVICE, CMD_MEASUREMENT_CHARACTERISTIC, magicBytes);
                 break;
