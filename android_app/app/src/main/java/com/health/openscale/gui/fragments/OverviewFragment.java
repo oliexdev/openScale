@@ -126,8 +126,8 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         overviewMeasurements.add(new HipMeasurementView(context));
         overviewMeasurements.add(new WHRMeasurementView(context));
 
-        for (MeasurementView measuremt : overviewMeasurements) {
-            tableOverviewLayout.addView(measuremt);
+        for (MeasurementView measurement : overviewMeasurements) {
+            tableOverviewLayout.addView(measurement);
         }
 
         pieChartLast = (PieChartView) overviewView.findViewById(R.id.pieChartLast);
@@ -192,10 +192,10 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             prevScaleData = new ScaleData();
         }
 
-        for (MeasurementView measuremt : overviewMeasurements) {
-            measuremt.updatePreferences(prefs);
-            measuremt.updateValue(lastScaleData);
-            measuremt.updateDiff(lastScaleData, prevScaleData);
+        for (MeasurementView measurement : overviewMeasurements) {
+            measurement.updatePreferences(prefs);
+            measurement.updateValue(lastScaleData);
+            measurement.updateDiff(lastScaleData, prevScaleData);
         }
     }
 
