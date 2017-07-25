@@ -36,6 +36,7 @@ import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleData;
 import com.health.openscale.gui.activities.DataEntryActivity;
+import com.health.openscale.gui.views.chart.Diagram;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -44,7 +45,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Stack;
 
-import lecho.lib.hellocharts.formatter.SimpleLineChartValueFormatter;
 import lecho.lib.hellocharts.listener.ColumnChartOnValueSelectListener;
 import lecho.lib.hellocharts.listener.LineChartOnValueSelectListener;
 import lecho.lib.hellocharts.model.Axis;
@@ -61,19 +61,24 @@ import lecho.lib.hellocharts.util.ChartUtils;
 import lecho.lib.hellocharts.view.ColumnChartView;
 import lecho.lib.hellocharts.view.LineChartView;
 
-public class GraphFragment extends Fragment implements FragmentUpdateListener {	
-	private View graphView;
-	private LineChartView chartBottom;
+// TODO: Rename to ChartFragment?
+public class GraphFragment extends Fragment implements FragmentUpdateListener {
+    private View graphView;
+    private LineChartView chartBottom;
     private ColumnChartView chartTop;
     private Viewport defaultTopViewport;
     private TextView txtYear;
-    private FloatingActionButton diagramWeight;
-    private FloatingActionButton diagramFat;
-    private FloatingActionButton diagramWater;
-    private FloatingActionButton diagramMuscle;
-    private FloatingActionButton diagramWaist;
-    private FloatingActionButton diagramHip;
+
+    private Diagram diagramWeight;
+    private Diagram diagramFat;
+    private Diagram diagramWater;
+    private Diagram diagramMuscle;
+    private Diagram diagramWaist;
+    private Diagram diagramHip;
+
+
     private FloatingActionButton enableMonth;
+
     private SharedPreferences prefs;
 
     private OpenScale openScale;
@@ -104,49 +109,53 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         txtYear = (TextView) graphView.findViewById(R.id.txtYear);
         txtYear.setText(Integer.toString(calYears.get(Calendar.YEAR)));
 
-        diagramWeight = (FloatingActionButton) graphView.findViewById(R.id.diagramWeight);
-        diagramFat = (FloatingActionButton) graphView.findViewById(R.id.diagramFat);
-        diagramWater = (FloatingActionButton) graphView.findViewById(R.id.diagramWater);
-        diagramMuscle = (FloatingActionButton) graphView.findViewById(R.id.diagramMuscle);
-        diagramWaist = (FloatingActionButton) graphView.findViewById(R.id.diagramWaist);
-        diagramHip = (FloatingActionButton) graphView.findViewById(R.id.diagramHip);
-
-        enableMonth = (FloatingActionButton) graphView.findViewById(R.id.enableMonth);
-
-        diagramWeight.setOnClickListener(new onClickListenerDiagramLines());
-        diagramFat.setOnClickListener(new onClickListenerDiagramLines());
-        diagramWater.setOnClickListener(new onClickListenerDiagramLines());
-        diagramMuscle.setOnClickListener(new onClickListenerDiagramLines());
-        diagramWaist.setOnClickListener(new onClickListenerDiagramLines());
-        diagramHip.setOnClickListener(new onClickListenerDiagramLines());
-
-        enableMonth.setOnClickListener(new onClickListenerDiagramLines());
-
         prefs = PreferenceManager.getDefaultSharedPreferences(graphView.getContext());
 
-        if(!prefs.getBoolean("weightEnable", true)) {
-            diagramWeight.setVisibility(View.GONE);
-        }
+        diagramWeight = new Diagram(
+                graphView,
+                new onClickListenerDiagramLines(),
+                prefs, "weightEnable", true,
+                R.id.diagramWeight,
+                ChartUtils.COLOR_VIOLET
+        );
+        diagramFat = new Diagram(
+                graphView,
+                new onClickListenerDiagramLines(),
+                prefs, "fatEnable", true,
+                R.id.diagramFat,
+                ChartUtils.COLOR_ORANGE
+        );
+        diagramWater = new Diagram(
+                graphView,
+                new onClickListenerDiagramLines(),
+                prefs,"waterEnable", true,
+                R.id.diagramWater,
+                ChartUtils.COLOR_BLUE
+        );
+        diagramMuscle = new Diagram(
+                graphView,
+                new onClickListenerDiagramLines(),
+                prefs, "muscleEnable", true,
+                R.id.diagramMuscle,
+                ChartUtils.COLOR_GREEN
+        );
+        diagramWaist = new Diagram(
+                graphView,
+                new onClickListenerDiagramLines(),
+                prefs, "waistEnable", false,
+                R.id.diagramWaist,
+                Color.MAGENTA
+        );
+        diagramHip = new Diagram(
+                graphView,
+                new onClickListenerDiagramLines(),
+                prefs, "hipEnable", false,
+                R.id.diagramHip,
+                Color.YELLOW
+        );
 
-        if(!prefs.getBoolean("fatEnable", true)) {
-            diagramFat.setVisibility(View.GONE);
-        }
-
-        if(!prefs.getBoolean("waterEnable", true)) {
-            diagramWater.setVisibility(View.GONE);
-        }
-
-        if(!prefs.getBoolean("muscleEnable", true)) {
-            diagramMuscle.setVisibility(View.GONE);
-        }
-
-        if(!prefs.getBoolean("waistEnable", false)) {
-            diagramWaist.setVisibility(View.GONE);
-        }
-
-        if(!prefs.getBoolean("hipEnable", false)) {
-            diagramHip.setVisibility(View.GONE);
-        }
+        enableMonth = (FloatingActionButton) graphView.findViewById(R.id.enableMonth);
+        enableMonth.setOnClickListener(new onClickListenerDiagramLines());
 
         graphView.findViewById(R.id.btnLeftYear).setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
@@ -251,82 +260,32 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             addPointValue(valuesHip, calDB.get(field), scaleEntry.getHip());
         }
 
-
-        Line lineWeight = new Line(valuesWeight).
-                setColor(ChartUtils.COLOR_VIOLET).
-                setHasLabels(prefs.getBoolean("labelsEnable", true)).
-                setHasPoints(prefs.getBoolean("pointsEnable", true)).
-                setFormatter(new SimpleLineChartValueFormatter(1));
-        Line lineFat = new Line(valuesFat).
-                setColor(ChartUtils.COLOR_ORANGE).
-                setHasLabels(prefs.getBoolean("labelsEnable", true)).
-                setHasPoints(prefs.getBoolean("pointsEnable", true)).
-                setFormatter(new SimpleLineChartValueFormatter(1));
-        Line lineWater = new Line(valuesWater).
-                setColor(ChartUtils.COLOR_BLUE).
-                setHasLabels(prefs.getBoolean("labelsEnable", true)).
-                setHasPoints(prefs.getBoolean("pointsEnable", true)).
-                setFormatter(new SimpleLineChartValueFormatter(1));
-        Line lineMuscle = new Line(valuesMuscle).
-                setColor(ChartUtils.COLOR_GREEN).
-                setHasLabels(prefs.getBoolean("labelsEnable", true)).
-                setHasPoints(prefs.getBoolean("pointsEnable", true)).
-                setFormatter(new SimpleLineChartValueFormatter(1));
-        Line lineWaist = new Line(valuesWaist).
-                setColor(Color.MAGENTA).
-                setHasLabels(prefs.getBoolean("labelsEnable", true)).
-                setHasPoints(prefs.getBoolean("pointsEnable", true)).
-                setFormatter(new SimpleLineChartValueFormatter(1));
-        Line lineHip = new Line(valuesHip).
-                setColor(Color.YELLOW).
-                setHasLabels(prefs.getBoolean("labelsEnable", true)).
-                setHasPoints(prefs.getBoolean("pointsEnable", true)).
-                setFormatter(new SimpleLineChartValueFormatter(1));
-
-
-        if(prefs.getBoolean("weightEnable", true) && prefs.getBoolean(String.valueOf(diagramWeight.getId()), true)) {
-            lines.add(lineWeight);
-            diagramWeight.setBackgroundTintList(ColorStateList.valueOf(ChartUtils.COLOR_VIOLET));
-        } else {
-            diagramWeight.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#d3d3d3")));
+        diagramWeight.prepareBackgroundTint();
+        if (diagramWeight.showLine()) {
+            lines.add(diagramWeight.createLine(valuesWeight));
+        }
+        diagramFat.prepareBackgroundTint();
+        if (diagramFat.showLine()) {
+            lines.add(diagramFat.createLine(valuesFat));
+        }
+        diagramWater.prepareBackgroundTint();
+        if (diagramWater.showLine()) {
+            lines.add(diagramWater.createLine(valuesWater));
+        }
+        diagramMuscle.prepareBackgroundTint();
+        if (diagramMuscle.showLine()) {
+            lines.add(diagramMuscle.createLine(valuesMuscle));
+        }
+        diagramWaist.prepareBackgroundTint();
+        if (diagramWaist.showLine()) {
+            lines.add(diagramWaist.createLine(valuesWaist));
+        }
+        diagramHip.prepareBackgroundTint();
+        if (diagramHip.showLine()) {
+            lines.add(diagramHip.createLine(valuesHip));
         }
 
-        if(prefs.getBoolean("fatEnable", true) && prefs.getBoolean(String.valueOf(diagramFat.getId()), true)) {
-            lines.add(lineFat);
-            diagramFat.setBackgroundTintList(ColorStateList.valueOf(ChartUtils.COLOR_ORANGE));
-        } else {
-            diagramFat.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#d3d3d3")));
-        }
-
-        if(prefs.getBoolean("waterEnable", true) && prefs.getBoolean(String.valueOf(diagramWater.getId()), true)) {
-            lines.add(lineWater);
-            diagramWater.setBackgroundTintList(ColorStateList.valueOf(ChartUtils.COLOR_BLUE));
-        } else {
-            diagramWater.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#d3d3d3")));
-        }
-
-        if(prefs.getBoolean("muscleEnable", true) && prefs.getBoolean(String.valueOf(diagramMuscle.getId()), true)) {
-            lines.add(lineMuscle);
-            diagramMuscle.setBackgroundTintList(ColorStateList.valueOf(ChartUtils.COLOR_GREEN));
-        } else {
-            diagramMuscle.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#d3d3d3")));
-        }
-
-        if(prefs.getBoolean("waistEnable", false) && prefs.getBoolean(String.valueOf(diagramWaist.getId()), true)) {
-            lines.add(lineWaist);
-            diagramWaist.setBackgroundTintList(ColorStateList.valueOf(Color.MAGENTA));
-        } else {
-            diagramWaist.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#d3d3d3")));
-        }
-
-        if(prefs.getBoolean("hipEnable", false) && prefs.getBoolean(String.valueOf(diagramHip.getId()), true)) {
-            lines.add(lineHip);
-            diagramHip.setBackgroundTintList(ColorStateList.valueOf(Color.YELLOW));
-        } else {
-            diagramHip.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#d3d3d3")));
-        }
-
-        if(prefs.getBoolean(String.valueOf(enableMonth.getId()), true)) {
+        if (prefs.getBoolean(String.valueOf(enableMonth.getId()), true)) {
             enableMonth.setBackgroundTintList(ColorStateList.valueOf(ChartUtils.COLOR_BLUE));
         } else {
             enableMonth.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#d3d3d3")));
