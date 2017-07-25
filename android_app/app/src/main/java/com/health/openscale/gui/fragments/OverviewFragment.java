@@ -39,9 +39,11 @@ import com.health.openscale.core.datatypes.ScaleData;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.gui.activities.DataEntryActivity;
 import com.health.openscale.gui.views.BMIMeasurementView;
+import com.health.openscale.gui.views.FatAbsoluteMeasurementView;
 import com.health.openscale.gui.views.FatMeasurementView;
 import com.health.openscale.gui.views.HipMeasurementView;
 import com.health.openscale.gui.views.MeasurementView;
+import com.health.openscale.gui.views.MuscleAbsoluteMeasurementView;
 import com.health.openscale.gui.views.MuscleMeasurementView;
 import com.health.openscale.gui.views.WHRMeasurementView;
 import com.health.openscale.gui.views.WHtRMeasurementView;
@@ -120,14 +122,16 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         overviewMeasurements.add(new BMIMeasurementView(context));
         overviewMeasurements.add(new WaterMeasurementView(context));
         overviewMeasurements.add(new MuscleMeasurementView(context));
+        overviewMeasurements.add(new MuscleAbsoluteMeasurementView(context));
         overviewMeasurements.add(new FatMeasurementView(context));
+        overviewMeasurements.add(new FatAbsoluteMeasurementView(context));
         overviewMeasurements.add(new WaistMeasurementView(context));
         overviewMeasurements.add(new WHtRMeasurementView(context));
         overviewMeasurements.add(new HipMeasurementView(context));
         overviewMeasurements.add(new WHRMeasurementView(context));
 
-        for (MeasurementView measuremt : overviewMeasurements) {
-            tableOverviewLayout.addView(measuremt);
+        for (MeasurementView measurement : overviewMeasurements) {
+            tableOverviewLayout.addView(measurement);
         }
 
         pieChartLast = (PieChartView) overviewView.findViewById(R.id.pieChartLast);
@@ -192,10 +196,10 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             prevScaleData = new ScaleData();
         }
 
-        for (MeasurementView measuremt : overviewMeasurements) {
-            measuremt.updatePreferences(prefs);
-            measuremt.updateValue(lastScaleData);
-            measuremt.updateDiff(lastScaleData, prevScaleData);
+        for (MeasurementView measurement : overviewMeasurements) {
+            measurement.updatePreferences(prefs);
+            measurement.updateValue(lastScaleData);
+            measurement.updateDiff(lastScaleData, prevScaleData);
         }
     }
 

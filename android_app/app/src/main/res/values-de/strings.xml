@@ -44,6 +44,7 @@
     <string name="label_enable_labels">Notiz auf den Datenpunkt</string>
     <string name="label_export">Exportieren</string>
     <string name="label_fat">Körperfettanteil</string>
+    <string name="label_fat_absolute">Körperfett absolut</string>
     <string name="label_gender">Geschlecht</string>
     <string name="label_goal_date">Zieldatum</string>
     <string name="label_goal_date_is">Das Zieldatum ist</string>
@@ -55,6 +56,7 @@
     <string name="label_male">Männlich</string>
     <string name="label_measures">Messungen</string>
     <string name="label_muscle">Muskelanteil</string>
+    <string name="label_muscle_absolute">Muskeln absolut</string>
     <string name="label_no">Nein</string>
     <string name="label_ok">OK</string>
     <string name="label_scale_unit">Einheit</string>

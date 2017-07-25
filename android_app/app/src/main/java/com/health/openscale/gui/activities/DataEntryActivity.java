@@ -34,7 +34,6 @@ import android.widget.Toast;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleData;
-import com.health.openscale.gui.views.BMIMeasurementView;
 import com.health.openscale.gui.views.CommentMeasurementView;
 import com.health.openscale.gui.views.DateMeasurementView;
 import com.health.openscale.gui.views.FatMeasurementView;
@@ -42,8 +41,6 @@ import com.health.openscale.gui.views.HipMeasurementView;
 import com.health.openscale.gui.views.MeasurementView;
 import com.health.openscale.gui.views.MuscleMeasurementView;
 import com.health.openscale.gui.views.TimeMeasurementView;
-import com.health.openscale.gui.views.WHRMeasurementView;
-import com.health.openscale.gui.views.WHtRMeasurementView;
 import com.health.openscale.gui.views.WaistMeasurementView;
 import com.health.openscale.gui.views.WaterMeasurementView;
 import com.health.openscale.gui.views.WeightMeasurementView;
@@ -60,14 +57,11 @@ public class DataEntryActivity extends Activity {
     private TableLayout tableLayoutDataEntry;
 
     private WeightMeasurementView weightMeasurement;
-    private BMIMeasurementView bmiMeasurementView;
     private WaterMeasurementView waterMeasurement;
     private MuscleMeasurementView muscleMeasurement;
     private FatMeasurementView fatMeasurement;
     private WaistMeasurementView waistMeasurement;
-    private WHtRMeasurementView wHtRMeasurementView;
     private HipMeasurementView hipMeasurement;
-    private WHRMeasurementView whrMeasurementView;
     private CommentMeasurementView commentMeasurement;
     private DateMeasurementView dateMeasurement;
     private TimeMeasurementView timeMeasurement;
@@ -97,36 +91,30 @@ public class DataEntryActivity extends Activity {
         tableLayoutDataEntry = (TableLayout) findViewById(R.id.tableLayoutDataEntry);
 
         weightMeasurement = new WeightMeasurementView(context);
-        bmiMeasurementView = new BMIMeasurementView(context);
         waterMeasurement = new WaterMeasurementView(context);
         muscleMeasurement = new MuscleMeasurementView(context);
         fatMeasurement = new FatMeasurementView(context);
         waistMeasurement = new WaistMeasurementView(context);
-        wHtRMeasurementView = new WHtRMeasurementView(context);
         hipMeasurement = new HipMeasurementView(context);
-        whrMeasurementView = new WHRMeasurementView(context);
         commentMeasurement = new CommentMeasurementView(context);
         dateMeasurement = new DateMeasurementView(context);
         timeMeasurement = new TimeMeasurementView(context);
 
         dataEntryMeasurements = new ArrayList<>();
         dataEntryMeasurements.add(weightMeasurement);
-        dataEntryMeasurements.add(bmiMeasurementView);
         dataEntryMeasurements.add(waterMeasurement);
         dataEntryMeasurements.add(muscleMeasurement);
         dataEntryMeasurements.add(fatMeasurement);
         dataEntryMeasurements.add(waistMeasurement);
-        dataEntryMeasurements.add(wHtRMeasurementView);
         dataEntryMeasurements.add(hipMeasurement);
-        dataEntryMeasurements.add(whrMeasurementView);
         dataEntryMeasurements.add(commentMeasurement);
         dataEntryMeasurements.add(dateMeasurement);
         dataEntryMeasurements.add(timeMeasurement);
 
         Collections.reverse(dataEntryMeasurements);
 
-        for (MeasurementView measuremt : dataEntryMeasurements) {
-            tableLayoutDataEntry.addView(measuremt, 0);
+        for (MeasurementView measurement : dataEntryMeasurements) {
+            tableLayoutDataEntry.addView(measurement, 0);
         }
 
         txtDataNr = (TextView) findViewById(R.id.txtDataNr);
@@ -157,8 +145,8 @@ public class DataEntryActivity extends Activity {
     {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
-        for (MeasurementView measuremt : dataEntryMeasurements) {
-            measuremt.updatePreferences(prefs);
+        for (MeasurementView measurement : dataEntryMeasurements) {
+            measurement.updatePreferences(prefs);
         }
 
         if (getIntent().hasExtra("id")) {
@@ -194,10 +182,10 @@ public class DataEntryActivity extends Activity {
             txtDataNr.setText(DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.SHORT).format(selectedScaleData.getDateTime()));
 
             // show selected scale data
-            for (MeasurementView measuremt : dataEntryMeasurements) {
-                measuremt.setExpand(prefs.getBoolean(String.valueOf(expandButton.getId()), false));
-                measuremt.updateValue(selectedScaleData);
-                measuremt.updateDiff(selectedScaleData, prevScaleData);
+            for (MeasurementView measurement : dataEntryMeasurements) {
+                measurement.setExpand(prefs.getBoolean(String.valueOf(expandButton.getId()), false));
+                measurement.updateValue(selectedScaleData);
+                measurement.updateDiff(selectedScaleData, prevScaleData);
             }
 
             return;
@@ -211,16 +199,16 @@ public class DataEntryActivity extends Activity {
             ScaleData lastScaleData = OpenScale.getInstance(getApplicationContext()).getScaleDataList().get(0);
 
             // show as default last scale data
-            for (MeasurementView measuremt : dataEntryMeasurements) {
+            for (MeasurementView measurement : dataEntryMeasurements) {
                 lastScaleData.setDateTime(new Date());
                 lastScaleData.setComment("");
-                measuremt.updateValue(lastScaleData);
+                measurement.updateValue(lastScaleData);
             }
         } else {
             setViewMode(MeasurementView.MeasurementViewMode.ADD);
             // show default values
-            for (MeasurementView measuremt : dataEntryMeasurements) {
-                measuremt.updateValue(new ScaleData());
+            for (MeasurementView measurement : dataEntryMeasurements) {
+                measurement.updateValue(new ScaleData());
             }
         }
     }
@@ -263,8 +251,8 @@ public class DataEntryActivity extends Activity {
                 break;
         }
 
-        for (MeasurementView measuremt : dataEntryMeasurements) {
-            measuremt.setEditMode(viewMode);
+        for (MeasurementView measurement : dataEntryMeasurements) {
+            measurement.setEditMode(viewMode);
         }
     }
 

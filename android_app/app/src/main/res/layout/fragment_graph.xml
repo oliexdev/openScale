@@ -42,6 +42,17 @@
             app:rippleColor="#FFBB33" />
 
         <android.support.design.widget.FloatingActionButton
+            android:id="@+id/diagramFatAbsolute"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="10dp"
+            android:clickable="true"
+            android:src="@drawable/fat_absolute"
+            app:backgroundTint="#E4A11B"
+            app:fabSize="mini"
+            app:rippleColor="#E4A11B" />
+
+        <android.support.design.widget.FloatingActionButton
             android:id="@+id/diagramWater"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -62,6 +73,17 @@
             app:backgroundTint="#99CC00"
             app:fabSize="mini"
             app:rippleColor="#99CC00" />
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/diagramMuscleAbsolute"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="10dp"
+            android:clickable="true"
+            android:src="@drawable/muscle_absolute"
+            app:backgroundTint="#70A62B"
+            app:fabSize="mini"
+            app:rippleColor="#70A62B" />
 
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/diagramWaist"
