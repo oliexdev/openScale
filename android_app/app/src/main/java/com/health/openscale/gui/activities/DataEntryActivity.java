@@ -125,8 +125,8 @@ public class DataEntryActivity extends Activity {
 
         Collections.reverse(dataEntryMeasurements);
 
-        for (MeasurementView measuremt : dataEntryMeasurements) {
-            tableLayoutDataEntry.addView(measuremt, 0);
+        for (MeasurementView measurement : dataEntryMeasurements) {
+            tableLayoutDataEntry.addView(measurement, 0);
         }
 
         txtDataNr = (TextView) findViewById(R.id.txtDataNr);
@@ -157,8 +157,8 @@ public class DataEntryActivity extends Activity {
     {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
-        for (MeasurementView measuremt : dataEntryMeasurements) {
-            measuremt.updatePreferences(prefs);
+        for (MeasurementView measurement : dataEntryMeasurements) {
+            measurement.updatePreferences(prefs);
         }
 
         if (getIntent().hasExtra("id")) {
@@ -194,10 +194,10 @@ public class DataEntryActivity extends Activity {
             txtDataNr.setText(DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.SHORT).format(selectedScaleData.getDateTime()));
 
             // show selected scale data
-            for (MeasurementView measuremt : dataEntryMeasurements) {
-                measuremt.setExpand(prefs.getBoolean(String.valueOf(expandButton.getId()), false));
-                measuremt.updateValue(selectedScaleData);
-                measuremt.updateDiff(selectedScaleData, prevScaleData);
+            for (MeasurementView measurement : dataEntryMeasurements) {
+                measurement.setExpand(prefs.getBoolean(String.valueOf(expandButton.getId()), false));
+                measurement.updateValue(selectedScaleData);
+                measurement.updateDiff(selectedScaleData, prevScaleData);
             }
 
             return;
@@ -211,16 +211,16 @@ public class DataEntryActivity extends Activity {
             ScaleData lastScaleData = OpenScale.getInstance(getApplicationContext()).getScaleDataList().get(0);
 
             // show as default last scale data
-            for (MeasurementView measuremt : dataEntryMeasurements) {
+            for (MeasurementView measurement : dataEntryMeasurements) {
                 lastScaleData.setDateTime(new Date());
                 lastScaleData.setComment("");
-                measuremt.updateValue(lastScaleData);
+                measurement.updateValue(lastScaleData);
             }
         } else {
             setViewMode(MeasurementView.MeasurementViewMode.ADD);
             // show default values
-            for (MeasurementView measuremt : dataEntryMeasurements) {
-                measuremt.updateValue(new ScaleData());
+            for (MeasurementView measurement : dataEntryMeasurements) {
+                measurement.updateValue(new ScaleData());
             }
         }
     }
@@ -263,8 +263,8 @@ public class DataEntryActivity extends Activity {
                 break;
         }
 
-        for (MeasurementView measuremt : dataEntryMeasurements) {
-            measuremt.setEditMode(viewMode);
+        for (MeasurementView measurement : dataEntryMeasurements) {
+            measurement.setEditMode(viewMode);
         }
     }
 
