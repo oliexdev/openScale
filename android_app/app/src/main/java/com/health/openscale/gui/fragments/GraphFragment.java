@@ -71,11 +71,12 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
     private Diagram diagramWeight;
     private Diagram diagramFat;
+    private Diagram diagramFatAbsolute;
     private Diagram diagramWater;
     private Diagram diagramMuscle;
+    private Diagram diagramMuscleAbsolute;
     private Diagram diagramWaist;
     private Diagram diagramHip;
-
 
     private FloatingActionButton enableMonth;
 
@@ -125,6 +126,13 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                 R.id.diagramFat,
                 ChartUtils.COLOR_ORANGE
         );
+        diagramFatAbsolute = new Diagram(
+                graphView,
+                new onClickListenerDiagramLines(),
+                prefs, "fatAbsoluteEnable", true,
+                R.id.diagramFatAbsolute,
+                Color.parseColor("#E4A11B")
+        );
         diagramWater = new Diagram(
                 graphView,
                 new onClickListenerDiagramLines(),
@@ -138,6 +146,13 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                 prefs, "muscleEnable", true,
                 R.id.diagramMuscle,
                 ChartUtils.COLOR_GREEN
+        );
+        diagramMuscleAbsolute = new Diagram(
+                graphView,
+                new onClickListenerDiagramLines(),
+                prefs, "muscleAbsoluteEnable", true,
+                R.id.diagramMuscleAbsolute,
+                Color.parseColor("#70A62B")
         );
         diagramWaist = new Diagram(
                 graphView,
@@ -235,8 +250,10 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         Stack<PointValue> valuesWeight = new Stack<PointValue>();
         Stack<PointValue> valuesFat = new Stack<PointValue>();
+        Stack<PointValue> valuesFatAbsolute = new Stack<PointValue>();
         Stack<PointValue> valuesWater = new Stack<PointValue>();
         Stack<PointValue> valuesMuscle = new Stack<PointValue>();
+        Stack<PointValue> valuesMuscleAbsolute = new Stack<PointValue>();
         Stack<PointValue> valuesWaist = new Stack<PointValue>();
         Stack<PointValue> valuesHip = new Stack<PointValue>();
         List<Line> lines = new ArrayList<Line>();
@@ -254,8 +271,10 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             }
 
             addPointValue(valuesFat, calDB.get(field), scaleEntry.getFat());
+            addPointValue(valuesFatAbsolute, calDB.get(field), scaleEntry.getFatAbsolute(openScale.getSelectedScaleUser().scale_unit));
             addPointValue(valuesWater, calDB.get(field), scaleEntry.getWater());
             addPointValue(valuesMuscle, calDB.get(field), scaleEntry.getMuscle());
+            addPointValue(valuesMuscleAbsolute, calDB.get(field), scaleEntry.getMuscleAbsolute(openScale.getSelectedScaleUser().scale_unit));
             addPointValue(valuesWaist, calDB.get(field), scaleEntry.getWaist());
             addPointValue(valuesHip, calDB.get(field), scaleEntry.getHip());
         }
@@ -268,6 +287,10 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         if (diagramFat.showLine()) {
             lines.add(diagramFat.createLine(valuesFat));
         }
+        diagramFatAbsolute.prepareBackgroundTint();
+        if (diagramFatAbsolute.showLine()) {
+            lines.add(diagramFatAbsolute.createLine(valuesFatAbsolute));
+        }
         diagramWater.prepareBackgroundTint();
         if (diagramWater.showLine()) {
             lines.add(diagramWater.createLine(valuesWater));
@@ -275,6 +298,10 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         diagramMuscle.prepareBackgroundTint();
         if (diagramMuscle.showLine()) {
             lines.add(diagramMuscle.createLine(valuesMuscle));
+        }
+        diagramMuscleAbsolute.prepareBackgroundTint();
+        if (diagramMuscleAbsolute.showLine()) {
+            lines.add(diagramMuscleAbsolute.createLine(valuesMuscleAbsolute));
         }
         diagramWaist.prepareBackgroundTint();
         if (diagramWaist.showLine()) {
