@@ -13,6 +13,7 @@
     <string name="label_no">いいえ</string>
     <string name="label_id">Id</string>
     <string name="label_fat">体脂肪率</string>
+    <string name="label_fat_absolute">Body fat absolute (please translate)</string>
     <string name="label_bmi">BMI</string>
     <string name="label_bluetooth_title">Bluetooth</string>
     <string name="label_birthday">誕生日</string>
@@ -30,6 +31,7 @@
     <string name="label_import">レコードのインポート</string>
     <string name="label_male">男性</string>
     <string name="label_muscle">筋肉率</string>
+    <string name="label_muscle_absolute">Muscle absolute (please translate)</string>
     <string name="label_gender">性別</string>
     <string name="label_water">体内の水分</string>
     <string name="label_title_user">ユーザー</string>
