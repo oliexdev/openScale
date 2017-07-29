@@ -216,7 +216,7 @@ public class OpenScale {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
         // if ignore out of range preference is true don't add this data
-        if (prefs.getBoolean("ignoreOfOutRange", false)) {
+        if (prefs.getBoolean("ignoreOutOfRange", false)) {
             return -1;
         }
 
