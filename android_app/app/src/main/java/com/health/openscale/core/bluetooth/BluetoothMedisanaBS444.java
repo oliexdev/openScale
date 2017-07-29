@@ -62,6 +62,7 @@ public class BluetoothMedisanaBS444 extends BluetoothCommunication {
         hwAddresses.add("E454EB");
         hwAddresses.add("F13A88");
         hwAddresses.add("C9A68A");
+        hwAddresses.add("D60211");
 
         return hwAddresses;
     }
