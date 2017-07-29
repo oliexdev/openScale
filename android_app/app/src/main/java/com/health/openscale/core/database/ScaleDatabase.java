@@ -172,7 +172,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
         dbWrite.update(TABLE_NAME, values, COLUMN_NAME_ID + "=" + id, null);
     }
 
-    public ScaleData[] getTupleDataEntry(long id)
+    public ScaleData[] getTupleDataEntry(int userId, long id)
     {
         Cursor cursorScaleDB;
 
@@ -182,8 +182,8 @@ public class ScaleDatabase extends SQLiteOpenHelper {
         cursorScaleDB = dbRead.query(
                 TABLE_NAME, 	// The table to query
                 projection, 	// The columns to return
-                COLUMN_NAME_ID + "=?", 			// The columns for the WHERE clause
-                new String[] {Long.toString(id)}, 			// The values for the WHERE clause
+                COLUMN_NAME_USER_ID + "=? AND " + COLUMN_NAME_ID + "=?", 			// The columns for the WHERE clause
+                new String[] {Integer.toString(userId), Long.toString(id)}, 			// The values for the WHERE clause
                 null, 			// don't group the rows
                 null,			// don't filter by row groups
                 null,  		// The sort order
@@ -201,8 +201,8 @@ public class ScaleDatabase extends SQLiteOpenHelper {
         cursorScaleDB = dbRead.query(
                 TABLE_NAME, 	// The table to query
                 projection, 	// The columns to return
-                COLUMN_NAME_DATE_TIME + "<? AND " + COLUMN_NAME_ENABLE + "=1", 			// The columns for the WHERE clause
-                new String[] {formatDateTime.format(tupleScaleData[1].getDateTime())}, 			// The values for the WHERE clause
+                COLUMN_NAME_USER_ID + "=? AND " + COLUMN_NAME_DATE_TIME + "<? AND " + COLUMN_NAME_ENABLE + "=1", 			// The columns for the WHERE clause
+                new String[] {Integer.toString(userId), formatDateTime.format(tupleScaleData[1].getDateTime())}, 			// The values for the WHERE clause
                 null, 			// don't group the rows
                 null,			// don't filter by row groups
                 COLUMN_NAME_DATE_TIME + " DESC",  	// The sort order
@@ -222,8 +222,8 @@ public class ScaleDatabase extends SQLiteOpenHelper {
         cursorScaleDB = dbRead.query(
                 TABLE_NAME, 	// The table to query
                 projection, 	// The columns to return
-                COLUMN_NAME_DATE_TIME + ">? AND " + COLUMN_NAME_ENABLE + "=1", 			// The columns for the WHERE clause
-                new String[] {formatDateTime.format(tupleScaleData[1].getDateTime())}, 			// The values for the WHERE clause
+                COLUMN_NAME_USER_ID + "=? AND " + COLUMN_NAME_DATE_TIME + ">? AND " + COLUMN_NAME_ENABLE + "=1", 			// The columns for the WHERE clause
+                new String[] {Integer.toString(userId), formatDateTime.format(tupleScaleData[1].getDateTime())}, 			// The values for the WHERE clause
                 null, 			// don't group the rows
                 null,			// don't filter by row groups
                 COLUMN_NAME_DATE_TIME, // The sort order

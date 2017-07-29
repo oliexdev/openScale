@@ -160,7 +160,7 @@ public class OpenScale {
 
     public ScaleData[] getTupleScaleData(long id)
     {
-        return scaleDB.getTupleDataEntry(id);
+        return scaleDB.getTupleDataEntry(getSelectedScaleUser().id, id);
     }
 
 	public int addScaleData(ScaleData scaleData) {
