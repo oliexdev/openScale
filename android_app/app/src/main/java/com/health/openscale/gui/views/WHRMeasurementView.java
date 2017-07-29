@@ -52,7 +52,7 @@ public class WHRMeasurementView extends MeasurementView {
 
     @Override
     public void updatePreferences(SharedPreferences preferences) {
-        setVisible(preferences.getBoolean("hipEnable", true) && preferences.getBoolean("waistEnable", true));
+        setVisible(preferences.getBoolean("hipEnable", false) && preferences.getBoolean("waistEnable", false));
     }
 
     @Override

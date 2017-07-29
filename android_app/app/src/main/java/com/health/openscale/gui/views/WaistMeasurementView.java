@@ -47,7 +47,7 @@ public class WaistMeasurementView extends MeasurementView {
 
     @Override
     public void updatePreferences(SharedPreferences preferences) {
-        setVisible(preferences.getBoolean("waistEnable", true));
+        setVisible(preferences.getBoolean("waistEnable", false));
     }
 
     @Override

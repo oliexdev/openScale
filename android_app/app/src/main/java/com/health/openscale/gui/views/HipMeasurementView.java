@@ -47,7 +47,7 @@ public class HipMeasurementView extends MeasurementView {
 
     @Override
     public void updatePreferences(SharedPreferences preferences) {
-        setVisible(preferences.getBoolean("hipEnable", true));
+        setVisible(preferences.getBoolean("hipEnable", false));
     }
 
     @Override
