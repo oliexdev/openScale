@@ -35,7 +35,9 @@ import java.util.Queue;
 import java.util.UUID;
 
 public abstract class BluetoothCommunication {
-    public enum BT_STATUS_CODE {BT_RETRIEVE_SCALE_DATA, BT_INIT_PROCESS, BT_CONNECTION_ESTABLISHED, BT_CONNECTION_LOST, BT_NO_DEVICE_FOUND, BT_UNEXPECTED_ERROR };
+    public enum BT_STATUS_CODE {BT_RETRIEVE_SCALE_DATA, BT_INIT_PROCESS, BT_CONNECTION_ESTABLISHED,
+        BT_CONNECTION_LOST, BT_NO_DEVICE_FOUND, BT_UNEXPECTED_ERROR, BT_SCALE_MESSAGE
+    };
     public enum BT_MACHINE_STATE {BT_INIT_STATE, BT_CMD_STATE, BT_CLEANUP_STATE}
 
     protected Context context;
@@ -123,6 +125,16 @@ public abstract class BluetoothCommunication {
      */
     protected void addScaleData(ScaleData scaleData) {
         callbackBtHandler.obtainMessage(BT_STATUS_CODE.BT_RETRIEVE_SCALE_DATA.ordinal(), scaleData).sendToTarget();
+    }
+
+    /**
+     * Send message to openScale user
+     *
+     * @param msg the string id to be send
+     * @param value the value to be used
+     */
+    protected void sendMessage(int msg,  Object value) {
+        callbackBtHandler.obtainMessage(BT_STATUS_CODE.BT_SCALE_MESSAGE.ordinal(), msg, 0,  value).sendToTarget();
     }
 
     /**
