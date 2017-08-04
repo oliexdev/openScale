@@ -30,6 +30,8 @@ import android.util.Log;
 import com.health.openscale.core.datatypes.ScaleData;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.UUID;
 
 public abstract class BluetoothCommunication {
@@ -51,6 +53,9 @@ public abstract class BluetoothCommunication {
     private int cleanupStepNr;
     private BT_MACHINE_STATE btMachineState;
 
+    private Queue<BluetoothGattDescriptor> descriptorRequestQueue;
+    private Queue<BluetoothGattCharacteristic> characteristicRequestQueue;
+    private Boolean openRequest;
 
     public BluetoothCommunication(Context context)
     {
@@ -208,6 +213,25 @@ public abstract class BluetoothCommunication {
     abstract boolean nextBluetoothCmd(int stateNr);
 
     /**
+     * Set the next command number of the current state.
+     *
+     * @param nextCommand next command to select
+     */
+    protected void setNextCmd(int nextCommand) {
+        switch (btMachineState) {
+            case BT_INIT_STATE:
+                initStepNr = nextCommand - 1;
+                break;
+            case BT_CMD_STATE:
+                cmdStepNr = nextCommand - 1;
+                break;
+            case BT_CLEANUP_STATE:
+                cleanupStepNr = nextCommand - 1;
+                break;
+        }
+    }
+
+    /**
      * State machine for the clean up process for the Bluetooth device.
      *
      * This state machine is *not* automatically triggered. You have to setBtMachineState(BT_MACHINE_STATE.BT_CLEANUP_STATE) to trigger this process if necessary.
@@ -244,7 +268,7 @@ public abstract class BluetoothCommunication {
     protected void setBtMachineState(BT_MACHINE_STATE btMachineState) {
         this.btMachineState = btMachineState;
 
-        nextMachineStateStep();
+        handleRequests();
     }
 
     /**
@@ -259,7 +283,10 @@ public abstract class BluetoothCommunication {
                 .getCharacteristic(characteristic);
 
         gattCharacteristic.setValue(bytes);
-        bluetoothGatt.writeCharacteristic(gattCharacteristic);
+        synchronized (openRequest) {
+             characteristicRequestQueue.add(gattCharacteristic);
+             handleRequests();
+        }
     }
 
     /**
@@ -291,8 +318,10 @@ public abstract class BluetoothCommunication {
 
         BluetoothGattDescriptor gattDescriptor = gattCharacteristic.getDescriptor(descriptor);
         gattDescriptor.setValue(BluetoothGattDescriptor.ENABLE_INDICATION_VALUE);
-
-        bluetoothGatt.writeDescriptor(gattDescriptor);
+        synchronized (openRequest) {
+            descriptorRequestQueue.add(gattDescriptor);
+            handleRequests();
+        }
     }
 
     /**
@@ -309,7 +338,10 @@ public abstract class BluetoothCommunication {
 
         BluetoothGattDescriptor gattDescriptor = gattCharacteristic.getDescriptor(descriptor);
         gattDescriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-        bluetoothGatt.writeDescriptor(gattDescriptor);
+        synchronized (openRequest) {
+            descriptorRequestQueue.add(gattDescriptor);
+            handleRequests();
+        }
     }
 
     /**
@@ -326,7 +358,10 @@ public abstract class BluetoothCommunication {
 
         BluetoothGattDescriptor gattDescriptor = gattCharacteristic.getDescriptor(descriptor);
         gattDescriptor.setValue(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
-        bluetoothGatt.writeDescriptor(gattDescriptor);
+        synchronized (openRequest) {
+            descriptorRequestQueue.add(gattDescriptor);
+            handleRequests();
+        }
     }
 
     /**
@@ -458,6 +493,35 @@ public abstract class BluetoothCommunication {
         }
     }
 
+    private void handleRequests() {
+        synchronized (openRequest) {
+            // check for pending request
+            if (openRequest)
+                return; // yes, do nothing
+
+            // handle descriptor requests first
+            BluetoothGattDescriptor descriptorRequest = descriptorRequestQueue.poll();
+            if (descriptorRequest != null) {
+                if (!bluetoothGatt.writeDescriptor(descriptorRequest))
+                    Log.d("BTC", "Descriptor Write failed(" + byteInHex(descriptorRequest.getValue()) + ")");
+                openRequest = true;
+                return;
+            }
+
+            // handle characteristics requests second
+            BluetoothGattCharacteristic characteristicRequest = characteristicRequestQueue.poll();
+            if (characteristicRequest != null) {
+                if (!bluetoothGatt.writeCharacteristic(characteristicRequest))
+                    Log.d("BTC", "Characteristic Write failed(" + byteInHex(characteristicRequest.getValue()) + ")");
+                openRequest = true;
+                return;
+            }
+
+            // After every command was executed, continue with the next step
+            nextMachineStateStep();
+        }
+    }
+
     /**
      * Custom Gatt callback class to set up a Bluetooth state machine.
      */
@@ -479,6 +543,12 @@ public abstract class BluetoothCommunication {
             initStepNr = 0;
             cleanupStepNr = 0;
 
+            // Clear from possible previous setups
+            characteristicRequestQueue = new LinkedList<>();
+            descriptorRequestQueue = new LinkedList<>();
+            openRequest = false;
+
+
             btMachineState = BT_MACHINE_STATE.BT_INIT_STATE;
             nextMachineStateStep();
         }
@@ -487,14 +557,20 @@ public abstract class BluetoothCommunication {
         public void onDescriptorWrite(BluetoothGatt gatt,
                                       BluetoothGattDescriptor descriptor,
                                       int status) {
-            nextMachineStateStep();
+            synchronized (openRequest) {
+                openRequest = false;
+                handleRequests();
+            }
         }
 
         @Override
         public void onCharacteristicWrite (BluetoothGatt gatt,
                                            BluetoothGattCharacteristic characteristic,
                                            int status) {
-            nextMachineStateStep();
+            synchronized (openRequest) {
+                openRequest = false;
+                handleRequests();
+            }
         }
 
         @Override
@@ -502,8 +578,10 @@ public abstract class BluetoothCommunication {
                                           BluetoothGattCharacteristic characteristic,
                                           int status) {
             onBluetoothDataRead(gatt, characteristic, status);
-
-            nextMachineStateStep();
+            synchronized (openRequest) {
+                openRequest = false;
+                handleRequests();
+            }
         }
 
         @Override
