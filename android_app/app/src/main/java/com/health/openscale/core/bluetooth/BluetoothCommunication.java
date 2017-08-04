@@ -65,7 +65,7 @@ public abstract class BluetoothCommunication {
      * Create and return a new Bluetooth object.
      *
      * @param context In which context should the Bluetooth device created
-     * @param i the specidific number of which Bluetooth device should be created (correspond to "deviceTypes" key in BluetoothPreferences)
+     * @param i the specific number of which Bluetooth device should be created (correspond to "deviceTypes" key in BluetoothPreferences)
      * @return created object specified by the number i otherwise null
      */
     public static BluetoothCommunication getBtDevice(Context context, int i) {
@@ -182,7 +182,7 @@ public abstract class BluetoothCommunication {
     /**
      * Return all hardware addresses of the Bluetooth device.
      *
-     * The format should be the first six hex values of a know Bluetooth hardware address without any colon e.g. 12:AB:65:12:34:52 becomes "12AB65"
+     * The format should be the first six hex values of a known Bluetooth hardware address without any colon e.g. 12:AB:65:12:34:52 becomes "12AB65"
      * @note add hw address "FFFFFF" to skip check
      *
      * @return a list of all hardware addresses that are known for this device.
@@ -190,7 +190,7 @@ public abstract class BluetoothCommunication {
     abstract public ArrayList<String> hwAddresses();
 
     /**
-     * State machine for the initialization process for the Bluetooth device.
+     * State machine for the initialization process of the Bluetooth device.
      *
      * @param stateNr the current step number
      * @return false if no next step is available otherwise true
@@ -198,7 +198,7 @@ public abstract class BluetoothCommunication {
     abstract boolean nextInitCmd(int stateNr);
 
     /**
-     * State machine for the normal/command process for the Bluetooth device.
+     * State machine for the normal/command process of the Bluetooth device.
      *
      * This state machine is automatically triggered if initialization process is finished.
      *
@@ -227,7 +227,7 @@ public abstract class BluetoothCommunication {
     protected void onBluetoothDataRead(BluetoothGatt bluetoothGatt, BluetoothGattCharacteristic gattCharacteristic, int status){};
 
     /**
-     * Method is triggered if a Bluetooth data from a device  is notified or indicated.
+     * Method is triggered if a Bluetooth data from a device is notified or indicated.
      *
      * @param bluetoothGatt the Bluetooth Gatt
      * @param gattCharacteristic the Bluetooth characteristic
