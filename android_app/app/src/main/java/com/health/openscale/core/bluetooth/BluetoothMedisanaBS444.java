@@ -63,6 +63,7 @@ public class BluetoothMedisanaBS444 extends BluetoothCommunication {
         hwAddresses.add("F13A88");
         hwAddresses.add("C9A68A");
         hwAddresses.add("D60211");
+        hwAddresses.add("DB2FF6");
 
         return hwAddresses;
     }
@@ -81,15 +82,15 @@ public class BluetoothMedisanaBS444 extends BluetoothCommunication {
         switch (stateNr) {
             case 0:
                 // set indication on for feature characteristic
-                setInidicationOn(WEIGHT_MEASUREMENT_SERVICE, FEATURE_MEASUREMENT_CHARACTERISTIC);
+                setIndicationOn(WEIGHT_MEASUREMENT_SERVICE, FEATURE_MEASUREMENT_CHARACTERISTIC, WEIGHT_MEASUREMENT_CONFIG);
                 break;
             case 1:
                 // set indication on for weight measurement
-                setInidicationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC);
+                setIndicationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC, WEIGHT_MEASUREMENT_CONFIG);
                 break;
             case 2:
                 // set indication on for custom5 measurement
-                setInidicationOn(WEIGHT_MEASUREMENT_SERVICE, CUSTOM5_MEASUREMENT_CHARACTERISTIC);
+                setIndicationOn(WEIGHT_MEASUREMENT_SERVICE, CUSTOM5_MEASUREMENT_CHARACTERISTIC, WEIGHT_MEASUREMENT_CONFIG);
                 break;
             case 3:
                 // send magic number to receive weight data

@@ -1,5 +1,6 @@
 /* Copyright (C) 2014  olie.xdev <olie.xdev@googlemail.com>
 *                2017  jflesch <jflesch@kwain.net>
+*                2017  Martin Nowack
 *
 *    This program is free software: you can redistribute it and/or modify
 *    it under the terms of the GNU General Public License as published by
@@ -17,23 +18,25 @@
 package com.health.openscale.core.bluetooth;
 
 import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothGattDescriptor;
-import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.util.Log;
 
+import com.health.openscale.R;
+import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleData;
+import com.health.openscale.core.datatypes.ScaleUser;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.Arrays;
+import java.text.SimpleDateFormat;
+import java.io.ByteArrayOutputStream;
+import java.util.Collections;
+import java.util.TreeSet;
 import java.util.UUID;
-
-import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_STATUS_CODE.BT_CONNECTION_ESTABLISHED;
-import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_STATUS_CODE.BT_CONNECTION_LOST;
-import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_STATUS_CODE.BT_UNEXPECTED_ERROR;
 
 public class BluetoothSanitasSbf70 extends BluetoothCommunication {
     public final static String TAG = "BluetoothSanitasSbf70";
@@ -74,7 +77,7 @@ public class BluetoothSanitasSbf70 extends BluetoothCommunication {
             UUID.fromString("00002A05-0000-1000-8000-00805F9B34FB");
     // descriptor ; handle = 0x000f
     private static final UUID CLIENT_CHARACTERISTICS_CONFIGURATION =
-            UUID.fromString("00002902-0000-1000-8000-00805F9B34FB");
+            UUID.fromString("00002901-0000-1000-8000-00805F9B34FB");
 
     private static final UUID CUSTOM_SERVICE_1 =
             UUID.fromString("0000FFE0-0000-1000-8000-00805F9B34FB");
@@ -96,9 +99,15 @@ public class BluetoothSanitasSbf70 extends BluetoothCommunication {
     private static final UUID CUSTOM_CHARACTERISTIC_IMG_BLOCK = // write-only, notify
             UUID.fromString("F000FFC2-0451-4000-8000-000000000000");
 
+
+    private int currentScaleUserId;
+    private int countRegisteredScaleUsers;
+    private TreeSet<Integer> seenUsers;
+    private int maxRegisteredScaleUser;
+    private ByteArrayOutputStream receivedScaleData;
+
     public BluetoothSanitasSbf70(Context context) {
         super(context);
-        gattCallback = new BluetoothSanitasGattCallback();
     }
 
     @Override
@@ -120,263 +129,480 @@ public class BluetoothSanitasSbf70 extends BluetoothCommunication {
     }
 
     @Override
-    boolean nextInitCmd(int stateNr) {
-        return false;
-    }
-
-    @Override
-    boolean nextBluetoothCmd(int stateNr) {
-        return false;
-    }
-
-    @Override
-    boolean nextCleanUpCmd(int stateNr) {
-        return false;
-    }
-
-    @Override
     public boolean initSupported() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean historySupported() {
-        return false;
+        return true;
     }
 
-    private class BluetoothSanitasGattCallback extends BluetoothGattCallback {
-        /**
-         * @brief used to collect the data
-         */
-        private ScaleData scaleBtData;
+    @Override
+    boolean nextInitCmd(int stateNr) {
 
-        /**
-         * @brief message to send.
-         * Messages are sent by writing on a specific characteristic
-         */
-        private Queue<byte[]> msgQueue;
+        switch (stateNr) {
+            case 0:
+                // Initialize data
+                currentScaleUserId = -1;
+                countRegisteredScaleUsers = -1;
+                maxRegisteredScaleUser = -1;
+                seenUsers = new TreeSet<>();
 
-        /**
-         * @brief true if the next message can be sent immediately. False if another is already
-         * being sent
-         */
-        private boolean canSend;
-
-        /**
-         * @brief true if the communication must be closed after all the message have been sent
-         */
-        private boolean eof;
-
-        public BluetoothSanitasGattCallback() {
-            super();
-            scaleBtData = new ScaleData();
-            scaleBtData.setId(-1);
-            msgQueue = new LinkedList<>();
-            canSend = true;
-            eof = false;
-        }
-
-        @Override
-        public void onConnectionStateChange(final BluetoothGatt gatt, int status, int newState) {
-            Log.d(TAG, "onConnectionStatechange(" + status + ", " + newState + ")");
-            if (newState == BluetoothProfile.STATE_CONNECTED) {
-                Log.d(TAG, "Connection established");
-                setBtStatus(BT_CONNECTION_ESTABLISHED);
-                gatt.discoverServices();
-            } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                Log.d(TAG, "Connection lost");
-                setBtStatus(BT_CONNECTION_LOST);
-                stopSearching();
-            }
-        }
-
-        @Override
-        public void onServicesDiscovered(final BluetoothGatt gatt, int status) {
-            Log.d(TAG, "onServicesDiscovered(" + status + ")");
-            //invokeNextBluetoothCmd(gatt);
-            if (status == gatt.GATT_SUCCESS) {
-                init(gatt);
-            }
-        }
-
-        /**
-         * @brief configure the scale
-         */
-        private void init(final BluetoothGatt gatt) {
-            BluetoothGattCharacteristic characteristic;
-            BluetoothGattDescriptor descriptor;
-
-            characteristic = gatt.getService(CUSTOM_SERVICE_1)
-                    .getCharacteristic(CUSTOM_CHARACTERISTIC_WEIGHT);
-            gatt.setCharacteristicNotification(characteristic, true);
-
-            descriptor = characteristic.getDescriptor(CLIENT_CHARACTERISTICS_CONFIGURATION);
-            descriptor.setValue(new byte[] {
-                    (byte)0x01, (byte)0x00,
-            });
-            gatt.writeDescriptor(descriptor);
-
-            msgQueue.add(new byte[] {
-                    (byte)0xe6, (byte)0x01,
-            });
-            canSend = false;
-        }
-
-        /**
-         * @brief send the next message in the queue
-         */
-        private void nextMessage(final BluetoothGatt gatt) {
-            if (!canSend) {
-                return;
-            }
-
-            byte[] msg = msgQueue.poll();
-            if (msg == null) {
-                if (eof) {
-                    stopSearching();
-                }
-                return;
-            }
-
-            canSend = false;
-
-            BluetoothGattCharacteristic characteristic;
-            characteristic = gatt.getService(CUSTOM_SERVICE_1)
-                    .getCharacteristic(CUSTOM_CHARACTERISTIC_WEIGHT);
-            characteristic.setValue(msg);
-            gatt.writeCharacteristic(characteristic);
-        }
-
-        @Override
-        public void onDescriptorWrite(BluetoothGatt gatt,
-                                      BluetoothGattDescriptor descriptor,
-                                      int status) {
-            Log.d(TAG, "onDescriptorWrite(" + descriptor + ", " + status + ")");
-            canSend = true;
-            nextMessage(gatt);
-        }
-
-        @Override
-        public void onCharacteristicWrite (BluetoothGatt gatt,
-                                           BluetoothGattCharacteristic characteristic,
-                                           int status) {
-            Log.d(TAG, "onCharacteristicWrite(" + characteristic + ", " + status + ")");
-            canSend = true;
-            nextMessage(gatt);
-        }
-
-        @Override
-        public void onCharacteristicRead (BluetoothGatt gatt,
-                                          BluetoothGattCharacteristic characteristic,
-                                          int status) {
-            Log.d(TAG, "onCharacteristicRead(" + characteristic + ", " + status + ")");
-        }
-
-        @Override
-        public void onCharacteristicChanged(BluetoothGatt gatt,
-                                            BluetoothGattCharacteristic characteristic) {
-            final UUID uuid = characteristic.getUuid();
-            final byte[] data = characteristic.getValue();
-
-            Log.d(TAG, "onCharacteristicChanged(" + uuid + "): " + byteInHex(data));
-
-            if (!uuid.equals(CUSTOM_CHARACTERISTIC_WEIGHT)) {
-                Log.d(TAG, "Got characteristic changed from unexpected UUID ?");
-            }
-
-            if ((data[0] & 0xFF) == 0xe6 && (data[1] & 0xFF) == 0x00) {
-                Log.d(TAG, "ACK");
-                msgQueue.add(new byte[] {
-                        (byte)0xe9, (byte)0x59, (byte)0x07, (byte)0x84, (byte)0x4c,
-                });
-                nextMessage(gatt);
-                return;
-
-            } else if ((data[0] & 0xFF) == 0xe7 && (data[1] & 0xFF) == 0x58) {
-                Log.d(TAG, "ACK");
-                msgQueue.add(new byte[] {
-                        (byte)0xe7, (byte)0xf1, (byte)(data[1] & 0xFF),
-                        (byte)(data[2] & 0xFF), (byte)(data[3] & 0xFF),
-                });
-                nextMessage(gatt);
-
-                // weight
-                if ((data[2] & 0xFF) != 0x00) {
-                    // temporary value;
-                    return;
-                }
-                // stabilized value
-                // little endian
-                float weight = ((float)(
-                        ((int)(data[3] & 0xFF) << 8) + ((int)(data[4] & 0xFF))
-                )) * 50.0f / 1000.0f; // unit is 50g
-                Log.i(TAG, "Got weight: " + weight);
-                scaleBtData.setWeight(weight);
-                return;
-
-            } else if ((data[0] & 0xFF) == 0xe7 && (data[1] & 0xFF) == 0x59) {
-                Log.d(TAG, "ACK Extra data " + ((int)data[3]));
-                msgQueue.add(new byte[] {
-                        (byte)0xe7, (byte)0xf1,
-                        (byte)(data[1] & 0xFF), (byte)(data[2] & 0xFF),
-                        (byte)(data[3] & 0xFF),
-                });
-
-                if ((data[2] & 0xFF) == 0x03 && (data[3] & 0xFF) == 0x02) {
-                    // big endian
-                    float fat = ((float)(
-                            ((int)(data[12] & 0xFF) << 8) + ((int)(data[13] & 0xFF))
-                    )) / 10.0f; // unit is 0.1kg
-                    Log.i(TAG, "Got fat: " + fat + "%");
-                    scaleBtData.setFat(fat);
+                // Setup notification
+                setNotificationOn(CUSTOM_SERVICE_1, CUSTOM_CHARACTERISTIC_WEIGHT, CLIENT_CHARACTERISTICS_CONFIGURATION);
+                break;
+            case 1:
+                // Say "Hello" to the scale
+                writeBytes(new byte[]{(byte) 0xe6, (byte) 0x01});
+                break;
+            case 2:
+                // Update timestamp of the scale
+                updateDateTimeSanitas();
+                break;
+            case 3:
+                // Request general user information
+                writeBytes(new byte[]{(byte) 0xe7, (byte) 0x33});
+                break;
+            case 4:
+                // Wait for ack of all users
+                if (seenUsers.size() < countRegisteredScaleUsers || (countRegisteredScaleUsers == -1)) {
+                    // Request this state again
+                    setNextCmd(stateNr);
+                    break;
                 }
 
-                if ((data[2] & 0xFF) == 0x03 && (data[3] & 0xFF) == 0x03) {
-                    // little endian
-                    float water = ((float)(
-                            ((int)(data[5] & 0xFF) << 8) + ((int)(data[4] & 0xFF))
-                    )) / 10.0f; // unit is 0.1kg
-                    Log.i(TAG, "Got water: " + water + "%");
-                    scaleBtData.setWater(water);
+                // Got all user acks
 
-                    // little endian
-                    float muscle = ((float)(
-                            ((int)(data[7] & 0xFF) << 8) + ((int)(data[6] & 0xFF))
-                    )) / 10.0f; // unit is 0.1kg
-                    Log.i(TAG, "Got muscle: " + muscle + "%");
-                    scaleBtData.setMuscle(muscle);
+                // Check if not found/unknown
+                if (currentScaleUserId == 0) {
+                    // Unknown user, request creation of new user
+                    if (countRegisteredScaleUsers == maxRegisteredScaleUser) {
+                        setBtMachineState(BT_MACHINE_STATE.BT_CLEANUP_STATE);
+                        Log.d(TAG, "Cannot create additional scale user");
+                        sendMessage(R.string.error_max_scale_users, 0);
+                        break;
+                    }
 
-                    addScaleData(scaleBtData);
+                    // Request creation of user
+                    final ScaleUser selectedUser = OpenScale.getInstance(context).getSelectedScaleUser();
 
-                    Log.d(TAG, "ACK Extra data (end)");
-                    msgQueue.add(new byte[] {
-                            (byte)0xe7, (byte)0x43, (byte)0x0, (byte)0x0, (byte)0x0,
-                            (byte)0x0, (byte)0x0, (byte)0x0, (byte)0x0,
-                            (byte)0x65
+                    // We can only use up to 3 characters and have to handle them uppercase
+                    int maxIdx = selectedUser.user_name.length() >= 3 ? 3 : selectedUser.user_name.length();
+                    byte[] nick = selectedUser.user_name.toUpperCase().substring(0, maxIdx).getBytes();
+
+                    byte activity = 2; // activity level: 1 - 5
+                    Log.d(TAG, "Create User:" + selectedUser.user_name);
+
+                    writeBytes(new byte[]{
+                            (byte) 0xe7, (byte) 0x31, (byte) 0x0, (byte) 0x0, (byte) 0x0,
+                            (byte) 0x0, (byte) 0x0, (byte) 0x0, (byte) 0x0,
+                            (byte) (seenUsers.size() > 0 ? Collections.max(seenUsers) + 1 : 101),
+                            nick[0], nick[1], nick[2],
+                            (byte) selectedUser.birthday.getYear(),
+                            (byte) selectedUser.birthday.getMonth(),
+                            (byte) selectedUser.birthday.getDate(),
+                            (byte) selectedUser.body_height,
+                            (byte) (((1 - selectedUser.gender) << 7) | activity)
+                    });
+                } else {
+                    // Get existing user information
+                    Log.d(TAG, "Request getUserInfo " + currentScaleUserId);
+                    writeBytes(new byte[]{
+                            (byte) 0xe7, (byte) 0x36, (byte) 0x0, (byte) 0x0, (byte) 0x0,
+                            (byte) 0x0, (byte) 0x0, (byte) 0x0, (byte) 0x0, (byte) currentScaleUserId
                     });
 
-                    scaleBtData = new ScaleData();
-                    scaleBtData.setId(-1);
                 }
+                Log.d(TAG, "scaleuserid:" + currentScaleUserId + " registered users: " + countRegisteredScaleUsers +
+                        " extracted users: " + seenUsers.size());
 
-                nextMessage(gatt);
-                return;
 
-            } else if ((data[0] & 0xFF) == 0xe7 && (data[1] & 0xFF) == 0xf0) {
-                Log.d(TAG, "ACK");
-                msgQueue.add(new byte[]{
-                        (byte) 0xea, (byte) 0x02,
+                break;
+            case 5:
+                break;
+            default:
+                // Finish init if everything is done
+                return false;
+        }
+
+
+        return true;
+    }
+
+    @Override
+    boolean nextBluetoothCmd(int stateNr) {
+
+        switch (stateNr) {
+            case 0:
+                // If no specific user selected
+                if (currentScaleUserId == 0)
+                    break;
+
+                Log.d(TAG, "Request Saved User Measurements");
+                writeBytes(new byte[]{
+                        (byte) 0xe7, (byte) 0x41, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, (byte) currentScaleUserId
                 });
-                nextMessage(gatt);
-                eof = true;
-                return;
 
-            } else {
-                Log.w(TAG, "Unidentified notification !");
+                break;
+            case 1:
+                // Wait for user measurements to be received
+                setNextCmd(stateNr);
+                break;
+            case 2:
+                setBtMachineState(BT_MACHINE_STATE.BT_CLEANUP_STATE);
+                break;
+            default:
+                return false;
 
-                setBtStatus(BT_UNEXPECTED_ERROR, "Error while decoding bluetooth value");
+        }
+        return true;
+    }
+
+    @Override
+    boolean nextCleanUpCmd(int stateNr) {
+        switch (stateNr) {
+            case 0:
+                // Force disconnect
+                writeBytes(new byte[]{(byte) 0xea, (byte) 0x02});
+                break;
+            default:
+                return false;
+        }
+        return true;
+    }
+
+
+    @Override
+    public void onBluetoothDataChange(BluetoothGatt bluetoothGatt, BluetoothGattCharacteristic gattCharacteristic) {
+        byte[] data = gattCharacteristic.getValue();
+        if (data.length == 0)
+            return;
+
+        if ((data[0] & 0xFF) == 0xe6 && (data[1] & 0xFF) == 0x00) {
+            Log.d(TAG, "ACK Scale is ready");
+            return;
+        }
+
+        if ((data[0] & 0xFF) == 0xe7 && (data[1] & 0xFF) == 0xf0 && data[2] == 0x33) {
+            Log.d(TAG, "ACK Got general user information");
+
+            int count = (byte) (data[4] & 0xFF);
+            int maxUsers = (byte) (data[5] & 0xFF);
+            Log.d(TAG, "Count:" + count + " maxUsers:" + maxUsers);
+
+            countRegisteredScaleUsers = count;
+            // Check if any scale user is registered
+            if (count == 0)
+                currentScaleUserId = 0; // Unknown user
+            maxRegisteredScaleUser = maxUsers;
+
+            nextMachineStateStep();
+            return;
+        }
+
+        if ((data[0] & 0xFF) == 0xe7 && (data[1] & 0xFF) == 0x34) {
+            Log.d(TAG, "Ack Get UUIDSs List of Users");
+
+            byte currentUserMax = (byte) (data[2] & 0xFF);
+            byte currentUserID = (byte) (data[3] & 0xFF);
+            byte userUuid = (byte) (data[11] & 0xFF);
+            String name = new String(data, 12, 3);
+            int year = (byte) (data[15] & 0xFF);
+
+            final ScaleUser selectedUser = OpenScale.getInstance(context).getSelectedScaleUser();
+
+            // Check if we found the currently selected user
+            if (selectedUser.user_name.toLowerCase().startsWith(name.toLowerCase()) &&
+                    selectedUser.birthday.getYear() == year) {
+                // Found user
+                currentScaleUserId = userUuid;
+            }
+
+            // Remember this uuid from the scale
+            if (seenUsers.add((int) userUuid)) {
+                if (currentScaleUserId == -1 && seenUsers.size() == countRegisteredScaleUsers) {
+                    // We have seen all users: user is unknown
+                    currentScaleUserId = 0;
+                }
+                Log.d(TAG, "Send ack gotUser");
+                writeBytes(new byte[]{
+                        (byte) 0xe7, (byte) 0xf1, (byte) 0x34, currentUserMax,
+                        currentUserID
+                });
+            }
+
+            return;
+        }
+
+        if ((data[0] & 0xFF) == 0xe7 && (data[1] & 0xFF) == 0xF0 && (data[2] & 0xFF) == 0x36) {
+            Log.d(TAG, "Ack Get User Info Initials");
+            String name = new String(data, 4, 3);
+            byte year = (byte) (data[7] & 0xFF);
+            byte month = (byte) (data[8] & 0xFF);
+            byte day = (byte) (data[9] & 0xFF);
+
+            int height = (data[10] & 0xFF);
+            boolean male = (data[11] & 0xF0) != 0;
+            byte activity = (byte) (data[11] & 0x0F);
+
+
+            Log.d(TAG, "Name " + name + " YY-MM-DD: " + year + " " + month + " " + day +
+                    "Height: " + height + " Sex:" + (male ? "M" : "F") + "activity: " + activity);
+
+            // Get scale status for user
+            writeBytes(new byte[]{
+                    (byte) 0xe7, (byte) 0x4f, (byte) 0x0, (byte) 0x0, (byte) 0x0, (byte) 0x0,
+                    (byte) 0x0, (byte) 0x0, (byte) 0x0, (byte) currentScaleUserId
+            });
+
+
+            return;
+        }
+
+        if ((data[0] & 0xFF) == 0xe7 && (data[1] & 0xFF) == 0xf0 && (data[2] & 0xFF) == 0x4F) {
+            Log.d(TAG, "Ack Get scale status");
+
+            int unknown = data[3];
+            int batteryLevel = (data[4] & 0xFF);
+            float weightThreshold = (data[5] & 0xFF) / 10f;
+            float bodyFatThreshold = (data[6] & 0xFF) / 10f;
+            int unit = data[7]; // 1 kg, 2 lb (pounds), 3 st stone
+            boolean userExists = (data[8] == 0);
+            boolean userReferWeightExists = (data[9] == 0);
+            boolean userMeasurementExist = (data[10] == 0);
+            int scaleVersion = data[11];
+
+            Log.d(TAG, "BatteryLevel:" + batteryLevel + " weightThreshold: " + weightThreshold +
+                    " BodyFatThresh: " + bodyFatThreshold + " Unit: " + unit + " userExists: " + userExists +
+                    " UserReference Weight Exists:" + userReferWeightExists + " UserMeasurementExists " + userMeasurementExist +
+                    " scaleVersion" + scaleVersion);
+            return;
+        }
+
+        if ((data[0] & 0xFF) == 0xe7 && (data[1] & 0xFF) == 0xf0 && data[2] == 0x31) {
+            Log.d(TAG, "Acknowledge creation of user");
+
+            // Indicate user to step on scale
+            sendMessage(R.string.info_step_on_scale, 0);
+
+            // Request basement measurement
+            writeBytes(new byte[]{
+                    (byte) 0xe7, 0x40, 0, 0, 0, 0, 0, 0, 0,
+                    (byte) (seenUsers.size() > 0 ? Collections.max(seenUsers) + 1 : 101)
+            });
+
+            return;
+
+        }
+
+
+        if ((data[0] & 0xFF) == 0xe7 && (data[1] & 0xFF) == 0xf0 && (data[2] & 0xFF) == 0x41) {
+            Log.d(TAG, "Will start to receive measurements User Specific");
+
+            byte nr_measurements = data[3];
+
+            Log.d(TAG, "New measurements: " + nr_measurements / 2);
+            return;
+        }
+
+        if ((data[0] & 0xFF) == 0xe7 && (data[1] & 0xFF) == 0x42) {
+            Log.d(TAG, "Specific measurement User specific");
+
+            // Measurements are split into two parts
+
+            int max_items = data[2] & 0xFF;
+            int current_item = data[3] & 0xFF;
+
+            // Received even part
+            if (current_item % 2 == 1) {
+                receivedScaleData = new ByteArrayOutputStream();
+            }
+
+            try {
+                receivedScaleData.write(Arrays.copyOfRange(data, 4, data.length));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            // Send acknowledgement
+            writeBytes(new byte[]{
+                    (byte) 0xe7, (byte) 0xf1, (byte) 0x42, (byte) (data[2] & 0xFF),
+                    (byte) (data[3] & 0xFF)
+            });
+
+            if (current_item % 2 == 0) {
+                try {
+                    ScaleData parsedData = parseScaleData(receivedScaleData.toByteArray());
+                    addScaleData(parsedData);
+                } catch (ParseException e) {
+                    Log.d(TAG, "Could not parse byte array: " + byteInHex(receivedScaleData.toByteArray()));
+                    e.printStackTrace();
+                }
+            }
+
+            if (current_item == max_items) {
+                // finish and delete
+                deleteScaleData();
+            }
+            return;
+        }
+
+        if ((data[0] & 0xFF) == 0xe7 && (data[1] & 0xFF) == 0x58) {
+            Log.d(TAG, "Active measurement");
+            if ((data[2] & 0xFF) != 0x00) {
+                // little endian
+                float weight = ((float) (
+                        ((data[3] & 0xFF) << 8) + (data[4] & 0xFF)
+                )) * 50.0f / 1000.0f; // unit is 50g
+
+                // temporary value;
+                sendMessage(R.string.info_measuring, weight);
                 return;
             }
+
+            // stabilized value
+            // little endian
+            float weight = ((float) (
+                    ((data[3] & 0xFF) << 8) + (data[4] & 0xFF)
+            )) * 50.0f / 1000.0f; // unit is 50g
+
+            Log.i(TAG, "Got weight: " + weight);
+
+
+            writeBytes(new byte[]{
+                    (byte) 0xe7, (byte) 0xf1, (byte) (data[1] & 0xFF),
+                    (byte) (data[2] & 0xFF), (byte) (data[3] & 0xFF),
+            });
+
+            return;
+
         }
+
+        if ((data[0] & 0xFF) == 0xe7 && (data[1] & 0xFF) == 0x59) {
+            // Get stable measurement results
+            Log.d(TAG, "Get measurement data " + ((int) data[3]));
+
+            int max_items = (data[2] & 0xFF);
+            int current_item = (data[3] & 0xFF);
+
+            // Received first part
+            if (current_item == 1) {
+                receivedScaleData = new ByteArrayOutputStream();
+            } else {
+                try {
+                    receivedScaleData.write(Arrays.copyOfRange(data, 4, data.length));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            // Send ack that we got the data
+            writeBytes(new byte[]{
+                    (byte) 0xe7, (byte) 0xf1,
+                    (byte) (data[1] & 0xFF), (byte) (data[2] & 0xFF),
+                    (byte) (data[3] & 0xFF),
+            });
+
+            if (current_item == max_items) {
+                // received all parts
+                ScaleData parsedData = null;
+                try {
+                    parsedData = parseScaleData(receivedScaleData.toByteArray());
+                    addScaleData(parsedData);
+                    // Delete data
+                    deleteScaleData();
+                } catch (ParseException e) {
+                    Log.d(TAG, "Parse Exception " + byteInHex(receivedScaleData.toByteArray()));
+                }
+            }
+
+            return;
+        }
+
+        if ((data[0] & 0xFF) == 0xe7 && (data[1] & 0xFF) == 0xf0 && (data[2] & 0xFF) == 0x43) {
+            Log.d(TAG, "Acknowledge: Data deleted.");
+            return;
+        }
+
+        Log.d(TAG, "DataChanged - not handled: " + byteInHex(data));
+    }
+
+    private void deleteScaleData() {
+        writeBytes(new byte[]{
+                (byte) 0xe7, (byte) 0x43, (byte) 0x0, (byte) 0x0, (byte) 0x0,
+                (byte) 0x0, (byte) 0x0, (byte) 0x0, (byte) 0x0,
+                (byte) currentScaleUserId
+        });
+    }
+
+    private ScaleData parseScaleData(byte[] data) throws ParseException {
+        if (data.length != 11 + 11)
+            throw new ParseException("Parse scala data: unexpected length", 0);
+
+        ScaleData receivedMeasurement = new ScaleData();
+
+        // Parse timestamp
+        long timestamp = ByteBuffer.wrap(data, 0, 4).getInt() * 1000L;
+        SimpleDateFormat sdf = new SimpleDateFormat("MMMM d, yyyy 'at' h:mm a");
+        String date = sdf.format(timestamp);
+
+        // little endian
+        float weight = ((float) (
+                ((data[4] & 0xFF) << 8) + (data[5] & 0xFF)
+        )) * 50.0f / 1000.0f; // unit is 50g
+        receivedMeasurement.setWeight(weight);
+
+        // Parse impedance level
+        int impedance = ((data[6] & 0xFF) << 8) + (data[7] & 0xFF);
+
+        // Parse fat
+        float fat = ((float) (
+                ((data[8] & 0xFF) << 8) + (data[9] & 0xFF)
+        )) / 10.0f; // unit is 0.1%
+        receivedMeasurement.setFat(fat);
+
+        float water = ((float) (
+                ((data[10] & 0xFF) << 8) + (data[11] & 0xFF)
+        )) / 10.0f; // unit is 0.1%
+        receivedMeasurement.setWater(water);
+
+        float muscle = ((float) (
+                ((data[12] & 0xFF) << 8) + (data[13] & 0xFF)
+        )) / 10.0f; // unit is 0.1%
+        receivedMeasurement.setMuscle(muscle);
+
+        float boneMass = ((float) (
+                ((data[14] & 0xFF) << 8) + (data[15] & 0xFF)
+        )) * 50.0f / 1000.0f; // unit is 50g
+
+        // basal metabolic rate
+        float bmr = ((float) (
+                ((data[16] & 0xFF) << 8) + (data[17] & 0xFF)
+        )) / 10.0f;
+
+        // active metabolic rate
+        int amr = ((data[18] & 0xFF) << 8) + (data[19] & 0xFF);
+
+        float bmi = ((data[20] & 0xFF) << 8) + (data[21] & 0xFF);
+
+        Log.i(TAG, "Measurement: " + date + " Impedance: " + impedance + " Weight:" + weight +
+                " Fat: " + fat + " Water: " + water + " Muscle: " + muscle +
+                " BoneMass: " + boneMass + " BMR: " + bmr + " AMR: " + amr + " BMI: " + bmi);
+
+        return receivedMeasurement;
+    }
+
+    private void updateDateTimeSanitas() {
+        // Update date/time of the scale
+        long unixTime = System.currentTimeMillis() / 1000L;
+        byte[] unixTimeBytes = ByteBuffer.allocate(Long.SIZE / 8).putLong(unixTime).array();
+        Log.d(TAG, "Write new Date/Time:" + unixTime + " " + byteInHex(unixTimeBytes));
+
+        writeBytes(new byte[]{(byte) 0xe9, unixTimeBytes[4], unixTimeBytes[5], unixTimeBytes[6], unixTimeBytes[7]});
+    }
+
+    private void writeBytes(byte[] data) {
+        writeBytes(CUSTOM_SERVICE_1, CUSTOM_CHARACTERISTIC_WEIGHT, data);
     }
 }

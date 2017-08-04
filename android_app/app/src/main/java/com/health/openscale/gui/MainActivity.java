@@ -244,6 +244,10 @@ public class MainActivity extends ActionBarActivity implements
 					Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_connection_error) + ": " + msg.obj, Toast.LENGTH_SHORT).show();
 					Log.e("OpenScale", "Bluetooth unexpected error: " + msg.obj);
 					break;
+				case BT_SCALE_MESSAGE:
+					String toastMessage = String.format(getResources().getString(msg.arg1), msg.obj);
+					Toast.makeText(getApplicationContext(), toastMessage, Toast.LENGTH_LONG).show();
+					break;
 			}
 		}
 	};

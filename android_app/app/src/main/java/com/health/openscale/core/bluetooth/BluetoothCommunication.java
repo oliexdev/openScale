@@ -30,10 +30,14 @@ import android.util.Log;
 import com.health.openscale.core.datatypes.ScaleData;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.UUID;
 
 public abstract class BluetoothCommunication {
-    public enum BT_STATUS_CODE {BT_RETRIEVE_SCALE_DATA, BT_INIT_PROCESS, BT_CONNECTION_ESTABLISHED, BT_CONNECTION_LOST, BT_NO_DEVICE_FOUND, BT_UNEXPECTED_ERROR };
+    public enum BT_STATUS_CODE {BT_RETRIEVE_SCALE_DATA, BT_INIT_PROCESS, BT_CONNECTION_ESTABLISHED,
+        BT_CONNECTION_LOST, BT_NO_DEVICE_FOUND, BT_UNEXPECTED_ERROR, BT_SCALE_MESSAGE
+    };
     public enum BT_MACHINE_STATE {BT_INIT_STATE, BT_CMD_STATE, BT_CLEANUP_STATE}
 
     protected Context context;
@@ -51,7 +55,9 @@ public abstract class BluetoothCommunication {
     private int cleanupStepNr;
     private BT_MACHINE_STATE btMachineState;
 
-    private final UUID WEIGHT_MEASUREMENT_CONFIG = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
+    private Queue<BluetoothGattDescriptor> descriptorRequestQueue;
+    private Queue<BluetoothGattCharacteristic> characteristicRequestQueue;
+    private Boolean openRequest;
 
     public BluetoothCommunication(Context context)
     {
@@ -66,7 +72,7 @@ public abstract class BluetoothCommunication {
      * Create and return a new Bluetooth object.
      *
      * @param context In which context should the Bluetooth device created
-     * @param i the specidific number of which Bluetooth device should be created (correspond to "deviceTypes" key in BluetoothPreferences)
+     * @param i the specific number of which Bluetooth device should be created (correspond to "deviceTypes" key in BluetoothPreferences)
      * @return created object specified by the number i otherwise null
      */
     public static BluetoothCommunication getBtDevice(Context context, int i) {
@@ -119,6 +125,16 @@ public abstract class BluetoothCommunication {
      */
     protected void addScaleData(ScaleData scaleData) {
         callbackBtHandler.obtainMessage(BT_STATUS_CODE.BT_RETRIEVE_SCALE_DATA.ordinal(), scaleData).sendToTarget();
+    }
+
+    /**
+     * Send message to openScale user
+     *
+     * @param msg the string id to be send
+     * @param value the value to be used
+     */
+    protected void sendMessage(int msg,  Object value) {
+        callbackBtHandler.obtainMessage(BT_STATUS_CODE.BT_SCALE_MESSAGE.ordinal(), msg, 0,  value).sendToTarget();
     }
 
     /**
@@ -183,7 +199,7 @@ public abstract class BluetoothCommunication {
     /**
      * Return all hardware addresses of the Bluetooth device.
      *
-     * The format should be the first six hex values of a know Bluetooth hardware address without any colon e.g. 12:AB:65:12:34:52 becomes "12AB65"
+     * The format should be the first six hex values of a known Bluetooth hardware address without any colon e.g. 12:AB:65:12:34:52 becomes "12AB65"
      * @note add hw address "FFFFFF" to skip check
      *
      * @return a list of all hardware addresses that are known for this device.
@@ -191,7 +207,7 @@ public abstract class BluetoothCommunication {
     abstract public ArrayList<String> hwAddresses();
 
     /**
-     * State machine for the initialization process for the Bluetooth device.
+     * State machine for the initialization process of the Bluetooth device.
      *
      * @param stateNr the current step number
      * @return false if no next step is available otherwise true
@@ -199,7 +215,7 @@ public abstract class BluetoothCommunication {
     abstract boolean nextInitCmd(int stateNr);
 
     /**
-     * State machine for the normal/command process for the Bluetooth device.
+     * State machine for the normal/command process of the Bluetooth device.
      *
      * This state machine is automatically triggered if initialization process is finished.
      *
@@ -207,6 +223,25 @@ public abstract class BluetoothCommunication {
      * @return false if no next step is available otherwise true
      */
     abstract boolean nextBluetoothCmd(int stateNr);
+
+    /**
+     * Set the next command number of the current state.
+     *
+     * @param nextCommand next command to select
+     */
+    protected void setNextCmd(int nextCommand) {
+        switch (btMachineState) {
+            case BT_INIT_STATE:
+                initStepNr = nextCommand - 1;
+                break;
+            case BT_CMD_STATE:
+                cmdStepNr = nextCommand - 1;
+                break;
+            case BT_CLEANUP_STATE:
+                cleanupStepNr = nextCommand - 1;
+                break;
+        }
+    }
 
     /**
      * State machine for the clean up process for the Bluetooth device.
@@ -228,7 +263,7 @@ public abstract class BluetoothCommunication {
     protected void onBluetoothDataRead(BluetoothGatt bluetoothGatt, BluetoothGattCharacteristic gattCharacteristic, int status){};
 
     /**
-     * Method is triggered if a Bluetooth data from a device  is notified or indicated.
+     * Method is triggered if a Bluetooth data from a device is notified or indicated.
      *
      * @param bluetoothGatt the Bluetooth Gatt
      * @param gattCharacteristic the Bluetooth characteristic
@@ -245,7 +280,7 @@ public abstract class BluetoothCommunication {
     protected void setBtMachineState(BT_MACHINE_STATE btMachineState) {
         this.btMachineState = btMachineState;
 
-        nextMachineStateStep();
+        handleRequests();
     }
 
     /**
@@ -260,7 +295,10 @@ public abstract class BluetoothCommunication {
                 .getCharacteristic(characteristic);
 
         gattCharacteristic.setValue(bytes);
-        bluetoothGatt.writeCharacteristic(gattCharacteristic);
+        synchronized (openRequest) {
+             characteristicRequestQueue.add(gattCharacteristic);
+             handleRequests();
+        }
     }
 
     /**
@@ -284,16 +322,18 @@ public abstract class BluetoothCommunication {
      * @param service the Bluetooth UUID device service
      * @param characteristic the Bluetooth UUID characteristic
      */
-    protected void setInidicationOn(UUID service, UUID characteristic) {
+    protected void setIndicationOn(UUID service, UUID characteristic, UUID descriptor) {
         BluetoothGattCharacteristic gattCharacteristic = bluetoothGatt.getService(service)
                 .getCharacteristic(characteristic);
 
         bluetoothGatt.setCharacteristicNotification(gattCharacteristic, true);
 
-        BluetoothGattDescriptor gattDescriptor = gattCharacteristic.getDescriptor(WEIGHT_MEASUREMENT_CONFIG);
+        BluetoothGattDescriptor gattDescriptor = gattCharacteristic.getDescriptor(descriptor);
         gattDescriptor.setValue(BluetoothGattDescriptor.ENABLE_INDICATION_VALUE);
-
-        bluetoothGatt.writeDescriptor(gattDescriptor);
+        synchronized (openRequest) {
+            descriptorRequestQueue.add(gattDescriptor);
+            handleRequests();
+        }
     }
 
     /**
@@ -302,15 +342,18 @@ public abstract class BluetoothCommunication {
      * @param service the Bluetooth UUID device service
      * @param characteristic the Bluetooth UUID characteristic
      */
-    protected void setNotificationOn(UUID service, UUID characteristic) {
+    protected void setNotificationOn(UUID service, UUID characteristic, UUID descriptor) {
         BluetoothGattCharacteristic gattCharacteristic = bluetoothGatt.getService(service)
                 .getCharacteristic(characteristic);
 
         bluetoothGatt.setCharacteristicNotification(gattCharacteristic, true);
 
-        BluetoothGattDescriptor gattDescriptor = gattCharacteristic.getDescriptor(WEIGHT_MEASUREMENT_CONFIG);
+        BluetoothGattDescriptor gattDescriptor = gattCharacteristic.getDescriptor(descriptor);
         gattDescriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-        bluetoothGatt.writeDescriptor(gattDescriptor);
+        synchronized (openRequest) {
+            descriptorRequestQueue.add(gattDescriptor);
+            handleRequests();
+        }
     }
 
     /**
@@ -319,15 +362,18 @@ public abstract class BluetoothCommunication {
      * @param service the Bluetooth UUID device service
      * @param characteristic the Bluetooth UUID characteristic
      */
-    protected void setNotificationOff(UUID service, UUID characteristic) {
+    protected void setNotificationOff(UUID service, UUID characteristic, UUID descriptor) {
         BluetoothGattCharacteristic gattCharacteristic = bluetoothGatt.getService(service)
                 .getCharacteristic(characteristic);
 
         bluetoothGatt.setCharacteristicNotification(gattCharacteristic, false);
 
-        BluetoothGattDescriptor gattDescriptor = gattCharacteristic.getDescriptor(WEIGHT_MEASUREMENT_CONFIG);
+        BluetoothGattDescriptor gattDescriptor = gattCharacteristic.getDescriptor(descriptor);
         gattDescriptor.setValue(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
-        bluetoothGatt.writeDescriptor(gattDescriptor);
+        synchronized (openRequest) {
+            descriptorRequestQueue.add(gattDescriptor);
+            handleRequests();
+        }
     }
 
     /**
@@ -459,6 +505,35 @@ public abstract class BluetoothCommunication {
         }
     }
 
+    private void handleRequests() {
+        synchronized (openRequest) {
+            // check for pending request
+            if (openRequest)
+                return; // yes, do nothing
+
+            // handle descriptor requests first
+            BluetoothGattDescriptor descriptorRequest = descriptorRequestQueue.poll();
+            if (descriptorRequest != null) {
+                if (!bluetoothGatt.writeDescriptor(descriptorRequest))
+                    Log.d("BTC", "Descriptor Write failed(" + byteInHex(descriptorRequest.getValue()) + ")");
+                openRequest = true;
+                return;
+            }
+
+            // handle characteristics requests second
+            BluetoothGattCharacteristic characteristicRequest = characteristicRequestQueue.poll();
+            if (characteristicRequest != null) {
+                if (!bluetoothGatt.writeCharacteristic(characteristicRequest))
+                    Log.d("BTC", "Characteristic Write failed(" + byteInHex(characteristicRequest.getValue()) + ")");
+                openRequest = true;
+                return;
+            }
+
+            // After every command was executed, continue with the next step
+            nextMachineStateStep();
+        }
+    }
+
     /**
      * Custom Gatt callback class to set up a Bluetooth state machine.
      */
@@ -480,6 +555,12 @@ public abstract class BluetoothCommunication {
             initStepNr = 0;
             cleanupStepNr = 0;
 
+            // Clear from possible previous setups
+            characteristicRequestQueue = new LinkedList<>();
+            descriptorRequestQueue = new LinkedList<>();
+            openRequest = false;
+
+
             btMachineState = BT_MACHINE_STATE.BT_INIT_STATE;
             nextMachineStateStep();
         }
@@ -488,14 +569,20 @@ public abstract class BluetoothCommunication {
         public void onDescriptorWrite(BluetoothGatt gatt,
                                       BluetoothGattDescriptor descriptor,
                                       int status) {
-            nextMachineStateStep();
+            synchronized (openRequest) {
+                openRequest = false;
+                handleRequests();
+            }
         }
 
         @Override
         public void onCharacteristicWrite (BluetoothGatt gatt,
                                            BluetoothGattCharacteristic characteristic,
                                            int status) {
-            nextMachineStateStep();
+            synchronized (openRequest) {
+                openRequest = false;
+                handleRequests();
+            }
         }
 
         @Override
@@ -503,8 +590,10 @@ public abstract class BluetoothCommunication {
                                           BluetoothGattCharacteristic characteristic,
                                           int status) {
             onBluetoothDataRead(gatt, characteristic, status);
-
-            nextMachineStateStep();
+            synchronized (openRequest) {
+                openRequest = false;
+                handleRequests();
+            }
         }
 
         @Override
