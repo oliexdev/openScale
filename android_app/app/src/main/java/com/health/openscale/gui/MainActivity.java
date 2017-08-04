@@ -215,9 +215,7 @@ public class MainActivity extends ActionBarActivity implements
 
 					scaleBtData.setConvertedWeight(scaleBtData.getWeight(), OpenScale.getInstance(getApplicationContext()).getSelectedScaleUser().scale_unit);
 
-					if (OpenScale.getInstance(getApplicationContext()).addScaleData(scaleBtData) == -1) {
-						Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_no_selected_user), Toast.LENGTH_SHORT).show();
-					}
+					OpenScale.getInstance(getApplicationContext()).addScaleData(scaleBtData);
 					break;
 				case BT_INIT_PROCESS:
 					setBluetoothStatusIcon(R.drawable.bluetooth_connection_success);

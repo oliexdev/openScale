@@ -152,12 +152,12 @@ public class BluetoothMiScale extends BluetoothCommunication {
     boolean nextBluetoothCmd(int stateNr) {
         switch (stateNr) {
             case 0:
-                // set notification on for weight measurement
-                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC, WEIGHT_MEASUREMENT_CONFIG);
-                break;
-            case 1:
                 // set notification on for weight measurement history
                 setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, WEIGHT_MEASUREMENT_CONFIG);
+                break;
+            case 1:
+                // set notification on for weight measurement
+                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC, WEIGHT_MEASUREMENT_CONFIG);
                 break;
             case 2:
                 // configure scale to get only last measurements
