@@ -133,7 +133,7 @@ public class BluetoothMiScale extends BluetoothCommunication {
                 break;
             case 2:
                 // set notification on for weight measurement history
-                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC);
+                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, WEIGHT_MEASUREMENT_CONFIG);
                 break;
             case 3:
                 // Set on history weight measurement
@@ -153,11 +153,11 @@ public class BluetoothMiScale extends BluetoothCommunication {
         switch (stateNr) {
             case 0:
                 // set notification on for weight measurement
-                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC);
+                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC, WEIGHT_MEASUREMENT_CONFIG);
                 break;
             case 1:
                 // set notification on for weight measurement history
-                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC);
+                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, WEIGHT_MEASUREMENT_CONFIG);
                 break;
             case 2:
                 // configure scale to get only last measurements
@@ -168,11 +168,11 @@ public class BluetoothMiScale extends BluetoothCommunication {
                 break;
             case 3:
                 // set notification off for weight measurement history
-                setNotificationOff(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC);
+                setNotificationOff(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, WEIGHT_MEASUREMENT_CONFIG);
                 break;
             case 4:
                 // set notification on for weight measurement history
-                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC);
+                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, WEIGHT_MEASUREMENT_CONFIG);
                 break;
             case 5:
                 // invoke receiving history data

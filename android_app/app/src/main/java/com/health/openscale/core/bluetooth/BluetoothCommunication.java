@@ -51,7 +51,6 @@ public abstract class BluetoothCommunication {
     private int cleanupStepNr;
     private BT_MACHINE_STATE btMachineState;
 
-    private final UUID WEIGHT_MEASUREMENT_CONFIG = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
 
     public BluetoothCommunication(Context context)
     {
@@ -284,13 +283,13 @@ public abstract class BluetoothCommunication {
      * @param service the Bluetooth UUID device service
      * @param characteristic the Bluetooth UUID characteristic
      */
-    protected void setInidicationOn(UUID service, UUID characteristic) {
+    protected void setIndicationOn(UUID service, UUID characteristic, UUID descriptor) {
         BluetoothGattCharacteristic gattCharacteristic = bluetoothGatt.getService(service)
                 .getCharacteristic(characteristic);
 
         bluetoothGatt.setCharacteristicNotification(gattCharacteristic, true);
 
-        BluetoothGattDescriptor gattDescriptor = gattCharacteristic.getDescriptor(WEIGHT_MEASUREMENT_CONFIG);
+        BluetoothGattDescriptor gattDescriptor = gattCharacteristic.getDescriptor(descriptor);
         gattDescriptor.setValue(BluetoothGattDescriptor.ENABLE_INDICATION_VALUE);
 
         bluetoothGatt.writeDescriptor(gattDescriptor);
@@ -302,13 +301,13 @@ public abstract class BluetoothCommunication {
      * @param service the Bluetooth UUID device service
      * @param characteristic the Bluetooth UUID characteristic
      */
-    protected void setNotificationOn(UUID service, UUID characteristic) {
+    protected void setNotificationOn(UUID service, UUID characteristic, UUID descriptor) {
         BluetoothGattCharacteristic gattCharacteristic = bluetoothGatt.getService(service)
                 .getCharacteristic(characteristic);
 
         bluetoothGatt.setCharacteristicNotification(gattCharacteristic, true);
 
-        BluetoothGattDescriptor gattDescriptor = gattCharacteristic.getDescriptor(WEIGHT_MEASUREMENT_CONFIG);
+        BluetoothGattDescriptor gattDescriptor = gattCharacteristic.getDescriptor(descriptor);
         gattDescriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
         bluetoothGatt.writeDescriptor(gattDescriptor);
     }
@@ -319,13 +318,13 @@ public abstract class BluetoothCommunication {
      * @param service the Bluetooth UUID device service
      * @param characteristic the Bluetooth UUID characteristic
      */
-    protected void setNotificationOff(UUID service, UUID characteristic) {
+    protected void setNotificationOff(UUID service, UUID characteristic, UUID descriptor) {
         BluetoothGattCharacteristic gattCharacteristic = bluetoothGatt.getService(service)
                 .getCharacteristic(characteristic);
 
         bluetoothGatt.setCharacteristicNotification(gattCharacteristic, false);
 
-        BluetoothGattDescriptor gattDescriptor = gattCharacteristic.getDescriptor(WEIGHT_MEASUREMENT_CONFIG);
+        BluetoothGattDescriptor gattDescriptor = gattCharacteristic.getDescriptor(descriptor);
         gattDescriptor.setValue(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
         bluetoothGatt.writeDescriptor(gattDescriptor);
     }
