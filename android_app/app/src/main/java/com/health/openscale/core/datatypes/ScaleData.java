@@ -23,6 +23,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class ScaleData {
+    private static final float A_HUNDRED = 100.0f;
     private static float KG_LB = 2.20462f;
     private static float KG_ST = 0.157473f;
 
@@ -130,6 +131,10 @@ public class ScaleData {
         return fat;
     }
 
+    public float getFatAbsolute(int scale_unit) {
+        return this.fat * this.getConvertedWeight(scale_unit) / A_HUNDRED;
+    }
+
     public void setFat(float fat) {
         this.fat = fat;
     }
@@ -144,6 +149,10 @@ public class ScaleData {
 
     public float getMuscle() {
         return muscle;
+    }
+
+    public float getMuscleAbsolute(int scale_unit) {
+        return this.muscle * this.getConvertedWeight(scale_unit) / A_HUNDRED;
     }
 
     public void setMuscle(float muscle) {
@@ -175,7 +184,7 @@ public class ScaleData {
     }
 
     public float getBMI(int body_height) {
-        return weight / ((body_height / 100.0f)*(body_height / 100.0f));
+        return weight / ((body_height / A_HUNDRED)*(body_height / A_HUNDRED));
     }
 
     public float getWHtR(int body_height) {

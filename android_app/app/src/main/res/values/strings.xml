@@ -25,8 +25,10 @@
     <string name="label_weight">Weight</string>
     <string name="label_bmi">BMI</string>
     <string name="label_fat">Body fat percentage</string>
+    <string name="label_fat_absolute">Body fat absolute</string>
     <string name="label_water">Water percentage</string>
     <string name="label_muscle">Muscle percentage</string>
+    <string name="label_muscle_absolute">Muscle absolute</string>
     <string name="label_waist">Waist circumference</string>
     <string name="label_hip">Hip circumference</string>
     <string name="label_comment">Comment</string>

@@ -24,8 +24,10 @@
     <string name="label_weight">Poids</string>
     <string name="label_bmi">IMC</string>
     <string name="label_fat">Taux de graisse corporelle</string>
+    <string name="label_fat_absolute">Graisse corporelle absolue (please check translation)</string>
     <string name="label_water">Pourcentage d\'eau</string>
     <string name="label_muscle">Pourcentage musculaire</string>
+    <string name="label_muscle_absolute">Muscles absolus (please check translation)</string>
     <string name="label_waist">Tour de taille</string>
     <string name="label_hip">Tour de hanches</string>
     <string name="label_comment">Commentaire</string>
