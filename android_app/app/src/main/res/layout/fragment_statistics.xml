@@ -45,7 +45,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="25dp"
                         android:layout_gravity="center"
-                        android:src="@drawable/target" />
+                        android:src="@drawable/ic_target" />
 
                     <TextView
                         android:id="@+id/txtLabelGoalWeight"
@@ -88,7 +88,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="25dp"
                         android:layout_gravity="center"
-                        android:src="@drawable/difference" />
+                        android:src="@drawable/ic_difference" />
 
                     <TextView
                         android:id="@+id/txtLabelGoalDiff"
@@ -131,7 +131,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="25dp"
                         android:layout_gravity="center"
-                        android:src="@drawable/daysleft" />
+                        android:src="@drawable/ic_daysleft" />
 
                     <TextView
                         android:id="@+id/txtLabelDayLeft"
@@ -195,7 +195,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="25dp"
                         android:layout_gravity="center"
-                        android:src="@drawable/lastweek" />
+                        android:src="@drawable/ic_lastweek" />
 
                     <TextView
                         android:id="@+id/txtLabelAvgWeek"
@@ -239,7 +239,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="25dp"
                         android:layout_gravity="center"
-                        android:src="@drawable/lastmonth" />
+                        android:src="@drawable/ic_lastmonth" />
 
                     <TextView
                         android:id="@+id/txtLabelAvgMonth"

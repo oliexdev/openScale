@@ -34,7 +34,7 @@ public class TimeMeasurementView extends MeasurementView {
     private SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
 
     public TimeMeasurementView(Context context) {
-        super(context, context.getResources().getString(R.string.label_time), ContextCompat.getDrawable(context, R.drawable.daysleft));
+        super(context, context.getResources().getString(R.string.label_time), ContextCompat.getDrawable(context, R.drawable.ic_daysleft));
     }
 
     private TimePickerDialog.OnTimeSetListener timePickerListener = new TimePickerDialog.OnTimeSetListener() {

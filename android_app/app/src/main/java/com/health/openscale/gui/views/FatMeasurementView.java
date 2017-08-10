@@ -27,7 +27,7 @@ import com.health.openscale.core.evaluation.EvaluationSheet;
 public class FatMeasurementView extends MeasurementView {
 
     public FatMeasurementView(Context context) {
-        super(context, context.getResources().getString(R.string.label_fat), ContextCompat.getDrawable(context, R.drawable.fat));
+        super(context, context.getResources().getString(R.string.label_fat), ContextCompat.getDrawable(context, R.drawable.ic_fat));
     }
 
     @Override

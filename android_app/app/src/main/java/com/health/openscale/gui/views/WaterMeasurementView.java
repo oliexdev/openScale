@@ -27,7 +27,7 @@ import com.health.openscale.core.evaluation.EvaluationSheet;
 public class WaterMeasurementView extends MeasurementView {
 
     public WaterMeasurementView(Context context) {
-        super(context, context.getResources().getString(R.string.label_water), ContextCompat.getDrawable(context, R.drawable.water));
+        super(context, context.getResources().getString(R.string.label_water), ContextCompat.getDrawable(context, R.drawable.ic_water));
     }
 
     @Override

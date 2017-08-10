@@ -3,25 +3,25 @@
     <header
         android:fragment="com.health.openscale.gui.preferences.UsersPreferences"
         android:title="@string/title_users"
-        android:icon="@drawable/preferences_users"/>
+        android:icon="@drawable/ic_preferences_users"/>
     <header
         android:fragment="com.health.openscale.gui.preferences.BluetoothPreferences"
         android:title="@string/label_bluetooth_title"
-        android:icon="@drawable/preferences_bluetooth"/>
+        android:icon="@drawable/ic_preferences_bluetooth"/>
     <header
         android:fragment="com.health.openscale.gui.preferences.MeasurementPreferences"
         android:title="@string/title_measurements"
-        android:icon="@drawable/preferences_measurement"/>
+        android:icon="@drawable/ic_preferences_measurement"/>
     <header
         android:fragment="com.health.openscale.gui.preferences.GraphPreferences"
         android:title="@string/title_graph"
-        android:icon="@drawable/preferences_graph"/>
+        android:icon="@drawable/ic_preferences_graph"/>
     <header
         android:fragment="com.health.openscale.gui.preferences.ReminderPreferences"
         android:title="@string/label_reminder"
-        android:icon="@drawable/preferences_reminder"/>
+        android:icon="@drawable/ic_preferences_reminder"/>
     <header
         android:fragment="com.health.openscale.gui.preferences.BackupPreferences"
         android:title="@string/label_backup"
-        android:icon="@drawable/preferences_backup"/>
+        android:icon="@drawable/ic_preferences_backup"/>
 </preference-headers>

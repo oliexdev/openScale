@@ -27,7 +27,7 @@ import com.health.openscale.core.evaluation.EvaluationSheet;
 public class WHtRMeasurementView extends MeasurementView {
 
     public WHtRMeasurementView(Context context) {
-        super(context, context.getResources().getString(R.string.label_whtr), ContextCompat.getDrawable(context, R.drawable.whtr));
+        super(context, context.getResources().getString(R.string.label_whtr), ContextCompat.getDrawable(context, R.drawable.ic_whtr));
     }
 
     @Override

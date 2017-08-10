@@ -27,7 +27,7 @@ import com.health.openscale.core.evaluation.EvaluationSheet;
 public class WaistMeasurementView extends MeasurementView {
 
     public WaistMeasurementView(Context context) {
-        super(context, context.getResources().getString(R.string.label_waist), ContextCompat.getDrawable(context, R.drawable.waist));
+        super(context, context.getResources().getString(R.string.label_waist), ContextCompat.getDrawable(context, R.drawable.ic_waist));
     }
 
     @Override

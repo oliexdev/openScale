@@ -25,7 +25,7 @@
             android:layout_height="wrap_content"
             android:layout_marginRight="10dp"
             android:clickable="true"
-            android:src="@drawable/weight"
+            android:src="@drawable/ic_weight"
             app:backgroundTint="#AA66CC"
             app:fabSize="mini"
             app:rippleColor="#AA66CC" />
@@ -36,7 +36,7 @@
             android:layout_height="wrap_content"
             android:layout_marginRight="10dp"
             android:clickable="true"
-            android:src="@drawable/fat"
+            android:src="@drawable/ic_fat"
             app:backgroundTint="#FFBB33"
             app:fabSize="mini"
             app:rippleColor="#FFBB33" />
@@ -47,7 +47,7 @@
             android:layout_height="wrap_content"
             android:layout_marginRight="10dp"
             android:clickable="true"
-            android:src="@drawable/water"
+            android:src="@drawable/ic_water"
             app:backgroundTint="#33B5E5"
             app:fabSize="mini"
             app:rippleColor="#33B5E5" />
@@ -58,7 +58,7 @@
             android:layout_height="wrap_content"
             android:layout_marginRight="10dp"
             android:clickable="true"
-            android:src="@drawable/muscle"
+            android:src="@drawable/ic_muscle"
             app:backgroundTint="#99CC00"
             app:fabSize="mini"
             app:rippleColor="#99CC00" />
@@ -69,7 +69,7 @@
             android:layout_height="wrap_content"
             android:layout_marginRight="10dp"
             android:clickable="true"
-            android:src="@drawable/waist"
+            android:src="@drawable/ic_waist"
             app:backgroundTint="#FF00FF"
             app:fabSize="mini"
             app:rippleColor="#FF00FF" />
@@ -80,7 +80,7 @@
             android:layout_height="wrap_content"
             android:layout_marginRight="10dp"
             android:clickable="true"
-            android:src="@drawable/hip"
+            android:src="@drawable/ic_hip"
             app:backgroundTint="#FFFF00"
             app:fabSize="mini"
             app:rippleColor="#FFFF00" />
@@ -151,7 +151,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
         android:clickable="true"
-        android:src="@drawable/lastmonth"
+        android:src="@drawable/ic_lastmonth"
         app:backgroundTint="#33B5E5"
         app:layout_anchor="@id/chart_bottom"
         app:layout_anchorGravity="bottom|right|end"

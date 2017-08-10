@@ -29,7 +29,7 @@ import com.health.openscale.core.evaluation.EvaluationSheet;
 public class CommentMeasurementView extends MeasurementView {
 
     public CommentMeasurementView(Context context) {
-        super(context, context.getResources().getString(R.string.label_comment), ContextCompat.getDrawable(context, R.drawable.comment));
+        super(context, context.getResources().getString(R.string.label_comment), ContextCompat.getDrawable(context, R.drawable.ic_comment));
     }
 
     @Override

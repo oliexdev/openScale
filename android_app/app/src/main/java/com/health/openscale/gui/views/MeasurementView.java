@@ -107,8 +107,8 @@ public abstract class MeasurementView extends TableLayout {
         addView(measurementRow);
         addView(evaluatorRow);
 
-        iconView.getLayoutParams().height = pxImageDp(30);
         iconView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+        iconView.setPadding(20,0,20,0);
 
         nameView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
         nameView.setTextColor(Color.BLACK);
@@ -121,8 +121,7 @@ public abstract class MeasurementView extends TableLayout {
         valueView.setPadding(0,0,20,0);
         valueView.setLayoutParams(new TableRow.LayoutParams(0, LayoutParams.MATCH_PARENT, 0.29f));
 
-        editModeView.getLayoutParams().height = pxImageDp(20);
-        editModeView.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.editable));
+        editModeView.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_editable));
         editModeView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
         editModeView.setVisibility(View.GONE);
 
@@ -183,7 +182,7 @@ public abstract class MeasurementView extends TableLayout {
                 editModeView.setVisibility(View.VISIBLE);
 
                 if (!isEditable()) {
-                    editModeView.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.noteditable));
+                    editModeView.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.ic_noteeditable));
                 }
 
                 indicatorView.setVisibility(View.GONE);

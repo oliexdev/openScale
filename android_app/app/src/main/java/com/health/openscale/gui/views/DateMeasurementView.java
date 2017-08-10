@@ -34,7 +34,7 @@ public class DateMeasurementView extends MeasurementView {
     private SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
 
     public DateMeasurementView(Context context) {
-        super(context, context.getResources().getString(R.string.label_date), ContextCompat.getDrawable(context, R.drawable.lastmonth));
+        super(context, context.getResources().getString(R.string.label_date), ContextCompat.getDrawable(context, R.drawable.ic_lastmonth));
     }
 
     private DatePickerDialog.OnDateSetListener datePickerListener = new DatePickerDialog.OnDateSetListener() {

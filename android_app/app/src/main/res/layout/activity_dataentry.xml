@@ -19,7 +19,7 @@
             android:layout_height="wrap_content"
             android:layout_marginRight="10dp"
             android:clickable="true"
-            android:src="@drawable/editable"
+            android:src="@drawable/ic_editable"
             app:backgroundTint="#D3D3D3"
             app:fabSize="mini" />
 
@@ -29,7 +29,7 @@
             android:layout_height="wrap_content"
             android:layout_marginRight="10dp"
             android:clickable="true"
-            android:src="@drawable/expand"
+            android:src="@drawable/ic_expand"
             app:backgroundTint="#D3D3D3"
             app:fabSize="mini" />
 
@@ -39,7 +39,7 @@
             android:layout_height="wrap_content"
             android:layout_marginRight="10dp"
             android:clickable="true"
-            android:src="@drawable/delete"
+            android:src="@drawable/ic_delete"
             app:backgroundTint="#FF4444"
             app:fabSize="mini" />
 

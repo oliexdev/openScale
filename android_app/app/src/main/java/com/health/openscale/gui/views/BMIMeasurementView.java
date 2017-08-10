@@ -27,7 +27,7 @@ import com.health.openscale.core.evaluation.EvaluationSheet;
 public class BMIMeasurementView extends MeasurementView {
 
     public BMIMeasurementView(Context context) {
-        super(context, context.getResources().getString(R.string.label_bmi), ContextCompat.getDrawable(context, R.drawable.bmi));
+        super(context, context.getResources().getString(R.string.label_bmi), ContextCompat.getDrawable(context, R.drawable.ic_bmi));
     }
 
     @Override

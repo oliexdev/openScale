@@ -158,7 +158,7 @@ public class AlarmHandler
                 PendingIntent.getActivity(context, 0, notifyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context);
-        Notification notification = mBuilder.setSmallIcon(R.drawable.ic_launcher)
+        Notification notification = mBuilder.setSmallIcon(R.drawable.ic_launcher_openscale)
                                             .setContentTitle(context.getString(R.string.app_name))
                                             .setContentText(notifyText)
                                             .setAutoCancel(true)

@@ -27,7 +27,7 @@ import com.health.openscale.core.evaluation.EvaluationSheet;
 public class HipMeasurementView extends MeasurementView {
 
     public HipMeasurementView(Context context) {
-        super(context, context.getResources().getString(R.string.label_hip), ContextCompat.getDrawable(context, R.drawable.hip));
+        super(context, context.getResources().getString(R.string.label_hip), ContextCompat.getDrawable(context, R.drawable.ic_hip));
     }
 
     @Override

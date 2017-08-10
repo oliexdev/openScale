@@ -1,0 +1,45 @@
+openScale uses open source components. You can find the source code of their open source projects along with license information below.
+I acknowledge and I am grateful to these developers for their contributions to open source.
+
+Project: HelloCharts
+Copyright 2014 Leszek Wach
+Apache License, Version 2.0
+License: https://www.apache.org/licenses/LICENSE-2.0
+Website: https://github.com/lecho/hellocharts-android
+
+Project: Low-Power
+Copyright 2016 Lim Phang Moh
+Creative Commons Attribution-ShareAlike 3.0
+Licnese: https://creativecommons.org/licenses/by-sa/3.0
+Website: https://github.com/rocketscream/Low-Power
+
+Project:  DS3232RTC
+Copyright 2013 Jack Christensen
+Attribution-ShareAlike 4.0 International
+License: https://creativecommons.org/licenses/by-sa/4.0/
+Website: https://github.com/JChristensen/DS3232RTC
+
+Project: I2C_EEPROM & RunningMedian
+Copyright 2015 Rob Tillaart
+License: Released to the public domain
+Website: https://github.com/RobTillaart/Arduino
+
+Project: Arduino Time Library
+Copyright 2009-2014 Michael Margolis
+GNU Lesser General Public License 2.1 or any later version
+License: https://www.gnu.org/licenses/
+Website: https://github.com/PaulStoffregen/Time
+
+Used icons are by flaticon.com (http://www.flaticon.com)
+Attribution 3.0 Unported (CC BY 3.0)
+License: http://creativecommons.org/licenses/by/3.0/
+* Icomoon (https://www.flaticon.com/authors/icomoon)
+* Google (https://www.flaticon.com/authors/google)
+* Robin Kylander (https://www.flaticon.com/authors/robin-kylander) 
+* Freepik (http://www.freepik.com)
+* Scott de Jonge (https://www.flaticon.com/authors/scott-de-jonge)
+* Cursor Creative (https://www.flaticon.com/authors/cursor-creative)
+* Madebyoliver (https://www.flaticon.com/authors/madebyoliver)
+
+Contributors to openScale are listed on:
+https://github.com/oliexdev/openScale/graphs/contributors

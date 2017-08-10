@@ -28,7 +28,7 @@ import com.health.openscale.core.evaluation.EvaluationSheet;
 public class WeightMeasurementView extends MeasurementView {
 
     public WeightMeasurementView(Context context) {
-        super(context, context.getResources().getString(R.string.label_weight), ContextCompat.getDrawable(context, R.drawable.weight));
+        super(context, context.getResources().getString(R.string.label_weight), ContextCompat.getDrawable(context, R.drawable.ic_weight));
     }
 
     @Override

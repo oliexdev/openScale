@@ -5,7 +5,7 @@
 
     <item
         android:id="@+id/action_bluetooth_status"
-        android:icon="@drawable/bluetooth_disabled"
+        android:icon="@drawable/ic_bluetooth_disabled"
         android:title="@string/action_bluetooth_status"
         app:showAsAction="ifRoom"/>
 
