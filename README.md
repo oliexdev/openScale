@@ -26,7 +26,7 @@ Install [openScale-dev-build.apk](https://github.com/oliexdev/openScale/blob/mas
   <tr>
     <th>
         <a href="doc/screens/screen_overview.png" target="_blank">
-        <img src='doc/screens/screen_overview.png' width='200px' alt='image missing' /> </a> <br>
+        <img src='doc/screens/screen_overview.png' width='250px' alt='image missing' /> </a> <br>
         <sub><b>overview page</b></sub>
     </th>
     <th>
