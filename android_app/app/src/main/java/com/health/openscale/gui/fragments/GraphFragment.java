@@ -36,6 +36,7 @@ import android.widget.TextView;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleData;
+import com.health.openscale.core.utils.PolynomialFitter;
 import com.health.openscale.gui.activities.DataEntryActivity;
 
 import java.text.SimpleDateFormat;
@@ -284,7 +285,6 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                 setHasPoints(prefs.getBoolean("pointsEnable", true)).
                 setFormatter(new SimpleLineChartValueFormatter(1));
 
-
         if(prefs.getBoolean("weightEnable", true) && prefs.getBoolean(String.valueOf(diagramWeight.getId()), true)) {
             lines.add(lineWeight);
             diagramWeight.setBackgroundTintList(ColorStateList.valueOf(ChartUtils.COLOR_VIOLET));
@@ -333,6 +333,22 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             enableMonth.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#d3d3d3")));
         }
 
+        LineChartData lineData = new LineChartData(lines);
+        lineData.setAxisXBottom(new Axis(axisValues).
+                setHasLines(true).
+                setTextColor(Color.BLACK)
+        );
+
+        lineData.setAxisYLeft(new Axis().
+                setHasLines(true).
+                setMaxLabelChars(5).
+                setTextColor(Color.BLACK)
+        );
+
+        chartBottom.setLineChartData(lineData);
+
+        defaultTopViewport = new Viewport(0, chartBottom.getCurrentViewport().top+4, axisValues.size()-1, chartBottom.getCurrentViewport().bottom-4);
+
         if (prefs.getBoolean("goalLine", true)) {
             Stack<PointValue> valuesGoalLine = new Stack<PointValue>();
 
@@ -349,112 +365,23 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             lines.add(goalLine);
         }
 
-        if (prefs.getBoolean("regressionLine", true)) {
+        if (prefs.getBoolean("regressionLine", false)) {
+            PolynomialFitter polyFitter = new PolynomialFitter(Integer.parseInt(prefs.getString("regressionLineOrder", "1")));
 
-            /*
-            // quadratic regression y = ax^2 + bx + c
-            double x_value = 0.0;
-            double y_value = 0.0;
-
-            double s40 = 0; //sum of x^4
-            double s30 = 0; //sum of x^3
-            double s20 = 0; //sum of x^2
-            double s10 = 0;  //sum of x
-            double s00 = scaleDataList.size();
-            //sum of x^0 * y^0  ie 1 * number of entries
-
-            double s21 = 0; //sum of x^2*y
-            double s11 = 0;  //sum of x*y
-            double s01 = 0;   //sum of y
-
-            for(ScaleData scaleEntry: scaleDataList) {
-                calDB.setTime(scaleEntry.getDateTime());
-
-                x_value = calDB.get(field);
-                y_value = scaleEntry.getConvertedWeight(openScale.getSelectedScaleUser().scale_unit);
-
-                s40 += Math.pow(x_value, 4);
-                s30 += Math.pow(x_value, 3);
-                s20 += Math.pow(x_value, 2);
-                s10 += x_value;
-
-                s21 += Math.pow(x_value, 2) * y_value;
-                s11 += x_value * y_value;
-                s01 += y_value;
+            for(PointValue weightValue : valuesWeight) {
+                polyFitter.addPoint(weightValue.getX(), weightValue.getY());
             }
 
-            // solve equations using Cramer's law
-            double a = (s21*(s20 * s00 - s10 * s10) -
-                        s11*(s30 * s00 - s10 * s20) +
-                        s01*(s30 * s10 - s20 * s20))
-                        /
-                        (s40*(s20 * s00 - s10 * s10) -
-                        s30*(s30 * s00 - s10 * s20) +
-                        s20*(s30 * s10 - s20 * s20));
-
-            double b = (s40*(s11 * s00 - s01 * s10) -
-                        s30*(s21 * s00 - s01 * s20) +
-                        s20*(s21 * s10 - s11 * s20))
-                        /
-                        (s40 * (s20 * s00 - s10 * s10) -
-                        s30 * (s30 * s00 - s10 * s20) +
-                        s20 * (s30 * s10 - s20 * s20));
-
-            double c = (s40*(s20 * s01 - s10 * s11) -
-                        s30*(s30 * s01 - s10 * s21) +
-                        s20*(s30 * s11 - s20 * s21))
-                        /
-                        (s40 * (s20 * s00 - s10 * s10) -
-                        s30 * (s30 * s00 - s10 * s20) +
-                        s20 * (s30 * s10 - s20 * s20));
-            */
-
-            // linear regression y = a + x*b
-            double sumx = 0.0;
-            double sumy = 0.0;
-
-            double x_value = 0.0;
-            double y_value = 0.0;
-
-            for(ScaleData scaleEntry: scaleDataList) {
-                calDB.setTime(scaleEntry.getDateTime());
-
-                x_value = calDB.get(field);
-                y_value = scaleEntry.getConvertedWeight(openScale.getSelectedScaleUser().scale_unit);
-
-                sumx += x_value;
-                sumy += y_value;
-            }
-
-            double xbar = sumx / scaleDataList.size();
-            double ybar = sumy / scaleDataList.size();
-
-            double xxbar = 0.0;
-            double xybar = 0.0;
-
-            for(ScaleData scaleEntry: scaleDataList) {
-                calDB.setTime(scaleEntry.getDateTime());
-
-                x_value = calDB.get(field);
-                y_value = scaleEntry.getConvertedWeight(openScale.getSelectedScaleUser().scale_unit);
-
-                xxbar += (x_value - xbar) * (x_value - xbar);
-                xybar += (y_value - xbar) * (y_value - ybar);
-            }
-
-            double b = xybar / xxbar;
-            double a = ybar - b * xbar;
-
+            PolynomialFitter.Polynomial polynom = polyFitter.getBestFit();
 
             Stack<PointValue> valuesLinearRegression = new Stack<PointValue>();
 
-            for (int i = 0; i < 31; i++) {
-                y_value = a + b * i; // linear regression
-                //y_value = a * i*i + b * i + c; // quadratic regression
-
-                valuesLinearRegression.push(new PointValue((float) i, (float) y_value));
+            if (!valuesWeight.isEmpty()) {
+                for (int i = (int)valuesWeight.peek().getX(); i <= 31; i++) {
+                    double y_value = polynom.getY(i);
+                    valuesLinearRegression.push(new PointValue((float) i, (float) y_value));
+                }
             }
-
             Line linearRegressionLine = new Line(valuesLinearRegression)
                     .setColor(ChartUtils.COLOR_VIOLET)
                     .setHasPoints(false);
@@ -464,22 +391,8 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             lines.add(linearRegressionLine);
         }
 
-        LineChartData lineData = new LineChartData(lines);
-        lineData.setAxisXBottom(new Axis(axisValues).
-                setHasLines(true).
-                setTextColor(Color.BLACK)
-        );
-
-        lineData.setAxisYLeft(new Axis().
-                setHasLines(true).
-                setMaxLabelChars(5).
-                setTextColor(Color.BLACK)
-        );
-
         chartBottom.setLineChartData(lineData);
-        defaultTopViewport = new Viewport(0, chartBottom.getCurrentViewport().top+4, axisValues.size()-1, chartBottom.getCurrentViewport().bottom-4);
 
-        chartBottom.setMaximumViewport(defaultTopViewport);
         chartBottom.setCurrentViewport(defaultTopViewport);
     }
 
