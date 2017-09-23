@@ -42,6 +42,7 @@ import com.health.openscale.gui.activities.DataEntryActivity;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Stack;
@@ -353,16 +354,31 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             Stack<PointValue> valuesGoalLine = new Stack<PointValue>();
 
             float goalWeight = openScale.getSelectedScaleUser().goal_weight;
+            Date goalDate = openScale.getSelectedScaleUser().goal_date;
 
-            valuesGoalLine.push(new PointValue(0, goalWeight));
-            valuesGoalLine.push(new PointValue(31, goalWeight));
+            if(!valuesWeight.empty()) {
+                PointValue lastMeasurement = valuesWeight.get(0);
+                valuesGoalLine.push(lastMeasurement);
+
+                ScaleData lastMeasurementScaleData = scaleDataList.get(0);
+                Date lastMeasurementDate = lastMeasurementScaleData.getDateTime();
+
+                long startTime = lastMeasurementDate.getTime();
+                long endTime = goalDate.getTime();
+                long diffTime = endTime - startTime;
+                long diffDays = diffTime / (1000 * 60 * 60 * 24);
+
+                valuesGoalLine.push(new PointValue(lastMeasurement.getX()+diffDays, goalWeight));
+            }
 
             Line goalLine = new Line(valuesGoalLine)
+                    .setColor(ChartUtils.COLOR_ORANGE)
                     .setHasPoints(false);
 
             goalLine.setPathEffect(new DashPathEffect(new float[] {10,30}, 0));
 
             lines.add(goalLine);
+
         }
 
         if (prefs.getBoolean("regressionLine", false)) {
