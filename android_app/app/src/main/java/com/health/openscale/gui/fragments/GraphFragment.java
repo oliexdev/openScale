@@ -202,14 +202,25 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         return false;
     }
 
+    private static Calendar toCalendar(Date date){
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        return cal;
+    }
+
     private void generateLineData(int field)
     {
         SimpleDateFormat day_date = new SimpleDateFormat("D", Locale.getDefault());
 
-        if (field == Calendar.DAY_OF_MONTH) {
+        boolean usingDailyView = field == Calendar.DAY_OF_MONTH;
+        boolean usingMonthlyView = field == Calendar.MONTH;
+
+        if (usingDailyView) {
             day_date = new SimpleDateFormat("dd", Locale.getDefault());
-        } else if (field == Calendar.MONTH) {
-            day_date = new SimpleDateFormat("MMM", Locale.getDefault());
+        } else {
+            if (usingMonthlyView) {
+                day_date = new SimpleDateFormat("MMM", Locale.getDefault());
+            }
         }
 
         Calendar calDays = (Calendar)calLastSelected.clone();
@@ -363,16 +374,24 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                 ScaleData lastMeasurementScaleData = scaleDataList.get(0);
                 Date lastMeasurementDate = lastMeasurementScaleData.getDateTime();
 
-                long startTime = lastMeasurementDate.getTime();
-                long endTime = goalDate.getTime();
-                long diffTime = endTime - startTime;
-                long diffDays = diffTime / (1000 * 60 * 60 * 24);
+                Calendar lastMeasurementCalendar = toCalendar(lastMeasurementDate);
+                Calendar goalDateCalendar = toCalendar(goalDate);
 
-                valuesGoalLine.push(new PointValue(lastMeasurement.getX()+diffDays, goalWeight));
+                int startDay = lastMeasurementCalendar.get(Calendar.DAY_OF_YEAR);
+                int endDay = goalDateCalendar.get(Calendar.DAY_OF_YEAR);
+
+                int diffYear = goalDateCalendar.get(Calendar.YEAR) - lastMeasurementCalendar.get(Calendar.YEAR);
+                int diffMonth = diffYear * 12 + goalDateCalendar.get(Calendar.MONTH) - lastMeasurementCalendar.get(Calendar.MONTH);
+                int diffDays = endDay - startDay;
+
+                if(usingDailyView)
+                    valuesGoalLine.push(new PointValue(lastMeasurement.getX() + diffDays, goalWeight));
+                else
+                    valuesGoalLine.push(new PointValue(lastMeasurement.getX() + diffMonth, goalWeight));
             }
 
             Line goalLine = new Line(valuesGoalLine)
-                    .setColor(ChartUtils.COLOR_ORANGE)
+                    .setColor(ChartUtils.COLOR_RED)
                     .setHasPoints(false);
 
             goalLine.setPathEffect(new DashPathEffect(new float[] {10,30}, 0));
