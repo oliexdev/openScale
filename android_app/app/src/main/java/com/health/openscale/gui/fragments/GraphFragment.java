@@ -42,6 +42,7 @@ import com.health.openscale.gui.activities.DataEntryActivity;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Stack;
@@ -201,14 +202,25 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         return false;
     }
 
+    private static Calendar toCalendar(Date date){
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        return cal;
+    }
+
     private void generateLineData(int field)
     {
         SimpleDateFormat day_date = new SimpleDateFormat("D", Locale.getDefault());
 
-        if (field == Calendar.DAY_OF_MONTH) {
+        boolean usingDailyView = field == Calendar.DAY_OF_MONTH;
+        boolean usingMonthlyView = field == Calendar.MONTH;
+
+        if (usingDailyView) {
             day_date = new SimpleDateFormat("dd", Locale.getDefault());
-        } else if (field == Calendar.MONTH) {
-            day_date = new SimpleDateFormat("MMM", Locale.getDefault());
+        } else {
+            if (usingMonthlyView) {
+                day_date = new SimpleDateFormat("MMM", Locale.getDefault());
+            }
         }
 
         Calendar calDays = (Calendar)calLastSelected.clone();
@@ -353,16 +365,39 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             Stack<PointValue> valuesGoalLine = new Stack<PointValue>();
 
             float goalWeight = openScale.getSelectedScaleUser().goal_weight;
+            Date goalDate = openScale.getSelectedScaleUser().goal_date;
 
-            valuesGoalLine.push(new PointValue(0, goalWeight));
-            valuesGoalLine.push(new PointValue(31, goalWeight));
+            if(!valuesWeight.empty()) {
+                PointValue lastMeasurement = valuesWeight.get(0);
+                valuesGoalLine.push(lastMeasurement);
+
+                ScaleData lastMeasurementScaleData = scaleDataList.get(0);
+                Date lastMeasurementDate = lastMeasurementScaleData.getDateTime();
+
+                Calendar lastMeasurementCalendar = toCalendar(lastMeasurementDate);
+                Calendar goalDateCalendar = toCalendar(goalDate);
+
+                int startDay = lastMeasurementCalendar.get(Calendar.DAY_OF_YEAR);
+                int endDay = goalDateCalendar.get(Calendar.DAY_OF_YEAR);
+
+                int diffYear = goalDateCalendar.get(Calendar.YEAR) - lastMeasurementCalendar.get(Calendar.YEAR);
+                int diffMonth = diffYear * 12 + goalDateCalendar.get(Calendar.MONTH) - lastMeasurementCalendar.get(Calendar.MONTH);
+                int diffDays = (endDay + (diffYear * 365)) - startDay;
+
+                if(usingDailyView)
+                    valuesGoalLine.push(new PointValue(lastMeasurement.getX() + diffDays, goalWeight));
+                else
+                    valuesGoalLine.push(new PointValue(lastMeasurement.getX() + diffMonth, goalWeight));
+            }
 
             Line goalLine = new Line(valuesGoalLine)
+                    .setColor(ChartUtils.COLOR_RED)
                     .setHasPoints(false);
 
             goalLine.setPathEffect(new DashPathEffect(new float[] {10,30}, 0));
 
             lines.add(goalLine);
+
         }
 
         if (prefs.getBoolean("regressionLine", false)) {
