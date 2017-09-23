@@ -382,7 +382,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
                 int diffYear = goalDateCalendar.get(Calendar.YEAR) - lastMeasurementCalendar.get(Calendar.YEAR);
                 int diffMonth = diffYear * 12 + goalDateCalendar.get(Calendar.MONTH) - lastMeasurementCalendar.get(Calendar.MONTH);
-                int diffDays = endDay - startDay;
+                int diffDays = (endDay + (diffYear * 365)) - startDay;
 
                 if(usingDailyView)
                     valuesGoalLine.push(new PointValue(lastMeasurement.getX() + diffDays, goalWeight));
