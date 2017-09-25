@@ -85,6 +85,8 @@ public abstract class BluetoothCommunication {
                 return new BluetoothSanitasSbf70(context);
             case 3:
                 return new BluetoothMedisanaBS444(context);
+            case 4:
+                return new BluetoothDigooDGSO38H(context);
         }
 
         return null;
