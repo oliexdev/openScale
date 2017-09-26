@@ -207,8 +207,13 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         if (field == Calendar.DAY_OF_MONTH) {
             day_date = new SimpleDateFormat("dd", Locale.getDefault());
-        } else if (field == Calendar.MONTH) {
-            day_date = new SimpleDateFormat("MMM", Locale.getDefault());
+        } else if (field == Calendar.DAY_OF_YEAR) {
+            day_date = new SimpleDateFormat("D", Locale.getDefault());
+
+            if (prefs.getBoolean("averageData", true)) {
+                field = Calendar.MONTH;
+                day_date = new SimpleDateFormat("MMM", Locale.getDefault());
+            }
         }
 
         Calendar calDays = (Calendar)calLastSelected.clone();
@@ -347,7 +352,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         chartBottom.setLineChartData(lineData);
 
-        defaultTopViewport = new Viewport(0, chartBottom.getCurrentViewport().top+4, axisValues.size()-1, chartBottom.getCurrentViewport().bottom-4);
+        defaultTopViewport = new Viewport(calDays.getActualMinimum(field), chartBottom.getCurrentViewport().top, maxDays+1, chartBottom.getCurrentViewport().bottom);
 
         if (prefs.getBoolean("goalLine", true)) {
             Stack<PointValue> valuesGoalLine = new Stack<PointValue>();
@@ -355,7 +360,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             float goalWeight = openScale.getSelectedScaleUser().goal_weight;
 
             valuesGoalLine.push(new PointValue(0, goalWeight));
-            valuesGoalLine.push(new PointValue(31, goalWeight));
+            valuesGoalLine.push(new PointValue(maxDays, goalWeight));
 
             Line goalLine = new Line(valuesGoalLine)
                     .setHasPoints(false);
@@ -377,7 +382,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             Stack<PointValue> valuesLinearRegression = new Stack<PointValue>();
 
             if (!valuesWeight.isEmpty()) {
-                for (int i = (int)valuesWeight.peek().getX(); i <= 31; i++) {
+                for (int i = (int)valuesWeight.peek().getX(); i <= maxDays; i++) {
                     double y_value = polynom.getY(i);
                     valuesLinearRegression.push(new PointValue((float) i, (float) y_value));
                 }
@@ -447,7 +452,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
             scaleDataList = openScale.getScaleDataOfYear(calYears.get(Calendar.YEAR));
 
-            generateLineData(Calendar.MONTH);
+            generateLineData(Calendar.DAY_OF_YEAR);
         }
     }
 
