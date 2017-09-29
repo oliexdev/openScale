@@ -430,26 +430,29 @@ public abstract class BluetoothCommunication {
             {
                 @Override
                 public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord) {
-                    if (device.getName() == null) {
-                        return;
-                    }
-
-                    for (int i=0; i<hwAddresses().size(); i++) {
-                        if (device.getAddress().replace(":", "").toUpperCase().startsWith(hwAddresses().get(i)) || hwAddresses().get(i) == "FFFFFF")
-                        {
-                            if (isDeviceNameCheck()) {
-                                if (!device.getName().toLowerCase().equals(btDeviceName.toLowerCase())) {
-                                    return;
-                                }
-                            }
-
-                            Log.d("BluetoothCommunication", btDeviceName + " found trying to connect...");
-
-                            bluetoothGatt = device.connectGatt(context, false, gattCallback);
-
-                            searchHandler.removeCallbacksAndMessages(null);
-                            btAdapter.stopLeScan(scanCallback);
+                    try {
+                        if (device.getName() == null) {
+                            return;
                         }
+
+                        for (int i = 0; i < hwAddresses().size(); i++) {
+                            if (device.getAddress().replace(":", "").toUpperCase().startsWith(hwAddresses().get(i)) || hwAddresses().get(i) == "FFFFFF") {
+                                if (isDeviceNameCheck()) {
+                                    if (!device.getName().toLowerCase().equals(btDeviceName.toLowerCase())) {
+                                        return;
+                                    }
+                                }
+
+                                Log.d("BluetoothCommunication", btDeviceName + " found trying to connect...");
+
+                                bluetoothGatt = device.connectGatt(context, false, gattCallback);
+
+                                searchHandler.removeCallbacksAndMessages(null);
+                                btAdapter.stopLeScan(scanCallback);
+                            }
+                        }
+                    } catch (Exception e) {
+                        setBtStatus(BT_STATUS_CODE.BT_UNEXPECTED_ERROR, e.getMessage());
                     }
                 }
             };

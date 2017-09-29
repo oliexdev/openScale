@@ -22,6 +22,7 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.health.openscale.core.alarm.AlarmHandler;
 import com.health.openscale.core.bluetooth.BluetoothCommunication;
@@ -114,16 +115,22 @@ public class OpenScale {
 
     public ScaleUser getSelectedScaleUser()
     {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        int selectedUserId  = prefs.getInt("selectedUserId", -1);
+        ScaleUser scaleUser = new ScaleUser();
 
-        if (selectedUserId == -1) {
-            ScaleUser scaleUser = new ScaleUser();
+        try {
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+            int selectedUserId  = prefs.getInt("selectedUserId", -1);
 
-            return scaleUser;
+            if (selectedUserId == -1) {
+                return scaleUser;
+            }
+
+            scaleUser = scaleUserDB.getScaleUser(selectedUserId);
+        } catch (Exception e) {
+            Toast.makeText(context, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
 
-        return scaleUserDB.getScaleUser(selectedUserId);
+        return scaleUser;
     }
 
     public void deleteScaleUser(int id)

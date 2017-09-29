@@ -89,7 +89,7 @@ public class BluetoothCustomOpenScale extends BluetoothCommunication {
 
         for (BluetoothDevice device : pairedDevices) {
             // check if we can found bluetooth device name in the pairing list
-            if (device.getName().equals(deviceName)) {
+            if (device != null && device.getName().equals(deviceName)) {
                 btDevice = device;
 
                 try {
