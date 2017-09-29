@@ -62,6 +62,7 @@ public class BluetoothMiScale extends BluetoothCommunication {
         ArrayList hwAddresses = new ArrayList();
             hwAddresses.add("880F10");
             hwAddresses.add("C80F10");
+            hwAddresses.add("F9C28E");
 
         return hwAddresses;
     }
