@@ -16,6 +16,7 @@
 
 package com.health.openscale.core.datatypes;
 
+import java.util.Calendar;
 import java.util.Date;
 
 public class ScaleUser {
@@ -49,6 +50,16 @@ public class ScaleUser {
             return true;
 
         return false;
+    }
+
+    public int getAge() {
+        Calendar cal_today = Calendar.getInstance();
+        Calendar cal_birthday = Calendar.getInstance();
+        cal_birthday.setTime(birthday);
+        int userAge = cal_today.get(Calendar.YEAR) - cal_birthday.get(Calendar.YEAR);
+        if (cal_today.get(Calendar.DAY_OF_YEAR) < cal_birthday.get(Calendar.DAY_OF_YEAR)) userAge--;
+
+        return userAge;
     }
 
 	@Override

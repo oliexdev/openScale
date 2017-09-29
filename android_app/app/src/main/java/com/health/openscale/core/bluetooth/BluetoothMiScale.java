@@ -49,7 +49,7 @@ public class BluetoothMiScale extends BluetoothCommunication {
 
     @Override
     public String deviceName() {
-        return "Xiaomi Mi Scale";
+        return "Xiaomi Mi Scale v1";
     }
 
     @Override

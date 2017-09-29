@@ -26,7 +26,6 @@ import com.health.openscale.core.datatypes.ScaleData;
 import com.health.openscale.core.datatypes.ScaleUser;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
 
@@ -116,12 +115,7 @@ public class BluetoothDigooDGSO38H extends BluetoothCommunication {
                 final ScaleUser selectedUser = OpenScale.getInstance(context).getSelectedScaleUser();
                 byte gender = selectedUser.isMale() ? (byte)0x00: (byte)0x01;
                 byte height = (byte) (selectedUser.body_height & 0xFF);
-                Calendar today = Calendar.getInstance();
-                Calendar birthday = Calendar.getInstance();
-                birthday.setTime(selectedUser.birthday);
-                int userAge = today.get(Calendar.YEAR) - birthday.get(Calendar.YEAR);
-                if (today.get(Calendar.DAY_OF_YEAR) < birthday.get(Calendar.DAY_OF_YEAR)) userAge--;
-                byte age = (byte)(userAge & 0xff);
+                byte age = (byte)(selectedUser.getAge() & 0xff);
                 byte unit;
                 switch (selectedUser.scale_unit) {
                     case 0:
