@@ -45,7 +45,6 @@
     <string name="label_bluetooth_enable">起動時に体重計を探索します</string>
     <string name="label_last_month">過去30日</string>
     <string name="label_last_week">過去7日</string>
-    <string name="label_device_name">デバイス名</string>
     <string name="error_exporting">エクスポートに失敗しました</string>
     <string name="error_importing">インポートに失敗しました</string>
     <string name="error_body_height_required">身長が必要です</string>

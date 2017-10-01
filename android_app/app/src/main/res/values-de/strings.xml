@@ -40,7 +40,6 @@
     <string name="label_days_left">Tage übrig</string>
     <string name="label_delete">Löschen</string>
     <string name="label_delete_all">Alles löschen</string>
-    <string name="label_device_name">Gerätename</string>
     <string name="label_enable_labels">Notiz auf den Datenpunkt</string>
     <string name="label_export">Exportieren</string>
     <string name="label_fat">Körperfettanteil</string>
@@ -116,10 +115,6 @@
     <string name="error_value_required">Wert ist erforderlich</string>
     <string name="title_statistics">Statistiken</string>
     <string name="label_cancel">Abbrechen</string>
-    <string name="label_bt_device_data_history">Bt Waage Datenhistorie</string>
-    <string name="label_bt_device_data_transfer">Bt Waage Datentransfer</string>
-    <string name="label_bt_device_initialization">Bt Waage Initialisierung</string>
-    <string name="label_bt_device_support">Folgendes wird unterstützt</string>
     <string name="label_backup">Datensicherung</string>
     <string name="label_exportBackup">Exportiere Datensicherung</string>
     <string name="label_importBackup">Importiere Datensicherung</string>
@@ -131,4 +126,9 @@
     <string name="info_enter_goal_weight">Gebe dein Gewicht in deiner Einheit an</string>
     <string name="error_initial_weight_required">Fehler Anfangsgewicht ist erforderlich</string>
     <string name="label_average_data">Berechne Durchschnitt pro Tag/Monat</string>
+    <string name="label_bt_device_no_support">Gerät wird nicht unterstützt</string>
+    <string name="label_goal_line">Ziellinie</string>
+    <string name="label_regression_line">Gewichtsregressionsgerade</string>
+    <string name="label_regression_line_degree">Regressions Polynomgrad</string>
+    <string name="label_bluetooth_searching">Suche nach Bluetooth Waagen</string>
 </resources>

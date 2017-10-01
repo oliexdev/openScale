@@ -349,15 +349,24 @@ public class OpenScale {
         return scaleDB.getScaleDataOfYear(selectedUserId, year);
     }
 
-	public void startSearchingForBluetooth(int btScales, String deviceName, Handler callbackBtHandler) {
+	public boolean startSearchingForBluetooth(String deviceName, Handler callbackBtHandler) {
 		Log.d("OpenScale", "Bluetooth Server started! I am searching for device ...");
 
-        btCom = BluetoothCommunication.getBtDevice(context, btScales);
-		btCom.registerCallbackHandler(callbackBtHandler);
-		btDeviceName = deviceName;
+        for (BluetoothCommunication.BT_DEVICE_ID btScaleID : BluetoothCommunication.BT_DEVICE_ID.values()) {
+            btCom = BluetoothCommunication.getBtDevice(context, btScaleID);
 
-        btCom.startSearching(btDeviceName);
-	}
+            if (btCom.checkDeviceName(deviceName)) {
+                btCom.registerCallbackHandler(callbackBtHandler);
+                btDeviceName = deviceName;
+
+                btCom.startSearching(btDeviceName);
+
+                return true;
+            }
+        }
+
+        return false;
+    }
 
 	public void stopSearchingForBluetooth() {
 		if (btCom != null) {

@@ -66,9 +66,6 @@
     <string name="label_bluetooth_title">Bluetooth</string>
     <string name="label_bmi">IMC</string>
     <string name="label_body_height">Altura</string>
-    <string name="label_bt_device_data_history">Histórico de dados da balança bt</string>
-    <string name="label_bt_device_data_transfer">Transferência de dados da balança bt</string>
-    <string name="label_bt_device_initialization">Inicialização da balança bt</string>
     <string name="label_cancel">Cancelar</string>
     <string name="label_comment">Comentário</string>
     <string name="label_date">Data</string>
@@ -77,7 +74,6 @@
     <string name="label_delete">Deletar</string>
     <string name="label_delete_all">Deletar tudo</string>
     <string name="label_delete_confirmation">Confirmar deleção</string>
-    <string name="label_device_name">Nome do dispositivo</string>
     <string name="label_device_type">Tipo do dispositivo</string>
     <string name="label_enable_labels">Etiquetas nos pontos de dados</string>
     <string name="label_enable_points">Circular pontos de dados</string>
@@ -105,7 +101,7 @@
     <string name="label_ok">OK</string>
     <string name="label_not_found">não encontrado</string>
     <string name="label_regression_line">Linha de tendência de peso</string>
-    <string name="label_regression_line_order">Exponente da tendência</string>
+    <string name="label_regression_line_degree">Exponente da tendência</string>
     <string name="label_reminder">Lembrete</string>
     <string name="label_reminder_notify_text">Título da notificação</string>
     <string name="label_reminder_time">Hora</string>

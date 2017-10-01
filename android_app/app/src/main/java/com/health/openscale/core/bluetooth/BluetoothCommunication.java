@@ -29,7 +29,6 @@ import android.util.Log;
 
 import com.health.openscale.core.datatypes.ScaleData;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.UUID;
@@ -39,6 +38,7 @@ public abstract class BluetoothCommunication {
         BT_CONNECTION_LOST, BT_NO_DEVICE_FOUND, BT_UNEXPECTED_ERROR, BT_SCALE_MESSAGE
     };
     public enum BT_MACHINE_STATE {BT_INIT_STATE, BT_CMD_STATE, BT_CLEANUP_STATE}
+    public enum BT_DEVICE_ID {CUSTOM_OPENSCALE, MI_SCALE_V1, SANITAS_SBF70, MEDISANA_BS444, DIGOO_DGS038H, EXCELVANT_CF369BLE}
 
     protected Context context;
 
@@ -72,22 +72,22 @@ public abstract class BluetoothCommunication {
      * Create and return a new Bluetooth object.
      *
      * @param context In which context should the Bluetooth device created
-     * @param i the specific number of which Bluetooth device should be created (correspond to "deviceTypes" key in BluetoothPreferences)
+     * @param btDeviceID the specific device ID of which Bluetooth device should be created
      * @return created object specified by the number i otherwise null
      */
-    public static BluetoothCommunication getBtDevice(Context context, int i) {
-        switch (i) {
-            case 0:
+    public static BluetoothCommunication getBtDevice(Context context, BT_DEVICE_ID btDeviceID) {
+        switch (btDeviceID) {
+            case CUSTOM_OPENSCALE:
                 return new BluetoothCustomOpenScale(context);
-            case 1:
+            case MI_SCALE_V1:
                 return new BluetoothMiScale(context);
-            case 2:
+            case SANITAS_SBF70:
                 return new BluetoothSanitasSbf70(context);
-            case 3:
+            case MEDISANA_BS444:
                 return new BluetoothMedisanaBS444(context);
-            case 4:
+            case DIGOO_DGS038H:
                 return new BluetoothDigooDGSO38H(context);
-            case 5:
+            case EXCELVANT_CF369BLE:
                 return new BluetoothExcelvanCF369BLE(context);
         }
 
@@ -142,30 +142,17 @@ public abstract class BluetoothCommunication {
     }
 
     /**
-     * Is the Bluetooth initialized process supported.
+     * Check if the a device name is supported of the scale
      *
-     * @return true if it supported otherwise false
+     * @param btDeviceName the device name that is checked
+     * @return true if it valid otherwise false
      */
-    public boolean initSupported() {
-        return true;
-    }
+    public boolean checkDeviceName(String btDeviceName) {
+        if (btDeviceName.toLowerCase().equals(defaultDeviceName().toLowerCase())) {
+            return true;
+        }
 
-    /**
-     * Is the Bluetooth transfer process supported.
-     *
-     * @return true if it supported otherwise false
-     */
-    public boolean transferSupported() {
-        return true;
-    }
-
-    /**
-     * Is the Bluetooth history process supported.
-     *
-     * @return true if it supported otherwise false
-     */
-    public boolean historySupported() {
-        return true;
+        return false;
     }
 
     /**
@@ -174,15 +161,6 @@ public abstract class BluetoothCommunication {
      * @return true if it Bluetooth 4.x (smart) otherwise false
      */
     public boolean isBLE() {
-        return true;
-    }
-
-    /**
-     * Should the device name checked while searching for a Bluetooth device.
-     *
-     * @return true if device name is checked otherwise false
-     */
-    public boolean isDeviceNameCheck() {
         return true;
     }
 
@@ -199,16 +177,6 @@ public abstract class BluetoothCommunication {
      * @return the Bluetooth default device name for the scale
      */
     abstract public String defaultDeviceName();
-
-    /**
-     * Return all hardware addresses of the Bluetooth device.
-     *
-     * The format should be the first six hex values of a known Bluetooth hardware address without any colon e.g. 12:AB:65:12:34:52 becomes "12AB65"
-     * @note add hw address "FFFFFF" to skip check
-     *
-     * @return a list of all hardware addresses that are known for this device.
-     */
-    abstract public ArrayList<String> hwAddresses();
 
     /**
      * State machine for the initialization process of the Bluetooth device.
@@ -435,21 +403,13 @@ public abstract class BluetoothCommunication {
                             return;
                         }
 
-                        for (int i = 0; i < hwAddresses().size(); i++) {
-                            if (device.getAddress().replace(":", "").toUpperCase().startsWith(hwAddresses().get(i)) || hwAddresses().get(i) == "FFFFFF") {
-                                if (isDeviceNameCheck()) {
-                                    if (!device.getName().toLowerCase().equals(btDeviceName.toLowerCase())) {
-                                        return;
-                                    }
-                                }
+                        if (device.getName().toLowerCase().equals(btDeviceName.toLowerCase())) {
+                            Log.d("BluetoothCommunication", btDeviceName + " found trying to connect...");
 
-                                Log.d("BluetoothCommunication", btDeviceName + " found trying to connect...");
+                            bluetoothGatt = device.connectGatt(context, false, gattCallback);
 
-                                bluetoothGatt = device.connectGatt(context, false, gattCallback);
-
-                                searchHandler.removeCallbacksAndMessages(null);
-                                btAdapter.stopLeScan(scanCallback);
-                            }
+                            searchHandler.removeCallbacksAndMessages(null);
+                            btAdapter.stopLeScan(scanCallback);
                         }
                     } catch (Exception e) {
                         setBtStatus(BT_STATUS_CODE.BT_UNEXPECTED_ERROR, e.getMessage());

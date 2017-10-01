@@ -27,13 +27,12 @@ import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleData;
 import com.health.openscale.core.datatypes.ScaleUser;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.text.SimpleDateFormat;
-import java.io.ByteArrayOutputStream;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.TreeSet;
 import java.util.UUID;
@@ -118,24 +117,6 @@ public class BluetoothSanitasSbf70 extends BluetoothCommunication {
     @Override
     public String defaultDeviceName() {
         return "SANITAS SBF70";
-    }
-
-    @Override
-    public ArrayList<String> hwAddresses() {
-        ArrayList hwAddresses = new ArrayList();
-        hwAddresses.add("FFFFFF");
-
-        return hwAddresses;
-    }
-
-    @Override
-    public boolean initSupported() {
-        return true;
-    }
-
-    @Override
-    public boolean historySupported() {
-        return true;
     }
 
     @Override

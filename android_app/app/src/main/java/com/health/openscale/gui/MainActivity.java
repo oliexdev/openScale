@@ -182,10 +182,9 @@ public class MainActivity extends ActionBarActivity implements
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
 		String deviceName = prefs.getString("btDeviceName", "MI_SCALE");
-		int deviceType = Integer.parseInt(prefs.getString("btDeviceTypes", "0"));
 
 		// Check if Bluetooth 4.x is available
-		if (BluetoothCommunication.getBtDevice(getApplicationContext(), deviceType).isBLE()) {
+		if (deviceName != "openScale_MCU") {
 			if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
 				setBluetoothStatusIcon(R.drawable.ic_bluetooth_disabled);
 				Toast.makeText(getApplicationContext(), "Bluetooth 4.x " + getResources().getString(R.string.info_is_not_available), Toast.LENGTH_SHORT).show();
@@ -197,7 +196,9 @@ public class MainActivity extends ActionBarActivity implements
 		setBluetoothStatusIcon(R.drawable.ic_bluetooth_searching);
 
 		OpenScale.getInstance(getApplicationContext()).stopSearchingForBluetooth();
-		OpenScale.getInstance(getApplicationContext()).startSearchingForBluetooth(deviceType, deviceName, callbackBtHandler);
+		if (!OpenScale.getInstance(getApplicationContext()).startSearchingForBluetooth(deviceName, callbackBtHandler)) {
+			Toast.makeText(getApplicationContext(), deviceName + " "  + getResources().getString(R.string.label_bt_device_no_support), Toast.LENGTH_SHORT).show();
+		}
 	}
 
 	private final Handler callbackBtHandler = new Handler() {

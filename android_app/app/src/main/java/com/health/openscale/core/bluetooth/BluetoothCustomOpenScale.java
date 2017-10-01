@@ -27,7 +27,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
 
@@ -51,11 +50,6 @@ public class BluetoothCustomOpenScale extends BluetoothCommunication {
     @Override
     public String defaultDeviceName() {
         return "openScale_MCU";
-    }
-
-    @Override
-    public ArrayList<String> hwAddresses() {
-        return null;
     }
 
     @Override

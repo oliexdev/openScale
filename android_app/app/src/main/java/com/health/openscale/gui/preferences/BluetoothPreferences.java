@@ -15,8 +15,11 @@
 */
 package com.health.openscale.gui.preferences;
 
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
 import android.preference.ListPreference;
@@ -24,42 +27,109 @@ import android.preference.MultiSelectListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceGroup;
-import android.text.Html;
+import android.preference.PreferenceManager;
+import android.preference.PreferenceScreen;
+import android.widget.BaseAdapter;
 
 import com.health.openscale.R;
 import com.health.openscale.core.bluetooth.BluetoothCommunication;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
-import static com.health.openscale.core.bluetooth.BluetoothCommunication.getBtDevice;
-
 public class BluetoothPreferences extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
-    private static final String PREFERENCE_KEY_BLUETOOTH_DEVICE_TYPE = "btDeviceTypes";
-    private static final String PREFERENCE_KEY_BLUETOOTH_DEVICE_NAME = "btDeviceName";
     private static final String PREFERENCE_KEY_BLUETOOTH_SMARTUSERASSIGN = "smartUserAssign";
     private static final String PREFERENCE_KEY_BLUETOOTH_IGNOREOUTOFRANGE = "ignoreOutOfRange";
+    private static final String PREFERENCE_KEY_BLUETOOTH_SCANNER = "btScanner";
 
-    private ListPreference deviceTypes;
-    private EditTextPreference deviceName;
     private CheckBoxPreference smartAssignEnable;
     private CheckBoxPreference ignoreOutOfRangeEnable;
+    private PreferenceScreen btScanner;
+
+    private BluetoothAdapter btAdapter  = null;
+    private Handler searchHandler = null;
+    private BluetoothAdapter.LeScanCallback scanCallback = null;
+
+    private Map<String, String> foundDevices = new HashMap<>();
+
+    public void startSearching() {
+        foundDevices.clear();
+
+        if (scanCallback == null)
+        {
+            scanCallback = new BluetoothAdapter.LeScanCallback()
+            {
+                @Override
+                public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord) {
+                if (device.getName() == null) {
+                    return;
+                }
+                    foundDevices.put(device.getAddress(), device.getName());
+
+                    btScanner.removeAll();
+
+                    for (Map.Entry<String, String> entry : foundDevices.entrySet())
+                    {
+                        if (getActivity() != null) {
+                            Preference prefBtDevice = new Preference(getActivity().getBaseContext());
+                            prefBtDevice.setSummary(entry.getKey());
+
+                            for (BluetoothCommunication.BT_DEVICE_ID btScaleID : BluetoothCommunication.BT_DEVICE_ID.values()) {
+                                BluetoothCommunication btDevice = BluetoothCommunication.getBtDevice(getActivity().getBaseContext(), btScaleID);
+
+                                if (btDevice.checkDeviceName(entry.getValue())) {
+                                    prefBtDevice.setOnPreferenceClickListener(new onClickListenerDeviceSelect());
+                                    prefBtDevice.setKey(entry.getKey());
+                                    prefBtDevice.setIcon(R.drawable.ic_bluetooth_connection_lost);
+                                    prefBtDevice.setTitle(entry.getValue() + " [" + btDevice.deviceName() + "]");
+                                    break;
+                                } else {
+                                    prefBtDevice.setIcon(R.drawable.ic_bluetooth_disabled);
+                                    prefBtDevice.setTitle(entry.getValue() + " [" + getResources().getString(R.string.label_bt_device_no_support) + "]");
+                                }
+                            }
+
+                            btScanner.addPreference(prefBtDevice);
+                        }
+                    }
+                }
+            };
+        }
+
+
+        searchHandler.postDelayed(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                btAdapter.stopLeScan(scanCallback);
+            }
+        }, 10000);
+
+        btAdapter.startLeScan(scanCallback);
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        btAdapter = BluetoothAdapter.getDefaultAdapter();
+        searchHandler = new Handler();
+
         addPreferencesFromResource(R.xml.bluetooth_preferences);
 
-        deviceTypes = (ListPreference)findPreference(PREFERENCE_KEY_BLUETOOTH_DEVICE_TYPE);
-        deviceName = (EditTextPreference)findPreference(PREFERENCE_KEY_BLUETOOTH_DEVICE_NAME);
         smartAssignEnable = (CheckBoxPreference) findPreference(PREFERENCE_KEY_BLUETOOTH_SMARTUSERASSIGN);
         ignoreOutOfRangeEnable = (CheckBoxPreference) findPreference(PREFERENCE_KEY_BLUETOOTH_IGNOREOUTOFRANGE);
+        btScanner = (PreferenceScreen) findPreference(PREFERENCE_KEY_BLUETOOTH_SCANNER);
 
-        deviceTypes.setOnPreferenceChangeListener(new deviceTypeOnPreferenceChangeListener());
+        btScanner.setOnPreferenceClickListener(new onClickListenerScannerSelect());
 
-        updateBluetoothPreferences();
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext());
+        btScanner.setSummary(prefs.getString("btDeviceName", "-"));
+
         initSummary(getPreferenceScreen());
     }
 
@@ -72,29 +142,6 @@ public class BluetoothPreferences extends PreferenceFragment implements SharedPr
         } else {
             updatePrefSummary(p);
         }
-    }
-
-    public void updateBluetoothPreferences() {
-        int i = 0;
-
-        ArrayList<String> btEntries = new ArrayList();
-        ArrayList<String> btEntryValues = new ArrayList();
-
-        while (true) {
-            BluetoothCommunication btCom = getBtDevice(getActivity().getApplicationContext(), i);
-
-            if (btCom == null) {
-                break;
-            }
-
-            btEntries.add(btCom.deviceName());
-            btEntryValues.add(String.valueOf(i));
-
-            i++;
-        }
-
-        deviceTypes.setEntries(btEntries.toArray(new CharSequence[btEntries.size()]));
-        deviceTypes.setEntryValues(btEntryValues.toArray(new CharSequence[btEntryValues.size()]));
     }
 
     @Override
@@ -125,34 +172,7 @@ public class BluetoothPreferences extends PreferenceFragment implements SharedPr
         if (p instanceof ListPreference) {
             ListPreference listPref = (ListPreference) p;
 
-            int i = Integer.parseInt(listPref.getValue());
-
-            BluetoothCommunication btCom = BluetoothCommunication.getBtDevice(getActivity().getApplicationContext(), i);
-
-            String summary = new String();
-
-            summary += listPref.getEntry() + "<br>" +
-                    getResources().getString(R.string.label_bt_device_support) + ":" + "<br>";
-
-            if (btCom.initSupported()) {
-                summary += getResources().getString(R.string.label_bt_device_initialization) + ": " + getResources().getString(R.string.label_yes)+ "<br>";
-            } else {
-                summary += getResources().getString(R.string.label_bt_device_initialization) + ": " + getResources().getString(R.string.label_no)+ "<br>";
-            }
-
-            if (btCom.transferSupported()) {
-                summary += getResources().getString(R.string.label_bt_device_data_transfer) + ": " + getResources().getString(R.string.label_yes)+ "<br>";
-            } else {
-                summary += getResources().getString(R.string.label_bt_device_data_transfer) + ": " + getResources().getString(R.string.label_no)+ "<br>";
-            }
-
-            if (btCom.historySupported()) {
-                summary += getResources().getString(R.string.label_bt_device_data_history) + ": " + getResources().getString(R.string.label_yes);
-            } else {
-                summary += getResources().getString(R.string.label_bt_device_data_history) + ": " + getResources().getString(R.string.label_no);
-            }
-
-            p.setSummary(Html.fromHtml(summary));
+            p.setSummary(listPref.getTitle());
         }
 
         if (p instanceof EditTextPreference) {
@@ -181,17 +201,26 @@ public class BluetoothPreferences extends PreferenceFragment implements SharedPr
         }
     }
 
-    private class deviceTypeOnPreferenceChangeListener implements Preference.OnPreferenceChangeListener {
-
+    private class onClickListenerScannerSelect implements Preference.OnPreferenceClickListener {
         @Override
-        public boolean onPreferenceChange(Preference p, Object o) {
-            int i = Integer.parseInt((String)o);
+        public boolean onPreferenceClick(Preference preference) {
+            startSearching();
+            return true;
+        }
+    }
 
-            BluetoothCommunication btCom = BluetoothCommunication.getBtDevice(getActivity().getApplicationContext(), i);
+    private class onClickListenerDeviceSelect implements Preference.OnPreferenceClickListener {
+        @Override
+        public boolean onPreferenceClick(Preference preference) {
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext());
 
-            deviceName.setSummary(btCom.defaultDeviceName());
-            deviceName.setText(btCom.defaultDeviceName());
+            prefs.edit().putString("btHwAddress", preference.getKey()).commit();
+            prefs.edit().putString("btDeviceName", foundDevices.get(preference.getKey())).commit();
 
+            btScanner.setSummary(preference.getTitle());
+            ((BaseAdapter)getPreferenceScreen().getRootAdapter()).notifyDataSetChanged(); // hack to change the summary text
+
+            btScanner.getDialog().dismiss();
             return true;
         }
     }

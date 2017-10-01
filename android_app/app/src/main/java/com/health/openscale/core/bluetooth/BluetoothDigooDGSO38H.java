@@ -25,7 +25,6 @@ import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleData;
 import com.health.openscale.core.datatypes.ScaleUser;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
 
@@ -46,14 +45,6 @@ public class BluetoothDigooDGSO38H extends BluetoothCommunication {
     @Override
     public String defaultDeviceName() {
         return "Mengii";
-    }
-
-    @Override
-    public ArrayList<String> hwAddresses() {
-        ArrayList<String> hwAddresses = new ArrayList<>();
-            hwAddresses.add("C8B21E");
-
-        return hwAddresses;
     }
 
     @Override

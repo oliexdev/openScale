@@ -21,7 +21,6 @@ import android.content.Context;
 
 import com.health.openscale.core.datatypes.ScaleData;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
 
@@ -52,25 +51,11 @@ public class BluetoothMedisanaBS444 extends BluetoothCommunication {
     }
 
     @Override
-    public boolean isDeviceNameCheck() {
-        return false;
-    }
+    public boolean checkDeviceName(String btDeviceName) {
+        if (btDeviceName.startsWith("013197")) {
+            return true;
+        }
 
-    @Override
-    public ArrayList<String> hwAddresses() {
-        ArrayList hwAddresses = new ArrayList();
-        hwAddresses.add("E454EB");
-        hwAddresses.add("F13A88");
-        hwAddresses.add("C9A68A");
-        hwAddresses.add("D60211");
-        hwAddresses.add("DB2FF6");
-        hwAddresses.add("DA45CF");
-        hwAddresses.add("CD9D0C");
-
-        return hwAddresses;
-    }
-
-    public boolean initSupported() {
         return false;
     }
 

@@ -27,7 +27,6 @@ import com.health.openscale.core.datatypes.ScaleData;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -55,16 +54,6 @@ public class BluetoothMiScale extends BluetoothCommunication {
     @Override
     public String defaultDeviceName() {
         return "MI_SCALE";
-    }
-
-    @Override
-    public ArrayList<String> hwAddresses() {
-        ArrayList hwAddresses = new ArrayList();
-            hwAddresses.add("880F10");
-            hwAddresses.add("C80F10");
-            hwAddresses.add("F9C28E");
-
-        return hwAddresses;
     }
 
     @Override
