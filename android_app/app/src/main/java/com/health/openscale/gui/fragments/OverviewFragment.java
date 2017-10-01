@@ -39,6 +39,7 @@ import com.health.openscale.core.datatypes.ScaleData;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.gui.activities.DataEntryActivity;
 import com.health.openscale.gui.views.BMIMeasurementView;
+import com.health.openscale.gui.views.BMRMeasurementView;
 import com.health.openscale.gui.views.BoneMeasurementView;
 import com.health.openscale.gui.views.FatMeasurementView;
 import com.health.openscale.gui.views.HipMeasurementView;
@@ -127,6 +128,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         overviewMeasurements.add(new WHtRMeasurementView(context));
         overviewMeasurements.add(new HipMeasurementView(context));
         overviewMeasurements.add(new WHRMeasurementView(context));
+        overviewMeasurements.add(new BMRMeasurementView(context));
 
         for (MeasurementView measurement : overviewMeasurements) {
             tableOverviewLayout.addView(measurement);

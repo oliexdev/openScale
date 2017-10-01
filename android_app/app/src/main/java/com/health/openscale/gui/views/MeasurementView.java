@@ -264,10 +264,6 @@ public abstract class MeasurementView extends TableLayout {
         return true;
     }
 
-    private int pxImageDp(float dp) {
-        return (int)(dp * getResources().getDisplayMetrics().density + 0.5f);
-    }
-
     protected boolean validateInput(EditText view) {
         if (view.getText().toString().length() == 0) {
             view.setError(getResources().getString(R.string.error_value_required));

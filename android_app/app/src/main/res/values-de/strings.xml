@@ -32,7 +32,7 @@
     <string name="label_birthday">Geburtstag</string>
     <string name="label_bluetooth_enable">Suche nach Waage beim Start</string>
     <string name="label_bluetooth_title">Bluetooth</string>
-    <string name="label_bmi">BMI</string>
+    <string name="label_bmi">Body-Mass-Index (BMI)</string>
     <string name="label_body_height">Körpergröße</string>
     <string name="label_comment">Kommentar</string>
     <string name="label_date">Datum</string>
@@ -132,4 +132,5 @@
     <string name="label_regression_line_degree">Regressions Polynomgrad</string>
     <string name="label_bluetooth_searching">Suche nach Bluetooth Waagen</string>
     <string name="label_bone">Knochenmasse</string>
+    <string name="label_bmr">Grundumsatz (BMR)</string>
 </resources>

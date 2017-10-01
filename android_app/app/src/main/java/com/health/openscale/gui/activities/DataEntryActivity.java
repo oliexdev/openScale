@@ -35,6 +35,7 @@ import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleData;
 import com.health.openscale.gui.views.BMIMeasurementView;
+import com.health.openscale.gui.views.BMRMeasurementView;
 import com.health.openscale.gui.views.BoneMeasurementView;
 import com.health.openscale.gui.views.CommentMeasurementView;
 import com.health.openscale.gui.views.DateMeasurementView;
@@ -69,6 +70,7 @@ public class DataEntryActivity extends Activity {
     private WHtRMeasurementView wHtRMeasurementView;
     private HipMeasurementView hipMeasurement;
     private WHRMeasurementView whrMeasurementView;
+    private BMRMeasurementView bmrMeasurementView;
     private BoneMeasurementView boneMeasurementView;
     private CommentMeasurementView commentMeasurement;
     private DateMeasurementView dateMeasurement;
@@ -107,6 +109,7 @@ public class DataEntryActivity extends Activity {
         wHtRMeasurementView = new WHtRMeasurementView(context);
         hipMeasurement = new HipMeasurementView(context);
         whrMeasurementView = new WHRMeasurementView(context);
+        bmrMeasurementView = new BMRMeasurementView(context);
         boneMeasurementView = new BoneMeasurementView(context);
         commentMeasurement = new CommentMeasurementView(context);
         dateMeasurement = new DateMeasurementView(context);
@@ -122,6 +125,7 @@ public class DataEntryActivity extends Activity {
         dataEntryMeasurements.add(wHtRMeasurementView);
         dataEntryMeasurements.add(hipMeasurement);
         dataEntryMeasurements.add(whrMeasurementView);
+        dataEntryMeasurements.add(bmrMeasurementView);
         dataEntryMeasurements.add(boneMeasurementView);
         dataEntryMeasurements.add(commentMeasurement);
         dataEntryMeasurements.add(dateMeasurement);

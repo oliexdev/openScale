@@ -49,6 +49,7 @@ import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleData;
 import com.health.openscale.gui.activities.DataEntryActivity;
 import com.health.openscale.gui.views.BMIMeasurementView;
+import com.health.openscale.gui.views.BMRMeasurementView;
 import com.health.openscale.gui.views.BoneMeasurementView;
 import com.health.openscale.gui.views.CommentMeasurementView;
 import com.health.openscale.gui.views.DateMeasurementView;
@@ -113,6 +114,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
         measurementsList.add(new WHtRMeasurementView(tableView.getContext()));
         measurementsList.add(new HipMeasurementView(tableView.getContext()));
         measurementsList.add(new WHRMeasurementView(tableView.getContext()));
+        measurementsList.add(new BMRMeasurementView(tableView.getContext()));
         measurementsList.add(new CommentMeasurementView(tableView.getContext()));
 
         for (MeasurementView measurement : measurementsList) {

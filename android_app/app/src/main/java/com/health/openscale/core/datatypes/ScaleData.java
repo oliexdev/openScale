@@ -184,6 +184,19 @@ public class ScaleData {
         return weight / ((body_height / 100.0f)*(body_height / 100.0f));
     }
 
+    public float getBMR(ScaleUser scaleUser) {
+        float bmr = 0.0f;
+
+        // BMR formula by Mifflin, St Jeor et al: A new predictive equation for resting energy expenditure in healthy individuals
+        if (scaleUser.isMale()) {
+            bmr = 10.0f * weight + 6.25f * scaleUser.body_height - 5.0f * scaleUser.getAge() + 5.0f;
+        } else {
+            bmr = 10.0f * weight + 6.25f * scaleUser.body_height - 5.0f * scaleUser.getAge() - 161.0f;
+        }
+
+        return bmr; // kCal / day
+    }
+
     public float getWHtR(int body_height) {
         return waist / (float)body_height ;
     }
