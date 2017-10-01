@@ -105,12 +105,12 @@ public class DataEntryActivity extends Activity {
         waterMeasurement = new WaterMeasurementView(context);
         muscleMeasurement = new MuscleMeasurementView(context);
         fatMeasurement = new FatMeasurementView(context);
+        boneMeasurementView = new BoneMeasurementView(context);
         waistMeasurement = new WaistMeasurementView(context);
         wHtRMeasurementView = new WHtRMeasurementView(context);
         hipMeasurement = new HipMeasurementView(context);
         whrMeasurementView = new WHRMeasurementView(context);
         bmrMeasurementView = new BMRMeasurementView(context);
-        boneMeasurementView = new BoneMeasurementView(context);
         commentMeasurement = new CommentMeasurementView(context);
         dateMeasurement = new DateMeasurementView(context);
         timeMeasurement = new TimeMeasurementView(context);
@@ -121,12 +121,12 @@ public class DataEntryActivity extends Activity {
         dataEntryMeasurements.add(waterMeasurement);
         dataEntryMeasurements.add(muscleMeasurement);
         dataEntryMeasurements.add(fatMeasurement);
+        dataEntryMeasurements.add(boneMeasurementView);
         dataEntryMeasurements.add(waistMeasurement);
         dataEntryMeasurements.add(wHtRMeasurementView);
         dataEntryMeasurements.add(hipMeasurement);
         dataEntryMeasurements.add(whrMeasurementView);
         dataEntryMeasurements.add(bmrMeasurementView);
-        dataEntryMeasurements.add(boneMeasurementView);
         dataEntryMeasurements.add(commentMeasurement);
         dataEntryMeasurements.add(dateMeasurement);
         dataEntryMeasurements.add(timeMeasurement);
