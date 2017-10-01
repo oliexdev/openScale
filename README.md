@@ -16,7 +16,7 @@ Install [openScale-dev-build.apk](https://github.com/oliexdev/openScale/blob/mas
 - Display all your data on a chart and table 
 - Import or export your data from/into a CSV file
 - Support for multiple users
-- Support for Bluetooth Xiaomi Mi Scale, Sanitas SBF70, Medisana BS444
+- Support for Bluetooth Xiaomi Mi Scale, Sanitas SBF70, Medisana BS444, Digoo DG-S038H, Yunmai Mini (basic support)
 - Connection to a custom made bluetooth scale (see [openScale wiki](https://github.com/oliexdev/openScale/wiki) for more information)
 - All data belongs to you (no cloud service)
 
