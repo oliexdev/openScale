@@ -119,9 +119,6 @@
   <string name="Friday">Piatok</string>
   <string name="Saturday">Sobota</string>
   <string name="Sunday">Nedeľa</string>
-  <string name="label_bt_device_initialization">Inicializácia Bt váhy</string>
-  <string name="label_bt_device_data_transfer">Prenos údajov z Bt váhy</string>
-  <string name="label_bt_device_data_history">História údajov Bt váhy</string>
   <string name="label_bt_device_support">Podporované budú</string>
   <string name="label_exportBackup">Export zálohy</string>
   <string name="label_importBackup">Import zálohy</string>

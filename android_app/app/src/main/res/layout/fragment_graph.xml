@@ -64,6 +64,17 @@
             app:rippleColor="#99CC00" />
 
         <android.support.design.widget.FloatingActionButton
+            android:id="@+id/diagramBone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="10dp"
+            android:clickable="true"
+            android:src="@drawable/ic_bone"
+            app:backgroundTint="#00cc9e"
+            app:fabSize="mini"
+            app:rippleColor="#00cc9e" />
+
+        <android.support.design.widget.FloatingActionButton
             android:id="@+id/diagramWaist"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

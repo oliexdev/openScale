@@ -556,6 +556,7 @@ public class BluetoothSanitasSbf70 extends BluetoothCommunication {
         float boneMass = ((float) (
                 ((data[14] & 0xFF) << 8) + (data[15] & 0xFF)
         )) * 50.0f / 1000.0f; // unit is 50g
+        receivedMeasurement.setBone(boneMass);
 
         // basal metabolic rate
         float bmr = ((float) (

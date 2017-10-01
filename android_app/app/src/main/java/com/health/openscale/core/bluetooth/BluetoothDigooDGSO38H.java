@@ -94,7 +94,7 @@ public class BluetoothDigooDGSO38H extends BluetoothCommunication {
     }
 
     private void parseBytes(byte[] weightBytes) {
-            float weight, fat, water, muscle;
+            float weight, fat, water, muscle, boneWeight;
             //float subcutaneousFat, visceralFat, metabolicBaseRate, biologicalAge,  boneWeight;
 
             final byte ctrlByte = weightBytes[5];
@@ -143,13 +143,14 @@ public class BluetoothDigooDGSO38H extends BluetoothCommunication {
                     //metabolicBaseRate = (float) (((weightBytes[13] & 0xFF) << 8) | (weightBytes[14] & 0xFF));
                     //biologicalAge = (float) (weightBytes[15] & 0xFF) + 1;
                     muscle = (float) (((weightBytes[16] & 0xFF) << 8) | (weightBytes[17] & 0xFF)) / 10.0f;
-                    //boneWeight = (float) (weightBytes[18] & 0xFF) / 10.0f;
+                    boneWeight = (float) (weightBytes[18] & 0xFF) / 10.0f;
 
                     //TODO: Add extra measurements?
                     scaleBtData.setDateTime(new Date());
                     scaleBtData.setFat(fat);
                     scaleBtData.setMuscle(muscle);
                     scaleBtData.setWater(water);
+                    scaleBtData.setBone(boneWeight);
                 }
                 scaleBtData.setWeight(weight);
                 addScaleData(scaleBtData);

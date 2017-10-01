@@ -39,6 +39,7 @@ import com.health.openscale.core.datatypes.ScaleData;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.gui.activities.DataEntryActivity;
 import com.health.openscale.gui.views.BMIMeasurementView;
+import com.health.openscale.gui.views.BoneMeasurementView;
 import com.health.openscale.gui.views.FatMeasurementView;
 import com.health.openscale.gui.views.HipMeasurementView;
 import com.health.openscale.gui.views.MeasurementView;
@@ -121,6 +122,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         overviewMeasurements.add(new WaterMeasurementView(context));
         overviewMeasurements.add(new MuscleMeasurementView(context));
         overviewMeasurements.add(new FatMeasurementView(context));
+        overviewMeasurements.add(new BoneMeasurementView(context));
         overviewMeasurements.add(new WaistMeasurementView(context));
         overviewMeasurements.add(new WHtRMeasurementView(context));
         overviewMeasurements.add(new HipMeasurementView(context));
@@ -234,6 +236,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         List<PointValue> valuesMuscle = new ArrayList<PointValue>();
         List<PointValue> valuesWaist = new ArrayList<PointValue>();
         List<PointValue> valuesHip = new ArrayList<PointValue>();
+        List<PointValue> valuesBone = new ArrayList<PointValue>();
         List<Line> lines = new ArrayList<Line>();
 
         int max_i = 7;
@@ -267,6 +270,8 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
                 valuesWaist.add(new PointValue(i, histData.getWaist()));
             if (histData.getHip() != 0.0f)
                 valuesHip.add(new PointValue(i, histData.getHip()));
+            if (histData.getBone() != 0.0f)
+                valuesBone.add(new PointValue(i, histData.getBone()));
 
             histDate.setTime(histData.getDateTime());
 
@@ -305,6 +310,11 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
                 setHasLabels(prefs.getBoolean("labelsEnable", true)).
                 setHasPoints(prefs.getBoolean("pointsEnable", true)).
                 setFormatter(new SimpleLineChartValueFormatter(1));
+        Line lineBone = new Line(valuesBone).
+                setColor(Color.parseColor("#00cc9e")).
+                setHasLabels(prefs.getBoolean("labelsEnable", true)).
+                setHasPoints(prefs.getBoolean("pointsEnable", true)).
+                setFormatter(new SimpleLineChartValueFormatter(1));
 
         if(prefs.getBoolean("weightEnable", true)) {
             lines.add(lineWeight);
@@ -328,6 +338,10 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
         if(prefs.getBoolean("hipEnable", false)) {
             lines.add(lineHip);
+        }
+
+        if(prefs.getBoolean("boneEnable", false)) {
+            lines.add(lineBone);
         }
 
         LineChartData lineData = new LineChartData(lines);

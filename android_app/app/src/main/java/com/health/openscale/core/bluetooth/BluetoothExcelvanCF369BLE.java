@@ -137,6 +137,9 @@ public class BluetoothExcelvanCF369BLE extends BluetoothCommunication {
         scaleBtData.setFat(fat);
         scaleBtData.setMuscle(muscle);
         scaleBtData.setWater(water);
+        scaleBtData.setBone(bone);
         scaleBtData.setDateTime(new Date());
+
+        addScaleData(scaleBtData);
     }
 }

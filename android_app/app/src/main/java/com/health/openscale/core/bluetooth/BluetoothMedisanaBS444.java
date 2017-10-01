@@ -140,7 +140,7 @@ public class BluetoothMedisanaBS444 extends BluetoothCommunication {
         btScaleData.setFat(decodeFeature(featureData[8], featureData[9]));
         btScaleData.setWater(decodeFeature(featureData[10], featureData[11]));
         btScaleData.setMuscle(decodeFeature(featureData[12], featureData[13]));
-        //btScaleData.setBone(decodeFeature(featureData[14], featureData[15]));
+        btScaleData.setBone(decodeFeature(featureData[14], featureData[15]));
     }
 
     private float decodeFeature(byte highByte, byte lowByte) {

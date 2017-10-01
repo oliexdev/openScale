@@ -131,4 +131,5 @@
     <string name="label_regression_line">Gewichtsregressionsgerade</string>
     <string name="label_regression_line_degree">Regressions Polynomgrad</string>
     <string name="label_bluetooth_searching">Suche nach Bluetooth Waagen</string>
+    <string name="label_bone">Knochenmasse</string>
 </resources>

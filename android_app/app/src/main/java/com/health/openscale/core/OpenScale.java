@@ -259,7 +259,7 @@ public class OpenScale {
 			while (line != null) {
 				String csvField[] = line.split(",", -1);
 
-                if (csvField.length < 8) {
+                if (csvField.length < 9) {
                     throw new IOException("Can't parse CSV file. Field length is wrong.");
                 }
 
@@ -270,9 +270,10 @@ public class OpenScale {
 				newScaleData.setFat(Float.parseFloat(csvField[2]));
 				newScaleData.setWater(Float.parseFloat(csvField[3]));
 				newScaleData.setMuscle(Float.parseFloat(csvField[4]));
-                newScaleData.setWaist(Float.parseFloat(csvField[5]));
-                newScaleData.setHip(Float.parseFloat(csvField[6]));
-                newScaleData.setComment(csvField[7]);
+                newScaleData.setBone(Float.parseFloat(csvField[5]));
+                newScaleData.setWaist(Float.parseFloat(csvField[6]));
+                newScaleData.setHip(Float.parseFloat(csvField[7]));
+                newScaleData.setComment(csvField[8]);
 
                 newScaleData.setUserId(getSelectedScaleUser().id);
 
@@ -307,6 +308,7 @@ public class OpenScale {
 			csvWriter.append(Float.toString(scaleData.getFat()) + ",");
 			csvWriter.append(Float.toString(scaleData.getWater()) + ",");
 			csvWriter.append(Float.toString(scaleData.getMuscle()) + ",");
+            csvWriter.append(Float.toString(scaleData.getBone()) + ",");
             csvWriter.append(Float.toString(scaleData.getWaist()) + ",");
             csvWriter.append(Float.toString(scaleData.getHip()) + ",");
             if (!scaleData.getComment().isEmpty()) {

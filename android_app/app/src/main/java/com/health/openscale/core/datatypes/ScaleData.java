@@ -37,6 +37,7 @@ public class ScaleData {
     private float muscle;
     private float waist;
     private float hip;
+    private float bone;
     private String comment;
 
     public ScaleData()
@@ -48,6 +49,7 @@ public class ScaleData {
         fat = 0.0f;
         water = 0.0f;
         muscle = 0.0f;
+        bone = 0.0f;
         waist = 0.0f;
         hip = 0.0f;
         comment = new String();
@@ -166,6 +168,10 @@ public class ScaleData {
         this.hip = hip;
     }
 
+    public float getBone() { return bone; }
+
+    public void setBone(float bone) {this.bone = bone; }
+
     public String getComment() {
         return comment;
     }
@@ -193,6 +199,6 @@ public class ScaleData {
 	@Override
 	public String toString()
 	{
-		return "ID : " + id + " USER_ID: " + user_id + " DATE_TIME: " + date_time.toString() + " WEIGHT: " + weight + " FAT: " + fat + " WATER: " + water + " MUSCLE: " + muscle + " WAIST: " + waist + " HIP: " + hip + " COMMENT: " + comment;
+		return "ID : " + id + " USER_ID: " + user_id + " DATE_TIME: " + date_time.toString() + " WEIGHT: " + weight + " FAT: " + fat + " WATER: " + water + " MUSCLE: " + muscle + " WAIST: " + waist + " HIP: " + hip + " BONE: " + bone + " COMMENT: " + comment;
 	}
 }

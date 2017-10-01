@@ -75,6 +75,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     private FloatingActionButton diagramMuscle;
     private FloatingActionButton diagramWaist;
     private FloatingActionButton diagramHip;
+    private FloatingActionButton diagramBone;
     private FloatingActionButton enableMonth;
     private SharedPreferences prefs;
 
@@ -112,7 +113,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         diagramMuscle = (FloatingActionButton) graphView.findViewById(R.id.diagramMuscle);
         diagramWaist = (FloatingActionButton) graphView.findViewById(R.id.diagramWaist);
         diagramHip = (FloatingActionButton) graphView.findViewById(R.id.diagramHip);
-
+        diagramBone = (FloatingActionButton) graphView.findViewById(R.id.diagramBone);
         enableMonth = (FloatingActionButton) graphView.findViewById(R.id.enableMonth);
 
         diagramWeight.setOnClickListener(new onClickListenerDiagramLines());
@@ -121,6 +122,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         diagramMuscle.setOnClickListener(new onClickListenerDiagramLines());
         diagramWaist.setOnClickListener(new onClickListenerDiagramLines());
         diagramHip.setOnClickListener(new onClickListenerDiagramLines());
+        diagramBone.setOnClickListener(new onClickListenerDiagramLines());
 
         enableMonth.setOnClickListener(new onClickListenerDiagramLines());
 
@@ -140,6 +142,10 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         if(!prefs.getBoolean("muscleEnable", true)) {
             diagramMuscle.setVisibility(View.GONE);
+        }
+
+        if(!prefs.getBoolean("boneEnable", false)) {
+            diagramBone.setVisibility(View.GONE);
         }
 
         if(!prefs.getBoolean("waistEnable", false)) {
@@ -237,6 +243,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         Stack<PointValue> valuesMuscle = new Stack<PointValue>();
         Stack<PointValue> valuesWaist = new Stack<PointValue>();
         Stack<PointValue> valuesHip = new Stack<PointValue>();
+        Stack<PointValue> valuesBone = new Stack<>();
         List<Line> lines = new ArrayList<Line>();
 
         Calendar calDB = Calendar.getInstance();
@@ -256,6 +263,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             addPointValue(valuesMuscle, calDB.get(field), scaleEntry.getMuscle());
             addPointValue(valuesWaist, calDB.get(field), scaleEntry.getWaist());
             addPointValue(valuesHip, calDB.get(field), scaleEntry.getHip());
+            addPointValue(valuesBone, calDB.get(field), scaleEntry.getBone());
         }
 
 
@@ -286,6 +294,11 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                 setFormatter(new SimpleLineChartValueFormatter(1));
         Line lineHip = new Line(valuesHip).
                 setColor(Color.YELLOW).
+                setHasLabels(prefs.getBoolean("labelsEnable", true)).
+                setHasPoints(prefs.getBoolean("pointsEnable", true)).
+                setFormatter(new SimpleLineChartValueFormatter(1));
+        Line lineBone = new Line(valuesBone).
+                setColor(Color.parseColor("#33ff9d")).
                 setHasLabels(prefs.getBoolean("labelsEnable", true)).
                 setHasPoints(prefs.getBoolean("pointsEnable", true)).
                 setFormatter(new SimpleLineChartValueFormatter(1));
@@ -330,6 +343,13 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             diagramHip.setBackgroundTintList(ColorStateList.valueOf(Color.YELLOW));
         } else {
             diagramHip.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#d3d3d3")));
+        }
+
+        if(prefs.getBoolean("boneEnable", false) && prefs.getBoolean(String.valueOf(diagramBone.getId()), true)) {
+            lines.add(lineBone);
+            diagramBone.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#00cc9e")));
+        } else {
+            diagramBone.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#d3d3d3")));
         }
 
         if(prefs.getBoolean(String.valueOf(enableMonth.getId()), true)) {
