@@ -76,9 +76,17 @@ public class BluetoothYunmaiMini extends BluetoothCommunication {
                 writeBytes(WEIGHT_CMD_SERVICE, WEIGHT_CMD_CHARACTERISTIC, user_add_or_query);
                 break;
             case 1:
-                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC, WEIGHT_MEASUREMENT_CONFIG);
+                long unix_time = new Date().getTime() / 1000;
+
+                byte[] set_time = new byte[]{(byte)0x0d, (byte) 0x0d, (byte) 0x11, (byte)((unix_time & 0xFF000000) >> 32), (byte)((unix_time & 0xFF0000) >> 16), (byte)((unix_time & 0xFF00) >> 8), (byte)((unix_time & 0xFF) >> 0), (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00};
+
+                set_time[12] = xor_checksum(set_time);
+                writeBytes(WEIGHT_CMD_SERVICE, WEIGHT_CMD_CHARACTERISTIC, set_time);
                 break;
             case 2:
+                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC, WEIGHT_MEASUREMENT_CONFIG);
+                break;
+            case 3:
                 byte[] magic_bytes = new byte[]{(byte)0x0d, (byte)0x05, (byte)0x13, (byte)0x00, (byte)0x16};
                 writeBytes(WEIGHT_CMD_SERVICE, WEIGHT_CMD_CHARACTERISTIC, magic_bytes);
                 break;
