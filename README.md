@@ -1,4 +1,4 @@
-openScale <img src="https://travis-ci.org/oliexdev/openScale.svg?branch=master" alt="build:passed">
+&nbsp;<img src="https://github.com/oliexdev/openScale/raw/master/android_app/app/src/main/res/drawable-mdpi/ic_launcher_openscale.png"/> openScale <img src="https://travis-ci.org/oliexdev/openScale.svg?branch=master" alt="build:passed">
 =========
 
 openScale is an open source app to keep a log of your weight, body fat, water percentage and muscle percentage.
