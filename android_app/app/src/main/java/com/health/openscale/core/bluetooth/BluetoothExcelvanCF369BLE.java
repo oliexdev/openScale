@@ -28,8 +28,8 @@ import java.util.Date;
 import java.util.UUID;
 
 public class BluetoothExcelvanCF369BLE extends BluetoothCommunication {
-    private final UUID WEIGHT_MEASUREMENT_SERVICE = UUID.fromString("f000ffc0-0451-4000-b000-000000000000");
-    private final UUID WEIGHT_MEASUREMENT_CHARACTERISTIC = UUID.fromString("0000FFF0-0000-1000-8000-00805f9b34fb");
+    private final UUID WEIGHT_MEASUREMENT_SERVICE = UUID.fromString("0000FFF0-0000-1000-8000-00805f9b34fb");
+    private final UUID WEIGHT_MEASUREMENT_CHARACTERISTIC = UUID.fromString("0000FFF1-0000-1000-8000-00805f9b34fb");
     private final UUID WEIGHT_CUSTOM0_CHARACTERISTIC = UUID.fromString("0000FFF4-0000-1000-8000-00805f9b34fb");
     private final UUID WEIGHT_MEASUREMENT_CONFIG = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
 
@@ -52,6 +52,9 @@ public class BluetoothExcelvanCF369BLE extends BluetoothCommunication {
         switch (stateNr) {
             case 0:
                 setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_CUSTOM0_CHARACTERISTIC, WEIGHT_MEASUREMENT_CONFIG);
+                break;
+            case 1:
+                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC, WEIGHT_MEASUREMENT_CONFIG);
                 break;
             default:
                 return false;
@@ -93,7 +96,7 @@ public class BluetoothExcelvanCF369BLE extends BluetoothCommunication {
                 break;
             case 1:
                 byte[] invokeCmd = new byte[]{(byte)0x01, (byte)0x00};
-                writeBytes(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_CUSTOM0_CHARACTERISTIC, invokeCmd);
+                writeBytes(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC, invokeCmd);
                 break;
             default:
                 return false;
