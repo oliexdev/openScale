@@ -49,18 +49,7 @@ public class BluetoothExcelvanCF369BLE extends BluetoothCommunication {
 
     @Override
     boolean nextInitCmd(int stateNr) {
-        switch (stateNr) {
-            case 0:
-                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_CUSTOM0_CHARACTERISTIC, WEIGHT_MEASUREMENT_CONFIG);
-                break;
-            case 1:
-                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC, WEIGHT_MEASUREMENT_CONFIG);
-                break;
-            default:
-                return false;
-        }
-
-        return true;
+        return false;
     }
 
     @Override
@@ -95,6 +84,9 @@ public class BluetoothExcelvanCF369BLE extends BluetoothCommunication {
                 writeBytes(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC, configBytes);
                 break;
             case 1:
+                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_CUSTOM0_CHARACTERISTIC, WEIGHT_MEASUREMENT_CONFIG);
+                break;
+            case 2:
                 byte[] invokeCmd = new byte[]{(byte)0x01, (byte)0x00};
                 writeBytes(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC, invokeCmd);
                 break;
@@ -117,7 +109,7 @@ public class BluetoothExcelvanCF369BLE extends BluetoothCommunication {
         if (data != null && data.length > 0) {
 
             // if data is body scale type
-            if (data[0] == 0xcf) {
+            if (data.length == 1 && data[0] == (byte)0xcf) {
                 parseBytes(data);
             }
         }
