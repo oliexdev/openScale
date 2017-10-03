@@ -77,7 +77,7 @@ public class BluetoothExcelvanCF369BLE extends BluetoothCommunication {
                         unit = 0x01; // kg
                 }
 
-                byte xor_checksum = (byte)((0x01) ^ sex ^ (0x01) ^ height ^ age ^ unit);
+                byte xor_checksum = (byte)((byte)(0x01) ^ sex ^ (byte)(0x01) ^ height ^ age ^ unit);
 
                 byte[] configBytes = {(byte)(0xfe), (byte)(0x01), sex, (byte)(0x01), height, age, unit, xor_checksum};
 
