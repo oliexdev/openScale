@@ -109,7 +109,7 @@ public class BluetoothExcelvanCF369BLE extends BluetoothCommunication {
         if (data != null && data.length > 0) {
 
             // if data is body scale type
-            if (data.length == 1 && data[0] == (byte)0xcf) {
+            if (data.length == 16 && data[0] == (byte)0xcf) {
                 parseBytes(data);
             }
         }
