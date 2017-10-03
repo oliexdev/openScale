@@ -133,6 +133,8 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 	@Override
 	public void updateOnView(ArrayList<ScaleData> scaleDataList)
     {
+        tableDataView.setAdapter(new ListViewAdapter(new ArrayList<HashMap<Integer, String>>())); // delete all data in the table with an empty adapter array list
+
         if (scaleDataList.isEmpty()) {
             return;
         }

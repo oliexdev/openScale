@@ -24,6 +24,7 @@ import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.health.openscale.R;
 import com.health.openscale.core.alarm.AlarmHandler;
 import com.health.openscale.core.bluetooth.BluetoothCommunication;
 import com.health.openscale.core.database.ScaleDatabase;
@@ -188,6 +189,10 @@ public class OpenScale {
         }
 
 		if (scaleDB.insertEntry(scaleData)) {
+            ScaleUser scaleUser = getScaleUser(scaleData.getUserId());
+
+            String infoText = String.format(context.getString(R.string.info_new_data_added), scaleData.getConvertedWeight(scaleUser.scale_unit), scaleUser.UNIT_STRING[scaleUser.scale_unit], dateTimeFormat.format(scaleData.getDateTime()), scaleUser.user_name);
+            Toast.makeText(context, infoText, Toast.LENGTH_LONG).show();
             alarmHandler.entryChanged(context, scaleData);
             updateScaleData();
         }
