@@ -408,10 +408,9 @@ public abstract class BluetoothCommunication {
                         if (device.getName().toLowerCase().equals(btDeviceName.toLowerCase())) {
                             Log.d("BluetoothCommunication", btDeviceName + " found trying to connect...");
 
-                            bluetoothGatt = device.connectGatt(context, false, gattCallback);
-
                             searchHandler.removeCallbacksAndMessages(null);
                             btAdapter.stopLeScan(scanCallback);
+                            bluetoothGatt = device.connectGatt(context, false, gattCallback);
                         }
                     } catch (Exception e) {
                         setBtStatus(BT_STATUS_CODE.BT_UNEXPECTED_ERROR, e.getMessage());

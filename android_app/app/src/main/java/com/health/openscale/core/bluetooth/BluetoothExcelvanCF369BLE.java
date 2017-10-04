@@ -24,6 +24,7 @@ import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleData;
 import com.health.openscale.core.datatypes.ScaleUser;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.UUID;
 
@@ -108,7 +109,7 @@ public class BluetoothExcelvanCF369BLE extends BluetoothCommunication {
 
             // if data is body scale type
             if (data.length == 16 && data[0] == (byte)0xcf) {
-                if (!data.equals(receivedData)) { // accepts only one data of the same content
+                if (!Arrays.equals(data, receivedData)) { // accepts only one data of the same content
                     receivedData = data;
                     parseBytes(data);
                 }
