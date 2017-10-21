@@ -14,12 +14,10 @@ deploy:
   api-key: $GITHUB_API_KEY
   file: $HOME/openScale-dev-build.apk
   skip_cleanup: true
-  overwrite: true
   name: "openScale dev build"
   body: "Automatically openScale dev build by Travis CI"
   prerelease: true
-  on:
-    tags: true
+  overwrite: true
 
 after_success:
  - chmod +x ./upload_apk.sh
