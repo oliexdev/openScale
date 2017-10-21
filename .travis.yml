@@ -18,6 +18,8 @@ deploy:
   name: "openScale dev build"
   body: "Automatically openScale dev build by Travis CI"
   prerelease: true
+  on:
+    tags: true
 
 after_success:
  - chmod +x ./upload_apk.sh
