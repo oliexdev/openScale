@@ -9,12 +9,6 @@ android:
     - android-24
     - extra-android-m2repository
 
-script: cd android_app && ./gradlew assembleDebug
-
-after_success:
- - chmod +x ./upload_apk.sh
- - ./upload_apk.sh
-
 deploy:
   provider: releases
   api-key: $GITHUB_API_KEY
@@ -24,3 +18,9 @@ deploy:
   body: "Automatically openScale dev build by Travis CI"
   draft: false
   prerelease: true
+
+after_success:
+ - chmod +x ./upload_apk.sh
+ - ./upload_apk.sh
+
+script: cd android_app && ./gradlew assembleDebug
