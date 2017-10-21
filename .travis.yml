@@ -12,11 +12,10 @@ android:
 deploy:
   provider: releases
   api-key: $GITHUB_API_KEY
-  file: "openScale-dev-build.apk"
+  file: $HOME/openScale-dev-build.apk
   skip_cleanup: true
   name: "openScale dev build"
   body: "Automatically openScale dev build by Travis CI"
-  draft: false
   prerelease: true
 
 after_success:
