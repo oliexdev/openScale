@@ -9,10 +9,17 @@ android:
     - android-24
     - extra-android-m2repository
 
+script: cd android_app && ./gradlew assembleDebug
+
+after_success:
+ - chmod +x ./upload_apk.sh
+ - ./upload_apk.sh
+
 deploy:
   provider: releases
   api-key: $GITHUB_API_KEY
-
+  file: "openScale-dev-build.apk"
+  skip_cleanup: true
   name: "openScale dev build"
   body: "Automatically openScale dev build by Travis CI"
   draft: false
