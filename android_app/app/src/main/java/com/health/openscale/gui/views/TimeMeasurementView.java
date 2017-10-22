@@ -70,7 +70,7 @@ public class TimeMeasurementView extends MeasurementView {
 
     @Override
     public String getUnit() {
-        return "";
+        return null;
     }
 
     @Override
