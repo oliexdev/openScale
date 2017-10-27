@@ -23,7 +23,9 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleData;
+import com.health.openscale.core.datatypes.ScaleUser;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -40,6 +42,9 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
     private final UUID WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC = UUID.fromString("00002a2f-0000-3512-2118-0009af100700");
     private final UUID WEIGHT_MEASUREMENT_TIME_CHARACTERISTIC = UUID.fromString("00002a2b-0000-1000-8000-00805f9b34fb");
     private final UUID WEIGHT_MEASUREMENT_CONFIG = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
+
+    private final UUID WEIGHT_CUSTOM_SERVICE = UUID.fromString("00001530-0000-3512-2118-0009af100700");
+    private final UUID WEIGHT_CUSTOM_CONFIG = UUID.fromString("00001542-0000-3512-2118-0009af100700");
 
     public BluetoothMiScale2(Context context) {
         super(context);
@@ -166,6 +171,12 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
             case 5:
                 // invoke receiving history data
                 writeBytes(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, new byte[]{0x02});
+                break;
+            case 6:
+                // set scale units
+                final ScaleUser selectedUser = OpenScale.getInstance(context).getSelectedScaleUser();
+                byte[] setUnitCmd = new byte[]{(byte)0x06, (byte)0x04, (byte)0x00, (byte) selectedUser.scale_unit};
+                writeBytes(WEIGHT_CUSTOM_SERVICE, WEIGHT_CUSTOM_CONFIG, setUnitCmd);
                 break;
             default:
                 return false;
