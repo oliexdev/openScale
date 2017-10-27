@@ -211,21 +211,13 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
         try {
             float weight = 0.0f;
 
-            final byte ctrlByte = weightBytes[1];
+            final byte ctrlByte0 = weightBytes[0];
+            final byte ctrlByte1 = weightBytes[1];
 
-            final boolean isWeightRemoved = isBitSet(ctrlByte, 7);
-            final boolean isStabilized = isBitSet(ctrlByte, 5);
-            final boolean isLBSUnit = isBitSet(ctrlByte, 0);
-            final boolean isCattyUnit = isBitSet(ctrlByte, 4);
-
-            /*Log.d("GattCallback", "IsWeightRemoved: " + isBitSet(ctrlByte, 7));
-            Log.d("GattCallback", "6 LSB Unknown: " + isBitSet(ctrlByte, 6));
-            Log.d("GattCallback", "IsStabilized: " + isBitSet(ctrlByte, 5));
-            Log.d("GattCallback", "IsCattyOrKg: " + isBitSet(ctrlByte, 4));
-            Log.d("GattCallback", "3 LSB Unknown: " + isBitSet(ctrlByte, 3));
-            Log.d("GattCallback", "2 LSB Unknown: " + isBitSet(ctrlByte, 2));
-            Log.d("GattCallback", "1 LSB Unknown: " + isBitSet(ctrlByte, 1));
-            Log.d("GattCallback", "IsLBS: " + isBitSet(ctrlByte, 0));*/
+            final boolean isWeightRemoved = isBitSet(ctrlByte1, 7); // FIXME: unconfirmed
+            final boolean isStabilized = isBitSet(ctrlByte1, 5);  // FIXME: unconfirmed
+            final boolean isLBSUnit = isBitSet(ctrlByte0, 0);
+            final boolean isCattyUnit = isBitSet(ctrlByte1, 6);
 
             // Only if the value is stabilized and the weight is *not* removed, the date is valid
             if (isStabilized && !isWeightRemoved) {
