@@ -42,6 +42,8 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
     private final UUID WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC = UUID.fromString("00002a2f-0000-3512-2118-0009af100700");
     private final UUID WEIGHT_MEASUREMENT_TIME_CHARACTERISTIC = UUID.fromString("00002a2b-0000-1000-8000-00805f9b34fb");
     private final UUID WEIGHT_MEASUREMENT_CONFIG = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
+    private final UUID WEIGHT_MEASUREMENT_BODY_COMPOSITION_FEATURE = UUID.fromString("00002a9b-0000-1000-8000-00805f9b34fb");
+    private final UUID WEIGHT_MEASUREMENT_BODY_COMPOSITION_MEASUREMENT = UUID.fromString("00002a9c-0000-1000-8000-00805f9b34fb");
 
     private final UUID WEIGHT_CUSTOM_SERVICE = UUID.fromString("00001530-0000-3512-2118-0009af100700");
     private final UUID WEIGHT_CUSTOM_CONFIG = UUID.fromString("00001542-0000-3512-2118-0009af100700");
@@ -61,28 +63,11 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
     }
 
     @Override
-    public void onBluetoothDataRead(BluetoothGatt bluetoothGatt, BluetoothGattCharacteristic gattCharacteristic, int status) {
-        byte[] data = gattCharacteristic.getValue();
-
-        int currentYear = Calendar.getInstance().get(Calendar.YEAR);
-        int currentMonth = Calendar.getInstance().get(Calendar.MONTH)+1;
-        int currentDay = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
-        int scaleYear = ((data[1] & 0xFF) << 8) | (data[0] & 0xFF);
-        int scaleMonth = (int) data[2];
-        int scaleDay = (int) data[3];
-
-        if (currentYear == scaleYear && currentMonth == scaleMonth && currentDay == scaleDay) {
-            setBtMachineState(BT_MACHINE_STATE.BT_CMD_STATE);
-        } else {
-            Log.d("BluetoothMiScale", "Current year and scale year is different");
-        }
-    }
-
-    @Override
     public void onBluetoothDataChange(BluetoothGatt bluetoothGatt, BluetoothGattCharacteristic gattCharacteristic) {
         final byte[] data = gattCharacteristic.getValue();
 
         if (data != null && data.length > 0) {
+
             // Stop command from mi scale received
             if (data[0] == 0x03) {
                 setBtMachineState(BT_MACHINE_STATE.BT_CLEANUP_STATE);
@@ -107,8 +92,10 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
     boolean nextInitCmd(int stateNr) {
         switch (stateNr) {
             case 0:
-                // read device time
-                readBytes(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_TIME_CHARACTERISTIC);
+                // set scale units
+                final ScaleUser selectedUser = OpenScale.getInstance(context).getSelectedScaleUser();
+                byte[] setUnitCmd = new byte[]{(byte)0x06, (byte)0x04, (byte)0x00, (byte) selectedUser.scale_unit};
+                writeBytes(WEIGHT_CUSTOM_SERVICE, WEIGHT_CUSTOM_CONFIG, setUnitCmd);
                 break;
             case 1:
                 // set current time
@@ -128,12 +115,6 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
                 // set notification on for weight measurement history
                 setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, WEIGHT_MEASUREMENT_CONFIG);
                 break;
-            case 3:
-                // Set on history weight measurement
-                byte[] magicBytes = new byte[]{(byte)0x01, (byte)0x96, (byte)0x8a, (byte)0xbd, (byte)0x62};
-
-                writeBytes(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, magicBytes);
-                break;
             default:
                 return false;
         }
@@ -145,38 +126,23 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
     boolean nextBluetoothCmd(int stateNr) {
         switch (stateNr) {
             case 0:
-                // set notification on for weight measurement history
-                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, WEIGHT_MEASUREMENT_CONFIG);
-                break;
-            case 1:
-                // set notification on for weight measurement
-                // FIXME: replacement characteristic for realtime measurements on Mi Scale 2?
-                //setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC, WEIGHT_MEASUREMENT_CONFIG);
-                break;
-            case 2:
                 // configure scale to get only last measurements
                 int uniqueNumber = getUniqueNumber();
 
                 byte[] userIdentifier = new byte[]{(byte)0x01, (byte)0xFF, (byte)0xFF, (byte) ((uniqueNumber & 0xFF00) >> 8), (byte) ((uniqueNumber & 0xFF) >> 0)};
                 writeBytes(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, userIdentifier);
                 break;
-            case 3:
+            case 1:
                 // set notification off for weight measurement history
                 setNotificationOff(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, WEIGHT_MEASUREMENT_CONFIG);
                 break;
-            case 4:
+            case 2:
                 // set notification on for weight measurement history
                 setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, WEIGHT_MEASUREMENT_CONFIG);
                 break;
-            case 5:
+            case 3:
                 // invoke receiving history data
                 writeBytes(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, new byte[]{0x02});
-                break;
-            case 6:
-                // set scale units
-                final ScaleUser selectedUser = OpenScale.getInstance(context).getSelectedScaleUser();
-                byte[] setUnitCmd = new byte[]{(byte)0x06, (byte)0x04, (byte)0x00, (byte) selectedUser.scale_unit};
-                writeBytes(WEIGHT_CUSTOM_SERVICE, WEIGHT_CUSTOM_CONFIG, setUnitCmd);
                 break;
             default:
                 return false;
@@ -200,6 +166,10 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
                 byte[] userIdentifier = new byte[]{(byte)0x04, (byte)0xFF, (byte)0xFF, (byte) ((uniqueNumber & 0xFF00) >> 8), (byte) ((uniqueNumber & 0xFF) >> 0)};
                 writeBytes(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, userIdentifier);
                 break;
+            case 2:
+                // set notification on for body composition measurement
+                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_BODY_COMPOSITION_MEASUREMENT, WEIGHT_MEASUREMENT_CONFIG);
+                break;
             default:
                 return false;
         }
@@ -214,13 +184,13 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
             final byte ctrlByte0 = weightBytes[0];
             final byte ctrlByte1 = weightBytes[1];
 
-            final boolean isWeightRemoved = isBitSet(ctrlByte1, 7); // FIXME: unconfirmed
-            final boolean isStabilized = isBitSet(ctrlByte1, 5);  // FIXME: unconfirmed
+            final boolean isWeightRemoved = isBitSet(ctrlByte1, 7);
+            final boolean isDateInvalid = isBitSet(ctrlByte1, 6);
+            final boolean isStabilized = isBitSet(ctrlByte1, 5);
             final boolean isLBSUnit = isBitSet(ctrlByte0, 0);
             final boolean isCattyUnit = isBitSet(ctrlByte1, 6);
 
-            // Only if the value is stabilized and the weight is *not* removed, the date is valid
-            if (isStabilized && !isWeightRemoved) {
+            if (isStabilized && !isWeightRemoved && !isDateInvalid) {
 
                 final int year = ((weightBytes[3] & 0xFF) << 8) | (weightBytes[2] & 0xFF);
                 final int month = (int) weightBytes[4];
