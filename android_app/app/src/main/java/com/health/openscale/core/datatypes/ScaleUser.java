@@ -21,6 +21,8 @@ import java.util.Date;
 
 public class ScaleUser {
     public static final String[] UNIT_STRING = new String[] {"kg", "lb", "st"};
+    private static float KG_LB = 2.20462f;
+    private static float KG_ST = 0.157473f;
 
 	public int id;
     public String user_name;
@@ -28,7 +30,7 @@ public class ScaleUser {
 	public int body_height;
 	public int scale_unit;
     public int gender;
-    public float initial_weight;
+    private float initial_weight;
     public float goal_weight;
     public Date goal_date;
 
@@ -60,6 +62,47 @@ public class ScaleUser {
         if (cal_today.get(Calendar.DAY_OF_YEAR) < cal_birthday.get(Calendar.DAY_OF_YEAR)) userAge--;
 
         return userAge;
+    }
+
+    public void setInitialWeight(float weight) {
+        this.initial_weight = weight;
+
+    }
+
+    public void setConvertedInitialWeight(float weight) {
+        switch (ScaleUser.UNIT_STRING[scale_unit]) {
+            case "kg":
+                this.initial_weight = weight;
+                break;
+            case "lb":
+                this.initial_weight = weight / KG_LB;
+                break;
+            case "st":
+                this.initial_weight = weight / KG_ST;
+                break;
+        }
+    }
+
+    public float getInitialWeight() {
+        return initial_weight;
+    }
+
+    public float getConvertedInitialWeight() {
+        float converted_weight = 0.0f;
+
+        switch (ScaleUser.UNIT_STRING[scale_unit]) {
+            case "kg":
+                converted_weight = initial_weight;
+                break;
+            case "lb":
+                converted_weight = initial_weight * KG_LB;
+                break;
+            case "st":
+                converted_weight = initial_weight * KG_ST;
+                break;
+        }
+
+        return converted_weight;
     }
 
 	@Override
