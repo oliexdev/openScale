@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion '25.0.2'
+    compileSdkVersion 26
+    buildToolsVersion '26.0.2'
 
     defaultConfig {
         applicationId "com.health.openscale"
         minSdkVersion 18
-        targetSdkVersion 22 // don't set target sdk > 22 otherwise bluetooth le discovery need permission to ACCESS_COARSE_LOCATION
+        targetSdkVersion 26
         versionCode 18
         versionName "1.5.5"
     }
@@ -24,12 +24,13 @@ android {
     }
 }
 ext {
-    supportLibVersion = '24.1.1' //  lib version > 24.1.1 has a floating button bug, which move the button randomly
+    supportLibVersion = '26.1.0'
 }
 
 dependencies {
     compile "com.android.support:design:${supportLibVersion}"
     compile "com.android.support:support-v4:${supportLibVersion}"
     compile "com.android.support:appcompat-v7:${supportLibVersion}"
+    compile 'com.karumi:dexter:4.2.0'
     compile 'com.github.lecho:hellocharts-library:1.5.8@aar'
 }
