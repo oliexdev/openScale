@@ -67,6 +67,7 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
         final byte[] data = gattCharacteristic.getValue();
 
         if (data != null && data.length > 0) {
+            Log.d("MIScale_v2", "DataChange hex data: "+ byteInHex(data));
 
             // Stop command from mi scale received
             if (data[0] == 0x03) {
