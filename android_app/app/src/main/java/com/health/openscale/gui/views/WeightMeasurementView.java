@@ -34,10 +34,6 @@ public class WeightMeasurementView extends MeasurementView {
     @Override
     public void updateValue(ScaleData updateData) {
         setValueOnView(updateData.getConvertedWeight(getScaleUser().scale_unit));
-
-        if (getMeasurementMode() == MeasurementViewMode.ADD) {
-            getInputDialog().show();
-        }
     }
 
     @Override

@@ -26,15 +26,23 @@ import android.text.Html;
 import android.text.InputType;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Space;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
+import android.os.Handler;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.View.OnTouchListener;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
@@ -59,6 +67,9 @@ public abstract class MeasurementView extends TableLayout {
     private ImageView iconView;
     private TextView nameView;
     private TextView valueView;
+    private LinearLayout incdecLayout;
+    private Button incView;
+    private Button decView;
     private ImageView editModeView;
     private ImageView indicatorView;
 
@@ -90,17 +101,22 @@ public abstract class MeasurementView extends TableLayout {
         iconView = new ImageView(context);
         nameView = new TextView(context);
         valueView = new TextView(context);
+        incView = new Button(context);
+        decView = new Button(context);
         editModeView = new ImageView(context);
         indicatorView = new ImageView(context);
 
         evaluatorRow = new TableRow(context);
         evaluatorView = new LinearGaugeView(context);
 
+        incdecLayout = new LinearLayout(context);
+
         measurementRow.setLayoutParams(new TableRow.LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.WRAP_CONTENT, 1.0f));
         measurementRow.setGravity(Gravity.CENTER);
         measurementRow.addView(iconView);
         measurementRow.addView(nameView);
         measurementRow.addView(valueView);
+        measurementRow.addView(incdecLayout);
         measurementRow.addView(editModeView);
         measurementRow.addView(indicatorView);
 
@@ -113,13 +129,57 @@ public abstract class MeasurementView extends TableLayout {
         nameView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
         nameView.setTextColor(Color.BLACK);
         nameView.setLines(2);
-        nameView.setLayoutParams(new TableRow.LayoutParams(0, LayoutParams.WRAP_CONTENT, 0.60f));
+        nameView.setLayoutParams(new TableRow.LayoutParams(0, LayoutParams.WRAP_CONTENT, 0.55f));
 
         valueView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
         valueView.setTextColor(Color.BLACK);
         valueView.setGravity(Gravity.RIGHT | Gravity.CENTER);
         valueView.setPadding(0,0,20,0);
         valueView.setLayoutParams(new TableRow.LayoutParams(0, LayoutParams.MATCH_PARENT, 0.29f));
+
+        incdecLayout.setOrientation(VERTICAL);
+        incdecLayout.addView(incView);
+        incdecLayout.addView(decView);
+        incdecLayout.setVisibility(View.GONE);
+        incdecLayout.setPadding(0,0,0,0);
+        incdecLayout.setLayoutParams(new TableRow.LayoutParams(0, LayoutParams.MATCH_PARENT, 0.05f));
+
+        incView.setText("+");
+        incView.setBackgroundColor(Color.TRANSPARENT);
+        incView.setPadding(0,0,0,0);
+        incView.setLayoutParams(new TableRow.LayoutParams(LayoutParams.MATCH_PARENT, 0, 0.50f));
+        incView.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                incValue();
+            }
+        });
+        incView.setOnTouchListener(new RepeatListener(400, 100, new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                incValue();
+            }
+        }));
+        incView.setVisibility(View.GONE);
+
+        decView.setText("-");
+        decView.setBackgroundColor(Color.TRANSPARENT);
+        decView.setPadding(0,0,0,0);
+        decView.setLayoutParams(new TableRow.LayoutParams(LayoutParams.MATCH_PARENT, 0, 0.50f));
+        decView.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                decValue();
+            }
+        });
+
+        decView.setOnTouchListener(new RepeatListener(400, 100, new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                decValue();
+            }
+        }));
+        decView.setVisibility(View.GONE);
 
         editModeView.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_editable));
         editModeView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
@@ -157,6 +217,22 @@ public abstract class MeasurementView extends TableLayout {
         return Float.valueOf(value);
     }
 
+    public void incValue() {
+        float incValue = getValue() + 0.1f;
+
+        if (incValue <= getMaxValue()) {
+            setValueOnView(incValue);
+        }
+    }
+
+    public void decValue() {
+        float decValue = getValue() - 0.1f;
+
+        if (decValue >= 0) {
+            setValueOnView(decValue);
+        }
+    }
+
     public String getValueAsString() {
         return value;
     }
@@ -176,13 +252,26 @@ public abstract class MeasurementView extends TableLayout {
             case VIEW:
                 indicatorView.setVisibility(View.VISIBLE);
                 editModeView.setVisibility(View.GONE);
+                incdecLayout.setVisibility(View.GONE);
+                incView.setVisibility(View.GONE);
+                decView.setVisibility(View.GONE);
                 break;
             case EDIT:
             case ADD:
                 editModeView.setVisibility(View.VISIBLE);
+                incView.setVisibility(View.VISIBLE);
+                decView.setVisibility(View.VISIBLE);
+                incdecLayout.setVisibility(View.VISIBLE);
 
                 if (!isEditable()) {
                     editModeView.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.ic_noteeditable));
+                    incView.setVisibility(View.GONE);
+                    decView.setVisibility(View.GONE);
+                }
+
+                if (getUnit() == null) {
+                    incView.setVisibility(View.GONE);
+                    decView.setVisibility(View.GONE);
                 }
 
                 indicatorView.setVisibility(View.GONE);
@@ -334,7 +423,7 @@ public abstract class MeasurementView extends TableLayout {
         input.setInputType(getInputType());
         input.setHint(getHintText());
         input.setText(value);
-        input.setSelection(value.length());
+        input.setSelectAllOnFocus(true);
         builder.setView(input);
 
         builder.setPositiveButton(getResources().getString(R.string.label_ok), null);
@@ -395,6 +484,66 @@ public abstract class MeasurementView extends TableLayout {
                 evaluatorRow.setVisibility(View.VISIBLE);
             }
         }
+    }
+
+    private class RepeatListener implements OnTouchListener {
+
+        private Handler handler = new Handler();
+
+        private int initialInterval;
+        private final int normalInterval;
+        private final OnClickListener clickListener;
+
+        private Runnable handlerRunnable = new Runnable() {
+            @Override
+            public void run() {
+                handler.postDelayed(this, normalInterval);
+                clickListener.onClick(downView);
+            }
+        };
+
+        private View downView;
+
+        /**
+         * RepeatListener cyclically runs a clickListener, emulating keyboard-like behaviour. First
+         * click is fired immediately, next one after the initialInterval, and subsequent ones after the normalInterval.
+         *
+         * @param initialInterval The interval after first click event
+         * @param normalInterval The interval after second and subsequent click events
+         * @param clickListener The OnClickListener, that will be called periodically
+         */
+        public RepeatListener(int initialInterval, int normalInterval,
+                              OnClickListener clickListener) {
+            if (clickListener == null)
+                throw new IllegalArgumentException("null runnable");
+            if (initialInterval < 0 || normalInterval < 0)
+                throw new IllegalArgumentException("negative interval");
+
+            this.initialInterval = initialInterval;
+            this.normalInterval = normalInterval;
+            this.clickListener = clickListener;
+        }
+
+        public boolean onTouch(View view, MotionEvent motionEvent) {
+            switch (motionEvent.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    handler.removeCallbacks(handlerRunnable);
+                    handler.postDelayed(handlerRunnable, initialInterval);
+                    downView = view;
+                    downView.setPressed(true);
+                    clickListener.onClick(view);
+                    return true;
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    handler.removeCallbacks(handlerRunnable);
+                    downView.setPressed(false);
+                    downView = null;
+                    return true;
+            }
+
+            return false;
+        }
+
     }
 }
 

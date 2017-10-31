@@ -19,7 +19,8 @@
   <string name="label_add_user">Pridať používateľa</string>
   <string name="label_id">ID</string>
   <string name="label_weight">Hmotnosť</string>
-  <string name="label_bmi">BMI</string>
+  <string name="label_bmi">Index telesnej hmotnosti (BMI)</string>
+  <string name="label_bmr">Bazálny metabolický výdaj (BMR)</string>
   <string name="label_fat">Percento telesného tuku</string>
   <string name="label_water">Percento vody</string>
   <string name="label_muscle">Percento svalov</string>
@@ -28,6 +29,7 @@
   <string name="label_comment">Komentár</string>
   <string name="label_whtr">Pomer pásu a výšky</string>
   <string name="label_whr">Pomer pásu a bokov</string>
+  <string name="label_bone">Hmotnosť kostí</string>
   <string name="label_smartUserAssign">Chytré priradenie používateľa</string>
   <string name="label_days">dni</string>
   <string name="label_measures">merania</string>
@@ -87,6 +89,7 @@
   <string name="info_bluetooth_connection_successful">Spojenie úspešné nadviazané</string>
   <string name="info_bluetooth_init">Inicializácia Bluetooth zariadenia</string>
   <string name="info_bluetooth_connection_error">Vyskytla neočakávaná chyba Bluetooth</string>
+  <string name="info_new_data_added">Do %4$s boli pridané %1$.2f%2$s [%3$s]</string>
   <string name="info_enter_user_name">Zadajte vaše meno</string>
   <string name="info_no_selected_user">Žiadny používateľ. Prosím, vytvorte nového používateľa v nastaveniach.</string>
   <string name="info_no_evaluation_available">Nie je možné vypočítať hodnotu</string>
@@ -95,13 +98,13 @@
   <string name="question_really_delete_user">Naozaj chcete vymazať používateľa? </string>
   <string name="label_bluetooth_title">Bluetooth</string>
   <string name="label_bluetooth_enable">Vyhľadať váhu po spustení</string>
-  <string name="label_device_name">Názov zariadenia</string>
+  <string name="label_bluetooth_searching">Prebieha vyhľadávanie Bluetooth váhy</string>
   <string name="label_device_type">Typ zariadenia</string>
   <string name="label_enable_labels">Štítok na údajový bod</string>
   <string name="label_enable_points">Bod na údajový bod</string>
   <string name="label_delete_confirmation">Potvrďte vymazanie</string>
   <string name="label_reminder">Pripomienka</string>
-  <string name="label_reminder_weekdays">Pracovné dni</string>
+  <string name="label_reminder_weekdays">Dni v týždni</string>
   <string name="label_reminder_time">Čas</string>
   <string name="label_reminder_notify_text">Text upozornenia</string>
   <string name="default_value_reminder_notify_text">Čas na váženie</string>
@@ -111,7 +114,7 @@
   <string name="info_your_muscle">Vaše percento svalov v tele bolo</string>
   <string name="info_your_waist">Váš obvod pása bol</string>
   <string name="info_your_hip">Váš obvod bokov bol</string>
-  <string name="info_on_date">do</string>
+  <string name="info_on_date">v deň</string>
   <string name="Monday">Pondelok</string>
   <string name="Tuesday">Utorok</string>
   <string name="Wednesday">Streda</string>
@@ -119,7 +122,7 @@
   <string name="Friday">Piatok</string>
   <string name="Saturday">Sobota</string>
   <string name="Sunday">Nedeľa</string>
-  <string name="label_bt_device_support">Podporované budú</string>
+  <string name="label_bt_device_no_support">nepodporované zariadenie</string>
   <string name="label_exportBackup">Export zálohy</string>
   <string name="label_importBackup">Import zálohy</string>
   <string name="label_backup">Zálohovanie</string>
@@ -129,7 +132,7 @@
   <string name="label_initial_weight">Počiatočná hmotnosť</string>
   <string name="label_average_data">Vypočítať priemer za deň/mesiac</string>
   <string name="label_regression_line">Vývoj úbytku hmotnosti</string>
-  <string name="label_regression_line_order">Radenie úbytku</string>
+  <string name="label_regression_line_degree">Stupeň polynomiálnej regresie</string>
   <string name="label_goal_line">Cieľová línia</string>
   <string name="error_max_scale_users">Dosiahli ste maximálny počet viacerých používateľov.</string>
   <string name="info_step_on_scale">Prosím, postavte sa na váhu pre referenčné meranie.</string>

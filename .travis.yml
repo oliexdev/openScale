@@ -9,6 +9,16 @@ android:
     - android-24
     - extra-android-m2repository
 
+deploy:
+  provider: releases
+  api-key: $GITHUB_API_KEY
+  file: $HOME/openScale-dev-build.apk
+  skip_cleanup: true
+  name: "openScale dev build"
+  body: "Automatically openScale dev build by Travis CI"
+  prerelease: true
+  overwrite: true
+
 after_success:
  - chmod +x ./upload_apk.sh
  - ./upload_apk.sh
