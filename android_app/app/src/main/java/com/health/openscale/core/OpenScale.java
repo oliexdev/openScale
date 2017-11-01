@@ -27,6 +27,8 @@ import android.widget.Toast;
 import com.health.openscale.R;
 import com.health.openscale.core.alarm.AlarmHandler;
 import com.health.openscale.core.bluetooth.BluetoothCommunication;
+import com.health.openscale.core.bodymetric.EstimatedFatMetric;
+import com.health.openscale.core.bodymetric.EstimatedWaterMetric;
 import com.health.openscale.core.database.ScaleDatabase;
 import com.health.openscale.core.database.ScaleUserDatabase;
 import com.health.openscale.core.datatypes.ScaleData;
@@ -186,6 +188,18 @@ public class OpenScale {
             if (scaleData.getUserId() == -1) {
                 return -1;
             }
+        }
+
+        if (prefs.getBoolean("estimateFatEnable", false)) {
+            EstimatedFatMetric fatMetric = EstimatedFatMetric.getEstimatedFatMetric(EstimatedFatMetric.FORMULA_FAT.valueOf(prefs.getString("estimateFatFormula", "BF_DEURENBERG_II")));
+
+            scaleData.setFat(fatMetric.getFat(getScaleUser(scaleData.getUserId()), scaleData));
+        }
+
+        if (prefs.getBoolean("estimateWaterEnable", false)) {
+            EstimatedWaterMetric waterMetric = EstimatedWaterMetric.getEstimatedWaterMetric(EstimatedWaterMetric.FORMULA_WATER.valueOf(prefs.getString("estimateWaterFormula", "TBW_BEHNKE")));
+
+            scaleData.setWater(waterMetric.getWater(getScaleUser(scaleData.getUserId()), scaleData));
         }
 
 		if (scaleDB.insertEntry(scaleData)) {

@@ -120,6 +120,13 @@
 
     <string name="label_delete_confirmation">Delete confirmation</string>
 
+    <string name="label_estimate_fat">Estimate body fat</string>
+    <string name="label_estimate_water">Estimate body water</string>
+
+    <string name="label_estimate_fat_formula">Body fat formula</string>
+    <string name="label_estimate_water_formula">Body water formula</string>
+    <string name="label_automatic">auto</string>
+
     <string name="label_reminder">Reminder</string>
     <string name="label_reminder_weekdays">Weekdays</string>
     <string name="label_reminder_time">Time</string>
