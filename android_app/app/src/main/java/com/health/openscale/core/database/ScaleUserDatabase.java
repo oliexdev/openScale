@@ -113,7 +113,7 @@ public class ScaleUserDatabase extends SQLiteOpenHelper {
         values.put(COLUMN_NAME_BODY_HEIGHT, scaleUser.body_height);
         values.put(COLUMN_NAME_SCALE_UNIT, scaleUser.scale_unit);
         values.put(COLUMN_NAME_GENDER, scaleUser.gender);
-        values.put(COLUMN_NAME_INITIAL_WEIGHT, scaleUser.initial_weight);
+        values.put(COLUMN_NAME_INITIAL_WEIGHT, scaleUser.getInitialWeight());
         values.put(COLUMN_NAME_GOAL_WEIGHT, scaleUser.goal_weight);
         values.put(COLUMN_NAME_GOAL_DATE, formatDateTime.format(scaleUser.goal_date));
 
@@ -146,7 +146,7 @@ public class ScaleUserDatabase extends SQLiteOpenHelper {
         values.put(COLUMN_NAME_BODY_HEIGHT, scaleUser.body_height);
         values.put(COLUMN_NAME_SCALE_UNIT, scaleUser.scale_unit);
         values.put(COLUMN_NAME_GENDER, scaleUser.gender);
-        values.put(COLUMN_NAME_INITIAL_WEIGHT, scaleUser.initial_weight);
+        values.put(COLUMN_NAME_INITIAL_WEIGHT, scaleUser.getInitialWeight());
         values.put(COLUMN_NAME_GOAL_WEIGHT, scaleUser.goal_weight);
         values.put(COLUMN_NAME_GOAL_DATE, formatDateTime.format(scaleUser.goal_date));
 
@@ -222,7 +222,7 @@ public class ScaleUserDatabase extends SQLiteOpenHelper {
             scaleUser.birthday = formatDateTime.parse(birthday);
             scaleUser.goal_date = formatDateTime.parse(goal_date);
 
-            scaleUser.initial_weight = Math.round(initial_weight * 100.0f) / 100.0f;
+            scaleUser.setInitialWeight(Math.round(initial_weight * 100.0f) / 100.0f);
             scaleUser.goal_weight = Math.round(goal_weight * 100.0f) / 100.0f;
         } catch (ParseException ex) {
             Log.e("ScaleDatabase", "Can't parse the date time string: " + ex.getMessage());

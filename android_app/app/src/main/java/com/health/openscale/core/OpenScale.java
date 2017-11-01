@@ -99,7 +99,7 @@ public class OpenScale
             scaleUser.body_height = body_height;
             scaleUser.scale_unit = scale_unit;
             scaleUser.gender = gender;
-            scaleUser.initial_weight = initial_weight;
+            scaleUser.setConvertedInitialWeight(initial_weight);
             scaleUser.goal_weight = goal_weight;
             scaleUser.goal_date = new SimpleDateFormat("dd.MM.yyyy").parse(goal_date);
 
@@ -162,7 +162,7 @@ public class OpenScale
             scaleUser.body_height = body_height;
             scaleUser.scale_unit = scale_unit;
             scaleUser.gender = gender;
-            scaleUser.initial_weight = initial_weight;
+            scaleUser.setConvertedInitialWeight(initial_weight);
             scaleUser.goal_weight = goal_weight;
             scaleUser.goal_date = new SimpleDateFormat("dd.MM.yyyy").parse(goal_date);
         } catch (ParseException e)
@@ -237,10 +237,8 @@ public class OpenScale
             if (scaleUserData.size() > 0)
             {
                 lastWeight = scaleUserData.get(0).getWeight();
-            }
-            else
-            {
-                lastWeight = scaleUser.get(i).initial_weight;
+            } else {
+                lastWeight = scaleUser.get(i).getInitialWeight();
             }
 
             if ((lastWeight - range) <= weight && (lastWeight + range) >= weight)
