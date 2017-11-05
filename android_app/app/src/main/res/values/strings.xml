@@ -120,6 +120,18 @@
 
     <string name="label_delete_confirmation">Delete confirmation</string>
 
+    <string name="label_estimate_fat">Estimate body fat</string>
+    <string name="label_estimate_water">Estimate body water</string>
+
+    <string name="label_category_display">Display</string>
+    <string name="label_category_body_metrics_estimation">Body metrics estimation</string>
+    <string name="label_category_measurement_database">Measurement database</string>
+    <string name="label_category_misc">Miscellaneous</string>
+
+    <string name="label_estimate_fat_formula">Body fat formula</string>
+    <string name="label_estimate_water_formula">Body water formula</string>
+    <string name="label_automatic">auto</string>
+
     <string name="label_reminder">Reminder</string>
     <string name="label_reminder_weekdays">Weekdays</string>
     <string name="label_reminder_time">Time</string>

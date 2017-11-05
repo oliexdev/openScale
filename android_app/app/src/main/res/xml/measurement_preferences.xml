@@ -1,10 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <CheckBoxPreference android:title="@string/label_fat" android:summaryOn="@string/info_is_enable" android:summaryOff="@string/info_is_not_enable" android:key="fatEnable" android:defaultValue="true"/>
-    <CheckBoxPreference android:title="@string/label_water" android:summaryOn="@string/info_is_enable" android:summaryOff="@string/info_is_not_enable"   android:key="waterEnable" android:defaultValue="true"/>
-    <CheckBoxPreference android:title="@string/label_muscle" android:summaryOn="@string/info_is_enable" android:summaryOff="@string/info_is_not_enable"  android:key="muscleEnable" android:defaultValue="true"/>
-    <CheckBoxPreference android:title="@string/label_bone" android:summaryOn="@string/info_is_enable" android:summaryOff="@string/info_is_not_enable"  android:key="boneEnable" android:defaultValue="false"/>
-    <CheckBoxPreference android:title="@string/label_waist" android:summaryOn="@string/info_is_enable" android:summaryOff="@string/info_is_not_enable"  android:key="waistEnable" android:defaultValue="false"/>
-    <CheckBoxPreference android:title="@string/label_hip" android:summaryOn="@string/info_is_enable" android:summaryOff="@string/info_is_not_enable"  android:key="hipEnable" android:defaultValue="false"/>
-    <Preference android:title="@string/label_delete_all" android:key="deleteAll"></Preference>
+    <PreferenceCategory android:title="@string/label_category_display">
+        <CheckBoxPreference android:title="@string/label_fat" android:summaryOn="@string/info_is_enable" android:summaryOff="@string/info_is_not_enable" android:key="fatEnable" android:defaultValue="true"/>
+        <CheckBoxPreference android:title="@string/label_water" android:summaryOn="@string/info_is_enable" android:summaryOff="@string/info_is_not_enable"   android:key="waterEnable" android:defaultValue="true"/>
+        <CheckBoxPreference android:title="@string/label_muscle" android:summaryOn="@string/info_is_enable" android:summaryOff="@string/info_is_not_enable"  android:key="muscleEnable" android:defaultValue="true"/>
+        <CheckBoxPreference android:title="@string/label_bone" android:summaryOn="@string/info_is_enable" android:summaryOff="@string/info_is_not_enable"  android:key="boneEnable" android:defaultValue="false"/>
+        <CheckBoxPreference android:title="@string/label_waist" android:summaryOn="@string/info_is_enable" android:summaryOff="@string/info_is_not_enable"  android:key="waistEnable" android:defaultValue="false"/>
+        <CheckBoxPreference android:title="@string/label_hip" android:summaryOn="@string/info_is_enable" android:summaryOff="@string/info_is_not_enable"  android:key="hipEnable" android:defaultValue="false"/>
+    </PreferenceCategory>
+    <PreferenceCategory android:title="@string/label_category_body_metrics_estimation">
+        <CheckBoxPreference android:title="@string/label_estimate_fat" android:summaryOn="@string/info_is_enable" android:summaryOff="@string/info_is_not_enable"  android:key="estimateFatEnable" android:defaultValue="false"/>
+        <ListPreference android:title="@string/label_estimate_fat_formula" android:key="estimateFatFormula" android:defaultValue="BF_GALLAGHER"/>
+        <CheckBoxPreference android:title="@string/label_estimate_water" android:summaryOn="@string/info_is_enable" android:summaryOff="@string/info_is_not_enable"  android:key="estimateWaterEnable" android:defaultValue="false"/>
+        <ListPreference android:title="@string/label_estimate_water_formula" android:key="estimateWaterFormula" android:defaultValue="TBW_LEESONGKIM"/>
+    </PreferenceCategory>
+    <PreferenceCategory android:title="@string/label_category_measurement_database">
+        <Preference android:title="@string/label_delete_all" android:key="deleteAll"></Preference>
+    </PreferenceCategory>
 </PreferenceScreen>

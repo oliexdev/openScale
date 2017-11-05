@@ -27,6 +27,8 @@ import android.widget.Toast;
 import com.health.openscale.R;
 import com.health.openscale.core.alarm.AlarmHandler;
 import com.health.openscale.core.bluetooth.BluetoothCommunication;
+import com.health.openscale.core.bodymetric.EstimatedFatMetric;
+import com.health.openscale.core.bodymetric.EstimatedWaterMetric;
 import com.health.openscale.core.database.ScaleDatabase;
 import com.health.openscale.core.database.ScaleUserDatabase;
 import com.health.openscale.core.datatypes.ScaleData;
@@ -93,7 +95,7 @@ public class OpenScale {
             scaleUser.body_height = body_height;
             scaleUser.scale_unit = scale_unit;
             scaleUser.gender = gender;
-            scaleUser.initial_weight = initial_weight;
+            scaleUser.setConvertedInitialWeight(initial_weight);
             scaleUser.goal_weight = goal_weight;
             scaleUser.goal_date = new SimpleDateFormat("dd.MM.yyyy").parse(goal_date);
 
@@ -150,7 +152,7 @@ public class OpenScale {
             scaleUser.body_height = body_height;
             scaleUser.scale_unit = scale_unit;
             scaleUser.gender = gender;
-            scaleUser.initial_weight = initial_weight;
+            scaleUser.setConvertedInitialWeight(initial_weight);
             scaleUser.goal_weight = goal_weight;
             scaleUser.goal_date = new SimpleDateFormat("dd.MM.yyyy").parse(goal_date);
         } catch (ParseException e) {
@@ -188,6 +190,18 @@ public class OpenScale {
             }
         }
 
+        if (prefs.getBoolean("estimateFatEnable", false)) {
+            EstimatedFatMetric fatMetric = EstimatedFatMetric.getEstimatedFatMetric(EstimatedFatMetric.FORMULA_FAT.valueOf(prefs.getString("estimateFatFormula", "BF_DEURENBERG_II")));
+
+            scaleData.setFat(fatMetric.getFat(getScaleUser(scaleData.getUserId()), scaleData));
+        }
+
+        if (prefs.getBoolean("estimateWaterEnable", false)) {
+            EstimatedWaterMetric waterMetric = EstimatedWaterMetric.getEstimatedWaterMetric(EstimatedWaterMetric.FORMULA_WATER.valueOf(prefs.getString("estimateWaterFormula", "TBW_BEHNKE")));
+
+            scaleData.setWater(waterMetric.getWater(getScaleUser(scaleData.getUserId()), scaleData));
+        }
+
 		if (scaleDB.insertEntry(scaleData)) {
             ScaleUser scaleUser = getScaleUser(scaleData.getUserId());
 
@@ -212,7 +226,7 @@ public class OpenScale {
             if (scaleUserData.size() > 0) {
                 lastWeight = scaleUserData.get(0).getWeight();
             } else {
-                lastWeight = scaleUser.get(i).initial_weight;
+                lastWeight = scaleUser.get(i).getInitialWeight();
             }
 
             if ((lastWeight - range) <= weight && (lastWeight + range) >= weight) {

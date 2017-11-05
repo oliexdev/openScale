@@ -104,7 +104,7 @@
   <string name="label_enable_points">Bod na údajový bod</string>
   <string name="label_delete_confirmation">Potvrďte vymazanie</string>
   <string name="label_reminder">Pripomienka</string>
-  <string name="label_reminder_weekdays">Pracovné dni</string>
+  <string name="label_reminder_weekdays">Dni v týždni</string>
   <string name="label_reminder_time">Čas</string>
   <string name="label_reminder_notify_text">Text upozornenia</string>
   <string name="default_value_reminder_notify_text">Čas na váženie</string>
@@ -114,7 +114,7 @@
   <string name="info_your_muscle">Vaše percento svalov v tele bolo</string>
   <string name="info_your_waist">Váš obvod pása bol</string>
   <string name="info_your_hip">Váš obvod bokov bol</string>
-  <string name="info_on_date">do</string>
+  <string name="info_on_date">v deň</string>
   <string name="Monday">Pondelok</string>
   <string name="Tuesday">Utorok</string>
   <string name="Wednesday">Streda</string>

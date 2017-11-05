@@ -133,7 +133,7 @@ public class UserSettingsActivity extends Activity {
         txtBodyHeight.setText(Integer.toString(scaleUser.body_height));
         txtBirthday.setText(dateFormat.format(scaleUser.birthday));
         txtGoalDate.setText(dateFormat.format(scaleUser.goal_date));
-        txtInitialWeight.setText(scaleUser.initial_weight+"");
+        txtInitialWeight.setText(Math.round(scaleUser.getConvertedInitialWeight()*100.0f)/100.0f + "");
         txtGoalWeight.setText(scaleUser.goal_weight+"");
 
         switch (scaleUser.scale_unit)
