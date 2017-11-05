@@ -26,13 +26,27 @@ import com.health.openscale.core.evaluation.EvaluationSheet;
 
 public class FatMeasurementView extends MeasurementView {
 
+    private boolean estimateFatEnable;
+
     public FatMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_fat), ContextCompat.getDrawable(context, R.drawable.ic_fat));
     }
 
     @Override
+    public boolean isEditable() {
+        if (estimateFatEnable && getMeasurementMode() == MeasurementViewMode.ADD) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
     public void updateValue(ScaleData updateData) {
-        setValueOnView(updateData.getFat());
+        if (estimateFatEnable && getMeasurementMode() == MeasurementViewMode.ADD) {
+            setValueOnView((getContext().getString(R.string.label_automatic)));
+        } else {
+            setValueOnView(updateData.getFat());
+        }
     }
 
     @Override
@@ -48,6 +62,7 @@ public class FatMeasurementView extends MeasurementView {
     @Override
     public void updatePreferences(SharedPreferences preferences) {
         setVisible(preferences.getBoolean("fatEnable", true));
+        estimateFatEnable = preferences.getBoolean("estimateFatEnable", false);
     }
 
     @Override

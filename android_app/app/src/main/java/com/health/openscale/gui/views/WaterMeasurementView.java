@@ -26,13 +26,27 @@ import com.health.openscale.core.evaluation.EvaluationSheet;
 
 public class WaterMeasurementView extends MeasurementView {
 
+    private boolean estimateWaterEnable;
+
     public WaterMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_water), ContextCompat.getDrawable(context, R.drawable.ic_water));
     }
 
     @Override
+    public boolean isEditable() {
+        if (estimateWaterEnable && getMeasurementMode() == MeasurementViewMode.ADD) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
     public void updateValue(ScaleData updateData) {
-        setValueOnView(updateData.getWater());
+        if (estimateWaterEnable && getMeasurementMode() == MeasurementViewMode.ADD) {
+            setValueOnView((getContext().getString(R.string.label_automatic)));
+        } else {
+            setValueOnView(updateData.getWater());
+        }
     }
 
     @Override
@@ -48,6 +62,7 @@ public class WaterMeasurementView extends MeasurementView {
     @Override
     public void updatePreferences(SharedPreferences preferences) {
         setVisible(preferences.getBoolean("waterEnable", true));
+        estimateWaterEnable = preferences.getBoolean("estimateWaterEnable", false);
     }
 
     @Override

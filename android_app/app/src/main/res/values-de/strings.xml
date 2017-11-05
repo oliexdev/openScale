@@ -135,4 +135,15 @@
     <string name="label_bmr">Grundumsatz (BMR)</string>
     <string name="info_measuring">Messe Gewicht: %.2f</string>
     <string name="info_new_data_added">%1$.2f%2$s [%3$s] zu %4$s hinzugefügt</string>
+    <string name="error_max_scale_users">Maximale Anzahl gleichzeitiger Benutzer erreicht.</string>
+    <string name="info_step_on_scale">Bitte steigen Sie barfuß auf die Waage zur Referenzmessung</string>
+    <string name="label_automatic">auto</string>
+    <string name="label_category_body_metrics_estimation">Körpermetriken abschätzen</string>
+    <string name="label_category_display">Anzeige</string>
+    <string name="label_category_measurement_database">Messwertedatenbank</string>
+    <string name="label_category_misc">Verschiedenes</string>
+    <string name="label_estimate_fat">Körperfettschätzung</string>
+    <string name="label_estimate_fat_formula">Körperfettformel</string>
+    <string name="label_estimate_water">Körperwasserschätzung</string>
+    <string name="label_estimate_water_formula">Körperwasserformel</string>
 </resources>

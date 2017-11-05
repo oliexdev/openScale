@@ -21,6 +21,7 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.os.Handler;
 import android.support.v4.content.ContextCompat;
 import android.text.Html;
 import android.text.InputType;
@@ -28,7 +29,6 @@ import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -38,11 +38,6 @@ import android.widget.Space;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
-import android.os.Handler;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.View.OnTouchListener;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
@@ -213,8 +208,11 @@ public abstract class MeasurementView extends TableLayout {
         if (value.length() == 0) {
             return -1;
         }
-
-        return Float.valueOf(value);
+        try {
+            return Float.valueOf(value);
+        } catch (NumberFormatException e) {
+            return -1;
+        }
     }
 
     public void incValue() {
