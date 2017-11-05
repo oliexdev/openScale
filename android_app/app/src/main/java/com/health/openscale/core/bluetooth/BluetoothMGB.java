@@ -1,4 +1,5 @@
-/* Copyright (C) 2017  DreamNik <dreamnik@mail.ru>
+/* Copyright (C) 2014  olie.xdev <olie.xdev@googlemail.com>
+*                2017  DreamNik <dreamnik@mail.ru>
 *
 *	This program is free software: you can redistribute it and/or modify
 *	it under the terms of the GNU General Public License as published by
