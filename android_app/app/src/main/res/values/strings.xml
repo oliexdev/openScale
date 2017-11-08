@@ -28,6 +28,7 @@
     <string name="label_fat">Body fat percentage</string>
     <string name="label_water">Water percentage</string>
     <string name="label_muscle">Muscle percentage</string>
+    <string name="label_lbw">Lean body weight</string>
     <string name="label_waist">Waist circumference</string>
     <string name="label_hip">Hip circumference</string>
     <string name="label_comment">Comment</string>
@@ -120,16 +121,18 @@
 
     <string name="label_delete_confirmation">Delete confirmation</string>
 
-    <string name="label_estimate_fat">Estimate body fat</string>
     <string name="label_estimate_water">Estimate body water</string>
+    <string name="label_estimate_lbw">Estimate lean body weight</string>
+    <string name="label_estimate_fat">Estimate body fat</string>
 
     <string name="label_category_display">Display</string>
     <string name="label_category_body_metrics_estimation">Body metrics estimation</string>
     <string name="label_category_measurement_database">Measurement database</string>
     <string name="label_category_misc">Miscellaneous</string>
 
-    <string name="label_estimate_fat_formula">Body fat formula</string>
     <string name="label_estimate_water_formula">Body water formula</string>
+    <string name="label_estimate_lbw_formula">Body lean body weight formula</string>
+    <string name="label_estimate_fat_formula">Body fat formula</string>
     <string name="label_automatic">auto</string>
 
     <string name="label_reminder">Reminder</string>

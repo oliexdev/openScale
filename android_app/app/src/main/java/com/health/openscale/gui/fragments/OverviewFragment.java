@@ -43,6 +43,7 @@ import com.health.openscale.gui.views.BMRMeasurementView;
 import com.health.openscale.gui.views.BoneMeasurementView;
 import com.health.openscale.gui.views.FatMeasurementView;
 import com.health.openscale.gui.views.HipMeasurementView;
+import com.health.openscale.gui.views.LBWMeasurementView;
 import com.health.openscale.gui.views.MeasurementView;
 import com.health.openscale.gui.views.MuscleMeasurementView;
 import com.health.openscale.gui.views.WHRMeasurementView;
@@ -122,6 +123,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         overviewMeasurements.add(new BMIMeasurementView(context));
         overviewMeasurements.add(new WaterMeasurementView(context));
         overviewMeasurements.add(new MuscleMeasurementView(context));
+        overviewMeasurements.add(new LBWMeasurementView(context));
         overviewMeasurements.add(new FatMeasurementView(context));
         overviewMeasurements.add(new BoneMeasurementView(context));
         overviewMeasurements.add(new WaistMeasurementView(context));
@@ -236,6 +238,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         List<PointValue> valuesFat = new ArrayList<PointValue>();
         List<PointValue> valuesWater = new ArrayList<PointValue>();
         List<PointValue> valuesMuscle = new ArrayList<PointValue>();
+        List<PointValue> valuesLBW = new ArrayList<PointValue>();
         List<PointValue> valuesWaist = new ArrayList<PointValue>();
         List<PointValue> valuesHip = new ArrayList<PointValue>();
         List<PointValue> valuesBone = new ArrayList<PointValue>();
@@ -268,6 +271,8 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
                 valuesWater.add(new PointValue(i, histData.getWater()));
             if (histData.getMuscle() != 0.0f)
                 valuesMuscle.add(new PointValue(i, histData.getMuscle()));
+            if (histData.getLBW() != 0.0f)
+                valuesLBW.add(new PointValue(i, histData.getLBW()));
             if (histData.getWaist() != 0.0f)
                 valuesWaist.add(new PointValue(i, histData.getWaist()));
             if (histData.getHip() != 0.0f)
@@ -302,6 +307,11 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
                 setHasLabels(prefs.getBoolean("labelsEnable", true)).
                 setHasPoints(prefs.getBoolean("pointsEnable", true)).
                 setFormatter(new SimpleLineChartValueFormatter(1));
+        Line lineLBW = new Line(valuesLBW).
+                setColor(Color.parseColor("#cc0099")).
+                setHasLabels(prefs.getBoolean("labelsEnable", true)).
+                setHasPoints(prefs.getBoolean("pointsEnable", true)).
+                setFormatter(new SimpleLineChartValueFormatter(1));
         Line lineWaist = new Line(valuesWaist).
                 setColor(Color.MAGENTA).
                 setHasLabels(prefs.getBoolean("labelsEnable", true)).
@@ -332,6 +342,10 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
         if(prefs.getBoolean("muscleEnable", true)) {
             lines.add(lineMuscle);
+        }
+
+        if(prefs.getBoolean("lbwEnable", false)) {
+            lines.add(lineLBW);
         }
 
         if(prefs.getBoolean("waistEnable", false)) {

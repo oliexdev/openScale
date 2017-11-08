@@ -13,23 +13,24 @@
 *    You should have received a copy of the GNU General Public License
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
+
 package com.health.openscale.core.bodymetric;
 
 import com.health.openscale.core.datatypes.ScaleData;
 import com.health.openscale.core.datatypes.ScaleUser;
 
-public class BFBJoN extends EstimatedFatMetric {
+public class LBWHume extends EstimatedLBWMetric {
     @Override
     public String getName() {
-        return "British Journal of Nutrition (1991)";
+        return "Hume (1966)";
     }
 
     @Override
-    public float getFat(ScaleUser user, ScaleData data) {
+    public float getLBW(ScaleUser user, ScaleData data) {
         if (user.isMale()) {
-            return (data.getBMI(user.body_height) * 1.2f) + (user.getAge(data.getDateTime()) * 0.23f) - 16.2f;
+            return (0.32810f * data.getWeight()) + (0.33929f * user.body_height) - 29.5336f;
         }
 
-        return (data.getBMI(user.body_height) * 1.2f) + (user.getAge(data.getDateTime()) * 0.23f) - 5.4f;
+        return (0.29569f * data.getWeight()) + (0.41813f * user.body_height) - 43.2933f;
     }
 }

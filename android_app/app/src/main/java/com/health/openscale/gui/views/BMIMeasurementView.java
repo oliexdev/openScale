@@ -37,7 +37,7 @@ public class BMIMeasurementView extends MeasurementView {
 
     @Override
     public void updateValue(ScaleData updateData) {
-        setValueOnView(updateData.getBMI(getScaleUser().body_height));
+        setValueOnView(updateData.getDateTime(), updateData.getBMI(getScaleUser().body_height));
     }
 
     @Override

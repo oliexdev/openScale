@@ -37,7 +37,7 @@ public class BMRMeasurementView extends MeasurementView {
 
     @Override
     public void updateValue(ScaleData updateData) {
-        setValueOnView(updateData.getBMR(getScaleUser()));
+        setValueOnView(updateData.getDateTime(), updateData.getBMR(getScaleUser()));
     }
 
     @Override

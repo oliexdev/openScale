@@ -146,4 +146,7 @@
     <string name="label_estimate_fat_formula">Körperfettformel</string>
     <string name="label_estimate_water">Körperwasserschätzung</string>
     <string name="label_estimate_water_formula">Körperwasserformel</string>
+    <string name="label_estimate_lbw">Fettfreie Körpermassenschätzung</string>
+    <string name="label_estimate_lbw_formula">Fettfreie Körpermassenformel</string>
+    <string name="label_lbw">Fettfreie Körpermasse</string>
 </resources>

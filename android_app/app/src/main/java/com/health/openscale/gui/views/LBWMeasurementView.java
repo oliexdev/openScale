@@ -24,17 +24,17 @@ import com.health.openscale.core.datatypes.ScaleData;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 
-public class FatMeasurementView extends MeasurementView {
+public class LBWMeasurementView extends MeasurementView {
 
-    private boolean estimateFatEnable;
+    private boolean estimateLBWEnable;
 
-    public FatMeasurementView(Context context) {
-        super(context, context.getResources().getString(R.string.label_fat), ContextCompat.getDrawable(context, R.drawable.ic_fat));
+    public LBWMeasurementView(Context context) {
+        super(context, context.getResources().getString(R.string.label_lbw), ContextCompat.getDrawable(context, R.drawable.ic_lbw));
     }
 
     @Override
     public boolean isEditable() {
-        if (estimateFatEnable && getMeasurementMode() == MeasurementViewMode.ADD) {
+        if (estimateLBWEnable && getMeasurementMode() == MeasurementViewMode.ADD) {
             return false;
         }
         return true;
@@ -42,32 +42,32 @@ public class FatMeasurementView extends MeasurementView {
 
     @Override
     public void updateValue(ScaleData updateData) {
-        if (estimateFatEnable && getMeasurementMode() == MeasurementViewMode.ADD) {
+        if (estimateLBWEnable && getMeasurementMode() == MeasurementViewMode.ADD) {
             setValueOnView(updateData.getDateTime(), (getContext().getString(R.string.label_automatic)));
         } else {
-            setValueOnView(updateData.getDateTime(), updateData.getFat());
+            setValueOnView(updateData.getDateTime(), updateData.getLBW());
         }
     }
 
     @Override
     public void updateDiff(ScaleData updateData, ScaleData lastData) {
-        setDiffOnView(updateData.getFat(), lastData.getFat());
+        setDiffOnView(updateData.getLBW(), lastData.getLBW());
     }
 
     @Override
     public String getUnit() {
-        return "%";
+        return "kg";
     }
 
     @Override
     public void updatePreferences(SharedPreferences preferences) {
-        setVisible(preferences.getBoolean("fatEnable", true));
-        estimateFatEnable = preferences.getBoolean("estimateFatEnable", false);
+        setVisible(preferences.getBoolean("lbwEnable", false));
+        estimateLBWEnable = preferences.getBoolean("estimateLBWEnable", false);
     }
 
     @Override
     public EvaluationResult evaluateSheet(EvaluationSheet evalSheet, float value) {
-        return evalSheet.evaluateBodyFat(value);
+        return null;
     }
 
     @Override
@@ -77,7 +77,7 @@ public class FatMeasurementView extends MeasurementView {
 
     @Override
     public float getMaxValue() {
-        return 80;
+        return 300;
     }
 
 }

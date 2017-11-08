@@ -35,6 +35,7 @@ public class ScaleData {
     private float fat;
     private float water;
     private float muscle;
+    private float lbw;
     private float waist;
     private float hip;
     private float bone;
@@ -49,6 +50,7 @@ public class ScaleData {
         fat = 0.0f;
         water = 0.0f;
         muscle = 0.0f;
+        lbw = 0.0f;
         bone = 0.0f;
         waist = 0.0f;
         hip = 0.0f;
@@ -152,6 +154,14 @@ public class ScaleData {
         this.muscle = muscle;
     }
 
+    public float getLBW() {
+        return lbw;
+    }
+
+    public void setLBW(float lbw) {
+        this.lbw = lbw;
+    }
+
     public float getWaist() {
         return waist;
     }
@@ -189,9 +199,9 @@ public class ScaleData {
 
         // BMR formula by Mifflin, St Jeor et al: A new predictive equation for resting energy expenditure in healthy individuals
         if (scaleUser.isMale()) {
-            bmr = 10.0f * weight + 6.25f * scaleUser.body_height - 5.0f * scaleUser.getAge() + 5.0f;
+            bmr = 10.0f * weight + 6.25f * scaleUser.body_height - 5.0f * scaleUser.getAge(date_time) + 5.0f;
         } else {
-            bmr = 10.0f * weight + 6.25f * scaleUser.body_height - 5.0f * scaleUser.getAge() - 161.0f;
+            bmr = 10.0f * weight + 6.25f * scaleUser.body_height - 5.0f * scaleUser.getAge(date_time) - 161.0f;
         }
 
         return bmr; // kCal / day
@@ -212,6 +222,6 @@ public class ScaleData {
 	@Override
 	public String toString()
 	{
-		return "ID : " + id + " USER_ID: " + user_id + " DATE_TIME: " + date_time.toString() + " WEIGHT: " + weight + " FAT: " + fat + " WATER: " + water + " MUSCLE: " + muscle + " WAIST: " + waist + " HIP: " + hip + " BONE: " + bone + " COMMENT: " + comment;
+		return "ID : " + id + " USER_ID: " + user_id + " DATE_TIME: " + date_time.toString() + " WEIGHT: " + weight + " FAT: " + fat + " WATER: " + water + " MUSCLE: " + muscle + " LBW: " + lbw + " WAIST: " + waist + " HIP: " + hip + " BONE: " + bone + " COMMENT: " + comment;
 	}
 }

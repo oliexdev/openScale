@@ -37,7 +37,7 @@ public class WHRMeasurementView extends MeasurementView {
 
     @Override
     public void updateValue(ScaleData updateData) {
-        setValueOnView(updateData.getWHR());
+        setValueOnView(updateData.getDateTime(), updateData.getWHR());
     }
 
     @Override

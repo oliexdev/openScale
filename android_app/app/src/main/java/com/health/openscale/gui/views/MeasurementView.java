@@ -46,6 +46,8 @@ import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 
+import java.util.Date;
+
 import lecho.lib.hellocharts.util.ChartUtils;
 
 import static com.health.openscale.gui.views.MeasurementView.MeasurementViewMode.ADD;
@@ -73,6 +75,7 @@ public abstract class MeasurementView extends TableLayout {
 
     private String nameText;
 
+    private Date dateTime;
     private String value;
     private String diffValue;
 
@@ -84,6 +87,7 @@ public abstract class MeasurementView extends TableLayout {
 
         measurementMode = VIEW;
         nameText = text;
+        dateTime = new Date();
         value = new String();
         diffValue = new String();
         nameView.setText(text);
@@ -219,7 +223,7 @@ public abstract class MeasurementView extends TableLayout {
         float incValue = getValue() + 0.1f;
 
         if (incValue <= getMaxValue()) {
-            setValueOnView(incValue);
+            setValueOnView(dateTime, incValue);
         }
     }
 
@@ -227,7 +231,7 @@ public abstract class MeasurementView extends TableLayout {
         float decValue = getValue() - 0.1f;
 
         if (decValue >= 0) {
-            setValueOnView(decValue);
+            setValueOnView(dateTime, decValue);
         }
     }
 
@@ -282,7 +286,8 @@ public abstract class MeasurementView extends TableLayout {
         return measurementMode;
     }
 
-    protected void setValueOnView(Object objValue) {
+    protected void setValueOnView(Date objTimeDate, Object objValue) {
+        dateTime = objTimeDate;
         value = String.valueOf(objValue);
 
         try{
@@ -328,7 +333,7 @@ public abstract class MeasurementView extends TableLayout {
     }
 
     public void setExpand(boolean state) {
-        if (state && measurementRow.getVisibility() == View.VISIBLE && evaluateSheet(new EvaluationSheet(getScaleUser()), 0.0f) != null) {
+        if (state && measurementRow.getVisibility() == View.VISIBLE && evaluateSheet(new EvaluationSheet(getScaleUser(), dateTime), 0.0f) != null) {
             evaluatorRow.setVisibility(View.VISIBLE);
         } else {
             evaluatorRow.setVisibility(View.GONE);
@@ -368,7 +373,7 @@ public abstract class MeasurementView extends TableLayout {
     }
 
     private void evaluate(float value) {
-        EvaluationSheet evalSheet = new EvaluationSheet(getScaleUser());
+        EvaluationSheet evalSheet = new EvaluationSheet(getScaleUser(), dateTime);
         EvaluationResult evalResult = evaluateSheet(evalSheet, value);
 
         if (evalResult == null) {
@@ -440,7 +445,7 @@ public abstract class MeasurementView extends TableLayout {
                     @Override
                     public void onClick(View view) {
                         if (validateInput(input)) {
-                            setValueOnView(input.getText().toString());
+                            setValueOnView(dateTime, input.getText().toString());
                             InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
                             imm.hideSoftInputFromWindow(input.getWindowToken(), 0);
                             floatDialog.dismiss();

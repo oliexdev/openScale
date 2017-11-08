@@ -18,18 +18,20 @@ package com.health.openscale.core.bodymetric;
 import com.health.openscale.core.datatypes.ScaleData;
 import com.health.openscale.core.datatypes.ScaleUser;
 
-public class BFBJoN extends EstimatedFatMetric {
-    @Override
-    public String getName() {
-        return "British Journal of Nutrition (1991)";
-    }
+public abstract class EstimatedLBWMetric {
+    public enum FORMULA { LBW_HUME, LBW_BOER };
 
-    @Override
-    public float getFat(ScaleUser user, ScaleData data) {
-        if (user.isMale()) {
-            return (data.getBMI(user.body_height) * 1.2f) + (user.getAge(data.getDateTime()) * 0.23f) - 16.2f;
+    public static EstimatedLBWMetric getEstimatedMetric(FORMULA metric) {
+        switch (metric) {
+            case LBW_HUME:
+                return new LBWHume();
+            case LBW_BOER:
+                return new LBWBoer();
         }
 
-        return (data.getBMI(user.body_height) * 1.2f) + (user.getAge(data.getDateTime()) * 0.23f) - 5.4f;
+        return null;
     }
+
+    public abstract String getName();
+    public abstract float getLBW(ScaleUser user, ScaleData data);
 }

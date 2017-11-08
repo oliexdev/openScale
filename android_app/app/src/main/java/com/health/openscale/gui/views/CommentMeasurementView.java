@@ -48,7 +48,7 @@ public class CommentMeasurementView extends MeasurementView {
 
     @Override
     public void updateValue(ScaleData updateData) {
-        setValueOnView(updateData.getComment());
+        setValueOnView(updateData.getDateTime(), updateData.getComment());
     }
 
     @Override

@@ -29,6 +29,7 @@ import com.health.openscale.core.evaluation.EvaluationSheet;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 
 public class DateMeasurementView extends MeasurementView {
     private SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
@@ -40,7 +41,7 @@ public class DateMeasurementView extends MeasurementView {
     private DatePickerDialog.OnDateSetListener datePickerListener = new DatePickerDialog.OnDateSetListener() {
         @Override
         public void onDateSet(DatePicker view, int selectedYear, int selectedMonth, int selectedDay) {
-            setValueOnView(String.format("%02d.%02d.%04d", selectedDay, selectedMonth+1, selectedYear));
+            setValueOnView(new Date(), String.format("%02d.%02d.%04d", selectedDay, selectedMonth+1, selectedYear));
         }
     };
 
@@ -55,7 +56,7 @@ public class DateMeasurementView extends MeasurementView {
 
     @Override
     public void updateValue(ScaleData updateData) {
-        setValueOnView(dateFormat.format(updateData.getDateTime()));
+        setValueOnView(updateData.getDateTime(), dateFormat.format(updateData.getDateTime()));
     }
 
     @Override

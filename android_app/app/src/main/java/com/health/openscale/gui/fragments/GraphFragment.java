@@ -73,6 +73,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     private FloatingActionButton diagramFat;
     private FloatingActionButton diagramWater;
     private FloatingActionButton diagramMuscle;
+    private FloatingActionButton diagramLBW;
     private FloatingActionButton diagramWaist;
     private FloatingActionButton diagramHip;
     private FloatingActionButton diagramBone;
@@ -111,6 +112,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         diagramFat = (FloatingActionButton) graphView.findViewById(R.id.diagramFat);
         diagramWater = (FloatingActionButton) graphView.findViewById(R.id.diagramWater);
         diagramMuscle = (FloatingActionButton) graphView.findViewById(R.id.diagramMuscle);
+        diagramLBW = (FloatingActionButton) graphView.findViewById(R.id.diagramLBW);
         diagramWaist = (FloatingActionButton) graphView.findViewById(R.id.diagramWaist);
         diagramHip = (FloatingActionButton) graphView.findViewById(R.id.diagramHip);
         diagramBone = (FloatingActionButton) graphView.findViewById(R.id.diagramBone);
@@ -120,6 +122,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         diagramFat.setOnClickListener(new onClickListenerDiagramLines());
         diagramWater.setOnClickListener(new onClickListenerDiagramLines());
         diagramMuscle.setOnClickListener(new onClickListenerDiagramLines());
+        diagramLBW.setOnClickListener(new onClickListenerDiagramLines());
         diagramWaist.setOnClickListener(new onClickListenerDiagramLines());
         diagramHip.setOnClickListener(new onClickListenerDiagramLines());
         diagramBone.setOnClickListener(new onClickListenerDiagramLines());
@@ -142,6 +145,10 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         if(!prefs.getBoolean("muscleEnable", true)) {
             diagramMuscle.setVisibility(View.GONE);
+        }
+
+        if(!prefs.getBoolean("lbwEnable", false)) {
+            diagramLBW.setVisibility(View.GONE);
         }
 
         if(!prefs.getBoolean("boneEnable", false)) {
@@ -241,6 +248,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         Stack<PointValue> valuesFat = new Stack<PointValue>();
         Stack<PointValue> valuesWater = new Stack<PointValue>();
         Stack<PointValue> valuesMuscle = new Stack<PointValue>();
+        Stack<PointValue> valuesLBW = new Stack<PointValue>();
         Stack<PointValue> valuesWaist = new Stack<PointValue>();
         Stack<PointValue> valuesHip = new Stack<PointValue>();
         Stack<PointValue> valuesBone = new Stack<>();
@@ -261,6 +269,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             addPointValue(valuesFat, calDB.get(field), scaleEntry.getFat());
             addPointValue(valuesWater, calDB.get(field), scaleEntry.getWater());
             addPointValue(valuesMuscle, calDB.get(field), scaleEntry.getMuscle());
+            addPointValue(valuesLBW, calDB.get(field), scaleEntry.getLBW());
             addPointValue(valuesWaist, calDB.get(field), scaleEntry.getWaist());
             addPointValue(valuesHip, calDB.get(field), scaleEntry.getHip());
             addPointValue(valuesBone, calDB.get(field), scaleEntry.getBone());
@@ -284,6 +293,11 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                 setFormatter(new SimpleLineChartValueFormatter(1));
         Line lineMuscle = new Line(valuesMuscle).
                 setColor(ChartUtils.COLOR_GREEN).
+                setHasLabels(prefs.getBoolean("labelsEnable", true)).
+                setHasPoints(prefs.getBoolean("pointsEnable", true)).
+                setFormatter(new SimpleLineChartValueFormatter(1));
+        Line lineLBW = new Line(valuesLBW).
+                setColor(Color.parseColor("#cc0099")).
                 setHasLabels(prefs.getBoolean("labelsEnable", true)).
                 setHasPoints(prefs.getBoolean("pointsEnable", true)).
                 setFormatter(new SimpleLineChartValueFormatter(1));
@@ -329,6 +343,13 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             diagramMuscle.setBackgroundTintList(ColorStateList.valueOf(ChartUtils.COLOR_GREEN));
         } else {
             diagramMuscle.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#d3d3d3")));
+        }
+
+        if(prefs.getBoolean("lbwEnable", false) && prefs.getBoolean(String.valueOf(diagramLBW.getId()), true)) {
+            lines.add(lineLBW);
+            diagramLBW.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#cc0099")));
+        } else {
+            diagramLBW.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#d3d3d3")));
         }
 
         if(prefs.getBoolean("waistEnable", false) && prefs.getBoolean(String.valueOf(diagramWaist.getId()), true)) {

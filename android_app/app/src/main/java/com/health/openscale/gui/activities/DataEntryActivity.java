@@ -41,6 +41,7 @@ import com.health.openscale.gui.views.CommentMeasurementView;
 import com.health.openscale.gui.views.DateMeasurementView;
 import com.health.openscale.gui.views.FatMeasurementView;
 import com.health.openscale.gui.views.HipMeasurementView;
+import com.health.openscale.gui.views.LBWMeasurementView;
 import com.health.openscale.gui.views.MeasurementView;
 import com.health.openscale.gui.views.MuscleMeasurementView;
 import com.health.openscale.gui.views.TimeMeasurementView;
@@ -65,6 +66,7 @@ public class DataEntryActivity extends Activity {
     private BMIMeasurementView bmiMeasurementView;
     private WaterMeasurementView waterMeasurement;
     private MuscleMeasurementView muscleMeasurement;
+    private LBWMeasurementView lbwMeasurement;
     private FatMeasurementView fatMeasurement;
     private WaistMeasurementView waistMeasurement;
     private WHtRMeasurementView wHtRMeasurementView;
@@ -104,6 +106,7 @@ public class DataEntryActivity extends Activity {
         bmiMeasurementView = new BMIMeasurementView(context);
         waterMeasurement = new WaterMeasurementView(context);
         muscleMeasurement = new MuscleMeasurementView(context);
+        lbwMeasurement = new LBWMeasurementView(context);
         fatMeasurement = new FatMeasurementView(context);
         boneMeasurementView = new BoneMeasurementView(context);
         waistMeasurement = new WaistMeasurementView(context);
@@ -120,6 +123,7 @@ public class DataEntryActivity extends Activity {
         dataEntryMeasurements.add(bmiMeasurementView);
         dataEntryMeasurements.add(waterMeasurement);
         dataEntryMeasurements.add(muscleMeasurement);
+        dataEntryMeasurements.add(lbwMeasurement);
         dataEntryMeasurements.add(fatMeasurement);
         dataEntryMeasurements.add(boneMeasurementView);
         dataEntryMeasurements.add(waistMeasurement);
@@ -203,9 +207,9 @@ public class DataEntryActivity extends Activity {
 
             // show selected scale data
             for (MeasurementView measurement : dataEntryMeasurements) {
-                measurement.setExpand(prefs.getBoolean(String.valueOf(expandButton.getId()), false));
                 measurement.updateValue(selectedScaleData);
                 measurement.updateDiff(selectedScaleData, prevScaleData);
+                measurement.setExpand(prefs.getBoolean(String.valueOf(expandButton.getId()), false));
             }
 
             return;
@@ -288,6 +292,7 @@ public class DataEntryActivity extends Activity {
         scaleData.setFat(fatMeasurement.getValue());
         scaleData.setWater(waterMeasurement.getValue());
         scaleData.setMuscle(muscleMeasurement.getValue());
+        scaleData.setLBW(lbwMeasurement.getValue());
         scaleData.setWaist(waistMeasurement.getValue());
         scaleData.setHip(hipMeasurement.getValue());
         scaleData.setBone(boneMeasurementView.getValue());
@@ -351,6 +356,7 @@ public class DataEntryActivity extends Activity {
                 scaleData.setFat(fatMeasurement.getValue());
                 scaleData.setWater(waterMeasurement.getValue());
                 scaleData.setMuscle(muscleMeasurement.getValue());
+                scaleData.setLBW(lbwMeasurement.getValue());
                 scaleData.setWaist(waistMeasurement.getValue());
                 scaleData.setHip(hipMeasurement.getValue());
                 scaleData.setBone(boneMeasurementView.getValue());

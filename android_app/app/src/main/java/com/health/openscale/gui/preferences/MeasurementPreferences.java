@@ -32,6 +32,7 @@ import android.widget.Toast;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.bodymetric.EstimatedFatMetric;
+import com.health.openscale.core.bodymetric.EstimatedLBWMetric;
 import com.health.openscale.core.bodymetric.EstimatedWaterMetric;
 
 import java.util.ArrayList;
@@ -40,16 +41,20 @@ import java.util.Set;
 
 public class MeasurementPreferences extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener  {
     public static final String PREFERENCE_KEY_DELETE_ALL = "deleteAll";
-    public static final String PREFERENCE_KEY_ESTIMATE_FAT = "estimateFatEnable";
-    public static final String PREFERENCE_KEY_ESTIMATE_FAT_FORMULA = "estimateFatFormula";
     public static final String PREFERENCE_KEY_ESTIMATE_WATER = "estimateWaterEnable";
     public static final String PREFERENCE_KEY_ESTIMATE_WATER_FORMULA = "estimateWaterFormula";
+    public static final String PREFERENCE_KEY_ESTIMATE_LBW = "estimateLBWEnable";
+    public static final String PREFERENCE_KEY_ESTIMATE_LBW_FORMULA = "estimateLBWFormula";
+    public static final String PREFERENCE_KEY_ESTIMATE_FAT = "estimateFatEnable";
+    public static final String PREFERENCE_KEY_ESTIMATE_FAT_FORMULA = "estimateFatFormula";
 
     private Preference deleteAll;
-    private CheckBoxPreference estimateFatEnable;
-    private ListPreference estimateFatFormula;
     private CheckBoxPreference estimateWaterEnable;
     private ListPreference estimateWaterFormula;
+    private CheckBoxPreference estimateLBWEnable;
+    private ListPreference estimateLBWFormula;
+    private CheckBoxPreference estimateFatEnable;
+    private ListPreference estimateFatFormula;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -60,22 +65,57 @@ public class MeasurementPreferences extends PreferenceFragment implements Shared
         deleteAll = (Preference) findPreference(PREFERENCE_KEY_DELETE_ALL);
         deleteAll.setOnPreferenceClickListener(new onClickListenerDeleteAll());
 
-        estimateFatEnable = (CheckBoxPreference) findPreference(PREFERENCE_KEY_ESTIMATE_FAT);
-        estimateFatFormula = (ListPreference) findPreference(PREFERENCE_KEY_ESTIMATE_FAT_FORMULA);
         estimateWaterEnable = (CheckBoxPreference) findPreference(PREFERENCE_KEY_ESTIMATE_WATER);
         estimateWaterFormula = (ListPreference) findPreference(PREFERENCE_KEY_ESTIMATE_WATER_FORMULA);
+        estimateLBWEnable = (CheckBoxPreference) findPreference(PREFERENCE_KEY_ESTIMATE_LBW);
+        estimateLBWFormula = (ListPreference) findPreference(PREFERENCE_KEY_ESTIMATE_LBW_FORMULA);
+        estimateFatEnable = (CheckBoxPreference) findPreference(PREFERENCE_KEY_ESTIMATE_FAT);
+        estimateFatFormula = (ListPreference) findPreference(PREFERENCE_KEY_ESTIMATE_FAT_FORMULA);
 
-        updateFatListPreferences();
         updateWaterListPreferences();
+        updateLBWListPreferences();
+        updateFatListPreferences();
+
         initSummary(getPreferenceScreen());
     }
+
+    public void updateWaterListPreferences() {
+        ArrayList<String> listEntries = new ArrayList();
+        ArrayList<String> listEntryValues = new ArrayList();
+
+        for (EstimatedWaterMetric.FORMULA formulaWater : EstimatedWaterMetric.FORMULA.values()) {
+            EstimatedWaterMetric waterMetric = EstimatedWaterMetric.getEstimatedMetric(formulaWater);
+
+            listEntries.add(waterMetric.getName());
+            listEntryValues.add(formulaWater.toString());
+        }
+
+        estimateWaterFormula.setEntries(listEntries.toArray(new CharSequence[listEntries.size()]));
+        estimateWaterFormula.setEntryValues(listEntryValues.toArray(new CharSequence[listEntryValues.size()]));
+    }
+
+    public void updateLBWListPreferences() {
+        ArrayList<String> listEntries = new ArrayList();
+        ArrayList<String> listEntryValues = new ArrayList();
+
+        for (EstimatedLBWMetric.FORMULA formulaLBW : EstimatedLBWMetric.FORMULA.values()) {
+            EstimatedLBWMetric muscleMetric = EstimatedLBWMetric.getEstimatedMetric(formulaLBW);
+
+            listEntries.add(muscleMetric.getName());
+            listEntryValues.add(formulaLBW.toString());
+        }
+
+        estimateLBWFormula.setEntries(listEntries.toArray(new CharSequence[listEntries.size()]));
+        estimateLBWFormula.setEntryValues(listEntryValues.toArray(new CharSequence[listEntryValues.size()]));
+    }
+
 
     public void updateFatListPreferences() {
         ArrayList<String> listEntries = new ArrayList();
         ArrayList<String> listEntryValues = new ArrayList();
 
-        for (EstimatedFatMetric.FORMULA_FAT formulaFat : EstimatedFatMetric.FORMULA_FAT.values()) {
-            EstimatedFatMetric fatMetric = EstimatedFatMetric.getEstimatedFatMetric(formulaFat);
+        for (EstimatedFatMetric.FORMULA formulaFat : EstimatedFatMetric.FORMULA.values()) {
+            EstimatedFatMetric fatMetric = EstimatedFatMetric.getEstimatedMetric(formulaFat);
 
             listEntries.add(fatMetric.getName());
             listEntryValues.add(formulaFat.toString());
@@ -85,20 +125,6 @@ public class MeasurementPreferences extends PreferenceFragment implements Shared
         estimateFatFormula.setEntryValues(listEntryValues.toArray(new CharSequence[listEntryValues.size()]));
     }
 
-    public void updateWaterListPreferences() {
-        ArrayList<String> listEntries = new ArrayList();
-        ArrayList<String> listEntryValues = new ArrayList();
-
-        for (EstimatedWaterMetric.FORMULA_WATER formulaWater : EstimatedWaterMetric.FORMULA_WATER.values()) {
-            EstimatedWaterMetric waterMetric = EstimatedWaterMetric.getEstimatedWaterMetric(formulaWater);
-
-            listEntries.add(waterMetric.getName());
-            listEntryValues.add(formulaWater.toString());
-        }
-
-        estimateWaterFormula.setEntries(listEntries.toArray(new CharSequence[listEntries.size()]));
-        estimateWaterFormula.setEntryValues(listEntryValues.toArray(new CharSequence[listEntryValues.size()]));
-    }
 
     private void initSummary(Preference p) {
         if (p instanceof PreferenceGroup) {
@@ -123,20 +149,27 @@ public class MeasurementPreferences extends PreferenceFragment implements Shared
     }
 
     private void updatePrefSummary(Preference p) {
-        if (estimateFatEnable.isChecked()) {
-            estimateFatFormula.setEnabled(true);
-        } else {
-            estimateFatFormula.setEnabled(false);
-        }
-
         if (estimateWaterEnable.isChecked()) {
             estimateWaterFormula.setEnabled(true);
         } else {
             estimateWaterFormula.setEnabled(false);
         }
 
-        estimateFatFormula.setSummary(EstimatedFatMetric.getEstimatedFatMetric(EstimatedFatMetric.FORMULA_FAT.valueOf(estimateFatFormula.getValue())).getName());
-        estimateWaterFormula.setSummary(EstimatedWaterMetric.getEstimatedWaterMetric(EstimatedWaterMetric.FORMULA_WATER.valueOf(estimateWaterFormula.getValue())).getName());
+        if (estimateLBWEnable.isChecked()) {
+            estimateLBWFormula.setEnabled(true);
+        } else {
+            estimateLBWFormula.setEnabled(false);
+        }
+
+        if (estimateFatEnable.isChecked()) {
+            estimateFatFormula.setEnabled(true);
+        } else {
+            estimateFatFormula.setEnabled(false);
+        }
+
+        estimateWaterFormula.setSummary(EstimatedWaterMetric.getEstimatedMetric(EstimatedWaterMetric.FORMULA.valueOf(estimateWaterFormula.getValue())).getName());
+        estimateLBWFormula.setSummary(EstimatedLBWMetric.getEstimatedMetric(EstimatedLBWMetric.FORMULA.valueOf(estimateLBWFormula.getValue())).getName());
+        estimateFatFormula.setSummary(EstimatedFatMetric.getEstimatedMetric(EstimatedFatMetric.FORMULA.valueOf(estimateFatFormula.getValue())).getName());
 
         if (p instanceof EditTextPreference) {
             EditTextPreference editTextPref = (EditTextPreference) p;

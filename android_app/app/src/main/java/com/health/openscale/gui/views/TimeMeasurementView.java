@@ -29,6 +29,7 @@ import com.health.openscale.core.evaluation.EvaluationSheet;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 
 public class TimeMeasurementView extends MeasurementView {
     private SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
@@ -40,7 +41,7 @@ public class TimeMeasurementView extends MeasurementView {
     private TimePickerDialog.OnTimeSetListener timePickerListener = new TimePickerDialog.OnTimeSetListener() {
         @Override
         public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-            	setValueOnView(String.format("%02d:%02d", hourOfDay, minute));
+            	setValueOnView(new Date(), String.format("%02d:%02d", hourOfDay, minute));
         }
     };
 
@@ -55,7 +56,7 @@ public class TimeMeasurementView extends MeasurementView {
 
     @Override
     public void updateValue(ScaleData updateData) {
-        setValueOnView(timeFormat.format(updateData.getDateTime()));
+        setValueOnView(updateData.getDateTime(), timeFormat.format(updateData.getDateTime()));
     }
 
     @Override
