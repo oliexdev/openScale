@@ -38,7 +38,7 @@ public abstract class BluetoothCommunication {
         BT_CONNECTION_LOST, BT_NO_DEVICE_FOUND, BT_UNEXPECTED_ERROR, BT_SCALE_MESSAGE
     };
     public enum BT_MACHINE_STATE {BT_INIT_STATE, BT_CMD_STATE, BT_CLEANUP_STATE}
-    public enum BT_DEVICE_ID {CUSTOM_OPENSCALE, MI_SCALE_V1, MI_SCALE_V2, SANITAS_SBF70, MEDISANA_BS444, DIGOO_DGS038H, EXCELVANT_CF369BLE, YUNMAI_MINI, YUNMAI_SE}
+    public enum BT_DEVICE_ID {CUSTOM_OPENSCALE, MI_SCALE_V1, MI_SCALE_V2, SANITAS_SBF70, MEDISANA_BS444, DIGOO_DGS038H, EXCELVANT_CF369BLE, YUNMAI_MINI, YUNMAI_SE, MGB}
 
     protected Context context;
 
@@ -95,6 +95,8 @@ public abstract class BluetoothCommunication {
                 return new BluetoothYunmaiMini(context);
             case YUNMAI_SE:
                 return new BluetoothYunmaiSE(context);
+            case MGB:
+                return new BluetoothMGB(context);
         }
 
         return null;
