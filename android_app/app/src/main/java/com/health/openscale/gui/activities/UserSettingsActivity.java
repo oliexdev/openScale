@@ -29,6 +29,7 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.RadioGroup;
+import android.widget.Toast;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
@@ -253,67 +254,68 @@ public class UserSettingsActivity extends Activity {
     private class onClickListenerOk implements View.OnClickListener {
         @Override
         public void onClick(View v) {
-            if (validateInput())
-            {
-                OpenScale openScale = OpenScale.getInstance(getApplicationContext());
+            try {
+                if (validateInput()) {
+                    OpenScale openScale = OpenScale.getInstance(getApplicationContext());
 
-                String name = txtUserName.getText().toString();
-                int body_height = Integer.valueOf(txtBodyHeight.getText().toString());
-                int checkedRadioButtonId = radioScaleUnit.getCheckedRadioButtonId();
-                int checkedGenderId = radioGender.getCheckedRadioButtonId();
-                float initial_weight  = Float.valueOf(txtInitialWeight.getText().toString());
-                float goal_weight  = Float.valueOf(txtGoalWeight.getText().toString());
+                    String name = txtUserName.getText().toString();
+                    int body_height = Integer.valueOf(txtBodyHeight.getText().toString());
+                    int checkedRadioButtonId = radioScaleUnit.getCheckedRadioButtonId();
+                    int checkedGenderId = radioGender.getCheckedRadioButtonId();
+                    float initial_weight = Float.valueOf(txtInitialWeight.getText().toString());
+                    float goal_weight = Float.valueOf(txtGoalWeight.getText().toString());
 
-                int scale_unit = -1;
+                    int scale_unit = -1;
 
-                switch (checkedRadioButtonId) {
-                    case R.id.btnRadioKG:
-                        scale_unit = 0;
-                        break;
-                    case R.id.btnRadioLB:
-                        scale_unit = 1;
-                        break;
-                    case R.id.btnRadioST:
-                        scale_unit = 2;
-                        break;
+                    switch (checkedRadioButtonId) {
+                        case R.id.btnRadioKG:
+                            scale_unit = 0;
+                            break;
+                        case R.id.btnRadioLB:
+                            scale_unit = 1;
+                            break;
+                        case R.id.btnRadioST:
+                            scale_unit = 2;
+                            break;
+                    }
+
+                    int gender = -1;
+
+                    switch (checkedGenderId) {
+                        case R.id.btnRadioMale:
+                            gender = 0;
+                            break;
+                        case R.id.btnRadioWoman:
+                            gender = 1;
+                            break;
+                    }
+
+                    String date = txtBirthday.getText().toString();
+                    String goal_date = txtGoalDate.getText().toString();
+
+                    int id = 0;
+
+                    if (getIntent().getExtras().getInt("mode") == EDIT_USER_REQUEST) {
+                        id = getIntent().getExtras().getInt("id");
+                        openScale.updateScaleUser(id, name, date, body_height, scale_unit, gender, initial_weight, goal_weight, goal_date);
+                    } else {
+                        openScale.addScaleUser(name, date, body_height, scale_unit, gender, initial_weight, goal_weight, goal_date);
+
+                        id = openScale.getScaleUserList().get(openScale.getScaleUserList().size() - 1).id;
+                    }
+
+                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+                    prefs.edit().putInt("selectedUserId", id).commit();
+
+                    openScale.updateScaleData();
+
+                    Intent returnIntent = new Intent();
+                    setResult(RESULT_OK, returnIntent);
+
+                    finish();
                 }
-
-                int gender = -1;
-
-                switch (checkedGenderId) {
-                    case R.id.btnRadioMale:
-                        gender = 0;
-                        break;
-                    case R.id.btnRadioWoman:
-                        gender = 1;
-                        break;
-                }
-
-                String date = txtBirthday.getText().toString();
-                String goal_date = txtGoalDate.getText().toString();
-
-                int id = 0;
-
-                if (getIntent().getExtras().getInt("mode") == EDIT_USER_REQUEST)
-                {
-                    id = getIntent().getExtras().getInt("id");
-                    openScale.updateScaleUser(id, name, date, body_height, scale_unit, gender, initial_weight, goal_weight, goal_date);
-                } else
-                {
-                    openScale.addScaleUser(name, date, body_height, scale_unit, gender, initial_weight, goal_weight, goal_date);
-
-                    id = openScale.getScaleUserList().get(openScale.getScaleUserList().size() - 1).id;
-                }
-
-                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-                prefs.edit().putInt("selectedUserId", id).commit();
-
-                openScale.updateScaleData();
-
-                Intent returnIntent = new Intent();
-                setResult(RESULT_OK, returnIntent);
-
-                finish();
+            } catch (NumberFormatException ex) {
+                Toast.makeText(context, getResources().getString(R.string.error_value_range) + "(" + ex.getMessage() + ")", Toast.LENGTH_SHORT).show();
             }
         }
     }
