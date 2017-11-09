@@ -243,6 +243,8 @@ public abstract class MeasurementView extends TableLayout {
 
     public String getDiffValue() { return diffValue; }
 
+    public Date getDateTime() { return dateTime; }
+
     protected boolean isEditable() {
         return true;
     }

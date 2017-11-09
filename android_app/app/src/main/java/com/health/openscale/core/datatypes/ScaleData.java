@@ -16,17 +16,11 @@
 
 package com.health.openscale.core.datatypes;
 
-import android.util.Log;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class ScaleData {
     private static float KG_LB = 2.20462f;
     private static float KG_ST = 0.157473f;
-
-    private SimpleDateFormat dateTimeFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm");
 
     private long id;
     private int user_id;
@@ -79,14 +73,6 @@ public class ScaleData {
 
     public void setDateTime(Date date_time) {
         this.date_time = date_time;
-    }
-
-    public void setDateTime(String date_time) {
-        try {
-            this.date_time = dateTimeFormat.parse(date_time);
-        } catch (ParseException e) {
-            Log.e("OpenScale", "Can't parse date time string while adding to the database");
-        }
     }
 
     public float getWeight() {

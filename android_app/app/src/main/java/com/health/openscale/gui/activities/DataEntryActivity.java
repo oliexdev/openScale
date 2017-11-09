@@ -34,6 +34,7 @@ import android.widget.Toast;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleData;
+import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.gui.views.BMIMeasurementView;
 import com.health.openscale.gui.views.BMRMeasurementView;
 import com.health.openscale.gui.views.BoneMeasurementView;
@@ -53,6 +54,7 @@ import com.health.openscale.gui.views.WeightMeasurementView;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 
@@ -280,15 +282,24 @@ public class DataEntryActivity extends Activity {
         }
     }
 
-    private void saveScaleData() {
+    private ScaleData createScaleDataFromMeasurement() {
         OpenScale openScale = OpenScale.getInstance(getApplicationContext());
+        ScaleUser user = openScale.getSelectedScaleUser();
+
+        Calendar time = Calendar.getInstance();
+        time.setTime(timeMeasurement.getDateTime());
+
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(dateMeasurement.getDateTime());
+        cal.set(Calendar.HOUR_OF_DAY, time.get(Calendar.HOUR_OF_DAY));
+        cal.set(Calendar.MINUTE, time.get(Calendar.MINUTE));
+        cal.set(Calendar.SECOND, time.get(Calendar.SECOND));
 
         ScaleData scaleData = new ScaleData();
 
-        scaleData.setId(id);
-        scaleData.setUserId(openScale.getSelectedScaleUser().id);
-        scaleData.setDateTime(dateMeasurement.getValueAsString() + " " + timeMeasurement.getValueAsString());
-        scaleData.setConvertedWeight(weightMeasurement.getValue(), openScale.getSelectedScaleUser().scale_unit);
+        scaleData.setUserId(user.id);
+        scaleData.setDateTime(cal.getTime());
+        scaleData.setConvertedWeight(weightMeasurement.getValue(), user.scale_unit);
         scaleData.setFat(fatMeasurement.getValue());
         scaleData.setWater(waterMeasurement.getValue());
         scaleData.setMuscle(muscleMeasurement.getValue());
@@ -298,6 +309,15 @@ public class DataEntryActivity extends Activity {
         scaleData.setBone(boneMeasurementView.getValue());
         scaleData.setComment(commentMeasurement.getValueAsString());
 
+        return scaleData;
+    }
+
+    private void saveScaleData() {
+        ScaleData scaleData = createScaleDataFromMeasurement();
+
+        scaleData.setId(id);
+
+        OpenScale openScale = OpenScale.getInstance(getApplicationContext());
         openScale.updateScaleData(scaleData);
     }
 
@@ -334,10 +354,8 @@ public class DataEntryActivity extends Activity {
     private class onClickListenerAdd implements View.OnClickListener {
         @Override
         public void onClick(View v) {
-            OpenScale openScale = OpenScale.getInstance(getApplicationContext());
-
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-            int selectedUserId  = prefs.getInt("selectedUserId", -1);
+            int selectedUserId = prefs.getInt("selectedUserId", -1);
 
             if (selectedUserId == -1) {
                 AlertDialog.Builder infoDialog = new AlertDialog.Builder(context);
@@ -348,20 +366,9 @@ public class DataEntryActivity extends Activity {
 
                 infoDialog.show();
             } else {
-                ScaleData scaleData = new ScaleData();
+                ScaleData scaleData = createScaleDataFromMeasurement();
 
-                scaleData.setUserId(selectedUserId);
-                scaleData.setDateTime( dateMeasurement.getValueAsString() + " " + timeMeasurement.getValueAsString());
-                scaleData.setConvertedWeight(weightMeasurement.getValue(), openScale.getSelectedScaleUser().scale_unit);
-                scaleData.setFat(fatMeasurement.getValue());
-                scaleData.setWater(waterMeasurement.getValue());
-                scaleData.setMuscle(muscleMeasurement.getValue());
-                scaleData.setLBW(lbwMeasurement.getValue());
-                scaleData.setWaist(waistMeasurement.getValue());
-                scaleData.setHip(hipMeasurement.getValue());
-                scaleData.setBone(boneMeasurementView.getValue());
-                scaleData.setComment(commentMeasurement.getValueAsString());
-
+                OpenScale openScale = OpenScale.getInstance(getApplicationContext());
                 openScale.addScaleData(scaleData);
 
                 finish();

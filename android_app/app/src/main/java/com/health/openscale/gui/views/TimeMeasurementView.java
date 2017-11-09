@@ -27,29 +27,39 @@ import com.health.openscale.core.datatypes.ScaleData;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 
-import java.text.SimpleDateFormat;
+import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
 public class TimeMeasurementView extends MeasurementView {
-    private SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
+    private DateFormat timeFormat;
 
     public TimeMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_time), ContextCompat.getDrawable(context, R.drawable.ic_daysleft));
+        timeFormat = android.text.format.DateFormat.getTimeFormat(context);
     }
 
     private TimePickerDialog.OnTimeSetListener timePickerListener = new TimePickerDialog.OnTimeSetListener() {
         @Override
         public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-            	setValueOnView(new Date(), String.format("%02d:%02d", hourOfDay, minute));
+            Calendar cal = Calendar.getInstance();
+            cal.set(Calendar.HOUR_OF_DAY, hourOfDay);
+            cal.set(Calendar.MINUTE, minute);
+            cal.set(Calendar.SECOND, 0);
+            Date date = cal.getTime();
+            setValueOnView(date, timeFormat.format(date));
         }
     };
 
     @Override
     protected AlertDialog getInputDialog() {
         Calendar cal = Calendar.getInstance();
+        cal.setTime(getDateTime());
 
-        TimePickerDialog timePicker = new TimePickerDialog(getContext(), timePickerListener, cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), true);
+        TimePickerDialog timePicker = new TimePickerDialog(
+            getContext(), timePickerListener,
+            cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE),
+            android.text.format.DateFormat.is24HourFormat(getContext()));
 
         return timePicker;
     }

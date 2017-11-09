@@ -158,6 +158,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="5"
                         android:ems="10"
+                        android:focusable="false"
                         android:inputType="date" />
 
                 </TableRow>
@@ -217,6 +218,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="5"
                         android:ems="10"
+                        android:focusable="false"
                         android:inputType="date" />
 
                 </TableRow>

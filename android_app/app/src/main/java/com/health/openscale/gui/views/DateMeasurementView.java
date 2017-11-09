@@ -27,12 +27,12 @@ import com.health.openscale.core.datatypes.ScaleData;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 
-import java.text.SimpleDateFormat;
+import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
 public class DateMeasurementView extends MeasurementView {
-    private SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
+    private DateFormat dateFormat = DateFormat.getDateInstance();
 
     public DateMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_date), ContextCompat.getDrawable(context, R.drawable.ic_lastmonth));
@@ -41,15 +41,21 @@ public class DateMeasurementView extends MeasurementView {
     private DatePickerDialog.OnDateSetListener datePickerListener = new DatePickerDialog.OnDateSetListener() {
         @Override
         public void onDateSet(DatePicker view, int selectedYear, int selectedMonth, int selectedDay) {
-            setValueOnView(new Date(), String.format("%02d.%02d.%04d", selectedDay, selectedMonth+1, selectedYear));
+            Calendar cal = Calendar.getInstance();
+            cal.set(selectedYear, selectedMonth, selectedDay);
+            Date date = cal.getTime();
+            setValueOnView(date, dateFormat.format(date));
         }
     };
 
     @Override
     protected AlertDialog getInputDialog() {
         Calendar cal = Calendar.getInstance();
+        cal.setTime(getDateTime());
 
-        DatePickerDialog datePicker = new DatePickerDialog(getContext(), datePickerListener, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
+        DatePickerDialog datePicker = new DatePickerDialog(
+            getContext(), datePickerListener, cal.get(Calendar.YEAR),
+            cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
 
         return datePicker;
     }
