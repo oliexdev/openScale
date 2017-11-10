@@ -46,6 +46,7 @@ import java.io.OutputStreamWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -86,23 +87,18 @@ public class OpenScale {
 		return instance;
 	}
 
-    public void addScaleUser(String name, String birthday, int body_height, int scale_unit, int gender, float initial_weight, float goal_weight, String goal_date)
+    public void addScaleUser(String name, Date birthday, int body_height, int scale_unit, int gender, float initial_weight, float goal_weight, Date goal_date)
     {
         ScaleUser scaleUser = new ScaleUser();
 
-        try {
-            scaleUser.user_name = name;
-            scaleUser.birthday = new SimpleDateFormat("dd.MM.yyyy").parse(birthday);
-            scaleUser.body_height = body_height;
-            scaleUser.scale_unit = scale_unit;
-            scaleUser.gender = gender;
-            scaleUser.setConvertedInitialWeight(initial_weight);
-            scaleUser.goal_weight = goal_weight;
-            scaleUser.goal_date = new SimpleDateFormat("dd.MM.yyyy").parse(goal_date);
-
-        } catch (ParseException e) {
-            Log.e("OpenScale", "Can't parse date time string while adding to the database");
-        }
+        scaleUser.user_name = name;
+        scaleUser.birthday = birthday;
+        scaleUser.body_height = body_height;
+        scaleUser.scale_unit = scale_unit;
+        scaleUser.gender = gender;
+        scaleUser.setConvertedInitialWeight(initial_weight);
+        scaleUser.goal_weight = goal_weight;
+        scaleUser.goal_date = goal_date;
 
         scaleUserDB.insertEntry(scaleUser);
     }
@@ -142,23 +138,19 @@ public class OpenScale {
         scaleUserDB.deleteEntry(id);
     }
 
-    public void updateScaleUser(int id, String name, String birthday, int body_height, int scale_unit, int gender, float initial_weight, float goal_weight, String goal_date)
+    public void updateScaleUser(int id, String name, Date birthday, int body_height, int scale_unit, int gender, float initial_weight, float goal_weight, Date goal_date)
     {
         ScaleUser scaleUser = new ScaleUser();
 
-        try {
-            scaleUser.id = id;
-            scaleUser.user_name = name;
-            scaleUser.birthday = new SimpleDateFormat("dd.MM.yyyy").parse(birthday);
-            scaleUser.body_height = body_height;
-            scaleUser.scale_unit = scale_unit;
-            scaleUser.gender = gender;
-            scaleUser.setConvertedInitialWeight(initial_weight);
-            scaleUser.goal_weight = goal_weight;
-            scaleUser.goal_date = new SimpleDateFormat("dd.MM.yyyy").parse(goal_date);
-        } catch (ParseException e) {
-            Log.e("OpenScale", "Can't parse date time string while adding to the database");
-        }
+        scaleUser.id = id;
+        scaleUser.user_name = name;
+        scaleUser.birthday = birthday;
+        scaleUser.body_height = body_height;
+        scaleUser.scale_unit = scale_unit;
+        scaleUser.gender = gender;
+        scaleUser.setConvertedInitialWeight(initial_weight);
+        scaleUser.goal_weight = goal_weight;
+        scaleUser.goal_date = goal_date;
 
         scaleUserDB.updateScaleUser(scaleUser);
     }
