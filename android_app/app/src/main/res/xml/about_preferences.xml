@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <Preference
+        android:key="pref_app_version"
+        android:persistent="false"
+        android:selectable="false"
+        android:title="openScale" />
+    <Preference
+        android:persistent="false"
+        android:selectable="false"
+        android:title="@string/label_maintainer"
+        android:summary="olie.xdev &lt;olie.xdev@googlemail.com&gt;"/>
+    <Preference
+        android:persistent="false"
+        android:selectable="false"
+        android:title="@string/label_website"
+        android:summary="https://github.com/oliexdev/openScale"/>
+    <Preference
+        android:persistent="false"
+        android:selectable="false"
+        android:title="@string/label_license"
+        android:summary="GPLv3"/>
+</PreferenceScreen>

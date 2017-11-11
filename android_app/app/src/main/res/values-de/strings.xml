@@ -149,4 +149,8 @@
     <string name="label_estimate_lbw">Fettfreie Körpermassenschätzung</string>
     <string name="label_estimate_lbw_formula">Fettfreie Körpermassenformel</string>
     <string name="label_lbw">Fettfreie Körpermasse</string>
+    <string name="label_license">Lizenz</string>
+    <string name="label_maintainer">Hauptentwickler</string>
+    <string name="label_website">Webseite</string>
+    <string name="title_about">Info</string>
 </resources>
