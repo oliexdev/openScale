@@ -370,27 +370,31 @@ public class ScaleDatabase extends SQLiteOpenHelper {
 	public ArrayList<ScaleData> getScaleDataList(int userId) {
 		ArrayList<ScaleData> scaleDataList = new ArrayList<ScaleData>();
 
-		String sortOrder = COLUMN_NAME_DATE_TIME + " DESC";
+        try {
+            String sortOrder = COLUMN_NAME_DATE_TIME + " DESC";
 
-		Cursor cursorScaleDB = dbRead.query(
-		    TABLE_NAME, 	// The table to query
-		    projection, 	// The columns to return
-            COLUMN_NAME_USER_ID + "=? AND " + COLUMN_NAME_ENABLE + "=1", // The columns for the WHERE clause
-		    new String[]{Integer.toString(userId)}, 			// The values for the WHERE clause
-		    null, 			// don't group the rows
-		    null,			// don't filter by row groups
-		    sortOrder  		// The sort order
-		    );
+            Cursor cursorScaleDB = dbRead.query(
+                    TABLE_NAME,    // The table to query
+                    projection,    // The columns to return
+                    COLUMN_NAME_USER_ID + "=? AND " + COLUMN_NAME_ENABLE + "=1", // The columns for the WHERE clause
+                    new String[]{Integer.toString(userId)},            // The values for the WHERE clause
+                    null,            // don't group the rows
+                    null,            // don't filter by row groups
+                    sortOrder        // The sort order
+            );
 
-			cursorScaleDB.moveToFirst();
-			
-			while (!cursorScaleDB.isAfterLast()) {
+            cursorScaleDB.moveToFirst();
+
+            while (!cursorScaleDB.isAfterLast()) {
                 scaleDataList.add(readAtCursor(cursorScaleDB));
 
                 cursorScaleDB.moveToNext();
             }
 
-        cursorScaleDB.close();
+            cursorScaleDB.close();
+        } catch (SQLException ex) {
+            Log.e("ScaleDatabase", "SQL exception occured while getting scale data list: " + ex.getMessage());
+        }
 		
 		return scaleDataList;
 	}
