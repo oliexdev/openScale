@@ -21,7 +21,7 @@ import com.health.openscale.core.datatypes.ScaleUser;
 public class BFDeurenberg extends EstimatedFatMetric {
     @Override
     public String getName() {
-        return "Deurenberg et. al (1998)";
+        return "Deurenberg (1992)";
     }
 
     @Override

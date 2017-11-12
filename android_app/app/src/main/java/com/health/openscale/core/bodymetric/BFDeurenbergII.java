@@ -18,10 +18,10 @@ package com.health.openscale.core.bodymetric;
 import com.health.openscale.core.datatypes.ScaleData;
 import com.health.openscale.core.datatypes.ScaleUser;
 
-public class BFBJoN extends EstimatedFatMetric {
+public class BFDeurenbergII extends EstimatedFatMetric {
     @Override
     public String getName() {
-        return "British Journal of Nutrition (1991)";
+        return "Deurenberg et. al (1991)";
     }
 
     @Override

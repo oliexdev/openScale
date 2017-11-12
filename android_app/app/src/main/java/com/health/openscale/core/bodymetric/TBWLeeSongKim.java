@@ -21,7 +21,7 @@ import com.health.openscale.core.datatypes.ScaleUser;
 public class TBWLeeSongKim extends EstimatedWaterMetric {
     @Override
     public String getName() {
-        return "Lee, Song, Kim, Lee et. al (1999)";
+        return "Lee, Song, Kim, Lee et. al (2001)";
     }
 
     @Override
