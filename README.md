@@ -2,7 +2,7 @@ openScale [![Build Status](https://travis-ci.org/oliexdev/openScale.svg?branch=m
 https://travis-ci.org/oliexdev/openScale)
 =========
 
-openScale is an open source app which support various Bluetooth scales to keep log of your body metrics.
+openScale is an open source app which support various Bluetooth scales to keep easy log of your body metrics.
 
 <a href="https://f-droid.org/repository/browse/?fdid=com.health.openscale" target="_blank">
 <img src="https://f-droid.org/badge/get-it-on.png" alt="Get it on F-Droid" height="80"/></a>
@@ -13,7 +13,7 @@ Install [openScale-dev-build.apk](https://github.com/oliexdev/openScale/releases
 
 # Features
 
-- Logs your body metrics (weigt, body fat, body water, muscl percentage, lean body mass, bone mass, BMI, BMR, waist/hip circumference, waist-hip ratio, waist-to-height ratio)
+- Logs your body metrics (weight, body fat, body water, muscle percentage, lean body mass, bone mass, BMI, BMR, waist/hip circumference, waist-hip ratio, waist-to-height ratio)
 - Keep track of your diet process
 - Display all your data on a chart and table 
 - Import or export your data from/into a CSV file
