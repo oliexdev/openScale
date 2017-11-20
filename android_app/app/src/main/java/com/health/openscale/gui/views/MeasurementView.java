@@ -294,7 +294,7 @@ public abstract class MeasurementView extends TableLayout {
 
         try{
             Float floatValue = Float.parseFloat(value);
-            if (measurementMode == VIEW) {
+            if (measurementMode == VIEW || measurementMode == EDIT) {
                 evaluate(floatValue);
             }
             valueView.setText(String.format("%.2f ", floatValue) + getUnit());
