@@ -205,7 +205,6 @@ public abstract class MeasurementView extends TableLayout {
     public abstract void updatePreferences(SharedPreferences preferences);
     public abstract String getUnit();
     public abstract EvaluationResult evaluateSheet(EvaluationSheet evalSheet, float value);
-    public abstract float getMinValue();
     public abstract float getMaxValue();
 
     public float getValue() {

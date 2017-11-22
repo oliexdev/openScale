@@ -56,11 +56,6 @@ public class BoneMeasurementView extends MeasurementView {
     }
 
     @Override
-    public float getMinValue() {
-        return 0;
-    }
-
-    @Override
     public float getMaxValue() {
         return 50;
     }
