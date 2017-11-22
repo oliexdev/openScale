@@ -189,7 +189,8 @@ public class DataEntryActivity extends Activity {
                 switchEditMode.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#D3D3D3")));
             }
 
-            if (prefs.getBoolean(String.valueOf(expandButton.getId()), false)) {
+            final boolean doExpand = prefs.getBoolean(String.valueOf(expandButton.getId()), false);
+            if (doExpand) {
                 expandButton.setBackgroundTintList(ColorStateList.valueOf(ChartUtils.COLOR_ORANGE));
             } else {
                 expandButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#D3D3D3")));
@@ -211,7 +212,7 @@ public class DataEntryActivity extends Activity {
             for (MeasurementView measurement : dataEntryMeasurements) {
                 measurement.updateValue(selectedScaleData);
                 measurement.updateDiff(selectedScaleData, prevScaleData);
-                measurement.setExpand(prefs.getBoolean(String.valueOf(expandButton.getId()), false));
+                measurement.setExpand(doExpand);
             }
 
             return;
