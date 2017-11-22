@@ -51,8 +51,6 @@ public class LinearGaugeView extends View {
     private Paint infoTextPaint;
 
     private float value;
-    private float minValue;
-    private float maxValue;
     private float firstLimit = -1.0f;
     private float secondLimit = -1.0f;
 
@@ -95,7 +93,7 @@ public class LinearGaugeView extends View {
         infoTextPaint.setTextAlign(Paint.Align.CENTER);
     }
 
-    private float valueToPosition(float value) {
+    private float valueToPosition(float value, float minValue, float maxValue) {
         final float percent = (value - minValue) / (maxValue - minValue) * 100.0f;
         return getWidth() / 100.0f * percent;
     }
@@ -123,9 +121,35 @@ public class LinearGaugeView extends View {
             return;
         }
 
-        final float firstPos = valueToPosition(firstLimit);
-        final float secondPos = valueToPosition(secondLimit);
-        final float valuePos = valueToPosition(value);
+        final boolean hasFirstLimit = firstLimit >= 0;
+
+        // Calculate the size of the "normal" span with a fallback if there is no such span
+        float span = hasFirstLimit ? secondLimit - firstLimit : 0.3f * secondLimit;
+
+        // Adjust the span if needed to make the value fit inside of it
+        if (hasFirstLimit && value < firstLimit - span) {
+            span = firstLimit - value;
+        } else if (!hasFirstLimit && value < secondLimit - span) {
+            span = secondLimit - value;
+        } else if (value > secondLimit + span) {
+            span = value - secondLimit;
+        }
+
+        // Round span to some nice value
+        if (span <= 1.0f) {
+            span = (float)Math.ceil(span * 10.0) / 10.0f;
+        } else if (span <= 10.0f) {
+            span = (float)Math.ceil(span);
+        } else {
+            span = 5.0f * (float)Math.ceil(span / 5.0);
+        }
+
+        final float minValue = Math.max(0.0f, (hasFirstLimit ? firstLimit : secondLimit) - span);
+        final float maxValue = secondLimit + span;
+
+        final float firstPos = valueToPosition(firstLimit, minValue, maxValue);
+        final float secondPos = valueToPosition(secondLimit, minValue, maxValue);
+        final float valuePos = valueToPosition(value, minValue, maxValue);
 
         // Bar
         final float barTop = getHeight() / 2.0f - barHeight / 2.0f;
@@ -219,13 +243,6 @@ public class LinearGaugeView extends View {
 
         //MUST CALL THIS
         setMeasuredDimension(width, height);
-    }
-
-    public void setMinMaxValue(float min, float max) {
-        minValue = min;
-        maxValue = max;
-        invalidate();
-        requestLayout();
     }
 
     public void setLimits(float first, float second) {

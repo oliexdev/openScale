@@ -382,7 +382,6 @@ public abstract class MeasurementView extends TableLayout {
             evalResult = new EvaluationResult();
         }
 
-        evaluatorView.setMinMaxValue(getMinValue(), getMaxValue());
         evaluatorView.setLimits(evalResult.lowLimit, evalResult.highLimit);
         evaluatorView.setValue(value);
 
