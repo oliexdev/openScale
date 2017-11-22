@@ -72,7 +72,7 @@ public class FatMeasurementView extends MeasurementView {
 
     @Override
     public float getMaxValue() {
-        return 60;
+        return 80;
     }
 
 }
