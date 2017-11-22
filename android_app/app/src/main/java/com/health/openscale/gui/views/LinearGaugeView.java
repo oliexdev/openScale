@@ -40,7 +40,7 @@ public class LinearGaugeView extends View {
     private static final float textOffset = 10.0f;
     private RectF limitRect = new RectF(0, 0, barHeight / 2, barHeight * 2);
 
-    // Pre-created rect to avoid creating many objects in onDraw
+    // Pre-created rect to avoid creating object in onDraw
     private Rect bounds = new Rect();
 
     private Paint rectPaintLow;
@@ -53,8 +53,8 @@ public class LinearGaugeView extends View {
     private float value;
     private float minValue;
     private float maxValue;
-    private float firstLimit;
-    private float secondLimit;
+    private float firstLimit = -1.0f;
+    private float secondLimit = -1.0f;
 
     public LinearGaugeView(Context context) {
         super(context);
@@ -93,9 +93,6 @@ public class LinearGaugeView extends View {
         infoTextPaint.setColor(Color.GRAY);
         infoTextPaint.setTextSize(30);
         infoTextPaint.setTextAlign(Paint.Align.CENTER);
-
-        firstLimit = -1.0f;
-        secondLimit = -1.0f;
     }
 
     private float valueToPosition(float value) {
@@ -103,11 +100,16 @@ public class LinearGaugeView extends View {
         return getWidth() / 100.0f * percent;
     }
 
-    private void drawCenteredText(Canvas canvas, String text, float centerX, float y, Paint paint) {
-        textPaint.getTextBounds(text, 0, text.length(), bounds);
-        float x = Math.max(0.0f, centerX - bounds.width() / 2.0f);
-        x = Math.min(x, getWidth() - bounds.width());
+    private void drawCenteredText(Canvas canvas, String text, float centerX, float y,
+                                  Paint paint, Rect textBounds) {
+        float x = Math.max(0.0f, centerX - textBounds.width() / 2.0f);
+        x = Math.min(x, getWidth() - textBounds.width());
         canvas.drawText(text, x, y, paint);
+    }
+
+    private void drawCenteredText(Canvas canvas, String text, float centerX, float y, Paint paint) {
+        paint.getTextBounds(text, 0, text.length(), bounds);
+        drawCenteredText(canvas, text, centerX, y, paint, bounds);
     }
 
     @Override
@@ -174,7 +176,7 @@ public class LinearGaugeView extends View {
         String valueStr = String.format("%.2f", value);
         indicatorPaint.getTextBounds(valueStr, 0, valueStr.length(), bounds);
         drawCenteredText(canvas, valueStr, valuePos,
-            indicatorBottom + bounds.height() + textOffset, indicatorPaint);
+            indicatorBottom + bounds.height() + textOffset, indicatorPaint, bounds);
     }
 
     @Override
