@@ -219,19 +219,13 @@ public abstract class MeasurementView extends TableLayout {
     }
 
     public void incValue() {
-        float incValue = getValue() + 0.1f;
-
-        if (incValue <= getMaxValue()) {
-            setValueOnView(dateTime, incValue);
-        }
+        float incValue = Math.min(getMaxValue(), getValue() + 0.1f);
+        setValueOnView(dateTime, incValue);
     }
 
     public void decValue() {
-        float decValue = getValue() - 0.1f;
-
-        if (decValue >= 0) {
-            setValueOnView(dateTime, decValue);
-        }
+        float decValue = Math.max(0.0f, getValue() - 0.1f);
+        setValueOnView(dateTime, decValue);
     }
 
     public String getValueAsString() {
