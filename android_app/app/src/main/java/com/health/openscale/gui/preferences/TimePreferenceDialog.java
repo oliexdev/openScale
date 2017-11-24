@@ -26,8 +26,6 @@ import android.widget.TimePicker;
 import com.health.openscale.R;
 
 import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
 
 public class TimePreferenceDialog extends DialogPreference {
     private Calendar calendar;
@@ -46,13 +44,14 @@ public class TimePreferenceDialog extends DialogPreference {
 
         setPositiveButtonText(R.string.label_ok);
         setNegativeButtonText(R.string.label_cancel);
-        calendar = new GregorianCalendar();
+        calendar = Calendar.getInstance();
     }
 
     @Override
     protected View onCreateDialogView() {
         picker = new TimePicker(getContext());
-        return (picker);
+        picker.setIs24HourView(android.text.format.DateFormat.is24HourFormat(getContext()));
+        return picker;
     }
 
     @Override
@@ -107,7 +106,7 @@ public class TimePreferenceDialog extends DialogPreference {
         if (calendar == null) {
             return null;
         }
-        return DateFormat.getTimeFormat(getContext()).format(new Date(calendar.getTimeInMillis()));
+        return DateFormat.getTimeFormat(getContext()).format(calendar.getTime());
     }
 
     public long getTimeInMillis() {

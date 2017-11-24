@@ -1,4 +1,4 @@
-/* Copyright (C) 2017  olie.xdev <olie.xdev@googlemail.com>
+/* Copyright (C) 2014  olie.xdev <olie.xdev@googlemail.com>
 *
 *    This program is free software: you can redistribute it and/or modify
 *    it under the terms of the GNU General Public License as published by
@@ -13,23 +13,23 @@
 *    You should have received a copy of the GNU General Public License
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-package com.health.openscale.core.bodymetric;
+package com.health.openscale.gui.preferences;
 
-import com.health.openscale.core.datatypes.ScaleData;
-import com.health.openscale.core.datatypes.ScaleUser;
+import android.os.Bundle;
+import android.preference.PreferenceFragment;
 
-public class BFBJoN extends EstimatedFatMetric {
+import com.health.openscale.BuildConfig;
+import com.health.openscale.R;
+
+public class AboutPreferences extends PreferenceFragment {
+    private static final String KEY_APP_VERSION = "pref_app_version";
+
     @Override
-    public String getName() {
-        return "British Journal of Nutrition (1991)";
-    }
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
-    @Override
-    public float getFat(ScaleUser user, ScaleData data) {
-        if (user.isMale()) {
-            return (data.getBMI(user.body_height) * 1.2f) + (user.getAge() * 0.23f) - 16.2f;
-        }
+        addPreferencesFromResource(R.xml.about_preferences);
 
-        return (data.getBMI(user.body_height) * 1.2f) + (user.getAge() * 0.23f) - 5.4f;
+        findPreference(KEY_APP_VERSION).setSummary("v" + BuildConfig.VERSION_NAME);
     }
 }

@@ -176,6 +176,7 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
         float weekAvgFat = 0;
         float weekAvgWater = 0;
         float weekAvgMuscle = 0;
+        float weekAvgLBW = 0;
         float weekAvgWaist = 0;
         float weekAvgBone = 0;
         float weekAvgWHtR = 0;
@@ -188,6 +189,7 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
         float monthAvgFat = 0;
         float monthAvgWater = 0;
         float monthAvgMuscle = 0;
+        float monthAvgLBW = 0;
         float monthAvgWaist = 0;
         float monthAvgBone = 0;
         float monthAvgWHtR = 0;
@@ -206,6 +208,7 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
                 weekAvgFat += scaleData.getFat();
                 weekAvgWater += scaleData.getWater();
                 weekAvgMuscle += scaleData.getMuscle();
+                weekAvgLBW += scaleData.getLBW();
                 weekAvgBone += scaleData.getBone();
                 weekAvgWaist += scaleData.getWaist();
                 weekAvgHip += scaleData.getHip();
@@ -221,6 +224,7 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
                 monthAvgFat += scaleData.getFat();
                 monthAvgWater += scaleData.getWater();
                 monthAvgMuscle += scaleData.getMuscle();
+                monthAvgLBW += scaleData.getLBW();
                 monthAvgBone += scaleData.getBone();
                 monthAvgWaist += scaleData.getWaist();
                 monthAvgHip += scaleData.getHip();
@@ -236,6 +240,7 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
         weekAvgFat /= weekSize;
         weekAvgWater /= weekSize;
         weekAvgMuscle /= weekSize;
+        weekAvgLBW /= weekSize;
         weekAvgWaist /= weekSize;
         weekAvgBone /= weekSize;
         weekAvgWHtR /= weekSize;
@@ -247,6 +252,7 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
         monthAvgFat /= monthSize;
         monthAvgWater /= monthSize;
         monthAvgMuscle /= monthSize;
+        monthAvgLBW /= monthSize;
         monthAvgBone /= monthSize;
         monthAvgWaist /= monthSize;
         monthAvgWHtR /= monthSize;
@@ -275,6 +281,12 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
         if(prefs.getBoolean("muscleEnable", true)) {
             info_week += String.format("Ø-"+getResources().getString(R.string.label_muscle)+": %.1f%% <br>", weekAvgMuscle);
             info_month += String.format("Ø-"+getResources().getString(R.string.label_muscle)+": %.1f%% <br>", monthAvgMuscle);
+            lines++;
+        }
+
+        if(prefs.getBoolean("lbwEnable", false)) {
+            info_week += String.format("Ø-"+getResources().getString(R.string.label_lbw)+": %.1fkg <br>", weekAvgLBW);
+            info_month += String.format("Ø-"+getResources().getString(R.string.label_lbw)+": %.1fkg <br>", monthAvgLBW);
             lines++;
         }
 

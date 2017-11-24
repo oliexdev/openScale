@@ -29,12 +29,13 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.RadioGroup;
+import android.widget.Toast;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleUser;
 
-import java.text.SimpleDateFormat;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -43,6 +44,9 @@ public class UserSettingsActivity extends Activity {
 
     public static final int ADD_USER_REQUEST = 0;
     public static final int EDIT_USER_REQUEST = 1;
+
+	private Date birthday = new Date();
+	private Date goal_date = new Date();
 
 	private EditText txtUserName;
 	private EditText txtBodyHeight;
@@ -57,7 +61,7 @@ public class UserSettingsActivity extends Activity {
     private Button btnCancel;
     private Button btnDelete;
 
-	private SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
+	private DateFormat dateFormat = DateFormat.getDateInstance();
 
 	private Context context;
 	
@@ -85,28 +89,30 @@ public class UserSettingsActivity extends Activity {
         btnCancel.setOnClickListener(new onClickListenerCancel());
         btnDelete.setOnClickListener(new onClickListenerDelete());
 
-        txtBirthday.setText(dateFormat.format(new Date()));
-        txtGoalDate.setText(dateFormat.format(new Date()));
+        txtBirthday.setText(dateFormat.format(birthday));
+        txtGoalDate.setText(dateFormat.format(goal_date));
 
-        txtBirthday.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+        txtBirthday.setOnClickListener(new View.OnClickListener() {
              @Override
-             public void onFocusChange(View v, boolean hasFocus) {
-                 if (hasFocus) {
-                     Calendar cal = Calendar.getInstance();
-                     DatePickerDialog datePicker = new DatePickerDialog(context, datePickerListener, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
-                     datePicker.show();
-                 }
+             public void onClick(View v) {
+                 Calendar cal = Calendar.getInstance();
+                 cal.setTime(birthday);
+                 DatePickerDialog datePicker = new DatePickerDialog(
+                     context, birthdayPickerListener, cal.get(Calendar.YEAR),
+                     cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
+                 datePicker.show();
              }
         });
 
-        txtGoalDate.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+        txtGoalDate.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (hasFocus) {
-                    Calendar cal = Calendar.getInstance();
-                    DatePickerDialog datePicker = new DatePickerDialog(context, goalDatePickerListener, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
-                    datePicker.show();
-                }
+            public void onClick(View v) {
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(goal_date);
+                DatePickerDialog datePicker = new DatePickerDialog(
+                    context, goalDatePickerListener, cal.get(Calendar.YEAR),
+                    cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
+                datePicker.show();
             }
         });
 
@@ -129,10 +135,13 @@ public class UserSettingsActivity extends Activity {
 
         ScaleUser scaleUser = openScale.getScaleUser(id);
 
+        birthday = scaleUser.birthday;
+        goal_date = scaleUser.goal_date;
+
         txtUserName.setText(scaleUser.user_name);
         txtBodyHeight.setText(Integer.toString(scaleUser.body_height));
-        txtBirthday.setText(dateFormat.format(scaleUser.birthday));
-        txtGoalDate.setText(dateFormat.format(scaleUser.goal_date));
+        txtBirthday.setText(dateFormat.format(birthday));
+        txtGoalDate.setText(dateFormat.format(goal_date));
         txtInitialWeight.setText(Math.round(scaleUser.getConvertedInitialWeight()*100.0f)/100.0f + "");
         txtGoalWeight.setText(scaleUser.goal_weight+"");
 
@@ -191,17 +200,23 @@ public class UserSettingsActivity extends Activity {
         return validate;
     }
 
-   private DatePickerDialog.OnDateSetListener datePickerListener = new DatePickerDialog.OnDateSetListener() {
+   private DatePickerDialog.OnDateSetListener birthdayPickerListener = new DatePickerDialog.OnDateSetListener() {
         @Override
         public void onDateSet(DatePicker view, int selectedYear, int selectedMonth, int selectedDay) {
-            txtBirthday.setText(String.format("%02d.%02d.%04d", selectedDay, selectedMonth + 1, selectedYear));
+            Calendar cal = Calendar.getInstance();
+            cal.set(selectedYear, selectedMonth, selectedDay, 0, 0, 0);
+            birthday = cal.getTime();
+            txtBirthday.setText(dateFormat.format(birthday));
            }
         };
 
     private DatePickerDialog.OnDateSetListener goalDatePickerListener = new DatePickerDialog.OnDateSetListener() {
         @Override
         public void onDateSet(DatePicker view, int selectedYear, int selectedMonth, int selectedDay) {
-            txtGoalDate.setText(String.format("%02d.%02d.%04d", selectedDay, selectedMonth + 1, selectedYear));
+            Calendar cal = Calendar.getInstance();
+            cal.set(selectedYear, selectedMonth, selectedDay, 0, 0, 0);
+            goal_date = cal.getTime();
+            txtGoalDate.setText(dateFormat.format(goal_date));
         }
     };
 
@@ -253,67 +268,65 @@ public class UserSettingsActivity extends Activity {
     private class onClickListenerOk implements View.OnClickListener {
         @Override
         public void onClick(View v) {
-            if (validateInput())
-            {
-                OpenScale openScale = OpenScale.getInstance(getApplicationContext());
+            try {
+                if (validateInput()) {
+                    OpenScale openScale = OpenScale.getInstance(getApplicationContext());
 
-                String name = txtUserName.getText().toString();
-                int body_height = Integer.valueOf(txtBodyHeight.getText().toString());
-                int checkedRadioButtonId = radioScaleUnit.getCheckedRadioButtonId();
-                int checkedGenderId = radioGender.getCheckedRadioButtonId();
-                float initial_weight  = Float.valueOf(txtInitialWeight.getText().toString());
-                float goal_weight  = Float.valueOf(txtGoalWeight.getText().toString());
+                    String name = txtUserName.getText().toString();
+                    int body_height = Integer.valueOf(txtBodyHeight.getText().toString());
+                    int checkedRadioButtonId = radioScaleUnit.getCheckedRadioButtonId();
+                    int checkedGenderId = radioGender.getCheckedRadioButtonId();
+                    float initial_weight = Float.valueOf(txtInitialWeight.getText().toString());
+                    float goal_weight = Float.valueOf(txtGoalWeight.getText().toString());
 
-                int scale_unit = -1;
+                    int scale_unit = -1;
 
-                switch (checkedRadioButtonId) {
-                    case R.id.btnRadioKG:
-                        scale_unit = 0;
-                        break;
-                    case R.id.btnRadioLB:
-                        scale_unit = 1;
-                        break;
-                    case R.id.btnRadioST:
-                        scale_unit = 2;
-                        break;
+                    switch (checkedRadioButtonId) {
+                        case R.id.btnRadioKG:
+                            scale_unit = 0;
+                            break;
+                        case R.id.btnRadioLB:
+                            scale_unit = 1;
+                            break;
+                        case R.id.btnRadioST:
+                            scale_unit = 2;
+                            break;
+                    }
+
+                    int gender = -1;
+
+                    switch (checkedGenderId) {
+                        case R.id.btnRadioMale:
+                            gender = 0;
+                            break;
+                        case R.id.btnRadioWoman:
+                            gender = 1;
+                            break;
+                    }
+
+                    int id = 0;
+
+                    if (getIntent().getExtras().getInt("mode") == EDIT_USER_REQUEST) {
+                        id = getIntent().getExtras().getInt("id");
+                        openScale.updateScaleUser(id, name, birthday, body_height, scale_unit, gender, initial_weight, goal_weight, goal_date);
+                    } else {
+                        openScale.addScaleUser(name, birthday, body_height, scale_unit, gender, initial_weight, goal_weight, goal_date);
+
+                        id = openScale.getScaleUserList().get(openScale.getScaleUserList().size() - 1).id;
+                    }
+
+                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+                    prefs.edit().putInt("selectedUserId", id).commit();
+
+                    openScale.updateScaleData();
+
+                    Intent returnIntent = new Intent();
+                    setResult(RESULT_OK, returnIntent);
+
+                    finish();
                 }
-
-                int gender = -1;
-
-                switch (checkedGenderId) {
-                    case R.id.btnRadioMale:
-                        gender = 0;
-                        break;
-                    case R.id.btnRadioWoman:
-                        gender = 1;
-                        break;
-                }
-
-                String date = txtBirthday.getText().toString();
-                String goal_date = txtGoalDate.getText().toString();
-
-                int id = 0;
-
-                if (getIntent().getExtras().getInt("mode") == EDIT_USER_REQUEST)
-                {
-                    id = getIntent().getExtras().getInt("id");
-                    openScale.updateScaleUser(id, name, date, body_height, scale_unit, gender, initial_weight, goal_weight, goal_date);
-                } else
-                {
-                    openScale.addScaleUser(name, date, body_height, scale_unit, gender, initial_weight, goal_weight, goal_date);
-
-                    id = openScale.getScaleUserList().get(openScale.getScaleUserList().size() - 1).id;
-                }
-
-                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-                prefs.edit().putInt("selectedUserId", id).commit();
-
-                openScale.updateScaleData();
-
-                Intent returnIntent = new Intent();
-                setResult(RESULT_OK, returnIntent);
-
-                finish();
+            } catch (NumberFormatException ex) {
+                Toast.makeText(context, getResources().getString(R.string.error_value_range) + "(" + ex.getMessage() + ")", Toast.LENGTH_SHORT).show();
             }
         }
     }

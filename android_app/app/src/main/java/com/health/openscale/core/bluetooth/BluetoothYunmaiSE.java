@@ -71,7 +71,7 @@ public class BluetoothYunmaiSE extends BluetoothCommunication {
                 byte sex = selectedUser.isMale() ? (byte)0x01 : (byte)0x02;
                 byte display_unit = selectedUser.scale_unit == 0 ? (byte) 0x01 : (byte) 0x02;
 
-                byte[] user_add_or_query = new byte[]{(byte)0x0d, (byte)0x12, (byte)0x10, (byte)0x01, (byte)0x00, (byte) 0x00, (byte) ((user_id & 0xFF00) >> 8), (byte) ((user_id & 0xFF) >> 0), (byte)selectedUser.body_height, (byte)sex, (byte) selectedUser.getAge(), (byte) 0x55, (byte) 0x5a, (byte) 0x00, (byte)0x00, (byte) display_unit, (byte) 0x03, (byte) 0x00 };
+                byte[] user_add_or_query = new byte[]{(byte)0x0d, (byte)0x12, (byte)0x10, (byte)0x01, (byte)0x00, (byte) 0x00, (byte) ((user_id & 0xFF00) >> 8), (byte) ((user_id & 0xFF) >> 0), (byte)selectedUser.body_height, (byte)sex, (byte) selectedUser.getAge(new Date()), (byte) 0x55, (byte) 0x5a, (byte) 0x00, (byte)0x00, (byte) display_unit, (byte) 0x03, (byte) 0x00 };
                 user_add_or_query[17] = xor_checksum(user_add_or_query);
                 writeBytes(WEIGHT_CMD_SERVICE, WEIGHT_CMD_CHARACTERISTIC, user_add_or_query);
                 break;

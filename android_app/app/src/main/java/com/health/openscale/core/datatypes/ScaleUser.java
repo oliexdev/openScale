@@ -54,8 +54,9 @@ public class ScaleUser {
         return false;
     }
 
-    public int getAge() {
+    public int getAge(Date todayDate) {
         Calendar cal_today = Calendar.getInstance();
+        cal_today.setTime(todayDate);
         Calendar cal_birthday = Calendar.getInstance();
         cal_birthday.setTime(birthday);
         int userAge = cal_today.get(Calendar.YEAR) - cal_birthday.get(Calendar.YEAR);

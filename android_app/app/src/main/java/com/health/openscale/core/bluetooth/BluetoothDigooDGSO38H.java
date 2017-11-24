@@ -106,7 +106,7 @@ public class BluetoothDigooDGSO38H extends BluetoothCommunication {
                 final ScaleUser selectedUser = OpenScale.getInstance(context).getSelectedScaleUser();
                 byte gender = selectedUser.isMale() ? (byte)0x00: (byte)0x01;
                 byte height = (byte) (selectedUser.body_height & 0xFF);
-                byte age = (byte)(selectedUser.getAge() & 0xff);
+                byte age = (byte)(selectedUser.getAge(new Date()) & 0xff);
                 byte unit;
                 switch (selectedUser.scale_unit) {
                     case 0:
