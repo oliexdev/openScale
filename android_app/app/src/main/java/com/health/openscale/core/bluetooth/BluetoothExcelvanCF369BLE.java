@@ -63,7 +63,7 @@ public class BluetoothExcelvanCF369BLE extends BluetoothCommunication {
 
                 byte sex = selectedUser.isMale() ? (byte)0x01 : (byte)0x00; // 01 - male; 00 - female
                 byte height = (byte)(selectedUser.body_height & 0xff); // cm
-                byte age = (byte)(selectedUser.getAge() & 0xff);
+                byte age = (byte)(selectedUser.getAge(new Date()) & 0xff);
                 byte unit;
 
                 switch (selectedUser.scale_unit) {

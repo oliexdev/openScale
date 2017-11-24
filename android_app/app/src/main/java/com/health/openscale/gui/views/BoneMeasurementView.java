@@ -32,7 +32,7 @@ public class BoneMeasurementView extends MeasurementView {
 
     @Override
     public void updateValue(ScaleData updateData) {
-        setValueOnView(updateData.getBone());
+        setValueOnView(updateData.getDateTime(), updateData.getBone());
     }
 
     @Override

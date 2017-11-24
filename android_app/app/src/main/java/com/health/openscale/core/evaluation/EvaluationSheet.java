@@ -15,12 +15,9 @@
 */
 package com.health.openscale.core.evaluation;
 
-import android.util.Log;
-
 import com.health.openscale.core.datatypes.ScaleUser;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -65,9 +62,9 @@ public class EvaluationSheet {
     }
 
 
-    public EvaluationSheet(ScaleUser user) {
+    public EvaluationSheet(ScaleUser user, Date dateTime) {
         evalUser = user;
-        userAge = getAge(evalUser.birthday);
+        userAge = user.getAge(dateTime);
 
         fatEvaluateSheet_Man = new ArrayList<>();
         fatEvaluateSheet_Woman = new ArrayList<>();
@@ -285,34 +282,5 @@ public class EvaluationSheet {
         }
 
         return new EvaluationResult(0, -1, -1, EvaluationResult.EVAL_STATE.UNDEFINED);
-    }
-
-    private int getAge(Date dateOfBirth) {
-
-        Calendar today = Calendar.getInstance();
-        Calendar birthDate = Calendar.getInstance();
-
-        int age = 0;
-
-        birthDate.setTime(dateOfBirth);
-        if (birthDate.after(today)) {
-            Log.e("EvaluationSheet", "Can't evaluate your body values because you can't be born in the future");
-            return 0;
-        }
-
-        age = today.get(Calendar.YEAR) - birthDate.get(Calendar.YEAR);
-
-        // If birth date is greater than todays date (after 2 days adjustment of leap year) then decrement age one year
-        if ( (birthDate.get(Calendar.DAY_OF_YEAR) - today.get(Calendar.DAY_OF_YEAR) > 3) ||
-                (birthDate.get(Calendar.MONTH) > today.get(Calendar.MONTH ))){
-            age--;
-
-            // If birth date and todays date are of same month and birth day of month is greater than todays day of month then decrement age
-        }else if ((birthDate.get(Calendar.MONTH) == today.get(Calendar.MONTH )) &&
-                (birthDate.get(Calendar.DAY_OF_MONTH) > today.get(Calendar.DAY_OF_MONTH ))){
-            age--;
-        }
-
-        return age;
     }
 }

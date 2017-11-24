@@ -33,7 +33,7 @@ import java.util.Calendar;
 import java.util.Locale;
 
 public class ScaleDatabase extends SQLiteOpenHelper {	
-    private static final int DATABASE_VERSION = 5;
+    private static final int DATABASE_VERSION = 6;
     private static final String DATABASE_NAME = "openScaleDatabase.db";	
 	
     private static final String TABLE_NAME = "scaledata";
@@ -44,6 +44,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
     private static final String COLUMN_NAME_FAT = "fat";
     private static final String COLUMN_NAME_WATER = "water";
     private static final String COLUMN_NAME_MUSCLE = "muscle";
+    private static final String COLUMN_NAME_LBW = "lbw";
     private static final String COLUMN_NAME_BONE = "bone";
     private static final String COLUMN_NAME_WAIST = "waist";
     private static final String COLUMN_NAME_HIP = "hip";
@@ -59,6 +60,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
     				COLUMN_NAME_FAT + " REAL," +
     				COLUMN_NAME_WATER + " REAL," + 
     				COLUMN_NAME_MUSCLE + " REAL," +
+                    COLUMN_NAME_LBW + " REAL," +
                     COLUMN_NAME_BONE + " REAL," +
                     COLUMN_NAME_WAIST + " REAL," +
                     COLUMN_NAME_HIP + " REAL," +
@@ -78,6 +80,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
             COLUMN_NAME_FAT,
             COLUMN_NAME_WATER,
             COLUMN_NAME_MUSCLE,
+            COLUMN_NAME_LBW,
             COLUMN_NAME_BONE,
             COLUMN_NAME_WAIST,
             COLUMN_NAME_HIP,
@@ -117,6 +120,10 @@ public class ScaleDatabase extends SQLiteOpenHelper {
         if (oldVersion == 4 && newVersion == 5) {
             db.execSQL("ALTER TABLE " + TABLE_NAME + " ADD COLUMN " + COLUMN_NAME_BONE + " REAL DEFAULT 0");
         }
+
+        if (oldVersion == 5 && newVersion == 6) {
+            db.execSQL("ALTER TABLE " + TABLE_NAME + " ADD COLUMN " + COLUMN_NAME_LBW + " REAL DEFAULT 0");
+        }
 	}
 	
 	public void clearScaleData(int userId) {
@@ -141,6 +148,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
             values.put(COLUMN_NAME_FAT, scaleData.getFat());
             values.put(COLUMN_NAME_WATER, scaleData.getWater());
             values.put(COLUMN_NAME_MUSCLE, scaleData.getMuscle());
+            values.put(COLUMN_NAME_LBW, scaleData.getLBW());
             values.put(COLUMN_NAME_BONE, scaleData.getBone());
             values.put(COLUMN_NAME_WAIST, scaleData.getWaist());
             values.put(COLUMN_NAME_HIP, scaleData.getHip());
@@ -172,6 +180,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
         values.put(COLUMN_NAME_FAT, scaleData.getFat());
         values.put(COLUMN_NAME_WATER, scaleData.getWater());
         values.put(COLUMN_NAME_MUSCLE, scaleData.getMuscle());
+        values.put(COLUMN_NAME_LBW, scaleData.getLBW());
         values.put(COLUMN_NAME_BONE, scaleData.getBone());
         values.put(COLUMN_NAME_WAIST, scaleData.getWaist());
         values.put(COLUMN_NAME_HIP, scaleData.getHip());
@@ -361,27 +370,31 @@ public class ScaleDatabase extends SQLiteOpenHelper {
 	public ArrayList<ScaleData> getScaleDataList(int userId) {
 		ArrayList<ScaleData> scaleDataList = new ArrayList<ScaleData>();
 
-		String sortOrder = COLUMN_NAME_DATE_TIME + " DESC";
+        try {
+            String sortOrder = COLUMN_NAME_DATE_TIME + " DESC";
 
-		Cursor cursorScaleDB = dbRead.query(
-		    TABLE_NAME, 	// The table to query
-		    projection, 	// The columns to return
-            COLUMN_NAME_USER_ID + "=? AND " + COLUMN_NAME_ENABLE + "=1", // The columns for the WHERE clause
-		    new String[]{Integer.toString(userId)}, 			// The values for the WHERE clause
-		    null, 			// don't group the rows
-		    null,			// don't filter by row groups
-		    sortOrder  		// The sort order
-		    );
+            Cursor cursorScaleDB = dbRead.query(
+                    TABLE_NAME,    // The table to query
+                    projection,    // The columns to return
+                    COLUMN_NAME_USER_ID + "=? AND " + COLUMN_NAME_ENABLE + "=1", // The columns for the WHERE clause
+                    new String[]{Integer.toString(userId)},            // The values for the WHERE clause
+                    null,            // don't group the rows
+                    null,            // don't filter by row groups
+                    sortOrder        // The sort order
+            );
 
-			cursorScaleDB.moveToFirst();
-			
-			while (!cursorScaleDB.isAfterLast()) {
+            cursorScaleDB.moveToFirst();
+
+            while (!cursorScaleDB.isAfterLast()) {
                 scaleDataList.add(readAtCursor(cursorScaleDB));
 
                 cursorScaleDB.moveToNext();
             }
 
-        cursorScaleDB.close();
+            cursorScaleDB.close();
+        } catch (SQLException ex) {
+            Log.e("ScaleDatabase", "SQL exception occured while getting scale data list: " + ex.getMessage());
+        }
 		
 		return scaleDataList;
 	}
@@ -398,6 +411,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
             scaleData.setFat(cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_FAT)));
             scaleData.setWater(cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_WATER)));
             scaleData.setMuscle(cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_MUSCLE)));
+            scaleData.setLBW(cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_LBW)));
             scaleData.setBone(cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_BONE)));
             scaleData.setWaist(cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_WAIST)));
             scaleData.setHip(cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_HIP)));

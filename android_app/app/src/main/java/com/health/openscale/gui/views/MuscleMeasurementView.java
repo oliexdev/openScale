@@ -31,8 +31,13 @@ public class MuscleMeasurementView extends MeasurementView {
     }
 
     @Override
+    public boolean isEditable() {
+        return true;
+    }
+
+    @Override
     public void updateValue(ScaleData updateData) {
-        setValueOnView(updateData.getMuscle());
+        setValueOnView(updateData.getDateTime(), updateData.getMuscle());
     }
 
     @Override

@@ -28,6 +28,7 @@ import com.health.openscale.R;
 import com.health.openscale.core.alarm.AlarmHandler;
 import com.health.openscale.core.bluetooth.BluetoothCommunication;
 import com.health.openscale.core.bodymetric.EstimatedFatMetric;
+import com.health.openscale.core.bodymetric.EstimatedLBWMetric;
 import com.health.openscale.core.bodymetric.EstimatedWaterMetric;
 import com.health.openscale.core.database.ScaleDatabase;
 import com.health.openscale.core.database.ScaleUserDatabase;
@@ -45,6 +46,7 @@ import java.io.OutputStreamWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -85,23 +87,18 @@ public class OpenScale {
 		return instance;
 	}
 
-    public void addScaleUser(String name, String birthday, int body_height, int scale_unit, int gender, float initial_weight, float goal_weight, String goal_date)
+    public void addScaleUser(String name, Date birthday, int body_height, int scale_unit, int gender, float initial_weight, float goal_weight, Date goal_date)
     {
         ScaleUser scaleUser = new ScaleUser();
 
-        try {
-            scaleUser.user_name = name;
-            scaleUser.birthday = new SimpleDateFormat("dd.MM.yyyy").parse(birthday);
-            scaleUser.body_height = body_height;
-            scaleUser.scale_unit = scale_unit;
-            scaleUser.gender = gender;
-            scaleUser.setConvertedInitialWeight(initial_weight);
-            scaleUser.goal_weight = goal_weight;
-            scaleUser.goal_date = new SimpleDateFormat("dd.MM.yyyy").parse(goal_date);
-
-        } catch (ParseException e) {
-            Log.e("OpenScale", "Can't parse date time string while adding to the database");
-        }
+        scaleUser.user_name = name;
+        scaleUser.birthday = birthday;
+        scaleUser.body_height = body_height;
+        scaleUser.scale_unit = scale_unit;
+        scaleUser.gender = gender;
+        scaleUser.setConvertedInitialWeight(initial_weight);
+        scaleUser.goal_weight = goal_weight;
+        scaleUser.goal_date = goal_date;
 
         scaleUserDB.insertEntry(scaleUser);
     }
@@ -141,23 +138,19 @@ public class OpenScale {
         scaleUserDB.deleteEntry(id);
     }
 
-    public void updateScaleUser(int id, String name, String birthday, int body_height, int scale_unit, int gender, float initial_weight, float goal_weight, String goal_date)
+    public void updateScaleUser(int id, String name, Date birthday, int body_height, int scale_unit, int gender, float initial_weight, float goal_weight, Date goal_date)
     {
         ScaleUser scaleUser = new ScaleUser();
 
-        try {
-            scaleUser.id = id;
-            scaleUser.user_name = name;
-            scaleUser.birthday = new SimpleDateFormat("dd.MM.yyyy").parse(birthday);
-            scaleUser.body_height = body_height;
-            scaleUser.scale_unit = scale_unit;
-            scaleUser.gender = gender;
-            scaleUser.setConvertedInitialWeight(initial_weight);
-            scaleUser.goal_weight = goal_weight;
-            scaleUser.goal_date = new SimpleDateFormat("dd.MM.yyyy").parse(goal_date);
-        } catch (ParseException e) {
-            Log.e("OpenScale", "Can't parse date time string while adding to the database");
-        }
+        scaleUser.id = id;
+        scaleUser.user_name = name;
+        scaleUser.birthday = birthday;
+        scaleUser.body_height = body_height;
+        scaleUser.scale_unit = scale_unit;
+        scaleUser.gender = gender;
+        scaleUser.setConvertedInitialWeight(initial_weight);
+        scaleUser.goal_weight = goal_weight;
+        scaleUser.goal_date = goal_date;
 
         scaleUserDB.updateScaleUser(scaleUser);
     }
@@ -190,16 +183,22 @@ public class OpenScale {
             }
         }
 
-        if (prefs.getBoolean("estimateFatEnable", false)) {
-            EstimatedFatMetric fatMetric = EstimatedFatMetric.getEstimatedFatMetric(EstimatedFatMetric.FORMULA_FAT.valueOf(prefs.getString("estimateFatFormula", "BF_DEURENBERG_II")));
-
-            scaleData.setFat(fatMetric.getFat(getScaleUser(scaleData.getUserId()), scaleData));
-        }
-
         if (prefs.getBoolean("estimateWaterEnable", false)) {
-            EstimatedWaterMetric waterMetric = EstimatedWaterMetric.getEstimatedWaterMetric(EstimatedWaterMetric.FORMULA_WATER.valueOf(prefs.getString("estimateWaterFormula", "TBW_BEHNKE")));
+            EstimatedWaterMetric waterMetric = EstimatedWaterMetric.getEstimatedMetric(EstimatedWaterMetric.FORMULA.valueOf(prefs.getString("estimateWaterFormula", "TBW_LEESONGKIM")));
 
             scaleData.setWater(waterMetric.getWater(getScaleUser(scaleData.getUserId()), scaleData));
+        }
+
+        if (prefs.getBoolean("estimateLBWEnable", false)) {
+            EstimatedLBWMetric lbwMetric = EstimatedLBWMetric.getEstimatedMetric(EstimatedLBWMetric.FORMULA.valueOf(prefs.getString("estimateLBWFormula", "LBW_HUME")));
+
+            scaleData.setLBW(lbwMetric.getLBW(getScaleUser(scaleData.getUserId()), scaleData));
+        }
+
+        if (prefs.getBoolean("estimateFatEnable", false)) {
+            EstimatedFatMetric fatMetric = EstimatedFatMetric.getEstimatedMetric(EstimatedFatMetric.FORMULA.valueOf(prefs.getString("estimateFatFormula", "BF_GALLAGHER")));
+
+            scaleData.setFat(fatMetric.getFat(getScaleUser(scaleData.getUserId()), scaleData));
         }
 
 		if (scaleDB.insertEntry(scaleData)) {
@@ -289,10 +288,11 @@ public class OpenScale {
 				newScaleData.setFat(Float.parseFloat(csvField[2]));
 				newScaleData.setWater(Float.parseFloat(csvField[3]));
 				newScaleData.setMuscle(Float.parseFloat(csvField[4]));
-                newScaleData.setBone(Float.parseFloat(csvField[5]));
-                newScaleData.setWaist(Float.parseFloat(csvField[6]));
-                newScaleData.setHip(Float.parseFloat(csvField[7]));
-                newScaleData.setComment(csvField[8]);
+                newScaleData.setLBW(Float.parseFloat(csvField[5]));
+                newScaleData.setBone(Float.parseFloat(csvField[6]));
+                newScaleData.setWaist(Float.parseFloat(csvField[7]));
+                newScaleData.setHip(Float.parseFloat(csvField[8]));
+                newScaleData.setComment(csvField[9]);
 
                 newScaleData.setUserId(getSelectedScaleUser().id);
 
@@ -327,6 +327,7 @@ public class OpenScale {
 			csvWriter.append(Float.toString(scaleData.getFat()) + ",");
 			csvWriter.append(Float.toString(scaleData.getWater()) + ",");
 			csvWriter.append(Float.toString(scaleData.getMuscle()) + ",");
+            csvWriter.append(Float.toString(scaleData.getLBW()) + ",");
             csvWriter.append(Float.toString(scaleData.getBone()) + ",");
             csvWriter.append(Float.toString(scaleData.getWaist()) + ",");
             csvWriter.append(Float.toString(scaleData.getHip()) + ",");

@@ -43,9 +43,9 @@ public class FatMeasurementView extends MeasurementView {
     @Override
     public void updateValue(ScaleData updateData) {
         if (estimateFatEnable && getMeasurementMode() == MeasurementViewMode.ADD) {
-            setValueOnView((getContext().getString(R.string.label_automatic)));
+            setValueOnView(updateData.getDateTime(), (getContext().getString(R.string.label_automatic)));
         } else {
-            setValueOnView(updateData.getFat());
+            setValueOnView(updateData.getDateTime(), updateData.getFat());
         }
     }
 

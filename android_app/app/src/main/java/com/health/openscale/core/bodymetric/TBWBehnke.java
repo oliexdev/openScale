@@ -21,7 +21,7 @@ import com.health.openscale.core.datatypes.ScaleUser;
 public class TBWBehnke extends EstimatedWaterMetric {
     @Override
     public String getName() {
-        return "Behnke et. al (1963)";
+        return "Behnke (1963)";
     }
 
     @Override

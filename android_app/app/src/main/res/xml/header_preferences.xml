@@ -24,4 +24,8 @@
         android:fragment="com.health.openscale.gui.preferences.BackupPreferences"
         android:title="@string/label_backup"
         android:icon="@drawable/ic_preferences_backup"/>
+    <header
+        android:fragment="com.health.openscale.gui.preferences.AboutPreferences"
+        android:title="@string/title_about"
+        android:icon="@drawable/ic_preferences_about"/>
 </preference-headers>
