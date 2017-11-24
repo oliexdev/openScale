@@ -178,5 +178,7 @@
     <string name="error_max_scale_users">Maximum number of concurrent scale users reached.</string>
     <string name="info_step_on_scale">Please step barefoot on the scale for reference measurements.</string>
     <string name="info_measuring">Measuring weight: %.2f</string>
+    <string name="permission_location_denied_title">Location permission denied</string>
+    <string name="permission_location_denied_message">This permission is needed to search for bluetooth devices.</string>
 
 </resources>

@@ -1,5 +1,4 @@
-openScale [![Build Status](https://travis-ci.org/oliexdev/openScale.svg?branch=master)](
-https://travis-ci.org/oliexdev/openScale)
+openScale <img src="https://travis-ci.org/wolkenschieber/openScale.svg?branch=api26" alt="travis:build">
 =========
 
 openScale is an open source app which support various Bluetooth scales to keep easy log of your body metrics.
