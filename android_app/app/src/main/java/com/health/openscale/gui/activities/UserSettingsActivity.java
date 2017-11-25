@@ -173,26 +173,22 @@ public class UserSettingsActivity extends Activity {
     {
         boolean validate = true;
 
-        if( txtUserName.getText().toString().length() == 0 )
-        {
+        if (txtUserName.getText().toString().length() == 0) {
             txtUserName.setError(getResources().getString(R.string.error_user_name_required));
             validate = false;
         }
 
-        if( txtBodyHeight.getText().toString().length() == 0 )
-        {
+        if (txtBodyHeight.getText().toString().length() == 0) {
             txtBodyHeight.setError(getResources().getString(R.string.error_body_height_required));
             validate = false;
         }
 
-        if( txtInitialWeight.getText().toString().length() == 0 )
-        {
+        if (txtInitialWeight.getText().toString().length() == 0) {
             txtInitialWeight.setError(getResources().getString(R.string.error_initial_weight_required));
             validate = false;
         }
 
-        if( txtGoalWeight.getText().toString().length() == 0 )
-        {
+        if (txtGoalWeight.getText().toString().length() == 0) {
             txtGoalWeight.setError(getResources().getString(R.string.error_goal_weight_required));
             validate = false;
         }

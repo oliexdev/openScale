@@ -131,35 +131,35 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         prefs = PreferenceManager.getDefaultSharedPreferences(graphView.getContext());
 
-        if(!prefs.getBoolean("weightEnable", true)) {
+        if (!prefs.getBoolean("weightEnable", true)) {
             diagramWeight.setVisibility(View.GONE);
         }
 
-        if(!prefs.getBoolean("fatEnable", true)) {
+        if (!prefs.getBoolean("fatEnable", true)) {
             diagramFat.setVisibility(View.GONE);
         }
 
-        if(!prefs.getBoolean("waterEnable", true)) {
+        if (!prefs.getBoolean("waterEnable", true)) {
             diagramWater.setVisibility(View.GONE);
         }
 
-        if(!prefs.getBoolean("muscleEnable", true)) {
+        if (!prefs.getBoolean("muscleEnable", true)) {
             diagramMuscle.setVisibility(View.GONE);
         }
 
-        if(!prefs.getBoolean("lbwEnable", false)) {
+        if (!prefs.getBoolean("lbwEnable", false)) {
             diagramLBW.setVisibility(View.GONE);
         }
 
-        if(!prefs.getBoolean("boneEnable", false)) {
+        if (!prefs.getBoolean("boneEnable", false)) {
             diagramBone.setVisibility(View.GONE);
         }
 
-        if(!prefs.getBoolean("waistEnable", false)) {
+        if (!prefs.getBoolean("waistEnable", false)) {
             diagramWaist.setVisibility(View.GONE);
         }
 
-        if(!prefs.getBoolean("hipEnable", false)) {
+        if (!prefs.getBoolean("hipEnable", false)) {
             diagramHip.setVisibility(View.GONE);
         }
 
@@ -258,8 +258,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         pointIndexScaleDataList = new ArrayList<>();
 
-        for(ScaleData scaleEntry: scaleDataList)
-        {
+        for (ScaleData scaleEntry: scaleDataList) {
             calDB.setTime(scaleEntry.getDateTime());
 
             if (addPointValue(valuesWeight, calDB.get(field), scaleEntry.getConvertedWeight(openScale.getSelectedScaleUser().scale_unit))) {
@@ -317,63 +316,63 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                 setHasPoints(prefs.getBoolean("pointsEnable", true)).
                 setFormatter(new SimpleLineChartValueFormatter(1));
 
-        if(prefs.getBoolean("weightEnable", true) && prefs.getBoolean(String.valueOf(diagramWeight.getId()), true)) {
+        if (prefs.getBoolean("weightEnable", true) && prefs.getBoolean(String.valueOf(diagramWeight.getId()), true)) {
             lines.add(lineWeight);
             diagramWeight.setBackgroundTintList(ColorStateList.valueOf(ChartUtils.COLOR_VIOLET));
         } else {
             diagramWeight.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#d3d3d3")));
         }
 
-        if(prefs.getBoolean("fatEnable", true) && prefs.getBoolean(String.valueOf(diagramFat.getId()), true)) {
+        if (prefs.getBoolean("fatEnable", true) && prefs.getBoolean(String.valueOf(diagramFat.getId()), true)) {
             lines.add(lineFat);
             diagramFat.setBackgroundTintList(ColorStateList.valueOf(ChartUtils.COLOR_ORANGE));
         } else {
             diagramFat.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#d3d3d3")));
         }
 
-        if(prefs.getBoolean("waterEnable", true) && prefs.getBoolean(String.valueOf(diagramWater.getId()), true)) {
+        if (prefs.getBoolean("waterEnable", true) && prefs.getBoolean(String.valueOf(diagramWater.getId()), true)) {
             lines.add(lineWater);
             diagramWater.setBackgroundTintList(ColorStateList.valueOf(ChartUtils.COLOR_BLUE));
         } else {
             diagramWater.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#d3d3d3")));
         }
 
-        if(prefs.getBoolean("muscleEnable", true) && prefs.getBoolean(String.valueOf(diagramMuscle.getId()), true)) {
+        if (prefs.getBoolean("muscleEnable", true) && prefs.getBoolean(String.valueOf(diagramMuscle.getId()), true)) {
             lines.add(lineMuscle);
             diagramMuscle.setBackgroundTintList(ColorStateList.valueOf(ChartUtils.COLOR_GREEN));
         } else {
             diagramMuscle.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#d3d3d3")));
         }
 
-        if(prefs.getBoolean("lbwEnable", false) && prefs.getBoolean(String.valueOf(diagramLBW.getId()), true)) {
+        if (prefs.getBoolean("lbwEnable", false) && prefs.getBoolean(String.valueOf(diagramLBW.getId()), true)) {
             lines.add(lineLBW);
             diagramLBW.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#cc0099")));
         } else {
             diagramLBW.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#d3d3d3")));
         }
 
-        if(prefs.getBoolean("waistEnable", false) && prefs.getBoolean(String.valueOf(diagramWaist.getId()), true)) {
+        if (prefs.getBoolean("waistEnable", false) && prefs.getBoolean(String.valueOf(diagramWaist.getId()), true)) {
             lines.add(lineWaist);
             diagramWaist.setBackgroundTintList(ColorStateList.valueOf(Color.MAGENTA));
         } else {
             diagramWaist.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#d3d3d3")));
         }
 
-        if(prefs.getBoolean("hipEnable", false) && prefs.getBoolean(String.valueOf(diagramHip.getId()), true)) {
+        if (prefs.getBoolean("hipEnable", false) && prefs.getBoolean(String.valueOf(diagramHip.getId()), true)) {
             lines.add(lineHip);
             diagramHip.setBackgroundTintList(ColorStateList.valueOf(Color.YELLOW));
         } else {
             diagramHip.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#d3d3d3")));
         }
 
-        if(prefs.getBoolean("boneEnable", false) && prefs.getBoolean(String.valueOf(diagramBone.getId()), true)) {
+        if (prefs.getBoolean("boneEnable", false) && prefs.getBoolean(String.valueOf(diagramBone.getId()), true)) {
             lines.add(lineBone);
             diagramBone.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#00cc9e")));
         } else {
             diagramBone.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#d3d3d3")));
         }
 
-        if(prefs.getBoolean(String.valueOf(enableMonth.getId()), true)) {
+        if (prefs.getBoolean(String.valueOf(enableMonth.getId()), true)) {
             enableMonth.setBackgroundTintList(ColorStateList.valueOf(ChartUtils.COLOR_BLUE));
         } else {
             enableMonth.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#d3d3d3")));
@@ -414,7 +413,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         if (prefs.getBoolean("regressionLine", false)) {
             PolynomialFitter polyFitter = new PolynomialFitter(Integer.parseInt(prefs.getString("regressionLineOrder", "1")));
 
-            for(PointValue weightValue : valuesWeight) {
+            for (PointValue weightValue : valuesWeight) {
                 polyFitter.addPoint(weightValue.getX(), weightValue.getY());
             }
 

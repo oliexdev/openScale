@@ -21,7 +21,7 @@ import com.health.openscale.core.datatypes.ScaleUser;
 public abstract class EstimatedWaterMetric {
     public enum FORMULA { TBW_BEHNKE, TBW_DELWAIDECRENIER, TBW_HUMEWEYERS, TBW_LEESONGKIM };
 
-    public static EstimatedWaterMetric getEstimatedMetric( FORMULA metric) {
+    public static EstimatedWaterMetric getEstimatedMetric(FORMULA metric) {
         switch (metric) {
             case TBW_BEHNKE:
                 return new TBWBehnke();

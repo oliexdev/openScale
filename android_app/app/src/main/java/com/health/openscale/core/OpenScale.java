@@ -415,7 +415,7 @@ public class OpenScale {
 
         scaleDataList = scaleDB.getScaleDataList(selectedUserId);
 
-        for(FragmentUpdateListener fragment : fragmentList) {
+        for (FragmentUpdateListener fragment : fragmentList) {
             if (fragment != null) {
                 if (((Fragment)fragment).isAdded()) {
                     fragment.updateOnView(scaleDataList);

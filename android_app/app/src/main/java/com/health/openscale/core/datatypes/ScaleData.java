@@ -194,7 +194,7 @@ public class ScaleData {
     }
 
     public float getWHtR(int body_height) {
-        return waist / (float)body_height ;
+        return waist / (float)body_height;
     }
 
     public float getWHR() {

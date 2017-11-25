@@ -47,19 +47,19 @@ public class BluetoothMGB extends BluetoothCommunication {
 
 
 
-    private int popInt( ){
+    private int popInt() {
         return packet_buf[packet_pos++] & 0xFF;
     }
 
 
-    private float popFloat( ){
+    private float popFloat() {
         int r = popInt();
         r = popInt() | (r<<8);
         return r * 0.1f;
     }
 
 
-    private void writeCfg( int b2 , int b3 , int b4 , int b5 ){
+    private void writeCfg(int b2, int b3, int b4, int b5) {
         byte[] buf  = new byte[8];
         buf[0] = (byte)0xAC;
         buf[1] = (byte)0x02;
@@ -68,15 +68,13 @@ public class BluetoothMGB extends BluetoothCommunication {
         buf[4] = (byte)b4;
         buf[5] = (byte)b5;
         buf[6] = (byte)0xCC;
-        buf[7] = (byte)( ( buf[2] + buf[3] + buf[4] + buf[5] + buf[6] ) & 0xFF );
+        buf[7] = (byte)((buf[2] + buf[3] + buf[4] + buf[5] + buf[6]) & 0xFF);
 
-        writeBytes( uuid_service , uuid_char_cfg , buf );
+        writeBytes(uuid_service, uuid_char_cfg, buf);
     }
 
 
-
-
-    public BluetoothMGB( Context context ){
+    public BluetoothMGB(Context context) {
         super(context);
     }
 
@@ -105,33 +103,33 @@ public class BluetoothMGB extends BluetoothCommunication {
     boolean nextInitCmd(int stateNr) {
         switch (stateNr) {
             case 0:
-                setNotificationOn( uuid_service , uuid_char_ctrl , uuid_desc_ctrl );
+                setNotificationOn(uuid_service, uuid_char_ctrl, uuid_desc_ctrl);
                 now  = Calendar.getInstance();
                 user = OpenScale.getInstance(context).getSelectedScaleUser();
                 break;
 
             case 1:
-                writeCfg( 0xF7 , 0 , 0 , 0 );
+                writeCfg(0xF7, 0, 0, 0);
                 break;
 
             case 2:
-                writeCfg( 0xFA , 0 , 0 , 0 );
+                writeCfg(0xFA, 0, 0, 0);
                 break;
 
             case 3:
-                writeCfg( 0xFB , (user.isMale() ? 1 : 2) , user.getAge(new Date()) , user.body_height );
+                writeCfg(0xFB, (user.isMale() ? 1 : 2), user.getAge(new Date()), user.body_height);
                 break;
 
             case 4:
-                writeCfg( 0xFD  ,  now.get( Calendar.YEAR ) - 2000  ,  now.get( Calendar.MONTH ) - Calendar.JANUARY + 1  ,  now.get( Calendar.DAY_OF_MONTH ) );
+                writeCfg(0xFD, now.get(Calendar.YEAR) - 2000, now.get(Calendar.MONTH) - Calendar.JANUARY + 1, now.get(Calendar.DAY_OF_MONTH));
                 break;
 
             case 5:
-                writeCfg( 0xFC  ,  now.get( Calendar.HOUR_OF_DAY )  ,  now.get( Calendar.MINUTE )  ,  now.get( Calendar.SECOND ) );
+                writeCfg(0xFC, now.get(Calendar.HOUR_OF_DAY), now.get(Calendar.MINUTE), now.get(Calendar.SECOND));
                 break;
 
             case 6:
-                writeCfg( 0xFE  ,  6 , 1 , 0 );
+                writeCfg(0xFE, 6, 1, 0);
                 break;
 
             default:
@@ -159,11 +157,11 @@ public class BluetoothMGB extends BluetoothCommunication {
         packet_buf = gattCharacteristic.getValue();
         packet_pos = 0;
 
-        if( packet_buf == null || packet_buf.length <= 0 ){
+        if (packet_buf == null || packet_buf.length <= 0) {
             return;
         }
 
-        if( packet_buf.length != 20 ){
+        if (packet_buf.length != 20) {
             return;
         }
 
@@ -171,7 +169,7 @@ public class BluetoothMGB extends BluetoothCommunication {
         int hdr_2 = popInt();
         int hdr_3 = popInt();
 
-        if( hdr_1 == 0xAC && hdr_2 == 0x02 && hdr_3 == 0xFF ){
+        if (hdr_1 == 0xAC && hdr_2 == 0x02 && hdr_3 == 0xFF) {
             measurement = new ScaleData();
 
             popInt(); //unknown =00
@@ -185,26 +183,25 @@ public class BluetoothMGB extends BluetoothCommunication {
             popInt(); //Minute
             popInt(); //Second
 
-            measurement.setDateTime( new Date() );
+            measurement.setDateTime(new Date());
 
-            measurement.setWeight( popFloat() );
+            measurement.setWeight(popFloat());
 
             popFloat(); //BMI
 
-            measurement.setFat( popFloat() );
+            measurement.setFat(popFloat());
 
             popInt(); //unknown =00
             popInt(); //unknown =00
 
-        }else
-        if( hdr_1 == 0x01 && hdr_2 == 0x00 ){
-            measurement.setMuscle( popFloat() );
+        } else if (hdr_1 == 0x01 && hdr_2 == 0x00) {
+            measurement.setMuscle(popFloat());
 
             popFloat(); //BMR
 
-            measurement.setBone( popFloat() );
+            measurement.setBone(popFloat());
 
-            measurement.setWater( popFloat() );
+            measurement.setWater(popFloat());
 
             popInt();  // Age
 
@@ -217,7 +214,7 @@ public class BluetoothMGB extends BluetoothCommunication {
             popInt(); // unknown =02
             popInt(); // unknown =47;48;4e;4b;42
 
-            addScaleData( measurement );
+            addScaleData(measurement);
 
             //    Visceral fat?
             //    Standart weight?

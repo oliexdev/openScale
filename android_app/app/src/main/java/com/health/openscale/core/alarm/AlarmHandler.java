@@ -59,10 +59,10 @@ public class AlarmHandler
         Calendar dataTimestamp = Calendar.getInstance();
         dataTimestamp.setTimeInMillis(dataMillis);
 
-        if(AlarmHandler.isSameDate(dataTimestamp, Calendar.getInstance()))
+        if (AlarmHandler.isSameDate(dataTimestamp, Calendar.getInstance()))
         {
             cancelAlarmNotification(context);
-            cancelAndRescheduleAlarmForNextWeek( context, dataTimestamp );
+            cancelAndRescheduleAlarmForNextWeek(context, dataTimestamp);
         }
     }
 

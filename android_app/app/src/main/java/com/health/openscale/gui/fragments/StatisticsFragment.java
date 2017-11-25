@@ -272,38 +272,38 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
         info_month += String.format("Ø-"+getResources().getString(R.string.label_bmi)+": %.1f <br>", monthAvgBMI);
         lines++;
 
-        if(prefs.getBoolean("fatEnable", true)) {
+        if (prefs.getBoolean("fatEnable", true)) {
             info_week += String.format("Ø-"+getResources().getString(R.string.label_fat)+": %.1f%% <br>", weekAvgFat);
             info_month +=  String.format("Ø-"+getResources().getString(R.string.label_fat)+": %.1f%% <br>", monthAvgFat);
             lines++;
         }
 
-        if(prefs.getBoolean("muscleEnable", true)) {
+        if (prefs.getBoolean("muscleEnable", true)) {
             info_week += String.format("Ø-"+getResources().getString(R.string.label_muscle)+": %.1f%% <br>", weekAvgMuscle);
             info_month += String.format("Ø-"+getResources().getString(R.string.label_muscle)+": %.1f%% <br>", monthAvgMuscle);
             lines++;
         }
 
-        if(prefs.getBoolean("lbwEnable", false)) {
+        if (prefs.getBoolean("lbwEnable", false)) {
             info_week += String.format("Ø-"+getResources().getString(R.string.label_lbw)+": %.1fkg <br>", weekAvgLBW);
             info_month += String.format("Ø-"+getResources().getString(R.string.label_lbw)+": %.1fkg <br>", monthAvgLBW);
             lines++;
         }
 
-        if(prefs.getBoolean("waterEnable", true)) {
+        if (prefs.getBoolean("waterEnable", true)) {
             info_week +=  String.format("Ø-"+getResources().getString(R.string.label_water)+": %.1f%% <br>", weekAvgWater);
             info_month += String.format("Ø-"+getResources().getString(R.string.label_water)+": %.1f%% <br>", monthAvgWater);
             lines++;
         }
 
-        if(prefs.getBoolean("boneEnable", false)) {
+        if (prefs.getBoolean("boneEnable", false)) {
             info_week +=  String.format("Ø-"+getResources().getString(R.string.label_bone)+": %.1fkg <br>", weekAvgBone);
             info_month += String.format("Ø-"+getResources().getString(R.string.label_bone)+": %.1fkg <br>",monthAvgBone);
             lines++;
         }
 
 
-        if(prefs.getBoolean("waistEnable", false)) {
+        if (prefs.getBoolean("waistEnable", false)) {
             info_week +=  String.format("Ø-"+getResources().getString(R.string.label_waist)+": %.1fcm <br>", weekAvgWaist);
             info_month += String.format("Ø-"+getResources().getString(R.string.label_waist)+": %.1fcm <br>", monthAvgWaist);
             lines++;
@@ -313,13 +313,13 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
             lines++;
         }
 
-        if(prefs.getBoolean("hipEnable", false)) {
+        if (prefs.getBoolean("hipEnable", false)) {
             info_week +=  String.format("Ø-"+getResources().getString(R.string.label_hip)+": %.1fcm <br>", weekAvgHip);
             info_month += String.format("Ø-"+getResources().getString(R.string.label_hip)+": %.1fcm <br>",monthAvgHip);
             lines++;
         }
 
-        if(prefs.getBoolean("hipEnable", false) && prefs.getBoolean("waistEnable", false)) {
+        if (prefs.getBoolean("hipEnable", false) && prefs.getBoolean("waistEnable", false)) {
             info_week +=  String.format("Ø-"+getResources().getString(R.string.label_whr)+": %.2f <br>", weekAvgWHR);
             info_month += String.format("Ø-"+getResources().getString(R.string.label_whr)+": %.2f <br>", monthAvgWHR);
             lines++;

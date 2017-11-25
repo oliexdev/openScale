@@ -217,7 +217,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         int posUser = 0;
         int pos = 0;
 
-        for(ScaleUser scaleUser :scaleUserList) {
+        for (ScaleUser scaleUser :scaleUserList) {
             spinUserAdapter.add(scaleUser.user_name);
 
             if (scaleUser.id == currentScaleUser.id) {
@@ -328,35 +328,35 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
                 setHasPoints(prefs.getBoolean("pointsEnable", true)).
                 setFormatter(new SimpleLineChartValueFormatter(1));
 
-        if(prefs.getBoolean("weightEnable", true)) {
+        if (prefs.getBoolean("weightEnable", true)) {
             lines.add(lineWeight);
         }
 
-        if(prefs.getBoolean("fatEnable", true)) {
+        if (prefs.getBoolean("fatEnable", true)) {
             lines.add(lineFat);
         }
 
-        if(prefs.getBoolean("waterEnable", true)) {
+        if (prefs.getBoolean("waterEnable", true)) {
             lines.add(lineWater);
         }
 
-        if(prefs.getBoolean("muscleEnable", true)) {
+        if (prefs.getBoolean("muscleEnable", true)) {
             lines.add(lineMuscle);
         }
 
-        if(prefs.getBoolean("lbwEnable", false)) {
+        if (prefs.getBoolean("lbwEnable", false)) {
             lines.add(lineLBW);
         }
 
-        if(prefs.getBoolean("waistEnable", false)) {
+        if (prefs.getBoolean("waistEnable", false)) {
             lines.add(lineWaist);
         }
 
-        if(prefs.getBoolean("hipEnable", false)) {
+        if (prefs.getBoolean("hipEnable", false)) {
             lines.add(lineHip);
         }
 
-        if(prefs.getBoolean("boneEnable", false)) {
+        if (prefs.getBoolean("boneEnable", false)) {
             lines.add(lineBone);
         }
 
@@ -467,7 +467,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         public void onValueSelected(int lineIndex, int pointIndex, PointValue pointValue) {
             userSelectedData = scaleDataLastDays.get(pointIndex);
 
-            updateOnView( OpenScale.getInstance(getContext()).getScaleDataList());
+            updateOnView(OpenScale.getInstance(getContext()).getScaleDataList());
         }
 
         @Override

@@ -396,7 +396,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
         private ArrayList<HashMap<Integer, String>> dataList;
         private LinearLayout row;
 
-        public ListViewAdapter(ArrayList<HashMap<Integer, String>> list){
+        public ListViewAdapter(ArrayList<HashMap<Integer, String>> list) {
             super();
             this.dataList =list;
         }
@@ -422,7 +422,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
                 return convertView;
             }
 
-            if(convertView == null){
+            if (convertView == null) {
                 row = new LinearLayout(getContext());
                 convertView = row;
 

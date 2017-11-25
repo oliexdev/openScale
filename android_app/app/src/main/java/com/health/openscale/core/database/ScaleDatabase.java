@@ -421,7 +421,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
         } catch (ParseException ex) {
             Log.e("ScaleDatabase", "Can't parse the date time string: " + ex.getMessage());
         }
-        catch ( IllegalArgumentException ex) {
+        catch (IllegalArgumentException ex) {
             Log.e("ScaleDatabase", "Illegal argument while reading from scale database: " + ex.getMessage());
         }
 
