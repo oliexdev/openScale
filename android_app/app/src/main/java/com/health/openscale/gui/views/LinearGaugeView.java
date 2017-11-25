@@ -20,6 +20,8 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.View;
 
@@ -34,17 +36,12 @@ public class LinearGaugeView extends View {
     public static final int COLOR_ORANGE = Color.parseColor("#FFBB33");
     public static final int COLOR_RED = Color.parseColor("#FF4444");
 
-    private final float barHeight = 10;
-    private final float limitLineHeight = 20;
-    private final float lineThickness = 5.0f;
-    private final float textOffset = 10.0f;
+    private static final float barHeight = 10;
+    private static final float textOffset = 10.0f;
+    private RectF limitRect = new RectF(0, 0, barHeight / 2, barHeight * 2);
 
-    private float firstPercent;
-    private float firstPos;
-    private float secondPercent;
-    private float secondPos;
-    private float valuePercent;
-    private float valuePos;
+    // Pre-created rect to avoid creating object in onDraw
+    private Rect bounds = new Rect();
 
     private Paint rectPaintLow;
     private Paint rectPaintNormal;
@@ -54,10 +51,8 @@ public class LinearGaugeView extends View {
     private Paint infoTextPaint;
 
     private float value;
-    private float minValue;
-    private float maxValue;
-    private float firstLimit;
-    private float secondLimit;
+    private float firstLimit = -1.0f;
+    private float secondLimit = -1.0f;
 
     public LinearGaugeView(Context context) {
         super(context);
@@ -96,9 +91,23 @@ public class LinearGaugeView extends View {
         infoTextPaint.setColor(Color.GRAY);
         infoTextPaint.setTextSize(30);
         infoTextPaint.setTextAlign(Paint.Align.CENTER);
+    }
 
-        firstLimit = -1.0f;
-        secondLimit = -1.0f;
+    private float valueToPosition(float value, float minValue, float maxValue) {
+        final float percent = (value - minValue) / (maxValue - minValue) * 100.0f;
+        return getWidth() / 100.0f * percent;
+    }
+
+    private void drawCenteredText(Canvas canvas, String text, float centerX, float y,
+                                  Paint paint, Rect textBounds) {
+        float x = Math.max(0.0f, centerX - textBounds.width() / 2.0f);
+        x = Math.min(x, getWidth() - textBounds.width());
+        canvas.drawText(text, x, y, paint);
+    }
+
+    private void drawCenteredText(Canvas canvas, String text, float centerX, float y, Paint paint) {
+        paint.getTextBounds(text, 0, text.length(), bounds);
+        drawCenteredText(canvas, text, centerX, y, paint, bounds);
     }
 
     @Override
@@ -106,57 +115,92 @@ public class LinearGaugeView extends View {
         super.onDraw(canvas);
 
         if (firstLimit < 0 && secondLimit < 0) {
-            float textY=getHeight() / 2.0f;
-            float textX=getWidth() / 2.0f;
-            canvas.drawText(getResources().getString(R.string.info_no_evaluation_available),textX,textY,infoTextPaint);
+            float textX = getWidth() / 2.0f;
+            float textY = getHeight() / 2.0f;
+            canvas.drawText(getResources().getString(R.string.info_no_evaluation_available), textX, textY, infoTextPaint);
             return;
         }
 
-        firstPercent = (firstLimit / maxValue) * 100.0f;
-        firstPos = (getWidth() / 100.0f) * firstPercent;
+        final boolean hasFirstLimit = firstLimit >= 0;
 
-        secondPercent = (secondLimit / maxValue) * 100.0f;
-        secondPos = (getWidth() / 100.0f) * secondPercent;
+        // Calculate the size of the "normal" span with a fallback if there is no such span
+        float span = hasFirstLimit ? secondLimit - firstLimit : 0.3f * secondLimit;
 
-        valuePercent = (value / maxValue) * 100.0f;
-        valuePos = (getWidth() / 100.0f) * valuePercent;
+        // Adjust the span if needed to make the value fit inside of it
+        if (hasFirstLimit && value < firstLimit - span) {
+            span = firstLimit - value;
+        } else if (!hasFirstLimit && value < secondLimit - span) {
+            span = secondLimit - value;
+        } else if (value > secondLimit + span) {
+            span = value - secondLimit;
+        }
+
+        // Round span to some nice value
+        if (span <= 1.0f) {
+            span = (float)Math.ceil(span * 10.0) / 10.0f;
+        } else if (span <= 10.0f) {
+            span = (float)Math.ceil(span);
+        } else {
+            span = 5.0f * (float)Math.ceil(span / 5.0);
+        }
+
+        final float minValue = Math.max(0.0f, (hasFirstLimit ? firstLimit : secondLimit) - span);
+        final float maxValue = secondLimit + span;
+
+        final float firstPos = valueToPosition(firstLimit, minValue, maxValue);
+        final float secondPos = valueToPosition(secondLimit, minValue, maxValue);
+        final float valuePos = valueToPosition(value, minValue, maxValue);
 
         // Bar
+        final float barTop = getHeight() / 2.0f - barHeight / 2.0f;
+        final float barBottom = barTop + barHeight;
+
         if (firstLimit > 0) {
-            canvas.drawRect(0, (getHeight() / 2.0f) - (barHeight / 2.0f), firstPos, (getHeight() / 2.0f) + (barHeight / 2.0f), rectPaintLow);
+            canvas.drawRect(0, barTop, firstPos, barBottom, rectPaintLow);
+            canvas.drawRect(firstPos, barTop, secondPos, barBottom, rectPaintNormal);
         } else {
-            canvas.drawRect(0, (getHeight() / 2.0f) - (barHeight / 2.0f), firstPos, (getHeight() / 2.0f) + (barHeight / 2.0f), rectPaintNormal);
+            canvas.drawRect(0, barTop, secondPos, barBottom, rectPaintNormal);
         }
-        canvas.drawRect(firstPos, (getHeight() / 2.0f) - (barHeight / 2.0f), secondPos , (getHeight() / 2.0f) + (barHeight / 2.0f), rectPaintNormal);
-        canvas.drawRect(secondPos,(getHeight() / 2.0f) - (barHeight / 2.0f), getWidth() , (getHeight() / 2.0f) + (barHeight / 2.0f), rectPaintHigh);
+        canvas.drawRect(secondPos, barTop, getWidth(), barBottom, rectPaintHigh);
 
         // Limit Lines
-        canvas.drawRect(0, (getHeight() / 2.0f) - (limitLineHeight / 2.0f), 0+lineThickness, (getHeight() / 2.0f) + (limitLineHeight / 2.0f), textPaint);
+        limitRect.offsetTo(0, getHeight() / 2.0f - limitRect.height() / 2.0f);
+        canvas.drawRect(limitRect, textPaint);
         if (firstLimit > 0) {
-            canvas.drawRect(firstPos, (getHeight() / 2.0f) - (limitLineHeight / 2.0f), firstPos + lineThickness, (getHeight() / 2.0f) + (limitLineHeight / 2.0f), textPaint);
+            limitRect.offsetTo(firstPos - limitRect.width() / 2.0f, limitRect.top);
+            canvas.drawRect(limitRect, textPaint);
         }
-        canvas.drawRect(secondPos, (getHeight() / 2.0f) - (limitLineHeight / 2.0f), secondPos+lineThickness, (getHeight() / 2.0f) + (limitLineHeight / 2.0f), textPaint);
-        canvas.drawRect(getWidth()-lineThickness, (getHeight() / 2.0f) - (limitLineHeight / 2.0f), getWidth(), (getHeight() / 2.0f) + (limitLineHeight / 2.0f), textPaint);
+        limitRect.offsetTo(secondPos - limitRect.width() / 2.0f, limitRect.top);
+        canvas.drawRect(limitRect, textPaint);
+        limitRect.offsetTo(getWidth() - limitRect.width(), limitRect.top);
+        canvas.drawRect(limitRect, textPaint);
 
         // Text
-        canvas.drawText(Float.toString(minValue), 0.0f, (getHeight() / 2.0f) - (barHeight / 2.0f) - textOffset, textPaint);
+        final float textY = barTop - textOffset;
+        canvas.drawText(Float.toString(minValue), 0.0f, textY, textPaint);
         if (firstLimit > 0) {
-            canvas.drawText(Float.toString(firstLimit), firstPos - 5.0f, (getHeight() / 2.0f) - (barHeight / 2.0f) - textOffset, textPaint);
+            drawCenteredText(canvas, Float.toString(firstLimit), firstPos, textY, textPaint);
         }
-        canvas.drawText(Float.toString(secondLimit), secondPos-5.0f, (getHeight() / 2.0f) - (barHeight / 2.0f) - textOffset, textPaint);
-        canvas.drawText(Float.toString(maxValue), getWidth()-40.0f, (getHeight() / 2.0f) - (barHeight / 2.0f)- textOffset, textPaint);
+        drawCenteredText(canvas, Float.toString(secondLimit), secondPos, textY, textPaint);
+        drawCenteredText(canvas, Float.toString(maxValue), getWidth(), textY, textPaint);
 
         // Indicator
+        final float indicatorBottom = limitRect.bottom + 10.0f;
         Path path = new Path();
         path.setFillType(Path.FillType.EVEN_ODD);
-        path.moveTo(valuePos,  (getHeight() / 2.0f) - 10.0f);
-        path.lineTo(valuePos + 10.0f, (getHeight() / 2.0f) + 20.0f);
-        path.lineTo(valuePos - 10.0f, (getHeight() / 2.0f) + 20.0f);
-        path.lineTo(valuePos, (getHeight() / 2.0f) - 10.0f);
+        path.moveTo(valuePos,  barTop);
+        path.lineTo(valuePos + 10.0f, indicatorBottom);
+        path.lineTo(valuePos - 10.0f, indicatorBottom);
+        path.lineTo(valuePos, barTop);
         path.close();
 
         canvas.drawPath(path, indicatorPaint);
-        canvas.drawText(String.format("%.2f", value), valuePos-15.0f, (getHeight() / 2.0f) - (barHeight / 2.0f) - textOffset, indicatorPaint);
+
+        // Value text
+        String valueStr = String.format("%.2f", value);
+        indicatorPaint.getTextBounds(valueStr, 0, valueStr.length(), bounds);
+        drawCenteredText(canvas, valueStr, valuePos,
+            indicatorBottom + bounds.height() + textOffset, indicatorPaint, bounds);
     }
 
     @Override
@@ -199,13 +243,6 @@ public class LinearGaugeView extends View {
 
         //MUST CALL THIS
         setMeasuredDimension(width, height);
-    }
-
-    public void setMinMaxValue(float min, float max) {
-        minValue = min;
-        maxValue = max;
-        invalidate();
-        requestLayout();
     }
 
     public void setLimits(float first, float second) {

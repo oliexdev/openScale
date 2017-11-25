@@ -61,11 +61,6 @@ public class WHRMeasurementView extends MeasurementView {
     }
 
     @Override
-    public float getMinValue() {
-        return 0.5f;
-    }
-
-    @Override
     public float getMaxValue() {
         return 1.5f;
     }

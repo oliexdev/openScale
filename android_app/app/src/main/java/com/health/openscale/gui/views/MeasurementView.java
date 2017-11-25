@@ -205,7 +205,6 @@ public abstract class MeasurementView extends TableLayout {
     public abstract void updatePreferences(SharedPreferences preferences);
     public abstract String getUnit();
     public abstract EvaluationResult evaluateSheet(EvaluationSheet evalSheet, float value);
-    public abstract float getMinValue();
     public abstract float getMaxValue();
 
     public float getValue() {
@@ -220,19 +219,13 @@ public abstract class MeasurementView extends TableLayout {
     }
 
     public void incValue() {
-        float incValue = getValue() + 0.1f;
-
-        if (incValue <= getMaxValue()) {
-            setValueOnView(dateTime, incValue);
-        }
+        float incValue = Math.min(getMaxValue(), getValue() + 0.1f);
+        setValueOnView(dateTime, incValue);
     }
 
     public void decValue() {
-        float decValue = getValue() - 0.1f;
-
-        if (decValue >= 0) {
-            setValueOnView(dateTime, decValue);
-        }
+        float decValue = Math.max(0.0f, getValue() - 0.1f);
+        setValueOnView(dateTime, decValue);
     }
 
     public String getValueAsString() {
@@ -294,7 +287,7 @@ public abstract class MeasurementView extends TableLayout {
 
         try{
             Float floatValue = Float.parseFloat(value);
-            if (measurementMode == VIEW) {
+            if (measurementMode == VIEW || measurementMode == EDIT) {
                 evaluate(floatValue);
             }
             valueView.setText(String.format("%.2f ", floatValue) + getUnit());
@@ -382,7 +375,6 @@ public abstract class MeasurementView extends TableLayout {
             evalResult = new EvaluationResult();
         }
 
-        evaluatorView.setMinMaxValue(getMinValue(), getMaxValue());
         evaluatorView.setLimits(evalResult.lowLimit, evalResult.highLimit);
         evaluatorView.setValue(value);
 

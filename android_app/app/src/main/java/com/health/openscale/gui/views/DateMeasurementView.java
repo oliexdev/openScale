@@ -86,11 +86,6 @@ public class DateMeasurementView extends MeasurementView {
     }
 
     @Override
-    public float getMinValue() {
-        return 0;
-    }
-
-    @Override
     public float getMaxValue() {
         return 0;
     }

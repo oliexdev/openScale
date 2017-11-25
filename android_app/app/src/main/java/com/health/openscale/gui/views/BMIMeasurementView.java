@@ -56,11 +56,6 @@ public class BMIMeasurementView extends MeasurementView {
     }
 
     @Override
-    public float getMinValue() {
-        return 10;
-    }
-
-    @Override
     public float getMaxValue() {
         return 50;
     }

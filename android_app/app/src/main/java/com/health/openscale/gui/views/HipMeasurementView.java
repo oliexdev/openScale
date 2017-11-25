@@ -56,11 +56,6 @@ public class HipMeasurementView extends MeasurementView {
     }
 
     @Override
-    public float getMinValue() {
-        return 30;
-    }
-
-    @Override
     public float getMaxValue() {
         return 200;
     }
