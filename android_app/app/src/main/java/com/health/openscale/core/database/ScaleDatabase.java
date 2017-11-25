@@ -32,10 +32,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Locale;
 
-public class ScaleDatabase extends SQLiteOpenHelper {	
+public class ScaleDatabase extends SQLiteOpenHelper {
     private static final int DATABASE_VERSION = 6;
-    private static final String DATABASE_NAME = "openScaleDatabase.db";	
-	
+    private static final String DATABASE_NAME = "openScaleDatabase.db";
+
     private static final String TABLE_NAME = "scaledata";
     private static final String COLUMN_NAME_ID = "id";
     private static final String COLUMN_NAME_USER_ID = "user_id";
@@ -50,15 +50,15 @@ public class ScaleDatabase extends SQLiteOpenHelper {
     private static final String COLUMN_NAME_HIP = "hip";
     private static final String COLUMN_NAME_COMMENT = "comment";
     private static final String COLUMN_NAME_ENABLE = "enable";
-    
-    private static final String SQL_CREATE_ENTRIES = 
-    		"CREATE TABLE " + TABLE_NAME + " (" + 
+
+    private static final String SQL_CREATE_ENTRIES =
+    		"CREATE TABLE " + TABLE_NAME + " (" +
     				COLUMN_NAME_ID + " INTEGER PRIMARY KEY," +
                     COLUMN_NAME_USER_ID + " INTEGER," +
     				COLUMN_NAME_DATE_TIME + " TEXT," +
     				COLUMN_NAME_WEIGHT + " REAL," +
     				COLUMN_NAME_FAT + " REAL," +
-    				COLUMN_NAME_WATER + " REAL," + 
+    				COLUMN_NAME_WATER + " REAL," +
     				COLUMN_NAME_MUSCLE + " REAL," +
                     COLUMN_NAME_LBW + " REAL," +
                     COLUMN_NAME_BONE + " REAL," +
@@ -125,7 +125,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
             db.execSQL("ALTER TABLE " + TABLE_NAME + " ADD COLUMN " + COLUMN_NAME_LBW + " REAL DEFAULT 0");
         }
 	}
-	
+
 	public void clearScaleData(int userId) {
         dbWrite.delete(TABLE_NAME, COLUMN_NAME_USER_ID + "=" + Integer.toString(userId), null);
 	}
@@ -395,7 +395,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
         } catch (SQLException ex) {
             Log.e("ScaleDatabase", "SQL exception occured while getting scale data list: " + ex.getMessage());
         }
-		
+
 		return scaleDataList;
 	}
 

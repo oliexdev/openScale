@@ -54,7 +54,7 @@ import java.util.Locale;
 
 public class MainActivity extends ActionBarActivity implements
 		ActionBar.TabListener {
-	
+
 	/**
 	 * The {@link android.support.v4.view.PagerAdapter} that will provide
 	 * fragments for each of the sections. We use a {@link FragmentPagerAdapter}
@@ -81,7 +81,7 @@ public class MainActivity extends ActionBarActivity implements
 		setContentView(R.layout.activity_main);
 
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-		
+
 		// Set up the action bar.
 		final ActionBar actionBar = getSupportActionBar();
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
@@ -285,15 +285,15 @@ public class MainActivity extends ActionBarActivity implements
 	 * one of the sections/tabs/pages.
 	 */
 	public class SectionsPagerAdapter extends FragmentPagerAdapter {
-		
+
 		private OverviewFragment overviewFrag;
 		private GraphFragment graphFrag;
 		private TableFragment tableFrag;
 		private StatisticsFragment statisticsFrag;
-		
+
 		public SectionsPagerAdapter(FragmentManager fm) {
 			super(fm);
-			
+
 			overviewFrag = new OverviewFragment();
 			graphFrag = new GraphFragment();
 			tableFrag = new TableFragment();
@@ -305,7 +305,7 @@ public class MainActivity extends ActionBarActivity implements
 			// getItem is called to instantiate the fragment for the given page.
 			// Return a PlaceholderFragment (defined as a static inner class
 			// below).
-			
+
 			switch (position) {
 				case 0:
 					return overviewFrag;

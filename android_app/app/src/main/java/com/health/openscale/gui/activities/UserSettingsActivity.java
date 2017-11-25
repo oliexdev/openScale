@@ -64,7 +64,7 @@ public class UserSettingsActivity extends Activity {
 	private DateFormat dateFormat = DateFormat.getDateInstance();
 
 	private Context context;
-	
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);

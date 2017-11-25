@@ -97,10 +97,10 @@ public class ScaleUserDatabase extends SQLiteOpenHelper {
             db.execSQL("ALTER TABLE " + TABLE_NAME + " ADD COLUMN " + COLUMN_NAME_INITIAL_WEIGHT + " REAL DEFAULT 0");
         }
 	}
-	
+
 	public void clearDatabase() {
 		SQLiteDatabase db = getWritableDatabase();
-		
+
 		db.delete(TABLE_NAME, null, null);
 	}
 
@@ -196,12 +196,12 @@ public class ScaleUserDatabase extends SQLiteOpenHelper {
 
 			while (!cursorScaleDB.isAfterLast()) {
                 scaleUserDBEntries.add(readAtCursor(cursorScaleDB));
-				
+
 				cursorScaleDB.moveToNext();
 			}
 
         cursorScaleDB.close();
-		
+
 		return scaleUserDBEntries;
 	}
 

@@ -85,9 +85,9 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
     private int selectedSubpageNr;
 
 	public TableFragment() {
-		
+
 	}
-	
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 	{
@@ -131,7 +131,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
 		return tableView;
 	}
-	
+
 	@Override
 	public void updateOnView(ArrayList<ScaleData> scaleDataList)
     {

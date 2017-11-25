@@ -63,7 +63,7 @@ import lecho.lib.hellocharts.util.ChartUtils;
 import lecho.lib.hellocharts.view.ColumnChartView;
 import lecho.lib.hellocharts.view.LineChartView;
 
-public class GraphFragment extends Fragment implements FragmentUpdateListener {	
+public class GraphFragment extends Fragment implements FragmentUpdateListener {
 	private View graphView;
 	private LineChartView chartBottom;
     private ColumnChartView chartTop;
@@ -94,10 +94,10 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     }
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) 
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
 	{
 		graphView = inflater.inflate(R.layout.fragment_graph, container, false);
-		
+
 		chartBottom = (LineChartView) graphView.findViewById(R.id.chart_bottom);
         chartTop = (ColumnChartView) graphView.findViewById(R.id.chart_top);
 
@@ -184,7 +184,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
 		return graphView;
 	}
-	
+
 	@Override
 	public void updateOnView(ArrayList<ScaleData> scaleDataList)
 	{
