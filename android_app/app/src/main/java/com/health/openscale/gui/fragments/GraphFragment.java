@@ -64,8 +64,8 @@ import lecho.lib.hellocharts.view.ColumnChartView;
 import lecho.lib.hellocharts.view.LineChartView;
 
 public class GraphFragment extends Fragment implements FragmentUpdateListener {
-	private View graphView;
-	private LineChartView chartBottom;
+    private View graphView;
+    private LineChartView chartBottom;
     private ColumnChartView chartTop;
     private Viewport defaultTopViewport;
     private TextView txtYear;
@@ -88,17 +88,17 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     private ArrayList<ScaleData> scaleDataList;
     private ArrayList<ScaleData> pointIndexScaleDataList;
 
-	public GraphFragment() {
+    public GraphFragment() {
         calYears = Calendar.getInstance();
         calLastSelected = Calendar.getInstance();
     }
 
-	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
-	{
-		graphView = inflater.inflate(R.layout.fragment_graph, container, false);
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+    {
+        graphView = inflater.inflate(R.layout.fragment_graph, container, false);
 
-		chartBottom = (LineChartView) graphView.findViewById(R.id.chart_bottom);
+        chartBottom = (LineChartView) graphView.findViewById(R.id.chart_bottom);
         chartTop = (ColumnChartView) graphView.findViewById(R.id.chart_top);
 
         chartBottom.setOnTouchListener(new chartBottomListener());
@@ -182,14 +182,14 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         openScale = OpenScale.getInstance(getContext());
         openScale.registerFragment(this);
 
-		return graphView;
-	}
+        return graphView;
+    }
 
-	@Override
-	public void updateOnView(ArrayList<ScaleData> scaleDataList)
-	{
+    @Override
+    public void updateOnView(ArrayList<ScaleData> scaleDataList)
+    {
         generateGraphs();
-	}
+    }
 
     /**
      * Add a point to a point value stack.

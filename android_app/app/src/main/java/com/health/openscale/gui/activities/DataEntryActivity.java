@@ -92,15 +92,15 @@ public class DataEntryActivity extends Activity {
 
     private long id;
 
-	private Context context;
+    private Context context;
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
-		setContentView(R.layout.activity_dataentry);
+        setContentView(R.layout.activity_dataentry);
 
-		context = this;
+        context = this;
 
         tableLayoutDataEntry = (TableLayout) findViewById(R.id.tableLayoutDataEntry);
 
@@ -145,8 +145,8 @@ public class DataEntryActivity extends Activity {
 
         txtDataNr = (TextView) findViewById(R.id.txtDataNr);
 
-		btnAdd = (Button) findViewById(R.id.btnAdd);
-		btnOk = (Button) findViewById(R.id.btnOk);
+        btnAdd = (Button) findViewById(R.id.btnAdd);
+        btnOk = (Button) findViewById(R.id.btnOk);
         btnCancel = (Button) findViewById(R.id.btnCancel);
         btnLeft = (Button) findViewById(R.id.btnLeft);
         btnRight = (Button) findViewById(R.id.btnRight);
@@ -164,7 +164,7 @@ public class DataEntryActivity extends Activity {
         expandButton.setOnClickListener(new onClickListenerToggleButton());
 
         updateOnView();
-	}
+    }
 
 
     private void updateOnView()

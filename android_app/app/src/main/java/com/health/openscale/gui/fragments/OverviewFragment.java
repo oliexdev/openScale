@@ -427,11 +427,11 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         return startDate.get(Calendar.DAY_OF_YEAR) - endDate.get(Calendar.DAY_OF_YEAR);
     }
 
-	public void btnOnClickInsertData()
-	{
-		Intent intent = new Intent(overviewView.getContext(), DataEntryActivity.class);
+    public void btnOnClickInsertData()
+    {
+        Intent intent = new Intent(overviewView.getContext(), DataEntryActivity.class);
         startActivityForResult(intent, 1);
-	}
+    }
 
     private class PieChartLastTouchListener implements PieChartOnValueSelectListener
     {
