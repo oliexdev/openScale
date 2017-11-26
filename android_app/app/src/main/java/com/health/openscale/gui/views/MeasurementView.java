@@ -77,6 +77,7 @@ public abstract class MeasurementView extends TableLayout {
 
     private Date dateTime;
     private String value;
+    private float previousValue;
     private String diffValue;
 
     private MeasurementViewMode measurementMode;
@@ -294,12 +295,17 @@ public abstract class MeasurementView extends TableLayout {
             }
             valueView.setText(String.format("%.2f ", floatValue) + getUnit());
             value = String.valueOf(Math.round(floatValue*100.0f)/100.0f);
+            // Only update diff value if setDiffOnView has been called previously
+            if (!diffValue.isEmpty()) {
+                setDiffOnView(floatValue, previousValue);
+            }
         } catch (NumberFormatException e) {
             valueView.setText(value);
         }
     }
 
     protected void setDiffOnView(float value, float prevValue) {
+        previousValue = prevValue;
         float diff = value - prevValue;
 
         String symbol;
