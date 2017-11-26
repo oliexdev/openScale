@@ -82,14 +82,14 @@ public class UsersPreferences extends PreferenceFragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data)
     {
         if (requestCode == UserSettingsActivity.ADD_USER_REQUEST) {
-            if(resultCode == RESULT_OK){
+            if (resultCode == RESULT_OK) {
                 updateUserPreferences();
             }
         }
 
 
         if (requestCode == UserSettingsActivity.EDIT_USER_REQUEST) {
-            if(resultCode == RESULT_OK){
+            if (resultCode == RESULT_OK) {
                 updateUserPreferences();
             }
         }

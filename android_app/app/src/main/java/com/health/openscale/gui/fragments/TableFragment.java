@@ -74,8 +74,8 @@ import lecho.lib.hellocharts.util.ChartUtils;
 import static android.util.TypedValue.COMPLEX_UNIT_DIP;
 
 public class TableFragment extends Fragment implements FragmentUpdateListener {
-	private View tableView;
-	private ListView tableDataView;
+    private View tableView;
+    private ListView tableDataView;
     private LinearLayout tableHeaderView;
     private SharedPreferences prefs;
     private LinearLayout subpageView;
@@ -84,22 +84,22 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
     private int selectedSubpageNr;
 
-	public TableFragment() {
-		
-	}
-	
-	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
-	{
-		tableView = inflater.inflate(R.layout.fragment_table, container, false);
+    public TableFragment() {
+
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+    {
+        tableView = inflater.inflate(R.layout.fragment_table, container, false);
 
         subpageView = (LinearLayout) tableView.findViewById(R.id.subpageView);
 
-		tableDataView = (ListView) tableView.findViewById(R.id.tableDataView);
+        tableDataView = (ListView) tableView.findViewById(R.id.tableDataView);
         tableHeaderView = (LinearLayout) tableView.findViewById(R.id.tableHeaderView);
 
-		tableView.findViewById(R.id.btnImportData).setOnClickListener(new onClickListenerImport());
-		tableView.findViewById(R.id.btnExportData).setOnClickListener(new onClickListenerExport());
+        tableView.findViewById(R.id.btnImportData).setOnClickListener(new onClickListenerImport());
+        tableView.findViewById(R.id.btnExportData).setOnClickListener(new onClickListenerExport());
 
         measurementsList = new ArrayList<>();
 
@@ -129,11 +129,11 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
         selectedSubpageNr = 0;
 
-		return tableView;
-	}
-	
-	@Override
-	public void updateOnView(ArrayList<ScaleData> scaleDataList)
+        return tableView;
+    }
+
+    @Override
+    public void updateOnView(ArrayList<ScaleData> scaleDataList)
     {
         tableDataView.setAdapter(new ListViewAdapter(new ArrayList<HashMap<Integer, String>>())); // delete all data in the table with an empty adapter array list
 
@@ -245,7 +245,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
         tableDataView.setAdapter(new ListViewAdapter(dataRowList));
         tableDataView.setOnItemClickListener(new onClickListenerRow());
-	}
+    }
 
     private int pxImageDp(float dp) {
         return (int)(dp * getResources().getDisplayMetrics().density + 0.5f);
@@ -396,7 +396,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
         private ArrayList<HashMap<Integer, String>> dataList;
         private LinearLayout row;
 
-        public ListViewAdapter(ArrayList<HashMap<Integer, String>> list){
+        public ListViewAdapter(ArrayList<HashMap<Integer, String>> list) {
             super();
             this.dataList =list;
         }
@@ -422,7 +422,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
                 return convertView;
             }
 
-            if(convertView == null){
+            if (convertView == null) {
                 row = new LinearLayout(getContext());
                 convertView = row;
 

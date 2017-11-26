@@ -135,12 +135,12 @@ public class BackupPreferences extends PreferenceFragment {
     }
 
     private boolean importBackup(String databaseName, File exportDir) {
-        if(!isExternalStoragePresent())
+        if (!isExternalStoragePresent())
             return false;
 
         File exportFile = new File(Environment.getDataDirectory() +
                         "/data/com.health.openscale" +
-                        "/databases/" + databaseName );
+                        "/databases/" + databaseName);
         File importFile = new File(exportDir, databaseName);
 
         if (!importFile.exists()) {
@@ -161,12 +161,12 @@ public class BackupPreferences extends PreferenceFragment {
     }
 
     private boolean exportBackup(String databaseName, File exportDir) {
-        if(!isExternalStoragePresent())
+        if (!isExternalStoragePresent())
             return false;
 
         File dbFile = new File(Environment.getDataDirectory() +
                 "/data/com.health.openscale" +
-                "/databases/" + databaseName );
+                "/databases/" + databaseName);
 
         File file = new File(exportDir, databaseName);
 

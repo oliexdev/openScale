@@ -52,40 +52,40 @@ import java.util.TreeMap;
 
 public class OpenScale {
 
-	private static OpenScale instance;
+    private static OpenScale instance;
 
-	private ScaleDatabase scaleDB;
+    private ScaleDatabase scaleDB;
     private ScaleUserDatabase scaleUserDB;
-	private ArrayList<ScaleData> scaleDataList;
+    private ArrayList<ScaleData> scaleDataList;
 
-	private BluetoothCommunication btCom;
-	private String btDeviceName;
+    private BluetoothCommunication btCom;
+    private String btDeviceName;
     private AlarmHandler alarmHandler;
 
-	private SimpleDateFormat dateTimeFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm");
+    private SimpleDateFormat dateTimeFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm");
 
     private Context context;
 
     private ArrayList<FragmentUpdateListener> fragmentList;
 
-	private OpenScale(Context context) {
+    private OpenScale(Context context) {
         this.context = context;
-		scaleDB = new ScaleDatabase(context);
+        scaleDB = new ScaleDatabase(context);
         scaleUserDB = new ScaleUserDatabase(context);
         alarmHandler = new AlarmHandler();
         btCom = null;
         fragmentList = new ArrayList<>();
 
         updateScaleData();
-	}
+    }
 
-	public static OpenScale getInstance(Context context) {
-		if (instance == null) {
-			instance = new OpenScale(context);
-		}
+    public static OpenScale getInstance(Context context) {
+        if (instance == null) {
+            instance = new OpenScale(context);
+        }
 
-		return instance;
-	}
+        return instance;
+    }
 
     public void addScaleUser(String name, Date birthday, int body_height, int scale_unit, int gender, float initial_weight, float goal_weight, Date goal_date)
     {
@@ -156,9 +156,9 @@ public class OpenScale {
     }
 
 
-	public ArrayList<ScaleData> getScaleDataList() {
-		return scaleDataList;
-	}
+    public ArrayList<ScaleData> getScaleDataList() {
+        return scaleDataList;
+    }
 
 
     public ScaleData[] getTupleScaleData(long id)
@@ -166,7 +166,7 @@ public class OpenScale {
         return scaleDB.getTupleDataEntry(getSelectedScaleUser().id, id);
     }
 
-	public int addScaleData(ScaleData scaleData) {
+    public int addScaleData(ScaleData scaleData) {
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
@@ -201,7 +201,7 @@ public class OpenScale {
             scaleData.setFat(fatMetric.getFat(getScaleUser(scaleData.getUserId()), scaleData));
         }
 
-		if (scaleDB.insertEntry(scaleData)) {
+        if (scaleDB.insertEntry(scaleData)) {
             ScaleUser scaleUser = getScaleUser(scaleData.getUserId());
 
             String infoText = String.format(context.getString(R.string.info_new_data_added), scaleData.getConvertedWeight(scaleUser.scale_unit), scaleUser.UNIT_STRING[scaleUser.scale_unit], dateTimeFormat.format(scaleData.getDateTime()), scaleUser.user_name);
@@ -211,7 +211,7 @@ public class OpenScale {
         }
 
         return scaleData.getUserId();
-	}
+    }
 
     private int getSmartUserAssignment(float weight, float range) {
         ArrayList<ScaleUser> scaleUser = getScaleUserList();
@@ -263,31 +263,31 @@ public class OpenScale {
         updateScaleData();
     }
 
-	public void importData(String filename) throws IOException {
-		File file = new File(filename);
+    public void importData(String filename) throws IOException {
+        File file = new File(filename);
 
-		FileInputStream inputStream = new FileInputStream(file);
+        FileInputStream inputStream = new FileInputStream(file);
 
-		InputStreamReader inputReader = new InputStreamReader(inputStream);
-		BufferedReader csvReader = new BufferedReader(inputReader);
+        InputStreamReader inputReader = new InputStreamReader(inputStream);
+        BufferedReader csvReader = new BufferedReader(inputReader);
 
-		String line = csvReader.readLine();
+        String line = csvReader.readLine();
 
-		try {
-			while (line != null) {
-				String csvField[] = line.split(",", -1);
+        try {
+            while (line != null) {
+                String csvField[] = line.split(",", -1);
 
                 if (csvField.length < 9) {
                     throw new IOException("Can't parse CSV file. Field length is wrong.");
                 }
 
-				ScaleData newScaleData = new ScaleData();
+                ScaleData newScaleData = new ScaleData();
 
-				newScaleData.setDateTime(dateTimeFormat.parse(csvField[0]));
-				newScaleData.setWeight(Float.parseFloat(csvField[1]));
-				newScaleData.setFat(Float.parseFloat(csvField[2]));
-				newScaleData.setWater(Float.parseFloat(csvField[3]));
-				newScaleData.setMuscle(Float.parseFloat(csvField[4]));
+                newScaleData.setDateTime(dateTimeFormat.parse(csvField[0]));
+                newScaleData.setWeight(Float.parseFloat(csvField[1]));
+                newScaleData.setFat(Float.parseFloat(csvField[2]));
+                newScaleData.setWater(Float.parseFloat(csvField[3]));
+                newScaleData.setMuscle(Float.parseFloat(csvField[4]));
                 newScaleData.setLBW(Float.parseFloat(csvField[5]));
                 newScaleData.setBone(Float.parseFloat(csvField[6]));
                 newScaleData.setWaist(Float.parseFloat(csvField[7]));
@@ -296,37 +296,37 @@ public class OpenScale {
 
                 newScaleData.setUserId(getSelectedScaleUser().id);
 
-				scaleDB.insertEntry(newScaleData);
+                scaleDB.insertEntry(newScaleData);
 
-				line = csvReader.readLine();
-			}
+                line = csvReader.readLine();
+            }
 
-		} catch (ParseException e) {
-			throw new IOException("Can't parse date format. Please set the date time format as <dd.MM.yyyy HH:mm> (e.g. 31.10.2014 05:23)");
-		} catch (NumberFormatException e) {
+        } catch (ParseException e) {
+            throw new IOException("Can't parse date format. Please set the date time format as <dd.MM.yyyy HH:mm> (e.g. 31.10.2014 05:23)");
+        } catch (NumberFormatException e) {
             throw new IOException("Can't parse float number (" + e.getMessage()+")");
         }
 
         updateScaleData();
 
-		csvReader.close();
-		inputReader.close();
-	}
+        csvReader.close();
+        inputReader.close();
+    }
 
-	public void exportData(String filename) throws IOException {
-		File file = new File(filename);
-		file.createNewFile();
+    public void exportData(String filename) throws IOException {
+        File file = new File(filename);
+        file.createNewFile();
 
-		FileOutputStream outputStream = new FileOutputStream(file);
+        FileOutputStream outputStream = new FileOutputStream(file);
 
-		OutputStreamWriter csvWriter = new OutputStreamWriter(outputStream);
+        OutputStreamWriter csvWriter = new OutputStreamWriter(outputStream);
 
-		for (ScaleData scaleData : scaleDataList) {
-			csvWriter.append(dateTimeFormat.format(scaleData.getDateTime()) + ",");
-			csvWriter.append(Float.toString(scaleData.getWeight()) + ",");
-			csvWriter.append(Float.toString(scaleData.getFat()) + ",");
-			csvWriter.append(Float.toString(scaleData.getWater()) + ",");
-			csvWriter.append(Float.toString(scaleData.getMuscle()) + ",");
+        for (ScaleData scaleData : scaleDataList) {
+            csvWriter.append(dateTimeFormat.format(scaleData.getDateTime()) + ",");
+            csvWriter.append(Float.toString(scaleData.getWeight()) + ",");
+            csvWriter.append(Float.toString(scaleData.getFat()) + ",");
+            csvWriter.append(Float.toString(scaleData.getWater()) + ",");
+            csvWriter.append(Float.toString(scaleData.getMuscle()) + ",");
             csvWriter.append(Float.toString(scaleData.getLBW()) + ",");
             csvWriter.append(Float.toString(scaleData.getBone()) + ",");
             csvWriter.append(Float.toString(scaleData.getWaist()) + ",");
@@ -335,20 +335,20 @@ public class OpenScale {
                 csvWriter.append(scaleData.getComment());
             }
 
-			csvWriter.append("\n");
-		}
+            csvWriter.append("\n");
+        }
 
-		csvWriter.close();
-		outputStream.close();
-	}
+        csvWriter.close();
+        outputStream.close();
+    }
 
-	public void clearScaleData(int userId) {
+    public void clearScaleData(int userId) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         prefs.edit().putInt("uniqueNumber", 0x00).commit();
-		scaleDB.clearScaleData(userId);
+        scaleDB.clearScaleData(userId);
 
         updateScaleData();
-	}
+    }
 
     public int[] getCountsOfMonth(int year) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
@@ -371,8 +371,8 @@ public class OpenScale {
         return scaleDB.getScaleDataOfYear(selectedUserId, year);
     }
 
-	public boolean startSearchingForBluetooth(String deviceName, Handler callbackBtHandler) {
-		Log.d("OpenScale", "Bluetooth Server started! I am searching for device ...");
+    public boolean startSearchingForBluetooth(String deviceName, Handler callbackBtHandler) {
+        Log.d("OpenScale", "Bluetooth Server started! I am searching for device ...");
 
         for (BluetoothCommunication.BT_DEVICE_ID btScaleID : BluetoothCommunication.BT_DEVICE_ID.values()) {
             btCom = BluetoothCommunication.getBtDevice(context, btScaleID);
@@ -390,12 +390,12 @@ public class OpenScale {
         return false;
     }
 
-	public void stopSearchingForBluetooth() {
-		if (btCom != null) {
+    public void stopSearchingForBluetooth() {
+        if (btCom != null) {
             btCom.stopSearching();
             Log.d("OpenScale", "Bluetooth Server explicit stopped!");
-		}
-	}
+        }
+    }
 
     public void registerFragment(FragmentUpdateListener fragment) {
         fragmentList.add(fragment);
@@ -415,7 +415,7 @@ public class OpenScale {
 
         scaleDataList = scaleDB.getScaleDataList(selectedUserId);
 
-        for(FragmentUpdateListener fragment : fragmentList) {
+        for (FragmentUpdateListener fragment : fragmentList) {
             if (fragment != null) {
                 if (((Fragment)fragment).isAdded()) {
                     fragment.updateOnView(scaleDataList);

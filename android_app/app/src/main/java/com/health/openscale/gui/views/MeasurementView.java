@@ -285,7 +285,7 @@ public abstract class MeasurementView extends TableLayout {
         dateTime = objTimeDate;
         value = String.valueOf(objValue);
 
-        try{
+        try {
             Float floatValue = Float.parseFloat(value);
             if (measurementMode == VIEW || measurementMode == EDIT) {
                 evaluate(floatValue);
@@ -306,7 +306,7 @@ public abstract class MeasurementView extends TableLayout {
         if (diff > 0.0) {
             symbol = SYMBOL_UP;
             symbol_color = "<font color='green'>" + SYMBOL_UP + "</font>";
-        } else if (diff < 0.0){
+        } else if (diff < 0.0) {
             symbol = SYMBOL_DOWN;
             symbol_color = "<font color='red'>" + SYMBOL_DOWN + "</font>";
         } else {
@@ -335,8 +335,8 @@ public abstract class MeasurementView extends TableLayout {
         }
     }
 
-    protected void setVisible(boolean isVisible){
-        if(isVisible) {
+    protected void setVisible(boolean isVisible) {
+        if (isVisible) {
             measurementRow.setVisibility(View.VISIBLE);
         } else {
             measurementRow.setVisibility(View.GONE);
@@ -378,7 +378,7 @@ public abstract class MeasurementView extends TableLayout {
         evaluatorView.setLimits(evalResult.lowLimit, evalResult.highLimit);
         evaluatorView.setValue(value);
 
-        switch(evalResult.eval_state)
+        switch (evalResult.eval_state)
         {
             case LOW:
                 indicatorView.setBackgroundColor(ChartUtils.COLOR_BLUE);

@@ -60,12 +60,12 @@ public class BluetoothMedisanaBS444 extends BluetoothCommunication {
     }
 
     @Override
-    boolean nextInitCmd(int stateNr){
+    boolean nextInitCmd(int stateNr) {
         return false;
     }
 
     @Override
-    boolean nextBluetoothCmd(int stateNr){
+    boolean nextBluetoothCmd(int stateNr) {
         switch (stateNr) {
             case 0:
                 // set indication on for feature characteristic
@@ -82,7 +82,7 @@ public class BluetoothMedisanaBS444 extends BluetoothCommunication {
             case 3:
                 // send magic number to receive weight data
                 Date date = new Date();
-                int unix_timestamp = (int) ((date.getTime() / 1000) - 1262304000) ; // -40 years because unix time starts in year 1970
+                int unix_timestamp = (int) ((date.getTime() / 1000) - 1262304000); // -40 years because unix time starts in year 1970
 
                 byte[] magicBytes = new byte[] {
                         (byte)0x02,
@@ -103,13 +103,13 @@ public class BluetoothMedisanaBS444 extends BluetoothCommunication {
     }
 
     @Override
-    boolean nextCleanUpCmd(int stateNr){
+    boolean nextCleanUpCmd(int stateNr) {
         return false;
     }
 
 
     @Override
-    public void onBluetoothDataChange(BluetoothGatt bluetoothGatt, BluetoothGattCharacteristic gattCharacteristic){
+    public void onBluetoothDataChange(BluetoothGatt bluetoothGatt, BluetoothGattCharacteristic gattCharacteristic) {
         final byte[] data = gattCharacteristic.getValue();
 
         if (gattCharacteristic.getUuid().equals(WEIGHT_MEASUREMENT_CHARACTERISTIC)) {

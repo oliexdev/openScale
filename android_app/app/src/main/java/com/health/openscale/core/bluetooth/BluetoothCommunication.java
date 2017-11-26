@@ -240,7 +240,7 @@ public abstract class BluetoothCommunication {
      * @param gattCharacteristic the Bluetooth Gatt characteristic
      * @param status the status code
      */
-    protected void onBluetoothDataRead(BluetoothGatt bluetoothGatt, BluetoothGattCharacteristic gattCharacteristic, int status){};
+    protected void onBluetoothDataRead(BluetoothGatt bluetoothGatt, BluetoothGattCharacteristic gattCharacteristic, int status) {};
 
     /**
      * Method is triggered if a Bluetooth data from a device is notified or indicated.
@@ -248,7 +248,7 @@ public abstract class BluetoothCommunication {
      * @param bluetoothGatt the Bluetooth Gatt
      * @param gattCharacteristic the Bluetooth characteristic
      */
-    protected void onBluetoothDataChange(BluetoothGatt bluetoothGatt, BluetoothGattCharacteristic gattCharacteristic){};
+    protected void onBluetoothDataChange(BluetoothGatt bluetoothGatt, BluetoothGattCharacteristic gattCharacteristic) {};
 
     /**
      * Set the Bluetooth machine state to a specific state.
@@ -369,7 +369,7 @@ public abstract class BluetoothCommunication {
         }
 
         final StringBuilder stringBuilder = new StringBuilder(data.length);
-        for(byte byteChar : data) {
+        for (byte byteChar : data) {
             stringBuilder.append(String.format("%02X ", byteChar));
         }
 
