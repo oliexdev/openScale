@@ -305,6 +305,8 @@ public class OpenScale {
 			throw new IOException("Can't parse date format. Please set the date time format as <dd.MM.yyyy HH:mm> (e.g. 31.10.2014 05:23)");
 		} catch (NumberFormatException e) {
             throw new IOException("Can't parse float number (" + e.getMessage()+")");
+        } catch (ArrayIndexOutOfBoundsException e) {
+		    throw new IOException("Can't parse format column number mismatch");
         }
 
         updateScaleData();
