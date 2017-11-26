@@ -475,11 +475,7 @@ public abstract class MeasurementView extends TableLayout {
                 return;
             }
 
-            if (evaluatorRow.getVisibility() == View.VISIBLE) {
-                evaluatorRow.setVisibility(View.GONE);
-            } else {
-                evaluatorRow.setVisibility(View.VISIBLE);
-            }
+            setExpand(evaluatorRow.getVisibility() != View.VISIBLE);
         }
     }
 
