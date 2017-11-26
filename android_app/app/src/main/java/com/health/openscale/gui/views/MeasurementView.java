@@ -197,7 +197,9 @@ public abstract class MeasurementView extends TableLayout {
         evaluatorView.setLayoutParams(new TableRow.LayoutParams(0, LayoutParams.WRAP_CONTENT, 0.99f));
         spaceAfterEvaluatorView.setLayoutParams(new TableRow.LayoutParams(0, LayoutParams.WRAP_CONTENT, 0.01f));
 
-        measurementRow.setOnClickListener(new onClickListenerEvaluation());
+        onClickListenerEvaluation onClickListener = new onClickListenerEvaluation();
+        measurementRow.setOnClickListener(onClickListener);
+        evaluatorRow.setOnClickListener(onClickListener);
     }
 
     public abstract void updateValue(ScaleData updateData);
