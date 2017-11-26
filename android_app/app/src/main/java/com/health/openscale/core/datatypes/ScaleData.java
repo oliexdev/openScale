@@ -194,7 +194,7 @@ public class ScaleData {
     }
 
     public float getWHtR(int body_height) {
-        return waist / (float)body_height ;
+        return waist / (float)body_height;
     }
 
     public float getWHR() {
@@ -205,9 +205,9 @@ public class ScaleData {
         return waist / hip;
     }
 
-	@Override
-	public String toString()
-	{
-		return "ID : " + id + " USER_ID: " + user_id + " DATE_TIME: " + date_time.toString() + " WEIGHT: " + weight + " FAT: " + fat + " WATER: " + water + " MUSCLE: " + muscle + " LBW: " + lbw + " WAIST: " + waist + " HIP: " + hip + " BONE: " + bone + " COMMENT: " + comment;
-	}
+    @Override
+    public String toString()
+    {
+        return "ID : " + id + " USER_ID: " + user_id + " DATE_TIME: " + date_time.toString() + " WEIGHT: " + weight + " FAT: " + fat + " WATER: " + water + " MUSCLE: " + muscle + " LBW: " + lbw + " WAIST: " + waist + " HIP: " + hip + " BONE: " + bone + " COMMENT: " + comment;
+    }
 }

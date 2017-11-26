@@ -142,7 +142,7 @@ public class BluetoothCustomOpenScale extends BluetoothCommunication {
             btConnectThread = null;
         }
     }
-    
+
     public void clearEEPROM()
     {
         sendBtData("9");

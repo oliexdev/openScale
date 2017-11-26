@@ -47,8 +47,8 @@ public class ScaleUserDatabase extends SQLiteOpenHelper {
     private static final String COLUMN_NAME_GOAL_DATE = "goal_date";
 
     private static final String SQL_CREATE_ENTRIES =
-    		"CREATE TABLE " + TABLE_NAME + " (" +
-    				COLUMN_NAME_ID + " INTEGER PRIMARY KEY," +
+            "CREATE TABLE " + TABLE_NAME + " (" +
+                    COLUMN_NAME_ID + " INTEGER PRIMARY KEY," +
                     COLUMN_NAME_USER_NAME + " TEXT," +
                     COLUMN_NAME_BIRTHDAY + " TEXT," +
                     COLUMN_NAME_BODY_HEIGHT + " INTEGER," +
@@ -57,10 +57,10 @@ public class ScaleUserDatabase extends SQLiteOpenHelper {
                     COLUMN_NAME_INITIAL_WEIGHT + " REAL," +
                     COLUMN_NAME_GOAL_WEIGHT + " REAL," +
                     COLUMN_NAME_GOAL_DATE + " TEXT" +
-    				")";
+                    ")";
 
     private static final String SQL_DELETE_ENTRIES =
-    		"DROP TABLE IF EXISTS " + TABLE_NAME;
+            "DROP TABLE IF EXISTS " + TABLE_NAME;
 
     private static String[] projection = {
             COLUMN_NAME_ID,
@@ -76,17 +76,17 @@ public class ScaleUserDatabase extends SQLiteOpenHelper {
 
     private SimpleDateFormat formatDateTime = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US);
 
-	public ScaleUserDatabase(Context context) {
-		super(context, DATABASE_NAME, null, DATABASE_VERSION);
-	}
+    public ScaleUserDatabase(Context context) {
+        super(context, DATABASE_NAME, null, DATABASE_VERSION);
+    }
 
-	@Override
-	public void onCreate(SQLiteDatabase db) {
-		db.execSQL(SQL_CREATE_ENTRIES);
-	}
+    @Override
+    public void onCreate(SQLiteDatabase db) {
+        db.execSQL(SQL_CREATE_ENTRIES);
+    }
 
-	@Override
-	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+    @Override
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         if (oldVersion == 1 && newVersion == 2) {
             db.execSQL("ALTER TABLE " + TABLE_NAME + " ADD COLUMN " + COLUMN_NAME_GENDER + " INTEGER DEFAULT 0");
             db.execSQL("ALTER TABLE " + TABLE_NAME + " ADD COLUMN " + COLUMN_NAME_GOAL_WEIGHT + " REAL DEFAULT 0");
@@ -96,16 +96,16 @@ public class ScaleUserDatabase extends SQLiteOpenHelper {
         if (oldVersion == 2 && newVersion == 3) {
             db.execSQL("ALTER TABLE " + TABLE_NAME + " ADD COLUMN " + COLUMN_NAME_INITIAL_WEIGHT + " REAL DEFAULT 0");
         }
-	}
-	
-	public void clearDatabase() {
-		SQLiteDatabase db = getWritableDatabase();
-		
-		db.delete(TABLE_NAME, null, null);
-	}
+    }
 
-	public boolean insertEntry(ScaleUser scaleUser) {
-		SQLiteDatabase db = getWritableDatabase();
+    public void clearDatabase() {
+        SQLiteDatabase db = getWritableDatabase();
+
+        db.delete(TABLE_NAME, null, null);
+    }
+
+    public boolean insertEntry(ScaleUser scaleUser) {
+        SQLiteDatabase db = getWritableDatabase();
 
         ContentValues values = new ContentValues();
         values.put(COLUMN_NAME_USER_NAME, scaleUser.user_name);
@@ -128,7 +128,7 @@ public class ScaleUserDatabase extends SQLiteOpenHelper {
         }
 
         return true;
-	}
+    }
 
     public void deleteEntry(int id) {
         SQLiteDatabase db = getWritableDatabase();
@@ -158,13 +158,13 @@ public class ScaleUserDatabase extends SQLiteOpenHelper {
         SQLiteDatabase db = getReadableDatabase();
 
         Cursor cursorScaleDB = db.query(
-                TABLE_NAME, 	// The table to query
-                projection, 	// The columns to return
-                COLUMN_NAME_ID + "=?", 			// The columns for the WHERE clause
-                new String[] {Integer.toString(id)}, 			// The values for the WHERE clause
-                null, 			// don't group the rows
-                null,			// don't filter by row groups
-                null  		// The sort order
+                TABLE_NAME,     // The table to query
+                projection,     // The columns to return
+                COLUMN_NAME_ID + "=?",             // The columns for the WHERE clause
+                new String[] {Integer.toString(id)},             // The values for the WHERE clause
+                null,             // don't group the rows
+                null,            // don't filter by row groups
+                null          // The sort order
         );
 
         cursorScaleDB.moveToFirst();
@@ -176,34 +176,34 @@ public class ScaleUserDatabase extends SQLiteOpenHelper {
         return scaleUser;
     }
 
-	public ArrayList<ScaleUser> getScaleUserList() {
-		SQLiteDatabase db = getReadableDatabase();
-		ArrayList<ScaleUser> scaleUserDBEntries = new ArrayList<ScaleUser>();
+    public ArrayList<ScaleUser> getScaleUserList() {
+        SQLiteDatabase db = getReadableDatabase();
+        ArrayList<ScaleUser> scaleUserDBEntries = new ArrayList<ScaleUser>();
 
-		String sortOrder = COLUMN_NAME_ID + " ASC";
+        String sortOrder = COLUMN_NAME_ID + " ASC";
 
-		Cursor cursorScaleDB = db.query(
-		    TABLE_NAME, 	// The table to query
-		    projection, 	// The columns to return
-		    null, 			// The columns for the WHERE clause
-		    null, 			// The values for the WHERE clause
-		    null, 			// don't group the rows
-		    null,			// don't filter by row groups
-		    sortOrder  		// The sort order
-		    );
+        Cursor cursorScaleDB = db.query(
+            TABLE_NAME,     // The table to query
+            projection,     // The columns to return
+            null,             // The columns for the WHERE clause
+            null,             // The values for the WHERE clause
+            null,             // don't group the rows
+            null,            // don't filter by row groups
+            sortOrder          // The sort order
+            );
 
-			cursorScaleDB.moveToFirst();
+            cursorScaleDB.moveToFirst();
 
-			while (!cursorScaleDB.isAfterLast()) {
+            while (!cursorScaleDB.isAfterLast()) {
                 scaleUserDBEntries.add(readAtCursor(cursorScaleDB));
-				
-				cursorScaleDB.moveToNext();
-			}
+
+                cursorScaleDB.moveToNext();
+            }
 
         cursorScaleDB.close();
-		
-		return scaleUserDBEntries;
-	}
+
+        return scaleUserDBEntries;
+    }
 
     private ScaleUser readAtCursor (Cursor cur) {
         ScaleUser scaleUser = new ScaleUser();
@@ -227,7 +227,7 @@ public class ScaleUserDatabase extends SQLiteOpenHelper {
         } catch (ParseException ex) {
             Log.e("ScaleDatabase", "Can't parse the date time string: " + ex.getMessage());
         }
-        catch ( IllegalArgumentException ex) {
+        catch (IllegalArgumentException ex) {
             Log.e("ScaleDatabase", "Illegal argument while reading from scale database: " + ex.getMessage());
         }
 

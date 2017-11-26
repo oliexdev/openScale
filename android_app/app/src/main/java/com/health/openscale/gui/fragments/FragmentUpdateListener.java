@@ -21,5 +21,5 @@ import com.health.openscale.core.datatypes.ScaleData;
 import java.util.ArrayList;
 
 public interface FragmentUpdateListener {
-	public void updateOnView(ArrayList<ScaleData> scaleDataList);
+    public void updateOnView(ArrayList<ScaleData> scaleDataList);
 }

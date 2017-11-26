@@ -45,12 +45,12 @@ public class UserSettingsActivity extends Activity {
     public static final int ADD_USER_REQUEST = 0;
     public static final int EDIT_USER_REQUEST = 1;
 
-	private Date birthday = new Date();
-	private Date goal_date = new Date();
+    private Date birthday = new Date();
+    private Date goal_date = new Date();
 
-	private EditText txtUserName;
-	private EditText txtBodyHeight;
-	private EditText txtBirthday;
+    private EditText txtUserName;
+    private EditText txtBodyHeight;
+    private EditText txtBirthday;
     private EditText txtInitialWeight;
     private EditText txtGoalWeight;
     private EditText txtGoalDate;
@@ -61,18 +61,18 @@ public class UserSettingsActivity extends Activity {
     private Button btnCancel;
     private Button btnDelete;
 
-	private DateFormat dateFormat = DateFormat.getDateInstance();
+    private DateFormat dateFormat = DateFormat.getDateInstance();
 
-	private Context context;
-	
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_usersettings);
-		context = this;
+    private Context context;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_usersettings);
+        context = this;
 
         txtUserName = (EditText) findViewById(R.id.txtUserName);
-		txtBodyHeight = (EditText) findViewById(R.id.txtBodyHeight);
+        txtBodyHeight = (EditText) findViewById(R.id.txtBodyHeight);
         radioScaleUnit = (RadioGroup) findViewById(R.id.groupScaleUnit);
         radioGender = (RadioGroup) findViewById(R.id.groupGender);
         txtInitialWeight = (EditText) findViewById(R.id.txtInitialWeight);
@@ -125,7 +125,7 @@ public class UserSettingsActivity extends Activity {
             btnOk.setText(getResources().getString(R.string.label_add));
             btnDelete.setVisibility(View.GONE);
         }
-	}
+    }
 
     private void editMode()
     {
@@ -173,26 +173,22 @@ public class UserSettingsActivity extends Activity {
     {
         boolean validate = true;
 
-        if( txtUserName.getText().toString().length() == 0 )
-        {
+        if (txtUserName.getText().toString().length() == 0) {
             txtUserName.setError(getResources().getString(R.string.error_user_name_required));
             validate = false;
         }
 
-        if( txtBodyHeight.getText().toString().length() == 0 )
-        {
+        if (txtBodyHeight.getText().toString().length() == 0) {
             txtBodyHeight.setError(getResources().getString(R.string.error_body_height_required));
             validate = false;
         }
 
-        if( txtInitialWeight.getText().toString().length() == 0 )
-        {
+        if (txtInitialWeight.getText().toString().length() == 0) {
             txtInitialWeight.setError(getResources().getString(R.string.error_initial_weight_required));
             validate = false;
         }
 
-        if( txtGoalWeight.getText().toString().length() == 0 )
-        {
+        if (txtGoalWeight.getText().toString().length() == 0) {
             txtGoalWeight.setError(getResources().getString(R.string.error_goal_weight_required));
             validate = false;
         }

@@ -21,7 +21,7 @@ import com.health.openscale.core.datatypes.ScaleUser;
 public abstract class EstimatedFatMetric {
     public enum FORMULA { BF_DEURENBERG, BF_DEURENBERG_II, BF_EDDY, BF_GALLAGHER, BF_GALLAGHER_ASIAN };
 
-    public static EstimatedFatMetric getEstimatedMetric( FORMULA metric) {
+    public static EstimatedFatMetric getEstimatedMetric(FORMULA metric) {
         switch (metric) {
             case BF_DEURENBERG:
                 return new BFDeurenberg();

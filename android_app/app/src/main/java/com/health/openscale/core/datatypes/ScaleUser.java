@@ -24,11 +24,11 @@ public class ScaleUser {
     private static float KG_LB = 2.20462f;
     private static float KG_ST = 0.157473f;
 
-	public int id;
+    public int id;
     public String user_name;
-	public Date birthday;
-	public int body_height;
-	public int scale_unit;
+    public Date birthday;
+    public int body_height;
+    public int scale_unit;
     public int gender;
     private float initial_weight;
     public float goal_weight;
@@ -106,9 +106,9 @@ public class ScaleUser {
         return converted_weight;
     }
 
-	@Override
-	public String toString()
-	{
-		return "ID : " + id + " NAME: " + user_name + " BIRTHDAY: " + birthday.toString() + " BODY_HEIGHT: " + body_height + " SCALE_UNIT: " + UNIT_STRING[scale_unit] + " GENDER " + gender + " INITIAL WEIGHT " + initial_weight + " GOAL WEIGHT " + goal_weight + " GOAL DATE " + goal_date.toString();
-	}
+    @Override
+    public String toString()
+    {
+        return "ID : " + id + " NAME: " + user_name + " BIRTHDAY: " + birthday.toString() + " BODY_HEIGHT: " + body_height + " SCALE_UNIT: " + UNIT_STRING[scale_unit] + " GENDER " + gender + " INITIAL WEIGHT " + initial_weight + " GOAL WEIGHT " + goal_weight + " GOAL DATE " + goal_date.toString();
+    }
 }
