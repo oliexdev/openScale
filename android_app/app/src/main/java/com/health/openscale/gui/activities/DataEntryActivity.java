@@ -226,16 +226,17 @@ public class DataEntryActivity extends Activity {
             ScaleData lastScaleData = OpenScale.getInstance(getApplicationContext()).getScaleDataList().get(0);
 
             // show as default last scale data
+            lastScaleData.setDateTime(new Date());
+            lastScaleData.setComment("");
             for (MeasurementView measurement : dataEntryMeasurements) {
-                lastScaleData.setDateTime(new Date());
-                lastScaleData.setComment("");
                 measurement.updateValue(lastScaleData);
             }
         } else {
             setViewMode(MeasurementView.MeasurementViewMode.ADD);
             // show default values
+            ScaleData newScaleData = new ScaleData();
             for (MeasurementView measurement : dataEntryMeasurements) {
-                measurement.updateValue(new ScaleData());
+                measurement.updateValue(newScaleData);
             }
         }
     }
