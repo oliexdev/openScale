@@ -80,6 +80,7 @@ public abstract class MeasurementView extends TableLayout {
     private float previousValue;
     private String diffValue;
 
+    private MeasurementViewUpdateListener updateListener = null;
     private MeasurementViewMode measurementMode;
 
     public MeasurementView(Context context, String text, Drawable icon) {
@@ -203,6 +204,10 @@ public abstract class MeasurementView extends TableLayout {
         evaluatorRow.setOnClickListener(onClickListener);
     }
 
+    public void setOnUpdateListener(MeasurementViewUpdateListener listener) {
+        updateListener = listener;
+    }
+
     public abstract void updateValue(ScaleData updateData);
     public abstract void updateDiff(ScaleData updateData, ScaleData lastData);
     public abstract void updatePreferences(SharedPreferences preferences);
@@ -301,6 +306,9 @@ public abstract class MeasurementView extends TableLayout {
             }
         } catch (NumberFormatException e) {
             valueView.setText(value);
+        }
+        if (updateListener != null) {
+            updateListener.onMeasurementViewUpdate(this);
         }
     }
 
