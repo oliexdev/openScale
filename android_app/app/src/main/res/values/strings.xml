@@ -72,10 +72,10 @@
     <string name="error_value_range">The value is not in range</string>
     <string name="error_exporting">Error exporting</string>
     <string name="error_importing">Error importing</string>
-    <string name="error_user_name_required">Error user name is required</string>
-    <string name="error_body_height_required">Error body height is required</string>
-    <string name="error_initial_weight_required">Error initial weight is required</string>
-    <string name="error_goal_weight_required">Error goal weight is required</string>
+    <string name="error_user_name_required">Error: user name is required</string>
+    <string name="error_body_height_required">Error: body height is required</string>
+    <string name="error_initial_weight_required">Error: initial weight is required</string>
+    <string name="error_goal_weight_required">Error: goal weight is required</string>
     <string name="error_hip_value_required">hip circumference is required</string>
 
     <string name="info_data_deleted">Database entry deleted</string>
