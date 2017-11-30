@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">openScale</string>
+    <string name="title_overview">General</string>
+    <string name="title_graph">Gráfica</string>
+    <string name="title_table">Tabla</string>
+    <string name="title_statistics">Estadísticas</string>
+    <string name="title_users">Usuarios</string>
+    <string name="title_data">Datos</string>
+    <string name="title_measurements">Mediciones</string>
+    <string name="title_about">Acerca de</string>
+
+    <string name="action_settings">Configuración</string>
+    <string name="action_bluetooth_status">Estado del Bluetooth</string>
+
+    <string name="label_add">Añadir</string>
+    <string name="label_cancel">Cancelar</string>
+    <string name="label_ok">OK</string>
+    <string name="label_yes">Si</string>
+    <string name="label_no">No</string>
+    <string name="label_delete">Borrar</string>
+    <string name="label_add_user">Añadir usuario</string>
+
+    <string name="label_id">Id</string>
+    <string name="label_weight">Peso</string>
+    <string name="label_bmi">Índice de masa corporal (IMC)</string>
+    <string name="label_bmr">Tasa metabólica basal (TMB)</string>
+    <string name="label_fat">Porcentaje de grasa corporal</string>
+    <string name="label_water">Porcentaje de agua</string>
+    <string name="label_muscle">Porcentaje muscular</string>
+    <string name="label_lbw">Masa corporal magra</string>
+    <string name="label_waist">Circunferencia de la cintura</string>
+    <string name="label_hip">Circunferencia de la cadera</string>
+    <string name="label_comment">Comentario</string>
+    <string name="label_whtr">Proporción cintura-altura</string>
+    <string name="label_whr">Proporción cintura-cadera</string>
+    <string name="label_bone">Masa ósea</string>
+    <string name="label_smartUserAssign">Asignación inteligente de usuario</string>
+
+    <string name="label_days">días</string>
+    <string name="label_measures">medidas</string>
+    <string name="label_last_week">Últimos 7 días</string>
+    <string name="label_last_month">Últimos 30 días</string>
+    <string name="label_weight_difference">Diferencia de peso</string>
+    <string name="label_goal_date_is">La fecha para cumplir el objetivo es</string>
+    <string name="label_days_left">Días restantes</string>
+
+    <string name="label_date">Fecha</string>
+    <string name="label_time">Hora</string>
+    <string name="label_birthday">F. Nacimiento</string>
+    <string name="label_user_name">Nombre</string>
+    <string name="label_body_height">Altura</string>
+    <string name="label_scale_unit">Unidad</string>
+    <string name="label_gender">Género</string>
+    <string name="label_male">Hombre</string>
+    <string name="label_woman">Mujer</string>
+    <string name="label_goal_weight">Peso objetivo</string>
+    <string name="label_goal_date">Fecha objetivo</string>
+
+
+    <string name="label_title_user">usuario</string>
+    <string name="label_title_last_measurement">última medición</string>
+    <string name="label_title_goal">objetivo</string>
+    <string name="label_title_statistics">estadísticas</string>
+
+    <string name="label_import">Importar</string>
+    <string name="label_export">Exportar</string>
+    <string name="label_delete_all">Borrar todo</string>
+
+    <string name="error_value_required">Se requiere un valor</string>
+    <string name="error_value_range">El valor no está en el rango</string>
+    <string name="error_exporting">Error exportando</string>
+    <string name="error_importing">Error importando</string>
+    <string name="error_user_name_required">Error, se require un nombre de usuario</string>
+    <string name="error_body_height_required">Error, se requiere la altura</string>
+    <string name="error_initial_weight_required">Error, se requiere el peso inicial</string>
+    <string name="error_goal_weight_required">Error, se requiere el objetivo de peso</string>
+    <string name="error_hip_value_required">se requiere circunferencia de la cadera</string>
+
+    <string name="info_data_deleted">Entrada borrada</string>
+    <string name="info_data_all_deleted">Todas las entradas borradas</string>
+    <string name="info_data_exported">Datos exportados a</string>
+    <string name="info_data_imported">Datos importados de</string>
+    <string name="info_set_filename">Establecer nombre de archivo a</string>
+    <string name="info_enter_value_cm">Introduzca valor en cm</string>
+    <string name="info_enter_value_percent">Introduzca valor en %</string>
+    <string name="info_enter_value_unit">Introduzca valor en</string>
+    <string name="info_enter_comment">Introduzca un comentario opcional</string>
+    <string name="info_enter_initial_weight">Introduzca su peso inicial en su unidad de medida</string>
+    <string name="info_enter_goal_weight">Introduzca su peso objetivo en su unidad de medida</string>
+    <string name="info_is_visible">está visible</string>
+    <string name="info_is_not_visible">no está visible</string>
+    <string name="info_is_enable">está activado</string>
+    <string name="info_is_not_enable">está desactivado</string>
+    <string name="info_is_not_available">no está disponible</string>
+    <string name="info_delete_bluetooth_data">Borrar todos los datos de Bluetooth</string>
+    <string name="info_delete_bluetooth_data_success">Los datos de Bluetooth fueron borrados</string>
+    <string name="info_bluetooth_try_connection">Intentando conectar a</string>
+    <string name="info_bluetooth_connection_lost">Se perdió la conexión Bluetooth.</string>
+    <string name="info_bluetooth_no_device">No se encontró un dispositivo Bluetooth</string>
+    <string name="info_bluetooth_connection_successful">La conexión se estableció correctamente</string>
+    <string name="info_bluetooth_init">Inicializar el dispositivo Bluetooth</string>
+    <string name="info_bluetooth_connection_error">El Bluetooth encontró un error inesperado</string>
+    <string name="info_new_data_added">%1$.2f%2$s [%3$s] a %4$s añadido</string>
+
+    <string name="info_enter_user_name">Introduce tu nombre</string>
+    <string name="info_no_selected_user">No existe usuario. Por favor, crea un nuevo usuario en la configuración.</string>
+    <string name="info_no_evaluation_available">No se puede evaluar el valor</string>
+
+    <string name="question_really_delete">¿Realmente quieres borrar la entrada de la base de datos?</string>
+    <string name="question_really_delete_all">¿Realmente quieres borrar todas las entradas de la base de datos?</string>
+    <string name="question_really_delete_user">¿Realmente quieres borrar el usuario? </string>
+
+    <string name="label_bluetooth_title">Bluetooth</string>
+    <string name="label_bluetooth_enable">Buscar báscula al iniciar</string>
+    <string name="label_bluetooth_searching">Buscando básculas Bluetooth</string>
+    <string name="label_device_type">Tipo de dispositivo</string>
+
+    <string name="label_enable_labels">Etiqueta en el punto de medición</string>
+    <string name="label_enable_points">Mostrar un punto en la medición</string>
+
+    <string name="label_delete_confirmation">Confirmación de borrado</string>
+
+    <string name="label_estimate_water">Estimación de agua corporal</string>
+    <string name="label_estimate_lbw">Estimación de masa corporal magra</string>
+    <string name="label_estimate_fat">Estimación de grasa coporal</string>
+
+    <string name="label_category_display">Mostrar</string>
+    <string name="label_category_body_metrics_estimation">Estimación de métricas corporales</string>
+    <string name="label_category_measurement_database">Base de datos de mediciones</string>
+    <string name="label_category_misc">Varios</string>
+
+    <string name="label_maintainer">Responsable</string>
+    <string name="label_website">Página Web</string>
+    <string name="label_license">Licencia</string>
+
+    <string name="label_estimate_water_formula">Fórmula de agua corporal</string>
+    <string name="label_estimate_lbw_formula">Fórmula de masa corporal magra</string>
+    <string name="label_estimate_fat_formula">Fórmula de grasa corporal</string>
+    <string name="label_automatic">automático</string>
+
+    <string name="label_reminder">Recordatorio</string>
+    <string name="label_reminder_weekdays">Días de la semana</string>
+    <string name="label_reminder_time">Hora</string>
+    <string name="label_reminder_notify_text">Texto de la notificación</string>
+    <string name="default_value_reminder_notify_text">Es hora de pesarse</string>
+
+    <string name="info_your_weight">Tu peso era</string>
+    <string name="info_your_fat">Tu masa corporal era</string>
+    <string name="info_your_water">Tu porcentaje de agua era</string>
+    <string name="info_your_muscle">Tu porcentaje muscular era</string>
+    <string name="info_your_waist">Tu cintura era</string>
+    <string name="info_your_hip">Tu cadera era</string>
+    <string name="info_on_date">el</string>
+
+    <string name="Monday">Lunes</string>
+    <string name="Tuesday">Martes</string>
+    <string name="Wednesday">Miércoles</string>
+    <string name="Thursday">Jueves</string>
+    <string name="Friday">Viernes</string>
+    <string name="Saturday">Sábado</string>
+    <string name="Sunday">Domingo</string>
+    <string name="label_bt_device_no_support">dispositivo no soportado</string>
+    <string name="label_exportBackup">Exportar respaldo</string>
+    <string name="label_importBackup">Importar respaldo</string>
+    <string name="label_backup">Respaldo</string>
+    <string name="label_export_dir">Directorio de exportación</string>
+    <string name="label_not_found">no encontrado</string>
+    <string name="label_ignoreOutOfRange">Ignorar los datos fuera de rango</string>
+    <string name="label_initial_weight">Peso inicial</string>
+    <string name="label_average_data">Calcular media por día/mes</string>
+    <string name="label_regression_line">Línea de peso de regresión</string>
+    <string name="label_regression_line_degree">Línea de grado de polinomio de regresión</string>
+    <string name="label_goal_line">Línea del objetivo</string>
+
+
+    <string name="error_max_scale_users">Número máximo de usuarios de báscula concurrentes alcanzado.</string>
+    <string name="info_step_on_scale">Por favor, póngase descalzo en la báscula para tomar medidas de referencia.</string>
+    <string name="info_measuring">Medición de peso: %.2f</string>
+
+</resources>
