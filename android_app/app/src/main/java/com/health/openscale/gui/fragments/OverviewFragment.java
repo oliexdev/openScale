@@ -74,6 +74,7 @@ import lecho.lib.hellocharts.view.PieChartView;
 public class OverviewFragment extends Fragment implements FragmentUpdateListener {
 
     private View overviewView;
+    private View userLineSeparator;
 
     private TextView txtTitleUser;
     private TextView txtTitleLastMeasurement;
@@ -109,6 +110,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         overviewView = inflater.inflate(R.layout.fragment_overview, container, false);
+        userLineSeparator = overviewView.findViewById(R.id.userLineSeparator);
 
         context = overviewView.getContext();
 
@@ -207,7 +209,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
     private void updateUserSelection() {
 
-        currentScaleUser =  OpenScale.getInstance(getContext()).getSelectedScaleUser();
+        currentScaleUser = OpenScale.getInstance(getContext()).getSelectedScaleUser();
 
         userSelectedData = null;
 
@@ -215,19 +217,22 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         ArrayList<ScaleUser> scaleUserList = OpenScale.getInstance(getContext()).getScaleUserList();
 
         int posUser = 0;
-        int pos = 0;
 
-        for (ScaleUser scaleUser :scaleUserList) {
+        for (ScaleUser scaleUser : scaleUserList) {
             spinUserAdapter.add(scaleUser.user_name);
 
             if (scaleUser.id == currentScaleUser.id) {
-                posUser = pos;
+                posUser = spinUserAdapter.getCount() - 1;
             }
-
-            pos++;
         }
 
         spinUser.setSelection(posUser, true);
+
+        // Hide user selector when there is only one user
+        int visibility = spinUserAdapter.getCount() < 2 ? View.GONE : View.VISIBLE;
+        txtTitleUser.setVisibility(visibility);
+        spinUser.setVisibility(visibility);
+        userLineSeparator.setVisibility(visibility);
     }
 
 

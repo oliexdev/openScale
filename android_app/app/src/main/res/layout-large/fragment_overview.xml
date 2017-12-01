@@ -46,6 +46,7 @@
             <View
                 android:layout_width="fill_parent"
                 android:layout_height="1dp"
+                android:id="@+id/userLineSeparator"
                 android:background="@android:color/darker_gray"/>
 
             <LinearLayout
