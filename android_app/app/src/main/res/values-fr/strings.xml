@@ -23,7 +23,7 @@
     <string name="label_id">ID</string>
     <string name="label_weight">Poids</string>
     <string name="label_bmi">IMC</string>
-    <string name="label_fat">Taux de graisse corporelle</string>
+    <string name="label_fat">Pourcentage de graisse corporelle</string>
     <string name="label_water">Pourcentage d\'eau</string>
     <string name="label_muscle">Pourcentage musculaire</string>
     <string name="label_waist">Tour de taille</string>
@@ -136,4 +136,6 @@
     <string name="Sunday">Dimanche</string>
     <string name="title_statistics">Statistiques</string>
     <string name="info_enter_initial_weight">Entrez votre objectif de poids dans votre unité d\'échelle</string>
+    <string name="label_bone">Masse osseuse</string>
+    <string name="label_bmr">Taux métabolique basal (BMR)</string>
 </resources>
