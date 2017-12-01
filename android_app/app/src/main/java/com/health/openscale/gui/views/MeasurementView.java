@@ -77,8 +77,10 @@ public abstract class MeasurementView extends TableLayout {
 
     private Date dateTime;
     private String value;
+    private float previousValue;
     private String diffValue;
 
+    private MeasurementViewUpdateListener updateListener = null;
     private MeasurementViewMode measurementMode;
 
     public MeasurementView(Context context, String text, Drawable icon) {
@@ -197,7 +199,13 @@ public abstract class MeasurementView extends TableLayout {
         evaluatorView.setLayoutParams(new TableRow.LayoutParams(0, LayoutParams.WRAP_CONTENT, 0.99f));
         spaceAfterEvaluatorView.setLayoutParams(new TableRow.LayoutParams(0, LayoutParams.WRAP_CONTENT, 0.01f));
 
-        measurementRow.setOnClickListener(new onClickListenerEvaluation());
+        onClickListenerEvaluation onClickListener = new onClickListenerEvaluation();
+        measurementRow.setOnClickListener(onClickListener);
+        evaluatorRow.setOnClickListener(onClickListener);
+    }
+
+    public void setOnUpdateListener(MeasurementViewUpdateListener listener) {
+        updateListener = listener;
     }
 
     public abstract void updateValue(ScaleData updateData);
@@ -292,12 +300,20 @@ public abstract class MeasurementView extends TableLayout {
             }
             valueView.setText(String.format("%.2f ", floatValue) + getUnit());
             value = String.valueOf(Math.round(floatValue*100.0f)/100.0f);
+            // Only update diff value if setDiffOnView has been called previously
+            if (!diffValue.isEmpty()) {
+                setDiffOnView(floatValue, previousValue);
+            }
         } catch (NumberFormatException e) {
             valueView.setText(value);
+        }
+        if (updateListener != null) {
+            updateListener.onMeasurementViewUpdate(this);
         }
     }
 
     protected void setDiffOnView(float value, float prevValue) {
+        previousValue = prevValue;
         float diff = value - prevValue;
 
         String symbol;
@@ -475,11 +491,7 @@ public abstract class MeasurementView extends TableLayout {
                 return;
             }
 
-            if (evaluatorRow.getVisibility() == View.VISIBLE) {
-                evaluatorRow.setVisibility(View.GONE);
-            } else {
-                evaluatorRow.setVisibility(View.VISIBLE);
-            }
+            setExpand(evaluatorRow.getVisibility() != View.VISIBLE);
         }
     }
 
