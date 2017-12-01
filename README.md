@@ -31,7 +31,7 @@ Please see in the [openScale wiki](https://github.com/oliexdev/openScale/wiki/Su
 
 If you found a bug, have an idea how to improve the openScale app or have a question, please create new issue or comment existing one. If you would like to contribute code, fork the repository and send a pull request.
 
-If you want to help to support your Bluetooth scale please see [here](https://github.com/oliexdev/openScale/wiki/How-to-reverse-engineer-a-Blueeoth-4.x-scale) for further information.
+If you want to help to support your Bluetooth scale please see [here](https://github.com/oliexdev/openScale/wiki/How-to-reverse-engineer-a-Bluetooth-4.x-scale) for further information.
 
 # Screens
 
