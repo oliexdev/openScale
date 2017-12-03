@@ -127,7 +127,7 @@ public class BluetoothBeurerBF700 extends BluetoothCommunication {
 
     @Override
     public String deviceName() {
-        return "Beurer BF 700;
+        return "Beurer BF 700";
     }
 
     @Override
