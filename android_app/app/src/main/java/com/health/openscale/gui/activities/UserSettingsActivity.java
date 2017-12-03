@@ -160,11 +160,14 @@ public class UserSettingsActivity extends Activity {
 
         switch (scaleUser.gender)
         {
-            case 0:
+            case ScaleUser.MALE:
                 radioGender.check(R.id.btnRadioMale);
                 break;
-            case 1:
+            case ScaleUser.FEMALE:
                 radioGender.check(R.id.btnRadioWoman);
+                break;
+            case ScaleUser.NONBINARY:
+                radioGender.check(R.id.btnRadioNonbinary);
                 break;
         }
     }
@@ -293,10 +296,13 @@ public class UserSettingsActivity extends Activity {
 
                     switch (checkedGenderId) {
                         case R.id.btnRadioMale:
-                            gender = 0;
+                            gender = ScaleUser.MALE;
                             break;
                         case R.id.btnRadioWoman:
-                            gender = 1;
+                            gender = ScaleUser.FEMALE;
+                            break;
+                        case R.id.btnRadioNonbinary:
+                            gender = ScaleUser.NONBINARY;
                             break;
                     }
 

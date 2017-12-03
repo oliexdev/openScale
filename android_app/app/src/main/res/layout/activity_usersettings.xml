@@ -88,14 +88,20 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/label_male"
-                            android:id="@+id/btnRadioMale"
-                            android:checked="true" />
+                            android:id="@+id/btnRadioMale" />
 
                         <RadioButton
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/label_woman"
                             android:id="@+id/btnRadioWoman" />
+
+                        <RadioButton
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/label_nonbinary"
+                            android:id="@+id/btnRadioNonbinary"
+                            android:checked="true" />
 
                     </RadioGroup>
 

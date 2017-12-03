@@ -26,10 +26,9 @@ public class BFEddy extends EstimatedFatMetric {
 
     @Override
     public float getFat(ScaleUser user, ScaleData data) {
-        if (user.isMale()) {
-            return (1.281f* data.getBMI(user.body_height)) - 10.13f;
-        }
+        float maleFat = (1.281f* data.getBMI(user.body_height)) - 10.13f;
+        float femaleFat = (1.48f* data.getBMI(user.body_height)) - 7.0f;
 
-        return (1.48f* data.getBMI(user.body_height)) - 7.0f;
+        return Utils.genderizeMetric(user, maleFat, femaleFat);
     }
 }
