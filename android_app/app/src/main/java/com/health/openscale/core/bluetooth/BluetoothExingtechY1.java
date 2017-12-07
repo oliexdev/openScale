@@ -56,7 +56,18 @@ public class BluetoothExingtechY1 extends BluetoothCommunication {
                 setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC, WEIGHT_MEASUREMENT_CONFIG);
                 break;
             case 1:
-                sendUserData();
+                final ScaleUser selectedUser = OpenScale.getInstance(context).getSelectedScaleUser();
+
+                byte gender = selectedUser.isMale() ? (byte)0x00 : (byte)0x01; // 00 - male; 01 - female
+                byte height = (byte)(selectedUser.body_height & 0xff); // cm
+                byte age = (byte)(selectedUser.getAge(new Date()) & 0xff);
+
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+                int userId = prefs.getInt("selectedUserId", -1);
+
+                byte cmdByte[] = {(byte)0x10, (byte)userId, gender, age, height};
+
+                writeBytes(WEIGHT_MEASUREMENT_SERVICE, CMD_MEASUREMENT_CHARACTERISTIC, cmdByte);
                 break;
             default:
                 return false;
@@ -81,7 +92,7 @@ public class BluetoothExingtechY1 extends BluetoothCommunication {
 
         if (data != null && data.length > 0) {
             // if data is body scale type
-            if (data.length == 20) {
+            if (data[0] == (byte)0x01 && data.length == 20) {
                 parseBytes(data);
             }
         }
@@ -113,20 +124,5 @@ public class BluetoothExingtechY1 extends BluetoothCommunication {
         scaleBtData.setDateTime(new Date());
 
         addScaleData(scaleBtData);
-    }
-
-    private void sendUserData() {
-        final ScaleUser selectedUser = OpenScale.getInstance(context).getSelectedScaleUser();
-
-        byte gender = selectedUser.isMale() ? (byte)0x00 : (byte)0x01; // 00 - male; 01 - female
-        byte height = (byte)(selectedUser.body_height & 0xff); // cm
-        byte age = (byte)(selectedUser.getAge(new Date()) & 0xff);
-
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        int userId = prefs.getInt("selectedUserId", -1);
-
-        byte cmdByte[] = {(byte)0x10, (byte)userId, gender, age, height};
-
-        writeBytes(WEIGHT_MEASUREMENT_SERVICE, CMD_MEASUREMENT_CHARACTERISTIC, cmdByte);
     }
 }
