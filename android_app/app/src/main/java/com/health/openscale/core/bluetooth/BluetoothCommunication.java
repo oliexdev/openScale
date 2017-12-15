@@ -101,6 +101,8 @@ public abstract class BluetoothCommunication {
                 return new BluetoothExingtechY1(context);
             case BEURER_BF700:
                 return new BluetoothBeurerBF700(context);
+            case BEURER_BF800:
+                return new BluetoothBeurerBF800(context);
         }
 
         return null;
