@@ -295,7 +295,7 @@ public class BluetoothBeurerBF700 extends BluetoothCommunication {
             maxRegisteredScaleUser = maxUsers;
 
             nextMachineStateStep();
-            return
+            return;
         }
 
         if ((data[0] & 0xFF) == 0xf7 && (data[1] & 0xFF) == 0x34) {
