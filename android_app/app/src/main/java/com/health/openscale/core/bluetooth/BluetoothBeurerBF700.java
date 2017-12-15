@@ -1,7 +1,7 @@
 /* Copyright (C) 2014  olie.xdev <olie.xdev@googlemail.com>
 *                2017  jflesch <jflesch@kwain.net>
 *                2017  Martin Nowack
-*
+*                2017  linuxlurak with help of Dododappere, see: https://github.com/oliexdev/openScale/issues/111
 *    This program is free software: you can redistribute it and/or modify
 *    it under the terms of the GNU General Public License as published by
 *    the Free Software Foundation, either version 3 of the License, or
@@ -82,38 +82,26 @@ public class BluetoothBeurerBF700 extends BluetoothCommunication {
 
     // descriptor ; handle = 0x000f  <-- kommentar nicht geprüft
     //unterschied zur sanitas (00002901) hier bei Beurer BF700 00002902
+    //2902 = Client Characteristic Configuration
+    //2901 = Characteristic User Description
+    //see https://www.bluetooth.com/specifications/gatt/descriptors
     private static final UUID CLIENT_CHARACTERISTICS_CONFIGURATION =
             UUID.fromString("00002902-0000-1000-8000-00805F9B34FB");
 
     //service mit gleicher uuid exisitert
+    //aus com.beurer.connect.healthmanager_2017-07-06_source_from_JADX\com\ilink\bleapi\SupportedServices.java:
+    //     public static final String SCALE_SERVICE_UUID = "0000ffe0-0000-1000-8000-00805f9b34fb";
     private static final UUID CUSTOM_SERVICE_1 =
             UUID.fromString("0000FFE0-0000-1000-8000-00805F9B34FB");
-    //characteristic FFE4 existiert nicht
-    private static final UUID CUSTOM_CHARACTERISTIC_1 = // read-write
-            UUID.fromString("0000FFE4-0000-1000-8000-00805F9B34FB");
     //characteristic FFE2 existiert mit notify, read, write, write no response
     private static final UUID CUSTOM_CHARACTERISTIC_2 = // read-only
             UUID.fromString("0000FFE2-0000-1000-8000-00805F9B34FB");
-    //characteristic FFE3 existiert nicht
-    private static final UUID CUSTOM_CHARACTERISTIC_3 = // write-only
-            UUID.fromString("0000FFE3-0000-1000-8000-00805F9B34FB");
     //characteristic FFE1 existiert mit notify, read, write, write no response
+    //aus com.beurer.connect.healthmanager_2017-07-06_source_from_JADX\com\ilink\bleapi\SupportedServices.java:
+    //    public static final String SCALE_CHARACTERISTIC_UUID_1 = "0000ffe1-0000-1000-8000-00805f9b34fb";
+    //    public static final String SCALE_CHARACTERISTIC_UUID_2 = "0000ffe2-0000-1000-8000-00805f9b34fb";
     private static final UUID CUSTOM_CHARACTERISTIC_WEIGHT = // write-only, notify ; handle=0x002e
             UUID.fromString("0000FFE1-0000-1000-8000-00805F9B34FB");
-    //characteristic FFE5 existiert nicht
-    private static final UUID CUSTOM_CHARACTERISTIC_5 = // write-only, notify
-            UUID.fromString("0000FFE5-0000-1000-8000-00805F9B34FB");
-
-    //existiert nicht
-    private static final UUID CUSTOM_SERVICE_2 =
-            UUID.fromString("F000FFCD-0451-4000-8000-000000000000"); // primary service
-//existiert nicht
-    private static final UUID CUSTOM_CHARACTERISTIC_IMG_IDENTIFY = // write-only, notify
-            UUID.fromString("F000FFC1-0451-4000-8000-000000000000");
-//existiert nicht
-    private static final UUID CUSTOM_CHARACTERISTIC_IMG_BLOCK = // write-only, notify
-            UUID.fromString("F000FFC2-0451-4000-8000-000000000000");
-
 
     private int currentScaleUserId;
     private int countRegisteredScaleUsers;
@@ -151,7 +139,7 @@ public class BluetoothBeurerBF700 extends BluetoothCommunication {
                 break;
             case 1:
                 // Say "Hello" to the scale
-                writeBytes(new byte[]{(byte) 0xe6, (byte) 0x01});
+                writeBytes(new byte[]{(byte) 0xf6, (byte) 0x01});
                 break;
             case 2:
                 // Update timestamp of the scale
@@ -276,7 +264,7 @@ public class BluetoothBeurerBF700 extends BluetoothCommunication {
         if (data.length == 0)
             return;
 
-        if ((data[0] & 0xFF) == 0xe6 && (data[1] & 0xFF) == 0x00) {
+        if ((data[0] & 0xFF) == 0xf6 && (data[1] & 0xFF) == 0x00) {
             Log.d(TAG, "ACK Scale is ready");
             return;
         }
@@ -597,7 +585,7 @@ public class BluetoothBeurerBF700 extends BluetoothCommunication {
         byte[] unixTimeBytes = ByteBuffer.allocate(Long.SIZE / 8).putLong(unixTime).array();
         Log.d(TAG, "Write new Date/Time:" + unixTime + " " + byteInHex(unixTimeBytes));
 
-        writeBytes(new byte[]{(byte) 0xe9, unixTimeBytes[4], unixTimeBytes[5], unixTimeBytes[6], unixTimeBytes[7]});
+        writeBytes(new byte[]{(byte) 0xf9, unixTimeBytes[4], unixTimeBytes[5], unixTimeBytes[6], unixTimeBytes[7]});
     }
 
     private void writeBytes(byte[] data) {
