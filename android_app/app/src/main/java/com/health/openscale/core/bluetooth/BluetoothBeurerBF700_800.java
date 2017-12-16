@@ -37,8 +37,8 @@ import java.util.Collections;
 import java.util.TreeSet;
 import java.util.UUID;
 
-public class BluetoothBeurerBF800 extends BluetoothCommunication {
-    public final static String TAG = "BluetoothBeurerBF800";
+public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
+    public final static String TAG = "BEURER BF700/800";
 
     private static final int PRIMARY_SERVICE = 0x180A;
     private static final UUID SYSTEM_ID = UUID.fromString("00002A23-0000-1000-8000-00805F9B34FB");
@@ -109,18 +109,27 @@ public class BluetoothBeurerBF800 extends BluetoothCommunication {
     private int maxRegisteredScaleUser;
     private ByteArrayOutputStream receivedScaleData;
 
-    public BluetoothBeurerBF800(Context context) {
+    public BluetoothBeurerBF700_800(Context context) {
         super(context);
     }
 
     @Override
     public String deviceName() {
-        return "Beurer BF800";
+        return "Beurer BF700/800";
     }
 
     @Override
     public String defaultDeviceName() {
-        return "BEURER BF800";
+        return "BEURER BF700/800";
+    }
+
+    @Override
+    public boolean checkDeviceName(String btDeviceName) {
+        if (btDeviceName.startsWith("BEURER BF700") || btDeviceName.startsWith("BEURER BF800")) {
+            return true;
+        }
+
+        return false;
     }
 
     @Override
