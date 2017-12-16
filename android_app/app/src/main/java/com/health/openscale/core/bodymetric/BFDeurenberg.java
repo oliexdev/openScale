@@ -26,10 +26,22 @@ public class BFDeurenberg extends EstimatedFatMetric {
 
     @Override
     public float getFat(ScaleUser user, ScaleData data) {
+        float genderVal = 0.0f;
+        switch (user.gender) {
+            case ScaleUser.MALE:
+                genderVal = 1.0f;
+                break;
+            case ScaleUser.FEMALE:
+                genderVal = 0.0f;
+                break;
+            default:
+                genderVal = 0.5;
+                break;
+        }
         if (user.getAge(data.getDateTime()) >= 16) {
-            return (1.2f * data.getBMI(user.body_height)) + (0.23f*user.getAge(data.getDateTime())) - (10.8f*(1-user.gender)) - 5.4f;
+            return (1.2f * data.getBMI(user.body_height)) + (0.23f*user.getAge(data.getDateTime())) - (10.8f*genderVal) - 5.4f;
         }
 
-        return (1.294f * data.getBMI(user.body_height)) + (0.20f*user.getAge(data.getDateTime())) - (11.4f*(1-user.gender)) - 8.0f;
+        return (1.294f * data.getBMI(user.body_height)) + (0.20f*user.getAge(data.getDateTime())) - (11.4f*genderVal) - 8.0f;
     }
 }

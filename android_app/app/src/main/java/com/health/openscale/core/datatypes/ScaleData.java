@@ -184,11 +184,21 @@ public class ScaleData {
         float bmr = 0.0f;
 
         // BMR formula by Mifflin, St Jeor et al: A new predictive equation for resting energy expenditure in healthy individuals
-        if (scaleUser.isMale()) {
-            bmr = 10.0f * weight + 6.25f * scaleUser.body_height - 5.0f * scaleUser.getAge(date_time) + 5.0f;
-        } else {
-            bmr = 10.0f * weight + 6.25f * scaleUser.body_height - 5.0f * scaleUser.getAge(date_time) - 161.0f;
+        float MALE_CONST = 5.0f;
+        float FEMALE_CONST = -161.0f;
+        float genderConst = 0.0f;
+        switch (scaleUser.gender) {
+            case ScaleUser.MALE:
+                genderConst = MALE_CONST;
+                break;
+            case ScaleUser.FEMALE:
+                genderConst = FEMALE_CONST;
+                break;
+            default:
+                genderConst = (MALE_CONST + FEMALE_CONST) / 2.0f;
+                break;
         }
+        bmr = 10.0f * weight + 6.25f * scaleUser.body_height - 5.0f * scaleUser.getAge(date_time) + genderConst;
 
         return bmr; // kCal / day
     }

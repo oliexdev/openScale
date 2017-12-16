@@ -164,18 +164,24 @@ public class EvaluationSheet {
         whrEvaluateSheet_Woman.add(new sheetEntry(18, 90, 0.7f, 0.8f));
     }
 
-
     public EvaluationResult evaluateWeight(float weight) {
         float body_height_squared = (evalUser.body_height / 100.0f) * (evalUser.body_height / 100.0f);
         float lowLimit = 0.0f;
         float highLimit = 0.0f;
 
-        if (evalUser.isMale()) {
-            lowLimit = body_height_squared * 20.0f;
-            highLimit = body_height_squared * 25.0f;
-        } else {
-            lowLimit = body_height_squared * 19.0f;
-            highLimit = body_height_squared * 24.0f;
+        switch (evalUser.gender) {
+            case ScaleUser.MALE:
+                lowLimit = body_height_squared * 20.0f;
+                highLimit = body_height_squared * 25.0f;
+                break;
+            case ScaleUser.FEMALE:
+                lowLimit = body_height_squared * 19.0f;
+                highLimit = body_height_squared * 24.0f;
+                break;
+            default:
+                lowLimit = body_height_squared * 19.0f;
+                highLimit = body_height_squared * 25.0f;
+                break;
         }
 
         if (weight < lowLimit) { // low
@@ -191,63 +197,33 @@ public class EvaluationSheet {
 
 
     public EvaluationResult evaluateBodyFat(float fat) {
-        List<sheetEntry> bodyEvaluateSheet;
-
-        if (evalUser.isMale()) {
-            bodyEvaluateSheet = fatEvaluateSheet_Man;
-        } else {
-            bodyEvaluateSheet = fatEvaluateSheet_Woman;
-        }
-
-        return evaluateSheet(fat, bodyEvaluateSheet);
+        EvaluationResult maleResult = evaluateSheet(fat, fatEvaluateSheet_Man);
+        EvaluationResult femaleResult = evaluateSheet(fat, fatEvaluateSheet_Woman);
+        return genderizeEvaluation(maleResult, femaleResult);
     }
 
     public EvaluationResult evaluateBodyWater(float water) {
-        List<sheetEntry> bodyEvaluateSheet;
-
-        if (evalUser.isMale()) {
-            bodyEvaluateSheet = waterEvaluateSheet_Man;
-        } else {
-            bodyEvaluateSheet = waterEvaluateSheet_Woman;
-        }
-
-        return evaluateSheet(water, bodyEvaluateSheet);
+        EvaluationResult maleResult = evaluateSheet(water, waterEvaluateSheet_Man);
+        EvaluationResult femaleResult = evaluateSheet(water, waterEvaluateSheet_Woman);
+        return genderizeEvaluation(maleResult, femaleResult);
     }
 
     public EvaluationResult evaluateBodyMuscle(float muscle) {
-        List<sheetEntry> bodyEvaluateSheet;
-
-        if (evalUser.isMale()) {
-            bodyEvaluateSheet = muscleEvaluateSheet_Man;
-        } else {
-            bodyEvaluateSheet = muscleEvaluateSheet_Woman;
-        }
-
-        return evaluateSheet(muscle, bodyEvaluateSheet);
+        EvaluationResult maleResult = evaluateSheet(muscle, muscleEvaluateSheet_Man);
+        EvaluationResult femaleResult = evaluateSheet(muscle, muscleEvaluateSheet_Woman);
+        return genderizeEvaluation(maleResult, femaleResult);
     }
 
     public EvaluationResult evaluateBMI(float bmi) {
-        List<sheetEntry> bodyEvaluateSheet;
-
-        if (evalUser.isMale()) {
-            bodyEvaluateSheet =  bmiEvaluateSheet_Man;
-        } else {
-            bodyEvaluateSheet = bmiEvaluateSheet_Woman;
-        }
-
-        return evaluateSheet(bmi, bodyEvaluateSheet);
+        EvaluationResult maleResult = evaluateSheet(bmi, bmiEvaluateSheet_Man);
+        EvaluationResult femaleResult = evaluateSheet(bmi, bmiEvaluateSheet_Woman);
+        return genderizeEvaluation(maleResult, femaleResult);
     }
 
     public EvaluationResult evaluateWaist(float waist) {
-        List<sheetEntry> bodyEvaluateSheet;
-
-        if (evalUser.isMale()) {
-            bodyEvaluateSheet =  waistEvaluateSheet_Man;
-        } else {
-            bodyEvaluateSheet = waistEvaluateSheet_Woman;
-        }
-
-        return evaluateSheet(waist, bodyEvaluateSheet);
+        EvaluationResult maleResult = evaluateSheet(waist, waistEvaluateSheet_Man);
+        EvaluationResult femaleResult = evaluateSheet(waist, waistEvaluateSheet_Woman);
+        return genderizeEvaluation(maleResult, femaleResult);
     }
 
     public EvaluationResult evaluateWHtR(float whrt) {
@@ -255,15 +231,9 @@ public class EvaluationSheet {
     }
 
     public EvaluationResult evaluateWHR(float whr) {
-        List<sheetEntry> bodyEvaluateSheet;
-
-        if (evalUser.isMale()) {
-            bodyEvaluateSheet =  whrEvaluateSheet_Man;
-        } else {
-            bodyEvaluateSheet = whrEvaluateSheet_Woman;
-        }
-
-        return evaluateSheet(whr, bodyEvaluateSheet);
+        EvaluationResult maleResult = evaluateSheet(whr, whrEvaluateSheet_Man);
+        EvaluationResult femaleResult = evaluateSheet(whr, whrEvaluateSheet_Woman);
+        return genderizeEvaluation(maleResult, femaleResult);
     }
 
     private EvaluationResult evaluateSheet(float value, List<sheetEntry> sheet) {
@@ -282,5 +252,29 @@ public class EvaluationSheet {
         }
 
         return new EvaluationResult(0, -1, -1, EvaluationResult.EVAL_STATE.UNDEFINED);
+    }
+
+    private EvaluationResult genderizeEvaluation(EvaluationResult maleResult, EvaluationResult femaleResult) {
+        switch (evalUser.gender) {
+            case ScaleUser.MALE:
+                return maleResult;
+            case ScaleUser.FEMALE:
+                return femaleResult;
+            default:
+                if (maleResult == femaleResult) {
+                    return femaleResult;
+                }
+                if (maleResult == EvaluationResult.UNDEFINED) {
+                    return femaleResult;
+                }
+                if (femaleResult == EvaluationResult.UNDEFINED) {
+                    return maleResult;
+                }
+                // If the results disagree and neither is undefined, then
+                // we aren't above the maximum for humans overall and we
+                // aren't below the minimum for humans overall, so we're
+                // "normal"
+                return EvaluationResult.EVAL_STATE.NORMAL;
+        }
     }
 }

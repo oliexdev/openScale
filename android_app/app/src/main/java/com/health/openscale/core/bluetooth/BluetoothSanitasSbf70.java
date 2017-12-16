@@ -184,7 +184,7 @@ public class BluetoothSanitasSbf70 extends BluetoothCommunication {
                             (byte) selectedUser.birthday.getMonth(),
                             (byte) selectedUser.birthday.getDate(),
                             (byte) selectedUser.body_height,
-                            (byte) (((1 - selectedUser.gender) << 7) | activity)
+                            (byte) (((selectedUser.isMale() ? 1 : 0) << 7) | activity)
                     });
                 } else {
                     // Get existing user information

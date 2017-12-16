@@ -15,20 +15,17 @@
 */
 package com.health.openscale.core.bodymetric;
 
-import com.health.openscale.core.datatypes.ScaleData;
 import com.health.openscale.core.datatypes.ScaleUser;
 
-public class TBWHumeWeyers extends EstimatedWaterMetric {
-    @Override
-    public String getName() {
-        return "Hume & Weyers (1971)";
-    }
-
-    @Override
-    public float getWater(ScaleUser user, ScaleData data) {
-        float maleWater = (0.194786f * user.body_height) + (0.296785f * data.getWeight()) - 14.012934f;
-        float femaleWater = (0.34454f * user.body_height) + (0.183809f * data.getWeight()) - 35.270121f;
-
-        return Utils.genderizeMetric(user, maleWater, femaleWater);
+public class Utils {
+    public static float genderizeMetric(ScaleUser user, float maleValue, float femaleValue) {
+        switch (user.gender) {
+            case ScaleUser.MALE:
+                return maleValue;
+            case ScaleUser.FEMALE:
+                return femaleValue;
+            default:
+                return (maleValue + femaleValue) / 2.0f;
+        }
     }
 }

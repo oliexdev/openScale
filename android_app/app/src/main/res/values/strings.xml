@@ -55,6 +55,7 @@
     <string name="label_gender">Gender</string>
     <string name="label_male">Male</string>
     <string name="label_woman">Woman</string>
+    <string name="label_nonbinary">Non-binary</string>
     <string name="label_goal_weight">Goal weight</string>
     <string name="label_goal_date">Goal date</string>
 

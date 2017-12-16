@@ -20,6 +20,10 @@ import java.util.Calendar;
 import java.util.Date;
 
 public class ScaleUser {
+    public static int MALE = 0;
+    public static int FEMALE = 1;
+    public static int NONBINARY = 2;
+
     public static final String[] UNIT_STRING = new String[] {"kg", "lb", "st"};
     private static float KG_LB = 2.20462f;
     private static float KG_ST = 0.157473f;
@@ -40,7 +44,7 @@ public class ScaleUser {
         birthday = new Date();
         body_height = -1;
         scale_unit = 0;
-        gender = 0;
+        gender = NONBINARY;
         initial_weight = -1;
         goal_weight = -1;
         goal_date = new Date();
@@ -48,7 +52,7 @@ public class ScaleUser {
 
     public boolean isMale()
     {
-        if (gender == 0)
+        if (gender == MALE)
             return true;
 
         return false;

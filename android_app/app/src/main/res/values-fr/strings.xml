@@ -50,6 +50,7 @@
     <string name="label_gender">Sexe</string>
     <string name="label_male">Homme</string>
     <string name="label_woman">Femme</string>
+    <string name="label_nonbinary">Non-binaire</string>
     <string name="label_goal_weight">Objectif de poids</string>
     <string name="label_goal_date">Date de l\'objectif</string>
 

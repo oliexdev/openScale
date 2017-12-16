@@ -26,12 +26,12 @@ public class BFGallagher extends EstimatedFatMetric {
 
     @Override
     public float getFat(ScaleUser user, ScaleData data) {
-        if (user.isMale()) {
-            // non-asian male
-            return 64.5f - 848.0f * (1.0f / data.getBMI(user.body_height)) + 0.079f * user.getAge(data.getDateTime()) - 16.4f + 0.05f * user.getAge(data.getDateTime()) + 39.0f * (1.0f / data.getBMI(user.body_height));
-        }
+        // non-asian male
+        float maleFat = 64.5f - 848.0f * (1.0f / data.getBMI(user.body_height)) + 0.079f * user.getAge(data.getDateTime()) - 16.4f + 0.05f * user.getAge(data.getDateTime()) + 39.0f * (1.0f / data.getBMI(user.body_height));
 
         // non-asian female
-        return 64.5f - 848.0f * (1.0f / data.getBMI(user.body_height)) + 0.079f * user.getAge(data.getDateTime());
+        float femaleFat = 64.5f - 848.0f * (1.0f / data.getBMI(user.body_height)) + 0.079f * user.getAge(data.getDateTime());
+
+        return Utils.genderizeMetric(user, maleFat, femaleFat);
     }
 }

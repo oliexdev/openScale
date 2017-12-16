@@ -55,6 +55,7 @@
     <string name="label_measures">Messungen</string>
     <string name="label_muscle">Muskelanteil</string>
     <string name="label_no">Nein</string>
+    <string name="label_nonbinary">Nichtbinär</string>
     <string name="label_ok">OK</string>
     <string name="label_scale_unit">Einheit</string>
     <string name="label_time">Zeit</string>
