@@ -30,6 +30,6 @@ public class AboutPreferences extends PreferenceFragment {
 
         addPreferencesFromResource(R.xml.about_preferences);
 
-        findPreference(KEY_APP_VERSION).setSummary("v" + BuildConfig.VERSION_NAME);
+        findPreference(KEY_APP_VERSION).setSummary("v" + BuildConfig.VERSION_NAME + " (" + BuildConfig.VERSION_CODE + ")");
     }
 }
