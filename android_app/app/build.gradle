@@ -8,7 +8,7 @@ android {
         minSdkVersion 18
         targetSdkVersion 22 // don't set target sdk > 22 otherwise bluetooth le discovery need permission to ACCESS_COARSE_LOCATION
         versionCode 21
-        versionName "1.6.2"
+        versionName "1.6.1"
     }
 
     lintOptions {
