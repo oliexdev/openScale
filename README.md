@@ -19,8 +19,9 @@ Install [openScale-dev-build.apk](https://github.com/oliexdev/openScale/releases
 - Import or export your data from/into a CSV file
 - Estimates body metrics (body fat, body water and lean body mass) based on scientic publications
 - Support for multiple users
-- Partially or full support for custom made Bluetooth scale, Xiaomi Mi scale v1, Sanitas SBF70, Medisana BS444, Digoo DG-S038H, Yunmai Mini, Excelvan CF369BLE, Yunmai SE, MGB, Xiaomi Mi scale v2 (see [openScale wiki](https://github.com/oliexdev/openScale/wiki/Supported-scales-in-openScale) for details)
+- Partially or full support for custom made Bluetooth scale, Xiaomi Mi scale v1/v2, Sanitas SBF70, Medisana BS444, Digoo DG-S038H, Yunmai Mini, Excelvan CF369BLE, Yunmai SE, MGB, Exingtech Y1, Beurer BF700/800 (see [openScale wiki](https://github.com/oliexdev/openScale/wiki/Supported-scales-in-openScale) for details)
 - Partially or full translated into English, German, Japanese, French, Polish, Brazilian portuguese, Slovak, Swedish, Spanish
+- No advertising and for free
 - All data belongs to you (no cloud service)
 
 # Supported Bluetooth scales
