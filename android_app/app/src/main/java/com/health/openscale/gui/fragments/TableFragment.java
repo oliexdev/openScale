@@ -119,10 +119,6 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
         measurementsList.add(new BMRMeasurementView(tableView.getContext()));
         measurementsList.add(new CommentMeasurementView(tableView.getContext()));
 
-        for (MeasurementView measurement : measurementsList) {
-            measurement.setEditMode(MeasurementView.MeasurementViewMode.EDIT);
-        }
-
         prefs = PreferenceManager.getDefaultSharedPreferences(tableView.getContext());
 
         OpenScale.getInstance(getContext()).registerFragment(this);
