@@ -36,7 +36,10 @@
     <string name="label_body_height">Körpergröße</string>
     <string name="label_comment">Kommentar</string>
     <string name="label_date">Datum</string>
-    <string name="label_days">Tage</string>
+    <plurals name="label_days">
+        <item quantity="one">%d Tag</item>
+        <item quantity="other">%d Tage</item>
+    </plurals>
     <string name="label_days_left">Tage übrig</string>
     <string name="label_delete">Löschen</string>
     <string name="label_delete_all">Alles löschen</string>

@@ -23,7 +23,9 @@
     <string name="label_body_height">身長</string>
     <string name="label_cancel">キャンセル</string>
     <string name="label_comment">コメント</string>
-    <string name="label_days">日</string>
+    <plurals name="label_days">
+        <item quantity="other">%d 日</item>
+    </plurals>
     <string name="label_date">期日</string>
     <string name="label_delete">デリート</string>
     <string name="label_export">レコードのエクスポート</string>

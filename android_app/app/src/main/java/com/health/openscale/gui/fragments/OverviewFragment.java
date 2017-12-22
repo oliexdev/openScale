@@ -54,7 +54,7 @@ import com.health.openscale.gui.views.WeightMeasurementView;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import lecho.lib.hellocharts.formatter.SimpleLineChartValueFormatter;
@@ -255,12 +255,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             max_i = scaleDataList.size();
         }
 
-        Calendar histDate = Calendar.getInstance();
-        Calendar lastDate = Calendar.getInstance();
-
-        if (!scaleDataList.isEmpty()) {
-            lastDate.setTime(scaleDataList.get(0).getDateTime());
-        }
+        Date now = new Date();
 
         scaleDataLastDays = new ArrayList<ScaleData>();
 
@@ -285,11 +280,9 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             if (histData.getBone() != 0.0f)
                 valuesBone.add(new PointValue(i, histData.getBone()));
 
-            histDate.setTime(histData.getDateTime());
-
-            long days = 0 - daysBetween(lastDate, histDate);
-
-            axisValues.add(new AxisValue(i, String.format("%d " + getResources().getString(R.string.label_days), days).toCharArray()));
+            int days = daysBetween(now, histData.getDateTime());
+            String label = getResources().getQuantityString(R.plurals.label_days, Math.abs(days), days);
+            axisValues.add(new AxisValue(i, label.toCharArray()));
         }
 
         Line lineWeight = new Line(valuesWeight).
@@ -428,8 +421,9 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         pieChartLast.setPieChartData(pieChartData);
     }
 
-    private long daysBetween(Calendar startDate, Calendar endDate) {
-        return startDate.get(Calendar.DAY_OF_YEAR) - endDate.get(Calendar.DAY_OF_YEAR);
+    private int daysBetween(Date startDate, Date endDate) {
+        final float msPerDay = 24 * 60 * 60 * 1000;
+        return Math.round((endDate.getTime() - startDate.getTime()) / msPerDay);
     }
 
     public void btnOnClickInsertData()
