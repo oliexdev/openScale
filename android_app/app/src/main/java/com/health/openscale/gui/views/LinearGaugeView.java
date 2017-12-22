@@ -123,16 +123,20 @@ public class LinearGaugeView extends View {
 
         final boolean hasFirstLimit = firstLimit >= 0;
 
-        // Calculate the size of the "normal" span with a fallback if there is no such span
-        float span = hasFirstLimit ? secondLimit - firstLimit : 0.3f * secondLimit;
+        // Calculate how much bar to show to the left and right of the "normal" span
+        // (or just the second limit if there is no first limit).
+        float span = hasFirstLimit ? (secondLimit - firstLimit) / 2.0f : 0.3f * secondLimit;
+
+        // Add some extra margin to avoid having the indicator too far towards an edge
+        final float margin = 0.05f * span;
 
         // Adjust the span if needed to make the value fit inside of it
-        if (hasFirstLimit && value < firstLimit - span) {
-            span = firstLimit - value;
-        } else if (!hasFirstLimit && value < secondLimit - span) {
-            span = secondLimit - value;
-        } else if (value > secondLimit + span) {
-            span = value - secondLimit;
+        if (hasFirstLimit && value - margin < firstLimit - span) {
+            span = firstLimit - value + margin;
+        } else if (!hasFirstLimit && value - margin < secondLimit - span) {
+            span = secondLimit - value + margin;
+        } else if (value + margin > secondLimit + span) {
+            span = value - secondLimit + margin;
         }
 
         // Round span to some nice value
