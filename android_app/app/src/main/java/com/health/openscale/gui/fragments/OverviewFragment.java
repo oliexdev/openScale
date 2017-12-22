@@ -202,8 +202,11 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
         for (MeasurementView measurement : overviewMeasurements) {
             measurement.updatePreferences(prefs);
-            measurement.updateValue(lastScaleData);
-            measurement.updateDiff(lastScaleData, prevScaleData);
+            if (measurement.isVisible()) {
+                measurement.reset();
+                measurement.updateValue(lastScaleData);
+                measurement.updateDiff(lastScaleData, prevScaleData);
+            }
         }
     }
 

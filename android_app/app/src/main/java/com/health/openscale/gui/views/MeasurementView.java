@@ -204,6 +204,11 @@ public abstract class MeasurementView extends TableLayout {
         evaluatorRow.setOnClickListener(onClickListener);
     }
 
+    public void reset() {
+        value = "";
+        diffValue = "";
+    }
+
     public void setOnUpdateListener(MeasurementViewUpdateListener listener) {
         updateListener = listener;
     }
@@ -344,7 +349,7 @@ public abstract class MeasurementView extends TableLayout {
     }
 
     public void setExpand(boolean state) {
-        if (state && measurementRow.getVisibility() == View.VISIBLE && evaluateSheet(new EvaluationSheet(getScaleUser(), dateTime), 0.0f) != null) {
+        if (state && isVisible() && evaluateSheet(new EvaluationSheet(getScaleUser(), dateTime), 0.0f) != null) {
             evaluatorRow.setVisibility(View.VISIBLE);
         } else {
             evaluatorRow.setVisibility(View.GONE);
@@ -360,11 +365,7 @@ public abstract class MeasurementView extends TableLayout {
     }
 
     public boolean isVisible() {
-        if (measurementRow.getVisibility() == View.GONE) {
-            return false;
-        }
-
-        return true;
+        return measurementRow.getVisibility() == View.VISIBLE;
     }
 
     protected boolean validateInput(EditText view) {

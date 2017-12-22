@@ -119,10 +119,6 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
         measurementsList.add(new BMRMeasurementView(tableView.getContext()));
         measurementsList.add(new CommentMeasurementView(tableView.getContext()));
 
-        for (MeasurementView measurement : measurementsList) {
-            measurement.setEditMode(MeasurementView.MeasurementViewMode.EDIT);
-        }
-
         prefs = PreferenceManager.getDefaultSharedPreferences(tableView.getContext());
 
         OpenScale.getInstance(getContext()).registerFragment(this);
@@ -223,12 +219,12 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
             int columnNr = 0;
             dataRow.put(columnNr, Long.toString(scaleData.getId()));
 
-            for (int j=0; j< measurementsList.size(); j++) {
-                MeasurementView measurement = measurementsList.get(j);
-                measurement.updateValue(scaleData);
-                measurement.updateDiff(scaleData, prevScaleData);
-
+            for (MeasurementView measurement : measurementsList) {
                 if (measurement.isVisible()) {
+                    measurement.reset();
+                    measurement.updateValue(scaleData);
+                    measurement.updateDiff(scaleData, prevScaleData);
+
                     columnNr++;
                     dataRow.put(columnNr, measurement.getValueAsString() + "<br>" + measurement.getDiffValue());
                 }
