@@ -212,6 +212,7 @@ public class DataEntryActivity extends Activity {
 
             // show selected scale data
             for (MeasurementView measurement : dataEntryMeasurements) {
+                measurement.reset();
                 measurement.updateValue(scaleData);
                 measurement.updateDiff(scaleData, prevScaleData);
                 measurement.setExpand(doExpand);

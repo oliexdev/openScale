@@ -204,6 +204,11 @@ public abstract class MeasurementView extends TableLayout {
         evaluatorRow.setOnClickListener(onClickListener);
     }
 
+    public void reset() {
+        value = "";
+        diffValue = "";
+    }
+
     public void setOnUpdateListener(MeasurementViewUpdateListener listener) {
         updateListener = listener;
     }
