@@ -181,6 +181,8 @@ public class DataEntryActivity extends Activity {
             id = getIntent().getExtras().getLong("id");
         }
 
+        ScaleData scaleData;
+
         if (id > 0) {
             // keep edit mode state if we are moving to left or right
             if (prefs.getBoolean(String.valueOf(switchEditMode.getId()), false)) {
@@ -202,39 +204,39 @@ public class DataEntryActivity extends Activity {
 
             ScaleData[] tupleScaleData = openScale.getTupleScaleData(id);
             ScaleData prevScaleData = tupleScaleData[0];
-            ScaleData selectedScaleData = tupleScaleData[1];
+            scaleData = tupleScaleData[1];
 
             if (prevScaleData == null) {
                 prevScaleData = new ScaleData();
             }
 
-            txtDataNr.setText(DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.SHORT).format(selectedScaleData.getDateTime()));
-
             // show selected scale data
             for (MeasurementView measurement : dataEntryMeasurements) {
-                measurement.updateValue(selectedScaleData);
-                measurement.updateDiff(selectedScaleData, prevScaleData);
+                measurement.updateValue(scaleData);
+                measurement.updateDiff(scaleData, prevScaleData);
                 measurement.setExpand(doExpand);
-            }
-        } else if (!OpenScale.getInstance(getApplicationContext()).getScaleDataList().isEmpty()) {
-            setViewMode(MeasurementView.MeasurementViewMode.ADD);
-            txtDataNr.setText(DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.SHORT).format(new Date()));
-            ScaleData lastScaleData = OpenScale.getInstance(getApplicationContext()).getScaleDataList().get(0);
-
-            // show as default last scale data
-            lastScaleData.setDateTime(new Date());
-            lastScaleData.setComment("");
-            for (MeasurementView measurement : dataEntryMeasurements) {
-                measurement.updateValue(lastScaleData);
             }
         } else {
             setViewMode(MeasurementView.MeasurementViewMode.ADD);
-            // show default values
-            ScaleData newScaleData = new ScaleData();
+
+            if (OpenScale.getInstance(getApplicationContext()).getScaleDataList().isEmpty()) {
+                // Show default values
+                scaleData = new ScaleData();
+            }
+            else {
+                // Show the last scale data as default
+                scaleData = OpenScale.getInstance(getApplicationContext()).getScaleDataList().get(0);
+                scaleData.setDateTime(new Date());
+                scaleData.setComment("");
+            }
+
             for (MeasurementView measurement : dataEntryMeasurements) {
-                measurement.updateValue(newScaleData);
+                measurement.updateValue(scaleData);
             }
         }
+
+        txtDataNr.setText(DateFormat.getDateTimeInstance(
+            DateFormat.LONG, DateFormat.SHORT).format(scaleData.getDateTime()));
 
         onMeasurementViewUpdateListener updateListener = new onMeasurementViewUpdateListener();
         for (MeasurementView measurement : dataEntryMeasurements) {
