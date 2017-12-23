@@ -125,7 +125,7 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
 
     @Override
     public boolean checkDeviceName(String btDeviceName) {
-        if (btDeviceName.toLowerCase().equals(new String("BEURER BF700").toLowerCase()) || btDeviceName.toLowerCase().equals(new String("BEURER BF800").toLowerCase())) {
+        if (btDeviceName.toLowerCase().startsWith(new String("BEURER BF700").toLowerCase()) || btDeviceName.toLowerCase().startsWith(new String("BEURER BF800").toLowerCase())) {
             return true;
         }
 
