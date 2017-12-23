@@ -344,7 +344,7 @@ public abstract class MeasurementView extends TableLayout {
     }
 
     public void setExpand(boolean state) {
-        if (state && measurementRow.getVisibility() == View.VISIBLE && evaluateSheet(new EvaluationSheet(getScaleUser(), dateTime), 0.0f) != null) {
+        if (state && isVisible() && evaluateSheet(new EvaluationSheet(getScaleUser(), dateTime), 0.0f) != null) {
             evaluatorRow.setVisibility(View.VISIBLE);
         } else {
             evaluatorRow.setVisibility(View.GONE);
