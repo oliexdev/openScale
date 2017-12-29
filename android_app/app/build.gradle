@@ -34,3 +34,11 @@ dependencies {
 
     testCompile 'junit:junit:4.12'
 }
+
+tasks.withType(Test) {
+    testLogging {
+        exceptionFormat "full"
+        events "started", "skipped", "passed", "failed"
+        showStandardStreams true
+    }
+}
