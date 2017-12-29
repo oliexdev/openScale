@@ -30,6 +30,7 @@ import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleData;
 import com.health.openscale.core.datatypes.ScaleUser;
+import com.health.openscale.core.utils.DateTimeHelpers;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -114,7 +115,9 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
         double weight_diff = goalScaleData.getConvertedWeight(currentScaleUser.scale_unit) - lastScaleData.getConvertedWeight(currentScaleUser.scale_unit);
         txtGoalDiff.setText(String.format("%.1f " + ScaleUser.UNIT_STRING[currentScaleUser.scale_unit], weight_diff));
 
-        int days = Math.max(0, daysBetween(new Date(), currentScaleUser.goal_date));
+        Calendar goalCalendar = Calendar.getInstance();
+        goalCalendar.setTime(currentScaleUser.goal_date);
+        int days = Math.max(0, DateTimeHelpers.daysBetween(Calendar.getInstance(), goalCalendar));
         txtGoalDayLeft.setText(getResources().getQuantityString(R.plurals.label_days, days, days));
 
         lastScaleData.setUserId(currentScaleUser.id);
@@ -329,10 +332,5 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
 
         txtAvgWeek.setText(weekSize + " " + getResources().getString(R.string.label_measures));
         txtAvgMonth.setText(monthSize + " " + getResources().getString(R.string.label_measures));
-    }
-
-    private int daysBetween(Date startDate, Date endDate) {
-        final float msPerDay = 24 * 60 * 60 * 1000;
-        return (int)Math.ceil((endDate.getTime() - startDate.getTime()) / msPerDay);
     }
 }

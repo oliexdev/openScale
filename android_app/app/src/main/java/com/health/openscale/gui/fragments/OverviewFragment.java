@@ -37,6 +37,7 @@ import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleData;
 import com.health.openscale.core.datatypes.ScaleUser;
+import com.health.openscale.core.utils.DateTimeHelpers;
 import com.health.openscale.gui.activities.DataEntryActivity;
 import com.health.openscale.gui.views.BMIMeasurementView;
 import com.health.openscale.gui.views.BMRMeasurementView;
@@ -54,6 +55,7 @@ import com.health.openscale.gui.views.WeightMeasurementView;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -255,7 +257,8 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             max_i = scaleDataList.size();
         }
 
-        Date now = new Date();
+        final Calendar now = Calendar.getInstance();
+        Calendar histCalendar = Calendar.getInstance();
 
         scaleDataLastDays = new ArrayList<ScaleData>();
 
@@ -280,7 +283,8 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             if (histData.getBone() != 0.0f)
                 valuesBone.add(new PointValue(i, histData.getBone()));
 
-            int days = daysBetween(now, histData.getDateTime());
+            histCalendar.setTime(histData.getDateTime());
+            int days = DateTimeHelpers.daysBetween(now, histCalendar);
             String label = getResources().getQuantityString(R.plurals.label_days, Math.abs(days), days);
             axisValues.add(new AxisValue(i, label.toCharArray()));
         }
@@ -419,11 +423,6 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         }
 
         pieChartLast.setPieChartData(pieChartData);
-    }
-
-    private int daysBetween(Date startDate, Date endDate) {
-        final float msPerDay = 24 * 60 * 60 * 1000;
-        return Math.round((endDate.getTime() - startDate.getTime()) / msPerDay);
     }
 
     public void btnOnClickInsertData()
