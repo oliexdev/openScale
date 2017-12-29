@@ -31,4 +31,6 @@ dependencies {
     compile "com.android.support:support-v4:${supportLibVersion}"
     compile "com.android.support:appcompat-v7:${supportLibVersion}"
     compile 'com.github.lecho:hellocharts-library:1.5.8@aar'
+
+    testCompile 'junit:junit:4.12'
 }
