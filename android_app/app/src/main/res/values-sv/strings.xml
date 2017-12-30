@@ -60,7 +60,10 @@
     <string name="label_days_left">Dagar kvar</string>
     <string name="label_goal_date_is">Måldatum är</string>
     <string name="label_weight_difference">Viktskillnad</string>
-    <string name="label_days">dagar</string>
+    <plurals name="label_days">
+        <item quantity="one">%d dag</item>
+        <item quantity="other">%d dagar</item>
+    </plurals>
     <string name="label_measures">mätningar</string>
     <string name="label_last_week">Senast 7 dagarna</string>
     <string name="label_last_month">Senast 30 dagarna</string>

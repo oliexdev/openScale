@@ -30,11 +30,12 @@ import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleData;
 import com.health.openscale.core.datatypes.ScaleUser;
+import com.health.openscale.core.utils.DateTimeHelpers;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.concurrent.TimeUnit;
+import java.util.Date;
 
 public class StatisticsFragment extends Fragment implements FragmentUpdateListener {
 
@@ -99,7 +100,7 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
         txtTitleStatistics.setText(getResources().getString(R.string.label_title_statistics).toUpperCase());
 
         prefs = PreferenceManager.getDefaultSharedPreferences(statisticsView.getContext());
-        currentScaleUser =  OpenScale.getInstance(getContext()).getSelectedScaleUser();
+        currentScaleUser = OpenScale.getInstance(getContext()).getSelectedScaleUser();
 
         updateStatistics(scaleDataList);
         updateGoal(scaleDataList);
@@ -114,12 +115,10 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
         double weight_diff = goalScaleData.getConvertedWeight(currentScaleUser.scale_unit) - lastScaleData.getConvertedWeight(currentScaleUser.scale_unit);
         txtGoalDiff.setText(String.format("%.1f " + ScaleUser.UNIT_STRING[currentScaleUser.scale_unit], weight_diff));
 
-        Calendar goalDate = Calendar.getInstance();
-        Calendar curDate = Calendar.getInstance();
-        goalDate.setTime(currentScaleUser.goal_date);
-
-        long days = daysBetween(curDate, goalDate);
-        txtGoalDayLeft.setText(days + " " + getResources().getString(R.string.label_days));
+        Calendar goalCalendar = Calendar.getInstance();
+        goalCalendar.setTime(currentScaleUser.goal_date);
+        int days = Math.max(0, DateTimeHelpers.daysBetween(Calendar.getInstance(), goalCalendar));
+        txtGoalDayLeft.setText(getResources().getQuantityString(R.plurals.label_days, days, days));
 
         lastScaleData.setUserId(currentScaleUser.id);
 
@@ -333,11 +332,5 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
 
         txtAvgWeek.setText(weekSize + " " + getResources().getString(R.string.label_measures));
         txtAvgMonth.setText(monthSize + " " + getResources().getString(R.string.label_measures));
-    }
-
-    private long daysBetween(Calendar startDate, Calendar endDate) {
-        long end = endDate.getTimeInMillis();
-        long start = startDate.getTimeInMillis();
-        return TimeUnit.MILLISECONDS.toDays(Math.abs(end - start));
     }
 }

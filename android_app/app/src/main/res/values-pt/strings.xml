@@ -69,7 +69,9 @@
     <string name="label_cancel">Cancelar</string>
     <string name="label_comment">Comentário</string>
     <string name="label_date">Data</string>
-    <string name="label_days">dias</string>
+    <plurals name="label_days">
+        <item quantity="other">%d dias</item>
+    </plurals>
     <string name="label_days_left">Dias restantes</string>
     <string name="label_delete">Deletar</string>
     <string name="label_delete_all">Deletar tudo</string>
