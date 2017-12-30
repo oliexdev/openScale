@@ -36,7 +36,9 @@
     <string name="label_bone">Masa kostna</string>
     <string name="label_smartUserAssign">Inteligente przypisywanie użytkowników</string>
 
-    <string name="label_days">dni</string>
+    <plurals name="label_days">
+        <item quantity="other">%d dni</item>
+    </plurals>
     <string name="label_measures">pomiarów</string>
     <string name="label_last_week">Ostatnie 7 dni</string>
     <string name="label_last_month">Ostatnie 30 dni</string>

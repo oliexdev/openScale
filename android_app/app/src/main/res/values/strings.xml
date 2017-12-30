@@ -38,7 +38,10 @@
     <string name="label_bone">Bone mass</string>
     <string name="label_smartUserAssign">Smart User assignment</string>
 
-    <string name="label_days">days</string>
+    <plurals name="label_days">
+        <item quantity="one">%d day</item>
+        <item quantity="other">%d days</item>
+    </plurals>
     <string name="label_measures">measures</string>
     <string name="label_last_week">Last 7 days</string>
     <string name="label_last_month">Last 30 days</string>

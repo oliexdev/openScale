@@ -38,7 +38,10 @@
     <string name="label_bone">Masa ósea</string>
     <string name="label_smartUserAssign">Asignación inteligente de usuario</string>
 
-    <string name="label_days">días</string>
+    <plurals name="label_days">
+        <item quantity="one">%d día</item>
+        <item quantity="other">%d días</item>
+    </plurals>
     <string name="label_measures">medidas</string>
     <string name="label_last_week">Últimos 7 días</string>
     <string name="label_last_month">Últimos 30 días</string>

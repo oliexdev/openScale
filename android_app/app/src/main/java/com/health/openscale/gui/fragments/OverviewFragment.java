@@ -37,6 +37,7 @@ import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleData;
 import com.health.openscale.core.datatypes.ScaleUser;
+import com.health.openscale.core.utils.DateTimeHelpers;
 import com.health.openscale.gui.activities.DataEntryActivity;
 import com.health.openscale.gui.views.BMIMeasurementView;
 import com.health.openscale.gui.views.BMRMeasurementView;
@@ -55,6 +56,7 @@ import com.health.openscale.gui.views.WeightMeasurementView;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import lecho.lib.hellocharts.formatter.SimpleLineChartValueFormatter;
@@ -255,12 +257,8 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             max_i = scaleDataList.size();
         }
 
-        Calendar histDate = Calendar.getInstance();
-        Calendar lastDate = Calendar.getInstance();
-
-        if (!scaleDataList.isEmpty()) {
-            lastDate.setTime(scaleDataList.get(0).getDateTime());
-        }
+        final Calendar now = Calendar.getInstance();
+        Calendar histCalendar = Calendar.getInstance();
 
         scaleDataLastDays = new ArrayList<ScaleData>();
 
@@ -285,11 +283,10 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             if (histData.getBone() != 0.0f)
                 valuesBone.add(new PointValue(i, histData.getBone()));
 
-            histDate.setTime(histData.getDateTime());
-
-            long days = 0 - daysBetween(lastDate, histDate);
-
-            axisValues.add(new AxisValue(i, String.format("%d " + getResources().getString(R.string.label_days), days).toCharArray()));
+            histCalendar.setTime(histData.getDateTime());
+            int days = DateTimeHelpers.daysBetween(now, histCalendar);
+            String label = getResources().getQuantityString(R.plurals.label_days, Math.abs(days), days);
+            axisValues.add(new AxisValue(i, label.toCharArray()));
         }
 
         Line lineWeight = new Line(valuesWeight).
@@ -426,10 +423,6 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         }
 
         pieChartLast.setPieChartData(pieChartData);
-    }
-
-    private long daysBetween(Calendar startDate, Calendar endDate) {
-        return startDate.get(Calendar.DAY_OF_YEAR) - endDate.get(Calendar.DAY_OF_YEAR);
     }
 
     public void btnOnClickInsertData()

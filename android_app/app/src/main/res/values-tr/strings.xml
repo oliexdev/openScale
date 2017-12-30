@@ -37,7 +37,9 @@
     <string name="label_bone">Kemik kütlesi</string>
     <string name="label_smartUserAssign">Akýllý kullanýcý atamasý</string>
 
-    <string name="label_days">Günler</string>
+    <plurals name="label_days">
+        <item quantity="other">%d Günler</item>
+    </plurals>
     <string name="label_measures">Ölçüler</string>
     <string name="label_last_week">Son 7 Gün</string>
     <string name="label_last_month">Son 30 Gün</string>

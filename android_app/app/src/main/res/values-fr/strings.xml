@@ -33,7 +33,10 @@
     <string name="label_whr">Rapport taille-hanches</string>
     <string name="label_smartUserAssign">Affectation intelligente de l\'Utilisateur</string>
 
-    <string name="label_days">jours</string>
+    <plurals name="label_days">
+        <item quantity="one">%d jour</item>
+        <item quantity="other">%d jours</item>
+    </plurals>
     <string name="label_measures">mesures</string>
     <string name="label_last_week">7 derniers jours</string>
     <string name="label_last_month">30 derniers jours</string>
