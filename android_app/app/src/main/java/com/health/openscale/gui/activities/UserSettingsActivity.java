@@ -135,17 +135,17 @@ public class UserSettingsActivity extends Activity {
 
         ScaleUser scaleUser = openScale.getScaleUser(id);
 
-        birthday = scaleUser.birthday;
-        goal_date = scaleUser.goal_date;
+        birthday = scaleUser.getBirthday();
+        goal_date = scaleUser.getGoalDate();
 
-        txtUserName.setText(scaleUser.user_name);
-        txtBodyHeight.setText(Integer.toString(scaleUser.body_height));
+        txtUserName.setText(scaleUser.getUserName());
+        txtBodyHeight.setText(Integer.toString(scaleUser.getBodyHeight()));
         txtBirthday.setText(dateFormat.format(birthday));
         txtGoalDate.setText(dateFormat.format(goal_date));
         txtInitialWeight.setText(Math.round(scaleUser.getConvertedInitialWeight()*100.0f)/100.0f + "");
-        txtGoalWeight.setText(scaleUser.goal_weight+"");
+        txtGoalWeight.setText(scaleUser.getGoalWeight() +"");
 
-        switch (scaleUser.scale_unit)
+        switch (scaleUser.getScaleUnit())
         {
             case 0:
                 radioScaleUnit.check(R.id.btnRadioKG);
@@ -158,7 +158,7 @@ public class UserSettingsActivity extends Activity {
                 break;
         }
 
-        switch (scaleUser.gender)
+        switch (scaleUser.getGender())
         {
             case 0:
                 radioGender.check(R.id.btnRadioMale);
@@ -236,7 +236,7 @@ public class UserSettingsActivity extends Activity {
                     int lastUserId = -1;
 
                     if (!scaleUser.isEmpty()) {
-                        lastUserId = scaleUser.get(0).id;
+                        lastUserId = scaleUser.get(0).getId();
                     }
 
                     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
@@ -308,7 +308,7 @@ public class UserSettingsActivity extends Activity {
                     } else {
                         openScale.addScaleUser(name, birthday, body_height, scale_unit, gender, initial_weight, goal_weight, goal_date);
 
-                        id = openScale.getScaleUserList().get(openScale.getScaleUserList().size() - 1).id;
+                        id = openScale.getScaleUserList().get(openScale.getScaleUserList().size() - 1).getId();
                     }
 
                     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);

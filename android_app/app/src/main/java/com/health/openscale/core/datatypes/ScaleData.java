@@ -16,30 +16,47 @@
 
 package com.health.openscale.core.datatypes;
 
+import android.arch.persistence.room.ColumnInfo;
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.PrimaryKey;
+
 import java.util.Date;
 
+@Entity
 public class ScaleData {
     private static float KG_LB = 2.20462f;
     private static float KG_ST = 0.157473f;
 
-    private long id;
-    private int user_id;
-    private Date date_time;
+    @PrimaryKey(autoGenerate = true)
+    private int id;
+
+    @ColumnInfo(name = "userId")
+    private int userId;
+    @ColumnInfo(name = "datetime")
+    private Date dateTime;
+    @ColumnInfo(name = "weight")
     private float weight;
+    @ColumnInfo(name = "fat")
     private float fat;
+    @ColumnInfo(name = "water")
     private float water;
+    @ColumnInfo(name = "muscle")
     private float muscle;
+    @ColumnInfo(name = "lbw")
     private float lbw;
+    @ColumnInfo(name = "waist")
     private float waist;
+    @ColumnInfo(name = "hip")
     private float hip;
+    @ColumnInfo(name = "bone")
     private float bone;
+    @ColumnInfo(name = "comment")
     private String comment;
 
     public ScaleData()
     {
-        id = -1;
-        user_id = -1;
-        date_time = new Date();
+        userId = -1;
+        dateTime = new Date();
         weight = 0.0f;
         fat = 0.0f;
         water = 0.0f;
@@ -51,28 +68,28 @@ public class ScaleData {
         comment = new String();
     }
 
-    public long getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(int id) {
         this.id = id;
     }
 
     public int getUserId() {
-        return user_id;
+        return userId;
     }
 
     public void setUserId(int user_id) {
-        this.user_id = user_id;
+        this.userId = user_id;
     }
 
     public Date getDateTime() {
-        return date_time;
+        return dateTime;
     }
 
     public void setDateTime(Date date_time) {
-        this.date_time = date_time;
+        this.dateTime = date_time;
     }
 
     public float getWeight() {
@@ -140,11 +157,11 @@ public class ScaleData {
         this.muscle = muscle;
     }
 
-    public float getLBW() {
+    public float getLbw() {
         return lbw;
     }
 
-    public void setLBW(float lbw) {
+    public void setLbw(float lbw) {
         this.lbw = lbw;
     }
 
@@ -185,9 +202,9 @@ public class ScaleData {
 
         // BMR formula by Mifflin, St Jeor et al: A new predictive equation for resting energy expenditure in healthy individuals
         if (scaleUser.isMale()) {
-            bmr = 10.0f * weight + 6.25f * scaleUser.body_height - 5.0f * scaleUser.getAge(date_time) + 5.0f;
+            bmr = 10.0f * weight + 6.25f * scaleUser.getBodyHeight() - 5.0f * scaleUser.getAge(dateTime) + 5.0f;
         } else {
-            bmr = 10.0f * weight + 6.25f * scaleUser.body_height - 5.0f * scaleUser.getAge(date_time) - 161.0f;
+            bmr = 10.0f * weight + 6.25f * scaleUser.getBodyHeight() - 5.0f * scaleUser.getAge(dateTime) - 161.0f;
         }
 
         return bmr; // kCal / day
@@ -208,6 +225,6 @@ public class ScaleData {
     @Override
     public String toString()
     {
-        return "ID : " + id + " USER_ID: " + user_id + " DATE_TIME: " + date_time.toString() + " WEIGHT: " + weight + " FAT: " + fat + " WATER: " + water + " MUSCLE: " + muscle + " LBW: " + lbw + " WAIST: " + waist + " HIP: " + hip + " BONE: " + bone + " COMMENT: " + comment;
+        return "ID : " + id + " USER_ID: " + userId + " DATE_TIME: " + dateTime.toString() + " WEIGHT: " + weight + " FAT: " + fat + " WATER: " + water + " MUSCLE: " + muscle + " LBW: " + lbw + " WAIST: " + waist + " HIP: " + hip + " BONE: " + bone + " COMMENT: " + comment;
     }
 }

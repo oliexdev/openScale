@@ -105,10 +105,10 @@ public class BluetoothDigooDGSO38H extends BluetoothCommunication {
                 //The weight is stabilized, now we want to measure all available values
                 final ScaleUser selectedUser = OpenScale.getInstance(context).getSelectedScaleUser();
                 byte gender = selectedUser.isMale() ? (byte)0x00: (byte)0x01;
-                byte height = (byte) (selectedUser.body_height & 0xFF);
+                byte height = (byte) (selectedUser.getBodyHeight() & 0xFF);
                 byte age = (byte)(selectedUser.getAge(new Date()) & 0xff);
                 byte unit;
-                switch (selectedUser.scale_unit) {
+                switch (selectedUser.getScaleUnit()) {
                     case 0:
                         unit = 0x1;
                         break;

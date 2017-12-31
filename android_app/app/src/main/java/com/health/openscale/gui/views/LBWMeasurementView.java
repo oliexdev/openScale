@@ -45,13 +45,13 @@ public class LBWMeasurementView extends MeasurementView {
         if (estimateLBWEnable && getMeasurementMode() == MeasurementViewMode.ADD) {
             setValueOnView(updateData.getDateTime(), (getContext().getString(R.string.label_automatic)));
         } else {
-            setValueOnView(updateData.getDateTime(), updateData.getLBW());
+            setValueOnView(updateData.getDateTime(), updateData.getLbw());
         }
     }
 
     @Override
     public void updateDiff(ScaleData updateData, ScaleData lastData) {
-        setDiffOnView(updateData.getLBW(), lastData.getLBW());
+        setDiffOnView(updateData.getLbw(), lastData.getLbw());
     }
 
     @Override

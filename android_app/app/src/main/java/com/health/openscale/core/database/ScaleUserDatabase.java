@@ -37,14 +37,14 @@ public class ScaleUserDatabase extends SQLiteOpenHelper {
 
     private static final String TABLE_NAME = "scaleuserdata";
     private static final String COLUMN_NAME_ID = "id";
-    private static final String COLUMN_NAME_USER_NAME = "user_name";
+    private static final String COLUMN_NAME_USER_NAME = "userName";
     private static final String COLUMN_NAME_BIRTHDAY = "birthday";
-    private static final String COLUMN_NAME_BODY_HEIGHT = "body_height";
-    private static final String COLUMN_NAME_SCALE_UNIT = "scale_unit";
+    private static final String COLUMN_NAME_BODY_HEIGHT = "bodyHeight";
+    private static final String COLUMN_NAME_SCALE_UNIT = "scaleUnit";
     private static final String COLUMN_NAME_GENDER = "gender";
     private static final String COLUMN_NAME_INITIAL_WEIGHT = "initial_weight";
-    private static final String COLUMN_NAME_GOAL_WEIGHT = "goal_weight";
-    private static final String COLUMN_NAME_GOAL_DATE = "goal_date";
+    private static final String COLUMN_NAME_GOAL_WEIGHT = "goalWeight";
+    private static final String COLUMN_NAME_GOAL_DATE = "goalDate";
 
     private static final String SQL_CREATE_ENTRIES =
             "CREATE TABLE " + TABLE_NAME + " (" +
@@ -108,14 +108,14 @@ public class ScaleUserDatabase extends SQLiteOpenHelper {
         SQLiteDatabase db = getWritableDatabase();
 
         ContentValues values = new ContentValues();
-        values.put(COLUMN_NAME_USER_NAME, scaleUser.user_name);
-        values.put(COLUMN_NAME_BIRTHDAY, formatDateTime.format(scaleUser.birthday));
-        values.put(COLUMN_NAME_BODY_HEIGHT, scaleUser.body_height);
-        values.put(COLUMN_NAME_SCALE_UNIT, scaleUser.scale_unit);
-        values.put(COLUMN_NAME_GENDER, scaleUser.gender);
+        values.put(COLUMN_NAME_USER_NAME, scaleUser.getUserName());
+        values.put(COLUMN_NAME_BIRTHDAY, formatDateTime.format(scaleUser.getBirthday()));
+        values.put(COLUMN_NAME_BODY_HEIGHT, scaleUser.getBodyHeight());
+        values.put(COLUMN_NAME_SCALE_UNIT, scaleUser.getScaleUnit());
+        values.put(COLUMN_NAME_GENDER, scaleUser.getGender());
         values.put(COLUMN_NAME_INITIAL_WEIGHT, scaleUser.getInitialWeight());
-        values.put(COLUMN_NAME_GOAL_WEIGHT, scaleUser.goal_weight);
-        values.put(COLUMN_NAME_GOAL_DATE, formatDateTime.format(scaleUser.goal_date));
+        values.put(COLUMN_NAME_GOAL_WEIGHT, scaleUser.getGoalWeight());
+        values.put(COLUMN_NAME_GOAL_DATE, formatDateTime.format(scaleUser.getGoalDate()));
 
         try
         {
@@ -141,16 +141,16 @@ public class ScaleUserDatabase extends SQLiteOpenHelper {
         SQLiteDatabase db = getWritableDatabase();
 
         ContentValues values = new ContentValues();
-        values.put(COLUMN_NAME_USER_NAME, scaleUser.user_name);
-        values.put(COLUMN_NAME_BIRTHDAY, formatDateTime.format(scaleUser.birthday));
-        values.put(COLUMN_NAME_BODY_HEIGHT, scaleUser.body_height);
-        values.put(COLUMN_NAME_SCALE_UNIT, scaleUser.scale_unit);
-        values.put(COLUMN_NAME_GENDER, scaleUser.gender);
+        values.put(COLUMN_NAME_USER_NAME, scaleUser.getUserName());
+        values.put(COLUMN_NAME_BIRTHDAY, formatDateTime.format(scaleUser.getBirthday()));
+        values.put(COLUMN_NAME_BODY_HEIGHT, scaleUser.getBodyHeight());
+        values.put(COLUMN_NAME_SCALE_UNIT, scaleUser.getScaleUnit());
+        values.put(COLUMN_NAME_GENDER, scaleUser.getGender());
         values.put(COLUMN_NAME_INITIAL_WEIGHT, scaleUser.getInitialWeight());
-        values.put(COLUMN_NAME_GOAL_WEIGHT, scaleUser.goal_weight);
-        values.put(COLUMN_NAME_GOAL_DATE, formatDateTime.format(scaleUser.goal_date));
+        values.put(COLUMN_NAME_GOAL_WEIGHT, scaleUser.getGoalWeight());
+        values.put(COLUMN_NAME_GOAL_DATE, formatDateTime.format(scaleUser.getGoalDate()));
 
-        db.update(TABLE_NAME, values, COLUMN_NAME_ID + "=" + scaleUser.id, null);
+        db.update(TABLE_NAME, values, COLUMN_NAME_ID + "=" + scaleUser.getId(), null);
     }
 
     public ScaleUser getScaleUser(int id)
@@ -209,21 +209,21 @@ public class ScaleUserDatabase extends SQLiteOpenHelper {
         ScaleUser scaleUser = new ScaleUser();
 
         try {
-            scaleUser.id = cur.getInt(cur.getColumnIndexOrThrow(COLUMN_NAME_ID));
-            scaleUser.user_name = cur.getString(cur.getColumnIndexOrThrow(COLUMN_NAME_USER_NAME));
+            scaleUser.setId(cur.getInt(cur.getColumnIndexOrThrow(COLUMN_NAME_ID)));
+            scaleUser.setUserName(cur.getString(cur.getColumnIndexOrThrow(COLUMN_NAME_USER_NAME)));
             String birthday = cur.getString(cur.getColumnIndexOrThrow(COLUMN_NAME_BIRTHDAY));
-            scaleUser.body_height = cur.getInt(cur.getColumnIndexOrThrow(COLUMN_NAME_BODY_HEIGHT));
-            scaleUser.scale_unit = cur.getInt(cur.getColumnIndexOrThrow(COLUMN_NAME_SCALE_UNIT));
-            scaleUser.gender = cur.getInt(cur.getColumnIndexOrThrow(COLUMN_NAME_GENDER));
+            scaleUser.setBodyHeight(cur.getInt(cur.getColumnIndexOrThrow(COLUMN_NAME_BODY_HEIGHT)));
+            scaleUser.setScaleUnit(cur.getInt(cur.getColumnIndexOrThrow(COLUMN_NAME_SCALE_UNIT)));
+            scaleUser.setGender(cur.getInt(cur.getColumnIndexOrThrow(COLUMN_NAME_GENDER)));
             double initial_weight = cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_INITIAL_WEIGHT));
             double goal_weight = cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_GOAL_WEIGHT));
             String goal_date = cur.getString(cur.getColumnIndexOrThrow(COLUMN_NAME_GOAL_DATE));
 
-            scaleUser.birthday = formatDateTime.parse(birthday);
-            scaleUser.goal_date = formatDateTime.parse(goal_date);
+            scaleUser.setBirthday(formatDateTime.parse(birthday));
+            scaleUser.setGoalDate(formatDateTime.parse(goal_date));
 
             scaleUser.setInitialWeight(Math.round(initial_weight * 100.0f) / 100.0f);
-            scaleUser.goal_weight = Math.round(goal_weight * 100.0f) / 100.0f;
+            scaleUser.setGoalWeight(Math.round(goal_weight * 100.0f) / 100.0f);
         } catch (ParseException ex) {
             Log.e("ScaleDatabase", "Can't parse the date time string: " + ex.getMessage());
         }

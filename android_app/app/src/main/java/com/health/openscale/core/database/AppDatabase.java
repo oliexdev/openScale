@@ -1,4 +1,4 @@
-/* Copyright (C) 2017  olie.xdev <olie.xdev@googlemail.com>
+/* Copyright (C) 2018  olie.xdev <olie.xdev@googlemail.com>
 *
 *    This program is free software: you can redistribute it and/or modify
 *    it under the terms of the GNU General Public License as published by
@@ -14,23 +14,20 @@
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
-package com.health.openscale.core.bodymetric;
+package com.health.openscale.core.database;
+
+import android.arch.persistence.room.Database;
+import android.arch.persistence.room.RoomDatabase;
+import android.arch.persistence.room.TypeConverters;
 
 import com.health.openscale.core.datatypes.ScaleData;
 import com.health.openscale.core.datatypes.ScaleUser;
+import com.health.openscale.core.utils.Converters;
 
-public class LBWHume extends EstimatedLBWMetric {
-    @Override
-    public String getName() {
-        return "Hume (1966)";
-    }
-
-    @Override
-    public float getLBW(ScaleUser user, ScaleData data) {
-        if (user.isMale()) {
-            return (0.32810f * data.getWeight()) + (0.33929f * user.getBodyHeight()) - 29.5336f;
-        }
-
-        return (0.29569f * data.getWeight()) + (0.41813f * user.getBodyHeight()) - 43.2933f;
-    }
+@Database(entities = {ScaleData.class, ScaleUser.class}, version = 1)
+@TypeConverters({Converters.class})
+public abstract class AppDatabase extends RoomDatabase {
+    public abstract ScaleMeasurementDAO measurementDAO();
+    public abstract ScaleUserDAO userDAO();
 }
+

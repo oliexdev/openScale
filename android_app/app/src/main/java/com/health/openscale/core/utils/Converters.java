@@ -1,4 +1,4 @@
-/* Copyright (C) 2017  olie.xdev <olie.xdev@googlemail.com>
+/* Copyright (C) 2018  olie.xdev <olie.xdev@googlemail.com>
 *
 *    This program is free software: you can redistribute it and/or modify
 *    it under the terms of the GNU General Public License as published by
@@ -13,23 +13,21 @@
 *    You should have received a copy of the GNU General Public License
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-package com.health.openscale.core.bodymetric;
 
-import com.health.openscale.core.datatypes.ScaleData;
-import com.health.openscale.core.datatypes.ScaleUser;
+package com.health.openscale.core.utils;
 
-public class BFEddy extends EstimatedFatMetric {
-    @Override
-    public String getName() {
-        return "Eddy et. al (1976)";
+import android.arch.persistence.room.TypeConverter;
+
+import java.util.Date;
+
+public class Converters {
+    @TypeConverter
+    public static Date fromTimestamp(Long value) {
+        return value == null ? null : new Date(value);
     }
 
-    @Override
-    public float getFat(ScaleUser user, ScaleData data) {
-        if (user.isMale()) {
-            return (1.281f* data.getBMI(user.getBodyHeight())) - 10.13f;
-        }
-
-        return (1.48f* data.getBMI(user.getBodyHeight())) - 7.0f;
+    @TypeConverter
+    public static Long dateToTimestamp(Date date) {
+        return date == null ? null : date.getTime();
     }
 }

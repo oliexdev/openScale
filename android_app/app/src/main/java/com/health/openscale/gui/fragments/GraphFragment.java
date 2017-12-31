@@ -261,14 +261,14 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         for (ScaleData scaleEntry: scaleDataList) {
             calDB.setTime(scaleEntry.getDateTime());
 
-            if (addPointValue(valuesWeight, calDB.get(field), scaleEntry.getConvertedWeight(openScale.getSelectedScaleUser().scale_unit))) {
+            if (addPointValue(valuesWeight, calDB.get(field), scaleEntry.getConvertedWeight(openScale.getSelectedScaleUser().getScaleUnit()))) {
                 pointIndexScaleDataList.add(scaleEntry); // if new point was added, add this point to pointIndexScaleDataList to get the correct point index after selecting an point
             }
 
             addPointValue(valuesFat, calDB.get(field), scaleEntry.getFat());
             addPointValue(valuesWater, calDB.get(field), scaleEntry.getWater());
             addPointValue(valuesMuscle, calDB.get(field), scaleEntry.getMuscle());
-            addPointValue(valuesLBW, calDB.get(field), scaleEntry.getLBW());
+            addPointValue(valuesLBW, calDB.get(field), scaleEntry.getLbw());
             addPointValue(valuesWaist, calDB.get(field), scaleEntry.getWaist());
             addPointValue(valuesHip, calDB.get(field), scaleEntry.getHip());
             addPointValue(valuesBone, calDB.get(field), scaleEntry.getBone());
@@ -397,7 +397,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         if (prefs.getBoolean("goalLine", true)) {
             Stack<PointValue> valuesGoalLine = new Stack<PointValue>();
 
-            float goalWeight = openScale.getSelectedScaleUser().goal_weight;
+            float goalWeight = openScale.getSelectedScaleUser().getGoalWeight();
 
             valuesGoalLine.push(new PointValue(0, goalWeight));
             valuesGoalLine.push(new PointValue(maxDays, goalWeight));
@@ -533,7 +533,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         public void onValueSelected(int lineIndex, int pointIndex, PointValue pointValue) {
             ScaleData scaleData = pointIndexScaleDataList.get(pointIndex);
 
-            long id = scaleData.getId();
+            int id = scaleData.getId();
 
             Intent intent = new Intent(graphView.getContext(), DataEntryActivity.class);
             intent.putExtra("id", id);

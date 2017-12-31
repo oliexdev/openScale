@@ -57,14 +57,14 @@ public class UsersPreferences extends PreferenceFragment {
             Preference prefUser = new Preference(getActivity().getBaseContext());
             prefUser.setOnPreferenceClickListener(new onClickListenerUserSelect());
 
-            if (scaleUser.id == selectedUserId) {
-                prefUser.setTitle("> " + scaleUser.user_name);
+            if (scaleUser.getId() == selectedUserId) {
+                prefUser.setTitle("> " + scaleUser.getUserName());
             } else
             {
-                prefUser.setTitle(scaleUser.user_name);
+                prefUser.setTitle(scaleUser.getUserName());
             }
 
-            prefUser.setKey(Integer.toString(scaleUser.id));
+            prefUser.setKey(Integer.toString(scaleUser.getId()));
 
             getPreferenceScreen().addPreference(prefUser);
         }

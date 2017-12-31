@@ -166,7 +166,7 @@ public class EvaluationSheet {
 
 
     public EvaluationResult evaluateWeight(float weight) {
-        float body_height_squared = (evalUser.body_height / 100.0f) * (evalUser.body_height / 100.0f);
+        float body_height_squared = (evalUser.getBodyHeight() / 100.0f) * (evalUser.getBodyHeight() / 100.0f);
         float lowLimit = 0.0f;
         float highLimit = 0.0f;
 

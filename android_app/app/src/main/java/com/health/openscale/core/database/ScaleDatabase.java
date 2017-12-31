@@ -148,7 +148,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
             values.put(COLUMN_NAME_FAT, scaleData.getFat());
             values.put(COLUMN_NAME_WATER, scaleData.getWater());
             values.put(COLUMN_NAME_MUSCLE, scaleData.getMuscle());
-            values.put(COLUMN_NAME_LBW, scaleData.getLBW());
+            values.put(COLUMN_NAME_LBW, scaleData.getLbw());
             values.put(COLUMN_NAME_BONE, scaleData.getBone());
             values.put(COLUMN_NAME_WAIST, scaleData.getWaist());
             values.put(COLUMN_NAME_HIP, scaleData.getHip());
@@ -180,7 +180,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
         values.put(COLUMN_NAME_FAT, scaleData.getFat());
         values.put(COLUMN_NAME_WATER, scaleData.getWater());
         values.put(COLUMN_NAME_MUSCLE, scaleData.getMuscle());
-        values.put(COLUMN_NAME_LBW, scaleData.getLBW());
+        values.put(COLUMN_NAME_LBW, scaleData.getLbw());
         values.put(COLUMN_NAME_BONE, scaleData.getBone());
         values.put(COLUMN_NAME_WAIST, scaleData.getWaist());
         values.put(COLUMN_NAME_HIP, scaleData.getHip());
@@ -404,14 +404,14 @@ public class ScaleDatabase extends SQLiteOpenHelper {
         ScaleData scaleData = new ScaleData();
 
         try {
-            scaleData.setId(cur.getLong(cur.getColumnIndexOrThrow(COLUMN_NAME_ID)));
+            scaleData.setId(cur.getInt(cur.getColumnIndexOrThrow(COLUMN_NAME_ID)));
             scaleData.setUserId(cur.getInt(cur.getColumnIndexOrThrow(COLUMN_NAME_USER_ID)));
             String date_time = cur.getString(cur.getColumnIndexOrThrow(COLUMN_NAME_DATE_TIME));
             scaleData.setWeight(cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_WEIGHT)));
             scaleData.setFat(cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_FAT)));
             scaleData.setWater(cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_WATER)));
             scaleData.setMuscle(cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_MUSCLE)));
-            scaleData.setLBW(cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_LBW)));
+            scaleData.setLbw(cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_LBW)));
             scaleData.setBone(cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_BONE)));
             scaleData.setWaist(cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_WAIST)));
             scaleData.setHip(cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_HIP)));

@@ -91,7 +91,7 @@ public class DataEntryActivity extends Activity {
     private FloatingActionButton switchEditMode;
     private FloatingActionButton expandButton;
 
-    private long id;
+    private int id;
 
     private Context context;
 
@@ -178,7 +178,7 @@ public class DataEntryActivity extends Activity {
         }
 
         if (getIntent().hasExtra("id")) {
-            id = getIntent().getExtras().getLong("id");
+            id = getIntent().getExtras().getInt("id");
         }
 
         ScaleData scaleData;
@@ -302,13 +302,13 @@ public class DataEntryActivity extends Activity {
 
         ScaleData scaleData = new ScaleData();
 
-        scaleData.setUserId(user.id);
+        scaleData.setUserId(user.getId());
         scaleData.setDateTime(cal.getTime());
-        scaleData.setConvertedWeight(weightMeasurement.getValue(), user.scale_unit);
+        scaleData.setConvertedWeight(weightMeasurement.getValue(), user.getScaleUnit());
         scaleData.setFat(fatMeasurement.getValue());
         scaleData.setWater(waterMeasurement.getValue());
         scaleData.setMuscle(muscleMeasurement.getValue());
-        scaleData.setLBW(lbwMeasurement.getValue());
+        scaleData.setLbw(lbwMeasurement.getValue());
         scaleData.setWaist(waistMeasurement.getValue());
         scaleData.setHip(hipMeasurement.getValue());
         scaleData.setBone(boneMeasurementView.getValue());

@@ -27,9 +27,9 @@ public class TBWHumeWeyers extends EstimatedWaterMetric {
     @Override
     public float getWater(ScaleUser user, ScaleData data) {
         if (user.isMale()) {
-            return (0.194786f * user.body_height) + (0.296785f * data.getWeight()) - 14.012934f;
+            return (0.194786f * user.getBodyHeight()) + (0.296785f * data.getWeight()) - 14.012934f;
         }
 
-        return (0.34454f * user.body_height) + (0.183809f * data.getWeight()) - 35.270121f;
+        return (0.34454f * user.getBodyHeight()) + (0.183809f * data.getWeight()) - 35.270121f;
     }
 }

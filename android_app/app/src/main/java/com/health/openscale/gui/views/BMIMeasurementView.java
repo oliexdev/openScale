@@ -37,12 +37,12 @@ public class BMIMeasurementView extends MeasurementView {
 
     @Override
     public void updateValue(ScaleData updateData) {
-        setValueOnView(updateData.getDateTime(), updateData.getBMI(getScaleUser().body_height));
+        setValueOnView(updateData.getDateTime(), updateData.getBMI(getScaleUser().getBodyHeight()));
     }
 
     @Override
     public void updateDiff(ScaleData updateData, ScaleData lastData) {
-        setDiffOnView(updateData.getBMI(getScaleUser().body_height), lastData.getBMI(getScaleUser().body_height));
+        setDiffOnView(updateData.getBMI(getScaleUser().getBodyHeight()), lastData.getBMI(getScaleUser().getBodyHeight()));
     }
 
     @Override

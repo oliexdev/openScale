@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 24
+    compileSdkVersion 26
 
     defaultConfig {
         applicationId "com.health.openscale"
@@ -23,7 +23,7 @@ android {
     }
 }
 ext {
-    supportLibVersion = '24.1.1' //  lib version > 24.1.1 has a floating button bug, which move the button randomly
+    supportLibVersion = '26.1.0'
 }
 
 dependencies {
@@ -32,6 +32,8 @@ dependencies {
     compile "com.android.support:appcompat-v7:${supportLibVersion}"
     compile 'com.github.lecho:hellocharts-library:1.5.8@aar'
     compile 'junit:junit:4.12'
+    compile 'android.arch.persistence.room:runtime:1.0.0'
+    annotationProcessor 'android.arch.persistence.room:compiler:1.0.0'
 }
 
 tasks.withType(Test) {

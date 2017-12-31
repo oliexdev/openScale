@@ -1,4 +1,4 @@
-/* Copyright (C) 2017  olie.xdev <olie.xdev@googlemail.com>
+/* Copyright (C) 2018  olie.xdev <olie.xdev@googlemail.com>
 *
 *    This program is free software: you can redistribute it and/or modify
 *    it under the terms of the GNU General Public License as published by
@@ -13,23 +13,32 @@
 *    You should have received a copy of the GNU General Public License
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-package com.health.openscale.core.bodymetric;
 
-import com.health.openscale.core.datatypes.ScaleData;
+package com.health.openscale.core.database;
+
+import android.arch.persistence.room.Dao;
+import android.arch.persistence.room.Delete;
+import android.arch.persistence.room.Insert;
+import android.arch.persistence.room.Query;
+
 import com.health.openscale.core.datatypes.ScaleUser;
 
-public class BFDeurenbergII extends EstimatedFatMetric {
-    @Override
-    public String getName() {
-        return "Deurenberg et. al (1991)";
-    }
+import java.util.List;
 
-    @Override
-    public float getFat(ScaleUser user, ScaleData data) {
-        if (user.isMale()) {
-            return (data.getBMI(user.getBodyHeight()) * 1.2f) + (user.getAge(data.getDateTime()) * 0.23f) - 16.2f;
-        }
+@Dao
+public interface ScaleUserDAO {
+    @Query("SELECT * FROM scaleuser")
+    List<ScaleUser> getAll();
 
-        return (data.getBMI(user.getBodyHeight()) * 1.2f) + (user.getAge(data.getDateTime()) * 0.23f) - 5.4f;
-    }
+    @Query("SELECT * FROM scaleuser WHERE id IS :id")
+    ScaleUser loadById(int id);
+
+    @Insert
+    void insert(ScaleUser user);
+
+    @Insert
+    void insertAll(ScaleUser... users);
+
+    @Delete
+    void delete(ScaleUser user);
 }

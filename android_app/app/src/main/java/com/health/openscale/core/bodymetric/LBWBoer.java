@@ -28,9 +28,9 @@ public class LBWBoer extends EstimatedLBWMetric {
     @Override
     public float getLBW(ScaleUser user, ScaleData data) {
         if (user.isMale()) {
-            return (0.4071f * data.getWeight()) + (0.267f * user.body_height) - 19.2f;
+            return (0.4071f * data.getWeight()) + (0.267f * user.getBodyHeight()) - 19.2f;
         }
 
-        return (0.252f * data.getWeight()) + (0.473f * user.body_height) - 48.3f;
+        return (0.252f * data.getWeight()) + (0.473f * user.getBodyHeight()) - 48.3f;
     }
 }

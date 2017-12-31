@@ -33,17 +33,17 @@ public class WeightMeasurementView extends MeasurementView {
 
     @Override
     public void updateValue(ScaleData updateData) {
-        setValueOnView(updateData.getDateTime(), updateData.getConvertedWeight(getScaleUser().scale_unit));
+        setValueOnView(updateData.getDateTime(), updateData.getConvertedWeight(getScaleUser().getScaleUnit()));
     }
 
     @Override
     public void updateDiff(ScaleData updateData, ScaleData lastData) {
-        setDiffOnView(updateData.getConvertedWeight(getScaleUser().scale_unit), lastData.getConvertedWeight(getScaleUser().scale_unit));
+        setDiffOnView(updateData.getConvertedWeight(getScaleUser().getScaleUnit()), lastData.getConvertedWeight(getScaleUser().getScaleUnit()));
     }
 
     @Override
     public String getUnit() {
-        return ScaleUser.UNIT_STRING[getScaleUser().scale_unit];
+        return ScaleUser.UNIT_STRING[getScaleUser().getScaleUnit()];
     }
 
     @Override

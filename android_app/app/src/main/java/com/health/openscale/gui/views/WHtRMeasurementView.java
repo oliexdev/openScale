@@ -37,12 +37,12 @@ public class WHtRMeasurementView extends MeasurementView {
 
     @Override
     public void updateValue(ScaleData updateData) {
-        setValueOnView(updateData.getDateTime(), updateData.getWHtR(getScaleUser().body_height));
+        setValueOnView(updateData.getDateTime(), updateData.getWHtR(getScaleUser().getBodyHeight()));
     }
 
     @Override
     public void updateDiff(ScaleData updateData, ScaleData lastData) {
-        setDiffOnView(updateData.getWHtR(getScaleUser().body_height), lastData.getWHtR(getScaleUser().body_height));
+        setDiffOnView(updateData.getWHtR(getScaleUser().getBodyHeight()), lastData.getWHtR(getScaleUser().getBodyHeight()));
     }
 
     @Override

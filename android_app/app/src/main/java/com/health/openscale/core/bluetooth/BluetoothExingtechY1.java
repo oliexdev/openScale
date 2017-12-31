@@ -59,7 +59,7 @@ public class BluetoothExingtechY1 extends BluetoothCommunication {
                 final ScaleUser selectedUser = OpenScale.getInstance(context).getSelectedScaleUser();
 
                 byte gender = selectedUser.isMale() ? (byte)0x00 : (byte)0x01; // 00 - male; 01 - female
-                byte height = (byte)(selectedUser.body_height & 0xff); // cm
+                byte height = (byte)(selectedUser.getBodyHeight() & 0xff); // cm
                 byte age = (byte)(selectedUser.getAge(new Date()) & 0xff);
 
                 SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
@@ -116,7 +116,7 @@ public class BluetoothExingtechY1 extends BluetoothCommunication {
 
         final ScaleUser selectedUser = OpenScale.getInstance(context).getSelectedScaleUser();
 
-        scaleBtData.setConvertedWeight(weight, selectedUser.scale_unit);
+        scaleBtData.setConvertedWeight(weight, selectedUser.getScaleUnit());
         scaleBtData.setFat(fat);
         scaleBtData.setMuscle(muscle);
         scaleBtData.setWater(water);

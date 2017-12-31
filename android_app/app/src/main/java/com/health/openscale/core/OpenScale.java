@@ -16,21 +16,22 @@
 
 package com.health.openscale.core;
 
+import android.arch.persistence.room.Room;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.health.openscale.R;
 import com.health.openscale.core.alarm.AlarmHandler;
 import com.health.openscale.core.bluetooth.BluetoothCommunication;
-import com.health.openscale.core.bodymetric.EstimatedFatMetric;
-import com.health.openscale.core.bodymetric.EstimatedLBWMetric;
-import com.health.openscale.core.bodymetric.EstimatedWaterMetric;
+import com.health.openscale.core.database.AppDatabase;
 import com.health.openscale.core.database.ScaleDatabase;
+import com.health.openscale.core.database.ScaleMeasurementDAO;
+import com.health.openscale.core.database.ScaleUserDAO;
 import com.health.openscale.core.database.ScaleUserDatabase;
 import com.health.openscale.core.datatypes.ScaleData;
 import com.health.openscale.core.datatypes.ScaleUser;
@@ -47,6 +48,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -54,6 +56,9 @@ public class OpenScale {
 
     private static OpenScale instance;
 
+    private AppDatabase appDB;
+    private ScaleMeasurementDAO measurementDAO;
+    private ScaleUserDAO userDAO;
     private ScaleDatabase scaleDB;
     private ScaleUserDatabase scaleUserDB;
     private ArrayList<ScaleData> scaleDataList;
@@ -75,6 +80,9 @@ public class OpenScale {
         alarmHandler = new AlarmHandler();
         btCom = null;
         fragmentList = new ArrayList<>();
+        appDB = Room.databaseBuilder(context, AppDatabase.class, "openScaleDatabase").build();
+        measurementDAO = appDB.measurementDAO();
+        userDAO = appDB.userDAO();
 
         updateScaleData();
     }
@@ -91,14 +99,14 @@ public class OpenScale {
     {
         ScaleUser scaleUser = new ScaleUser();
 
-        scaleUser.user_name = name;
-        scaleUser.birthday = birthday;
-        scaleUser.body_height = body_height;
-        scaleUser.scale_unit = scale_unit;
-        scaleUser.gender = gender;
+        scaleUser.setUserName(name);
+        scaleUser.setBirthday(birthday);
+        scaleUser.setBodyHeight(body_height);
+        scaleUser.setScaleUnit(scale_unit);
+        scaleUser.setGender(gender);
         scaleUser.setConvertedInitialWeight(initial_weight);
-        scaleUser.goal_weight = goal_weight;
-        scaleUser.goal_date = goal_date;
+        scaleUser.setGoalWeight(goal_weight);
+        scaleUser.setGoalDate(goal_date);
 
         scaleUserDB.insertEntry(scaleUser);
     }
@@ -142,15 +150,15 @@ public class OpenScale {
     {
         ScaleUser scaleUser = new ScaleUser();
 
-        scaleUser.id = id;
-        scaleUser.user_name = name;
-        scaleUser.birthday = birthday;
-        scaleUser.body_height = body_height;
-        scaleUser.scale_unit = scale_unit;
-        scaleUser.gender = gender;
+        scaleUser.setId(id);
+        scaleUser.setUserName(name);
+        scaleUser.setBirthday(birthday);
+        scaleUser.setBodyHeight(body_height);
+        scaleUser.setScaleUnit(scale_unit);
+        scaleUser.setGender(gender);
         scaleUser.setConvertedInitialWeight(initial_weight);
-        scaleUser.goal_weight = goal_weight;
-        scaleUser.goal_date = goal_date;
+        scaleUser.setGoalWeight(goal_weight);
+        scaleUser.setGoalDate(goal_date);
 
         scaleUserDB.updateScaleUser(scaleUser);
     }
@@ -163,12 +171,33 @@ public class OpenScale {
 
     public ScaleData[] getTupleScaleData(long id)
     {
-        return scaleDB.getTupleDataEntry(getSelectedScaleUser().id, id);
+        return scaleDB.getTupleDataEntry(getSelectedScaleUser().getId(), id);
     }
 
-    public int addScaleData(ScaleData scaleData) {
+    public int addScaleData(final ScaleData scaleData) {
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                Log.d("TEST", "ADD START");
+
+                measurementDAO.insert(scaleData);
+
+                Log.d("TEST", "ADD END");
+
+                Log.d("TEST", "READ ALL");
+
+                List<ScaleData> listScaleData = measurementDAO.getAll();
+
+                for(ScaleData nextScaleData : listScaleData) {
+                    Log.d("TEST", "DB : " + nextScaleData.getDateTime() + " Weight: " + nextScaleData.getWeight());
+                }
+            }
+        });
+
+
+        return -1;
+/*        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
         if (scaleData.getUserId() == -1) {
             if (prefs.getBoolean("smartUserAssign", false)) {
@@ -192,7 +221,7 @@ public class OpenScale {
         if (prefs.getBoolean("estimateLBWEnable", false)) {
             EstimatedLBWMetric lbwMetric = EstimatedLBWMetric.getEstimatedMetric(EstimatedLBWMetric.FORMULA.valueOf(prefs.getString("estimateLBWFormula", "LBW_HUME")));
 
-            scaleData.setLBW(lbwMetric.getLBW(getScaleUser(scaleData.getUserId()), scaleData));
+            scaleData.setLbw(lbwMetric.getLBW(getScaleUser(scaleData.getUserId()), scaleData));
         }
 
         if (prefs.getBoolean("estimateFatEnable", false)) {
@@ -204,13 +233,13 @@ public class OpenScale {
         if (scaleDB.insertEntry(scaleData)) {
             ScaleUser scaleUser = getScaleUser(scaleData.getUserId());
 
-            String infoText = String.format(context.getString(R.string.info_new_data_added), scaleData.getConvertedWeight(scaleUser.scale_unit), scaleUser.UNIT_STRING[scaleUser.scale_unit], dateTimeFormat.format(scaleData.getDateTime()), scaleUser.user_name);
+            String infoText = String.format(context.getString(R.string.info_new_data_added), scaleData.getConvertedWeight(scaleUser.scaleUnit), scaleUser.UNIT_STRING[scaleUser.scaleUnit], dateTimeFormat.format(scaleData.getDateTime()), scaleUser.userName);
             Toast.makeText(context, infoText, Toast.LENGTH_LONG).show();
             alarmHandler.entryChanged(context, scaleData);
             updateScaleData();
         }
 
-        return scaleData.getUserId();
+        return scaleData.getUserId();*/
     }
 
     private int getSmartUserAssignment(float weight, float range) {
@@ -218,7 +247,7 @@ public class OpenScale {
         Map<Float, Integer> inRangeWeights = new TreeMap<>();
 
         for (int i = 0; i < scaleUser.size(); i++) {
-            ArrayList<ScaleData> scaleUserData = scaleDB.getScaleDataList(scaleUser.get(i).id);
+            ArrayList<ScaleData> scaleUserData = scaleDB.getScaleDataList(scaleUser.get(i).getId());
 
             float lastWeight = 0;
 
@@ -229,7 +258,7 @@ public class OpenScale {
             }
 
             if ((lastWeight - range) <= weight && (lastWeight + range) >= weight) {
-                inRangeWeights.put(Math.abs(lastWeight - weight), scaleUser.get(i).id);
+                inRangeWeights.put(Math.abs(lastWeight - weight), scaleUser.get(i).getId());
             }
         }
 
@@ -246,7 +275,7 @@ public class OpenScale {
         }
 
         // return selected scale user id if not out of range preference is checked and weight is out of range of any user
-        return getSelectedScaleUser().id;
+        return getSelectedScaleUser().getId();
     }
 
     public void updateScaleData(ScaleData scaleData) {
@@ -288,13 +317,13 @@ public class OpenScale {
                 newScaleData.setFat(Float.parseFloat(csvField[2]));
                 newScaleData.setWater(Float.parseFloat(csvField[3]));
                 newScaleData.setMuscle(Float.parseFloat(csvField[4]));
-                newScaleData.setLBW(Float.parseFloat(csvField[5]));
+                newScaleData.setLbw(Float.parseFloat(csvField[5]));
                 newScaleData.setBone(Float.parseFloat(csvField[6]));
                 newScaleData.setWaist(Float.parseFloat(csvField[7]));
                 newScaleData.setHip(Float.parseFloat(csvField[8]));
                 newScaleData.setComment(csvField[9]);
 
-                newScaleData.setUserId(getSelectedScaleUser().id);
+                newScaleData.setUserId(getSelectedScaleUser().getId());
 
                 scaleDB.insertEntry(newScaleData);
 
@@ -329,7 +358,7 @@ public class OpenScale {
             csvWriter.append(Float.toString(scaleData.getFat()) + ",");
             csvWriter.append(Float.toString(scaleData.getWater()) + ",");
             csvWriter.append(Float.toString(scaleData.getMuscle()) + ",");
-            csvWriter.append(Float.toString(scaleData.getLBW()) + ",");
+            csvWriter.append(Float.toString(scaleData.getLbw()) + ",");
             csvWriter.append(Float.toString(scaleData.getBone()) + ",");
             csvWriter.append(Float.toString(scaleData.getWaist()) + ",");
             csvWriter.append(Float.toString(scaleData.getHip()) + ",");

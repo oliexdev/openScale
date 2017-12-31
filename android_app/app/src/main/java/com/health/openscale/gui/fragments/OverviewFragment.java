@@ -56,7 +56,6 @@ import com.health.openscale.gui.views.WeightMeasurementView;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 import lecho.lib.hellocharts.formatter.SimpleLineChartValueFormatter;
@@ -221,9 +220,9 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         int posUser = 0;
 
         for (ScaleUser scaleUser : scaleUserList) {
-            spinUserAdapter.add(scaleUser.user_name);
+            spinUserAdapter.add(scaleUser.getUserName());
 
-            if (scaleUser.id == currentScaleUser.id) {
+            if (scaleUser.getId() == currentScaleUser.getId()) {
                 posUser = spinUserAdapter.getCount() - 1;
             }
         }
@@ -267,15 +266,15 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
             scaleDataLastDays.add(histData);
 
-            valuesWeight.add(new PointValue(i, histData.getConvertedWeight(currentScaleUser.scale_unit)));
+            valuesWeight.add(new PointValue(i, histData.getConvertedWeight(currentScaleUser.getScaleUnit())));
             if (histData.getFat() != 0.0f)
                 valuesFat.add(new PointValue(i, histData.getFat()));
             if (histData.getWater() != 0.0f)
                 valuesWater.add(new PointValue(i, histData.getWater()));
             if (histData.getMuscle() != 0.0f)
                 valuesMuscle.add(new PointValue(i, histData.getMuscle()));
-            if (histData.getLBW() != 0.0f)
-                valuesLBW.add(new PointValue(i, histData.getLBW()));
+            if (histData.getLbw() != 0.0f)
+                valuesLBW.add(new PointValue(i, histData.getLbw()));
             if (histData.getWaist() != 0.0f)
                 valuesWaist.add(new PointValue(i, histData.getWaist()));
             if (histData.getHip() != 0.0f)
@@ -408,7 +407,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         PieChartData pieChartData = new PieChartData(arcValuesLast);
         pieChartData.setHasLabels(false);
         pieChartData.setHasCenterCircle(true);
-        pieChartData.setCenterText1(String.format("%.2f %s", lastScaleData.getConvertedWeight(currentScaleUser.scale_unit), ScaleUser.UNIT_STRING[currentScaleUser.scale_unit]));
+        pieChartData.setCenterText1(String.format("%.2f %s", lastScaleData.getConvertedWeight(currentScaleUser.getScaleUnit()), ScaleUser.UNIT_STRING[currentScaleUser.getScaleUnit()]));
         pieChartData.setCenterText2(DateFormat.getDateInstance(DateFormat.MEDIUM).format(lastScaleData.getDateTime()));
 
 
@@ -486,7 +485,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
                  ScaleUser scaleUser = scaleUserList.get(position);
 
                  SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-                 prefs.edit().putInt("selectedUserId", scaleUser.id).commit();
+                 prefs.edit().putInt("selectedUserId", scaleUser.getId()).commit();
                  OpenScale.getInstance(getContext()).updateScaleData();
              }
         }

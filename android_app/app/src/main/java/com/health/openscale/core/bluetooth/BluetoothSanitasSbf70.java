@@ -179,22 +179,22 @@ public class BluetoothSanitasSbf70 extends BluetoothCommunication {
                     final ScaleUser selectedUser = OpenScale.getInstance(context).getSelectedScaleUser();
 
                     // We can only use up to 3 characters and have to handle them uppercase
-                    int maxIdx = selectedUser.user_name.length() >= 3 ? 3 : selectedUser.user_name.length();
-                    byte[] nick = selectedUser.user_name.toUpperCase().substring(0, maxIdx).getBytes();
+                    int maxIdx = selectedUser.getUserName().length() >= 3 ? 3 : selectedUser.getUserName().length();
+                    byte[] nick = selectedUser.getUserName().toUpperCase().substring(0, maxIdx).getBytes();
 
                     byte activity = 2; // activity level: 1 - 5
-                    Log.d(TAG, "Create User:" + selectedUser.user_name);
+                    Log.d(TAG, "Create User:" + selectedUser.getUserName());
 
                     writeBytes(new byte[]{
                             (byte) 0xe7, (byte) 0x31, (byte) 0x0, (byte) 0x0, (byte) 0x0,
                             (byte) 0x0, (byte) 0x0, (byte) 0x0, (byte) 0x0,
                             (byte) (seenUsers.size() > 0 ? Collections.max(seenUsers) + 1 : 101),
                             nick[0], nick[1], nick[2],
-                            (byte) selectedUser.birthday.getYear(),
-                            (byte) selectedUser.birthday.getMonth(),
-                            (byte) selectedUser.birthday.getDate(),
-                            (byte) selectedUser.body_height,
-                            (byte) (((1 - selectedUser.gender) << 7) | activity)
+                            (byte) selectedUser.getBirthday().getYear(),
+                            (byte) selectedUser.getBirthday().getMonth(),
+                            (byte) selectedUser.getBirthday().getDate(),
+                            (byte) selectedUser.getBodyHeight(),
+                            (byte) (((1 - selectedUser.getGender()) << 7) | activity)
                     });
                 } else {
                     // Get existing user information
@@ -304,8 +304,8 @@ public class BluetoothSanitasSbf70 extends BluetoothCommunication {
             final ScaleUser selectedUser = OpenScale.getInstance(context).getSelectedScaleUser();
 
             // Check if we found the currently selected user
-            if (selectedUser.user_name.toLowerCase().startsWith(name.toLowerCase()) &&
-                    selectedUser.birthday.getYear() == year) {
+            if (selectedUser.getUserName().toLowerCase().startsWith(name.toLowerCase()) &&
+                    selectedUser.getBirthday().getYear() == year) {
                 // Found user
                 currentScaleUserId = userUuid;
             }

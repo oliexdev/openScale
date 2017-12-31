@@ -252,7 +252,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
         public void onItemClick(AdapterView<?> parent, View view, int position, long click_id) {
             LinearLayout dataRow = (LinearLayout)view;
             TextView idTextView = (TextView) dataRow.getChildAt(0);
-            long id = Long.parseLong(idTextView.getText().toString());
+            int id = Integer.parseInt(idTextView.getText().toString());
 
             Intent intent = new Intent(tableView.getContext(), DataEntryActivity.class);
             intent.putExtra("id", id);
@@ -283,7 +283,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
                     filenameDialog.setTitle(getResources().getString(R.string.info_set_filename) + " /sdcard ...");
 
                     final EditText txtFilename = new EditText(tableView.getContext());
-                    txtFilename.setText("/openScale_data_" + OpenScale.getInstance(getContext()).getSelectedScaleUser().user_name + ".csv");
+                    txtFilename.setText("/openScale_data_" + OpenScale.getInstance(getContext()).getSelectedScaleUser().getUserName() + ".csv");
 
                     filenameDialog.setView(txtFilename);
 
@@ -325,7 +325,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
             filenameDialog.setTitle(getResources().getString(R.string.info_set_filename) + " /sdcard ...");
 
             final EditText txtFilename = new EditText(tableView.getContext());
-            txtFilename.setText("/openScale_data_" + OpenScale.getInstance(getContext()).getSelectedScaleUser().user_name + ".csv");
+            txtFilename.setText("/openScale_data_" + OpenScale.getInstance(getContext()).getSelectedScaleUser().getUserName() + ".csv");
 
             filenameDialog.setView(txtFilename);
 
