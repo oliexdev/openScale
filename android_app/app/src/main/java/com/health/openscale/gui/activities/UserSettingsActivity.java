@@ -36,9 +36,9 @@ import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleUser;
 
 import java.text.DateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 public class UserSettingsActivity extends Activity {
 
@@ -231,7 +231,7 @@ public class UserSettingsActivity extends Activity {
                     openScale.clearScaleData(userId);
                     openScale.deleteScaleUser(userId);
 
-                    ArrayList<ScaleUser> scaleUser = openScale.getScaleUserList();
+                    List<ScaleUser> scaleUser = openScale.getScaleUserList();
 
                     int lastUserId = -1;
 
@@ -302,11 +302,23 @@ public class UserSettingsActivity extends Activity {
 
                     int id = 0;
 
+                    final ScaleUser scaleUser = new ScaleUser();
+
+                    scaleUser.setUserName(name);
+                    scaleUser.setBirthday(birthday);
+                    scaleUser.setBodyHeight(body_height);
+                    scaleUser.setScaleUnit(scale_unit);
+                    scaleUser.setGender(gender);
+                    scaleUser.setConvertedInitialWeight(initial_weight);
+                    scaleUser.setGoalWeight(goal_weight);
+                    scaleUser.setGoalDate(goal_date);
+
                     if (getIntent().getExtras().getInt("mode") == EDIT_USER_REQUEST) {
                         id = getIntent().getExtras().getInt("id");
-                        openScale.updateScaleUser(id, name, birthday, body_height, scale_unit, gender, initial_weight, goal_weight, goal_date);
+                        scaleUser.setId(id);
+                        openScale.updateScaleUser(scaleUser);
                     } else {
-                        openScale.addScaleUser(name, birthday, body_height, scale_unit, gender, initial_weight, goal_weight, goal_date);
+                        openScale.addScaleUser(scaleUser);
 
                         id = openScale.getScaleUserList().get(openScale.getScaleUserList().size() - 1).getId();
                     }

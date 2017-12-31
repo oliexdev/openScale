@@ -215,7 +215,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         userSelectedData = null;
 
         spinUserAdapter.clear();
-        ArrayList<ScaleUser> scaleUserList = OpenScale.getInstance(getContext()).getScaleUserList();
+        List<ScaleUser> scaleUserList = OpenScale.getInstance(getContext()).getScaleUserList();
 
         int posUser = 0;
 
@@ -480,7 +480,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
              if (parent.getChildCount() > 0) {
                  ((TextView) parent.getChildAt(0)).setTextColor(Color.GRAY);
 
-                 ArrayList<ScaleUser> scaleUserList = OpenScale.getInstance(getContext()).getScaleUserList();
+                 List<ScaleUser> scaleUserList = OpenScale.getInstance(getContext()).getScaleUserList();
 
                  ScaleUser scaleUser = scaleUserList.get(position);
 

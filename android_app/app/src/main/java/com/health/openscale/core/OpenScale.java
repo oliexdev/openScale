@@ -47,7 +47,6 @@ import java.io.OutputStreamWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -80,7 +79,7 @@ public class OpenScale {
         alarmHandler = new AlarmHandler();
         btCom = null;
         fragmentList = new ArrayList<>();
-        appDB = Room.databaseBuilder(context, AppDatabase.class, "openScaleDatabase").build();
+        appDB = Room.databaseBuilder(context, AppDatabase.class, "openScaleDatabase").allowMainThreadQueries().build();
         measurementDAO = appDB.measurementDAO();
         userDAO = appDB.userDAO();
 
@@ -95,30 +94,24 @@ public class OpenScale {
         return instance;
     }
 
-    public void addScaleUser(String name, Date birthday, int body_height, int scale_unit, int gender, float initial_weight, float goal_weight, Date goal_date)
+    public void addScaleUser(final ScaleUser user)
     {
-        ScaleUser scaleUser = new ScaleUser();
-
-        scaleUser.setUserName(name);
-        scaleUser.setBirthday(birthday);
-        scaleUser.setBodyHeight(body_height);
-        scaleUser.setScaleUnit(scale_unit);
-        scaleUser.setGender(gender);
-        scaleUser.setConvertedInitialWeight(initial_weight);
-        scaleUser.setGoalWeight(goal_weight);
-        scaleUser.setGoalDate(goal_date);
-
-        scaleUserDB.insertEntry(scaleUser);
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                userDAO.insert(user);
+            }
+        });
     }
 
-    public ArrayList<ScaleUser> getScaleUserList()
+    public List<ScaleUser> getScaleUserList()
     {
-        return scaleUserDB.getScaleUserList();
+        return userDAO.getAll();
     }
 
     public ScaleUser getScaleUser(int userId)
     {
-        return scaleUserDB.getScaleUser(userId);
+        return userDAO.getById(userId);
     }
 
     public ScaleUser getSelectedScaleUser()
@@ -133,7 +126,7 @@ public class OpenScale {
                 return scaleUser;
             }
 
-            scaleUser = scaleUserDB.getScaleUser(selectedUserId);
+            scaleUser = userDAO.getById(selectedUserId);
         } catch (Exception e) {
             Toast.makeText(context, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
@@ -143,26 +136,13 @@ public class OpenScale {
 
     public void deleteScaleUser(int id)
     {
-        scaleUserDB.deleteEntry(id);
+        userDAO.delete(userDAO.getById(id));
     }
 
-    public void updateScaleUser(int id, String name, Date birthday, int body_height, int scale_unit, int gender, float initial_weight, float goal_weight, Date goal_date)
+    public void updateScaleUser(ScaleUser user)
     {
-        ScaleUser scaleUser = new ScaleUser();
-
-        scaleUser.setId(id);
-        scaleUser.setUserName(name);
-        scaleUser.setBirthday(birthday);
-        scaleUser.setBodyHeight(body_height);
-        scaleUser.setScaleUnit(scale_unit);
-        scaleUser.setGender(gender);
-        scaleUser.setConvertedInitialWeight(initial_weight);
-        scaleUser.setGoalWeight(goal_weight);
-        scaleUser.setGoalDate(goal_date);
-
-        scaleUserDB.updateScaleUser(scaleUser);
+        userDAO.update(user);
     }
-
 
     public ArrayList<ScaleData> getScaleDataList() {
         return scaleDataList;
@@ -243,7 +223,7 @@ public class OpenScale {
     }
 
     private int getSmartUserAssignment(float weight, float range) {
-        ArrayList<ScaleUser> scaleUser = getScaleUserList();
+        List<ScaleUser> scaleUser = getScaleUserList();
         Map<Float, Integer> inRangeWeights = new TreeMap<>();
 
         for (int i = 0; i < scaleUser.size(); i++) {

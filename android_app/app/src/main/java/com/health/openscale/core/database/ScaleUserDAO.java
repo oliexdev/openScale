@@ -20,6 +20,7 @@ import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Delete;
 import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.Query;
+import android.arch.persistence.room.Update;
 
 import com.health.openscale.core.datatypes.ScaleUser;
 
@@ -31,6 +32,9 @@ public interface ScaleUserDAO {
     List<ScaleUser> getAll();
 
     @Query("SELECT * FROM scaleuser WHERE id IS :id")
+    ScaleUser getById(int id);
+
+    @Query("SELECT * FROM scaleuser WHERE id IS :id")
     ScaleUser loadById(int id);
 
     @Insert
@@ -38,6 +42,9 @@ public interface ScaleUserDAO {
 
     @Insert
     void insertAll(ScaleUser... users);
+
+    @Update
+    void update(ScaleUser user);
 
     @Delete
     void delete(ScaleUser user);
