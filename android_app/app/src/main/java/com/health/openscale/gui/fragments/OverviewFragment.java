@@ -174,7 +174,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
     }
 
     @Override
-    public void updateOnView(ArrayList<ScaleData> scaleDataList) {
+    public void updateOnView(List<ScaleData> scaleDataList) {
         if (scaleDataList.isEmpty()) {
             lastScaleData = new ScaleData();
         } else if (userSelectedData != null) {
@@ -237,7 +237,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
     }
 
 
-    private void updateLastLineChart(ArrayList<ScaleData> scaleDataList) {
+    private void updateLastLineChart(List<ScaleData> scaleDataList) {
         List<AxisValue> axisValues = new ArrayList<AxisValue>();
 
         List<PointValue> valuesWeight = new ArrayList<PointValue>();

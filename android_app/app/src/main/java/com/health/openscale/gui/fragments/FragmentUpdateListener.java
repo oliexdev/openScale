@@ -18,8 +18,8 @@ package com.health.openscale.gui.fragments;
 
 import com.health.openscale.core.datatypes.ScaleData;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public interface FragmentUpdateListener {
-    public void updateOnView(ArrayList<ScaleData> scaleDataList);
+    public void updateOnView(List<ScaleData> scaleDataList);
 }

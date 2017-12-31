@@ -31,10 +31,10 @@ public interface ScaleUserDAO {
     @Query("SELECT * FROM scaleuser")
     List<ScaleUser> getAll();
 
-    @Query("SELECT * FROM scaleuser WHERE id IS :id")
+    @Query("SELECT * FROM scaleuser WHERE id = :id")
     ScaleUser getById(int id);
 
-    @Query("SELECT * FROM scaleuser WHERE id IS :id")
+    @Query("SELECT * FROM scaleuser WHERE id = :id")
     ScaleUser loadById(int id);
 
     @Insert

@@ -186,7 +186,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     }
 
     @Override
-    public void updateOnView(ArrayList<ScaleData> scaleDataList)
+    public void updateOnView(List<ScaleData> scaleDataList)
     {
         generateGraphs();
     }

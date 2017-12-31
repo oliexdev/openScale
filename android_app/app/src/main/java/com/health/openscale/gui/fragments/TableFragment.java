@@ -68,6 +68,7 @@ import com.health.openscale.gui.views.WeightMeasurementView;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import lecho.lib.hellocharts.util.ChartUtils;
 
@@ -129,7 +130,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
     }
 
     @Override
-    public void updateOnView(ArrayList<ScaleData> scaleDataList)
+    public void updateOnView(List<ScaleData> scaleDataList)
     {
         tableDataView.setAdapter(new ListViewAdapter(new ArrayList<HashMap<Integer, String>>())); // delete all data in the table with an empty adapter array list
 

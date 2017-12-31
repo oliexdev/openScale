@@ -33,8 +33,8 @@ import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.DateTimeHelpers;
 
 import java.text.DateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 public class StatisticsFragment extends Fragment implements FragmentUpdateListener {
 
@@ -88,7 +88,7 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
     }
 
     @Override
-    public void updateOnView(ArrayList<ScaleData> scaleDataList) {
+    public void updateOnView(List<ScaleData> scaleDataList) {
         if (scaleDataList.isEmpty()) {
             lastScaleData = new ScaleData();
         } else {
@@ -105,7 +105,7 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
         updateGoal(scaleDataList);
     }
 
-    private void updateGoal(ArrayList<ScaleData> scaleDataList) {
+    private void updateGoal(List<ScaleData> scaleDataList) {
         ScaleData goalScaleData = new ScaleData();
         goalScaleData.setConvertedWeight(currentScaleUser.getGoalWeight(), currentScaleUser.getScaleUnit());
 
@@ -157,7 +157,7 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
         ); // currentScaleUser.goalDate
     }
 
-    private void updateStatistics(ArrayList<ScaleData> scaleDataList) {
+    private void updateStatistics(List<ScaleData> scaleDataList) {
         Calendar histDate = Calendar.getInstance();
         Calendar weekPastDate = Calendar.getInstance();
         Calendar monthPastDate = Calendar.getInstance();

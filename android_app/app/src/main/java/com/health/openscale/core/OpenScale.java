@@ -26,8 +26,12 @@ import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.health.openscale.R;
 import com.health.openscale.core.alarm.AlarmHandler;
 import com.health.openscale.core.bluetooth.BluetoothCommunication;
+import com.health.openscale.core.bodymetric.EstimatedFatMetric;
+import com.health.openscale.core.bodymetric.EstimatedLBWMetric;
+import com.health.openscale.core.bodymetric.EstimatedWaterMetric;
 import com.health.openscale.core.database.AppDatabase;
 import com.health.openscale.core.database.ScaleDatabase;
 import com.health.openscale.core.database.ScaleMeasurementDAO;
@@ -60,7 +64,7 @@ public class OpenScale {
     private ScaleUserDAO userDAO;
     private ScaleDatabase scaleDB;
     private ScaleUserDatabase scaleUserDB;
-    private ArrayList<ScaleData> scaleDataList;
+    private List<ScaleData> scaleDataList;
 
     private BluetoothCommunication btCom;
     private String btDeviceName;
@@ -144,7 +148,7 @@ public class OpenScale {
         userDAO.update(user);
     }
 
-    public ArrayList<ScaleData> getScaleDataList() {
+    public List<ScaleData> getScaleDataList() {
         return scaleDataList;
     }
 
@@ -155,35 +159,13 @@ public class OpenScale {
     }
 
     public int addScaleData(final ScaleData scaleData) {
-
-        AsyncTask.execute(new Runnable() {
-            @Override
-            public void run() {
-                Log.d("TEST", "ADD START");
-
-                measurementDAO.insert(scaleData);
-
-                Log.d("TEST", "ADD END");
-
-                Log.d("TEST", "READ ALL");
-
-                List<ScaleData> listScaleData = measurementDAO.getAll();
-
-                for(ScaleData nextScaleData : listScaleData) {
-                    Log.d("TEST", "DB : " + nextScaleData.getDateTime() + " Weight: " + nextScaleData.getWeight());
-                }
-            }
-        });
-
-
-        return -1;
-/*        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
         if (scaleData.getUserId() == -1) {
             if (prefs.getBoolean("smartUserAssign", false)) {
                 scaleData.setUserId(getSmartUserAssignment(scaleData.getWeight(), 15.0f));
             } else {
-                scaleData.setUserId(getSelectedScaleUser().id);
+                scaleData.setUserId(getSelectedScaleUser().getId());
             }
 
             // don't add scale data if no user is selected
@@ -210,16 +192,17 @@ public class OpenScale {
             scaleData.setFat(fatMetric.getFat(getScaleUser(scaleData.getUserId()), scaleData));
         }
 
-        if (scaleDB.insertEntry(scaleData)) {
+        if (measurementDAO.get(scaleData.getDateTime(), scaleData.getUserId()) == null) {
+            measurementDAO.insert(scaleData);
             ScaleUser scaleUser = getScaleUser(scaleData.getUserId());
 
-            String infoText = String.format(context.getString(R.string.info_new_data_added), scaleData.getConvertedWeight(scaleUser.scaleUnit), scaleUser.UNIT_STRING[scaleUser.scaleUnit], dateTimeFormat.format(scaleData.getDateTime()), scaleUser.userName);
+            String infoText = String.format(context.getString(R.string.info_new_data_added), scaleData.getConvertedWeight(scaleUser.getScaleUnit()), scaleUser.UNIT_STRING[scaleUser.getScaleUnit()], dateTimeFormat.format(scaleData.getDateTime()), scaleUser.getUserName());
             Toast.makeText(context, infoText, Toast.LENGTH_LONG).show();
             alarmHandler.entryChanged(context, scaleData);
             updateScaleData();
         }
 
-        return scaleData.getUserId();*/
+        return scaleData.getUserId();
     }
 
     private int getSmartUserAssignment(float weight, float range) {
@@ -259,7 +242,7 @@ public class OpenScale {
     }
 
     public void updateScaleData(ScaleData scaleData) {
-        scaleDB.updateEntry(scaleData.getId(), scaleData);
+        measurementDAO.update(scaleData);
         alarmHandler.entryChanged(context, scaleData);
 
         updateScaleData();
@@ -305,7 +288,7 @@ public class OpenScale {
 
                 newScaleData.setUserId(getSelectedScaleUser().getId());
 
-                scaleDB.insertEntry(newScaleData);
+                measurementDAO.insert(newScaleData);
 
                 line = csvReader.readLine();
             }
@@ -414,7 +397,7 @@ public class OpenScale {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         int selectedUserId  = prefs.getInt("selectedUserId", -1);
 
-        scaleDataList = scaleDB.getScaleDataList(selectedUserId);
+        scaleDataList = measurementDAO.getAll(selectedUserId);
 
         fragment.updateOnView(scaleDataList);
     }
@@ -424,7 +407,7 @@ public class OpenScale {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         int selectedUserId  = prefs.getInt("selectedUserId", -1);
 
-        scaleDataList = scaleDB.getScaleDataList(selectedUserId);
+        scaleDataList = measurementDAO.getAll(selectedUserId);
 
         for (FragmentUpdateListener fragment : fragmentList) {
             if (fragment != null) {

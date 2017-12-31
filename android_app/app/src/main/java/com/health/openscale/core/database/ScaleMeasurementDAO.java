@@ -24,12 +24,16 @@ import android.arch.persistence.room.Update;
 
 import com.health.openscale.core.datatypes.ScaleData;
 
+import java.util.Date;
 import java.util.List;
 
 @Dao
 public interface ScaleMeasurementDAO {
-    @Query("SELECT * FROM scaledata")
-    List<ScaleData> getAll();
+    @Query("SELECT * FROM scaledata WHERE datetime = :datetime AND userId = :userId")
+    ScaleData get(Date datetime, int userId);
+
+    @Query("SELECT * FROM scaledata WHERE userId = :userId")
+    List<ScaleData> getAll(int userId);
 
     @Query("SELECT * FROM scaledata WHERE id IS :id")
     ScaleData loadById(int id);
