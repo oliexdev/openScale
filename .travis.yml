@@ -30,8 +30,8 @@ deploy:
   api-key: $GITHUB_API_KEY
   file: openScale-dev-build.apk
   skip_cleanup: true
-  name: "openScale dev build"
-  body: "Automatically openScale dev build by Travis CI"
+  name: openScale development build
+  body: Automatic openScale development build of $TRAVIS_BRANCH ($TRAVIS_COMMIT) built by Travis CI on $(date +'%F %T %Z').
   prerelease: true
   overwrite: true
   target_commitish: $TRAVIS_COMMIT
