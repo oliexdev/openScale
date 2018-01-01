@@ -85,8 +85,8 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     private Calendar calYears;
     private Calendar calLastSelected;
 
-    private ArrayList<ScaleData> scaleDataList;
-    private ArrayList<ScaleData> pointIndexScaleDataList;
+    private List<ScaleData> scaleDataList;
+    private List<ScaleData> pointIndexScaleDataList;
 
     public GraphFragment() {
         calYears = Calendar.getInstance();

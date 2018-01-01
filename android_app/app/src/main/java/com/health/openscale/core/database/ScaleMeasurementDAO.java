@@ -17,7 +17,6 @@
 package com.health.openscale.core.database;
 
 import android.arch.persistence.room.Dao;
-import android.arch.persistence.room.Delete;
 import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Update;
@@ -29,24 +28,36 @@ import java.util.List;
 
 @Dao
 public interface ScaleMeasurementDAO {
-    @Query("SELECT * FROM scaledata WHERE datetime = :datetime AND userId = :userId")
+    @Query("SELECT * FROM scaledata WHERE datetime = :datetime AND userId = :userId AND enabled = 1")
     ScaleData get(Date datetime, int userId);
 
-    @Query("SELECT * FROM scaledata WHERE userId = :userId")
+    @Query("SELECT * FROM scaledata WHERE id = :id AND enabled = 1")
+    ScaleData get(int id);
+
+    @Query("SELECT * FROM scaledata WHERE datetime < (SELECT datetime FROM scaledata WHERE id = :id) AND userId = :userId AND enabled = 1 ORDER BY datetime DESC LIMIT 0,1")
+    ScaleData getPrevious(int id, int userId);
+
+    @Query("SELECT * FROM scaledata WHERE datetime > (SELECT datetime FROM scaledata WHERE id = :id) AND userId = :userId AND enabled = 1 LIMIT 0,1")
+    ScaleData getNext(int id, int userId);
+
+    @Query("SELECT * FROM scaledata WHERE userId = :userId AND enabled = 1 ORDER BY datetime DESC")
     List<ScaleData> getAll(int userId);
 
-    @Query("SELECT * FROM scaledata WHERE id IS :id")
-    ScaleData loadById(int id);
+    @Query("SELECT * FROM scaledata WHERE datetime >= :startYear AND datetime < :endYear AND userId = :userId AND enabled = 1 ORDER BY datetime DESC")
+    List<ScaleData> getAllInRange(Date startYear, Date endYear, int userId);
 
     @Insert
     void insert(ScaleData measurement);
 
     @Insert
-    void insertAll(ScaleData... measurements);
+    void insertAll(List<ScaleData> measurementList);
 
     @Update
     void update(ScaleData measurement);
 
-    @Delete
-    void delete(ScaleData measurement);
+    @Query("UPDATE scaledata SET enabled = 0 WHERE id = :id")
+    void delete(int id);
+
+    @Query("DELETE FROM scaledata WHERE userId = :userId")
+    void deleteAll(int userId);
 }

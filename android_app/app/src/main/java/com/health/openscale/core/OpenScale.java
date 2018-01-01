@@ -51,6 +51,7 @@ import java.io.OutputStreamWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -87,6 +88,7 @@ public class OpenScale {
         measurementDAO = appDB.measurementDAO();
         userDAO = appDB.userDAO();
 
+        migrateSQLtoRoom();
         updateScaleData();
     }
 
@@ -96,6 +98,20 @@ public class OpenScale {
         }
 
         return instance;
+    }
+
+    private void migrateSQLtoRoom() {
+        List<ScaleUser> scaleUserList = scaleUserDB.getScaleUserList();
+
+        if (scaleDB.getReadableDatabase().getVersion() == 6 && userDAO.getAll().isEmpty() && !scaleUserList.isEmpty()) {
+            Toast.makeText(context, "Migrating old SQL database to new database format...", Toast.LENGTH_LONG).show();
+            userDAO.insertAll(scaleUserList);
+
+            for (ScaleUser user : scaleUserList) {
+                List<ScaleData> scaleDataList = scaleDB.getScaleDataList(user.getId());
+                measurementDAO.insertAll(scaleDataList);
+            }
+        }
     }
 
     public void addScaleUser(final ScaleUser user)
@@ -115,7 +131,7 @@ public class OpenScale {
 
     public ScaleUser getScaleUser(int userId)
     {
-        return userDAO.getById(userId);
+        return userDAO.get(userId);
     }
 
     public ScaleUser getSelectedScaleUser()
@@ -130,7 +146,7 @@ public class OpenScale {
                 return scaleUser;
             }
 
-            scaleUser = userDAO.getById(selectedUserId);
+            scaleUser = userDAO.get(selectedUserId);
         } catch (Exception e) {
             Toast.makeText(context, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
@@ -140,7 +156,7 @@ public class OpenScale {
 
     public void deleteScaleUser(int id)
     {
-        userDAO.delete(userDAO.getById(id));
+        userDAO.delete(userDAO.get(id));
     }
 
     public void updateScaleUser(ScaleUser user)
@@ -153,9 +169,15 @@ public class OpenScale {
     }
 
 
-    public ScaleData[] getTupleScaleData(long id)
+    public ScaleData[] getTupleScaleData(int id)
     {
-        return scaleDB.getTupleDataEntry(getSelectedScaleUser().getId(), id);
+        ScaleData[]  tupleScaleData = new ScaleData[3];
+
+        tupleScaleData[0] = measurementDAO.getPrevious(id, getSelectedScaleUser().getId());
+        tupleScaleData[1] = measurementDAO.get(id);
+        tupleScaleData[2] = measurementDAO.getNext(id, getSelectedScaleUser().getId());
+
+        return tupleScaleData;
     }
 
     public int addScaleData(final ScaleData scaleData) {
@@ -206,22 +228,22 @@ public class OpenScale {
     }
 
     private int getSmartUserAssignment(float weight, float range) {
-        List<ScaleUser> scaleUser = getScaleUserList();
+        List<ScaleUser> scaleUsers = getScaleUserList();
         Map<Float, Integer> inRangeWeights = new TreeMap<>();
 
-        for (int i = 0; i < scaleUser.size(); i++) {
-            ArrayList<ScaleData> scaleUserData = scaleDB.getScaleDataList(scaleUser.get(i).getId());
+        for (int i = 0; i < scaleUsers.size(); i++) {
+            List<ScaleData> scaleUserData = measurementDAO.getAll(scaleUsers.get(i).getId());
 
             float lastWeight = 0;
 
             if (scaleUserData.size() > 0) {
                 lastWeight = scaleUserData.get(0).getWeight();
             } else {
-                lastWeight = scaleUser.get(i).getInitialWeight();
+                lastWeight = scaleUsers.get(i).getInitialWeight();
             }
 
             if ((lastWeight - range) <= weight && (lastWeight + range) >= weight) {
-                inRangeWeights.put(Math.abs(lastWeight - weight), scaleUser.get(i).getId());
+                inRangeWeights.put(Math.abs(lastWeight - weight), scaleUsers.get(i).getId());
             }
         }
 
@@ -248,9 +270,9 @@ public class OpenScale {
         updateScaleData();
     }
 
-    public void deleteScaleData(long id)
+    public void deleteScaleData(int id)
     {
-        scaleDB.deleteEntry(id);
+        measurementDAO.delete(id);
 
         updateScaleData();
     }
@@ -339,7 +361,7 @@ public class OpenScale {
     public void clearScaleData(int userId) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         prefs.edit().putInt("uniqueNumber", 0x00).commit();
-        scaleDB.clearScaleData(userId);
+        measurementDAO.deleteAll(userId);
 
         updateScaleData();
     }
@@ -348,21 +370,47 @@ public class OpenScale {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         int selectedUserId  = prefs.getInt("selectedUserId", -1);
 
-        return scaleDB.getCountsOfAllMonth(selectedUserId, year);
+        int [] numOfMonth = new int[12];
+
+        Calendar startCalender = Calendar.getInstance();
+        Calendar endCalender = Calendar.getInstance();
+
+        for (int i=0; i<12; i++) {
+            startCalender.set(year, i, 1, 0, 0, 0);
+            endCalender.set(year, i, 1, 0, 0, 0);
+            endCalender.add(Calendar.MONTH, 1);
+
+            numOfMonth[i] = measurementDAO.getAllInRange(startCalender.getTime(), endCalender.getTime(), selectedUserId).size();
+        }
+
+        return numOfMonth;
     }
 
-    public ArrayList<ScaleData> getScaleDataOfMonth(int year, int month) {
+    public List<ScaleData> getScaleDataOfMonth(int year, int month) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         int selectedUserId  = prefs.getInt("selectedUserId", -1);
 
-        return scaleDB.getScaleDataOfMonth(selectedUserId, year, month);
+        Calendar startCalender = Calendar.getInstance();
+        Calendar endCalender = Calendar.getInstance();
+
+        startCalender.set(year, month, 1, 0, 0, 0);
+        endCalender.set(year, month, 1, 0, 0, 0);
+        endCalender.add(Calendar.MONTH, 1);
+
+        return measurementDAO.getAllInRange(startCalender.getTime(), endCalender.getTime(), selectedUserId);
     }
 
-    public ArrayList<ScaleData> getScaleDataOfYear(int year) {
+    public List<ScaleData> getScaleDataOfYear(int year) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         int selectedUserId  = prefs.getInt("selectedUserId", -1);
 
-        return scaleDB.getScaleDataOfYear(selectedUserId, year);
+        Calendar startCalender = Calendar.getInstance();
+        Calendar endCalender = Calendar.getInstance();
+
+        startCalender.set(year, Calendar.JANUARY, 1, 0, 0, 0);
+        endCalender.set(year+1, Calendar.JANUARY, 1, 0, 0, 0);
+
+        return measurementDAO.getAllInRange(startCalender.getTime(), endCalender.getTime(), selectedUserId);
     }
 
     public boolean startSearchingForBluetooth(String deviceName, Handler callbackBtHandler) {

@@ -37,14 +37,14 @@ public class ScaleUserDatabase extends SQLiteOpenHelper {
 
     private static final String TABLE_NAME = "scaleuserdata";
     private static final String COLUMN_NAME_ID = "id";
-    private static final String COLUMN_NAME_USER_NAME = "userName";
+    private static final String COLUMN_NAME_USER_NAME = "user_name";
     private static final String COLUMN_NAME_BIRTHDAY = "birthday";
-    private static final String COLUMN_NAME_BODY_HEIGHT = "bodyHeight";
-    private static final String COLUMN_NAME_SCALE_UNIT = "scaleUnit";
+    private static final String COLUMN_NAME_BODY_HEIGHT = "body_height";
+    private static final String COLUMN_NAME_SCALE_UNIT = "scale_unit";
     private static final String COLUMN_NAME_GENDER = "gender";
     private static final String COLUMN_NAME_INITIAL_WEIGHT = "initial_weight";
-    private static final String COLUMN_NAME_GOAL_WEIGHT = "goalWeight";
-    private static final String COLUMN_NAME_GOAL_DATE = "goalDate";
+    private static final String COLUMN_NAME_GOAL_WEIGHT = "goal_weight";
+    private static final String COLUMN_NAME_GOAL_DATE = "goal_date";
 
     private static final String SQL_CREATE_ENTRIES =
             "CREATE TABLE " + TABLE_NAME + " (" +

@@ -464,7 +464,7 @@ public class DataEntryActivity extends Activity {
         }
 
         void deleteMeasurement() {
-            long delId = id;
+            int delId = id;
 
             boolean hasNext = moveLeft();
 

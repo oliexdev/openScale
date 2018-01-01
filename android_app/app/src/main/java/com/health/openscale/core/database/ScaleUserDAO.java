@@ -32,16 +32,13 @@ public interface ScaleUserDAO {
     List<ScaleUser> getAll();
 
     @Query("SELECT * FROM scaleuser WHERE id = :id")
-    ScaleUser getById(int id);
-
-    @Query("SELECT * FROM scaleuser WHERE id = :id")
-    ScaleUser loadById(int id);
+    ScaleUser get(int id);
 
     @Insert
     void insert(ScaleUser user);
 
     @Insert
-    void insertAll(ScaleUser... users);
+    void insertAll(List<ScaleUser> userList);
 
     @Update
     void update(ScaleUser user);

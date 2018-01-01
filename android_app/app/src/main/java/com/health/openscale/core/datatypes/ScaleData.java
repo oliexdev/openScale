@@ -32,6 +32,8 @@ public class ScaleData {
 
     @ColumnInfo(name = "userId")
     private int userId;
+    @ColumnInfo(name = "enabled")
+    private boolean enabled;
     @ColumnInfo(name = "datetime")
     private Date dateTime;
     @ColumnInfo(name = "weight")
@@ -56,6 +58,7 @@ public class ScaleData {
     public ScaleData()
     {
         userId = -1;
+        enabled = true;
         dateTime = new Date();
         weight = 0.0f;
         fat = 0.0f;
@@ -82,6 +85,14 @@ public class ScaleData {
 
     public void setUserId(int user_id) {
         this.userId = user_id;
+    }
+
+    public boolean getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
     public Date getDateTime() {
