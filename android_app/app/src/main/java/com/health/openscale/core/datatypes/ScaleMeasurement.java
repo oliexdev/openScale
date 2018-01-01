@@ -18,11 +18,12 @@ package com.health.openscale.core.datatypes;
 
 import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.Index;
 import android.arch.persistence.room.PrimaryKey;
 
 import java.util.Date;
 
-@Entity(tableName = "scaleMeasurements")
+@Entity(tableName = "scaleMeasurements", indices = {@Index(value = {"datetime"}, unique = true)})
 public class ScaleMeasurement {
     private static float KG_LB = 2.20462f;
     private static float KG_ST = 0.157473f;

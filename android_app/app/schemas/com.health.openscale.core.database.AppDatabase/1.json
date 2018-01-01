@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "410f7d8b5658d42485fff50486fde7f5",
+    "identityHash": "f7147b87965bad6c8417519fa7d0f7d2",
     "entities": [
       {
         "tableName": "scaleMeasurements",
@@ -93,7 +93,16 @@
           ],
           "autoGenerate": true
         },
-        "indices": [],
+        "indices": [
+          {
+            "name": "index_scaleMeasurements_datetime",
+            "unique": true,
+            "columnNames": [
+              "datetime"
+            ],
+            "createSql": "CREATE UNIQUE INDEX `index_scaleMeasurements_datetime` ON `${TABLE_NAME}` (`datetime`)"
+          }
+        ],
         "foreignKeys": []
       },
       {
@@ -167,7 +176,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"410f7d8b5658d42485fff50486fde7f5\")"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"f7147b87965bad6c8417519fa7d0f7d2\")"
     ]
   }
 }
