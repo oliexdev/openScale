@@ -8,10 +8,4 @@
         android:icon="@drawable/ic_bluetooth_disabled"
         android:title="@string/action_bluetooth_status"
         app:showAsAction="ifRoom"/>
-
-    <item
-        android:id="@+id/action_general_settings"
-        android:orderInCategory="100"
-        android:title="@string/action_settings"
-        app:showAsAction="never"/>
 </menu>

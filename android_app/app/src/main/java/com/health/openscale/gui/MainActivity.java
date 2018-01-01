@@ -57,12 +57,12 @@ public class MainActivity extends AppCompatActivity {
     private static boolean firstAppStart = true;
     private static int bluetoothStatusIcon = R.drawable.ic_bluetooth_disabled;
     private static MenuItem bluetoothStatus;
+    private static CharSequence fragmentTitle;
 
     private DrawerLayout drawerLayout;
     private Toolbar toolbar;
     private NavigationView navDrawer;
     private ActionBarDrawerToggle drawerToggle;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,7 +104,10 @@ public class MainActivity extends AppCompatActivity {
         // Initial first fragment
         if(savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment_content,new OverviewFragment()).commit();
+            fragmentTitle = getString(R.string.title_overview);
         }
+
+        setTitle(fragmentTitle);
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -149,6 +152,9 @@ public class MainActivity extends AppCompatActivity {
             case R.id.nav_statistic:
                 fragmentClass = StatisticsFragment.class;
                 break;
+            case R.id.nav_settings:
+                startActivityForResult(new Intent(this, SettingsActivity.class), 1);
+                return;
             default:
                 fragmentClass = OverviewFragment.class;
         }
@@ -168,7 +174,8 @@ public class MainActivity extends AppCompatActivity {
         menuItem.setChecked(true);
 
         // Set action bar title
-        //setTitle(menuItem.getTitle());
+        setTitle(menuItem.getTitle());
+        fragmentTitle = menuItem.getTitle();
 
         // Close the navigation drawer
         drawerLayout.closeDrawers();
@@ -184,10 +191,6 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case android.R.id.home:
                 drawerLayout.openDrawer(GravityCompat.START);
-                return true;
-            case R.id.action_general_settings:
-                Intent intent = new Intent(this, SettingsActivity.class);
-                startActivityForResult(intent, 1);
                 return true;
             case R.id.action_bluetooth_status:
                 invokeSearchBluetoothDevice();
