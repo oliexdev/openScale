@@ -9,18 +9,24 @@ android:
     - android-26
     - extra-android-m2repository
 
+before_deploy:
+  - ln -s app/build/outputs/apk/debug/app-debug.apk openScale-dev-build.apk
+  - git tag -f travis-dev-build
+  - git remote add gh https://${TRAVIS_REPO_SLUG%/*}:${GITHUB_API_KEY}@github.com/${TRAVIS_REPO_SLUG}.git
+  - git push -f gh travis-dev-build
+  - git remote remove gh
+
 deploy:
   provider: releases
   api-key: $GITHUB_API_KEY
-  file: $HOME/openScale-dev-build.apk
+  file: openScale-dev-build.apk
   skip_cleanup: true
   name: "openScale dev build"
   body: "Automatically openScale dev build by Travis CI"
   prerelease: true
   overwrite: true
-
-after_success:
- - chmod +x ./upload_apk.sh
- - ./upload_apk.sh
+  target_commitish: $TRAVIS_COMMIT
+  on:
+    branch: travis
 
 script: cd android_app && ./gradlew testDebug assembleDebug
