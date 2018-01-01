@@ -9,6 +9,10 @@ android:
     - android-26
     - extra-android-m2repository
 
+branches:
+  except:
+    - travis-dev-build
+
 before_script:
   - sed -i -re 's/(versionName ".*)"/\1-dev_'${TRAVIS_COMMIT:0:8}'"/' android_app/app/build.gradle
 
