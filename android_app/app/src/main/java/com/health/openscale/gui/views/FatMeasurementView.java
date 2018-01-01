@@ -20,7 +20,7 @@ import android.content.SharedPreferences;
 import android.support.v4.content.ContextCompat;
 
 import com.health.openscale.R;
-import com.health.openscale.core.datatypes.ScaleData;
+import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 
@@ -41,17 +41,17 @@ public class FatMeasurementView extends MeasurementView {
     }
 
     @Override
-    public void updateValue(ScaleData updateData) {
+    public void updateValue(ScaleMeasurement newMeasurement) {
         if (estimateFatEnable && getMeasurementMode() == MeasurementViewMode.ADD) {
-            setValueOnView(updateData.getDateTime(), (getContext().getString(R.string.label_automatic)));
+            setValueOnView(newMeasurement.getDateTime(), (getContext().getString(R.string.label_automatic)));
         } else {
-            setValueOnView(updateData.getDateTime(), updateData.getFat());
+            setValueOnView(newMeasurement.getDateTime(), newMeasurement.getFat());
         }
     }
 
     @Override
-    public void updateDiff(ScaleData updateData, ScaleData lastData) {
-        setDiffOnView(updateData.getFat(), lastData.getFat());
+    public void updateDiff(ScaleMeasurement newMeasurement, ScaleMeasurement lastMeasurement) {
+        setDiffOnView(newMeasurement.getFat(), lastMeasurement.getFat());
     }
 
     @Override

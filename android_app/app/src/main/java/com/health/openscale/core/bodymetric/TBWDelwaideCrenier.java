@@ -15,7 +15,7 @@
 */
 package com.health.openscale.core.bodymetric;
 
-import com.health.openscale.core.datatypes.ScaleData;
+import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 
 public class TBWDelwaideCrenier extends EstimatedWaterMetric {
@@ -25,7 +25,7 @@ public class TBWDelwaideCrenier extends EstimatedWaterMetric {
     }
 
     @Override
-    public float getWater(ScaleUser user, ScaleData data) {
+    public float getWater(ScaleUser user, ScaleMeasurement data) {
         return 0.72f * (-1.976f + 0.907f * data.getWeight());
     }
 }

@@ -44,7 +44,7 @@ import android.widget.Toast;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.bluetooth.BluetoothCommunication;
-import com.health.openscale.core.datatypes.ScaleData;
+import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.gui.activities.SettingsActivity;
 import com.health.openscale.gui.activities.UserSettingsActivity;
 import com.health.openscale.gui.fragments.GraphFragment;
@@ -274,7 +274,7 @@ public class MainActivity extends AppCompatActivity {
             switch (btStatusCode) {
                 case BT_RETRIEVE_SCALE_DATA:
                     setBluetoothStatusIcon(R.drawable.ic_bluetooth_connection_success);
-                    ScaleData scaleBtData = (ScaleData) msg.obj;
+                    ScaleMeasurement scaleBtData = (ScaleMeasurement) msg.obj;
 
                     scaleBtData.setConvertedWeight(scaleBtData.getWeight(), OpenScale.getInstance(getApplicationContext()).getSelectedScaleUser().getScaleUnit());
 

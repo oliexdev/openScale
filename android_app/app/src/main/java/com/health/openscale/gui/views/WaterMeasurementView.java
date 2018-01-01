@@ -20,7 +20,7 @@ import android.content.SharedPreferences;
 import android.support.v4.content.ContextCompat;
 
 import com.health.openscale.R;
-import com.health.openscale.core.datatypes.ScaleData;
+import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 
@@ -41,17 +41,17 @@ public class WaterMeasurementView extends MeasurementView {
     }
 
     @Override
-    public void updateValue(ScaleData updateData) {
+    public void updateValue(ScaleMeasurement newMeasurement) {
         if (estimateWaterEnable && getMeasurementMode() == MeasurementViewMode.ADD) {
-            setValueOnView(updateData.getDateTime(), (getContext().getString(R.string.label_automatic)));
+            setValueOnView(newMeasurement.getDateTime(), (getContext().getString(R.string.label_automatic)));
         } else {
-            setValueOnView(updateData.getDateTime(), updateData.getWater());
+            setValueOnView(newMeasurement.getDateTime(), newMeasurement.getWater());
         }
     }
 
     @Override
-    public void updateDiff(ScaleData updateData, ScaleData lastData) {
-        setDiffOnView(updateData.getWater(), lastData.getWater());
+    public void updateDiff(ScaleMeasurement newMeasurement, ScaleMeasurement lastMeasurement) {
+        setDiffOnView(newMeasurement.getWater(), lastMeasurement.getWater());
     }
 
     @Override

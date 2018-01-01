@@ -19,7 +19,7 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
 
-import com.health.openscale.core.datatypes.ScaleData;
+import com.health.openscale.core.datatypes.ScaleMeasurement;
 
 import java.util.Date;
 import java.util.UUID;
@@ -33,11 +33,11 @@ public class BluetoothMedisanaBS444 extends BluetoothCommunication {
     private final UUID CUSTOM5_MEASUREMENT_CHARACTERISTIC = UUID.fromString("00008a82-0000-1000-8000-00805f9b34fb"); // indication, read-only
     private final UUID WEIGHT_MEASUREMENT_CONFIG = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
 
-    private ScaleData btScaleData;
+    private ScaleMeasurement btScaleMeasurement;
 
     public BluetoothMedisanaBS444(Context context) {
         super(context);
-        btScaleData = new ScaleData();
+        btScaleMeasurement = new ScaleMeasurement();
     }
 
     @Override
@@ -119,7 +119,7 @@ public class BluetoothMedisanaBS444 extends BluetoothCommunication {
         if (gattCharacteristic.getUuid().equals(FEATURE_MEASUREMENT_CHARACTERISTIC)) {
             parseFeatureData(data);
 
-            addScaleData(btScaleData);
+            addScaleData(btScaleMeasurement);
         }
     }
 
@@ -131,16 +131,16 @@ public class BluetoothMedisanaBS444 extends BluetoothCommunication {
         unix_timestamp += 1262304000; // +40 years because unix time starts in year 1970
         btDate.setTime(unix_timestamp*1000); // multiply with 1000 to get milliseconds
 
-        btScaleData.setDateTime(btDate);
-        btScaleData.setWeight(weight);
+        btScaleMeasurement.setDateTime(btDate);
+        btScaleMeasurement.setWeight(weight);
     }
 
     private void parseFeatureData(byte[] featureData) {
         //btScaleData.setKCal(((featureData[7] & 0xFF) << 8) | (featureData[6] & 0xFF));
-        btScaleData.setFat(decodeFeature(featureData[8], featureData[9]));
-        btScaleData.setWater(decodeFeature(featureData[10], featureData[11]));
-        btScaleData.setMuscle(decodeFeature(featureData[12], featureData[13]));
-        btScaleData.setBone(decodeFeature(featureData[14], featureData[15]));
+        btScaleMeasurement.setFat(decodeFeature(featureData[8], featureData[9]));
+        btScaleMeasurement.setWater(decodeFeature(featureData[10], featureData[11]));
+        btScaleMeasurement.setMuscle(decodeFeature(featureData[12], featureData[13]));
+        btScaleMeasurement.setBone(decodeFeature(featureData[14], featureData[15]));
     }
 
     private float decodeFeature(byte highByte, byte lowByte) {

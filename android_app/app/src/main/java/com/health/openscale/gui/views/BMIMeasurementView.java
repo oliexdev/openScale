@@ -20,7 +20,7 @@ import android.content.SharedPreferences;
 import android.support.v4.content.ContextCompat;
 
 import com.health.openscale.R;
-import com.health.openscale.core.datatypes.ScaleData;
+import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 
@@ -36,13 +36,13 @@ public class BMIMeasurementView extends MeasurementView {
     }
 
     @Override
-    public void updateValue(ScaleData updateData) {
-        setValueOnView(updateData.getDateTime(), updateData.getBMI(getScaleUser().getBodyHeight()));
+    public void updateValue(ScaleMeasurement newMeasurement) {
+        setValueOnView(newMeasurement.getDateTime(), newMeasurement.getBMI(getScaleUser().getBodyHeight()));
     }
 
     @Override
-    public void updateDiff(ScaleData updateData, ScaleData lastData) {
-        setDiffOnView(updateData.getBMI(getScaleUser().getBodyHeight()), lastData.getBMI(getScaleUser().getBodyHeight()));
+    public void updateDiff(ScaleMeasurement newMeasurement, ScaleMeasurement lastMeasurement) {
+        setDiffOnView(newMeasurement.getBMI(getScaleUser().getBodyHeight()), lastMeasurement.getBMI(getScaleUser().getBodyHeight()));
     }
 
     @Override

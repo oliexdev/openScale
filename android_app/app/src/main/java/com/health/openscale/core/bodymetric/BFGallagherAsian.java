@@ -15,7 +15,7 @@
 */
 package com.health.openscale.core.bodymetric;
 
-import com.health.openscale.core.datatypes.ScaleData;
+import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 
 public class BFGallagherAsian extends EstimatedFatMetric {
@@ -25,7 +25,7 @@ public class BFGallagherAsian extends EstimatedFatMetric {
     }
 
     @Override
-    public float getFat(ScaleUser user, ScaleData data) {
+    public float getFat(ScaleUser user, ScaleMeasurement data) {
         if (user.isMale()) {
             // asian male
             return 51.9f - 740.0f * (1.0f / data.getBMI(user.getBodyHeight())) + 0.029f * user.getAge(data.getDateTime());

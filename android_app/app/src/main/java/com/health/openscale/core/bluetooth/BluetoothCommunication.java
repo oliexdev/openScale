@@ -27,7 +27,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.util.Log;
 
-import com.health.openscale.core.datatypes.ScaleData;
+import com.health.openscale.core.datatypes.ScaleMeasurement;
 
 import java.util.LinkedList;
 import java.util.Queue;
@@ -137,10 +137,10 @@ public abstract class BluetoothCommunication {
     /**
      * Add a new scale data to openScale
      *
-     * @param scaleData the scale data that should be added to openScale
+     * @param scaleMeasurement the scale data that should be added to openScale
      */
-    protected void addScaleData(ScaleData scaleData) {
-        callbackBtHandler.obtainMessage(BT_STATUS_CODE.BT_RETRIEVE_SCALE_DATA.ordinal(), scaleData).sendToTarget();
+    protected void addScaleData(ScaleMeasurement scaleMeasurement) {
+        callbackBtHandler.obtainMessage(BT_STATUS_CODE.BT_RETRIEVE_SCALE_DATA.ordinal(), scaleMeasurement).sendToTarget();
     }
 
     /**

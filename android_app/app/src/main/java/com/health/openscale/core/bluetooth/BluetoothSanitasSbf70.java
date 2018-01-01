@@ -24,7 +24,7 @@ import android.util.Log;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
-import com.health.openscale.core.datatypes.ScaleData;
+import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 
 import java.io.ByteArrayOutputStream;
@@ -424,7 +424,7 @@ public class BluetoothSanitasSbf70 extends BluetoothCommunication {
 
             if (current_item % 2 == 0) {
                 try {
-                    ScaleData parsedData = parseScaleData(receivedScaleData.toByteArray());
+                    ScaleMeasurement parsedData = parseScaleData(receivedScaleData.toByteArray());
                     addScaleData(parsedData);
                 } catch (ParseException e) {
                     Log.d(TAG, "Could not parse byte array: " + byteInHex(receivedScaleData.toByteArray()));
@@ -497,7 +497,7 @@ public class BluetoothSanitasSbf70 extends BluetoothCommunication {
 
             if (current_item == max_items) {
                 // received all parts
-                ScaleData parsedData = null;
+                ScaleMeasurement parsedData = null;
                 try {
                     parsedData = parseScaleData(receivedScaleData.toByteArray());
                     addScaleData(parsedData);
@@ -527,11 +527,11 @@ public class BluetoothSanitasSbf70 extends BluetoothCommunication {
         });
     }
 
-    private ScaleData parseScaleData(byte[] data) throws ParseException {
+    private ScaleMeasurement parseScaleData(byte[] data) throws ParseException {
         if (data.length != 11 + 11)
             throw new ParseException("Parse scala data: unexpected length", 0);
 
-        ScaleData receivedMeasurement = new ScaleData();
+        ScaleMeasurement receivedMeasurement = new ScaleMeasurement();
 
         // Parse timestamp
         long timestamp = ByteBuffer.wrap(data, 0, 4).getInt() * 1000L;

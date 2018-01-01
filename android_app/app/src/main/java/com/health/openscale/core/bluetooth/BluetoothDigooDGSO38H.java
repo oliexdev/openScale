@@ -22,7 +22,7 @@ import android.content.Context;
 import android.util.Log;
 
 import com.health.openscale.core.OpenScale;
-import com.health.openscale.core.datatypes.ScaleData;
+import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 
 import java.util.Date;
@@ -130,7 +130,7 @@ public class BluetoothDigooDGSO38H extends BluetoothCommunication {
                 configBytes[15] = (byte)(checksum & 0xFF);
                 writeBytes(WEIGHT_MEASUREMENT_SERVICE, EXTRA_MEASUREMENT_CHARACTERISTIC, configBytes);
             } else if (allValues) {
-                ScaleData scaleBtData = new ScaleData();
+                ScaleMeasurement scaleBtData = new ScaleMeasurement();
                 weight = (float) (((weightBytes[3] & 0xFF) << 8) | (weightBytes[4] & 0xFF)) / 100.0f;
                 fat = (float) (((weightBytes[6] & 0xFF) << 8) | (weightBytes[7] & 0xFF)) / 10.0f;
                 if (Math.abs(fat - 0.0) < 0.00001) {

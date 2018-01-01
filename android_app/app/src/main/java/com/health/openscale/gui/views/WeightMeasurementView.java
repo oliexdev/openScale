@@ -20,7 +20,7 @@ import android.content.SharedPreferences;
 import android.support.v4.content.ContextCompat;
 
 import com.health.openscale.R;
-import com.health.openscale.core.datatypes.ScaleData;
+import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
@@ -32,13 +32,13 @@ public class WeightMeasurementView extends MeasurementView {
     }
 
     @Override
-    public void updateValue(ScaleData updateData) {
-        setValueOnView(updateData.getDateTime(), updateData.getConvertedWeight(getScaleUser().getScaleUnit()));
+    public void updateValue(ScaleMeasurement newMeasurement) {
+        setValueOnView(newMeasurement.getDateTime(), newMeasurement.getConvertedWeight(getScaleUser().getScaleUnit()));
     }
 
     @Override
-    public void updateDiff(ScaleData updateData, ScaleData lastData) {
-        setDiffOnView(updateData.getConvertedWeight(getScaleUser().getScaleUnit()), lastData.getConvertedWeight(getScaleUser().getScaleUnit()));
+    public void updateDiff(ScaleMeasurement newMeasurement, ScaleMeasurement lastMeasurement) {
+        setDiffOnView(newMeasurement.getConvertedWeight(getScaleUser().getScaleUnit()), lastMeasurement.getConvertedWeight(getScaleUser().getScaleUnit()));
     }
 
     @Override

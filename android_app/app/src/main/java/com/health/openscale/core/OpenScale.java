@@ -37,7 +37,7 @@ import com.health.openscale.core.database.ScaleDatabase;
 import com.health.openscale.core.database.ScaleMeasurementDAO;
 import com.health.openscale.core.database.ScaleUserDAO;
 import com.health.openscale.core.database.ScaleUserDatabase;
-import com.health.openscale.core.datatypes.ScaleData;
+import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.gui.fragments.FragmentUpdateListener;
 
@@ -65,7 +65,7 @@ public class OpenScale {
     private ScaleUserDAO userDAO;
     private ScaleDatabase scaleDB;
     private ScaleUserDatabase scaleUserDB;
-    private List<ScaleData> scaleDataList;
+    private List<ScaleMeasurement> scaleMeasurementList;
 
     private BluetoothCommunication btCom;
     private String btDeviceName;
@@ -108,8 +108,8 @@ public class OpenScale {
             userDAO.insertAll(scaleUserList);
 
             for (ScaleUser user : scaleUserList) {
-                List<ScaleData> scaleDataList = scaleDB.getScaleDataList(user.getId());
-                measurementDAO.insertAll(scaleDataList);
+                List<ScaleMeasurement> scaleMeasurementList = scaleDB.getScaleDataList(user.getId());
+                measurementDAO.insertAll(scaleMeasurementList);
             }
         }
     }
@@ -164,14 +164,14 @@ public class OpenScale {
         userDAO.update(user);
     }
 
-    public List<ScaleData> getScaleDataList() {
-        return scaleDataList;
+    public List<ScaleMeasurement> getScaleMeasurementList() {
+        return scaleMeasurementList;
     }
 
 
-    public ScaleData[] getTupleScaleData(int id)
+    public ScaleMeasurement[] getTupleScaleData(int id)
     {
-        ScaleData[]  tupleScaleData = new ScaleData[3];
+        ScaleMeasurement[]  tupleScaleData = new ScaleMeasurement[3];
 
         tupleScaleData[0] = measurementDAO.getPrevious(id, getSelectedScaleUser().getId());
         tupleScaleData[1] = measurementDAO.get(id);
@@ -180,18 +180,18 @@ public class OpenScale {
         return tupleScaleData;
     }
 
-    public int addScaleData(final ScaleData scaleData) {
+    public int addScaleData(final ScaleMeasurement scaleMeasurement) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
-        if (scaleData.getUserId() == -1) {
+        if (scaleMeasurement.getUserId() == -1) {
             if (prefs.getBoolean("smartUserAssign", false)) {
-                scaleData.setUserId(getSmartUserAssignment(scaleData.getWeight(), 15.0f));
+                scaleMeasurement.setUserId(getSmartUserAssignment(scaleMeasurement.getWeight(), 15.0f));
             } else {
-                scaleData.setUserId(getSelectedScaleUser().getId());
+                scaleMeasurement.setUserId(getSelectedScaleUser().getId());
             }
 
             // don't add scale data if no user is selected
-            if (scaleData.getUserId() == -1) {
+            if (scaleMeasurement.getUserId() == -1) {
                 return -1;
             }
         }
@@ -199,32 +199,32 @@ public class OpenScale {
         if (prefs.getBoolean("estimateWaterEnable", false)) {
             EstimatedWaterMetric waterMetric = EstimatedWaterMetric.getEstimatedMetric(EstimatedWaterMetric.FORMULA.valueOf(prefs.getString("estimateWaterFormula", "TBW_LEESONGKIM")));
 
-            scaleData.setWater(waterMetric.getWater(getScaleUser(scaleData.getUserId()), scaleData));
+            scaleMeasurement.setWater(waterMetric.getWater(getScaleUser(scaleMeasurement.getUserId()), scaleMeasurement));
         }
 
         if (prefs.getBoolean("estimateLBWEnable", false)) {
             EstimatedLBWMetric lbwMetric = EstimatedLBWMetric.getEstimatedMetric(EstimatedLBWMetric.FORMULA.valueOf(prefs.getString("estimateLBWFormula", "LBW_HUME")));
 
-            scaleData.setLbw(lbwMetric.getLBW(getScaleUser(scaleData.getUserId()), scaleData));
+            scaleMeasurement.setLbw(lbwMetric.getLBW(getScaleUser(scaleMeasurement.getUserId()), scaleMeasurement));
         }
 
         if (prefs.getBoolean("estimateFatEnable", false)) {
             EstimatedFatMetric fatMetric = EstimatedFatMetric.getEstimatedMetric(EstimatedFatMetric.FORMULA.valueOf(prefs.getString("estimateFatFormula", "BF_GALLAGHER")));
 
-            scaleData.setFat(fatMetric.getFat(getScaleUser(scaleData.getUserId()), scaleData));
+            scaleMeasurement.setFat(fatMetric.getFat(getScaleUser(scaleMeasurement.getUserId()), scaleMeasurement));
         }
 
-        if (measurementDAO.get(scaleData.getDateTime(), scaleData.getUserId()) == null) {
-            measurementDAO.insert(scaleData);
-            ScaleUser scaleUser = getScaleUser(scaleData.getUserId());
+        if (measurementDAO.get(scaleMeasurement.getDateTime(), scaleMeasurement.getUserId()) == null) {
+            measurementDAO.insert(scaleMeasurement);
+            ScaleUser scaleUser = getScaleUser(scaleMeasurement.getUserId());
 
-            String infoText = String.format(context.getString(R.string.info_new_data_added), scaleData.getConvertedWeight(scaleUser.getScaleUnit()), scaleUser.UNIT_STRING[scaleUser.getScaleUnit()], dateTimeFormat.format(scaleData.getDateTime()), scaleUser.getUserName());
+            String infoText = String.format(context.getString(R.string.info_new_data_added), scaleMeasurement.getConvertedWeight(scaleUser.getScaleUnit()), scaleUser.UNIT_STRING[scaleUser.getScaleUnit()], dateTimeFormat.format(scaleMeasurement.getDateTime()), scaleUser.getUserName());
             Toast.makeText(context, infoText, Toast.LENGTH_LONG).show();
-            alarmHandler.entryChanged(context, scaleData);
+            alarmHandler.entryChanged(context, scaleMeasurement);
             updateScaleData();
         }
 
-        return scaleData.getUserId();
+        return scaleMeasurement.getUserId();
     }
 
     private int getSmartUserAssignment(float weight, float range) {
@@ -232,7 +232,7 @@ public class OpenScale {
         Map<Float, Integer> inRangeWeights = new TreeMap<>();
 
         for (int i = 0; i < scaleUsers.size(); i++) {
-            List<ScaleData> scaleUserData = measurementDAO.getAll(scaleUsers.get(i).getId());
+            List<ScaleMeasurement> scaleUserData = measurementDAO.getAll(scaleUsers.get(i).getId());
 
             float lastWeight = 0;
 
@@ -263,9 +263,9 @@ public class OpenScale {
         return getSelectedScaleUser().getId();
     }
 
-    public void updateScaleData(ScaleData scaleData) {
-        measurementDAO.update(scaleData);
-        alarmHandler.entryChanged(context, scaleData);
+    public void updateScaleData(ScaleMeasurement scaleMeasurement) {
+        measurementDAO.update(scaleMeasurement);
+        alarmHandler.entryChanged(context, scaleMeasurement);
 
         updateScaleData();
     }
@@ -295,22 +295,22 @@ public class OpenScale {
                     throw new IOException("Can't parse CSV file. Field length is wrong.");
                 }
 
-                ScaleData newScaleData = new ScaleData();
+                ScaleMeasurement newScaleMeasurement = new ScaleMeasurement();
 
-                newScaleData.setDateTime(dateTimeFormat.parse(csvField[0]));
-                newScaleData.setWeight(Float.parseFloat(csvField[1]));
-                newScaleData.setFat(Float.parseFloat(csvField[2]));
-                newScaleData.setWater(Float.parseFloat(csvField[3]));
-                newScaleData.setMuscle(Float.parseFloat(csvField[4]));
-                newScaleData.setLbw(Float.parseFloat(csvField[5]));
-                newScaleData.setBone(Float.parseFloat(csvField[6]));
-                newScaleData.setWaist(Float.parseFloat(csvField[7]));
-                newScaleData.setHip(Float.parseFloat(csvField[8]));
-                newScaleData.setComment(csvField[9]);
+                newScaleMeasurement.setDateTime(dateTimeFormat.parse(csvField[0]));
+                newScaleMeasurement.setWeight(Float.parseFloat(csvField[1]));
+                newScaleMeasurement.setFat(Float.parseFloat(csvField[2]));
+                newScaleMeasurement.setWater(Float.parseFloat(csvField[3]));
+                newScaleMeasurement.setMuscle(Float.parseFloat(csvField[4]));
+                newScaleMeasurement.setLbw(Float.parseFloat(csvField[5]));
+                newScaleMeasurement.setBone(Float.parseFloat(csvField[6]));
+                newScaleMeasurement.setWaist(Float.parseFloat(csvField[7]));
+                newScaleMeasurement.setHip(Float.parseFloat(csvField[8]));
+                newScaleMeasurement.setComment(csvField[9]);
 
-                newScaleData.setUserId(getSelectedScaleUser().getId());
+                newScaleMeasurement.setUserId(getSelectedScaleUser().getId());
 
-                measurementDAO.insert(newScaleData);
+                measurementDAO.insert(newScaleMeasurement);
 
                 line = csvReader.readLine();
             }
@@ -337,18 +337,18 @@ public class OpenScale {
 
         OutputStreamWriter csvWriter = new OutputStreamWriter(outputStream);
 
-        for (ScaleData scaleData : scaleDataList) {
-            csvWriter.append(dateTimeFormat.format(scaleData.getDateTime()) + ",");
-            csvWriter.append(Float.toString(scaleData.getWeight()) + ",");
-            csvWriter.append(Float.toString(scaleData.getFat()) + ",");
-            csvWriter.append(Float.toString(scaleData.getWater()) + ",");
-            csvWriter.append(Float.toString(scaleData.getMuscle()) + ",");
-            csvWriter.append(Float.toString(scaleData.getLbw()) + ",");
-            csvWriter.append(Float.toString(scaleData.getBone()) + ",");
-            csvWriter.append(Float.toString(scaleData.getWaist()) + ",");
-            csvWriter.append(Float.toString(scaleData.getHip()) + ",");
-            if (!scaleData.getComment().isEmpty()) {
-                csvWriter.append(scaleData.getComment());
+        for (ScaleMeasurement scaleMeasurement : scaleMeasurementList) {
+            csvWriter.append(dateTimeFormat.format(scaleMeasurement.getDateTime()) + ",");
+            csvWriter.append(Float.toString(scaleMeasurement.getWeight()) + ",");
+            csvWriter.append(Float.toString(scaleMeasurement.getFat()) + ",");
+            csvWriter.append(Float.toString(scaleMeasurement.getWater()) + ",");
+            csvWriter.append(Float.toString(scaleMeasurement.getMuscle()) + ",");
+            csvWriter.append(Float.toString(scaleMeasurement.getLbw()) + ",");
+            csvWriter.append(Float.toString(scaleMeasurement.getBone()) + ",");
+            csvWriter.append(Float.toString(scaleMeasurement.getWaist()) + ",");
+            csvWriter.append(Float.toString(scaleMeasurement.getHip()) + ",");
+            if (!scaleMeasurement.getComment().isEmpty()) {
+                csvWriter.append(scaleMeasurement.getComment());
             }
 
             csvWriter.append("\n");
@@ -386,7 +386,7 @@ public class OpenScale {
         return numOfMonth;
     }
 
-    public List<ScaleData> getScaleDataOfMonth(int year, int month) {
+    public List<ScaleMeasurement> getScaleDataOfMonth(int year, int month) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         int selectedUserId  = prefs.getInt("selectedUserId", -1);
 
@@ -400,7 +400,7 @@ public class OpenScale {
         return measurementDAO.getAllInRange(startCalender.getTime(), endCalender.getTime(), selectedUserId);
     }
 
-    public List<ScaleData> getScaleDataOfYear(int year) {
+    public List<ScaleMeasurement> getScaleDataOfYear(int year) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         int selectedUserId  = prefs.getInt("selectedUserId", -1);
 
@@ -445,9 +445,9 @@ public class OpenScale {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         int selectedUserId  = prefs.getInt("selectedUserId", -1);
 
-        scaleDataList = measurementDAO.getAll(selectedUserId);
+        scaleMeasurementList = measurementDAO.getAll(selectedUserId);
 
-        fragment.updateOnView(scaleDataList);
+        fragment.updateOnView(scaleMeasurementList);
     }
 
     public void updateScaleData()
@@ -455,12 +455,12 @@ public class OpenScale {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         int selectedUserId  = prefs.getInt("selectedUserId", -1);
 
-        scaleDataList = measurementDAO.getAll(selectedUserId);
+        scaleMeasurementList = measurementDAO.getAll(selectedUserId);
 
         for (FragmentUpdateListener fragment : fragmentList) {
             if (fragment != null) {
                 if (((Fragment)fragment).isAdded()) {
-                    fragment.updateOnView(scaleDataList);
+                    fragment.updateOnView(scaleMeasurementList);
                 }
             }
         }

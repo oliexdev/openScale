@@ -41,7 +41,7 @@ import android.widget.TextView;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
-import com.health.openscale.core.datatypes.ScaleData;
+import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
@@ -208,8 +208,8 @@ public abstract class MeasurementView extends TableLayout {
         updateListener = listener;
     }
 
-    public abstract void updateValue(ScaleData updateData);
-    public abstract void updateDiff(ScaleData updateData, ScaleData lastData);
+    public abstract void updateValue(ScaleMeasurement newMeasurement);
+    public abstract void updateDiff(ScaleMeasurement newMeasurement, ScaleMeasurement lastMeasurement);
     public abstract void updatePreferences(SharedPreferences preferences);
     public abstract String getUnit();
     public abstract EvaluationResult evaluateSheet(EvaluationSheet evalSheet, float value);

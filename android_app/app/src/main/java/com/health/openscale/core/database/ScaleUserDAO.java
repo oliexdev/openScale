@@ -28,10 +28,10 @@ import java.util.List;
 
 @Dao
 public interface ScaleUserDAO {
-    @Query("SELECT * FROM scaleuser")
+    @Query("SELECT * FROM scaleUsers")
     List<ScaleUser> getAll();
 
-    @Query("SELECT * FROM scaleuser WHERE id = :id")
+    @Query("SELECT * FROM scaleUsers WHERE id = :id")
     ScaleUser get(int id);
 
     @Insert

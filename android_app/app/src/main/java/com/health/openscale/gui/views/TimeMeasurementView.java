@@ -23,7 +23,7 @@ import android.support.v4.content.ContextCompat;
 import android.widget.TimePicker;
 
 import com.health.openscale.R;
-import com.health.openscale.core.datatypes.ScaleData;
+import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 
@@ -65,12 +65,12 @@ public class TimeMeasurementView extends MeasurementView {
     }
 
     @Override
-    public void updateValue(ScaleData updateData) {
-        setValueOnView(updateData.getDateTime(), timeFormat.format(updateData.getDateTime()));
+    public void updateValue(ScaleMeasurement newMeasurement) {
+        setValueOnView(newMeasurement.getDateTime(), timeFormat.format(newMeasurement.getDateTime()));
     }
 
     @Override
-    public void updateDiff(ScaleData updateData, ScaleData lastData) {
+    public void updateDiff(ScaleMeasurement newMeasurement, ScaleMeasurement lastMeasurement) {
 
     }
 

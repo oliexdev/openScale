@@ -22,8 +22,8 @@ import android.arch.persistence.room.PrimaryKey;
 
 import java.util.Date;
 
-@Entity
-public class ScaleData {
+@Entity(tableName = "scaleMeasurements")
+public class ScaleMeasurement {
     private static float KG_LB = 2.20462f;
     private static float KG_ST = 0.157473f;
 
@@ -55,7 +55,7 @@ public class ScaleData {
     @ColumnInfo(name = "comment")
     private String comment;
 
-    public ScaleData()
+    public ScaleMeasurement()
     {
         userId = -1;
         enabled = true;

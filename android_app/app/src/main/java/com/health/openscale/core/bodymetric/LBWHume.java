@@ -16,7 +16,7 @@
 
 package com.health.openscale.core.bodymetric;
 
-import com.health.openscale.core.datatypes.ScaleData;
+import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 
 public class LBWHume extends EstimatedLBWMetric {
@@ -26,7 +26,7 @@ public class LBWHume extends EstimatedLBWMetric {
     }
 
     @Override
-    public float getLBW(ScaleUser user, ScaleData data) {
+    public float getLBW(ScaleUser user, ScaleMeasurement data) {
         if (user.isMale()) {
             return (0.32810f * data.getWeight()) + (0.33929f * user.getBodyHeight()) - 29.5336f;
         }

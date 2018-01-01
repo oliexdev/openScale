@@ -15,7 +15,7 @@
 */
 package com.health.openscale.core.bodymetric;
 
-import com.health.openscale.core.datatypes.ScaleData;
+import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 
 public abstract class EstimatedLBWMetric {
@@ -33,5 +33,5 @@ public abstract class EstimatedLBWMetric {
     }
 
     public abstract String getName();
-    public abstract float getLBW(ScaleUser user, ScaleData data);
+    public abstract float getLBW(ScaleUser user, ScaleMeasurement data);
 }

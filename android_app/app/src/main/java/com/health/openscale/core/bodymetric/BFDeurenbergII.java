@@ -15,7 +15,7 @@
 */
 package com.health.openscale.core.bodymetric;
 
-import com.health.openscale.core.datatypes.ScaleData;
+import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 
 public class BFDeurenbergII extends EstimatedFatMetric {
@@ -25,7 +25,7 @@ public class BFDeurenbergII extends EstimatedFatMetric {
     }
 
     @Override
-    public float getFat(ScaleUser user, ScaleData data) {
+    public float getFat(ScaleUser user, ScaleMeasurement data) {
         if (user.isMale()) {
             return (data.getBMI(user.getBodyHeight()) * 1.2f) + (user.getAge(data.getDateTime()) * 0.23f) - 16.2f;
         }

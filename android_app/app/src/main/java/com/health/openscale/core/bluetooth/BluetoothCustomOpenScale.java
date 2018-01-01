@@ -20,7 +20,7 @@ import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.util.Log;
 
-import com.health.openscale.core.datatypes.ScaleData;
+import com.health.openscale.core.datatypes.ScaleMeasurement;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -190,10 +190,10 @@ public class BluetoothCustomOpenScale extends BluetoothCommunication {
                     btLine.append(btChar);
 
                     if (btLine.charAt(btLine.length() - 1) == '\n') {
-                        ScaleData scaleData = parseBtString(btLine.toString());
+                        ScaleMeasurement scaleMeasurement = parseBtString(btLine.toString());
 
-                        if (scaleData != null) {
-                            addScaleData(scaleData);
+                        if (scaleMeasurement != null) {
+                            addScaleData(scaleMeasurement);
                         }
 
                         btLine.setLength(0);
@@ -206,8 +206,8 @@ public class BluetoothCustomOpenScale extends BluetoothCommunication {
             }
         }
 
-        private ScaleData parseBtString(String btString) throws IOException {
-            ScaleData scaleBtData = new ScaleData();
+        private ScaleMeasurement parseBtString(String btString) throws IOException {
+            ScaleMeasurement scaleBtData = new ScaleMeasurement();
             btString = btString.substring(0, btString.length() - 1); // delete newline '\n' of the string
 
             if (btString.charAt(0) != '$' && btString.charAt(2) != '$') {

@@ -23,7 +23,7 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
 import com.health.openscale.core.OpenScale;
-import com.health.openscale.core.datatypes.ScaleData;
+import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 
 import java.util.Date;
@@ -127,7 +127,7 @@ public class BluetoothYunmaiSE extends BluetoothCommunication {
 
         float weight = (float) (((weightBytes[13] & 0xFF) << 8) | (weightBytes[14] & 0xFF)) / 100.0f;
 
-        ScaleData scaleBtData = new ScaleData();
+        ScaleMeasurement scaleBtData = new ScaleMeasurement();
 
         final ScaleUser selectedUser = OpenScale.getInstance(context).getSelectedScaleUser();
 

@@ -23,7 +23,7 @@ import android.arch.persistence.room.PrimaryKey;
 import java.util.Calendar;
 import java.util.Date;
 
-@Entity
+@Entity(tableName = "scaleUsers")
 public class ScaleUser {
     public static final String[] UNIT_STRING = new String[] {"kg", "lb", "st"};
     private static float KG_LB = 2.20462f;

@@ -33,7 +33,7 @@ import android.widget.Toast;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
-import com.health.openscale.core.datatypes.ScaleData;
+import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.gui.views.BMIMeasurementView;
 import com.health.openscale.gui.views.BMRMeasurementView;
@@ -181,7 +181,7 @@ public class DataEntryActivity extends Activity {
             id = getIntent().getExtras().getInt("id");
         }
 
-        ScaleData scaleData;
+        ScaleMeasurement scaleMeasurement;
 
         if (id > 0) {
             // keep edit mode state if we are moving to left or right
@@ -202,41 +202,41 @@ public class DataEntryActivity extends Activity {
 
             OpenScale openScale = OpenScale.getInstance(context);
 
-            ScaleData[] tupleScaleData = openScale.getTupleScaleData(id);
-            ScaleData prevScaleData = tupleScaleData[0];
-            scaleData = tupleScaleData[1];
+            ScaleMeasurement[] tupleScaleData = openScale.getTupleScaleData(id);
+            ScaleMeasurement prevScaleMeasurement = tupleScaleData[0];
+            scaleMeasurement = tupleScaleData[1];
 
-            if (prevScaleData == null) {
-                prevScaleData = new ScaleData();
+            if (prevScaleMeasurement == null) {
+                prevScaleMeasurement = new ScaleMeasurement();
             }
 
             // show selected scale data
             for (MeasurementView measurement : dataEntryMeasurements) {
-                measurement.updateValue(scaleData);
-                measurement.updateDiff(scaleData, prevScaleData);
+                measurement.updateValue(scaleMeasurement);
+                measurement.updateDiff(scaleMeasurement, prevScaleMeasurement);
                 measurement.setExpand(doExpand);
             }
         } else {
             setViewMode(MeasurementView.MeasurementViewMode.ADD);
 
-            if (OpenScale.getInstance(getApplicationContext()).getScaleDataList().isEmpty()) {
+            if (OpenScale.getInstance(getApplicationContext()).getScaleMeasurementList().isEmpty()) {
                 // Show default values
-                scaleData = new ScaleData();
+                scaleMeasurement = new ScaleMeasurement();
             }
             else {
                 // Show the last scale data as default
-                scaleData = OpenScale.getInstance(getApplicationContext()).getScaleDataList().get(0);
-                scaleData.setDateTime(new Date());
-                scaleData.setComment("");
+                scaleMeasurement = OpenScale.getInstance(getApplicationContext()).getScaleMeasurementList().get(0);
+                scaleMeasurement.setDateTime(new Date());
+                scaleMeasurement.setComment("");
             }
 
             for (MeasurementView measurement : dataEntryMeasurements) {
-                measurement.updateValue(scaleData);
+                measurement.updateValue(scaleMeasurement);
             }
         }
 
         txtDataNr.setText(DateFormat.getDateTimeInstance(
-            DateFormat.LONG, DateFormat.SHORT).format(scaleData.getDateTime()));
+            DateFormat.LONG, DateFormat.SHORT).format(scaleMeasurement.getDateTime()));
 
         onMeasurementViewUpdateListener updateListener = new onMeasurementViewUpdateListener();
         for (MeasurementView measurement : dataEntryMeasurements) {
@@ -287,7 +287,7 @@ public class DataEntryActivity extends Activity {
         }
     }
 
-    private ScaleData createScaleDataFromMeasurement() {
+    private ScaleMeasurement createScaleDataFromMeasurement() {
         OpenScale openScale = OpenScale.getInstance(getApplicationContext());
         ScaleUser user = openScale.getSelectedScaleUser();
 
@@ -300,39 +300,39 @@ public class DataEntryActivity extends Activity {
         cal.set(Calendar.MINUTE, time.get(Calendar.MINUTE));
         cal.set(Calendar.SECOND, time.get(Calendar.SECOND));
 
-        ScaleData scaleData = new ScaleData();
+        ScaleMeasurement scaleMeasurement = new ScaleMeasurement();
 
-        scaleData.setUserId(user.getId());
-        scaleData.setDateTime(cal.getTime());
-        scaleData.setConvertedWeight(weightMeasurement.getValue(), user.getScaleUnit());
-        scaleData.setFat(fatMeasurement.getValue());
-        scaleData.setWater(waterMeasurement.getValue());
-        scaleData.setMuscle(muscleMeasurement.getValue());
-        scaleData.setLbw(lbwMeasurement.getValue());
-        scaleData.setWaist(waistMeasurement.getValue());
-        scaleData.setHip(hipMeasurement.getValue());
-        scaleData.setBone(boneMeasurementView.getValue());
-        scaleData.setComment(commentMeasurement.getValueAsString());
+        scaleMeasurement.setUserId(user.getId());
+        scaleMeasurement.setDateTime(cal.getTime());
+        scaleMeasurement.setConvertedWeight(weightMeasurement.getValue(), user.getScaleUnit());
+        scaleMeasurement.setFat(fatMeasurement.getValue());
+        scaleMeasurement.setWater(waterMeasurement.getValue());
+        scaleMeasurement.setMuscle(muscleMeasurement.getValue());
+        scaleMeasurement.setLbw(lbwMeasurement.getValue());
+        scaleMeasurement.setWaist(waistMeasurement.getValue());
+        scaleMeasurement.setHip(hipMeasurement.getValue());
+        scaleMeasurement.setBone(boneMeasurementView.getValue());
+        scaleMeasurement.setComment(commentMeasurement.getValueAsString());
 
-        return scaleData;
+        return scaleMeasurement;
     }
 
     private void saveScaleData() {
-        ScaleData scaleData = createScaleDataFromMeasurement();
+        ScaleMeasurement scaleMeasurement = createScaleDataFromMeasurement();
 
-        scaleData.setId(id);
+        scaleMeasurement.setId(id);
 
         OpenScale openScale = OpenScale.getInstance(getApplicationContext());
-        openScale.updateScaleData(scaleData);
+        openScale.updateScaleData(scaleMeasurement);
     }
 
     private boolean moveLeft() {
-        ScaleData[] tupleScaleData = OpenScale.getInstance(getApplicationContext()).getTupleScaleData(id);
-        ScaleData prevScaleData = tupleScaleData[0];
+        ScaleMeasurement[] tupleScaleData = OpenScale.getInstance(getApplicationContext()).getTupleScaleData(id);
+        ScaleMeasurement prevScaleMeasurement = tupleScaleData[0];
 
-        if (prevScaleData != null) {
+        if (prevScaleMeasurement != null) {
             saveScaleData();
-            getIntent().putExtra("id", prevScaleData.getId());
+            getIntent().putExtra("id", prevScaleMeasurement.getId());
             updateOnView();
             return true;
         }
@@ -342,12 +342,12 @@ public class DataEntryActivity extends Activity {
 
     private boolean moveRight()
     {
-        ScaleData[] tupleScaleData = OpenScale.getInstance(getApplicationContext()).getTupleScaleData(id);
-        ScaleData nextScaleData = tupleScaleData[2];
+        ScaleMeasurement[] tupleScaleData = OpenScale.getInstance(getApplicationContext()).getTupleScaleData(id);
+        ScaleMeasurement nextScaleMeasurement = tupleScaleData[2];
 
-        if (nextScaleData != null) {
+        if (nextScaleMeasurement != null) {
             saveScaleData();
-            getIntent().putExtra("id", nextScaleData.getId());
+            getIntent().putExtra("id", nextScaleMeasurement.getId());
             updateOnView();
             return true;
         }
@@ -372,9 +372,9 @@ public class DataEntryActivity extends Activity {
             }
 
             if (!viewsToUpdate.isEmpty()) {
-                ScaleData scaleData = createScaleDataFromMeasurement();
+                ScaleMeasurement scaleMeasurement = createScaleDataFromMeasurement();
                 for (MeasurementView measurement : viewsToUpdate) {
-                    measurement.updateValue(scaleData);
+                    measurement.updateValue(scaleMeasurement);
                 }
             }
         }
@@ -395,10 +395,10 @@ public class DataEntryActivity extends Activity {
 
                 infoDialog.show();
             } else {
-                ScaleData scaleData = createScaleDataFromMeasurement();
+                ScaleMeasurement scaleMeasurement = createScaleDataFromMeasurement();
 
                 OpenScale openScale = OpenScale.getInstance(getApplicationContext());
-                openScale.addScaleData(scaleData);
+                openScale.addScaleData(scaleMeasurement);
 
                 finish();
             }

@@ -15,7 +15,7 @@
 */
 package com.health.openscale.core.bodymetric;
 
-import com.health.openscale.core.datatypes.ScaleData;
+import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 
 public abstract class EstimatedFatMetric {
@@ -39,5 +39,5 @@ public abstract class EstimatedFatMetric {
     }
 
     public abstract String getName();
-    public abstract float getFat(ScaleUser user, ScaleData data);
+    public abstract float getFat(ScaleUser user, ScaleMeasurement data);
 }

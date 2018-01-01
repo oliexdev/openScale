@@ -27,7 +27,7 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import com.health.openscale.R;
-import com.health.openscale.core.datatypes.ScaleData;
+import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.gui.MainActivity;
 
 import java.util.Calendar;
@@ -52,7 +52,7 @@ public class AlarmHandler
         enableAlarms(context, alarmEntries);
     }
 
-    public void entryChanged(Context context, ScaleData data)
+    public void entryChanged(Context context, ScaleMeasurement data)
     {
         long dataMillis = data.getDateTime().getTime();
 

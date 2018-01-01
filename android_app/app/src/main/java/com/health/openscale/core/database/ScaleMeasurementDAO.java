@@ -21,43 +21,43 @@ import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Update;
 
-import com.health.openscale.core.datatypes.ScaleData;
+import com.health.openscale.core.datatypes.ScaleMeasurement;
 
 import java.util.Date;
 import java.util.List;
 
 @Dao
 public interface ScaleMeasurementDAO {
-    @Query("SELECT * FROM scaledata WHERE datetime = :datetime AND userId = :userId AND enabled = 1")
-    ScaleData get(Date datetime, int userId);
+    @Query("SELECT * FROM scaleMeasurements WHERE datetime = :datetime AND userId = :userId AND enabled = 1")
+    ScaleMeasurement get(Date datetime, int userId);
 
-    @Query("SELECT * FROM scaledata WHERE id = :id AND enabled = 1")
-    ScaleData get(int id);
+    @Query("SELECT * FROM scaleMeasurements WHERE id = :id AND enabled = 1")
+    ScaleMeasurement get(int id);
 
-    @Query("SELECT * FROM scaledata WHERE datetime < (SELECT datetime FROM scaledata WHERE id = :id) AND userId = :userId AND enabled = 1 ORDER BY datetime DESC LIMIT 0,1")
-    ScaleData getPrevious(int id, int userId);
+    @Query("SELECT * FROM scaleMeasurements WHERE datetime < (SELECT datetime FROM scaleMeasurements WHERE id = :id) AND userId = :userId AND enabled = 1 ORDER BY datetime DESC LIMIT 0,1")
+    ScaleMeasurement getPrevious(int id, int userId);
 
-    @Query("SELECT * FROM scaledata WHERE datetime > (SELECT datetime FROM scaledata WHERE id = :id) AND userId = :userId AND enabled = 1 LIMIT 0,1")
-    ScaleData getNext(int id, int userId);
+    @Query("SELECT * FROM scaleMeasurements WHERE datetime > (SELECT datetime FROM scaleMeasurements WHERE id = :id) AND userId = :userId AND enabled = 1 LIMIT 0,1")
+    ScaleMeasurement getNext(int id, int userId);
 
-    @Query("SELECT * FROM scaledata WHERE userId = :userId AND enabled = 1 ORDER BY datetime DESC")
-    List<ScaleData> getAll(int userId);
+    @Query("SELECT * FROM scaleMeasurements WHERE userId = :userId AND enabled = 1 ORDER BY datetime DESC")
+    List<ScaleMeasurement> getAll(int userId);
 
-    @Query("SELECT * FROM scaledata WHERE datetime >= :startYear AND datetime < :endYear AND userId = :userId AND enabled = 1 ORDER BY datetime DESC")
-    List<ScaleData> getAllInRange(Date startYear, Date endYear, int userId);
-
-    @Insert
-    void insert(ScaleData measurement);
+    @Query("SELECT * FROM scaleMeasurements WHERE datetime >= :startYear AND datetime < :endYear AND userId = :userId AND enabled = 1 ORDER BY datetime DESC")
+    List<ScaleMeasurement> getAllInRange(Date startYear, Date endYear, int userId);
 
     @Insert
-    void insertAll(List<ScaleData> measurementList);
+    void insert(ScaleMeasurement measurement);
+
+    @Insert
+    void insertAll(List<ScaleMeasurement> measurementList);
 
     @Update
-    void update(ScaleData measurement);
+    void update(ScaleMeasurement measurement);
 
-    @Query("UPDATE scaledata SET enabled = 0 WHERE id = :id")
+    @Query("UPDATE scaleMeasurements SET enabled = 0 WHERE id = :id")
     void delete(int id);
 
-    @Query("DELETE FROM scaledata WHERE userId = :userId")
+    @Query("DELETE FROM scaleMeasurements WHERE userId = :userId")
     void deleteAll(int userId);
 }

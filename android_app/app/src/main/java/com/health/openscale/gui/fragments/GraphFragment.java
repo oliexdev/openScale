@@ -35,7 +35,7 @@ import android.widget.TextView;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
-import com.health.openscale.core.datatypes.ScaleData;
+import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.utils.PolynomialFitter;
 import com.health.openscale.gui.activities.DataEntryActivity;
 
@@ -85,8 +85,8 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     private Calendar calYears;
     private Calendar calLastSelected;
 
-    private List<ScaleData> scaleDataList;
-    private List<ScaleData> pointIndexScaleDataList;
+    private List<ScaleMeasurement> scaleMeasurementList;
+    private List<ScaleMeasurement> pointIndexScaleMeasurementList;
 
     public GraphFragment() {
         calYears = Calendar.getInstance();
@@ -186,7 +186,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     }
 
     @Override
-    public void updateOnView(List<ScaleData> scaleDataList)
+    public void updateOnView(List<ScaleMeasurement> scaleMeasurementList)
     {
         generateGraphs();
     }
@@ -256,13 +256,13 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         Calendar calDB = Calendar.getInstance();
 
-        pointIndexScaleDataList = new ArrayList<>();
+        pointIndexScaleMeasurementList = new ArrayList<>();
 
-        for (ScaleData scaleEntry: scaleDataList) {
+        for (ScaleMeasurement scaleEntry: scaleMeasurementList) {
             calDB.setTime(scaleEntry.getDateTime());
 
             if (addPointValue(valuesWeight, calDB.get(field), scaleEntry.getConvertedWeight(openScale.getSelectedScaleUser().getScaleUnit()))) {
-                pointIndexScaleDataList.add(scaleEntry); // if new point was added, add this point to pointIndexScaleDataList to get the correct point index after selecting an point
+                pointIndexScaleMeasurementList.add(scaleEntry); // if new point was added, add this point to pointIndexScaleDataList to get the correct point index after selecting an point
             }
 
             addPointValue(valuesFat, calDB.get(field), scaleEntry.getFat());
@@ -482,7 +482,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             chartBottom.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 0.7f));
 
             generateColumnData();
-            scaleDataList = openScale.getScaleDataOfMonth(calYears.get(Calendar.YEAR), calLastSelected.get(Calendar.MONTH));
+            scaleMeasurementList = openScale.getScaleDataOfMonth(calYears.get(Calendar.YEAR), calLastSelected.get(Calendar.MONTH));
 
             generateLineData(Calendar.DAY_OF_MONTH);
         // show only yearly diagram and hide monthly diagram
@@ -490,7 +490,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             chartTop.setVisibility(View.GONE);
             chartBottom.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
 
-            scaleDataList = openScale.getScaleDataOfYear(calYears.get(Calendar.YEAR));
+            scaleMeasurementList = openScale.getScaleDataOfYear(calYears.get(Calendar.YEAR));
 
             generateLineData(Calendar.DAY_OF_YEAR);
         }
@@ -505,7 +505,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
             calLastSelected = cal;
 
-            scaleDataList = openScale.getScaleDataOfMonth(calYears.get(Calendar.YEAR), calLastSelected.get(Calendar.MONTH));
+            scaleMeasurementList = openScale.getScaleDataOfMonth(calYears.get(Calendar.YEAR), calLastSelected.get(Calendar.MONTH));
             generateLineData(Calendar.DAY_OF_MONTH);
         }
 
@@ -531,9 +531,9 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     private class chartBottomValueTouchListener implements LineChartOnValueSelectListener {
         @Override
         public void onValueSelected(int lineIndex, int pointIndex, PointValue pointValue) {
-            ScaleData scaleData = pointIndexScaleDataList.get(pointIndex);
+            ScaleMeasurement scaleMeasurement = pointIndexScaleMeasurementList.get(pointIndex);
 
-            int id = scaleData.getId();
+            int id = scaleMeasurement.getId();
 
             Intent intent = new Intent(graphView.getContext(), DataEntryActivity.class);
             intent.putExtra("id", id);

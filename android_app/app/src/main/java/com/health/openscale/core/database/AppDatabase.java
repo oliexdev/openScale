@@ -20,11 +20,11 @@ import android.arch.persistence.room.Database;
 import android.arch.persistence.room.RoomDatabase;
 import android.arch.persistence.room.TypeConverters;
 
-import com.health.openscale.core.datatypes.ScaleData;
+import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
 
-@Database(entities = {ScaleData.class, ScaleUser.class}, version = 1)
+@Database(entities = {ScaleMeasurement.class, ScaleUser.class}, version = 1)
 @TypeConverters({Converters.class})
 public abstract class AppDatabase extends RoomDatabase {
     public abstract ScaleMeasurementDAO measurementDAO();

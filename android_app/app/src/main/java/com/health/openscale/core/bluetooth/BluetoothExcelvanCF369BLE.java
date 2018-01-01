@@ -21,7 +21,7 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
 
 import com.health.openscale.core.OpenScale;
-import com.health.openscale.core.datatypes.ScaleData;
+import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 
 import java.util.Arrays;
@@ -126,7 +126,7 @@ public class BluetoothExcelvanCF369BLE extends BluetoothCommunication {
         float water = (float)(((weightBytes[12] & 0xFF) << 8) | (weightBytes[13] & 0xFF)) / 10.0f;
         float bmr = (float)(((weightBytes[14] & 0xFF) << 8) | (weightBytes[15] & 0xFF));
 
-        ScaleData scaleBtData = new ScaleData();
+        ScaleMeasurement scaleBtData = new ScaleMeasurement();
 
         final ScaleUser selectedUser = OpenScale.getInstance(context).getSelectedScaleUser();
 

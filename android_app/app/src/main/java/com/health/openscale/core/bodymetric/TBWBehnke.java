@@ -15,7 +15,7 @@
 */
 package com.health.openscale.core.bodymetric;
 
-import com.health.openscale.core.datatypes.ScaleData;
+import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 
 public class TBWBehnke extends EstimatedWaterMetric {
@@ -25,7 +25,7 @@ public class TBWBehnke extends EstimatedWaterMetric {
     }
 
     @Override
-    public float getWater(ScaleUser user, ScaleData data) {
+    public float getWater(ScaleUser user, ScaleMeasurement data) {
         if (user.isMale()) {
             return 0.72f * (0.204f * user.getBodyHeight() * user.getBodyHeight()) / 100.0f;
         }
