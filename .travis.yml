@@ -6,7 +6,7 @@ android:
     - platform-tools
     - tools
     - build-tools-26.0.2
-    - android-24
+    - android-26
     - extra-android-m2repository
 
 deploy:
