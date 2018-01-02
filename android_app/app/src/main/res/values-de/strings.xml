@@ -156,4 +156,6 @@
     <string name="label_maintainer">Hauptentwickler</string>
     <string name="label_website">Webseite</string>
     <string name="title_about">Info</string>
+    <string name="open_drawer">öffnen</string>
+    <string name="close_drawer">schließen</string>
 </resources>
