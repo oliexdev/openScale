@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">openScale</string>
+    <string name="title_overview">Overzicht</string>
+    <string name="title_graph">Grafieken</string>
+    <string name="title_table">Tabel</string>
+    <string name="title_statistics">Statistieken</string>
+    <string name="title_users">Gebruikers</string>
+    <string name="title_data">Data</string>
+    <string name="title_measurements">Metingen</string>
+    <string name="title_about">Info</string>
+
+    <string name="action_settings">Instellingen</string>
+    <string name="action_bluetooth_status">Bluetooth Status</string>
+    <string name="open_drawer">openen</string>
+    <string name="close_drawer">sluiten</string>
+
+    <string name="label_add">Toevoegen</string>
+    <string name="label_cancel">Annuleren</string>
+    <string name="label_ok">OK</string>
+    <string name="label_yes">Ja</string>
+    <string name="label_no">Nee</string>
+    <string name="label_delete">Verwijderen</string>
+    <string name="label_add_user">Gebruiker toevoegen</string>
+
+    <string name="label_id">Id</string>
+    <string name="label_weight">Gewicht</string>
+    <string name="label_bmi">Body mass index (BMI)</string>
+    <string name="label_bmr">Basaal Metabolisme (BMR)</string>
+    <string name="label_fat">Lichaamsvet percentage</string>
+    <string name="label_water">Vocht percentage</string>
+    <string name="label_muscle">Spier percentage</string>
+    <string name="label_lbw">vetvrije massa</string>
+    <string name="label_waist">Tailleomtrek</string>
+    <string name="label_hip">Heupomtrek</string>
+    <string name="label_comment">Commentaar</string>
+    <string name="label_whtr">Taille-naar-lengte ratio</string>
+    <string name="label_whr">Taille-heup ratio</string>
+    <string name="label_bone">Botmassa</string>
+    <string name="label_smartUserAssign">Slimme gebruiker herkenning</string>
+
+    <plurals name="label_days">
+        <item quantity="one">%d dag</item>
+        <item quantity="other">%d dagen</item>
+    </plurals>
+    <string name="label_measures">Metingen</string>
+    <string name="label_last_week">Laatste 7 dagen</string>
+    <string name="label_last_month">Laaste 30 dagen</string>
+    <string name="label_weight_difference">Verschil in gewicht</string>
+    <string name="label_goal_date_is">Streefdatum is</string>
+    <string name="label_days_left">Dagen te gaan</string>
+
+    <string name="label_date">Datum</string>
+    <string name="label_time">Tijd</string>
+    <string name="label_birthday">Geboortedatum</string>
+    <string name="label_user_name">Naam</string>
+    <string name="label_body_height">Lichaamslengte</string>
+    <string name="label_scale_unit">Schaal</string>
+    <string name="label_gender">Geslacht</string>
+    <string name="label_male">Man</string>
+    <string name="label_woman">Vrouw</string>
+    <string name="label_goal_weight">Streefgewicht</string>
+    <string name="label_goal_date">Streefdatum</string>
+
+
+    <string name="label_title_user">Gebruiker</string>
+    <string name="label_title_last_measurement">Laatste meting</string>
+    <string name="label_title_goal">Doel</string>
+    <string name="label_title_statistics">Statistieken</string>
+
+    <string name="label_import">Importeren</string>
+    <string name="label_export">Exporteren</string>
+    <string name="label_delete_all">Alles verwijderen</string>
+
+    <string name="error_value_required">Waarde is vereist</string>
+    <string name="error_value_range">De waarde valt niet binnen het bereik</string>
+    <string name="error_exporting">Fout met exporteren</string>
+    <string name="error_importing">Fout met importeren</string>
+    <string name="error_user_name_required">Fout: Naam is vereist</string>
+    <string name="error_body_height_required">Fout: Lichaamslengte is vereist</string>
+    <string name="error_initial_weight_required">Fout: Begingewicht is vereist</string>
+    <string name="error_goal_weight_required">Fout: Streefgewicht is vereist</string>
+    <string name="error_hip_value_required">Fout: Heupomtrek is vereist</string>
+
+    <string name="info_data_deleted">Database vermelding verwijderd</string>
+    <string name="info_data_all_deleted">Alle database vermeldingen verwijderd</string>
+    <string name="info_data_exported">Data geexporteerd naar</string>
+    <string name="info_data_imported">Data geinporteerd van</string>
+    <string name="info_set_filename">Zet bestandsnaam op</string>
+    <string name="info_enter_value_cm">Geef waarde op cm's in</string>
+    <string name="info_enter_value_percent">Geef waarde op in %</string>
+    <string name="info_enter_value_unit">Geef waaarde op</string>
+    <string name="info_enter_comment">Voeg een optionele opmerking toe.</string>
+    <string name="info_enter_initial_weight">Voer uw begingewicht in uw weegschaal in</string>
+    <string name="info_enter_goal_weight">Voer uw streefgewicht in uw weegschaal in</string>
+    <string name="info_is_visible">is zichtbaar</string>
+    <string name="info_is_not_visible">is niet zichtbaar</string>
+    <string name="info_is_enable">is ingeschakeld</string>
+    <string name="info_is_not_enable">is uitgeschakeld</string>
+    <string name="info_is_not_available">is niet beschikbaar</string>
+    <string name="info_delete_bluetooth_data">Wis alle Bluetooth gegevens</string>
+    <string name="info_delete_bluetooth_data_success">Bluetooth gegevens succesvol gewist</string>
+    <string name="info_bluetooth_try_connection">Poging verbinding te maken</string>
+    <string name="info_bluetooth_connection_lost">Bluetooth-verbinding verloren</string>
+    <string name="info_bluetooth_no_device">Geen Bluetooth-apparaat gevonden</string>
+    <string name="info_bluetooth_connection_successful">Verbinding tot stand gekomen</string>
+    <string name="info_bluetooth_init">Initialiseer Bluetooth-apparaat</string>
+    <string name="info_bluetooth_connection_error">Bluetooth ondervond een onverwachte fout</string>
+    <string name="info_new_data_added">%1$.2f%2$s [%3$s] to %4$s added</string>
+
+    <string name="info_enter_user_name">Voer uw naam in</string>
+    <string name="info_no_selected_user">Geen gebruikers beschikbaar. Gelieve een nieuwe gebruiker aan te maken bij de instellingen.</string>
+    <string name="info_no_evaluation_available">Kan de waarde niet evalueren</string>
+
+    <string name="question_really_delete">Weet u zeker dat u de database vermelding wenst te verwijderen?</string>
+    <string name="question_really_delete_all">Weet u zeker dat u alle database vermdlingen wenst te verwijderen?</string>
+    <string name="question_really_delete_user">Weet u zeker dat u de gebruiker wenst te verwijderen?</string>
+
+    <string name="label_bluetooth_title">Bluetooth</string>
+    <string name="label_bluetooth_enable">Zoek naar weegschaal bij opstarten</string>
+    <string name="label_bluetooth_searching">Zoeken naar Bluetooth weegschalen</string>
+    <string name="label_device_type">Apparaat Type</string>
+
+    <string name="label_enable_labels">Label op gegevenspunt</string>
+    <string name="label_enable_points">Punt op gegevenspunt</string>
+
+    <string name="label_delete_confirmation">Bevestiging verwijderen</string>
+
+    <string name="label_estimate_water">Geschat vochtmassa</string>
+    <string name="label_estimate_lbw">Geschat vetvrije massa</string>
+    <string name="label_estimate_fat">Geschat vetmassa</string>
+
+    <string name="label_category_display">Scherm</string>
+    <string name="label_category_body_metrics_estimation"> Schatting lichaamssamenstelling</string>
+    <string name="label_category_measurement_database">Metingen database</string>
+    <string name="label_category_misc"> Diversen</string>
+
+    <string name="label_maintainer">Beheerder</string>
+    <string name="label_website">Website</string>
+    <string name="label_license">Licentie</string>
+
+    <string name="label_estimate_water_formula">Formule vochtmassa</string>
+    <string name="label_estimate_lbw_formula">Formule vetvrije massa</string>
+    <string name="label_estimate_fat_formula">Formule vetmassa</string>
+    <string name="label_automatic">auto</string>
+
+    <string name="label_reminder">Herinnering</string>
+    <string name="label_reminder_weekdays">Werkdagen</string>
+    <string name="label_reminder_time">Tijd</string>
+    <string name="label_reminder_notify_text">Notificatietekst</string>
+    <string name="default_value_reminder_notify_text">Tijd om te wegen</string>
+
+    <string name="info_your_weight">Uw gewicht was</string>
+    <string name="info_your_fat">Uw vetmassa was</string>
+    <string name="info_your_water">Uw vochtmassa was</string>
+    <string name="info_your_muscle">Uw spierpercentage was</string>
+    <string name="info_your_waist">Uw buikomtrek was</string>
+    <string name="info_your_hip">Uw heupomtrek was</string>
+    <string name="info_on_date">op</string>
+
+    <string name="Monday">Maandag</string>
+    <string name="Tuesday">Dinsdag</string>
+    <string name="Wednesday">Woensdag</string>
+    <string name="Thursday">Donderdag</string>
+    <string name="Friday">Vrijdag</string>
+    <string name="Saturday">Zaterdag</string>
+    <string name="Sunday">Zondag</string>
+    <string name="label_bt_device_no_support">Apparaat niet ondersteund</string>
+    <string name="label_exportBackup">Backup exporteren</string>
+    <string name="label_importBackup">Backup importeren</string>
+    <string name="label_backup">Backup</string>
+    <string name="label_export_dir">Export folder</string>
+    <string name="label_not_found">niet gevonden</string>
+    <string name="label_ignoreOutOfRange">Negeer gegevens die buiten bereik zijn</string>
+    <string name="label_initial_weight">Begingewicht</string>
+    <string name="label_average_data">Bereken het gemiddelde per dag/maand</string>
+    <string name="label_regression_line">Regressie gewichtslijn</string>
+    <string name="label_regression_line_degree">Regressie polynoomlijn</string>
+    <string name="label_goal_line">Doel lijn</string>
+
+
+    <string name="error_max_scale_users">Maximumaantal gelijktijdige schaalgebruikers bereikt.</string>
+    <string name="info_step_on_scale">Stapt alsjeblieft met blote voeten op de weegschaal voor een meting.</string>
+    <string name="info_measuring">Gewicht meten: %.2f</string>
+
+</resources>

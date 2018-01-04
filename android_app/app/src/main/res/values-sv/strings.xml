@@ -156,4 +156,6 @@
     <string name="error_max_scale_users">Maximalt antal samtidiga våganvändare har nåtts.</string>
     <string name="info_step_on_scale">Kliv upp barfota på vågen för referensmätningar.</string>
     <string name="info_measuring">Mäter vikt: %.2f</string>
+    <string name="open_drawer">öppna</string>
+    <string name="close_drawer">stäng</string>
 </resources>
