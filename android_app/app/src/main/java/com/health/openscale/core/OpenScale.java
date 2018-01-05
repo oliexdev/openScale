@@ -80,7 +80,7 @@ public class OpenScale {
         alarmHandler = new AlarmHandler();
         btCom = null;
         fragmentList = new ArrayList<>();
-        appDB = Room.databaseBuilder(context, AppDatabase.class, "openScaleDatabase").allowMainThreadQueries().build();
+        appDB = Room.databaseBuilder(context, AppDatabase.class, "openScale.db").allowMainThreadQueries().build();
         measurementDAO = appDB.measurementDAO();
         userDAO = appDB.userDAO();
 

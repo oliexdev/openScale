@@ -15,6 +15,7 @@
 */
 package com.health.openscale.gui.preferences;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.EditTextPreference;
@@ -27,6 +28,8 @@ import android.preference.PreferenceManager;
 import android.widget.Toast;
 
 import com.health.openscale.R;
+import com.health.openscale.core.OpenScale;
+import com.health.openscale.core.datatypes.ScaleUser;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -49,7 +52,6 @@ public class BackupPreferences extends PreferenceFragment {
         super.onCreate(savedInstanceState);
 
         addPreferencesFromResource(R.xml.backup_preferences);
-
 
         importBackup = (Preference) findPreference(PREFERENCE_KEY_IMPORT_BACKUP);
         importBackup.setOnPreferenceClickListener(new onClickListenerImportBackup());
@@ -115,8 +117,15 @@ public class BackupPreferences extends PreferenceFragment {
         public boolean onPreferenceClick(Preference preference) {
             File exportDir = new File(Environment.getExternalStorageDirectory(), PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext()).getString("exportDir", "openScale Backup"));
 
-            importBackup("openScaleDatabase.db", exportDir);
-            importBackup("openScaleUserDatabase.db", exportDir);
+            importBackup("openScale.db", exportDir);
+
+            List<ScaleUser> scaleUserList = OpenScale.getInstance(getActivity().getApplicationContext()).getScaleUserList();
+
+            if (!scaleUserList.isEmpty()) {
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext());
+                prefs.edit().putInt("selectedUserId", scaleUserList.get(0).getId()).commit();
+                OpenScale.getInstance(getActivity().getApplicationContext()).updateScaleData();
+            }
 
             return true;
         }
@@ -127,8 +136,7 @@ public class BackupPreferences extends PreferenceFragment {
         public boolean onPreferenceClick(Preference preference) {
             File exportDir = new File(Environment.getExternalStorageDirectory(), PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext()).getString("exportDir", "openScale Backup"));
 
-            exportBackup("openScaleDatabase.db", exportDir);
-            exportBackup("openScaleUserDatabase.db", exportDir);
+            exportBackup("openScale.db", exportDir);
 
             return true;
         }
@@ -138,9 +146,7 @@ public class BackupPreferences extends PreferenceFragment {
         if (!isExternalStoragePresent())
             return false;
 
-        File exportFile = new File(Environment.getDataDirectory() +
-                        "/data/com.health.openscale" +
-                        "/databases/" + databaseName);
+        File exportFile = getActivity().getApplicationContext().getDatabasePath(databaseName);
         File importFile = new File(exportDir, databaseName);
 
         if (!importFile.exists()) {
@@ -164,10 +170,7 @@ public class BackupPreferences extends PreferenceFragment {
         if (!isExternalStoragePresent())
             return false;
 
-        File dbFile = new File(Environment.getDataDirectory() +
-                "/data/com.health.openscale" +
-                "/databases/" + databaseName);
-
+        File dbFile = getActivity().getApplicationContext().getDatabasePath(databaseName);
         File file = new File(exportDir, databaseName);
 
         if (!exportDir.exists()) {
