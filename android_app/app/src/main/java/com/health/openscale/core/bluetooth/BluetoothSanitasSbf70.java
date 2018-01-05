@@ -36,6 +36,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.TreeSet;
 import java.util.UUID;
+import java.util.Date;
 
 public class BluetoothSanitasSbf70 extends BluetoothCommunication {
     public final static String TAG = "BluetoothSanitasSbf70";
@@ -537,7 +538,8 @@ public class BluetoothSanitasSbf70 extends BluetoothCommunication {
         long timestamp = ByteBuffer.wrap(data, 0, 4).getInt() * 1000L;
         SimpleDateFormat sdf = new SimpleDateFormat("MMMM d, yyyy 'at' h:mm a");
         String date = sdf.format(timestamp);
-
+        receivedMeasurement.setDateTime(new Date(timestamp));
+        
         // little endian
         float weight = ((float) (
                 ((data[4] & 0xFF) << 8) + (data[5] & 0xFF)
