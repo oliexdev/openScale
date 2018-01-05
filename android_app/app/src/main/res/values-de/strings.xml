@@ -158,4 +158,5 @@
     <string name="title_about">Info</string>
     <string name="open_drawer">öffnen</string>
     <string name="close_drawer">schließen</string>
+    <string name="info_bluetooth_no_device_set">Kein Bluetooth Gerät ausgewählt</string>
 </resources>

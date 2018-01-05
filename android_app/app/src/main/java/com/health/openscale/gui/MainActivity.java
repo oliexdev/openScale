@@ -248,7 +248,12 @@ public class MainActivity extends AppCompatActivity {
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
-        String deviceName = prefs.getString("btDeviceName", "MI_SCALE");
+        String deviceName = prefs.getString("btDeviceName", "-");
+
+        if (deviceName == "-") {
+            Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_no_device_set), Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         // Check if Bluetooth 4.x is available
         if (deviceName != "openScale_MCU") {
