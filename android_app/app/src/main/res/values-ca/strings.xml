@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">openScale</string>
+    <string name="title_overview">General</string>
+    <string name="title_graph">Gràfica</string>
+    <string name="title_table">Taula</string>
+    <string name="title_statistics">Estadístiques</string>
+    <string name="title_users">Usuaris</string>
+    <string name="title_data">Dades</string>
+    <string name="title_measurements">Mesures</string>
+    <string name="title_about">Quant a</string>
+
+    <string name="action_settings">Configuració</string>
+    <string name="action_bluetooth_status">Estat del Bluetooth</string>
+
+    <string name="label_add">Afegir</string>
+    <string name="label_cancel">Cancel·lar</string>
+    <string name="label_ok">OK</string>
+    <string name="label_yes">Sí</string>
+    <string name="label_no">No</string>
+    <string name="label_delete">Elimina</string>
+    <string name="label_add_user">Afegir usuari</string>
+
+    <string name="label_id">Id</string>
+    <string name="label_weight">Pes</string>
+    <string name="label_bmi">Índex de massa corporal (IMC)</string>
+    <string name="label_bmr">Taxa metabòlica basal (TMB)</string>
+    <string name="label_fat">Percentatge de greix corporal</string>
+    <string name="label_water">Percentatge d\'aigua</string>
+    <string name="label_muscle">Percentatge muscular</string>
+    <string name="label_lbw">Massa corporal magra</string>
+    <string name="label_waist">Circumferència de la cintura</string>
+    <string name="label_hip">Circumferència del maluc</string>
+    <string name="label_comment">Comentari</string>
+    <string name="label_whtr">Proporció cintura-altura</string>
+    <string name="label_whr">Proporció cintura-maluc</string>
+    <string name="label_bone">Massa òssia</string>
+    <string name="label_smartUserAssign">Asignació intel·ligent d\'usuari</string>
+
+    <plurals name="label_days">
+        <item quantity="one">%d dia</item>
+        <item quantity="other">%d dies</item>
+    </plurals>
+    <string name="label_measures">mesures</string>
+    <string name="label_last_week">Darrers 7 dies</string>
+    <string name="label_last_month">Darrers 30 dies</string>
+    <string name="label_weight_difference">Diferència de pes</string>
+    <string name="label_goal_date_is">La data per complir l\'objectiu és</string>
+    <string name="label_days_left">Dies que queden</string>
+
+    <string name="label_date">Data</string>
+    <string name="label_time">Hora</string>
+    <string name="label_birthday">D. Naiximent</string>
+    <string name="label_user_name">Nom</string>
+    <string name="label_body_height">Altura</string>
+    <string name="label_scale_unit">Unitat</string>
+    <string name="label_gender">Gènere</string>
+    <string name="label_male">Home</string>
+    <string name="label_woman">Dona</string>
+    <string name="label_goal_weight">Pes objectiu</string>
+    <string name="label_goal_date">Data objectiu</string>
+
+
+    <string name="label_title_user">usuari</string>
+    <string name="label_title_last_measurement">darrera mesura</string>
+    <string name="label_title_goal">objectiu</string>
+    <string name="label_title_statistics">estadístiques</string>
+
+    <string name="label_import">Importar</string>
+    <string name="label_export">Exportar</string>
+    <string name="label_delete_all">Eliminar tot</string>
+
+    <string name="error_value_required">Cal un valor</string>
+    <string name="error_value_range">El valor no està en el rang</string>
+    <string name="error_exporting">Error exportant</string>
+    <string name="error_importing">Error important</string>
+    <string name="error_user_name_required">Error, cal un nom d\'usuari</string>
+    <string name="error_body_height_required">Error, cal l\'altura</string>
+    <string name="error_initial_weight_required">Error, cal el pes inicial</string>
+    <string name="error_goal_weight_required">Error, cal l\'objetiu de pes</string>
+    <string name="error_hip_value_required">cal la circumferència del maluc</string>
+
+    <string name="info_data_deleted">Entrada eliminada</string>
+    <string name="info_data_all_deleted">Totes les entrades eliminades</string>
+    <string name="info_data_exported">Dades exportades a</string>
+    <string name="info_data_imported">Dades importades de</string>
+    <string name="info_set_filename">Establir nom d\'arxiu a</string>
+    <string name="info_enter_value_cm">Valor en cm</string>
+    <string name="info_enter_value_percent">Valor en %</string>
+    <string name="info_enter_value_unit">Valor en</string>
+    <string name="info_enter_comment">Comentari opcional</string>
+    <string name="info_enter_initial_weight">Pes inicial en la seua unitat de mesura</string>
+    <string name="info_enter_goal_weight">Pes objectiu en la seua unitat de mesura</string>
+    <string name="info_is_visible">està visible</string>
+    <string name="info_is_not_visible">no està visible</string>
+    <string name="info_is_enable">està activat</string>
+    <string name="info_is_not_enable">està desactivat</string>
+    <string name="info_is_not_available">no està disponible</string>
+    <string name="info_delete_bluetooth_data">Eliminar totes les dades de Bluetooth</string>
+    <string name="info_delete_bluetooth_data_success">Les dades de Bluetooth s\'han eliminat</string>
+    <string name="info_bluetooth_try_connection">Intentant connectar a</string>
+    <string name="info_bluetooth_connection_lost">S\'ha perdut la connexió Bluetooth.</string>
+    <string name="info_bluetooth_no_device">No s\'ha trobat un dispositiu Bluetooth</string>
+    <string name="info_bluetooth_connection_successful">La connexió s\'ha fet correctament</string>
+    <string name="info_bluetooth_init">Inicialitzar el dispositiu Bluetooth</string>
+    <string name="info_bluetooth_connection_error">El Bluetooth ha trobat un error inesperat</string>
+    <string name="info_new_data_added">%1$.2f%2$s [%3$s] a %4$s afegit</string>
+
+    <string name="info_enter_user_name">Dóna el teu nom</string>
+    <string name="info_no_selected_user">No existeix l\'usuari. Si us plau, definiu un usuari nou en la configuració.</string>
+    <string name="info_no_evaluation_available">No es pot avaluar el valor</string>
+
+    <string name="question_really_delete">Realment vols eliminar l\'entrada de la base de dades?</string>
+    <string name="question_really_delete_all">Realment vols eliminar totes les entrades de la base de dades?</string>
+    <string name="question_really_delete_user">Realment vols eliminar l\'usuari? </string>
+
+    <string name="label_bluetooth_title">Bluetooth</string>
+    <string name="label_bluetooth_enable">Buscar bàscula en iniciar</string>
+    <string name="label_bluetooth_searching">Buscant bàscules Bluetooth</string>
+    <string name="label_device_type">Tipus de dispositiu</string>
+
+    <string name="label_enable_labels">Etiqueta en el punt de mesura</string>
+    <string name="label_enable_points">Mostreu un punt en la mesura</string>
+
+    <string name="label_delete_confirmation">Confirmació d\'eliminació</string>
+
+    <string name="label_estimate_water">Estimació d\'aigua corporal</string>
+    <string name="label_estimate_lbw">Estimació de massa corporal magra</string>
+    <string name="label_estimate_fat">Estimació de greix corporal</string>
+
+    <string name="label_category_display">Mostreu</string>
+    <string name="label_category_body_metrics_estimation">Estimació de mètriques corporals</string>
+    <string name="label_category_measurement_database">Base de dades de mesures</string>
+    <string name="label_category_misc">Varis</string>
+
+    <string name="label_maintainer">Responsable</string>
+    <string name="label_website">Pàgina Web</string>
+    <string name="label_license">Llicència</string>
+
+    <string name="label_estimate_water_formula">Fórmula d\'aigua corporal</string>
+    <string name="label_estimate_lbw_formula">Fórmula de massa corporal magra</string>
+    <string name="label_estimate_fat_formula">Fórmula de greix corporal</string>
+    <string name="label_automatic">automàtic</string>
+
+    <string name="label_reminder">Recordatori</string>
+    <string name="label_reminder_weekdays">Dies de la setmana</string>
+    <string name="label_reminder_time">Hora</string>
+    <string name="label_reminder_notify_text">Text de la notificació</string>
+    <string name="default_value_reminder_notify_text">És hora de pesar-se</string>
+
+    <string name="info_your_weight">El teu pes era</string>
+    <string name="info_your_fat">La teua massa corporal era</string>
+    <string name="info_your_water">El teu percentatge d\'aigua era</string>
+    <string name="info_your_muscle">El teu percentatge muscular era</string>
+    <string name="info_your_waist">La teua cintura era</string>
+    <string name="info_your_hip">El teu maluc era</string>
+    <string name="info_on_date">el</string>
+
+    <string name="Monday">Dilluns</string>
+    <string name="Tuesday">Dimarts</string>
+    <string name="Wednesday">Dimecres</string>
+    <string name="Thursday">Dijous</string>
+    <string name="Friday">Divendres</string>
+    <string name="Saturday">Dissabte</string>
+    <string name="Sunday">Diumenge</string>
+    <string name="label_bt_device_no_support">dispositiu no suportat</string>
+    <string name="label_exportBackup">Exportar còpia de seguretat</string>
+    <string name="label_importBackup">Importar còpia de seguretat</string>
+    <string name="label_backup">Còpia de seguretat</string>
+    <string name="label_export_dir">Directori d\'exportació</string>
+    <string name="label_not_found">no trobat</string>
+    <string name="label_ignoreOutOfRange">Ignorar dades fora rang</string>
+    <string name="label_initial_weight">Pes inicial</string>
+    <string name="label_average_data">Calcular mitjana per dia/mes</string>
+    <string name="label_regression_line">Polinomi de regressió del pes</string>
+    <string name="label_regression_line_degree">Grau del polinomi de regressió</string>
+    <string name="label_goal_line">Línia de l\'objectiu</string>
+
+
+    <string name="error_max_scale_users">S\'ha assolit el nombre màxim d\'usuaris simultanis de la bàscula.</string>
+    <string name="info_step_on_scale">Si us plau, pose\'s descalç en la bàscula per prendre mesures de referència.</string>
+    <string name="info_measuring">Mesura del pes: %.2f</string>
+    <string name="open_drawer">obri</string>
+    <string name="close_drawer">tanca</string>
+
+</resources>
