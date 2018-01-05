@@ -42,7 +42,6 @@ import android.widget.ListView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
@@ -65,7 +64,6 @@ import com.health.openscale.gui.views.WaistMeasurementView;
 import com.health.openscale.gui.views.WaterMeasurementView;
 import com.health.openscale.gui.views.WeightMeasurementView;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -290,19 +288,8 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
                     filenameDialog.setPositiveButton(getResources().getString(R.string.label_ok), new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            boolean isError = false;
-
-                            try {
-                                OpenScale.getInstance(getContext()).importData(Environment.getExternalStorageDirectory().getPath() + txtFilename.getText().toString());
-                            } catch (IOException e) {
-                                Toast.makeText(tableView.getContext(), getResources().getString(R.string.error_importing) + " " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                                isError = true;
-                            }
-
-                            if (!isError) {
-                                Toast.makeText(tableView.getContext(), getResources().getString(R.string.info_data_imported) + " /sdcard" + txtFilename.getText().toString(), Toast.LENGTH_SHORT).show();
-                                updateOnView(OpenScale.getInstance(getContext()).getScaleMeasurementList());
-                            }
+                            OpenScale.getInstance(getContext()).importData(Environment.getExternalStorageDirectory().getPath() + txtFilename.getText().toString());
+                            updateOnView(OpenScale.getInstance(getContext()).getScaleMeasurementList());
                         }
                     });
 
@@ -332,18 +319,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
             filenameDialog.setPositiveButton(getResources().getString(R.string.label_ok), new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
-                    boolean isError = false;
-
-                    try {
-                        OpenScale.getInstance(getContext()).exportData(Environment.getExternalStorageDirectory().getPath() + txtFilename.getText().toString());
-                    } catch (IOException e) {
-                        Toast.makeText(tableView.getContext(), getResources().getString(R.string.error_exporting) + " " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                        isError = true;
-                    }
-
-                    if (!isError) {
-                        Toast.makeText(tableView.getContext(), getResources().getString(R.string.info_data_exported) + " /sdcard" + txtFilename.getText().toString(), Toast.LENGTH_SHORT).show();
-                    }
+                    OpenScale.getInstance(getContext()).exportData(Environment.getExternalStorageDirectory().getPath() + txtFilename.getText().toString());
                 }
             });
 

@@ -21,6 +21,8 @@ import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.Index;
 import android.arch.persistence.room.PrimaryKey;
 
+import com.j256.simplecsv.common.CsvColumn;
+
 import java.util.Date;
 
 @Entity(tableName = "scaleMeasurements", indices = {@Index(value = {"datetime"}, unique = true)})
@@ -31,28 +33,39 @@ public class ScaleMeasurement {
     @PrimaryKey(autoGenerate = true)
     private int id;
 
+    @CsvColumn
     @ColumnInfo(name = "userId")
     private int userId;
     @ColumnInfo(name = "enabled")
     private boolean enabled;
+    @CsvColumn (format = "dd.MM.yyyy HH:mm")
     @ColumnInfo(name = "datetime")
     private Date dateTime;
+    @CsvColumn
     @ColumnInfo(name = "weight")
     private float weight;
+    @CsvColumn
     @ColumnInfo(name = "fat")
     private float fat;
+    @CsvColumn
     @ColumnInfo(name = "water")
     private float water;
+    @CsvColumn
     @ColumnInfo(name = "muscle")
     private float muscle;
+    @CsvColumn
     @ColumnInfo(name = "lbw")
     private float lbw;
+    @CsvColumn
     @ColumnInfo(name = "waist")
     private float waist;
+    @CsvColumn
     @ColumnInfo(name = "hip")
     private float hip;
+    @CsvColumn
     @ColumnInfo(name = "bone")
     private float bone;
+    @CsvColumn
     @ColumnInfo(name = "comment")
     private String comment;
 

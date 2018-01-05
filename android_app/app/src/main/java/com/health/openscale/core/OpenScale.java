@@ -40,14 +40,10 @@ import com.health.openscale.core.database.ScaleUserDatabase;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.gui.fragments.FragmentUpdateListener;
+import com.j256.simplecsv.processor.CsvProcessor;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -277,85 +273,34 @@ public class OpenScale {
         updateScaleData();
     }
 
-    public void importData(String filename) throws IOException {
-        File file = new File(filename);
-
-        FileInputStream inputStream = new FileInputStream(file);
-
-        InputStreamReader inputReader = new InputStreamReader(inputStream);
-        BufferedReader csvReader = new BufferedReader(inputReader);
-
-        String line = csvReader.readLine();
+    public void importData(String filename) {
+        CsvProcessor<ScaleMeasurement> csvProcessor = new CsvProcessor<ScaleMeasurement>(ScaleMeasurement.class).withHeaderValidation(true).withFlexibleOrder(true);
+        File csvFile = new File(filename);
 
         try {
-            while (line != null) {
-                String csvField[] = line.split(",", -1);
+            List<ScaleMeasurement> csvScaleMeasurementList = csvProcessor.readAll(csvFile, null);
 
-                if (csvField.length < 9) {
-                    throw new IOException("Can't parse CSV file. Field length is wrong.");
-                }
-
-                ScaleMeasurement newScaleMeasurement = new ScaleMeasurement();
-
-                newScaleMeasurement.setDateTime(dateTimeFormat.parse(csvField[0]));
-                newScaleMeasurement.setWeight(Float.parseFloat(csvField[1]));
-                newScaleMeasurement.setFat(Float.parseFloat(csvField[2]));
-                newScaleMeasurement.setWater(Float.parseFloat(csvField[3]));
-                newScaleMeasurement.setMuscle(Float.parseFloat(csvField[4]));
-                newScaleMeasurement.setLbw(Float.parseFloat(csvField[5]));
-                newScaleMeasurement.setBone(Float.parseFloat(csvField[6]));
-                newScaleMeasurement.setWaist(Float.parseFloat(csvField[7]));
-                newScaleMeasurement.setHip(Float.parseFloat(csvField[8]));
-                newScaleMeasurement.setComment(csvField[9]);
-
-                newScaleMeasurement.setUserId(getSelectedScaleUser().getId());
-
-                measurementDAO.insert(newScaleMeasurement);
-
-                line = csvReader.readLine();
-            }
-
+            measurementDAO.insertAll(csvScaleMeasurementList);
+            updateScaleData();
+            Toast.makeText(context, context.getString(R.string.info_data_imported) + " /sdcard" + filename, Toast.LENGTH_SHORT).show();
+        } catch (IOException e) {
+            Toast.makeText(context, context.getString(R.string.error_importing) + e.getMessage(), Toast.LENGTH_SHORT).show();
         } catch (ParseException e) {
-            throw new IOException("Can't parse date format. Please set the date time format as <dd.MM.yyyy HH:mm> (e.g. 31.10.2014 05:23)");
-        } catch (NumberFormatException e) {
-            throw new IOException("Can't parse float number (" + e.getMessage()+")");
-        } catch (ArrayIndexOutOfBoundsException e) {
-		    throw new IOException("Can't parse format column number mismatch");
+            Toast.makeText(context, context.getString(R.string.error_importing) + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
-
-        updateScaleData();
-
-        csvReader.close();
-        inputReader.close();
     }
 
-    public void exportData(String filename) throws IOException {
-        File file = new File(filename);
-        file.createNewFile();
+    public void exportData(String filename) {
+        CsvProcessor<ScaleMeasurement> csvProcessor = new CsvProcessor<ScaleMeasurement>(ScaleMeasurement.class);
 
-        FileOutputStream outputStream = new FileOutputStream(file);
+        File csvFile = new File(filename);
 
-        OutputStreamWriter csvWriter = new OutputStreamWriter(outputStream);
-
-        for (ScaleMeasurement scaleMeasurement : scaleMeasurementList) {
-            csvWriter.append(dateTimeFormat.format(scaleMeasurement.getDateTime()) + ",");
-            csvWriter.append(Float.toString(scaleMeasurement.getWeight()) + ",");
-            csvWriter.append(Float.toString(scaleMeasurement.getFat()) + ",");
-            csvWriter.append(Float.toString(scaleMeasurement.getWater()) + ",");
-            csvWriter.append(Float.toString(scaleMeasurement.getMuscle()) + ",");
-            csvWriter.append(Float.toString(scaleMeasurement.getLbw()) + ",");
-            csvWriter.append(Float.toString(scaleMeasurement.getBone()) + ",");
-            csvWriter.append(Float.toString(scaleMeasurement.getWaist()) + ",");
-            csvWriter.append(Float.toString(scaleMeasurement.getHip()) + ",");
-            if (!scaleMeasurement.getComment().isEmpty()) {
-                csvWriter.append(scaleMeasurement.getComment());
-            }
-
-            csvWriter.append("\n");
+        try {
+            csvProcessor.writeAll(csvFile, scaleMeasurementList, true);
+            Toast.makeText(context, context.getString(R.string.info_data_exported) + " /sdcard" + filename, Toast.LENGTH_SHORT).show();
+        } catch (IOException e) {
+            Toast.makeText(context, context.getResources().getString(R.string.error_exporting) + " " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
-
-        csvWriter.close();
-        outputStream.close();
     }
 
     public void clearScaleData(int userId) {
