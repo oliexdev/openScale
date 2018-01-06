@@ -298,7 +298,8 @@ public class DataEntryActivity extends Activity {
         cal.setTime(dateMeasurement.getDateTime());
         cal.set(Calendar.HOUR_OF_DAY, time.get(Calendar.HOUR_OF_DAY));
         cal.set(Calendar.MINUTE, time.get(Calendar.MINUTE));
-        cal.set(Calendar.SECOND, time.get(Calendar.SECOND));
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
 
         ScaleMeasurement scaleMeasurement = new ScaleMeasurement();
 

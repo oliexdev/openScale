@@ -210,14 +210,15 @@ public class OpenScale {
             scaleMeasurement.setFat(fatMetric.getFat(getScaleUser(scaleMeasurement.getUserId()), scaleMeasurement));
         }
 
-        if (measurementDAO.get(scaleMeasurement.getDateTime(), scaleMeasurement.getUserId()) == null) {
-            measurementDAO.insert(scaleMeasurement);
+        if (measurementDAO.insert(scaleMeasurement) != -1) {
             ScaleUser scaleUser = getScaleUser(scaleMeasurement.getUserId());
 
             String infoText = String.format(context.getString(R.string.info_new_data_added), scaleMeasurement.getConvertedWeight(scaleUser.getScaleUnit()), scaleUser.UNIT_STRING[scaleUser.getScaleUnit()], dateTimeFormat.format(scaleMeasurement.getDateTime()), scaleUser.getUserName());
             Toast.makeText(context, infoText, Toast.LENGTH_LONG).show();
             alarmHandler.entryChanged(context, scaleMeasurement);
             updateScaleData();
+        } else {
+            Toast.makeText(context, context.getString(R.string.info_new_data_duplicated), Toast.LENGTH_LONG).show();
         }
 
         return scaleMeasurement.getUserId();

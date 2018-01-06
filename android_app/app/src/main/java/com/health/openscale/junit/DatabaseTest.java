@@ -17,7 +17,6 @@ package com.health.openscale.junit;
 
 import android.arch.persistence.room.Room;
 import android.content.Context;
-import android.database.sqlite.SQLiteConstraintException;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
@@ -40,7 +39,6 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 // run this test as an Android instrumented test!
 @RunWith(AndroidJUnit4.class)
@@ -179,16 +177,8 @@ public class DatabaseTest {
         assertEquals(25.0f, measurementDAO.getAll(user2).get(0).getWeight(), DELTA);
 
         // don't allow insertion with the same date
-        if (measurementDAO.get(measurement11.getDateTime(), user1) == null) {
-            measurementDAO.insert(measurement11);
-        }
-        assertEquals(3, measurementDAO.getAll(user1).size());
-
-        // test if SQLiteConstraintException exception is thrown if we want to try to insert a measurement with the same date
-        try {
-            measurementDAO.insert(measurement11);
-            fail("SQLiteConstraintException was not thrown while inserting measurement with the same date");
-        } catch (SQLiteConstraintException e) {}
+        long id = measurementDAO.insert(measurement11);
+        assertEquals(-1 , id);
         assertEquals(3, measurementDAO.getAll(user1).size());
 
         // test get(datetime) method

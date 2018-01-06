@@ -18,6 +18,7 @@ package com.health.openscale.core.database;
 
 import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Insert;
+import android.arch.persistence.room.OnConflictStrategy;
 import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Update;
 
@@ -46,10 +47,10 @@ public interface ScaleMeasurementDAO {
     @Query("SELECT * FROM scaleMeasurements WHERE datetime >= :startYear AND datetime < :endYear AND userId = :userId AND enabled = 1 ORDER BY datetime DESC")
     List<ScaleMeasurement> getAllInRange(Date startYear, Date endYear, int userId);
 
-    @Insert
-    void insert(ScaleMeasurement measurement);
+    @Insert (onConflict = OnConflictStrategy.IGNORE)
+    long insert(ScaleMeasurement measurement);
 
-    @Insert
+    @Insert (onConflict = OnConflictStrategy.IGNORE)
     void insertAll(List<ScaleMeasurement> measurementList);
 
     @Update
