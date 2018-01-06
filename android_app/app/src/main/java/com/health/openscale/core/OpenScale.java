@@ -97,16 +97,18 @@ public class OpenScale {
     }
 
     private void migrateSQLtoRoom() {
-        List<ScaleUser> scaleUserList = scaleUserDB.getScaleUserList();
+        List<ScaleUser> oldScaleUserList = scaleUserDB.getScaleUserList();
 
-        if (scaleDB.getReadableDatabase().getVersion() == 6 && userDAO.getAll().isEmpty() && !scaleUserList.isEmpty()) {
+        if (scaleDB.getReadableDatabase().getVersion() == 6 && userDAO.getAll().isEmpty() && !oldScaleUserList.isEmpty()) {
             Toast.makeText(context, "Migrating old SQL database to new database format...", Toast.LENGTH_LONG).show();
-            userDAO.insertAll(scaleUserList);
+            userDAO.insertAll(oldScaleUserList);
 
-            for (ScaleUser user : scaleUserList) {
-                List<ScaleMeasurement> scaleMeasurementList = scaleDB.getScaleDataList(user.getId());
-                measurementDAO.insertAll(scaleMeasurementList);
+            for (ScaleUser user : oldScaleUserList) {
+                List<ScaleMeasurement> oldScaleMeasurementList = scaleDB.getScaleDataList(user.getId());
+                measurementDAO.insertAll(oldScaleMeasurementList);
             }
+
+            Toast.makeText(context, "Finished migrating old SQL database to new database format", Toast.LENGTH_LONG).show();
         }
     }
 
