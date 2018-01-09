@@ -138,10 +138,8 @@ public class DataEntryActivity extends Activity {
         dataEntryMeasurements.add(dateMeasurement);
         dataEntryMeasurements.add(timeMeasurement);
 
-        Collections.reverse(dataEntryMeasurements);
-
         for (MeasurementView measurement : dataEntryMeasurements) {
-            tableLayoutDataEntry.addView(measurement, 0);
+            tableLayoutDataEntry.addView(measurement);
         }
 
         txtDataNr = (TextView) findViewById(R.id.txtDataNr);
