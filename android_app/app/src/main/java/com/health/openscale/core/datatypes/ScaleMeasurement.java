@@ -141,7 +141,6 @@ public class ScaleMeasurement {
 
     public void setWeight(float weight) {
         this.weight = weight;
-
     }
 
     public void setConvertedWeight(float weight, int scale_unit) {

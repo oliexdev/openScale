@@ -180,6 +180,7 @@ public class DataEntryActivity extends Activity {
         }
 
         ScaleMeasurement scaleMeasurement;
+        OpenScale openScale = OpenScale.getInstance(context);
 
         if (id > 0) {
             // keep edit mode state if we are moving to left or right
@@ -198,8 +199,6 @@ public class DataEntryActivity extends Activity {
                 expandButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#D3D3D3")));
             }
 
-            OpenScale openScale = OpenScale.getInstance(context);
-
             ScaleMeasurement[] tupleScaleData = openScale.getTupleScaleData(id);
             ScaleMeasurement prevScaleMeasurement = tupleScaleData[0];
             scaleMeasurement = tupleScaleData[1];
@@ -217,13 +216,14 @@ public class DataEntryActivity extends Activity {
         } else {
             setViewMode(MeasurementView.MeasurementViewMode.ADD);
 
-            if (OpenScale.getInstance(getApplicationContext()).getScaleMeasurementList().isEmpty()) {
+            if (openScale.getScaleMeasurementList().isEmpty()) {
                 // Show default values
                 scaleMeasurement = new ScaleMeasurement();
+                scaleMeasurement.setWeight(openScale.getSelectedScaleUser().getInitialWeight());
             }
             else {
                 // Show the last scale data as default
-                scaleMeasurement = OpenScale.getInstance(getApplicationContext()).getScaleMeasurementList().get(0);
+                scaleMeasurement = openScale.getScaleMeasurementList().get(0);
                 scaleMeasurement.setDateTime(new Date());
                 scaleMeasurement.setComment("");
             }
