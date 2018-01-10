@@ -24,25 +24,10 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 
-public class BoneMeasurementView extends MeasurementView {
+public class BoneMeasurementView extends FloatMeasurementView {
 
     public BoneMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_bone), ContextCompat.getDrawable(context, R.drawable.ic_bone));
-    }
-
-    @Override
-    public void updateValue(ScaleMeasurement newMeasurement) {
-        setValueOnView(newMeasurement.getDateTime(), newMeasurement.getBone());
-    }
-
-    @Override
-    public void updateDiff(ScaleMeasurement newMeasurement, ScaleMeasurement lastMeasurement) {
-        setDiffOnView(newMeasurement.getBone(), lastMeasurement.getBone());
-    }
-
-    @Override
-    public String getUnit() {
-        return "kg";
     }
 
     @Override
@@ -51,12 +36,27 @@ public class BoneMeasurementView extends MeasurementView {
     }
 
     @Override
-    public EvaluationResult evaluateSheet(EvaluationSheet evalSheet, float value) {
-        return null;
+    protected float getMeasurementValue(ScaleMeasurement measurement) {
+        return measurement.getBone();
     }
 
     @Override
-    public float getMaxValue() {
+    protected void setMeasurementValue(float value, ScaleMeasurement measurement) {
+        measurement.setBone(value);
+    }
+
+    @Override
+    protected String getUnit() {
+        return "kg";
+    }
+
+    @Override
+    protected float getMaxValue() {
         return 50;
+    }
+
+    @Override
+    protected EvaluationResult evaluateSheet(EvaluationSheet evalSheet, float value) {
+        return null;
     }
 }

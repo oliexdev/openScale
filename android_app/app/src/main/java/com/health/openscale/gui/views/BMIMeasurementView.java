@@ -24,10 +24,15 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 
-public class BMIMeasurementView extends MeasurementView {
+public class BMIMeasurementView extends FloatMeasurementView {
 
     public BMIMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_bmi), ContextCompat.getDrawable(context, R.drawable.ic_bmi));
+    }
+
+    @Override
+    public void updatePreferences(SharedPreferences preferences) {
+        setVisible(preferences.getBoolean("weightEnable", true));
     }
 
     @Override
@@ -36,32 +41,27 @@ public class BMIMeasurementView extends MeasurementView {
     }
 
     @Override
-    public void updateValue(ScaleMeasurement newMeasurement) {
-        setValueOnView(newMeasurement.getDateTime(), newMeasurement.getBMI(getScaleUser().getBodyHeight()));
+    protected float getMeasurementValue(ScaleMeasurement measurement) {
+        return measurement.getBMI(getScaleUser().getBodyHeight());
     }
 
     @Override
-    public void updateDiff(ScaleMeasurement newMeasurement, ScaleMeasurement lastMeasurement) {
-        setDiffOnView(newMeasurement.getBMI(getScaleUser().getBodyHeight()), lastMeasurement.getBMI(getScaleUser().getBodyHeight()));
+    protected void setMeasurementValue(float value, ScaleMeasurement measurement) {
+        // Empty
     }
 
     @Override
-    public String getUnit() {
+    protected String getUnit() {
         return "";
     }
 
     @Override
-    public EvaluationResult evaluateSheet(EvaluationSheet evalSheet, float value) {
-        return evalSheet.evaluateBMI(value);
-    }
-
-    @Override
-    public float getMaxValue() {
+    protected float getMaxValue() {
         return 50;
     }
 
     @Override
-    public void updatePreferences(SharedPreferences preferences) {
-        setVisible(preferences.getBoolean("weightEnable", true));
+    protected EvaluationResult evaluateSheet(EvaluationSheet evalSheet, float value) {
+        return evalSheet.evaluateBMI(value);
     }
 }

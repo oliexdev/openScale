@@ -24,10 +24,16 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 
-public class WHRMeasurementView extends MeasurementView {
+public class WHRMeasurementView extends FloatMeasurementView {
 
     public WHRMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_whr), ContextCompat.getDrawable(context, R.drawable.ic_whr));
+    }
+
+    @Override
+    public void updatePreferences(SharedPreferences preferences) {
+        setVisible(preferences.getBoolean("hipEnable", false)
+                && preferences.getBoolean("waistEnable", false));
     }
 
     @Override
@@ -36,33 +42,27 @@ public class WHRMeasurementView extends MeasurementView {
     }
 
     @Override
-    public void updateValue(ScaleMeasurement newMeasurement) {
-        setValueOnView(newMeasurement.getDateTime(), newMeasurement.getWHR());
+    protected float getMeasurementValue(ScaleMeasurement measurement) {
+        return measurement.getWHR();
     }
 
     @Override
-    public void updateDiff(ScaleMeasurement newMeasurement, ScaleMeasurement lastMeasurement) {
-        setDiffOnView(newMeasurement.getWHR(), lastMeasurement.getWHR());
+    protected void setMeasurementValue(float value, ScaleMeasurement measurement) {
+        // Empty
     }
 
     @Override
-    public String getUnit() {
+    protected String getUnit() {
         return "";
     }
 
     @Override
-    public void updatePreferences(SharedPreferences preferences) {
-        setVisible(preferences.getBoolean("hipEnable", false) && preferences.getBoolean("waistEnable", false));
-    }
-
-    @Override
-    public EvaluationResult evaluateSheet(EvaluationSheet evalSheet, float value) {
-        return evalSheet.evaluateWHR(value);
-    }
-
-    @Override
-    public float getMaxValue() {
+    protected float getMaxValue() {
         return 1.5f;
     }
 
+    @Override
+    protected EvaluationResult evaluateSheet(EvaluationSheet evalSheet, float value) {
+        return evalSheet.evaluateWHR(value);
+    }
 }

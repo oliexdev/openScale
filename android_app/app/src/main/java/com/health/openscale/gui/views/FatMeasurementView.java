@@ -24,39 +24,12 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 
-public class FatMeasurementView extends MeasurementView {
+public class FatMeasurementView extends FloatMeasurementView {
 
     private boolean estimateFatEnable;
 
     public FatMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_fat), ContextCompat.getDrawable(context, R.drawable.ic_fat));
-    }
-
-    @Override
-    public boolean isEditable() {
-        if (estimateFatEnable && getMeasurementMode() == MeasurementViewMode.ADD) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public void updateValue(ScaleMeasurement newMeasurement) {
-        if (estimateFatEnable && getMeasurementMode() == MeasurementViewMode.ADD) {
-            setValueOnView(newMeasurement.getDateTime(), (getContext().getString(R.string.label_automatic)));
-        } else {
-            setValueOnView(newMeasurement.getDateTime(), newMeasurement.getFat());
-        }
-    }
-
-    @Override
-    public void updateDiff(ScaleMeasurement newMeasurement, ScaleMeasurement lastMeasurement) {
-        setDiffOnView(newMeasurement.getFat(), lastMeasurement.getFat());
-    }
-
-    @Override
-    public String getUnit() {
-        return "%";
     }
 
     @Override
@@ -66,13 +39,32 @@ public class FatMeasurementView extends MeasurementView {
     }
 
     @Override
-    public EvaluationResult evaluateSheet(EvaluationSheet evalSheet, float value) {
-        return evalSheet.evaluateBodyFat(value);
+    protected float getMeasurementValue(ScaleMeasurement measurement) {
+        return measurement.getFat();
     }
 
     @Override
-    public float getMaxValue() {
+    protected void setMeasurementValue(float value, ScaleMeasurement measurement) {
+        measurement.setFat(value);
+    }
+
+    @Override
+    protected String getUnit() {
+        return "%";
+    }
+
+    @Override
+    protected float getMaxValue() {
         return 80;
     }
 
+    @Override
+    protected boolean isEstimationEnabled() {
+        return estimateFatEnable;
+    }
+
+    @Override
+    protected EvaluationResult evaluateSheet(EvaluationSheet evalSheet, float value) {
+        return evalSheet.evaluateBodyFat(value);
+    }
 }

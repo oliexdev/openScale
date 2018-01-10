@@ -24,30 +24,10 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 
-public class MuscleMeasurementView extends MeasurementView {
+public class MuscleMeasurementView extends FloatMeasurementView {
 
     public MuscleMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_muscle), ContextCompat.getDrawable(context, R.drawable.ic_muscle));
-    }
-
-    @Override
-    public boolean isEditable() {
-        return true;
-    }
-
-    @Override
-    public void updateValue(ScaleMeasurement newMeasurement) {
-        setValueOnView(newMeasurement.getDateTime(), newMeasurement.getMuscle());
-    }
-
-    @Override
-    public void updateDiff(ScaleMeasurement newMeasurement, ScaleMeasurement lastMeasurement) {
-        setDiffOnView(newMeasurement.getMuscle(), lastMeasurement.getMuscle());
-    }
-
-    @Override
-    public String getUnit() {
-        return "%";
     }
 
     @Override
@@ -56,13 +36,27 @@ public class MuscleMeasurementView extends MeasurementView {
     }
 
     @Override
-    public EvaluationResult evaluateSheet(EvaluationSheet evalSheet, float value) {
-        return evalSheet.evaluateBodyMuscle(value);
+    protected float getMeasurementValue(ScaleMeasurement measurement) {
+        return measurement.getMuscle();
     }
 
     @Override
-    public float getMaxValue() {
+    protected void setMeasurementValue(float value, ScaleMeasurement measurement) {
+        measurement.setMuscle(value);
+    }
+
+    @Override
+    protected String getUnit() {
+        return "%";
+    }
+
+    @Override
+    protected float getMaxValue() {
         return 80;
     }
 
+    @Override
+    protected EvaluationResult evaluateSheet(EvaluationSheet evalSheet, float value) {
+        return evalSheet.evaluateBodyMuscle(value);
+    }
 }

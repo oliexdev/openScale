@@ -24,30 +24,10 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 
-public class WHtRMeasurementView extends MeasurementView {
+public class WHtRMeasurementView extends FloatMeasurementView {
 
     public WHtRMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_whtr), ContextCompat.getDrawable(context, R.drawable.ic_whtr));
-    }
-
-    @Override
-    public boolean isEditable() {
-        return false;
-    }
-
-    @Override
-    public void updateValue(ScaleMeasurement newMeasurement) {
-        setValueOnView(newMeasurement.getDateTime(), newMeasurement.getWHtR(getScaleUser().getBodyHeight()));
-    }
-
-    @Override
-    public void updateDiff(ScaleMeasurement newMeasurement, ScaleMeasurement lastMeasurement) {
-        setDiffOnView(newMeasurement.getWHtR(getScaleUser().getBodyHeight()), lastMeasurement.getWHtR(getScaleUser().getBodyHeight()));
-    }
-
-    @Override
-    public String getUnit() {
-        return "";
     }
 
     @Override
@@ -56,13 +36,32 @@ public class WHtRMeasurementView extends MeasurementView {
     }
 
     @Override
-    public EvaluationResult evaluateSheet(EvaluationSheet evalSheet, float value) {
-        return evalSheet.evaluateWHtR(value);
+    public boolean isEditable() {
+        return false;
     }
 
     @Override
-    public float getMaxValue() {
+    protected float getMeasurementValue(ScaleMeasurement measurement) {
+        return measurement.getWHtR(getScaleUser().getBodyHeight());
+    }
+
+    @Override
+    protected void setMeasurementValue(float value, ScaleMeasurement measurement) {
+        // Empty
+    }
+
+    @Override
+    protected String getUnit() {
+        return "";
+    }
+
+    @Override
+    protected float getMaxValue() {
         return 1;
     }
 
+    @Override
+    protected EvaluationResult evaluateSheet(EvaluationSheet evalSheet, float value) {
+        return evalSheet.evaluateWHtR(value);
+    }
 }

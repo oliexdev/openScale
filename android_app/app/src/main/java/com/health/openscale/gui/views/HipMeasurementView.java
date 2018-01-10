@@ -24,25 +24,10 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 
-public class HipMeasurementView extends MeasurementView {
+public class HipMeasurementView extends FloatMeasurementView {
 
     public HipMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_hip), ContextCompat.getDrawable(context, R.drawable.ic_hip));
-    }
-
-    @Override
-    public void updateValue(ScaleMeasurement newMeasurement) {
-        setValueOnView(newMeasurement.getDateTime(), newMeasurement.getHip());
-    }
-
-    @Override
-    public void updateDiff(ScaleMeasurement newMeasurement, ScaleMeasurement lastMeasurement) {
-        setDiffOnView(newMeasurement.getHip(), lastMeasurement.getHip());
-    }
-
-    @Override
-    public String getUnit() {
-        return "cm";
     }
 
     @Override
@@ -51,13 +36,27 @@ public class HipMeasurementView extends MeasurementView {
     }
 
     @Override
-    public EvaluationResult evaluateSheet(EvaluationSheet evalSheet, float value) {
-        return null;
+    protected float getMeasurementValue(ScaleMeasurement measurement) {
+        return measurement.getHip();
     }
 
     @Override
-    public float getMaxValue() {
+    protected void setMeasurementValue(float value, ScaleMeasurement measurement) {
+        measurement.setHip(value);
+    }
+
+    @Override
+    protected String getUnit() {
+        return "cm";
+    }
+
+    @Override
+    protected float getMaxValue() {
         return 200;
     }
 
+    @Override
+    protected EvaluationResult evaluateSheet(EvaluationSheet evalSheet, float value) {
+        return null;
+    }
 }

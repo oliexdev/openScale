@@ -25,25 +25,10 @@ import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 
-public class WeightMeasurementView extends MeasurementView {
+public class WeightMeasurementView extends FloatMeasurementView {
 
     public WeightMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_weight), ContextCompat.getDrawable(context, R.drawable.ic_weight));
-    }
-
-    @Override
-    public void updateValue(ScaleMeasurement newMeasurement) {
-        setValueOnView(newMeasurement.getDateTime(), newMeasurement.getConvertedWeight(getScaleUser().getScaleUnit()));
-    }
-
-    @Override
-    public void updateDiff(ScaleMeasurement newMeasurement, ScaleMeasurement lastMeasurement) {
-        setDiffOnView(newMeasurement.getConvertedWeight(getScaleUser().getScaleUnit()), lastMeasurement.getConvertedWeight(getScaleUser().getScaleUnit()));
-    }
-
-    @Override
-    public String getUnit() {
-        return ScaleUser.UNIT_STRING[getScaleUser().getScaleUnit()];
     }
 
     @Override
@@ -52,13 +37,27 @@ public class WeightMeasurementView extends MeasurementView {
     }
 
     @Override
-    public EvaluationResult evaluateSheet(EvaluationSheet evalSheet, float value) {
-        return evalSheet.evaluateWeight(value);
+    protected float getMeasurementValue(ScaleMeasurement measurement) {
+        return measurement.getConvertedWeight(getScaleUser().getScaleUnit());
     }
 
     @Override
-    public float getMaxValue() {
+    protected void setMeasurementValue(float value, ScaleMeasurement measurement) {
+        measurement.setConvertedWeight(value, getScaleUser().getScaleUnit());
+    }
+
+    @Override
+    protected String getUnit() {
+        return ScaleUser.UNIT_STRING[getScaleUser().getScaleUnit()];
+    }
+
+    @Override
+    protected float getMaxValue() {
         return 300;
     }
 
+    @Override
+    protected EvaluationResult evaluateSheet(EvaluationSheet evalSheet, float value) {
+        return evalSheet.evaluateWeight(value);
+    }
 }

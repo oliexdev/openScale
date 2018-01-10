@@ -24,25 +24,10 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 
-public class WaistMeasurementView extends MeasurementView {
+public class WaistMeasurementView extends FloatMeasurementView {
 
     public WaistMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_waist), ContextCompat.getDrawable(context, R.drawable.ic_waist));
-    }
-
-    @Override
-    public void updateValue(ScaleMeasurement newMeasurement) {
-        setValueOnView(newMeasurement.getDateTime(), newMeasurement.getWaist());
-    }
-
-    @Override
-    public void updateDiff(ScaleMeasurement newMeasurement, ScaleMeasurement lastMeasurement) {
-        setDiffOnView(newMeasurement.getWaist(), lastMeasurement.getWaist());
-    }
-
-    @Override
-    public String getUnit() {
-        return "cm";
     }
 
     @Override
@@ -51,13 +36,27 @@ public class WaistMeasurementView extends MeasurementView {
     }
 
     @Override
-    public EvaluationResult evaluateSheet(EvaluationSheet evalSheet, float value) {
-        return evalSheet.evaluateWaist(value);
+    protected float getMeasurementValue(ScaleMeasurement measurement) {
+        return measurement.getWaist();
     }
 
     @Override
-    public float getMaxValue() {
+    protected void setMeasurementValue(float value, ScaleMeasurement measurement) {
+        measurement.setWaist(value);
+    }
+
+    @Override
+    protected String getUnit() {
+        return "cm";
+    }
+
+    @Override
+    protected float getMaxValue() {
         return 200;
     }
 
+    @Override
+    protected EvaluationResult evaluateSheet(EvaluationSheet evalSheet, float value) {
+        return evalSheet.evaluateWaist(value);
+    }
 }

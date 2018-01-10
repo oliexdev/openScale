@@ -24,39 +24,12 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 
-public class LBWMeasurementView extends MeasurementView {
+public class LBWMeasurementView extends FloatMeasurementView {
 
     private boolean estimateLBWEnable;
 
     public LBWMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_lbw), ContextCompat.getDrawable(context, R.drawable.ic_lbw));
-    }
-
-    @Override
-    public boolean isEditable() {
-        if (estimateLBWEnable && getMeasurementMode() == MeasurementViewMode.ADD) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public void updateValue(ScaleMeasurement newMeasurement) {
-        if (estimateLBWEnable && getMeasurementMode() == MeasurementViewMode.ADD) {
-            setValueOnView(newMeasurement.getDateTime(), (getContext().getString(R.string.label_automatic)));
-        } else {
-            setValueOnView(newMeasurement.getDateTime(), newMeasurement.getLbw());
-        }
-    }
-
-    @Override
-    public void updateDiff(ScaleMeasurement newMeasurement, ScaleMeasurement lastMeasurement) {
-        setDiffOnView(newMeasurement.getLbw(), lastMeasurement.getLbw());
-    }
-
-    @Override
-    public String getUnit() {
-        return "kg";
     }
 
     @Override
@@ -66,13 +39,32 @@ public class LBWMeasurementView extends MeasurementView {
     }
 
     @Override
-    public EvaluationResult evaluateSheet(EvaluationSheet evalSheet, float value) {
-        return null;
+    protected float getMeasurementValue(ScaleMeasurement measurement) {
+        return measurement.getLbw();
     }
 
     @Override
-    public float getMaxValue() {
+    protected void setMeasurementValue(float value, ScaleMeasurement measurement) {
+        measurement.setLbw(value);
+    }
+
+    @Override
+    protected String getUnit() {
+        return "kg";
+    }
+
+    @Override
+    protected float getMaxValue() {
         return 300;
     }
 
+    @Override
+    protected boolean isEstimationEnabled() {
+        return estimateLBWEnable;
+    }
+
+    @Override
+    protected EvaluationResult evaluateSheet(EvaluationSheet evalSheet, float value) {
+        return null;
+    }
 }
