@@ -20,8 +20,11 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
-import android.text.Html;
 import android.text.InputType;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.RelativeSizeSpan;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
@@ -38,9 +41,9 @@ import java.util.Date;
 import java.util.Locale;
 
 public abstract class FloatMeasurementView extends MeasurementView {
-    private static String SYMBOL_UP = "&#10138;";
-    private static String SYMBOL_NEUTRAL = "&#10137;";
-    private static String SYMBOL_DOWN = "&#10136;";
+    private static char SYMBOL_UP = '\u279a';
+    private static char SYMBOL_NEUTRAL = '\u2799';
+    private static char SYMBOL_DOWN = '\u2798';
 
     private static float NO_VALUE = -1.0f;
     private static float AUTO_VALUE = -2.0f;
@@ -142,7 +145,7 @@ public abstract class FloatMeasurementView extends MeasurementView {
             if (previousValue >= 0.0f) {
                 final float diff = value - previousValue;
 
-                String symbol;
+                char symbol;
 
                 if (diff > 0.0) {
                     symbol = SYMBOL_UP;
@@ -152,10 +155,22 @@ public abstract class FloatMeasurementView extends MeasurementView {
                     symbol = SYMBOL_NEUTRAL;
                 }
 
-                setNameView(Html.fromHtml(
-                        String.format(
-                                "%s <br> <font color='grey'>%s<small>%s%s</small></font>",
-                                nameText, symbol, formatValue(diff), suffix)));
+                SpannableStringBuilder text = new SpannableStringBuilder(nameText);
+                text.append("\n");
+
+                int start = text.length();
+                text.append(symbol);
+                text.setSpan(new ForegroundColorSpan(Color.GRAY), start, text.length(),
+                        Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
+
+                start = text.length();
+                text.append(' ');
+                text.append(formatValue(diff));
+                text.append(suffix);
+                text.setSpan(new RelativeSizeSpan(0.8f), start, text.length(),
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+                setNameView(text);
             } else {
                 setNameView(nameText);
             }
@@ -227,7 +242,7 @@ public abstract class FloatMeasurementView extends MeasurementView {
             return "";
         }
 
-        String symbol;
+        char symbol;
         String color;
 
         final float diff = value - previousValue;
