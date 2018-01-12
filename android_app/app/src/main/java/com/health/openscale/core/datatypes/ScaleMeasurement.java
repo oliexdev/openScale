@@ -33,7 +33,6 @@ public class ScaleMeasurement implements Cloneable {
     @PrimaryKey(autoGenerate = true)
     private int id;
 
-    @CsvColumn
     @ColumnInfo(name = "userId")
     private int userId;
     @ColumnInfo(name = "enabled")
