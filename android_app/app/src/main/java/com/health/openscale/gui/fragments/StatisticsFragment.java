@@ -24,6 +24,7 @@ import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TableLayout;
 import android.widget.TextView;
 
 import com.health.openscale.R;
@@ -31,56 +32,116 @@ import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.DateTimeHelpers;
+import com.health.openscale.gui.views.BoneMeasurementView;
+import com.health.openscale.gui.views.FatMeasurementView;
+import com.health.openscale.gui.views.HipMeasurementView;
+import com.health.openscale.gui.views.LBWMeasurementView;
+import com.health.openscale.gui.views.MeasurementView;
+import com.health.openscale.gui.views.MuscleMeasurementView;
+import com.health.openscale.gui.views.WaistMeasurementView;
+import com.health.openscale.gui.views.WaterMeasurementView;
+import com.health.openscale.gui.views.WeightMeasurementView;
 
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+
+import static com.health.openscale.gui.views.MeasurementView.MeasurementViewMode.STATISTIC;
 
 public class StatisticsFragment extends Fragment implements FragmentUpdateListener {
 
     private View statisticsView;
 
-    private TextView txtTitleGoal;
-    private TextView txtTitleStatistics;
-
     private TextView txtGoalWeight;
     private TextView txtGoalDiff;
     private TextView txtGoalDayLeft;
-
-    private TextView txtAvgWeek;
-    private TextView txtAvgMonth;
 
     private TextView txtLabelGoalWeight;
     private TextView txtLabelGoalDiff;
     private TextView txtLabelDayLeft;
 
-    private TextView txtLabelAvgWeek;
-    private TextView txtLabelAvgMonth;
+    private TableLayout tableWeekAveragesLayoutColumnA;
+    private TableLayout tableWeekAveragesLayoutColumnB;
+    private TableLayout tableMonthAveragesLayoutColumnA;
+    private TableLayout tableMonthAveragesLayoutColumnB;
 
     private SharedPreferences prefs;
     private ScaleUser currentScaleUser;
     private ScaleMeasurement lastScaleMeasurement;
 
+    private ArrayList <MeasurementView> viewMeasurementsListWeek;
+    private ArrayList <MeasurementView> viewMeasurementsListMonth;
+    
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         statisticsView = inflater.inflate(R.layout.fragment_statistics, container, false);
 
-        txtTitleGoal = (TextView) statisticsView.findViewById(R.id.txtTitleGoal);
-        txtTitleStatistics = (TextView) statisticsView.findViewById(R.id.txtTitleStatistics);
+        prefs = PreferenceManager.getDefaultSharedPreferences(statisticsView.getContext());
 
         txtGoalWeight = (TextView) statisticsView.findViewById(R.id.txtGoalWeight);
         txtGoalDiff = (TextView) statisticsView.findViewById(R.id.txtGoalDiff);
         txtGoalDayLeft = (TextView) statisticsView.findViewById(R.id.txtGoalDayLeft);
 
-        txtAvgWeek = (TextView) statisticsView.findViewById(R.id.txtAvgWeek);
-        txtAvgMonth = (TextView) statisticsView.findViewById(R.id.txtAvgMonth);
-
         txtLabelGoalWeight = (TextView) statisticsView.findViewById(R.id.txtLabelGoalWeight);
         txtLabelGoalDiff = (TextView) statisticsView.findViewById(R.id.txtLabelGoalDiff);
         txtLabelDayLeft = (TextView) statisticsView.findViewById(R.id.txtLabelDayLeft);
 
-        txtLabelAvgWeek = (TextView) statisticsView.findViewById(R.id.txtLabelAvgWeek);
-        txtLabelAvgMonth = (TextView) statisticsView.findViewById(R.id.txtLabelAvgMonth);
+        tableWeekAveragesLayoutColumnA = (TableLayout) statisticsView.findViewById(R.id.tableWeekAveragesLayoutColumnA);
+        tableWeekAveragesLayoutColumnB = (TableLayout) statisticsView.findViewById(R.id.tableWeekAveragesLayoutColumnB);
+        tableMonthAveragesLayoutColumnA = (TableLayout) statisticsView.findViewById(R.id.tableMonthAveragesLayoutColumnA);
+        tableMonthAveragesLayoutColumnB = (TableLayout) statisticsView.findViewById(R.id.tableMonthAveragesLayoutColumnB);
+
+        viewMeasurementsListWeek = new ArrayList<>();
+
+        viewMeasurementsListWeek.add(new WeightMeasurementView(statisticsView.getContext()));
+        viewMeasurementsListWeek.add(new WaterMeasurementView(statisticsView.getContext()));
+        viewMeasurementsListWeek.add(new MuscleMeasurementView(statisticsView.getContext()));
+        viewMeasurementsListWeek.add(new LBWMeasurementView(statisticsView.getContext()));
+        viewMeasurementsListWeek.add(new FatMeasurementView(statisticsView.getContext()));
+        viewMeasurementsListWeek.add(new BoneMeasurementView(statisticsView.getContext()));
+        viewMeasurementsListWeek.add(new WaistMeasurementView(statisticsView.getContext()));
+        viewMeasurementsListWeek.add(new HipMeasurementView(statisticsView.getContext()));
+
+        int i=0;
+
+        for (MeasurementView measurement : viewMeasurementsListWeek) {
+            measurement.setEditMode(STATISTIC);
+            measurement.updatePreferences(prefs);
+            if ((i % 2) == 0) {
+                tableWeekAveragesLayoutColumnA.addView(measurement);
+            }
+            else {
+                tableWeekAveragesLayoutColumnB.addView(measurement);
+            }
+            i++;
+        }
+
+        viewMeasurementsListMonth = new ArrayList<>();
+
+        viewMeasurementsListMonth.add(new WeightMeasurementView(statisticsView.getContext()));
+        viewMeasurementsListMonth.add(new WaterMeasurementView(statisticsView.getContext()));
+        viewMeasurementsListMonth.add(new MuscleMeasurementView(statisticsView.getContext()));
+        viewMeasurementsListMonth.add(new LBWMeasurementView(statisticsView.getContext()));
+        viewMeasurementsListMonth.add(new FatMeasurementView(statisticsView.getContext()));
+        viewMeasurementsListMonth.add(new BoneMeasurementView(statisticsView.getContext()));
+        viewMeasurementsListMonth.add(new WaistMeasurementView(statisticsView.getContext()));
+        viewMeasurementsListMonth.add(new HipMeasurementView(statisticsView.getContext()));
+
+        i=0;
+
+        for (MeasurementView measurement : viewMeasurementsListMonth) {
+            measurement.setEditMode(STATISTIC);
+            measurement.updatePreferences(prefs);
+
+            if ((i % 2) == 0) {
+                tableMonthAveragesLayoutColumnA.addView(measurement);
+            }
+            else {
+                tableMonthAveragesLayoutColumnB.addView(measurement);
+            }
+            i++;
+        }
 
         OpenScale.getInstance(getContext()).registerFragment(this);
 
@@ -95,10 +156,6 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
             lastScaleMeasurement = scaleMeasurementList.get(0);
         }
 
-        txtTitleGoal.setText(getResources().getString(R.string.label_title_goal).toUpperCase());
-        txtTitleStatistics.setText(getResources().getString(R.string.label_title_statistics).toUpperCase());
-
-        prefs = PreferenceManager.getDefaultSharedPreferences(statisticsView.getContext());
         currentScaleUser = OpenScale.getInstance(getContext()).getSelectedScaleUser();
 
         updateStatistics(scaleMeasurementList);
@@ -158,6 +215,7 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
     }
 
     private void updateStatistics(List<ScaleMeasurement> scaleMeasurementList) {
+
         Calendar histDate = Calendar.getInstance();
         Calendar weekPastDate = Calendar.getInstance();
         Calendar monthPastDate = Calendar.getInstance();
@@ -169,167 +227,34 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
         monthPastDate.add(Calendar.DATE, -30);
 
         int weekSize = 0;
-        float weekAvgWeight = 0;
-        float weekAvgBMI = 0;
-        float weekAvgFat = 0;
-        float weekAvgWater = 0;
-        float weekAvgMuscle = 0;
-        float weekAvgLBW = 0;
-        float weekAvgWaist = 0;
-        float weekAvgBone = 0;
-        float weekAvgWHtR = 0;
-        float weekAvgHip = 0;
-        float weekAvgWHR = 0;
-
         int monthSize = 0;
-        float monthAvgWeight = 0;
-        float monthAvgBMI = 0;
-        float monthAvgFat = 0;
-        float monthAvgWater = 0;
-        float monthAvgMuscle = 0;
-        float monthAvgLBW = 0;
-        float monthAvgWaist = 0;
-        float monthAvgBone = 0;
-        float monthAvgWHtR = 0;
-        float monthAvgHip = 0;
-        float monthAvgWHR = 0;
 
-        for (ScaleMeasurement scaleMeasurement : scaleMeasurementList)
-        {
-            histDate.setTime(scaleMeasurement.getDateTime());
+        ScaleMeasurement averageWeek = new ScaleMeasurement();
+        ScaleMeasurement averageMonth = new ScaleMeasurement();
+
+        for (ScaleMeasurement measurement : scaleMeasurementList) {
+            histDate.setTime(measurement.getDateTime());
 
             if (weekPastDate.before(histDate)) {
+                averageWeek.add(measurement);
                 weekSize++;
-
-                weekAvgWeight += scaleMeasurement.getConvertedWeight(currentScaleUser.getScaleUnit());
-                weekAvgBMI += scaleMeasurement.getBMI(currentScaleUser.getBodyHeight());
-                weekAvgFat += scaleMeasurement.getFat();
-                weekAvgWater += scaleMeasurement.getWater();
-                weekAvgMuscle += scaleMeasurement.getMuscle();
-                weekAvgLBW += scaleMeasurement.getLbw();
-                weekAvgBone += scaleMeasurement.getBone();
-                weekAvgWaist += scaleMeasurement.getWaist();
-                weekAvgHip += scaleMeasurement.getHip();
-                weekAvgWHtR += scaleMeasurement.getWHtR(currentScaleUser.getBodyHeight());
-                weekAvgWHR += scaleMeasurement.getWHR();
             }
 
             if (monthPastDate.before(histDate)) {
+                averageMonth.add(measurement);
                 monthSize++;
-
-                monthAvgWeight += scaleMeasurement.getConvertedWeight(currentScaleUser.getScaleUnit());
-                monthAvgBMI += scaleMeasurement.getBMI(currentScaleUser.getBodyHeight());
-                monthAvgFat += scaleMeasurement.getFat();
-                monthAvgWater += scaleMeasurement.getWater();
-                monthAvgMuscle += scaleMeasurement.getMuscle();
-                monthAvgLBW += scaleMeasurement.getLbw();
-                monthAvgBone += scaleMeasurement.getBone();
-                monthAvgWaist += scaleMeasurement.getWaist();
-                monthAvgHip += scaleMeasurement.getHip();
-                monthAvgWHtR += scaleMeasurement.getWHtR(currentScaleUser.getBodyHeight());
-                monthAvgWHR += scaleMeasurement.getWHR();
-            } else {
-                break;
             }
         }
 
-        weekAvgWeight /= weekSize;
-        weekAvgBMI /= weekSize;
-        weekAvgFat /= weekSize;
-        weekAvgWater /= weekSize;
-        weekAvgMuscle /= weekSize;
-        weekAvgLBW /= weekSize;
-        weekAvgWaist /= weekSize;
-        weekAvgBone /= weekSize;
-        weekAvgWHtR /= weekSize;
-        weekAvgHip /= weekSize;
-        weekAvgWHR /= weekSize;
+        averageWeek.divide(weekSize);
+        averageMonth.divide(monthSize);
 
-        monthAvgWeight /= monthSize;
-        monthAvgBMI /= monthSize;
-        monthAvgFat /= monthSize;
-        monthAvgWater /= monthSize;
-        monthAvgMuscle /= monthSize;
-        monthAvgLBW /= monthSize;
-        monthAvgBone /= monthSize;
-        monthAvgWaist /= monthSize;
-        monthAvgWHtR /= monthSize;
-        monthAvgHip /= monthSize;
-        monthAvgWHR /= monthSize;
-
-        String info_week = new String();
-        String info_month = new String();
-
-        int lines = 1;
-
-        info_week += String.format("Ø-"+getResources().getString(R.string.label_weight)+": %.1f" + ScaleUser.UNIT_STRING[currentScaleUser.getScaleUnit()] + "<br>", weekAvgWeight);
-        info_month += String.format("Ø-"+getResources().getString(R.string.label_weight)+": %.1f" + ScaleUser.UNIT_STRING[currentScaleUser.getScaleUnit()] + "<br>", monthAvgWeight);
-        lines++;
-
-        info_week += String.format("Ø-"+getResources().getString(R.string.label_bmi)+": %.1f <br>", weekAvgBMI);
-        info_month += String.format("Ø-"+getResources().getString(R.string.label_bmi)+": %.1f <br>", monthAvgBMI);
-        lines++;
-
-        if (prefs.getBoolean("fatEnable", true)) {
-            info_week += String.format("Ø-"+getResources().getString(R.string.label_fat)+": %.1f%% <br>", weekAvgFat);
-            info_month +=  String.format("Ø-"+getResources().getString(R.string.label_fat)+": %.1f%% <br>", monthAvgFat);
-            lines++;
+        for (MeasurementView measurement : viewMeasurementsListWeek) {
+            measurement.loadFrom(averageWeek, null);
         }
 
-        if (prefs.getBoolean("muscleEnable", true)) {
-            info_week += String.format("Ø-"+getResources().getString(R.string.label_muscle)+": %.1f%% <br>", weekAvgMuscle);
-            info_month += String.format("Ø-"+getResources().getString(R.string.label_muscle)+": %.1f%% <br>", monthAvgMuscle);
-            lines++;
+        for (MeasurementView measurement : viewMeasurementsListMonth) {
+            measurement.loadFrom(averageMonth, null);
         }
-
-        if (prefs.getBoolean("lbwEnable", false)) {
-            info_week += String.format("Ø-"+getResources().getString(R.string.label_lbw)+": %.1fkg <br>", weekAvgLBW);
-            info_month += String.format("Ø-"+getResources().getString(R.string.label_lbw)+": %.1fkg <br>", monthAvgLBW);
-            lines++;
-        }
-
-        if (prefs.getBoolean("waterEnable", true)) {
-            info_week +=  String.format("Ø-"+getResources().getString(R.string.label_water)+": %.1f%% <br>", weekAvgWater);
-            info_month += String.format("Ø-"+getResources().getString(R.string.label_water)+": %.1f%% <br>", monthAvgWater);
-            lines++;
-        }
-
-        if (prefs.getBoolean("boneEnable", false)) {
-            info_week +=  String.format("Ø-"+getResources().getString(R.string.label_bone)+": %.1fkg <br>", weekAvgBone);
-            info_month += String.format("Ø-"+getResources().getString(R.string.label_bone)+": %.1fkg <br>",monthAvgBone);
-            lines++;
-        }
-
-
-        if (prefs.getBoolean("waistEnable", false)) {
-            info_week +=  String.format("Ø-"+getResources().getString(R.string.label_waist)+": %.1fcm <br>", weekAvgWaist);
-            info_month += String.format("Ø-"+getResources().getString(R.string.label_waist)+": %.1fcm <br>", monthAvgWaist);
-            lines++;
-
-            info_week +=  String.format("Ø-"+getResources().getString(R.string.label_whtr)+": %.2f <br>", weekAvgWHtR);
-            info_month += String.format("Ø-"+getResources().getString(R.string.label_whtr)+": %.2f <br>", monthAvgWHtR);
-            lines++;
-        }
-
-        if (prefs.getBoolean("hipEnable", false)) {
-            info_week +=  String.format("Ø-"+getResources().getString(R.string.label_hip)+": %.1fcm <br>", weekAvgHip);
-            info_month += String.format("Ø-"+getResources().getString(R.string.label_hip)+": %.1fcm <br>",monthAvgHip);
-            lines++;
-        }
-
-        if (prefs.getBoolean("hipEnable", false) && prefs.getBoolean("waistEnable", false)) {
-            info_week +=  String.format("Ø-"+getResources().getString(R.string.label_whr)+": %.2f <br>", weekAvgWHR);
-            info_month += String.format("Ø-"+getResources().getString(R.string.label_whr)+": %.2f <br>", monthAvgWHR);
-            lines++;
-        }
-
-        txtLabelAvgWeek.setLines(lines);
-        txtLabelAvgMonth.setLines(lines);
-
-        txtLabelAvgWeek.setText(Html.fromHtml(getResources().getString(R.string.label_last_week) + " <br> <font color='grey'><small> " + info_week + "</small></font>"));
-        txtLabelAvgMonth.setText(Html.fromHtml(getResources().getString(R.string.label_last_month) + " <br> <font color='grey'><small> " + info_month + "</small></font>"));
-
-        txtAvgWeek.setText(weekSize + " " + getResources().getString(R.string.label_measures));
-        txtAvgMonth.setText(monthSize + " " + getResources().getString(R.string.label_measures));
     }
 }

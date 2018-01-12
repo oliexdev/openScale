@@ -97,6 +97,28 @@ public class ScaleMeasurement implements Cloneable {
         return clone;
     }
 
+    public void add(final ScaleMeasurement summand) {
+        weight += summand.getWeight();
+        fat += summand.getFat();
+        water += summand.getWater();
+        muscle += summand.getMuscle();
+        lbw += summand.getLbw();
+        bone += summand.getBone();
+        waist += summand.getWaist();
+        hip += summand.getHip();
+    }
+
+    public void divide(final float divisor) {
+        weight /= divisor;
+        fat /= divisor;
+        water /= divisor;
+        muscle /= divisor;
+        lbw /= divisor;
+        bone /= divisor;
+        waist /= divisor;
+        hip /= divisor;
+    }
+
     public int getId() {
         return id;
     }

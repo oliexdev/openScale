@@ -45,10 +45,11 @@ import lecho.lib.hellocharts.util.ChartUtils;
 
 import static com.health.openscale.gui.views.MeasurementView.MeasurementViewMode.ADD;
 import static com.health.openscale.gui.views.MeasurementView.MeasurementViewMode.EDIT;
+import static com.health.openscale.gui.views.MeasurementView.MeasurementViewMode.STATISTIC;
 import static com.health.openscale.gui.views.MeasurementView.MeasurementViewMode.VIEW;
 
 public abstract class MeasurementView extends TableLayout {
-    public enum MeasurementViewMode {VIEW, EDIT, ADD};
+    public enum MeasurementViewMode {VIEW, EDIT, ADD, STATISTIC};
 
     private TableRow measurementRow;
     private ImageView iconView;
@@ -168,12 +169,16 @@ public abstract class MeasurementView extends TableLayout {
                 indicatorView.setVisibility(View.VISIBLE);
                 editModeView.setVisibility(View.GONE);
                 incDecLayout.setVisibility(View.GONE);
+                nameView.setVisibility(View.VISIBLE);
+                valueView.setGravity(Gravity.RIGHT | Gravity.CENTER);
                 break;
             case EDIT:
             case ADD:
                 indicatorView.setVisibility(View.GONE);
                 editModeView.setVisibility(View.VISIBLE);
                 incDecLayout.setVisibility(View.VISIBLE);
+                nameView.setVisibility(View.VISIBLE);
+                valueView.setGravity(Gravity.RIGHT | Gravity.CENTER);
 
                 if (!isEditable()) {
                     editModeView.setImageDrawable(ContextCompat.getDrawable(getContext(),
@@ -181,6 +186,13 @@ public abstract class MeasurementView extends TableLayout {
                 }
 
                 showEvaluatorRow(false);
+                break;
+            case STATISTIC:
+                indicatorView.setVisibility(View.GONE);
+                incDecLayout.setVisibility(View.GONE);
+                editModeView.setVisibility(View.GONE);
+                nameView.setVisibility(View.GONE);
+                valueView.setGravity(Gravity.CENTER);
                 break;
         }
     }
@@ -322,6 +334,10 @@ public abstract class MeasurementView extends TableLayout {
     private class onClickListenerEvaluation implements View.OnClickListener {
         @Override
         public void onClick(View v) {
+            if (getMeasurementMode() == STATISTIC) {
+                return;
+            }
+
             if (getMeasurementMode() == EDIT || getMeasurementMode() == ADD) {
                 if (isEditable()) {
                     getInputDialog().show();
