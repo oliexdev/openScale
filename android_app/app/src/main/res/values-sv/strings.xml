@@ -158,4 +158,9 @@
     <string name="info_measuring">Mäter vikt: %.2f</string>
     <string name="open_drawer">öppna</string>
     <string name="close_drawer">stäng</string>
+    <string name="label_fat_percentage">Kroppsfett i %</string>
+    <string name="label_muscle_percentage">Muskler i %</string>
+    <string name="label_water_percentage">Vatten i %</string>
+    <string name="info_bluetooth_no_device_set">Ingen Bluetooth-enhet vald</string>
+    <string name="info_new_data_duplicated">mätning med samma datum och tid existerar redan</string>
 </resources>
