@@ -21,12 +21,14 @@ import android.support.v4.content.ContextCompat;
 
 import com.health.openscale.R;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
+import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 
 public class FatMeasurementView extends FloatMeasurementView {
 
     private boolean estimateFatEnable;
+    private boolean percentageEnable;
 
     public FatMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_fat), ContextCompat.getDrawable(context, R.drawable.ic_fat));
@@ -36,26 +38,43 @@ public class FatMeasurementView extends FloatMeasurementView {
     public void updatePreferences(SharedPreferences preferences) {
         setVisible(preferences.getBoolean("fatEnable", true));
         estimateFatEnable = preferences.getBoolean("estimateFatEnable", false);
+        percentageEnable = preferences.getBoolean("fatPercentageEnable", true);
     }
 
     @Override
     protected float getMeasurementValue(ScaleMeasurement measurement) {
-        return measurement.getFat();
+        if (percentageEnable) {
+            return measurement.getFat();
+        }
+
+        return measurement.getConvertedWeight(getScaleUser().getScaleUnit()) / 100.0f * measurement.getFat();
     }
 
     @Override
     protected void setMeasurementValue(float value, ScaleMeasurement measurement) {
-        measurement.setFat(value);
+        if (percentageEnable) {
+            measurement.setFat(value);
+        } else {
+            measurement.setFat(100.0f / measurement.getConvertedWeight(getScaleUser().getScaleUnit()) * value);
+        }
     }
 
     @Override
     protected String getUnit() {
-        return "%";
+        if (percentageEnable) {
+            return "%";
+        }
+
+        return ScaleUser.UNIT_STRING[getScaleUser().getScaleUnit()];
     }
 
     @Override
     protected float getMaxValue() {
-        return 80;
+        if (percentageEnable) {
+            return 80;
+        }
+
+        return 300;
     }
 
     @Override

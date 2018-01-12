@@ -21,12 +21,14 @@ import android.support.v4.content.ContextCompat;
 
 import com.health.openscale.R;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
+import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 
 public class WaterMeasurementView extends FloatMeasurementView {
 
     private boolean estimateWaterEnable;
+    private boolean percentageEnable;
 
     public WaterMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_water), ContextCompat.getDrawable(context, R.drawable.ic_water));
@@ -36,26 +38,43 @@ public class WaterMeasurementView extends FloatMeasurementView {
     public void updatePreferences(SharedPreferences preferences) {
         setVisible(preferences.getBoolean("waterEnable", true));
         estimateWaterEnable = preferences.getBoolean("estimateWaterEnable", false);
+        percentageEnable = preferences.getBoolean("waterPercentageEnable", true);
     }
 
     @Override
     protected float getMeasurementValue(ScaleMeasurement measurement) {
-        return measurement.getWater();
+        if (percentageEnable) {
+            return measurement.getWater();
+        }
+
+        return measurement.getConvertedWeight(getScaleUser().getScaleUnit()) / 100.0f * measurement.getWater();
     }
 
     @Override
     protected void setMeasurementValue(float value, ScaleMeasurement measurement) {
-        measurement.setWater(value);
+        if (percentageEnable) {
+            measurement.setWater(value);
+        } else {
+            measurement.setWater(100.0f / measurement.getConvertedWeight(getScaleUser().getScaleUnit()) * value);
+        }
     }
 
     @Override
     protected String getUnit() {
-        return "%";
+        if (percentageEnable) {
+            return "%";
+        }
+
+        return ScaleUser.UNIT_STRING[getScaleUser().getScaleUnit()];
     }
 
     @Override
     protected float getMaxValue() {
-        return 80;
+        if (percentageEnable) {
+            return 80;
+        }
+
+        return 300;
     }
 
     @Override

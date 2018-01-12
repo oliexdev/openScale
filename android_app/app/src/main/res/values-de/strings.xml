@@ -160,4 +160,7 @@
     <string name="close_drawer">schließen</string>
     <string name="info_bluetooth_no_device_set">Kein Bluetooth Gerät ausgewählt</string>
     <string name="info_new_data_duplicated">Messung mit gleichen Datum und Uhrzeit exisitiert bereits</string>
+    <string name="label_fat_percentage">Körperfett in %</string>
+    <string name="label_water_percentage">Wasseranteil in %</string>
+    <string name="label_muscle_percentage">Muskelanteil in %</string>
 </resources>

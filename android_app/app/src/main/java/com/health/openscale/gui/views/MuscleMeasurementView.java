@@ -21,10 +21,13 @@ import android.support.v4.content.ContextCompat;
 
 import com.health.openscale.R;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
+import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 
 public class MuscleMeasurementView extends FloatMeasurementView {
+
+    private boolean percentageEnable;
 
     public MuscleMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_muscle), ContextCompat.getDrawable(context, R.drawable.ic_muscle));
@@ -33,26 +36,43 @@ public class MuscleMeasurementView extends FloatMeasurementView {
     @Override
     public void updatePreferences(SharedPreferences preferences) {
         setVisible(preferences.getBoolean("muscleEnable", true));
+        percentageEnable = preferences.getBoolean("musclePercentageEnable", true);
     }
 
     @Override
     protected float getMeasurementValue(ScaleMeasurement measurement) {
-        return measurement.getMuscle();
+        if (percentageEnable) {
+            return measurement.getMuscle();
+        }
+
+        return measurement.getConvertedWeight(getScaleUser().getScaleUnit()) / 100.0f * measurement.getMuscle();
     }
 
     @Override
     protected void setMeasurementValue(float value, ScaleMeasurement measurement) {
-        measurement.setMuscle(value);
+        if (percentageEnable) {
+            measurement.setMuscle(value);
+        } else {
+            measurement.setMuscle(100.0f / measurement.getConvertedWeight(getScaleUser().getScaleUnit()) * value);
+        }
     }
 
     @Override
     protected String getUnit() {
-        return "%";
+        if (percentageEnable) {
+            return "%";
+        }
+
+        return ScaleUser.UNIT_STRING[getScaleUser().getScaleUnit()];
     }
 
     @Override
     protected float getMaxValue() {
-        return 80;
+        if (percentageEnable) {
+            return 80;
+        }
+
+        return 300;
     }
 
     @Override

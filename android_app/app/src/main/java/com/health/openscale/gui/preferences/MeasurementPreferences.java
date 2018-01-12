@@ -27,6 +27,7 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceGroup;
 import android.preference.PreferenceManager;
+import android.preference.SwitchPreference;
 import android.widget.Toast;
 
 import com.health.openscale.R;
@@ -41,6 +42,12 @@ import java.util.Set;
 
 public class MeasurementPreferences extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener  {
     public static final String PREFERENCE_KEY_DELETE_ALL = "deleteAll";
+    public static final String PREFERENCE_KEY_FAT = "fatEnable";
+    public static final String PREFERENCE_KEY_FAT_PERCENTAGE = "fatPercentageEnable";
+    public static final String PREFERENCE_KEY_WATER = "waterEnable";
+    public static final String PREFERENCE_KEY_WATER_PERCENTAGE = "waterPercentageEnable";
+    public static final String PREFERENCE_KEY_MUSCLE = "muscleEnable";
+    public static final String PREFERENCE_KEY_MUSCLE_PERCENTAGE = "musclePercentageEnable";
     public static final String PREFERENCE_KEY_ESTIMATE_WATER = "estimateWaterEnable";
     public static final String PREFERENCE_KEY_ESTIMATE_WATER_FORMULA = "estimateWaterFormula";
     public static final String PREFERENCE_KEY_ESTIMATE_LBW = "estimateLBWEnable";
@@ -49,6 +56,14 @@ public class MeasurementPreferences extends PreferenceFragment implements Shared
     public static final String PREFERENCE_KEY_ESTIMATE_FAT_FORMULA = "estimateFatFormula";
 
     private Preference deleteAll;
+
+    private CheckBoxPreference fatEnable;
+    private SwitchPreference fatPercentageEnable;
+    private CheckBoxPreference waterEnable;
+    private SwitchPreference waterPercentageEnable;
+    private CheckBoxPreference muscleEnable;
+    private SwitchPreference musclePercentageEnable;
+
     private CheckBoxPreference estimateWaterEnable;
     private ListPreference estimateWaterFormula;
     private CheckBoxPreference estimateLBWEnable;
@@ -71,6 +86,13 @@ public class MeasurementPreferences extends PreferenceFragment implements Shared
         estimateLBWFormula = (ListPreference) findPreference(PREFERENCE_KEY_ESTIMATE_LBW_FORMULA);
         estimateFatEnable = (CheckBoxPreference) findPreference(PREFERENCE_KEY_ESTIMATE_FAT);
         estimateFatFormula = (ListPreference) findPreference(PREFERENCE_KEY_ESTIMATE_FAT_FORMULA);
+
+        fatEnable = (CheckBoxPreference) findPreference(PREFERENCE_KEY_FAT);
+        fatPercentageEnable = (SwitchPreference) findPreference(PREFERENCE_KEY_FAT_PERCENTAGE);
+        waterEnable = (CheckBoxPreference) findPreference(PREFERENCE_KEY_WATER);
+        waterPercentageEnable = (SwitchPreference) findPreference(PREFERENCE_KEY_WATER_PERCENTAGE);
+        muscleEnable = (CheckBoxPreference) findPreference(PREFERENCE_KEY_MUSCLE);
+        musclePercentageEnable = (SwitchPreference) findPreference(PREFERENCE_KEY_MUSCLE_PERCENTAGE);
 
         updateWaterListPreferences();
         updateLBWListPreferences();
@@ -165,6 +187,24 @@ public class MeasurementPreferences extends PreferenceFragment implements Shared
             estimateFatFormula.setEnabled(true);
         } else {
             estimateFatFormula.setEnabled(false);
+        }
+
+        if (fatEnable.isChecked()) {
+            fatPercentageEnable.setEnabled(true);
+        } else {
+            fatPercentageEnable.setEnabled(false);
+        }
+
+        if (waterEnable.isChecked()) {
+            waterPercentageEnable.setEnabled(true);
+        } else {
+            waterPercentageEnable.setEnabled(false);
+        }
+
+        if (muscleEnable.isChecked()) {
+            musclePercentageEnable.setEnabled(true);
+        } else {
+            musclePercentageEnable.setEnabled(false);
         }
 
         estimateWaterFormula.setSummary(EstimatedWaterMetric.getEstimatedMetric(EstimatedWaterMetric.FORMULA.valueOf(estimateWaterFormula.getValue())).getName());

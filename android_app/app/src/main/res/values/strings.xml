@@ -40,6 +40,10 @@
     <string name="label_bone">Bone mass</string>
     <string name="label_smartUserAssign">Smart User assignment</string>
 
+    <string name="label_fat_percentage">Body fat in %</string>
+    <string name="label_water_percentage">Body water in %</string>
+    <string name="label_muscle_percentage">Muscle in %</string>
+
     <plurals name="label_days">
         <item quantity="one">%d day</item>
         <item quantity="other">%d days</item>

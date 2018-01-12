@@ -2,8 +2,11 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory android:title="@string/label_category_display">
         <CheckBoxPreference android:title="@string/label_fat" android:summaryOn="@string/info_is_enable" android:summaryOff="@string/info_is_not_enable" android:key="fatEnable" android:defaultValue="true"/>
+        <SwitchPreference android:title="@string/label_fat_percentage" android:summaryOn="@string/info_is_enable" android:summaryOff="@string/info_is_not_enable" android:key ="fatPercentageEnable" android:defaultValue="true"/>
         <CheckBoxPreference android:title="@string/label_water" android:summaryOn="@string/info_is_enable" android:summaryOff="@string/info_is_not_enable"   android:key="waterEnable" android:defaultValue="true"/>
+        <SwitchPreference android:title="@string/label_water_percentage" android:summaryOn="@string/info_is_enable" android:summaryOff="@string/info_is_not_enable" android:key ="waterPercentageEnable" android:defaultValue="true"/>
         <CheckBoxPreference android:title="@string/label_muscle" android:summaryOn="@string/info_is_enable" android:summaryOff="@string/info_is_not_enable"  android:key="muscleEnable" android:defaultValue="true"/>
+        <SwitchPreference android:title="@string/label_muscle_percentage" android:summaryOn="@string/info_is_enable" android:summaryOff="@string/info_is_not_enable" android:key ="musclePercentageEnable" android:defaultValue="true"/>
         <CheckBoxPreference android:title="@string/label_lbw" android:summaryOn="@string/info_is_enable" android:summaryOff="@string/info_is_not_enable"  android:key="lbwEnable" android:defaultValue="false"/>
         <CheckBoxPreference android:title="@string/label_bone" android:summaryOn="@string/info_is_enable" android:summaryOff="@string/info_is_not_enable"  android:key="boneEnable" android:defaultValue="false"/>
         <CheckBoxPreference android:title="@string/label_waist" android:summaryOn="@string/info_is_enable" android:summaryOff="@string/info_is_not_enable"  android:key="waistEnable" android:defaultValue="false"/>
