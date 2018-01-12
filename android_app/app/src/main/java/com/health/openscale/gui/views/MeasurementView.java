@@ -21,13 +21,9 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.os.Handler;
 import android.support.v4.content.ContextCompat;
-import android.text.Html;
-import android.text.InputType;
 import android.util.TypedValue;
 import android.view.Gravity;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -44,9 +40,6 @@ import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.evaluation.EvaluationResult;
-import com.health.openscale.core.evaluation.EvaluationSheet;
-
-import java.util.Date;
 
 import lecho.lib.hellocharts.util.ChartUtils;
 
@@ -56,42 +49,25 @@ import static com.health.openscale.gui.views.MeasurementView.MeasurementViewMode
 
 public abstract class MeasurementView extends TableLayout {
     public enum MeasurementViewMode {VIEW, EDIT, ADD};
-    private static String SYMBOL_UP = "&#10138;";
-    private static String SYMBOL_NEUTRAL = "&#10137;";
-    private static String SYMBOL_DOWN = "&#10136;";
 
     private TableRow measurementRow;
     private ImageView iconView;
     private TextView nameView;
     private TextView valueView;
-    private LinearLayout incdecLayout;
-    private Button incView;
-    private Button decView;
+    private LinearLayout incDecLayout;
     private ImageView editModeView;
     private ImageView indicatorView;
 
     private TableRow evaluatorRow;
     private LinearGaugeView evaluatorView;
 
-    private String nameText;
-
-    private Date dateTime;
-    private String value;
-    private float previousValue;
-    private String diffValue;
-
     private MeasurementViewUpdateListener updateListener = null;
-    private MeasurementViewMode measurementMode;
+    private MeasurementViewMode measurementMode = VIEW;
 
     public MeasurementView(Context context, String text, Drawable icon) {
         super(context);
         initView(context);
 
-        measurementMode = VIEW;
-        nameText = text;
-        dateTime = new Date();
-        value = new String();
-        diffValue = new String();
         nameView.setText(text);
         iconView.setImageDrawable(icon);
     }
@@ -102,22 +78,20 @@ public abstract class MeasurementView extends TableLayout {
         iconView = new ImageView(context);
         nameView = new TextView(context);
         valueView = new TextView(context);
-        incView = new Button(context);
-        decView = new Button(context);
         editModeView = new ImageView(context);
         indicatorView = new ImageView(context);
 
         evaluatorRow = new TableRow(context);
         evaluatorView = new LinearGaugeView(context);
 
-        incdecLayout = new LinearLayout(context);
+        incDecLayout = new LinearLayout(context);
 
         measurementRow.setLayoutParams(new TableRow.LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.WRAP_CONTENT, 1.0f));
         measurementRow.setGravity(Gravity.CENTER);
         measurementRow.addView(iconView);
         measurementRow.addView(nameView);
         measurementRow.addView(valueView);
-        measurementRow.addView(incdecLayout);
+        measurementRow.addView(incDecLayout);
         measurementRow.addView(editModeView);
         measurementRow.addView(indicatorView);
 
@@ -138,49 +112,10 @@ public abstract class MeasurementView extends TableLayout {
         valueView.setPadding(0,0,20,0);
         valueView.setLayoutParams(new TableRow.LayoutParams(0, LayoutParams.MATCH_PARENT, 0.29f));
 
-        incdecLayout.setOrientation(VERTICAL);
-        incdecLayout.addView(incView);
-        incdecLayout.addView(decView);
-        incdecLayout.setVisibility(View.GONE);
-        incdecLayout.setPadding(0,0,0,0);
-        incdecLayout.setLayoutParams(new TableRow.LayoutParams(0, LayoutParams.MATCH_PARENT, 0.05f));
-
-        incView.setText("+");
-        incView.setBackgroundColor(Color.TRANSPARENT);
-        incView.setPadding(0,0,0,0);
-        incView.setLayoutParams(new TableRow.LayoutParams(LayoutParams.MATCH_PARENT, 0, 0.50f));
-        incView.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                incValue();
-            }
-        });
-        incView.setOnTouchListener(new RepeatListener(400, 100, new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                incValue();
-            }
-        }));
-        incView.setVisibility(View.GONE);
-
-        decView.setText("-");
-        decView.setBackgroundColor(Color.TRANSPARENT);
-        decView.setPadding(0,0,0,0);
-        decView.setLayoutParams(new TableRow.LayoutParams(LayoutParams.MATCH_PARENT, 0, 0.50f));
-        decView.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                decValue();
-            }
-        });
-
-        decView.setOnTouchListener(new RepeatListener(400, 100, new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                decValue();
-            }
-        }));
-        decView.setVisibility(View.GONE);
+        incDecLayout.setOrientation(VERTICAL);
+        incDecLayout.setVisibility(View.GONE);
+        incDecLayout.setPadding(0,0,0,0);
+        incDecLayout.setLayoutParams(new TableRow.LayoutParams(0, LayoutParams.MATCH_PARENT, 0.05f));
 
         editModeView.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_editable));
         editModeView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
@@ -204,47 +139,22 @@ public abstract class MeasurementView extends TableLayout {
         evaluatorRow.setOnClickListener(onClickListener);
     }
 
+    protected LinearLayout getIncDecLayout() {
+        return incDecLayout;
+    }
+
     public void setOnUpdateListener(MeasurementViewUpdateListener listener) {
         updateListener = listener;
     }
 
-    public abstract void updateValue(ScaleMeasurement newMeasurement);
-    public abstract void updateDiff(ScaleMeasurement newMeasurement, ScaleMeasurement lastMeasurement);
+    public abstract void loadFrom(ScaleMeasurement measurement, ScaleMeasurement previousMeasurement);
+    public abstract void saveTo(ScaleMeasurement measurement);
+
     public abstract void updatePreferences(SharedPreferences preferences);
-    public abstract String getUnit();
-    public abstract EvaluationResult evaluateSheet(EvaluationSheet evalSheet, float value);
-    public abstract float getMaxValue();
 
-    public float getValue() {
-        if (value.length() == 0) {
-            return -1;
-        }
-        try {
-            return Float.valueOf(value);
-        } catch (NumberFormatException e) {
-            return -1;
-        }
-    }
-
-    public void incValue() {
-        float incValue = Math.min(getMaxValue(), getValue() + 0.1f);
-        setValueOnView(dateTime, incValue);
-    }
-
-    public void decValue() {
-        float decValue = Math.max(0.0f, getValue() - 0.1f);
-        setValueOnView(dateTime, decValue);
-    }
-
-    public String getValueAsString() {
-        return value;
-    }
-
+    public abstract String getValueAsString();
+    public String getDiffValue() { return ""; }
     public Drawable getIcon() { return iconView.getDrawable(); }
-
-    public String getDiffValue() { return diffValue; }
-
-    public Date getDateTime() { return dateTime; }
 
     protected boolean isEditable() {
         return true;
@@ -257,30 +167,20 @@ public abstract class MeasurementView extends TableLayout {
             case VIEW:
                 indicatorView.setVisibility(View.VISIBLE);
                 editModeView.setVisibility(View.GONE);
-                incdecLayout.setVisibility(View.GONE);
-                incView.setVisibility(View.GONE);
-                decView.setVisibility(View.GONE);
+                incDecLayout.setVisibility(View.GONE);
                 break;
             case EDIT:
             case ADD:
+                indicatorView.setVisibility(View.GONE);
                 editModeView.setVisibility(View.VISIBLE);
-                incView.setVisibility(View.VISIBLE);
-                decView.setVisibility(View.VISIBLE);
-                incdecLayout.setVisibility(View.VISIBLE);
+                incDecLayout.setVisibility(View.VISIBLE);
 
                 if (!isEditable()) {
-                    editModeView.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.ic_noteeditable));
-                    incView.setVisibility(View.GONE);
-                    decView.setVisibility(View.GONE);
+                    editModeView.setImageDrawable(ContextCompat.getDrawable(getContext(),
+                            R.drawable.ic_noteeditable));
                 }
 
-                if (getUnit() == null) {
-                    incView.setVisibility(View.GONE);
-                    decView.setVisibility(View.GONE);
-                }
-
-                indicatorView.setVisibility(View.GONE);
-                evaluatorRow.setVisibility(View.GONE);
+                showEvaluatorRow(false);
                 break;
         }
     }
@@ -289,66 +189,28 @@ public abstract class MeasurementView extends TableLayout {
         return measurementMode;
     }
 
-    protected void setValueOnView(Date objTimeDate, Object objValue) {
-        dateTime = objTimeDate;
-        value = String.valueOf(objValue);
-
-        try {
-            Float floatValue = Float.parseFloat(value);
-            if (measurementMode == VIEW || measurementMode == EDIT) {
-                evaluate(floatValue);
-            }
-            valueView.setText(String.format("%.2f ", floatValue) + getUnit());
-            value = String.valueOf(Math.round(floatValue*100.0f)/100.0f);
-            // Only update diff value if setDiffOnView has been called previously
-            if (!diffValue.isEmpty()) {
-                setDiffOnView(floatValue, previousValue);
-            }
-        } catch (NumberFormatException e) {
-            valueView.setText(value);
-        }
-        if (updateListener != null) {
+    protected void setValueView(String text, boolean callListener) {
+        valueView.setText(text);
+        if (callListener && updateListener != null) {
             updateListener.onMeasurementViewUpdate(this);
         }
     }
 
-    protected void setDiffOnView(float value, float prevValue) {
-        previousValue = prevValue;
-        float diff = value - prevValue;
+    protected void setNameView(CharSequence text) {
+        nameView.setText(text);
+    }
 
-        String symbol;
-        String symbol_color;
-
-        if (diff > 0.0) {
-            symbol = SYMBOL_UP;
-            symbol_color = "<font color='green'>" + SYMBOL_UP + "</font>";
-        } else if (diff < 0.0) {
-            symbol = SYMBOL_DOWN;
-            symbol_color = "<font color='red'>" + SYMBOL_DOWN + "</font>";
-        } else {
-            symbol = SYMBOL_NEUTRAL;
-            symbol_color = "<font color='grey'>" + SYMBOL_NEUTRAL + "</font>";
+    protected void showEvaluatorRow(boolean show) {
+        if (show) {
+            evaluatorRow.setVisibility(View.VISIBLE);
         }
-        diffValue = symbol_color + "<font color='grey'><small>" + String.format("%.2f", diff) + "</small></font>";
-
-        nameView.setText(
-                Html.fromHtml(
-                        nameText +
-                                " <br> <font color='grey'>" +
-                                symbol +
-                                "<small> " +
-                                String.format("%.2f ", diff) + getUnit() +
-                                "</small></font>"
-                )
-        );
+        else {
+            evaluatorRow.setVisibility(View.GONE);
+        }
     }
 
     public void setExpand(boolean state) {
-        if (state && isVisible() && evaluateSheet(new EvaluationSheet(getScaleUser(), dateTime), 0.0f) != null) {
-            evaluatorRow.setVisibility(View.VISIBLE);
-        } else {
-            evaluatorRow.setVisibility(View.GONE);
-        }
+        showEvaluatorRow(false);
     }
 
     protected void setVisible(boolean isVisible) {
@@ -367,35 +229,17 @@ public abstract class MeasurementView extends TableLayout {
         return true;
     }
 
-    protected boolean validateInput(EditText view) {
-        if (view.getText().toString().length() == 0) {
-            view.setError(getResources().getString(R.string.error_value_required));
-            return false;
-        }
-
-        float floatValue = Float.valueOf(view.getText().toString());
-
-        if (!(floatValue >= 0 && floatValue <= getMaxValue())) {
-            view.setError(getResources().getString(R.string.error_value_range));
-            return false;
-        }
-
-        return true;
-    }
-
-    private void evaluate(float value) {
-        EvaluationSheet evalSheet = new EvaluationSheet(getScaleUser(), dateTime);
-        EvaluationResult evalResult = evaluateSheet(evalSheet, value);
-
+    protected void setEvaluationView(EvaluationResult evalResult) {
         if (evalResult == null) {
-            evalResult = new EvaluationResult();
+            evaluatorView.setLimits(-1.0f, -1.0f);
+            indicatorView.setBackgroundColor(Color.GRAY);
+            return;
         }
 
         evaluatorView.setLimits(evalResult.lowLimit, evalResult.highLimit);
-        evaluatorView.setValue(value);
+        evaluatorView.setValue(evalResult.value);
 
-        switch (evalResult.eval_state)
-        {
+        switch (evalResult.eval_state) {
             case LOW:
                 indicatorView.setBackgroundColor(ChartUtils.COLOR_BLUE);
                 break;
@@ -417,16 +261,11 @@ public abstract class MeasurementView extends TableLayout {
         return openScale.getSelectedScaleUser();
     }
 
-    protected int getInputType() {
-        return InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_SIGNED | InputType.TYPE_NUMBER_FLAG_DECIMAL;
-    }
-
-    protected String getHintText() {
-        return getResources().getString(R.string.info_enter_value_unit) + " " + getUnit();
-    }
+    protected abstract boolean validateAndSetInput(EditText view);
+    protected abstract int getInputType();
+    protected abstract String getHintText();
 
     protected AlertDialog getInputDialog() {
-        final AlertDialog floatDialog;
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle(nameView.getText());
         builder.setIcon(iconView.getDrawable());
@@ -435,14 +274,14 @@ public abstract class MeasurementView extends TableLayout {
 
         input.setInputType(getInputType());
         input.setHint(getHintText());
-        input.setText(value);
+        input.setText(getValueAsString());
         input.setSelectAllOnFocus(true);
         builder.setView(input);
 
         builder.setPositiveButton(getResources().getString(R.string.label_ok), null);
         builder.setNegativeButton(getResources().getString(R.string.label_cancel), null);
 
-        floatDialog = builder.create();
+        final AlertDialog floatDialog = builder.create();
 
         floatDialog.setOnShowListener(new DialogInterface.OnShowListener() {
 
@@ -454,8 +293,7 @@ public abstract class MeasurementView extends TableLayout {
 
                     @Override
                     public void onClick(View view) {
-                        if (validateInput(input)) {
-                            setValueOnView(dateTime, input.getText().toString());
+                        if (validateAndSetInput(input)) {
                             InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
                             imm.hideSoftInputFromWindow(input.getWindowToken(), 0);
                             floatDialog.dismiss();
@@ -493,66 +331,6 @@ public abstract class MeasurementView extends TableLayout {
 
             setExpand(evaluatorRow.getVisibility() != View.VISIBLE);
         }
-    }
-
-    private class RepeatListener implements OnTouchListener {
-
-        private Handler handler = new Handler();
-
-        private int initialInterval;
-        private final int normalInterval;
-        private final OnClickListener clickListener;
-
-        private Runnable handlerRunnable = new Runnable() {
-            @Override
-            public void run() {
-                handler.postDelayed(this, normalInterval);
-                clickListener.onClick(downView);
-            }
-        };
-
-        private View downView;
-
-        /**
-         * RepeatListener cyclically runs a clickListener, emulating keyboard-like behaviour. First
-         * click is fired immediately, next one after the initialInterval, and subsequent ones after the normalInterval.
-         *
-         * @param initialInterval The interval after first click event
-         * @param normalInterval The interval after second and subsequent click events
-         * @param clickListener The OnClickListener, that will be called periodically
-         */
-        public RepeatListener(int initialInterval, int normalInterval,
-                              OnClickListener clickListener) {
-            if (clickListener == null)
-                throw new IllegalArgumentException("null runnable");
-            if (initialInterval < 0 || normalInterval < 0)
-                throw new IllegalArgumentException("negative interval");
-
-            this.initialInterval = initialInterval;
-            this.normalInterval = normalInterval;
-            this.clickListener = clickListener;
-        }
-
-        public boolean onTouch(View view, MotionEvent motionEvent) {
-            switch (motionEvent.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    handler.removeCallbacks(handlerRunnable);
-                    handler.postDelayed(handlerRunnable, initialInterval);
-                    downView = view;
-                    downView.setPressed(true);
-                    clickListener.onClick(view);
-                    return true;
-                case MotionEvent.ACTION_UP:
-                case MotionEvent.ACTION_CANCEL:
-                    handler.removeCallbacks(handlerRunnable);
-                    downView.setPressed(false);
-                    downView = null;
-                    return true;
-            }
-
-            return false;
-        }
-
     }
 }
 

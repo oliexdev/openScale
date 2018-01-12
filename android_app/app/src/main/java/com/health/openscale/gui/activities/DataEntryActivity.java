@@ -65,22 +65,6 @@ public class DataEntryActivity extends Activity {
     private ArrayList<MeasurementView> dataEntryMeasurements;
     private TableLayout tableLayoutDataEntry;
 
-    private WeightMeasurementView weightMeasurement;
-    private BMIMeasurementView bmiMeasurementView;
-    private WaterMeasurementView waterMeasurement;
-    private MuscleMeasurementView muscleMeasurement;
-    private LBWMeasurementView lbwMeasurement;
-    private FatMeasurementView fatMeasurement;
-    private WaistMeasurementView waistMeasurement;
-    private WHtRMeasurementView wHtRMeasurementView;
-    private HipMeasurementView hipMeasurement;
-    private WHRMeasurementView whrMeasurementView;
-    private BMRMeasurementView bmrMeasurementView;
-    private BoneMeasurementView boneMeasurementView;
-    private CommentMeasurementView commentMeasurement;
-    private DateMeasurementView dateMeasurement;
-    private TimeMeasurementView timeMeasurement;
-
     private TextView txtDataNr;
     private Button btnAdd;
     private Button btnOk;
@@ -91,7 +75,9 @@ public class DataEntryActivity extends Activity {
     private FloatingActionButton switchEditMode;
     private FloatingActionButton expandButton;
 
-    private int id;
+    private ScaleMeasurement scaleMeasurement;
+    private ScaleMeasurement previousMeasurement;
+    private boolean isDirty;
 
     private Context context;
 
@@ -105,43 +91,27 @@ public class DataEntryActivity extends Activity {
 
         tableLayoutDataEntry = (TableLayout) findViewById(R.id.tableLayoutDataEntry);
 
-        weightMeasurement = new WeightMeasurementView(context);
-        bmiMeasurementView = new BMIMeasurementView(context);
-        waterMeasurement = new WaterMeasurementView(context);
-        muscleMeasurement = new MuscleMeasurementView(context);
-        lbwMeasurement = new LBWMeasurementView(context);
-        fatMeasurement = new FatMeasurementView(context);
-        boneMeasurementView = new BoneMeasurementView(context);
-        waistMeasurement = new WaistMeasurementView(context);
-        wHtRMeasurementView = new WHtRMeasurementView(context);
-        hipMeasurement = new HipMeasurementView(context);
-        whrMeasurementView = new WHRMeasurementView(context);
-        bmrMeasurementView = new BMRMeasurementView(context);
-        commentMeasurement = new CommentMeasurementView(context);
-        dateMeasurement = new DateMeasurementView(context);
-        timeMeasurement = new TimeMeasurementView(context);
-
         dataEntryMeasurements = new ArrayList<>();
-        dataEntryMeasurements.add(weightMeasurement);
-        dataEntryMeasurements.add(bmiMeasurementView);
-        dataEntryMeasurements.add(waterMeasurement);
-        dataEntryMeasurements.add(muscleMeasurement);
-        dataEntryMeasurements.add(lbwMeasurement);
-        dataEntryMeasurements.add(fatMeasurement);
-        dataEntryMeasurements.add(boneMeasurementView);
-        dataEntryMeasurements.add(waistMeasurement);
-        dataEntryMeasurements.add(wHtRMeasurementView);
-        dataEntryMeasurements.add(hipMeasurement);
-        dataEntryMeasurements.add(whrMeasurementView);
-        dataEntryMeasurements.add(bmrMeasurementView);
-        dataEntryMeasurements.add(commentMeasurement);
-        dataEntryMeasurements.add(dateMeasurement);
-        dataEntryMeasurements.add(timeMeasurement);
+        dataEntryMeasurements.add(new WeightMeasurementView(context));
+        dataEntryMeasurements.add(new BMIMeasurementView(context));
+        dataEntryMeasurements.add(new WaterMeasurementView(context));
+        dataEntryMeasurements.add(new MuscleMeasurementView(context));
+        dataEntryMeasurements.add(new LBWMeasurementView(context));
+        dataEntryMeasurements.add(new FatMeasurementView(context));
+        dataEntryMeasurements.add(new BoneMeasurementView(context));
+        dataEntryMeasurements.add(new WaistMeasurementView(context));
+        dataEntryMeasurements.add(new WHtRMeasurementView(context));
+        dataEntryMeasurements.add(new HipMeasurementView(context));
+        dataEntryMeasurements.add(new WHRMeasurementView(context));
+        dataEntryMeasurements.add(new BMRMeasurementView(context));
+        dataEntryMeasurements.add(new CommentMeasurementView(context));
+        dataEntryMeasurements.add(new DateMeasurementView(context));
+        dataEntryMeasurements.add(new TimeMeasurementView(context));
 
-        Collections.reverse(dataEntryMeasurements);
-
+        onMeasurementViewUpdateListener updateListener = new onMeasurementViewUpdateListener();
         for (MeasurementView measurement : dataEntryMeasurements) {
-            tableLayoutDataEntry.addView(measurement, 0);
+            tableLayoutDataEntry.addView(measurement);
+            measurement.setOnUpdateListener(updateListener);
         }
 
         txtDataNr = (TextView) findViewById(R.id.txtDataNr);
@@ -167,21 +137,28 @@ public class DataEntryActivity extends Activity {
         updateOnView();
     }
 
-
     private void updateOnView()
     {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
         for (MeasurementView measurement : dataEntryMeasurements) {
-            measurement.setOnUpdateListener(null);
             measurement.updatePreferences(prefs);
         }
 
+        int id = 0;
         if (getIntent().hasExtra("id")) {
             id = getIntent().getExtras().getInt("id");
         }
 
-        ScaleMeasurement scaleMeasurement;
+        if (scaleMeasurement == null || scaleMeasurement.getId() != id) {
+            isDirty = false;
+        }
+
+        scaleMeasurement = null;
+        previousMeasurement = null;
+
+        OpenScale openScale = OpenScale.getInstance(context);
+        boolean doExpand = false;
 
         if (id > 0) {
             // keep edit mode state if we are moving to left or right
@@ -193,59 +170,47 @@ public class DataEntryActivity extends Activity {
                 switchEditMode.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#D3D3D3")));
             }
 
-            final boolean doExpand = prefs.getBoolean(String.valueOf(expandButton.getId()), false);
+            doExpand = prefs.getBoolean(String.valueOf(expandButton.getId()), false);
             if (doExpand) {
                 expandButton.setBackgroundTintList(ColorStateList.valueOf(ChartUtils.COLOR_ORANGE));
             } else {
                 expandButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#D3D3D3")));
             }
 
-            OpenScale openScale = OpenScale.getInstance(context);
-
+            // Show selected scale data
             ScaleMeasurement[] tupleScaleData = openScale.getTupleScaleData(id);
-            ScaleMeasurement prevScaleMeasurement = tupleScaleData[0];
-            scaleMeasurement = tupleScaleData[1];
-
-            if (prevScaleMeasurement == null) {
-                prevScaleMeasurement = new ScaleMeasurement();
-            }
-
-            // show selected scale data
-            for (MeasurementView measurement : dataEntryMeasurements) {
-                measurement.updateValue(scaleMeasurement);
-                measurement.updateDiff(scaleMeasurement, prevScaleMeasurement);
-                measurement.setExpand(doExpand);
-            }
+            previousMeasurement = tupleScaleData[0];
+            scaleMeasurement = tupleScaleData[1].clone();
         } else {
             setViewMode(MeasurementView.MeasurementViewMode.ADD);
 
-            if (OpenScale.getInstance(getApplicationContext()).getScaleMeasurementList().isEmpty()) {
+            if (openScale.getScaleMeasurementList().isEmpty()) {
                 // Show default values
                 scaleMeasurement = new ScaleMeasurement();
+                scaleMeasurement.setWeight(openScale.getSelectedScaleUser().getInitialWeight());
             }
             else {
                 // Show the last scale data as default
-                scaleMeasurement = OpenScale.getInstance(getApplicationContext()).getScaleMeasurementList().get(0);
+                scaleMeasurement = openScale.getScaleMeasurementList().get(0).clone();
+                scaleMeasurement.setId(0);
                 scaleMeasurement.setDateTime(new Date());
                 scaleMeasurement.setComment("");
             }
+        }
 
-            for (MeasurementView measurement : dataEntryMeasurements) {
-                measurement.updateValue(scaleMeasurement);
-            }
+        for (MeasurementView measurement : dataEntryMeasurements) {
+            measurement.loadFrom(scaleMeasurement, previousMeasurement);
+            measurement.setExpand(doExpand);
         }
 
         txtDataNr.setText(DateFormat.getDateTimeInstance(
             DateFormat.LONG, DateFormat.SHORT).format(scaleMeasurement.getDateTime()));
-
-        onMeasurementViewUpdateListener updateListener = new onMeasurementViewUpdateListener();
-        for (MeasurementView measurement : dataEntryMeasurements) {
-            measurement.setOnUpdateListener(updateListener);
-        }
     }
 
     private void setViewMode(MeasurementView.MeasurementViewMode viewMode)
     {
+        int dateTimeVisibility = View.VISIBLE;
+
         switch (viewMode) {
             case VIEW:
                 btnOk.setVisibility(View.VISIBLE);
@@ -255,8 +220,7 @@ public class DataEntryActivity extends Activity {
                 btnRight.setVisibility(View.VISIBLE);
                 expandButton.setVisibility(View.VISIBLE);
                 switchEditMode.setVisibility(View.VISIBLE);
-                dateMeasurement.setVisibility(View.GONE);
-                timeMeasurement.setVisibility(View.GONE);
+                dateTimeVisibility = View.GONE;
                 break;
             case EDIT:
                 btnOk.setVisibility(View.VISIBLE);
@@ -266,8 +230,6 @@ public class DataEntryActivity extends Activity {
                 btnRight.setVisibility(View.VISIBLE);
                 expandButton.setVisibility(View.VISIBLE);
                 switchEditMode.setVisibility(View.VISIBLE);
-                dateMeasurement.setVisibility(View.VISIBLE);
-                timeMeasurement.setVisibility(View.VISIBLE);
                 break;
             case ADD:
                 btnOk.setVisibility(View.GONE);
@@ -277,63 +239,29 @@ public class DataEntryActivity extends Activity {
                 btnRight.setVisibility(View.GONE);
                 expandButton.setVisibility(View.GONE);
                 switchEditMode.setVisibility(View.GONE);
-                dateMeasurement.setVisibility(View.VISIBLE);
-                timeMeasurement.setVisibility(View.VISIBLE);
                 break;
         }
 
         for (MeasurementView measurement : dataEntryMeasurements) {
+            if (measurement instanceof DateMeasurementView || measurement instanceof TimeMeasurementView) {
+                measurement.setVisibility(dateTimeVisibility);
+            }
             measurement.setEditMode(viewMode);
         }
     }
 
-    private ScaleMeasurement createScaleDataFromMeasurement() {
-        OpenScale openScale = OpenScale.getInstance(getApplicationContext());
-        ScaleUser user = openScale.getSelectedScaleUser();
-
-        Calendar time = Calendar.getInstance();
-        time.setTime(timeMeasurement.getDateTime());
-
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(dateMeasurement.getDateTime());
-        cal.set(Calendar.HOUR_OF_DAY, time.get(Calendar.HOUR_OF_DAY));
-        cal.set(Calendar.MINUTE, time.get(Calendar.MINUTE));
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-
-        ScaleMeasurement scaleMeasurement = new ScaleMeasurement();
-
-        scaleMeasurement.setUserId(user.getId());
-        scaleMeasurement.setDateTime(cal.getTime());
-        scaleMeasurement.setConvertedWeight(weightMeasurement.getValue(), user.getScaleUnit());
-        scaleMeasurement.setFat(fatMeasurement.getValue());
-        scaleMeasurement.setWater(waterMeasurement.getValue());
-        scaleMeasurement.setMuscle(muscleMeasurement.getValue());
-        scaleMeasurement.setLbw(lbwMeasurement.getValue());
-        scaleMeasurement.setWaist(waistMeasurement.getValue());
-        scaleMeasurement.setHip(hipMeasurement.getValue());
-        scaleMeasurement.setBone(boneMeasurementView.getValue());
-        scaleMeasurement.setComment(commentMeasurement.getValueAsString());
-
-        return scaleMeasurement;
-    }
-
     private void saveScaleData() {
-        ScaleMeasurement scaleMeasurement = createScaleDataFromMeasurement();
-
-        scaleMeasurement.setId(id);
-
-        OpenScale openScale = OpenScale.getInstance(getApplicationContext());
-        openScale.updateScaleData(scaleMeasurement);
+        if (isDirty) {
+            OpenScale openScale = OpenScale.getInstance(getApplicationContext());
+            openScale.updateScaleData(scaleMeasurement);
+            isDirty = false;
+        }
     }
 
     private boolean moveLeft() {
-        ScaleMeasurement[] tupleScaleData = OpenScale.getInstance(getApplicationContext()).getTupleScaleData(id);
-        ScaleMeasurement prevScaleMeasurement = tupleScaleData[0];
-
-        if (prevScaleMeasurement != null) {
+        if (previousMeasurement != null) {
             saveScaleData();
-            getIntent().putExtra("id", prevScaleMeasurement.getId());
+            getIntent().putExtra("id", previousMeasurement.getId());
             updateOnView();
             return true;
         }
@@ -341,9 +269,9 @@ public class DataEntryActivity extends Activity {
         return false;
     }
 
-    private boolean moveRight()
-    {
-        ScaleMeasurement[] tupleScaleData = OpenScale.getInstance(getApplicationContext()).getTupleScaleData(id);
+    private boolean moveRight() {
+        ScaleMeasurement[] tupleScaleData = OpenScale.getInstance(getApplicationContext())
+                .getTupleScaleData(scaleMeasurement.getId());
         ScaleMeasurement nextScaleMeasurement = tupleScaleData[2];
 
         if (nextScaleMeasurement != null) {
@@ -359,23 +287,12 @@ public class DataEntryActivity extends Activity {
     private class onMeasurementViewUpdateListener implements MeasurementViewUpdateListener {
         @Override
         public void onMeasurementViewUpdate(MeasurementView view) {
-            ArrayList<MeasurementView> viewsToUpdate = new ArrayList<>();
-            if (view == weightMeasurement) {
-                viewsToUpdate.add(bmiMeasurementView);
-                viewsToUpdate.add(bmrMeasurementView);
-            } else if (view == waistMeasurement) {
-                viewsToUpdate.add(wHtRMeasurementView);
-                viewsToUpdate.add(whrMeasurementView);
-            } else if (view == hipMeasurement) {
-                viewsToUpdate.add(whrMeasurementView);
-            } else if (view == dateMeasurement) {
-                viewsToUpdate.add(bmrMeasurementView);
-            }
+            view.saveTo(scaleMeasurement);
+            isDirty = true;
 
-            if (!viewsToUpdate.isEmpty()) {
-                ScaleMeasurement scaleMeasurement = createScaleDataFromMeasurement();
-                for (MeasurementView measurement : viewsToUpdate) {
-                    measurement.updateValue(scaleMeasurement);
+            for (MeasurementView measurement : dataEntryMeasurements) {
+                if (measurement != view) {
+                    measurement.loadFrom(scaleMeasurement, previousMeasurement);
                 }
             }
         }
@@ -396,7 +313,9 @@ public class DataEntryActivity extends Activity {
 
                 infoDialog.show();
             } else {
-                ScaleMeasurement scaleMeasurement = createScaleDataFromMeasurement();
+                for (MeasurementView measurement : dataEntryMeasurements) {
+                    measurement.saveTo(scaleMeasurement);
+                }
 
                 OpenScale openScale = OpenScale.getInstance(getApplicationContext());
                 openScale.addScaleData(scaleMeasurement);
@@ -465,7 +384,7 @@ public class DataEntryActivity extends Activity {
         }
 
         void deleteMeasurement() {
-            int delId = id;
+            int delId = scaleMeasurement.getId();
 
             boolean hasNext = moveLeft();
 

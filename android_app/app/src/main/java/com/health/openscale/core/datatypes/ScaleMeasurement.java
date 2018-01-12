@@ -26,7 +26,7 @@ import com.j256.simplecsv.common.CsvColumn;
 import java.util.Date;
 
 @Entity(tableName = "scaleMeasurements", indices = {@Index(value = {"datetime"}, unique = true)})
-public class ScaleMeasurement {
+public class ScaleMeasurement implements Cloneable {
     private static float KG_LB = 2.20462f;
     private static float KG_ST = 0.157473f;
 
@@ -85,6 +85,19 @@ public class ScaleMeasurement {
         comment = new String();
     }
 
+    @Override
+    public ScaleMeasurement clone() {
+        ScaleMeasurement clone;
+        try {
+            clone = (ScaleMeasurement) super.clone();
+        }
+        catch (CloneNotSupportedException e) {
+            throw new RuntimeException("failed to clone ScaleMeasurement", e);
+        }
+        clone.dateTime = (Date) dateTime.clone();
+        return clone;
+    }
+
     public int getId() {
         return id;
     }
@@ -141,7 +154,6 @@ public class ScaleMeasurement {
 
     public void setWeight(float weight) {
         this.weight = weight;
-
     }
 
     public void setConvertedWeight(float weight, int scale_unit) {

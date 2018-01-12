@@ -23,6 +23,7 @@ import android.os.AsyncTask;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -48,6 +49,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -215,7 +217,15 @@ public class OpenScale {
         if (measurementDAO.insert(scaleMeasurement) != -1) {
             ScaleUser scaleUser = getScaleUser(scaleMeasurement.getUserId());
 
-            String infoText = String.format(context.getString(R.string.info_new_data_added), scaleMeasurement.getConvertedWeight(scaleUser.getScaleUnit()), scaleUser.UNIT_STRING[scaleUser.getScaleUnit()], dateTimeFormat.format(scaleMeasurement.getDateTime()), scaleUser.getUserName());
+            final java.text.DateFormat dateFormat = DateFormat.getDateFormat(context);
+            final java.text.DateFormat timeFormat = DateFormat.getTimeFormat(context);
+            final Date dateTime = scaleMeasurement.getDateTime();
+
+            String infoText = String.format(context.getString(R.string.info_new_data_added),
+                    scaleMeasurement.getConvertedWeight(scaleUser.getScaleUnit()),
+                    scaleUser.UNIT_STRING[scaleUser.getScaleUnit()],
+                    dateFormat.format(dateTime) + " " + timeFormat.format(dateTime),
+                    scaleUser.getUserName());
             Toast.makeText(context, infoText, Toast.LENGTH_LONG).show();
             alarmHandler.entryChanged(context, scaleMeasurement);
             updateScaleData();

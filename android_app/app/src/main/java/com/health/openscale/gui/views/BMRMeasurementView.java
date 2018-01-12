@@ -24,10 +24,17 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 
-public class BMRMeasurementView extends MeasurementView {
+import java.util.Locale;
+
+public class BMRMeasurementView extends FloatMeasurementView {
 
     public BMRMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_bmr), ContextCompat.getDrawable(context, R.drawable.ic_bmr));
+    }
+
+    @Override
+    public void updatePreferences(SharedPreferences preferences) {
+        setVisible(preferences.getBoolean("weightEnable", true));
     }
 
     @Override
@@ -36,32 +43,32 @@ public class BMRMeasurementView extends MeasurementView {
     }
 
     @Override
-    public void updateValue(ScaleMeasurement newMeasurement) {
-        setValueOnView(newMeasurement.getDateTime(), newMeasurement.getBMR(getScaleUser()));
+    protected String formatValue(float value) {
+        return String.format(Locale.getDefault(), "%d", Math.round(value));
     }
 
     @Override
-    public void updateDiff(ScaleMeasurement newMeasurement, ScaleMeasurement lastMeasurement) {
-        setDiffOnView(newMeasurement.getBMR(getScaleUser()), lastMeasurement.getBMR(getScaleUser()));
+    protected float getMeasurementValue(ScaleMeasurement measurement) {
+        return measurement.getBMR(getScaleUser());
     }
 
     @Override
-    public String getUnit() {
+    protected void setMeasurementValue(float value, ScaleMeasurement measurement) {
+        // Empty
+    }
+
+    @Override
+    protected String getUnit() {
         return "kCal";
     }
 
     @Override
-    public EvaluationResult evaluateSheet(EvaluationSheet evalSheet, float value) {
-        return null;
-    }
-
-    @Override
-    public float getMaxValue() {
+    protected float getMaxValue() {
         return 5000;
     }
 
     @Override
-    public void updatePreferences(SharedPreferences preferences) {
-        setVisible(preferences.getBoolean("weightEnable", true));
+    protected EvaluationResult evaluateSheet(EvaluationSheet evalSheet, float value) {
+        return null;
     }
 }

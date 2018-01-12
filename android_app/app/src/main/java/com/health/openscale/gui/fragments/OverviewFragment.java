@@ -179,8 +179,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             lastScaleMeasurement = new ScaleMeasurement();
         } else if (userSelectedData != null) {
             lastScaleMeasurement = userSelectedData;
-        }
-        else {
+        } else {
             lastScaleMeasurement = scaleMeasurementList.get(0);
         }
 
@@ -197,14 +196,9 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         ScaleMeasurement[] tupleScaleData = OpenScale.getInstance(context).getTupleScaleData(lastScaleMeasurement.getId());
         ScaleMeasurement prevScaleMeasurement = tupleScaleData[0];
 
-        if (prevScaleMeasurement == null) {
-            prevScaleMeasurement = new ScaleMeasurement();
-        }
-
         for (MeasurementView measurement : overviewMeasurements) {
             measurement.updatePreferences(prefs);
-            measurement.updateValue(lastScaleMeasurement);
-            measurement.updateDiff(lastScaleMeasurement, prevScaleMeasurement);
+            measurement.loadFrom(lastScaleMeasurement, prevScaleMeasurement);
         }
     }
 

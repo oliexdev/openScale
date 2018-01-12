@@ -201,31 +201,24 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
         int displayCount = 0;
 
-        for (int i = (maxSize * selectedSubpageNr); i< scaleMeasurementList.size(); i++) {
+        for (int i = (maxSize * selectedSubpageNr); i < scaleMeasurementList.size(); i++) {
             ScaleMeasurement scaleMeasurement = scaleMeasurementList.get(i);
 
-            ScaleMeasurement prevScaleMeasurement;
-
-            if (i >= scaleMeasurementList.size()-1) {
-                prevScaleMeasurement = new ScaleMeasurement();
-            } else {
-                prevScaleMeasurement = scaleMeasurementList.get(i+1);
+            ScaleMeasurement prevScaleMeasurement = null;
+            if (i < scaleMeasurementList.size() - 1) {
+                prevScaleMeasurement = scaleMeasurementList.get(i + 1);
             }
-
 
             HashMap<Integer,String> dataRow = new HashMap<>();
 
             int columnNr = 0;
-            dataRow.put(columnNr, Long.toString(scaleMeasurement.getId()));
+            dataRow.put(columnNr++, Long.toString(scaleMeasurement.getId()));
 
-            for (int j=0; j< measurementsList.size(); j++) {
-                MeasurementView measurement = measurementsList.get(j);
-                measurement.updateValue(scaleMeasurement);
-                measurement.updateDiff(scaleMeasurement, prevScaleMeasurement);
+            for (MeasurementView measurement : measurementsList) {
+                measurement.loadFrom(scaleMeasurement, prevScaleMeasurement);
 
                 if (measurement.isVisible()) {
-                    columnNr++;
-                    dataRow.put(columnNr, measurement.getValueAsString() + "<br>" + measurement.getDiffValue());
+                    dataRow.put(columnNr++, measurement.getValueAsString() + "<br>" + measurement.getDiffValue());
                 }
             }
 

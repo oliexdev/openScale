@@ -24,39 +24,12 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 
-public class WaterMeasurementView extends MeasurementView {
+public class WaterMeasurementView extends FloatMeasurementView {
 
     private boolean estimateWaterEnable;
 
     public WaterMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_water), ContextCompat.getDrawable(context, R.drawable.ic_water));
-    }
-
-    @Override
-    public boolean isEditable() {
-        if (estimateWaterEnable && getMeasurementMode() == MeasurementViewMode.ADD) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public void updateValue(ScaleMeasurement newMeasurement) {
-        if (estimateWaterEnable && getMeasurementMode() == MeasurementViewMode.ADD) {
-            setValueOnView(newMeasurement.getDateTime(), (getContext().getString(R.string.label_automatic)));
-        } else {
-            setValueOnView(newMeasurement.getDateTime(), newMeasurement.getWater());
-        }
-    }
-
-    @Override
-    public void updateDiff(ScaleMeasurement newMeasurement, ScaleMeasurement lastMeasurement) {
-        setDiffOnView(newMeasurement.getWater(), lastMeasurement.getWater());
-    }
-
-    @Override
-    public String getUnit() {
-        return "%";
     }
 
     @Override
@@ -66,12 +39,32 @@ public class WaterMeasurementView extends MeasurementView {
     }
 
     @Override
-    public EvaluationResult evaluateSheet(EvaluationSheet evalSheet, float value) {
-        return evalSheet.evaluateBodyWater(value);
+    protected float getMeasurementValue(ScaleMeasurement measurement) {
+        return measurement.getWater();
     }
 
     @Override
-    public float getMaxValue() {
+    protected void setMeasurementValue(float value, ScaleMeasurement measurement) {
+        measurement.setWater(value);
+    }
+
+    @Override
+    protected String getUnit() {
+        return "%";
+    }
+
+    @Override
+    protected float getMaxValue() {
         return 80;
+    }
+
+    @Override
+    protected boolean isEstimationEnabled() {
+        return estimateWaterEnable;
+    }
+
+    @Override
+    protected EvaluationResult evaluateSheet(EvaluationSheet evalSheet, float value) {
+        return evalSheet.evaluateBodyWater(value);
     }
 }
