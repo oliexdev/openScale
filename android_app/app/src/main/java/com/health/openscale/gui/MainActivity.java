@@ -124,8 +124,6 @@ public class MainActivity extends AppCompatActivity {
             prefs.edit().putBoolean("firstStart", false).commit();
         }
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-
         if(!valueOfCountModified){
             int launchCount = prefs.getInt("launchCount", 0);
 
@@ -134,6 +132,8 @@ public class MainActivity extends AppCompatActivity {
 
                 // ask the user once for feedback on the 30th app launch
                 if(launchCount == 30){
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
                     builder.setMessage(R.string.label_feedback_message_enjoying)
                             .setPositiveButton(R.string.label_feedback_message_yes, new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int id) {
