@@ -185,6 +185,13 @@
     <string name="label_regression_line_degree">Regression polynom degree</string>
     <string name="label_goal_line">Goal line</string>
 
+    <string name="label_feedback_message_enjoying">Enjoying openScale?</string>
+    <string name="label_feedback_message_rate_app">How about a rating on GooglePlay or on GitHub, then?</string>
+    <string name="label_feedback_message_issue">Would you mind giving us some feedback?</string>
+    <string name="label_feedback_message_yes">Yes!</string>
+    <string name="label_feedback_message_no">Not really</string>
+    <string name="label_feedback_message_positive">Ok, sure</string>
+    <string name="label_feedback_message_negative">No, thanks</string>
 
     <string name="error_max_scale_users">Maximum number of concurrent scale users reached.</string>
     <string name="info_step_on_scale">Please step barefoot on the scale for reference measurements.</string>

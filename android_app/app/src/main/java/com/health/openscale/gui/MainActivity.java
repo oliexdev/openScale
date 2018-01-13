@@ -16,13 +16,17 @@
 
 package com.health.openscale.gui;
 
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -55,6 +59,7 @@ import com.health.openscale.gui.fragments.TableFragment;
 
 public class MainActivity extends AppCompatActivity {
     private static boolean firstAppStart = true;
+    private static boolean valueOfCountModified = false;
     private static int bluetoothStatusIcon = R.drawable.ic_bluetooth_disabled;
     private static MenuItem bluetoothStatus;
     private static CharSequence fragmentTitle;
@@ -118,6 +123,87 @@ public class MainActivity extends AppCompatActivity {
 
             prefs.edit().putBoolean("firstStart", false).commit();
         }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        if(!valueOfCountModified){
+            int launchCount = prefs.getInt("launchCount", 0);
+
+            if(prefs.edit().putInt("launchCount", ++launchCount).commit()){
+                valueOfCountModified = true;
+
+                // ask the user once for feedback on the 30th app launch
+                if(launchCount == 30){
+                    builder.setMessage(R.string.label_feedback_message_enjoying)
+                            .setPositiveButton(R.string.label_feedback_message_yes, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    dialog.dismiss();
+                                    positiveFeedbackDialog();
+                                }
+                            })
+                            .setNegativeButton(R.string.label_feedback_message_no, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    dialog.dismiss();
+                                    negativeFeedbackDialog();
+                                }
+                            });
+
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
+                }
+            }
+        }
+    }
+
+    private void positiveFeedbackDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        builder.setMessage(R.string.label_feedback_message_rate_app)
+                .setPositiveButton(R.string.label_feedback_message_positive, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.dismiss();
+                        Uri uri = Uri.parse("market://details?id=" + getPackageName());
+                        Intent goToMarket = new Intent(Intent.ACTION_VIEW, uri);
+                        // To count with Play market backstack, After pressing back button,
+                        // to taken back to our application, we need to add following flags to intent.
+                        goToMarket.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY |
+                                Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET |
+                                Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+                        try {
+                            startActivity(goToMarket);
+                        } catch (ActivityNotFoundException e) {
+                            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=" + getPackageName())));
+                        }
+                    }
+                })
+                .setNegativeButton(R.string.label_feedback_message_negative, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.dismiss();
+                    }
+                });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    private void negativeFeedbackDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        builder.setMessage(R.string.label_feedback_message_issue)
+                .setPositiveButton(R.string.label_feedback_message_positive, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.dismiss();
+                        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/oliexdev/openScale/issues")));
+                    }
+                })
+                .setNegativeButton(R.string.label_feedback_message_negative, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.dismiss();
+                    }
+                });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 
     private void setupDrawerContent(NavigationView navigationView) {
@@ -193,7 +279,9 @@ public class MainActivity extends AppCompatActivity {
                 drawerLayout.openDrawer(GravityCompat.START);
                 return true;
             case R.id.action_bluetooth_status:
-                invokeSearchBluetoothDevice();
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+                prefs.edit().putInt("launchCount", 0).commit();
+                //invokeSearchBluetoothDevice();
                 return true;
         }
 

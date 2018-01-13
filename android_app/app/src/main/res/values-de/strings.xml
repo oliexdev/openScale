@@ -163,4 +163,11 @@
     <string name="label_fat_percentage">Körperfett in %</string>
     <string name="label_water_percentage">Wasseranteil in %</string>
     <string name="label_muscle_percentage">Muskelanteil in %</string>
+    <string name="label_feedback_message_enjoying">Gefällt Dir openScale?</string>
+    <string name="label_feedback_message_rate_app">Wie wäre es dann mit einer Bewertung bei GooglePlay oder bei GitHub?</string>
+    <string name="label_feedback_message_yes">Ja!</string>
+    <string name="label_feedback_message_no">Nicht wirklich</string>
+    <string name="label_feedback_message_positive">Ja klar</string>
+    <string name="label_feedback_message_negative">Nein danke</string>
+    <string name="label_feedback_message_issue">Würdest Du uns etwas Feedback geben?</string>
 </resources>
