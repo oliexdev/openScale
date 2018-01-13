@@ -108,13 +108,15 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
         for (MeasurementView measurement : viewMeasurementsListWeek) {
             measurement.setEditMode(STATISTIC);
             measurement.updatePreferences(prefs);
-            if ((i % 2) == 0) {
-                tableWeekAveragesLayoutColumnA.addView(measurement);
+
+            if (measurement.isVisible()) {
+                if ((i % 2) == 0) {
+                    tableWeekAveragesLayoutColumnA.addView(measurement);
+                } else {
+                    tableWeekAveragesLayoutColumnB.addView(measurement);
+                }
+                i++;
             }
-            else {
-                tableWeekAveragesLayoutColumnB.addView(measurement);
-            }
-            i++;
         }
 
         viewMeasurementsListMonth = new ArrayList<>();
@@ -134,13 +136,14 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
             measurement.setEditMode(STATISTIC);
             measurement.updatePreferences(prefs);
 
-            if ((i % 2) == 0) {
-                tableMonthAveragesLayoutColumnA.addView(measurement);
+            if (measurement.isVisible()) {
+                if ((i % 2) == 0) {
+                    tableMonthAveragesLayoutColumnA.addView(measurement);
+                } else {
+                    tableMonthAveragesLayoutColumnB.addView(measurement);
+                }
+                i++;
             }
-            else {
-                tableMonthAveragesLayoutColumnB.addView(measurement);
-            }
-            i++;
         }
 
         OpenScale.getInstance(getContext()).registerFragment(this);
