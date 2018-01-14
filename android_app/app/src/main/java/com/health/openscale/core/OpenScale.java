@@ -293,6 +293,11 @@ public class OpenScale {
             List<ScaleMeasurement> csvScaleMeasurementList =
                     CsvHelper.importFrom(new BufferedReader(new FileReader(filename)));
 
+            final int userId = getSelectedScaleUser().getId();
+            for (ScaleMeasurement measurement : csvScaleMeasurementList) {
+                measurement.setUserId(userId);
+            }
+
             measurementDAO.insertAll(csvScaleMeasurementList);
             updateScaleData();
             Toast.makeText(context, context.getString(R.string.info_data_imported) + " /sdcard" + filename, Toast.LENGTH_SHORT).show();
