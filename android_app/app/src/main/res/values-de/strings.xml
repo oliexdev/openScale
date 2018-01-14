@@ -170,4 +170,5 @@
     <string name="label_feedback_message_positive">Ja klar</string>
     <string name="label_feedback_message_negative">Nein danke</string>
     <string name="label_feedback_message_issue">Würdest Du uns etwas Feedback geben?</string>
+    <string name="error_user_name_too_short">Fehler Benutzername muss mind. 3 Zeichen haben</string>
 </resources>

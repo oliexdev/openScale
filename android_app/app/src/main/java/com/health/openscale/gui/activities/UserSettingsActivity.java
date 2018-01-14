@@ -173,8 +173,12 @@ public class UserSettingsActivity extends Activity {
     {
         boolean validate = true;
 
-        if (txtUserName.getText().toString().length() == 0) {
-            txtUserName.setError(getResources().getString(R.string.error_user_name_required));
+        if (txtUserName.getText().toString().length() < 3) {
+            if (txtUserName.getText().toString().length() == 0) {
+                txtUserName.setError(getResources().getString(R.string.error_user_name_required));
+            } else {
+                txtUserName.setError(getResources().getString(R.string.error_user_name_too_short));
+            }
             validate = false;
         }
 
