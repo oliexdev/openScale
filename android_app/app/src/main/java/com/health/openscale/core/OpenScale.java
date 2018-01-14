@@ -40,10 +40,12 @@ import com.health.openscale.core.database.ScaleUserDAO;
 import com.health.openscale.core.database.ScaleUserDatabase;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
+import com.health.openscale.core.utils.CsvHelper;
 import com.health.openscale.gui.fragments.FragmentUpdateListener;
-import com.j256.simplecsv.processor.CsvProcessor;
 
-import java.io.File;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -287,15 +289,14 @@ public class OpenScale {
     }
 
     public void importData(String filename) {
-        CsvProcessor<ScaleMeasurement> csvProcessor = new CsvProcessor<ScaleMeasurement>(ScaleMeasurement.class)
-                .withHeaderValidation(true)
-                .withFlexibleOrder(true)
-                .withAlwaysTrimInput(true)
-                .withAllowPartialLines(true);
-        File csvFile = new File(filename);
-
         try {
-            List<ScaleMeasurement> csvScaleMeasurementList = csvProcessor.readAll(csvFile, null);
+            List<ScaleMeasurement> csvScaleMeasurementList =
+                    CsvHelper.importFrom(new BufferedReader(new FileReader(filename)));
+
+            final int userId = getSelectedScaleUser().getId();
+            for (ScaleMeasurement measurement : csvScaleMeasurementList) {
+                measurement.setUserId(userId);
+            }
 
             measurementDAO.insertAll(csvScaleMeasurementList);
             updateScaleData();
@@ -308,12 +309,8 @@ public class OpenScale {
     }
 
     public void exportData(String filename) {
-        CsvProcessor<ScaleMeasurement> csvProcessor = new CsvProcessor<ScaleMeasurement>(ScaleMeasurement.class);
-
-        File csvFile = new File(filename);
-
         try {
-            csvProcessor.writeAll(csvFile, scaleMeasurementList, true);
+            CsvHelper.exportTo(new FileWriter(filename), scaleMeasurementList);
             Toast.makeText(context, context.getString(R.string.info_data_exported) + " /sdcard" + filename, Toast.LENGTH_SHORT).show();
         } catch (IOException e) {
             Toast.makeText(context, context.getResources().getString(R.string.error_exporting) + " " + e.getMessage(), Toast.LENGTH_SHORT).show();

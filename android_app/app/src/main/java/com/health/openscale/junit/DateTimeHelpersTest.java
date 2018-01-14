@@ -23,7 +23,6 @@ import org.junit.Test;
 import java.util.Calendar;
 
 import static junit.framework.Assert.assertEquals;
-import static org.junit.Assert.assertEquals;
 
 public class DateTimeHelpersTest {
     Calendar getDate(int year, int month, int day, int hour, int minute, int second, int ms) {
