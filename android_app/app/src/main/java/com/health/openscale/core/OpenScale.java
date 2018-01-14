@@ -287,7 +287,11 @@ public class OpenScale {
     }
 
     public void importData(String filename) {
-        CsvProcessor<ScaleMeasurement> csvProcessor = new CsvProcessor<ScaleMeasurement>(ScaleMeasurement.class).withHeaderValidation(true).withFlexibleOrder(true);
+        CsvProcessor<ScaleMeasurement> csvProcessor = new CsvProcessor<ScaleMeasurement>(ScaleMeasurement.class)
+                .withHeaderValidation(true)
+                .withFlexibleOrder(true)
+                .withAlwaysTrimInput(true)
+                .withAllowPartialLines(true);
         File csvFile = new File(filename);
 
         try {
