@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/saveButton"
+        android:title="@string/save"
+        app:showAsAction="always|withText" />
+    <item
+        android:id="@+id/editButton"
+        android:title="@string/edit"
+        android:icon="@drawable/ic_pencil"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/expandButton"
+        android:title="@string/toggle_expand"
+        android:icon="@drawable/ic_resize"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/deleteButton"
+        android:title="@string/label_delete"
+        app:showAsAction="never" />
+
+</menu>
