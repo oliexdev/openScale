@@ -19,7 +19,7 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 
 public abstract class EstimatedLBWMetric {
-    public enum FORMULA { LBW_HUME, LBW_BOER };
+    public enum FORMULA { LBW_HUME, LBW_BOER }
 
     public static EstimatedLBWMetric getEstimatedMetric(FORMULA metric) {
         switch (metric) {

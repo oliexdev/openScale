@@ -225,7 +225,7 @@ public class OpenScale {
 
             String infoText = String.format(context.getString(R.string.info_new_data_added),
                     scaleMeasurement.getConvertedWeight(scaleUser.getScaleUnit()),
-                    scaleUser.UNIT_STRING[scaleUser.getScaleUnit()],
+                    ScaleUser.UNIT_STRING[scaleUser.getScaleUnit()],
                     dateFormat.format(dateTime) + " " + timeFormat.format(dateTime),
                     scaleUser.getUserName());
             Toast.makeText(context, infoText, Toast.LENGTH_LONG).show();

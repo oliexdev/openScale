@@ -49,7 +49,7 @@ import static com.health.openscale.gui.views.MeasurementView.MeasurementViewMode
 import static com.health.openscale.gui.views.MeasurementView.MeasurementViewMode.VIEW;
 
 public abstract class MeasurementView extends TableLayout {
-    public enum MeasurementViewMode {VIEW, EDIT, ADD, STATISTIC};
+    public enum MeasurementViewMode {VIEW, EDIT, ADD, STATISTIC}
 
     private TableRow measurementRow;
     private ImageView iconView;

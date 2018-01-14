@@ -17,7 +17,7 @@
 package com.health.openscale.core.evaluation;
 
 public class EvaluationResult {
-    public  static enum EVAL_STATE {LOW, NORMAL, HIGH, UNDEFINED};
+    public enum EVAL_STATE {LOW, NORMAL, HIGH, UNDEFINED}
 
     public float value;
     public float lowLimit;
