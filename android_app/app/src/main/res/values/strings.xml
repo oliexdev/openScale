@@ -67,7 +67,6 @@
     <string name="label_goal_weight">Goal weight</string>
     <string name="label_goal_date">Goal date</string>
 
-
     <string name="label_title_user">user</string>
     <string name="label_title_last_measurement">last measurement</string>
     <string name="label_title_goal">goal</string>
@@ -197,5 +196,15 @@
     <string name="error_max_scale_users">Maximum number of concurrent scale users reached.</string>
     <string name="info_step_on_scale">Please step barefoot on the scale for reference measurements.</string>
     <string name="info_measuring">Measuring weight: %.2f</string>
+
+    <string name="customactivityoncrash_error_activity_error_occurred_explanation">An unexpected error occurred.\n\nPlease create a new issue on\nhttps://github.com/oliexdev/openScale/issues\n\nInclude the error details.</string>
+    <string name="customactivityoncrash_error_activity_restart_app">Restart app</string>
+    <string name="customactivityoncrash_error_activity_close_app">Close app</string>
+    <string name="customactivityoncrash_error_activity_error_details">Error details</string>
+    <string name="customactivityoncrash_error_activity_error_details_title">Error details</string>
+    <string name="customactivityoncrash_error_activity_error_details_close">Close</string>
+    <string name="customactivityoncrash_error_activity_error_details_copy">Copy to clipboard</string>
+    <string name="customactivityoncrash_error_activity_error_details_copied">Copied to clipboard</string>
+    <string name="customactivityoncrash_error_activity_error_details_clipboard_label">Error information</string>
 
 </resources>
