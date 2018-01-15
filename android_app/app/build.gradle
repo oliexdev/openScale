@@ -48,6 +48,7 @@ dependencies {
     implementation 'com.android.support.test:runner:1.0.0'
     implementation 'com.android.support.test:rules:1.0.0'
     annotationProcessor 'android.arch.persistence.room:compiler:1.0.0'
+    compile 'cat.ereza:customactivityoncrash:2.2.0'
 }
 
 tasks.withType(Test) {

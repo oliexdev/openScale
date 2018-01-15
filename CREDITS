@@ -13,10 +13,16 @@ ISC License
 License: https://opensource.org/licenses/ISC
 Website: https://github.com/j256/simplecsv
 
+Project: CustomActivityOnCrash
+Copyright 2014-2017 Eduard Ereza Martínez
+Apache License, Version 2.0
+License: https://www.apache.org/licenses/LICENSE-2.0
+Website: https://github.com/Ereza/CustomActivityOnCrash
+
 Project: Low-Power
 Copyright 2016 Lim Phang Moh
 Creative Commons Attribution-ShareAlike 3.0
-Licnese: https://creativecommons.org/licenses/by-sa/3.0
+License: https://creativecommons.org/licenses/by-sa/3.0
 Website: https://github.com/rocketscream/Low-Power
 
 Project:  DS3232RTC

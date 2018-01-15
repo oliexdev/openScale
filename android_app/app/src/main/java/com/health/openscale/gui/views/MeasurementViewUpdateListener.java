@@ -16,5 +16,5 @@
 package com.health.openscale.gui.views;
 
 public interface MeasurementViewUpdateListener {
-    public void onMeasurementViewUpdate(MeasurementView view);
+    void onMeasurementViewUpdate(MeasurementView view);
 }
