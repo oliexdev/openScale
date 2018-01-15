@@ -99,6 +99,9 @@ public class BluetoothSanitasSbf70 extends BluetoothCommunication {
     private static final UUID CUSTOM_CHARACTERISTIC_IMG_BLOCK = // write-only, notify
             UUID.fromString("F000FFC2-0451-4000-8000-000000000000");
 
+    // Command bytes
+    private static final byte[] SET_UNIT_COMMAND = new byte[] {(byte) 0xe7, (byte) 0x4d, (byte) 0x00};
+
 
     private int currentScaleUserId;
     private int countRegisteredScaleUsers;
@@ -153,10 +156,14 @@ public class BluetoothSanitasSbf70 extends BluetoothCommunication {
                 updateDateTimeSanitas();
                 break;
             case 3:
+                // Set measurement unit
+                setUnitCommand();
+                break;
+            case 4:
                 // Request general user information
                 writeBytes(new byte[]{(byte) 0xe7, (byte) 0x33});
                 break;
-            case 4:
+            case 5:
                 // Wait for ack of all users
                 if (seenUsers.size() < countRegisteredScaleUsers || (countRegisteredScaleUsers == -1)) {
                     // Request this state again
@@ -211,7 +218,7 @@ public class BluetoothSanitasSbf70 extends BluetoothCommunication {
 
 
                 break;
-            case 5:
+            case 6:
                 break;
             default:
                 // Finish init if everything is done
@@ -594,6 +601,28 @@ public class BluetoothSanitasSbf70 extends BluetoothCommunication {
         Log.d(TAG, "Write new Date/Time:" + unixTime + " " + byteInHex(unixTimeBytes));
 
         writeBytes(new byte[]{(byte) 0xe9, unixTimeBytes[4], unixTimeBytes[5], unixTimeBytes[6], unixTimeBytes[7]});
+    }
+
+    private void setUnitCommand() {
+        byte[] command = SET_UNIT_COMMAND;
+        final ScaleUser selectedUser = OpenScale.getInstance(context).getSelectedScaleUser();
+
+        switch ((byte) selectedUser.getScaleUnit()) {
+            case 0:
+                // Kg
+                command[2] = (byte) 0x01;
+                break;
+            case 1:
+                // Lb
+                command[2] = (byte) 0x02;
+                break;
+            case 2:
+                // St
+                command[3] = (byte) 0x04;
+                break;
+         }
+        Log.d(TAG, "Setting unit " + ScaleUser.UNIT_STRING[selectedUser.getScaleUnit()]);
+        writeBytes(command);
     }
 
     private void writeBytes(byte[] data) {

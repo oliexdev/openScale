@@ -376,7 +376,7 @@ public class MainActivity extends AppCompatActivity {
                     setBluetoothStatusIcon(R.drawable.ic_bluetooth_connection_success);
                     ScaleMeasurement scaleBtData = (ScaleMeasurement) msg.obj;
 
-                    scaleBtData.setConvertedWeight(scaleBtData.getWeight(), OpenScale.getInstance(getApplicationContext()).getSelectedScaleUser().getScaleUnit());
+  //                  scaleBtData.setConvertedWeight(scaleBtData.getWeight(), OpenScale.getInstance(getApplicationContext()).getSelectedScaleUser().getScaleUnit());
 
                     OpenScale.getInstance(getApplicationContext()).addScaleData(scaleBtData);
                     break;
