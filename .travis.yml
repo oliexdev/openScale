@@ -13,6 +13,9 @@ branches:
   except:
     - travis-dev-build
 
+before_install:
+  - yes | sdkmanager "platforms;android-27"
+
 before_script:
   - sed -i -r
     -e 's/applicationId "[^"]+/\0.dev/'
