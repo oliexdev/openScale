@@ -13,7 +13,7 @@
 *    You should have received a copy of the GNU General Public License
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-package com.health.openscale.junit;
+package com.health.openscale;
 
 import android.arch.persistence.room.Room;
 import android.content.Context;
