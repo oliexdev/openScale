@@ -77,11 +77,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         // Enable for release builds and debug builds done by Travis
-        final boolean enableCrashHandler =
-                BuildConfig.BUILD_TYPE.equals("release")
-                || BuildConfig.VERSION_NAME.contains("-dev");
+        final boolean enableCrashHandler = BuildConfig.BUILD_TYPE.equals("release")
+                || BuildConfig.BUILD_TYPE.equals("debug");
+
         CaocConfig.Builder.create()
                 .enabled(enableCrashHandler)
+                .trackActivities(true)
                 .apply();
 
         setContentView(R.layout.activity_main);

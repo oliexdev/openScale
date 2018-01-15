@@ -197,7 +197,7 @@
     <string name="info_step_on_scale">Please step barefoot on the scale for reference measurements.</string>
     <string name="info_measuring">Measuring weight: %.2f</string>
 
-    <string name="customactivityoncrash_error_activity_error_occurred_explanation">An unexpected error occurred.\n\nPlease create a new issue on\nhttps://github.com/oliexdev/openScale/issues\n\nInclude the error details.</string>
+    <string name="customactivityoncrash_error_activity_error_occurred_explanation">An unexpected error occurred.\n\nPlease create a new issue including the detailed error details on\nhttps://github.com/oliexdev/openScale/issues</string>
     <string name="customactivityoncrash_error_activity_restart_app">Restart app</string>
     <string name="customactivityoncrash_error_activity_close_app">Close app</string>
     <string name="customactivityoncrash_error_activity_error_details">Error details</string>
