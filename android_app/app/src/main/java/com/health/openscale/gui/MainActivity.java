@@ -45,7 +45,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import com.health.openscale.BuildConfig;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.bluetooth.BluetoothCommunication;
@@ -76,12 +75,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Enable for release builds and debug builds done by Travis
-        final boolean enableCrashHandler = BuildConfig.BUILD_TYPE.equals("release")
-                || BuildConfig.BUILD_TYPE.equals("debug");
-
         CaocConfig.Builder.create()
-                .enabled(enableCrashHandler)
                 .trackActivities(true)
                 .apply();
 

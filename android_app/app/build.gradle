@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 26
+    compileSdkVersion 27
 
     defaultConfig {
         applicationId "com.health.openscale"
@@ -33,7 +33,7 @@ android {
     }
 }
 ext {
-    supportLibVersion = '26.1.0'
+    supportLibVersion = '27.0.1'
 }
 
 dependencies {
@@ -42,13 +42,13 @@ dependencies {
     implementation "com.android.support:appcompat-v7:${supportLibVersion}"
     implementation 'com.github.lecho:hellocharts-library:1.5.8@aar'
     implementation 'com.j256.simplecsv:simplecsv:2.2'
+    implementation 'cat.ereza:customactivityoncrash:2.2.0'
     implementation 'android.arch.persistence.room:runtime:1.0.0'
     implementation 'junit:junit:4.12'
     implementation 'android.arch.persistence.room:testing:1.0.0'
     implementation 'com.android.support.test:runner:1.0.0'
     implementation 'com.android.support.test:rules:1.0.0'
     annotationProcessor 'android.arch.persistence.room:compiler:1.0.0'
-    compile 'cat.ereza:customactivityoncrash:2.2.0'
 }
 
 tasks.withType(Test) {
