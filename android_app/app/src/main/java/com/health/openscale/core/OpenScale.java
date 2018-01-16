@@ -19,7 +19,6 @@ package com.health.openscale.core;
 import android.arch.persistence.room.Room;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
@@ -118,12 +117,7 @@ public class OpenScale {
 
     public void addScaleUser(final ScaleUser user)
     {
-        AsyncTask.execute(new Runnable() {
-            @Override
-            public void run() {
-                userDAO.insert(user);
-            }
-        });
+        userDAO.insert(user);
     }
 
     public List<ScaleUser> getScaleUserList()
