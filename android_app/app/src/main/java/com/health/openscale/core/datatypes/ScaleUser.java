@@ -20,6 +20,8 @@ import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
 
+import com.health.openscale.core.utils.DateTimeHelpers;
+
 import java.util.Calendar;
 import java.util.Date;
 
@@ -124,8 +126,7 @@ public class ScaleUser {
         this.goalDate = goalDate;
     }
 
-    public boolean isMale()
-    {
+    public boolean isMale() {
         if (gender == 0)
             return true;
 
@@ -133,19 +134,17 @@ public class ScaleUser {
     }
 
     public int getAge(Date todayDate) {
-        Calendar cal_today = Calendar.getInstance();
-        cal_today.setTime(todayDate);
-        Calendar cal_birthday = Calendar.getInstance();
-        cal_birthday.setTime(birthday);
-        int userAge = cal_today.get(Calendar.YEAR) - cal_birthday.get(Calendar.YEAR);
-        if (cal_today.get(Calendar.DAY_OF_YEAR) < cal_birthday.get(Calendar.DAY_OF_YEAR)) userAge--;
+        Calendar calToday = Calendar.getInstance();
+        calToday.setTime(todayDate);
 
-        return userAge;
+        Calendar calBirthday = Calendar.getInstance();
+        calBirthday.setTime(birthday);
+
+        return DateTimeHelpers.yearsBetween(calBirthday, calToday);
     }
 
     public void setInitialWeight(float weight) {
         this.initialWeight = weight;
-
     }
 
     public void setConvertedInitialWeight(float weight) {

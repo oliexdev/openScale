@@ -1,4 +1,4 @@
-/* Copyright (C) 2017 Erik Johansson <erik@ejohansson.se>
+/* Copyright (C) 2017-2018 Erik Johansson <erik@ejohansson.se>
 *
 *    This program is free software: you can redistribute it and/or modify
 *    it under the terms of the GNU General Public License as published by
@@ -38,5 +38,18 @@ public final class DateTimeHelpers {
         days += end.get(Calendar.DAY_OF_YEAR) - current.get(Calendar.DAY_OF_YEAR);
 
         return days;
+    }
+
+    static public int yearsBetween(Calendar start, Calendar end) {
+        int years = end.get(Calendar.YEAR) - start.get(Calendar.YEAR);
+
+        final int startMonth = start.get(Calendar.MONTH);
+        final int endMonth = end.get(Calendar.MONTH);
+        if (endMonth < startMonth
+            || (endMonth == startMonth
+                && end.get(Calendar.DAY_OF_MONTH) < start.get(Calendar.DAY_OF_MONTH))) {
+            years -= 1;
+        }
+        return years;
     }
 }
