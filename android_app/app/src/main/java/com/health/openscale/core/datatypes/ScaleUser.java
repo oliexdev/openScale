@@ -42,7 +42,8 @@ public class ScaleUser {
     @NonNull
     private Converters.WeightUnit scaleUnit;
     @ColumnInfo(name = "gender")
-    private int gender;
+    @NonNull
+    private Converters.Gender gender;
     @ColumnInfo(name = "initialWeight")
     private float initialWeight;
     @ColumnInfo(name = "goalWeight")
@@ -55,7 +56,7 @@ public class ScaleUser {
         birthday = new Date();
         bodyHeight = -1;
         scaleUnit = Converters.WeightUnit.KG;
-        gender = 0;
+        gender = Converters.Gender.MALE;
         initialWeight = -1;
         goalWeight = -1;
         goalDate = new Date();
@@ -101,11 +102,11 @@ public class ScaleUser {
         this.scaleUnit = scaleUnit;
     }
 
-    public int getGender() {
+    public Converters.Gender getGender() {
         return gender;
     }
 
-    public void setGender(int gender) {
+    public void setGender(Converters.Gender gender) {
         this.gender = gender;
     }
 
@@ -126,9 +127,9 @@ public class ScaleUser {
     }
 
     public boolean isMale() {
-        if (gender == 0)
+        if (gender == Converters.Gender.MALE) {
             return true;
-
+        }
         return false;
     }
 
@@ -162,9 +163,9 @@ public class ScaleUser {
     public String toString()
     {
         return String.format(
-                "ID: %d, NAME: %s, BIRTHDAY: %s, BODY_HEIGHT: %d, SCALE_UNIT: %s, GENDER: %d, " +
-                "INITIAL_WEIGHT: %.2f, GOAL_WEIGHT: %.2f, GOAL_DATE: %s",
+                "ID: %d, NAME: %s, BIRTHDAY: %s, BODY_HEIGHT: %d, SCALE_UNIT: %s, " +
+                "GENDER: %s, INITIAL_WEIGHT: %.2f, GOAL_WEIGHT: %.2f, GOAL_DATE: %s",
                 id, userName, birthday.toString(), bodyHeight, scaleUnit.toString(),
-                gender, initialWeight, goalWeight, goalDate.toString());
+                gender.toString().toLowerCase(), initialWeight, goalWeight, goalDate.toString());
     }
 }

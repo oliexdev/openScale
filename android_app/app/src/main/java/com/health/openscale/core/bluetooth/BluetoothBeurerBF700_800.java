@@ -208,7 +208,7 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
                             (byte) selectedUser.getBirthday().getMonth(),
                             (byte) selectedUser.getBirthday().getDate(),
                             (byte) selectedUser.getBodyHeight(),
-                            (byte) (((1 - selectedUser.getGender()) << 7) | activity)
+                            (byte) (((selectedUser.isMale() ? 1 : 0) << 7) | activity)
                     });
                 } else {
                     // Get existing user information

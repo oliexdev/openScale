@@ -161,10 +161,10 @@ public class UserSettingsActivity extends Activity {
 
         switch (scaleUser.getGender())
         {
-            case 0:
+            case MALE:
                 radioGender.check(R.id.btnRadioMale);
                 break;
-            case 1:
+            case FEMALE:
                 radioGender.check(R.id.btnRadioWoman);
                 break;
         }
@@ -312,8 +312,8 @@ public class UserSettingsActivity extends Activity {
                     scaleUser.setUserName(name);
                     scaleUser.setBirthday(birthday);
                     scaleUser.setBodyHeight(body_height);
-                    scaleUser.setScaleUnit(Converters.fromInt(scale_unit));
-                    scaleUser.setGender(gender);
+                    scaleUser.setScaleUnit(Converters.fromWeightUnitInt(scale_unit));
+                    scaleUser.setGender(Converters.fromGenderInt(gender));
                     scaleUser.setConvertedInitialWeight(initial_weight);
                     scaleUser.setGoalWeight(goal_weight);
                     scaleUser.setGoalDate(goal_date);

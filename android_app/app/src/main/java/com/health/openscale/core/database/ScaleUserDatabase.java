@@ -112,8 +112,8 @@ public class ScaleUserDatabase extends SQLiteOpenHelper {
         values.put(COLUMN_NAME_USER_NAME, scaleUser.getUserName());
         values.put(COLUMN_NAME_BIRTHDAY, formatDateTime.format(scaleUser.getBirthday()));
         values.put(COLUMN_NAME_BODY_HEIGHT, scaleUser.getBodyHeight());
-        values.put(COLUMN_NAME_SCALE_UNIT, Converters.toInt(scaleUser.getScaleUnit()));
-        values.put(COLUMN_NAME_GENDER, scaleUser.getGender());
+        values.put(COLUMN_NAME_SCALE_UNIT, Converters.toWeightUnitInt(scaleUser.getScaleUnit()));
+        values.put(COLUMN_NAME_GENDER, Converters.toGenderInt(scaleUser.getGender()));
         values.put(COLUMN_NAME_INITIAL_WEIGHT, scaleUser.getInitialWeight());
         values.put(COLUMN_NAME_GOAL_WEIGHT, scaleUser.getGoalWeight());
         values.put(COLUMN_NAME_GOAL_DATE, formatDateTime.format(scaleUser.getGoalDate()));
@@ -145,8 +145,8 @@ public class ScaleUserDatabase extends SQLiteOpenHelper {
         values.put(COLUMN_NAME_USER_NAME, scaleUser.getUserName());
         values.put(COLUMN_NAME_BIRTHDAY, formatDateTime.format(scaleUser.getBirthday()));
         values.put(COLUMN_NAME_BODY_HEIGHT, scaleUser.getBodyHeight());
-        values.put(COLUMN_NAME_SCALE_UNIT, Converters.toInt(scaleUser.getScaleUnit()));
-        values.put(COLUMN_NAME_GENDER, scaleUser.getGender());
+        values.put(COLUMN_NAME_SCALE_UNIT, Converters.toWeightUnitInt(scaleUser.getScaleUnit()));
+        values.put(COLUMN_NAME_GENDER, Converters.toGenderInt(scaleUser.getGender()));
         values.put(COLUMN_NAME_INITIAL_WEIGHT, scaleUser.getInitialWeight());
         values.put(COLUMN_NAME_GOAL_WEIGHT, scaleUser.getGoalWeight());
         values.put(COLUMN_NAME_GOAL_DATE, formatDateTime.format(scaleUser.getGoalDate()));
@@ -214,8 +214,8 @@ public class ScaleUserDatabase extends SQLiteOpenHelper {
             scaleUser.setUserName(cur.getString(cur.getColumnIndexOrThrow(COLUMN_NAME_USER_NAME)));
             String birthday = cur.getString(cur.getColumnIndexOrThrow(COLUMN_NAME_BIRTHDAY));
             scaleUser.setBodyHeight(cur.getInt(cur.getColumnIndexOrThrow(COLUMN_NAME_BODY_HEIGHT)));
-            scaleUser.setScaleUnit(Converters.fromInt(cur.getInt(cur.getColumnIndexOrThrow(COLUMN_NAME_SCALE_UNIT))));
-            scaleUser.setGender(cur.getInt(cur.getColumnIndexOrThrow(COLUMN_NAME_GENDER)));
+            scaleUser.setScaleUnit(Converters.fromWeightUnitInt(cur.getInt(cur.getColumnIndexOrThrow(COLUMN_NAME_SCALE_UNIT))));
+            scaleUser.setGender(Converters.fromGenderInt(cur.getInt(cur.getColumnIndexOrThrow(COLUMN_NAME_GENDER))));
             double initial_weight = cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_INITIAL_WEIGHT));
             double goal_weight = cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_GOAL_WEIGHT));
             String goal_date = cur.getString(cur.getColumnIndexOrThrow(COLUMN_NAME_GOAL_DATE));

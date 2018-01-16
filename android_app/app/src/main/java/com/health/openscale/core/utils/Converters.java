@@ -35,6 +35,8 @@ public class Converters {
         }
     }
 
+    public enum Gender { MALE, FEMALE }
+
     private static float KG_LB = 2.20462f;
     private static float KG_ST = 0.157473f;
 
@@ -49,7 +51,7 @@ public class Converters {
     }
 
     @TypeConverter
-    public static WeightUnit fromInt(int unit) {
+    public static WeightUnit fromWeightUnitInt(int unit) {
         switch (unit) {
             case 1:
                 return WeightUnit.LB;
@@ -60,7 +62,7 @@ public class Converters {
     }
 
     @TypeConverter
-    public static int toInt(WeightUnit unit) {
+    public static int toWeightUnitInt(WeightUnit unit) {
         switch (unit) {
             case LB:
                 return 1;
@@ -68,6 +70,16 @@ public class Converters {
                 return 2;
         }
         return 0;
+    }
+
+    @TypeConverter
+    public static Gender fromGenderInt(int gender) {
+        return gender == 0 ? Gender.MALE : Gender.FEMALE;
+    }
+
+    @TypeConverter
+    public static int toGenderInt(Gender gender) {
+        return gender == Gender.MALE ? 0 : 1;
     }
 
     public static float toKilogram(float value, WeightUnit unit) {

@@ -26,17 +26,29 @@ public class ConvertersTest {
 
     @Test
     public void weightUnitTypeConverters() throws Exception {
-        assertEquals(0, Converters.toInt(Converters.WeightUnit.KG));
-        assertEquals(1, Converters.toInt(Converters.WeightUnit.LB));
-        assertEquals(2, Converters.toInt(Converters.WeightUnit.ST));
+        assertEquals(0, Converters.toWeightUnitInt(Converters.WeightUnit.KG));
+        assertEquals(1, Converters.toWeightUnitInt(Converters.WeightUnit.LB));
+        assertEquals(2, Converters.toWeightUnitInt(Converters.WeightUnit.ST));
 
-        assertEquals(Converters.WeightUnit.KG, Converters.fromInt(0));
-        assertEquals(Converters.WeightUnit.LB, Converters.fromInt(1));
-        assertEquals(Converters.WeightUnit.ST, Converters.fromInt(2));
+        assertEquals(Converters.WeightUnit.KG, Converters.fromWeightUnitInt(0));
+        assertEquals(Converters.WeightUnit.LB, Converters.fromWeightUnitInt(1));
+        assertEquals(Converters.WeightUnit.ST, Converters.fromWeightUnitInt(2));
 
         assertEquals("kg", Converters.WeightUnit.KG.toString());
         assertEquals("lb", Converters.WeightUnit.LB.toString());
         assertEquals("st", Converters.WeightUnit.ST.toString());
+    }
+
+    @Test
+    public void genderTypeConverters() throws Exception {
+        assertEquals(0, Converters.toGenderInt(Converters.Gender.MALE));
+        assertEquals(1, Converters.toGenderInt(Converters.Gender.FEMALE));
+
+        assertEquals(Converters.Gender.MALE, Converters.fromGenderInt(0));
+        assertEquals(Converters.Gender.FEMALE, Converters.fromGenderInt(1));
+
+        assertEquals("MALE", Converters.Gender.MALE.toString());
+        assertEquals("FEMALE", Converters.Gender.FEMALE.toString());
     }
 
     @Test
