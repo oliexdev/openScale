@@ -34,6 +34,7 @@ import android.widget.Toast;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleUser;
+import com.health.openscale.core.utils.Converters;
 
 import java.text.DateFormat;
 import java.util.Calendar;
@@ -147,13 +148,13 @@ public class UserSettingsActivity extends Activity {
 
         switch (scaleUser.getScaleUnit())
         {
-            case 0:
+            case KG:
                 radioScaleUnit.check(R.id.btnRadioKG);
                 break;
-            case 1:
+            case LB:
                 radioScaleUnit.check(R.id.btnRadioLB);
                 break;
-            case 2:
+            case ST:
                 radioScaleUnit.check(R.id.btnRadioST);
                 break;
         }
@@ -311,7 +312,7 @@ public class UserSettingsActivity extends Activity {
                     scaleUser.setUserName(name);
                     scaleUser.setBirthday(birthday);
                     scaleUser.setBodyHeight(body_height);
-                    scaleUser.setScaleUnit(scale_unit);
+                    scaleUser.setScaleUnit(Converters.fromInt(scale_unit));
                     scaleUser.setGender(gender);
                     scaleUser.setConvertedInitialWeight(initial_weight);
                     scaleUser.setGoalWeight(goal_weight);

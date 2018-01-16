@@ -612,21 +612,18 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
         byte[] command = SET_UNIT_COMMAND;
         final ScaleUser selectedUser = OpenScale.getInstance(context).getSelectedScaleUser();
 
-        switch ((byte) selectedUser.getScaleUnit()) {
-            case 0:
-                // Kg
+        switch (selectedUser.getScaleUnit()) {
+            case KG:
                 command[2] = (byte) 0x01;
                 break;
-            case 1:
-                // Lb
+            case LB:
                 command[2] = (byte) 0x02;
                 break;
-            case 2:
-                // St
+            case ST:
                 command[3] = (byte) 0x04;
                 break;
         }
-        Log.d(TAG, "Setting unit " + ScaleUser.UNIT_STRING[selectedUser.getScaleUnit()]);
+        Log.d(TAG, "Setting unit " + selectedUser.getScaleUnit().toString());
         writeBytes(command);
     }
 

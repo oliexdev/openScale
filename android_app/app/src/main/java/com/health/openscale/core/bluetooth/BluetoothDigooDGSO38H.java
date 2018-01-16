@@ -107,19 +107,14 @@ public class BluetoothDigooDGSO38H extends BluetoothCommunication {
                 byte gender = selectedUser.isMale() ? (byte)0x00: (byte)0x01;
                 byte height = (byte) (selectedUser.getBodyHeight() & 0xFF);
                 byte age = (byte)(selectedUser.getAge(new Date()) & 0xff);
-                byte unit;
+                byte unit = 0x01; // kg
                 switch (selectedUser.getScaleUnit()) {
-                    case 0:
-                        unit = 0x1;
-                        break;
-                    case 1:
+                    case LB:
                         unit = 0x02;
                         break;
-                    case 2:
+                    case ST:
                         unit = 0x8;
                         break;
-                    default:
-                        unit = 0x1;
                 }
                 byte configBytes[] = new byte[]{(byte)0x09, (byte)0x10, (byte)0x12, (byte)0x11, (byte)0x0d, (byte)0x01, height, age, gender, unit, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00};
                 //Write checksum is sum of all bytes % 256

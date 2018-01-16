@@ -31,6 +31,7 @@ import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
+import com.health.openscale.core.utils.Converters;
 import com.health.openscale.core.utils.DateTimeHelpers;
 import com.health.openscale.gui.views.BoneMeasurementView;
 import com.health.openscale.gui.views.FatMeasurementView;
@@ -169,10 +170,11 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
         ScaleMeasurement goalScaleMeasurement = new ScaleMeasurement();
         goalScaleMeasurement.setConvertedWeight(currentScaleUser.getGoalWeight(), currentScaleUser.getScaleUnit());
 
-        txtGoalWeight.setText(goalScaleMeasurement.getConvertedWeight(currentScaleUser.getScaleUnit()) + " " + ScaleUser.UNIT_STRING[currentScaleUser.getScaleUnit()]);
+        final Converters.WeightUnit unit = currentScaleUser.getScaleUnit();
+        txtGoalWeight.setText(goalScaleMeasurement.getConvertedWeight(unit) + " " + unit.toString());
 
-        double weight_diff = goalScaleMeasurement.getConvertedWeight(currentScaleUser.getScaleUnit()) - lastScaleMeasurement.getConvertedWeight(currentScaleUser.getScaleUnit());
-        txtGoalDiff.setText(String.format("%.1f " + ScaleUser.UNIT_STRING[currentScaleUser.getScaleUnit()], weight_diff));
+        double weight_diff = goalScaleMeasurement.getConvertedWeight(unit) - lastScaleMeasurement.getConvertedWeight(unit);
+        txtGoalDiff.setText(String.format("%.1f %s", weight_diff, unit.toString()));
 
         Calendar goalCalendar = Calendar.getInstance();
         goalCalendar.setTime(currentScaleUser.getGoalDate());
@@ -182,7 +184,7 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
         lastScaleMeasurement.setUserId(currentScaleUser.getId());
 
         ScaleMeasurement goalData = new ScaleMeasurement();
-        goalData.setConvertedWeight(currentScaleUser.getGoalWeight(), currentScaleUser.getScaleUnit());
+        goalData.setConvertedWeight(currentScaleUser.getGoalWeight(), unit);
         goalData.setUserId(currentScaleUser.getId());
 
         txtLabelGoalWeight.setText(

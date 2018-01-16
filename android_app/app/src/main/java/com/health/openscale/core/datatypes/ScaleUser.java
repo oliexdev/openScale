@@ -19,7 +19,9 @@ package com.health.openscale.core.datatypes;
 import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
+import android.support.annotation.NonNull;
 
+import com.health.openscale.core.utils.Converters;
 import com.health.openscale.core.utils.DateTimeHelpers;
 
 import java.util.Calendar;
@@ -27,10 +29,6 @@ import java.util.Date;
 
 @Entity(tableName = "scaleUsers")
 public class ScaleUser {
-    public static final String[] UNIT_STRING = new String[] {"kg", "lb", "st"};
-    private static float KG_LB = 2.20462f;
-    private static float KG_ST = 0.157473f;
-
     @PrimaryKey(autoGenerate = true)
     private int id;
 
@@ -41,7 +39,8 @@ public class ScaleUser {
     @ColumnInfo(name = "bodyHeight")
     private int bodyHeight;
     @ColumnInfo(name = "scaleUnit")
-    private int scaleUnit;
+    @NonNull
+    private Converters.WeightUnit scaleUnit;
     @ColumnInfo(name = "gender")
     private int gender;
     @ColumnInfo(name = "initialWeight")
@@ -55,7 +54,7 @@ public class ScaleUser {
         userName = new String();
         birthday = new Date();
         bodyHeight = -1;
-        scaleUnit = 0;
+        scaleUnit = Converters.WeightUnit.KG;
         gender = 0;
         initialWeight = -1;
         goalWeight = -1;
@@ -94,11 +93,11 @@ public class ScaleUser {
         this.bodyHeight = bodyHeight;
     }
 
-    public int getScaleUnit() {
+    public Converters.WeightUnit getScaleUnit() {
         return scaleUnit;
     }
 
-    public void setScaleUnit(int scaleUnit) {
+    public void setScaleUnit(Converters.WeightUnit scaleUnit) {
         this.scaleUnit = scaleUnit;
     }
 
@@ -148,17 +147,7 @@ public class ScaleUser {
     }
 
     public void setConvertedInitialWeight(float weight) {
-        switch (ScaleUser.UNIT_STRING[scaleUnit]) {
-            case "kg":
-                this.initialWeight = weight;
-                break;
-            case "lb":
-                this.initialWeight = weight / KG_LB;
-                break;
-            case "st":
-                this.initialWeight = weight / KG_ST;
-                break;
-        }
+        initialWeight = Converters.toKilogram(weight, scaleUnit);
     }
 
     public float getInitialWeight() {
@@ -166,26 +155,16 @@ public class ScaleUser {
     }
 
     public float getConvertedInitialWeight() {
-        float converted_weight = 0.0f;
-
-        switch (ScaleUser.UNIT_STRING[scaleUnit]) {
-            case "kg":
-                converted_weight = initialWeight;
-                break;
-            case "lb":
-                converted_weight = initialWeight * KG_LB;
-                break;
-            case "st":
-                converted_weight = initialWeight * KG_ST;
-                break;
-        }
-
-        return converted_weight;
+        return Converters.fromKilogram(initialWeight, scaleUnit);
     }
 
     @Override
     public String toString()
     {
-        return "ID : " + id + " NAME: " + userName + " BIRTHDAY: " + birthday.toString() + " BODY_HEIGHT: " + bodyHeight + " SCALE_UNIT: " + UNIT_STRING[scaleUnit] + " GENDER " + gender + " INITIAL WEIGHT " + initialWeight + " GOAL WEIGHT " + goalWeight + " GOAL DATE " + goalDate.toString();
+        return String.format(
+                "ID: %d, NAME: %s, BIRTHDAY: %s, BODY_HEIGHT: %d, SCALE_UNIT: %s, GENDER: %d, " +
+                "INITIAL_WEIGHT: %.2f, GOAL_WEIGHT: %.2f, GOAL_DATE: %s",
+                id, userName, birthday.toString(), bodyHeight, scaleUnit.toString(),
+                gender, initialWeight, goalWeight, goalDate.toString());
     }
 }

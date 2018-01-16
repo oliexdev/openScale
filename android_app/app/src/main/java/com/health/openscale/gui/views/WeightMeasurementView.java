@@ -48,7 +48,7 @@ public class WeightMeasurementView extends FloatMeasurementView {
 
     @Override
     protected String getUnit() {
-        return ScaleUser.UNIT_STRING[getScaleUser().getScaleUnit()];
+        return getScaleUser().getScaleUnit().toString();
     }
 
     @Override

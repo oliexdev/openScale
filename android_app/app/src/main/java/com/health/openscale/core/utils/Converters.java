@@ -21,6 +21,23 @@ import android.arch.persistence.room.TypeConverter;
 import java.util.Date;
 
 public class Converters {
+    public enum WeightUnit {
+        KG, LB, ST;
+
+        public String toString() {
+            switch (this) {
+                case LB:
+                    return "lb";
+                case ST:
+                    return "st";
+            }
+            return "kg";
+        }
+    }
+
+    private static float KG_LB = 2.20462f;
+    private static float KG_ST = 0.157473f;
+
     @TypeConverter
     public static Date fromTimestamp(Long value) {
         return value == null ? null : new Date(value);
@@ -29,5 +46,47 @@ public class Converters {
     @TypeConverter
     public static Long dateToTimestamp(Date date) {
         return date == null ? null : date.getTime();
+    }
+
+    @TypeConverter
+    public static WeightUnit fromInt(int unit) {
+        switch (unit) {
+            case 1:
+                return WeightUnit.LB;
+            case 2:
+                return WeightUnit.ST;
+        }
+        return WeightUnit.KG;
+    }
+
+    @TypeConverter
+    public static int toInt(WeightUnit unit) {
+        switch (unit) {
+            case LB:
+                return 1;
+            case ST:
+                return 2;
+        }
+        return 0;
+    }
+
+    public static float toKilogram(float value, WeightUnit unit) {
+        switch (unit) {
+            case LB:
+                return value / KG_LB;
+            case ST:
+                return value / KG_ST;
+        }
+        return value;
+    }
+
+    public static float fromKilogram(float kg, WeightUnit unit) {
+        switch (unit) {
+            case LB:
+                return kg * KG_LB;
+            case ST:
+                return kg * KG_ST;
+        }
+        return kg;
     }
 }

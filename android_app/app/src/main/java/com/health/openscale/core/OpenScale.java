@@ -39,6 +39,7 @@ import com.health.openscale.core.database.ScaleUserDAO;
 import com.health.openscale.core.database.ScaleUserDatabase;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
+import com.health.openscale.core.utils.Converters;
 import com.health.openscale.core.utils.CsvHelper;
 import com.health.openscale.gui.fragments.FragmentUpdateListener;
 
@@ -217,9 +218,9 @@ public class OpenScale {
             final java.text.DateFormat timeFormat = DateFormat.getTimeFormat(context);
             final Date dateTime = scaleMeasurement.getDateTime();
 
+            final Converters.WeightUnit unit = scaleUser.getScaleUnit();
             String infoText = String.format(context.getString(R.string.info_new_data_added),
-                    scaleMeasurement.getConvertedWeight(scaleUser.getScaleUnit()),
-                    ScaleUser.UNIT_STRING[scaleUser.getScaleUnit()],
+                    scaleMeasurement.getConvertedWeight(unit), unit.toString(),
                     dateFormat.format(dateTime) + " " + timeFormat.format(dateTime),
                     scaleUser.getUserName());
             Toast.makeText(context, infoText, Toast.LENGTH_LONG).show();
