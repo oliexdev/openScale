@@ -249,8 +249,12 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
             }
         }
 
-        averageWeek.divide(weekSize);
-        averageMonth.divide(monthSize);
+        if (weekSize > 0) {
+            averageWeek.divide(weekSize);
+        }
+        if (monthSize > 0) {
+            averageMonth.divide(monthSize);
+        }
 
         for (MeasurementView measurement : viewMeasurementsListWeek) {
             measurement.loadFrom(averageWeek, null);
