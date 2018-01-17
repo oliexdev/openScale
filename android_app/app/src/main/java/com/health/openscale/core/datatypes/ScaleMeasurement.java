@@ -234,7 +234,7 @@ public class ScaleMeasurement implements Cloneable {
         float bmr = 0.0f;
 
         // BMR formula by Mifflin, St Jeor et al: A new predictive equation for resting energy expenditure in healthy individuals
-        if (scaleUser.isMale()) {
+        if (scaleUser.getGender().isMale()) {
             bmr = 10.0f * weight + 6.25f * scaleUser.getBodyHeight() - 5.0f * scaleUser.getAge(dateTime) + 5.0f;
         } else {
             bmr = 10.0f * weight + 6.25f * scaleUser.getBodyHeight() - 5.0f * scaleUser.getAge(dateTime) - 161.0f;

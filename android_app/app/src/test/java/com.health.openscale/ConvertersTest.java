@@ -21,6 +21,8 @@ import com.health.openscale.core.utils.Converters;
 import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
 
 public class ConvertersTest {
 
@@ -65,6 +67,9 @@ public class ConvertersTest {
 
         assertEquals("MALE", Converters.Gender.MALE.toString());
         assertEquals("FEMALE", Converters.Gender.FEMALE.toString());
+
+        assertTrue(Converters.Gender.MALE.isMale());
+        assertFalse(Converters.Gender.FEMALE.isMale());
     }
 
     @Test

@@ -26,7 +26,7 @@ public class BFGallagherAsian extends EstimatedFatMetric {
 
     @Override
     public float getFat(ScaleUser user, ScaleMeasurement data) {
-        if (user.isMale()) {
+        if (user.getGender().isMale()) {
             // asian male
             return 51.9f - 740.0f * (1.0f / data.getBMI(user.getBodyHeight())) + 0.029f * user.getAge(data.getDateTime());
         }

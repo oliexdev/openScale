@@ -27,7 +27,7 @@ public class LBWHume extends EstimatedLBWMetric {
 
     @Override
     public float getLBW(ScaleUser user, ScaleMeasurement data) {
-        if (user.isMale()) {
+        if (user.getGender().isMale()) {
             return (0.32810f * data.getWeight()) + (0.33929f * user.getBodyHeight()) - 29.5336f;
         }
 

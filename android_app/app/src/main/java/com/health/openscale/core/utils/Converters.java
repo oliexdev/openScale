@@ -58,6 +58,10 @@ public class Converters {
     public enum Gender {
         MALE, FEMALE;
 
+        public boolean isMale() {
+            return this == MALE;
+        }
+
         public static Gender fromInt(int gender) {
             return gender == 0 ? MALE : FEMALE;
         }

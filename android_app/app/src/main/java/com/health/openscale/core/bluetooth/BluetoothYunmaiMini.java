@@ -69,7 +69,7 @@ public class BluetoothYunmaiMini extends BluetoothCommunication {
                 int user_id = getUniqueNumber();
 
                 final ScaleUser selectedUser = OpenScale.getInstance(context).getSelectedScaleUser();
-                byte sex = selectedUser.isMale() ? (byte)0x01 : (byte)0x02;
+                byte sex = selectedUser.getGender().isMale() ? (byte)0x01 : (byte)0x02;
                 byte display_unit = selectedUser.getScaleUnit() == Converters.WeightUnit.KG ? (byte) 0x01 : (byte) 0x02;
 
                 byte[] user_add_or_query = new byte[]{(byte)0x0d, (byte)0x12, (byte)0x10, (byte)0x01, (byte)0x00, (byte) 0x00, (byte) ((user_id & 0xFF00) >> 8), (byte) ((user_id & 0xFF) >> 0), (byte)selectedUser.getBodyHeight(), (byte)sex, (byte) selectedUser.getAge(new Date()), (byte) 0x55, (byte) 0x5a, (byte) 0x00, (byte)0x00, (byte) display_unit, (byte) 0x03, (byte) 0x00 };

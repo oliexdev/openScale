@@ -117,7 +117,7 @@ public class BluetoothMGB extends BluetoothCommunication {
                 break;
 
             case 3:
-                writeCfg(0xFB, (user.isMale() ? 1 : 2), user.getAge(new Date()), user.getBodyHeight());
+                writeCfg(0xFB, (user.getGender().isMale() ? 1 : 2), user.getAge(new Date()), user.getBodyHeight());
                 break;
 
             case 4:

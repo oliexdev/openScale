@@ -126,13 +126,6 @@ public class ScaleUser {
         this.goalDate = goalDate;
     }
 
-    public boolean isMale() {
-        if (gender == Converters.Gender.MALE) {
-            return true;
-        }
-        return false;
-    }
-
     public int getAge(Date todayDate) {
         Calendar calToday = Calendar.getInstance();
         calToday.setTime(todayDate);
