@@ -96,7 +96,7 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
             case 0:
                 // set scale units
                 final ScaleUser selectedUser = OpenScale.getInstance(context).getSelectedScaleUser();
-                byte[] setUnitCmd = new byte[]{(byte)0x06, (byte)0x04, (byte)0x00, (byte) Converters.toWeightUnitInt(selectedUser.getScaleUnit())};
+                byte[] setUnitCmd = new byte[]{(byte)0x06, (byte)0x04, (byte)0x00, (byte) selectedUser.getScaleUnit().toInt()};
                 writeBytes(WEIGHT_CUSTOM_SERVICE, WEIGHT_CUSTOM_CONFIG, setUnitCmd);
                 break;
             case 1:

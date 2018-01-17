@@ -30,9 +30,17 @@ public class ConvertersTest {
         assertEquals(1, Converters.toWeightUnitInt(Converters.WeightUnit.LB));
         assertEquals(2, Converters.toWeightUnitInt(Converters.WeightUnit.ST));
 
+        for (Converters.WeightUnit unit : Converters.WeightUnit.values()) {
+            assertEquals(Converters.toWeightUnitInt(unit), unit.toInt());
+        }
+
         assertEquals(Converters.WeightUnit.KG, Converters.fromWeightUnitInt(0));
         assertEquals(Converters.WeightUnit.LB, Converters.fromWeightUnitInt(1));
         assertEquals(Converters.WeightUnit.ST, Converters.fromWeightUnitInt(2));
+
+        for (int i = 0; i < Converters.WeightUnit.values().length; ++i) {
+            assertEquals(Converters.fromWeightUnitInt(i), Converters.WeightUnit.fromInt(i));
+        }
 
         assertEquals("kg", Converters.WeightUnit.KG.toString());
         assertEquals("lb", Converters.WeightUnit.LB.toString());
@@ -44,8 +52,16 @@ public class ConvertersTest {
         assertEquals(0, Converters.toGenderInt(Converters.Gender.MALE));
         assertEquals(1, Converters.toGenderInt(Converters.Gender.FEMALE));
 
+        for (Converters.Gender gender : Converters.Gender.values()) {
+            assertEquals(Converters.toGenderInt(gender), gender.toInt());
+        }
+
         assertEquals(Converters.Gender.MALE, Converters.fromGenderInt(0));
         assertEquals(Converters.Gender.FEMALE, Converters.fromGenderInt(1));
+
+        for (int i = 0; i < Converters.Gender.values().length; ++i) {
+            assertEquals(Converters.fromGenderInt(i), Converters.Gender.fromInt(i));
+        }
 
         assertEquals("MALE", Converters.Gender.MALE.toString());
         assertEquals("FEMALE", Converters.Gender.FEMALE.toString());

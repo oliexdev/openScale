@@ -112,8 +112,8 @@ public class ScaleUserDatabase extends SQLiteOpenHelper {
         values.put(COLUMN_NAME_USER_NAME, scaleUser.getUserName());
         values.put(COLUMN_NAME_BIRTHDAY, formatDateTime.format(scaleUser.getBirthday()));
         values.put(COLUMN_NAME_BODY_HEIGHT, scaleUser.getBodyHeight());
-        values.put(COLUMN_NAME_SCALE_UNIT, Converters.toWeightUnitInt(scaleUser.getScaleUnit()));
-        values.put(COLUMN_NAME_GENDER, Converters.toGenderInt(scaleUser.getGender()));
+        values.put(COLUMN_NAME_SCALE_UNIT, scaleUser.getScaleUnit().toInt());
+        values.put(COLUMN_NAME_GENDER, scaleUser.getGender().toInt());
         values.put(COLUMN_NAME_INITIAL_WEIGHT, scaleUser.getInitialWeight());
         values.put(COLUMN_NAME_GOAL_WEIGHT, scaleUser.getGoalWeight());
         values.put(COLUMN_NAME_GOAL_DATE, formatDateTime.format(scaleUser.getGoalDate()));
@@ -145,8 +145,8 @@ public class ScaleUserDatabase extends SQLiteOpenHelper {
         values.put(COLUMN_NAME_USER_NAME, scaleUser.getUserName());
         values.put(COLUMN_NAME_BIRTHDAY, formatDateTime.format(scaleUser.getBirthday()));
         values.put(COLUMN_NAME_BODY_HEIGHT, scaleUser.getBodyHeight());
-        values.put(COLUMN_NAME_SCALE_UNIT, Converters.toWeightUnitInt(scaleUser.getScaleUnit()));
-        values.put(COLUMN_NAME_GENDER, Converters.toGenderInt(scaleUser.getGender()));
+        values.put(COLUMN_NAME_SCALE_UNIT, scaleUser.getScaleUnit().toInt());
+        values.put(COLUMN_NAME_GENDER, scaleUser.getGender().toInt());
         values.put(COLUMN_NAME_INITIAL_WEIGHT, scaleUser.getInitialWeight());
         values.put(COLUMN_NAME_GOAL_WEIGHT, scaleUser.getGoalWeight());
         values.put(COLUMN_NAME_GOAL_DATE, formatDateTime.format(scaleUser.getGoalDate()));
