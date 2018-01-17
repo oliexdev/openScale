@@ -154,24 +154,27 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
 
     @Override
     public void updateOnView(List<ScaleMeasurement> scaleMeasurementList) {
+        currentScaleUser = OpenScale.getInstance(getContext()).getSelectedScaleUser();
+
         if (scaleMeasurementList.isEmpty()) {
             lastScaleMeasurement = new ScaleMeasurement();
+            lastScaleMeasurement.setUserId(currentScaleUser.getId());
         } else {
             lastScaleMeasurement = scaleMeasurementList.get(0);
         }
 
-        currentScaleUser = OpenScale.getInstance(getContext()).getSelectedScaleUser();
-
         updateStatistics(scaleMeasurementList);
-        updateGoal(scaleMeasurementList);
+        updateGoal();
     }
 
-    private void updateGoal(List<ScaleMeasurement> scaleMeasurementList) {
-        ScaleMeasurement goalScaleMeasurement = new ScaleMeasurement();
-        goalScaleMeasurement.setConvertedWeight(currentScaleUser.getGoalWeight(), currentScaleUser.getScaleUnit());
-
+    private void updateGoal() {
         final Converters.WeightUnit unit = currentScaleUser.getScaleUnit();
-        txtGoalWeight.setText(goalScaleMeasurement.getConvertedWeight(unit) + " " + unit.toString());
+
+        ScaleMeasurement goalScaleMeasurement = new ScaleMeasurement();
+        goalScaleMeasurement.setUserId(currentScaleUser.getId());
+        goalScaleMeasurement.setConvertedWeight(currentScaleUser.getGoalWeight(), unit);
+
+        txtGoalWeight.setText(String.format("%.1f %s", goalScaleMeasurement.getConvertedWeight(unit), unit.toString()));
 
         double weight_diff = goalScaleMeasurement.getConvertedWeight(unit) - lastScaleMeasurement.getConvertedWeight(unit);
         txtGoalDiff.setText(String.format("%.1f %s", weight_diff, unit.toString()));
@@ -181,19 +184,14 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
         int days = Math.max(0, DateTimeHelpers.daysBetween(Calendar.getInstance(), goalCalendar));
         txtGoalDayLeft.setText(getResources().getQuantityString(R.plurals.label_days, days, days));
 
-        lastScaleMeasurement.setUserId(currentScaleUser.getId());
-
-        ScaleMeasurement goalData = new ScaleMeasurement();
-        goalData.setConvertedWeight(currentScaleUser.getGoalWeight(), unit);
-        goalData.setUserId(currentScaleUser.getId());
-
+        final float goalBmi = goalScaleMeasurement.getBMI(currentScaleUser.getBodyHeight());
         txtLabelGoalWeight.setText(
                 Html.fromHtml(
                         getResources().getString(R.string.label_goal_weight) +
                                 " <br> <font color='grey'><small>" +
                                 getResources().getString(R.string.label_bmi) +
                                 ": " +
-                                String.format("%.1f", goalData.getBMI(currentScaleUser.getBodyHeight())) +
+                                String.format("%.1f", goalBmi) +
                                 " </small></font>"
                 )
         );
@@ -203,7 +201,7 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
                                 " <br> <font color='grey'><small>" +
                                 getResources().getString(R.string.label_bmi) +
                                 ": " +
-                                String.format("%.1f", lastScaleMeasurement.getBMI(currentScaleUser.getBodyHeight()) - goalData.getBMI(currentScaleUser.getBodyHeight()))  +
+                                String.format("%.1f", lastScaleMeasurement.getBMI(currentScaleUser.getBodyHeight()) - goalBmi)  +
                                 " </small></font>"
                 )
         );
@@ -216,7 +214,7 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
                                 + DateFormat.getDateInstance(DateFormat.LONG).format(currentScaleUser.getGoalDate()) +
                                 " </small></font>"
                 )
-        ); // currentScaleUser.goalDate
+        );
     }
 
     private void updateStatistics(List<ScaleMeasurement> scaleMeasurementList) {
