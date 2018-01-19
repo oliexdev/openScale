@@ -211,9 +211,10 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
 
                 // Is the year plausible? Check if the year is in the range of 20 years...
                 if (validateDate(date_time, 20)) {
+                    final ScaleUser selectedUser = OpenScale.getInstance(context).getSelectedScaleUser();
                     ScaleMeasurement scaleBtData = new ScaleMeasurement();
 
-                    scaleBtData.setWeight(weight);
+                    scaleBtData.setConvertedWeight(weight, selectedUser.getScaleUnit());
                     scaleBtData.setDateTime(date_time);
 
                     addScaleData(scaleBtData);

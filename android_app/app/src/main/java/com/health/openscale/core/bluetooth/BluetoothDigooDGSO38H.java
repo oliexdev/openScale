@@ -100,10 +100,10 @@ public class BluetoothDigooDGSO38H extends BluetoothCommunication {
             final byte ctrlByte = weightBytes[5];
             final boolean allValues = isBitSet(ctrlByte, 1);
             final boolean weightStabilized = isBitSet(ctrlByte, 0);
+            final ScaleUser selectedUser = OpenScale.getInstance(context).getSelectedScaleUser();
 
             if (weightStabilized) {
                 //The weight is stabilized, now we want to measure all available values
-                final ScaleUser selectedUser = OpenScale.getInstance(context).getSelectedScaleUser();
                 byte gender = selectedUser.isMale() ? (byte)0x00: (byte)0x01;
                 byte height = (byte) (selectedUser.getBodyHeight() & 0xFF);
                 byte age = (byte)(selectedUser.getAge(new Date()) & 0xff);
@@ -152,7 +152,7 @@ public class BluetoothDigooDGSO38H extends BluetoothCommunication {
                     scaleBtData.setWater(water);
                     scaleBtData.setBone(boneWeight);
                 }
-                scaleBtData.setWeight(weight);
+                scaleBtData.setConvertedWeight(weight, selectedUser.getScaleUnit());
                 addScaleData(scaleBtData);
             }
     }

@@ -23,7 +23,9 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
+import com.health.openscale.core.datatypes.ScaleUser;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -238,9 +240,10 @@ public class BluetoothMiScale extends BluetoothCommunication {
 
                 // Is the year plausible? Check if the year is in the range of 20 years...
                 if (validateDate(date_time, 20)) {
+                    final ScaleUser selectedUser = OpenScale.getInstance(context).getSelectedScaleUser();
                     ScaleMeasurement scaleBtData = new ScaleMeasurement();
 
-                    scaleBtData.setWeight(weight);
+                    scaleBtData.setConvertedWeight(weight, selectedUser.getScaleUnit());
                     scaleBtData.setDateTime(date_time);
 
                     addScaleData(scaleBtData);
