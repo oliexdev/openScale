@@ -171,4 +171,13 @@
     <string name="label_feedback_message_negative">Nein danke</string>
     <string name="label_feedback_message_issue">Würdest Du uns etwas Feedback geben?</string>
     <string name="error_user_name_too_short">Fehler Benutzername muss mind. 3 Zeichen haben</string>
+    <string name="customactivityoncrash_error_activity_error_occurred_explanation">Ein unerwartet Fehler ist aufgetaucht.\n\n Bitte erstellen Sie ein neues issue mit eingefügten deaillierten Fehlerreport auf\nhttps://github.com/oliexdev/openScale/issues</string>
+    <string name="customactivityoncrash_error_activity_restart_app">App Neustart</string>
+    <string name="customactivityoncrash_error_activity_close_app">Schließe App</string>
+    <string name="customactivityoncrash_error_activity_error_details">Fehlerdetails</string>
+    <string name="customactivityoncrash_error_activity_error_details_title">Fehlerdetails</string>
+    <string name="customactivityoncrash_error_activity_error_details_close">Schließen</string>
+    <string name="customactivityoncrash_error_activity_error_details_copy">Kopieren in die Zwischenablage</string>
+    <string name="customactivityoncrash_error_activity_error_details_copied">in Zwischenablage kopiert</string>
+    <string name="customactivityoncrash_error_activity_error_details_clipboard_label">Fehlerinformationen</string>
 </resources>
