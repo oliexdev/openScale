@@ -27,13 +27,13 @@ import android.view.View;
 
 import com.health.openscale.R;
 
+import java.util.Locale;
+
 
 public class LinearGaugeView extends View {
 
     public static final int COLOR_BLUE = Color.parseColor("#33B5E5");
-    public static final int COLOR_VIOLET = Color.parseColor("#AA66CC");
     public static final int COLOR_GREEN = Color.parseColor("#99CC00");
-    public static final int COLOR_ORANGE = Color.parseColor("#FFBB33");
     public static final int COLOR_RED = Color.parseColor("#FF4444");
 
     private static final float barHeight = 10;
@@ -105,6 +105,9 @@ public class LinearGaugeView extends View {
         canvas.drawText(text, x, y, paint);
     }
 
+    private String toText(float value) {
+        return String.format(Locale.getDefault(), "%.1f", value);
+    }
 
     @Override
     protected void onDraw(Canvas canvas) {
@@ -177,12 +180,12 @@ public class LinearGaugeView extends View {
 
         // Text
         final float textY = barTop - textOffset;
-        canvas.drawText(Float.toString(minValue), 0.0f, textY, textPaint);
+        canvas.drawText(toText(minValue), 0.0f, textY, textPaint);
         if (firstLimit > 0) {
-            drawCenteredText(canvas, Float.toString(firstLimit), firstPos, textY, textPaint);
+            drawCenteredText(canvas, toText(firstLimit), firstPos, textY, textPaint);
         }
-        drawCenteredText(canvas, Float.toString(secondLimit), secondPos, textY, textPaint);
-        drawCenteredText(canvas, Float.toString(maxValue), getWidth(), textY, textPaint);
+        drawCenteredText(canvas, toText(secondLimit), secondPos, textY, textPaint);
+        drawCenteredText(canvas, toText(maxValue), getWidth(), textY, textPaint);
 
         // Indicator
         final float indicatorBottom = limitRect.bottom + 10.0f;
@@ -197,7 +200,7 @@ public class LinearGaugeView extends View {
         canvas.drawPath(path, indicatorPaint);
 
         // Value text
-        String valueStr = String.format("%.2f", value);
+        final String valueStr = String.format(Locale.getDefault(), "%.2f", value);
         indicatorPaint.getTextBounds(valueStr, 0, valueStr.length(), bounds);
         drawCenteredText(canvas, valueStr, valuePos,
             indicatorBottom + bounds.height() + textOffset, indicatorPaint);
