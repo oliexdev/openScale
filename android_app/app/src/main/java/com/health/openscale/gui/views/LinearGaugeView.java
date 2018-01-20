@@ -81,15 +81,15 @@ public class LinearGaugeView extends View {
 
         textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         textPaint.setColor(Color.GRAY);
-        textPaint.setTextSize(20);
+        textPaint.setTextSize(30);
 
         indicatorPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         indicatorPaint.setColor(Color.BLACK);
-        indicatorPaint.setTextSize(20);
+        indicatorPaint.setTextSize(30);
 
         infoTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         infoTextPaint.setColor(Color.GRAY);
-        infoTextPaint.setTextSize(30);
+        infoTextPaint.setTextSize(40);
         infoTextPaint.setTextAlign(Paint.Align.CENTER);
     }
 
@@ -211,7 +211,7 @@ public class LinearGaugeView extends View {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 
         int desiredWidth = 100;
-        int desiredHeight = 100;
+        int desiredHeight = 120;
 
         int widthMode = MeasureSpec.getMode(widthMeasureSpec);
         int widthSize = MeasureSpec.getSize(widthMeasureSpec);

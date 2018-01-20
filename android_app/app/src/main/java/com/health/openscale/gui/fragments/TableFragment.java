@@ -274,14 +274,18 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
                     filenameDialog.setTitle(getResources().getString(R.string.info_set_filename) + " /sdcard ...");
 
+                    String exportFilename = prefs.getString("exportFilename", "/openScale_data_" + OpenScale.getInstance(getContext()).getSelectedScaleUser().getUserName() + ".csv");
+
                     final EditText txtFilename = new EditText(tableView.getContext());
-                    txtFilename.setText("/openScale_data_" + OpenScale.getInstance(getContext()).getSelectedScaleUser().getUserName() + ".csv");
+                    txtFilename.setText(exportFilename);
 
                     filenameDialog.setView(txtFilename);
 
                     filenameDialog.setPositiveButton(getResources().getString(R.string.label_ok), new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             OpenScale.getInstance(getContext()).importData(Environment.getExternalStorageDirectory().getPath() + txtFilename.getText().toString());
+                            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(tableView.getContext());
+                            prefs.edit().putString("exportFilename", txtFilename.getText().toString()).commit();
                             updateOnView(OpenScale.getInstance(getContext()).getScaleMeasurementList());
                         }
                     });
@@ -305,14 +309,18 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
             filenameDialog.setTitle(getResources().getString(R.string.info_set_filename) + " /sdcard ...");
 
+            String exportFilename = prefs.getString("exportFilename", "/openScale_data_" + OpenScale.getInstance(getContext()).getSelectedScaleUser().getUserName() + ".csv");
+
             final EditText txtFilename = new EditText(tableView.getContext());
-            txtFilename.setText("/openScale_data_" + OpenScale.getInstance(getContext()).getSelectedScaleUser().getUserName() + ".csv");
+            txtFilename.setText(exportFilename);
 
             filenameDialog.setView(txtFilename);
 
             filenameDialog.setPositiveButton(getResources().getString(R.string.label_ok), new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
                     OpenScale.getInstance(getContext()).exportData(Environment.getExternalStorageDirectory().getPath() + txtFilename.getText().toString());
+                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(tableView.getContext());
+                    prefs.edit().putString("exportFilename", txtFilename.getText().toString()).commit();
                 }
             });
 
