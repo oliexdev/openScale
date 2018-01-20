@@ -63,7 +63,7 @@ public class MuscleMeasurementView extends FloatMeasurementView {
             return "%";
         }
 
-        return ScaleUser.UNIT_STRING[getScaleUser().getScaleUnit()];
+        return getScaleUser().getScaleUnit().toString();
     }
 
     @Override

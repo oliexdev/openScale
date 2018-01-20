@@ -26,7 +26,7 @@ public class TBWLeeSongKim extends EstimatedWaterMetric {
 
     @Override
     public float getWater(ScaleUser user, ScaleMeasurement data) {
-        if (user.isMale()) {
+        if (user.getGender().isMale()) {
             return -28.3497f + (0.243057f * user.getBodyHeight()) + (0.366248f * data.getWeight());
         }
 

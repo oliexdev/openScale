@@ -37,6 +37,7 @@ import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
+import com.health.openscale.core.utils.Converters;
 import com.health.openscale.core.utils.DateTimeHelpers;
 import com.health.openscale.gui.activities.DataEntryActivity;
 import com.health.openscale.gui.views.BMIMeasurementView;
@@ -398,10 +399,11 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             arcValuesLast.add(new SliceValue(lastScaleMeasurement.getMuscle(), ChartUtils.COLOR_GREEN));
         }
 
+        final Converters.WeightUnit unit = currentScaleUser.getScaleUnit();
         PieChartData pieChartData = new PieChartData(arcValuesLast);
         pieChartData.setHasLabels(false);
         pieChartData.setHasCenterCircle(true);
-        pieChartData.setCenterText1(String.format("%.2f %s", lastScaleMeasurement.getConvertedWeight(currentScaleUser.getScaleUnit()), ScaleUser.UNIT_STRING[currentScaleUser.getScaleUnit()]));
+        pieChartData.setCenterText1(String.format("%.2f %s", lastScaleMeasurement.getConvertedWeight(unit), unit.toString()));
         pieChartData.setCenterText2(DateFormat.getDateInstance(DateFormat.MEDIUM).format(lastScaleMeasurement.getDateTime()));
 
 

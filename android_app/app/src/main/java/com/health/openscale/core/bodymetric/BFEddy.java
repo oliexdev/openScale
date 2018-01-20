@@ -26,7 +26,7 @@ public class BFEddy extends EstimatedFatMetric {
 
     @Override
     public float getFat(ScaleUser user, ScaleMeasurement data) {
-        if (user.isMale()) {
+        if (user.getGender().isMale()) {
             return (1.281f* data.getBMI(user.getBodyHeight())) - 10.13f;
         }
 

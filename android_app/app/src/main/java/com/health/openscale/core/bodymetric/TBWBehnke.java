@@ -26,7 +26,7 @@ public class TBWBehnke extends EstimatedWaterMetric {
 
     @Override
     public float getWater(ScaleUser user, ScaleMeasurement data) {
-        if (user.isMale()) {
+        if (user.getGender().isMale()) {
             return 0.72f * (0.204f * user.getBodyHeight() * user.getBodyHeight()) / 100.0f;
         }
 

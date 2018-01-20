@@ -61,23 +61,18 @@ public class BluetoothExcelvanCF369BLE extends BluetoothCommunication {
             case 0:
                 final ScaleUser selectedUser = OpenScale.getInstance(context).getSelectedScaleUser();
 
-                byte sex = selectedUser.isMale() ? (byte)0x01 : (byte)0x00; // 01 - male; 00 - female
+                byte sex = selectedUser.getGender().isMale() ? (byte)0x01 : (byte)0x00; // 01 - male; 00 - female
                 byte height = (byte)(selectedUser.getBodyHeight() & 0xff); // cm
                 byte age = (byte)(selectedUser.getAge(new Date()) & 0xff);
-                byte unit;
+                byte unit = 0x01; // kg
 
                 switch (selectedUser.getScaleUnit()) {
-                    case 0:
-                        unit = 0x01; // kg
+                    case LB:
+                        unit = 0x02;
                         break;
-                    case 1:
-                        unit = 0x02; // lb
+                    case ST:
+                        unit = 0x04;
                         break;
-                    case 2:
-                        unit = 0x04; // st
-                        break;
-                    default:
-                        unit = 0x01; // kg
                 }
 
                 byte xor_checksum = (byte)((byte)(0x01) ^ sex ^ (byte)(0x01) ^ height ^ age ^ unit);
