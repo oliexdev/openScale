@@ -8,8 +8,8 @@ android {
         testApplicationId "com.health.openscale.test"
         minSdkVersion 18
         targetSdkVersion 22 // don't set target sdk > 22 otherwise bluetooth le discovery need permission to ACCESS_COARSE_LOCATION
-        versionCode 22
-        versionName "1.7 (beta)"
+        versionCode 23
+        versionName "1.7"
 
         javaCompileOptions {
             annotationProcessorOptions { arguments = ["room.schemaLocation":"$projectDir/schemas".toString()] }
