@@ -206,6 +206,7 @@ public class UserSettingsActivity extends Activity {
         public void onDateSet(DatePicker view, int selectedYear, int selectedMonth, int selectedDay) {
             Calendar cal = Calendar.getInstance();
             cal.set(selectedYear, selectedMonth, selectedDay, 0, 0, 0);
+            cal.set(Calendar.MILLISECOND, 0);
             birthday = cal.getTime();
             txtBirthday.setText(dateFormat.format(birthday));
            }
@@ -216,6 +217,7 @@ public class UserSettingsActivity extends Activity {
         public void onDateSet(DatePicker view, int selectedYear, int selectedMonth, int selectedDay) {
             Calendar cal = Calendar.getInstance();
             cal.set(selectedYear, selectedMonth, selectedDay, 0, 0, 0);
+            cal.set(Calendar.MILLISECOND, 0);
             goal_date = cal.getTime();
             txtGoalDate.setText(dateFormat.format(goal_date));
         }

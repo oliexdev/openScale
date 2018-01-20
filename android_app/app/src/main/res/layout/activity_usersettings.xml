@@ -8,7 +8,7 @@
     <ScrollView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/scrollView4" >
+        android:id="@+id/scrollViewUserData" >
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -17,18 +17,19 @@
             android:padding="5dp" >
 
         <TableLayout
+                android:id="@+id/tableUserData"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="5dp"
                 android:stretchColumns="*" >
 
                 <TableRow
-                    android:id="@+id/tableRow1"
+                    android:id="@+id/rowUserName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" >
 
                     <TextView
-                        android:id="@+id/textView1"
+                        android:id="@+id/lblUserName"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/label_user_name" />
@@ -47,11 +48,12 @@
                 </TableRow>
 
                 <TableRow
-                    android:id="@+id/tableRow2"
+                    android:id="@+id/rowBodyHeight"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" >
 
                     <TextView
+                        android:id="@+id/lblBodyHeight"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/label_body_height" />
@@ -67,12 +69,12 @@
                 </TableRow>
 
                 <TableRow
-                    android:id="@+id/tableRow3"
+                    android:id="@+id/rowGender"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" >
 
                     <TextView
-                        android:id="@+id/textView3"
+                        android:id="@+id/lblGender"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/label_gender" />
@@ -102,12 +104,12 @@
                 </TableRow>
 
                 <TableRow
-                    android:id="@+id/tableRow4"
+                    android:id="@+id/rowUnit"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" >
 
                     <TextView
-                        android:id="@+id/textView4"
+                        android:id="@+id/lblUnit"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/label_scale_unit" />
@@ -142,12 +144,12 @@
                 </TableRow>
 
                 <TableRow
-                    android:id="@+id/tableRow5"
+                    android:id="@+id/rowBirthday"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" >
 
                     <TextView
-                        android:id="@+id/textView5"
+                        android:id="@+id/lblBirthday"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/label_birthday" />
@@ -169,6 +171,7 @@
                 android:layout_height="wrap_content" >
 
                 <TextView
+                    android:id="@+id/lblInitialWeight"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/label_initial_weight" />
@@ -183,11 +186,12 @@
             </TableRow>
 
                 <TableRow
-                    android:id="@+id/tableRow6"
+                    android:id="@+id/rowGoalWeight"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" >
 
                     <TextView
+                        android:id="@+id/lblGoalWeight"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/label_goal_weight" />
@@ -202,12 +206,12 @@
                 </TableRow>
 
                 <TableRow
-                    android:id="@+id/tableRow7"
+                    android:id="@+id/rowGoalDate"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" >
 
                     <TextView
-                        android:id="@+id/textView7"
+                        android:id="@+id/lblGoalDate"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/label_goal_date" />
