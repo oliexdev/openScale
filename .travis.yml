@@ -14,7 +14,7 @@ branches:
     - travis-dev-build
 
 before_install:
-  - yes | sdkmanager "platforms;android-27"
+  - yes | $ANDROID_HOME/tools/bin/sdkmanager "platforms;android-27"
 
 before_script:
   - sed -i -r
