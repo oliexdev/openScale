@@ -35,7 +35,7 @@ public interface ScaleUserDAO {
     ScaleUser get(int id);
 
     @Insert
-    void insert(ScaleUser user);
+    long insert(ScaleUser user);
 
     @Insert
     void insertAll(List<ScaleUser> userList);

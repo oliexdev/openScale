@@ -118,7 +118,10 @@ public class OpenScale {
 
     public void addScaleUser(final ScaleUser user)
     {
-        userDAO.insert(user);
+        long userId = userDAO.insert(user);
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        prefs.edit().putInt("selectedUserId", (int)userId).commit();
     }
 
     public List<ScaleUser> getScaleUserList()
@@ -178,6 +181,10 @@ public class OpenScale {
     }
 
     public int addScaleData(final ScaleMeasurement scaleMeasurement) {
+        return addScaleData(scaleMeasurement, false);
+    }
+
+    public int addScaleData(final ScaleMeasurement scaleMeasurement, boolean silent) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
         if (scaleMeasurement.getUserId() == -1) {
@@ -219,15 +226,20 @@ public class OpenScale {
             final Date dateTime = scaleMeasurement.getDateTime();
 
             final Converters.WeightUnit unit = scaleUser.getScaleUnit();
-            String infoText = String.format(context.getString(R.string.info_new_data_added),
-                    scaleMeasurement.getConvertedWeight(unit), unit.toString(),
-                    dateFormat.format(dateTime) + " " + timeFormat.format(dateTime),
-                    scaleUser.getUserName());
-            Toast.makeText(context, infoText, Toast.LENGTH_LONG).show();
+
+            if (!silent) {
+                String infoText = String.format(context.getString(R.string.info_new_data_added),
+                        scaleMeasurement.getConvertedWeight(unit), unit.toString(),
+                        dateFormat.format(dateTime) + " " + timeFormat.format(dateTime),
+                        scaleUser.getUserName());
+                Toast.makeText(context, infoText, Toast.LENGTH_LONG).show();
+            }
             alarmHandler.entryChanged(context, scaleMeasurement);
             updateScaleData();
         } else {
-            Toast.makeText(context, context.getString(R.string.info_new_data_duplicated), Toast.LENGTH_LONG).show();
+            if (!silent) {
+                Toast.makeText(context, context.getString(R.string.info_new_data_duplicated), Toast.LENGTH_LONG).show();
+            }
         }
 
         return scaleMeasurement.getUserId();
