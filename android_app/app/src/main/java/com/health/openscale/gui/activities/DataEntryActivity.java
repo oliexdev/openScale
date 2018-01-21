@@ -178,6 +178,9 @@ public class DataEntryActivity extends Activity {
                 ScaleMeasurement[] tupleScaleData = openScale.getTupleScaleData(id);
                 previousMeasurement = tupleScaleData[0];
                 scaleMeasurement = tupleScaleData[1].clone();
+
+                btnLeft.setVisibility(tupleScaleData[0] != null ? View.VISIBLE : View.INVISIBLE);
+                btnRight.setVisibility(tupleScaleData[2] != null ? View.VISIBLE : View.INVISIBLE);
             }
         } else {
             setViewMode(MeasurementView.MeasurementViewMode.ADD);
@@ -214,8 +217,10 @@ public class DataEntryActivity extends Activity {
                 btnOk.setVisibility(View.VISIBLE);
                 btnAdd.setVisibility(View.GONE);
                 imageViewDelete.setVisibility(View.VISIBLE);
-                btnLeft.setVisibility(View.VISIBLE);
-                btnRight.setVisibility(View.VISIBLE);
+                if (scaleMeasurement == null) {
+                    btnLeft.setVisibility(View.VISIBLE);
+                    btnRight.setVisibility(View.VISIBLE);
+                }
                 expandButton.setVisibility(View.VISIBLE);
                 switchEditMode.setVisibility(View.VISIBLE);
                 dateTimeVisibility = View.GONE;
@@ -224,8 +229,10 @@ public class DataEntryActivity extends Activity {
                 btnOk.setVisibility(View.VISIBLE);
                 btnAdd.setVisibility(View.GONE);
                 imageViewDelete.setVisibility(View.VISIBLE);
-                btnLeft.setVisibility(View.VISIBLE);
-                btnRight.setVisibility(View.VISIBLE);
+                if (scaleMeasurement == null) {
+                    btnLeft.setVisibility(View.VISIBLE);
+                    btnRight.setVisibility(View.VISIBLE);
+                }
                 expandButton.setVisibility(View.VISIBLE);
                 switchEditMode.setVisibility(View.VISIBLE);
                 break;
