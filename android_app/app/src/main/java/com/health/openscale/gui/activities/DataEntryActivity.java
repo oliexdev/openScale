@@ -149,10 +149,9 @@ public class DataEntryActivity extends Activity {
 
         if (scaleMeasurement == null || scaleMeasurement.getId() != id) {
             isDirty = false;
+            scaleMeasurement = null;
+            previousMeasurement = null;
         }
-
-        scaleMeasurement = null;
-        previousMeasurement = null;
 
         OpenScale openScale = OpenScale.getInstance(context);
         boolean doExpand = false;
@@ -175,9 +174,11 @@ public class DataEntryActivity extends Activity {
             }
 
             // Show selected scale data
-            ScaleMeasurement[] tupleScaleData = openScale.getTupleScaleData(id);
-            previousMeasurement = tupleScaleData[0];
-            scaleMeasurement = tupleScaleData[1].clone();
+            if (scaleMeasurement ==  null) {
+                ScaleMeasurement[] tupleScaleData = openScale.getTupleScaleData(id);
+                previousMeasurement = tupleScaleData[0];
+                scaleMeasurement = tupleScaleData[1].clone();
+            }
         } else {
             setViewMode(MeasurementView.MeasurementViewMode.ADD);
 
