@@ -178,29 +178,28 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:layout_marginTop="10dp"
                 android:layout_weight="90">
+
                 <TableLayout
                     android:id="@+id/tableWeekAveragesLayoutColumnA"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="50"
-                    android:stretchColumns="1">
-                </TableLayout>
+                    android:stretchColumns="1" />
 
                 <TableLayout
                     android:id="@+id/tableWeekAveragesLayoutColumnB"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="50"
-                    android:stretchColumns="1">
-                </TableLayout>
+                    android:stretchColumns="1" />
 
             </LinearLayout>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingTop="10dp"
                 android:text="@string/label_last_month"
                 android:textSize="20dp"
                 android:typeface="monospace" />
@@ -213,22 +212,22 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:layout_marginTop="10dp"
                 android:layout_weight="90">
+
                 <TableLayout
                     android:id="@+id/tableMonthAveragesLayoutColumnA"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="50"
-                    android:stretchColumns="1">
-                </TableLayout>
+                    android:stretchColumns="1" />
 
                 <TableLayout
                     android:id="@+id/tableMonthAveragesLayoutColumnB"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_weight="50"
-                    android:stretchColumns="1">
-                </TableLayout>
+                    android:stretchColumns="1" />
 
             </LinearLayout>
         </LinearLayout>
