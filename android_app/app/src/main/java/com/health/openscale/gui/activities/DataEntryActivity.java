@@ -74,6 +74,7 @@ public class DataEntryActivity extends Activity {
 
     private ScaleMeasurement scaleMeasurement;
     private ScaleMeasurement previousMeasurement;
+    private ScaleMeasurement nextMeasurement;
     private boolean isDirty;
 
     private Context context;
@@ -151,6 +152,7 @@ public class DataEntryActivity extends Activity {
             isDirty = false;
             scaleMeasurement = null;
             previousMeasurement = null;
+            nextMeasurement = null;
         }
 
         OpenScale openScale = OpenScale.getInstance(context);
@@ -178,9 +180,10 @@ public class DataEntryActivity extends Activity {
                 ScaleMeasurement[] tupleScaleData = openScale.getTupleScaleData(id);
                 previousMeasurement = tupleScaleData[0];
                 scaleMeasurement = tupleScaleData[1].clone();
+                nextMeasurement = tupleScaleData[2];
 
-                btnLeft.setEnabled(tupleScaleData[0] != null);
-                btnRight.setEnabled(tupleScaleData[2] != null);
+                btnLeft.setEnabled(previousMeasurement != null);
+                btnRight.setEnabled(nextMeasurement != null);
             }
         } else {
             setViewMode(MeasurementView.MeasurementViewMode.ADD);
@@ -271,13 +274,9 @@ public class DataEntryActivity extends Activity {
     }
 
     private boolean moveRight() {
-        ScaleMeasurement[] tupleScaleData = OpenScale.getInstance(getApplicationContext())
-                .getTupleScaleData(scaleMeasurement.getId());
-        ScaleMeasurement nextScaleMeasurement = tupleScaleData[2];
-
-        if (nextScaleMeasurement != null) {
+        if (nextMeasurement != null) {
             saveScaleData();
-            getIntent().putExtra("id", nextScaleMeasurement.getId());
+            getIntent().putExtra("id", nextMeasurement.getId());
             updateOnView();
             return true;
         }
@@ -387,10 +386,11 @@ public class DataEntryActivity extends Activity {
         void deleteMeasurement() {
             int delId = scaleMeasurement.getId();
 
-            boolean hasNext = moveLeft();
-
             OpenScale.getInstance(getApplicationContext()).deleteScaleData(delId);
             Toast.makeText(context, getResources().getString(R.string.info_data_deleted), Toast.LENGTH_SHORT).show();
+
+            isDirty = false;
+            final boolean hasNext = moveLeft() || moveRight();
 
             if (!hasNext) {
                 finish();
