@@ -35,6 +35,7 @@ import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.CsvHelper;
+import com.health.openscale.core.utils.DateTimeHelpers;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -113,26 +114,22 @@ public class ScreenshotRecorder {
 
     ScaleUser getTestUser() {
         ScaleUser user = new ScaleUser();
-        user.setUserName("test");
+        user.setUserName("Test");
         user.setBodyHeight(180);
         user.setInitialWeight(80.0f);
         user.setGoalWeight(60.0f);
 
         Calendar birthday = Calendar.getInstance();
-        birthday.setTimeInMillis(0);
-        birthday.set(Calendar.YEAR, 1990);
-        birthday.set(Calendar.MONTH, Calendar.JANUARY);
-        birthday.set(Calendar.DAY_OF_MONTH, 19);
-        birthday.set(Calendar.HOUR_OF_DAY, 0);
+        birthday.add(Calendar.YEAR, -28);
+        birthday.set(birthday.get(Calendar.YEAR), Calendar.JANUARY, 19, 0, 0, 0);
+        birthday.set(Calendar.MILLISECOND, 0);
 
         user.setBirthday(birthday.getTime());
 
         Calendar goalDate = Calendar.getInstance();
-        goalDate.setTimeInMillis(0);
-        goalDate.set(Calendar.YEAR, 2018);
-        goalDate.set(Calendar.MONTH, Calendar.JANUARY);
-        goalDate.set(Calendar.DAY_OF_MONTH, 31);
-        goalDate.set(Calendar.HOUR_OF_DAY, 0);
+        goalDate.add(Calendar.YEAR, 1);
+        goalDate.set(goalDate.get(Calendar.YEAR), Calendar.JANUARY, 31, 0, 0, 0);
+        goalDate.set(Calendar.MILLISECOND, 0);
 
         user.setGoalDate(goalDate.getTime());
 
@@ -199,13 +196,16 @@ public class ScreenshotRecorder {
             e.printStackTrace();
         }
 
-        // set current year to the measurement data
+        // Move measurements forward in time
         Calendar measurementDate = Calendar.getInstance();
-        int year = measurementDate.get(Calendar.YEAR);
+        if (!scaleMeasurementList.isEmpty()) {
+            measurementDate.setTime(scaleMeasurementList.get(0).getDateTime());
+        }
+        final int daysToAdvance = DateTimeHelpers.daysBetween(measurementDate, Calendar.getInstance());
 
         for (ScaleMeasurement measurement : scaleMeasurementList) {
             measurementDate.setTime(measurement.getDateTime());
-            measurementDate.set(Calendar.YEAR, year);
+            measurementDate.add(Calendar.DAY_OF_YEAR, daysToAdvance);
             measurement.setDateTime(measurementDate.getTime());
         }
 
