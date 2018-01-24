@@ -151,6 +151,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
         moveSubpageLeft.getLayoutParams().height = pxImageDp(20);
         moveSubpageLeft.getLayoutParams().width = pxImageDp(50);
         moveSubpageLeft.setOnClickListener(new onClickListenerMoveSubpageLeft());
+        moveSubpageLeft.setEnabled(selectedSubpageNr > 0);
         subpageView.addView(moveSubpageLeft);
 
         for (int i=0; i<subpageCount; i++) {
@@ -178,6 +179,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
         moveSubpageRight.getLayoutParams().height = pxImageDp(20);
         moveSubpageRight.getLayoutParams().width = pxImageDp(50);
         moveSubpageRight.setOnClickListener(new onClickListenerMoveSubpageRight());
+        moveSubpageRight.setEnabled(selectedSubpageNr + 1 < subpageCount);
         subpageView.addView(moveSubpageRight);
 
         tableHeaderView.removeAllViews();

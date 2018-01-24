@@ -104,6 +104,8 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
         viewMeasurementsListWeek.add(new WaistMeasurementView(statisticsView.getContext()));
         viewMeasurementsListWeek.add(new HipMeasurementView(statisticsView.getContext()));
 
+        final int paddingBottom = 10;
+
         int i=0;
 
         for (MeasurementView measurement : viewMeasurementsListWeek) {
@@ -111,6 +113,7 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
             measurement.updatePreferences(prefs);
 
             if (measurement.isVisible()) {
+                measurement.setPadding(-1, -1, -1, paddingBottom);
                 if ((i % 2) == 0) {
                     tableWeekAveragesLayoutColumnA.addView(measurement);
                 } else {
@@ -138,6 +141,7 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
             measurement.updatePreferences(prefs);
 
             if (measurement.isVisible()) {
+                measurement.setPadding(-1, -1, -1, paddingBottom);
                 if ((i % 2) == 0) {
                     tableMonthAveragesLayoutColumnA.addView(measurement);
                 } else {
