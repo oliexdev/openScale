@@ -48,7 +48,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -70,8 +69,6 @@ public class OpenScale {
     private BluetoothCommunication btCom;
     private String btDeviceName;
     private AlarmHandler alarmHandler;
-
-    private SimpleDateFormat dateTimeFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm");
 
     private Context context;
 
