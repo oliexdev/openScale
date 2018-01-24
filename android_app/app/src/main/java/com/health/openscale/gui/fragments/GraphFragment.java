@@ -506,6 +506,14 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         btnLeftYear.setEnabled(selectedYear > firstYear);
         btnRightYear.setEnabled(selectedYear < lastYear);
 
+        if (selectedYear == firstYear && selectedYear == lastYear) {
+            btnLeftYear.setVisibility(View.GONE);
+            btnRightYear.setVisibility(View.GONE);
+        } else {
+            btnLeftYear.setVisibility(View.VISIBLE);
+            btnRightYear.setVisibility(View.VISIBLE);
+        }
+
         // show monthly diagram
         if (prefs.getBoolean(String.valueOf(enableMonth.getId()), true)) {
             chartTop.setVisibility(View.VISIBLE);
