@@ -65,6 +65,8 @@ public class OpenScale {
     private AppDatabase appDB;
     private ScaleMeasurementDAO measurementDAO;
     private ScaleUserDAO userDAO;
+
+    private ScaleUser selectedScaleUser;
     private List<ScaleMeasurement> scaleMeasurementList;
 
     private BluetoothCommunication btCom;
@@ -145,50 +147,55 @@ public class OpenScale {
     public void selectScaleUser(int userId) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         prefs.edit().putInt("selectedUserId", userId).commit();
+
+        selectedScaleUser = null;
     }
 
     public int getSelectedScaleUserId() {
+        if (selectedScaleUser != null) {
+            return selectedScaleUser.getId();
+        }
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         return prefs.getInt("selectedUserId", -1);
     }
 
-    public List<ScaleUser> getScaleUserList()
-    {
+    public List<ScaleUser> getScaleUserList() {
         return userDAO.getAll();
     }
 
-    public ScaleUser getScaleUser(int userId)
-    {
+    public ScaleUser getScaleUser(int userId) {
+        if (selectedScaleUser != null && selectedScaleUser.getId() == userId) {
+            return selectedScaleUser;
+        }
         return userDAO.get(userId);
     }
 
-    public ScaleUser getSelectedScaleUser()
-    {
-        ScaleUser scaleUser = new ScaleUser();
+    public ScaleUser getSelectedScaleUser() {
+        if (selectedScaleUser != null) {
+            return selectedScaleUser;
+        }
 
         try {
-            int selectedUserId = getSelectedScaleUserId();
-
-            if (selectedUserId == -1) {
-                return scaleUser;
+            final int selectedUserId = getSelectedScaleUserId();
+            if (selectedUserId != -1) {
+                selectedScaleUser = userDAO.get(selectedUserId);
+                return selectedScaleUser;
             }
-
-            scaleUser = userDAO.get(selectedUserId);
         } catch (Exception e) {
             Toast.makeText(context, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
 
-        return scaleUser;
+        return new ScaleUser();
     }
 
-    public void deleteScaleUser(int id)
-    {
+    public void deleteScaleUser(int id) {
         userDAO.delete(userDAO.get(id));
+        selectedScaleUser = null;
     }
 
-    public void updateScaleUser(ScaleUser user)
-    {
+    public void updateScaleUser(ScaleUser user) {
         userDAO.update(user);
+        selectedScaleUser = null;
     }
 
     public List<ScaleMeasurement> getScaleMeasurementList() {
