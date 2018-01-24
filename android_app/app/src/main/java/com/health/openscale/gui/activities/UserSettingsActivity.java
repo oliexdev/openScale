@@ -246,9 +246,7 @@ public class UserSettingsActivity extends Activity {
                         lastUserId = scaleUser.get(0).getId();
                     }
 
-                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-                    prefs.edit().putInt("selectedUserId", lastUserId).commit();
-
+                    openScale.selectScaleUser(lastUserId);
                     openScale.updateScaleData();
 
                     Intent returnIntent = new Intent();
@@ -325,13 +323,10 @@ public class UserSettingsActivity extends Activity {
                         scaleUser.setId(id);
                         openScale.updateScaleUser(scaleUser);
                     } else {
-                        openScale.addScaleUser(scaleUser);
-
-                        id = openScale.getScaleUserList().get(openScale.getScaleUserList().size() - 1).getId();
+                        id = openScale.addScaleUser(scaleUser);
                     }
 
-                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-                    prefs.edit().putInt("selectedUserId", id).commit();
+                    openScale.selectScaleUser(id);
 
                     openScale.updateScaleData();
 

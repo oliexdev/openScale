@@ -213,7 +213,8 @@ public class ScreenshotRecorder {
     }
 
     private void prepareData() {
-        openScale.addScaleUser(getTestUser());
+        int userId = openScale.addScaleUser(getTestUser());
+        openScale.selectScaleUser(userId);
 
         List<ScaleMeasurement> scaleMeasurementList = getTestMeasurements();
 

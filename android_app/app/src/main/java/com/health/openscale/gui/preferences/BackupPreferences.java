@@ -125,8 +125,7 @@ public class BackupPreferences extends PreferenceFragment {
             List<ScaleUser> scaleUserList = openScale.getScaleUserList();
 
             if (!scaleUserList.isEmpty()) {
-                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext());
-                prefs.edit().putInt("selectedUserId", scaleUserList.get(0).getId()).commit();
+                openScale.selectScaleUser(scaleUserList.get(0).getId());
                 openScale.updateScaleData();
             }
 

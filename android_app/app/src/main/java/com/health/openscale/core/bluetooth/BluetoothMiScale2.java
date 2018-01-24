@@ -257,7 +257,7 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
             prefs.edit().putInt("uniqueNumber", uniqueNumber).commit();
         }
 
-        int userId = prefs.getInt("selectedUserId", -1);
+        int userId = OpenScale.getInstance(context).getSelectedScaleUserId();
 
         return uniqueNumber + userId;
     }

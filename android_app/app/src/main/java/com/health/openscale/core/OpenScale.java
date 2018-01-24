@@ -138,12 +138,18 @@ public class OpenScale {
         scaleDB.close();
     }
 
-    public void addScaleUser(final ScaleUser user)
-    {
-        long userId = userDAO.insert(user);
+    public int addScaleUser(final ScaleUser user) {
+        return (int)userDAO.insert(user);
+    }
 
+    public void selectScaleUser(int userId) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        prefs.edit().putInt("selectedUserId", (int)userId).commit();
+        prefs.edit().putInt("selectedUserId", userId).commit();
+    }
+
+    public int getSelectedScaleUserId() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getInt("selectedUserId", -1);
     }
 
     public List<ScaleUser> getScaleUserList()
@@ -161,8 +167,7 @@ public class OpenScale {
         ScaleUser scaleUser = new ScaleUser();
 
         try {
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-            int selectedUserId  = prefs.getInt("selectedUserId", -1);
+            int selectedUserId = getSelectedScaleUserId();
 
             if (selectedUserId == -1) {
                 return scaleUser;
@@ -355,8 +360,7 @@ public class OpenScale {
     }
 
     public int[] getCountsOfMonth(int year) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        int selectedUserId  = prefs.getInt("selectedUserId", -1);
+        int selectedUserId = getSelectedScaleUserId();
 
         int [] numOfMonth = new int[12];
 
@@ -375,8 +379,7 @@ public class OpenScale {
     }
 
     public List<ScaleMeasurement> getScaleDataOfMonth(int year, int month) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        int selectedUserId  = prefs.getInt("selectedUserId", -1);
+        int selectedUserId = getSelectedScaleUserId();
 
         Calendar startCalender = Calendar.getInstance();
         Calendar endCalender = Calendar.getInstance();
@@ -389,8 +392,7 @@ public class OpenScale {
     }
 
     public List<ScaleMeasurement> getScaleDataOfYear(int year) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        int selectedUserId  = prefs.getInt("selectedUserId", -1);
+        int selectedUserId = getSelectedScaleUserId();
 
         Calendar startCalender = Calendar.getInstance();
         Calendar endCalender = Calendar.getInstance();
@@ -430,18 +432,15 @@ public class OpenScale {
     public void registerFragment(FragmentUpdateListener fragment) {
         fragmentList.add(fragment);
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        int selectedUserId  = prefs.getInt("selectedUserId", -1);
+        int selectedUserId = getSelectedScaleUserId();
 
         scaleMeasurementList = measurementDAO.getAll(selectedUserId);
 
         fragment.updateOnView(scaleMeasurementList);
     }
 
-    public void updateScaleData()
-    {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        int selectedUserId  = prefs.getInt("selectedUserId", -1);
+    public void updateScaleData() {
+        int selectedUserId = getSelectedScaleUserId();
 
         scaleMeasurementList = measurementDAO.getAll(selectedUserId);
 

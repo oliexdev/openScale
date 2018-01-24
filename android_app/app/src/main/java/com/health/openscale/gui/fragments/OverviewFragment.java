@@ -476,13 +476,13 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
              if (parent.getChildCount() > 0) {
                  ((TextView) parent.getChildAt(0)).setTextColor(Color.GRAY);
 
-                 List<ScaleUser> scaleUserList = OpenScale.getInstance(getContext()).getScaleUserList();
+                 OpenScale openScale = OpenScale.getInstance(getContext());
 
+                 List<ScaleUser> scaleUserList = openScale.getScaleUserList();
                  ScaleUser scaleUser = scaleUserList.get(position);
 
-                 SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-                 prefs.edit().putInt("selectedUserId", scaleUser.getId()).commit();
-                 OpenScale.getInstance(getContext()).updateScaleData();
+                 openScale.selectScaleUser(scaleUser.getId());
+                 openScale.updateScaleData();
              }
         }
 

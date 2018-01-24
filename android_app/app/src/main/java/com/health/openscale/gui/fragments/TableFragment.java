@@ -263,8 +263,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
         @Override
         public void onClick(View v) {
 
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(v.getContext());
-            int selectedUserId  = prefs.getInt("selectedUserId", -1);
+            int selectedUserId = OpenScale.getInstance(getContext()).getSelectedScaleUserId();
 
             if (selectedUserId == -1)
             {

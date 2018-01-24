@@ -62,8 +62,7 @@ public class BluetoothExingtechY1 extends BluetoothCommunication {
                 byte height = (byte)(selectedUser.getBodyHeight() & 0xff); // cm
                 byte age = (byte)(selectedUser.getAge(new Date()) & 0xff);
 
-                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-                int userId = prefs.getInt("selectedUserId", -1);
+                int userId = selectedUser.getId();
 
                 byte cmdByte[] = {(byte)0x10, (byte)userId, gender, age, height};
 
