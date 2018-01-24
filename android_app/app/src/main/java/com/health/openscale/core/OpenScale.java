@@ -16,11 +16,14 @@
 
 package com.health.openscale.core;
 
+import android.arch.persistence.db.SupportSQLiteDatabase;
 import android.arch.persistence.room.Room;
+import android.arch.persistence.room.RoomDatabase;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.text.format.DateFormat;
 import android.util.Log;
@@ -81,7 +84,17 @@ public class OpenScale {
         alarmHandler = new AlarmHandler();
         btCom = null;
         fragmentList = new ArrayList<>();
-        appDB = Room.databaseBuilder(context, AppDatabase.class, "openScale.db").allowMainThreadQueries().build();
+        appDB = Room.databaseBuilder(context, AppDatabase.class, "openScale.db")
+                .allowMainThreadQueries()
+                .addCallback(new RoomDatabase.Callback() {
+                    @Override
+                    public void onOpen(@NonNull SupportSQLiteDatabase db) {
+                        super.onOpen(db);
+                        db.setForeignKeyConstraintsEnabled(true);
+                    }
+                })
+                .addMigrations(AppDatabase.MIGRATION_1_2)
+                .build();
         measurementDAO = appDB.measurementDAO();
         userDAO = appDB.userDAO();
 
