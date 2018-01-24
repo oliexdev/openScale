@@ -30,6 +30,7 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -69,6 +70,8 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     private ColumnChartView chartTop;
     private Viewport defaultTopViewport;
     private TextView txtYear;
+    private Button btnLeftYear;
+    private Button btnRightYear;
     private FloatingActionButton diagramWeight;
     private FloatingActionButton diagramFat;
     private FloatingActionButton diagramWater;
@@ -96,6 +99,14 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
+        openScale = OpenScale.getInstance(getContext());
+
+        scaleMeasurementList = openScale.getScaleMeasurementList();
+        if (!scaleMeasurementList.isEmpty()) {
+            calYears.setTime(scaleMeasurementList.get(0).getDateTime());
+            calLastSelected.setTime(scaleMeasurementList.get(0).getDateTime());
+        }
+
         graphView = inflater.inflate(R.layout.fragment_graph, container, false);
 
         chartBottom = (LineChartView) graphView.findViewById(R.id.chart_bottom);
@@ -163,7 +174,8 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             diagramHip.setVisibility(View.GONE);
         }
 
-        graphView.findViewById(R.id.btnLeftYear).setOnClickListener(new View.OnClickListener() {
+        btnLeftYear = graphView.findViewById(R.id.btnLeftYear);
+        btnLeftYear.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
                 calYears.roll(Calendar.YEAR, false);
                 txtYear.setText(Integer.toString(calYears.get(Calendar.YEAR)));
@@ -171,7 +183,8 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             }
         });
 
-        graphView.findViewById(R.id.btnRightYear).setOnClickListener(new View.OnClickListener() {
+        btnRightYear = graphView.findViewById(R.id.btnRightYear);
+        btnRightYear.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
                 calYears.roll(Calendar.YEAR, true);
                 txtYear.setText(Integer.toString(calYears.get(Calendar.YEAR)));
@@ -179,7 +192,6 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             }
         });
 
-        openScale = OpenScale.getInstance(getContext());
         openScale.registerFragment(this);
 
         return graphView;
@@ -476,13 +488,31 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     }
 
     private void generateGraphs() {
+        final int selectedYear = calYears.get(Calendar.YEAR);
+
+        int firstYear = selectedYear;
+        int lastYear = selectedYear;
+
+        scaleMeasurementList = openScale.getScaleMeasurementList();
+        if (!scaleMeasurementList.isEmpty()) {
+            Calendar cal = Calendar.getInstance();
+
+            cal.setTime(scaleMeasurementList.get(scaleMeasurementList.size() - 1).getDateTime());
+            firstYear = cal.get(Calendar.YEAR);
+
+            cal.setTime(scaleMeasurementList.get(0).getDateTime());
+            lastYear = cal.get(Calendar.YEAR);
+        }
+        btnLeftYear.setEnabled(selectedYear > firstYear);
+        btnRightYear.setEnabled(selectedYear < lastYear);
+
         // show monthly diagram
         if (prefs.getBoolean(String.valueOf(enableMonth.getId()), true)) {
             chartTop.setVisibility(View.VISIBLE);
             chartBottom.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 0.7f));
 
             generateColumnData();
-            scaleMeasurementList = openScale.getScaleDataOfMonth(calYears.get(Calendar.YEAR), calLastSelected.get(Calendar.MONTH));
+            scaleMeasurementList = openScale.getScaleDataOfMonth(selectedYear, calLastSelected.get(Calendar.MONTH));
 
             generateLineData(Calendar.DAY_OF_MONTH);
         // show only yearly diagram and hide monthly diagram
@@ -490,7 +520,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             chartTop.setVisibility(View.GONE);
             chartBottom.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
 
-            scaleMeasurementList = openScale.getScaleDataOfYear(calYears.get(Calendar.YEAR));
+            scaleMeasurementList = openScale.getScaleDataOfYear(selectedYear);
 
             generateLineData(Calendar.DAY_OF_YEAR);
         }

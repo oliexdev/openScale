@@ -111,7 +111,7 @@ public abstract class MeasurementView extends TableLayout {
         valueView.setTextColor(Color.BLACK);
         valueView.setGravity(Gravity.RIGHT | Gravity.CENTER);
         valueView.setPadding(0,0,20,0);
-        valueView.setLayoutParams(new TableRow.LayoutParams(0, LayoutParams.MATCH_PARENT, 0.29f));
+        valueView.setLayoutParams(new TableRow.LayoutParams(0, LayoutParams.WRAP_CONTENT, 0.29f));
 
         incDecLayout.setOrientation(VERTICAL);
         incDecLayout.setVisibility(View.GONE);

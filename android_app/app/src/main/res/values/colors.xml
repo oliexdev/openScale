@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-  <resources>
+<resources>
     <color name="blue_pressed">@android:color/holo_blue_dark</color>
     <color name="blue_normal">@android:color/holo_blue_light</color>
-  </resources>
+    <color name="gray_disabled">#ccc</color>
+</resources>
