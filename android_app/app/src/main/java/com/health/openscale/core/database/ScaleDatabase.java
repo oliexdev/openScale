@@ -16,7 +16,6 @@
 
 package com.health.openscale.core.database;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
@@ -29,7 +28,6 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Locale;
 
 public class ScaleDatabase extends SQLiteOpenHelper {
@@ -68,10 +66,6 @@ public class ScaleDatabase extends SQLiteOpenHelper {
                     COLUMN_NAME_ENABLE + " INTEGER" +
                     ")";
 
-    private static final String SQL_DELETE_ENTRIES =
-            "DROP TABLE IF EXISTS " + TABLE_NAME;
-
-
     private static String[] projection = {
             COLUMN_NAME_ID,
             COLUMN_NAME_USER_ID,
@@ -87,9 +81,6 @@ public class ScaleDatabase extends SQLiteOpenHelper {
             COLUMN_NAME_COMMENT,
             COLUMN_NAME_ENABLE
     };
-
-    private final SQLiteDatabase dbWrite = getWritableDatabase();
-    private final SQLiteDatabase dbRead = getReadableDatabase();
 
     private SimpleDateFormat formatDateTime = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US);
 
@@ -126,254 +117,13 @@ public class ScaleDatabase extends SQLiteOpenHelper {
         }
     }
 
-    public void clearScaleData(int userId) {
-        dbWrite.delete(TABLE_NAME, COLUMN_NAME_USER_ID + "=" + Integer.toString(userId), null);
-    }
-
-    public boolean insertEntry(ScaleMeasurement scaleMeasurement) {
-        SQLiteDatabase db = getWritableDatabase();
-
-        Cursor cursorScaleDB = db.query(TABLE_NAME, new String[] {COLUMN_NAME_DATE_TIME}, COLUMN_NAME_DATE_TIME + "=? AND " + COLUMN_NAME_USER_ID + "=?",
-                new String[] {formatDateTime.format(scaleMeasurement.getDateTime()), Integer.toString(scaleMeasurement.getUserId())}, null, null, null);
-
-        // we don't want double entries
-        if (cursorScaleDB.getCount() > 0) {
-            cursorScaleDB.close();
-            return false;
-        } else {
-            ContentValues values = new ContentValues();
-            values.put(COLUMN_NAME_USER_ID, scaleMeasurement.getUserId());
-            values.put(COLUMN_NAME_DATE_TIME, formatDateTime.format(scaleMeasurement.getDateTime()));
-            values.put(COLUMN_NAME_WEIGHT, scaleMeasurement.getWeight());
-            values.put(COLUMN_NAME_FAT, scaleMeasurement.getFat());
-            values.put(COLUMN_NAME_WATER, scaleMeasurement.getWater());
-            values.put(COLUMN_NAME_MUSCLE, scaleMeasurement.getMuscle());
-            values.put(COLUMN_NAME_LBW, scaleMeasurement.getLbw());
-            values.put(COLUMN_NAME_BONE, scaleMeasurement.getBone());
-            values.put(COLUMN_NAME_WAIST, scaleMeasurement.getWaist());
-            values.put(COLUMN_NAME_HIP, scaleMeasurement.getHip());
-            values.put(COLUMN_NAME_COMMENT, scaleMeasurement.getComment());
-            values.put(COLUMN_NAME_ENABLE, 1);
-
-            try
-            {
-                db.insertOrThrow(TABLE_NAME, null, values);
-            }
-            catch (SQLException e)
-            {
-                Log.e("ScaleDatabase", "An error occured while inserting a new entry into the scale database: " + e.toString());
-                cursorScaleDB.close();
-                return false;
-            }
-        }
-
-        cursorScaleDB.close();
-
-        return true;
-    }
-
-    public void updateEntry(long id, ScaleMeasurement scaleMeasurement) {
-        ContentValues values = new ContentValues();
-
-        values.put(COLUMN_NAME_DATE_TIME, formatDateTime.format(scaleMeasurement.getDateTime()));
-        values.put(COLUMN_NAME_WEIGHT, scaleMeasurement.getWeight());
-        values.put(COLUMN_NAME_FAT, scaleMeasurement.getFat());
-        values.put(COLUMN_NAME_WATER, scaleMeasurement.getWater());
-        values.put(COLUMN_NAME_MUSCLE, scaleMeasurement.getMuscle());
-        values.put(COLUMN_NAME_LBW, scaleMeasurement.getLbw());
-        values.put(COLUMN_NAME_BONE, scaleMeasurement.getBone());
-        values.put(COLUMN_NAME_WAIST, scaleMeasurement.getWaist());
-        values.put(COLUMN_NAME_HIP, scaleMeasurement.getHip());
-        values.put(COLUMN_NAME_COMMENT, scaleMeasurement.getComment());
-        values.put(COLUMN_NAME_ENABLE, 1);
-
-        dbWrite.update(TABLE_NAME, values, COLUMN_NAME_ID + "=" + id, null);
-    }
-
-    public ScaleMeasurement[] getTupleDataEntry(int userId, long id)
-    {
-        Cursor cursorScaleDB;
-
-        ScaleMeasurement[] tupleScaleData = new ScaleMeasurement[3];
-
-        // selected scale data entry
-        cursorScaleDB = dbRead.query(
-                TABLE_NAME,     // The table to query
-                projection,     // The columns to return
-                COLUMN_NAME_USER_ID + "=? AND " + COLUMN_NAME_ID + "=?",             // The columns for the WHERE clause
-                new String[] {Integer.toString(userId), Long.toString(id)},             // The values for the WHERE clause
-                null,             // don't group the rows
-                null,            // don't filter by row groups
-                null,          // The sort order
-                "1"         // Limit
-        );
-
-        if (cursorScaleDB.getCount() == 1) {
-            cursorScaleDB.moveToFirst();
-            tupleScaleData[1] = readAtCursor(cursorScaleDB);
-        } else {
-            tupleScaleData[1] = new ScaleMeasurement();
-        }
-
-        // previous scale entry
-        cursorScaleDB = dbRead.query(
-                TABLE_NAME,     // The table to query
-                projection,     // The columns to return
-                COLUMN_NAME_USER_ID + "=? AND " + COLUMN_NAME_DATE_TIME + "<? AND " + COLUMN_NAME_ENABLE + "=1",             // The columns for the WHERE clause
-                new String[] {Integer.toString(userId), formatDateTime.format(tupleScaleData[1].getDateTime())},             // The values for the WHERE clause
-                null,             // don't group the rows
-                null,            // don't filter by row groups
-                COLUMN_NAME_DATE_TIME + " DESC",      // The sort order
-                "1"             // Limit
-        );
-
-        if (cursorScaleDB.getCount() == 1) {
-            cursorScaleDB.moveToFirst();
-            tupleScaleData[0] = readAtCursor(cursorScaleDB);
-        } else {
-            tupleScaleData[0] = null;
-        }
-
-        cursorScaleDB.close();
-
-        // next scale data entry
-        cursorScaleDB = dbRead.query(
-                TABLE_NAME,     // The table to query
-                projection,     // The columns to return
-                COLUMN_NAME_USER_ID + "=? AND " + COLUMN_NAME_DATE_TIME + ">? AND " + COLUMN_NAME_ENABLE + "=1",             // The columns for the WHERE clause
-                new String[] {Integer.toString(userId), formatDateTime.format(tupleScaleData[1].getDateTime())},             // The values for the WHERE clause
-                null,             // don't group the rows
-                null,            // don't filter by row groups
-                COLUMN_NAME_DATE_TIME, // The sort order
-                "1"             // Limit
-        );
-
-        if (cursorScaleDB.getCount() == 1) {
-            cursorScaleDB.moveToFirst();
-            tupleScaleData[2] = readAtCursor(cursorScaleDB);
-        } else {
-            tupleScaleData[2] = null;
-        }
-
-        return tupleScaleData;
-    }
-
-    public void deleteEntry(long id) {
-        //dbWrite.delete(TABLE_NAME, COLUMN_NAME_ID + "= ?", new String[] {String.valueOf(id)});
-
-        ContentValues values = new ContentValues();
-        values.put(COLUMN_NAME_ENABLE, 0);
-
-        dbWrite.update(TABLE_NAME, values, COLUMN_NAME_ID + "=" + id, null);
-    }
-
-    public int[] getCountsOfAllMonth(int userId, int year) {
-        int [] numOfMonth = new int[12];
-
-        Calendar start_cal = Calendar.getInstance();
-        Calendar end_cal = Calendar.getInstance();
-
-        for (int i=0; i<12; i++) {
-            start_cal.set(year, i, 1, 0, 0, 0);
-            end_cal.set(year, i, 1, 0, 0, 0);
-            end_cal.add(Calendar.MONTH, 1);
-
-            Cursor cursorScaleDB = dbRead.query(
-                    TABLE_NAME,    // The table to query
-                    new String[]{"count(*)"},    // The columns to return
-                    COLUMN_NAME_DATE_TIME + " >= ? AND " + COLUMN_NAME_DATE_TIME + " < ? AND " + COLUMN_NAME_USER_ID + "=? AND "+ COLUMN_NAME_ENABLE + "=1", // The columns for the WHERE clause
-                    new String[]{formatDateTime.format(start_cal.getTime()), formatDateTime.format(end_cal.getTime()), Integer.toString(userId)},            // The values for the WHERE clause
-                    null,            // don't group the rows
-                    null,            // don't filter by row groups
-                    null        // The sort order
-            );
-
-            cursorScaleDB.moveToFirst();
-
-            numOfMonth[i] = cursorScaleDB.getInt(0);
-
-            cursorScaleDB.close();
-        }
-
-        return numOfMonth;
-    }
-
-    public ArrayList<ScaleMeasurement> getScaleDataOfMonth(int userId, int year, int month) {
-        ArrayList<ScaleMeasurement> scaleMeasurementList = new ArrayList<ScaleMeasurement>();
-
-        String sortOrder = COLUMN_NAME_DATE_TIME + " DESC";
-
-        Calendar start_cal = Calendar.getInstance();
-        Calendar end_cal = Calendar.getInstance();
-
-        start_cal.set(year, month, 1, 0, 0, 0);
-        end_cal.set(year, month, 1, 0, 0, 0);
-        end_cal.add(Calendar.MONTH, 1);
-
-        Cursor cursorScaleDB = dbRead.query(
-                TABLE_NAME,     // The table to query
-                projection,     // The columns to return
-                COLUMN_NAME_DATE_TIME + " >= ? AND " + COLUMN_NAME_DATE_TIME + " < ? AND " + COLUMN_NAME_USER_ID + "=? AND " + COLUMN_NAME_ENABLE + "=1", // The columns for the WHERE clause
-                new String[]{formatDateTime.format(start_cal.getTime()), formatDateTime.format(end_cal.getTime()), Integer.toString(userId)},            // The values for the WHERE clause
-                null,             // don't group the rows
-                null,            // don't filter by row groups
-                sortOrder          // The sort order
-        );
-
-        cursorScaleDB.moveToFirst();
-
-        while (!cursorScaleDB.isAfterLast()) {
-            scaleMeasurementList.add(readAtCursor(cursorScaleDB));
-
-            cursorScaleDB.moveToNext();
-        }
-
-        cursorScaleDB.close();
-
-        return scaleMeasurementList;
-    }
-
-    public ArrayList<ScaleMeasurement> getScaleDataOfYear(int userId, int year) {
-        ArrayList<ScaleMeasurement> scaleMeasurementList = new ArrayList<ScaleMeasurement>();
-
-        String sortOrder = COLUMN_NAME_DATE_TIME + " DESC";
-
-        Calendar start_cal = Calendar.getInstance();
-        Calendar end_cal = Calendar.getInstance();
-
-        start_cal.set(year, Calendar.JANUARY, 1, 0, 0, 0);
-        end_cal.set(year+1, Calendar.JANUARY, 1, 0, 0, 0);
-
-        Cursor cursorScaleDB = dbRead.query(
-                TABLE_NAME,     // The table to query
-                projection,     // The columns to return
-                COLUMN_NAME_DATE_TIME + " >= ? AND " + COLUMN_NAME_DATE_TIME + " < ? AND " + COLUMN_NAME_USER_ID + "=? AND " + COLUMN_NAME_ENABLE + "=1", // The columns for the WHERE clause
-                new String[]{formatDateTime.format(start_cal.getTime()), formatDateTime.format(end_cal.getTime()), Integer.toString(userId)},            // The values for the WHERE clause
-                null,             // don't group the rows
-                null,            // don't filter by row groups
-                sortOrder          // The sort order
-        );
-
-        cursorScaleDB.moveToFirst();
-
-        while (!cursorScaleDB.isAfterLast()) {
-            scaleMeasurementList.add(readAtCursor(cursorScaleDB));
-
-            cursorScaleDB.moveToNext();
-        }
-
-        cursorScaleDB.close();
-
-        return scaleMeasurementList;
-    }
-
     public ArrayList<ScaleMeasurement> getScaleDataList(int userId) {
         ArrayList<ScaleMeasurement> scaleMeasurementList = new ArrayList<ScaleMeasurement>();
 
         try {
             String sortOrder = COLUMN_NAME_DATE_TIME + " DESC";
 
-            Cursor cursorScaleDB = dbRead.query(
+            Cursor cursorScaleDB = getReadableDatabase().query(
                     TABLE_NAME,    // The table to query
                     projection,    // The columns to return
                     COLUMN_NAME_USER_ID + "=? AND " + COLUMN_NAME_ENABLE + "=1", // The columns for the WHERE clause

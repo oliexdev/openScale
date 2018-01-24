@@ -16,10 +16,8 @@
 
 package com.health.openscale.core.database;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
@@ -60,9 +58,6 @@ public class ScaleUserDatabase extends SQLiteOpenHelper {
                     COLUMN_NAME_GOAL_DATE + " TEXT" +
                     ")";
 
-    private static final String SQL_DELETE_ENTRIES =
-            "DROP TABLE IF EXISTS " + TABLE_NAME;
-
     private static String[] projection = {
             COLUMN_NAME_ID,
             COLUMN_NAME_USER_NAME,
@@ -97,84 +92,6 @@ public class ScaleUserDatabase extends SQLiteOpenHelper {
         if (oldVersion == 2 && newVersion == 3) {
             db.execSQL("ALTER TABLE " + TABLE_NAME + " ADD COLUMN " + COLUMN_NAME_INITIAL_WEIGHT + " REAL DEFAULT 0");
         }
-    }
-
-    public void clearDatabase() {
-        SQLiteDatabase db = getWritableDatabase();
-
-        db.delete(TABLE_NAME, null, null);
-    }
-
-    public boolean insertEntry(ScaleUser scaleUser) {
-        SQLiteDatabase db = getWritableDatabase();
-
-        ContentValues values = new ContentValues();
-        values.put(COLUMN_NAME_USER_NAME, scaleUser.getUserName());
-        values.put(COLUMN_NAME_BIRTHDAY, formatDateTime.format(scaleUser.getBirthday()));
-        values.put(COLUMN_NAME_BODY_HEIGHT, scaleUser.getBodyHeight());
-        values.put(COLUMN_NAME_SCALE_UNIT, scaleUser.getScaleUnit().toInt());
-        values.put(COLUMN_NAME_GENDER, scaleUser.getGender().toInt());
-        values.put(COLUMN_NAME_INITIAL_WEIGHT, scaleUser.getInitialWeight());
-        values.put(COLUMN_NAME_GOAL_WEIGHT, scaleUser.getGoalWeight());
-        values.put(COLUMN_NAME_GOAL_DATE, formatDateTime.format(scaleUser.getGoalDate()));
-
-        try
-        {
-            db.insertOrThrow(TABLE_NAME, null, values);
-        }
-        catch (SQLException e)
-        {
-            Log.e("ScaleUserDatabase", "An error occured while inserting a new entry into the scale user database: " + e.toString());
-            return false;
-        }
-
-        return true;
-    }
-
-    public void deleteEntry(int id) {
-        SQLiteDatabase db = getWritableDatabase();
-
-        db.delete(TABLE_NAME, COLUMN_NAME_ID + "= ?", new String[] {String.valueOf(id)});
-    }
-
-    public void updateScaleUser(ScaleUser scaleUser)
-    {
-        SQLiteDatabase db = getWritableDatabase();
-
-        ContentValues values = new ContentValues();
-        values.put(COLUMN_NAME_USER_NAME, scaleUser.getUserName());
-        values.put(COLUMN_NAME_BIRTHDAY, formatDateTime.format(scaleUser.getBirthday()));
-        values.put(COLUMN_NAME_BODY_HEIGHT, scaleUser.getBodyHeight());
-        values.put(COLUMN_NAME_SCALE_UNIT, scaleUser.getScaleUnit().toInt());
-        values.put(COLUMN_NAME_GENDER, scaleUser.getGender().toInt());
-        values.put(COLUMN_NAME_INITIAL_WEIGHT, scaleUser.getInitialWeight());
-        values.put(COLUMN_NAME_GOAL_WEIGHT, scaleUser.getGoalWeight());
-        values.put(COLUMN_NAME_GOAL_DATE, formatDateTime.format(scaleUser.getGoalDate()));
-
-        db.update(TABLE_NAME, values, COLUMN_NAME_ID + "=" + scaleUser.getId(), null);
-    }
-
-    public ScaleUser getScaleUser(int id)
-    {
-        SQLiteDatabase db = getReadableDatabase();
-
-        Cursor cursorScaleDB = db.query(
-                TABLE_NAME,     // The table to query
-                projection,     // The columns to return
-                COLUMN_NAME_ID + "=?",             // The columns for the WHERE clause
-                new String[] {Integer.toString(id)},             // The values for the WHERE clause
-                null,             // don't group the rows
-                null,            // don't filter by row groups
-                null          // The sort order
-        );
-
-        cursorScaleDB.moveToFirst();
-
-        ScaleUser scaleUser = readAtCursor(cursorScaleDB);
-
-        cursorScaleDB.close();
-
-        return scaleUser;
     }
 
     public ArrayList<ScaleUser> getScaleUserList() {
