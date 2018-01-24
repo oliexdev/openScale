@@ -65,8 +65,6 @@ public class OpenScale {
     private AppDatabase appDB;
     private ScaleMeasurementDAO measurementDAO;
     private ScaleUserDAO userDAO;
-    private ScaleDatabase scaleDB;
-    private ScaleUserDatabase scaleUserDB;
     private List<ScaleMeasurement> scaleMeasurementList;
 
     private BluetoothCommunication btCom;
@@ -79,8 +77,6 @@ public class OpenScale {
 
     private OpenScale(Context context) {
         this.context = context;
-        scaleDB = new ScaleDatabase(context);
-        scaleUserDB = new ScaleUserDatabase(context);
         alarmHandler = new AlarmHandler();
         btCom = null;
         fragmentList = new ArrayList<>();
@@ -120,6 +116,10 @@ public class OpenScale {
     }
 
     private void migrateSQLtoRoom() {
+        // TODO: check if databases exist before opening and possibly creating them
+        ScaleDatabase scaleDB = new ScaleDatabase(context);
+        ScaleUserDatabase scaleUserDB = new ScaleUserDatabase(context);
+
         List<ScaleUser> oldScaleUserList = scaleUserDB.getScaleUserList();
 
         if (scaleDB.getReadableDatabase().getVersion() == 6 && userDAO.getAll().isEmpty() && !oldScaleUserList.isEmpty()) {
@@ -133,6 +133,9 @@ public class OpenScale {
 
             Toast.makeText(context, "Finished migrating old SQL database to new database format", Toast.LENGTH_LONG).show();
         }
+
+        scaleUserDB.close();
+        scaleDB.close();
     }
 
     public void addScaleUser(final ScaleUser user)
