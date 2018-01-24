@@ -84,6 +84,26 @@ public class OpenScale {
         alarmHandler = new AlarmHandler();
         btCom = null;
         fragmentList = new ArrayList<>();
+
+        reopenDatabase();
+
+        migrateSQLtoRoom();
+        updateScaleData();
+    }
+
+    public static OpenScale getInstance(Context context) {
+        if (instance == null) {
+            instance = new OpenScale(context);
+        }
+
+        return instance;
+    }
+
+    public void reopenDatabase() {
+        if (appDB != null) {
+            appDB.close();
+        }
+
         appDB = Room.databaseBuilder(context, AppDatabase.class, "openScale.db")
                 .allowMainThreadQueries()
                 .addCallback(new RoomDatabase.Callback() {
@@ -97,17 +117,6 @@ public class OpenScale {
                 .build();
         measurementDAO = appDB.measurementDAO();
         userDAO = appDB.userDAO();
-
-        migrateSQLtoRoom();
-        updateScaleData();
-    }
-
-    public static OpenScale getInstance(Context context) {
-        if (instance == null) {
-            instance = new OpenScale(context);
-        }
-
-        return instance;
     }
 
     private void migrateSQLtoRoom() {
