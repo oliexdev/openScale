@@ -21,9 +21,9 @@ import android.support.v4.content.ContextCompat;
 
 import com.health.openscale.R;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
-import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
+import com.health.openscale.core.utils.Converters;
 
 public class WeightMeasurementView extends FloatMeasurementView {
 
@@ -53,7 +53,7 @@ public class WeightMeasurementView extends FloatMeasurementView {
 
     @Override
     protected float getMaxValue() {
-        return 300;
+        return Converters.fromKilogram(300.0f, getScaleUser().getScaleUnit());
     }
 
     @Override

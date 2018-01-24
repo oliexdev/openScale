@@ -16,6 +16,7 @@
 package com.health.openscale.core.evaluation;
 
 import com.health.openscale.core.datatypes.ScaleUser;
+import com.health.openscale.core.utils.Converters;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -179,11 +180,11 @@ public class EvaluationSheet {
         }
 
         if (weight < lowLimit) { // low
-            return new EvaluationResult(weight,  Math.round(lowLimit), Math.round(highLimit), EvaluationResult.EVAL_STATE.LOW);
+            return new EvaluationResult(weight,  Converters.fromKilogram(Math.round(lowLimit), evalUser.getScaleUnit()), Converters.fromKilogram(Math.round(highLimit), evalUser.getScaleUnit()), EvaluationResult.EVAL_STATE.LOW);
         } else if (weight >= lowLimit && weight <= highLimit) { // normal
-            return new EvaluationResult(weight, Math.round(lowLimit), Math.round(highLimit), EvaluationResult.EVAL_STATE.NORMAL);
+            return new EvaluationResult(weight, Converters.fromKilogram(Math.round(lowLimit), evalUser.getScaleUnit()), Converters.fromKilogram(Math.round(highLimit), evalUser.getScaleUnit()), EvaluationResult.EVAL_STATE.NORMAL);
         } else if (weight > highLimit) { //high
-            return new EvaluationResult(weight, Math.round(lowLimit), Math.round(highLimit), EvaluationResult.EVAL_STATE.HIGH);
+            return new EvaluationResult(weight, Converters.fromKilogram(Math.round(lowLimit), evalUser.getScaleUnit()), Converters.fromKilogram(Math.round(highLimit),  evalUser.getScaleUnit()), EvaluationResult.EVAL_STATE.HIGH);
         }
 
         return new EvaluationResult(0, -1, -1, EvaluationResult.EVAL_STATE.UNDEFINED);
