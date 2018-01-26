@@ -188,6 +188,12 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             public void onClick(View view) {
                 calYears.roll(Calendar.YEAR, false);
                 txtYear.setText(Integer.toString(calYears.get(Calendar.YEAR)));
+
+                List<ScaleMeasurement> scaleMeasurementList =
+                        OpenScale.getInstance(getContext()).getScaleDataOfYear(calYears.get(Calendar.YEAR));
+                if (!scaleMeasurementList.isEmpty()) {
+                    calLastSelected.setTime(scaleMeasurementList.get(0).getDateTime());
+                }
                 updateOnView(null);
             }
         });
@@ -197,6 +203,12 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             public void onClick(View view) {
                 calYears.roll(Calendar.YEAR, true);
                 txtYear.setText(Integer.toString(calYears.get(Calendar.YEAR)));
+
+                List<ScaleMeasurement> scaleMeasurementList =
+                        OpenScale.getInstance(getContext()).getScaleDataOfYear(calYears.get(Calendar.YEAR));
+                if (!scaleMeasurementList.isEmpty()) {
+                    calLastSelected.setTime(scaleMeasurementList.get(scaleMeasurementList.size() - 1).getDateTime());
+                }
                 updateOnView(null);
             }
         });
