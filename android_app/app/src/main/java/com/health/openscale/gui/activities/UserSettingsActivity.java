@@ -246,9 +246,7 @@ public class UserSettingsActivity extends Activity {
                         lastUserId = scaleUser.get(0).getId();
                     }
 
-                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-                    prefs.edit().putInt("selectedUserId", lastUserId).commit();
-
+                    openScale.selectScaleUser(lastUserId);
                     openScale.updateScaleData();
 
                     Intent returnIntent = new Intent();
@@ -282,57 +280,52 @@ public class UserSettingsActivity extends Activity {
                     float initial_weight = Float.valueOf(txtInitialWeight.getText().toString());
                     float goal_weight = Float.valueOf(txtGoalWeight.getText().toString());
 
-                    int scale_unit = -1;
+                    Converters.WeightUnit scale_unit = Converters.WeightUnit.KG;
 
                     switch (checkedRadioButtonId) {
                         case R.id.btnRadioKG:
-                            scale_unit = 0;
+                            scale_unit = Converters.WeightUnit.KG;
                             break;
                         case R.id.btnRadioLB:
-                            scale_unit = 1;
+                            scale_unit = Converters.WeightUnit.LB;
                             break;
                         case R.id.btnRadioST:
-                            scale_unit = 2;
+                            scale_unit = Converters.WeightUnit.ST;
                             break;
                     }
 
-                    int gender = -1;
+                    Converters.Gender gender = Converters.Gender.MALE;
 
                     switch (checkedGenderId) {
                         case R.id.btnRadioMale:
-                            gender = 0;
+                            gender = Converters.Gender.MALE;
                             break;
                         case R.id.btnRadioWoman:
-                            gender = 1;
+                            gender = Converters.Gender.FEMALE;
                             break;
                     }
-
-                    int id = 0;
 
                     final ScaleUser scaleUser = new ScaleUser();
 
                     scaleUser.setUserName(name);
                     scaleUser.setBirthday(birthday);
                     scaleUser.setBodyHeight(body_height);
-                    scaleUser.setScaleUnit(Converters.fromWeightUnitInt(scale_unit));
-                    scaleUser.setGender(Converters.fromGenderInt(gender));
+                    scaleUser.setScaleUnit(scale_unit);
+                    scaleUser.setGender(gender);
                     scaleUser.setConvertedInitialWeight(initial_weight);
                     scaleUser.setGoalWeight(goal_weight);
                     scaleUser.setGoalDate(goal_date);
 
                     if (getIntent().getExtras().getInt("mode") == EDIT_USER_REQUEST) {
-                        id = getIntent().getExtras().getInt("id");
+                        int id = getIntent().getExtras().getInt("id");
                         scaleUser.setId(id);
                         openScale.updateScaleUser(scaleUser);
                     } else {
-                        openScale.addScaleUser(scaleUser);
-
-                        id = openScale.getScaleUserList().get(openScale.getScaleUserList().size() - 1).getId();
+                        int id = openScale.addScaleUser(scaleUser);
+                        scaleUser.setId(id);
                     }
 
-                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-                    prefs.edit().putInt("selectedUserId", id).commit();
-
+                    openScale.selectScaleUser(scaleUser.getId());
                     openScale.updateScaleData();
 
                     Intent returnIntent = new Intent();

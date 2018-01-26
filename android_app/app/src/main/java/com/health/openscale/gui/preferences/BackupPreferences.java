@@ -119,12 +119,14 @@ public class BackupPreferences extends PreferenceFragment {
 
             importBackup("openScale.db", exportDir);
 
-            List<ScaleUser> scaleUserList = OpenScale.getInstance(getActivity().getApplicationContext()).getScaleUserList();
+            OpenScale openScale = OpenScale.getInstance(getActivity().getApplicationContext());
+            openScale.reopenDatabase();
+
+            List<ScaleUser> scaleUserList = openScale.getScaleUserList();
 
             if (!scaleUserList.isEmpty()) {
-                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext());
-                prefs.edit().putInt("selectedUserId", scaleUserList.get(0).getId()).commit();
-                OpenScale.getInstance(getActivity().getApplicationContext()).updateScaleData();
+                openScale.selectScaleUser(scaleUserList.get(0).getId());
+                openScale.updateScaleData();
             }
 
             return true;

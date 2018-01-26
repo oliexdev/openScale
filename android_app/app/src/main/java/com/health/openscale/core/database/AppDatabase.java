@@ -16,18 +16,62 @@
 
 package com.health.openscale.core.database;
 
+import android.arch.persistence.db.SupportSQLiteDatabase;
 import android.arch.persistence.room.Database;
 import android.arch.persistence.room.RoomDatabase;
 import android.arch.persistence.room.TypeConverters;
+import android.arch.persistence.room.migration.Migration;
+import android.support.annotation.NonNull;
 
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
 
-@Database(entities = {ScaleMeasurement.class, ScaleUser.class}, version = 1)
+@Database(entities = {ScaleMeasurement.class, ScaleUser.class}, version = 2)
 @TypeConverters({Converters.class})
 public abstract class AppDatabase extends RoomDatabase {
     public abstract ScaleMeasurementDAO measurementDAO();
     public abstract ScaleUserDAO userDAO();
+
+    public static final Migration MIGRATION_1_2 = new Migration(1, 2) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            database.beginTransaction();
+            try {
+                // Drop old index on datetime only
+                database.execSQL("DROP INDEX index_scaleMeasurements_datetime");
+
+                // Rename old table
+                database.execSQL("ALTER TABLE scaleMeasurements RENAME TO scaleMeasurementsOld");
+
+                // Create new table with foreign key
+                database.execSQL("CREATE TABLE scaleMeasurements"
+                        + " (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"
+                        + " userId INTEGER NOT NULL, enabled INTEGER NOT NULL,"
+                        + " datetime INTEGER, weight REAL NOT NULL, fat REAL NOT NULL,"
+                        + " water REAL NOT NULL, muscle REAL NOT NULL, lbw REAL NOT NULL,"
+                        + " waist REAL NOT NULL, hip REAL NOT NULL, bone REAL NOT NULL,"
+                        + " comment TEXT, FOREIGN KEY(userId) REFERENCES scaleUsers(id)"
+                        + " ON UPDATE NO ACTION ON DELETE CASCADE)");
+
+                // Create new index on datetime + userId
+                database.execSQL("CREATE UNIQUE INDEX index_scaleMeasurements_datetime_userId"
+                        + " ON scaleMeasurements (datetime, userId)");
+
+                // Copy data from the old table, ignoring those with invalid userId (if any)
+                database.execSQL("INSERT INTO scaleMeasurements"
+                        + " SELECT * FROM scaleMeasurementsOld"
+                        + " WHERE userId IN (SELECT id from scaleUsers)");
+
+                // Delete old table
+                database.execSQL("DROP TABLE scaleMeasurementsOld");
+
+                database.setTransactionSuccessful();
+            }
+            finally {
+                database.endTransaction();
+            }
+        }
+    };
 }
 

@@ -247,10 +247,10 @@ public class MeasurementPreferences extends PreferenceFragment implements Shared
 
             deleteAllDialog.setPositiveButton(getResources().getString(R.string.label_yes), new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
-                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext());
-                    int selectedUserId  = prefs.getInt("selectedUserId", -1);
+                    OpenScale openScale = OpenScale.getInstance(getActivity().getApplicationContext());
+                    int selectedUserId = openScale.getSelectedScaleUserId();
 
-                    OpenScale.getInstance(getActivity().getApplicationContext()).clearScaleData(selectedUserId);
+                    openScale.clearScaleData(selectedUserId);
 
                     Toast.makeText(getActivity().getApplicationContext(), getResources().getString(R.string.info_data_all_deleted), Toast.LENGTH_SHORT).show();
                 }

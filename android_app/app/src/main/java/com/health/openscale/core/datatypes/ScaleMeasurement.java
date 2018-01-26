@@ -18,6 +18,7 @@ package com.health.openscale.core.datatypes;
 
 import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.ForeignKey;
 import android.arch.persistence.room.Index;
 import android.arch.persistence.room.PrimaryKey;
 
@@ -26,7 +27,13 @@ import com.j256.simplecsv.common.CsvColumn;
 
 import java.util.Date;
 
-@Entity(tableName = "scaleMeasurements", indices = {@Index(value = {"datetime"}, unique = true)})
+@Entity(tableName = "scaleMeasurements",
+        indices = {@Index(value = {"datetime", "userId"}, unique = true)},
+        foreignKeys = @ForeignKey(
+                entity = ScaleUser.class,
+                parentColumns = "id",
+                childColumns = "userId",
+                onDelete = ForeignKey.CASCADE))
 public class ScaleMeasurement implements Cloneable {
 
     @PrimaryKey(autoGenerate = true)

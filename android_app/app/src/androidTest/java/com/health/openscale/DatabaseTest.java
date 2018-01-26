@@ -65,7 +65,7 @@ public class DatabaseTest {
     @Test
     public void userOperations() throws Exception {
         ScaleUser user1 = new ScaleUser();
-        ScaleUser user2  = new ScaleUser();
+        ScaleUser user2 = new ScaleUser();
 
         user1.setUserName("foo");
         user2.setUserName("bar");
@@ -121,8 +121,14 @@ public class DatabaseTest {
 
     @Test
     public void measurementOperations() throws Exception {
+        final ScaleUser scaleUser1 = new ScaleUser();
+        final ScaleUser scaleUser2 = new ScaleUser();
+
+        scaleUser1.setId((int)userDao.insert(scaleUser1));
+        scaleUser2.setId((int)userDao.insert(scaleUser2));
+
         // User 1 data initialization
-        final int user1 = 0;
+        final int user1 = scaleUser1.getId();
         ScaleMeasurement measurement11 = new ScaleMeasurement();
         ScaleMeasurement measurement12 = new ScaleMeasurement();
         ScaleMeasurement measurement13 = new ScaleMeasurement();
@@ -140,7 +146,7 @@ public class DatabaseTest {
         measurement13.setDateTime(new Date(300));
 
         // User 2 data initialization
-        final int user2 = 1;
+        final int user2 = scaleUser2.getId();
         ScaleMeasurement measurement21 = new ScaleMeasurement();
         ScaleMeasurement measurement22 = new ScaleMeasurement();
 

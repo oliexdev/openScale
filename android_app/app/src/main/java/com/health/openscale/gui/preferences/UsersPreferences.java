@@ -41,14 +41,12 @@ public class UsersPreferences extends PreferenceFragment {
         updateUserPreferences();
     }
 
-    private void updateUserPreferences()
-    {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext());
-        int selectedUserId  = prefs.getInt("selectedUserId", -1);
+    private void updateUserPreferences() {
+        OpenScale openScale = OpenScale.getInstance(getActivity().getApplicationContext());
+
+        int selectedUserId = openScale.getSelectedScaleUserId();
 
         getPreferenceScreen().removeAll();
-
-        OpenScale openScale = OpenScale.getInstance(getActivity().getApplicationContext());
 
         List<ScaleUser> scaleUserList = openScale.getScaleUserList();
 

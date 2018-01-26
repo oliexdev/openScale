@@ -301,8 +301,9 @@ public class DataEntryActivity extends Activity {
     private class onClickListenerAdd implements View.OnClickListener {
         @Override
         public void onClick(View v) {
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-            int selectedUserId = prefs.getInt("selectedUserId", -1);
+            OpenScale openScale = OpenScale.getInstance(getApplicationContext());
+
+            int selectedUserId = openScale.getSelectedScaleUserId();
 
             if (selectedUserId == -1) {
                 AlertDialog.Builder infoDialog = new AlertDialog.Builder(context);
@@ -317,7 +318,6 @@ public class DataEntryActivity extends Activity {
                     measurement.saveTo(scaleMeasurement);
                 }
 
-                OpenScale openScale = OpenScale.getInstance(getApplicationContext());
                 openScale.addScaleData(scaleMeasurement);
 
                 finish();

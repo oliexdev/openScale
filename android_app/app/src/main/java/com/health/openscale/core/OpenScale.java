@@ -16,11 +16,14 @@
 
 package com.health.openscale.core;
 
+import android.arch.persistence.db.SupportSQLiteDatabase;
 import android.arch.persistence.room.Room;
+import android.arch.persistence.room.RoomDatabase;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.text.format.DateFormat;
 import android.util.Log;
@@ -48,7 +51,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -63,15 +65,13 @@ public class OpenScale {
     private AppDatabase appDB;
     private ScaleMeasurementDAO measurementDAO;
     private ScaleUserDAO userDAO;
-    private ScaleDatabase scaleDB;
-    private ScaleUserDatabase scaleUserDB;
+
+    private ScaleUser selectedScaleUser;
     private List<ScaleMeasurement> scaleMeasurementList;
 
     private BluetoothCommunication btCom;
     private String btDeviceName;
     private AlarmHandler alarmHandler;
-
-    private SimpleDateFormat dateTimeFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm");
 
     private Context context;
 
@@ -79,14 +79,11 @@ public class OpenScale {
 
     private OpenScale(Context context) {
         this.context = context;
-        scaleDB = new ScaleDatabase(context);
-        scaleUserDB = new ScaleUserDatabase(context);
         alarmHandler = new AlarmHandler();
         btCom = null;
         fragmentList = new ArrayList<>();
-        appDB = Room.databaseBuilder(context, AppDatabase.class, "openScale.db").allowMainThreadQueries().build();
-        measurementDAO = appDB.measurementDAO();
-        userDAO = appDB.userDAO();
+
+        reopenDatabase();
 
         migrateSQLtoRoom();
         updateScaleData();
@@ -100,7 +97,31 @@ public class OpenScale {
         return instance;
     }
 
+    public void reopenDatabase() {
+        if (appDB != null) {
+            appDB.close();
+        }
+
+        appDB = Room.databaseBuilder(context, AppDatabase.class, "openScale.db")
+                .allowMainThreadQueries()
+                .addCallback(new RoomDatabase.Callback() {
+                    @Override
+                    public void onOpen(@NonNull SupportSQLiteDatabase db) {
+                        super.onOpen(db);
+                        db.setForeignKeyConstraintsEnabled(true);
+                    }
+                })
+                .addMigrations(AppDatabase.MIGRATION_1_2)
+                .build();
+        measurementDAO = appDB.measurementDAO();
+        userDAO = appDB.userDAO();
+    }
+
     private void migrateSQLtoRoom() {
+        // TODO: check if databases exist before opening and possibly creating them
+        ScaleDatabase scaleDB = new ScaleDatabase(context);
+        ScaleUserDatabase scaleUserDB = new ScaleUserDatabase(context);
+
         List<ScaleUser> oldScaleUserList = scaleUserDB.getScaleUserList();
 
         if (scaleDB.getReadableDatabase().getVersion() == 6 && userDAO.getAll().isEmpty() && !oldScaleUserList.isEmpty()) {
@@ -114,54 +135,67 @@ public class OpenScale {
 
             Toast.makeText(context, "Finished migrating old SQL database to new database format", Toast.LENGTH_LONG).show();
         }
+
+        scaleUserDB.close();
+        scaleDB.close();
     }
 
-    public void addScaleUser(final ScaleUser user)
-    {
-        long userId = userDAO.insert(user);
+    public int addScaleUser(final ScaleUser user) {
+        return (int)userDAO.insert(user);
+    }
 
+    public void selectScaleUser(int userId) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        prefs.edit().putInt("selectedUserId", (int)userId).commit();
+        prefs.edit().putInt("selectedUserId", userId).commit();
+
+        selectedScaleUser = null;
     }
 
-    public List<ScaleUser> getScaleUserList()
-    {
+    public int getSelectedScaleUserId() {
+        if (selectedScaleUser != null) {
+            return selectedScaleUser.getId();
+        }
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getInt("selectedUserId", -1);
+    }
+
+    public List<ScaleUser> getScaleUserList() {
         return userDAO.getAll();
     }
 
-    public ScaleUser getScaleUser(int userId)
-    {
+    public ScaleUser getScaleUser(int userId) {
+        if (selectedScaleUser != null && selectedScaleUser.getId() == userId) {
+            return selectedScaleUser;
+        }
         return userDAO.get(userId);
     }
 
-    public ScaleUser getSelectedScaleUser()
-    {
-        ScaleUser scaleUser = new ScaleUser();
+    public ScaleUser getSelectedScaleUser() {
+        if (selectedScaleUser != null) {
+            return selectedScaleUser;
+        }
 
         try {
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-            int selectedUserId  = prefs.getInt("selectedUserId", -1);
-
-            if (selectedUserId == -1) {
-                return scaleUser;
+            final int selectedUserId = getSelectedScaleUserId();
+            if (selectedUserId != -1) {
+                selectedScaleUser = userDAO.get(selectedUserId);
+                return selectedScaleUser;
             }
-
-            scaleUser = userDAO.get(selectedUserId);
         } catch (Exception e) {
             Toast.makeText(context, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
 
-        return scaleUser;
+        return new ScaleUser();
     }
 
-    public void deleteScaleUser(int id)
-    {
+    public void deleteScaleUser(int id) {
         userDAO.delete(userDAO.get(id));
+        selectedScaleUser = null;
     }
 
-    public void updateScaleUser(ScaleUser user)
-    {
+    public void updateScaleUser(ScaleUser user) {
         userDAO.update(user);
+        selectedScaleUser = null;
     }
 
     public List<ScaleMeasurement> getScaleMeasurementList() {
@@ -333,8 +367,7 @@ public class OpenScale {
     }
 
     public int[] getCountsOfMonth(int year) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        int selectedUserId  = prefs.getInt("selectedUserId", -1);
+        int selectedUserId = getSelectedScaleUserId();
 
         int [] numOfMonth = new int[12];
 
@@ -353,8 +386,7 @@ public class OpenScale {
     }
 
     public List<ScaleMeasurement> getScaleDataOfMonth(int year, int month) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        int selectedUserId  = prefs.getInt("selectedUserId", -1);
+        int selectedUserId = getSelectedScaleUserId();
 
         Calendar startCalender = Calendar.getInstance();
         Calendar endCalender = Calendar.getInstance();
@@ -367,8 +399,7 @@ public class OpenScale {
     }
 
     public List<ScaleMeasurement> getScaleDataOfYear(int year) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        int selectedUserId  = prefs.getInt("selectedUserId", -1);
+        int selectedUserId = getSelectedScaleUserId();
 
         Calendar startCalender = Calendar.getInstance();
         Calendar endCalender = Calendar.getInstance();
@@ -408,18 +439,15 @@ public class OpenScale {
     public void registerFragment(FragmentUpdateListener fragment) {
         fragmentList.add(fragment);
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        int selectedUserId  = prefs.getInt("selectedUserId", -1);
+        int selectedUserId = getSelectedScaleUserId();
 
         scaleMeasurementList = measurementDAO.getAll(selectedUserId);
 
         fragment.updateOnView(scaleMeasurementList);
     }
 
-    public void updateScaleData()
-    {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        int selectedUserId  = prefs.getInt("selectedUserId", -1);
+    public void updateScaleData() {
+        int selectedUserId = getSelectedScaleUserId();
 
         scaleMeasurementList = measurementDAO.getAll(selectedUserId);
 
