@@ -26,34 +26,36 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 import java.util.Date;
 import java.util.UUID;
 
-public class BluetoothHesley extends BluetoothCommunication {
+public class BluetoothOneByone extends BluetoothCommunication {
+    private final UUID WEIGHT_MEASUREMENT_SERVICE_BODY_COMPOSITION = UUID.fromString("0000181B-0000-1000-8000-00805f9b34fb");
+    private final UUID WEIGHT_MEASUREMENT_CHARACTERISTIC_BODY_COMPOSITION = UUID.fromString("00002A9C-0000-1000-8000-00805f9b34fb"); // read, indication
+
     private final UUID WEIGHT_MEASUREMENT_SERVICE = UUID.fromString("0000fff0-0000-1000-8000-00805f9b34fb");
-    private final UUID WEIGHT_MEASUREMENT_CHARACTERISTIC = UUID.fromString("0000fff4-0000-1000-8000-00805f9b34fb"); // read, notify
     private final UUID CMD_MEASUREMENT_CHARACTERISTIC = UUID.fromString("0000fff1-0000-1000-8000-00805f9b34fb"); // write only
     private final UUID WEIGHT_MEASUREMENT_CONFIG = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
 
-    public BluetoothHesley(Context context) {
+    public BluetoothOneByone(Context context) {
         super(context);
     }
 
     @Override
     public String deviceName() {
-        return "Hesley scale";
+        return "1byone scale";
     }
 
     @Override
     public String defaultDeviceName() {
-        return "YunChen";
+        return "Health Scale";
     }
 
     @Override
     boolean nextInitCmd(int stateNr) {
         switch (stateNr) {
             case 0:
-                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC, WEIGHT_MEASUREMENT_CONFIG);
+                setIndicationOn(WEIGHT_MEASUREMENT_SERVICE_BODY_COMPOSITION, WEIGHT_MEASUREMENT_CHARACTERISTIC_BODY_COMPOSITION, WEIGHT_MEASUREMENT_CONFIG);
                 break;
             case 1:
-                byte[] magicBytes = {(byte)0xa5, (byte)0x01, (byte)0x2c, (byte)0xab, (byte)0x50, (byte)0x5a, (byte)0x29};
+                byte[] magicBytes = {(byte)0xfd,(byte)0x37,(byte)0x01,(byte)0x01,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0xca};
                 writeBytes(WEIGHT_MEASUREMENT_SERVICE, CMD_MEASUREMENT_CHARACTERISTIC, magicBytes);
                 break;
             default:
@@ -81,21 +83,20 @@ public class BluetoothHesley extends BluetoothCommunication {
 
         if (data != null && data.length > 0) {
             // if data is valid data
-            if (data[1] == (byte)0x01 && data.length == 20) {
+            if (data.length == 16) {
                 parseBytes(data);
             }
         }
     }
 
     private void parseBytes(byte[] weightBytes) {
-        int bodyage = (int)(weightBytes[17]); // 10 ~ 99
-
-        float weight = (float) (((weightBytes[2] & 0xFF) << 8) | (weightBytes[3] & 0xFF)) / 100.0f; // kg
-        float fat = (float)(((weightBytes[4] & 0xFF) << 8) | (weightBytes[5] & 0xFF)) / 10.0f; // %
-        float water = (float)(((weightBytes[8] & 0xFF) << 8) | (weightBytes[9] & 0xFF)) / 10.0f; // %
-        float muscle = (float)(((weightBytes[10] & 0xFF) << 8) | (weightBytes[11] & 0xFF)) / 10.0f; // %
-        float bone = (float)(((weightBytes[12] & 0xFF) << 8) | (weightBytes[13] & 0xFF)) / 10.0f; // %
-        float calorie = (float)(((weightBytes[14] & 0xFF) << 8) | (weightBytes[15] & 0xFF)); // kcal
+        float weight = (float) (((weightBytes[4] & 0xFF) << 8) | (weightBytes[5] & 0xFF)) / 10.0f; // kg
+        float fat = (float)(((weightBytes[6] & 0xFF) << 8) | (weightBytes[7] & 0xFF)) / 10.0f; // %
+        float bone = (float)(((weightBytes[8] & 0xFF) & 0xFF)) / 10.0f; // %
+        float muscle = (float)(((weightBytes[9] & 0xFF) << 8) | (weightBytes[10] & 0xFF)) / 10.0f; // %
+        float visfat = (float)(((weightBytes[11] & 0xFF) & 0xFF)) / 10.0f; // %
+        float water = (float)(((weightBytes[12] & 0xFF) << 8) | (weightBytes[13] & 0xFF)) / 10.0f; // %
+        float bmr = (float)(((weightBytes[14] & 0xFF) << 8) | (weightBytes[15] & 0xFF)); // kcal
 
         ScaleMeasurement scaleBtData = new ScaleMeasurement();
 
