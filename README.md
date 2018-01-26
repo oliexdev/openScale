@@ -69,7 +69,7 @@ If you want to help to support your Bluetooth scale please see [here](https://gi
   <tr>
     <td>
         <a href="doc/screens/screen_dataentry.png" target="_blank">
-        <img src='doc/screens/screen_dataentry.png' width='200px' alt='image missing' /> </a> <br>
+        <img src='doc/screens/screen_dataentry.png' width='250px' alt='image missing' /> </a> <br>
         <sub><b>data entry page</b></sub>
     </td>
     <td>
