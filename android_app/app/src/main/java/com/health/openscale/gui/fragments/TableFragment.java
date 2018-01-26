@@ -25,6 +25,7 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.text.Html;
@@ -82,6 +83,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
     private ArrayList <MeasurementView> measurementsList;
 
     private int selectedSubpageNr;
+    static private String SELECTED_SUBPAGE_NR_KEY = "selectedSubpageNr";
 
     public TableFragment() {
 
@@ -120,11 +122,22 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
         prefs = PreferenceManager.getDefaultSharedPreferences(tableView.getContext());
 
+        if (savedInstanceState == null) {
+            selectedSubpageNr = 0;
+        }
+        else {
+            selectedSubpageNr = savedInstanceState.getInt(SELECTED_SUBPAGE_NR_KEY);
+        }
+
         OpenScale.getInstance(getContext()).registerFragment(this);
 
-        selectedSubpageNr = 0;
-
         return tableView;
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(SELECTED_SUBPAGE_NR_KEY, selectedSubpageNr);
     }
 
     @Override

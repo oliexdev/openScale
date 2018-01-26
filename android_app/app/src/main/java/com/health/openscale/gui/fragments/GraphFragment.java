@@ -23,6 +23,7 @@ import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.view.GestureDetector;
@@ -88,6 +89,9 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     private Calendar calYears;
     private Calendar calLastSelected;
 
+    static private String CAL_YEARS_KEY = "calYears";
+    static private String CAL_LAST_SELECTED_KEY = "calLastSelected";
+
     private List<ScaleMeasurement> scaleMeasurementList;
     private List<ScaleMeasurement> pointIndexScaleMeasurementList;
 
@@ -101,10 +105,16 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     {
         openScale = OpenScale.getInstance(getContext());
 
-        scaleMeasurementList = openScale.getScaleMeasurementList();
-        if (!scaleMeasurementList.isEmpty()) {
-            calYears.setTime(scaleMeasurementList.get(0).getDateTime());
-            calLastSelected.setTime(scaleMeasurementList.get(0).getDateTime());
+        if (savedInstanceState == null) {
+            scaleMeasurementList = openScale.getScaleMeasurementList();
+            if (!scaleMeasurementList.isEmpty()) {
+                calYears.setTime(scaleMeasurementList.get(0).getDateTime());
+                calLastSelected.setTime(scaleMeasurementList.get(0).getDateTime());
+            }
+        }
+        else {
+            calYears.setTimeInMillis(savedInstanceState.getLong(CAL_YEARS_KEY));
+            calLastSelected.setTimeInMillis(savedInstanceState.getLong(CAL_LAST_SELECTED_KEY));
         }
 
         graphView = inflater.inflate(R.layout.fragment_graph, container, false);
@@ -195,6 +205,14 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         openScale.registerFragment(this);
 
         return graphView;
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putLong(CAL_YEARS_KEY, calYears.getTimeInMillis());
+        outState.putLong(CAL_LAST_SELECTED_KEY, calLastSelected.getTimeInMillis());
     }
 
     @Override
