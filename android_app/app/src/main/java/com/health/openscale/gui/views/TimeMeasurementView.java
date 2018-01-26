@@ -19,6 +19,7 @@ import android.app.AlertDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.widget.EditText;
 import android.widget.TimePicker;
@@ -33,6 +34,7 @@ import java.util.Date;
 public class TimeMeasurementView extends MeasurementView {
     private DateFormat timeFormat;
     private Date time;
+    static private String TIME_KEY = "time";
 
     public TimeMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_time), ContextCompat.getDrawable(context, R.drawable.ic_daysleft));
@@ -65,6 +67,16 @@ public class TimeMeasurementView extends MeasurementView {
         target.set(Calendar.MILLISECOND, 0);
 
         measurement.setDateTime(target.getTime());
+    }
+
+    @Override
+    public void restoreState(Bundle state) {
+        setValue(new Date(state.getLong(TIME_KEY)), true);
+    }
+
+    @Override
+    public void saveState(Bundle state) {
+        state.putLong(TIME_KEY, time.getTime());
     }
 
     @Override

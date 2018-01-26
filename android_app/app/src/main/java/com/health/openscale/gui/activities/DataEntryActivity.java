@@ -135,6 +135,24 @@ public class DataEntryActivity extends Activity {
         updateOnView();
     }
 
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+
+        for (MeasurementView measurement : dataEntryMeasurements) {
+            measurement.restoreState(savedInstanceState);
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        for (MeasurementView measurement : dataEntryMeasurements) {
+            measurement.saveState(outState);
+        }
+    }
+
     private void updateOnView()
     {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);

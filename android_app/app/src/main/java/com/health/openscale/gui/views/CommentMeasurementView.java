@@ -17,6 +17,7 @@ package com.health.openscale.gui.views;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.text.InputType;
 import android.widget.EditText;
@@ -26,6 +27,7 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 
 public class CommentMeasurementView extends MeasurementView {
     private String comment;
+    static private String COMMENT_KEY = "comment";
 
     public CommentMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_comment), ContextCompat.getDrawable(context, R.drawable.ic_comment));
@@ -46,6 +48,16 @@ public class CommentMeasurementView extends MeasurementView {
     @Override
     public void saveTo(ScaleMeasurement measurement) {
         measurement.setComment(comment);
+    }
+
+    @Override
+    public void restoreState(Bundle state) {
+        setValue(state.getString(COMMENT_KEY), true);
+    }
+
+    @Override
+    public void saveState(Bundle state) {
+        state.putString(COMMENT_KEY, comment);
     }
 
     @Override
