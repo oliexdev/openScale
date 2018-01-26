@@ -28,6 +28,7 @@ import android.support.test.runner.screenshot.BasicScreenCaptureProcessor;
 import android.support.test.runner.screenshot.ScreenCapture;
 import android.support.test.runner.screenshot.Screenshot;
 import android.test.suitebuilder.annotation.LargeTest;
+import android.util.Log;
 import android.view.Gravity;
 
 import com.health.openscale.R;
@@ -35,7 +36,6 @@ import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.CsvHelper;
-import com.health.openscale.core.utils.DateTimeHelpers;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -69,6 +69,7 @@ import static android.support.test.espresso.matcher.ViewMatchers.withId;
 public class ScreenshotRecorder {
     private Context context;
     private OpenScale openScale;
+    private final int WAIT_MS = 500;
 
     @Rule
     public ActivityTestRule<MainActivity> mActivityTestRule = new ActivityTestRule<>(MainActivity.class, false , false);
@@ -90,6 +91,9 @@ public class ScreenshotRecorder {
         // Set first start to true to get the user add dialog
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         prefs.edit().putBoolean("firstStart", false).commit();
+        prefs.edit().putBoolean("waistEnable", true).commit();
+        prefs.edit().putBoolean("hipEnable", true).commit();
+        prefs.edit().putBoolean("boneEnable", true).commit();
     }
 
     @Test
@@ -196,16 +200,13 @@ public class ScreenshotRecorder {
             e.printStackTrace();
         }
 
-        // Move measurements forward in time
+        // set current year to the measurement data
         Calendar measurementDate = Calendar.getInstance();
-        if (!scaleMeasurementList.isEmpty()) {
-            measurementDate.setTime(scaleMeasurementList.get(0).getDateTime());
-        }
-        final int daysToAdvance = DateTimeHelpers.daysBetween(measurementDate, Calendar.getInstance());
+        int year = measurementDate.get(Calendar.YEAR);
 
         for (ScaleMeasurement measurement : scaleMeasurementList) {
             measurementDate.setTime(measurement.getDateTime());
-            measurementDate.add(Calendar.DAY_OF_YEAR, daysToAdvance);
+            measurementDate.set(Calendar.YEAR, year);
             measurement.setDateTime(measurementDate.getTime());
         }
 
@@ -224,59 +225,68 @@ public class ScreenshotRecorder {
     }
 
     private void screenshotRecorder() {
-        mActivityTestRule.launchActivity(null);
+        try {
+            mActivityTestRule.launchActivity(null);
 
-        captureScreenshot("overview");
+            Thread.sleep(WAIT_MS);
+            captureScreenshot("overview");
 
-        onView(withId(R.id.btnInsertData)).perform(click());
+            onView(withId(R.id.btnInsertData)).perform(click());
 
-        captureScreenshot("dataentry");
+            Thread.sleep(WAIT_MS);
+            captureScreenshot("dataentry");
 
-        pressBack();
+            pressBack();
 
-        onView(withId(R.id.drawer_layout))
-                .perform(open()); // Open Drawer
+            onView(withId(R.id.drawer_layout))
+                    .perform(open()); // Open Drawer
 
-        onView(withId(R.id.navigation_view))
-                .perform(navigateTo(R.id.nav_graph));
+            onView(withId(R.id.navigation_view))
+                    .perform(navigateTo(R.id.nav_graph));
 
-        onView(withId(R.id.drawer_layout))
-                .perform(close()); // Close Drawer
+            onView(withId(R.id.drawer_layout))
+                    .perform(close()); // Close Drawer
 
-        onView(withId(R.id.drawer_layout))
-                .check(matches(isClosed(Gravity.LEFT)));
+            onView(withId(R.id.drawer_layout))
+                    .check(matches(isClosed(Gravity.LEFT)));
 
-        captureScreenshot("graph");
+            Thread.sleep(WAIT_MS);
+            captureScreenshot("graph");
 
-        onView(withId(R.id.drawer_layout))
-                .perform(open()); // Open Drawer
+            onView(withId(R.id.drawer_layout))
+                    .perform(open()); // Open Drawer
 
-        onView(withId(R.id.navigation_view))
-                .perform(navigateTo(R.id.nav_table));
+            onView(withId(R.id.navigation_view))
+                    .perform(navigateTo(R.id.nav_table));
 
-        onView(withId(R.id.drawer_layout))
-                .perform(close()); // Close Drawer
+            onView(withId(R.id.drawer_layout))
+                    .perform(close()); // Close Drawer
 
-        onView(withId(R.id.drawer_layout))
-                .check(matches(isClosed(Gravity.LEFT)));
+            onView(withId(R.id.drawer_layout))
+                    .check(matches(isClosed(Gravity.LEFT)));
 
-        captureScreenshot("table");
+            Thread.sleep(WAIT_MS);
+            captureScreenshot("table");
 
-        onView(withId(R.id.drawer_layout))
-                .perform(open()); // Open Drawer
+            onView(withId(R.id.drawer_layout))
+                    .perform(open()); // Open Drawer
 
-        onView(withId(R.id.navigation_view))
-                .perform(navigateTo(R.id.nav_statistic));
+            onView(withId(R.id.navigation_view))
+                    .perform(navigateTo(R.id.nav_statistic));
 
-        onView(withId(R.id.drawer_layout))
-                .perform(close()); // Close Drawer
+            onView(withId(R.id.drawer_layout))
+                    .perform(close()); // Close Drawer
 
-        onView(withId(R.id.drawer_layout))
-                .check(matches(isClosed(Gravity.LEFT)));
+            onView(withId(R.id.drawer_layout))
+                    .check(matches(isClosed(Gravity.LEFT)));
 
-        captureScreenshot("statistic");
+            Thread.sleep(WAIT_MS);
+            captureScreenshot("statistics");
 
-        mActivityTestRule.finishActivity();
+            mActivityTestRule.finishActivity();
+        } catch (InterruptedException e) {
+            Log.e("ScreenshotRecorder", e.getMessage());
+        }
     }
 
     private void captureScreenshot(String name) {
