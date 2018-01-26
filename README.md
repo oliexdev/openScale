@@ -19,10 +19,14 @@ Install [openScale-dev-build.apk](https://github.com/oliexdev/openScale/releases
 - Import or export your data from/into a CSV file
 - Estimates body metrics (body fat, body water and lean body mass) based on scientic publications
 - Support for multiple users
-- Partially or full support for custom made Bluetooth scale, Xiaomi Mi scale v1/v2, Sanitas SBF70, Medisana BS444, Digoo DG-S038H, Yunmai Mini, Excelvan CF369BLE, Yunmai SE, MGB, Exingtech Y1, Beurer BF700/800 (see [openScale wiki](https://github.com/oliexdev/openScale/wiki/Supported-scales-in-openScale) for details)
-- Partially or full translated into English, German, Japanese, French, Polish, Brazilian portuguese, Slovak, Turkish, Swedish, Spanish
+- Partially or full support for custom made Bluetooth scale, Xiaomi Mi scale v1/v2, Sanitas SBF70, Medisana BS444, Digoo DG-S038H, Yunmai Mini, Excelvan CF369BLE, Yunmai SE, MGB, Exingtech Y1, Beurer BF700/800, Silvercrest SBF75, Runtastic Libra (see [openScale wiki](https://github.com/oliexdev/openScale/wiki/Supported-scales-in-openScale) for details)
+- Partially or full translated into English, German, Japanese, French, Polish, Brazilian portuguese, Slovak, Turkish, Swedish, Spanish, Dutch, Catalan
 - No advertising and for free
 - All data belongs to you (no cloud service)
+
+# Need help?
+
+Before asking, please first read the [FAQ](https://github.com/oliexdev/openScale/wiki/Frequently-Asked-Questions-(FAQ)), the [openScale wiki](https://github.com/oliexdev/openScale/wiki) and try to [find an answer](https://github.com/oliexdev/openScale/issues) in existing issues. If you still haven't found an answer, please create a [new issue](https://github.com/oliexdev/openScale/issues/new) on GitHub.
 
 # Supported Bluetooth scales
 
