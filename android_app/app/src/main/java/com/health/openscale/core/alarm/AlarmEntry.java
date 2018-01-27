@@ -15,8 +15,6 @@
 */
 package com.health.openscale.core.alarm;
 
-import android.support.annotation.NonNull;
-
 import java.util.Calendar;
 
 public class AlarmEntry implements Comparable<AlarmEntry>
@@ -78,7 +76,7 @@ public class AlarmEntry implements Comparable<AlarmEntry>
     }
 
     @Override
-    public int compareTo(@NonNull AlarmEntry o)
+    public int compareTo(AlarmEntry o)
     {
         int rc = compare(dayOfWeek, o.dayOfWeek);
         if (rc == 0) rc = compare(timeInMillis, o.timeInMillis);

@@ -21,7 +21,6 @@ import android.arch.persistence.room.Database;
 import android.arch.persistence.room.RoomDatabase;
 import android.arch.persistence.room.TypeConverters;
 import android.arch.persistence.room.migration.Migration;
-import android.support.annotation.NonNull;
 
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
@@ -35,7 +34,7 @@ public abstract class AppDatabase extends RoomDatabase {
 
     public static final Migration MIGRATION_1_2 = new Migration(1, 2) {
         @Override
-        public void migrate(@NonNull SupportSQLiteDatabase database) {
+        public void migrate(SupportSQLiteDatabase database) {
             database.beginTransaction();
             try {
                 // Drop old index on datetime only

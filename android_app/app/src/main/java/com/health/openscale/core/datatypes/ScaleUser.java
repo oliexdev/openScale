@@ -19,7 +19,6 @@ package com.health.openscale.core.datatypes;
 import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
-import android.support.annotation.NonNull;
 
 import com.health.openscale.core.utils.Converters;
 import com.health.openscale.core.utils.DateTimeHelpers;
@@ -39,10 +38,8 @@ public class ScaleUser {
     @ColumnInfo(name = "bodyHeight")
     private int bodyHeight;
     @ColumnInfo(name = "scaleUnit")
-    @NonNull
     private Converters.WeightUnit scaleUnit;
     @ColumnInfo(name = "gender")
-    @NonNull
     private Converters.Gender gender;
     @ColumnInfo(name = "initialWeight")
     private float initialWeight;

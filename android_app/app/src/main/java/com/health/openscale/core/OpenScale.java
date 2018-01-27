@@ -23,7 +23,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.text.format.DateFormat;
 import android.util.Log;
@@ -106,7 +105,7 @@ public class OpenScale {
                 .allowMainThreadQueries()
                 .addCallback(new RoomDatabase.Callback() {
                     @Override
-                    public void onOpen(@NonNull SupportSQLiteDatabase db) {
+                    public void onOpen(SupportSQLiteDatabase db) {
                         super.onOpen(db);
                         db.setForeignKeyConstraintsEnabled(true);
                     }
