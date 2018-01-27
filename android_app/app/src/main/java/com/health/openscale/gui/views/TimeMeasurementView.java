@@ -34,7 +34,7 @@ import java.util.Date;
 public class TimeMeasurementView extends MeasurementView {
     private DateFormat timeFormat;
     private Date time;
-    static private String TIME_KEY = "time";
+    private static String TIME_KEY = "time";
 
     public TimeMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_time), ContextCompat.getDrawable(context, R.drawable.ic_daysleft));

@@ -88,8 +88,8 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     private Calendar calYears;
     private Calendar calLastSelected;
 
-    static private String CAL_YEARS_KEY = "calYears";
-    static private String CAL_LAST_SELECTED_KEY = "calLastSelected";
+    private static String CAL_YEARS_KEY = "calYears";
+    private static String CAL_LAST_SELECTED_KEY = "calLastSelected";
 
     private List<ScaleMeasurement> pointIndexScaleMeasurementList;
 

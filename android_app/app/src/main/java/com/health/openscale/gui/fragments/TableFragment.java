@@ -82,7 +82,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
     private ArrayList <MeasurementView> measurementsList;
 
     private int selectedSubpageNr;
-    static private String SELECTED_SUBPAGE_NR_KEY = "selectedSubpageNr";
+    private static String SELECTED_SUBPAGE_NR_KEY = "selectedSubpageNr";
 
     public TableFragment() {
 

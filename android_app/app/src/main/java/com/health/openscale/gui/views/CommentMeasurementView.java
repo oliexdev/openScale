@@ -27,7 +27,7 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 
 public class CommentMeasurementView extends MeasurementView {
     private String comment;
-    static private String COMMENT_KEY = "comment";
+    private static String COMMENT_KEY = "comment";
 
     public CommentMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_comment), ContextCompat.getDrawable(context, R.drawable.ic_comment));

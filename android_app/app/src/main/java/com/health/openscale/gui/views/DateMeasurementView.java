@@ -34,7 +34,7 @@ import java.util.Date;
 public class DateMeasurementView extends MeasurementView {
     private static DateFormat dateFormat = DateFormat.getDateInstance();
     private Date date;
-    static private String DATE_KEY = "date";
+    private static String DATE_KEY = "date";
 
     public DateMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_date), ContextCompat.getDrawable(context, R.drawable.ic_lastmonth));
