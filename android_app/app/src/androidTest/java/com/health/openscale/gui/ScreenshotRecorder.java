@@ -143,7 +143,8 @@ public class ScreenshotRecorder {
     List<ScaleMeasurement> getTestMeasurements() {
         List<ScaleMeasurement> scaleMeasurementList = new ArrayList<>();
 
-        String data = "04.08.2015 08:08,89.7,21.2,58.0,41.5\n" +
+        String data = "\"dateTime\",\"weight\",\"fat\",\"water\",\"muscle\",\"lbw\",\"bone\",\"waist\",\"hip\",\"comment\"\n" +
+                        "04.08.2015 08:08,89.7,21.2,58.0,41.5\n" +
                         "03.08.2015 05:17,89.0,26.4,54.6,41.6\n" +
                         "02.08.2015 07:32,88.8,25.0,55.6,41.7\n" +
                         "31.07.2015 04:39,89.1,29.2,52.8,41.6\n" +
@@ -195,9 +196,9 @@ public class ScreenshotRecorder {
         try {
             scaleMeasurementList = CsvHelper.importFrom(new BufferedReader(new StringReader(data)));
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e("ScreenshotRecorder", e.getMessage());
         } catch (ParseException e) {
-            e.printStackTrace();
+            Log.e("ScreenshotRecorder", e.getMessage());
         }
 
         // set current year to the measurement data
