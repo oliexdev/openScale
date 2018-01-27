@@ -19,6 +19,7 @@ import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.widget.DatePicker;
 import android.widget.EditText;
@@ -33,6 +34,7 @@ import java.util.Date;
 public class DateMeasurementView extends MeasurementView {
     private static DateFormat dateFormat = DateFormat.getDateInstance();
     private Date date;
+    private static String DATE_KEY = "date";
 
     public DateMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_date), ContextCompat.getDrawable(context, R.drawable.ic_lastmonth));
@@ -62,6 +64,16 @@ public class DateMeasurementView extends MeasurementView {
                 source.get(Calendar.DAY_OF_MONTH));
 
         measurement.setDateTime(target.getTime());
+    }
+
+    @Override
+    public void restoreState(Bundle state) {
+        setValue(new Date(state.getLong(DATE_KEY)), true);
+    }
+
+    @Override
+    public void saveState(Bundle state) {
+        state.putLong(DATE_KEY, date.getTime());
     }
 
     @Override

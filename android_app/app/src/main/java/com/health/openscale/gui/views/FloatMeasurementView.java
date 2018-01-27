@@ -19,6 +19,7 @@ package com.health.openscale.gui.views;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.os.Bundle;
 import android.os.Handler;
 import android.text.InputType;
 import android.text.SpannableStringBuilder;
@@ -226,6 +227,16 @@ public abstract class FloatMeasurementView extends MeasurementView {
         if (!useAutoValue()) {
             setMeasurementValue(value, measurement);
         }
+    }
+
+    @Override
+    public void restoreState(Bundle state) {
+        setValue(state.getFloat(nameText), previousValue, true);
+    }
+
+    @Override
+    public void saveState(Bundle state) {
+        state.putFloat(nameText, value);
     }
 
     @Override

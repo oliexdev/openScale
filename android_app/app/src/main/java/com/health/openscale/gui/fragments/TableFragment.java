@@ -82,6 +82,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
     private ArrayList <MeasurementView> measurementsList;
 
     private int selectedSubpageNr;
+    private static String SELECTED_SUBPAGE_NR_KEY = "selectedSubpageNr";
 
     public TableFragment() {
 
@@ -120,11 +121,22 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
         prefs = PreferenceManager.getDefaultSharedPreferences(tableView.getContext());
 
+        if (savedInstanceState == null) {
+            selectedSubpageNr = 0;
+        }
+        else {
+            selectedSubpageNr = savedInstanceState.getInt(SELECTED_SUBPAGE_NR_KEY);
+        }
+
         OpenScale.getInstance(getContext()).registerFragment(this);
 
-        selectedSubpageNr = 0;
-
         return tableView;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(SELECTED_SUBPAGE_NR_KEY, selectedSubpageNr);
     }
 
     @Override

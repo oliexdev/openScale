@@ -88,7 +88,9 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     private Calendar calYears;
     private Calendar calLastSelected;
 
-    private List<ScaleMeasurement> scaleMeasurementList;
+    private static String CAL_YEARS_KEY = "calYears";
+    private static String CAL_LAST_SELECTED_KEY = "calLastSelected";
+
     private List<ScaleMeasurement> pointIndexScaleMeasurementList;
 
     public GraphFragment() {
@@ -101,10 +103,16 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     {
         openScale = OpenScale.getInstance(getContext());
 
-        scaleMeasurementList = openScale.getScaleMeasurementList();
-        if (!scaleMeasurementList.isEmpty()) {
-            calYears.setTime(scaleMeasurementList.get(0).getDateTime());
-            calLastSelected.setTime(scaleMeasurementList.get(0).getDateTime());
+        if (savedInstanceState == null) {
+            List<ScaleMeasurement> scaleMeasurementList = openScale.getScaleMeasurementList();
+            if (!scaleMeasurementList.isEmpty()) {
+                calYears.setTime(scaleMeasurementList.get(0).getDateTime());
+                calLastSelected.setTime(scaleMeasurementList.get(0).getDateTime());
+            }
+        }
+        else {
+            calYears.setTimeInMillis(savedInstanceState.getLong(CAL_YEARS_KEY));
+            calLastSelected.setTimeInMillis(savedInstanceState.getLong(CAL_LAST_SELECTED_KEY));
         }
 
         graphView = inflater.inflate(R.layout.fragment_graph, container, false);
@@ -179,6 +187,12 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             public void onClick(View view) {
                 calYears.roll(Calendar.YEAR, false);
                 txtYear.setText(Integer.toString(calYears.get(Calendar.YEAR)));
+
+                List<ScaleMeasurement> scaleMeasurementList =
+                        OpenScale.getInstance(getContext()).getScaleDataOfYear(calYears.get(Calendar.YEAR));
+                if (!scaleMeasurementList.isEmpty()) {
+                    calLastSelected.setTime(scaleMeasurementList.get(0).getDateTime());
+                }
                 updateOnView(null);
             }
         });
@@ -188,6 +202,12 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             public void onClick(View view) {
                 calYears.roll(Calendar.YEAR, true);
                 txtYear.setText(Integer.toString(calYears.get(Calendar.YEAR)));
+
+                List<ScaleMeasurement> scaleMeasurementList =
+                        OpenScale.getInstance(getContext()).getScaleDataOfYear(calYears.get(Calendar.YEAR));
+                if (!scaleMeasurementList.isEmpty()) {
+                    calLastSelected.setTime(scaleMeasurementList.get(scaleMeasurementList.size() - 1).getDateTime());
+                }
                 updateOnView(null);
             }
         });
@@ -195,6 +215,14 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         openScale.registerFragment(this);
 
         return graphView;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putLong(CAL_YEARS_KEY, calYears.getTimeInMillis());
+        outState.putLong(CAL_LAST_SELECTED_KEY, calLastSelected.getTimeInMillis());
     }
 
     @Override
@@ -226,7 +254,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         return false;
     }
 
-    private void generateLineData(int field)
+    private void generateLineData(int field, List<ScaleMeasurement> scaleMeasurementList)
     {
         SimpleDateFormat day_date = new SimpleDateFormat("D", Locale.getDefault());
 
@@ -493,7 +521,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         int firstYear = selectedYear;
         int lastYear = selectedYear;
 
-        scaleMeasurementList = openScale.getScaleMeasurementList();
+        List<ScaleMeasurement> scaleMeasurementList = openScale.getScaleMeasurementList();
         if (!scaleMeasurementList.isEmpty()) {
             Calendar cal = Calendar.getInstance();
 
@@ -522,7 +550,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             generateColumnData();
             scaleMeasurementList = openScale.getScaleDataOfMonth(selectedYear, calLastSelected.get(Calendar.MONTH));
 
-            generateLineData(Calendar.DAY_OF_MONTH);
+            generateLineData(Calendar.DAY_OF_MONTH, scaleMeasurementList);
         // show only yearly diagram and hide monthly diagram
         } else {
             chartTop.setVisibility(View.GONE);
@@ -530,7 +558,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
             scaleMeasurementList = openScale.getScaleDataOfYear(selectedYear);
 
-            generateLineData(Calendar.DAY_OF_YEAR);
+            generateLineData(Calendar.DAY_OF_YEAR, scaleMeasurementList);
         }
     }
 
@@ -543,8 +571,9 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
             calLastSelected = cal;
 
-            scaleMeasurementList = openScale.getScaleDataOfMonth(calYears.get(Calendar.YEAR), calLastSelected.get(Calendar.MONTH));
-            generateLineData(Calendar.DAY_OF_MONTH);
+            List<ScaleMeasurement> scaleMeasurementList =
+                    openScale.getScaleDataOfMonth(calYears.get(Calendar.YEAR), calLastSelected.get(Calendar.MONTH));
+            generateLineData(Calendar.DAY_OF_MONTH, scaleMeasurementList);
         }
 
         @Override

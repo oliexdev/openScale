@@ -21,6 +21,7 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -150,6 +151,9 @@ public abstract class MeasurementView extends TableLayout {
 
     public abstract void loadFrom(ScaleMeasurement measurement, ScaleMeasurement previousMeasurement);
     public abstract void saveTo(ScaleMeasurement measurement);
+
+    public abstract void restoreState(Bundle state);
+    public abstract void saveState(Bundle state);
 
     public abstract void updatePreferences(SharedPreferences preferences);
 

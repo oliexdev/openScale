@@ -32,7 +32,7 @@ public class CsvHelper {
         csvProcessor.writeAll(writer, measurements, true);
     }
 
-    static private String[] getOldStyleHeaders(String sampleLine) {
+    private static String[] getOldStyleHeaders(String sampleLine) {
         final String[] fields = sampleLine.split(",", -1);
 
         // Return an array with header fields so that all the headers that actually are
