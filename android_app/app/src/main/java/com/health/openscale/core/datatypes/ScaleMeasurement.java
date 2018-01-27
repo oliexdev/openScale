@@ -28,7 +28,7 @@ import com.j256.simplecsv.common.CsvColumn;
 import java.util.Date;
 
 @Entity(tableName = "scaleMeasurements",
-        indices = {@Index(value = {"datetime", "userId"}, unique = true)},
+        indices = {@Index(value = {"userId", "datetime"}, unique = true)},
         foreignKeys = @ForeignKey(
                 entity = ScaleUser.class,
                 parentColumns = "id",
