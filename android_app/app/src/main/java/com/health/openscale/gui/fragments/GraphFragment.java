@@ -83,6 +83,8 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     private FloatingActionButton enableMonth;
     private SharedPreferences prefs;
 
+    private int textColor;
+
     private OpenScale openScale;
 
     private Calendar calYears;
@@ -123,6 +125,9 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         chartBottom.setOnTouchListener(new chartBottomListener());
         chartBottom.setOnValueTouchListener(new chartBottomValueTouchListener());
         chartTop.setOnValueTouchListener(new chartTopValueTouchListener());
+
+        // HACK: get default text color from hidden text view to set the correct axis colors
+        textColor = ((TextView)graphView.findViewById(R.id.colorHack)).getCurrentTextColor();
 
         txtYear = (TextView) graphView.findViewById(R.id.txtYear);
         txtYear.setText(Integer.toString(calYears.get(Calendar.YEAR)));
@@ -421,13 +426,13 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         LineChartData lineData = new LineChartData(lines);
         lineData.setAxisXBottom(new Axis(axisValues).
                 setHasLines(true).
-                setTextColor(Color.BLACK)
+                setTextColor(textColor)
         );
 
         lineData.setAxisYLeft(new Axis().
                 setHasLines(true).
                 setMaxLabelChars(5).
-                setTextColor(Color.BLACK)
+                setTextColor(textColor)
         );
 
         chartBottom.setLineChartData(lineData);
@@ -507,7 +512,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         ColumnChartData columnData = new ColumnChartData(columns);
 
-        columnData.setAxisXBottom(new Axis(axisValues).setHasLines(true).setTextColor(Color.BLACK));
+        columnData.setAxisXBottom(new Axis(axisValues).setHasLines(true).setTextColor(textColor));
 
         chartTop.setColumnChartData(columnData);
         chartTop.setValueSelectionEnabled(true);

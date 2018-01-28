@@ -102,14 +102,13 @@ public abstract class MeasurementView extends TableLayout {
 
         iconView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
         iconView.setPadding(20,0,20,0);
+        iconView.setColorFilter(nameView.getCurrentTextColor());
 
         nameView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
-        nameView.setTextColor(Color.BLACK);
         nameView.setLines(2);
         nameView.setLayoutParams(new TableRow.LayoutParams(0, LayoutParams.WRAP_CONTENT, 0.55f));
 
         valueView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
-        valueView.setTextColor(Color.BLACK);
         valueView.setGravity(Gravity.RIGHT | Gravity.CENTER);
         valueView.setPadding(0,0,20,0);
         valueView.setLayoutParams(new TableRow.LayoutParams(0, LayoutParams.WRAP_CONTENT, 0.29f));
@@ -122,6 +121,7 @@ public abstract class MeasurementView extends TableLayout {
         editModeView.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_editable));
         editModeView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
         editModeView.setVisibility(View.GONE);
+        editModeView.setColorFilter(nameView.getCurrentTextColor());
 
         indicatorView.setLayoutParams(new TableRow.LayoutParams(0, LayoutParams.MATCH_PARENT, 0.01f));
         indicatorView.setBackgroundColor(Color.GRAY);
@@ -185,8 +185,14 @@ public abstract class MeasurementView extends TableLayout {
                 valueView.setGravity(Gravity.RIGHT | Gravity.CENTER);
 
                 if (!isEditable()) {
-                    editModeView.setImageDrawable(ContextCompat.getDrawable(getContext(),
-                            R.drawable.ic_noteeditable));
+                    // if measurement is not editable, darken the icon color
+                    float[] hsv = new float[3];
+                    int color = nameView.getCurrentTextColor();
+                    Color.colorToHSV(color, hsv);
+                    hsv[2] *= 0.4f; // value component
+                    color = Color.HSVToColor(hsv);
+
+                    editModeView.setColorFilter(color);
                 }
 
                 showEvaluatorRow(false);

@@ -144,7 +144,6 @@
     <string name="label_category_body_metrics_estimation">Körpermetriken abschätzen</string>
     <string name="label_category_display">Anzeige</string>
     <string name="label_category_measurement_database">Messwertedatenbank</string>
-    <string name="label_category_misc">Verschiedenes</string>
     <string name="label_estimate_fat">Körperfettschätzung</string>
     <string name="label_estimate_fat_formula">Körperfettformel</string>
     <string name="label_estimate_water">Körperwasserschätzung</string>
@@ -180,4 +179,7 @@
     <string name="customactivityoncrash_error_activity_error_details_copy">Kopieren in die Zwischenablage</string>
     <string name="customactivityoncrash_error_activity_error_details_copied">in Zwischenablage kopiert</string>
     <string name="customactivityoncrash_error_activity_error_details_clipboard_label">Fehlerinformationen</string>
+    <string name="title_general">Allgmein</string>
+    <string name="label_theme">Theme</string>
+    <string name="info_app_restart_required">Um die Änderungen zu übernehmen, ist ein App Neustart erforderlich</string>
 </resources>

@@ -41,7 +41,6 @@
     <string name="label_reminder_weekdays">Veckodagar</string>
     <string name="label_website">Hemsida</string>
     <string name="label_license">License</string>
-    <string name="label_category_misc">Diverse</string>
     <string name="error_exporting">Fel vid export</string>
     <string name="label_gender">Kön</string>
     <string name="label_male">Man</string>

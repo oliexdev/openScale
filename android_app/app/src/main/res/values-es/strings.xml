@@ -132,7 +132,6 @@
     <string name="label_category_display">Mostrar</string>
     <string name="label_category_body_metrics_estimation">Estimación de métricas corporales</string>
     <string name="label_category_measurement_database">Base de datos de mediciones</string>
-    <string name="label_category_misc">Varios</string>
 
     <string name="label_maintainer">Responsable</string>
     <string name="label_website">Página Web</string>

@@ -134,7 +134,6 @@
     <string name="label_category_display">Scherm</string>
     <string name="label_category_body_metrics_estimation"> Schatting lichaamssamenstelling</string>
     <string name="label_category_measurement_database">Metingen database</string>
-    <string name="label_category_misc"> Diversen</string>
 
     <string name="label_maintainer">Beheerder</string>
     <string name="label_website">Website</string>

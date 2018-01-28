@@ -73,6 +73,12 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        String app_theme = PreferenceManager.getDefaultSharedPreferences(this).getString("app_theme", "Light");
+
+        if (app_theme.equals("Dark")) {
+            setTheme(R.style.AppTheme_Dark);
+        }
+
         super.onCreate(savedInstanceState);
 
         CaocConfig.Builder.create()
@@ -245,7 +251,9 @@ public class MainActivity extends AppCompatActivity {
                 fragmentClass = StatisticsFragment.class;
                 break;
             case R.id.nav_settings:
-                startActivityForResult(new Intent(this, SettingsActivity.class), 1);
+                Intent settingsIntent = new Intent(this, SettingsActivity.class);
+                settingsIntent.putExtra("tintColor", navDrawer.getItemTextColor().getDefaultColor());
+                startActivityForResult(settingsIntent, 1);
                 return;
             default:
                 fragmentClass = OverviewFragment.class;

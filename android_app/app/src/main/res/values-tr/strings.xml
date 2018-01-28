@@ -130,7 +130,6 @@
     <string name="label_category_display">Display</string>
     <string name="label_category_body_metrics_estimation">Vücüt ölçütleri tahmini</string>
     <string name="label_category_measurement_database">Ölçüm veritabaný</string>
-    <string name="label_category_misc">Miscellaneous</string>
 
     <string name="label_maintainer">Maintainer</string>
     <string name="label_website">Websitesi</string>

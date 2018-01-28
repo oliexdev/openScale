@@ -1,4 +1,5 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical"
@@ -44,7 +45,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="20dp"
                         android:layout_gravity="center"
-                        android:src="@drawable/ic_target" />
+                        android:src="@drawable/ic_target"
+                        android:tint="?attr/editTextColor" />
 
                     <TextView
                         android:id="@+id/txtLabelGoalWeight"
@@ -87,7 +89,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="20dp"
                         android:layout_gravity="center"
-                        android:src="@drawable/ic_difference" />
+                        android:src="@drawable/ic_difference"
+                        android:tint="?attr/editTextColor" />
 
                     <TextView
                         android:id="@+id/txtLabelGoalDiff"
@@ -130,7 +133,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="20dp"
                         android:layout_gravity="center"
-                        android:src="@drawable/ic_daysleft" />
+                        android:src="@drawable/ic_daysleft"
+                        android:tint="?attr/editTextColor" />
 
                     <TextView
                         android:id="@+id/txtLabelDayLeft"

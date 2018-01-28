@@ -132,7 +132,6 @@
     <string name="label_category_display">Mostreu</string>
     <string name="label_category_body_metrics_estimation">Estimació de mètriques corporals</string>
     <string name="label_category_measurement_database">Base de dades de mesures</string>
-    <string name="label_category_misc">Varis</string>
 
     <string name="label_maintainer">Responsable</string>
     <string name="label_website">Pàgina Web</string>

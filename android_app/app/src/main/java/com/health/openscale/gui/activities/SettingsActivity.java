@@ -15,7 +15,11 @@
 */
 package com.health.openscale.gui.activities;
 
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
+import android.os.Bundle;
 import android.preference.PreferenceActivity;
+import android.preference.PreferenceManager;
 
 import com.health.openscale.R;
 
@@ -26,11 +30,27 @@ public class SettingsActivity extends PreferenceActivity {
     private static List<String> fragments = new ArrayList<String>();
 
     @Override
+    public void onCreate(Bundle savedInstanceState) {
+        String app_theme = PreferenceManager.getDefaultSharedPreferences(this).getString("app_theme", "Light");
+
+        if (app_theme.equals("Dark")) {
+            setTheme(R.style.AppTheme_Dark);
+        }
+
+        super.onCreate(savedInstanceState);
+    }
+
+    @Override
     public void onBuildHeaders(List<Header> target) {
         loadHeadersFromResource(R.xml.header_preferences, target);
 
+        int tintColor = getIntent().getIntExtra("tintColor", 0);
+
         fragments.clear();
         for (Header header : target) {
+            Drawable icon = getResources().getDrawable(header.iconRes);
+            icon.setColorFilter(tintColor, PorterDuff.Mode.SRC_IN);
+
             fragments.add(header.fragment);
         }
     }

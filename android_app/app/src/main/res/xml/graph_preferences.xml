@@ -1,14 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <PreferenceCategory android:title="@string/label_category_display">
-        <CheckBoxPreference android:title="@string/label_enable_labels" android:summaryOn="@string/info_is_visible" android:summaryOff="@string/info_is_not_visible" android:key="labelsEnable" android:defaultValue="true"/>
-        <CheckBoxPreference android:title="@string/label_enable_points" android:summaryOn="@string/info_is_visible" android:summaryOff="@string/info_is_not_visible" android:key="pointsEnable" android:defaultValue="true"/>
-        <CheckBoxPreference android:title="@string/label_goal_line" android:summaryOn="@string/info_is_visible" android:summaryOff="@string/info_is_not_visible" android:key="goalLine" android:defaultValue="true" />
-        <CheckBoxPreference android:title="@string/label_regression_line" android:summaryOn="@string/info_is_visible" android:summaryOff="@string/info_is_not_visible" android:key="regressionLine" android:defaultValue="false" />
-        <EditTextPreference android:title="@string/label_regression_line_degree" android:key="regressionLineOrder" android:defaultValue="1" />
-    </PreferenceCategory>
-    <PreferenceCategory android:title="@string/label_category_misc">
-        <CheckBoxPreference android:title="@string/label_delete_confirmation" android:summaryOn="@string/info_is_enable" android:summaryOff="@string/info_is_not_enable" android:key="deleteConfirmationEnable" android:defaultValue="true" />
-        <CheckBoxPreference android:title="@string/label_average_data" android:summaryOn="@string/info_is_enable" android:summaryOff="@string/info_is_not_enable" android:key="averageData" android:defaultValue="true" />
-    </PreferenceCategory>
+    <CheckBoxPreference android:title="@string/label_average_data" android:summaryOn="@string/info_is_enable" android:summaryOff="@string/info_is_not_enable" android:key="averageData" android:defaultValue="true" />
+    <CheckBoxPreference android:title="@string/label_enable_labels" android:summaryOn="@string/info_is_visible" android:summaryOff="@string/info_is_not_visible" android:key="labelsEnable" android:defaultValue="true"/>
+    <CheckBoxPreference android:title="@string/label_enable_points" android:summaryOn="@string/info_is_visible" android:summaryOff="@string/info_is_not_visible" android:key="pointsEnable" android:defaultValue="true"/>
+    <CheckBoxPreference android:title="@string/label_goal_line" android:summaryOn="@string/info_is_visible" android:summaryOff="@string/info_is_not_visible" android:key="goalLine" android:defaultValue="true" />
+    <CheckBoxPreference android:title="@string/label_regression_line" android:summaryOn="@string/info_is_visible" android:summaryOff="@string/info_is_not_visible" android:key="regressionLine" android:defaultValue="false" />
+    <EditTextPreference android:title="@string/label_regression_line_degree" android:key="regressionLineOrder" android:defaultValue="1" />
 </PreferenceScreen>

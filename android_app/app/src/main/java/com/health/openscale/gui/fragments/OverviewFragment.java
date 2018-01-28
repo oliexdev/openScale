@@ -359,13 +359,13 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         LineChartData lineData = new LineChartData(lines);
         lineData.setAxisXBottom(new Axis(axisValues).
                         setHasLines(true).
-                        setTextColor(Color.BLACK)
+                        setTextColor(txtTitleLastMeasurement.getCurrentTextColor())
         );
 
         lineData.setAxisYLeft(new Axis().
                         setHasLines(true).
                         setMaxLabelChars(5).
-                        setTextColor(Color.BLACK)
+                        setTextColor(txtTitleLastMeasurement.getCurrentTextColor())
         );
 
         lineChartLast.setLineChartData(lineData);
@@ -405,7 +405,8 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         pieChartData.setHasCenterCircle(true);
         pieChartData.setCenterText1(String.format("%.2f %s", lastScaleMeasurement.getConvertedWeight(unit), unit.toString()));
         pieChartData.setCenterText2(DateFormat.getDateInstance(DateFormat.MEDIUM).format(lastScaleMeasurement.getDateTime()));
-
+        pieChartData.setCenterText1Color(txtTitleLastMeasurement.getCurrentTextColor());
+        pieChartData.setCenterText2Color(txtTitleLastMeasurement.getCurrentTextColor());
 
         if ((getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == Configuration.SCREENLAYOUT_SIZE_XLARGE ||
             (getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == Configuration.SCREENLAYOUT_SIZE_LARGE) {
