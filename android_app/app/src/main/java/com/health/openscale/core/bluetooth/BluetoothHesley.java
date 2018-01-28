@@ -19,7 +19,6 @@ package com.health.openscale.core.bluetooth;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
-import android.widget.Toast;
 
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 
@@ -52,10 +51,6 @@ public class BluetoothHesley extends BluetoothCommunication {
             case 0:
                 setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC, WEIGHT_MEASUREMENT_CONFIG);
                 break;
-            case 1:
-                byte[] magicBytes = {(byte)0xa5, (byte)0x01, (byte)0x2c, (byte)0xab, (byte)0x50, (byte)0x5a, (byte)0x29};
-                writeBytes(WEIGHT_MEASUREMENT_SERVICE, CMD_MEASUREMENT_CHARACTERISTIC, magicBytes);
-                break;
             default:
                 return false;
         }
@@ -76,8 +71,6 @@ public class BluetoothHesley extends BluetoothCommunication {
     @Override
     public void onBluetoothDataChange(BluetoothGatt bluetoothGatt, BluetoothGattCharacteristic gattCharacteristic) {
         final byte[] data = gattCharacteristic.getValue();
-
-        Toast.makeText(context, "Log Data: " + byteInHex(data), Toast.LENGTH_LONG).show();
 
         if (data != null && data.length > 0) {
             // if data is valid data
