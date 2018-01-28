@@ -54,8 +54,8 @@ public abstract class AppDatabase extends RoomDatabase {
                         + " ON UPDATE NO ACTION ON DELETE CASCADE)");
 
                 // Create new index on datetime + userId
-                database.execSQL("CREATE UNIQUE INDEX index_scaleMeasurements_datetime_userId"
-                        + " ON scaleMeasurements (datetime, userId)");
+                database.execSQL("CREATE UNIQUE INDEX index_scaleMeasurements_userId_datetime"
+                        + " ON scaleMeasurements (userId, datetime)");
 
                 // Copy data from the old table, ignoring those with invalid userId (if any)
                 database.execSQL("INSERT INTO scaleMeasurements"
