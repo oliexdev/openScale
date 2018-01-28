@@ -21,9 +21,7 @@ import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -89,6 +87,11 @@ public class UserSettingsActivity extends Activity {
         btnOk.setOnClickListener(new onClickListenerOk());
         btnCancel.setOnClickListener(new onClickListenerCancel());
         btnDelete.setOnClickListener(new onClickListenerDelete());
+
+        Calendar birthdayCal = Calendar.getInstance();
+        birthdayCal.setTime(birthday);
+        birthdayCal.add(Calendar.YEAR, -20);
+        birthday = birthdayCal.getTime();
 
         txtBirthday.setText(dateFormat.format(birthday));
         txtGoalDate.setText(dateFormat.format(goal_date));
