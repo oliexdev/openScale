@@ -93,6 +93,11 @@ public class UserSettingsActivity extends Activity {
         birthdayCal.add(Calendar.YEAR, -20);
         birthday = birthdayCal.getTime();
 
+        Calendar goalCal = Calendar.getInstance();
+        goalCal.setTime(goal_date);
+        goalCal.add(Calendar.MONTH, 6);
+        goal_date = goalCal.getTime();
+
         txtBirthday.setText(dateFormat.format(birthday));
         txtGoalDate.setText(dateFormat.format(goal_date));
 
