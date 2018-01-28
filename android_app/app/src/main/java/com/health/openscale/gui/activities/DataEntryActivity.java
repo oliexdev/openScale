@@ -81,6 +81,12 @@ public class DataEntryActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        String app_theme = PreferenceManager.getDefaultSharedPreferences(this).getString("app_theme", "Light");
+
+        if (app_theme.equals("Dark")) {
+            setTheme(R.style.AppTheme_Dark);
+        }
+
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_dataentry);

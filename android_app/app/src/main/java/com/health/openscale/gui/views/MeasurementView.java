@@ -185,14 +185,7 @@ public abstract class MeasurementView extends TableLayout {
                 valueView.setGravity(Gravity.RIGHT | Gravity.CENTER);
 
                 if (!isEditable()) {
-                    // if measurement is not editable, darken the icon color
-                    float[] hsv = new float[3];
-                    int color = nameView.getCurrentTextColor();
-                    Color.colorToHSV(color, hsv);
-                    hsv[2] *= 0.4f; // value component
-                    color = Color.HSVToColor(hsv);
-
-                    editModeView.setColorFilter(color);
+                    editModeView.setVisibility(View.GONE);
                 }
 
                 showEvaluatorRow(false);
