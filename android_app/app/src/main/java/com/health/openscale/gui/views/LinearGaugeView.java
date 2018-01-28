@@ -84,7 +84,7 @@ public class LinearGaugeView extends View {
         textPaint.setTextSize(30);
 
         indicatorPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        indicatorPaint.setColor(Color.BLACK);
+        indicatorPaint.setColor(Color.GRAY);
         indicatorPaint.setTextSize(30);
 
         infoTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
