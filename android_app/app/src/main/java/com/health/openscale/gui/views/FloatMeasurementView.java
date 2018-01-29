@@ -268,7 +268,7 @@ public abstract class FloatMeasurementView extends MeasurementView {
             color = "grey";
         }
         return String.format(
-                "<font color='%s'>%s</font><font color='grey'><small>%s</small></font>",
+                "<font color='%s'>%s</font> <font color='grey'><small>%s</small></font>",
                 color, symbol, formatValue(diff));
     }
 
