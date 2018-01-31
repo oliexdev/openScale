@@ -130,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (prefs.getBoolean("firstStart", true)) {
             Intent intent = new Intent(this, UserSettingsActivity.class);
-            intent.putExtra("mode", UserSettingsActivity.ADD_USER_REQUEST);
+            intent.putExtra(UserSettingsActivity.EXTRA_MODE, UserSettingsActivity.ADD_USER_REQUEST);
             startActivity(intent);
 
             prefs.edit().putBoolean("firstStart", false).commit();
@@ -252,7 +252,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case R.id.nav_settings:
                 Intent settingsIntent = new Intent(this, SettingsActivity.class);
-                settingsIntent.putExtra("tintColor", navDrawer.getItemTextColor().getDefaultColor());
+                settingsIntent.putExtra(SettingsActivity.EXTRA_TINT_COLOR, navDrawer.getItemTextColor().getDefaultColor());
                 startActivityForResult(settingsIntent, 1);
                 return;
             default:

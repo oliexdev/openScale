@@ -608,7 +608,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             int id = scaleMeasurement.getId();
 
             Intent intent = new Intent(graphView.getContext(), DataEntryActivity.class);
-            intent.putExtra("id", id);
+            intent.putExtra(DataEntryActivity.EXTRA_ID, id);
             startActivityForResult(intent, 1);
         }
 

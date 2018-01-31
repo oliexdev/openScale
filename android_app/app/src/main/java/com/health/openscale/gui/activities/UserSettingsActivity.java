@@ -40,6 +40,8 @@ import java.util.Date;
 import java.util.List;
 
 public class UserSettingsActivity extends Activity {
+    public static String EXTRA_ID = "id";
+    public static String EXTRA_MODE = "mode";
 
     public static final int ADD_USER_REQUEST = 0;
     public static final int EDIT_USER_REQUEST = 1;
@@ -126,11 +128,10 @@ public class UserSettingsActivity extends Activity {
         });
 
 
-        if (getIntent().getExtras().getInt("mode") == EDIT_USER_REQUEST)
-        {
+        if (getIntent().getExtras().getInt(EXTRA_MODE) == EDIT_USER_REQUEST) {
             editMode();
-        } else
-        {
+        }
+        else {
             btnOk.setText(getResources().getString(R.string.label_add));
             btnDelete.setVisibility(View.GONE);
         }
@@ -138,7 +139,7 @@ public class UserSettingsActivity extends Activity {
 
     private void editMode()
     {
-        int id = getIntent().getExtras().getInt("id");
+        int id = getIntent().getExtras().getInt(EXTRA_ID);
 
         OpenScale openScale = OpenScale.getInstance(getApplicationContext());
 
@@ -240,7 +241,7 @@ public class UserSettingsActivity extends Activity {
 
             deleteAllDialog.setPositiveButton(getResources().getString(R.string.label_yes), new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
-                    int userId = getIntent().getExtras().getInt("id");
+                    int userId = getIntent().getExtras().getInt(EXTRA_ID);
 
                     OpenScale openScale = OpenScale.getInstance(getApplicationContext());
                     openScale.clearScaleData(userId);
@@ -324,8 +325,8 @@ public class UserSettingsActivity extends Activity {
                     scaleUser.setGoalWeight(goal_weight);
                     scaleUser.setGoalDate(goal_date);
 
-                    if (getIntent().getExtras().getInt("mode") == EDIT_USER_REQUEST) {
-                        int id = getIntent().getExtras().getInt("id");
+                    if (getIntent().getExtras().getInt(EXTRA_MODE) == EDIT_USER_REQUEST) {
+                        int id = getIntent().getExtras().getInt(EXTRA_ID);
                         scaleUser.setId(id);
                         openScale.updateScaleUser(scaleUser);
                     } else {
