@@ -4,7 +4,7 @@
             android:key="btScanner"
             android:title="@string/label_device_type"
             android:persistent="false">
-            <Preference android:key="0" android:title="@string/label_bluetooth_searching"/>
+            <Preference android:key="0" android:title="@string/label_device_type"/>
         </PreferenceScreen>
         <CheckBoxPreference android:title="@string/label_bluetooth_enable" android:summaryOn="@string/info_is_enable" android:summaryOff="@string/info_is_not_enable" android:key="btEnable" android:defaultValue="false"/>
         <CheckBoxPreference android:title="@string/label_smartUserAssign" android:summaryOn="@string/info_is_enable" android:summaryOff="@string/info_is_not_enable"  android:key="smartUserAssign" android:defaultValue="false"/>
