@@ -185,7 +185,7 @@ public abstract class MeasurementView extends TableLayout {
                 valueView.setGravity(Gravity.RIGHT | Gravity.CENTER);
 
                 if (!isEditable()) {
-                    editModeView.setVisibility(View.GONE);
+                    editModeView.setVisibility(View.INVISIBLE);
                 }
 
                 showEvaluatorRow(false);

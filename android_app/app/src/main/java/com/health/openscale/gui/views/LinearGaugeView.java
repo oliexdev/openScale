@@ -188,13 +188,12 @@ public class LinearGaugeView extends View {
         drawCenteredText(canvas, toText(maxValue), getWidth(), textY, textPaint);
 
         // Indicator
-        final float indicatorBottom = limitRect.bottom + 10.0f;
+        final float indicatorBottom = limitRect.bottom + 15.0f;
         Path path = new Path();
         path.setFillType(Path.FillType.EVEN_ODD);
-        path.moveTo(valuePos,  barTop);
+        path.moveTo(valuePos,  barBottom);
         path.lineTo(valuePos + 10.0f, indicatorBottom);
         path.lineTo(valuePos - 10.0f, indicatorBottom);
-        path.lineTo(valuePos, barTop);
         path.close();
 
         canvas.drawPath(path, indicatorPaint);
@@ -203,7 +202,7 @@ public class LinearGaugeView extends View {
         final String valueStr = String.format(Locale.getDefault(), "%.2f", value);
         indicatorPaint.getTextBounds(valueStr, 0, valueStr.length(), bounds);
         drawCenteredText(canvas, valueStr, valuePos,
-            indicatorBottom + bounds.height() + textOffset, indicatorPaint);
+            indicatorBottom + bounds.height(), indicatorPaint);
     }
 
     @Override
