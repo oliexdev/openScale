@@ -5,45 +5,14 @@
     android:layout_height="fill_parent"
     android:orientation="vertical">
 
-    <LinearLayout
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/dataEntryToolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="?attr/actionBarSize"
         android:background="?attr/colorPrimary"
-        android:gravity="right"
-        android:orientation="horizontal"
-        android:padding="5dp">
-
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/switchEditMode"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="10dp"
-            android:clickable="true"
-            android:src="@drawable/ic_editable"
-            app:backgroundTint="#D3D3D3"
-            app:fabSize="mini" />
-
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/expandButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="10dp"
-            android:clickable="true"
-            android:src="@drawable/ic_expand"
-            app:backgroundTint="#D3D3D3"
-            app:fabSize="mini" />
-
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/imgViewDelete"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="10dp"
-            android:clickable="true"
-            android:src="@drawable/ic_delete"
-            app:backgroundTint="#FF4444"
-            app:fabSize="mini" />
-
-    </LinearLayout>
+        android:elevation="4dp"
+        app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -99,42 +68,5 @@
 
     </ScrollView>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="5dp">
-
-        <Button
-            android:id="@+id/btnCancel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="5"
-            android:background="@drawable/flat_selector"
-            android:text="@string/label_cancel"
-            android:textColor="@android:color/white" />
-
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_weight="0.5" />
-
-        <Button
-            android:id="@+id/btnAdd"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="5"
-            android:background="@drawable/flat_selector"
-            android:text="@string/label_add"
-            android:textColor="@android:color/white" />
-
-        <Button
-            android:id="@+id/btnOk"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="5"
-            android:background="@drawable/flat_selector"
-            android:text="@string/label_ok"
-            android:textColor="@android:color/white" />
-    </LinearLayout>
 </LinearLayout>
 
