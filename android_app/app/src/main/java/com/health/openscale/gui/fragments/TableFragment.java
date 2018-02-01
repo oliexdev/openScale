@@ -28,7 +28,9 @@ import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
-import android.text.Html;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
+import android.text.SpannedString;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -145,7 +147,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
     @Override
     public void updateOnView(List<ScaleMeasurement> scaleMeasurementList)
     {
-        tableDataView.setAdapter(new ListViewAdapter(new ArrayList<HashMap<Integer, String>>())); // delete all data in the table with an empty adapter array list
+        tableDataView.setAdapter(new ListViewAdapter(new ArrayList<HashMap<Integer, Spanned>>())); // delete all data in the table with an empty adapter array list
 
         if (scaleMeasurementList.isEmpty()) {
             return;
@@ -220,7 +222,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
             }
         }
 
-        ArrayList<HashMap<Integer,String>> dataRowList = new ArrayList<>();
+        ArrayList<HashMap<Integer, Spanned>> dataRowList = new ArrayList<>();
 
         int displayCount = 0;
 
@@ -232,16 +234,21 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
                 prevScaleMeasurement = scaleMeasurementList.get(i + 1);
             }
 
-            HashMap<Integer,String> dataRow = new HashMap<>();
+            HashMap<Integer, Spanned> dataRow = new HashMap<>();
 
             int columnNr = 0;
-            dataRow.put(columnNr++, Long.toString(scaleMeasurement.getId()));
+            dataRow.put(columnNr++, new SpannedString(Long.toString(scaleMeasurement.getId())));
 
             for (MeasurementView measurement : measurementsList) {
                 measurement.loadFrom(scaleMeasurement, prevScaleMeasurement);
 
                 if (measurement.isVisible()) {
-                    dataRow.put(columnNr++, measurement.getValueAsString() + "<br>" + measurement.getDiffValue());
+                    SpannableStringBuilder text = new SpannableStringBuilder();
+                    text.append(measurement.getValueAsString());
+                    text.append("\n");
+                    measurement.appendDiffValue(text);
+
+                    dataRow.put(columnNr++, text);
                 }
             }
 
@@ -410,12 +417,12 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
     private class ListViewAdapter extends BaseAdapter {
 
-        private ArrayList<HashMap<Integer, String>> dataList;
+        private ArrayList<HashMap<Integer, Spanned>> dataList;
         private LinearLayout row;
 
-        public ListViewAdapter(ArrayList<HashMap<Integer, String>> list) {
+        public ListViewAdapter(ArrayList<HashMap<Integer, Spanned>> list) {
             super();
-            this.dataList =list;
+            this.dataList = list;
         }
 
         @Override
@@ -464,11 +471,11 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
             LinearLayout convView = (LinearLayout)convertView;
 
-            HashMap<Integer, String> map = dataList.get(position);
+            HashMap<Integer, Spanned> map = dataList.get(position);
 
-            for (int i = 0; i< dataList.get(0).size(); i++) {
+            for (int i = 0; i < map.size(); i++) {
                 TextView column = (TextView)convView.getChildAt(i);
-                column.setText(Html.fromHtml(map.get(i)));
+                column.setText(map.get(i));
             }
 
             return convertView;

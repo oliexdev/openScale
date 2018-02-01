@@ -248,28 +248,39 @@ public abstract class FloatMeasurementView extends MeasurementView {
     }
 
     @Override
-    public String getDiffValue() {
+    public void appendDiffValue(SpannableStringBuilder text) {
         if (previousValue < 0.0f) {
-            return "";
+            return;
         }
 
         char symbol;
-        String color;
+        int color;
 
         final float diff = value - previousValue;
         if (diff > 0.0f) {
             symbol = SYMBOL_UP;
-            color = "green";
+            color = Color.GREEN;
         } else if (diff < 0.0f) {
             symbol = SYMBOL_DOWN;
-            color = "red";
+            color = Color.RED;
         } else {
             symbol = SYMBOL_NEUTRAL;
-            color = "grey";
+            color = Color.GRAY;
         }
-        return String.format(
-                "<font color='%s'>%s</font> <font color='grey'><small>%s</small></font>",
-                color, symbol, formatValue(diff));
+
+        int start = text.length();
+        text.append(symbol);
+        text.setSpan(new ForegroundColorSpan(color), start, text.length(),
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+        text.append(' ');
+
+        start = text.length();
+        text.append(formatValue(diff));
+        text.setSpan(new ForegroundColorSpan(Color.GRAY), start, text.length(),
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        text.setSpan(new RelativeSizeSpan(0.8f), start, text.length(),
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
     }
 
     @Override

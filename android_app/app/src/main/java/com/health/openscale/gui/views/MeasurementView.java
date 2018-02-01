@@ -23,6 +23,7 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.text.SpannableStringBuilder;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
@@ -158,7 +159,7 @@ public abstract class MeasurementView extends TableLayout {
     public abstract void updatePreferences(SharedPreferences preferences);
 
     public abstract String getValueAsString();
-    public String getDiffValue() { return ""; }
+    public void appendDiffValue(SpannableStringBuilder builder) { }
     public Drawable getIcon() { return iconView.getDrawable(); }
 
     protected boolean isEditable() {
