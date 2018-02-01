@@ -52,6 +52,7 @@ public class BluetoothPreferences extends PreferenceFragment implements SharedPr
     private CheckBoxPreference smartAssignEnable;
     private CheckBoxPreference ignoreOutOfRangeEnable;
     private PreferenceScreen btScanner;
+    public boolean isReceiverRegistered;
 
     private BluetoothAdapter btAdapter  = null;
 
@@ -67,6 +68,7 @@ public class BluetoothPreferences extends PreferenceFragment implements SharedPr
         filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
 
         getActivity().registerReceiver(mReceiver, filter);
+        isReceiverRegistered = true;
         btAdapter.startDiscovery();
     }
 
@@ -119,7 +121,9 @@ public class BluetoothPreferences extends PreferenceFragment implements SharedPr
 
     @Override
     public void onDestroy() {
-        getActivity().unregisterReceiver(mReceiver);
+        if (isReceiverRegistered) {
+            getActivity().unregisterReceiver(mReceiver);
+        }
 
         super.onDestroy();
     }
@@ -137,6 +141,7 @@ public class BluetoothPreferences extends PreferenceFragment implements SharedPr
         btScanner = (PreferenceScreen) findPreference(PREFERENCE_KEY_BLUETOOTH_SCANNER);
 
         btScanner.setOnPreferenceClickListener(new onClickListenerScannerSelect());
+        isReceiverRegistered = false;
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext());
         btScanner.setSummary(prefs.getString("btDeviceName", "-"));
