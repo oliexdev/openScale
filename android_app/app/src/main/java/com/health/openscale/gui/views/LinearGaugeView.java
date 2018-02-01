@@ -202,7 +202,7 @@ public class LinearGaugeView extends View {
         final String valueStr = String.format(Locale.getDefault(), "%.2f", value);
         indicatorPaint.getTextBounds(valueStr, 0, valueStr.length(), bounds);
         drawCenteredText(canvas, valueStr, valuePos,
-            indicatorBottom + bounds.height(), indicatorPaint);
+            indicatorBottom + bounds.height() + 2, indicatorPaint);
     }
 
     @Override
