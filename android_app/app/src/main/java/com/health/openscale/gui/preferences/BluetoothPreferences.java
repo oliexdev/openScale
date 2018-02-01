@@ -84,6 +84,10 @@ public class BluetoothPreferences extends PreferenceFragment implements SharedPr
                 //bluetooth device found
                 BluetoothDevice device = (BluetoothDevice) intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 
+                if (device.getName() == null) {
+                    return;
+                }
+
                 foundDevices.put(device.getAddress(), device.getName());
 
                 for (Map.Entry<String, String> entry : foundDevices.entrySet()) {
