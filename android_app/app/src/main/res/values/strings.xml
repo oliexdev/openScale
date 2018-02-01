@@ -24,6 +24,7 @@
     <string name="label_no">No</string>
     <string name="label_delete">Delete</string>
     <string name="label_add_user">Add user</string>
+    <string name="label_share">Share</string>
 
     <string name="label_id">Id</string>
     <string name="label_weight">Weight</string>

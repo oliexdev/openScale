@@ -22,6 +22,7 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
@@ -42,6 +43,7 @@ import android.widget.ListView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
@@ -64,6 +66,7 @@ import com.health.openscale.gui.views.WaistMeasurementView;
 import com.health.openscale.gui.views.WaterMeasurementView;
 import com.health.openscale.gui.views.WeightMeasurementView;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -326,26 +329,47 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
         public void onClick(View v) {
             AlertDialog.Builder filenameDialog = new AlertDialog.Builder(getActivity());
 
-            filenameDialog.setTitle(getResources().getString(R.string.info_set_filename) + " /sdcard ...");
+            filenameDialog.setTitle(getResources().getString(R.string.info_set_filename) + " " + Environment.getExternalStorageDirectory().getPath());
 
-            String exportFilename = prefs.getString("exportFilename", "/openScale_data_" + OpenScale.getInstance(getContext()).getSelectedScaleUser().getUserName() + ".csv");
+            String exportFilename = prefs.getString("exportFilename", "openScale_data_" + OpenScale.getInstance(getContext()).getSelectedScaleUser().getUserName() + ".csv");
 
             final EditText txtFilename = new EditText(tableView.getContext());
             txtFilename.setText(exportFilename);
 
             filenameDialog.setView(txtFilename);
 
-            filenameDialog.setPositiveButton(getResources().getString(R.string.label_ok), new DialogInterface.OnClickListener() {
+            filenameDialog.setPositiveButton(getResources().getString(R.string.label_export), new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
-                    OpenScale.getInstance(getContext()).exportData(Environment.getExternalStorageDirectory().getPath() + txtFilename.getText().toString());
-                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(tableView.getContext());
-                    prefs.edit().putString("exportFilename", txtFilename.getText().toString()).commit();
+                    String fullPath = Environment.getExternalStorageDirectory().getPath() + "/" + txtFilename.getText().toString();
+
+                    if (OpenScale.getInstance(getContext()).exportData(fullPath)) {
+                        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(tableView.getContext());
+                        prefs.edit().putString("exportFilename", txtFilename.getText().toString()).commit();
+                        Toast.makeText(getContext(), getResources().getString(R.string.info_data_exported) + " " + fullPath, Toast.LENGTH_SHORT).show();
+                    }
                 }
             });
 
-            filenameDialog.setNegativeButton(getResources().getString(R.string.label_cancel), new DialogInterface.OnClickListener() {
+            filenameDialog.setNeutralButton(getResources().getString(R.string.label_share), new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
-                    dialog.dismiss();
+                    String fullPath = Environment.getExternalStorageDirectory().getPath() + "/tmp/" + txtFilename.getText().toString();
+
+                    if (!OpenScale.getInstance(getContext()).exportData(fullPath)) {
+                        return;
+                    }
+
+                    Intent intentShareFile = new Intent(Intent.ACTION_SEND);
+                    File shareFile = new File(fullPath);
+
+                    if(shareFile.exists()) {
+                        intentShareFile.setType("text/comma-separated-values");
+                        intentShareFile.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://"+fullPath));
+
+                        intentShareFile.putExtra(Intent.EXTRA_SUBJECT, "openScale export csv file");
+                        intentShareFile.putExtra(Intent.EXTRA_TEXT, txtFilename.getText().toString());
+
+                        startActivity(Intent.createChooser(intentShareFile, getResources().getString(R.string.label_share)));
+                    }
                 }
             });
 

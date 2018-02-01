@@ -348,13 +348,15 @@ public class OpenScale {
         }
     }
 
-    public void exportData(String filename) {
+    public boolean exportData(String filename) {
         try {
             CsvHelper.exportTo(new FileWriter(filename), scaleMeasurementList);
-            Toast.makeText(context, context.getString(R.string.info_data_exported) + " /sdcard" + filename, Toast.LENGTH_SHORT).show();
+            return true;
         } catch (IOException e) {
             Toast.makeText(context, context.getResources().getString(R.string.error_exporting) + " " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
+
+        return false;
     }
 
     public void clearScaleData(int userId) {
