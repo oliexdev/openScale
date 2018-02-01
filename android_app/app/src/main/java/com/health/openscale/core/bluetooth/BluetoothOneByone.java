@@ -32,6 +32,7 @@ public class BluetoothOneByone extends BluetoothCommunication {
 
     private final UUID WEIGHT_MEASUREMENT_SERVICE = UUID.fromString("0000fff0-0000-1000-8000-00805f9b34fb");
     private final UUID CMD_MEASUREMENT_CHARACTERISTIC = UUID.fromString("0000fff1-0000-1000-8000-00805f9b34fb"); // write only
+    private final UUID CMD_MEASUREMENT_CUSTOM_CHARACTERISTIC = UUID.fromString("0000fff4-0000-1000-8000-00805f9b34fb"); // notify only
     private final UUID WEIGHT_MEASUREMENT_CONFIG = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
 
     public BluetoothOneByone(Context context) {
@@ -55,8 +56,15 @@ public class BluetoothOneByone extends BluetoothCommunication {
                 setIndicationOn(WEIGHT_MEASUREMENT_SERVICE_BODY_COMPOSITION, WEIGHT_MEASUREMENT_CHARACTERISTIC_BODY_COMPOSITION, WEIGHT_MEASUREMENT_CONFIG);
                 break;
             case 1:
+                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, CMD_MEASUREMENT_CUSTOM_CHARACTERISTIC, WEIGHT_MEASUREMENT_CONFIG);
+                break;
+            case 2:
                 byte[] magicBytes = {(byte)0xfd,(byte)0x37,(byte)0x01,(byte)0x01,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0xca};
                 writeBytes(WEIGHT_MEASUREMENT_SERVICE, CMD_MEASUREMENT_CHARACTERISTIC, magicBytes);
+                break;
+            case 3:
+                byte[] magicBytes2 = {(byte)0xfe, (byte)0x01, (byte)0x01, (byte)0x00, (byte)0xaa, (byte)0x2d, (byte)0x02, (byte)0x85};
+                writeBytes(WEIGHT_MEASUREMENT_SERVICE, CMD_MEASUREMENT_CHARACTERISTIC, magicBytes2);
                 break;
             default:
                 return false;
