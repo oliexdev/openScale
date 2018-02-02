@@ -67,6 +67,8 @@ public abstract class MeasurementView extends TableLayout {
     private MeasurementViewUpdateListener updateListener = null;
     private MeasurementViewMode measurementMode = VIEW;
 
+    private boolean updateViews = true;
+
     public MeasurementView(Context context, String text, Drawable icon) {
         super(context);
         initView(context);
@@ -150,6 +152,13 @@ public abstract class MeasurementView extends TableLayout {
         updateListener = listener;
     }
 
+    public void setUpdateViews(boolean update) {
+        updateViews = update;
+    }
+    protected boolean getUpdateViews() {
+        return updateViews;
+    }
+
     public abstract void loadFrom(ScaleMeasurement measurement, ScaleMeasurement previousMeasurement);
     public abstract void saveTo(ScaleMeasurement measurement);
 
@@ -206,14 +215,18 @@ public abstract class MeasurementView extends TableLayout {
     }
 
     protected void setValueView(String text, boolean callListener) {
-        valueView.setText(text);
+        if (updateViews) {
+            valueView.setText(text);
+        }
         if (callListener && updateListener != null) {
             updateListener.onMeasurementViewUpdate(this);
         }
     }
 
     protected void setNameView(CharSequence text) {
-        nameView.setText(text);
+        if (updateViews) {
+            nameView.setText(text);
+        }
     }
 
     protected void showEvaluatorRow(boolean show) {
@@ -246,6 +259,10 @@ public abstract class MeasurementView extends TableLayout {
     }
 
     protected void setEvaluationView(EvaluationResult evalResult) {
+        if (!updateViews) {
+            return;
+        }
+
         if (evalResult == null) {
             evaluatorView.setLimits(-1.0f, -1.0f);
             indicatorView.setBackgroundColor(Color.GRAY);

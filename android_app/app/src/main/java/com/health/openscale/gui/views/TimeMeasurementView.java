@@ -44,7 +44,9 @@ public class TimeMeasurementView extends MeasurementView {
     private void setValue(Date newTime, boolean callListener) {
         if (!newTime.equals(time)) {
             time = newTime;
-            setValueView(timeFormat.format(time), callListener);
+            if (getUpdateViews()) {
+                setValueView(timeFormat.format(time), callListener);
+            }
         }
     }
 

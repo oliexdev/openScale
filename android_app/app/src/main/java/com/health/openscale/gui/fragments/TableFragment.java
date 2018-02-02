@@ -124,6 +124,10 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
         measurementsList.add(new BMRMeasurementView(tableView.getContext()));
         measurementsList.add(new CommentMeasurementView(tableView.getContext()));
 
+        for (MeasurementView measurement : measurementsList) {
+            measurement.setUpdateViews(false);
+        }
+
         prefs = PreferenceManager.getDefaultSharedPreferences(tableView.getContext());
 
         if (savedInstanceState == null) {
