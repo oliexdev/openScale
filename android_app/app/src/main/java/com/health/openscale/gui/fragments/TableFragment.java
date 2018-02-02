@@ -157,7 +157,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
             return;
         }
 
-        final int maxSize = 20;
+        final int maxSize = 50;
 
         int subpageCount = (int)Math.ceil(scaleMeasurementList.size() / (double)maxSize);
 
