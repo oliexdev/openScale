@@ -49,10 +49,10 @@ public abstract class FloatMeasurementView extends MeasurementView {
     private static float NO_VALUE = -1.0f;
     private static float AUTO_VALUE = -2.0f;
 
-    Date dateTime;
-    float value = NO_VALUE;
-    float previousValue = NO_VALUE;
-    EvaluationResult evaluationResult;
+    private Date dateTime;
+    private float value = NO_VALUE;
+    private float previousValue = NO_VALUE;
+    private EvaluationResult evaluationResult;
 
     private String nameText;
 

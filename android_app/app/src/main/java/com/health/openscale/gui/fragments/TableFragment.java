@@ -50,6 +50,7 @@ import android.widget.Toast;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
+import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.gui.activities.DataEntryActivity;
 import com.health.openscale.gui.views.BMIMeasurementView;
 import com.health.openscale.gui.views.BMRMeasurementView;
@@ -342,7 +343,8 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
             filenameDialog.setTitle(getResources().getString(R.string.info_set_filename) + " " + Environment.getExternalStorageDirectory().getPath());
 
-            String exportFilename = prefs.getString("exportFilename", "openScale_data_" + OpenScale.getInstance(getContext()).getSelectedScaleUser().getUserName() + ".csv");
+            final ScaleUser selectedScaleUser = OpenScale.getInstance(getContext()).getSelectedScaleUser();
+            String exportFilename = prefs.getString("exportFilename" + selectedScaleUser.getId(), "openScale_data_" + selectedScaleUser.getUserName() + ".csv");
 
             final EditText txtFilename = new EditText(tableView.getContext());
             txtFilename.setText(exportFilename);
@@ -355,7 +357,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
                     if (OpenScale.getInstance(getContext()).exportData(fullPath)) {
                         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(tableView.getContext());
-                        prefs.edit().putString("exportFilename", txtFilename.getText().toString()).commit();
+                        prefs.edit().putString("exportFilename" + selectedScaleUser.getId(), txtFilename.getText().toString()).commit();
                         Toast.makeText(getContext(), getResources().getString(R.string.info_data_exported) + " " + fullPath, Toast.LENGTH_SHORT).show();
                     }
                 }
