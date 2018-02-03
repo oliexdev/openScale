@@ -43,7 +43,9 @@ public class DateMeasurementView extends MeasurementView {
     private void setValue(Date newDate, boolean callListener) {
         if (!newDate.equals(date)) {
             date = newDate;
-            setValueView(dateFormat.format(date), callListener);
+            if (getUpdateViews()) {
+                setValueView(dateFormat.format(date), callListener);
+            }
         }
     }
 

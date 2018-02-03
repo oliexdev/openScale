@@ -23,6 +23,7 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.text.SpannableStringBuilder;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
@@ -65,6 +66,8 @@ public abstract class MeasurementView extends TableLayout {
 
     private MeasurementViewUpdateListener updateListener = null;
     private MeasurementViewMode measurementMode = VIEW;
+
+    private boolean updateViews = true;
 
     public MeasurementView(Context context, String text, Drawable icon) {
         super(context);
@@ -149,6 +152,13 @@ public abstract class MeasurementView extends TableLayout {
         updateListener = listener;
     }
 
+    public void setUpdateViews(boolean update) {
+        updateViews = update;
+    }
+    protected boolean getUpdateViews() {
+        return updateViews;
+    }
+
     public abstract void loadFrom(ScaleMeasurement measurement, ScaleMeasurement previousMeasurement);
     public abstract void saveTo(ScaleMeasurement measurement);
 
@@ -158,7 +168,7 @@ public abstract class MeasurementView extends TableLayout {
     public abstract void updatePreferences(SharedPreferences preferences);
 
     public abstract String getValueAsString();
-    public String getDiffValue() { return ""; }
+    public void appendDiffValue(SpannableStringBuilder builder) { }
     public Drawable getIcon() { return iconView.getDrawable(); }
 
     protected boolean isEditable() {
@@ -205,14 +215,18 @@ public abstract class MeasurementView extends TableLayout {
     }
 
     protected void setValueView(String text, boolean callListener) {
-        valueView.setText(text);
+        if (updateViews) {
+            valueView.setText(text);
+        }
         if (callListener && updateListener != null) {
             updateListener.onMeasurementViewUpdate(this);
         }
     }
 
     protected void setNameView(CharSequence text) {
-        nameView.setText(text);
+        if (updateViews) {
+            nameView.setText(text);
+        }
     }
 
     protected void showEvaluatorRow(boolean show) {
@@ -245,6 +259,10 @@ public abstract class MeasurementView extends TableLayout {
     }
 
     protected void setEvaluationView(EvaluationResult evalResult) {
+        if (!updateViews) {
+            return;
+        }
+
         if (evalResult == null) {
             evaluatorView.setLimits(-1.0f, -1.0f);
             indicatorView.setBackgroundColor(Color.GRAY);

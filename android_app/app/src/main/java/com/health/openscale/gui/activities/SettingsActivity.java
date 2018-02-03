@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SettingsActivity extends PreferenceActivity {
+    public static String EXTRA_TINT_COLOR = "tintColor";
     private static List<String> fragments = new ArrayList<String>();
 
     @Override
@@ -44,7 +45,7 @@ public class SettingsActivity extends PreferenceActivity {
     public void onBuildHeaders(List<Header> target) {
         loadHeadersFromResource(R.xml.header_preferences, target);
 
-        int tintColor = getIntent().getIntExtra("tintColor", 0);
+        int tintColor = getIntent().getIntExtra(EXTRA_TINT_COLOR, 0);
 
         fragments.clear();
         for (Header header : target) {

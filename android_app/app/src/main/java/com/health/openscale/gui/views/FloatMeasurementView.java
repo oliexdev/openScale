@@ -116,6 +116,70 @@ public abstract class FloatMeasurementView extends MeasurementView {
         return Math.max(0.0f, Math.min(getMaxValue(), value));
     }
 
+    private void setValueInner(float newValue, String suffix, boolean callListener) {
+        value = newValue;
+        evaluationResult = null;
+
+        if (!getUpdateViews()) {
+            return;
+        }
+
+        if (value == AUTO_VALUE) {
+            setValueView(getContext().getString(R.string.label_automatic), false);
+        }
+        else {
+            setValueView(formatValue(value) + suffix, callListener);
+
+            if (getMeasurementMode() != MeasurementViewMode.ADD) {
+                EvaluationSheet evalSheet = new EvaluationSheet(getScaleUser(), dateTime);
+                evaluationResult = evaluateSheet(evalSheet, value);
+            }
+        }
+        setEvaluationView(evaluationResult);
+    }
+
+    private void setPreviousValueInner(float newPreviousValue, String suffix) {
+        previousValue = newPreviousValue;
+
+        if (!getUpdateViews()) {
+            return;
+        }
+
+        if (previousValue >= 0.0f) {
+            final float diff = value - previousValue;
+
+            char symbol;
+
+            if (diff > 0.0) {
+                symbol = SYMBOL_UP;
+            } else if (diff < 0.0) {
+                symbol = SYMBOL_DOWN;
+            } else {
+                symbol = SYMBOL_NEUTRAL;
+            }
+
+            SpannableStringBuilder text = new SpannableStringBuilder(nameText);
+            text.append("\n");
+
+            int start = text.length();
+            text.append(symbol);
+            text.setSpan(new ForegroundColorSpan(Color.GRAY), start, text.length(),
+                    Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
+
+            start = text.length();
+            text.append(' ');
+            text.append(formatValue(diff));
+            text.append(suffix);
+            text.setSpan(new RelativeSizeSpan(0.8f), start, text.length(),
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+            setNameView(text);
+        }
+        else {
+            setNameView(nameText);
+        }
+    }
+
     private void setValue(float newValue, float newPreviousValue, boolean callListener) {
         final String unit = getUnit();
         final String suffix = unit.isEmpty() ? "" : " " + unit;
@@ -124,57 +188,11 @@ public abstract class FloatMeasurementView extends MeasurementView {
         final boolean previousValueChanged = newPreviousValue != previousValue;
 
         if (valueChanged) {
-            value = newValue;
-            evaluationResult = null;
-
-            if (value == AUTO_VALUE) {
-                setValueView(getContext().getString(R.string.label_automatic), false);
-            }
-            else {
-                setValueView(formatValue(value) + suffix, callListener);
-
-                if (getMeasurementMode() != MeasurementViewMode.ADD) {
-                    EvaluationSheet evalSheet = new EvaluationSheet(getScaleUser(), dateTime);
-                    evaluationResult = evaluateSheet(evalSheet, value);
-                }
-            }
-            setEvaluationView(evaluationResult);
+            setValueInner(newValue, suffix, callListener);
         }
 
         if (valueChanged || previousValueChanged) {
-            previousValue = newPreviousValue;
-            if (previousValue >= 0.0f) {
-                final float diff = value - previousValue;
-
-                char symbol;
-
-                if (diff > 0.0) {
-                    symbol = SYMBOL_UP;
-                } else if (diff < 0.0) {
-                    symbol = SYMBOL_DOWN;
-                } else {
-                    symbol = SYMBOL_NEUTRAL;
-                }
-
-                SpannableStringBuilder text = new SpannableStringBuilder(nameText);
-                text.append("\n");
-
-                int start = text.length();
-                text.append(symbol);
-                text.setSpan(new ForegroundColorSpan(Color.GRAY), start, text.length(),
-                        Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
-
-                start = text.length();
-                text.append(' ');
-                text.append(formatValue(diff));
-                text.append(suffix);
-                text.setSpan(new RelativeSizeSpan(0.8f), start, text.length(),
-                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-                setNameView(text);
-            } else {
-                setNameView(nameText);
-            }
+            setPreviousValueInner(newPreviousValue, suffix);
         }
     }
 
@@ -248,28 +266,39 @@ public abstract class FloatMeasurementView extends MeasurementView {
     }
 
     @Override
-    public String getDiffValue() {
+    public void appendDiffValue(SpannableStringBuilder text) {
         if (previousValue < 0.0f) {
-            return "";
+            return;
         }
 
         char symbol;
-        String color;
+        int color;
 
         final float diff = value - previousValue;
         if (diff > 0.0f) {
             symbol = SYMBOL_UP;
-            color = "green";
+            color = Color.GREEN;
         } else if (diff < 0.0f) {
             symbol = SYMBOL_DOWN;
-            color = "red";
+            color = Color.RED;
         } else {
             symbol = SYMBOL_NEUTRAL;
-            color = "grey";
+            color = Color.GRAY;
         }
-        return String.format(
-                "<font color='%s'>%s</font> <font color='grey'><small>%s</small></font>",
-                color, symbol, formatValue(diff));
+
+        int start = text.length();
+        text.append(symbol);
+        text.setSpan(new ForegroundColorSpan(color), start, text.length(),
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+        text.append(' ');
+
+        start = text.length();
+        text.append(formatValue(diff));
+        text.setSpan(new ForegroundColorSpan(Color.GRAY), start, text.length(),
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        text.setSpan(new RelativeSizeSpan(0.8f), start, text.length(),
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
     }
 
     @Override

@@ -59,6 +59,8 @@ import java.util.Date;
 import lecho.lib.hellocharts.util.ChartUtils;
 
 public class DataEntryActivity extends Activity {
+    public static String EXTRA_ID = "id";
+
     private ArrayList<MeasurementView> dataEntryMeasurements;
     private TableLayout tableLayoutDataEntry;
 
@@ -168,8 +170,8 @@ public class DataEntryActivity extends Activity {
         }
 
         int id = 0;
-        if (getIntent().hasExtra("id")) {
-            id = getIntent().getExtras().getInt("id");
+        if (getIntent().hasExtra(EXTRA_ID)) {
+            id = getIntent().getExtras().getInt(EXTRA_ID);
         }
 
         if (scaleMeasurement == null || scaleMeasurement.getId() != id) {
@@ -289,7 +291,7 @@ public class DataEntryActivity extends Activity {
     private boolean moveLeft() {
         if (previousMeasurement != null) {
             saveScaleData();
-            getIntent().putExtra("id", previousMeasurement.getId());
+            getIntent().putExtra(EXTRA_ID, previousMeasurement.getId());
             updateOnView();
             return true;
         }
@@ -300,7 +302,7 @@ public class DataEntryActivity extends Activity {
     private boolean moveRight() {
         if (nextMeasurement != null) {
             saveScaleData();
-            getIntent().putExtra("id", nextMeasurement.getId());
+            getIntent().putExtra(EXTRA_ID, nextMeasurement.getId());
             updateOnView();
             return true;
         }

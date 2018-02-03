@@ -97,8 +97,8 @@ public class UsersPreferences extends PreferenceFragment {
         @Override
         public boolean onPreferenceClick(Preference preference) {
             Intent intent = new Intent(preference.getContext(), UserSettingsActivity.class);
-            intent.putExtra("mode", UserSettingsActivity.EDIT_USER_REQUEST);
-            intent.putExtra("id", Integer.parseInt(preference.getKey()));
+            intent.putExtra(UserSettingsActivity.EXTRA_MODE, UserSettingsActivity.EDIT_USER_REQUEST);
+            intent.putExtra(UserSettingsActivity.EXTRA_ID, Integer.parseInt(preference.getKey()));
             startActivityForResult(intent, UserSettingsActivity.EDIT_USER_REQUEST);
 
             return false;
@@ -109,7 +109,7 @@ public class UsersPreferences extends PreferenceFragment {
         @Override
         public boolean onPreferenceClick(Preference preference) {
             Intent intent = new Intent(preference.getContext(), UserSettingsActivity.class);
-            intent.putExtra("mode", UserSettingsActivity.ADD_USER_REQUEST);
+            intent.putExtra(UserSettingsActivity.EXTRA_MODE, UserSettingsActivity.ADD_USER_REQUEST);
             startActivityForResult(intent, UserSettingsActivity.ADD_USER_REQUEST);
 
             return false;
