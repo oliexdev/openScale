@@ -93,14 +93,4 @@
 
         </LinearLayout>
     </ScrollView>
-
-    <Button
-        android:id="@+id/btnInsertData"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/flat_selector"
-        android:text="+"
-        android:textColor="@android:color/white" />
-
-
 </LinearLayout>

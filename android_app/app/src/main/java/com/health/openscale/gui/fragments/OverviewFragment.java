@@ -16,7 +16,6 @@
 package com.health.openscale.gui.fragments;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Color;
@@ -39,7 +38,6 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
 import com.health.openscale.core.utils.DateTimeHelpers;
-import com.health.openscale.gui.activities.DataEntryActivity;
 import com.health.openscale.gui.views.BMIMeasurementView;
 import com.health.openscale.gui.views.BMRMeasurementView;
 import com.health.openscale.gui.views.BoneMeasurementView;
@@ -149,12 +147,6 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
         pieChartLast.setOnValueTouchListener(new PieChartLastTouchListener());
         pieChartLast.setChartRotationEnabled(false);
-
-        overviewView.findViewById(R.id.btnInsertData).setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                btnOnClickInsertData();
-            }
-        });
 
         userSelectedData = null;
 
@@ -419,12 +411,6 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         }
 
         pieChartLast.setPieChartData(pieChartData);
-    }
-
-    public void btnOnClickInsertData()
-    {
-        Intent intent = new Intent(overviewView.getContext(), DataEntryActivity.class);
-        startActivityForResult(intent, 1);
     }
 
     private class PieChartLastTouchListener implements PieChartOnValueSelectListener

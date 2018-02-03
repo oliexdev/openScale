@@ -49,6 +49,7 @@ import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.bluetooth.BluetoothCommunication;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
+import com.health.openscale.gui.activities.DataEntryActivity;
 import com.health.openscale.gui.activities.SettingsActivity;
 import com.health.openscale.gui.activities.UserSettingsActivity;
 import com.health.openscale.gui.fragments.GraphFragment;
@@ -64,7 +65,6 @@ public class MainActivity extends AppCompatActivity {
     private static boolean valueOfCountModified = false;
     private static int bluetoothStatusIcon = R.drawable.ic_bluetooth_disabled;
     private static MenuItem bluetoothStatus;
-    private static CharSequence fragmentTitle;
 
     private DrawerLayout drawerLayout;
     private Toolbar toolbar;
@@ -118,15 +118,9 @@ public class MainActivity extends AppCompatActivity {
         // Setup drawer view
         setupDrawerContent(navDrawer);
 
-        // Initial first fragment
-        if(savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_content,new OverviewFragment()).commit();
-            fragmentTitle = getString(R.string.title_overview);
-        }
-
-        setTitle(fragmentTitle);
-
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+
+        selectDrawerItem(prefs.getInt("lastFragmentId", R.id.nav_overview));
 
         if (prefs.getBoolean("firstStart", true)) {
             Intent intent = new Intent(this, UserSettingsActivity.class);
@@ -224,7 +218,9 @@ public class MainActivity extends AppCompatActivity {
                 new NavigationView.OnNavigationItemSelectedListener() {
                     @Override
                     public boolean onNavigationItemSelected(MenuItem menuItem) {
-                        selectDrawerItem(menuItem);
+                        selectDrawerItem(menuItem.getItemId());
+                        // Highlight the selected item has been done by NavigationView
+                        menuItem.setChecked(true);
                         return true;
 
                     }
@@ -232,23 +228,34 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-    public void selectDrawerItem(MenuItem menuItem) {
+    public void selectDrawerItem(int menuItemId) {
         // Create a new fragment and specify the fragment to show based on nav item clicked
         Fragment fragment = null;
         Class fragmentClass;
+        String fragmentTitle;
 
-        switch(menuItem.getItemId()) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+
+        switch(menuItemId) {
             case R.id.nav_overview:
                 fragmentClass = OverviewFragment.class;
+                fragmentTitle = getResources().getString(R.string.title_overview);
+                prefs.edit().putInt("lastFragmentId", menuItemId).commit();
                 break;
             case R.id.nav_graph:
                 fragmentClass = GraphFragment.class;
+                fragmentTitle = getResources().getString(R.string.title_graph);
+                prefs.edit().putInt("lastFragmentId", menuItemId).commit();
                 break;
             case R.id.nav_table:
                 fragmentClass = TableFragment.class;
+                fragmentTitle = getResources().getString(R.string.title_table);
+                prefs.edit().putInt("lastFragmentId", menuItemId).commit();
                 break;
             case R.id.nav_statistic:
                 fragmentClass = StatisticsFragment.class;
+                fragmentTitle = getResources().getString(R.string.title_statistics);
+                prefs.edit().putInt("lastFragmentId", menuItemId).commit();
                 break;
             case R.id.nav_settings:
                 Intent settingsIntent = new Intent(this, SettingsActivity.class);
@@ -257,6 +264,8 @@ public class MainActivity extends AppCompatActivity {
                 return;
             default:
                 fragmentClass = OverviewFragment.class;
+                fragmentTitle = getResources().getString(R.string.title_overview);
+                prefs.edit().putInt("lastFragmentId", menuItemId).commit();
         }
 
         try {
@@ -270,12 +279,8 @@ public class MainActivity extends AppCompatActivity {
         FragmentManager fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction().replace(R.id.fragment_content, fragment).commit();
 
-        // Highlight the selected item has been done by NavigationView
-        menuItem.setChecked(true);
-
         // Set action bar title
-        setTitle(menuItem.getTitle());
-        fragmentTitle = menuItem.getTitle();
+        setTitle(fragmentTitle);
 
         // Close the navigation drawer
         drawerLayout.closeDrawers();
@@ -291,6 +296,10 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case android.R.id.home:
                 drawerLayout.openDrawer(GravityCompat.START);
+                return true;
+            case R.id.action_add_measurement:
+                Intent intent = new Intent(getApplicationContext(), DataEntryActivity.class);
+                startActivityForResult(intent, 1);
                 return true;
             case R.id.action_bluetooth_status:
                 invokeSearchBluetoothDevice();

@@ -84,34 +84,6 @@
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"></TableLayout>
 
-            <Space
-                android:layout_width="match_parent"
-                android:layout_height="80dp" />
-
         </LinearLayout>
-
     </ScrollView>
-
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/btnInsertData"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:clickable="true"
-        android:textColor="@android:color/white"
-        app:backgroundTint="#33B5E5"
-        app:layout_anchor="@id/scrollView"
-        app:layout_anchorGravity="bottom|right|end" />
-
-
-    <TextView
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:text="+"
-        android:elevation="6dp"
-        android:textSize="18dp"
-        android:textColor="#fff"
-        app:layout_anchor="@id/btnInsertData"
-        app:layout_anchorGravity="center"/>
-
 </android.support.design.widget.CoordinatorLayout>
