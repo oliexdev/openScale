@@ -16,6 +16,7 @@
 
 package com.health.openscale.gui;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
@@ -31,6 +32,10 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
+import android.support.design.internal.BottomNavigationItemView;
+import android.support.design.internal.BottomNavigationMenuView;
+import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -57,6 +62,8 @@ import com.health.openscale.gui.fragments.OverviewFragment;
 import com.health.openscale.gui.fragments.StatisticsFragment;
 import com.health.openscale.gui.fragments.TableFragment;
 
+import java.lang.reflect.Field;
+
 import cat.ereza.customactivityoncrash.config.CaocConfig;
 
 
@@ -69,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
     private DrawerLayout drawerLayout;
     private Toolbar toolbar;
     private NavigationView navDrawer;
+    private BottomNavigationView navBottomDrawer;
     private ActionBarDrawerToggle drawerToggle;
 
     @Override
@@ -100,6 +108,17 @@ public class MainActivity extends AppCompatActivity {
         // Find our drawer view
         navDrawer = (NavigationView) findViewById(R.id.navigation_view);
 
+        navBottomDrawer = (BottomNavigationView) findViewById(R.id.navigation_bottom_view);
+        navBottomDrawer.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                selectDrawerItem(item.getItemId());
+                return true;
+            }
+        });
+
+        disableShiftMode(navBottomDrawer);
+
         //Create Drawer Toggle
         drawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.open_drawer, R.string.close_drawer){
             @Override
@@ -121,6 +140,8 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         selectDrawerItem(prefs.getInt("lastFragmentId", R.id.nav_overview));
+
+        navBottomDrawer.setSelectedItemId(prefs.getInt("lastFragmentId", R.id.nav_overview));
 
         if (prefs.getBoolean("firstStart", true)) {
             Intent intent = new Intent(this, UserSettingsActivity.class);
@@ -219,8 +240,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public boolean onNavigationItemSelected(MenuItem menuItem) {
                         selectDrawerItem(menuItem.getItemId());
-                        // Highlight the selected item has been done by NavigationView
-                        menuItem.setChecked(true);
+                        navBottomDrawer.setSelectedItemId(menuItem.getItemId());
                         return true;
 
                     }
@@ -281,6 +301,9 @@ public class MainActivity extends AppCompatActivity {
 
         // Set action bar title
         setTitle(fragmentTitle);
+
+        // Set checked item
+        navDrawer.setCheckedItem(menuItemId);
 
         // Close the navigation drawer
         drawerLayout.closeDrawers();
@@ -431,5 +454,29 @@ public class MainActivity extends AppCompatActivity {
     private void setBluetoothStatusIcon(int iconRessource) {
         bluetoothStatusIcon = iconRessource;
         bluetoothStatus.setIcon(getResources().getDrawable(bluetoothStatusIcon));
+    }
+
+    @SuppressLint("RestrictedApi")
+    public static void disableShiftMode(BottomNavigationView view) {
+        BottomNavigationMenuView menuView = (BottomNavigationMenuView) view.getChildAt(0);
+        try {
+            Field shiftingMode = menuView.getClass().getDeclaredField("mShiftingMode");
+            shiftingMode.setAccessible(true);
+            shiftingMode.setBoolean(menuView, false);
+            shiftingMode.setAccessible(false);
+            for (int i = 0; i < menuView.getChildCount(); i++) {
+                BottomNavigationItemView item = (BottomNavigationItemView) menuView.getChildAt(i);
+                //noinspection RestrictedApi
+                item.setShiftingMode(false);
+                item.setPadding(0, 15, 0, 0);
+                // set once again checked value, so view will be updated
+                //noinspection RestrictedApi
+                item.setChecked(item.getItemData().isChecked());
+            }
+        } catch (NoSuchFieldException e) {
+            Log.e("BNVHelper", "Unable to get shift mode field", e);
+        } catch (IllegalAccessException e) {
+            Log.e("BNVHelper", "Unable to change value of shift mode", e);
+        }
     }
 }

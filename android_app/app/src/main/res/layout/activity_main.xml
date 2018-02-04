@@ -1,45 +1,62 @@
-<android.support.v4.widget.DrawerLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/drawer_layout"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- This LinearLayout represents the contents of the screen  -->
-    <LinearLayout
+    <android.support.v4.widget.DrawerLayout
+        android:id="@+id/drawer_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="match_parent">
 
-        <!-- The ActionBar displayed at the top -->
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/toolbar"
+        <!-- This LinearLayout represents the contents of the screen  -->
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:fitsSystemWindows="true"
-            android:minHeight="?attr/actionBarSize"
-            app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-            android:background="?attr/colorPrimaryDark">
-        </android.support.v7.widget.Toolbar>
+            android:layout_height="match_parent"
+            android:weightSum="100"
+            android:orientation="vertical">
 
-        <!-- action_menumain content view where fragments are loaded -->
+            <!-- The ActionBar displayed at the top -->
+            <android.support.v7.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fitsSystemWindows="true"
+                android:minHeight="?attr/actionBarSize"
+                app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+                android:background="?attr/colorPrimaryDark">
+            </android.support.v7.widget.Toolbar>
 
-        <FrameLayout
-            android:id="@+id/fragment_content"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-    </LinearLayout>
+            <!-- action_menumain content view where fragments are loaded -->
 
+            <FrameLayout
+                android:id="@+id/fragment_content"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="90"/>
 
-    <!-- The navigation drawer that comes from the left -->
-    <!-- Note that `android:layout_gravity` needs to be set to 'start' -->
-    <android.support.design.widget.NavigationView
-        android:id="@+id/navigation_view"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_gravity="start"
-        app:headerLayout="@layout/drawer_header"
-        app:menu="@menu/drawer_view" />
+            <android.support.design.widget.BottomNavigationView
+                android:id="@+id/navigation_bottom_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="10"
+                android:background="?attr/colorPrimaryDark"
+                app:itemIconTint="@drawable/nav_item_colors"
+                app:itemTextColor="@android:color/transparent"
+                app:menu="@menu/drawer_bottom_view" />
+        </LinearLayout>
 
-</android.support.v4.widget.DrawerLayout>
+        <!-- The navigation drawer that comes from the left -->
+        <!-- Note that `android:layout_gravity` needs to be set to 'start' -->
+        <android.support.design.widget.NavigationView
+            android:id="@+id/navigation_view"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="start"
+            app:headerLayout="@layout/drawer_header"
+            app:menu="@menu/drawer_view" />
+
+    </android.support.v4.widget.DrawerLayout>
+</RelativeLayout>
