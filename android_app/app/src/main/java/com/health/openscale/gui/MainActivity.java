@@ -66,13 +66,13 @@ import java.lang.reflect.Field;
 
 import cat.ereza.customactivityoncrash.config.CaocConfig;
 
-
 public class MainActivity extends AppCompatActivity {
     private static boolean firstAppStart = true;
     private static boolean valueOfCountModified = false;
     private static int bluetoothStatusIcon = R.drawable.ic_bluetooth_disabled;
     private static MenuItem bluetoothStatus;
 
+    private Fragment currentFragment;
     private DrawerLayout drawerLayout;
     private Toolbar toolbar;
     private NavigationView navDrawer;
@@ -94,6 +94,8 @@ public class MainActivity extends AppCompatActivity {
                 .apply();
 
         setContentView(R.layout.activity_main);
+
+        currentFragment = null;
 
         // Set a Toolbar to replace the ActionBar.
         toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -250,7 +252,6 @@ public class MainActivity extends AppCompatActivity {
 
     public void selectDrawerItem(int menuItemId) {
         // Create a new fragment and specify the fragment to show based on nav item clicked
-        Fragment fragment = null;
         Class fragmentClass;
         String fragmentTitle;
 
@@ -282,22 +283,37 @@ public class MainActivity extends AppCompatActivity {
                 settingsIntent.putExtra(SettingsActivity.EXTRA_TINT_COLOR, navDrawer.getItemTextColor().getDefaultColor());
                 startActivityForResult(settingsIntent, 1);
                 return;
+            case R.id.nav_help:
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/oliexdev/openScale/wiki")));
+                return;
             default:
                 fragmentClass = OverviewFragment.class;
                 fragmentTitle = getResources().getString(R.string.title_overview);
                 prefs.edit().putInt("lastFragmentId", menuItemId).commit();
         }
 
-        try {
-            fragment = (Fragment) fragmentClass.newInstance();
+        FragmentManager fragmentManager = getSupportFragmentManager();
 
-        } catch (Exception e) {
-            e.printStackTrace();
+        // hide previous fragment if it available
+        if (currentFragment != null) {
+            fragmentManager.beginTransaction().hide(currentFragment).commit();
         }
 
-        // Insert the fragment by replacing any existing fragment
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction().replace(R.id.fragment_content, fragment).commit();
+        // try to find selected fragment
+        currentFragment = fragmentManager.findFragmentByTag(""+menuItemId);
+
+        // if fragment not found then add the fragment
+        if (currentFragment == null) {
+            try {
+                currentFragment = (Fragment) fragmentClass.newInstance();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            fragmentManager.beginTransaction().add(R.id.fragment_content, currentFragment, "" + menuItemId).commit();
+        } else { // otherwise show fragment
+            fragmentManager.beginTransaction().show(currentFragment).commit();
+        }
 
         // Set action bar title
         setTitle(fragmentTitle);
@@ -468,10 +484,10 @@ public class MainActivity extends AppCompatActivity {
                 BottomNavigationItemView item = (BottomNavigationItemView) menuView.getChildAt(i);
                 //noinspection RestrictedApi
                 item.setShiftingMode(false);
-                item.setPadding(0, 15, 0, 0);
+                //item.setPadding(0, 15, 0, 0);
                 // set once again checked value, so view will be updated
                 //noinspection RestrictedApi
-                item.setChecked(item.getItemData().isChecked());
+                //item.setChecked(item.getItemData().isChecked());
             }
         } catch (NoSuchFieldException e) {
             Log.e("BNVHelper", "Unable to get shift mode field", e);

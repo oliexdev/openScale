@@ -184,4 +184,5 @@
     <string name="info_app_restart_required">Um die Änderungen zu übernehmen, ist ein App Neustart erforderlich</string>
     <string name="label_share">Teilen</string>
     <string name="label_bluetooth_searching_finished">Suche beendet nach Bluetooth Waagen</string>
+    <string name="label_help">Hilfe</string>
 </resources>
