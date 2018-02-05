@@ -316,6 +316,9 @@ public class DataEntryActivity extends AppCompatActivity {
             view.saveTo(scaleMeasurement);
             isDirty = true;
 
+            txtDataNr.setText(DateFormat.getDateTimeInstance(
+                    DateFormat.LONG, DateFormat.SHORT).format(scaleMeasurement.getDateTime()));
+
             for (MeasurementView measurement : dataEntryMeasurements) {
                 if (measurement != view) {
                     measurement.loadFrom(scaleMeasurement, previousMeasurement);
