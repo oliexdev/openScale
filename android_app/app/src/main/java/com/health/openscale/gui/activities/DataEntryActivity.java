@@ -15,7 +15,6 @@
 */
 package com.health.openscale.gui.activities;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -25,6 +24,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TableLayout;
@@ -58,7 +58,7 @@ import java.util.Date;
 
 import lecho.lib.hellocharts.util.ChartUtils;
 
-public class DataEntryActivity extends Activity {
+public class DataEntryActivity extends AppCompatActivity {
     public static String EXTRA_ID = "id";
 
     private ArrayList<MeasurementView> dataEntryMeasurements;
