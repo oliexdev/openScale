@@ -3,4 +3,8 @@
     <color name="blue_pressed">@android:color/holo_blue_dark</color>
     <color name="blue_normal">@android:color/holo_blue_light</color>
     <color name="gray_disabled">#ccc</color>
+
+    <color name="primaryColor">#000000</color>
+    <color name="primaryLightColor">@android:color/holo_blue_light</color>
+    <color name="primaryDarkColor">#000000</color>
 </resources>

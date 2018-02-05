@@ -1,12 +1,11 @@
 <resources>
     <!-- Application theme. -->
-    <style name="AppTheme_Light" parent="Theme.Design.Light.NoActionBar">
-        <!-- All customizations that are NOT specific to a particular API-level can go here. -->
-        <item name="colorPrimary">#000000</item>
-        <item name="colorPrimaryDark">#000000</item>
-        <item name="colorAccent">@android:color/holo_blue_light</item>
+    <style name="AppTheme_Light" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">@color/primaryColor</item>
+        <item name="colorPrimaryDark">@color/primaryDarkColor</item>
+        <item name="colorAccent">@color/primaryLightColor</item>
     </style>
 
-    <style name="AppTheme_Dark" parent="Theme.Design.NoActionBar">
+    <style name="AppTheme_Dark" parent="Theme.AppCompat.NoActionBar">
     </style>
 </resources>
