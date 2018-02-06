@@ -232,7 +232,7 @@ public class ScreenshotRecorder {
             Thread.sleep(WAIT_MS);
             captureScreenshot("overview");
 
-            onView(withId(R.id.btnInsertData)).perform(click());
+            onView(withId(R.id.action_add_measurement)).perform(click());
 
             Thread.sleep(WAIT_MS);
             captureScreenshot("dataentry");
