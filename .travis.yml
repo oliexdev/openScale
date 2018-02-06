@@ -40,7 +40,7 @@ before_script:
     && echo "$DEBUG_KEYSTORE" | base64 -d > $HOME/.android/debug.keystore
     || true
 
-script: cd android_app && ./gradlew testDebug assembleDebug
+script: cd android_app && ./gradlew testDebug assembleAndroidTest assembleDebug
 
 before_deploy:
   - ln -s app/build/outputs/apk/debug/app-debug.apk openScale-dev-build.apk
