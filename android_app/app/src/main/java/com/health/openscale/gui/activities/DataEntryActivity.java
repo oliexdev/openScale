@@ -19,12 +19,16 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
-import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.design.widget.FloatingActionButton;
+import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TableLayout;
@@ -56,23 +60,23 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-import lecho.lib.hellocharts.util.ChartUtils;
-
 public class DataEntryActivity extends AppCompatActivity {
     public static String EXTRA_ID = "id";
+    private static String PREF_EXPAND = "expandEvaluator";
+
+    private MeasurementView.MeasurementViewMode measurementViewMode;
 
     private ArrayList<MeasurementView> dataEntryMeasurements;
     private TableLayout tableLayoutDataEntry;
 
     private TextView txtDataNr;
-    private Button btnAdd;
-    private Button btnOk;
-    private Button btnCancel;
     private Button btnLeft;
     private Button btnRight;
-    private FloatingActionButton imageViewDelete;
-    private FloatingActionButton switchEditMode;
-    private FloatingActionButton expandButton;
+
+    private MenuItem saveButton;
+    private MenuItem editButton;
+    private MenuItem expandButton;
+    private MenuItem deleteButton;
 
     private ScaleMeasurement scaleMeasurement;
     private ScaleMeasurement previousMeasurement;
@@ -92,6 +96,12 @@ public class DataEntryActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_dataentry);
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.dataEntryToolbar);
+        setSupportActionBar(toolbar);
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setTitle("");
 
         context = this;
 
@@ -114,33 +124,38 @@ public class DataEntryActivity extends AppCompatActivity {
         dataEntryMeasurements.add(new DateMeasurementView(context));
         dataEntryMeasurements.add(new TimeMeasurementView(context));
 
+        txtDataNr = (TextView) findViewById(R.id.txtDataNr);
+        btnLeft = (Button) findViewById(R.id.btnLeft);
+        btnRight = (Button) findViewById(R.id.btnRight);
+
+        btnLeft.setVisibility(View.INVISIBLE);
+        btnRight.setVisibility(View.INVISIBLE);
+
+        btnLeft.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                moveLeft();
+            }
+        });
+        btnRight.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                moveRight();
+            }
+        });
+
+        updateOnView();
+
         onMeasurementViewUpdateListener updateListener = new onMeasurementViewUpdateListener();
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        final boolean expand = getIntent().hasExtra(EXTRA_ID)
+                ? prefs.getBoolean(PREF_EXPAND, true) : false;
+
         for (MeasurementView measurement : dataEntryMeasurements) {
             tableLayoutDataEntry.addView(measurement);
             measurement.setOnUpdateListener(updateListener);
+            measurement.setExpand(expand);
         }
-
-        txtDataNr = (TextView) findViewById(R.id.txtDataNr);
-
-        btnAdd = (Button) findViewById(R.id.btnAdd);
-        btnOk = (Button) findViewById(R.id.btnOk);
-        btnCancel = (Button) findViewById(R.id.btnCancel);
-        btnLeft = (Button) findViewById(R.id.btnLeft);
-        btnRight = (Button) findViewById(R.id.btnRight);
-        imageViewDelete = (FloatingActionButton) findViewById(R.id.imgViewDelete);
-        switchEditMode = (FloatingActionButton) findViewById(R.id.switchEditMode);
-        expandButton = (FloatingActionButton) findViewById(R.id.expandButton);
-
-        btnAdd.setOnClickListener(new onClickListenerAdd());
-        btnOk.setOnClickListener(new onClickListenerOk());
-        btnCancel.setOnClickListener(new onClickListenerCancel());
-        imageViewDelete.setOnClickListener(new onClickListenerDelete());
-        btnLeft.setOnClickListener(new onClickListenerLeft());
-        btnRight.setOnClickListener(new onClickListenerRight());
-        switchEditMode.setOnClickListener(new onClickListenerToggleButton());
-        expandButton.setOnClickListener(new onClickListenerToggleButton());
-
-        updateOnView();
     }
 
     @Override
@@ -161,8 +176,92 @@ public class DataEntryActivity extends AppCompatActivity {
         }
     }
 
-    private void updateOnView()
-    {
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.dataentry_menu, menu);
+
+        // Apply a white tint to all icons in the toolbar
+        for (int i = 0; i < menu.size(); ++i) {
+            MenuItem item = menu.getItem(i);
+            final Drawable drawable = item.getIcon();
+            if (drawable == null) {
+                continue;
+            }
+            final Drawable wrapped = DrawableCompat.wrap(drawable.mutate());
+            DrawableCompat.setTint(wrapped, Color.WHITE);
+            item.setIcon(wrapped);
+        }
+
+        saveButton = menu.findItem(R.id.saveButton);
+        editButton = menu.findItem(R.id.editButton);
+        expandButton = menu.findItem(R.id.expandButton);
+        deleteButton = menu.findItem(R.id.deleteButton);
+
+        // Hide/show icons as appropriate for the view mode
+        if (getIntent().hasExtra(EXTRA_ID)) {
+            setViewMode(MeasurementView.MeasurementViewMode.VIEW);
+        }
+        else {
+            setViewMode(MeasurementView.MeasurementViewMode.ADD);
+        }
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.saveButton:
+                final boolean isEdit = scaleMeasurement.getId() > 0;
+                saveScaleData();
+                if (isEdit) {
+                    setViewMode(MeasurementView.MeasurementViewMode.VIEW);
+                }
+                else {
+                    finish();
+                }
+                return true;
+
+            case R.id.expandButton:
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+                final boolean expand = !prefs.getBoolean(PREF_EXPAND, true);
+                prefs.edit().putBoolean(PREF_EXPAND, expand).apply();
+
+                for (MeasurementView measurement : dataEntryMeasurements) {
+                    measurement.setExpand(expand);
+                }
+                return true;
+
+            case R.id.editButton:
+                setViewMode(MeasurementView.MeasurementViewMode.EDIT);
+                return true;
+
+            case R.id.deleteButton:
+                deleteMeasurement();
+                return true;
+
+            // Override the default behaviour in order to return to the correct fragment
+            // (e.g. the table view) and not always go to the overview.
+            case android.R.id.home:
+                onBackPressed();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (measurementViewMode == MeasurementView.MeasurementViewMode.EDIT) {
+            setViewMode(MeasurementView.MeasurementViewMode.VIEW);
+            updateOnView();
+        }
+        else {
+            super.onBackPressed();
+        }
+    }
+
+    private void updateOnView() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
         for (MeasurementView measurement : dataEntryMeasurements) {
@@ -182,25 +281,8 @@ public class DataEntryActivity extends AppCompatActivity {
         }
 
         OpenScale openScale = OpenScale.getInstance(context);
-        boolean doExpand = false;
 
         if (id > 0) {
-            // keep edit mode state if we are moving to left or right
-            if (prefs.getBoolean(String.valueOf(switchEditMode.getId()), false)) {
-                setViewMode(MeasurementView.MeasurementViewMode.EDIT);
-                switchEditMode.setBackgroundTintList(ColorStateList.valueOf(ChartUtils.COLOR_GREEN));
-            } else {
-                setViewMode(MeasurementView.MeasurementViewMode.VIEW);
-                switchEditMode.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#D3D3D3")));
-            }
-
-            doExpand = prefs.getBoolean(String.valueOf(expandButton.getId()), false);
-            if (doExpand) {
-                expandButton.setBackgroundTintList(ColorStateList.valueOf(ChartUtils.COLOR_ORANGE));
-            } else {
-                expandButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#D3D3D3")));
-            }
-
             // Show selected scale data
             if (scaleMeasurement ==  null) {
                 ScaleMeasurement[] tupleScaleData = openScale.getTupleScaleData(id);
@@ -212,8 +294,6 @@ public class DataEntryActivity extends AppCompatActivity {
                 btnRight.setEnabled(nextMeasurement != null);
             }
         } else {
-            setViewMode(MeasurementView.MeasurementViewMode.ADD);
-
             if (openScale.getScaleMeasurementList().isEmpty()) {
                 // Show default values
                 scaleMeasurement = new ScaleMeasurement();
@@ -226,49 +306,55 @@ public class DataEntryActivity extends AppCompatActivity {
                 scaleMeasurement.setDateTime(new Date());
                 scaleMeasurement.setComment("");
             }
+
+            isDirty = true;
         }
 
         for (MeasurementView measurement : dataEntryMeasurements) {
             measurement.loadFrom(scaleMeasurement, previousMeasurement);
-            measurement.setExpand(doExpand);
         }
 
         txtDataNr.setText(DateFormat.getDateTimeInstance(
             DateFormat.LONG, DateFormat.SHORT).format(scaleMeasurement.getDateTime()));
     }
 
-    private void setViewMode(MeasurementView.MeasurementViewMode viewMode)
-    {
+    private void setViewMode(MeasurementView.MeasurementViewMode viewMode) {
+        measurementViewMode = viewMode;
         int dateTimeVisibility = View.VISIBLE;
 
         switch (viewMode) {
             case VIEW:
-                btnOk.setVisibility(View.VISIBLE);
-                btnAdd.setVisibility(View.GONE);
-                imageViewDelete.setVisibility(View.VISIBLE);
+                saveButton.setVisible(false);
+                editButton.setVisible(true);
+                expandButton.setVisible(true);
+                deleteButton.setVisible(true);
+
                 btnLeft.setVisibility(View.VISIBLE);
                 btnRight.setVisibility(View.VISIBLE);
-                expandButton.setVisibility(View.VISIBLE);
-                switchEditMode.setVisibility(View.VISIBLE);
+
                 dateTimeVisibility = View.GONE;
                 break;
             case EDIT:
-                btnOk.setVisibility(View.VISIBLE);
-                btnAdd.setVisibility(View.GONE);
-                imageViewDelete.setVisibility(View.VISIBLE);
-                btnLeft.setVisibility(View.VISIBLE);
-                btnRight.setVisibility(View.VISIBLE);
-                expandButton.setVisibility(View.VISIBLE);
-                switchEditMode.setVisibility(View.VISIBLE);
-                break;
-            case ADD:
-                btnOk.setVisibility(View.GONE);
-                btnAdd.setVisibility(View.VISIBLE);
-                imageViewDelete.setVisibility(View.GONE);
+                saveButton.setVisible(true);
+                saveButton.setTitle(R.string.save);
+
+                editButton.setVisible(false);
+                expandButton.setVisible(true);
+                deleteButton.setVisible(true);
+
                 btnLeft.setVisibility(View.GONE);
                 btnRight.setVisibility(View.GONE);
-                expandButton.setVisibility(View.GONE);
-                switchEditMode.setVisibility(View.GONE);
+                break;
+            case ADD:
+                saveButton.setVisible(true);
+                saveButton.setTitle(R.string.label_add);
+
+                editButton.setVisible(false);
+                expandButton.setVisible(false);
+                deleteButton.setVisible(false);
+
+                btnLeft.setVisibility(View.GONE);
+                btnRight.setVisibility(View.GONE);
                 break;
         }
 
@@ -281,16 +367,71 @@ public class DataEntryActivity extends AppCompatActivity {
     }
 
     private void saveScaleData() {
-        if (isDirty) {
-            OpenScale openScale = OpenScale.getInstance(getApplicationContext());
+        if (!isDirty) {
+            return;
+        }
+
+        OpenScale openScale = OpenScale.getInstance(getApplicationContext());
+        if (openScale.getSelectedScaleUserId() == -1) {
+            AlertDialog.Builder infoDialog = new AlertDialog.Builder(context);
+
+            infoDialog.setMessage(getResources().getString(R.string.info_no_selected_user));
+            infoDialog.setPositiveButton(getResources().getString(R.string.label_ok), null);
+            infoDialog.show();
+            return;
+        }
+
+        if (scaleMeasurement.getId() > 0) {
             openScale.updateScaleData(scaleMeasurement);
-            isDirty = false;
+        }
+        else {
+            openScale.addScaleData(scaleMeasurement);
+        }
+        isDirty = false;
+    }
+
+    private void deleteMeasurement() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        boolean deleteConfirmationEnable = prefs.getBoolean("deleteConfirmationEnable", true);
+
+        if (deleteConfirmationEnable) {
+            AlertDialog.Builder deleteAllDialog = new AlertDialog.Builder(context);
+            deleteAllDialog.setMessage(getResources().getString(R.string.question_really_delete));
+
+            deleteAllDialog.setPositiveButton(getResources().getString(R.string.label_yes), new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    doDeleteMeasurement();
+                }
+            });
+
+            deleteAllDialog.setNegativeButton(getResources().getString(R.string.label_no), new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    dialog.dismiss();
+                }
+            });
+
+            deleteAllDialog.show();
+        }
+        else {
+            doDeleteMeasurement();
+        }
+    }
+
+    private void doDeleteMeasurement() {
+        OpenScale.getInstance(getApplicationContext()).deleteScaleData(scaleMeasurement.getId());
+        Toast.makeText(context, getResources().getString(R.string.info_data_deleted), Toast.LENGTH_SHORT).show();
+
+        final boolean hasNext = moveLeft() || moveRight();
+        if (!hasNext) {
+            finish();
+        }
+        else if (measurementViewMode == MeasurementView.MeasurementViewMode.EDIT) {
+            setViewMode(MeasurementView.MeasurementViewMode.VIEW);
         }
     }
 
     private boolean moveLeft() {
         if (previousMeasurement != null) {
-            saveScaleData();
             getIntent().putExtra(EXTRA_ID, previousMeasurement.getId());
             updateOnView();
             return true;
@@ -301,7 +442,6 @@ public class DataEntryActivity extends AppCompatActivity {
 
     private boolean moveRight() {
         if (nextMeasurement != null) {
-            saveScaleData();
             getIntent().putExtra(EXTRA_ID, nextMeasurement.getId());
             updateOnView();
             return true;
@@ -324,123 +464,6 @@ public class DataEntryActivity extends AppCompatActivity {
                     measurement.loadFrom(scaleMeasurement, previousMeasurement);
                 }
             }
-        }
-    }
-
-    private class onClickListenerAdd implements View.OnClickListener {
-        @Override
-        public void onClick(View v) {
-            OpenScale openScale = OpenScale.getInstance(getApplicationContext());
-
-            int selectedUserId = openScale.getSelectedScaleUserId();
-
-            if (selectedUserId == -1) {
-                AlertDialog.Builder infoDialog = new AlertDialog.Builder(context);
-
-                infoDialog.setMessage(getResources().getString(R.string.info_no_selected_user));
-
-                infoDialog.setPositiveButton(getResources().getString(R.string.label_ok), null);
-
-                infoDialog.show();
-            } else {
-                for (MeasurementView measurement : dataEntryMeasurements) {
-                    measurement.saveTo(scaleMeasurement);
-                }
-
-                openScale.addScaleData(scaleMeasurement);
-
-                finish();
-            }
-        }
-    }
-
-    private class onClickListenerOk implements View.OnClickListener {
-        @Override
-        public void onClick(View v) {
-            saveScaleData();
-            finish();
-        }
-    }
-
-    private class onClickListenerLeft implements View.OnClickListener {
-        @Override
-        public void onClick(View v) {
-            moveLeft();
-        }
-    }
-
-    private class onClickListenerRight implements View.OnClickListener {
-        @Override
-        public void onClick(View v) {
-            moveRight();
-        }
-    }
-
-    private class onClickListenerCancel implements View.OnClickListener {
-        @Override
-        public void onClick(View v) {
-            finish();
-        }
-    }
-
-    private class onClickListenerDelete implements View.OnClickListener {
-        @Override
-        public void onClick(View v) {
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(v.getContext());
-            boolean deleteConfirmationEnable  = prefs.getBoolean("deleteConfirmationEnable", true);
-
-            if (deleteConfirmationEnable) {
-                AlertDialog.Builder deleteAllDialog = new AlertDialog.Builder(v.getContext());
-                deleteAllDialog.setMessage(getResources().getString(R.string.question_really_delete));
-
-                deleteAllDialog.setPositiveButton(getResources().getString(R.string.label_yes), new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        deleteMeasurement();
-                    }
-                });
-
-                deleteAllDialog.setNegativeButton(getResources().getString(R.string.label_no), new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        dialog.dismiss();
-                    }
-                });
-
-                deleteAllDialog.show();
-            }
-            else {
-                deleteMeasurement();
-            }
-        }
-
-        void deleteMeasurement() {
-            int delId = scaleMeasurement.getId();
-
-            OpenScale.getInstance(getApplicationContext()).deleteScaleData(delId);
-            Toast.makeText(context, getResources().getString(R.string.info_data_deleted), Toast.LENGTH_SHORT).show();
-
-            isDirty = false;
-            final boolean hasNext = moveLeft() || moveRight();
-
-            if (!hasNext) {
-                finish();
-            }
-        }
-    }
-
-    private class onClickListenerToggleButton implements View.OnClickListener {
-        @Override
-        public void onClick(View v) {
-            FloatingActionButton actionButton = (FloatingActionButton) v;
-
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(v.getContext());
-
-            if (prefs.getBoolean(String.valueOf(actionButton.getId()), false)) {
-                prefs.edit().putBoolean(String.valueOf(actionButton.getId()), false).commit();
-            } else {
-                prefs.edit().putBoolean(String.valueOf(actionButton.getId()), true).commit();
-            }
-
-            updateOnView();
         }
     }
 }
