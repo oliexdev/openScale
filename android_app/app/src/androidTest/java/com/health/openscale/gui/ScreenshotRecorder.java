@@ -89,11 +89,12 @@ public class ScreenshotRecorder {
         openScale = OpenScale.getInstance(context);
 
         // Set first start to true to get the user add dialog
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        prefs.edit().putBoolean("firstStart", false).commit();
-        prefs.edit().putBoolean("waistEnable", true).commit();
-        prefs.edit().putBoolean("hipEnable", true).commit();
-        prefs.edit().putBoolean("boneEnable", true).commit();
+        PreferenceManager.getDefaultSharedPreferences(context).edit()
+                .putBoolean("firstStart", false)
+                .putBoolean("waistEnable", true)
+                .putBoolean("hipEnable", true)
+                .putBoolean("boneEnable", true)
+                .commit();
     }
 
     @Test
@@ -108,10 +109,13 @@ public class ScreenshotRecorder {
             throwable.printStackTrace();
         };
 
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
+        prefs.edit().remove("lastFragmentId").commit();
         setLangauge("en", "EN");
         screenshotRecorder();
 
+        prefs.edit().remove("lastFragmentId").commit();
         setLangauge("de", "DE");
         screenshotRecorder();
     }
