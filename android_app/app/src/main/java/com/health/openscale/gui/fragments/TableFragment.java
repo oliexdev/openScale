@@ -31,7 +31,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
-import android.text.SpannedString;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -108,6 +107,9 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
         tableDataView = (ListView) tableView.findViewById(R.id.tableDataView);
         tableHeaderView = (LinearLayout) tableView.findViewById(R.id.tableHeaderView);
+
+        tableDataView.setAdapter(new ListViewAdapter());
+        tableDataView.setOnItemClickListener(new onClickListenerRow());
 
         optionMenu = (ImageView) tableView.findViewById(R.id.optionMenu);
 
@@ -192,15 +194,12 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
     @Override
     public void updateOnView(List<ScaleMeasurement> scaleMeasurementList)
     {
-        tableDataView.setAdapter(new ListViewAdapter(new ArrayList<HashMap<Integer, Spanned>>())); // delete all data in the table with an empty adapter array list
-
-        if (scaleMeasurementList.isEmpty()) {
-            return;
-        }
-
         final int maxSize = 25;
 
-        int subpageCount = (int)Math.ceil(scaleMeasurementList.size() / (double)maxSize);
+        final int subpageCount = (int)Math.ceil(scaleMeasurementList.size() / (double)maxSize);
+        if (selectedSubpageNr >= subpageCount) {
+            selectedSubpageNr = Math.max(0, subpageCount - 1);
+        }
 
         subpageView.removeAllViews();
 
@@ -216,7 +215,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
         moveSubpageLeft.setEnabled(selectedSubpageNr > 0);
         subpageView.addView(moveSubpageLeft);
 
-        for (int i=0; i<subpageCount; i++) {
+        for (int i = 0; i < subpageCount; i++) {
             TextView subpageNrView = new TextView(tableView.getContext());
             subpageNrView.setOnClickListener(new onClickListenerSubpageSelect());
             subpageNrView.setText(Integer.toString(i+1));
@@ -225,6 +224,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
             subpageView.addView(subpageNrView);
         }
+
         if (subpageView.getChildCount() > 1) {
             TextView selectedSubpageNrView = (TextView) subpageView.getChildAt(selectedSubpageNr + 1);
             if (selectedSubpageNrView != null) {
@@ -247,6 +247,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
         tableHeaderView.removeAllViews();
 
+        ArrayList<MeasurementView> visibleMeasurements = new ArrayList<>();
         for (MeasurementView measurement : measurementsList) {
             measurement.updatePreferences(prefs);
 
@@ -259,50 +260,16 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
                 headerIcon.getLayoutParams().height = pxImageDp(20);
 
                 tableHeaderView.addView(headerIcon);
+
+                visibleMeasurements.add(measurement);
             }
         }
 
-        ArrayList<HashMap<Integer, Spanned>> dataRowList = new ArrayList<>();
+        ListViewAdapter adapter = (ListViewAdapter) tableDataView.getAdapter();
 
-        int displayCount = 0;
-
-        for (int i = (maxSize * selectedSubpageNr); i < scaleMeasurementList.size(); i++) {
-            ScaleMeasurement scaleMeasurement = scaleMeasurementList.get(i);
-
-            ScaleMeasurement prevScaleMeasurement = null;
-            if (i < scaleMeasurementList.size() - 1) {
-                prevScaleMeasurement = scaleMeasurementList.get(i + 1);
-            }
-
-            HashMap<Integer, Spanned> dataRow = new HashMap<>();
-
-            int columnNr = 0;
-            dataRow.put(columnNr++, new SpannedString(Long.toString(scaleMeasurement.getId())));
-
-            for (MeasurementView measurement : measurementsList) {
-                measurement.loadFrom(scaleMeasurement, prevScaleMeasurement);
-
-                if (measurement.isVisible()) {
-                    SpannableStringBuilder text = new SpannableStringBuilder();
-                    text.append(measurement.getValueAsString());
-                    text.append("\n");
-                    measurement.appendDiffValue(text);
-
-                    dataRow.put(columnNr++, text);
-                }
-            }
-
-            dataRowList.add(dataRow);
-
-            displayCount++;
-
-            if (maxSize <= displayCount) {
-                break;
-            }
-        }
-
-        tableDataView.setAdapter(new ListViewAdapter(dataRowList));
-        tableDataView.setOnItemClickListener(new onClickListenerRow());
+        final int startOffset = maxSize * selectedSubpageNr;
+        final int endOffset = Math.min(startOffset + maxSize + 1, scaleMeasurementList.size());
+        adapter.setMeasurements(visibleMeasurements, scaleMeasurementList.subList(startOffset, endOffset), maxSize);
     }
 
     private int pxImageDp(float dp) {
@@ -311,14 +278,11 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
     private class onClickListenerRow implements AdapterView.OnItemClickListener {
         @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, long click_id) {
-            LinearLayout dataRow = (LinearLayout)view;
-            TextView idTextView = (TextView) dataRow.getChildAt(0);
-            int id = Integer.parseInt(idTextView.getText().toString());
-
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             Intent intent = new Intent(tableView.getContext(), DataEntryActivity.class);
-            intent.putExtra(DataEntryActivity.EXTRA_ID, id);
-            startActivityForResult(intent, 1);        }
+            intent.putExtra(DataEntryActivity.EXTRA_ID, (int)id);
+            startActivityForResult(intent, 1);
+        }
     }
 
     private void importTable() {
@@ -480,69 +444,102 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
     private class ListViewAdapter extends BaseAdapter {
 
-        private ArrayList<HashMap<Integer, Spanned>> dataList;
-        private LinearLayout row;
+        private List<MeasurementView> visibleMeasurements;
+        private List<ScaleMeasurement> scaleMeasurements;
+        private int measurementsToShow = 0;
 
-        public ListViewAdapter(ArrayList<HashMap<Integer, Spanned>> list) {
-            super();
-            this.dataList = list;
+        private Spanned[][] stringCache;
+
+        private ArrayList<HashMap<Integer, Spanned>> dataList;
+
+        public void setMeasurements(List<MeasurementView> visibleMeasurements,
+                                    List<ScaleMeasurement> scaleMeasurements,
+                                    int maxSize) {
+            this.visibleMeasurements = visibleMeasurements;
+            this.scaleMeasurements = scaleMeasurements;
+            measurementsToShow = Math.min(scaleMeasurements.size(), maxSize);
+
+            stringCache = new Spanned[measurementsToShow][visibleMeasurements.size()];
+
+            notifyDataSetChanged();
         }
 
         @Override
         public int getCount() {
-            return dataList.size();
+            return measurementsToShow;
         }
 
         @Override
         public Object getItem(int position) {
-            return dataList.get(position);
+            return scaleMeasurements.get(position);
         }
 
         @Override
         public long getItemId(int position) {
-            return 0;
+            return scaleMeasurements.get(position).getId();
         }
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            if (dataList.isEmpty()) {
-                return convertView;
-            }
+            // Create entries in stringCache if needed
+            if (stringCache[position][0] == null) {
+                ScaleMeasurement measurement = scaleMeasurements.get(position);
+                ScaleMeasurement prevMeasurement = null;
+                if (position + 1 < scaleMeasurements.size()) {
+                    prevMeasurement = scaleMeasurements.get(position + 1);
+                }
 
-            if (convertView == null) {
-                row = new LinearLayout(getContext());
-                convertView = row;
+                for (int i = 0; i < visibleMeasurements.size(); ++i) {
+                    visibleMeasurements.get(i).loadFrom(measurement, prevMeasurement);
 
-                for (int i = 0; i< dataList.get(0).size(); i++) {
-                    TextView column = new TextView(getContext());
-                    column.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
-                    column.getLayoutParams().width = 0;
-                    column.setGravity(Gravity.CENTER);
+                    SpannableStringBuilder string = new SpannableStringBuilder();
+                    string.append(visibleMeasurements.get(i).getValueAsString());
+                    string.append("\n");
+                    visibleMeasurements.get(i).appendDiffValue(string);
 
-                    if ((getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) != Configuration.SCREENLAYOUT_SIZE_XLARGE &&
-                       (getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) != Configuration.SCREENLAYOUT_SIZE_LARGE) {
-                        column.setTextSize(COMPLEX_UNIT_DIP, 9);
-                    }
-
-                    if (i == 0) {
-                        column.setVisibility(View.GONE);
-                    }
-
-                    row.addView(column);
+                    stringCache[position][i] = string;
                 }
             }
 
-            LinearLayout convView = (LinearLayout)convertView;
+            // Create view if needed
+            LinearLayout row;
+            if (convertView == null) {
+                row = new LinearLayout(getContext());
 
-            HashMap<Integer, Spanned> map = dataList.get(position);
+                final int screenSize = getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK;
+                final boolean isSmallScreen =
+                        screenSize != Configuration.SCREENLAYOUT_SIZE_XLARGE
+                        && screenSize != Configuration.SCREENLAYOUT_SIZE_LARGE;
 
-            for (int i = 0; i < map.size(); i++) {
-                TextView column = (TextView)convView.getChildAt(i);
-                column.setText(map.get(i));
+                for (int i = 0; i < visibleMeasurements.size(); ++i) {
+                    TextView column = new TextView(getContext());
+                    column.setLayoutParams(new LinearLayout.LayoutParams(
+                            LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
+                    column.getLayoutParams().width = 0;
+                    column.setGravity(Gravity.CENTER);
+
+                    if (isSmallScreen) {
+                        column.setTextSize(COMPLEX_UNIT_DIP, 9);
+                    }
+                    row.addView(column);
+                }
+            }
+            else {
+                row = (LinearLayout) convertView;
             }
 
-            return convertView;
+            // Fill view with data
+            for (int i = 0; i < visibleMeasurements.size(); ++i) {
+                TextView column = (TextView) row.getChildAt(i);
+                column.setText(stringCache[position][i]);
+            }
+
+            return row;
         }
 
+        @Override
+        public boolean hasStableIds() {
+            return true;
+        }
     }
 }
