@@ -494,7 +494,6 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
                     SpannableStringBuilder string = new SpannableStringBuilder();
                     string.append(visibleMeasurements.get(i).getValueAsString());
-                    string.append("\n");
                     visibleMeasurements.get(i).appendDiffValue(string);
 
                     stringCache[position][i] = string;
