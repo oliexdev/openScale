@@ -214,6 +214,5 @@
     <string name="customactivityoncrash_error_activity_error_details_clipboard_label">Error information</string>
     <string name="toggle_expand">Toggle expand</string>
     <string name="edit">Edit</string>
-    <string name="save">Save</string>
 
 </resources>
