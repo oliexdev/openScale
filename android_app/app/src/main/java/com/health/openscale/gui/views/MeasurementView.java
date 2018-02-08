@@ -197,8 +197,6 @@ public abstract class MeasurementView extends TableLayout {
                 if (!isEditable()) {
                     editModeView.setVisibility(View.INVISIBLE);
                 }
-
-                showEvaluatorRow(false);
                 break;
             case STATISTIC:
                 indicatorView.setVisibility(View.GONE);
