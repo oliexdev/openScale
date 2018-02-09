@@ -68,33 +68,4 @@
 
     </ScrollView>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="5dp">
-
-        <Button
-            android:id="@+id/btnCancel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="5"
-            android:background="@drawable/flat_selector"
-            android:text="@string/label_cancel"
-            android:textColor="@android:color/white" />
-
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_weight="0.5" />
-
-        <Button
-            android:id="@+id/btnSave"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="5"
-            android:background="@drawable/flat_selector"
-            android:text="@string/label_add"
-            android:textColor="@android:color/white" />
-    </LinearLayout>
-
 </LinearLayout>

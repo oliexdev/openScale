@@ -73,9 +73,7 @@ public class DataEntryActivity extends AppCompatActivity {
     private Button btnLeft;
     private Button btnRight;
 
-    private Button btnCancel;
-    private Button btnSave;
-
+    private MenuItem saveButton;
     private MenuItem editButton;
     private MenuItem expandButton;
     private MenuItem deleteButton;
@@ -130,29 +128,6 @@ public class DataEntryActivity extends AppCompatActivity {
         btnLeft = (Button) findViewById(R.id.btnLeft);
         btnRight = (Button) findViewById(R.id.btnRight);
 
-        btnCancel = (Button) findViewById(R.id.btnCancel);
-        btnSave = (Button) findViewById(R.id.btnSave);
-
-        btnCancel.setOnClickListener(new Button.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onBackPressed();
-            }
-        });
-        btnSave.setOnClickListener(new Button.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                final boolean isEdit = scaleMeasurement.getId() > 0;
-                saveScaleData();
-                if (isEdit) {
-                    setViewMode(MeasurementView.MeasurementViewMode.VIEW);
-                }
-                else {
-                    finish();
-                }
-            }
-        });
-
         btnLeft.setVisibility(View.INVISIBLE);
         btnRight.setVisibility(View.INVISIBLE);
 
@@ -206,18 +181,32 @@ public class DataEntryActivity extends AppCompatActivity {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.dataentry_menu, menu);
 
-        // Apply a white tint to all icons in the toolbar
+        // Apply a tint to all icons in the toolbar
         for (int i = 0; i < menu.size(); ++i) {
             MenuItem item = menu.getItem(i);
             final Drawable drawable = item.getIcon();
             if (drawable == null) {
                 continue;
             }
+
             final Drawable wrapped = DrawableCompat.wrap(drawable.mutate());
-            DrawableCompat.setTint(wrapped, Color.WHITE);
+
+            String menuTitle = item.getTitle().toString();
+
+            if (menuTitle == getResources().getString(R.string.save)) {
+                DrawableCompat.setTint(wrapped, Color.parseColor("#FFFFFF"));
+            } else if (menuTitle == getResources().getString(R.string.edit)) {
+                DrawableCompat.setTint(wrapped, Color.parseColor("#99CC00"));
+            } else if (menuTitle == getResources().getString(R.string.toggle_expand)) {
+                DrawableCompat.setTint(wrapped, Color.parseColor("#FFBB33"));
+            } else if (menuTitle == getResources().getString(R.string.label_delete)) {
+                DrawableCompat.setTint(wrapped, Color.parseColor("#FF4444"));
+            }
+
             item.setIcon(wrapped);
         }
 
+        saveButton = menu.findItem(R.id.saveButton);
         editButton = menu.findItem(R.id.editButton);
         expandButton = menu.findItem(R.id.expandButton);
         deleteButton = menu.findItem(R.id.deleteButton);
@@ -236,6 +225,17 @@ public class DataEntryActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.saveButton:
+                final boolean isEdit = scaleMeasurement.getId() > 0;
+                saveScaleData();
+                if (isEdit) {
+                    setViewMode(MeasurementView.MeasurementViewMode.VIEW);
+                }
+                else {
+                    finish();
+                }
+                return true;
+
             case R.id.expandButton:
                 SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
                 final boolean expand = !prefs.getBoolean(PREF_EXPAND, true);
@@ -328,7 +328,7 @@ public class DataEntryActivity extends AppCompatActivity {
         }
 
         txtDataNr.setText(DateFormat.getDateTimeInstance(
-            DateFormat.LONG, DateFormat.SHORT).format(scaleMeasurement.getDateTime()));
+                DateFormat.LONG, DateFormat.SHORT).format(scaleMeasurement.getDateTime()));
     }
 
     private void setViewMode(MeasurementView.MeasurementViewMode viewMode) {
@@ -337,38 +337,34 @@ public class DataEntryActivity extends AppCompatActivity {
 
         switch (viewMode) {
             case VIEW:
+                saveButton.setVisible(false);
                 editButton.setVisible(true);
                 expandButton.setVisible(true);
                 deleteButton.setVisible(true);
 
-                btnCancel.setVisibility(View.GONE);
-                btnSave.setVisibility(View.GONE);
-
                 btnLeft.setVisibility(View.VISIBLE);
                 btnRight.setVisibility(View.VISIBLE);
+                btnLeft.setEnabled(true);
+                btnRight.setEnabled(true);
 
                 dateTimeVisibility = View.GONE;
                 break;
             case EDIT:
+                saveButton.setVisible(true);
                 editButton.setVisible(false);
                 expandButton.setVisible(true);
                 deleteButton.setVisible(true);
 
-                btnCancel.setVisibility(View.VISIBLE);
-                btnSave.setVisibility(View.VISIBLE);
-                btnSave.setText(R.string.label_ok);
-
-                btnLeft.setVisibility(View.GONE);
-                btnRight.setVisibility(View.GONE);
+                btnLeft.setVisibility(View.VISIBLE);
+                btnRight.setVisibility(View.VISIBLE);
+                btnLeft.setEnabled(false);
+                btnRight.setEnabled(false);
                 break;
             case ADD:
+                saveButton.setVisible(true);
                 editButton.setVisible(false);
                 expandButton.setVisible(false);
                 deleteButton.setVisible(false);
-
-                btnCancel.setVisibility(View.VISIBLE);
-                btnSave.setVisibility(View.VISIBLE);
-                btnSave.setText(R.string.label_add);
 
                 btnLeft.setVisibility(View.GONE);
                 btnRight.setVisibility(View.GONE);

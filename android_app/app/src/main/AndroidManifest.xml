@@ -27,8 +27,7 @@
         </activity>
         <activity android:name=".gui.activities.SettingsActivity"/>
         <activity android:name=".gui.activities.DataEntryActivity"/>
-        <activity android:name=".gui.activities.UserSettingsActivity" android:theme="@android:style/Theme.Holo.Dialog"
-                  android:label="@string/label_title_user"/>
+        <activity android:name=".gui.activities.UserSettingsActivity"/>
 
         <receiver android:name=".core.alarm.ReminderBootReceiver" android:enabled="false">
             <intent-filter>
