@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <resources>
     <string name="app_name">openScale</string>
     <string name="title_overview">Översikt</string>
@@ -182,4 +182,6 @@
     <string name="customactivityoncrash_error_activity_error_details_copy">Kopiera till urklipp</string>
     <string name="customactivityoncrash_error_activity_error_details_copied">Kopierad till urklipp</string>
     <string name="customactivityoncrash_error_activity_error_details_clipboard_label">Felinformation</string>
+<string name="save">Spara</string>
+
 </resources>
