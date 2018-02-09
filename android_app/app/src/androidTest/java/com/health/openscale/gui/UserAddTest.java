@@ -181,7 +181,7 @@ public class UserAddTest {
         onView(withId(android.R.id.button1)).perform(click());
 
         ViewInteraction button3 = onView(
-                allOf(withId(R.id.btnOk),
+                allOf(withId(R.id.saveButton),
                         childAtPosition(
                                 childAtPosition(
                                         withClassName(is("android.widget.LinearLayout")),
