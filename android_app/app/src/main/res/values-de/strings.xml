@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <resources>
     <string name="app_name">openScale</string>
     <string name="action_settings">Einstellungen</string>
@@ -185,4 +185,8 @@
     <string name="label_share">Teilen</string>
     <string name="label_bluetooth_searching_finished">Suche beendet nach Bluetooth Waagen</string>
     <string name="label_help">Hilfe</string>
+<string name="toggle_expand">Umschalten expandieren</string>
+    <string name="edit">Editieren</string>
+    <string name="save">Speichern</string>
+
 </resources>
