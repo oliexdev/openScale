@@ -24,8 +24,8 @@ before_script:
     -e 's/versionName "[^"]+/\0-dev_'${TRAVIS_COMMIT:0:8}'/'
     android_app/app/build.gradle
   - sed -i -r
-    -e 's/(<string name="app_name">[^<]+)/\1 (dev)/'
-    android_app/app/src/main/res/values*/strings.xml
+    -e 's/(<string name="app_name"[^>]*>[^<]+)/\1 (dev)/'
+    android_app/app/src/main/res/values/strings.xml
   # Create keystore by running:
   #   keytool -genkey -v -keystore debug.keystore -storepass android \
   #     -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 \
