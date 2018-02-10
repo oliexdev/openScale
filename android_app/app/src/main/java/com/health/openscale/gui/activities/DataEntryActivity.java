@@ -191,15 +191,13 @@ public class DataEntryActivity extends AppCompatActivity {
 
             final Drawable wrapped = DrawableCompat.wrap(drawable.mutate());
 
-            String menuTitle = item.getTitle().toString();
-
-            if (menuTitle == getResources().getString(R.string.save)) {
+            if (item.getItemId() == R.id.saveButton) {
                 DrawableCompat.setTint(wrapped, Color.parseColor("#FFFFFF"));
-            } else if (menuTitle == getResources().getString(R.string.edit)) {
+            } else if (item.getItemId() == R.id.editButton) {
                 DrawableCompat.setTint(wrapped, Color.parseColor("#99CC00"));
-            } else if (menuTitle == getResources().getString(R.string.toggle_expand)) {
+            } else if (item.getItemId() == R.id.expandButton) {
                 DrawableCompat.setTint(wrapped, Color.parseColor("#FFBB33"));
-            } else if (menuTitle == getResources().getString(R.string.label_delete)) {
+            } else if (item.getItemId() == R.id.deleteButton) {
                 DrawableCompat.setTint(wrapped, Color.parseColor("#FF4444"));
             }
 
@@ -267,6 +265,9 @@ public class DataEntryActivity extends AppCompatActivity {
     public void onBackPressed() {
         if (measurementViewMode == MeasurementView.MeasurementViewMode.EDIT) {
             setViewMode(MeasurementView.MeasurementViewMode.VIEW);
+            if (isDirty) {
+                scaleMeasurement = null;
+            }
             updateOnView();
         }
         else {
@@ -327,6 +328,7 @@ public class DataEntryActivity extends AppCompatActivity {
             measurement.loadFrom(scaleMeasurement, previousMeasurement);
         }
 
+        txtDataNr.setMinWidth(txtDataNr.getWidth());
         txtDataNr.setText(DateFormat.getDateTimeInstance(
                 DateFormat.LONG, DateFormat.SHORT).format(scaleMeasurement.getDateTime()));
     }
@@ -344,8 +346,8 @@ public class DataEntryActivity extends AppCompatActivity {
 
                 btnLeft.setVisibility(View.VISIBLE);
                 btnRight.setVisibility(View.VISIBLE);
-                btnLeft.setEnabled(true);
-                btnRight.setEnabled(true);
+                btnLeft.setEnabled(previousMeasurement != null);
+                btnRight.setEnabled(nextMeasurement != null);
 
                 dateTimeVisibility = View.GONE;
                 break;
