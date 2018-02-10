@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">openScale</string>
+    <string name="app_name" translatable="false">openScale</string>
     <string name="title_overview">Overview</string>
     <string name="title_graph">Chart</string>
     <string name="title_table">Table</string>
@@ -108,7 +108,7 @@
     <string name="info_delete_bluetooth_data">Clear all Bluetooth data</string>
     <string name="info_delete_bluetooth_data_success">Bluetooth data was successful cleared</string>
     <string name="info_bluetooth_try_connection">Trying to connect to</string>
-    <string name="info_bluetooth_connection_lost">Lost Bluetooth connection.</string>
+    <string name="info_bluetooth_connection_lost">Lost Bluetooth connection</string>
     <string name="info_bluetooth_no_device">No Bluetooth device found</string>
     <string name="info_bluetooth_no_device_set">No Bluetooth device selected</string>
     <string name="info_bluetooth_connection_successful">Connection successful established</string>
@@ -199,8 +199,8 @@
     <string name="label_feedback_message_positive">Ok, sure</string>
     <string name="label_feedback_message_negative">No, thanks</string>
 
-    <string name="error_max_scale_users">Maximum number of concurrent scale users reached.</string>
-    <string name="info_step_on_scale">Please step barefoot on the scale for reference measurements.</string>
+    <string name="error_max_scale_users">Maximum number of concurrent scale users reached</string>
+    <string name="info_step_on_scale">Please step barefoot on the scale for reference measurements</string>
     <string name="info_measuring">Measuring weight: %.2f</string>
 
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">An unexpected error occurred.\n\nPlease create a new issue including the detailed error details on\nhttps://github.com/oliexdev/openScale/issues</string>

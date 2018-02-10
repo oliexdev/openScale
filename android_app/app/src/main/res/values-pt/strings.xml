@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">openScale</string>
     <string name="Friday">Sexta</string>
     <string name="Monday">Segunda</string>
     <string name="Saturday">Sábado</string>
@@ -17,7 +16,7 @@
     <string name="error_hip_value_required">Erro: circunferência do quadril é obrigatória</string>
     <string name="error_importing">Erro ao importar</string>
     <string name="error_initial_weight_required">Erro: Peso inicial é obrigatório</string>
-    <string name="error_max_scale_users">Numero máximo de balanças concorrentes alcançado.</string>
+    <string name="error_max_scale_users">Numero máximo de balanças concorrentes alcançado</string>
     <string name="error_user_name_required">Erro: Nome de usuário é obrigatório</string>
     <string name="error_value_range">Valor não está no intervalo</string>
     <string name="error_value_required">Valor é obrigatório</string>
@@ -50,7 +49,7 @@
     <string name="info_on_date">em</string>
     <string name="info_no_selected_user">Nenhum usuário existe. Por favor, crie um novo usuário em Configurações.</string>
     <string name="info_set_filename">Definir nome de arquivo para</string>
-    <string name="info_step_on_scale">Por favor suba na balança para medidas de referência.</string>
+    <string name="info_step_on_scale">Por favor suba na balança para medidas de referência</string>
     <string name="info_your_fat">Sua gordura corporal foi</string>
     <string name="info_your_hip">Sua circunferência de quadril foi</string>
     <string name="info_your_muscle">Sua porcentagem de massa muscular foi</string>

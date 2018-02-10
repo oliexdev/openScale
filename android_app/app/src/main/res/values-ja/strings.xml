@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">openScale</string>
     <string name="title_users">ユーザー</string>
     <string name="title_table">早見表</string>
     <string name="title_graph">図表</string>

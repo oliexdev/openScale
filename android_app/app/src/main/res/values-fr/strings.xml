@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">openScale</string>
     <string name="title_overview">Vue d\'ensemble</string>
     <string name="title_graph">Diagramme</string>
     <string name="title_table">Tableau</string>
