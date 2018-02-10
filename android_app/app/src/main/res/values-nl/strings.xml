@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">openScale</string>
     <string name="title_overview">Overzicht</string>
     <string name="title_graph">Grafieken</string>
     <string name="title_table">Tabel</string>
@@ -179,7 +178,7 @@
     <string name="label_goal_line">Doel lijn</string>
 
 
-    <string name="error_max_scale_users">Maximumaantal gelijktijdige schaalgebruikers bereikt.</string>
+    <string name="error_max_scale_users">Maximumaantal gelijktijdige schaalgebruikers bereikt</string>
     <string name="info_step_on_scale">Stapt alsjeblieft met blote voeten op de weegschaal voor een meting.</string>
     <string name="info_measuring">Gewicht meten: %.2f</string>
 

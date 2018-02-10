@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">openScale</string>
     <string name="title_overview">General</string>
     <string name="title_graph">Gráfica</string>
     <string name="title_table">Tabla</string>
@@ -177,8 +176,8 @@
     <string name="label_goal_line">Línea del objetivo</string>
 
 
-    <string name="error_max_scale_users">Número máximo de usuarios de báscula concurrentes alcanzado.</string>
-    <string name="info_step_on_scale">Por favor, póngase descalzo en la báscula para tomar medidas de referencia.</string>
+    <string name="error_max_scale_users">Número máximo de usuarios de báscula concurrentes alcanzado</string>
+    <string name="info_step_on_scale">Por favor, póngase descalzo en la báscula para tomar medidas de referencia</string>
     <string name="info_measuring">Medición de peso: %.2f</string>
 
 </resources>

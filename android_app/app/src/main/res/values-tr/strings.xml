@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name= "app_name">openScale</string>
     <string name="title_overview">Genel Bakýþ</string>
     <string name="title_graph">Çizelge</string>
     <string name="title_table">Tablo</string>
@@ -175,7 +174,7 @@
     <string name="label_goal_line">Hedef çizgisi</string>
 
 
-    <string name="error_max_scale_users">Maksimum eþzamanlý ölçekli kullanýcý sayýsý ulaþtý.</string>
-    <string name="info_step_on_scale">Referans ölçümleri için lütfen ölçekte çýplak ayakla adým atýn.</string>
+    <string name="error_max_scale_users">Maksimum eþzamanlý ölçekli kullanýcý sayýsý ulaþtý</string>
+    <string name="info_step_on_scale">Referans ölçümleri için lütfen ölçekte çýplak ayakla adým atýn</string>
     <string name="info_measuring">Aðýrlýðý ölçme: %.2f</string>
 </resources>

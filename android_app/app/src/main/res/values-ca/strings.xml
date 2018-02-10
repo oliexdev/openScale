@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">openScale</string>
     <string name="title_overview">General</string>
     <string name="title_graph">Gràfica</string>
     <string name="title_table">Taula</string>
@@ -100,7 +99,7 @@
     <string name="info_delete_bluetooth_data">Eliminar totes les dades de Bluetooth</string>
     <string name="info_delete_bluetooth_data_success">Les dades de Bluetooth s\'han eliminat</string>
     <string name="info_bluetooth_try_connection">Intentant connectar a</string>
-    <string name="info_bluetooth_connection_lost">S\'ha perdut la connexió Bluetooth.</string>
+    <string name="info_bluetooth_connection_lost">S\'ha perdut la connexió Bluetooth</string>
     <string name="info_bluetooth_no_device">No s\'ha trobat un dispositiu Bluetooth</string>
     <string name="info_bluetooth_connection_successful">La connexió s\'ha fet correctament</string>
     <string name="info_bluetooth_init">Inicialitzar el dispositiu Bluetooth</string>
@@ -177,8 +176,8 @@
     <string name="label_goal_line">Línia de l\'objectiu</string>
 
 
-    <string name="error_max_scale_users">S\'ha assolit el nombre màxim d\'usuaris simultanis de la bàscula.</string>
-    <string name="info_step_on_scale">Si us plau, pose\'s descalç en la bàscula per prendre mesures de referència.</string>
+    <string name="error_max_scale_users">S\'ha assolit el nombre màxim d\'usuaris simultanis de la bàscula</string>
+    <string name="info_step_on_scale">Si us plau, pose\'s descalç en la bàscula per prendre mesures de referència</string>
     <string name="info_measuring">Mesura del pes: %.2f</string>
     <string name="open_drawer">obri</string>
     <string name="close_drawer">tanca</string>
