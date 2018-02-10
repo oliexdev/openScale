@@ -60,6 +60,8 @@ public class PermissionHelper {
             AlertDialog.Builder builder = new AlertDialog.Builder(activity);
 
             builder.setMessage(R.string.permission_bluetooth_info)
+                    .setTitle(R.string.permission_bluetooth_info_title)
+                    .setIcon(R.drawable.ic_preferences_about)
                     .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             dialog.dismiss();
