@@ -87,9 +87,6 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
     private SharedPreferences prefs;
     private LinearLayout subpageView;
 
-    private boolean permGrantedReadAccess;
-    private boolean permGrantedWriteAccess;
-
     private ArrayList <MeasurementView> measurementsList;
 
     private int selectedSubpageNr;
@@ -142,9 +139,6 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
         else {
             selectedSubpageNr = savedInstanceState.getInt(SELECTED_SUBPAGE_NR_KEY);
         }
-
-        permGrantedReadAccess = false;
-        permGrantedWriteAccess = false;
 
         OpenScale.getInstance(getContext()).registerFragment(this);
 
@@ -297,115 +291,50 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
     private class onClickListenerImport implements View.OnClickListener {
         @Override
         public void onClick(View v) {
-
-            permGrantedReadAccess = PermissionHelper.requestReadPermission(getActivity());
-
-            if (!permGrantedReadAccess) {
-                Toast.makeText(getContext(), getResources().getString(R.string.permission_not_granted), Toast.LENGTH_SHORT).show();
-                return;
+            if (PermissionHelper.requestReadPermission(getActivity())) {
+                importTable();
             }
-
-            int selectedUserId = OpenScale.getInstance(getContext()).getSelectedScaleUserId();
-
-            if (selectedUserId == -1)
-            {
-                AlertDialog.Builder infoDialog = new AlertDialog.Builder(v.getContext());
-
-                infoDialog.setMessage(getResources().getString(R.string.info_no_selected_user));
-
-                infoDialog.setPositiveButton(getResources().getString(R.string.label_ok), null);
-
-                infoDialog.show();
-            }
-            else
-                {
-                    AlertDialog.Builder filenameDialog = new AlertDialog.Builder(getActivity());
-
-                    filenameDialog.setTitle(getResources().getString(R.string.info_set_filename) + " /sdcard ...");
-
-                    String exportFilename = prefs.getString("exportFilename", "/openScale_data_" + OpenScale.getInstance(getContext()).getSelectedScaleUser().getUserName() + ".csv");
-
-                    final EditText txtFilename = new EditText(tableView.getContext());
-                    txtFilename.setText(exportFilename);
-
-                    filenameDialog.setView(txtFilename);
-
-                    filenameDialog.setPositiveButton(getResources().getString(R.string.label_ok), new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            OpenScale.getInstance(getContext()).importData(Environment.getExternalStorageDirectory().getPath() + txtFilename.getText().toString());
-                            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(tableView.getContext());
-                            prefs.edit().putString("exportFilename", txtFilename.getText().toString()).commit();
-                            updateOnView(OpenScale.getInstance(getContext()).getScaleMeasurementList());
-                        }
-                    });
-
-                    filenameDialog.setNegativeButton(getResources().getString(R.string.label_cancel), new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            dialog.dismiss();
-                        }
-                    });
-
-
-                    filenameDialog.show();
-                }
         }
     }
 
-    private class onClickListenerExport implements View.OnClickListener {
-        @Override
-        public void onClick(View v) {
+    private void importTable() {
+        int selectedUserId = OpenScale.getInstance(getContext()).getSelectedScaleUserId();
 
-            permGrantedWriteAccess = PermissionHelper.requestWritePermission(getActivity());
+        if (selectedUserId == -1)
+        {
+            AlertDialog.Builder infoDialog = new AlertDialog.Builder(getContext());
 
-            if (!permGrantedWriteAccess) {
-                Toast.makeText(getContext(), getResources().getString(R.string.permission_not_granted), Toast.LENGTH_SHORT).show();
-                return;
-            }
+            infoDialog.setMessage(getResources().getString(R.string.info_no_selected_user));
 
+            infoDialog.setPositiveButton(getResources().getString(R.string.label_ok), null);
+
+            infoDialog.show();
+        }
+        else
+        {
             AlertDialog.Builder filenameDialog = new AlertDialog.Builder(getActivity());
 
-            filenameDialog.setTitle(getResources().getString(R.string.info_set_filename) + " " + Environment.getExternalStorageDirectory().getPath());
+            filenameDialog.setTitle(getResources().getString(R.string.info_set_filename) + " /sdcard ...");
 
-            final ScaleUser selectedScaleUser = OpenScale.getInstance(getContext()).getSelectedScaleUser();
-            String exportFilename = prefs.getString("exportFilename" + selectedScaleUser.getId(), "openScale_data_" + selectedScaleUser.getUserName() + ".csv");
+            String exportFilename = prefs.getString("exportFilename", "/openScale_data_" + OpenScale.getInstance(getContext()).getSelectedScaleUser().getUserName() + ".csv");
 
             final EditText txtFilename = new EditText(tableView.getContext());
             txtFilename.setText(exportFilename);
 
             filenameDialog.setView(txtFilename);
 
-            filenameDialog.setPositiveButton(getResources().getString(R.string.label_export), new DialogInterface.OnClickListener() {
+            filenameDialog.setPositiveButton(getResources().getString(R.string.label_ok), new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
-                    String fullPath = Environment.getExternalStorageDirectory().getPath() + "/" + txtFilename.getText().toString();
-
-                    if (OpenScale.getInstance(getContext()).exportData(fullPath)) {
-                        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(tableView.getContext());
-                        prefs.edit().putString("exportFilename" + selectedScaleUser.getId(), txtFilename.getText().toString()).commit();
-                        Toast.makeText(getContext(), getResources().getString(R.string.info_data_exported) + " " + fullPath, Toast.LENGTH_SHORT).show();
-                    }
+                    OpenScale.getInstance(getContext()).importData(Environment.getExternalStorageDirectory().getPath() + txtFilename.getText().toString());
+                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(tableView.getContext());
+                    prefs.edit().putString("exportFilename", txtFilename.getText().toString()).commit();
+                    updateOnView(OpenScale.getInstance(getContext()).getScaleMeasurementList());
                 }
             });
 
-            filenameDialog.setNeutralButton(getResources().getString(R.string.label_share), new DialogInterface.OnClickListener() {
+            filenameDialog.setNegativeButton(getResources().getString(R.string.label_cancel), new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
-                    String fullPath = Environment.getExternalStorageDirectory().getPath() + "/tmp/" + txtFilename.getText().toString();
-
-                    if (!OpenScale.getInstance(getContext()).exportData(fullPath)) {
-                        return;
-                    }
-
-                    Intent intentShareFile = new Intent(Intent.ACTION_SEND);
-                    File shareFile = new File(fullPath);
-
-                    if(shareFile.exists()) {
-                        intentShareFile.setType("text/comma-separated-values");
-                        intentShareFile.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://"+fullPath));
-
-                        intentShareFile.putExtra(Intent.EXTRA_SUBJECT, "openScale export csv file");
-                        intentShareFile.putExtra(Intent.EXTRA_TEXT, txtFilename.getText().toString());
-
-                        startActivity(Intent.createChooser(intentShareFile, getResources().getString(R.string.label_share)));
-                    }
+                    dialog.dismiss();
                 }
             });
 
@@ -414,26 +343,87 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
         }
     }
 
+    private class onClickListenerExport implements View.OnClickListener {
+        @Override
+        public void onClick(View v) {
+            if (PermissionHelper.requestWritePermission(getActivity())) {
+                exportTable();
+            }
+        }
+    }
+
+    private void exportTable() {
+        AlertDialog.Builder filenameDialog = new AlertDialog.Builder(getActivity());
+
+        filenameDialog.setTitle(getResources().getString(R.string.info_set_filename) + " " + Environment.getExternalStorageDirectory().getPath());
+
+        final ScaleUser selectedScaleUser = OpenScale.getInstance(getContext()).getSelectedScaleUser();
+        String exportFilename = prefs.getString("exportFilename" + selectedScaleUser.getId(), "openScale_data_" + selectedScaleUser.getUserName() + ".csv");
+
+        final EditText txtFilename = new EditText(tableView.getContext());
+        txtFilename.setText(exportFilename);
+
+        filenameDialog.setView(txtFilename);
+
+        filenameDialog.setPositiveButton(getResources().getString(R.string.label_export), new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                String fullPath = Environment.getExternalStorageDirectory().getPath() + "/" + txtFilename.getText().toString();
+
+                if (OpenScale.getInstance(getContext()).exportData(fullPath)) {
+                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(tableView.getContext());
+                    prefs.edit().putString("exportFilename" + selectedScaleUser.getId(), txtFilename.getText().toString()).commit();
+                    Toast.makeText(getContext(), getResources().getString(R.string.info_data_exported) + " " + fullPath, Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        filenameDialog.setNeutralButton(getResources().getString(R.string.label_share), new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                String fullPath = Environment.getExternalStorageDirectory().getPath() + "/tmp/" + txtFilename.getText().toString();
+
+                if (!OpenScale.getInstance(getContext()).exportData(fullPath)) {
+                    return;
+                }
+
+                Intent intentShareFile = new Intent(Intent.ACTION_SEND);
+                File shareFile = new File(fullPath);
+
+                if(shareFile.exists()) {
+                    intentShareFile.setType("text/comma-separated-values");
+                    intentShareFile.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://"+fullPath));
+
+                    intentShareFile.putExtra(Intent.EXTRA_SUBJECT, "openScale export csv file");
+                    intentShareFile.putExtra(Intent.EXTRA_TEXT, txtFilename.getText().toString());
+
+                    startActivity(Intent.createChooser(intentShareFile, getResources().getString(R.string.label_share)));
+                }
+            }
+        });
+
+
+        filenameDialog.show();
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         switch (requestCode) {
-            case PermissionHelper.PERMISSIONS_REQUEST_ACCESS_READ_STORAGE: {
+            case PermissionHelper.PERMISSIONS_REQUEST_ACCESS_READ_STORAGE:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    permGrantedReadAccess = true;
+                    importTable();
                 } else {
-                    permGrantedReadAccess = false;
+                    Toast.makeText(getContext(), getResources().getString(R.string.permission_not_granted), Toast.LENGTH_SHORT).show();
                 }
-                return;
-            }
-            case PermissionHelper.PERMISSIONS_REQUEST_ACCESS_WRITE_STORAGE: {
+            break;
+            case PermissionHelper.PERMISSIONS_REQUEST_ACCESS_WRITE_STORAGE:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    permGrantedWriteAccess = true;
+                    exportTable();
                 } else {
-                    permGrantedWriteAccess = false;
+                    Toast.makeText(getContext(), getResources().getString(R.string.permission_not_granted), Toast.LENGTH_SHORT).show();
                 }
-                return;
-            }
+            break;
         }
+
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     private class onClickListenerMoveSubpageLeft implements View.OnClickListener {

@@ -70,8 +70,6 @@ public class MainActivity extends AppCompatActivity {
     private static int bluetoothStatusIcon = R.drawable.ic_bluetooth_disabled;
     private static MenuItem bluetoothStatus;
 
-    private boolean permGrantedCoarseLocation;
-
     private Fragment currentFragment;
     private DrawerLayout drawerLayout;
     private Toolbar toolbar;
@@ -96,7 +94,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         currentFragment = null;
-        permGrantedCoarseLocation = false;
 
         // Set a Toolbar to replace the ActionBar.
         toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -387,6 +384,8 @@ public class MainActivity extends AppCompatActivity {
 
         String deviceName = prefs.getString("btDeviceName", "-");
 
+        boolean permGrantedCoarseLocation = false;
+
         // Check if Bluetooth 4.x is available
         if (deviceName != "openScale_MCU") {
             permGrantedCoarseLocation = PermissionHelper.requestBluetoothPermission(this, false);
@@ -407,9 +406,6 @@ public class MainActivity extends AppCompatActivity {
             if (!OpenScale.getInstance(getApplicationContext()).startSearchingForBluetooth(deviceName, callbackBtHandler)) {
                 Toast.makeText(getApplicationContext(), deviceName + " " + getResources().getString(R.string.label_bt_device_no_support), Toast.LENGTH_SHORT).show();
             }
-        } else {
-            setBluetoothStatusIcon(R.drawable.ic_bluetooth_disabled);
-            Toast.makeText(getApplicationContext(), getResources().getString(R.string.permission_not_granted), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -467,15 +463,17 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         switch (requestCode) {
-            case PermissionHelper.PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION: {
+            case PermissionHelper.PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    permGrantedCoarseLocation = true;
+                    invokeSearchBluetoothDevice();
                 } else {
-                    permGrantedCoarseLocation = false;
+                    setBluetoothStatusIcon(R.drawable.ic_bluetooth_disabled);
+                    Toast.makeText(getApplicationContext(), getResources().getString(R.string.permission_not_granted), Toast.LENGTH_SHORT).show();
                 }
-                return;
-            }
+            break;
         }
+
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
 

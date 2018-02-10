@@ -51,8 +51,6 @@ public class BluetoothPreferences extends PreferenceFragment implements SharedPr
     private static final String PREFERENCE_KEY_BLUETOOTH_IGNOREOUTOFRANGE = "ignoreOutOfRange";
     private static final String PREFERENCE_KEY_BLUETOOTH_SCANNER = "btScanner";
 
-    private boolean permGrantedCoarseLocation;
-
     private CheckBoxPreference smartAssignEnable;
     private CheckBoxPreference ignoreOutOfRangeEnable;
     private PreferenceScreen btScanner;
@@ -135,8 +133,6 @@ public class BluetoothPreferences extends PreferenceFragment implements SharedPr
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        permGrantedCoarseLocation = false;
 
         btAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -226,14 +222,9 @@ public class BluetoothPreferences extends PreferenceFragment implements SharedPr
     private class onClickListenerScannerSelect implements Preference.OnPreferenceClickListener {
         @Override
         public boolean onPreferenceClick(Preference preference) {
-            permGrantedCoarseLocation = PermissionHelper.requestBluetoothPermission(getActivity(), true);
-
-            if (permGrantedCoarseLocation) {
+             if (PermissionHelper.requestBluetoothPermission(getActivity(), true)) {
                 startSearching();
-            } else {
-                Toast.makeText(getActivity().getApplicationContext(), getResources().getString(R.string.permission_not_granted), Toast.LENGTH_SHORT).show();
-            }
-
+             }
             return true;
         }
     }
@@ -259,9 +250,9 @@ public class BluetoothPreferences extends PreferenceFragment implements SharedPr
         switch (requestCode) {
             case PermissionHelper.PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    permGrantedCoarseLocation = true;
+                    startSearching();
                 } else {
-                    permGrantedCoarseLocation = false;
+                    Toast.makeText(getActivity().getApplicationContext(), getResources().getString(R.string.permission_not_granted), Toast.LENGTH_SHORT).show();
                 }
                 return;
             }

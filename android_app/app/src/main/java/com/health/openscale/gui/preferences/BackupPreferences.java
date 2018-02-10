@@ -45,9 +45,6 @@ public class BackupPreferences extends PreferenceFragment {
     private static final String PREFERENCE_KEY_IMPORT_BACKUP = "importBackup";
     private static final String PREFERENCE_KEY_EXPORT_BACKUP = "exportBackup";
 
-    private boolean permGrantedReadAccess;
-    private boolean permGrantedWriteAccess;
-
     private Preference importBackup;
     private Preference exportBackup;
 
@@ -62,9 +59,6 @@ public class BackupPreferences extends PreferenceFragment {
 
         exportBackup = (Preference) findPreference(PREFERENCE_KEY_EXPORT_BACKUP);
         exportBackup.setOnPreferenceClickListener(new onClickListenerExportBackup());
-
-        permGrantedReadAccess = false;
-        permGrantedWriteAccess = false;
 
         initSummary(getPreferenceScreen());
     }
@@ -122,18 +116,8 @@ public class BackupPreferences extends PreferenceFragment {
     private class onClickListenerImportBackup implements Preference.OnPreferenceClickListener {
         @Override
         public boolean onPreferenceClick(Preference preference) {
-            File exportDir = new File(Environment.getExternalStorageDirectory(), PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext()).getString("exportDir", "openScale Backup"));
-
-            importBackup("openScale.db", exportDir);
-
-            OpenScale openScale = OpenScale.getInstance(getActivity().getApplicationContext());
-            openScale.reopenDatabase();
-
-            List<ScaleUser> scaleUserList = openScale.getScaleUserList();
-
-            if (!scaleUserList.isEmpty()) {
-                openScale.selectScaleUser(scaleUserList.get(0).getId());
-                openScale.updateScaleData();
+            if (PermissionHelper.requestReadPermission(getActivity())) {
+                importBackup();
             }
 
             return true;
@@ -143,21 +127,18 @@ public class BackupPreferences extends PreferenceFragment {
     private class onClickListenerExportBackup implements Preference.OnPreferenceClickListener {
         @Override
         public boolean onPreferenceClick(Preference preference) {
-            File exportDir = new File(Environment.getExternalStorageDirectory(), PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext()).getString("exportDir", "openScale Backup"));
-
-            exportBackup("openScale.db", exportDir);
+            if (PermissionHelper.requestWritePermission(getActivity())) {
+                exportBackup();
+            }
 
             return true;
         }
     }
 
-    private boolean importBackup(String databaseName, File exportDir) {
-        permGrantedReadAccess = PermissionHelper.requestReadPermission(getActivity());
+    private boolean importBackup() {
+        File exportDir = new File(Environment.getExternalStorageDirectory(), PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext()).getString("exportDir", "openScale Backup"));
 
-        if (!permGrantedReadAccess) {
-            Toast.makeText(getActivity().getApplicationContext(), getResources().getString(R.string.permission_not_granted), Toast.LENGTH_SHORT).show();
-            return false;
-        }
+        String databaseName = "openScale.db";
 
         if (!isExternalStoragePresent())
             return false;
@@ -179,16 +160,23 @@ public class BackupPreferences extends PreferenceFragment {
             return false;
         }
 
+        OpenScale openScale = OpenScale.getInstance(getActivity().getApplicationContext());
+        openScale.reopenDatabase();
+
+        List<ScaleUser> scaleUserList = openScale.getScaleUserList();
+
+        if (!scaleUserList.isEmpty()) {
+            openScale.selectScaleUser(scaleUserList.get(0).getId());
+            openScale.updateScaleData();
+        }
+
         return true;
     }
 
-    private boolean exportBackup(String databaseName, File exportDir) {
-        permGrantedWriteAccess = PermissionHelper.requestWritePermission(getActivity());
+    private boolean exportBackup() {
+        File exportDir = new File(Environment.getExternalStorageDirectory(), PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext()).getString("exportDir", "openScale Backup"));
 
-        if (!permGrantedWriteAccess) {
-            Toast.makeText(getActivity().getApplicationContext(), getResources().getString(R.string.permission_not_granted), Toast.LENGTH_SHORT).show();
-            return false;
-        }
+        String databaseName = "openScale.db";
 
         if (!isExternalStoragePresent())
             return false;
@@ -233,22 +221,22 @@ public class BackupPreferences extends PreferenceFragment {
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         switch (requestCode) {
-            case PermissionHelper.PERMISSIONS_REQUEST_ACCESS_READ_STORAGE: {
+            case PermissionHelper.PERMISSIONS_REQUEST_ACCESS_READ_STORAGE:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    permGrantedReadAccess = true;
+                    importBackup();
                 } else {
-                    permGrantedReadAccess = false;
+                    Toast.makeText(getActivity().getApplicationContext(), getResources().getString(R.string.permission_not_granted), Toast.LENGTH_SHORT).show();
                 }
-                return;
-            }
-            case PermissionHelper.PERMISSIONS_REQUEST_ACCESS_WRITE_STORAGE: {
+            break;
+            case PermissionHelper.PERMISSIONS_REQUEST_ACCESS_WRITE_STORAGE:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    permGrantedWriteAccess = true;
+                    exportBackup();
                 } else {
-                    permGrantedWriteAccess = false;
+                    Toast.makeText(getActivity().getApplicationContext(), getResources().getString(R.string.permission_not_granted), Toast.LENGTH_SHORT).show();
                 }
-                return;
-            }
+            break;
         }
+
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 }
