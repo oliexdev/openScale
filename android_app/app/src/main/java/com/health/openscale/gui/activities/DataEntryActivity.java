@@ -345,8 +345,8 @@ public class DataEntryActivity extends AppCompatActivity {
 
                 btnLeft.setVisibility(View.VISIBLE);
                 btnRight.setVisibility(View.VISIBLE);
-                btnLeft.setEnabled(true);
-                btnRight.setEnabled(true);
+                btnLeft.setEnabled(previousMeasurement != null);
+                btnRight.setEnabled(nextMeasurement != null);
 
                 dateTimeVisibility = View.GONE;
                 break;
