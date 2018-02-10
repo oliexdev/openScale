@@ -328,6 +328,7 @@ public class DataEntryActivity extends AppCompatActivity {
             measurement.loadFrom(scaleMeasurement, previousMeasurement);
         }
 
+        txtDataNr.setMinWidth(txtDataNr.getWidth());
         txtDataNr.setText(DateFormat.getDateTimeInstance(
                 DateFormat.LONG, DateFormat.SHORT).format(scaleMeasurement.getDateTime()));
     }
