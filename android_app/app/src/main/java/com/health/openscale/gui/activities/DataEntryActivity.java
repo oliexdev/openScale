@@ -267,6 +267,9 @@ public class DataEntryActivity extends AppCompatActivity {
     public void onBackPressed() {
         if (measurementViewMode == MeasurementView.MeasurementViewMode.EDIT) {
             setViewMode(MeasurementView.MeasurementViewMode.VIEW);
+            if (isDirty) {
+                scaleMeasurement = null;
+            }
             updateOnView();
         }
         else {
