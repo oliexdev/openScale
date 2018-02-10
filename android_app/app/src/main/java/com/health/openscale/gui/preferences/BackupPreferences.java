@@ -15,7 +15,7 @@
 */
 package com.health.openscale.gui.preferences;
 
-import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.EditTextPreference;
@@ -30,6 +30,7 @@ import android.widget.Toast;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleUser;
+import com.health.openscale.gui.utils.PermissionHelper;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -43,6 +44,9 @@ import java.util.Set;
 public class BackupPreferences extends PreferenceFragment {
     private static final String PREFERENCE_KEY_IMPORT_BACKUP = "importBackup";
     private static final String PREFERENCE_KEY_EXPORT_BACKUP = "exportBackup";
+
+    private boolean permGrantedReadAccess;
+    private boolean permGrantedWriteAccess;
 
     private Preference importBackup;
     private Preference exportBackup;
@@ -58,6 +62,9 @@ public class BackupPreferences extends PreferenceFragment {
 
         exportBackup = (Preference) findPreference(PREFERENCE_KEY_EXPORT_BACKUP);
         exportBackup.setOnPreferenceClickListener(new onClickListenerExportBackup());
+
+        permGrantedReadAccess = false;
+        permGrantedWriteAccess = false;
 
         initSummary(getPreferenceScreen());
     }
@@ -145,6 +152,13 @@ public class BackupPreferences extends PreferenceFragment {
     }
 
     private boolean importBackup(String databaseName, File exportDir) {
+        permGrantedReadAccess = PermissionHelper.requestReadPermission(getActivity());
+
+        if (!permGrantedReadAccess) {
+            Toast.makeText(getActivity().getApplicationContext(), getResources().getString(R.string.permission_not_granted), Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
         if (!isExternalStoragePresent())
             return false;
 
@@ -169,6 +183,13 @@ public class BackupPreferences extends PreferenceFragment {
     }
 
     private boolean exportBackup(String databaseName, File exportDir) {
+        permGrantedWriteAccess = PermissionHelper.requestWritePermission(getActivity());
+
+        if (!permGrantedWriteAccess) {
+            Toast.makeText(getActivity().getApplicationContext(), getResources().getString(R.string.permission_not_granted), Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
         if (!isExternalStoragePresent())
             return false;
 
@@ -207,5 +228,27 @@ public class BackupPreferences extends PreferenceFragment {
 
     private boolean isExternalStoragePresent() {
         return Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case PermissionHelper.PERMISSIONS_REQUEST_ACCESS_READ_STORAGE: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    permGrantedReadAccess = true;
+                } else {
+                    permGrantedReadAccess = false;
+                }
+                return;
+            }
+            case PermissionHelper.PERMISSIONS_REQUEST_ACCESS_WRITE_STORAGE: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    permGrantedWriteAccess = true;
+                } else {
+                    permGrantedWriteAccess = false;
+                }
+                return;
+            }
+        }
     }
 }

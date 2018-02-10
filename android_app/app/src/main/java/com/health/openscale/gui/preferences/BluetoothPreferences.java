@@ -22,6 +22,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
@@ -37,6 +38,7 @@ import android.widget.Toast;
 
 import com.health.openscale.R;
 import com.health.openscale.core.bluetooth.BluetoothCommunication;
+import com.health.openscale.gui.utils.PermissionHelper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -48,6 +50,8 @@ public class BluetoothPreferences extends PreferenceFragment implements SharedPr
     private static final String PREFERENCE_KEY_BLUETOOTH_SMARTUSERASSIGN = "smartUserAssign";
     private static final String PREFERENCE_KEY_BLUETOOTH_IGNOREOUTOFRANGE = "ignoreOutOfRange";
     private static final String PREFERENCE_KEY_BLUETOOTH_SCANNER = "btScanner";
+
+    private boolean permGrantedCoarseLocation;
 
     private CheckBoxPreference smartAssignEnable;
     private CheckBoxPreference ignoreOutOfRangeEnable;
@@ -131,6 +135,8 @@ public class BluetoothPreferences extends PreferenceFragment implements SharedPr
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        permGrantedCoarseLocation = false;
 
         btAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -220,7 +226,14 @@ public class BluetoothPreferences extends PreferenceFragment implements SharedPr
     private class onClickListenerScannerSelect implements Preference.OnPreferenceClickListener {
         @Override
         public boolean onPreferenceClick(Preference preference) {
-            startSearching();
+            permGrantedCoarseLocation = PermissionHelper.requestBluetoothPermission(getActivity(), true);
+
+            if (permGrantedCoarseLocation) {
+                startSearching();
+            } else {
+                Toast.makeText(getActivity().getApplicationContext(), getResources().getString(R.string.permission_not_granted), Toast.LENGTH_SHORT).show();
+            }
+
             return true;
         }
     }
@@ -238,6 +251,20 @@ public class BluetoothPreferences extends PreferenceFragment implements SharedPr
 
             btScanner.getDialog().dismiss();
             return true;
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case PermissionHelper.PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    permGrantedCoarseLocation = true;
+                } else {
+                    permGrantedCoarseLocation = false;
+                }
+                return;
+            }
         }
     }
 }

@@ -216,4 +216,7 @@
     <string name="edit">Edit</string>
     <string name="save">Save</string>
 
+    <string name="permission_not_granted">Permission not granted</string>
+    <string name="permission_bluetooth_info">openScale needs permission to access to coarse location to search for Bluetooth devices</string>
+
 </resources>

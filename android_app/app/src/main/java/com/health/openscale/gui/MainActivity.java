@@ -18,10 +18,7 @@ package com.health.openscale.gui;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothManager;
 import android.content.ActivityNotFoundException;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -61,6 +58,7 @@ import com.health.openscale.gui.fragments.GraphFragment;
 import com.health.openscale.gui.fragments.OverviewFragment;
 import com.health.openscale.gui.fragments.StatisticsFragment;
 import com.health.openscale.gui.fragments.TableFragment;
+import com.health.openscale.gui.utils.PermissionHelper;
 
 import java.lang.reflect.Field;
 
@@ -71,6 +69,8 @@ public class MainActivity extends AppCompatActivity {
     private static boolean valueOfCountModified = false;
     private static int bluetoothStatusIcon = R.drawable.ic_bluetooth_disabled;
     private static MenuItem bluetoothStatus;
+
+    private boolean permGrantedCoarseLocation;
 
     private Fragment currentFragment;
     private DrawerLayout drawerLayout;
@@ -96,6 +96,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         currentFragment = null;
+        permGrantedCoarseLocation = false;
 
         // Set a Toolbar to replace the ActionBar.
         toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -382,42 +383,33 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void invokeSearchBluetoothDevice() {
-        final BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
-        BluetoothAdapter btAdapter = bluetoothManager.getAdapter();
-
-        if (btAdapter == null || !btAdapter.isEnabled()) {
-            setBluetoothStatusIcon(R.drawable.ic_bluetooth_disabled);
-            Toast.makeText(getApplicationContext(), "Bluetooth " + getResources().getString(R.string.info_is_not_enable), Toast.LENGTH_SHORT).show();
-
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBtIntent, 1);
-            return;
-        }
-
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         String deviceName = prefs.getString("btDeviceName", "-");
 
-        if (deviceName == "-") {
-            Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_no_device_set), Toast.LENGTH_SHORT).show();
-            return;
-        }
-
         // Check if Bluetooth 4.x is available
         if (deviceName != "openScale_MCU") {
-            if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-                setBluetoothStatusIcon(R.drawable.ic_bluetooth_disabled);
-                Toast.makeText(getApplicationContext(), "Bluetooth 4.x " + getResources().getString(R.string.info_is_not_available), Toast.LENGTH_SHORT).show();
-                return;
-            }
+            permGrantedCoarseLocation = PermissionHelper.requestBluetoothPermission(this, false);
+        } else {
+            permGrantedCoarseLocation = PermissionHelper.requestBluetoothPermission(this, true);
         }
 
-        Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_try_connection) + " " + deviceName, Toast.LENGTH_SHORT).show();
-        setBluetoothStatusIcon(R.drawable.ic_bluetooth_searching);
+        if (permGrantedCoarseLocation) {
+            if (deviceName == "-") {
+                Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_no_device_set), Toast.LENGTH_SHORT).show();
+                return;
+            }
 
-        OpenScale.getInstance(getApplicationContext()).stopSearchingForBluetooth();
-        if (!OpenScale.getInstance(getApplicationContext()).startSearchingForBluetooth(deviceName, callbackBtHandler)) {
-            Toast.makeText(getApplicationContext(), deviceName + " "  + getResources().getString(R.string.label_bt_device_no_support), Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_try_connection) + " " + deviceName, Toast.LENGTH_SHORT).show();
+            setBluetoothStatusIcon(R.drawable.ic_bluetooth_searching);
+
+            OpenScale.getInstance(getApplicationContext()).stopSearchingForBluetooth();
+            if (!OpenScale.getInstance(getApplicationContext()).startSearchingForBluetooth(deviceName, callbackBtHandler)) {
+                Toast.makeText(getApplicationContext(), deviceName + " " + getResources().getString(R.string.label_bt_device_no_support), Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            setBluetoothStatusIcon(R.drawable.ic_bluetooth_disabled);
+            Toast.makeText(getApplicationContext(), getResources().getString(R.string.permission_not_granted), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -471,6 +463,21 @@ public class MainActivity extends AppCompatActivity {
         bluetoothStatusIcon = iconRessource;
         bluetoothStatus.setIcon(getResources().getDrawable(bluetoothStatusIcon));
     }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case PermissionHelper.PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    permGrantedCoarseLocation = true;
+                } else {
+                    permGrantedCoarseLocation = false;
+                }
+                return;
+            }
+        }
+    }
+
 
     @SuppressLint("RestrictedApi")
     public static void disableShiftMode(BottomNavigationView view) {

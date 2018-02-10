@@ -153,11 +153,9 @@ public class UserSettingsActivity extends AppCompatActivity {
 
             final Drawable wrapped = DrawableCompat.wrap(drawable.mutate());
 
-            String menuTitle = item.getTitle().toString();
-
-            if (menuTitle == getResources().getString(R.string.save)) {
+            if (item.getItemId() == R.id.saveButton) {
                 DrawableCompat.setTint(wrapped, Color.parseColor("#FFFFFF"));
-            } else if (menuTitle == getResources().getString(R.string.label_delete)) {
+            } else if (item.getItemId() == R.id.deleteButton) {
                 DrawableCompat.setTint(wrapped, Color.parseColor("#FF4444"));
             }
 

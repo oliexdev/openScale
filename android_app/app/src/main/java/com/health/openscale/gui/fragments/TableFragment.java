@@ -19,6 +19,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -52,6 +53,7 @@ import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.gui.activities.DataEntryActivity;
+import com.health.openscale.gui.utils.PermissionHelper;
 import com.health.openscale.gui.views.BMIMeasurementView;
 import com.health.openscale.gui.views.BMRMeasurementView;
 import com.health.openscale.gui.views.BoneMeasurementView;
@@ -84,6 +86,9 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
     private LinearLayout tableHeaderView;
     private SharedPreferences prefs;
     private LinearLayout subpageView;
+
+    private boolean permGrantedReadAccess;
+    private boolean permGrantedWriteAccess;
 
     private ArrayList <MeasurementView> measurementsList;
 
@@ -137,6 +142,9 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
         else {
             selectedSubpageNr = savedInstanceState.getInt(SELECTED_SUBPAGE_NR_KEY);
         }
+
+        permGrantedReadAccess = false;
+        permGrantedWriteAccess = false;
 
         OpenScale.getInstance(getContext()).registerFragment(this);
 
@@ -290,6 +298,13 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
         @Override
         public void onClick(View v) {
 
+            permGrantedReadAccess = PermissionHelper.requestReadPermission(getActivity());
+
+            if (!permGrantedReadAccess) {
+                Toast.makeText(getContext(), getResources().getString(R.string.permission_not_granted), Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             int selectedUserId = OpenScale.getInstance(getContext()).getSelectedScaleUserId();
 
             if (selectedUserId == -1)
@@ -339,6 +354,14 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
     private class onClickListenerExport implements View.OnClickListener {
         @Override
         public void onClick(View v) {
+
+            permGrantedWriteAccess = PermissionHelper.requestWritePermission(getActivity());
+
+            if (!permGrantedWriteAccess) {
+                Toast.makeText(getContext(), getResources().getString(R.string.permission_not_granted), Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             AlertDialog.Builder filenameDialog = new AlertDialog.Builder(getActivity());
 
             filenameDialog.setTitle(getResources().getString(R.string.info_set_filename) + " " + Environment.getExternalStorageDirectory().getPath());
@@ -388,6 +411,28 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
 
             filenameDialog.show();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case PermissionHelper.PERMISSIONS_REQUEST_ACCESS_READ_STORAGE: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    permGrantedReadAccess = true;
+                } else {
+                    permGrantedReadAccess = false;
+                }
+                return;
+            }
+            case PermissionHelper.PERMISSIONS_REQUEST_ACCESS_WRITE_STORAGE: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    permGrantedWriteAccess = true;
+                } else {
+                    permGrantedWriteAccess = false;
+                }
+                return;
+            }
         }
     }
 

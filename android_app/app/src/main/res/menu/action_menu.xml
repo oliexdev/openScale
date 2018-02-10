@@ -4,14 +4,15 @@
     tools:context="com.example.openscale.MainActivity" >
 
     <item
+        android:id="@+id/action_bluetooth_status"
+        android:icon="@drawable/ic_bluetooth_disabled"
+        android:title="@string/action_bluetooth_status"
+        app:showAsAction="always" />
+
+    <item
         android:id="@+id/action_add_measurement"
         android:icon="@drawable/ic_add"
         android:title="+"
         app:showAsAction="always" />
 
-    <item
-        android:id="@+id/action_bluetooth_status"
-        android:icon="@drawable/ic_bluetooth_disabled"
-        android:title="@string/action_bluetooth_status"
-        app:showAsAction="always" />
 </menu>
