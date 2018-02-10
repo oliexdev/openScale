@@ -191,15 +191,13 @@ public class DataEntryActivity extends AppCompatActivity {
 
             final Drawable wrapped = DrawableCompat.wrap(drawable.mutate());
 
-            String menuTitle = item.getTitle().toString();
-
-            if (menuTitle == getResources().getString(R.string.save)) {
+            if (item.getItemId() == R.id.saveButton) {
                 DrawableCompat.setTint(wrapped, Color.parseColor("#FFFFFF"));
-            } else if (menuTitle == getResources().getString(R.string.edit)) {
+            } else if (item.getItemId() == R.id.editButton) {
                 DrawableCompat.setTint(wrapped, Color.parseColor("#99CC00"));
-            } else if (menuTitle == getResources().getString(R.string.toggle_expand)) {
+            } else if (item.getItemId() == R.id.expandButton) {
                 DrawableCompat.setTint(wrapped, Color.parseColor("#FFBB33"));
-            } else if (menuTitle == getResources().getString(R.string.label_delete)) {
+            } else if (item.getItemId() == R.id.deleteButton) {
                 DrawableCompat.setTint(wrapped, Color.parseColor("#FF4444"));
             }
 
