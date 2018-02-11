@@ -15,6 +15,7 @@
 */
 package com.health.openscale.gui.activities;
 
+import android.app.Fragment;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -22,6 +23,9 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 
 import com.health.openscale.R;
+import com.health.openscale.gui.preferences.BackupPreferences;
+import com.health.openscale.gui.preferences.BluetoothPreferences;
+import com.health.openscale.gui.utils.PermissionHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +33,7 @@ import java.util.List;
 public class SettingsActivity extends PreferenceActivity {
     public static String EXTRA_TINT_COLOR = "tintColor";
     private static List<String> fragments = new ArrayList<String>();
+    private Fragment currentFragment;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -59,5 +64,29 @@ public class SettingsActivity extends PreferenceActivity {
     @Override
     protected boolean isValidFragment(String fragmentName) {
         return fragments.contains(fragmentName);
+    }
+
+    @Override
+    public void onAttachFragment(Fragment fragment) {
+        currentFragment = fragment;
+        super.onAttachFragment(fragment);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        // HACK to call RequestPermissionResult(...) in PreferenceFragment otherwise API level > 23 is required
+        switch(requestCode) {
+            case PermissionHelper.PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION:
+                BluetoothPreferences bluetoothPreferences = (BluetoothPreferences)currentFragment;
+                bluetoothPreferences.onMyOwnRequestPermissionsResult(requestCode, permissions, grantResults);
+                break;
+            case PermissionHelper.PERMISSIONS_REQUEST_ACCESS_READ_STORAGE:
+            case PermissionHelper.PERMISSIONS_REQUEST_ACCESS_WRITE_STORAGE:
+                BackupPreferences backupPreferences = (BackupPreferences)currentFragment;
+                backupPreferences.onMyOwnRequestPermissionsResult(requestCode, permissions, grantResults);
+                break;
+        }
+
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 }

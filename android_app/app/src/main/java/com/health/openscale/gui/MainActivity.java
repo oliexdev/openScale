@@ -473,6 +473,7 @@ public class MainActivity extends AppCompatActivity {
             break;
         }
 
+        currentFragment.onRequestPermissionsResult(requestCode, permissions, grantResults);
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 

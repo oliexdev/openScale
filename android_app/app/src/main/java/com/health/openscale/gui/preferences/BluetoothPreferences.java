@@ -245,8 +245,7 @@ public class BluetoothPreferences extends PreferenceFragment implements SharedPr
         }
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+    public void onMyOwnRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         switch (requestCode) {
             case PermissionHelper.PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -254,7 +253,7 @@ public class BluetoothPreferences extends PreferenceFragment implements SharedPr
                 } else {
                     Toast.makeText(getActivity().getApplicationContext(), getResources().getString(R.string.permission_not_granted), Toast.LENGTH_SHORT).show();
                 }
-                return;
+                break;
             }
         }
     }
