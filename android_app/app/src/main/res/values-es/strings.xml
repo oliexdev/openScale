@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <resources>
 
     <string name="title_overview">General</string>
@@ -99,7 +99,7 @@
     <string name="info_delete_bluetooth_data">Borrar todos los datos de Bluetooth</string>
     <string name="info_delete_bluetooth_data_success">Los datos de Bluetooth fueron borrados</string>
     <string name="info_bluetooth_try_connection">Intentando conectar a</string>
-    <string name="info_bluetooth_connection_lost">Se perdió la conexión Bluetooth.</string>
+    <string name="info_bluetooth_connection_lost">Se perdió la conexión Bluetooth</string>
     <string name="info_bluetooth_no_device">No se encontró un dispositivo Bluetooth</string>
     <string name="info_bluetooth_connection_successful">La conexión se estableció correctamente</string>
     <string name="info_bluetooth_init">Inicializar el dispositivo Bluetooth</string>
@@ -179,5 +179,56 @@
     <string name="error_max_scale_users">Número máximo de usuarios de báscula concurrentes alcanzado</string>
     <string name="info_step_on_scale">Por favor, póngase descalzo en la báscula para tomar medidas de referencia</string>
     <string name="info_measuring">Medición de peso: %.2f</string>
+
+<string name="title_general">General</string>
+
+    <string name="open_drawer">abrir</string>
+    <string name="close_drawer">cerrar</string>
+
+    <string name="label_share">Compartir</string>
+
+    <string name="label_fat_percentage">Grasa corporal en %</string>
+    <string name="label_water_percentage">Porcentaje de agua en %</string>
+    <string name="label_muscle_percentage">Porcentaje muscular en %</string>
+
+    <string name="error_user_name_too_short">Error: el nombre de usuario tiene que tener al menos 3 carácteres</string>
+    <string name="info_bluetooth_no_device_set">"No hay dispositivo Bluetooth seleccionado "</string>
+    <string name="info_new_data_duplicated">Medición con al misma fecha y hora ya existe</string>
+
+    <string name="label_bluetooth_searching_finished">Finalizada la búsqueda de básculas Bluetooth</string>
+    <string name="label_theme">Tema</string>
+    <string name="info_app_restart_required">Para aplicar los cambios se requiere un reinicio de la aplicación</string>
+
+    <string name="label_help">Ayuda</string>
+
+    <string name="label_feedback_message_enjoying">¿Te gusta openScale?</string>
+    <string name="label_feedback_message_rate_app">¿Qué tal una evaluación en GooglePlay o en GitHub?</string>
+    <string name="label_feedback_message_issue">¿Te importaría darnos algún comentario?</string>
+    <string name="label_feedback_message_yes">¡Sí!</string>
+    <string name="label_feedback_message_no">En realidad no</string>
+    <string name="label_feedback_message_positive">Sí, por supuesto</string>
+    <string name="label_feedback_message_negative">No, gracias</string>
+
+    <string name="customactivityoncrash_error_activity_error_occurred_explanation">Un error no esperado ocurrió
+\n
+\nPor favor crea un issue incluyendo detalladamente el error en
+\nhttps://github.com/oliexdev/openScale/issues</string>
+    <string name="customactivityoncrash_error_activity_restart_app">Reiniciar aplicación</string>
+    <string name="customactivityoncrash_error_activity_close_app">Cerrar aplicación</string>
+    <string name="customactivityoncrash_error_activity_error_details">Detalles del error</string>
+    <string name="customactivityoncrash_error_activity_error_details_title">Detalles del error</string>
+    <string name="customactivityoncrash_error_activity_error_details_close">Cerrar</string>
+    <string name="customactivityoncrash_error_activity_error_details_copy">Copiar al portapapeles</string>
+    <string name="customactivityoncrash_error_activity_error_details_copied">Copiado al portapapeles</string>
+    <string name="customactivityoncrash_error_activity_error_details_clipboard_label">Error en la información</string>
+    <string name="toggle_expand">Alternar el expandir</string>
+    <string name="edit">Editar</string>
+    <string name="save">Guardar</string>
+
+    <string name="label_month_view">Vista mensual</string>
+
+    <string name="permission_not_granted">Permiso no obtenido</string>
+    <string name="permission_bluetooth_info">"openScale requiere permiso para acceder a la localización para buscar dispositivos Bluetooth "</string>
+    <string name="permission_bluetooth_info_title">Información</string>
 
 </resources>
