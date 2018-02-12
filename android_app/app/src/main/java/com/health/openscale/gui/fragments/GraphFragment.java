@@ -27,11 +27,14 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import com.health.openscale.R;
@@ -80,7 +83,8 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     private FloatingActionButton diagramWaist;
     private FloatingActionButton diagramHip;
     private FloatingActionButton diagramBone;
-    private FloatingActionButton enableMonth;
+    private ImageView optionMenu;
+    private PopupMenu popup;
     private SharedPreferences prefs;
 
     private int textColor;
@@ -140,7 +144,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         diagramWaist = (FloatingActionButton) graphView.findViewById(R.id.diagramWaist);
         diagramHip = (FloatingActionButton) graphView.findViewById(R.id.diagramHip);
         diagramBone = (FloatingActionButton) graphView.findViewById(R.id.diagramBone);
-        enableMonth = (FloatingActionButton) graphView.findViewById(R.id.enableMonth);
+        optionMenu = (ImageView) graphView.findViewById(R.id.optionMenu);
 
         diagramWeight.setOnClickListener(new onClickListenerDiagramLines());
         diagramFat.setOnClickListener(new onClickListenerDiagramLines());
@@ -151,7 +155,12 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         diagramHip.setOnClickListener(new onClickListenerDiagramLines());
         diagramBone.setOnClickListener(new onClickListenerDiagramLines());
 
-        enableMonth.setOnClickListener(new onClickListenerDiagramLines());
+        optionMenu.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                popup.show();
+            }
+        });
 
         prefs = PreferenceManager.getDefaultSharedPreferences(graphView.getContext());
 
@@ -216,6 +225,34 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                 updateOnView(null);
             }
         });
+
+        popup = new PopupMenu(getContext(), optionMenu);
+        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+
+
+                switch (item.getItemId()) {
+                    case R.id.enableMonth:
+                        if (item.isChecked()) {
+                            item.setChecked(false);
+                            prefs.edit().putBoolean("showMonth", false).commit();
+                        } else {
+                            item.setChecked(true);
+                            prefs.edit().putBoolean("showMonth", true).commit();
+                        }
+
+                        generateGraphs();
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+        });
+        popup.getMenuInflater().inflate(R.menu.graph_menu, popup.getMenu());
+
+        MenuItem enableMonth = popup.getMenu().findItem(R.id.enableMonth);
+        enableMonth.setChecked(prefs.getBoolean("showMonth", true));
 
         openScale.registerFragment(this);
 
@@ -417,12 +454,6 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             diagramBone.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#d3d3d3")));
         }
 
-        if (prefs.getBoolean(String.valueOf(enableMonth.getId()), true)) {
-            enableMonth.setBackgroundTintList(ColorStateList.valueOf(ChartUtils.COLOR_BLUE));
-        } else {
-            enableMonth.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#d3d3d3")));
-        }
-
         LineChartData lineData = new LineChartData(lines);
         lineData.setAxisXBottom(new Axis(axisValues).
                 setHasLines(true).
@@ -548,7 +579,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         }
 
         // show monthly diagram
-        if (prefs.getBoolean(String.valueOf(enableMonth.getId()), true)) {
+        if (prefs.getBoolean("showMonth", true)) {
             chartTop.setVisibility(View.VISIBLE);
             chartBottom.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 0.7f));
 

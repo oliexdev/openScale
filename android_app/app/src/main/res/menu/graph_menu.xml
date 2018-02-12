@@ -1,0 +1,9 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.example.openscale.MainActivity">
+
+    <item
+        android:id="@+id/enableMonth"
+        android:title="@string/label_month_view"
+        android:checkable="true"/>
+</menu>

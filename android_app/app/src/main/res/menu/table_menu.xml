@@ -1,0 +1,16 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.example.openscale.MainActivity">
+
+    <item
+        android:id="@+id/importData"
+        android:title="@string/label_import"/>
+
+    <item
+        android:id="@+id/exportData"
+        android:title="@string/label_export"/>
+
+    <item
+        android:id="@+id/shareData"
+        android:title="@string/label_share"/>
+</menu>

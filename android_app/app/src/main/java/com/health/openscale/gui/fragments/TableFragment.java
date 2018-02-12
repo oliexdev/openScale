@@ -34,6 +34,7 @@ import android.text.Spanned;
 import android.text.SpannedString;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -43,6 +44,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.PopupMenu;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -76,8 +78,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import lecho.lib.hellocharts.util.ChartUtils;
-
 import static android.util.TypedValue.COMPLEX_UNIT_DIP;
 
 public class TableFragment extends Fragment implements FragmentUpdateListener {
@@ -86,6 +86,9 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
     private LinearLayout tableHeaderView;
     private SharedPreferences prefs;
     private LinearLayout subpageView;
+
+    private ImageView optionMenu;
+    private PopupMenu popup;
 
     private ArrayList <MeasurementView> measurementsList;
 
@@ -106,8 +109,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
         tableDataView = (ListView) tableView.findViewById(R.id.tableDataView);
         tableHeaderView = (LinearLayout) tableView.findViewById(R.id.tableHeaderView);
 
-        tableView.findViewById(R.id.btnImportData).setOnClickListener(new onClickListenerImport());
-        tableView.findViewById(R.id.btnExportData).setOnClickListener(new onClickListenerExport());
+        optionMenu = (ImageView) tableView.findViewById(R.id.optionMenu);
 
         measurementsList = new ArrayList<>();
 
@@ -140,6 +142,42 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
             selectedSubpageNr = savedInstanceState.getInt(SELECTED_SUBPAGE_NR_KEY);
         }
 
+        optionMenu.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                popup.show();
+            }
+        });
+
+        popup = new PopupMenu(getContext(), optionMenu);
+        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+
+
+                switch (item.getItemId()) {
+                    case R.id.importData:
+                        if (PermissionHelper.requestReadPermission(getActivity())) {
+                            importTable();
+                        }
+                        return true;
+                    case R.id.exportData:
+                        if (PermissionHelper.requestWritePermission(getActivity())) {
+                            exportTable();
+                        }
+                        return true;
+                    case R.id.shareData:
+                        if (PermissionHelper.requestWritePermission(getActivity())) {
+                            shareTable();
+                        }
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+        });
+        popup.getMenuInflater().inflate(R.menu.table_menu, popup.getMenu());
+
         OpenScale.getInstance(getContext()).registerFragment(this);
 
         return tableView;
@@ -160,7 +198,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
             return;
         }
 
-        final int maxSize = 50;
+        final int maxSize = 25;
 
         int subpageCount = (int)Math.ceil(scaleMeasurementList.size() / (double)maxSize);
 
@@ -182,6 +220,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
             TextView subpageNrView = new TextView(tableView.getContext());
             subpageNrView.setOnClickListener(new onClickListenerSubpageSelect());
             subpageNrView.setText(Integer.toString(i+1));
+            subpageNrView.setTextColor(Color.GRAY);
             subpageNrView.setPadding(10, 10, 20, 10);
 
             subpageView.addView(subpageNrView);
@@ -190,7 +229,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
             TextView selectedSubpageNrView = (TextView) subpageView.getChildAt(selectedSubpageNr + 1);
             if (selectedSubpageNrView != null) {
                 selectedSubpageNrView.setTypeface(null, Typeface.BOLD);
-                selectedSubpageNrView.setTextColor(ChartUtils.COLOR_BLUE);
+                selectedSubpageNrView.setTextColor(Color.WHITE);
             }
         }
 
@@ -205,12 +244,6 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
         moveSubpageRight.setOnClickListener(new onClickListenerMoveSubpageRight());
         moveSubpageRight.setEnabled(selectedSubpageNr + 1 < subpageCount);
         subpageView.addView(moveSubpageRight);
-
-        if (subpageCount <= 1) {
-            subpageView.setVisibility(View.GONE);
-        } else {
-            subpageView.setVisibility(View.VISIBLE);
-        }
 
         tableHeaderView.removeAllViews();
 
@@ -288,15 +321,6 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
             startActivityForResult(intent, 1);        }
     }
 
-    private class onClickListenerImport implements View.OnClickListener {
-        @Override
-        public void onClick(View v) {
-            if (PermissionHelper.requestReadPermission(getActivity())) {
-                importTable();
-            }
-        }
-    }
-
     private void importTable() {
         int selectedUserId = OpenScale.getInstance(getContext()).getSelectedScaleUserId();
 
@@ -343,15 +367,6 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
         }
     }
 
-    private class onClickListenerExport implements View.OnClickListener {
-        @Override
-        public void onClick(View v) {
-            if (PermissionHelper.requestWritePermission(getActivity())) {
-                exportTable();
-            }
-        }
-    }
-
     private void exportTable() {
         AlertDialog.Builder filenameDialog = new AlertDialog.Builder(getActivity());
 
@@ -377,31 +392,38 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
             }
         });
 
-        filenameDialog.setNeutralButton(getResources().getString(R.string.label_share), new DialogInterface.OnClickListener() {
+        filenameDialog.setNegativeButton(getResources().getString(R.string.label_cancel), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                String fullPath = Environment.getExternalStorageDirectory().getPath() + "/tmp/" + txtFilename.getText().toString();
-
-                if (!OpenScale.getInstance(getContext()).exportData(fullPath)) {
-                    return;
-                }
-
-                Intent intentShareFile = new Intent(Intent.ACTION_SEND);
-                File shareFile = new File(fullPath);
-
-                if(shareFile.exists()) {
-                    intentShareFile.setType("text/comma-separated-values");
-                    intentShareFile.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://"+fullPath));
-
-                    intentShareFile.putExtra(Intent.EXTRA_SUBJECT, "openScale export csv file");
-                    intentShareFile.putExtra(Intent.EXTRA_TEXT, txtFilename.getText().toString());
-
-                    startActivity(Intent.createChooser(intentShareFile, getResources().getString(R.string.label_share)));
-                }
+                dialog.dismiss();
             }
         });
 
-
         filenameDialog.show();
+    }
+
+
+    private void shareTable() {
+        final ScaleUser selectedScaleUser = OpenScale.getInstance(getContext()).getSelectedScaleUser();
+        String exportFilename = prefs.getString("exportFilename" + selectedScaleUser.getId(), "openScale_data_" + selectedScaleUser.getUserName() + ".csv");
+
+        String fullPath = Environment.getExternalStorageDirectory().getPath() + "/tmp/" + exportFilename;
+
+        if (!OpenScale.getInstance(getContext()).exportData(fullPath)) {
+            return;
+        }
+
+        Intent intentShareFile = new Intent(Intent.ACTION_SEND);
+        File shareFile = new File(fullPath);
+
+        if(shareFile.exists()) {
+            intentShareFile.setType("text/comma-separated-values");
+            intentShareFile.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://"+fullPath));
+
+            intentShareFile.putExtra(Intent.EXTRA_SUBJECT, "openScale export csv file");
+            intentShareFile.putExtra(Intent.EXTRA_TEXT, exportFilename);
+
+            startActivity(Intent.createChooser(intentShareFile, getResources().getString(R.string.label_share)));
+        }
     }
 
     @Override
