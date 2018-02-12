@@ -45,7 +45,7 @@
                 android:layout_height="match_parent"
                 android:scaleType="centerInside"
                 android:tint="@android:color/white"
-                app:srcCompat="@drawable/ic_options" />
+                app:srcCompat="@drawable/ic_share" />
         </LinearLayout>
 
     </LinearLayout>
