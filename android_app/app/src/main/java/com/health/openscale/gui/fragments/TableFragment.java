@@ -512,10 +512,14 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
                 for (int i = 0; i < visibleMeasurements.size(); ++i) {
                     TextView column = new TextView(getContext());
-                    column.setLayoutParams(new LinearLayout.LayoutParams(
-                            LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
-                    column.getLayoutParams().width = 0;
-                    column.setGravity(Gravity.CENTER);
+                    LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
+                            LinearLayout.LayoutParams.WRAP_CONTENT,
+                            LinearLayout.LayoutParams.WRAP_CONTENT,
+                            1);
+                    layoutParams.width = 0;
+                    column.setLayoutParams(layoutParams);
+                    column.setMinLines(2);
+                    column.setGravity(Gravity.CENTER_HORIZONTAL);
 
                     if (isSmallScreen) {
                         column.setTextSize(COMPLEX_UNIT_DIP, 9);
