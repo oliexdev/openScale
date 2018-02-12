@@ -29,6 +29,7 @@ import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.view.Gravity;
@@ -49,6 +50,7 @@ import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.health.openscale.BuildConfig;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
@@ -169,9 +171,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
                         }
                         return true;
                     case R.id.shareData:
-                        if (PermissionHelper.requestWritePermission(getActivity())) {
-                            shareTable();
-                        }
+                        shareTable();
                         return true;
                     default:
                         return false;
@@ -368,26 +368,25 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
     private void shareTable() {
         final ScaleUser selectedScaleUser = OpenScale.getInstance(getContext()).getSelectedScaleUser();
-        String exportFilename = prefs.getString("exportFilename" + selectedScaleUser.getId(), "openScale_data_" + selectedScaleUser.getUserName() + ".csv");
 
-        String fullPath = Environment.getExternalStorageDirectory().getPath() + "/tmp/" + exportFilename;
-
-        if (!OpenScale.getInstance(getContext()).exportData(fullPath)) {
+        File shareFile = new File(getContext().getCacheDir(),
+                String.format("openScale %s.csv", selectedScaleUser.getUserName()));
+        if (!OpenScale.getInstance(getContext()).exportData(shareFile.getPath())) {
             return;
         }
 
-        Intent intentShareFile = new Intent(Intent.ACTION_SEND);
-        File shareFile = new File(fullPath);
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        intent.setType("text/csv");
 
-        if(shareFile.exists()) {
-            intentShareFile.setType("text/comma-separated-values");
-            intentShareFile.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://"+fullPath));
+        final Uri uri = FileProvider.getUriForFile(
+                getContext(), BuildConfig.APPLICATION_ID + ".fileprovider", shareFile);
+        intent.putExtra(Intent.EXTRA_STREAM, uri);
 
-            intentShareFile.putExtra(Intent.EXTRA_SUBJECT, "openScale export csv file");
-            intentShareFile.putExtra(Intent.EXTRA_TEXT, exportFilename);
+        intent.putExtra(Intent.EXTRA_SUBJECT,
+                getResources().getString(R.string.label_share_subject, selectedScaleUser.getUserName()));
 
-            startActivity(Intent.createChooser(intentShareFile, getResources().getString(R.string.label_share)));
-        }
+        startActivity(Intent.createChooser(intent, getResources().getString(R.string.label_share)));
     }
 
     @Override
