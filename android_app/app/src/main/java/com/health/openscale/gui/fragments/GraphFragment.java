@@ -640,7 +640,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
             Intent intent = new Intent(graphView.getContext(), DataEntryActivity.class);
             intent.putExtra(DataEntryActivity.EXTRA_ID, id);
-            startActivityForResult(intent, 1);
+            startActivity(intent);
         }
 
         @Override

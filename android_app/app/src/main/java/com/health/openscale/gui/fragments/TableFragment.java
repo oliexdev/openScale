@@ -281,7 +281,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             Intent intent = new Intent(tableView.getContext(), DataEntryActivity.class);
             intent.putExtra(DataEntryActivity.EXTRA_ID, (int)id);
-            startActivityForResult(intent, 1);
+            startActivity(intent);
         }
     }
 

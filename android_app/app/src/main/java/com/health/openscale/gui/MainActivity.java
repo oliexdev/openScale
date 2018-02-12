@@ -279,7 +279,7 @@ public class MainActivity extends AppCompatActivity {
             case R.id.nav_settings:
                 Intent settingsIntent = new Intent(this, SettingsActivity.class);
                 settingsIntent.putExtra(SettingsActivity.EXTRA_TINT_COLOR, navDrawer.getItemTextColor().getDefaultColor());
-                startActivityForResult(settingsIntent, 1);
+                startActivity(settingsIntent);
                 return;
             case R.id.nav_help:
                 startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/oliexdev/openScale/wiki")));
@@ -336,7 +336,7 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             case R.id.action_add_measurement:
                 Intent intent = new Intent(getApplicationContext(), DataEntryActivity.class);
-                startActivityForResult(intent, 1);
+                startActivity(intent);
                 return true;
             case R.id.action_bluetooth_status:
                 invokeSearchBluetoothDevice();
