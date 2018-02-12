@@ -105,7 +105,7 @@
     <string name="info_delete_bluetooth_data">Rensa all Bluetooth-data</string>
     <string name="info_delete_bluetooth_data_success">Bluetooth-datan togs bort</string>
     <string name="info_bluetooth_try_connection">Försöker ansluta till</string>
-    <string name="info_bluetooth_connection_lost">Tappade Bluetooth-anslutningen.</string>
+    <string name="info_bluetooth_connection_lost">Förlorade Bluetooth-anslutningen</string>
     <string name="info_bluetooth_no_device">Ingen Bluetooth-enhet funnen</string>
     <string name="info_bluetooth_connection_successful">Anslutning upprättad</string>
     <string name="info_bluetooth_init">Initiera Bluetooth-enhet</string>
@@ -182,5 +182,18 @@
     <string name="customactivityoncrash_error_activity_error_details_copied">Kopierad till urklipp</string>
     <string name="customactivityoncrash_error_activity_error_details_clipboard_label">Felinformation</string>
 <string name="save">Spara</string>
+
+<string name="label_share">Dela</string>
+
+    <string name="label_bluetooth_searching_finished">Sökning efter Bluetooth-vågar slutförd</string>
+    <string name="label_help">Hjälp</string>
+
+    <string name="toggle_expand">Fäll ihop/expandera</string>
+    <string name="edit">Ändra</string>
+    <string name="label_month_view">Månadsvy</string>
+
+    <string name="permission_not_granted">Tillstånd beviljas inte</string>
+    <string name="permission_bluetooth_info">openScale kräver åtkomst till grov platsbestämning för att söka efter Bluetooth-enheter</string>
+    <string name="permission_bluetooth_info_title">Information</string>
 
 </resources>
