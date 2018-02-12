@@ -39,7 +39,7 @@
     <string name="label_reminder_time">Tid</string>
     <string name="label_reminder_weekdays">Veckodagar</string>
     <string name="label_website">Hemsida</string>
-    <string name="label_license">License</string>
+    <string name="label_license">Licens</string>
     <string name="error_exporting">Fel vid export</string>
     <string name="label_gender">Kön</string>
     <string name="label_male">Man</string>
@@ -130,7 +130,7 @@
     <string name="label_category_display">Visa</string>
     <string name="label_category_body_metrics_estimation">Kroppmätetals-estimering</string>
     <string name="label_category_measurement_database">Mätningsdatabas</string>
-    <string name="label_maintainer">Maintainer</string>
+    <string name="label_maintainer">Utvecklare</string>
     <string name="label_estimate_water_formula">Kroppsvattenformel</string>
     <string name="label_estimate_lbw_formula">Fettfri kroppsvikt-formel</string>
     <string name="label_estimate_fat_formula">Kroppsfettformel</string>
@@ -188,7 +188,7 @@
     <string name="label_bluetooth_searching_finished">Sökning efter Bluetooth-vågar slutförd</string>
     <string name="label_help">Hjälp</string>
 
-    <string name="toggle_expand">Fäll ihop/expandera</string>
+    <string name="toggle_expand">Växla expandera</string>
     <string name="edit">Ändra</string>
     <string name="label_month_view">Månadsvy</string>
 
