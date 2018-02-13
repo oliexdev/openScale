@@ -21,8 +21,11 @@ import android.arch.persistence.room.Room;
 import android.arch.persistence.room.RoomDatabase;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.provider.OpenableColumns;
 import android.support.v4.app.Fragment;
 import android.text.format.DateFormat;
 import android.util.Log;
@@ -46,9 +49,10 @@ import com.health.openscale.core.utils.CsvHelper;
 import com.health.openscale.gui.fragments.FragmentUpdateListener;
 
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -328,10 +332,20 @@ public class OpenScale {
         updateScaleData();
     }
 
-    public void importData(String filename) {
+    private String getFilenameFromUri(Uri uri) {
+        Cursor cursor = context.getContentResolver().query(
+                uri, null, null, null, null);
+        cursor.moveToFirst();
+        return cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+    }
+
+    public void importData(Uri uri) {
         try {
+            final String filename = getFilenameFromUri(uri);
+
+            InputStream input = context.getContentResolver().openInputStream(uri);
             List<ScaleMeasurement> csvScaleMeasurementList =
-                    CsvHelper.importFrom(new BufferedReader(new FileReader(filename)));
+                    CsvHelper.importFrom(new BufferedReader(new InputStreamReader(input)));
 
             final int userId = getSelectedScaleUser().getId();
             for (ScaleMeasurement measurement : csvScaleMeasurementList) {
@@ -340,11 +354,11 @@ public class OpenScale {
 
             measurementDAO.insertAll(csvScaleMeasurementList);
             updateScaleData();
-            Toast.makeText(context, context.getString(R.string.info_data_imported) + " /sdcard" + filename, Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, context.getString(R.string.info_data_imported) + " " + filename, Toast.LENGTH_SHORT).show();
         } catch (IOException e) {
-            Toast.makeText(context, context.getString(R.string.error_importing) + e.getMessage(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, context.getString(R.string.error_importing) + ": " + e.getMessage(), Toast.LENGTH_SHORT).show();
         } catch (ParseException e) {
-            Toast.makeText(context, context.getString(R.string.error_importing) + e.getMessage(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, context.getString(R.string.error_importing) + ": " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
 

@@ -79,6 +79,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import static android.app.Activity.RESULT_OK;
 import static android.util.TypedValue.COMPLEX_UNIT_DIP;
 
 public class TableFragment extends Fragment implements FragmentUpdateListener {
@@ -94,7 +95,9 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
     private ArrayList <MeasurementView> measurementsList;
 
     private int selectedSubpageNr;
-    private static String SELECTED_SUBPAGE_NR_KEY = "selectedSubpageNr";
+    private static final String SELECTED_SUBPAGE_NR_KEY = "selectedSubpageNr";
+
+    private static final int IMPORT_DATA_REQUEST = 100;
 
     public TableFragment() {
 
@@ -158,12 +161,9 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
 
-
                 switch (item.getItemId()) {
                     case R.id.importData:
-                        if (PermissionHelper.requestReadPermission(getActivity())) {
-                            importTable();
-                        }
+                        importTable();
                         return true;
                     case R.id.exportData:
                         if (PermissionHelper.requestWritePermission(getActivity())) {
@@ -285,11 +285,19 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
         }
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == IMPORT_DATA_REQUEST && resultCode == RESULT_OK && data != null) {
+            OpenScale.getInstance(getContext()).importData(data.getData());
+        }
+    }
+
     private void importTable() {
         int selectedUserId = OpenScale.getInstance(getContext()).getSelectedScaleUserId();
 
-        if (selectedUserId == -1)
-        {
+        if (selectedUserId == -1) {
             AlertDialog.Builder infoDialog = new AlertDialog.Builder(getContext());
 
             infoDialog.setMessage(getResources().getString(R.string.info_no_selected_user));
@@ -298,36 +306,14 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
             infoDialog.show();
         }
-        else
-        {
-            AlertDialog.Builder filenameDialog = new AlertDialog.Builder(getActivity());
+        else {
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.setType("text/*");
 
-            filenameDialog.setTitle(getResources().getString(R.string.info_set_filename) + " /sdcard ...");
-
-            String exportFilename = prefs.getString("exportFilename", "/openScale_data_" + OpenScale.getInstance(getContext()).getSelectedScaleUser().getUserName() + ".csv");
-
-            final EditText txtFilename = new EditText(tableView.getContext());
-            txtFilename.setText(exportFilename);
-
-            filenameDialog.setView(txtFilename);
-
-            filenameDialog.setPositiveButton(getResources().getString(R.string.label_ok), new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-                    OpenScale.getInstance(getContext()).importData(Environment.getExternalStorageDirectory().getPath() + txtFilename.getText().toString());
-                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(tableView.getContext());
-                    prefs.edit().putString("exportFilename", txtFilename.getText().toString()).commit();
-                    updateOnView(OpenScale.getInstance(getContext()).getScaleMeasurementList());
-                }
-            });
-
-            filenameDialog.setNegativeButton(getResources().getString(R.string.label_cancel), new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-                    dialog.dismiss();
-                }
-            });
-
-
-            filenameDialog.show();
+            startActivityForResult(
+                    Intent.createChooser(intent, getResources().getString(R.string.label_import)),
+                    IMPORT_DATA_REQUEST);
         }
     }
 
@@ -364,7 +350,6 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
         filenameDialog.show();
     }
-
 
     private void shareTable() {
         final ScaleUser selectedScaleUser = OpenScale.getInstance(getContext()).getSelectedScaleUser();
