@@ -33,6 +33,10 @@ public class CsvHelper {
     }
 
     private static String[] getOldStyleHeaders(String sampleLine) {
+        if (sampleLine == null) {
+            return null;
+        }
+
         final String[] fields = sampleLine.split(",", -1);
 
         // Return an array with header fields so that all the headers that actually are

@@ -24,6 +24,7 @@ import org.junit.Test;
 import java.io.BufferedReader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -180,5 +181,11 @@ public class CsvHelperTest {
 
         assertEquals(1, list.size());
         validateEntry(list.get(0), 0);
+    }
+
+    @Test(expected = ParseException.class)
+    public void empty() throws Exception {
+        final String data = "";
+        CsvHelper.importFrom(new BufferedReader(new StringReader(data)));
     }
 }
