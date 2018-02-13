@@ -1,2 +1,169 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<?xml version='1.0' encoding='UTF-8'?>
+<resources><string name="title_overview">Přehled</string>
+    <string name="title_graph">Graf</string>
+    <string name="title_table">Tabulka</string>
+    <string name="title_statistics">Statistiky</string>
+    <string name="title_users">Uživatelé</string>
+    <string name="title_data">Data</string>
+    <string name="title_measurements">Měření</string>
+    <string name="title_about">O aplikaci</string>
+    <string name="title_general">Obecné</string>
+
+    <string name="action_settings">Nastavení</string>
+    <string name="action_bluetooth_status">Stav bluetooth</string>
+    <string name="open_drawer">otevřít</string>
+    <string name="close_drawer">zavřít</string>
+
+    <string name="label_add">Přidat</string>
+    <string name="label_cancel">Storno</string>
+    <string name="label_yes">Ano</string>
+    <string name="label_no">Ne</string>
+    <string name="label_delete">Smazat</string>
+    <string name="label_add_user">Přidat uživatele</string>
+    <string name="label_share">Sdílet</string>
+
+    <string name="label_id">Identifikátor</string>
+    <string name="label_weight">Hmotnost</string>
+    <string name="label_bmi">Index tělesné hmotnosti (BMI)</string>
+    <string name="label_bmr">Bazální metabolický výdej (BMR)</string>
+    <string name="label_fat">Procento tělesného tuku</string>
+    <string name="label_water">Procento vody</string>
+    <string name="label_muscle">Procento svalů</string>
+    <string name="label_comment">Komentář</string>
+    <string name="label_smartUserAssign">Chytré přiřazení uživatele</string>
+
+    <string name="label_fat_percentage">Tělesný tuk v %</string>
+    <string name="label_water_percentage">Tělesná voda v %</string>
+    <string name="label_muscle_percentage">Svalová hmota v %</string>
+
+    <plurals name="label_days">
+	<item quantity="one">%d den</item>
+	<item quantity="few">%d dny</item>
+	<item quantity="other">%d dnů</item>
+</plurals>
+    <string name="label_last_week">Uplynulých 7 dnů</string>
+    <string name="label_last_month">Uplynulých 30 dnů</string>
+    <string name="label_weight_difference">Rozdíl hmotnosti</string>
+    <string name="label_goal_date_is">Cílové datum je</string>
+    <string name="label_days_left">Zbývá dnů</string>
+
+    <string name="label_date">Datum</string>
+    <string name="label_time">Čas</string>
+    <string name="label_birthday">Narozeniny</string>
+    <string name="label_user_name">Jméno</string>
+    <string name="label_body_height">Tělesná hmotnost</string>
+    <string name="label_gender">Pohlaví</string>
+    <string name="label_male">Muž</string>
+    <string name="label_woman">Žena</string>
+    <string name="label_goal_weight">Cílová hmotnost</string>
+    <string name="label_goal_date">Cílové datum</string>
+
+    <string name="label_title_user">uživatel</string>
+    <string name="label_title_last_measurement">minulé měření</string>
+    <string name="label_title_goal">cíl</string>
+    <string name="label_title_statistics">statistiky</string>
+
+    <string name="label_import">Import</string>
+    <string name="label_export">Export</string>
+    <string name="label_delete_all">Smazat vše</string>
+
+    <string name="error_value_required">Je vyžadována hodnota</string>
+    <string name="error_value_range">Hodnota není v rozsahu</string>
+    <string name="error_exporting">Chyba při exportu</string>
+    <string name="error_importing">Chyba při importu</string>
+    <string name="error_user_name_required">Chyba: je třeba uživatelské jméno</string>
+    <string name="error_user_name_too_short">Chyba: je třeba, aby uživatelské jméno bylo alespoň 3 znaky dlouhé</string>
+    <string name="error_body_height_required">Chyba: je třeba zadat výšku člověka</string>
+    <string name="error_initial_weight_required">Chyba: je třeba zadat počáteční hmotnost</string>
+    <string name="error_goal_weight_required">Chyba: je třeba zadat cílovou hmotnost</string>
+    <string name="info_data_deleted">Položka v databázi smazána</string>
+    <string name="info_data_all_deleted">Všechny položky vymazány z databáze</string>
+    <string name="info_data_exported">Data exportována na</string>
+    <string name="info_data_imported">Data importována z</string>
+    <string name="info_enter_value_cm">Zadejte hodnotu v cm</string>
+    <string name="info_enter_value_percent">Zadejte hodnotu v %</string>
+    <string name="info_enter_value_unit">Zadejte hodnotu v</string>
+    <string name="info_enter_comment">Zadejte volitelný komentář</string>
+    <string name="info_is_visible">je viditelné</string>
+    <string name="info_is_not_visible">není viditelné</string>
+    <string name="info_is_enable">je zapnuté</string>
+    <string name="info_is_not_enable">je vypnuté</string>
+    <string name="info_is_not_available">není k dispozici</string>
+    <string name="info_delete_bluetooth_data">Vyčistit všechna bluetooth data</string>
+    <string name="info_bluetooth_connection_lost">Ztraceno bluetooth spojení</string>
+    <string name="info_bluetooth_no_device">Nebylo nalezeno žádné bluetooth zařízení</string>
+    <string name="info_bluetooth_no_device_set">Nebylo vybráno žádné bluetooth zařízení</string>
+    <string name="info_bluetooth_connection_successful">Spojení úspěšně navázáno</string>
+    <string name="info_bluetooth_init">Inicializovat bluetooth zařízení</string>
+    <string name="info_new_data_added">%1$.2f%2$s [%3$s] do %4$s přidáno</string>
+    <string name="info_enter_user_name">Zadejte své jméno</string>
+    <string name="info_no_evaluation_available">Hodnotu se nedaří vyhodnotit</string>
+
+    <string name="question_really_delete">Opravdu chcete smazat položku v databázi?</string>
+    <string name="question_really_delete_user">Opravdu chcete smazat tohoto uživatele?</string>
+
+    <string name="label_bluetooth_title">Bluetooth</string>
+    <string name="label_device_type">Typ zařízení</string>
+
+    <string name="label_delete_confirmation">Potvrzení smazání</string>
+
+    <string name="label_estimate_water">Odhadnout vodu v těle</string>
+    <string name="label_estimate_fat">Odhadnout tělesný tuk</string>
+
+    <string name="label_category_display">Zobrazit</string>
+    <string name="label_maintainer">Správce</string>
+    <string name="label_website">Webové stránky</string>
+    <string name="label_license">Licence</string>
+
+    <string name="label_automatic">automaticky</string>
+
+    <string name="label_theme">Téma vzhledu</string>
+    <string name="info_app_restart_required">Aby se změny projevily, je třeba aplikaci restartovat</string>
+
+    <string name="label_reminder">Připomínání</string>
+    <string name="label_reminder_weekdays">Dny v týdnu</string>
+    <string name="label_reminder_time">Čas</string>
+    <string name="label_reminder_notify_text">Text upozornění</string>
+    <string name="info_your_weight">Vaše hmotnost byla</string>
+    <string name="info_on_date">v</string>
+
+    <string name="Monday">pondělí</string>
+    <string name="Tuesday">úterý</string>
+    <string name="Wednesday">středa</string>
+    <string name="Thursday">čtvrtek</string>
+    <string name="Friday">pátek</string>
+    <string name="Saturday">sobota</string>
+    <string name="Sunday">neděle</string>
+    <string name="label_bt_device_no_support">zařízení není podporováno</string>
+    <string name="label_exportBackup">Exportovat zálohu</string>
+    <string name="label_importBackup">Importovat zálohu</string>
+    <string name="label_backup">Záloha</string>
+    <string name="label_export_dir">Složka s exportem</string>
+    <string name="label_not_found">nenalezeno</string>
+    <string name="label_ignoreOutOfRange">Ignorovat data která jsou mimo rozsah</string>
+    <string name="label_initial_weight">Počáteční hmotnost</string>
+    <string name="label_average_data">Spočítat průměr za den/měsíc</string>
+    <string name="label_help">Nápověda</string>
+
+    <string name="label_feedback_message_enjoying">Líbí se vám openScale?</string>
+    <string name="label_feedback_message_rate_app">Co takhle ohodnotit na GooglePlay nebo GitHub?</string>
+    <string name="label_feedback_message_issue">Chcete nám poskytnout nějakou zpětnou vazbu?</string>
+    <string name="label_feedback_message_yes">Ano!</string>
+    <string name="label_feedback_message_no">Ani ne</string>
+    <string name="label_feedback_message_positive">OK, jistě</string>
+    <string name="label_feedback_message_negative">Ne, děkuji</string>
+
+    <string name="customactivityoncrash_error_activity_restart_app">Restartovat aplikaci</string>
+    <string name="customactivityoncrash_error_activity_close_app">Zavřít aplikaci</string>
+    <string name="customactivityoncrash_error_activity_error_details">Podrobnosti chyby</string>
+    <string name="customactivityoncrash_error_activity_error_details_title">Podrobnosti chyby</string>
+    <string name="customactivityoncrash_error_activity_error_details_close">Zavřít</string>
+    <string name="customactivityoncrash_error_activity_error_details_copy">Zkopírovat do schránky</string>
+    <string name="customactivityoncrash_error_activity_error_details_copied">Zkopírováno do schránky</string>
+    <string name="customactivityoncrash_error_activity_error_details_clipboard_label">Informace o chybě</string>
+    <string name="edit">Upravit</string>
+    <string name="save">Uložit</string>
+
+    <string name="permission_bluetooth_info_title">Informace</string>
+
+</resources>
