@@ -69,7 +69,8 @@
         <ListView
             android:id="@+id/tableDataView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:layout_marginHorizontal="5dp">
         </ListView>
     </LinearLayout>
 </LinearLayout>

@@ -29,9 +29,9 @@ import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
-import android.text.SpannedString;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -50,6 +50,7 @@ import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.health.openscale.BuildConfig;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
@@ -78,6 +79,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import static android.app.Activity.RESULT_OK;
 import static android.util.TypedValue.COMPLEX_UNIT_DIP;
 
 public class TableFragment extends Fragment implements FragmentUpdateListener {
@@ -93,7 +95,9 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
     private ArrayList <MeasurementView> measurementsList;
 
     private int selectedSubpageNr;
-    private static String SELECTED_SUBPAGE_NR_KEY = "selectedSubpageNr";
+    private static final String SELECTED_SUBPAGE_NR_KEY = "selectedSubpageNr";
+
+    private static final int IMPORT_DATA_REQUEST = 100;
 
     public TableFragment() {
 
@@ -108,6 +112,9 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
         tableDataView = (ListView) tableView.findViewById(R.id.tableDataView);
         tableHeaderView = (LinearLayout) tableView.findViewById(R.id.tableHeaderView);
+
+        tableDataView.setAdapter(new ListViewAdapter());
+        tableDataView.setOnItemClickListener(new onClickListenerRow());
 
         optionMenu = (ImageView) tableView.findViewById(R.id.optionMenu);
 
@@ -154,12 +161,9 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
 
-
                 switch (item.getItemId()) {
                     case R.id.importData:
-                        if (PermissionHelper.requestReadPermission(getActivity())) {
-                            importTable();
-                        }
+                        importTable();
                         return true;
                     case R.id.exportData:
                         if (PermissionHelper.requestWritePermission(getActivity())) {
@@ -167,9 +171,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
                         }
                         return true;
                     case R.id.shareData:
-                        if (PermissionHelper.requestWritePermission(getActivity())) {
-                            shareTable();
-                        }
+                        shareTable();
                         return true;
                     default:
                         return false;
@@ -192,15 +194,12 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
     @Override
     public void updateOnView(List<ScaleMeasurement> scaleMeasurementList)
     {
-        tableDataView.setAdapter(new ListViewAdapter(new ArrayList<HashMap<Integer, Spanned>>())); // delete all data in the table with an empty adapter array list
-
-        if (scaleMeasurementList.isEmpty()) {
-            return;
-        }
-
         final int maxSize = 25;
 
-        int subpageCount = (int)Math.ceil(scaleMeasurementList.size() / (double)maxSize);
+        final int subpageCount = (int)Math.ceil(scaleMeasurementList.size() / (double)maxSize);
+        if (selectedSubpageNr >= subpageCount) {
+            selectedSubpageNr = Math.max(0, subpageCount - 1);
+        }
 
         subpageView.removeAllViews();
 
@@ -216,7 +215,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
         moveSubpageLeft.setEnabled(selectedSubpageNr > 0);
         subpageView.addView(moveSubpageLeft);
 
-        for (int i=0; i<subpageCount; i++) {
+        for (int i = 0; i < subpageCount; i++) {
             TextView subpageNrView = new TextView(tableView.getContext());
             subpageNrView.setOnClickListener(new onClickListenerSubpageSelect());
             subpageNrView.setText(Integer.toString(i+1));
@@ -225,6 +224,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
             subpageView.addView(subpageNrView);
         }
+
         if (subpageView.getChildCount() > 1) {
             TextView selectedSubpageNrView = (TextView) subpageView.getChildAt(selectedSubpageNr + 1);
             if (selectedSubpageNrView != null) {
@@ -247,6 +247,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
         tableHeaderView.removeAllViews();
 
+        ArrayList<MeasurementView> visibleMeasurements = new ArrayList<>();
         for (MeasurementView measurement : measurementsList) {
             measurement.updatePreferences(prefs);
 
@@ -259,50 +260,16 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
                 headerIcon.getLayoutParams().height = pxImageDp(20);
 
                 tableHeaderView.addView(headerIcon);
+
+                visibleMeasurements.add(measurement);
             }
         }
 
-        ArrayList<HashMap<Integer, Spanned>> dataRowList = new ArrayList<>();
+        ListViewAdapter adapter = (ListViewAdapter) tableDataView.getAdapter();
 
-        int displayCount = 0;
-
-        for (int i = (maxSize * selectedSubpageNr); i < scaleMeasurementList.size(); i++) {
-            ScaleMeasurement scaleMeasurement = scaleMeasurementList.get(i);
-
-            ScaleMeasurement prevScaleMeasurement = null;
-            if (i < scaleMeasurementList.size() - 1) {
-                prevScaleMeasurement = scaleMeasurementList.get(i + 1);
-            }
-
-            HashMap<Integer, Spanned> dataRow = new HashMap<>();
-
-            int columnNr = 0;
-            dataRow.put(columnNr++, new SpannedString(Long.toString(scaleMeasurement.getId())));
-
-            for (MeasurementView measurement : measurementsList) {
-                measurement.loadFrom(scaleMeasurement, prevScaleMeasurement);
-
-                if (measurement.isVisible()) {
-                    SpannableStringBuilder text = new SpannableStringBuilder();
-                    text.append(measurement.getValueAsString());
-                    text.append("\n");
-                    measurement.appendDiffValue(text);
-
-                    dataRow.put(columnNr++, text);
-                }
-            }
-
-            dataRowList.add(dataRow);
-
-            displayCount++;
-
-            if (maxSize <= displayCount) {
-                break;
-            }
-        }
-
-        tableDataView.setAdapter(new ListViewAdapter(dataRowList));
-        tableDataView.setOnItemClickListener(new onClickListenerRow());
+        final int startOffset = maxSize * selectedSubpageNr;
+        final int endOffset = Math.min(startOffset + maxSize + 1, scaleMeasurementList.size());
+        adapter.setMeasurements(visibleMeasurements, scaleMeasurementList.subList(startOffset, endOffset), maxSize);
     }
 
     private int pxImageDp(float dp) {
@@ -311,21 +278,26 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
     private class onClickListenerRow implements AdapterView.OnItemClickListener {
         @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, long click_id) {
-            LinearLayout dataRow = (LinearLayout)view;
-            TextView idTextView = (TextView) dataRow.getChildAt(0);
-            int id = Integer.parseInt(idTextView.getText().toString());
-
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             Intent intent = new Intent(tableView.getContext(), DataEntryActivity.class);
-            intent.putExtra(DataEntryActivity.EXTRA_ID, id);
-            startActivityForResult(intent, 1);        }
+            intent.putExtra(DataEntryActivity.EXTRA_ID, (int)id);
+            startActivity(intent);
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == IMPORT_DATA_REQUEST && resultCode == RESULT_OK && data != null) {
+            OpenScale.getInstance(getContext()).importData(data.getData());
+        }
     }
 
     private void importTable() {
         int selectedUserId = OpenScale.getInstance(getContext()).getSelectedScaleUserId();
 
-        if (selectedUserId == -1)
-        {
+        if (selectedUserId == -1) {
             AlertDialog.Builder infoDialog = new AlertDialog.Builder(getContext());
 
             infoDialog.setMessage(getResources().getString(R.string.info_no_selected_user));
@@ -334,36 +306,14 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
             infoDialog.show();
         }
-        else
-        {
-            AlertDialog.Builder filenameDialog = new AlertDialog.Builder(getActivity());
+        else {
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.setType("text/*");
 
-            filenameDialog.setTitle(getResources().getString(R.string.info_set_filename) + " /sdcard ...");
-
-            String exportFilename = prefs.getString("exportFilename", "/openScale_data_" + OpenScale.getInstance(getContext()).getSelectedScaleUser().getUserName() + ".csv");
-
-            final EditText txtFilename = new EditText(tableView.getContext());
-            txtFilename.setText(exportFilename);
-
-            filenameDialog.setView(txtFilename);
-
-            filenameDialog.setPositiveButton(getResources().getString(R.string.label_ok), new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-                    OpenScale.getInstance(getContext()).importData(Environment.getExternalStorageDirectory().getPath() + txtFilename.getText().toString());
-                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(tableView.getContext());
-                    prefs.edit().putString("exportFilename", txtFilename.getText().toString()).commit();
-                    updateOnView(OpenScale.getInstance(getContext()).getScaleMeasurementList());
-                }
-            });
-
-            filenameDialog.setNegativeButton(getResources().getString(R.string.label_cancel), new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-                    dialog.dismiss();
-                }
-            });
-
-
-            filenameDialog.show();
+            startActivityForResult(
+                    Intent.createChooser(intent, getResources().getString(R.string.label_import)),
+                    IMPORT_DATA_REQUEST);
         }
     }
 
@@ -401,29 +351,27 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
         filenameDialog.show();
     }
 
-
     private void shareTable() {
         final ScaleUser selectedScaleUser = OpenScale.getInstance(getContext()).getSelectedScaleUser();
-        String exportFilename = prefs.getString("exportFilename" + selectedScaleUser.getId(), "openScale_data_" + selectedScaleUser.getUserName() + ".csv");
 
-        String fullPath = Environment.getExternalStorageDirectory().getPath() + "/tmp/" + exportFilename;
-
-        if (!OpenScale.getInstance(getContext()).exportData(fullPath)) {
+        File shareFile = new File(getContext().getCacheDir(),
+                String.format("openScale %s.csv", selectedScaleUser.getUserName()));
+        if (!OpenScale.getInstance(getContext()).exportData(shareFile.getPath())) {
             return;
         }
 
-        Intent intentShareFile = new Intent(Intent.ACTION_SEND);
-        File shareFile = new File(fullPath);
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        intent.setType("text/csv");
 
-        if(shareFile.exists()) {
-            intentShareFile.setType("text/comma-separated-values");
-            intentShareFile.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://"+fullPath));
+        final Uri uri = FileProvider.getUriForFile(
+                getContext(), BuildConfig.APPLICATION_ID + ".fileprovider", shareFile);
+        intent.putExtra(Intent.EXTRA_STREAM, uri);
 
-            intentShareFile.putExtra(Intent.EXTRA_SUBJECT, "openScale export csv file");
-            intentShareFile.putExtra(Intent.EXTRA_TEXT, exportFilename);
+        intent.putExtra(Intent.EXTRA_SUBJECT,
+                getResources().getString(R.string.label_share_subject, selectedScaleUser.getUserName()));
 
-            startActivity(Intent.createChooser(intentShareFile, getResources().getString(R.string.label_share)));
-        }
+        startActivity(Intent.createChooser(intent, getResources().getString(R.string.label_share)));
     }
 
     @Override
@@ -480,69 +428,105 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
     private class ListViewAdapter extends BaseAdapter {
 
-        private ArrayList<HashMap<Integer, Spanned>> dataList;
-        private LinearLayout row;
+        private List<MeasurementView> visibleMeasurements;
+        private List<ScaleMeasurement> scaleMeasurements;
+        private int measurementsToShow = 0;
 
-        public ListViewAdapter(ArrayList<HashMap<Integer, Spanned>> list) {
-            super();
-            this.dataList = list;
+        private Spanned[][] stringCache;
+
+        private ArrayList<HashMap<Integer, Spanned>> dataList;
+
+        public void setMeasurements(List<MeasurementView> visibleMeasurements,
+                                    List<ScaleMeasurement> scaleMeasurements,
+                                    int maxSize) {
+            this.visibleMeasurements = visibleMeasurements;
+            this.scaleMeasurements = scaleMeasurements;
+            measurementsToShow = Math.min(scaleMeasurements.size(), maxSize);
+
+            stringCache = new Spanned[measurementsToShow][visibleMeasurements.size()];
+
+            notifyDataSetChanged();
         }
 
         @Override
         public int getCount() {
-            return dataList.size();
+            return measurementsToShow;
         }
 
         @Override
         public Object getItem(int position) {
-            return dataList.get(position);
+            return scaleMeasurements.get(position);
         }
 
         @Override
         public long getItemId(int position) {
-            return 0;
+            return scaleMeasurements.get(position).getId();
         }
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            if (dataList.isEmpty()) {
-                return convertView;
-            }
+            // Create entries in stringCache if needed
+            if (stringCache[position][0] == null) {
+                ScaleMeasurement measurement = scaleMeasurements.get(position);
+                ScaleMeasurement prevMeasurement = null;
+                if (position + 1 < scaleMeasurements.size()) {
+                    prevMeasurement = scaleMeasurements.get(position + 1);
+                }
 
-            if (convertView == null) {
-                row = new LinearLayout(getContext());
-                convertView = row;
+                for (int i = 0; i < visibleMeasurements.size(); ++i) {
+                    visibleMeasurements.get(i).loadFrom(measurement, prevMeasurement);
 
-                for (int i = 0; i< dataList.get(0).size(); i++) {
-                    TextView column = new TextView(getContext());
-                    column.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
-                    column.getLayoutParams().width = 0;
-                    column.setGravity(Gravity.CENTER);
+                    SpannableStringBuilder string = new SpannableStringBuilder();
+                    string.append(visibleMeasurements.get(i).getValueAsString());
+                    visibleMeasurements.get(i).appendDiffValue(string);
 
-                    if ((getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) != Configuration.SCREENLAYOUT_SIZE_XLARGE &&
-                       (getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) != Configuration.SCREENLAYOUT_SIZE_LARGE) {
-                        column.setTextSize(COMPLEX_UNIT_DIP, 9);
-                    }
-
-                    if (i == 0) {
-                        column.setVisibility(View.GONE);
-                    }
-
-                    row.addView(column);
+                    stringCache[position][i] = string;
                 }
             }
 
-            LinearLayout convView = (LinearLayout)convertView;
+            // Create view if needed
+            LinearLayout row;
+            if (convertView == null) {
+                row = new LinearLayout(getContext());
 
-            HashMap<Integer, Spanned> map = dataList.get(position);
+                final int screenSize = getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK;
+                final boolean isSmallScreen =
+                        screenSize != Configuration.SCREENLAYOUT_SIZE_XLARGE
+                        && screenSize != Configuration.SCREENLAYOUT_SIZE_LARGE;
 
-            for (int i = 0; i < map.size(); i++) {
-                TextView column = (TextView)convView.getChildAt(i);
-                column.setText(map.get(i));
+                for (int i = 0; i < visibleMeasurements.size(); ++i) {
+                    TextView column = new TextView(getContext());
+                    LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
+                            LinearLayout.LayoutParams.WRAP_CONTENT,
+                            LinearLayout.LayoutParams.WRAP_CONTENT,
+                            1);
+                    layoutParams.width = 0;
+                    column.setLayoutParams(layoutParams);
+                    column.setMinLines(2);
+                    column.setGravity(Gravity.CENTER_HORIZONTAL);
+
+                    if (isSmallScreen) {
+                        column.setTextSize(COMPLEX_UNIT_DIP, 9);
+                    }
+                    row.addView(column);
+                }
+            }
+            else {
+                row = (LinearLayout) convertView;
             }
 
-            return convertView;
+            // Fill view with data
+            for (int i = 0; i < visibleMeasurements.size(); ++i) {
+                TextView column = (TextView) row.getChildAt(i);
+                column.setText(stringCache[position][i]);
+            }
+
+            return row;
         }
 
+        @Override
+        public boolean hasStableIds() {
+            return true;
+        }
     }
 }
