@@ -39,6 +39,8 @@ If you found a bug, have an idea how to improve the openScale app or have a ques
 
 If you want to help to support your Bluetooth scale please see [here](https://github.com/oliexdev/openScale/wiki/How-to-reverse-engineer-a-Bluetooth-4.x-scale) for further information.
 
+If you want to help to translate the app in your language pleasse see [here](https://github.com/oliexdev/openScale/wiki/Frequently-Asked-Questions-(FAQ)#why-is-my-language-xyz-is-missing-or-incomplete)
+
 # Screens
 
 <table>
