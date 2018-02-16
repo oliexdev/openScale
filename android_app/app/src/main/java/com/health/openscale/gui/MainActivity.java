@@ -508,7 +508,7 @@ public class MainActivity extends AppCompatActivity {
                 BottomNavigationItemView item = (BottomNavigationItemView) menuView.getChildAt(i);
                 //noinspection RestrictedApi
                 item.setShiftingMode(false);
-                //item.setPadding(0, 15, 0, 0);
+                item.setPadding(0, 20, 0, 0);
                 // set once again checked value, so view will be updated
                 //noinspection RestrictedApi
                 //item.setChecked(item.getItemData().isChecked());
