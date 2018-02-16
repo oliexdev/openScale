@@ -388,11 +388,6 @@ public class DataEntryActivity extends AppCompatActivity {
 
         OpenScale openScale = OpenScale.getInstance(getApplicationContext());
         if (openScale.getSelectedScaleUserId() == -1) {
-            AlertDialog.Builder infoDialog = new AlertDialog.Builder(context);
-
-            infoDialog.setMessage(getResources().getString(R.string.info_no_selected_user));
-            infoDialog.setPositiveButton(getResources().getString(R.string.label_ok), null);
-            infoDialog.show();
             return;
         }
 

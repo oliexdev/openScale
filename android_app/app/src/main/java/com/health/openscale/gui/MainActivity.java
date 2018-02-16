@@ -323,10 +323,18 @@ public class MainActivity extends AppCompatActivity {
         drawerLayout.closeDrawers();
     }
 
+    private void showNoSelectedUserDialog() {
+        AlertDialog.Builder infoDialog = new AlertDialog.Builder(this);
+
+        infoDialog.setMessage(getResources().getString(R.string.info_no_selected_user));
+        infoDialog.setPositiveButton(getResources().getString(R.string.label_ok), null);
+        infoDialog.show();
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        if(drawerToggle.onOptionsItemSelected(item)){
+        if (drawerToggle.onOptionsItemSelected(item)) {
             return true;
         }
 
@@ -335,6 +343,11 @@ public class MainActivity extends AppCompatActivity {
                 drawerLayout.openDrawer(GravityCompat.START);
                 return true;
             case R.id.action_add_measurement:
+                if (OpenScale.getInstance(getApplicationContext()).getSelectedScaleUserId() == -1) {
+                    showNoSelectedUserDialog();
+                    return true;
+                }
+
                 Intent intent = new Intent(getApplicationContext(), DataEntryActivity.class);
                 startActivity(intent);
                 return true;
@@ -380,6 +393,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void invokeSearchBluetoothDevice() {
+        if (OpenScale.getInstance(getApplicationContext()).getSelectedScaleUserId() == -1) {
+            showNoSelectedUserDialog();
+            return;
+        }
+
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         String deviceName = prefs.getString("btDeviceName", "-");
