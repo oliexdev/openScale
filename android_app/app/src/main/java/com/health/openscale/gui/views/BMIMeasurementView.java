@@ -17,6 +17,7 @@ package com.health.openscale.gui.views;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.support.v4.content.ContextCompat;
 
 import com.health.openscale.R;
@@ -58,6 +59,11 @@ public class BMIMeasurementView extends FloatMeasurementView {
     @Override
     protected float getMaxValue() {
         return 50;
+    }
+
+    @Override
+    public int getColor() {
+        return Color.parseColor("#26A69A");
     }
 
     @Override

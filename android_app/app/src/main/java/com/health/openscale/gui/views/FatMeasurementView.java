@@ -21,9 +21,10 @@ import android.support.v4.content.ContextCompat;
 
 import com.health.openscale.R;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
-import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
+
+import lecho.lib.hellocharts.util.ChartUtils;
 
 public class FatMeasurementView extends FloatMeasurementView {
 
@@ -75,6 +76,11 @@ public class FatMeasurementView extends FloatMeasurementView {
         }
 
         return 300;
+    }
+
+    @Override
+    public int getColor() {
+        return ChartUtils.COLOR_ORANGE;
     }
 
     @Override

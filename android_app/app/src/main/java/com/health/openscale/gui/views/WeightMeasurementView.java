@@ -25,6 +25,8 @@ import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 import com.health.openscale.core.utils.Converters;
 
+import lecho.lib.hellocharts.util.ChartUtils;
+
 public class WeightMeasurementView extends FloatMeasurementView {
 
     public WeightMeasurementView(Context context) {
@@ -54,6 +56,11 @@ public class WeightMeasurementView extends FloatMeasurementView {
     @Override
     protected float getMaxValue() {
         return Converters.fromKilogram(300.0f, getScaleUser().getScaleUnit());
+    }
+
+    @Override
+    public int getColor() {
+        return ChartUtils.COLOR_VIOLET;
     }
 
     @Override

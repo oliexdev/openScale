@@ -89,101 +89,13 @@
             android:fillViewport="true">
 
             <LinearLayout
+                android:id="@+id/floatingActionBar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="?attr/colorPrimary"
                 android:gravity="center"
                 android:orientation="horizontal"
                 android:padding="5dp">
-
-                <android.support.design.widget.FloatingActionButton
-                    android:id="@+id/diagramWeight"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginRight="10dp"
-                    android:clickable="true"
-                    android:src="@drawable/ic_weight"
-                    app:backgroundTint="#AA66CC"
-                    app:fabSize="mini"
-                    app:rippleColor="#AA66CC" />
-
-                <android.support.design.widget.FloatingActionButton
-                    android:id="@+id/diagramFat"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginRight="10dp"
-                    android:clickable="true"
-                    android:src="@drawable/ic_fat"
-                    app:backgroundTint="#FFBB33"
-                    app:fabSize="mini"
-                    app:rippleColor="#FFBB33" />
-
-                <android.support.design.widget.FloatingActionButton
-                    android:id="@+id/diagramWater"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginRight="10dp"
-                    android:clickable="true"
-                    android:src="@drawable/ic_water"
-                    app:backgroundTint="#33B5E5"
-                    app:fabSize="mini"
-                    app:rippleColor="#33B5E5" />
-
-                <android.support.design.widget.FloatingActionButton
-                    android:id="@+id/diagramMuscle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginRight="10dp"
-                    android:clickable="true"
-                    android:src="@drawable/ic_muscle"
-                    app:backgroundTint="#99CC00"
-                    app:fabSize="mini"
-                    app:rippleColor="#99CC00" />
-
-                <android.support.design.widget.FloatingActionButton
-                    android:id="@+id/diagramLBW"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginRight="10dp"
-                    android:clickable="true"
-                    android:src="@drawable/ic_lbw"
-                    app:backgroundTint="#cc0099"
-                    app:fabSize="mini"
-                    app:rippleColor="#cc0099" />
-
-                <android.support.design.widget.FloatingActionButton
-                    android:id="@+id/diagramBone"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginRight="10dp"
-                    android:clickable="true"
-                    android:src="@drawable/ic_bone"
-                    app:backgroundTint="#00cc9e"
-                    app:fabSize="mini"
-                    app:rippleColor="#00cc9e" />
-
-                <android.support.design.widget.FloatingActionButton
-                    android:id="@+id/diagramWaist"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginRight="10dp"
-                    android:clickable="true"
-                    android:src="@drawable/ic_waist"
-                    app:backgroundTint="#FF00FF"
-                    app:fabSize="mini"
-                    app:rippleColor="#FF00FF" />
-
-                <android.support.design.widget.FloatingActionButton
-                    android:id="@+id/diagramHip"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginRight="10dp"
-                    android:clickable="true"
-                    android:src="@drawable/ic_hip"
-                    app:backgroundTint="#FFFF00"
-                    app:fabSize="mini"
-                    app:rippleColor="#FFFF00" />
-
             </LinearLayout>
         </HorizontalScrollView>
 

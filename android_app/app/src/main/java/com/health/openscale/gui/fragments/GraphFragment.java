@@ -35,6 +35,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.health.openscale.R;
@@ -42,6 +43,18 @@ import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.utils.PolynomialFitter;
 import com.health.openscale.gui.activities.DataEntryActivity;
+import com.health.openscale.gui.views.BMIMeasurementView;
+import com.health.openscale.gui.views.BoneMeasurementView;
+import com.health.openscale.gui.views.FatMeasurementView;
+import com.health.openscale.gui.views.FloatMeasurementView;
+import com.health.openscale.gui.views.HipMeasurementView;
+import com.health.openscale.gui.views.LBWMeasurementView;
+import com.health.openscale.gui.views.MuscleMeasurementView;
+import com.health.openscale.gui.views.WHRMeasurementView;
+import com.health.openscale.gui.views.WHtRMeasurementView;
+import com.health.openscale.gui.views.WaistMeasurementView;
+import com.health.openscale.gui.views.WaterMeasurementView;
+import com.health.openscale.gui.views.WeightMeasurementView;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -75,17 +88,12 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     private TextView txtYear;
     private Button btnLeftYear;
     private Button btnRightYear;
-    private FloatingActionButton diagramWeight;
-    private FloatingActionButton diagramFat;
-    private FloatingActionButton diagramWater;
-    private FloatingActionButton diagramMuscle;
-    private FloatingActionButton diagramLBW;
-    private FloatingActionButton diagramWaist;
-    private FloatingActionButton diagramHip;
-    private FloatingActionButton diagramBone;
+    private LinearLayout floatingActionBar;
     private ImageView optionMenu;
     private PopupMenu popup;
     private SharedPreferences prefs;
+
+    private ArrayList<FloatMeasurementView> measurementViews;
 
     private int textColor;
 
@@ -136,65 +144,29 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         txtYear = (TextView) graphView.findViewById(R.id.txtYear);
         txtYear.setText(Integer.toString(calYears.get(Calendar.YEAR)));
 
-        diagramWeight = (FloatingActionButton) graphView.findViewById(R.id.diagramWeight);
-        diagramFat = (FloatingActionButton) graphView.findViewById(R.id.diagramFat);
-        diagramWater = (FloatingActionButton) graphView.findViewById(R.id.diagramWater);
-        diagramMuscle = (FloatingActionButton) graphView.findViewById(R.id.diagramMuscle);
-        diagramLBW = (FloatingActionButton) graphView.findViewById(R.id.diagramLBW);
-        diagramWaist = (FloatingActionButton) graphView.findViewById(R.id.diagramWaist);
-        diagramHip = (FloatingActionButton) graphView.findViewById(R.id.diagramHip);
-        diagramBone = (FloatingActionButton) graphView.findViewById(R.id.diagramBone);
+        floatingActionBar = (LinearLayout) graphView.findViewById(R.id.floatingActionBar);
+
+        measurementViews = new ArrayList<>();
+
+        measurementViews.add(new WeightMeasurementView(getContext()));
+        measurementViews.add(new BMIMeasurementView(getContext()));
+        measurementViews.add(new WaterMeasurementView(getContext()));
+        measurementViews.add(new MuscleMeasurementView(getContext()));
+        measurementViews.add(new LBWMeasurementView(getContext()));
+        measurementViews.add(new FatMeasurementView(getContext()));
+        measurementViews.add(new BoneMeasurementView(getContext()));
+        measurementViews.add(new WaistMeasurementView(getContext()));
+        measurementViews.add(new WHtRMeasurementView(getContext()));
+        measurementViews.add(new HipMeasurementView(getContext()));
+        measurementViews.add(new WHRMeasurementView(getContext()));
+
         optionMenu = (ImageView) graphView.findViewById(R.id.optionMenu);
-
-        diagramWeight.setOnClickListener(new onClickListenerDiagramLines());
-        diagramFat.setOnClickListener(new onClickListenerDiagramLines());
-        diagramWater.setOnClickListener(new onClickListenerDiagramLines());
-        diagramMuscle.setOnClickListener(new onClickListenerDiagramLines());
-        diagramLBW.setOnClickListener(new onClickListenerDiagramLines());
-        diagramWaist.setOnClickListener(new onClickListenerDiagramLines());
-        diagramHip.setOnClickListener(new onClickListenerDiagramLines());
-        diagramBone.setOnClickListener(new onClickListenerDiagramLines());
-
         optionMenu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 popup.show();
             }
         });
-
-        prefs = PreferenceManager.getDefaultSharedPreferences(graphView.getContext());
-
-        if (!prefs.getBoolean("weightEnable", true)) {
-            diagramWeight.setVisibility(View.GONE);
-        }
-
-        if (!prefs.getBoolean("fatEnable", true)) {
-            diagramFat.setVisibility(View.GONE);
-        }
-
-        if (!prefs.getBoolean("waterEnable", true)) {
-            diagramWater.setVisibility(View.GONE);
-        }
-
-        if (!prefs.getBoolean("muscleEnable", true)) {
-            diagramMuscle.setVisibility(View.GONE);
-        }
-
-        if (!prefs.getBoolean("lbwEnable", false)) {
-            diagramLBW.setVisibility(View.GONE);
-        }
-
-        if (!prefs.getBoolean("boneEnable", false)) {
-            diagramBone.setVisibility(View.GONE);
-        }
-
-        if (!prefs.getBoolean("waistEnable", false)) {
-            diagramWaist.setVisibility(View.GONE);
-        }
-
-        if (!prefs.getBoolean("hipEnable", false)) {
-            diagramHip.setVisibility(View.GONE);
-        }
 
         btnLeftYear = graphView.findViewById(R.id.btnLeftYear);
         btnLeftYear.setOnClickListener(new View.OnClickListener() {
@@ -251,6 +223,8 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         });
         popup.getMenuInflater().inflate(R.menu.graph_menu, popup.getMenu());
 
+        prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+
         MenuItem enableMonth = popup.getMenu().findItem(R.id.enableMonth);
         enableMonth.setChecked(prefs.getBoolean("showMonth", true));
 
@@ -271,6 +245,27 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     public void updateOnView(List<ScaleMeasurement> scaleMeasurementList)
     {
         generateGraphs();
+    }
+
+    private void addFloatingActionButton(FloatMeasurementView measurementView) {
+        FloatingActionButton actionButton = new FloatingActionButton(getContext());
+
+        actionButton.setTag("actionButton" + measurementView.getName());
+        actionButton.setImageDrawable(measurementView.getIcon());
+        actionButton.setClickable(true);
+        actionButton.setSize(android.support.design.widget.FloatingActionButton.SIZE_MINI);
+        RelativeLayout.LayoutParams lay = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        lay.setMargins(0,5,20,10);
+        actionButton.setLayoutParams(lay);
+        actionButton.setOnClickListener(new onClickListenerDiagramLines());
+
+        if (prefs.getBoolean(String.valueOf("actionButton" + measurementView.getName()), true)) {
+            actionButton.setBackgroundTintList(ColorStateList.valueOf(measurementView.getColor()));
+        } else {
+            actionButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#d3d3d3")));
+        }
+
+        floatingActionBar.addView(actionButton);
     }
 
     /**
@@ -326,135 +321,44 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             calDays.add(field, 1);
         }
 
-        Stack<PointValue> valuesWeight = new Stack<PointValue>();
-        Stack<PointValue> valuesFat = new Stack<PointValue>();
-        Stack<PointValue> valuesWater = new Stack<PointValue>();
-        Stack<PointValue> valuesMuscle = new Stack<PointValue>();
-        Stack<PointValue> valuesLBW = new Stack<PointValue>();
-        Stack<PointValue> valuesWaist = new Stack<PointValue>();
-        Stack<PointValue> valuesHip = new Stack<PointValue>();
-        Stack<PointValue> valuesBone = new Stack<>();
-        List<Line> lines = new ArrayList<Line>();
+        List<Line> diagramLineList = new ArrayList<Line>();
 
         Calendar calDB = Calendar.getInstance();
 
         pointIndexScaleMeasurementList = new ArrayList<>();
 
-        for (ScaleMeasurement scaleEntry: scaleMeasurementList) {
-            calDB.setTime(scaleEntry.getDateTime());
+        floatingActionBar.removeAllViews();
 
-            if (addPointValue(valuesWeight, calDB.get(field), scaleEntry.getConvertedWeight(openScale.getSelectedScaleUser().getScaleUnit()))) {
-                pointIndexScaleMeasurementList.add(scaleEntry); // if new point was added, add this point to pointIndexScaleDataList to get the correct point index after selecting an point
+        for (FloatMeasurementView measurementView : measurementViews) {
+            measurementView.updatePreferences(prefs);
+            Stack<PointValue> valuesStack = new Stack<PointValue>();
+
+            for (ScaleMeasurement measurement : scaleMeasurementList) {
+                measurementView.loadFrom(measurement, null);
+
+                calDB.setTime(measurement.getDateTime());
+
+                if (addPointValue(valuesStack, calDB.get(field), measurementView.getValue())) {
+                    pointIndexScaleMeasurementList.add(measurement); // if new point was added, add this point to pointIndexScaleDataList to get the correct point index after selecting an point
+                }
             }
 
-            addPointValue(valuesFat, calDB.get(field), scaleEntry.getFat());
-            addPointValue(valuesWater, calDB.get(field), scaleEntry.getWater());
-            addPointValue(valuesMuscle, calDB.get(field), scaleEntry.getMuscle());
-            addPointValue(valuesLBW, calDB.get(field), scaleEntry.getLbw());
-            addPointValue(valuesWaist, calDB.get(field), scaleEntry.getWaist());
-            addPointValue(valuesHip, calDB.get(field), scaleEntry.getHip());
-            addPointValue(valuesBone, calDB.get(field), scaleEntry.getBone());
+            Line diagramLine = new Line(valuesStack).
+                    setColor(measurementView.getColor()).
+                    setHasLabels(prefs.getBoolean("labelsEnable", true)).
+                    setHasPoints(prefs.getBoolean("pointsEnable", true)).
+                    setFormatter(new SimpleLineChartValueFormatter(1));
+
+            if (measurementView.isVisible()) {
+                addFloatingActionButton(measurementView);
+
+                if (prefs.getBoolean(String.valueOf("actionButton" + measurementView.getName()), true)) {
+                    diagramLineList.add(diagramLine);
+                }
+            }
         }
 
-
-        Line lineWeight = new Line(valuesWeight).
-                setColor(ChartUtils.COLOR_VIOLET).
-                setHasLabels(prefs.getBoolean("labelsEnable", true)).
-                setHasPoints(prefs.getBoolean("pointsEnable", true)).
-                setFormatter(new SimpleLineChartValueFormatter(1));
-        Line lineFat = new Line(valuesFat).
-                setColor(ChartUtils.COLOR_ORANGE).
-                setHasLabels(prefs.getBoolean("labelsEnable", true)).
-                setHasPoints(prefs.getBoolean("pointsEnable", true)).
-                setFormatter(new SimpleLineChartValueFormatter(1));
-        Line lineWater = new Line(valuesWater).
-                setColor(ChartUtils.COLOR_BLUE).
-                setHasLabels(prefs.getBoolean("labelsEnable", true)).
-                setHasPoints(prefs.getBoolean("pointsEnable", true)).
-                setFormatter(new SimpleLineChartValueFormatter(1));
-        Line lineMuscle = new Line(valuesMuscle).
-                setColor(ChartUtils.COLOR_GREEN).
-                setHasLabels(prefs.getBoolean("labelsEnable", true)).
-                setHasPoints(prefs.getBoolean("pointsEnable", true)).
-                setFormatter(new SimpleLineChartValueFormatter(1));
-        Line lineLBW = new Line(valuesLBW).
-                setColor(Color.parseColor("#cc0099")).
-                setHasLabels(prefs.getBoolean("labelsEnable", true)).
-                setHasPoints(prefs.getBoolean("pointsEnable", true)).
-                setFormatter(new SimpleLineChartValueFormatter(1));
-        Line lineWaist = new Line(valuesWaist).
-                setColor(Color.MAGENTA).
-                setHasLabels(prefs.getBoolean("labelsEnable", true)).
-                setHasPoints(prefs.getBoolean("pointsEnable", true)).
-                setFormatter(new SimpleLineChartValueFormatter(1));
-        Line lineHip = new Line(valuesHip).
-                setColor(Color.YELLOW).
-                setHasLabels(prefs.getBoolean("labelsEnable", true)).
-                setHasPoints(prefs.getBoolean("pointsEnable", true)).
-                setFormatter(new SimpleLineChartValueFormatter(1));
-        Line lineBone = new Line(valuesBone).
-                setColor(Color.parseColor("#33ff9d")).
-                setHasLabels(prefs.getBoolean("labelsEnable", true)).
-                setHasPoints(prefs.getBoolean("pointsEnable", true)).
-                setFormatter(new SimpleLineChartValueFormatter(1));
-
-        if (prefs.getBoolean("weightEnable", true) && prefs.getBoolean(String.valueOf(diagramWeight.getId()), true)) {
-            lines.add(lineWeight);
-            diagramWeight.setBackgroundTintList(ColorStateList.valueOf(ChartUtils.COLOR_VIOLET));
-        } else {
-            diagramWeight.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#d3d3d3")));
-        }
-
-        if (prefs.getBoolean("fatEnable", true) && prefs.getBoolean(String.valueOf(diagramFat.getId()), true)) {
-            lines.add(lineFat);
-            diagramFat.setBackgroundTintList(ColorStateList.valueOf(ChartUtils.COLOR_ORANGE));
-        } else {
-            diagramFat.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#d3d3d3")));
-        }
-
-        if (prefs.getBoolean("waterEnable", true) && prefs.getBoolean(String.valueOf(diagramWater.getId()), true)) {
-            lines.add(lineWater);
-            diagramWater.setBackgroundTintList(ColorStateList.valueOf(ChartUtils.COLOR_BLUE));
-        } else {
-            diagramWater.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#d3d3d3")));
-        }
-
-        if (prefs.getBoolean("muscleEnable", true) && prefs.getBoolean(String.valueOf(diagramMuscle.getId()), true)) {
-            lines.add(lineMuscle);
-            diagramMuscle.setBackgroundTintList(ColorStateList.valueOf(ChartUtils.COLOR_GREEN));
-        } else {
-            diagramMuscle.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#d3d3d3")));
-        }
-
-        if (prefs.getBoolean("lbwEnable", false) && prefs.getBoolean(String.valueOf(diagramLBW.getId()), true)) {
-            lines.add(lineLBW);
-            diagramLBW.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#cc0099")));
-        } else {
-            diagramLBW.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#d3d3d3")));
-        }
-
-        if (prefs.getBoolean("waistEnable", false) && prefs.getBoolean(String.valueOf(diagramWaist.getId()), true)) {
-            lines.add(lineWaist);
-            diagramWaist.setBackgroundTintList(ColorStateList.valueOf(Color.MAGENTA));
-        } else {
-            diagramWaist.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#d3d3d3")));
-        }
-
-        if (prefs.getBoolean("hipEnable", false) && prefs.getBoolean(String.valueOf(diagramHip.getId()), true)) {
-            lines.add(lineHip);
-            diagramHip.setBackgroundTintList(ColorStateList.valueOf(Color.YELLOW));
-        } else {
-            diagramHip.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#d3d3d3")));
-        }
-
-        if (prefs.getBoolean("boneEnable", false) && prefs.getBoolean(String.valueOf(diagramBone.getId()), true)) {
-            lines.add(lineBone);
-            diagramBone.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#00cc9e")));
-        } else {
-            diagramBone.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#d3d3d3")));
-        }
-
-        LineChartData lineData = new LineChartData(lines);
+        LineChartData lineData = new LineChartData(diagramLineList);
         lineData.setAxisXBottom(new Axis(axisValues).
                 setHasLines(true).
                 setTextColor(textColor)
@@ -483,14 +387,17 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
             goalLine.setPathEffect(new DashPathEffect(new float[] {10,30}, 0));
 
-            lines.add(goalLine);
+            diagramLineList.add(goalLine);
         }
 
         if (prefs.getBoolean("regressionLine", false)) {
             PolynomialFitter polyFitter = new PolynomialFitter(Integer.parseInt(prefs.getString("regressionLineOrder", "1")));
 
-            for (PointValue weightValue : valuesWeight) {
-                polyFitter.addPoint(weightValue.getX(), weightValue.getY());
+            Stack<PointValue> valuesWeight = new Stack<PointValue>();
+
+            for (ScaleMeasurement measurement : scaleMeasurementList) {
+                addPointValue(valuesWeight, calDB.get(field), measurement.getConvertedWeight(openScale.getSelectedScaleUser().getScaleUnit()));
+                polyFitter.addPoint(calDB.get(field), measurement.getConvertedWeight(openScale.getSelectedScaleUser().getScaleUnit()));
             }
 
             PolynomialFitter.Polynomial polynom = polyFitter.getBestFit();
@@ -509,7 +416,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
             linearRegressionLine.setPathEffect(new DashPathEffect(new float[] {10,30}, 0));
 
-            lines.add(linearRegressionLine);
+            diagramLineList.add(linearRegressionLine);
         }
 
         chartBottom.setLineChartData(lineData);
@@ -656,10 +563,10 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
 
-            if (prefs.getBoolean(String.valueOf(actionButton.getId()), true)) {
-                prefs.edit().putBoolean(String.valueOf(actionButton.getId()), false).commit();
+            if (prefs.getBoolean(String.valueOf(actionButton.getTag()), true)) {
+                prefs.edit().putBoolean(String.valueOf(actionButton.getTag()), false).commit();
             } else {
-                prefs.edit().putBoolean(String.valueOf(actionButton.getId()), true).commit();
+                prefs.edit().putBoolean(String.valueOf(actionButton.getTag()), true).commit();
             }
 
             generateGraphs();

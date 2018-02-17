@@ -213,6 +213,8 @@ public abstract class FloatMeasurementView extends MeasurementView {
     protected abstract String getUnit();
     protected abstract float getMaxValue();
 
+    public abstract int getColor();
+
     protected boolean isEstimationEnabled() {
         return false;
     }
@@ -263,6 +265,14 @@ public abstract class FloatMeasurementView extends MeasurementView {
             return getContext().getString(R.string.label_automatic);
         }
         return formatValue(value);
+    }
+
+    public float getValue() {
+        return value;
+    }
+
+    public String getName() {
+        return nameText;
     }
 
     @Override
