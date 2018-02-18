@@ -72,6 +72,10 @@ public class DataEntryActivity extends AppCompatActivity {
 
     private Context context;
 
+    private boolean isAddActivity() {
+        return !getIntent().hasExtra(EXTRA_ID);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         String app_theme = PreferenceManager.getDefaultSharedPreferences(this).getString("app_theme", "Light");
@@ -117,12 +121,19 @@ public class DataEntryActivity extends AppCompatActivity {
             }
         });
 
+        final MeasurementView.MeasurementViewMode mode = isAddActivity()
+                ? MeasurementView.MeasurementViewMode.ADD
+                : MeasurementView.MeasurementViewMode.VIEW;
+        for (MeasurementView measurement : dataEntryMeasurements) {
+            measurement.setEditMode(mode);
+        }
+
         updateOnView();
 
         onMeasurementViewUpdateListener updateListener = new onMeasurementViewUpdateListener();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        final boolean expand = getIntent().hasExtra(EXTRA_ID)
-                ? prefs.getBoolean(PREF_EXPAND, true) : false;
+        final boolean expand = isAddActivity()
+                ? false : prefs.getBoolean(PREF_EXPAND, true);
 
         for (MeasurementView measurement : dataEntryMeasurements) {
             tableLayoutDataEntry.addView(measurement);
@@ -183,11 +194,11 @@ public class DataEntryActivity extends AppCompatActivity {
         deleteButton = menu.findItem(R.id.deleteButton);
 
         // Hide/show icons as appropriate for the view mode
-        if (getIntent().hasExtra(EXTRA_ID)) {
-            setViewMode(MeasurementView.MeasurementViewMode.VIEW);
+        if (isAddActivity()) {
+            setViewMode(MeasurementView.MeasurementViewMode.ADD);
         }
         else {
-            setViewMode(MeasurementView.MeasurementViewMode.ADD);
+            setViewMode(MeasurementView.MeasurementViewMode.VIEW);
         }
 
         return super.onCreateOptionsMenu(menu);
