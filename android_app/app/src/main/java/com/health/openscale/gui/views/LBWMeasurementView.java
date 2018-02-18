@@ -61,7 +61,7 @@ public class LBWMeasurementView extends FloatMeasurementView {
 
     @Override
     public int getColor() {
-        return Color.parseColor("#cc0099");
+        return Color.parseColor("#5C6BC0");
     }
 
     @Override

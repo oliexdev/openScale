@@ -63,7 +63,7 @@ public class WHtRMeasurementView extends FloatMeasurementView {
 
     @Override
     public int getColor() {
-        return Color.parseColor("#A1887F");
+        return Color.parseColor("#9CCC65");
     }
 
     @Override

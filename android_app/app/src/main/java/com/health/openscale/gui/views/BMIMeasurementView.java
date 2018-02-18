@@ -63,7 +63,7 @@ public class BMIMeasurementView extends FloatMeasurementView {
 
     @Override
     public int getColor() {
-        return Color.parseColor("#26A69A");
+        return Color.parseColor("#EC407A");
     }
 
     @Override

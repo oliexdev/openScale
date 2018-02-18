@@ -17,14 +17,13 @@ package com.health.openscale.gui.views;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.support.v4.content.ContextCompat;
 
 import com.health.openscale.R;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
-
-import lecho.lib.hellocharts.util.ChartUtils;
 
 public class MuscleMeasurementView extends FloatMeasurementView {
 
@@ -78,7 +77,7 @@ public class MuscleMeasurementView extends FloatMeasurementView {
 
     @Override
     public int getColor() {
-        return ChartUtils.COLOR_GREEN;
+        return Color.parseColor("#99CC00");
     }
 
     @Override

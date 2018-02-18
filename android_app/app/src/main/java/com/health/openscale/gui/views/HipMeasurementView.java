@@ -58,7 +58,7 @@ public class HipMeasurementView extends FloatMeasurementView {
 
     @Override
     public int getColor() {
-        return Color.YELLOW;
+        return Color.parseColor("#FFEE58");
     }
 
     @Override

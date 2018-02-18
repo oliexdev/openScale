@@ -58,7 +58,7 @@ public class BoneMeasurementView extends FloatMeasurementView {
 
     @Override
     public int getColor() {
-        return Color.parseColor("#33ff9d");
+        return Color.parseColor("#4FC3F7");
     }
 
     @Override

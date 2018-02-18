@@ -58,7 +58,7 @@ public class WaistMeasurementView extends FloatMeasurementView {
 
     @Override
     public int getColor() {
-        return Color.MAGENTA;
+        return Color.parseColor("#FF7043");
     }
 
     @Override
