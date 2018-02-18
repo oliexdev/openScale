@@ -166,7 +166,6 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         updateLastLineChart(scaleMeasurementList);
 
         for (MeasurementView measurement : measurementViews) {
-            measurement.updatePreferences(prefs);
             measurement.loadFrom(lastScaleMeasurement, prevScaleMeasurement);
         }
     }
@@ -220,8 +219,6 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
                 if (measurementView.getName().equals(getString(R.string.label_bmr))) {
                     continue;
                 }
-
-                measurementView.updatePreferences(prefs);
 
                 Stack<PointValue> valuesStack = new Stack<PointValue>();
 
@@ -283,7 +280,6 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
                     continue;
                 }
 
-                measurementView.updatePreferences(prefs);
                 measurementView.loadFrom(lastScaleMeasurement, null);
 
                 if (measurementView.getValue() != 0) {

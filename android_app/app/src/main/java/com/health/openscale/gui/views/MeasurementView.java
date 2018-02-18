@@ -22,6 +22,7 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.content.ContextCompat;
 import android.text.SpannableStringBuilder;
 import android.util.TypedValue;
@@ -105,6 +106,12 @@ public abstract class MeasurementView extends TableLayout {
         if (order == DateTimeOrder.LAST) {
             measurementViews.add(new DateMeasurementView(context));
             measurementViews.add(new TimeMeasurementView(context));
+        }
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+
+        for (MeasurementView measurement : measurementViews) {
+            measurement.updatePreferences(prefs);
         }
 
         return measurementViews;

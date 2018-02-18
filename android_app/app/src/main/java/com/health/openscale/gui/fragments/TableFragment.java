@@ -219,7 +219,6 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
         ArrayList<MeasurementView> visibleMeasurements = new ArrayList<>();
         for (MeasurementView measurement : measurementViews) {
-            measurement.updatePreferences(prefs);
 
             if (measurement.isVisible()) {
                 ImageView headerIcon = new ImageView(tableView.getContext());

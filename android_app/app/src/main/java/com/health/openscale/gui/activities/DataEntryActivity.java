@@ -261,12 +261,6 @@ public class DataEntryActivity extends AppCompatActivity {
     }
 
     private void updateOnView() {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-
-        for (MeasurementView measurement : dataEntryMeasurements) {
-            measurement.updatePreferences(prefs);
-        }
-
         int id = 0;
         if (getIntent().hasExtra(EXTRA_ID)) {
             id = getIntent().getExtras().getInt(EXTRA_ID);

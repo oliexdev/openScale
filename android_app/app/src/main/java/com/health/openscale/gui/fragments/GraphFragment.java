@@ -315,7 +315,6 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                     continue;
                 }
 
-                measurementView.updatePreferences(prefs);
                 Stack<PointValue> valuesStack = new Stack<PointValue>();
 
                 for (ScaleMeasurement measurement : scaleMeasurementList) {
