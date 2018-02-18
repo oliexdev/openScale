@@ -38,27 +38,14 @@ import android.widget.Toast;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
-import com.health.openscale.gui.views.BMIMeasurementView;
-import com.health.openscale.gui.views.BMRMeasurementView;
-import com.health.openscale.gui.views.BoneMeasurementView;
-import com.health.openscale.gui.views.CommentMeasurementView;
 import com.health.openscale.gui.views.DateMeasurementView;
-import com.health.openscale.gui.views.FatMeasurementView;
-import com.health.openscale.gui.views.HipMeasurementView;
-import com.health.openscale.gui.views.LBWMeasurementView;
 import com.health.openscale.gui.views.MeasurementView;
 import com.health.openscale.gui.views.MeasurementViewUpdateListener;
-import com.health.openscale.gui.views.MuscleMeasurementView;
 import com.health.openscale.gui.views.TimeMeasurementView;
-import com.health.openscale.gui.views.WHRMeasurementView;
-import com.health.openscale.gui.views.WHtRMeasurementView;
-import com.health.openscale.gui.views.WaistMeasurementView;
-import com.health.openscale.gui.views.WaterMeasurementView;
-import com.health.openscale.gui.views.WeightMeasurementView;
 
 import java.text.DateFormat;
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class DataEntryActivity extends AppCompatActivity {
     public static String EXTRA_ID = "id";
@@ -66,7 +53,7 @@ public class DataEntryActivity extends AppCompatActivity {
 
     private MeasurementView.MeasurementViewMode measurementViewMode;
 
-    private ArrayList<MeasurementView> dataEntryMeasurements;
+    private List<MeasurementView> dataEntryMeasurements;
     private TableLayout tableLayoutDataEntry;
 
     private TextView txtDataNr;
@@ -107,22 +94,7 @@ public class DataEntryActivity extends AppCompatActivity {
 
         tableLayoutDataEntry = (TableLayout) findViewById(R.id.tableLayoutDataEntry);
 
-        dataEntryMeasurements = new ArrayList<>();
-        dataEntryMeasurements.add(new WeightMeasurementView(context));
-        dataEntryMeasurements.add(new BMIMeasurementView(context));
-        dataEntryMeasurements.add(new WaterMeasurementView(context));
-        dataEntryMeasurements.add(new MuscleMeasurementView(context));
-        dataEntryMeasurements.add(new LBWMeasurementView(context));
-        dataEntryMeasurements.add(new FatMeasurementView(context));
-        dataEntryMeasurements.add(new BoneMeasurementView(context));
-        dataEntryMeasurements.add(new WaistMeasurementView(context));
-        dataEntryMeasurements.add(new WHtRMeasurementView(context));
-        dataEntryMeasurements.add(new HipMeasurementView(context));
-        dataEntryMeasurements.add(new WHRMeasurementView(context));
-        dataEntryMeasurements.add(new BMRMeasurementView(context));
-        dataEntryMeasurements.add(new CommentMeasurementView(context));
-        dataEntryMeasurements.add(new DateMeasurementView(context));
-        dataEntryMeasurements.add(new TimeMeasurementView(context));
+        dataEntryMeasurements = MeasurementView.getMeasurementList(context);
 
         txtDataNr = (TextView) findViewById(R.id.txtDataNr);
         btnLeft = (Button) findViewById(R.id.btnLeft);
