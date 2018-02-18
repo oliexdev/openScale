@@ -123,6 +123,10 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         measurementViews = MeasurementView.getMeasurementList(getContext());
 
         for (MeasurementView measurement : measurementViews) {
+            if (measurement instanceof DateMeasurementView || measurement instanceof TimeMeasurementView) {
+                continue;
+            }
+
             tableOverviewLayout.addView(measurement);
         }
 
