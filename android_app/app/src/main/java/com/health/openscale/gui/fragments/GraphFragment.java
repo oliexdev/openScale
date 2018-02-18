@@ -66,6 +66,7 @@ import lecho.lib.hellocharts.model.PointValue;
 import lecho.lib.hellocharts.model.SelectedValue;
 import lecho.lib.hellocharts.model.SubcolumnValue;
 import lecho.lib.hellocharts.model.Viewport;
+import lecho.lib.hellocharts.model.ValueShape;
 import lecho.lib.hellocharts.util.ChartUtils;
 import lecho.lib.hellocharts.view.ColumnChartView;
 import lecho.lib.hellocharts.view.LineChartView;
@@ -405,8 +406,76 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             diagramLineList.add(linearRegressionLine);
         }
 
-        chartBottom.setLineChartData(lineData);
+        if( prefs.getBoolean("meanLables",false) && (scaleMeasurementList.size()!=0)){
 
+            Stack<PointValue> valuesMean = new Stack<>();
+
+            ScaleMeasurement lastScaleEntry = scaleMeasurementList.get(0);
+            calDB.setTime(lastScaleEntry.getDateTime());
+            int maxDay;
+            int fieldMean;
+
+            if (field==Calendar.MONTH)
+            {
+                fieldMean = Calendar.DAY_OF_YEAR;
+            }
+            else
+            {
+                fieldMean = field;
+            }
+
+            maxDay = calDB.get(fieldMean);
+            int numberOfMeanPoints = maxDay/7;
+            float[] meanSums = new float[numberOfMeanPoints];
+            int[]   meanSamples = new int[numberOfMeanPoints];
+
+
+            for (ScaleMeasurement scaleEntry: scaleMeasurementList) {
+                calDB.setTime(scaleEntry.getDateTime());
+                int index = (maxDay - calDB.get(fieldMean))/7;
+                if(index<numberOfMeanPoints) { // do not add Mean Value if there are less than 7 days left
+                    meanSums[index] += scaleEntry.getConvertedWeight(openScale.getSelectedScaleUser().getScaleUnit());
+                    meanSamples[index] +=1;
+                }
+            }
+
+            float scaleFactor = 1.0f;
+            float scaleOffset = 0.0f;
+
+            if(field==Calendar.MONTH){
+                scaleFactor = 12.0f /calDB.getActualMaximum(Calendar.DAY_OF_YEAR);
+                scaleOffset = -1.0f;
+            }
+
+            for(int i=0;i<numberOfMeanPoints;i++){
+                float actMean = meanSums[i]/(meanSamples[i]+0.0f);
+
+                PointValue actValue = new PointValue((maxDay-i*7)*scaleFactor+scaleOffset,actMean);
+                actValue.setLabel(String.format ("Ø  %.2f(%d)", actMean,meanSamples[i]));
+                valuesMean.add(actValue);
+
+                if(defaultTopViewport.left > actValue.getX()) {
+                    defaultTopViewport.left = actValue.getX();
+                }
+
+                if(defaultTopViewport.bottom > actValue.getY()) {
+                    defaultTopViewport.bottom = actValue.getY();
+                }
+            }
+
+            Line meanLine = new Line(valuesMean)
+                    .setColor(ChartUtils.COLOR_VIOLET)
+                    .setStrokeWidth(0)
+                    .setHasPoints(true)
+                    .setHasLabels(true)
+                    .setShape(ValueShape.DIAMOND)
+                    .setHasLines(false)
+                    .setFilled(false);
+
+            diagramLineList.add(meanLine);
+        }
+
+        chartBottom.setLineChartData(lineData);
         chartBottom.setCurrentViewport(defaultTopViewport);
     }
 
@@ -527,6 +596,11 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     private class chartBottomValueTouchListener implements LineChartOnValueSelectListener {
         @Override
         public void onValueSelected(int lineIndex, int pointIndex, PointValue pointValue) {
+
+            if(pointValue.getLabelAsChars()!=null){
+                return; // we have a label so we do not make a lookup in the  MeasurementList
+            }
+
             ScaleMeasurement scaleMeasurement = pointIndexScaleMeasurementList.get(pointIndex);
 
             int id = scaleMeasurement.getId();
