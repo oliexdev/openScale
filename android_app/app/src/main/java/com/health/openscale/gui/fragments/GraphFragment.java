@@ -43,19 +43,8 @@ import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.utils.PolynomialFitter;
 import com.health.openscale.gui.activities.DataEntryActivity;
-import com.health.openscale.gui.views.BMIMeasurementView;
-import com.health.openscale.gui.views.BoneMeasurementView;
-import com.health.openscale.gui.views.FatMeasurementView;
 import com.health.openscale.gui.views.FloatMeasurementView;
-import com.health.openscale.gui.views.HipMeasurementView;
-import com.health.openscale.gui.views.LBWMeasurementView;
 import com.health.openscale.gui.views.MeasurementView;
-import com.health.openscale.gui.views.MuscleMeasurementView;
-import com.health.openscale.gui.views.WHRMeasurementView;
-import com.health.openscale.gui.views.WHtRMeasurementView;
-import com.health.openscale.gui.views.WaistMeasurementView;
-import com.health.openscale.gui.views.WaterMeasurementView;
-import com.health.openscale.gui.views.WeightMeasurementView;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -94,7 +83,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     private PopupMenu popup;
     private SharedPreferences prefs;
 
-    private ArrayList<MeasurementView> measurementViews;
+    private List<MeasurementView> measurementViews;
 
     private int textColor;
 
@@ -147,20 +136,6 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         floatingActionBar = (LinearLayout) graphView.findViewById(R.id.floatingActionBar);
 
-        measurementViews = new ArrayList<>();
-
-        measurementViews.add(new WeightMeasurementView(getContext()));
-        measurementViews.add(new BMIMeasurementView(getContext()));
-        measurementViews.add(new WaterMeasurementView(getContext()));
-        measurementViews.add(new MuscleMeasurementView(getContext()));
-        measurementViews.add(new LBWMeasurementView(getContext()));
-        measurementViews.add(new FatMeasurementView(getContext()));
-        measurementViews.add(new BoneMeasurementView(getContext()));
-        measurementViews.add(new WaistMeasurementView(getContext()));
-        measurementViews.add(new WHtRMeasurementView(getContext()));
-        measurementViews.add(new HipMeasurementView(getContext()));
-        measurementViews.add(new WHRMeasurementView(getContext()));
-
         optionMenu = (ImageView) graphView.findViewById(R.id.optionMenu);
         optionMenu.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -180,7 +155,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                 if (!scaleMeasurementList.isEmpty()) {
                     calLastSelected.setTime(scaleMeasurementList.get(0).getDateTime());
                 }
-                updateOnView(null);
+                generateGraphs();
             }
         });
 
@@ -195,9 +170,11 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                 if (!scaleMeasurementList.isEmpty()) {
                     calLastSelected.setTime(scaleMeasurementList.get(scaleMeasurementList.size() - 1).getDateTime());
                 }
-                updateOnView(null);
+                generateGraphs();
             }
         });
+
+        measurementViews = MeasurementView.getMeasurementList(getContext());
 
         popup = new PopupMenu(getContext(), optionMenu);
         popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {

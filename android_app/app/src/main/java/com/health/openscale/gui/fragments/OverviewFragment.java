@@ -38,20 +38,10 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
 import com.health.openscale.core.utils.DateTimeHelpers;
-import com.health.openscale.gui.views.BMIMeasurementView;
-import com.health.openscale.gui.views.BMRMeasurementView;
-import com.health.openscale.gui.views.BoneMeasurementView;
-import com.health.openscale.gui.views.FatMeasurementView;
+import com.health.openscale.gui.views.DateMeasurementView;
 import com.health.openscale.gui.views.FloatMeasurementView;
-import com.health.openscale.gui.views.HipMeasurementView;
-import com.health.openscale.gui.views.LBWMeasurementView;
 import com.health.openscale.gui.views.MeasurementView;
-import com.health.openscale.gui.views.MuscleMeasurementView;
-import com.health.openscale.gui.views.WHRMeasurementView;
-import com.health.openscale.gui.views.WHtRMeasurementView;
-import com.health.openscale.gui.views.WaistMeasurementView;
-import com.health.openscale.gui.views.WaterMeasurementView;
-import com.health.openscale.gui.views.WeightMeasurementView;
+import com.health.openscale.gui.views.TimeMeasurementView;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -82,7 +72,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
     private TableLayout tableOverviewLayout;
 
-    private ArrayList<MeasurementView> measurementViews;
+    private List<MeasurementView> measurementViews;
 
     private PieChartView pieChartLast;
     private LineChartView lineChartLast;
@@ -120,25 +110,6 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
         tableOverviewLayout = (TableLayout)overviewView.findViewById(R.id.tableLayoutMeasurements);
 
-        measurementViews = new ArrayList<>();
-
-        measurementViews.add(new WeightMeasurementView(context));
-        measurementViews.add(new BMIMeasurementView(context));
-        measurementViews.add(new WaterMeasurementView(context));
-        measurementViews.add(new MuscleMeasurementView(context));
-        measurementViews.add(new LBWMeasurementView(context));
-        measurementViews.add(new FatMeasurementView(context));
-        measurementViews.add(new BoneMeasurementView(context));
-        measurementViews.add(new WaistMeasurementView(context));
-        measurementViews.add(new WHtRMeasurementView(context));
-        measurementViews.add(new HipMeasurementView(context));
-        measurementViews.add(new WHRMeasurementView(context));
-        measurementViews.add(new BMRMeasurementView(context));
-
-        for (MeasurementView measurement : measurementViews) {
-            tableOverviewLayout.addView(measurement);
-        }
-
         pieChartLast = (PieChartView) overviewView.findViewById(R.id.pieChartLast);
         lineChartLast = (LineChartView) overviewView.findViewById(R.id.lineChartLast);
 
@@ -148,6 +119,12 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
         pieChartLast.setOnValueTouchListener(new PieChartLastTouchListener());
         pieChartLast.setChartRotationEnabled(false);
+
+        measurementViews = MeasurementView.getMeasurementList(getContext());
+
+        for (MeasurementView measurement : measurementViews) {
+            tableOverviewLayout.addView(measurement);
+        }
 
         userSelectedData = null;
 
@@ -161,6 +138,8 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
                 updateUserSelection();
             }
         });
+
+        prefs = PreferenceManager.getDefaultSharedPreferences(overviewView.getContext());
 
         OpenScale.getInstance(getContext()).registerFragment(this);
 
@@ -177,8 +156,17 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             lastScaleMeasurement = scaleMeasurementList.get(0);
         }
 
+        ScaleMeasurement[] tupleScaleData = OpenScale.getInstance(context).getTupleScaleData(lastScaleMeasurement.getId());
+        ScaleMeasurement prevScaleMeasurement = tupleScaleData[0];
 
-        prefs = PreferenceManager.getDefaultSharedPreferences(overviewView.getContext());
+        for (MeasurementView measurement : measurementViews) {
+            if (measurement instanceof DateMeasurementView || measurement instanceof TimeMeasurementView) {
+                continue;
+            }
+
+            measurement.updatePreferences(prefs);
+            measurement.loadFrom(lastScaleMeasurement, prevScaleMeasurement);
+        }
 
         txtTitleUser.setText(getResources().getString(R.string.label_title_user).toUpperCase());
         txtTitleLastMeasurement.setText(getResources().getString(R.string.label_title_last_measurement).toUpperCase());
@@ -186,14 +174,6 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         updateUserSelection();
         updateLastPieChart();
         updateLastLineChart(scaleMeasurementList);
-
-        ScaleMeasurement[] tupleScaleData = OpenScale.getInstance(context).getTupleScaleData(lastScaleMeasurement.getId());
-        ScaleMeasurement prevScaleMeasurement = tupleScaleData[0];
-
-        for (MeasurementView measurement : measurementViews) {
-            measurement.updatePreferences(prefs);
-            measurement.loadFrom(lastScaleMeasurement, prevScaleMeasurement);
-        }
     }
 
     private void updateUserSelection() {
@@ -226,7 +206,6 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
 
     private void updateLastLineChart(List<ScaleMeasurement> scaleMeasurementList) {
-
         int max_i = 7;
 
         if (scaleMeasurementList.size() < 7) {

@@ -57,22 +57,7 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.gui.activities.DataEntryActivity;
 import com.health.openscale.gui.utils.PermissionHelper;
-import com.health.openscale.gui.views.BMIMeasurementView;
-import com.health.openscale.gui.views.BMRMeasurementView;
-import com.health.openscale.gui.views.BoneMeasurementView;
-import com.health.openscale.gui.views.CommentMeasurementView;
-import com.health.openscale.gui.views.DateMeasurementView;
-import com.health.openscale.gui.views.FatMeasurementView;
-import com.health.openscale.gui.views.HipMeasurementView;
-import com.health.openscale.gui.views.LBWMeasurementView;
 import com.health.openscale.gui.views.MeasurementView;
-import com.health.openscale.gui.views.MuscleMeasurementView;
-import com.health.openscale.gui.views.TimeMeasurementView;
-import com.health.openscale.gui.views.WHRMeasurementView;
-import com.health.openscale.gui.views.WHtRMeasurementView;
-import com.health.openscale.gui.views.WaistMeasurementView;
-import com.health.openscale.gui.views.WaterMeasurementView;
-import com.health.openscale.gui.views.WeightMeasurementView;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -92,7 +77,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
     private ImageView optionMenu;
     private PopupMenu popup;
 
-    private ArrayList <MeasurementView> measurementsList;
+    private List<MeasurementView> measurementViews;
 
     private int selectedSubpageNr;
     private static final String SELECTED_SUBPAGE_NR_KEY = "selectedSubpageNr";
@@ -118,28 +103,6 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
         optionMenu = (ImageView) tableView.findViewById(R.id.optionMenu);
 
-        measurementsList = new ArrayList<>();
-
-        measurementsList.add(new DateMeasurementView(tableView.getContext()));
-        measurementsList.add(new TimeMeasurementView(tableView.getContext()));
-        measurementsList.add(new WeightMeasurementView(tableView.getContext()));
-        measurementsList.add(new BMIMeasurementView(tableView.getContext()));
-        measurementsList.add(new WaterMeasurementView(tableView.getContext()));
-        measurementsList.add(new MuscleMeasurementView(tableView.getContext()));
-        measurementsList.add(new LBWMeasurementView(tableView.getContext()));
-        measurementsList.add(new FatMeasurementView(tableView.getContext()));
-        measurementsList.add(new BoneMeasurementView(tableView.getContext()));
-        measurementsList.add(new WaistMeasurementView(tableView.getContext()));
-        measurementsList.add(new WHtRMeasurementView(tableView.getContext()));
-        measurementsList.add(new HipMeasurementView(tableView.getContext()));
-        measurementsList.add(new WHRMeasurementView(tableView.getContext()));
-        measurementsList.add(new BMRMeasurementView(tableView.getContext()));
-        measurementsList.add(new CommentMeasurementView(tableView.getContext()));
-
-        for (MeasurementView measurement : measurementsList) {
-            measurement.setUpdateViews(false);
-        }
-
         prefs = PreferenceManager.getDefaultSharedPreferences(tableView.getContext());
 
         if (savedInstanceState == null) {
@@ -147,6 +110,12 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
         }
         else {
             selectedSubpageNr = savedInstanceState.getInt(SELECTED_SUBPAGE_NR_KEY);
+        }
+
+        measurementViews = MeasurementView.getMeasurementList(getContext());
+
+        for (MeasurementView measurement : measurementViews) {
+            measurement.setUpdateViews(false);
         }
 
         optionMenu.setOnClickListener(new View.OnClickListener() {
@@ -248,7 +217,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
         tableHeaderView.removeAllViews();
 
         ArrayList<MeasurementView> visibleMeasurements = new ArrayList<>();
-        for (MeasurementView measurement : measurementsList) {
+        for (MeasurementView measurement : measurementViews) {
             measurement.updatePreferences(prefs);
 
             if (measurement.isVisible()) {

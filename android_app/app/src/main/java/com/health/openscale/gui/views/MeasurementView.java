@@ -43,6 +43,9 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.evaluation.EvaluationResult;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import lecho.lib.hellocharts.util.ChartUtils;
 
 import static com.health.openscale.gui.views.MeasurementView.MeasurementViewMode.ADD;
@@ -75,6 +78,28 @@ public abstract class MeasurementView extends TableLayout {
 
         nameView.setText(text);
         iconView.setImageDrawable(icon);
+    }
+
+    public static final List<MeasurementView> getMeasurementList(Context context) {
+        final List<MeasurementView> measurementViews = new ArrayList<>();
+
+        measurementViews.add(new DateMeasurementView(context));
+        measurementViews.add(new TimeMeasurementView(context));
+        measurementViews.add(new WeightMeasurementView(context));
+        measurementViews.add(new BMIMeasurementView(context));
+        measurementViews.add(new WaterMeasurementView(context));
+        measurementViews.add(new MuscleMeasurementView(context));
+        measurementViews.add(new LBWMeasurementView(context));
+        measurementViews.add(new FatMeasurementView(context));
+        measurementViews.add(new BoneMeasurementView(context));
+        measurementViews.add(new WaistMeasurementView(context));
+        measurementViews.add(new WHtRMeasurementView(context));
+        measurementViews.add(new HipMeasurementView(context));
+        measurementViews.add(new WHRMeasurementView(context));
+        measurementViews.add(new BMRMeasurementView(context));
+        measurementViews.add(new CommentMeasurementView(context));
+
+        return measurementViews;
     }
 
     private void initView(Context context) {
