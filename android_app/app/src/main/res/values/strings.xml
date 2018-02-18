@@ -155,7 +155,6 @@
     <string name="label_automatic">auto</string>
 
     <string name="label_theme">Theme</string>
-    <string name="info_app_restart_required">To apply changes an app restart is required</string>
 
     <string name="label_reminder">Reminder</string>
     <string name="label_reminder_weekdays">Weekdays</string>

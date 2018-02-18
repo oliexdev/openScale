@@ -197,7 +197,6 @@
 
     <string name="label_bluetooth_searching_finished">Finalizada la búsqueda de básculas Bluetooth</string>
     <string name="label_theme">Tema</string>
-    <string name="info_app_restart_required">Para aplicar los cambios se requiere un reinicio de la aplicación</string>
 
     <string name="label_help">Ayuda</string>
 

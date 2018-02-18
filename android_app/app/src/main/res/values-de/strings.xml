@@ -180,7 +180,6 @@
     <string name="customactivityoncrash_error_activity_error_details_clipboard_label">Fehlerinformationen</string>
     <string name="title_general">Allgmein</string>
     <string name="label_theme">Theme</string>
-    <string name="info_app_restart_required">Um die Änderungen zu übernehmen, ist ein App Neustart erforderlich</string>
     <string name="label_share">Teilen</string>
     <string name="label_bluetooth_searching_finished">Suche beendet nach Bluetooth Waagen</string>
     <string name="label_help">Hilfe</string>

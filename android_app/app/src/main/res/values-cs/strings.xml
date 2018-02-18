@@ -40,7 +40,7 @@
 	<item quantity="one">%d den</item>
 	<item quantity="few">%d dny</item>
 	<item quantity="other">%d dnů</item>
-</plurals>
+    </plurals>
     <string name="label_last_week">Uplynulých 7 dnů</string>
     <string name="label_last_month">Uplynulých 30 dnů</string>
     <string name="label_weight_difference">Rozdíl hmotnosti</string>
@@ -118,7 +118,6 @@
     <string name="label_automatic">automaticky</string>
 
     <string name="label_theme">Téma vzhledu</string>
-    <string name="info_app_restart_required">Aby se změny projevily, je třeba aplikaci restartovat</string>
 
     <string name="label_reminder">Připomínání</string>
     <string name="label_reminder_weekdays">Dny v týdnu</string>

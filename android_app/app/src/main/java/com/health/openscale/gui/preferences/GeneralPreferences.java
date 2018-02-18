@@ -44,16 +44,6 @@ public class GeneralPreferences extends PreferenceFragment implements SharedPref
 
         appThemeList = (ListPreference)findPreference(PREFERENCE_KEY_APP_THEME);
 
-        appThemeList.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-            @Override
-            public boolean onPreferenceChange(Preference preference, Object o) {
-                Toast.makeText(getActivity().getApplicationContext(), getResources().getString(R.string.info_app_restart_required), Toast.LENGTH_LONG).show();
-
-                return true;
-            }
-        });
-
-
         initSummary(getPreferenceScreen());
     }
 

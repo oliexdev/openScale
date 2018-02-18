@@ -64,7 +64,8 @@ import java.lang.reflect.Field;
 
 import cat.ereza.customactivityoncrash.config.CaocConfig;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity
+        implements SharedPreferences.OnSharedPreferenceChangeListener{
     private static boolean firstAppStart = true;
     private static boolean valueOfCountModified = false;
     private static int bluetoothStatusIcon = R.drawable.ic_bluetooth_disabled;
@@ -79,7 +80,9 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        String app_theme = PreferenceManager.getDefaultSharedPreferences(this).getString("app_theme", "Light");
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+
+        String app_theme = prefs.getString("app_theme", "Light");
 
         if (app_theme.equals("Dark")) {
             setTheme(R.style.AppTheme_Dark);
@@ -137,8 +140,6 @@ public class MainActivity extends AppCompatActivity {
         // Setup drawer view
         setupDrawerContent(navDrawer);
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-
         selectDrawerItem(prefs.getInt("lastFragmentId", R.id.nav_overview));
 
         navBottomDrawer.setSelectedItemId(prefs.getInt("lastFragmentId", R.id.nav_overview));
@@ -180,6 +181,35 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
+    }
+
+    private void registerOnSharedPreferenceChangeListener() {
+        PreferenceManager.getDefaultSharedPreferences(this)
+                .registerOnSharedPreferenceChangeListener(this);
+    }
+
+    private void unregisterOnSharedPreferenceChangeListener() {
+        PreferenceManager.getDefaultSharedPreferences(this)
+                .unregisterOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Stop listening when returning from settings
+        unregisterOnSharedPreferenceChangeListener();
+    }
+
+    @Override
+    public void onDestroy() {
+        // Clean up when shutting down
+        unregisterOnSharedPreferenceChangeListener();
+        super.onDestroy();
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences preferences, String key) {
+        recreate();
     }
 
     private void positiveFeedbackDialog() {
@@ -277,6 +307,7 @@ public class MainActivity extends AppCompatActivity {
                 prefs.edit().putInt("lastFragmentId", menuItemId).commit();
                 break;
             case R.id.nav_settings:
+                registerOnSharedPreferenceChangeListener();
                 Intent settingsIntent = new Intent(this, SettingsActivity.class);
                 settingsIntent.putExtra(SettingsActivity.EXTRA_TINT_COLOR, navDrawer.getItemTextColor().getDefaultColor());
                 startActivity(settingsIntent);

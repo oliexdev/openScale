@@ -16,6 +16,7 @@
 package com.health.openscale.gui.activities;
 
 import android.app.Fragment;
+import android.content.SharedPreferences;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -30,7 +31,8 @@ import com.health.openscale.gui.utils.PermissionHelper;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SettingsActivity extends PreferenceActivity {
+public class SettingsActivity extends PreferenceActivity
+        implements SharedPreferences.OnSharedPreferenceChangeListener {
     public static String EXTRA_TINT_COLOR = "tintColor";
     private static List<String> fragments = new ArrayList<String>();
     private Fragment currentFragment;
@@ -44,6 +46,28 @@ public class SettingsActivity extends PreferenceActivity {
         }
 
         super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        PreferenceManager.getDefaultSharedPreferences(this)
+                .registerOnSharedPreferenceChangeListener(this);
+
+    }
+
+    @Override
+    public void onPause() {
+        PreferenceManager.getDefaultSharedPreferences(this)
+                .unregisterOnSharedPreferenceChangeListener(this);
+        super.onPause();
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences preferences, String key) {
+        if (key.equals("app_theme")) {
+            recreate();
+        }
     }
 
     @Override
