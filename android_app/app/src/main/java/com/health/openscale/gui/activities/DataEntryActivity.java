@@ -31,6 +31,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -328,6 +329,7 @@ public class DataEntryActivity extends AppCompatActivity {
                 expandButton.setVisible(true);
                 deleteButton.setVisible(true);
 
+                ((LinearLayout)txtDataNr.getParent()).setVisibility(View.VISIBLE);
                 btnLeft.setVisibility(View.VISIBLE);
                 btnRight.setVisibility(View.VISIBLE);
                 btnLeft.setEnabled(previousMeasurement != null);
@@ -341,6 +343,7 @@ public class DataEntryActivity extends AppCompatActivity {
                 expandButton.setVisible(true);
                 deleteButton.setVisible(true);
 
+                ((LinearLayout)txtDataNr.getParent()).setVisibility(View.VISIBLE);
                 btnLeft.setVisibility(View.VISIBLE);
                 btnRight.setVisibility(View.VISIBLE);
                 btnLeft.setEnabled(false);
@@ -352,8 +355,7 @@ public class DataEntryActivity extends AppCompatActivity {
                 expandButton.setVisible(false);
                 deleteButton.setVisible(false);
 
-                btnLeft.setVisibility(View.GONE);
-                btnRight.setVisibility(View.GONE);
+                ((LinearLayout)txtDataNr.getParent()).setVisibility(View.GONE);
                 break;
         }
 
