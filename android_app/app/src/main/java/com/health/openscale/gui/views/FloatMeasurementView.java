@@ -210,7 +210,7 @@ public abstract class FloatMeasurementView extends MeasurementView {
     protected abstract float getMeasurementValue(ScaleMeasurement measurement);
     protected abstract void setMeasurementValue(float value, ScaleMeasurement measurement);
 
-    protected abstract String getUnit();
+    public abstract String getUnit();
     protected abstract float getMaxValue();
 
     public abstract int getColor();

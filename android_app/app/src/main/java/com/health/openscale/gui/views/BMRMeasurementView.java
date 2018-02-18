@@ -59,7 +59,7 @@ public class BMRMeasurementView extends FloatMeasurementView {
     }
 
     @Override
-    protected String getUnit() {
+    public String getUnit() {
         return "kCal";
     }
 

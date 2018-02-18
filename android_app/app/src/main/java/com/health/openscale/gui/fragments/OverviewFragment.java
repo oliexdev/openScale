@@ -42,6 +42,7 @@ import com.health.openscale.gui.views.BMIMeasurementView;
 import com.health.openscale.gui.views.BMRMeasurementView;
 import com.health.openscale.gui.views.BoneMeasurementView;
 import com.health.openscale.gui.views.FatMeasurementView;
+import com.health.openscale.gui.views.FloatMeasurementView;
 import com.health.openscale.gui.views.HipMeasurementView;
 import com.health.openscale.gui.views.LBWMeasurementView;
 import com.health.openscale.gui.views.MeasurementView;
@@ -56,6 +57,7 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Stack;
 
 import lecho.lib.hellocharts.formatter.SimpleLineChartValueFormatter;
 import lecho.lib.hellocharts.listener.LineChartOnValueSelectListener;
@@ -67,7 +69,6 @@ import lecho.lib.hellocharts.model.LineChartData;
 import lecho.lib.hellocharts.model.PieChartData;
 import lecho.lib.hellocharts.model.PointValue;
 import lecho.lib.hellocharts.model.SliceValue;
-import lecho.lib.hellocharts.util.ChartUtils;
 import lecho.lib.hellocharts.view.LineChartView;
 import lecho.lib.hellocharts.view.PieChartView;
 
@@ -81,7 +82,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
     private TableLayout tableOverviewLayout;
 
-    private ArrayList<MeasurementView> overviewMeasurements;
+    private ArrayList<MeasurementView> measurementViews;
 
     private PieChartView pieChartLast;
     private LineChartView lineChartLast;
@@ -119,22 +120,22 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
         tableOverviewLayout = (TableLayout)overviewView.findViewById(R.id.tableLayoutMeasurements);
 
-        overviewMeasurements = new ArrayList<>();
+        measurementViews = new ArrayList<>();
 
-        overviewMeasurements.add(new WeightMeasurementView(context));
-        overviewMeasurements.add(new BMIMeasurementView(context));
-        overviewMeasurements.add(new WaterMeasurementView(context));
-        overviewMeasurements.add(new MuscleMeasurementView(context));
-        overviewMeasurements.add(new LBWMeasurementView(context));
-        overviewMeasurements.add(new FatMeasurementView(context));
-        overviewMeasurements.add(new BoneMeasurementView(context));
-        overviewMeasurements.add(new WaistMeasurementView(context));
-        overviewMeasurements.add(new WHtRMeasurementView(context));
-        overviewMeasurements.add(new HipMeasurementView(context));
-        overviewMeasurements.add(new WHRMeasurementView(context));
-        overviewMeasurements.add(new BMRMeasurementView(context));
+        measurementViews.add(new WeightMeasurementView(context));
+        measurementViews.add(new BMIMeasurementView(context));
+        measurementViews.add(new WaterMeasurementView(context));
+        measurementViews.add(new MuscleMeasurementView(context));
+        measurementViews.add(new LBWMeasurementView(context));
+        measurementViews.add(new FatMeasurementView(context));
+        measurementViews.add(new BoneMeasurementView(context));
+        measurementViews.add(new WaistMeasurementView(context));
+        measurementViews.add(new WHtRMeasurementView(context));
+        measurementViews.add(new HipMeasurementView(context));
+        measurementViews.add(new WHRMeasurementView(context));
+        measurementViews.add(new BMRMeasurementView(context));
 
-        for (MeasurementView measurement : overviewMeasurements) {
+        for (MeasurementView measurement : measurementViews) {
             tableOverviewLayout.addView(measurement);
         }
 
@@ -189,7 +190,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         ScaleMeasurement[] tupleScaleData = OpenScale.getInstance(context).getTupleScaleData(lastScaleMeasurement.getId());
         ScaleMeasurement prevScaleMeasurement = tupleScaleData[0];
 
-        for (MeasurementView measurement : overviewMeasurements) {
+        for (MeasurementView measurement : measurementViews) {
             measurement.updatePreferences(prefs);
             measurement.loadFrom(lastScaleMeasurement, prevScaleMeasurement);
         }
@@ -225,17 +226,6 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
 
     private void updateLastLineChart(List<ScaleMeasurement> scaleMeasurementList) {
-        List<AxisValue> axisValues = new ArrayList<AxisValue>();
-
-        List<PointValue> valuesWeight = new ArrayList<PointValue>();
-        List<PointValue> valuesFat = new ArrayList<PointValue>();
-        List<PointValue> valuesWater = new ArrayList<PointValue>();
-        List<PointValue> valuesMuscle = new ArrayList<PointValue>();
-        List<PointValue> valuesLBW = new ArrayList<PointValue>();
-        List<PointValue> valuesWaist = new ArrayList<PointValue>();
-        List<PointValue> valuesHip = new ArrayList<PointValue>();
-        List<PointValue> valuesBone = new ArrayList<PointValue>();
-        List<Line> lines = new ArrayList<Line>();
 
         int max_i = 7;
 
@@ -243,112 +233,54 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             max_i = scaleMeasurementList.size();
         }
 
+        List<Line> diagramLineList = new ArrayList<>();
+        List<AxisValue> axisValues = new ArrayList<>();
+
         final Calendar now = Calendar.getInstance();
         Calendar histCalendar = Calendar.getInstance();
 
-        scaleMeasurementLastDays = new ArrayList<ScaleMeasurement>();
+        for (MeasurementView view : measurementViews) {
+            if (view instanceof FloatMeasurementView) {
+                FloatMeasurementView measurementView = (FloatMeasurementView) view;
 
-        for (int i=0; i<max_i; i++) {
-            ScaleMeasurement histData = scaleMeasurementList.get(max_i - i - 1);
+                if (measurementView.getName().equals(getString(R.string.label_bmr))) {
+                    continue;
+                }
 
-            scaleMeasurementLastDays.add(histData);
+                measurementView.updatePreferences(prefs);
 
-            valuesWeight.add(new PointValue(i, histData.getConvertedWeight(currentScaleUser.getScaleUnit())));
-            if (histData.getFat() != 0.0f)
-                valuesFat.add(new PointValue(i, histData.getFat()));
-            if (histData.getWater() != 0.0f)
-                valuesWater.add(new PointValue(i, histData.getWater()));
-            if (histData.getMuscle() != 0.0f)
-                valuesMuscle.add(new PointValue(i, histData.getMuscle()));
-            if (histData.getLbw() != 0.0f)
-                valuesLBW.add(new PointValue(i, histData.getLbw()));
-            if (histData.getWaist() != 0.0f)
-                valuesWaist.add(new PointValue(i, histData.getWaist()));
-            if (histData.getHip() != 0.0f)
-                valuesHip.add(new PointValue(i, histData.getHip()));
-            if (histData.getBone() != 0.0f)
-                valuesBone.add(new PointValue(i, histData.getBone()));
+                Stack<PointValue> valuesStack = new Stack<PointValue>();
 
-            histCalendar.setTime(histData.getDateTime());
-            int days = DateTimeHelpers.daysBetween(now, histCalendar);
-            String label = getResources().getQuantityString(R.plurals.label_days, Math.abs(days), days);
-            axisValues.add(new AxisValue(i, label.toCharArray()));
+                scaleMeasurementLastDays = new ArrayList<>();
+
+                for (int i=0; i<max_i; i++) {
+                    ScaleMeasurement measurement = scaleMeasurementList.get(max_i - i - 1);
+                    measurementView.loadFrom(measurement, null);
+                    scaleMeasurementLastDays.add(measurement);
+
+                    if (measurementView.getValue() != 0.0f) {
+                        valuesStack.push(new PointValue(i, measurementView.getValue()));
+                    }
+
+                    histCalendar.setTime(measurement.getDateTime());
+                    int days = DateTimeHelpers.daysBetween(now, histCalendar);
+                    String label = getResources().getQuantityString(R.plurals.label_days, Math.abs(days), days);
+                    axisValues.add(new AxisValue(i, label.toCharArray()));
+                }
+
+                Line lineaDiagram = new Line(valuesStack).
+                        setColor(measurementView.getColor()).
+                        setHasLabels(prefs.getBoolean("labelsEnable", true)).
+                        setHasPoints(prefs.getBoolean("pointsEnable", true)).
+                        setFormatter(new SimpleLineChartValueFormatter(1));
+
+                if (measurementView.isVisible()) {
+                    diagramLineList.add(lineaDiagram);
+                }
+            }
         }
 
-        Line lineWeight = new Line(valuesWeight).
-                setColor(ChartUtils.COLOR_VIOLET).
-                setHasLabels(prefs.getBoolean("labelsEnable", true)).
-                setHasPoints(prefs.getBoolean("pointsEnable", true)).
-                setFormatter(new SimpleLineChartValueFormatter(1));
-        Line lineFat = new Line(valuesFat).
-                setColor(ChartUtils.COLOR_ORANGE).
-                setHasLabels(prefs.getBoolean("labelsEnable", true)).
-                setHasPoints(prefs.getBoolean("pointsEnable", true)).
-                setFormatter(new SimpleLineChartValueFormatter(1));
-        Line lineWater = new Line(valuesWater).
-                setColor(ChartUtils.COLOR_BLUE).
-                setHasLabels(prefs.getBoolean("labelsEnable", true)).
-                setHasPoints(prefs.getBoolean("pointsEnable", true)).
-                setFormatter(new SimpleLineChartValueFormatter(1));
-        Line lineMuscle = new Line(valuesMuscle).
-                setColor(ChartUtils.COLOR_GREEN).
-                setHasLabels(prefs.getBoolean("labelsEnable", true)).
-                setHasPoints(prefs.getBoolean("pointsEnable", true)).
-                setFormatter(new SimpleLineChartValueFormatter(1));
-        Line lineLBW = new Line(valuesLBW).
-                setColor(Color.parseColor("#cc0099")).
-                setHasLabels(prefs.getBoolean("labelsEnable", true)).
-                setHasPoints(prefs.getBoolean("pointsEnable", true)).
-                setFormatter(new SimpleLineChartValueFormatter(1));
-        Line lineWaist = new Line(valuesWaist).
-                setColor(Color.MAGENTA).
-                setHasLabels(prefs.getBoolean("labelsEnable", true)).
-                setHasPoints(prefs.getBoolean("pointsEnable", true)).
-                setFormatter(new SimpleLineChartValueFormatter(1));
-        Line lineHip = new Line(valuesHip).
-                setColor(Color.YELLOW).
-                setHasLabels(prefs.getBoolean("labelsEnable", true)).
-                setHasPoints(prefs.getBoolean("pointsEnable", true)).
-                setFormatter(new SimpleLineChartValueFormatter(1));
-        Line lineBone = new Line(valuesBone).
-                setColor(Color.parseColor("#00cc9e")).
-                setHasLabels(prefs.getBoolean("labelsEnable", true)).
-                setHasPoints(prefs.getBoolean("pointsEnable", true)).
-                setFormatter(new SimpleLineChartValueFormatter(1));
-
-        if (prefs.getBoolean("weightEnable", true)) {
-            lines.add(lineWeight);
-        }
-
-        if (prefs.getBoolean("fatEnable", true)) {
-            lines.add(lineFat);
-        }
-
-        if (prefs.getBoolean("waterEnable", true)) {
-            lines.add(lineWater);
-        }
-
-        if (prefs.getBoolean("muscleEnable", true)) {
-            lines.add(lineMuscle);
-        }
-
-        if (prefs.getBoolean("lbwEnable", false)) {
-            lines.add(lineLBW);
-        }
-
-        if (prefs.getBoolean("waistEnable", false)) {
-            lines.add(lineWaist);
-        }
-
-        if (prefs.getBoolean("hipEnable", false)) {
-            lines.add(lineHip);
-        }
-
-        if (prefs.getBoolean("boneEnable", false)) {
-            lines.add(lineBone);
-        }
-
-        LineChartData lineData = new LineChartData(lines);
+        LineChartData lineData = new LineChartData(diagramLineList);
         lineData.setAxisXBottom(new Axis(axisValues).
                         setHasLines(true).
                         setTextColor(txtTitleLastMeasurement.getCurrentTextColor())
@@ -367,28 +299,23 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
     }
 
     private void updateLastPieChart() {
+        List<SliceValue> arcValuesLast = new ArrayList<>();
 
-        List<SliceValue> arcValuesLast = new ArrayList<SliceValue>();
+        for (MeasurementView view : measurementViews) {
+            if (view instanceof FloatMeasurementView) {
+                FloatMeasurementView measurementView = (FloatMeasurementView) view;
 
-        if (lastScaleMeasurement.getFat() == 0) {
-            arcValuesLast.add(new SliceValue(1, ChartUtils.COLOR_ORANGE));
-        }
-        else {
-            arcValuesLast.add(new SliceValue(lastScaleMeasurement.getFat(), ChartUtils.COLOR_ORANGE));
-        }
+                if (measurementView.getName().equals(getString(R.string.label_bmr))) {
+                    continue;
+                }
 
-        if (lastScaleMeasurement.getWater() == 0) {
-            arcValuesLast.add(new SliceValue(1, ChartUtils.COLOR_BLUE));
-        }
-        else {
-            arcValuesLast.add(new SliceValue(lastScaleMeasurement.getWater(), ChartUtils.COLOR_BLUE));
-        }
+                measurementView.updatePreferences(prefs);
+                measurementView.loadFrom(lastScaleMeasurement, null);
 
-        if (lastScaleMeasurement.getMuscle() == 0) {
-            arcValuesLast.add(new SliceValue(1, ChartUtils.COLOR_GREEN));
-        }
-        else {
-            arcValuesLast.add(new SliceValue(lastScaleMeasurement.getMuscle(), ChartUtils.COLOR_GREEN));
+                if (measurementView.getValue() != 0) {
+                    arcValuesLast.add(new SliceValue(measurementView.getValue(), measurementView.getColor()));
+                }
+            }
         }
 
         final Converters.WeightUnit unit = currentScaleUser.getScaleUnit();
@@ -423,16 +350,16 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
             String date_time = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.SHORT).format(lastScaleMeasurement.getDateTime());
 
-            switch (i) {
-                case 0:
-                    Toast.makeText(getActivity(), getResources().getString(R.string.info_your_fat) + " " + lastScaleMeasurement.getFat() + "% " + getResources().getString(R.string.info_on_date) + " " + date_time, Toast.LENGTH_SHORT).show();
-                    break;
-                case 1:
-                    Toast.makeText(getActivity(), getResources().getString(R.string.info_your_water) + " " + lastScaleMeasurement.getWater() + "% " + getResources().getString(R.string.info_on_date) + " " + date_time, Toast.LENGTH_SHORT).show();
-                    break;
-                case 2:
-                    Toast.makeText(getActivity(), getResources().getString(R.string.info_your_muscle) + " " + lastScaleMeasurement.getMuscle() + "% " + getResources().getString(R.string.info_on_date) + " " + date_time, Toast.LENGTH_SHORT).show();
-                    break;
+            for (MeasurementView view : measurementViews) {
+                if (view instanceof FloatMeasurementView) {
+                    FloatMeasurementView measurementView = (FloatMeasurementView) view;
+
+                    measurementView.loadFrom(lastScaleMeasurement, null);
+
+                    if (measurementView.getColor() == arcValue.getColor()) {
+                        Toast.makeText(getActivity(), measurementView.getName() + " " + measurementView.getValueAsString() + measurementView.getUnit() + " " + getResources().getString(R.string.info_on_date) + " " + date_time, Toast.LENGTH_SHORT).show();
+                    }
+                }
             }
         }
 

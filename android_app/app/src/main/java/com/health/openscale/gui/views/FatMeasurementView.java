@@ -61,7 +61,7 @@ public class FatMeasurementView extends FloatMeasurementView {
     }
 
     @Override
-    protected String getUnit() {
+    public String getUnit() {
         if (percentageEnable) {
             return "%";
         }

@@ -61,7 +61,7 @@ public class WaterMeasurementView extends FloatMeasurementView {
     }
 
     @Override
-    protected String getUnit() {
+    public String getUnit() {
         if (percentageEnable) {
             return "%";
         }

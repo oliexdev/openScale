@@ -59,7 +59,7 @@ public class MuscleMeasurementView extends FloatMeasurementView {
     }
 
     @Override
-    protected String getUnit() {
+    public String getUnit() {
         if (percentageEnable) {
             return "%";
         }

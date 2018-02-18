@@ -50,7 +50,7 @@ public class LBWMeasurementView extends FloatMeasurementView {
     }
 
     @Override
-    protected String getUnit() {
+    public String getUnit() {
         return "kg";
     }
 

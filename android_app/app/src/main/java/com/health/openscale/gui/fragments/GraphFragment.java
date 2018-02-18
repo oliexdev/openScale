@@ -49,6 +49,7 @@ import com.health.openscale.gui.views.FatMeasurementView;
 import com.health.openscale.gui.views.FloatMeasurementView;
 import com.health.openscale.gui.views.HipMeasurementView;
 import com.health.openscale.gui.views.LBWMeasurementView;
+import com.health.openscale.gui.views.MeasurementView;
 import com.health.openscale.gui.views.MuscleMeasurementView;
 import com.health.openscale.gui.views.WHRMeasurementView;
 import com.health.openscale.gui.views.WHtRMeasurementView;
@@ -93,7 +94,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     private PopupMenu popup;
     private SharedPreferences prefs;
 
-    private ArrayList<FloatMeasurementView> measurementViews;
+    private ArrayList<MeasurementView> measurementViews;
 
     private int textColor;
 
@@ -329,31 +330,39 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         floatingActionBar.removeAllViews();
 
-        for (FloatMeasurementView measurementView : measurementViews) {
-            measurementView.updatePreferences(prefs);
-            Stack<PointValue> valuesStack = new Stack<PointValue>();
+        for (MeasurementView view : measurementViews) {
+            if (view instanceof FloatMeasurementView) {
+                FloatMeasurementView measurementView = (FloatMeasurementView) view;
 
-            for (ScaleMeasurement measurement : scaleMeasurementList) {
-                measurementView.loadFrom(measurement, null);
-
-                calDB.setTime(measurement.getDateTime());
-
-                if (addPointValue(valuesStack, calDB.get(field), measurementView.getValue())) {
-                    pointIndexScaleMeasurementList.add(measurement); // if new point was added, add this point to pointIndexScaleDataList to get the correct point index after selecting an point
+                if (measurementView.getName().equals(getString(R.string.label_bmr))) {
+                    continue;
                 }
-            }
 
-            Line diagramLine = new Line(valuesStack).
-                    setColor(measurementView.getColor()).
-                    setHasLabels(prefs.getBoolean("labelsEnable", true)).
-                    setHasPoints(prefs.getBoolean("pointsEnable", true)).
-                    setFormatter(new SimpleLineChartValueFormatter(1));
+                measurementView.updatePreferences(prefs);
+                Stack<PointValue> valuesStack = new Stack<PointValue>();
 
-            if (measurementView.isVisible()) {
-                addFloatingActionButton(measurementView);
+                for (ScaleMeasurement measurement : scaleMeasurementList) {
+                    measurementView.loadFrom(measurement, null);
 
-                if (prefs.getBoolean(String.valueOf("actionButton" + measurementView.getName()), true)) {
-                    diagramLineList.add(diagramLine);
+                    calDB.setTime(measurement.getDateTime());
+
+                    if (addPointValue(valuesStack, calDB.get(field), measurementView.getValue())) {
+                        pointIndexScaleMeasurementList.add(measurement); // if new point was added, add this point to pointIndexScaleDataList to get the correct point index after selecting an point
+                    }
+                }
+
+                Line diagramLine = new Line(valuesStack).
+                        setColor(measurementView.getColor()).
+                        setHasLabels(prefs.getBoolean("labelsEnable", true)).
+                        setHasPoints(prefs.getBoolean("pointsEnable", true)).
+                        setFormatter(new SimpleLineChartValueFormatter(1));
+
+                if (measurementView.isVisible()) {
+                    addFloatingActionButton(measurementView);
+
+                    if (prefs.getBoolean(String.valueOf("actionButton" + measurementView.getName()), true)) {
+                        diagramLineList.add(diagramLine);
+                    }
                 }
             }
         }

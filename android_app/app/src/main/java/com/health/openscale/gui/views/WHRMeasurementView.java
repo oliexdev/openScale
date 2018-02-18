@@ -53,7 +53,7 @@ public class WHRMeasurementView extends FloatMeasurementView {
     }
 
     @Override
-    protected String getUnit() {
+    public String getUnit() {
         return "";
     }
 
