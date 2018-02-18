@@ -94,7 +94,8 @@ public class DataEntryActivity extends AppCompatActivity {
 
         tableLayoutDataEntry = (TableLayout) findViewById(R.id.tableLayoutDataEntry);
 
-        dataEntryMeasurements = MeasurementView.getMeasurementList(context);
+        dataEntryMeasurements = MeasurementView.getMeasurementList(
+                context, MeasurementView.DateTimeOrder.LAST);
 
         txtDataNr = (TextView) findViewById(R.id.txtDataNr);
         btnLeft = (Button) findViewById(R.id.btnLeft);

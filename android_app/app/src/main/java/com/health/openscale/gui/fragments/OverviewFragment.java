@@ -38,10 +38,8 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
 import com.health.openscale.core.utils.DateTimeHelpers;
-import com.health.openscale.gui.views.DateMeasurementView;
 import com.health.openscale.gui.views.FloatMeasurementView;
 import com.health.openscale.gui.views.MeasurementView;
-import com.health.openscale.gui.views.TimeMeasurementView;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -120,13 +118,10 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         pieChartLast.setOnValueTouchListener(new PieChartLastTouchListener());
         pieChartLast.setChartRotationEnabled(false);
 
-        measurementViews = MeasurementView.getMeasurementList(getContext());
+        measurementViews = MeasurementView.getMeasurementList(
+                getContext(), MeasurementView.DateTimeOrder.NONE);
 
         for (MeasurementView measurement : measurementViews) {
-            if (measurement instanceof DateMeasurementView || measurement instanceof TimeMeasurementView) {
-                continue;
-            }
-
             tableOverviewLayout.addView(measurement);
         }
 
@@ -171,10 +166,6 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         updateLastLineChart(scaleMeasurementList);
 
         for (MeasurementView measurement : measurementViews) {
-            if (measurement instanceof DateMeasurementView || measurement instanceof TimeMeasurementView) {
-                continue;
-            }
-
             measurement.updatePreferences(prefs);
             measurement.loadFrom(lastScaleMeasurement, prevScaleMeasurement);
         }

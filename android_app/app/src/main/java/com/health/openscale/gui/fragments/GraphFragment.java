@@ -174,7 +174,8 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             }
         });
 
-        measurementViews = MeasurementView.getMeasurementList(getContext());
+        measurementViews = MeasurementView.getMeasurementList(
+                getContext(), MeasurementView.DateTimeOrder.NONE);
 
         popup = new PopupMenu(getContext(), optionMenu);
         popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {

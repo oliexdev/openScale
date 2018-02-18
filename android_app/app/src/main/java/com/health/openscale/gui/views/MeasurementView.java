@@ -80,11 +80,15 @@ public abstract class MeasurementView extends TableLayout {
         iconView.setImageDrawable(icon);
     }
 
-    public static final List<MeasurementView> getMeasurementList(Context context) {
+    public enum DateTimeOrder { FIRST, LAST, NONE }
+
+    public static final List<MeasurementView> getMeasurementList(Context context, DateTimeOrder order) {
         final List<MeasurementView> measurementViews = new ArrayList<>();
 
-        measurementViews.add(new DateMeasurementView(context));
-        measurementViews.add(new TimeMeasurementView(context));
+        if (order == DateTimeOrder.FIRST) {
+            measurementViews.add(new DateMeasurementView(context));
+            measurementViews.add(new TimeMeasurementView(context));
+        }
         measurementViews.add(new WeightMeasurementView(context));
         measurementViews.add(new BMIMeasurementView(context));
         measurementViews.add(new WaterMeasurementView(context));
@@ -98,6 +102,10 @@ public abstract class MeasurementView extends TableLayout {
         measurementViews.add(new WHRMeasurementView(context));
         measurementViews.add(new BMRMeasurementView(context));
         measurementViews.add(new CommentMeasurementView(context));
+        if (order == DateTimeOrder.LAST) {
+            measurementViews.add(new DateMeasurementView(context));
+            measurementViews.add(new TimeMeasurementView(context));
+        }
 
         return measurementViews;
     }

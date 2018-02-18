@@ -112,7 +112,8 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
             selectedSubpageNr = savedInstanceState.getInt(SELECTED_SUBPAGE_NR_KEY);
         }
 
-        measurementViews = MeasurementView.getMeasurementList(getContext());
+        measurementViews = MeasurementView.getMeasurementList(
+                getContext(), MeasurementView.DateTimeOrder.FIRST);
 
         for (MeasurementView measurement : measurementViews) {
             measurement.setUpdateViews(false);
