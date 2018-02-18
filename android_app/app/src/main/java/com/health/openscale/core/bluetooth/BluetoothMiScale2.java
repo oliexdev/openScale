@@ -26,7 +26,6 @@ import android.util.Log;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
-import com.health.openscale.core.utils.Converters;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

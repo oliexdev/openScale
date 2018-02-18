@@ -181,7 +181,6 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
 
-
                 switch (item.getItemId()) {
                     case R.id.enableMonth:
                         if (item.isChecked()) {
