@@ -143,6 +143,9 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             }
         });
 
+        txtTitleUser.setText(getResources().getString(R.string.label_title_user).toUpperCase());
+        txtTitleLastMeasurement.setText(getResources().getString(R.string.label_title_last_measurement).toUpperCase());
+
         prefs = PreferenceManager.getDefaultSharedPreferences(overviewView.getContext());
 
         OpenScale.getInstance(getContext()).registerFragment(this);
@@ -163,6 +166,10 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         ScaleMeasurement[] tupleScaleData = OpenScale.getInstance(context).getTupleScaleData(lastScaleMeasurement.getId());
         ScaleMeasurement prevScaleMeasurement = tupleScaleData[0];
 
+        updateUserSelection();
+        updateLastPieChart();
+        updateLastLineChart(scaleMeasurementList);
+
         for (MeasurementView measurement : measurementViews) {
             if (measurement instanceof DateMeasurementView || measurement instanceof TimeMeasurementView) {
                 continue;
@@ -171,13 +178,6 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             measurement.updatePreferences(prefs);
             measurement.loadFrom(lastScaleMeasurement, prevScaleMeasurement);
         }
-
-        txtTitleUser.setText(getResources().getString(R.string.label_title_user).toUpperCase());
-        txtTitleLastMeasurement.setText(getResources().getString(R.string.label_title_last_measurement).toUpperCase());
-
-        updateUserSelection();
-        updateLastPieChart();
-        updateLastLineChart(scaleMeasurementList);
     }
 
     private void updateUserSelection() {
