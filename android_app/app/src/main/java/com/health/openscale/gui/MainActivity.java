@@ -513,7 +513,7 @@ public class MainActivity extends AppCompatActivity {
                 item.setPadding(0, 20, 0, 0);
                 // set once again checked value, so view will be updated
                 //noinspection RestrictedApi
-                //item.setChecked(item.getItemData().isChecked());
+                item.setChecked(item.getItemData().isChecked());
             }
         } catch (NoSuchFieldException e) {
             Log.e("BNVHelper", "Unable to get shift mode field", e);
