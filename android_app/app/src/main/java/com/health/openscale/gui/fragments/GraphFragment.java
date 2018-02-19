@@ -461,6 +461,15 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                 if(defaultTopViewport.bottom > actValue.getY()) {
                     defaultTopViewport.bottom = actValue.getY();
                 }
+
+                if(defaultTopViewport.right < actValue.getX()) {
+                    defaultTopViewport.right = actValue.getX();
+                }
+
+                if(defaultTopViewport.top < actValue.getY()) {
+                    defaultTopViewport.top = actValue.getY();
+                }
+
             }
 
             Line meanLine = new Line(valuesMean)
