@@ -216,11 +216,10 @@
     <string name="toggle_expand">Toggle expand</string>
     <string name="edit">Edit</string>
     <string name="save">Save</string>
-
+    <string name="label_mean_labels">Show 7 day weight mean values</string>
     <string name="label_month_view">Month view</string>
 
     <string name="permission_not_granted">Permission not granted</string>
     <string name="permission_bluetooth_info">openScale requires permission to access the coarse location to search for Bluetooth devices</string>
     <string name="permission_bluetooth_info_title">Information</string>
-
 </resources>
