@@ -98,6 +98,7 @@ public class BluetoothPreferences extends PreferenceFragment implements SharedPr
                         prefBtDevice.setSummary(entry.getKey());
 
                         for (BluetoothCommunication.BT_DEVICE_ID btScaleID : BluetoothCommunication.BT_DEVICE_ID.values()) {
+                            Log.i("openscale","Looking for a scale device within Preferences");
                             BluetoothCommunication btDevice = BluetoothCommunication.getBtDevice(getActivity().getBaseContext(), btScaleID);
 
                             if (btDevice.checkDeviceName(entry.getValue())) {

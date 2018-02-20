@@ -76,12 +76,16 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
         @Override
     public void startSearching(String deviceName) {
 
+       Log.i("openscale","startSearching "+deviceName);
+
         if (btAdapter == null) {
             setBtStatus(BT_STATUS_CODE.BT_NO_DEVICE_FOUND);
             return;
         }
 
         Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
+
+       Log.i("openscale","about to start searching paired devices");
 
         for (BluetoothDevice device : pairedDevices) {
             // check if we can found bluetooth device name in the pairing list
