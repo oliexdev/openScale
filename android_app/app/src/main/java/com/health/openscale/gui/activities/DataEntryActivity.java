@@ -536,7 +536,7 @@ public class DataEntryActivity extends AppCompatActivity {
                     }
                     break;
                 case DragEvent.ACTION_DROP:
-                    View draggedView = (View) event.getLocalState();
+                    MeasurementView draggedView = (MeasurementView) event.getLocalState();
                     TableLayout table = (TableLayout) draggedView.getParent();
                     final int draggedIndex = table.indexOfChild(draggedView);
                     final int targetIndex = table.indexOfChild(view);
@@ -545,7 +545,9 @@ public class DataEntryActivity extends AppCompatActivity {
                         // and a view that is moved up is placed before the target view.
                         table.removeView(draggedView);
                         table.addView(draggedView, targetIndex);
-                        MeasurementView.saveMeasurementViewsOrder(table);
+                        dataEntryMeasurements.remove(draggedView);
+                        dataEntryMeasurements.add(targetIndex, draggedView);
+                        MeasurementView.saveMeasurementViewsOrder(getApplicationContext(), dataEntryMeasurements);
                     }
                     break;
                 case DragEvent.ACTION_DRAG_ENDED:

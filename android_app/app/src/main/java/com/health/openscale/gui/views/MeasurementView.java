@@ -144,17 +144,15 @@ public abstract class MeasurementView extends TableLayout {
         return sorted;
     }
 
-    public static void saveMeasurementViewsOrder(TableLayout tableLayout) {
+    public static void saveMeasurementViewsOrder(Context context, List<MeasurementView> measurementViews) {
         ArrayList<String> order = new ArrayList<>();
-        for (int i = 0; i < tableLayout.getChildCount(); ++i) {
-            MeasurementView view = (MeasurementView) tableLayout.getChildAt(i);
-            if (view instanceof DateMeasurementView || view instanceof TimeMeasurementView) {
+        for (MeasurementView measurement : measurementViews) {
+            if (measurement instanceof DateMeasurementView || measurement instanceof TimeMeasurementView) {
                 continue;
             }
-            order.add(view.getKey());
+            order.add(measurement.getKey());
         }
-        PreferenceManager.getDefaultSharedPreferences(tableLayout.getContext())
-                .edit()
+        PreferenceManager.getDefaultSharedPreferences(context).edit()
                 .putString(PREF_MEASUREMENT_ORDER, TextUtils.join(",", order))
                 .commit();
     }
