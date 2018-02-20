@@ -200,6 +200,8 @@ public abstract class MeasurementView extends TableLayout {
         return updateViews;
     }
 
+    public abstract String getKey();
+
     public abstract void loadFrom(ScaleMeasurement measurement, ScaleMeasurement previousMeasurement);
     public abstract void saveTo(ScaleMeasurement measurement);
 

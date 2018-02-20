@@ -32,6 +32,11 @@ public class HipMeasurementView extends FloatMeasurementView {
     }
 
     @Override
+    public String getKey() {
+        return "hip";
+    }
+
+    @Override
     public void updatePreferences(SharedPreferences preferences) {
         setVisible(preferences.getBoolean("hipEnable", false));
     }

@@ -34,6 +34,11 @@ public class BMRMeasurementView extends FloatMeasurementView {
     }
 
     @Override
+    public String getKey() {
+        return "bmr";
+    }
+
+    @Override
     public void updatePreferences(SharedPreferences preferences) {
         setVisible(preferences.getBoolean("weightEnable", true));
     }

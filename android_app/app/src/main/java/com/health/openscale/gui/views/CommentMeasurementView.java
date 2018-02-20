@@ -27,10 +27,14 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 
 public class CommentMeasurementView extends MeasurementView {
     private String comment;
-    private static String COMMENT_KEY = "comment";
 
     public CommentMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_comment), ContextCompat.getDrawable(context, R.drawable.ic_comment));
+    }
+
+    @Override
+    public String getKey() {
+        return "comment";
     }
 
     private void setValue(String newComment, boolean callListener) {
@@ -52,12 +56,12 @@ public class CommentMeasurementView extends MeasurementView {
 
     @Override
     public void restoreState(Bundle state) {
-        setValue(state.getString(COMMENT_KEY), true);
+        setValue(state.getString(getKey()), true);
     }
 
     @Override
     public void saveState(Bundle state) {
-        state.putString(COMMENT_KEY, comment);
+        state.putString(getKey(), comment);
     }
 
     @Override

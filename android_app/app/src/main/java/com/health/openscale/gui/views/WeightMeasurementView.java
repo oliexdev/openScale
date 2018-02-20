@@ -33,6 +33,11 @@ public class WeightMeasurementView extends FloatMeasurementView {
     }
 
     @Override
+    public String getKey() {
+        return "weight";
+    }
+
+    @Override
     public void updatePreferences(SharedPreferences preferences) {
         setVisible(preferences.getBoolean("weightEnable", true));
     }

@@ -32,6 +32,11 @@ public class WaistMeasurementView extends FloatMeasurementView {
     }
 
     @Override
+    public String getKey() {
+        return "waist";
+    }
+
+    @Override
     public void updatePreferences(SharedPreferences preferences) {
         setVisible(preferences.getBoolean("waistEnable", false));
     }

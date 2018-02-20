@@ -251,12 +251,12 @@ public abstract class FloatMeasurementView extends MeasurementView {
 
     @Override
     public void restoreState(Bundle state) {
-        setValue(state.getFloat(nameText), previousValue, true);
+        setValue(state.getFloat(getKey()), previousValue, true);
     }
 
     @Override
     public void saveState(Bundle state) {
-        state.putFloat(nameText, value);
+        state.putFloat(getKey(), value);
     }
 
     @Override

@@ -35,6 +35,11 @@ public class FatMeasurementView extends FloatMeasurementView {
     }
 
     @Override
+    public String getKey() {
+        return "fat";
+    }
+
+    @Override
     public void updatePreferences(SharedPreferences preferences) {
         setVisible(preferences.getBoolean("fatEnable", true));
         estimateFatEnable = preferences.getBoolean("estimateFatEnable", false);

@@ -32,6 +32,11 @@ public class BoneMeasurementView extends FloatMeasurementView {
     }
 
     @Override
+    public String getKey() {
+        return "bone";
+    }
+
+    @Override
     public void updatePreferences(SharedPreferences preferences) {
         setVisible(preferences.getBoolean("boneEnable", false));
     }
