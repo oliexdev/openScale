@@ -44,7 +44,7 @@ public abstract class BluetoothCommunication {
     public enum BT_MACHINE_STATE {BT_INIT_STATE, BT_CMD_STATE, BT_CLEANUP_STATE}
     public enum BT_DEVICE_ID {CUSTOM_OPENSCALE, MI_SCALE_V1, MI_SCALE_V2,
         SANITAS_SBF70, MEDISANA_BS444, DIGOO_DGS038H, EXCELVANT_CF369BLE,
-        YUNMAI_MINI, YUNMAI_SE, MGB, EXINGTECH_Y1, BEURER_BF700_800, HESLEY, ONEBYONE}
+        YUNMAI_MINI, YUNMAI_SE, MGB, EXINGTECH_Y1, BEURER_BF700_800, HESLEY, ONEBYONE, IHEALTH_HS3}
 
     protected Context context;
 
@@ -112,6 +112,8 @@ public abstract class BluetoothCommunication {
                 return new BluetoothHesley(context);
             case ONEBYONE:
                 return new BluetoothOneByone(context);
+            case IHEALTH_HS3:
+                return new BluetoothIhealthHS3(context);
         }
 
         return null;
