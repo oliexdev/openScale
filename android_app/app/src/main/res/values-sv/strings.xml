@@ -164,7 +164,6 @@
     <string name="title_general">Allmänt</string>
     <string name="error_user_name_too_short">Fel: namnet måste vara minst 3 tecken</string>
     <string name="label_theme">Tema</string>
-    <string name="info_app_restart_required">En app-omstart krävs för att applicera ändringarna</string>
     <string name="label_feedback_message_enjoying">Uppskattar du openScale?</string>
     <string name="label_feedback_message_rate_app">Vad sägs om ett betyg på GooglePlay eller på GitHub?</string>
     <string name="label_feedback_message_issue">Skulle du ha något emot att ge oss lite återkoppling?</string>

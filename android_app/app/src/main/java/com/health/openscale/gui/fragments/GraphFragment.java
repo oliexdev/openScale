@@ -174,13 +174,13 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             }
         });
 
-        measurementViews = MeasurementView.getMeasurementList(getContext());
+        measurementViews = MeasurementView.getMeasurementList(
+                getContext(), MeasurementView.DateTimeOrder.NONE);
 
         popup = new PopupMenu(getContext(), optionMenu);
         popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-
 
                 switch (item.getItemId()) {
                     case R.id.enableMonth:
@@ -315,7 +315,6 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                     continue;
                 }
 
-                measurementView.updatePreferences(prefs);
                 Stack<PointValue> valuesStack = new Stack<PointValue>();
 
                 for (ScaleMeasurement measurement : scaleMeasurementList) {

@@ -16,11 +16,9 @@
 package com.health.openscale.gui.preferences;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
-import android.preference.PreferenceManager;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
