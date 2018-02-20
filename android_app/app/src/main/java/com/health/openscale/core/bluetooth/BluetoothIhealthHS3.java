@@ -85,11 +85,11 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
 
         Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
 
-       Log.i("openscale","about to start searching paired devices");
+       Log.w("openscale","about to start searching paired devices");
 
         for (BluetoothDevice device : pairedDevices) {
             // check if we can found bluetooth device name in the pairing list
-            if (device != null ) { Log.i("openscale","Looking at device "+device.getName()) } ;
+            if (device != null ) { Log.w("openscale","Looking at device "+device.getName()) } ;
                 
             if (device != null && device.getName().equals(deviceName)) {
                 btDevice = device;
@@ -134,6 +134,8 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
 
     @Override
     public void stopSearching() {
+
+        Log.w("openscale","HS3 - stopSearching");
         if (btSocket != null) {
             if (btSocket.isConnected()) {
                 try {
