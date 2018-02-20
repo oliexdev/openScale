@@ -25,6 +25,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.content.ContextCompat;
 import android.text.SpannableStringBuilder;
+import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
@@ -58,6 +59,8 @@ import static com.health.openscale.gui.views.MeasurementView.MeasurementViewMode
 public abstract class MeasurementView extends TableLayout {
     public enum MeasurementViewMode {VIEW, EDIT, ADD, STATISTIC}
 
+    public static String PREF_MEASUREMENT_ORDER = "measurementOrder";
+
     private TableRow measurementRow;
     private ImageView iconView;
     private TextView nameView;
@@ -84,38 +87,76 @@ public abstract class MeasurementView extends TableLayout {
 
     public enum DateTimeOrder { FIRST, LAST, NONE }
 
-    public static final List<MeasurementView> getMeasurementList(Context context, DateTimeOrder order) {
-        final List<MeasurementView> measurementViews = new ArrayList<>();
-
-        if (order == DateTimeOrder.FIRST) {
-            measurementViews.add(new DateMeasurementView(context));
-            measurementViews.add(new TimeMeasurementView(context));
-        }
-        measurementViews.add(new WeightMeasurementView(context));
-        measurementViews.add(new BMIMeasurementView(context));
-        measurementViews.add(new WaterMeasurementView(context));
-        measurementViews.add(new MuscleMeasurementView(context));
-        measurementViews.add(new LBWMeasurementView(context));
-        measurementViews.add(new FatMeasurementView(context));
-        measurementViews.add(new BoneMeasurementView(context));
-        measurementViews.add(new WaistMeasurementView(context));
-        measurementViews.add(new WHtRMeasurementView(context));
-        measurementViews.add(new HipMeasurementView(context));
-        measurementViews.add(new WHRMeasurementView(context));
-        measurementViews.add(new BMRMeasurementView(context));
-        measurementViews.add(new CommentMeasurementView(context));
-        if (order == DateTimeOrder.LAST) {
-            measurementViews.add(new DateMeasurementView(context));
-            measurementViews.add(new TimeMeasurementView(context));
+    public static final List<MeasurementView> getMeasurementList(Context context, DateTimeOrder dateTimeOrder) {
+        final List<MeasurementView> sorted = new ArrayList<>();
+        if (dateTimeOrder == DateTimeOrder.FIRST) {
+            sorted.add(new DateMeasurementView(context));
+            sorted.add(new TimeMeasurementView(context));
         }
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
-        for (MeasurementView measurement : measurementViews) {
+        {
+            final List<MeasurementView> unsorted = new ArrayList<>();
+
+            unsorted.add(new WeightMeasurementView(context));
+            unsorted.add(new BMIMeasurementView(context));
+            unsorted.add(new WaterMeasurementView(context));
+            unsorted.add(new MuscleMeasurementView(context));
+            unsorted.add(new LBWMeasurementView(context));
+            unsorted.add(new FatMeasurementView(context));
+            unsorted.add(new BoneMeasurementView(context));
+            unsorted.add(new WaistMeasurementView(context));
+            unsorted.add(new WHtRMeasurementView(context));
+            unsorted.add(new HipMeasurementView(context));
+            unsorted.add(new WHRMeasurementView(context));
+            unsorted.add(new BMRMeasurementView(context));
+            unsorted.add(new CommentMeasurementView(context));
+
+            // Get sort order
+            final String[] sortOrder = TextUtils.split(
+                    prefs.getString(PREF_MEASUREMENT_ORDER, ""), ",");
+
+            // Move views from unsorted to sorted in the correct order
+            for (String key : sortOrder) {
+                for (MeasurementView measurement : unsorted) {
+                    if (key.equals(measurement.getKey())) {
+                        sorted.add(measurement);
+                        unsorted.remove(measurement);
+                        break;
+                    }
+                }
+            }
+
+            // Any new views end up at the end
+            sorted.addAll(unsorted);
+        }
+
+        if (dateTimeOrder == DateTimeOrder.LAST) {
+            sorted.add(new DateMeasurementView(context));
+            sorted.add(new TimeMeasurementView(context));
+        }
+
+        for (MeasurementView measurement : sorted) {
             measurement.updatePreferences(prefs);
         }
 
-        return measurementViews;
+        return sorted;
+    }
+
+    public static void saveMeasurementViewsOrder(TableLayout tableLayout) {
+        ArrayList<String> order = new ArrayList<>();
+        for (int i = 0; i < tableLayout.getChildCount(); ++i) {
+            MeasurementView view = (MeasurementView) tableLayout.getChildAt(i);
+            if (view instanceof DateMeasurementView || view instanceof TimeMeasurementView) {
+                continue;
+            }
+            order.add(view.getKey());
+        }
+        PreferenceManager.getDefaultSharedPreferences(tableLayout.getContext())
+                .edit()
+                .putString(PREF_MEASUREMENT_ORDER, TextUtils.join(",", order))
+                .commit();
     }
 
     private void initView(Context context) {
@@ -180,9 +221,7 @@ public abstract class MeasurementView extends TableLayout {
         evaluatorView.setLayoutParams(new TableRow.LayoutParams(0, LayoutParams.WRAP_CONTENT, 0.99f));
         spaceAfterEvaluatorView.setLayoutParams(new TableRow.LayoutParams(0, LayoutParams.WRAP_CONTENT, 0.01f));
 
-        onClickListenerEvaluation onClickListener = new onClickListenerEvaluation();
-        measurementRow.setOnClickListener(onClickListener);
-        evaluatorRow.setOnClickListener(onClickListener);
+        setOnClickListener(new onClickListenerEvaluation());
     }
 
     protected LinearLayout getIncDecLayout() {

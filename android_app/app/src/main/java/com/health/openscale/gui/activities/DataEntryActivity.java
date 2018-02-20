@@ -20,15 +20,18 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.DragEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -127,6 +130,16 @@ public class DataEntryActivity extends AppCompatActivity {
                 : MeasurementView.MeasurementViewMode.VIEW;
         for (MeasurementView measurement : dataEntryMeasurements) {
             measurement.setEditMode(mode);
+
+            // Date and time can not be reordered (as they can be both first and last)
+            if (measurement instanceof DateMeasurementView || measurement instanceof TimeMeasurementView) {
+                continue;
+            }
+
+            onLongClickListener longClickListener = new onLongClickListener();
+            measurement.setOnTouchListener(longClickListener);
+            measurement.setOnLongClickListener(longClickListener);
+            measurement.setOnDragListener(new onDragListener());
         }
 
         updateOnView();
@@ -454,6 +467,97 @@ public class DataEntryActivity extends AppCompatActivity {
                     measurement.loadFrom(scaleMeasurement, previousMeasurement);
                 }
             }
+        }
+    }
+
+    private class onLongClickListener implements View.OnTouchListener, View.OnLongClickListener {
+        float x = 0;
+        float y = 0;
+
+        @Override
+        public boolean onTouch(View view, MotionEvent event) {
+            if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+                // Save x and y so that the drag shadow can have the touch point set to where
+                // the user did the touch (and not in the center of the view).
+                x = event.getX();
+                y = event.getY();
+            }
+            return false;
+        }
+
+        @Override
+        public boolean onLongClick(View view) {
+            return view.startDrag(null, new dragShadowBuilder(view), view, 0);
+        }
+
+        private class dragShadowBuilder extends View.DragShadowBuilder {
+            public dragShadowBuilder(View view) {
+                super(view);
+            }
+
+            @Override
+            public void onProvideShadowMetrics(Point outShadowSize, Point outShadowTouchPoint) {
+                super.onProvideShadowMetrics(outShadowSize, outShadowTouchPoint);
+                outShadowTouchPoint.set(Math.round(x), Math.round(y));
+            }
+        }
+    }
+
+    private class onDragListener implements View.OnDragListener {
+        Drawable background = null;
+        // background may be set to null, thus the extra boolean
+        boolean hasBackground = false;
+
+        @Override
+        public boolean onDrag(View view, DragEvent event) {
+            switch (event.getAction()) {
+                case DragEvent.ACTION_DRAG_STARTED:
+                    if (view == event.getLocalState() && !hasBackground) {
+                        background = view.getBackground();
+                        hasBackground = true;
+                        view.setBackgroundColor(Color.GRAY);
+                    }
+                    break;
+                case DragEvent.ACTION_DRAG_LOCATION:
+                    // Ignore
+                    break;
+                case DragEvent.ACTION_DRAG_ENTERED:
+                    if (view != event.getLocalState()) {
+                        background = view.getBackground();
+                        hasBackground = true;
+                        view.setBackgroundColor(Color.LTGRAY);
+                    }
+                    break;
+                case DragEvent.ACTION_DRAG_EXITED:
+                    if (view != event.getLocalState() && hasBackground) {
+                        view.setBackground(background);
+                        background = null;
+                        hasBackground = false;
+                    }
+                    break;
+                case DragEvent.ACTION_DROP:
+                    View draggedView = (View) event.getLocalState();
+                    TableLayout table = (TableLayout) draggedView.getParent();
+                    final int draggedIndex = table.indexOfChild(draggedView);
+                    final int targetIndex = table.indexOfChild(view);
+                    if (draggedIndex != targetIndex) {
+                        // A view that is moved down is placed after the target view,
+                        // and a view that is moved up is placed before the target view.
+                        table.removeView(draggedView);
+                        table.addView(draggedView, targetIndex);
+                        MeasurementView.saveMeasurementViewsOrder(table);
+                    }
+                    break;
+                case DragEvent.ACTION_DRAG_ENDED:
+                    if (hasBackground) {
+                        // Restore background
+                        view.setBackground(background);
+                        background = null;
+                        hasBackground = false;
+                    }
+                    break;
+            }
+            return true;
         }
     }
 }

@@ -59,6 +59,7 @@ import com.health.openscale.gui.fragments.OverviewFragment;
 import com.health.openscale.gui.fragments.StatisticsFragment;
 import com.health.openscale.gui.fragments.TableFragment;
 import com.health.openscale.gui.utils.PermissionHelper;
+import com.health.openscale.gui.views.MeasurementView;
 
 import java.lang.reflect.Field;
 
@@ -78,6 +79,8 @@ public class MainActivity extends AppCompatActivity
     private BottomNavigationView navBottomDrawer;
     private ActionBarDrawerToggle drawerToggle;
 
+    private boolean settingsActivityRunning = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -89,6 +92,9 @@ public class MainActivity extends AppCompatActivity
         }
 
         super.onCreate(savedInstanceState);
+
+        PreferenceManager.getDefaultSharedPreferences(this)
+                .registerOnSharedPreferenceChangeListener(this);
 
         CaocConfig.Builder.create()
                 .trackActivities(true)
@@ -183,33 +189,24 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private void registerOnSharedPreferenceChangeListener() {
-        PreferenceManager.getDefaultSharedPreferences(this)
-                .registerOnSharedPreferenceChangeListener(this);
-    }
-
-    private void unregisterOnSharedPreferenceChangeListener() {
-        PreferenceManager.getDefaultSharedPreferences(this)
-                .unregisterOnSharedPreferenceChangeListener(this);
-    }
-
     @Override
     public void onResume() {
         super.onResume();
-        // Stop listening when returning from settings
-        unregisterOnSharedPreferenceChangeListener();
+        settingsActivityRunning = false;
     }
 
     @Override
     public void onDestroy() {
-        // Clean up when shutting down
-        unregisterOnSharedPreferenceChangeListener();
+        PreferenceManager.getDefaultSharedPreferences(this)
+                .unregisterOnSharedPreferenceChangeListener(this);
         super.onDestroy();
     }
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences preferences, String key) {
-        recreate();
+        if (settingsActivityRunning || key == MeasurementView.PREF_MEASUREMENT_ORDER) {
+            recreate();
+        }
     }
 
     private void positiveFeedbackDialog() {
@@ -307,10 +304,10 @@ public class MainActivity extends AppCompatActivity
                 prefs.edit().putInt("lastFragmentId", menuItemId).commit();
                 break;
             case R.id.nav_settings:
-                registerOnSharedPreferenceChangeListener();
                 Intent settingsIntent = new Intent(this, SettingsActivity.class);
                 settingsIntent.putExtra(SettingsActivity.EXTRA_TINT_COLOR, navDrawer.getItemTextColor().getDefaultColor());
                 startActivity(settingsIntent);
+                settingsActivityRunning = true;
                 drawerLayout.closeDrawers();
                 return;
             case R.id.nav_help:
