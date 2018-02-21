@@ -221,5 +221,6 @@
     <string name="permission_not_granted">Permission not granted</string>
     <string name="permission_bluetooth_info">openScale requires permission to access the coarse location to search for Bluetooth devices</string>
     <string name="permission_bluetooth_info_title">Information</string>
+    <string name="label_next">Next</string>
 
 </resources>
