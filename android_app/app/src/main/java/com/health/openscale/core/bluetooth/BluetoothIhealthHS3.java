@@ -89,7 +89,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
 
         for (BluetoothDevice device : pairedDevices) {
             // check if we can found bluetooth device name in the pairing list
-            if (device != null ) { Log.w("openscale","Looking at device "+device.getName() } ;
+            if (device != null ) { Log.w("openscale","Looking at device "+device.getName()); } ;
                 
             if (device != null && device.getName().equals(deviceName)) {
                 btDevice = device;
