@@ -28,6 +28,7 @@ import android.text.SpannableStringBuilder;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -349,8 +350,24 @@ public abstract class MeasurementView extends TableLayout {
         input.setSelectAllOnFocus(true);
         builder.setView(input);
 
+        ViewGroup parent = (ViewGroup) getParent();
+        MeasurementView view = null;
+        for (int i = parent.indexOfChild(this) + 1; i < parent.getChildCount(); ++i) {
+            MeasurementView next = (MeasurementView) parent.getChildAt(i);
+            if (!next.isEditable() || next instanceof DateMeasurementView || next instanceof TimeMeasurementView) {
+                continue;
+            }
+            view = next;
+            break;
+        }
+        final MeasurementView next = view;
+
         builder.setPositiveButton(getResources().getString(R.string.label_ok), null);
         builder.setNegativeButton(getResources().getString(R.string.label_cancel), null);
+
+        if (next != null) {
+            builder.setNeutralButton(R.string.label_next, null);
+        }
 
         final AlertDialog floatDialog = builder.create();
 
@@ -361,7 +378,6 @@ public abstract class MeasurementView extends TableLayout {
 
                 Button positiveButton = floatDialog.getButton(AlertDialog.BUTTON_POSITIVE);
                 positiveButton.setOnClickListener(new View.OnClickListener() {
-
                     @Override
                     public void onClick(View view) {
                         if (validateAndSetInput(input)) {
@@ -381,6 +397,19 @@ public abstract class MeasurementView extends TableLayout {
                         floatDialog.dismiss();
                     }
                 });
+
+                if (next != null) {
+                    Button neutralButton = floatDialog.getButton(AlertDialog.BUTTON_NEUTRAL);
+                    neutralButton.setOnClickListener(new OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            if (validateAndSetInput(input)) {
+                                floatDialog.dismiss();
+                                next.getInputDialog().show();
+                            }
+                        }
+                    });
+                }
             }
         });
 
