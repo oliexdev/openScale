@@ -51,9 +51,20 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
 
     @Override
     public String defaultDeviceName() {
-        Log.w("openscale","ihealthHS3 - DeviceName - returning iHealth HS3");
+        Log.w("openscale","ihealthHS3 - defaultDeviceName - returning iHealth HS3");
         return "iHealth HS3";
     }
+
+    @Override
+    public boolean checkDeviceName(String btDeviceName) {
+        Log.w("openscale","ihealthHS3 - checkDeviceName "+btDeviceName);
+        if (btDeviceName.startsWith("iHealth HS3")) {
+            return true;
+        }
+
+        return false;
+    }
+
 
     @Override
     boolean nextInitCmd(int stateNr) {
