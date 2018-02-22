@@ -195,4 +195,11 @@
     <string name="permission_bluetooth_info">openScale kräver åtkomst till grov platsbestämning för att söka efter Bluetooth-enheter</string>
     <string name="permission_bluetooth_info_title">Information</string>
 
+<string name="label_share_subject">openScale CSV data export (%s)</string>
+
+    <string name="label_next">Nästa</string>
+    <string name="label_measurement_order">Mätordning</string>
+    <string name="label_press_hold_reorder">Tryck och håll för att ordna om</string>
+    <string name="label_set_default_order">Sätt standardordningen</string>
+
 </resources>
