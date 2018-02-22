@@ -34,11 +34,16 @@ import java.util.Date;
 public class DateMeasurementView extends MeasurementView {
     private static DateFormat dateFormat = DateFormat.getDateInstance();
     private Date date;
-    private static String DATE_KEY = "date";
 
     public DateMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_date), ContextCompat.getDrawable(context, R.drawable.ic_lastmonth));
     }
+
+    @Override
+    public String getKey() {
+        return "date";
+    }
+
 
     private void setValue(Date newDate, boolean callListener) {
         if (!newDate.equals(date)) {
@@ -70,12 +75,12 @@ public class DateMeasurementView extends MeasurementView {
 
     @Override
     public void restoreState(Bundle state) {
-        setValue(new Date(state.getLong(DATE_KEY)), true);
+        setValue(new Date(state.getLong(getKey())), true);
     }
 
     @Override
     public void saveState(Bundle state) {
-        state.putLong(DATE_KEY, date.getTime());
+        state.putLong(getKey(), date.getTime());
     }
 
     @Override

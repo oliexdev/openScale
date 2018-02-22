@@ -32,6 +32,11 @@ public class WHRMeasurementView extends FloatMeasurementView {
     }
 
     @Override
+    public String getKey() {
+        return "whr";
+    }
+
+    @Override
     public void updatePreferences(SharedPreferences preferences) {
         setVisible(preferences.getBoolean("hipEnable", false)
                 && preferences.getBoolean("waistEnable", false));

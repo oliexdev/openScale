@@ -222,5 +222,8 @@
     <string name="permission_bluetooth_info">openScale requires permission to access the coarse location to search for Bluetooth devices</string>
     <string name="permission_bluetooth_info_title">Information</string>
     <string name="label_next">Next</string>
+    <string name="label_measurement_order">Measurement order</string>
+    <string name="label_press_hold_reorder">Press and hold to reorder</string>
+    <string name="label_set_default_order">Set default order</string>
 
 </resources>

@@ -35,6 +35,11 @@ public class WaterMeasurementView extends FloatMeasurementView {
     }
 
     @Override
+    public String getKey() {
+        return "water";
+    }
+
+    @Override
     public void updatePreferences(SharedPreferences preferences) {
         setVisible(preferences.getBoolean("waterEnable", true));
         estimateWaterEnable = preferences.getBoolean("estimateWaterEnable", false);

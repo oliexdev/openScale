@@ -34,11 +34,15 @@ import java.util.Date;
 public class TimeMeasurementView extends MeasurementView {
     private DateFormat timeFormat;
     private Date time;
-    private static String TIME_KEY = "time";
 
     public TimeMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_time), ContextCompat.getDrawable(context, R.drawable.ic_daysleft));
         timeFormat = android.text.format.DateFormat.getTimeFormat(context);
+    }
+
+    @Override
+    public String getKey() {
+        return "time";
     }
 
     private void setValue(Date newTime, boolean callListener) {
@@ -73,12 +77,12 @@ public class TimeMeasurementView extends MeasurementView {
 
     @Override
     public void restoreState(Bundle state) {
-        setValue(new Date(state.getLong(TIME_KEY)), true);
+        setValue(new Date(state.getLong(getKey())), true);
     }
 
     @Override
     public void saveState(Bundle state) {
-        state.putLong(TIME_KEY, time.getTime());
+        state.putLong(getKey(), time.getTime());
     }
 
     @Override
