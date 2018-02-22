@@ -247,6 +247,7 @@ public abstract class MeasurementView extends TableLayout {
 
     public abstract void updatePreferences(SharedPreferences preferences);
 
+    public CharSequence getNameText() { return nameView.getText(); }
     public abstract String getValueAsString();
     public void appendDiffValue(SpannableStringBuilder builder) { }
     public Drawable getIcon() { return iconView.getDrawable(); }
@@ -378,8 +379,8 @@ public abstract class MeasurementView extends TableLayout {
 
     protected AlertDialog getInputDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setTitle(nameView.getText());
-        builder.setIcon(iconView.getDrawable());
+        builder.setTitle(getNameText());
+        builder.setIcon(getIcon());
 
         final EditText input = new EditText(getContext());
 
