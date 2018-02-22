@@ -74,11 +74,13 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
 
     @Override
     boolean nextBluetoothCmd(int stateNr) {
+        Log.w("openscale","ihealthHS3 - nextBluetoothCmd - returning false");
         return false;
     }
 
     @Override
     boolean nextCleanUpCmd(int stateNr) {
+        Log.w("openscale","ihealthHS3 - nextCleanUpCmd - returning false");
         return false;
     }
 
@@ -170,6 +172,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
 
 
     private boolean sendBtData(String data) {
+        Log.w("openscale","ihealthHS3 - sendBtData"+data);
         if (btSocket.isConnected()) {
             btConnectThread = new BluetoothConnectedThread();
             btConnectThread.write(data.getBytes());
@@ -177,7 +180,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
             btConnectThread.cancel();
             return true;
         }
-
+        Log.w("openscale","ihealthHS3 - sendBtData - socket is not connected");
         return false;
     }
 
@@ -201,7 +204,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
 
         public void run() {
             final StringBuilder btLine = new StringBuilder();
-
+            Log.w("openscale","ihealthHS3 - run");
             // Keep listening to the InputStream until an exception occurs (e.g. device partner goes offline)
             while (!isCancel) {
                 try {
@@ -211,6 +214,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
                     btLine.append(btChar);
 
                     if (btLine.charAt(btLine.length() - 1) == '\n') {
+                        Log.w("openscale","ihealthHS3 - have a line " + btLine.toString());
                         ScaleMeasurement scaleMeasurement = parseBtString(btLine.toString());
 
                         if (scaleMeasurement != null) {
