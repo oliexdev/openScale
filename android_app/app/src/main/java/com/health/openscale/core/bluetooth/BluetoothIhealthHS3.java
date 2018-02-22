@@ -45,16 +45,19 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
 
     @Override
     public String deviceName() {
+        Log.w("openscale","ihealthHS3 - DeviceName - returning iHealth HS33FA4A");
         return "iHealth HS33FA4A";
     }
 
     @Override
     public String defaultDeviceName() {
+        Log.w("openscale","ihealthHS3 - DeviceName - returning iHealth HS3");
         return "iHealth HS3";
     }
 
     @Override
     boolean nextInitCmd(int stateNr) {
+        Log.w("openscale","ihealthHS3 - nextInitCmd - returning false");
         return false;
     }
 
@@ -69,6 +72,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
     }
 
     public boolean isBLE() {
+        Log.w("openscale","iHealth HS3 - isBLE - returning false");
         return false;
     }
 
@@ -76,7 +80,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
         @Override
     public void startSearching(String deviceName) {
 
-       Log.i("openscale","startSearching "+deviceName);
+       Log.w("openscale","iHealth HS3 - startSearching "+deviceName);
 
         if (btAdapter == null) {
             setBtStatus(BT_STATUS_CODE.BT_NO_DEVICE_FOUND);
@@ -172,7 +176,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
         private volatile boolean isCancel;
 
         public BluetoothConnectedThread() {
-
+            Log.w("openscale","ihealthHS3 - BluetoothConnectedThread");
             isCancel = false;
 
             // Get the input and output bluetooth streams

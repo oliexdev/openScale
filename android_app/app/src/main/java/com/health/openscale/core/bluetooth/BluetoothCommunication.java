@@ -86,6 +86,7 @@ public abstract class BluetoothCommunication {
         Log.w("openscale","getBtDevice called");
         switch (btDeviceID) {
             case CUSTOM_OPENSCALE:
+                Log.w("openscale","getBtDevice - CUSTOM_OPENSCALE case");
                 return new BluetoothCustomOpenScale(context);
             case MI_SCALE_V1:
                 return new BluetoothMiScale(context);
@@ -114,6 +115,7 @@ public abstract class BluetoothCommunication {
             case ONEBYONE:
                 return new BluetoothOneByone(context);
             case IHEALTH_HS3:
+                Log.w("openscale","getBtDevice - IHEALTH_HS3 case");
                 return new BluetoothIhealthHS3(context);
         }
 
