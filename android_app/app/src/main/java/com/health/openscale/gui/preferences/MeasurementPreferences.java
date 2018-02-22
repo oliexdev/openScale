@@ -214,11 +214,17 @@ public class MeasurementPreferences extends PreferenceFragment implements Shared
     }
 
     @Override
+    public void onPause() {
+        getPreferenceManager().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
+        super.onPause();
+    }
+
+    @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         updatePrefSummary(findPreference(key));
         if (!key.equals(MeasurementView.PREF_MEASUREMENT_ORDER)) {
             measurementOrderCategory.removeAll();
-            updateMeasurementOrderScreen(getContext(), measurementOrderCategory);
+            updateMeasurementOrderScreen(getActivity().getApplicationContext(), measurementOrderCategory);
         }
     }
 
