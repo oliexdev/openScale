@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory android:title="@string/label_category_display">
+        <PreferenceScreen android:title="@string/label_measurement_order" android:key="measurementOrder" />
         <CheckBoxPreference android:title="@string/label_fat" android:summaryOn="@string/info_is_enable" android:summaryOff="@string/info_is_not_enable" android:key="fatEnable" android:defaultValue="true"/>
         <SwitchPreference android:title="@string/label_fat_percentage" android:summaryOn="@string/info_is_enable" android:summaryOff="@string/info_is_not_enable" android:key ="fatPercentageEnable" android:defaultValue="true"/>
         <CheckBoxPreference android:title="@string/label_water" android:summaryOn="@string/info_is_enable" android:summaryOff="@string/info_is_not_enable"   android:key="waterEnable" android:defaultValue="true"/>

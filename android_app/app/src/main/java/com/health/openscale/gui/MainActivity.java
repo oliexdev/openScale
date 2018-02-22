@@ -59,7 +59,6 @@ import com.health.openscale.gui.fragments.OverviewFragment;
 import com.health.openscale.gui.fragments.StatisticsFragment;
 import com.health.openscale.gui.fragments.TableFragment;
 import com.health.openscale.gui.utils.PermissionHelper;
-import com.health.openscale.gui.views.MeasurementView;
 
 import java.lang.reflect.Field;
 
@@ -204,7 +203,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences preferences, String key) {
-        if (settingsActivityRunning || key == MeasurementView.PREF_MEASUREMENT_ORDER) {
+        if (settingsActivityRunning) {
             recreate();
         }
     }
