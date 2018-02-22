@@ -147,9 +147,6 @@ public abstract class MeasurementView extends TableLayout {
     public static void saveMeasurementViewsOrder(Context context, List<MeasurementView> measurementViews) {
         ArrayList<String> order = new ArrayList<>();
         for (MeasurementView measurement : measurementViews) {
-            if (measurement instanceof DateMeasurementView || measurement instanceof TimeMeasurementView) {
-                continue;
-            }
             order.add(measurement.getKey());
         }
         PreferenceManager.getDefaultSharedPreferences(context).edit()
