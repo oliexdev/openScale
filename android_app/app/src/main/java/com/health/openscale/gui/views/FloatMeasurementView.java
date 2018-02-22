@@ -271,7 +271,8 @@ public abstract class FloatMeasurementView extends MeasurementView {
         return value;
     }
 
-    public String getName() {
+    @Override
+    public CharSequence getName() {
         return nameText;
     }
 

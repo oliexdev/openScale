@@ -330,7 +330,7 @@ public class MeasurementPreferences extends PreferenceFragment implements Shared
             parentGroup = parent;
             measurement = measurementView;
             setIcon(measurement.getIcon());
-            setTitle(measurement.getNameText());
+            setTitle(measurement.getName());
         }
 
         public PreferenceGroup getParent() {
