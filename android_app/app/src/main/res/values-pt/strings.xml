@@ -13,7 +13,6 @@
     <string name="error_body_height_required">Erro: Altura é obrigatória</string>
     <string name="error_exporting">Erro ao exportar</string>
     <string name="error_goal_weight_required">Erro: Objetivo de peso é obrigatório</string>
-    <string name="error_hip_value_required">Erro: circunferência do quadril é obrigatória</string>
     <string name="error_importing">Erro ao importar</string>
     <string name="error_initial_weight_required">Erro: Peso inicial é obrigatório</string>
     <string name="error_max_scale_users">Numero máximo de balanças concorrentes alcançado</string>
@@ -30,14 +29,11 @@
     <string name="info_data_deleted">Entrada da base de dados deletada</string>
     <string name="info_data_exported">Dados exportados para</string>
     <string name="info_data_imported">Dados importados de</string>
-    <string name="info_delete_bluetooth_data">Apagar todos os dados de Bluetooth</string>
-    <string name="info_delete_bluetooth_data_success">Dados de Bluetooh apagados com sucesso</string>
     <string name="info_enter_comment">Digite um comentário opcional</string>
     <string name="info_enter_goal_weight">Digite seu objetivo de peso na sua medida de peso</string>
     <string name="info_enter_initial_weight">Digite seu peso inicial na sua medida de peso</string>
     <string name="info_enter_user_name">Digite seu nome</string>
     <string name="info_enter_value_cm">Digite o valor em centímetros</string>
-    <string name="info_enter_value_percent">Digite o valor em %</string>
     <string name="info_enter_value_unit">Digite o valor em</string>
     <string name="info_is_enable">está ativado</string>
     <string name="info_is_not_available">não está disponível</string>
@@ -50,13 +46,6 @@
     <string name="info_no_selected_user">Nenhum usuário existe. Por favor, crie um novo usuário em Configurações.</string>
     <string name="info_set_filename">Definir nome de arquivo para</string>
     <string name="info_step_on_scale">Por favor suba na balança para medidas de referência</string>
-    <string name="info_your_fat">Sua gordura corporal foi</string>
-    <string name="info_your_hip">Sua circunferência de quadril foi</string>
-    <string name="info_your_muscle">Sua porcentagem de massa muscular foi</string>
-    <string name="info_your_waist">Sua circunferência de cintura foi</string>
-    <string name="info_your_water">Sua porcentagem de água foi</string>
-    <string name="info_your_weight">Seu peso foi</string>
-    <string name="label_add">Adicionar</string>
     <string name="label_add_user">Adicionar usuário</string>
     <string name="label_average_data">Calcular média</string>
     <string name="label_backup">Backup</string>
@@ -88,7 +77,6 @@
     <string name="label_goal_line">Linha objetivo</string>
     <string name="label_goal_weight">Objetivo de peso</string>
     <string name="label_hip">Circunferência de quadril</string>
-    <string name="label_id">Id</string>
     <string name="label_ignoreOutOfRange">Ignorar dados fora do intervalo</string>
     <string name="label_import">Importar</string>
     <string name="label_importBackup">Importar Backup</string>
@@ -96,7 +84,6 @@
     <string name="label_last_month">Últimos 30 dias</string>
     <string name="label_last_week">Últimos 7 dias</string>
     <string name="label_male">Masc</string>
-    <string name="label_measures">medidas</string>
     <string name="label_muscle">Porcentagem de massa muscular</string>
     <string name="label_no">Não</string>
     <string name="label_ok">OK</string>
@@ -112,7 +99,6 @@
     <string name="label_time">Hora</string>
     <string name="label_title_goal">objetivo</string>
     <string name="label_title_last_measurement">última medida</string>
-    <string name="label_title_statistics">estatísticas</string>
     <string name="label_title_user">usuário</string>
     <string name="label_user_name">Nome</string>
     <string name="label_waist">Circunferência de quadril</string>
@@ -126,7 +112,6 @@
     <string name="question_really_delete">Tem certeza que quer deletar essa entrada da base?</string>
     <string name="question_really_delete_all">Tem certeza que quer deletar todas as entradas da base?</string>
     <string name="question_really_delete_user">Tem certeza que quer deletar esse usuário?</string>
-    <string name="title_data">Dados</string>
     <string name="title_graph">Gráfico</string>
     <string name="title_measurements">Medidas</string>
     <string name="title_overview">Visão geral</string>

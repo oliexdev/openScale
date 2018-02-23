@@ -7,7 +7,6 @@
     <string name="title_table">Table</string>
     <string name="title_statistics">Statistics</string>
     <string name="title_users">Users</string>
-    <string name="title_data">Data</string>
     <string name="title_measurements">Measurements</string>
     <string name="title_about">About</string>
     <string name="title_general">General</string>
@@ -17,7 +16,6 @@
     <string name="open_drawer">open</string>
     <string name="close_drawer">close</string>
 
-    <string name="label_add">Add</string>
     <string name="label_cancel">Cancel</string>
     <string name="label_ok">OK</string>
     <string name="label_yes">Yes</string>
@@ -27,7 +25,6 @@
     <string name="label_share">Share</string>
     <string name="label_share_subject">openScale CSV data export (%s)</string>
 
-    <string name="label_id">Id</string>
     <string name="label_weight">Weight</string>
     <string name="label_bmi">Body mass index (BMI)</string>
     <string name="label_bmr">Basal metabolic rate (BMR)</string>
@@ -51,7 +48,6 @@
         <item quantity="one">%d day</item>
         <item quantity="other">%d days</item>
     </plurals>
-    <string name="label_measures">measures</string>
     <string name="label_last_week">Last 7 days</string>
     <string name="label_last_month">Last 30 days</string>
     <string name="label_weight_difference">Weight difference</string>
@@ -73,7 +69,6 @@
     <string name="label_title_user">user</string>
     <string name="label_title_last_measurement">last measurement</string>
     <string name="label_title_goal">goal</string>
-    <string name="label_title_statistics">statistics</string>
 
     <string name="label_import">Import</string>
     <string name="label_export">Export</string>
@@ -88,7 +83,6 @@
     <string name="error_body_height_required">Error: body height is required</string>
     <string name="error_initial_weight_required">Error: initial weight is required</string>
     <string name="error_goal_weight_required">Error: goal weight is required</string>
-    <string name="error_hip_value_required">hip circumference is required</string>
 
     <string name="info_data_deleted">Database entry deleted</string>
     <string name="info_data_all_deleted">All database entries deleted</string>
@@ -96,7 +90,6 @@
     <string name="info_data_imported">Data imported from</string>
     <string name="info_set_filename">Set filename to</string>
     <string name="info_enter_value_cm">Enter value in cm</string>
-    <string name="info_enter_value_percent">Enter value in %</string>
     <string name="info_enter_value_unit">Enter value in</string>
     <string name="info_enter_comment">Enter an optional comment</string>
     <string name="info_enter_initial_weight">Enter your initial weight in your scale unit</string>
@@ -106,8 +99,6 @@
     <string name="info_is_enable">is enabled</string>
     <string name="info_is_not_enable">is disabled</string>
     <string name="info_is_not_available">is not available</string>
-    <string name="info_delete_bluetooth_data">Clear all Bluetooth data</string>
-    <string name="info_delete_bluetooth_data_success">Bluetooth data was successful cleared</string>
     <string name="info_bluetooth_try_connection">Trying to connect to</string>
     <string name="info_bluetooth_connection_lost">Lost Bluetooth connection</string>
     <string name="info_bluetooth_no_device">No Bluetooth device found</string>
@@ -162,12 +153,6 @@
     <string name="label_reminder_notify_text">Notification text</string>
     <string name="default_value_reminder_notify_text">Time to weight</string>
 
-    <string name="info_your_weight">Your weight was</string>
-    <string name="info_your_fat">Your body fat was</string>
-    <string name="info_your_water">Your water percentage was</string>
-    <string name="info_your_muscle">Your muscle percentage was</string>
-    <string name="info_your_waist">Your waist circumference was</string>
-    <string name="info_your_hip">Your hip circumference was</string>
     <string name="info_on_date">on</string>
 
     <string name="Monday">Monday</string>

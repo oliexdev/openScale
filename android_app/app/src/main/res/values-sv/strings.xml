@@ -5,19 +5,16 @@
     <string name="title_table">Tabell</string>
     <string name="title_statistics">Statistik</string>
     <string name="title_users">Användare</string>
-    <string name="title_data">Data</string>
     <string name="title_measurements">Mätvärden</string>
     <string name="title_about">Om</string>
     <string name="action_settings">Inställningar</string>
     <string name="action_bluetooth_status">Bluetooth-status</string>
-    <string name="label_add">Lägg till</string>
     <string name="label_cancel">Avbryt</string>
     <string name="label_ok">Ok</string>
     <string name="label_yes">Ja</string>
     <string name="label_no">Nej</string>
     <string name="label_delete">Ta bort</string>
     <string name="label_add_user">Lägg till användare</string>
-    <string name="label_id">Id</string>
     <string name="label_weight">Vikt</string>
     <string name="label_bmi">Kroppsmasseindex (BMI)</string>
     <string name="label_bmr">Basal ämnesomsättning (BMR)</string>
@@ -32,10 +29,6 @@
     <string name="Sunday">Söndag</string>
     <string name="label_backup">Säkerhetskopia</string>
     <string name="default_value_reminder_notify_text">Dags att väga</string>
-    <string name="info_your_weight">Din vikt var</string>
-    <string name="info_your_fat">Din mängd kroppsfett var</string>
-    <string name="info_your_water">Din andel vatten var</string>
-    <string name="info_your_muscle">Din andel muskler var</string>
     <string name="label_reminder_time">Tid</string>
     <string name="label_reminder_weekdays">Veckodagar</string>
     <string name="label_website">Hemsida</string>
@@ -62,7 +55,6 @@
         <item quantity="one">%d dag</item>
         <item quantity="other">%d dagar</item>
     </plurals>
-    <string name="label_measures">mätningar</string>
     <string name="label_last_week">Senast 7 dagarna</string>
     <string name="label_last_month">Senast 30 dagarna</string>
     <string name="label_muscle">Muskler</string>
@@ -74,7 +66,6 @@
     <string name="label_whtr">Midja-till-längd-kvot</string>
     <string name="label_bone">Benmassa</string>
     <string name="label_smartUserAssign">Smart tilldelning av användare</string>
-    <string name="label_title_statistics">statistik</string>
     <string name="label_import">Importera</string>
     <string name="label_export">Exportera</string>
     <string name="label_delete_all">Ta bort alla</string>
@@ -85,14 +76,12 @@
     <string name="error_body_height_required">Fel: längd krävs</string>
     <string name="error_initial_weight_required">Fel: startvikt krävs</string>
     <string name="error_goal_weight_required">Fel: målvikt krävs</string>
-    <string name="error_hip_value_required">höftomkrets krävs</string>
     <string name="info_data_deleted">Databaspost borttagen</string>
     <string name="info_data_all_deleted">Alla databasposter borttagna</string>
     <string name="info_data_exported">Data exporterad till</string>
     <string name="info_data_imported">Data importerad från</string>
     <string name="info_set_filename">Sätt filnamn till</string>
     <string name="info_enter_value_cm">Ange värde i cm</string>
-    <string name="info_enter_value_percent">Ange värde i %</string>
     <string name="info_enter_value_unit">Ange värde i</string>
     <string name="info_enter_comment">Ange en frivillig kommentar</string>
     <string name="info_enter_initial_weight">Ange din startvikt i din viktenhet</string>
@@ -102,8 +91,6 @@
     <string name="info_is_enable">är aktiverad</string>
     <string name="info_is_not_enable">är inaktiverad</string>
     <string name="info_is_not_available">är inte tillgänglig</string>
-    <string name="info_delete_bluetooth_data">Rensa all Bluetooth-data</string>
-    <string name="info_delete_bluetooth_data_success">Bluetooth-data togs bort</string>
     <string name="info_bluetooth_try_connection">Försöker ansluta till</string>
     <string name="info_bluetooth_connection_lost">Förlorade Bluetooth-anslutningen</string>
     <string name="info_bluetooth_no_device">Ingen Bluetooth-enhet hittades</string>
@@ -137,8 +124,6 @@
     <string name="label_automatic">auto</string>
     <string name="label_reminder">Påminnelse</string>
     <string name="label_reminder_notify_text">Meddelandetext</string>
-    <string name="info_your_waist">Ditt midjemått var</string>
-    <string name="info_your_hip">Din höftomkrets var</string>
     <string name="info_on_date">på</string>
     <string name="label_bt_device_no_support">enheten stöds inte</string>
     <string name="label_exportBackup">Exportera säkerhetskopia</string>

@@ -6,14 +6,12 @@
     <string name="title_table">Taula</string>
     <string name="title_statistics">Estadístiques</string>
     <string name="title_users">Usuaris</string>
-    <string name="title_data">Dades</string>
     <string name="title_measurements">Mesures</string>
     <string name="title_about">Quant a</string>
 
     <string name="action_settings">Configuració</string>
     <string name="action_bluetooth_status">Estat del Bluetooth</string>
 
-    <string name="label_add">Afegir</string>
     <string name="label_cancel">Cancel·lar</string>
     <string name="label_ok">OK</string>
     <string name="label_yes">Sí</string>
@@ -21,7 +19,6 @@
     <string name="label_delete">Elimina</string>
     <string name="label_add_user">Afegir usuari</string>
 
-    <string name="label_id">Id</string>
     <string name="label_weight">Pes</string>
     <string name="label_bmi">Índex de massa corporal (IMC)</string>
     <string name="label_bmr">Taxa metabòlica basal (TMB)</string>
@@ -41,7 +38,6 @@
         <item quantity="one">%d dia</item>
         <item quantity="other">%d dies</item>
     </plurals>
-    <string name="label_measures">mesures</string>
     <string name="label_last_week">Darrers 7 dies</string>
     <string name="label_last_month">Darrers 30 dies</string>
     <string name="label_weight_difference">Diferència de pes</string>
@@ -64,7 +60,6 @@
     <string name="label_title_user">usuari</string>
     <string name="label_title_last_measurement">darrera mesura</string>
     <string name="label_title_goal">objectiu</string>
-    <string name="label_title_statistics">estadístiques</string>
 
     <string name="label_import">Importar</string>
     <string name="label_export">Exportar</string>
@@ -78,7 +73,6 @@
     <string name="error_body_height_required">Error, cal l\'altura</string>
     <string name="error_initial_weight_required">Error, cal el pes inicial</string>
     <string name="error_goal_weight_required">Error, cal l\'objetiu de pes</string>
-    <string name="error_hip_value_required">cal la circumferència del maluc</string>
 
     <string name="info_data_deleted">Entrada eliminada</string>
     <string name="info_data_all_deleted">Totes les entrades eliminades</string>
@@ -86,7 +80,6 @@
     <string name="info_data_imported">Dades importades de</string>
     <string name="info_set_filename">Establir nom d\'arxiu a</string>
     <string name="info_enter_value_cm">Valor en cm</string>
-    <string name="info_enter_value_percent">Valor en %</string>
     <string name="info_enter_value_unit">Valor en</string>
     <string name="info_enter_comment">Comentari opcional</string>
     <string name="info_enter_initial_weight">Pes inicial en la seua unitat de mesura</string>
@@ -96,8 +89,6 @@
     <string name="info_is_enable">està activat</string>
     <string name="info_is_not_enable">està desactivat</string>
     <string name="info_is_not_available">no està disponible</string>
-    <string name="info_delete_bluetooth_data">Eliminar totes les dades de Bluetooth</string>
-    <string name="info_delete_bluetooth_data_success">Les dades de Bluetooth s\'han eliminat</string>
     <string name="info_bluetooth_try_connection">Intentant connectar a</string>
     <string name="info_bluetooth_connection_lost">S\'ha perdut la connexió Bluetooth</string>
     <string name="info_bluetooth_no_device">No s\'ha trobat un dispositiu Bluetooth</string>
@@ -147,12 +138,6 @@
     <string name="label_reminder_notify_text">Text de la notificació</string>
     <string name="default_value_reminder_notify_text">És hora de pesar-se</string>
 
-    <string name="info_your_weight">El teu pes era</string>
-    <string name="info_your_fat">La teua massa corporal era</string>
-    <string name="info_your_water">El teu percentatge d\'aigua era</string>
-    <string name="info_your_muscle">El teu percentatge muscular era</string>
-    <string name="info_your_waist">La teua cintura era</string>
-    <string name="info_your_hip">El teu maluc era</string>
     <string name="info_on_date">el</string>
 
     <string name="Monday">Dilluns</string>
