@@ -157,6 +157,8 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
         moveSubpageRight.setEnabled(selectedSubpageNr + 1 < subpageCount);
         subpageView.addView(moveSubpageRight);
 
+        subpageView.setVisibility(subpageCount > 1 ? View.VISIBLE : View.GONE);
+
         tableHeaderView.removeAllViews();
 
         ArrayList<MeasurementView> visibleMeasurements = new ArrayList<>();
