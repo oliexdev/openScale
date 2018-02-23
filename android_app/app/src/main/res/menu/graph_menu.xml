@@ -6,4 +6,8 @@
         android:id="@+id/enableMonth"
         android:title="@string/label_month_view"
         android:checkable="true"/>
+    <item
+        android:id="@+id/enableWeek"
+        android:title="@string/label_weeks_view"
+        android:checkable="true"/>
 </menu>

@@ -217,6 +217,7 @@
     <string name="save">Save</string>
 
     <string name="label_month_view">Month view</string>
+    <string name="label_weeks_view">Week view</string>
 
     <string name="permission_not_granted">Permission not granted</string>
     <string name="permission_bluetooth_info">openScale requires permission to access the coarse location to search for Bluetooth devices</string>

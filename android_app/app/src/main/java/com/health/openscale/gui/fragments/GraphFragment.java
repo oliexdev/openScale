@@ -194,6 +194,17 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
                         generateGraphs();
                         return true;
+                    case R.id.enableWeek:
+                        if (item.isChecked()) {
+                            item.setChecked(false);
+                            prefs.edit().putBoolean("showWeek", false).commit();
+                        } else {
+                            item.setChecked(true);
+                            prefs.edit().putBoolean("showWeek", true).commit();
+                        }
+
+                        generateGraphs();
+                        return true;
                     default:
                         return false;
                 }
@@ -205,6 +216,9 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         MenuItem enableMonth = popup.getMenu().findItem(R.id.enableMonth);
         enableMonth.setChecked(prefs.getBoolean("showMonth", true));
+
+        MenuItem enableWeek = popup.getMenu().findItem(R.id.enableWeek);
+        enableWeek.setChecked(prefs.getBoolean("showWeek", false));
 
         openScale.registerFragment(this);
 
@@ -258,7 +272,19 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
      */
     private boolean addPointValue(Stack<PointValue> pointValues, float value_x, float value_y) {
         if (prefs.getBoolean("averageData", true) && !pointValues.isEmpty() && pointValues.peek().getX() == value_x) {
-            pointValues.push(new PointValue(value_x, (pointValues.pop().getY() + value_y) / 2.0f));
+            PointValue prevValue = pointValues.pop();
+            PointValue newValue = new PointValue(value_x, (prevValue.getY() + value_y) / 2.0f);
+
+            if (prevValue.getLabelAsChars() != null) {
+                int avgCount = Character.getNumericValue(prevValue.getLabelAsChars()[prevValue.getLabelAsChars().length-3]) * 10 +
+                        Character.getNumericValue(prevValue.getLabelAsChars()[prevValue.getLabelAsChars().length-2]) + 1;
+
+                newValue.setLabel(String.format("Ø %.2f (%02d)", newValue.getY(), avgCount));
+            } else {
+                newValue.setLabel(String.format("Ø %.2f (%02d)", newValue.getY(), 2));
+            }
+
+            pointValues.push(newValue);
         } else {
             if (value_y != 0.0f) { // don't show zero values
                 pointValues.add(new PointValue(value_x, value_y));
@@ -275,12 +301,22 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         if (field == Calendar.DAY_OF_MONTH) {
             day_date = new SimpleDateFormat("dd", Locale.getDefault());
+
+            if (prefs.getBoolean("showWeek", false)) {
+                field = Calendar.WEEK_OF_MONTH;
+                day_date = new SimpleDateFormat("W", Locale.getDefault());
+            }
         } else if (field == Calendar.DAY_OF_YEAR) {
             day_date = new SimpleDateFormat("D", Locale.getDefault());
 
             if (prefs.getBoolean("averageData", true)) {
                 field = Calendar.MONTH;
                 day_date = new SimpleDateFormat("MMM", Locale.getDefault());
+            }
+
+            if (prefs.getBoolean("showWeek", false)) {
+                field = Calendar.WEEK_OF_YEAR;
+                day_date = new SimpleDateFormat("w", Locale.getDefault());
             }
         }
 
