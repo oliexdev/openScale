@@ -81,7 +81,7 @@
     <string name="info_data_exported">Data geexporteerd naar</string>
     <string name="info_data_imported">Data geinporteerd van</string>
     <string name="info_set_filename">Zet bestandsnaam op</string>
-    <string name="info_enter_value_cm">Geef waarde op cm's in</string>
+    <string name="info_enter_value_cm">Geef waarde op cm\'s in</string>
     <string name="info_enter_value_unit">Geef waaarde op</string>
     <string name="info_enter_comment">Voeg een optionele opmerking toe.</string>
     <string name="info_enter_initial_weight">Voer uw begingewicht in uw weegschaal in</string>
