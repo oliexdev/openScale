@@ -67,6 +67,7 @@ import com.health.openscale.gui.utils.PermissionHelper;
 
 import java.io.File;
 import java.lang.reflect.Field;
+import java.util.List;
 
 import cat.ereza.customactivityoncrash.config.CaocConfig;
 
@@ -486,7 +487,22 @@ public class MainActivity extends AppCompatActivity
                     setBluetoothStatusIcon(R.drawable.ic_bluetooth_connection_success);
                     ScaleMeasurement scaleBtData = (ScaleMeasurement) msg.obj;
 
-                    OpenScale.getInstance(getApplicationContext()).addScaleData(scaleBtData);
+                    OpenScale openScale = OpenScale.getInstance(getApplicationContext());
+
+                    List<ScaleMeasurement> scaleMeasurementList = openScale.getScaleMeasurementList();
+                    if (!scaleMeasurementList.isEmpty()) {
+                        // Copy measurements that (normally?) don't come from a bluetooth scale
+                        // over from the last (manual) measurement.
+                        ScaleMeasurement last = scaleMeasurementList.get(0);
+                        if (scaleBtData.getWaist() == 0.0f) {
+                            scaleBtData.setWaist(last.getWaist());
+                        }
+                        if (scaleBtData.getHip() == 0.0f) {
+                            scaleBtData.setHip(last.getHip());
+                        }
+                    }
+
+                    openScale.addScaleData(scaleBtData);
                     break;
                 case BT_INIT_PROCESS:
                     setBluetoothStatusIcon(R.drawable.ic_bluetooth_connection_success);
