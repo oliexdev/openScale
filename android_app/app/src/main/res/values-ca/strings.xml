@@ -48,7 +48,7 @@
     <string name="label_time">Hora</string>
     <string name="label_birthday">D. Naiximent</string>
     <string name="label_user_name">Nom</string>
-    <string name="label_body_height">Altura</string>
+    <string name="label_height">Altura</string>
     <string name="label_scale_unit">Unitat</string>
     <string name="label_gender">Gènere</string>
     <string name="label_male">Home</string>
@@ -70,7 +70,7 @@
     <string name="error_exporting">Error exportant</string>
     <string name="error_importing">Error important</string>
     <string name="error_user_name_required">Error, cal un nom d\'usuari</string>
-    <string name="error_body_height_required">Error, cal l\'altura</string>
+    <string name="error_height_required">Error, cal l\'altura</string>
     <string name="error_initial_weight_required">Error, cal el pes inicial</string>
     <string name="error_goal_weight_required">Error, cal l\'objetiu de pes</string>
 

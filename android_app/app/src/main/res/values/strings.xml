@@ -58,7 +58,7 @@
     <string name="label_time">Time</string>
     <string name="label_birthday">Birthday</string>
     <string name="label_user_name">Name</string>
-    <string name="label_body_height">Body height</string>
+    <string name="label_height">Height</string>
     <string name="label_scale_unit">Scale unit</string>
     <string name="label_gender">Gender</string>
     <string name="label_male">Male</string>
@@ -80,7 +80,7 @@
     <string name="error_importing">Error importing</string>
     <string name="error_user_name_required">Error: user name is required</string>
     <string name="error_user_name_too_short">Error: user name have to be at least 3 characters</string>
-    <string name="error_body_height_required">Error: body height is required</string>
+    <string name="error_height_required">Error: height is required</string>
     <string name="error_initial_weight_required">Error: initial weight is required</string>
     <string name="error_goal_weight_required">Error: goal weight is required</string>
 

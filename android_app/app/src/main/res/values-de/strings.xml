@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <resources>
     <string name="action_settings">Einstellungen</string>
-    <string name="error_body_height_required">Fehler Körpergröße ist erforderlich</string>
+    <string name="error_height_required">Fehler Körpergröße ist erforderlich</string>
     <string name="error_exporting">Fehler beim Exportieren</string>
     <string name="error_importing">Fehler beim Importieren</string>
     <string name="error_user_name_required">Fehler Benutzername ist erfoderlich</string>
@@ -23,7 +23,7 @@
     <string name="label_bluetooth_enable">Suche nach Waage beim Start</string>
     <string name="label_bluetooth_title">Bluetooth</string>
     <string name="label_bmi">Body-Mass-Index (BMI)</string>
-    <string name="label_body_height">Körpergröße</string>
+    <string name="label_height">Körpergröße</string>
     <string name="label_comment">Kommentar</string>
     <string name="label_date">Datum</string>
     <plurals name="label_days">

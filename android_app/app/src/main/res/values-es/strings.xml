@@ -48,7 +48,7 @@
     <string name="label_time">Hora</string>
     <string name="label_birthday">F. Nacimiento</string>
     <string name="label_user_name">Nombre</string>
-    <string name="label_body_height">Altura</string>
+    <string name="label_height">Altura</string>
     <string name="label_scale_unit">Unidad</string>
     <string name="label_gender">Género</string>
     <string name="label_male">Hombre</string>
@@ -70,7 +70,7 @@
     <string name="error_exporting">Error exportando</string>
     <string name="error_importing">Error importando</string>
     <string name="error_user_name_required">Error, se require un nombre de usuario</string>
-    <string name="error_body_height_required">Error, se requiere la altura</string>
+    <string name="error_height_required">Error, se requiere la altura</string>
     <string name="error_initial_weight_required">Error, se requiere el peso inicial</string>
     <string name="error_goal_weight_required">Error, se requiere el objetivo de peso</string>
 

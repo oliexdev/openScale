@@ -39,7 +39,7 @@
   <string name="label_time">Čas</string>
   <string name="label_birthday">Dátum narodenia</string>
   <string name="label_user_name">Meno</string>
-  <string name="label_body_height">Telesná výška</string>
+  <string name="label_height">Telesná výška</string>
   <string name="label_scale_unit">Jednotka hmotnosti</string>
   <string name="label_gender">Pohlavie</string>
   <string name="label_male">Muž</string>
@@ -57,7 +57,7 @@
   <string name="error_exporting">Chyba pri exporte</string>
   <string name="error_importing">Chyba pri importe</string>
   <string name="error_user_name_required">Chyba, používateľské meno je povinné</string>
-  <string name="error_body_height_required">Chyba, telesná výška je povinná</string>
+  <string name="error_height_required">Chyba, telesná výška je povinná</string>
   <string name="error_initial_weight_required">Chyba, počiatočná hmotnosť je povinná</string>
   <string name="error_goal_weight_required">Chyba, cieľová hmotnosť je povinná</string>
   <string name="info_data_deleted">Položka bola vymazaná z databázy</string>

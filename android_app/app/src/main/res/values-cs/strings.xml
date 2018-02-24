@@ -48,7 +48,7 @@
     <string name="label_time">Čas</string>
     <string name="label_birthday">Narozeniny</string>
     <string name="label_user_name">Jméno</string>
-    <string name="label_body_height">Tělesná hmotnost</string>
+    <string name="label_height">Tělesná hmotnost</string>
     <string name="label_gender">Pohlaví</string>
     <string name="label_male">Muž</string>
     <string name="label_woman">Žena</string>
@@ -69,7 +69,7 @@
     <string name="error_importing">Chyba při importu</string>
     <string name="error_user_name_required">Chyba: je třeba uživatelské jméno</string>
     <string name="error_user_name_too_short">Chyba: je třeba, aby uživatelské jméno bylo alespoň 3 znaky dlouhé</string>
-    <string name="error_body_height_required">Chyba: je třeba zadat výšku člověka</string>
+    <string name="error_height_required">Chyba: je třeba zadat výšku člověka</string>
     <string name="error_initial_weight_required">Chyba: je třeba zadat počáteční hmotnost</string>
     <string name="error_goal_weight_required">Chyba: je třeba zadat cílovou hmotnost</string>
     <string name="info_data_deleted">Položka v databázi smazána</string>

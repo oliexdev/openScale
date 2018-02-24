@@ -43,7 +43,7 @@
     <string name="label_time">Heure</string>
     <string name="label_birthday">Date de naissance</string>
     <string name="label_user_name">Nom</string>
-    <string name="label_body_height">Hauteur du corps</string>
+    <string name="label_height">Hauteur du corps</string>
     <string name="label_scale_unit">Unité d\'échelle</string>
     <string name="label_gender">Sexe</string>
     <string name="label_male">Homme</string>
@@ -65,7 +65,7 @@
     <string name="error_exporting">Erreur durant l\'exportation</string>
     <string name="error_importing">Erreur durant l\'importation</string>
     <string name="error_user_name_required">Erreur : le nom d\'utilisateur est requis</string>
-    <string name="error_body_height_required">Erreur : la hauteur du corps est requise</string>
+    <string name="error_height_required">Erreur : la hauteur du corps est requise</string>
     <string name="error_goal_weight_required">Erreur : un objectif de poids est requis</string>
 
     <string name="info_data_deleted">L\'entrée a été supprimée de la base de données</string>

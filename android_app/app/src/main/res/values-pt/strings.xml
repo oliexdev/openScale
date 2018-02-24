@@ -10,7 +10,7 @@
     <string name="action_bluetooth_status">Estado do Bluetooth</string>
     <string name="action_settings">Configurações</string>
     <string name="default_value_reminder_notify_text">Hora de pesar-se</string>
-    <string name="error_body_height_required">Erro: Altura é obrigatória</string>
+    <string name="error_height_required">Erro: Altura é obrigatória</string>
     <string name="error_exporting">Erro ao exportar</string>
     <string name="error_goal_weight_required">Erro: Objetivo de peso é obrigatório</string>
     <string name="error_importing">Erro ao importar</string>
@@ -53,7 +53,7 @@
     <string name="label_bluetooth_enable">Procurar por balança ao iniciar</string>
     <string name="label_bluetooth_title">Bluetooth</string>
     <string name="label_bmi">IMC</string>
-    <string name="label_body_height">Altura</string>
+    <string name="label_height">Altura</string>
     <string name="label_cancel">Cancelar</string>
     <string name="label_comment">Comentário</string>
     <string name="label_date">Data</string>

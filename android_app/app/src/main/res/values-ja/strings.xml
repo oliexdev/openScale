@@ -17,7 +17,7 @@
     <string name="label_weight">体重</string>
     <string name="label_weight_difference">体重差</string>
     <string name="action_settings">設定</string>
-    <string name="label_body_height">身長</string>
+    <string name="label_height">身長</string>
     <string name="label_cancel">キャンセル</string>
     <string name="label_comment">コメント</string>
     <plurals name="label_days">
@@ -45,7 +45,7 @@
     <string name="label_last_week">過去7日</string>
     <string name="error_exporting">エクスポートに失敗しました</string>
     <string name="error_importing">インポートに失敗しました</string>
-    <string name="error_body_height_required">身長が必要です</string>
+    <string name="error_height_required">身長が必要です</string>
     <string name="error_user_name_required">ユーザー名が必要です</string>
     <string name="info_data_all_deleted">すべてのレコードが削除されます</string>
     <string name="info_data_deleted">レコードが削除されます</string>

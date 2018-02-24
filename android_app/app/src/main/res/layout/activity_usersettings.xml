@@ -65,7 +65,7 @@
                         android:id="@+id/lblBodyHeight"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/label_body_height" />
+                        android:text="@string/label_height" />
 
                     <EditText
                         android:id="@+id/txtBodyHeight"

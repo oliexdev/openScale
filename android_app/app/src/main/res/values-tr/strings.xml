@@ -46,7 +46,7 @@
     <string name="label_time">Zaman</string>
     <string name="label_birthday">Doðum Tarihi</string>
     <string name="label_user_name">Ýsim</string>
-    <string name="label_body_height">Boy uzunluðu</string>
+    <string name="label_height">Boy uzunluðu</string>
     <string name="label_scale_unit">Ölçek birimi</string>
     <string name="label_gender">Cinsiyet</string>
     <string name="label_male">Erkek</string>
@@ -68,7 +68,7 @@
     <string name="error_exporting">Hatalý export</string>
     <string name="error_importing">Hatalý import</string>
     <string name="error_user_name_required">Hata: kullanýcý adý gerekiyor</string>
-    <string name="error_body_height_required">Error: Vücut boyu gerekli</string>
+    <string name="error_height_required">Error: Vücut boyu gerekli</string>
     <string name="error_initial_weight_required">Error: Baþlangýç aðýrlýðý gerekli</string>
     <string name="error_goal_weight_required">Error: Hedef aðýrlýk gerekli</string>
 
