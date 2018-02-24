@@ -275,15 +275,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         if (prefs.getBoolean("averageData", true) && !pointValues.isEmpty() && pointValues.peek().getX() == value_x) {
             PointValue prevValue = pointValues.pop();
             PointValue newValue = new PointValue(value_x, (prevValue.getY() + value_y) / 2.0f);
-
-            if (prevValue.getLabelAsChars() != null) {
-                int avgCount = Character.getNumericValue(prevValue.getLabelAsChars()[prevValue.getLabelAsChars().length-3]) * 10 +
-                        Character.getNumericValue(prevValue.getLabelAsChars()[prevValue.getLabelAsChars().length-2]) + 1;
-
-                newValue.setLabel(String.format("Ø %.2f (%02d)", newValue.getY(), avgCount));
-            } else {
-                newValue.setLabel(String.format("Ø %.2f (%02d)", newValue.getY(), 2));
-            }
+            newValue.setLabel(String.format("Ø %.2f", newValue.getY()));
 
             pointValues.push(newValue);
         } else {
