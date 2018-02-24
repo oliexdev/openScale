@@ -461,6 +461,10 @@ public class OpenScale {
         fragment.updateOnView(scaleMeasurementList);
     }
 
+    public void unregisterFragment(FragmentUpdateListener fragment) {
+        fragmentList.remove(fragment);
+    }
+
     public void updateScaleData() {
         int selectedUserId = getSelectedScaleUserId();
 

@@ -149,6 +149,12 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
     }
 
     @Override
+    public void onDestroyView() {
+        OpenScale.getInstance(getContext()).unregisterFragment(this);
+        super.onDestroyView();
+    }
+
+    @Override
     public void updateOnView(List<ScaleMeasurement> scaleMeasurementList) {
         if (scaleMeasurementList.isEmpty()) {
             lastScaleMeasurement = new ScaleMeasurement();

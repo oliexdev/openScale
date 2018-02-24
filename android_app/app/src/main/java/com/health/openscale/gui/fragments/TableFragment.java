@@ -98,6 +98,12 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
     }
 
     @Override
+    public void onDestroyView() {
+        OpenScale.getInstance(getContext()).unregisterFragment(this);
+        super.onDestroyView();
+    }
+
+    @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt(SELECTED_SUBPAGE_NR_KEY, selectedSubpageNr);

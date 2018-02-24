@@ -227,6 +227,12 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     }
 
     @Override
+    public void onDestroyView() {
+        OpenScale.getInstance(getContext()).unregisterFragment(this);
+        super.onDestroyView();
+    }
+
+    @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
