@@ -243,6 +243,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         FloatingActionButton actionButton = new FloatingActionButton(getContext());
 
         actionButton.setTag("actionButton" + measurementView.getName());
+        actionButton.setColorFilter(Color.parseColor("#000000"));
         actionButton.setImageDrawable(measurementView.getIcon());
         actionButton.setClickable(true);
         actionButton.setSize(android.support.design.widget.FloatingActionButton.SIZE_MINI);
