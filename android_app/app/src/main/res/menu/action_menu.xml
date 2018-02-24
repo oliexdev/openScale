@@ -15,4 +15,19 @@
         android:title="+"
         app:showAsAction="always" />
 
+    <item
+        android:id="@+id/importData"
+        android:title="@string/label_import"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/exportData"
+        android:title="@string/label_export"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/shareData"
+        android:title="@string/label_share"
+        app:showAsAction="never"/>
+
 </menu>

@@ -38,13 +38,6 @@
             android:gravity="right"
             android:layout_weight="0.9"
             android:orientation="horizontal">
-            <ImageView
-                android:id="@+id/optionMenu"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:scaleType="centerInside"
-                android:tint="@android:color/white"
-                app:srcCompat="@drawable/ic_share" />
         </LinearLayout>
 
     </LinearLayout>
