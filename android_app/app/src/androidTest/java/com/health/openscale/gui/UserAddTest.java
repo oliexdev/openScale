@@ -56,7 +56,6 @@ import static android.support.test.espresso.action.ViewActions.scrollTo;
 import static android.support.test.espresso.matcher.ViewMatchers.withClassName;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 
 @LargeTest
@@ -180,14 +179,7 @@ public class UserAddTest {
         onView(withClassName(Matchers.equalTo(DatePicker.class.getName()))).perform(PickerActions.setDate(2018,  1, 31));
         onView(withId(android.R.id.button1)).perform(click());
 
-        ViewInteraction button3 = onView(
-                allOf(withId(R.id.saveButton),
-                        childAtPosition(
-                                childAtPosition(
-                                        withClassName(is("android.widget.LinearLayout")),
-                                        1),
-                                2)));
-        button3.perform(scrollTo(), click());
+        onView(withId(R.id.saveButton)).perform(click());
     }
 
     private static Matcher<View> childAtPosition(
