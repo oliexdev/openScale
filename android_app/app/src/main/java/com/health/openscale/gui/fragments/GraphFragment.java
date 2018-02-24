@@ -278,9 +278,10 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             newValue.setLabel(String.format("Ø %.2f", newValue.getY()));
 
             pointValues.push(newValue);
+            return true;
         } else {
             if (value_y != 0.0f) { // don't show zero values
-                pointValues.add(new PointValue(value_x, value_y));
+                pointValues.push(new PointValue(value_x, value_y));
                 return true;
             }
         }
@@ -410,8 +411,13 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             Stack<PointValue> valuesWeight = new Stack<PointValue>();
 
             for (ScaleMeasurement measurement : scaleMeasurementList) {
+                calDB.setTime(measurement.getDateTime());
+
                 addPointValue(valuesWeight, calDB.get(field), measurement.getConvertedWeight(openScale.getSelectedScaleUser().getScaleUnit()));
-                polyFitter.addPoint(calDB.get(field), measurement.getConvertedWeight(openScale.getSelectedScaleUser().getScaleUnit()));
+            }
+
+            for (PointValue value : valuesWeight) {
+                polyFitter.addPoint(value.getX(), value.getY());
             }
 
             PolynomialFitter.Polynomial polynom = polyFitter.getBestFit();
@@ -419,14 +425,15 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             Stack<PointValue> valuesLinearRegression = new Stack<PointValue>();
 
             if (!valuesWeight.isEmpty()) {
-                for (int i = (int)valuesWeight.peek().getX(); i <= maxDays; i++) {
+                for (int i = 0; i < maxDays+1; i++) {
                     double y_value = polynom.getY(i);
                     valuesLinearRegression.push(new PointValue((float) i, (float) y_value));
                 }
             }
             Line linearRegressionLine = new Line(valuesLinearRegression)
                     .setColor(ChartUtils.COLOR_VIOLET)
-                    .setHasPoints(false);
+                    .setHasPoints(false)
+                    .setCubic(true);
 
             linearRegressionLine.setPathEffect(new DashPathEffect(new float[] {10,30}, 0));
 
