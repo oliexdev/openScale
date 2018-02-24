@@ -26,6 +26,7 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
@@ -36,6 +37,7 @@ import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.content.FileProvider;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -45,12 +47,15 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.Toast;
 
+import com.health.openscale.BuildConfig;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.bluetooth.BluetoothCommunication;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
+import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.gui.activities.DataEntryActivity;
 import com.health.openscale.gui.activities.SettingsActivity;
 import com.health.openscale.gui.activities.UserSettingsActivity;
@@ -60,6 +65,7 @@ import com.health.openscale.gui.fragments.StatisticsFragment;
 import com.health.openscale.gui.fragments.TableFragment;
 import com.health.openscale.gui.utils.PermissionHelper;
 
+import java.io.File;
 import java.lang.reflect.Field;
 
 import cat.ereza.customactivityoncrash.config.CaocConfig;
@@ -70,6 +76,8 @@ public class MainActivity extends AppCompatActivity
     private static boolean valueOfCountModified = false;
     private static int bluetoothStatusIcon = R.drawable.ic_bluetooth_disabled;
     private static MenuItem bluetoothStatus;
+
+    private static final int IMPORT_DATA_REQUEST = 100;
 
     private Fragment currentFragment;
     private DrawerLayout drawerLayout;
@@ -383,6 +391,17 @@ public class MainActivity extends AppCompatActivity
             case R.id.action_bluetooth_status:
                 invokeSearchBluetoothDevice();
                 return true;
+            case R.id.importData:
+                importCsvFile();
+                return true;
+            case R.id.exportData:
+                if (PermissionHelper.requestWritePermission(this)) {
+                    exportCsvFile();
+                }
+                return true;
+            case R.id.shareData:
+                shareCsvFile();
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
@@ -507,23 +526,127 @@ public class MainActivity extends AppCompatActivity
         bluetoothStatus.setIcon(getResources().getDrawable(bluetoothStatusIcon));
     }
 
+    private void importCsvFile() {
+        int selectedUserId = OpenScale.getInstance(getApplicationContext()).getSelectedScaleUserId();
+
+        if (selectedUserId == -1) {
+            AlertDialog.Builder infoDialog = new AlertDialog.Builder(this);
+
+            infoDialog.setMessage(getResources().getString(R.string.info_no_selected_user));
+            infoDialog.setPositiveButton(getResources().getString(R.string.label_ok), null);
+
+            infoDialog.show();
+        }
+        else {
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.setType("text/*");
+
+            startActivityForResult(
+                    Intent.createChooser(intent, getResources().getString(R.string.label_import)),
+                    IMPORT_DATA_REQUEST);
+        }
+    }
+
+    private void exportCsvFile() {
+        AlertDialog.Builder filenameDialog = new AlertDialog.Builder(this);
+
+        filenameDialog.setTitle(getResources().getString(R.string.info_set_filename) + " "
+                + Environment.getExternalStorageDirectory().getPath());
+
+        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+
+        final ScaleUser selectedScaleUser = OpenScale.getInstance(getApplicationContext()).getSelectedScaleUser();
+        String exportFilename = prefs.getString("exportFilename" + selectedScaleUser.getId(),
+                "openScale_data_" + selectedScaleUser.getUserName() + ".csv");
+
+        final EditText txtFilename = new EditText(this);
+        txtFilename.setText(exportFilename);
+
+        filenameDialog.setView(txtFilename);
+
+        filenameDialog.setPositiveButton(getResources().getString(R.string.label_export), new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                String fullPath = Environment.getExternalStorageDirectory().getPath() + "/" + txtFilename.getText().toString();
+
+                if (OpenScale.getInstance(getApplicationContext()).exportData(fullPath)) {
+                    prefs.edit().putString("exportFilename" + selectedScaleUser.getId(), txtFilename.getText().toString()).commit();
+                    Toast.makeText(getApplicationContext(), getResources().getString(
+                            R.string.info_data_exported) + " " + fullPath, Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        filenameDialog.setNegativeButton(getResources().getString(R.string.label_cancel), new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                dialog.dismiss();
+            }
+        });
+
+        filenameDialog.show();
+    }
+
+    private void shareCsvFile() {
+        final ScaleUser selectedScaleUser = OpenScale.getInstance(getApplicationContext()).getSelectedScaleUser();
+
+        File shareFile = new File(getApplicationContext().getCacheDir(),
+                String.format("openScale %s.csv", selectedScaleUser.getUserName()));
+        if (!OpenScale.getInstance(getApplicationContext()).exportData(shareFile.getPath())) {
+            return;
+        }
+
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        intent.setType("text/csv");
+
+        final Uri uri = FileProvider.getUriForFile(
+                getApplicationContext(), BuildConfig.APPLICATION_ID + ".fileprovider", shareFile);
+        intent.putExtra(Intent.EXTRA_STREAM, uri);
+
+        intent.putExtra(Intent.EXTRA_SUBJECT,
+                getResources().getString(R.string.label_share_subject, selectedScaleUser.getUserName()));
+
+        startActivity(Intent.createChooser(intent, getResources().getString(R.string.label_share)));
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == IMPORT_DATA_REQUEST && resultCode == RESULT_OK && data != null) {
+            OpenScale.getInstance(getApplicationContext()).importData(data.getData());
+        }
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        boolean permissionGranted = true;
         switch (requestCode) {
             case PermissionHelper.PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     invokeSearchBluetoothDevice();
                 } else {
                     setBluetoothStatusIcon(R.drawable.ic_bluetooth_disabled);
-                    Toast.makeText(getApplicationContext(), getResources().getString(R.string.permission_not_granted), Toast.LENGTH_SHORT).show();
+                    permissionGranted = false;
                 }
-            break;
+                break;
+            case PermissionHelper.PERMISSIONS_REQUEST_ACCESS_WRITE_STORAGE:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    exportCsvFile();
+                } else {
+                    permissionGranted = false;
+                }
+                break;
+        }
+
+        if (!permissionGranted) {
+            Toast.makeText(getApplicationContext(), getResources().getString(
+                    R.string.permission_not_granted), Toast.LENGTH_SHORT).show();
         }
 
         currentFragment.onRequestPermissionsResult(requestCode, permissions, grantResults);
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
-
 
     @SuppressLint("RestrictedApi")
     public static void disableShiftMode(BottomNavigationView view) {
