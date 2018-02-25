@@ -141,7 +141,6 @@
     <string name="label_not_found">nenalezeno</string>
     <string name="label_ignoreOutOfRange">Ignorovat data která jsou mimo rozsah</string>
     <string name="label_initial_weight">Počáteční hmotnost</string>
-    <string name="label_average_data">Spočítat průměr za den/měsíc</string>
     <string name="label_help">Nápověda</string>
 
     <string name="label_feedback_message_enjoying">Líbí se vám openScale?</string>

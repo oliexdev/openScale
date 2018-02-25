@@ -45,6 +45,7 @@ import com.health.openscale.core.utils.PolynomialFitter;
 import com.health.openscale.gui.activities.DataEntryActivity;
 import com.health.openscale.gui.views.FloatMeasurementView;
 import com.health.openscale.gui.views.MeasurementView;
+import com.health.openscale.gui.views.WeightMeasurementView;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -261,34 +262,6 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         floatingActionBar.addView(actionButton);
     }
 
-    /**
-     * Add a point to a point value stack.
-     *
-     * Average y value of point if x value is already on the stack and option "averageData" is enabled.
-     *
-     * @param pointValues stack of point values
-     * @param value_x x value of the point
-     * @param value_y y value of the point
-     * @return true if a new point was added otherwise false if point was average added to an existing point
-     */
-    private boolean addPointValue(Stack<PointValue> pointValues, float value_x, float value_y) {
-        if (prefs.getBoolean("averageData", true) && !pointValues.isEmpty() && pointValues.peek().getX() == value_x) {
-            PointValue prevValue = pointValues.pop();
-            PointValue newValue = new PointValue(value_x, (prevValue.getY() + value_y) / 2.0f);
-            newValue.setLabel(String.format("Ø %.2f", newValue.getY()));
-
-            pointValues.push(newValue);
-            return true;
-        } else {
-            if (value_y != 0.0f) { // don't show zero values
-                pointValues.push(new PointValue(value_x, value_y));
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     private void generateLineData(int field, List<ScaleMeasurement> scaleMeasurementList)
     {
         SimpleDateFormat day_date = new SimpleDateFormat("D", Locale.getDefault());
@@ -317,14 +290,14 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         Calendar calDays = (Calendar)calLastSelected.clone();
 
         calDays.set(field, calDays.getActualMinimum(field));
-        int maxDays = calDays.getActualMaximum(field);
+        int maxDays = calDays.getMaximum(field);
 
-        List<AxisValue> axisValues = new ArrayList<AxisValue>();
+        List<AxisValue> axisValues = new ArrayList<>();
 
-        for (int i=0; i<maxDays+1; i++) {
+        for (int i=0; i<maxDays; i++) {
             String day_name = day_date.format(calDays.getTime());
 
-            axisValues.add(new AxisValue(i+calDays.getActualMinimum(field), day_name.toCharArray()));
+            axisValues.add(new AxisValue(i, day_name.toCharArray()));
 
             calDays.add(field, 1);
         }
@@ -337,6 +310,8 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         floatingActionBar.removeAllViews();
 
+        PolynomialFitter polyFitter = new PolynomialFitter(Integer.parseInt(prefs.getString("regressionLineOrder", "1")));
+
         for (MeasurementView view : measurementViews) {
             if (view instanceof FloatMeasurementView) {
                 FloatMeasurementView measurementView = (FloatMeasurementView) view;
@@ -345,16 +320,49 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                     continue;
                 }
 
-                Stack<PointValue> valuesStack = new Stack<PointValue>();
+                Stack<PointValue> valuesStack = new Stack<>();
+                ArrayList<Float>[] avgBins = new ArrayList[maxDays+1];
+                ScaleMeasurement[] indexScaleMeasurement = new ScaleMeasurement[maxDays+1];
 
                 for (ScaleMeasurement measurement : scaleMeasurementList) {
                     measurementView.loadFrom(measurement, null);
 
                     calDB.setTime(measurement.getDateTime());
 
-                    if (addPointValue(valuesStack, calDB.get(field), measurementView.getValue())) {
-                        pointIndexScaleMeasurementList.add(measurement); // if new point was added, add this point to pointIndexScaleDataList to get the correct point index after selecting an point
+                    if (avgBins[calDB.get(field)] == null) {
+                        avgBins[calDB.get(field)] = new ArrayList<>();
                     }
+
+                    if (measurementView.getValue() != 0.0f){
+                        avgBins[calDB.get(field)].add(measurementView.getValue());
+                        indexScaleMeasurement[calDB.get(field)] = measurement;
+                    }
+                }
+
+                for (int i=0; i<maxDays+1; i++) {
+                    ArrayList avgBin = avgBins[i];
+
+                    if (avgBin == null) {
+                        continue;
+                    }
+
+                    float sum = 0.0f;
+
+                    for (int j=0; j<avgBin.size(); j++) {
+                        sum += (float)avgBin.get(j);
+                    }
+
+                    PointValue avgValue  = new PointValue(i, sum / avgBin.size());
+
+                    if (prefs.getBoolean("regressionLine", false) && measurementView instanceof WeightMeasurementView) {
+                        polyFitter.addPoint((double)avgValue.getX(), (double)avgValue.getY());
+                    }
+
+                    if (avgBin.size() > 1) {
+                        avgValue.setLabel(String.format("Ø %.2f", avgValue.getY()));
+                    }
+                    valuesStack.push(avgValue);
+                    pointIndexScaleMeasurementList.add(indexScaleMeasurement[i]);
                 }
 
                 Line diagramLine = new Line(valuesStack).
@@ -387,7 +395,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         chartBottom.setLineChartData(lineData);
 
-        defaultTopViewport = new Viewport(calDays.getActualMinimum(field), chartBottom.getCurrentViewport().top, maxDays+1, chartBottom.getCurrentViewport().bottom);
+        defaultTopViewport = new Viewport(calDays.getMinimum(field), chartBottom.getCurrentViewport().top, maxDays+1, chartBottom.getCurrentViewport().bottom);
 
         if (prefs.getBoolean("goalLine", true)) {
             Stack<PointValue> valuesGoalLine = new Stack<PointValue>();
@@ -406,36 +414,21 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         }
 
         if (prefs.getBoolean("regressionLine", false)) {
-            PolynomialFitter polyFitter = new PolynomialFitter(Integer.parseInt(prefs.getString("regressionLineOrder", "1")));
-
-            Stack<PointValue> valuesWeight = new Stack<PointValue>();
-
-            for (ScaleMeasurement measurement : scaleMeasurementList) {
-                calDB.setTime(measurement.getDateTime());
-
-                addPointValue(valuesWeight, calDB.get(field), measurement.getConvertedWeight(openScale.getSelectedScaleUser().getScaleUnit()));
-            }
-
-            for (PointValue value : valuesWeight) {
-                polyFitter.addPoint(value.getX(), value.getY());
-            }
-
             PolynomialFitter.Polynomial polynom = polyFitter.getBestFit();
 
-            Stack<PointValue> valuesLinearRegression = new Stack<PointValue>();
+            Stack<PointValue> valuesLinearRegression = new Stack<>();
 
-            if (!valuesWeight.isEmpty()) {
-                for (int i = 0; i < maxDays+1; i++) {
+            for (int i = 0; i < maxDays; i++) {
                     double y_value = polynom.getY(i);
                     valuesLinearRegression.push(new PointValue((float) i, (float) y_value));
-                }
             }
+
             Line linearRegressionLine = new Line(valuesLinearRegression)
                     .setColor(ChartUtils.COLOR_VIOLET)
                     .setHasPoints(false)
                     .setCubic(true);
 
-            linearRegressionLine.setPathEffect(new DashPathEffect(new float[] {10,30}, 0));
+            linearRegressionLine.setPathEffect(new DashPathEffect(new float[]{10, 30}, 0));
 
             diagramLineList.add(linearRegressionLine);
         }
@@ -518,7 +511,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         // show only yearly diagram and hide monthly diagram
         } else {
             chartTop.setVisibility(View.GONE);
-            chartBottom.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
+            chartBottom.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 0.9f));
 
             scaleMeasurementList = openScale.getScaleDataOfYear(selectedYear);
 
@@ -535,8 +528,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
             calLastSelected = cal;
 
-            List<ScaleMeasurement> scaleMeasurementList =
-                    openScale.getScaleDataOfMonth(calYears.get(Calendar.YEAR), calLastSelected.get(Calendar.MONTH));
+            List<ScaleMeasurement> scaleMeasurementList = openScale.getScaleDataOfMonth(calYears.get(Calendar.YEAR), calLastSelected.get(Calendar.MONTH));
             generateLineData(Calendar.DAY_OF_MONTH, scaleMeasurementList);
         }
 
