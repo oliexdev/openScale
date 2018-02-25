@@ -37,6 +37,7 @@ import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.FileProvider;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -80,7 +81,6 @@ public class MainActivity extends AppCompatActivity
 
     private static final int IMPORT_DATA_REQUEST = 100;
 
-    private Fragment currentFragment;
     private DrawerLayout drawerLayout;
     private Toolbar toolbar;
     private NavigationView navDrawer;
@@ -109,8 +109,6 @@ public class MainActivity extends AppCompatActivity
                 .apply();
 
         setContentView(R.layout.activity_main);
-
-        currentFragment = null;
 
         // Set a Toolbar to replace the ActionBar.
         toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -288,28 +286,23 @@ public class MainActivity extends AppCompatActivity
         Class fragmentClass;
         String fragmentTitle;
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-
-        switch(menuItemId) {
+        switch (menuItemId) {
+            default:
             case R.id.nav_overview:
                 fragmentClass = OverviewFragment.class;
                 fragmentTitle = getResources().getString(R.string.title_overview);
-                prefs.edit().putInt("lastFragmentId", menuItemId).commit();
                 break;
             case R.id.nav_graph:
                 fragmentClass = GraphFragment.class;
                 fragmentTitle = getResources().getString(R.string.title_graph);
-                prefs.edit().putInt("lastFragmentId", menuItemId).commit();
                 break;
             case R.id.nav_table:
                 fragmentClass = TableFragment.class;
                 fragmentTitle = getResources().getString(R.string.title_table);
-                prefs.edit().putInt("lastFragmentId", menuItemId).commit();
                 break;
             case R.id.nav_statistic:
                 fragmentClass = StatisticsFragment.class;
                 fragmentTitle = getResources().getString(R.string.title_statistics);
-                prefs.edit().putInt("lastFragmentId", menuItemId).commit();
                 break;
             case R.id.nav_settings:
                 Intent settingsIntent = new Intent(this, SettingsActivity.class);
@@ -322,34 +315,44 @@ public class MainActivity extends AppCompatActivity
                 startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/oliexdev/openScale/wiki")));
                 drawerLayout.closeDrawers();
                 return;
-            default:
-                fragmentClass = OverviewFragment.class;
-                fragmentTitle = getResources().getString(R.string.title_overview);
-                prefs.edit().putInt("lastFragmentId", menuItemId).commit();
         }
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        prefs.edit().putInt("lastFragmentId", menuItemId).commit();
 
         FragmentManager fragmentManager = getSupportFragmentManager();
 
-        // hide previous fragment if it available
-        if (currentFragment != null) {
-            fragmentManager.beginTransaction().hide(currentFragment).commit();
+        // Make sure that any pending transaction completes so that added fragments are
+        // actually added and won't get added again (may happen during activity creation
+        // when this method is called twice).
+        fragmentManager.executePendingTransactions();
+
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        final String tag = String.valueOf(menuItemId);
+
+        boolean found = false;
+        for (Fragment fragment : fragmentManager.getFragments()) {
+            if (fragment.getTag().equals(tag)) {
+                // Show selected fragment if already added
+                transaction.show(fragment);
+                found = true;
+            }
+            else if (!fragment.isHidden()) {
+                // Hide currently shown fragment
+                transaction.hide(fragment);
+            }
         }
 
-        // try to find selected fragment
-        currentFragment = fragmentManager.findFragmentByTag(""+menuItemId);
-
-        // if fragment not found then add the fragment
-        if (currentFragment == null) {
+        // If fragment isn't found then add it
+        if (!found) {
             try {
-                currentFragment = (Fragment) fragmentClass.newInstance();
+                transaction.add(R.id.fragment_content, (Fragment) fragmentClass.newInstance(), tag);
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
-            fragmentManager.beginTransaction().add(R.id.fragment_content, currentFragment, "" + menuItemId).commit();
-        } else { // otherwise show fragment
-            fragmentManager.beginTransaction().show(currentFragment).commit();
         }
+
+        transaction.commit();
 
         // Set action bar title
         setTitle(fragmentTitle);
@@ -654,7 +657,6 @@ public class MainActivity extends AppCompatActivity
                     R.string.permission_not_granted), Toast.LENGTH_SHORT).show();
         }
 
-        currentFragment.onRequestPermissionsResult(requestCode, permissions, grantResults);
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
