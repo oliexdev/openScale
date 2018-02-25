@@ -28,8 +28,8 @@
     <string name="label_weight">Weight</string>
     <string name="label_bmi">Body mass index (BMI)</string>
     <string name="label_bmr">Basal metabolic rate (BMR)</string>
-    <string name="label_fat">Fat</string>
-    <string name="label_water">Water</string>
+    <string name="label_fat">Body fat</string>
+    <string name="label_water">Body water</string>
     <string name="label_muscle">Muscle</string>
     <string name="label_lbw">Lean body weight</string>
     <string name="label_waist">Waist circumference</string>
@@ -40,8 +40,8 @@
     <string name="label_bone">Bone mass</string>
     <string name="label_smartUserAssign">Smart User assignment</string>
 
-    <string name="label_fat_percentage">Fat in %</string>
-    <string name="label_water_percentage">Water in %</string>
+    <string name="label_fat_percentage">Body fat in %</string>
+    <string name="label_water_percentage">Body water in %</string>
     <string name="label_muscle_percentage">Muscle in %</string>
 
     <plurals name="label_days">
@@ -128,9 +128,9 @@
 
     <string name="label_delete_confirmation">Delete confirmation</string>
 
-    <string name="label_estimate_water">Estimate water</string>
+    <string name="label_estimate_water">Estimate body water</string>
     <string name="label_estimate_lbw">Estimate lean body weight</string>
-    <string name="label_estimate_fat">Estimate fat</string>
+    <string name="label_estimate_fat">Estimate body fat</string>
 
     <string name="label_category_display">Display</string>
     <string name="label_category_body_metrics_estimation">Body metrics estimation</string>
@@ -140,9 +140,9 @@
     <string name="label_website">Website</string>
     <string name="label_license">License</string>
 
-    <string name="label_estimate_water_formula">Water formula</string>
+    <string name="label_estimate_water_formula">Body water formula</string>
     <string name="label_estimate_lbw_formula">Lean body weight formula</string>
-    <string name="label_estimate_fat_formula">Fat formula</string>
+    <string name="label_estimate_fat_formula">Body fat formula</string>
     <string name="label_automatic">auto</string>
 
     <string name="label_theme">Theme</string>
