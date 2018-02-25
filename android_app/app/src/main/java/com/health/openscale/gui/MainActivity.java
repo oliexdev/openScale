@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity
     private static boolean firstAppStart = true;
     private static boolean valueOfCountModified = false;
     private static int bluetoothStatusIcon = R.drawable.ic_bluetooth_disabled;
-    private static MenuItem bluetoothStatus;
+    private MenuItem bluetoothStatus;
 
     private static final int IMPORT_DATA_REQUEST = 100;
 
