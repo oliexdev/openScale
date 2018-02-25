@@ -420,9 +420,19 @@ public abstract class BluetoothCommunication {
         filter.addAction(BluetoothDevice.ACTION_FOUND);
         filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
 
-        context.registerReceiver(mReceiver, filter);
-        isReceiverRegistered = true;
-        btAdapter.startDiscovery();
+        if (isReceiverRegistered == false) {
+            context.registerReceiver(mReceiver, filter);
+            isReceiverRegistered = true;
+            btAdapter.startDiscovery();
+        } else {
+            try {
+                context.unregisterReceiver(mReceiver);
+                isReceiverRegistered = false;
+            } catch (Exception e) {
+                isReceiverRegistered = false;
+            }
+            startSearching(deviceName);
+        }
     }
 
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
@@ -463,8 +473,12 @@ public abstract class BluetoothCommunication {
         }
 
         if (isReceiverRegistered == true) {
-            context.unregisterReceiver(mReceiver);
-            isReceiverRegistered = false;
+            try {
+                context.unregisterReceiver(mReceiver);
+                isReceiverRegistered = false;
+            } catch (Exception e) {
+                isReceiverRegistered = false;
+            }
         }
 
         searchHandler.removeCallbacksAndMessages(null);
