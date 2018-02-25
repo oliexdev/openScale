@@ -19,7 +19,7 @@
     <string name="label_bmi">Kroppsmasseindex (BMI)</string>
     <string name="label_bmr">Basal ämnesomsättning (BMR)</string>
     <string name="label_fat">Kroppsfett</string>
-    <string name="label_water">Vatten</string>
+    <string name="label_water">Kroppsvatten</string>
     <string name="Monday">Måndag</string>
     <string name="Tuesday">Tisdag</string>
     <string name="Wednesday">Onsdag</string>
@@ -111,16 +111,16 @@
     <string name="label_enable_labels">Etikett på datapunkt</string>
     <string name="label_enable_points">Punkt på datapunkt</string>
     <string name="label_delete_confirmation">Borttagningsbekräftelse</string>
-    <string name="label_estimate_water">Estimera vatten</string>
+    <string name="label_estimate_water">Estimera kroppsvatten</string>
     <string name="label_estimate_lbw">Estimera fettfri kroppsvikt</string>
     <string name="label_estimate_fat">Estimera kroppsfett</string>
     <string name="label_category_display">Visa</string>
     <string name="label_category_body_metrics_estimation">Uppskatta mätvärden</string>
     <string name="label_category_measurement_database">Mätningsdatabas</string>
     <string name="label_maintainer">Utvecklare</string>
-    <string name="label_estimate_water_formula">Vattenformel</string>
-    <string name="label_estimate_lbw_formula">Fettfri kroppsvikt-formel</string>
-    <string name="label_estimate_fat_formula">Kroppsfettformel</string>
+    <string name="label_estimate_water_formula">Formel för kroppsvatten</string>
+    <string name="label_estimate_lbw_formula">Formel för fettfri kroppsvikt</string>
+    <string name="label_estimate_fat_formula">Formel för kroppsfett</string>
     <string name="label_automatic">auto</string>
     <string name="label_reminder">Påminnelse</string>
     <string name="label_reminder_notify_text">Meddelandetext</string>
@@ -143,7 +143,7 @@
     <string name="close_drawer">stäng</string>
     <string name="label_fat_percentage">Kroppsfett i %</string>
     <string name="label_muscle_percentage">Muskler i %</string>
-    <string name="label_water_percentage">Vatten i %</string>
+    <string name="label_water_percentage">Kroppsvatten i %</string>
     <string name="info_bluetooth_no_device_set">Ingen Bluetooth-enhet vald</string>
     <string name="info_new_data_duplicated">mätning med samma datum och tid existerar redan</string>
     <string name="title_general">Allmänt</string>
@@ -165,9 +165,9 @@
     <string name="customactivityoncrash_error_activity_error_details_copy">Kopiera till urklipp</string>
     <string name="customactivityoncrash_error_activity_error_details_copied">Kopierat till urklipp</string>
     <string name="customactivityoncrash_error_activity_error_details_clipboard_label">Felinformation</string>
-<string name="save">Spara</string>
+    <string name="save">Spara</string>
 
-<string name="label_share">Dela</string>
+    <string name="label_share">Dela</string>
 
     <string name="label_bluetooth_searching_finished">Sökning efter Bluetooth-vågar slutförd</string>
     <string name="label_help">Hjälp</string>
@@ -180,13 +180,13 @@
     <string name="permission_bluetooth_info">openScale kräver åtkomst till grov platsbestämning för att söka efter Bluetooth-enheter</string>
     <string name="permission_bluetooth_info_title">Information</string>
 
-<string name="label_share_subject">openScale CSV dataexport (%s)</string>
+    <string name="label_share_subject">openScale CSV dataexport (%s)</string>
 
     <string name="label_next">Nästa</string>
     <string name="label_measurement_order">Mätordning</string>
     <string name="label_press_hold_reorder">Tryck och håll för att ändra ordning</string>
     <string name="label_set_default_order">Ställ in standardordning</string>
 
-<string name="label_weeks_view">Veckovy</string>
+    <string name="label_weeks_view">Veckovy</string>
 
-    </resources>
+</resources>
