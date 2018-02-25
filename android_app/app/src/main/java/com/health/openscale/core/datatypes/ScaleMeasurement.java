@@ -21,10 +21,12 @@ import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.ForeignKey;
 import android.arch.persistence.room.Index;
 import android.arch.persistence.room.PrimaryKey;
+import android.util.Log;
 
 import com.health.openscale.core.utils.Converters;
 import com.j256.simplecsv.common.CsvColumn;
 
+import java.lang.reflect.Field;
 import java.util.Date;
 
 @Entity(tableName = "scaleMeasurements",
@@ -123,6 +125,25 @@ public class ScaleMeasurement implements Cloneable {
         bone /= divisor;
         waist /= divisor;
         hip /= divisor;
+    }
+
+    public void merge(ScaleMeasurement measurements) {
+        try {
+            Field[] fields = getClass().getDeclaredFields();
+
+            for (Field field : fields) {
+                field.setAccessible(true);
+                Object value = field.get(measurements);
+                if (Float.class.isAssignableFrom(value.getClass())) {
+                    if ((float)field.get(this) == 0.0f) {
+                        field.set(this, value);
+                    }
+                }
+                field.setAccessible(false);
+            }
+        } catch (IllegalAccessException e) {
+            Log.e("ScaleMeasurement", "Error: " + e.getMessage());
+        }
     }
 
     public int getId() {
