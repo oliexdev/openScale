@@ -1,21 +1,17 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <resources>
     <string name="action_settings">Einstellungen</string>
-    <string name="error_body_height_required">Fehler Körpergröße ist erforderlich</string>
+    <string name="error_height_required">Fehler Körpergröße ist erforderlich</string>
     <string name="error_exporting">Fehler beim Exportieren</string>
     <string name="error_importing">Fehler beim Importieren</string>
     <string name="error_user_name_required">Fehler Benutzername ist erfoderlich</string>
-    <string name="error_hip_value_required">Hüftumfang ist erforderlich</string>
     <string name="info_data_all_deleted">Alle Datenbank Einträge wurden gelöscht</string>
     <string name="info_data_deleted">Datenbank Eintrag wurde gelöscht</string>
     <string name="info_data_exported">Daten werden exportiert nach</string>
     <string name="info_data_imported">Daten werden importiert von</string>
-    <string name="info_delete_bluetooth_data">Lösche alle Bluetooth Daten</string>
-    <string name="info_delete_bluetooth_data_success">Bluetooth Daten wurden erfolgreich gelöscht</string>
     <string name="info_enter_comment">Gebe ein optionalen Kommentar ein</string>
     <string name="info_enter_user_name">Gebe dein Namen ein</string>
     <string name="info_enter_value_cm">Gebe dein Wert in cm an</string>
-    <string name="info_enter_value_percent">Gebe dein Wert in % an</string>
     <string name="info_enter_value_unit">Gebe dein Wert an in</string>
     <string name="info_is_not_visible">ist nicht sichtbar</string>
     <string name="info_is_visible">ist sichtbar</string>
@@ -23,16 +19,11 @@
     <string name="info_no_selected_user">Kein Benutzer vorhanden. Bitte erzeugen Sie ein neuen Benutzer unter Einstellungen.</string>
     <string name="info_on_date">am</string>
     <string name="info_set_filename">Setzte Dateiname auf</string>
-    <string name="info_your_fat">Dein Körperfett war</string>
-    <string name="info_your_muscle">Dein Muskelanteil war</string>
-    <string name="info_your_water">Dein Wasseranteil war</string>
-    <string name="info_your_weight">Dein Gewicht war</string>
-    <string name="label_add">Hinzufügen</string>
     <string name="label_birthday">Geburtstag</string>
     <string name="label_bluetooth_enable">Suche nach Waage beim Start</string>
     <string name="label_bluetooth_title">Bluetooth</string>
     <string name="label_bmi">Body-Mass-Index (BMI)</string>
-    <string name="label_body_height">Körpergröße</string>
+    <string name="label_height">Körpergröße</string>
     <string name="label_comment">Kommentar</string>
     <string name="label_date">Datum</string>
     <plurals name="label_days">
@@ -49,12 +40,10 @@
     <string name="label_goal_date">Zieldatum</string>
     <string name="label_goal_date_is">Das Zieldatum ist</string>
     <string name="label_goal_weight">Zielgewicht</string>
-    <string name="label_id">Id</string>
     <string name="label_import">Importieren</string>
     <string name="label_last_month">Letzten 30 Tage</string>
     <string name="label_last_week">Letzten 7 Tage</string>
     <string name="label_male">Männlich</string>
-    <string name="label_measures">Messungen</string>
     <string name="label_muscle">Muskelanteil</string>
     <string name="label_no">Nein</string>
     <string name="label_ok">OK</string>
@@ -62,7 +51,6 @@
     <string name="label_time">Zeit</string>
     <string name="label_title_goal">Ziel</string>
     <string name="label_title_last_measurement">Letzte Messung</string>
-    <string name="label_title_statistics">Statistiken</string>
     <string name="label_title_user">Benutzer</string>
     <string name="label_user_name">Name</string>
     <string name="label_water">Wassergehalt</string>
@@ -78,13 +66,10 @@
     <string name="title_users">Benutzer</string>
     <string name="label_add_user">Benutzer hinzufügen</string>
     <string name="error_goal_weight_required">Fehler Zielgewicht ist erforderlich</string>
-    <string name="title_data">Daten</string>
     <string name="info_is_not_enable">ist ausgeschaltet</string>
     <string name="info_is_enable">ist eingeschaltet</string>
     <string name="label_waist">Taillenumfang</string>
     <string name="label_hip">Hüftumfang</string>
-    <string name="info_your_hip">Dein Hüftumfang war</string>
-    <string name="info_your_waist">Dein Bauchumfang war</string>
     <string name="info_no_evaluation_available">Kann den Wert nicht evaluieren</string>
     <string name="label_whtr">Taille-zu-Größe Verhältnis</string>
     <string name="label_whr">Taille-Hüft Verhältnis</string>

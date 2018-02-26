@@ -4,7 +4,6 @@
     <string name="title_table">Tabulka</string>
     <string name="title_statistics">Statistiky</string>
     <string name="title_users">Uživatelé</string>
-    <string name="title_data">Data</string>
     <string name="title_measurements">Měření</string>
     <string name="title_about">O aplikaci</string>
     <string name="title_general">Obecné</string>
@@ -14,7 +13,6 @@
     <string name="open_drawer">otevřít</string>
     <string name="close_drawer">zavřít</string>
 
-    <string name="label_add">Přidat</string>
     <string name="label_cancel">Storno</string>
     <string name="label_yes">Ano</string>
     <string name="label_no">Ne</string>
@@ -22,7 +20,6 @@
     <string name="label_add_user">Přidat uživatele</string>
     <string name="label_share">Sdílet</string>
 
-    <string name="label_id">Identifikátor</string>
     <string name="label_weight">Hmotnost</string>
     <string name="label_bmi">Index tělesné hmotnosti (BMI)</string>
     <string name="label_bmr">Bazální metabolický výdej (BMR)</string>
@@ -51,7 +48,7 @@
     <string name="label_time">Čas</string>
     <string name="label_birthday">Narozeniny</string>
     <string name="label_user_name">Jméno</string>
-    <string name="label_body_height">Tělesná hmotnost</string>
+    <string name="label_height">Tělesná hmotnost</string>
     <string name="label_gender">Pohlaví</string>
     <string name="label_male">Muž</string>
     <string name="label_woman">Žena</string>
@@ -61,7 +58,6 @@
     <string name="label_title_user">uživatel</string>
     <string name="label_title_last_measurement">minulé měření</string>
     <string name="label_title_goal">cíl</string>
-    <string name="label_title_statistics">statistiky</string>
 
     <string name="label_import">Import</string>
     <string name="label_export">Export</string>
@@ -73,7 +69,7 @@
     <string name="error_importing">Chyba při importu</string>
     <string name="error_user_name_required">Chyba: je třeba uživatelské jméno</string>
     <string name="error_user_name_too_short">Chyba: je třeba, aby uživatelské jméno bylo alespoň 3 znaky dlouhé</string>
-    <string name="error_body_height_required">Chyba: je třeba zadat výšku člověka</string>
+    <string name="error_height_required">Chyba: je třeba zadat výšku člověka</string>
     <string name="error_initial_weight_required">Chyba: je třeba zadat počáteční hmotnost</string>
     <string name="error_goal_weight_required">Chyba: je třeba zadat cílovou hmotnost</string>
     <string name="info_data_deleted">Položka v databázi smazána</string>
@@ -81,7 +77,6 @@
     <string name="info_data_exported">Data exportována na</string>
     <string name="info_data_imported">Data importována z</string>
     <string name="info_enter_value_cm">Zadejte hodnotu v cm</string>
-    <string name="info_enter_value_percent">Zadejte hodnotu v %</string>
     <string name="info_enter_value_unit">Zadejte hodnotu v</string>
     <string name="info_enter_comment">Zadejte volitelný komentář</string>
     <string name="info_is_visible">je viditelné</string>
@@ -89,7 +84,6 @@
     <string name="info_is_enable">je zapnuté</string>
     <string name="info_is_not_enable">je vypnuté</string>
     <string name="info_is_not_available">není k dispozici</string>
-    <string name="info_delete_bluetooth_data">Vyčistit všechna bluetooth data</string>
     <string name="info_bluetooth_connection_lost">Ztraceno bluetooth spojení</string>
     <string name="info_bluetooth_no_device">Nebylo nalezeno žádné bluetooth zařízení</string>
     <string name="info_bluetooth_no_device_set">Nebylo vybráno žádné bluetooth zařízení</string>
@@ -123,7 +117,6 @@
     <string name="label_reminder_weekdays">Dny v týdnu</string>
     <string name="label_reminder_time">Čas</string>
     <string name="label_reminder_notify_text">Text upozornění</string>
-    <string name="info_your_weight">Vaše hmotnost byla</string>
     <string name="info_on_date">v</string>
 
     <string name="Monday">pondělí</string>

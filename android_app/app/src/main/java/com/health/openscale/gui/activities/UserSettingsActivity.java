@@ -260,7 +260,7 @@ public class UserSettingsActivity extends AppCompatActivity {
         }
 
         if (txtBodyHeight.getText().toString().length() == 0) {
-            txtBodyHeight.setError(getResources().getString(R.string.error_body_height_required));
+            txtBodyHeight.setError(getResources().getString(R.string.error_height_required));
             validate = false;
         }
 

@@ -6,7 +6,6 @@
     <string name="title_table">Tabel</string>
     <string name="title_statistics">Statistieken</string>
     <string name="title_users">Gebruikers</string>
-    <string name="title_data">Data</string>
     <string name="title_measurements">Metingen</string>
     <string name="title_about">Info</string>
 
@@ -15,7 +14,6 @@
     <string name="open_drawer">openen</string>
     <string name="close_drawer">sluiten</string>
 
-    <string name="label_add">Toevoegen</string>
     <string name="label_cancel">Annuleren</string>
     <string name="label_ok">OK</string>
     <string name="label_yes">Ja</string>
@@ -23,7 +21,6 @@
     <string name="label_delete">Verwijderen</string>
     <string name="label_add_user">Gebruiker toevoegen</string>
 
-    <string name="label_id">Id</string>
     <string name="label_weight">Gewicht</string>
     <string name="label_bmi">Body mass index (BMI)</string>
     <string name="label_bmr">Basaal Metabolisme (BMR)</string>
@@ -43,7 +40,6 @@
         <item quantity="one">%d dag</item>
         <item quantity="other">%d dagen</item>
     </plurals>
-    <string name="label_measures">Metingen</string>
     <string name="label_last_week">Laatste 7 dagen</string>
     <string name="label_last_month">Laaste 30 dagen</string>
     <string name="label_weight_difference">Verschil in gewicht</string>
@@ -54,7 +50,7 @@
     <string name="label_time">Tijd</string>
     <string name="label_birthday">Geboortedatum</string>
     <string name="label_user_name">Naam</string>
-    <string name="label_body_height">Lichaamslengte</string>
+    <string name="label_height">Lichaamslengte</string>
     <string name="label_scale_unit">Schaal</string>
     <string name="label_gender">Geslacht</string>
     <string name="label_male">Man</string>
@@ -66,7 +62,6 @@
     <string name="label_title_user">Gebruiker</string>
     <string name="label_title_last_measurement">Laatste meting</string>
     <string name="label_title_goal">Doel</string>
-    <string name="label_title_statistics">Statistieken</string>
 
     <string name="label_import">Importeren</string>
     <string name="label_export">Exporteren</string>
@@ -77,18 +72,16 @@
     <string name="error_exporting">Fout met exporteren</string>
     <string name="error_importing">Fout met importeren</string>
     <string name="error_user_name_required">Fout: Naam is vereist</string>
-    <string name="error_body_height_required">Fout: Lichaamslengte is vereist</string>
+    <string name="error_height_required">Fout: Lichaamslengte is vereist</string>
     <string name="error_initial_weight_required">Fout: Begingewicht is vereist</string>
     <string name="error_goal_weight_required">Fout: Streefgewicht is vereist</string>
-    <string name="error_hip_value_required">Fout: Heupomtrek is vereist</string>
 
     <string name="info_data_deleted">Database vermelding verwijderd</string>
     <string name="info_data_all_deleted">Alle database vermeldingen verwijderd</string>
     <string name="info_data_exported">Data geexporteerd naar</string>
     <string name="info_data_imported">Data geinporteerd van</string>
     <string name="info_set_filename">Zet bestandsnaam op</string>
-    <string name="info_enter_value_cm">Geef waarde op cm's in</string>
-    <string name="info_enter_value_percent">Geef waarde op in %</string>
+    <string name="info_enter_value_cm">Geef waarde op cm\'s in</string>
     <string name="info_enter_value_unit">Geef waaarde op</string>
     <string name="info_enter_comment">Voeg een optionele opmerking toe.</string>
     <string name="info_enter_initial_weight">Voer uw begingewicht in uw weegschaal in</string>
@@ -98,8 +91,6 @@
     <string name="info_is_enable">is ingeschakeld</string>
     <string name="info_is_not_enable">is uitgeschakeld</string>
     <string name="info_is_not_available">is niet beschikbaar</string>
-    <string name="info_delete_bluetooth_data">Wis alle Bluetooth gegevens</string>
-    <string name="info_delete_bluetooth_data_success">Bluetooth gegevens succesvol gewist</string>
     <string name="info_bluetooth_try_connection">Poging verbinding te maken</string>
     <string name="info_bluetooth_connection_lost">Bluetooth-verbinding verloren</string>
     <string name="info_bluetooth_no_device">Geen Bluetooth-apparaat gevonden</string>
@@ -149,12 +140,6 @@
     <string name="label_reminder_notify_text">Notificatietekst</string>
     <string name="default_value_reminder_notify_text">Tijd om te wegen</string>
 
-    <string name="info_your_weight">Uw gewicht was</string>
-    <string name="info_your_fat">Uw vetmassa was</string>
-    <string name="info_your_water">Uw vochtmassa was</string>
-    <string name="info_your_muscle">Uw spierpercentage was</string>
-    <string name="info_your_waist">Uw buikomtrek was</string>
-    <string name="info_your_hip">Uw heupomtrek was</string>
     <string name="info_on_date">op</string>
 
     <string name="Monday">Maandag</string>

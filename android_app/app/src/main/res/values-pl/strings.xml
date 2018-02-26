@@ -6,13 +6,11 @@
     <string name="title_table">Tabele</string>
     <string name="title_statistics">Statystyki</string>
     <string name="title_users">Użytkownicy</string>
-    <string name="title_data">Dane</string>
     <string name="title_measurements">Pomiary</string>
 
     <string name="action_settings">Ustawienia</string>
     <string name="action_bluetooth_status">Stan Bluetooth</string>
 
-    <string name="label_add">Dodaj</string>
     <string name="label_cancel">Anuluj</string>
     <string name="label_ok">OK</string>
     <string name="label_yes">Tak</string>
@@ -20,7 +18,6 @@
     <string name="label_delete">Usuń</string>
     <string name="label_add_user">Dodaj użytkownika</string>
 
-    <string name="label_id">Id</string>
     <string name="label_weight">Waga</string>
     <string name="label_bmi">Wskaźnik masy ciała (BMI)</string>
     <string name="label_bmr">Wskaźnik podstawowej przemiany materii (BMR)</string>
@@ -38,7 +35,6 @@
     <plurals name="label_days">
         <item quantity="other">%d dni</item>
     </plurals>
-    <string name="label_measures">pomiarów</string>
     <string name="label_last_week">Ostatnie 7 dni</string>
     <string name="label_last_month">Ostatnie 30 dni</string>
     <string name="label_weight_difference">Różnica wagi</string>
@@ -49,7 +45,7 @@
     <string name="label_time">Czas</string>
     <string name="label_birthday">Urodziny</string>
     <string name="label_user_name">Imie</string>
-    <string name="label_body_height">Wzrost</string>
+    <string name="label_height">Wzrost</string>
     <string name="label_scale_unit">Jednostka wagi</string>
     <string name="label_gender">Płęć</string>
     <string name="label_male">Mężczyzna</string>
@@ -61,7 +57,6 @@
     <string name="label_title_user">użytkownik</string>
     <string name="label_title_last_measurement">ostatni pomiar</string>
     <string name="label_title_goal">cel</string>
-    <string name="label_title_statistics">statystyki</string>
 
     <string name="label_import">Import</string>
     <string name="label_export">Export</string>
@@ -72,10 +67,9 @@
     <string name="error_exporting">Błąd eksportu</string>
     <string name="error_importing">Błąd importu</string>
     <string name="error_user_name_required">Błąd nazwa użytkownika jest wymagana</string>
-    <string name="error_body_height_required">Błąd wzrost jest wymagany</string>
+    <string name="error_height_required">Błąd wzrost jest wymagany</string>
     <string name="error_initial_weight_required">Błąd waga początkowa jest wymagana</string>
     <string name="error_goal_weight_required">Błąd waga docelowa jest wymagana</string>
-    <string name="error_hip_value_required">Obwód bioder jest wymagany</string>
 
     <string name="info_data_deleted">Wpis w bazie danych usunięty</string>
     <string name="info_data_all_deleted">Wszytkie wpisy w bazie danych usunięte</string>
@@ -83,7 +77,6 @@
     <string name="info_data_imported">Dane zaimportowane z</string>
     <string name="info_set_filename">Ustaw nazwę pliku na</string>
     <string name="info_enter_value_cm">Wprowadź wartość w cm</string>
-    <string name="info_enter_value_percent">Wprowadź wartość w %</string>
     <string name="info_enter_value_unit">Wprowadź wartość w</string>
     <string name="info_enter_comment">Wprowadź opcjonlany komentarz</string>
     <string name="info_enter_initial_weight">Wprowadź twoją wagę początkową w wybranej jednostce wagi</string>
@@ -93,8 +86,6 @@
     <string name="info_is_enable">jest włączone</string>
     <string name="info_is_not_enable">jest wyłączone</string>
     <string name="info_is_not_available">jest niedostępne</string>
-    <string name="info_delete_bluetooth_data">Wyczyść wszystkie dane Bluetooth</string>
-    <string name="info_delete_bluetooth_data_success">Dane Bluetooth usunięte</string>
     <string name="info_bluetooth_try_connection">Próba połączenia do</string>
     <string name="info_bluetooth_connection_lost">Utracono połączenie Bluetooth.</string>
     <string name="info_bluetooth_no_device">Nie znaleziono urządzeń Bluetooth</string>
@@ -127,12 +118,6 @@
     <string name="label_reminder_notify_text">Tekst powiadomienia</string>
     <string name="default_value_reminder_notify_text">Pora by się zważyć</string>
 
-    <string name="info_your_weight">Twój wzrost</string>
-    <string name="info_your_fat">Twój procent tkanki tłuszczowej</string>
-    <string name="info_your_water">Twój procent wody organizmie</string>
-    <string name="info_your_muscle">Twój procent masy mięśniowej</string>
-    <string name="info_your_waist">Twój obwód talii</string>
-    <string name="info_your_hip">Twój obwód bioder</string>
     <string name="info_on_date">na dzień</string>
 
     <string name="Monday">Poniedziałek</string>

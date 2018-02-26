@@ -5,18 +5,15 @@
   <string name="title_table">Tabuľka</string>
   <string name="title_statistics">Štatistiky</string>
   <string name="title_users">Používatelia</string>
-  <string name="title_data">Údaje</string>
   <string name="title_measurements">Merania</string>
   <string name="action_settings">Nastavenia</string>
   <string name="action_bluetooth_status">Stav Bluetooth</string>
-  <string name="label_add">Pridať</string>
   <string name="label_cancel">Zrušiť</string>
   <string name="label_ok">OK</string>
   <string name="label_yes">Áno</string>
   <string name="label_no">Nie</string>
   <string name="label_delete">Vymazať</string>
   <string name="label_add_user">Pridať používateľa</string>
-  <string name="label_id">ID</string>
   <string name="label_weight">Hmotnosť</string>
   <string name="label_bmi">Index telesnej hmotnosti (BMI)</string>
   <string name="label_bmr">Bazálny metabolický výdaj (BMR)</string>
@@ -33,7 +30,6 @@
   <plurals name="label_days">
         <item quantity="other">%d dni</item>
     </plurals>
-  <string name="label_measures">merania</string>
   <string name="label_last_week">Posledných 7 dní</string>
   <string name="label_last_month">Posledných 30 dní</string>
   <string name="label_weight_difference">Rozdiel hmotnosti</string>
@@ -43,7 +39,7 @@
   <string name="label_time">Čas</string>
   <string name="label_birthday">Dátum narodenia</string>
   <string name="label_user_name">Meno</string>
-  <string name="label_body_height">Telesná výška</string>
+  <string name="label_height">Telesná výška</string>
   <string name="label_scale_unit">Jednotka hmotnosti</string>
   <string name="label_gender">Pohlavie</string>
   <string name="label_male">Muž</string>
@@ -53,7 +49,6 @@
   <string name="label_title_user">používateľ</string>
   <string name="label_title_last_measurement">posledné meranie</string>
   <string name="label_title_goal">cieľ</string>
-  <string name="label_title_statistics">štatistiky</string>
   <string name="label_import">Import</string>
   <string name="label_export">Export</string>
   <string name="label_delete_all">Vymazať všetko</string>
@@ -62,17 +57,15 @@
   <string name="error_exporting">Chyba pri exporte</string>
   <string name="error_importing">Chyba pri importe</string>
   <string name="error_user_name_required">Chyba, používateľské meno je povinné</string>
-  <string name="error_body_height_required">Chyba, telesná výška je povinná</string>
+  <string name="error_height_required">Chyba, telesná výška je povinná</string>
   <string name="error_initial_weight_required">Chyba, počiatočná hmotnosť je povinná</string>
   <string name="error_goal_weight_required">Chyba, cieľová hmotnosť je povinná</string>
-  <string name="error_hip_value_required">obvod bokov je povinný</string>
   <string name="info_data_deleted">Položka bola vymazaná z databázy</string>
   <string name="info_data_all_deleted">Všetkých položky boli vymazané z databázy</string>
   <string name="info_data_exported">Údaje boli exportované do</string>
   <string name="info_data_imported">Údaje boli importované z</string>
   <string name="info_set_filename">Nastaviť názov súboru na</string>
   <string name="info_enter_value_cm">Zadajte hodnotu v cm</string>
-  <string name="info_enter_value_percent">Zadajte hodnotu v %</string>
   <string name="info_enter_value_unit">Zadajte hodnotu v palcoch</string>
   <string name="info_enter_comment">Zadajte voliteľný komentár</string>
   <string name="info_enter_initial_weight">Zadajte vaša počiatočná hmotnosť v jednotkách stupnice</string>
@@ -82,8 +75,6 @@
   <string name="info_is_enable">je povolené</string>
   <string name="info_is_not_enable">je zakázané</string>
   <string name="info_is_not_available">nie je k dispozícii</string>
-  <string name="info_delete_bluetooth_data">Vymazať všetky Bluetooth údaje</string>
-  <string name="info_delete_bluetooth_data_success">Bluetooth údaje boli vymazané</string>
   <string name="info_bluetooth_try_connection">Pokus o pripojenie ku</string>
   <string name="info_bluetooth_connection_lost">Bluetooth pripojenie sa stratilo.</string>
   <string name="info_bluetooth_no_device">Nenašli sa žiadne Bluetooth zariadenia</string>
@@ -109,12 +100,6 @@
   <string name="label_reminder_time">Čas</string>
   <string name="label_reminder_notify_text">Text upozornenia</string>
   <string name="default_value_reminder_notify_text">Čas na váženie</string>
-  <string name="info_your_weight">Vaša hmotnosť bola</string>
-  <string name="info_your_fat">Váš telesný tuk bol</string>
-  <string name="info_your_water">Vaše percento vody v tele bolo</string>
-  <string name="info_your_muscle">Vaše percento svalov v tele bolo</string>
-  <string name="info_your_waist">Váš obvod pása bol</string>
-  <string name="info_your_hip">Váš obvod bokov bol</string>
   <string name="info_on_date">v deň</string>
   <string name="Monday">Pondelok</string>
   <string name="Tuesday">Utorok</string>
