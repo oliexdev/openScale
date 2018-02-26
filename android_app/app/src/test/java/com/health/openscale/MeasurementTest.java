@@ -24,11 +24,14 @@ import static junit.framework.Assert.assertEquals;
 
 public class MeasurementTest {
     private static final double DELTA = 1e-15;
-    private ScaleMeasurement measurementA = new ScaleMeasurement();
-    private ScaleMeasurement measurementB = new ScaleMeasurement();
+    private ScaleMeasurement measurementA;
+    private ScaleMeasurement measurementB;
 
     @Before
     public void initData() {
+        measurementA = new ScaleMeasurement();
+        measurementB = new ScaleMeasurement();
+
         measurementA.setWeight(80.0f);
         measurementA.setBone(3.0f);
         measurementA.setMuscle(55.0f);

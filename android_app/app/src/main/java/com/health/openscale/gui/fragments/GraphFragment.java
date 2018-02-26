@@ -277,7 +277,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
             if (prefs.getBoolean("showWeek", false)) {
                 field = Calendar.WEEK_OF_MONTH;
-                day_date = new SimpleDateFormat("W", Locale.getDefault());
+                day_date = new SimpleDateFormat("w", Locale.getDefault());
             }
         } else if (field == Calendar.DAY_OF_YEAR) {
             day_date = new SimpleDateFormat("D", Locale.getDefault());
@@ -295,15 +295,19 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         Calendar calDays = (Calendar)calLastSelected.clone();
 
-        calDays.set(field, calDays.getActualMinimum(field));
+        calDays.setMinimalDaysInFirstWeek(7);
+        calDays.set(field, calDays.getMinimum(field));
         int maxDays = calDays.getMaximum(field);
 
         List<AxisValue> axisValues = new ArrayList<>();
 
-        for (int i=0; i<maxDays; i++) {
+        for (int i=0; i<calDays.getMaximum(field)+1; i++) {
             String day_name = day_date.format(calDays.getTime());
 
-            axisValues.add(new AxisValue(i, day_name.toCharArray()));
+            AxisValue  xAxisValue = new AxisValue(i + calDays.getActualMinimum(field));
+            xAxisValue.setLabel(day_name);
+
+            axisValues.add(xAxisValue);
 
             calDays.add(field, 1);
         }
@@ -334,6 +338,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                     measurementView.loadFrom(measurement, null);
 
                     calDB.setTime(measurement.getDateTime());
+                    calDB.setMinimalDaysInFirstWeek(7);
 
                     if (avgBins[calDB.get(field)] == null) {
                         avgBins[calDB.get(field)] = new ArrayList<>();
@@ -401,7 +406,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         chartBottom.setLineChartData(lineData);
 
-        defaultTopViewport = new Viewport(calDays.getMinimum(field), chartBottom.getCurrentViewport().top, maxDays+1, chartBottom.getCurrentViewport().bottom);
+        defaultTopViewport = new Viewport(calDays.getActualMinimum(field), chartBottom.getCurrentViewport().top, calDays.getMaximum(field)+1, chartBottom.getCurrentViewport().bottom);
 
         if (prefs.getBoolean("goalLine", true)) {
             Stack<PointValue> valuesGoalLine = new Stack<PointValue>();
