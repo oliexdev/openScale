@@ -194,6 +194,18 @@ public class OpenScale {
     public void deleteScaleUser(int id) {
         userDAO.delete(userDAO.get(id));
         selectedScaleUser = null;
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+
+        // Remove user specific settings
+        SharedPreferences.Editor editor = prefs.edit();
+        final String prefix = ScaleUser.getPreferenceKey(id, "");
+        for (String key : prefs.getAll().keySet()) {
+            if (key.startsWith(prefix)) {
+                editor.remove(key);
+            }
+        }
+        editor.apply();
     }
 
     public void updateScaleUser(ScaleUser user) {
