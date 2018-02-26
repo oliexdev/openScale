@@ -94,7 +94,7 @@ public class OpenScale {
 
     public static OpenScale getInstance(Context context) {
         if (instance == null) {
-            instance = new OpenScale(context);
+            instance = new OpenScale(context.getApplicationContext());
         }
 
         return instance;
@@ -459,6 +459,10 @@ public class OpenScale {
         scaleMeasurementList = measurementDAO.getAll(selectedUserId);
 
         fragment.updateOnView(scaleMeasurementList);
+    }
+
+    public void unregisterFragment(FragmentUpdateListener fragment) {
+        fragmentList.remove(fragment);
     }
 
     public void updateScaleData() {
