@@ -106,25 +106,38 @@ public class ScaleMeasurement implements Cloneable {
     }
 
     public void add(final ScaleMeasurement summand) {
-        weight += summand.getWeight();
-        fat += summand.getFat();
-        water += summand.getWater();
-        muscle += summand.getMuscle();
-        lbw += summand.getLbw();
-        bone += summand.getBone();
-        waist += summand.getWaist();
-        hip += summand.getHip();
+        try {
+            Field[] fields = getClass().getDeclaredFields();
+
+            for (Field field : fields) {
+                field.setAccessible(true);
+                Object value = field.get(this);
+
+                if (value != null && Float.class.isAssignableFrom(value.getClass())) {
+                    field.set(this, (float)value + (float)field.get(summand));
+                }
+                field.setAccessible(false);
+            }
+        } catch (IllegalAccessException e) {
+            Log.e("ScaleMeasurement", "Error: " + e.getMessage());
+        }
     }
 
     public void divide(final float divisor) {
-        weight /= divisor;
-        fat /= divisor;
-        water /= divisor;
-        muscle /= divisor;
-        lbw /= divisor;
-        bone /= divisor;
-        waist /= divisor;
-        hip /= divisor;
+        try {
+            Field[] fields = getClass().getDeclaredFields();
+
+            for (Field field : fields) {
+                field.setAccessible(true);
+                Object value = field.get(this);
+                if (value != null && Float.class.isAssignableFrom(value.getClass())) {
+                    field.set(this, (float)value / divisor);
+                }
+                field.setAccessible(false);
+            }
+        } catch (IllegalAccessException e) {
+            Log.e("ScaleMeasurement", "Error: " + e.getMessage());
+        }
     }
 
     public void merge(ScaleMeasurement measurements) {
@@ -134,7 +147,7 @@ public class ScaleMeasurement implements Cloneable {
             for (Field field : fields) {
                 field.setAccessible(true);
                 Object value = field.get(measurements);
-                if (Float.class.isAssignableFrom(value.getClass())) {
+                if (value != null && Float.class.isAssignableFrom(value.getClass())) {
                     if ((float)field.get(this) == 0.0f) {
                         field.set(this, value);
                     }

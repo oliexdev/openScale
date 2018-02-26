@@ -17,18 +17,18 @@ package com.health.openscale;
 
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
 
 public class MeasurementTest {
     private static final double DELTA = 1e-15;
+    private ScaleMeasurement measurementA = new ScaleMeasurement();
+    private ScaleMeasurement measurementB = new ScaleMeasurement();
 
-    @Test
-    public void mergeTest() throws InstantiationException, IllegalAccessException {
-        ScaleMeasurement measurementA = new ScaleMeasurement();
-        ScaleMeasurement measurementB = new ScaleMeasurement();
-
+    @Before
+    public void initData() {
         measurementA.setWeight(80.0f);
         measurementA.setBone(3.0f);
         measurementA.setMuscle(55.0f);
@@ -37,7 +37,10 @@ public class MeasurementTest {
         measurementB.setBone(10.0f);
         measurementB.setHip(5.0f);
         measurementB.setWater(12.0f);
+    }
 
+    @Test
+    public void mergeTest() {
         measurementA.merge(measurementB);
 
         assertEquals(80.0f, measurementA.getWeight(), DELTA);
@@ -45,5 +48,26 @@ public class MeasurementTest {
         assertEquals( 5.0f, measurementA.getHip(), DELTA);
         assertEquals( 12.0f, measurementA.getWater(), DELTA);
         assertEquals( 55.0f, measurementA.getMuscle(), DELTA);
+    }
+
+    @Test
+    public void divideTest() {
+        measurementA.divide(2.0f);
+
+        assertEquals(40.0f, measurementA.getWeight(), DELTA);
+        assertEquals(1.5f, measurementA.getBone(), DELTA);
+        assertEquals(27.5f, measurementA.getMuscle(), DELTA);
+        assertEquals(0.0f, measurementA.getWater(), DELTA);
+    }
+
+    @Test
+    public void addTest() {
+        measurementA.add(measurementB);
+
+        assertEquals(170.0f, measurementA.getWeight(), DELTA);
+        assertEquals(13.0f, measurementA.getBone(), DELTA);
+        assertEquals(55.0f, measurementA.getMuscle(), DELTA);
+        assertEquals(12.0f, measurementA.getWater(), DELTA);
+        assertEquals(5.0f, measurementA.getHip(), DELTA);
     }
 }
