@@ -157,6 +157,12 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
     }
 
     @Override
+    public void onDestroyView() {
+        OpenScale.getInstance(getContext()).unregisterFragment(this);
+        super.onDestroyView();
+    }
+
+    @Override
     public void updateOnView(List<ScaleMeasurement> scaleMeasurementList) {
         currentScaleUser = OpenScale.getInstance(getContext()).getSelectedScaleUser();
 
