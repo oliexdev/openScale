@@ -553,7 +553,7 @@ public class MainActivity extends AppCompatActivity
         else {
             Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
             intent.addCategory(Intent.CATEGORY_OPENABLE);
-            intent.setType("text/*");
+            intent.setType("*/*");
 
             startActivityForResult(
                     Intent.createChooser(intent, getResources().getString(R.string.label_import)),
