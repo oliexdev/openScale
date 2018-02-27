@@ -74,6 +74,7 @@ import cat.ereza.customactivityoncrash.config.CaocConfig;
 
 public class MainActivity extends AppCompatActivity
         implements SharedPreferences.OnSharedPreferenceChangeListener{
+    private SharedPreferences prefs;
     private static boolean firstAppStart = true;
     private static boolean valueOfCountModified = false;
     private static int bluetoothStatusIcon = R.drawable.ic_bluetooth_disabled;
@@ -91,7 +92,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         String app_theme = prefs.getString("app_theme", "Light");
 
@@ -492,11 +493,13 @@ public class MainActivity extends AppCompatActivity
 
                     OpenScale openScale = OpenScale.getInstance(getApplicationContext());
 
-                    List<ScaleMeasurement> scaleMeasurementList = openScale.getScaleMeasurementList();
+                    if (prefs.getBoolean("mergeWithLastMeasurement", true)) {
+                        List<ScaleMeasurement> scaleMeasurementList = openScale.getScaleMeasurementList();
 
-                    if (!scaleMeasurementList.isEmpty()) {
-                        ScaleMeasurement lastMeasurement = scaleMeasurementList.get(0);
-                        scaleBtData.merge(lastMeasurement);
+                        if (!scaleMeasurementList.isEmpty()) {
+                            ScaleMeasurement lastMeasurement = scaleMeasurementList.get(0);
+                            scaleBtData.merge(lastMeasurement);
+                        }
                     }
 
                     openScale.addScaleData(scaleBtData);

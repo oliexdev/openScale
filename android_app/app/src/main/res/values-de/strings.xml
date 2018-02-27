@@ -180,5 +180,6 @@
     <string name="label_press_hold_reorder">Halten Sie die Taste gedrückt, um die Reihenfolge zu ändern</string>
     <string name="label_set_default_order">Default Reihenfolge wiederherstellen</string>
     <string name="label_share_subject">openScale CSV Datenexport (%s)</string>
+    <string name="label_mergeWithLastMeasurement">Zusammenführen mit der letzten Messung</string>
 
 </resources>

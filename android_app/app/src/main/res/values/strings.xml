@@ -119,6 +119,7 @@
 
     <string name="label_bluetooth_title">Bluetooth</string>
     <string name="label_bluetooth_enable">Search for scale on startup</string>
+    <string name="label_mergeWithLastMeasurement">Merge with last measurement</string>
     <string name="label_bluetooth_searching">Searching for Bluetooth scales</string>
     <string name="label_bluetooth_searching_finished">Finished searching for Bluetooth scales</string>
     <string name="label_device_type">Device Type</string>
@@ -210,5 +211,6 @@
     <string name="label_measurement_order">Measurement order</string>
     <string name="label_press_hold_reorder">Press and hold to reorder</string>
     <string name="label_set_default_order">Set default order</string>
+
 
 </resources>
