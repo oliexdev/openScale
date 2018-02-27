@@ -187,5 +187,6 @@
     <string name="label_set_default_order">Ställ in standardordning</string>
 
     <string name="label_weeks_view">Veckovy</string>
+    <string name="label_mergeWithLastMeasurement">Sammanfläta med föregående mätning</string>
 
 </resources>
