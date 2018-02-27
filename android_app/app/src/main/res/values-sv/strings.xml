@@ -80,7 +80,6 @@
     <string name="info_data_all_deleted">Alla databasposter borttagna</string>
     <string name="info_data_exported">Data exporterad till</string>
     <string name="info_data_imported">Data importerad från</string>
-    <string name="info_set_filename">Sätt filnamn till</string>
     <string name="info_enter_value_cm">Ange värde i cm</string>
     <string name="info_enter_value_unit">Ange värde i</string>
     <string name="info_enter_comment">Ange en frivillig kommentar</string>
@@ -187,5 +186,6 @@
     <string name="label_set_default_order">Ställ in standardordning</string>
 
     <string name="label_weeks_view">Veckovy</string>
+    <string name="label_export_overwrite">Skriv över föregående export \"%s\"?</string>
 
 </resources>

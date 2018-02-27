@@ -26,7 +26,6 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
@@ -48,7 +47,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.Toast;
 
 import com.health.openscale.BuildConfig;
@@ -81,6 +79,7 @@ public class MainActivity extends AppCompatActivity
     private MenuItem bluetoothStatus;
 
     private static final int IMPORT_DATA_REQUEST = 100;
+    private static final int EXPORT_DATA_REQUEST = 101;
 
     private DrawerLayout drawerLayout;
     private Toolbar toolbar;
@@ -400,9 +399,7 @@ public class MainActivity extends AppCompatActivity
                 importCsvFile();
                 return true;
             case R.id.exportData:
-                if (PermissionHelper.requestWritePermission(this)) {
-                    exportCsvFile();
-                }
+                exportCsvFile();
                 return true;
             case R.id.shareData:
                 shareCsvFile();
@@ -564,50 +561,95 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private void exportCsvFile() {
-        AlertDialog.Builder filenameDialog = new AlertDialog.Builder(this);
+    private String getExportFilename(ScaleUser selectedScaleUser) {
+        return String.format("openScale %s.csv", selectedScaleUser.getUserName());
+    }
 
-        filenameDialog.setTitle(getResources().getString(R.string.info_set_filename) + " "
-                + Environment.getExternalStorageDirectory().getPath());
+    private void startActionCreateDocumentForExportIntent() {
+        OpenScale openScale = OpenScale.getInstance(getApplicationContext());
+        ScaleUser selectedScaleUser = openScale.getSelectedScaleUser();
+
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("text/csv");
+        intent.putExtra(Intent.EXTRA_TITLE, getExportFilename(selectedScaleUser));
+
+        startActivityForResult(intent, EXPORT_DATA_REQUEST);
+    }
+
+    private boolean doExportData(Uri uri) {
+        OpenScale openScale = OpenScale.getInstance(getApplicationContext());
+        if (openScale.exportData(uri)) {
+            String filename = openScale.getFilenameFromUri(uri);
+            Toast.makeText(this,
+                    getResources().getString(R.string.info_data_exported) + " " + filename,
+                    Toast.LENGTH_SHORT).show();
+            return true;
+        }
+        return false;
+    }
+
+    private String getExportPreferenceKey(ScaleUser selectedScaleUser) {
+        return selectedScaleUser.getPreferenceKey("exportUri");
+    }
+
+    private void exportCsvFile() {
+        OpenScale openScale = OpenScale.getInstance(getApplicationContext());
+        final ScaleUser selectedScaleUser = openScale.getSelectedScaleUser();
 
         final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
-        final ScaleUser selectedScaleUser = OpenScale.getInstance(getApplicationContext()).getSelectedScaleUser();
-        String exportFilename = prefs.getString("exportFilename" + selectedScaleUser.getId(),
-                "openScale_data_" + selectedScaleUser.getUserName() + ".csv");
+        Uri uri;
+        try {
+            String exportUri = prefs.getString(getExportPreferenceKey(selectedScaleUser), "");
+            uri = Uri.parse(exportUri);
+            getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+        }
+        catch (Exception ex) {
+            uri = null;
+        }
 
-        final EditText txtFilename = new EditText(this);
-        txtFilename.setText(exportFilename);
+        if (uri == null) {
+            startActionCreateDocumentForExportIntent();
+            return;
+        }
 
-        filenameDialog.setView(txtFilename);
+        AlertDialog.Builder exportDialog = new AlertDialog.Builder(this);
+        exportDialog.setTitle(R.string.label_export);
+        exportDialog.setMessage(getResources().getString(R.string.label_export_overwrite,
+                openScale.getFilenameFromUri(uri)));
 
-        filenameDialog.setPositiveButton(getResources().getString(R.string.label_export), new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                String fullPath = Environment.getExternalStorageDirectory().getPath() + "/" + txtFilename.getText().toString();
-
-                if (OpenScale.getInstance(getApplicationContext()).exportData(fullPath)) {
-                    prefs.edit().putString("exportFilename" + selectedScaleUser.getId(), txtFilename.getText().toString()).commit();
-                    Toast.makeText(getApplicationContext(), getResources().getString(
-                            R.string.info_data_exported) + " " + fullPath, Toast.LENGTH_SHORT).show();
+        final Uri exportUri = uri;
+        exportDialog.setPositiveButton(R.string.label_yes, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (!doExportData(exportUri)) {
+                    prefs.edit().remove(getExportPreferenceKey(selectedScaleUser)).apply();
                 }
             }
         });
-
-        filenameDialog.setNegativeButton(getResources().getString(R.string.label_cancel), new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
+        exportDialog.setNegativeButton(R.string.label_no, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                startActionCreateDocumentForExportIntent();
+            }
+        });
+        exportDialog.setNeutralButton(R.string.label_cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
             }
         });
 
-        filenameDialog.show();
+        exportDialog.show();
     }
 
     private void shareCsvFile() {
         final ScaleUser selectedScaleUser = OpenScale.getInstance(getApplicationContext()).getSelectedScaleUser();
 
         File shareFile = new File(getApplicationContext().getCacheDir(),
-                String.format("openScale %s.csv", selectedScaleUser.getUserName()));
-        if (!OpenScale.getInstance(getApplicationContext()).exportData(shareFile.getPath())) {
+                getExportFilename(selectedScaleUser));
+        if (!OpenScale.getInstance(getApplicationContext()).exportData(Uri.fromFile(shareFile))) {
             return;
         }
 
@@ -629,8 +671,30 @@ public class MainActivity extends AppCompatActivity
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == IMPORT_DATA_REQUEST && resultCode == RESULT_OK && data != null) {
-            OpenScale.getInstance(getApplicationContext()).importData(data.getData());
+        if (resultCode != RESULT_OK || data == null) {
+            return;
+        }
+
+        OpenScale openScale = OpenScale.getInstance(getApplicationContext());
+
+        switch (requestCode) {
+            case IMPORT_DATA_REQUEST:
+                openScale.importData(data.getData());
+                break;
+            case EXPORT_DATA_REQUEST:
+                if (doExportData(data.getData())) {
+                    try {
+                        getContentResolver().takePersistableUriPermission(
+                                data.getData(), Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                        String key = getExportPreferenceKey(openScale.getSelectedScaleUser());
+                        PreferenceManager.getDefaultSharedPreferences(this).edit()
+                                .putString(key, data.getData().toString()).apply();
+                    }
+                    catch (Exception ex) {
+                        // Ignore
+                    }
+                }
+                break;
         }
     }
 
@@ -643,13 +707,6 @@ public class MainActivity extends AppCompatActivity
                     invokeSearchBluetoothDevice();
                 } else {
                     setBluetoothStatusIcon(R.drawable.ic_bluetooth_disabled);
-                    permissionGranted = false;
-                }
-                break;
-            case PermissionHelper.PERMISSIONS_REQUEST_ACCESS_WRITE_STORAGE:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    exportCsvFile();
-                } else {
                     permissionGranted = false;
                 }
                 break;

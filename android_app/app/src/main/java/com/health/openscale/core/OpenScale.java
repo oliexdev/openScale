@@ -49,10 +49,11 @@ import com.health.openscale.core.utils.CsvHelper;
 import com.health.openscale.gui.fragments.FragmentUpdateListener;
 
 import java.io.BufferedReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -344,7 +345,7 @@ public class OpenScale {
         updateScaleData();
     }
 
-    private String getFilenameFromUri(Uri uri) {
+    public String getFilenameFromUri(Uri uri) {
         Cursor cursor = context.getContentResolver().query(
                 uri, null, null, null, null);
         cursor.moveToFirst();
@@ -374,9 +375,10 @@ public class OpenScale {
         }
     }
 
-    public boolean exportData(String filename) {
+    public boolean exportData(Uri uri) {
         try {
-            CsvHelper.exportTo(new FileWriter(filename), scaleMeasurementList);
+            OutputStream output = context.getContentResolver().openOutputStream(uri);
+            CsvHelper.exportTo(new OutputStreamWriter(output), scaleMeasurementList);
             return true;
         } catch (IOException e) {
             Toast.makeText(context, context.getResources().getString(R.string.error_exporting) + " " + e.getMessage(), Toast.LENGTH_SHORT).show();

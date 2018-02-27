@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="title_overview">Prehľad</string>
+  <string name="title_overview">Prehľad</string>
   <string name="title_graph">Graf</string>
   <string name="title_table">Tabuľka</string>
   <string name="title_statistics">Štatistiky</string>
@@ -64,7 +64,6 @@
   <string name="info_data_all_deleted">Všetkých položky boli vymazané z databázy</string>
   <string name="info_data_exported">Údaje boli exportované do</string>
   <string name="info_data_imported">Údaje boli importované z</string>
-  <string name="info_set_filename">Nastaviť názov súboru na</string>
   <string name="info_enter_value_cm">Zadajte hodnotu v cm</string>
   <string name="info_enter_value_unit">Zadajte hodnotu v palcoch</string>
   <string name="info_enter_comment">Zadajte voliteľný komentár</string>
