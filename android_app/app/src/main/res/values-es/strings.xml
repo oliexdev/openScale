@@ -78,7 +78,6 @@
     <string name="info_data_all_deleted">Todas las entradas borradas</string>
     <string name="info_data_exported">Datos exportados a</string>
     <string name="info_data_imported">Datos importados de</string>
-    <string name="info_set_filename">Establecer nombre de archivo a</string>
     <string name="info_enter_value_cm">Introduzca valor en cm</string>
     <string name="info_enter_value_unit">Introduzca valor en</string>
     <string name="info_enter_comment">Introduzca un comentario opcional</string>

@@ -54,7 +54,6 @@
     <string name="info_on_date">でした -</string>
     <string name="info_no_selected_user">ユーザーは存在しません！設定で新しいユーザを入れてください</string>
     <string name="label_add_user">ユーザーの追加する</string>
-    <string name="info_set_filename">にファイル名を設定</string>
     <string name="label_enable_labels">メモの上にデータ点</string>
     <string name="info_is_visible">表示されています</string>
     <string name="info_is_not_visible">表示されていません</string>

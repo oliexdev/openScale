@@ -152,6 +152,14 @@ public class ScaleUser {
         return Converters.fromKilogram(initialWeight, scaleUnit);
     }
 
+    public static String getPreferenceKey(int userId, String key) {
+        return String.format("user.%d.%s", userId, key);
+    }
+
+    public String getPreferenceKey(String key) {
+        return getPreferenceKey(getId(), key);
+    }
+
     @Override
     public String toString()
     {

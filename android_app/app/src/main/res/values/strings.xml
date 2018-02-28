@@ -88,7 +88,6 @@
     <string name="info_data_all_deleted">All database entries deleted</string>
     <string name="info_data_exported">Data exported to</string>
     <string name="info_data_imported">Data imported from</string>
-    <string name="info_set_filename">Set filename to</string>
     <string name="info_enter_value_cm">Enter value in cm</string>
     <string name="info_enter_value_unit">Enter value in</string>
     <string name="info_enter_comment">Enter an optional comment</string>
@@ -211,6 +210,7 @@
     <string name="label_measurement_order">Measurement order</string>
     <string name="label_press_hold_reorder">Press and hold to reorder</string>
     <string name="label_set_default_order">Set default order</string>
+    <string name="label_export_overwrite">Overwrite previous export \"%s\"?</string>
 
 
 </resources>

@@ -6,7 +6,7 @@ android {
     defaultConfig {
         applicationId "com.health.openscale"
         testApplicationId "com.health.openscale.test"
-        minSdkVersion 18
+        minSdkVersion 19
         targetSdkVersion 27
         versionCode 23
         versionName "1.7"

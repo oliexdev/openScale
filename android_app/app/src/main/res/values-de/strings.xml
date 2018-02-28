@@ -18,7 +18,6 @@
     <string name="info_is_not_available">ist nicht verfügbar</string>
     <string name="info_no_selected_user">Kein Benutzer vorhanden. Bitte erzeugen Sie ein neuen Benutzer unter Einstellungen.</string>
     <string name="info_on_date">am</string>
-    <string name="info_set_filename">Setzte Dateiname auf</string>
     <string name="label_birthday">Geburtstag</string>
     <string name="label_bluetooth_enable">Suche nach Waage beim Start</string>
     <string name="label_bluetooth_title">Bluetooth</string>
