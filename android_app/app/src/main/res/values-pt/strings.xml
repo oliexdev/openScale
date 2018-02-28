@@ -44,7 +44,6 @@
     <string name="info_no_evaluation_available">Valor não pode ser processado</string>
     <string name="info_on_date">em</string>
     <string name="info_no_selected_user">Nenhum usuário existe. Por favor, crie um novo usuário em Configurações.</string>
-    <string name="info_set_filename">Definir nome de arquivo para</string>
     <string name="info_step_on_scale">Por favor suba na balança para medidas de referência</string>
     <string name="label_add_user">Adicionar usuário</string>
     <string name="label_backup">Backup</string>

@@ -75,7 +75,6 @@
     <string name="info_data_all_deleted">Wszytkie wpisy w bazie danych usunięte</string>
     <string name="info_data_exported">Dane wyeksportowane do</string>
     <string name="info_data_imported">Dane zaimportowane z</string>
-    <string name="info_set_filename">Ustaw nazwę pliku na</string>
     <string name="info_enter_value_cm">Wprowadź wartość w cm</string>
     <string name="info_enter_value_unit">Wprowadź wartość w</string>
     <string name="info_enter_comment">Wprowadź opcjonlany komentarz</string>

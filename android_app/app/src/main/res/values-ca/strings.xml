@@ -78,7 +78,6 @@
     <string name="info_data_all_deleted">Totes les entrades eliminades</string>
     <string name="info_data_exported">Dades exportades a</string>
     <string name="info_data_imported">Dades importades de</string>
-    <string name="info_set_filename">Establir nom d\'arxiu a</string>
     <string name="info_enter_value_cm">Valor en cm</string>
     <string name="info_enter_value_unit">Valor en</string>
     <string name="info_enter_comment">Comentari opcional</string>

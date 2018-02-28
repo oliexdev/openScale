@@ -67,7 +67,7 @@ public class TimeMeasurementView extends MeasurementView {
         Calendar source = Calendar.getInstance();
         source.setTime(time);
 
-        target.set(Calendar.HOUR, source.get(Calendar.HOUR));
+        target.set(Calendar.HOUR_OF_DAY, source.get(Calendar.HOUR_OF_DAY));
         target.set(Calendar.MINUTE, source.get(Calendar.MINUTE));
         target.set(Calendar.SECOND, 0);
         target.set(Calendar.MILLISECOND, 0);
