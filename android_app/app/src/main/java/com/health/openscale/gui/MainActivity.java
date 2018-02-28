@@ -604,6 +604,7 @@ public class MainActivity extends AppCompatActivity
             String exportUri = prefs.getString(getExportPreferenceKey(selectedScaleUser), "");
             uri = Uri.parse(exportUri);
             getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            openScale.getFilenameFromUri(uri);
         }
         catch (Exception ex) {
             uri = null;
