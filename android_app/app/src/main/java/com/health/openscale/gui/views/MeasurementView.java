@@ -256,13 +256,15 @@ public abstract class MeasurementView extends TableLayout {
     public void setEditMode(MeasurementViewMode mode) {
         measurementMode = mode;
 
+        nameView.setGravity(Gravity.LEFT | (mode == ADD ? Gravity.CENTER : Gravity.TOP));
+        valueView.setGravity(Gravity.CENTER | (mode == STATISTIC ? 0 : Gravity.RIGHT));
+
         switch (mode) {
             case VIEW:
                 indicatorView.setVisibility(View.VISIBLE);
                 editModeView.setVisibility(View.GONE);
                 incDecLayout.setVisibility(View.GONE);
                 nameView.setVisibility(View.VISIBLE);
-                valueView.setGravity(Gravity.RIGHT | Gravity.CENTER);
                 break;
             case EDIT:
             case ADD:
@@ -270,7 +272,6 @@ public abstract class MeasurementView extends TableLayout {
                 editModeView.setVisibility(View.VISIBLE);
                 incDecLayout.setVisibility(View.VISIBLE);
                 nameView.setVisibility(View.VISIBLE);
-                valueView.setGravity(Gravity.RIGHT | Gravity.CENTER);
 
                 if (!isEditable()) {
                     editModeView.setVisibility(View.INVISIBLE);
@@ -281,7 +282,6 @@ public abstract class MeasurementView extends TableLayout {
                 incDecLayout.setVisibility(View.GONE);
                 editModeView.setVisibility(View.GONE);
                 nameView.setVisibility(View.GONE);
-                valueView.setGravity(Gravity.CENTER);
                 break;
         }
     }
