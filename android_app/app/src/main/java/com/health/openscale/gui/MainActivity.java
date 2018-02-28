@@ -603,6 +603,8 @@ public class MainActivity extends AppCompatActivity
         try {
             String exportUri = prefs.getString(getExportPreferenceKey(selectedScaleUser), "");
             uri = Uri.parse(exportUri);
+
+            // Verify that the file still exists and that we have write permission
             getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
             openScale.getFilenameFromUri(uri);
         }
@@ -684,16 +686,33 @@ public class MainActivity extends AppCompatActivity
                 break;
             case EXPORT_DATA_REQUEST:
                 if (doExportData(data.getData())) {
+                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+                    SharedPreferences.Editor editor = prefs.edit();
+
+                    String key = getExportPreferenceKey(openScale.getSelectedScaleUser());
+
+                    // Remove any old persistable permission and export uri
                     try {
-                        getContentResolver().takePersistableUriPermission(
-                                data.getData(), Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-                        String key = getExportPreferenceKey(openScale.getSelectedScaleUser());
-                        PreferenceManager.getDefaultSharedPreferences(this).edit()
-                                .putString(key, data.getData().toString()).apply();
+                        getContentResolver().releasePersistableUriPermission(
+                                Uri.parse(prefs.getString(key, "")),
+                                Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                        editor.remove(key);
                     }
                     catch (Exception ex) {
                         // Ignore
                     }
+
+                    // Take persistable permission and save export uri
+                    try {
+                        getContentResolver().takePersistableUriPermission(
+                                data.getData(), Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                        editor.putString(key, data.getData().toString());
+                    }
+                    catch (Exception ex) {
+                        // Ignore
+                    }
+
+                    editor.apply();
                 }
                 break;
         }
