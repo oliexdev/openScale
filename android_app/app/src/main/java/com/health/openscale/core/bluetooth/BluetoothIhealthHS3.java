@@ -205,32 +205,32 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
 
         public void run() {
  
-            byte weightBytes = new byte[2];
+            byte[] weightBytes = new byte[2];
             Log.w("openscale","ihealthHS3 - run");
             // Keep listening to the InputStream until an exception occurs (e.g. device partner goes offline)
             while (!isCancel) {
                 try {
                     // stream read is a blocking method
 
-                    byte btByte = (byte) btInStream.read();
+                    btByte = (byte) btInStream.read();
 
                    if ( btByte == 0xa0 ) {
                      Log.w("openscale","seen 0xa0");
-                     byte btByte = (byte) btInStream.read();
+                     btByte = (byte) btInStream.read();
                      if ( btByte == 0x09 ) {
                         Log.w("openscale","seen 0xa009");
-                        byte btByte = (byte) btInStream.read();
+                        btByte = (byte) btInStream.read();
                         if ( btByte == 0xa6 ) {
                            Log.w("openscale","seen 0xa009a6");
-                           byte btByte = (byte) btInStream.read();
+                           btByte = (byte) btInStream.read();
                            if ( btByte == 0x28 ) {
                               Log.w("openscale","seen 0xa009a628 - Weight packet");
                               // deal with a weight packet - read 5 bytes we dont care about
-                                 byte btByte = (byte) btInStream.read();
-                                 byte btByte = (byte) btInStream.read();
-                                 byte btByte = (byte) btInStream.read();
-                                 byte btByte = (byte) btInStream.read();
-                                 byte btByte = (byte) btInStream.read();
+                                 btByte = (byte) btInStream.read();
+                                 btByte = (byte) btInStream.read();
+                                 btByte = (byte) btInStream.read();
+                                 btByte = (byte) btInStream.read();
+                                 btByte = (byte) btInStream.read();
 // and the weight - which should follow
                                  weightBytes[0] = (byte) btInStream.read();
                                  weightBytes[1] = (byte) btInStream.read();
