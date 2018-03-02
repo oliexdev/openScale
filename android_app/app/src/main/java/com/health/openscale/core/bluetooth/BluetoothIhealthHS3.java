@@ -205,7 +205,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
 
         public void run() {
  
-            byte byByte;
+            byte btByte;
             byte[] weightBytes = new byte[2];
             Log.w("openscale","ihealthHS3 - run");
             // Keep listening to the InputStream until an exception occurs (e.g. device partner goes offline)
