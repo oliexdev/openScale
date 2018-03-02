@@ -232,8 +232,8 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
                                  byte btByte = (byte) btInStream.read();
                                  byte btByte = (byte) btInStream.read();
 // and the weight - which should follow
-                                 byte weightBytes[0] = (byte) btInStream.read();
-                                 byte weightBytes[1] = (byte) btInStream.read();
+                                 weightBytes[0] = (byte) btInStream.read();
+                                 weightBytes[1] = (byte) btInStream.read();
                                  Log.w("openscale","have read the weight");
                                  ScaleMeasurement scaleMeasurement = parseWeightArray(weightBytes);
 
@@ -251,8 +251,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
                                  }
                              }
                         }
-                    }          
-                  }
+                    }
 
 
 
