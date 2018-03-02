@@ -326,7 +326,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
 //                    setBtStatus(BT_STATUS_CODE.BT_UNEXPECTED_ERROR, "Error unknown MCU command");
 //            }
 
-//            return null;
+           return null;
         }
 
         public void write(byte[] bytes) {
