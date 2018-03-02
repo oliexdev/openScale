@@ -204,35 +204,50 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
 
         public void run() {
             final StringBuilder btLine = new StringBuilder();
-            weightBytes = new byte[2];
+            byte weightBytes = new byte[2];
             Log.w("openscale","ihealthHS3 - run");
             // Keep listening to the InputStream until an exception occurs (e.g. device partner goes offline)
             while (!isCancel) {
                 try {
                     // stream read is a blocking method
-//                    char btChar = (char) btInStream.read();
 
                     byte btByte = (byte) btInStream.read();
 
- //                   btLine.append(btChar);
-
                    if ( btByte == 0xa0 ) {
-                     log.w("openscale","seen 0xa0");
-                     }
-
-
-                    
-
-                    if (btLine.charAt(btLine.length() - 1) == '\n') {
-                        Log.w("openscale","ihealthHS3 - have a line " + btLine.toString());
-                        ScaleMeasurement scaleMeasurement = parseBtString(btLine.toString());
-
-                        if (scaleMeasurement != null) {
-                            addScaleData(scaleMeasurement);
+                     Log.w("openscale","seen 0xa0");
+                     byte btByte = (byte) btInStream.read();
+                     if ( btByte == 0x09 ) {
+                        Log.w("openscale","seen 0xa009");
+                        byte btByte = (byte) btInStream.read();
+                        if ( btByte == 0xa6 ) {
+                           Log.w("openscale","seen 0xa009a6");
+                           byte btByte = (byte) btInStream.read();
+                           if ( btByte == 0x28 ) {
+                              Log.w("openscale","seen 0xa009a628 - Weight packet");
+                              // deal with a weight packet - read 5 bytes we dont care about
+                                 byte btByte = (byte) btInStream.read();
+                                 byte btByte = (byte) btInStream.read();
+                                 byte btByte = (byte) btInStream.read();
+                                 byte btByte = (byte) btInStream.read();
+                                 byte btByte = (byte) btInStream.read();
+// and the weight - which should follow
+                                 byte weightBytes[0] = (byte) btInStream.read();
+                                 byte weightBytes[1] = (byte) btInStream.read();
+                                 Log.w("openscale","have read the weight");
+                              }
+                              else if (btByte == 0x33 ) {
+                                 Log.w("openscale","seen 0xa009a633 - time packet");
+                                 // deal with a time packet, if needed
+                                 } else {
+                                 Log.w("openscale","seen some other data packet");
+                                 }
+                                 }
+                             }
                         }
+                    }          
+                  }
 
-                        btLine.setLength(0);
-                    }
+
 
                 } catch (IOException e) {
                     cancel();
