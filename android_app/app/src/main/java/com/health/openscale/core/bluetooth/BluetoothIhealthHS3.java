@@ -204,14 +204,24 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
 
         public void run() {
             final StringBuilder btLine = new StringBuilder();
+            weightBytes = new byte[2];
             Log.w("openscale","ihealthHS3 - run");
             // Keep listening to the InputStream until an exception occurs (e.g. device partner goes offline)
             while (!isCancel) {
                 try {
                     // stream read is a blocking method
-                    char btChar = (char) btInStream.read();
+//                    char btChar = (char) btInStream.read();
 
-                    btLine.append(btChar);
+                    byte btByte = (byte) btInStream.read();
+
+ //                   btLine.append(btChar);
+
+                   if ( btByte == 0xa0 ) {
+                     log.w("openscale","seen 0xa0");
+                     }
+
+
+                    
 
                     if (btLine.charAt(btLine.length() - 1) == '\n') {
                         Log.w("openscale","ihealthHS3 - have a line " + btLine.toString());

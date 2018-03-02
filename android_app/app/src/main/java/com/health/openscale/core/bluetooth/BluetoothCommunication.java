@@ -83,10 +83,8 @@ public abstract class BluetoothCommunication {
      * @return created object specified by the number i otherwise null
      */
     public static BluetoothCommunication getBtDevice(Context context, BT_DEVICE_ID btDeviceID) {
-        Log.w("openscale","getBtDevice called");
         switch (btDeviceID) {
             case CUSTOM_OPENSCALE:
-                Log.w("openscale","getBtDevice - CUSTOM_OPENSCALE case");
                 return new BluetoothCustomOpenScale(context);
             case MI_SCALE_V1:
                 return new BluetoothMiScale(context);
