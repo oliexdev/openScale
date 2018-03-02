@@ -251,7 +251,6 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
                                  }
                              }
                         }
-                    }
 
 
 
