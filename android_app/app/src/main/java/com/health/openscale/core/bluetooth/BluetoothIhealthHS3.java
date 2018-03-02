@@ -261,7 +261,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
             }
         }
 
-        private ScaleMeasurement parseWeightArray(bytes weightBytes ) throws IOException {
+        private ScaleMeasurement parseWeightArray(byte[] weightBytes ) throws IOException {
             ScaleMeasurement scaleBtData = new ScaleMeasurement();
   //          btString = btString.substring(0, btString.length() - 1); // delete newline '\n' of the string
 
