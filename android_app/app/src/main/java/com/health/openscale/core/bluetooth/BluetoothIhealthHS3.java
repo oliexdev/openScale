@@ -178,6 +178,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
             btConnectThread.write(data.getBytes());
 
             btConnectThread.cancel();
+
             return true;
         }
         Log.w("openscale","ihealthHS3 - sendBtData - socket is not connected");
@@ -203,7 +204,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
         }
 
         public void run() {
-            final StringBuilder btLine = new StringBuilder();
+ 
             byte weightBytes = new byte[2];
             Log.w("openscale","ihealthHS3 - run");
             // Keep listening to the InputStream until an exception occurs (e.g. device partner goes offline)
@@ -234,6 +235,12 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
                                  byte weightBytes[0] = (byte) btInStream.read();
                                  byte weightBytes[1] = (byte) btInStream.read();
                                  Log.w("openscale","have read the weight");
+                                 ScaleMeasurement scaleMeasurement = parseWeightArray(weightBytes);
+
+                                 if (scaleMeasurement != null) {
+                                       addScaleData(scaleMeasurement);
+                                }
+                                 
                               }
                               else if (btByte == 0x33 ) {
                                  Log.w("openscale","seen 0xa009a633 - time packet");
@@ -256,71 +263,71 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
             }
         }
 
-        private ScaleMeasurement parseBtString(String btString) throws IOException {
+        private ScaleMeasurement parseWeightArray(bytes weightBytes ) throws IOException {
             ScaleMeasurement scaleBtData = new ScaleMeasurement();
-            btString = btString.substring(0, btString.length() - 1); // delete newline '\n' of the string
+  //          btString = btString.substring(0, btString.length() - 1); // delete newline '\n' of the string
 
-            if (btString.charAt(0) != '$' && btString.charAt(2) != '$') {
-                setBtStatus(BT_STATUS_CODE.BT_UNEXPECTED_ERROR, "Parse error of bluetooth string. String has not a valid format");
-            }
+  //          if (btString.charAt(0) != '$' && btString.charAt(2) != '$') {
+  //              setBtStatus(BT_STATUS_CODE.BT_UNEXPECTED_ERROR, "Parse error of bluetooth string. String has not a valid format");
+  //          }
 
-            String btMsg = btString.substring(3, btString.length()); // message string
+  //          String btMsg = btString.substring(3, btString.length()); // message string
 
-            switch (btString.charAt(1)) {
-                case 'I':
-                    Log.i("OpenScale", "MCU Information: " + btMsg);
-                    break;
-                case 'E':
-                    Log.e("OpenScale", "MCU Error: " + btMsg);
-                    break;
-                case 'S':
-                    Log.i("OpenScale", "MCU stored data size: " + btMsg);
-                    break;
-                case 'D':
-                    String[] csvField = btMsg.split(",");
+//            switch (btString.charAt(1)) {
+//                case 'I':
+//                    Log.i("OpenScale", "MCU Information: " + btMsg);
+//                    break;
+//                case 'E':
+//                    Log.e("OpenScale", "MCU Error: " + btMsg);
+//                    break;
+//                case 'S':
+//                    Log.i("OpenScale", "MCU stored data size: " + btMsg);
+//                    break;
+//                case 'D':
+//                    String[] csvField = btMsg.split(",");
 
-                    try {
-                        int checksum = 0;
+//                    try {
+//                        int checksum = 0;
 
-                        checksum ^= Integer.parseInt(csvField[0]);
-                        checksum ^= Integer.parseInt(csvField[1]);
-                        checksum ^= Integer.parseInt(csvField[2]);
-                        checksum ^= Integer.parseInt(csvField[3]);
-                        checksum ^= Integer.parseInt(csvField[4]);
-                        checksum ^= Integer.parseInt(csvField[5]);
-                        checksum ^= (int) Float.parseFloat(csvField[6]);
-                        checksum ^= (int) Float.parseFloat(csvField[7]);
-                        checksum ^= (int) Float.parseFloat(csvField[8]);
-                        checksum ^= (int) Float.parseFloat(csvField[9]);
+//                        checksum ^= Integer.parseInt(csvField[0]);
+//                        checksum ^= Integer.parseInt(csvField[1]);
+//                        checksum ^= Integer.parseInt(csvField[2]);
+//                        checksum ^= Integer.parseInt(csvField[3]);
+//                        checksum ^= Integer.parseInt(csvField[4]);
+//                        checksum ^= Integer.parseInt(csvField[5]);
+//                        checksum ^= (int) Float.parseFloat(csvField[6]);
+//                        checksum ^= (int) Float.parseFloat(csvField[7]);
+//                        checksum ^= (int) Float.parseFloat(csvField[8]);
+//                        checksum ^= (int) Float.parseFloat(csvField[9]);
 
-                        int btChecksum = Integer.parseInt(csvField[10]);
+//                        int btChecksum = Integer.parseInt(csvField[10]);
 
-                        if (checksum == btChecksum) {
-                            scaleBtData.setId(-1);
-                            scaleBtData.setUserId(Integer.parseInt(csvField[0]));
-                            String date_string = csvField[1] + "/" + csvField[2] + "/" + csvField[3] + "/" + csvField[4] + "/" + csvField[5];
-                            scaleBtData.setDateTime(new SimpleDateFormat("yyyy/MM/dd/HH/mm").parse(date_string));
+//                        if (checksum == btChecksum) {
+//                            scaleBtData.setId(-1);
+//                            scaleBtData.setUserId(Integer.parseInt(csvField[0]));
+//                            String date_string = csvField[1] + "/" + csvField[2] + "/" + csvField[3] + "/" + csvField[4] + "/" + csvField[5];
+//                            scaleBtData.setDateTime(new SimpleDateFormat("yyyy/MM/dd/HH/mm").parse(date_string));
 
-                            scaleBtData.setWeight(Float.parseFloat(csvField[6]));
-                            scaleBtData.setFat(Float.parseFloat(csvField[7]));
-                            scaleBtData.setWater(Float.parseFloat(csvField[8]));
-                            scaleBtData.setMuscle(Float.parseFloat(csvField[9]));
+//                            scaleBtData.setWeight(Float.parseFloat(csvField[6]));
+//                            scaleBtData.setFat(Float.parseFloat(csvField[7]));
+//                            scaleBtData.setWater(Float.parseFloat(csvField[8]));
+//                            scaleBtData.setMuscle(Float.parseFloat(csvField[9]));
 
-                            return scaleBtData;
-                        } else {
-                            setBtStatus(BT_STATUS_CODE.BT_UNEXPECTED_ERROR, "Error calculated checksum (" + checksum + ") and received checksum (" + btChecksum + ") is different");
-                        }
-                    } catch (ParseException e) {
-                        setBtStatus(BT_STATUS_CODE.BT_UNEXPECTED_ERROR, "Error while decoding bluetooth date string (" + e.getMessage() + ")");
-                    } catch (NumberFormatException e) {
-                        setBtStatus(BT_STATUS_CODE.BT_UNEXPECTED_ERROR, "Error while decoding a number of bluetooth string (" + e.getMessage() + ")");
-                    }
-                    break;
-                default:
-                    setBtStatus(BT_STATUS_CODE.BT_UNEXPECTED_ERROR, "Error unknown MCU command");
-            }
+//                            return scaleBtData;
+//                        } else {
+//                            setBtStatus(BT_STATUS_CODE.BT_UNEXPECTED_ERROR, "Error calculated checksum (" + checksum + ") and received checksum (" + btChecksum + ") is different");
+//                        }
+//                    } catch (ParseException e) {
+//                        setBtStatus(BT_STATUS_CODE.BT_UNEXPECTED_ERROR, "Error while decoding bluetooth date string (" + e.getMessage() + ")");
+//                    } catch (NumberFormatException e) {
+//                        setBtStatus(BT_STATUS_CODE.BT_UNEXPECTED_ERROR, "Error while decoding a number of bluetooth string (" + e.getMessage() + ")");
+//                    }
+//                    break;
+//                default:
+//                    setBtStatus(BT_STATUS_CODE.BT_UNEXPECTED_ERROR, "Error unknown MCU command");
+//            }
 
-            return null;
+//            return null;
         }
 
         public void write(byte[] bytes) {
