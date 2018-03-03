@@ -216,16 +216,16 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
                     btByte = (byte) btInStream.read();
                     Log.w("openscale","iheathHS3 - seen a byte "+String.format("%02X",btByte));
 
-                   if ( btByte == 0xa0 ) {
+                   if ( btByte == (byte) 0xA0 ) {
                      Log.w("openscale","seen 0xa0");
                      btByte = (byte) btInStream.read();
-                     if ( btByte == 0x09 ) {
+                     if ( btByte == (byte) 0x09 ) {
                         Log.w("openscale","seen 0xa009");
                         btByte = (byte) btInStream.read();
-                        if ( btByte == 0xa6 ) {
+                        if ( btByte == (byte) 0xa6 ) {
                            Log.w("openscale","seen 0xa009a6");
                            btByte = (byte) btInStream.read();
-                           if ( btByte == 0x28 ) {
+                           if ( btByte == (byte) 0x28 ) {
                               Log.w("openscale","seen 0xa009a628 - Weight packet");
                               // deal with a weight packet - read 5 bytes we dont care about
                                  btByte = (byte) btInStream.read();
@@ -244,7 +244,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
                                 }
                                  
                               }
-                              else if (btByte == 0x33 ) {
+                              else if (btByte == (byte) 0x33 ) {
                                  Log.w("openscale","seen 0xa009a633 - time packet");
                                  // deal with a time packet, if needed
                                  } else {
