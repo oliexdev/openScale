@@ -269,8 +269,9 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
             ScaleMeasurement scaleBtData = new ScaleMeasurement();
 
             Log.w("openscale","iHealthHS3 - ScaleMeasurement "+String.format("%02X",weightBytes[0])+String.format("%02X",weightBytes[1]));
-            int wi = (weightBytes[0] * 10) + weightBytes[1];
+            int wi = ((weightBytes[0] & 0xFF ) * 10) + (weightBytes[1] & 0xFF);
             float weight = (float) wi / 10.0f;
+            Log.w("openscale","iHealthHS3 - ScaleMeasurement wi "+String.format("%d ",wi)+String.format("%f",weight));
 //    I will see what I get if I only set the weight
             scaleBtData.setDateTime(new Date());
             scaleBtData.setWeight(weight);
