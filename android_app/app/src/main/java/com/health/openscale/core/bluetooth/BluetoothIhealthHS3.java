@@ -219,13 +219,10 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
                     Log.w("openscale","iheathHS3 - seen a byte "+String.format("%02X",btByte));
 
                    if ( btByte == (byte) 0xA0 ) {
-                     Log.w("openscale","seen 0xa0");
                      btByte = (byte) btInStream.read();
                      if ( btByte == (byte) 0x09 ) {
-                        Log.w("openscale","seen 0xa009");
                         btByte = (byte) btInStream.read();
                         if ( btByte == (byte) 0xa6 ) {
-                           Log.w("openscale","seen 0xa009a6");
                            btByte = (byte) btInStream.read();
                            if ( btByte == (byte) 0x28 ) {
                               Log.w("openscale","seen 0xa009a628 - Weight packet");
@@ -269,8 +266,8 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
             ScaleMeasurement scaleBtData = new ScaleMeasurement();
 
             Log.w("openscale","iHealthHS3 - ScaleMeasurement "+String.format("%02X",weightBytes[0])+String.format("%02X",weightBytes[1]));
-            String ws = String.format("%02X",weightBytes[0])+String.format("%02X",weightBytes[1]);
-            ws = new StringBuilder(ws.insert(ws.length()-1), ".").toString();
+            String ws = ((String.format("%02X",weightBytes[0])+String.format("%02X",weightBytes[1])).insert(ws.length()-1)).toString();
+           
             
             int wi = ((weightBytes[0] & 0xFF ) * 10) + (weightBytes[1] & 0xFF);
  //           float weight = (float) wi / 10.0f;
