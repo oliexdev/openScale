@@ -21,6 +21,7 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
@@ -65,6 +66,9 @@ public class MeasurementPreferences extends PreferenceFragment implements Shared
     public static final String PREFERENCE_KEY_ESTIMATE_FAT = "estimateFatEnable";
     public static final String PREFERENCE_KEY_ESTIMATE_FAT_FORMULA = "estimateFatFormula";
 
+    public static final String PREFERENCE_KEY_RESET_ORDER = "resetOrder";
+    public static final String PREFERENCE_KEY_ORDER_CATEGORY = "orderCategory";
+
     private Preference deleteAll;
 
     private PreferenceScreen measurementOrderScreen;
@@ -93,15 +97,13 @@ public class MeasurementPreferences extends PreferenceFragment implements Shared
         deleteAll = (Preference) findPreference(PREFERENCE_KEY_DELETE_ALL);
         deleteAll.setOnPreferenceClickListener(new onClickListenerDeleteAll());
 
-        final Context context = getActivity().getApplicationContext();
+        final Context context = getActivity().getBaseContext();
         measurementOrderScreen = (PreferenceScreen) findPreference(MeasurementView.PREF_MEASUREMENT_ORDER);
 
-        measurementOrderCategory = new PreferenceCategory(context);
-        measurementOrderCategory.setTitle(R.string.label_press_hold_reorder);
+        measurementOrderCategory = (PreferenceCategory) findPreference(PREFERENCE_KEY_ORDER_CATEGORY);
         measurementOrderCategory.setOrderingAsAdded(true);
 
-        Preference resetOrder = new Preference(context);
-        resetOrder.setTitle(R.string.label_set_default_order);
+        Preference resetOrder = findPreference(PREFERENCE_KEY_RESET_ORDER);
         resetOrder.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
@@ -112,8 +114,6 @@ public class MeasurementPreferences extends PreferenceFragment implements Shared
                 return true;
             }
         });
-        measurementOrderScreen.addPreference(resetOrder);
-        measurementOrderScreen.addPreference(measurementOrderCategory);
 
         updateMeasurementOrderScreen(context, measurementOrderCategory);
 
@@ -335,7 +335,9 @@ public class MeasurementPreferences extends PreferenceFragment implements Shared
             super(context);
             parentGroup = parent;
             measurement = measurementView;
-            setIcon(measurement.getIcon());
+            Drawable icon = measurement.getIcon();
+            icon.setColorFilter(measurementView.getForegroundColor(), PorterDuff.Mode.SRC_IN);
+            setIcon(icon);
             setTitle(measurement.getName());
         }
 

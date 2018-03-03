@@ -75,10 +75,19 @@ public abstract class MeasurementView extends TableLayout {
     private MeasurementViewUpdateListener updateListener = null;
     private MeasurementViewMode measurementMode = VIEW;
 
+    private static SharedPreferences prefs;
+
     private boolean updateViews = true;
 
     public MeasurementView(Context context, String text, Drawable icon) {
         super(context);
+        prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        String app_theme = prefs.getString("app_theme", "Light");
+
+        if (app_theme.equals("Dark")) {
+            context.setTheme(R.style.AppTheme_Dark);
+        }
+
         initView(context);
 
         nameView.setText(text);
@@ -93,8 +102,6 @@ public abstract class MeasurementView extends TableLayout {
             sorted.add(new DateMeasurementView(context));
             sorted.add(new TimeMeasurementView(context));
         }
-
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
         {
             final List<MeasurementView> unsorted = new ArrayList<>();
@@ -182,7 +189,7 @@ public abstract class MeasurementView extends TableLayout {
 
         iconView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
         iconView.setPadding(20,0,20,0);
-        iconView.setColorFilter(nameView.getCurrentTextColor());
+        iconView.setColorFilter(getForegroundColor());
 
         nameView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
         nameView.setLines(2);
@@ -201,7 +208,7 @@ public abstract class MeasurementView extends TableLayout {
         editModeView.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_editable));
         editModeView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
         editModeView.setVisibility(View.GONE);
-        editModeView.setColorFilter(nameView.getCurrentTextColor());
+        editModeView.setColorFilter(getForegroundColor());
 
         indicatorView.setLayoutParams(new TableRow.LayoutParams(0, LayoutParams.MATCH_PARENT, 0.01f));
         indicatorView.setBackgroundColor(Color.GRAY);
@@ -303,6 +310,10 @@ public abstract class MeasurementView extends TableLayout {
         if (updateViews) {
             nameView.setText(text);
         }
+    }
+
+    public int getForegroundColor() {
+        return valueView.getCurrentTextColor();
     }
 
     protected void showEvaluatorRow(boolean show) {
