@@ -270,7 +270,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
 
             Log.w("openscale","iHealthHS3 - ScaleMeasurement "+String.format("%02X",weightBytes[0])+String.format("%02X",weightBytes[1]));
             String ws = String.format("%02X",weightBytes[0])+String.format("%02X",weightBytes[1]);
-            ws = new StringBuilder(str.insert(str.length()-1), ".").toString();
+            ws = new StringBuilder(ws.insert(ws.length()-1), ".").toString();
             
             int wi = ((weightBytes[0] & 0xFF ) * 10) + (weightBytes[1] & 0xFF);
  //           float weight = (float) wi / 10.0f;
