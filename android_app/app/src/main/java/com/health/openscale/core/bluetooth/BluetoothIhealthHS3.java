@@ -265,8 +265,21 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
 
         private ScaleMeasurement parseWeightArray(byte[] weightBytes ) throws IOException {
             ScaleMeasurement scaleBtData = new ScaleMeasurement();
+            int wi;
+            float weight;
 
             Log.w("openscale","iHealthHS3 - ScaleMeasurement "+String.format("%02X",weightBytes[0])+String.format("%02X",weightBytes[1]));
+            wi = (weightBytes[0] * 10) + weightBytes[1];
+            weight = float (wi) / 10.0;
+//    I will see what I get if I only set the weight
+            scaleBtData.setDateTime(new Date());
+            scaleBtData.setWeight(weight);
+            return scaleBtData;
+
+
+// There should be some sanity checks here, and if I have the weight from the scales that should be set too.
+            
+            
   //          btString = btString.substring(0, btString.length() - 1); // delete newline '\n' of the string
 
   //          if (btString.charAt(0) != '$' && btString.charAt(2) != '$') {
@@ -329,7 +342,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
 //                    setBtStatus(BT_STATUS_CODE.BT_UNEXPECTED_ERROR, "Error unknown MCU command");
 //            }
 
-           return null;
+//           return null;
         }
 
         public void write(byte[] bytes) {
