@@ -1,4 +1,5 @@
-/* Copyright (C) 2018  John Lines <john+openscale@paladyn.org>
+/*  Copyright (C) 2014  olie.xdev <olie.xdev@googlemail.com>
+*   Copyright (C) 2018  John Lines <john+openscale@paladyn.org>
 *
 *    This program is free software: you can redistribute it and/or modify
 *    it under the terms of the GNU General Public License as published by
@@ -104,7 +105,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
 
         Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
 
-       Log.w("openscale","about to start searching paired devices");
+//       Log.w("openscale","about to start searching paired devices");
 
         for (BluetoothDevice device : pairedDevices) {
             // check if we can found bluetooth device name in the pairing list
@@ -235,7 +236,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
 // and the weight - which should follow
                                  weightBytes[0] = (byte) btInStream.read();
                                  weightBytes[1] = (byte) btInStream.read();
-                                 Log.w("openscale","have read the weight");
+
                                  ScaleMeasurement scaleMeasurement = parseWeightArray(weightBytes);
 
                                  if (scaleMeasurement != null) {
@@ -266,12 +267,14 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
             ScaleMeasurement scaleBtData = new ScaleMeasurement();
 
             Log.w("openscale","iHealthHS3 - ScaleMeasurement "+String.format("%02X",weightBytes[0])+String.format("%02X",weightBytes[1]));
-            String ws = ((String.format("%02X",weightBytes[0])+String.format("%02X",weightBytes[1])).insert(ws.length()-1)).toString();
+//            String ws = ((String.format("%02X",weightBytes[0])+String.format("%02X",weightBytes[1])).insert(ws.length()-1)).toString();
+            String ws = String.format("%02X",weightBytes[0])+String.format("%02X",weightBytes[1]);
+            String ws1 = ws.insert(ws.length()-1,".");
            
             
             int wi = ((weightBytes[0] & 0xFF ) * 10) + (weightBytes[1] & 0xFF);
  //           float weight = (float) wi / 10.0f;
-            float weight = Float.parseFloat(ws);
+            float weight = Float.parseFloat(ws1);
             Log.w("openscale","iHealthHS3 - ScaleMeasurement wi "+String.format("%d ",wi)+String.format("%f",weight));
 //    I will see what I get if I only set the weight
             scaleBtData.setDateTime(new Date());
