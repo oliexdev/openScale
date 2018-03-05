@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <resources>
   <string name="title_overview">Prehľad</string>
   <string name="title_graph">Graf</string>
@@ -17,9 +17,9 @@
   <string name="label_weight">Hmotnosť</string>
   <string name="label_bmi">Index telesnej hmotnosti (BMI)</string>
   <string name="label_bmr">Bazálny metabolický výdaj (BMR)</string>
-  <string name="label_fat">Percento telesného tuku</string>
-  <string name="label_water">Percento vody</string>
-  <string name="label_muscle">Percento svalov</string>
+  <string name="label_fat">Telesný tuk</string>
+  <string name="label_water">Voda v tele</string>
+  <string name="label_muscle">Svalstvo</string>
   <string name="label_waist">Obvod pása</string>
   <string name="label_hip">Obvod bokov</string>
   <string name="label_comment">Komentár</string>
@@ -75,7 +75,7 @@
   <string name="info_is_not_enable">je zakázané</string>
   <string name="info_is_not_available">nie je k dispozícii</string>
   <string name="info_bluetooth_try_connection">Pokus o pripojenie ku</string>
-  <string name="info_bluetooth_connection_lost">Bluetooth pripojenie sa stratilo.</string>
+  <string name="info_bluetooth_connection_lost">Bluetooth pripojenie sa stratilo</string>
   <string name="info_bluetooth_no_device">Nenašli sa žiadne Bluetooth zariadenia</string>
   <string name="info_bluetooth_connection_successful">Spojenie úspešné nadviazané</string>
   <string name="info_bluetooth_init">Inicializácia Bluetooth zariadenia</string>
@@ -121,4 +121,75 @@
   <string name="error_max_scale_users">Dosiahli ste maximálny počet viacerých používateľov</string>
   <string name="info_step_on_scale">Prosím, postavte sa na váhu pre referenčné meranie</string>
   <string name="info_measuring">Nameraná hmotnosť: %.2f</string>
+<string name="title_about">O aplikácii</string>
+    <string name="title_general">Všeobecné</string>
+
+    <string name="open_drawer">otvoriť</string>
+    <string name="close_drawer">zavrieť</string>
+
+    <string name="label_share">Zdieľať</string>
+    <string name="label_share_subject">openScale CSV export údajov (%s)</string>
+
+    <string name="label_fat_percentage">Telesný tuk v %</string>
+    <string name="label_water_percentage">Voda v tele v %</string>
+    <string name="label_muscle_percentage">Svalstvo v %</string>
+
+    <string name="error_user_name_too_short">Chyba: používateľské meno musí obsahovať minimálne 3 znaky</string>
+    <string name="info_bluetooth_no_device_set">Nevybrali ste žiadne bluetooth zariadenie</string>
+    <string name="info_new_data_duplicated">meranie s rovnakým dátumom a časom už existuje</string>
+
+    <string name="label_mergeWithLastMeasurement">Zlúčiť s posledným meraním</string>
+    <string name="label_bluetooth_searching_finished">Hľadanie bluetooth váh sa dokončilo</string>
+    <string name="label_estimate_water">Odhadnúť vodu v tele</string>
+    <string name="label_estimate_fat">Odhadnúť telesný tuk</string>
+
+    <string name="label_category_display">Zobraziť</string>
+    <string name="label_category_measurement_database">Databáza meraní</string>
+
+    <string name="label_maintainer">Správca</string>
+    <string name="label_website">Webové stránky</string>
+    <string name="label_license">Licencia</string>
+
+    <string name="label_automatic">automaticky</string>
+
+    <string name="label_theme">Motív</string>
+
+    <string name="label_help">Pomocník</string>
+
+    <string name="label_feedback_message_enjoying">Páči sa Vám openScale?</string>
+    <string name="label_feedback_message_rate_app">Čo tak ohodnotiť na GooglePlay alebo GitHub?</string>
+    <string name="label_feedback_message_issue">Chcete nám poskytnúť spätnú väzbu?</string>
+    <string name="label_feedback_message_yes">Áno!</string>
+    <string name="label_feedback_message_no">Ani nie</string>
+    <string name="label_feedback_message_positive">OK, určite</string>
+    <string name="label_feedback_message_negative">Nie, ďakujem</string>
+
+    <string name="customactivityoncrash_error_activity_error_occurred_explanation">Vyskytla sa neočakávaná chyba.
+\n
+\nProsím, oznámte nám problém vrátane podrobných informácií o chybe na
+\nhttps://github.com/oliexdev/openScale/issues</string>
+    <string name="customactivityoncrash_error_activity_restart_app">Reštartovať aplikáciu</string>
+    <string name="customactivityoncrash_error_activity_close_app">Zavrieť aplikáciu</string>
+    <string name="customactivityoncrash_error_activity_error_details">Podrobnosti chyby</string>
+    <string name="customactivityoncrash_error_activity_error_details_title">Podrobnosti chyby</string>
+    <string name="customactivityoncrash_error_activity_error_details_close">Zavrieť</string>
+    <string name="customactivityoncrash_error_activity_error_details_copy">Skopírovať do schránky</string>
+    <string name="customactivityoncrash_error_activity_error_details_copied">Skopírované do schránky</string>
+    <string name="customactivityoncrash_error_activity_error_details_clipboard_label">Informácie o chybe</string>
+    <string name="edit">Upraviť</string>
+    <string name="save">Uložiť</string>
+
+    <string name="label_month_view">Mesačný prehľad</string>
+    <string name="label_weeks_view">Týždenný prehľad</string>
+
+    <string name="permission_not_granted">Povolenie nebolo udelené</string>
+    <string name="permission_bluetooth_info">openScale vyžaduje povolenie prístupu k približnej polohe na vyhľadávanie bluetooth zariadení</string>
+    <string name="permission_bluetooth_info_title">Informácie</string>
+    <string name="label_next">Ďalej</string>
+    <string name="label_measurement_order">Radenie meraní</string>
+    <string name="label_press_hold_reorder">Stlačte a podržte pre zmenu radenia</string>
+    <string name="label_set_default_order">Nastaviť predvolené radenie</string>
+    <string name="label_export_overwrite">Prepísať predchádzajúci export \"%s\"?</string>
+
+
 </resources>
