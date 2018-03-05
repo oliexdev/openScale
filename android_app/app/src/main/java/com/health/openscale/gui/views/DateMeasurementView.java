@@ -15,14 +15,12 @@
 */
 package com.health.openscale.gui.views;
 
-import android.app.AlertDialog;
-import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.view.View;
 import android.widget.DatePicker;
-import android.widget.EditText;
 
 import com.health.openscale.R;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
@@ -94,37 +92,32 @@ public class DateMeasurementView extends MeasurementView {
     }
 
     @Override
-    protected boolean validateAndSetInput(EditText view) {
+    protected boolean showSoftInputForInputDialog() {
         return false;
     }
 
     @Override
-    protected int getInputType() {
-        return 0;
-    }
+    protected View getInputView() {
+        DatePicker datePicker = new DatePicker(getContext());
+        datePicker.setPadding(0, 15, 0, 0);
 
-    @Override
-    protected String getHintText() {
-        return null;
-    }
-
-    private DatePickerDialog.OnDateSetListener datePickerListener = new DatePickerDialog.OnDateSetListener() {
-        @Override
-        public void onDateSet(DatePicker view, int selectedYear, int selectedMonth, int selectedDay) {
-            Calendar cal = Calendar.getInstance();
-            cal.setTime(date);
-            cal.set(selectedYear, selectedMonth, selectedDay);
-            setValue(cal.getTime(), true);
-        }
-    };
-
-    @Override
-    protected AlertDialog getInputDialog() {
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
+        datePicker.updateDate(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH),
+                cal.get(Calendar.DAY_OF_MONTH));
 
-        return new DatePickerDialog(
-            getContext(), datePickerListener, cal.get(Calendar.YEAR),
-            cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
+        return datePicker;
+    }
+
+    @Override
+    protected boolean validateAndSetInput(View view) {
+        DatePicker datePicker = (DatePicker) view;
+
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        cal.set(datePicker.getYear(), datePicker.getMonth(), datePicker.getDayOfMonth());
+        setValue(cal.getTime(), true);
+
+        return true;
     }
 }
