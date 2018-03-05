@@ -405,13 +405,18 @@ public abstract class FloatMeasurementView extends MeasurementView {
             }
         };
 
+        RepeatListener repeatListener =
+                new RepeatListener(400, 100, onClickListener);
+
         final Button inc = view.findViewById(R.id.btn_inc);
         inc.setText("\u25b2 +" + formatValue(INC_DEC_DELTA));
         inc.setOnClickListener(onClickListener);
+        inc.setOnTouchListener(repeatListener);
 
         final Button dec = view.findViewById(R.id.btn_dec);
         dec.setText("\u25bc -" + formatValue(INC_DEC_DELTA));
         dec.setOnClickListener(onClickListener);
+        dec.setOnTouchListener(repeatListener);
 
         return view;
     }
