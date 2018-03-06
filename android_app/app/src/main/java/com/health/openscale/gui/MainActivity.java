@@ -499,7 +499,7 @@ public class MainActivity extends AppCompatActivity
                         }
                     }
 
-                    openScale.addScaleData(scaleBtData);
+                    openScale.addScaleData(scaleBtData, true);
                     break;
                 case BT_INIT_PROCESS:
                     setBluetoothStatusIcon(R.drawable.ic_bluetooth_connection_success);
