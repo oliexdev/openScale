@@ -21,17 +21,18 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
-import android.text.InputType;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.RelativeSizeSpan;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TableRow;
+import android.widget.TextView;
 
 import com.health.openscale.R;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
@@ -48,6 +49,7 @@ public abstract class FloatMeasurementView extends MeasurementView {
 
     private static float NO_VALUE = -1.0f;
     private static float AUTO_VALUE = -2.0f;
+    private static float INC_DEC_DELTA = 0.1f;
 
     private Date dateTime;
     private float value = NO_VALUE;
@@ -197,10 +199,10 @@ public abstract class FloatMeasurementView extends MeasurementView {
     }
 
     private void incValue() {
-        setValue(clampValue(value + 0.1f), previousValue, true);
+        setValue(clampValue(value + INC_DEC_DELTA), previousValue, true);
     }
     private void decValue() {
-        setValue(clampValue(value - 0.1f), previousValue, true);
+        setValue(clampValue(value - INC_DEC_DELTA), previousValue, true);
     }
 
     protected String formatValue(float value) {
@@ -342,15 +344,20 @@ public abstract class FloatMeasurementView extends MeasurementView {
     }
 
     @Override
-    protected boolean validateAndSetInput(EditText view) {
-        final String text = view.getText().toString();
+    protected boolean showSoftInputForInputDialog() {
+        return true;
+    }
 
+    private float validateAndGetInput(View view) {
+        EditText editText = view.findViewById(R.id.float_input);
+        String text = editText.getText().toString();
+
+        float newValue = -1;
         if (text.isEmpty()) {
-            view.setError(getResources().getString(R.string.error_value_required));
-            return false;
+            editText.setError(getResources().getString(R.string.error_value_required));
+            return newValue;
         }
 
-        float newValue;
         try {
             newValue = Float.valueOf(text.replace(',', '.'));
         }
@@ -359,22 +366,70 @@ public abstract class FloatMeasurementView extends MeasurementView {
         }
 
         if (newValue < 0 || newValue > getMaxValue()) {
-            view.setError(getResources().getString(R.string.error_value_range));
-            return false;
+            editText.setError(getResources().getString(R.string.error_value_range));
+            newValue = -1;
         }
 
-        setValue(newValue, previousValue, true);
-        return true;
+        return newValue;
     }
 
     @Override
-    protected int getInputType() {
-        return InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL;
+    protected View getInputView() {
+        final LinearLayout view = (LinearLayout) LayoutInflater.from(getContext())
+                .inflate(R.layout.float_input_view, null);
+
+        final EditText input = view.findViewById(R.id.float_input);
+        input.setText(formatValue(value));
+        input.requestFocus();
+
+        final TextView unit = view.findViewById(R.id.float_input_unit);
+        unit.setText(getUnit());
+
+        View.OnClickListener onClickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View button) {
+                float newValue = validateAndGetInput(view);
+                if (newValue < 0) {
+                    return;
+                }
+
+                if (button.getId() == R.id.btn_inc) {
+                    newValue += INC_DEC_DELTA;
+                }
+                else {
+                    newValue -= INC_DEC_DELTA;
+                }
+
+                input.setText(formatValue(clampValue(newValue)));
+                input.selectAll();
+            }
+        };
+
+        RepeatListener repeatListener =
+                new RepeatListener(400, 100, onClickListener);
+
+        final Button inc = view.findViewById(R.id.btn_inc);
+        inc.setText("\u25b2 +" + formatValue(INC_DEC_DELTA));
+        inc.setOnClickListener(onClickListener);
+        inc.setOnTouchListener(repeatListener);
+
+        final Button dec = view.findViewById(R.id.btn_dec);
+        dec.setText("\u25bc -" + formatValue(INC_DEC_DELTA));
+        dec.setOnClickListener(onClickListener);
+        dec.setOnTouchListener(repeatListener);
+
+        return view;
     }
 
     @Override
-    protected String getHintText() {
-        return getResources().getString(R.string.info_enter_value_unit) + " " + getUnit();
+    protected boolean validateAndSetInput(View view) {
+        float newValue = validateAndGetInput(view);
+        if (newValue >= 0) {
+            setValue(newValue, previousValue, true);
+            return true;
+        }
+
+        return false;
     }
 
     private class RepeatListener implements OnTouchListener {

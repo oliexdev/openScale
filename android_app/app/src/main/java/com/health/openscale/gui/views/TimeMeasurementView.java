@@ -15,13 +15,11 @@
 */
 package com.health.openscale.gui.views;
 
-import android.app.AlertDialog;
-import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
-import android.widget.EditText;
+import android.view.View;
 import android.widget.TimePicker;
 
 import com.health.openscale.R;
@@ -96,43 +94,38 @@ public class TimeMeasurementView extends MeasurementView {
     }
 
     @Override
-    protected boolean validateAndSetInput(EditText view) {
+    protected boolean showSoftInputForInputDialog() {
         return false;
     }
 
     @Override
-    protected int getInputType() {
-        return 0;
-    }
+    protected View getInputView() {
+        TimePicker timePicker = new TimePicker(getContext());
+        timePicker.setPadding(0, 15, 0, 0);
 
-    @Override
-    protected String getHintText() {
-        return null;
-    }
-
-    private TimePickerDialog.OnTimeSetListener timePickerListener = new TimePickerDialog.OnTimeSetListener() {
-        @Override
-        public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-            Calendar cal = Calendar.getInstance();
-            cal.setTime(time);
-
-            cal.set(Calendar.HOUR_OF_DAY, hourOfDay);
-            cal.set(Calendar.MINUTE, minute);
-            cal.set(Calendar.SECOND, 0);
-            cal.set(Calendar.MILLISECOND, 0);
-
-            setValue(cal.getTime(), true);
-        }
-    };
-
-    @Override
-    protected AlertDialog getInputDialog() {
         Calendar cal = Calendar.getInstance();
         cal.setTime(time);
 
-        return new TimePickerDialog(
-            getContext(), timePickerListener,
-            cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE),
-            android.text.format.DateFormat.is24HourFormat(getContext()));
+        timePicker.setCurrentHour(cal.get(Calendar.HOUR_OF_DAY));
+        timePicker.setCurrentMinute(cal.get(Calendar.MINUTE));
+        timePicker.setIs24HourView(android.text.format.DateFormat.is24HourFormat(getContext()));
+
+        return timePicker;
+    }
+
+    @Override
+    protected boolean validateAndSetInput(View view) {
+        TimePicker timePicker = (TimePicker) view;
+
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(time);
+        cal.set(Calendar.HOUR_OF_DAY, timePicker.getCurrentHour());
+        cal.set(Calendar.MINUTE, timePicker.getCurrentMinute());
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+
+        setValue(cal.getTime(), true);
+
+        return true;
     }
 }

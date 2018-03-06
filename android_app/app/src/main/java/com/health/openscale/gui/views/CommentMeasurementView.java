@@ -20,6 +20,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.text.InputType;
+import android.view.View;
 import android.widget.EditText;
 
 import com.health.openscale.R;
@@ -75,20 +76,29 @@ public class CommentMeasurementView extends MeasurementView {
     }
 
     @Override
-    protected boolean validateAndSetInput(EditText view) {
-        setValue(view.getText().toString(), true);
+    protected boolean showSoftInputForInputDialog() {
         return true;
     }
 
     @Override
-    protected int getInputType() {
-        return InputType.TYPE_CLASS_TEXT
+    protected View getInputView() {
+        EditText input = new EditText(getContext());
+
+        input.setInputType(InputType.TYPE_CLASS_TEXT
                 | InputType.TYPE_TEXT_FLAG_AUTO_COMPLETE
-                | InputType.TYPE_TEXT_FLAG_MULTI_LINE;
+                | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+        input.setHint(R.string.info_enter_comment);
+        input.setText(getValueAsString());
+        input.setSelectAllOnFocus(true);
+
+        input.requestFocus();
+        return input;
     }
 
     @Override
-    protected String getHintText() {
-        return getResources().getString(R.string.info_enter_comment);
+    protected boolean validateAndSetInput(View view) {
+        EditText editText = (EditText) view;
+        setValue(editText.getText().toString(), true);
+        return true;
     }
 }

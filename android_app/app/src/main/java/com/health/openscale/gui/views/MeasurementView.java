@@ -31,8 +31,8 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Space;
@@ -381,90 +381,96 @@ public abstract class MeasurementView extends TableLayout {
         return openScale.getSelectedScaleUser();
     }
 
-    protected abstract boolean validateAndSetInput(EditText view);
-    protected abstract int getInputType();
-    protected abstract String getHintText();
+    protected abstract boolean showSoftInputForInputDialog();
+    protected abstract View getInputView();
+    protected abstract boolean validateAndSetInput(View view);
 
-    protected AlertDialog getInputDialog() {
+    private MeasurementView getNextView() {
+        ViewGroup parent = (ViewGroup) getParent();
+        for (int i = parent.indexOfChild(this) + 1; i < parent.getChildCount(); ++i) {
+            MeasurementView next = (MeasurementView) parent.getChildAt(i);
+            if (next.isEditable()) {
+                return next;
+            }
+        }
+        return null;
+    }
+
+    private void prepareInputDialog(final AlertDialog dialog) {
+        dialog.setTitle(getName());
+        dialog.setIcon(getIcon());
+
+        final InputMethodManager imm = (InputMethodManager) getContext()
+                .getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (showSoftInputForInputDialog()) {
+            imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
+        }
+        else if (dialog.getCurrentFocus() != null) {
+            imm.hideSoftInputFromWindow(dialog.getCurrentFocus().getWindowToken(), 0);
+        }
+
+        final View input = getInputView();
+
+        FrameLayout fl = dialog.findViewById(android.R.id.custom);
+        fl.removeAllViews();
+        fl.addView(input, new LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT));
+
+        View.OnClickListener clickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (view == dialog.getButton(DialogInterface.BUTTON_POSITIVE)
+                    && !validateAndSetInput(input)) {
+                    return;
+                }
+                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                dialog.dismiss();
+            }
+        };
+
+        dialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener(clickListener);
+        dialog.getButton(DialogInterface.BUTTON_NEGATIVE).setOnClickListener(clickListener);
+
+        final MeasurementView next = getNextView();
+        if (next != null) {
+            dialog.getButton(DialogInterface.BUTTON_NEUTRAL).setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (validateAndSetInput(input)) {
+                        next.prepareInputDialog(dialog);
+                    }
+                }
+            });
+        }
+        else {
+            dialog.getButton(DialogInterface.BUTTON_NEUTRAL).setVisibility(GONE);
+        }
+    }
+
+    private void showInputDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+
         builder.setTitle(getName());
         builder.setIcon(getIcon());
 
-        final EditText input = new EditText(getContext());
+        // Dummy view to have the "custom" frame layout being created and show
+        // the soft input (if needed).
+        builder.setView(new EditText(getContext()));
 
-        input.setInputType(getInputType());
-        input.setHint(getHintText());
-        input.setText(getValueAsString());
-        input.setSelectAllOnFocus(true);
-        builder.setView(input);
+        builder.setPositiveButton(R.string.label_ok, null);
+        builder.setNegativeButton(R.string.label_cancel, null);
+        builder.setNeutralButton(R.string.label_next, null);
 
-        ViewGroup parent = (ViewGroup) getParent();
-        MeasurementView view = null;
-        for (int i = parent.indexOfChild(this) + 1; i < parent.getChildCount(); ++i) {
-            MeasurementView next = (MeasurementView) parent.getChildAt(i);
-            if (!next.isEditable() || next instanceof DateMeasurementView || next instanceof TimeMeasurementView) {
-                continue;
-            }
-            view = next;
-            break;
-        }
-        final MeasurementView next = view;
+        final AlertDialog dialog = builder.create();
 
-        builder.setPositiveButton(getResources().getString(R.string.label_ok), null);
-        builder.setNegativeButton(getResources().getString(R.string.label_cancel), null);
-
-        if (next != null) {
-            builder.setNeutralButton(R.string.label_next, null);
-        }
-
-        final AlertDialog floatDialog = builder.create();
-
-        floatDialog.setOnShowListener(new DialogInterface.OnShowListener() {
-
+        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
             @Override
-            public void onShow(DialogInterface dialog) {
-
-                Button positiveButton = floatDialog.getButton(AlertDialog.BUTTON_POSITIVE);
-                positiveButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        if (validateAndSetInput(input)) {
-                            InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                            imm.hideSoftInputFromWindow(input.getWindowToken(), 0);
-                            floatDialog.dismiss();
-                        }
-                    }
-                });
-
-                Button negativeButton = floatDialog.getButton(AlertDialog.BUTTON_NEGATIVE);
-                negativeButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                        imm.hideSoftInputFromWindow(input.getWindowToken(), 0);
-                        floatDialog.dismiss();
-                    }
-                });
-
-                if (next != null) {
-                    Button neutralButton = floatDialog.getButton(AlertDialog.BUTTON_NEUTRAL);
-                    neutralButton.setOnClickListener(new OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            if (validateAndSetInput(input)) {
-                                floatDialog.dismiss();
-                                next.getInputDialog().show();
-                            }
-                        }
-                    });
-                }
+            public void onShow(DialogInterface dialogInterface) {
+                prepareInputDialog(dialog);
             }
         });
 
-        InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
-
-        return floatDialog;
+        dialog.show();
     }
 
     private class onClickListenerEvaluation implements View.OnClickListener {
@@ -476,7 +482,7 @@ public abstract class MeasurementView extends TableLayout {
 
             if (getMeasurementMode() == EDIT || getMeasurementMode() == ADD) {
                 if (isEditable()) {
-                    getInputDialog().show();
+                    showInputDialog();
                 }
                 return;
             }

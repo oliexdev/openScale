@@ -12,7 +12,6 @@
     <string name="info_enter_comment">Gebe ein optionalen Kommentar ein</string>
     <string name="info_enter_user_name">Gebe dein Namen ein</string>
     <string name="info_enter_value_cm">Gebe dein Wert in cm an</string>
-    <string name="info_enter_value_unit">Gebe dein Wert an in</string>
     <string name="info_is_not_visible">ist nicht sichtbar</string>
     <string name="info_is_visible">ist sichtbar</string>
     <string name="info_is_not_available">ist nicht verfügbar</string>

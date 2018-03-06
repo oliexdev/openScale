@@ -79,7 +79,6 @@
     <string name="info_data_exported">Dades exportades a</string>
     <string name="info_data_imported">Dades importades de</string>
     <string name="info_enter_value_cm">Valor en cm</string>
-    <string name="info_enter_value_unit">Valor en</string>
     <string name="info_enter_comment">Comentari opcional</string>
     <string name="info_enter_initial_weight">Pes inicial en la seua unitat de mesura</string>
     <string name="info_enter_goal_weight">Pes objectiu en la seua unitat de mesura</string>

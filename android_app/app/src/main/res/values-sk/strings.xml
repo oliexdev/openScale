@@ -65,7 +65,6 @@
   <string name="info_data_exported">Údaje boli exportované do</string>
   <string name="info_data_imported">Údaje boli importované z</string>
   <string name="info_enter_value_cm">Zadajte hodnotu v cm</string>
-  <string name="info_enter_value_unit">Zadajte hodnotu v palcoch</string>
   <string name="info_enter_comment">Zadajte voliteľný komentár</string>
   <string name="info_enter_initial_weight">Zadajte vaša počiatočná hmotnosť v jednotkách stupnice</string>
   <string name="info_enter_goal_weight">Zadajte vaša cieľovú hmotnosť v jednotkách stupnice</string>

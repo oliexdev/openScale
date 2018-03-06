@@ -73,7 +73,6 @@
     <string name="info_data_exported">Données exportées vers</string>
     <string name="info_data_imported">Donnéees importées depuis</string>
     <string name="info_enter_value_cm">Entrez la valeur en cm</string>
-    <string name="info_enter_value_unit">Entrez la valeur en</string>
     <string name="info_enter_comment">Ajouter un commentaire optionnel</string>
     <string name="info_enter_goal_weight">Entrez votre objectif de poids dans votre unité d\'échelle</string>
     <string name="info_is_visible">est visible</string>
