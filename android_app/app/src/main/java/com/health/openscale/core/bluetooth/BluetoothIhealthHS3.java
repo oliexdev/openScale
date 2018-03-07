@@ -42,6 +42,11 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
 
     private BluetoothConnectedThread btConnectThread = null;
 
+    private byte[] lastWeight = new byte[2];
+    private Date lastWeighed = 0;
+    private final long maxTimeDiff = 2000;   // maximum time interval we will consider two identical
+                                             // weight readings to be the same and hence ignored - 2 seconds in milliseconds
+
     public BluetoothIhealthHS3(Context context) {
         super(context);
     }
@@ -267,88 +272,30 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
             ScaleMeasurement scaleBtData = new ScaleMeasurement();
 
             Log.w("openscale","iHealthHS3 - ScaleMeasurement "+String.format("%02X",weightBytes[0])+String.format("%02X",weightBytes[1]));
-//            String ws = ((String.format("%02X",weightBytes[0])+String.format("%02X",weightBytes[1])).insert(ws.length()-1)).toString();
+
             String ws = String.format("%02X",weightBytes[0])+String.format("%02X",weightBytes[1]);
             StringBuilder ws1 = new StringBuilder (ws);
             ws1.insert(ws.length()-1,".");
-           
-            
-            int wi = ((weightBytes[0] & 0xFF ) * 10) + (weightBytes[1] & 0xFF);
- //           float weight = (float) wi / 10.0f;
+    
+
             float weight = Float.parseFloat(ws1.toString());
-            Log.w("openscale","iHealthHS3 - ScaleMeasurement wi "+String.format("%d ",wi)+String.format("%f",weight));
-//    I will see what I get if I only set the weight
-            scaleBtData.setDateTime(new Date());
+            Log.w("openscale","iHealthHS3 - ScaleMeasurement "+String.format("%f",weight));
+
+            Date now = new Date();
+
+// If the weight is the same as the lastWeight, and the time since the last reading is less than maxTimeDiff then return null
+            if (Arrays.equals(weightBytes,lastWeight) and  (now.getTime() - lastWeighted.getTime() < maxTimeDiff) {   
+                Log.w("openscale","iHealthHS3 - parseWeightArray returning null"0);
+                return null;
+                }     
+            
+
+            scaleBtData.setDateTime(now);
             scaleBtData.setWeight(weight);
+            lastWeighed = now;
+            System.arraycopy(weightBytes,0,lastWeight,0,lastWeight.length);
             return scaleBtData;
 
-
-// There should be some sanity checks here, and if I have the weight from the scales that should be set too.
-            
-            
-  //          btString = btString.substring(0, btString.length() - 1); // delete newline '\n' of the string
-
-  //          if (btString.charAt(0) != '$' && btString.charAt(2) != '$') {
-  //              setBtStatus(BT_STATUS_CODE.BT_UNEXPECTED_ERROR, "Parse error of bluetooth string. String has not a valid format");
-  //          }
-
-  //          String btMsg = btString.substring(3, btString.length()); // message string
-
-//            switch (btString.charAt(1)) {
-//                case 'I':
-//                    Log.i("OpenScale", "MCU Information: " + btMsg);
-//                    break;
-//                case 'E':
-//                    Log.e("OpenScale", "MCU Error: " + btMsg);
-//                    break;
-//                case 'S':
-//                    Log.i("OpenScale", "MCU stored data size: " + btMsg);
-//                    break;
-//                case 'D':
-//                    String[] csvField = btMsg.split(",");
-
-//                    try {
-//                        int checksum = 0;
-
-//                        checksum ^= Integer.parseInt(csvField[0]);
-//                        checksum ^= Integer.parseInt(csvField[1]);
-//                        checksum ^= Integer.parseInt(csvField[2]);
-//                        checksum ^= Integer.parseInt(csvField[3]);
-//                        checksum ^= Integer.parseInt(csvField[4]);
-//                        checksum ^= Integer.parseInt(csvField[5]);
-//                        checksum ^= (int) Float.parseFloat(csvField[6]);
-//                        checksum ^= (int) Float.parseFloat(csvField[7]);
-//                        checksum ^= (int) Float.parseFloat(csvField[8]);
-//                        checksum ^= (int) Float.parseFloat(csvField[9]);
-
-//                        int btChecksum = Integer.parseInt(csvField[10]);
-
-//                        if (checksum == btChecksum) {
-//                            scaleBtData.setId(-1);
-//                            scaleBtData.setUserId(Integer.parseInt(csvField[0]));
-//                            String date_string = csvField[1] + "/" + csvField[2] + "/" + csvField[3] + "/" + csvField[4] + "/" + csvField[5];
-//                            scaleBtData.setDateTime(new SimpleDateFormat("yyyy/MM/dd/HH/mm").parse(date_string));
-
-//                            scaleBtData.setWeight(Float.parseFloat(csvField[6]));
-//                            scaleBtData.setFat(Float.parseFloat(csvField[7]));
-//                            scaleBtData.setWater(Float.parseFloat(csvField[8]));
-//                            scaleBtData.setMuscle(Float.parseFloat(csvField[9]));
-
-//                            return scaleBtData;
-//                        } else {
-//                            setBtStatus(BT_STATUS_CODE.BT_UNEXPECTED_ERROR, "Error calculated checksum (" + checksum + ") and received checksum (" + btChecksum + ") is different");
-//                        }
-//                    } catch (ParseException e) {
-//                        setBtStatus(BT_STATUS_CODE.BT_UNEXPECTED_ERROR, "Error while decoding bluetooth date string (" + e.getMessage() + ")");
-//                    } catch (NumberFormatException e) {
-//                        setBtStatus(BT_STATUS_CODE.BT_UNEXPECTED_ERROR, "Error while decoding a number of bluetooth string (" + e.getMessage() + ")");
-//                    }
-//                    break;
-//                default:
-//                    setBtStatus(BT_STATUS_CODE.BT_UNEXPECTED_ERROR, "Error unknown MCU command");
-//            }
-
-//           return null;
         }
 
         public void write(byte[] bytes) {
