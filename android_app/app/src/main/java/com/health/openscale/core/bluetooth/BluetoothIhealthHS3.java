@@ -45,8 +45,8 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
 
     private byte[] lastWeight = new byte[2];
     private Date lastWeighed = new Date();
-    private final long maxTimeDiff = 2000;   // maximum time interval we will consider two identical
-                                             // weight readings to be the same and hence ignored - 2 seconds in milliseconds
+    private final long maxTimeDiff = 6000;   // maximum time interval we will consider two identical
+                                             // weight readings to be the same and hence ignored - 6 seconds in milliseconds
 
     public BluetoothIhealthHS3(Context context) {
         super(context);
