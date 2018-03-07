@@ -47,21 +47,18 @@ public class WaterMeasurementView extends FloatMeasurementView {
     }
 
     @Override
-    protected float getMeasurementValue(ScaleMeasurement measurement) {
-        if (percentageEnable) {
-            return measurement.getWater();
-        }
+    protected boolean shouldConvertPercentageToAbsoluteWeight() {
+        return !percentageEnable;
+    }
 
-        return measurement.getConvertedWeight(getScaleUser().getScaleUnit()) / 100.0f * measurement.getWater();
+    @Override
+    protected float getMeasurementValue(ScaleMeasurement measurement) {
+        return measurement.getWater();
     }
 
     @Override
     protected void setMeasurementValue(float value, ScaleMeasurement measurement) {
-        if (percentageEnable) {
-            measurement.setWater(value);
-        } else {
-            measurement.setWater(100.0f / measurement.getConvertedWeight(getScaleUser().getScaleUnit()) * value);
-        }
+        measurement.setWater(value);
     }
 
     @Override
@@ -75,11 +72,7 @@ public class WaterMeasurementView extends FloatMeasurementView {
 
     @Override
     protected float getMaxValue() {
-        if (percentageEnable) {
-            return 80;
-        }
-
-        return 300;
+        return maybeConvertPercentageToAbsolute(80);
     }
 
     @Override
