@@ -284,8 +284,8 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
             Date now = new Date();
 
 // If the weight is the same as the lastWeight, and the time since the last reading is less than maxTimeDiff then return null
-            if (Arrays.equals(weightBytes,lastWeight) and  (now.getTime() - lastWeighted.getTime() < maxTimeDiff) {   
-                Log.w("openscale","iHealthHS3 - parseWeightArray returning null"0);
+            if (Arrays.equals(weightBytes,lastWeight) && (now.getTime() - lastWeighted.getTime() < maxTimeDiff)) {   
+                Log.w("openscale","iHealthHS3 - parseWeightArray returning null");
                 return null;
                 }     
             
