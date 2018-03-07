@@ -135,7 +135,16 @@ public abstract class FloatMeasurementView extends MeasurementView {
 
             if (getMeasurementMode() != MeasurementViewMode.ADD) {
                 EvaluationSheet evalSheet = new EvaluationSheet(getScaleUser(), dateTime);
-                evaluationResult = evaluateSheet(evalSheet, value);
+                float evalValue = value;
+                if (shouldConvertPercentageToAbsoluteWeight()) {
+                    evalValue = makeRelativeWeight(value);
+                }
+                evaluationResult = evaluateSheet(evalSheet, evalValue);
+                if (shouldConvertPercentageToAbsoluteWeight()) {
+                    evaluationResult.value = value;
+                    evaluationResult.lowLimit = makeAbsoluteWeight(evaluationResult.lowLimit);
+                    evaluationResult.highLimit = makeAbsoluteWeight(evaluationResult.highLimit);
+                }
             }
         }
         setEvaluationView(evaluationResult);
