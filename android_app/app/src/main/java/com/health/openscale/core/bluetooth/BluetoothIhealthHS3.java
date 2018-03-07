@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.Date;
 import java.util.Calendar;
+import java.lang.Arrays;
 
 public class BluetoothIhealthHS3 extends BluetoothCommunication {
     private final UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb"); // Standard SerialPortService ID
@@ -43,7 +44,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
     private BluetoothConnectedThread btConnectThread = null;
 
     private byte[] lastWeight = new byte[2];
-    private Date lastWeighed = 0;
+    private Date lastWeighed = new Date();
     private final long maxTimeDiff = 2000;   // maximum time interval we will consider two identical
                                              // weight readings to be the same and hence ignored - 2 seconds in milliseconds
 
@@ -284,7 +285,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
             Date now = new Date();
 
 // If the weight is the same as the lastWeight, and the time since the last reading is less than maxTimeDiff then return null
-            if (Arrays.equals(weightBytes,lastWeight) && (now.getTime() - lastWeighted.getTime() < maxTimeDiff)) {   
+            if (Arrays.equals(weightBytes,lastWeight) && (now.getTime() - lastWeighed.getTime() < maxTimeDiff)) {   
                 Log.w("openscale","iHealthHS3 - parseWeightArray returning null");
                 return null;
                 }     
