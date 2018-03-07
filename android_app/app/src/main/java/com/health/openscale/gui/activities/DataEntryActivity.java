@@ -43,6 +43,7 @@ import com.health.openscale.gui.views.DateMeasurementView;
 import com.health.openscale.gui.views.MeasurementView;
 import com.health.openscale.gui.views.MeasurementViewUpdateListener;
 import com.health.openscale.gui.views.TimeMeasurementView;
+import com.health.openscale.gui.views.WeightMeasurementView;
 
 import java.text.DateFormat;
 import java.util.Date;
@@ -445,6 +446,17 @@ public class DataEntryActivity extends AppCompatActivity {
         public void onMeasurementViewUpdate(MeasurementView view) {
             view.saveTo(scaleMeasurement);
             isDirty = true;
+
+            // When weight is updated we may need to re-save some values that are stored
+            // as percentages, but that the user may have set up to be shown as absolute.
+            // Otherwise that measurement (e.g. fat) may change when weight is updated.
+            if (view instanceof WeightMeasurementView) {
+                for (MeasurementView measurement : dataEntryMeasurements) {
+                    if (measurement != view) {
+                        measurement.saveTo(scaleMeasurement);
+                    }
+                }
+            }
 
             txtDataNr.setText(DateFormat.getDateTimeInstance(
                     DateFormat.LONG, DateFormat.SHORT).format(scaleMeasurement.getDateTime()));
