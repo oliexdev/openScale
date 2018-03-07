@@ -33,7 +33,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.Date;
 import java.util.Calendar;
-import java.lang.Arrays;
+import java.util.Arrays;
 
 public class BluetoothIhealthHS3 extends BluetoothCommunication {
     private final UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb"); // Standard SerialPortService ID
