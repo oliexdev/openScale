@@ -45,8 +45,8 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
 
     private byte[] lastWeight = new byte[2];
     private Date lastWeighed = new Date();
-    private final long maxTimeDiff = 6000;   // maximum time interval we will consider two identical
-                                             // weight readings to be the same and hence ignored - 6 seconds in milliseconds
+    private final long maxTimeDiff = 10000;   // maximum time interval we will consider two identical
+                                             // weight readings to be the same and hence ignored - 10 seconds in milliseconds
 
     public BluetoothIhealthHS3(Context context) {
         super(context);
@@ -102,7 +102,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
         @Override
     public void startSearching(String deviceName) {
 
-       Log.w("openscale","iHealth HS3 - startSearching "+deviceName);
+//       Log.w("openscale","iHealth HS3 - startSearching "+deviceName);
 
         if (btAdapter == null) {
             setBtStatus(BT_STATUS_CODE.BT_NO_DEVICE_FOUND);
@@ -115,7 +115,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
 
         for (BluetoothDevice device : pairedDevices) {
             // check if we can found bluetooth device name in the pairing list
-            if (device != null ) { Log.w("openscale","Looking at device "+device.getName()); } ;
+//            if (device != null ) { Log.w("openscale","Looking at device "+device.getName()); } ;
                 
             if (device != null && device.getName().equals(deviceName)) {
                 btDevice = device;
@@ -200,7 +200,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
         private volatile boolean isCancel;
 
         public BluetoothConnectedThread() {
-            Log.w("openscale","ihealthHS3 - BluetoothConnectedThread");
+//            Log.w("openscale","ihealthHS3 - BluetoothConnectedThread");
             isCancel = false;
 
             // Get the input and output bluetooth streams
@@ -216,14 +216,14 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
  
             byte btByte;
             byte[] weightBytes = new byte[2];
-            Log.w("openscale","ihealthHS3 - run");
+//            Log.w("openscale","ihealthHS3 - run");
             // Keep listening to the InputStream until an exception occurs (e.g. device partner goes offline)
             while (!isCancel) {
                 try {
                     // stream read is a blocking method
 
                     btByte = (byte) btInStream.read();
-                    Log.w("openscale","iheathHS3 - seen a byte "+String.format("%02X",btByte));
+//                    Log.w("openscale","iheathHS3 - seen a byte "+String.format("%02X",btByte));
 
                    if ( btByte == (byte) 0xA0 ) {
                      btByte = (byte) btInStream.read();
@@ -232,7 +232,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
                         if ( btByte == (byte) 0xa6 ) {
                            btByte = (byte) btInStream.read();
                            if ( btByte == (byte) 0x28 ) {
-                              Log.w("openscale","seen 0xa009a628 - Weight packet");
+//                              Log.w("openscale","seen 0xa009a628 - Weight packet");
                               // deal with a weight packet - read 5 bytes we dont care about
                                  btByte = (byte) btInStream.read();
                                  btByte = (byte) btInStream.read();
@@ -254,7 +254,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
                                  Log.w("openscale","seen 0xa009a633 - time packet");
                                  // deal with a time packet, if needed
                                  } else {
-                                 Log.w("openscale","seen some other data packet");
+                                 Log.w("openscale","iHealthHS3 - seen byte after control leader "+String.format("%02X",btByte));
                                  }
                                  }
                              }
@@ -272,7 +272,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
         private ScaleMeasurement parseWeightArray(byte[] weightBytes ) throws IOException {
             ScaleMeasurement scaleBtData = new ScaleMeasurement();
 
-            Log.w("openscale","iHealthHS3 - ScaleMeasurement "+String.format("%02X",weightBytes[0])+String.format("%02X",weightBytes[1]));
+//            Log.w("openscale","iHealthHS3 - ScaleMeasurement "+String.format("%02X",weightBytes[0])+String.format("%02X",weightBytes[1]));
 
             String ws = String.format("%02X",weightBytes[0])+String.format("%02X",weightBytes[1]);
             StringBuilder ws1 = new StringBuilder (ws);
@@ -280,13 +280,13 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
     
 
             float weight = Float.parseFloat(ws1.toString());
-            Log.w("openscale","iHealthHS3 - ScaleMeasurement "+String.format("%f",weight));
+//            Log.w("openscale","iHealthHS3 - ScaleMeasurement "+String.format("%f",weight));
 
             Date now = new Date();
 
 // If the weight is the same as the lastWeight, and the time since the last reading is less than maxTimeDiff then return null
             if (Arrays.equals(weightBytes,lastWeight) && (now.getTime() - lastWeighed.getTime() < maxTimeDiff)) {   
-                Log.w("openscale","iHealthHS3 - parseWeightArray returning null");
+//                Log.w("openscale","iHealthHS3 - parseWeightArray returning null");
                 return null;
                 }     
             
