@@ -113,7 +113,6 @@ public abstract class BluetoothCommunication {
             case ONEBYONE:
                 return new BluetoothOneByone(context);
             case IHEALTH_HS3:
-                Log.w("openscale","getBtDevice - IHEALTH_HS3 case");
                 return new BluetoothIhealthHS3(context);
         }
 
