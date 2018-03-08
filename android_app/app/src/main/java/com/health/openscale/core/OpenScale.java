@@ -183,6 +183,10 @@ public class OpenScale {
             final int selectedUserId = getSelectedScaleUserId();
             if (selectedUserId != -1) {
                 selectedScaleUser = userDAO.get(selectedUserId);
+                if (selectedScaleUser == null) {
+                    selectScaleUser(-1);
+                    throw new Exception("could not find the selected user");
+                }
                 return selectedScaleUser;
             }
         } catch (Exception e) {
@@ -221,7 +225,7 @@ public class OpenScale {
 
     public ScaleMeasurement[] getTupleScaleData(int id)
     {
-        ScaleMeasurement[]  tupleScaleData = new ScaleMeasurement[3];
+        ScaleMeasurement[] tupleScaleData = new ScaleMeasurement[3];
 
         tupleScaleData[0] = measurementDAO.getPrevious(id, getSelectedScaleUser().getId());
         tupleScaleData[1] = measurementDAO.get(id);
