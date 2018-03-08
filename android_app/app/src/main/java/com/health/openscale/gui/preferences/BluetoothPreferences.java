@@ -34,7 +34,6 @@ import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.widget.BaseAdapter;
 import android.widget.Toast;
-import android.util.Log;
 
 import com.health.openscale.R;
 import com.health.openscale.core.bluetooth.BluetoothCommunication;
@@ -63,7 +62,6 @@ public class BluetoothPreferences extends PreferenceFragment implements SharedPr
     public void startSearching() {
         foundDevices.clear();
 
-        Log.w("openscale","Preferences - start searching");
         IntentFilter filter = new IntentFilter();
 
         filter.addAction(BluetoothDevice.ACTION_FOUND);
@@ -73,13 +71,11 @@ public class BluetoothPreferences extends PreferenceFragment implements SharedPr
         getActivity().registerReceiver(mReceiver, filter);
         isReceiverRegistered = true;
         btAdapter.startDiscovery();
-        Log.w("openscale","Preferences - end of startSearching");
     }
 
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
-            Log.w("openscale","Preferences - onRecieve - started");
 
             if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
                 //discovery starts, we can show progress dialog or perform other tasks
@@ -90,24 +86,19 @@ public class BluetoothPreferences extends PreferenceFragment implements SharedPr
             } else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 //bluetooth device found
                 BluetoothDevice device = (BluetoothDevice) intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-            Log.w("openscale","Preferences - onReceive - Bluetooth device found");
 
                 if (device.getName() == null) {
-                    Log.w("openscale","Preferences - onReceive - device name is null");
                     return;
                 }
 
                 foundDevices.put(device.getAddress(), device.getName());
 
                 for (Map.Entry<String, String> entry : foundDevices.entrySet()) {
-                     Log.w("openscale","Preferences - onReceive - loop through foundDevices.entrySet");
                     if (getActivity() != null) {
                         Preference prefBtDevice = new Preference(getActivity().getBaseContext());
                         prefBtDevice.setSummary(entry.getKey());
-                        Log.w("openscale","Preferences - onRecieve - getActivity was not null");
 
                         for (BluetoothCommunication.BT_DEVICE_ID btScaleID : BluetoothCommunication.BT_DEVICE_ID.values()) {
-                            Log.w("openscale","Looking for a scale device within Preferences");
                             BluetoothCommunication btDevice = BluetoothCommunication.getBtDevice(getActivity().getBaseContext(), btScaleID);
 
                             if (btDevice.checkDeviceName(entry.getValue())) {
@@ -144,7 +135,6 @@ public class BluetoothPreferences extends PreferenceFragment implements SharedPr
 
         btAdapter = BluetoothAdapter.getDefaultAdapter();
 
-        Log.w("openscale","Preferences - onCreate");
 
         addPreferencesFromResource(R.xml.bluetooth_preferences);
 
