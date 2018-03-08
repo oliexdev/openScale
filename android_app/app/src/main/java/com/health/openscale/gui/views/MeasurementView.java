@@ -381,7 +381,6 @@ public abstract class MeasurementView extends TableLayout {
         return openScale.getSelectedScaleUser();
     }
 
-    protected abstract boolean showSoftInputForInputDialog();
     protected abstract View getInputView();
     protected abstract boolean validateAndSetInput(View view);
 
@@ -400,15 +399,6 @@ public abstract class MeasurementView extends TableLayout {
         dialog.setTitle(getName());
         dialog.setIcon(getIcon());
 
-        final InputMethodManager imm = (InputMethodManager) getContext()
-                .getSystemService(Context.INPUT_METHOD_SERVICE);
-        if (showSoftInputForInputDialog()) {
-            imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
-        }
-        else if (dialog.getCurrentFocus() != null) {
-            imm.hideSoftInputFromWindow(dialog.getCurrentFocus().getWindowToken(), 0);
-        }
-
         final View input = getInputView();
 
         FrameLayout fl = dialog.findViewById(android.R.id.custom);
@@ -423,7 +413,6 @@ public abstract class MeasurementView extends TableLayout {
                     && !validateAndSetInput(input)) {
                     return;
                 }
-                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
                 dialog.dismiss();
             }
         };

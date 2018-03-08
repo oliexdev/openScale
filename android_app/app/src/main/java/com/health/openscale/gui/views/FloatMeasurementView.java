@@ -404,11 +404,6 @@ public abstract class FloatMeasurementView extends MeasurementView {
         showEvaluatorRow(show);
     }
 
-    @Override
-    protected boolean showSoftInputForInputDialog() {
-        return true;
-    }
-
     private float validateAndGetInput(View view) {
         EditText editText = view.findViewById(R.id.float_input);
         String text = editText.getText().toString();
@@ -441,7 +436,6 @@ public abstract class FloatMeasurementView extends MeasurementView {
 
         final EditText input = view.findViewById(R.id.float_input);
         input.setText(formatValue(value));
-        input.requestFocus();
 
         final TextView unit = view.findViewById(R.id.float_input_unit);
         unit.setText(getUnit());
