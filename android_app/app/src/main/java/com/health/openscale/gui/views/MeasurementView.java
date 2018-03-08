@@ -65,7 +65,6 @@ public abstract class MeasurementView extends TableLayout {
     private ImageView iconView;
     private TextView nameView;
     private TextView valueView;
-    private LinearLayout incDecLayout;
     private ImageView editModeView;
     private ImageView indicatorView;
 
@@ -173,14 +172,11 @@ public abstract class MeasurementView extends TableLayout {
         evaluatorRow = new TableRow(context);
         evaluatorView = new LinearGaugeView(context);
 
-        incDecLayout = new LinearLayout(context);
-
         measurementRow.setLayoutParams(new TableRow.LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.WRAP_CONTENT, 1.0f));
         measurementRow.setGravity(Gravity.CENTER);
         measurementRow.addView(iconView);
         measurementRow.addView(nameView);
         measurementRow.addView(valueView);
-        measurementRow.addView(incDecLayout);
         measurementRow.addView(editModeView);
         measurementRow.addView(indicatorView);
 
@@ -199,11 +195,6 @@ public abstract class MeasurementView extends TableLayout {
         valueView.setGravity(Gravity.RIGHT | Gravity.CENTER);
         valueView.setPadding(0,0,20,0);
         valueView.setLayoutParams(new TableRow.LayoutParams(0, LayoutParams.WRAP_CONTENT, 0.29f));
-
-        incDecLayout.setOrientation(VERTICAL);
-        incDecLayout.setVisibility(View.GONE);
-        incDecLayout.setPadding(0,0,0,0);
-        incDecLayout.setLayoutParams(new TableRow.LayoutParams(0, LayoutParams.MATCH_PARENT, 0.05f));
 
         editModeView.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_editable));
         editModeView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
@@ -224,10 +215,6 @@ public abstract class MeasurementView extends TableLayout {
         spaceAfterEvaluatorView.setLayoutParams(new TableRow.LayoutParams(0, LayoutParams.WRAP_CONTENT, 0.01f));
 
         setOnClickListener(new onClickListenerEvaluation());
-    }
-
-    protected LinearLayout getIncDecLayout() {
-        return incDecLayout;
     }
 
     public void setOnUpdateListener(MeasurementViewUpdateListener listener) {
@@ -270,14 +257,12 @@ public abstract class MeasurementView extends TableLayout {
             case VIEW:
                 indicatorView.setVisibility(View.VISIBLE);
                 editModeView.setVisibility(View.GONE);
-                incDecLayout.setVisibility(View.GONE);
                 nameView.setVisibility(View.VISIBLE);
                 break;
             case EDIT:
             case ADD:
                 indicatorView.setVisibility(View.GONE);
                 editModeView.setVisibility(View.VISIBLE);
-                incDecLayout.setVisibility(View.VISIBLE);
                 nameView.setVisibility(View.VISIBLE);
 
                 if (!isEditable()) {
@@ -286,7 +271,6 @@ public abstract class MeasurementView extends TableLayout {
                 break;
             case STATISTIC:
                 indicatorView.setVisibility(View.GONE);
-                incDecLayout.setVisibility(View.GONE);
                 editModeView.setVisibility(View.GONE);
                 nameView.setVisibility(View.GONE);
                 break;
