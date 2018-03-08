@@ -76,11 +76,6 @@ public class CommentMeasurementView extends MeasurementView {
     }
 
     @Override
-    protected boolean showSoftInputForInputDialog() {
-        return true;
-    }
-
-    @Override
     protected View getInputView() {
         EditText input = new EditText(getContext());
 
@@ -91,7 +86,6 @@ public class CommentMeasurementView extends MeasurementView {
         input.setText(getValueAsString());
         input.setSelectAllOnFocus(true);
 
-        input.requestFocus();
         return input;
     }
 
