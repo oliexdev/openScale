@@ -31,6 +31,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -417,7 +418,11 @@ public abstract class MeasurementView extends TableLayout {
 
         final MeasurementView next = getNextView();
         if (next != null) {
-            dialog.getButton(DialogInterface.BUTTON_NEUTRAL).setOnClickListener(new OnClickListener() {
+            Button neutral = dialog.getButton(DialogInterface.BUTTON_NEUTRAL);
+            neutral.setCompoundDrawablesRelativeWithIntrinsicBounds(
+                    next.getIcon(), null, null, null);
+            neutral.setCompoundDrawablePadding((int)(8 * getResources().getDisplayMetrics().density));
+            neutral.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if (validateAndSetInput(input)) {
