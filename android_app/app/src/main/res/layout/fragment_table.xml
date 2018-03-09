@@ -5,44 +5,6 @@
     android:orientation="vertical">
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="5dp"
-        android:gravity="center"
-        android:background="?attr/colorPrimary"
-        android:orientation="horizontal">
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="?attr/colorPrimary"
-            android:gravity="left"
-            android:layout_weight="1"
-            android:orientation="horizontal">
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/subpageView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="?attr/colorPrimary"
-            android:gravity="center"
-            android:layout_weight="0"
-            android:orientation="horizontal">
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="?attr/colorPrimary"
-            android:gravity="right"
-            android:layout_weight="0.9"
-            android:orientation="horizontal">
-        </LinearLayout>
-
-    </LinearLayout>
-
-    <LinearLayout
         android:id="@+id/tableHeaderView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
