@@ -33,7 +33,7 @@
     <string name="label_delete_all">Alles löschen</string>
     <string name="label_enable_labels">Notiz auf den Datenpunkt</string>
     <string name="label_export">Exportieren</string>
-    <string name="label_fat">Körperfettanteil</string>
+    <string name="label_fat">Körperfett</string>
     <string name="label_gender">Geschlecht</string>
     <string name="label_goal_date">Zieldatum</string>
     <string name="label_goal_date_is">Das Zieldatum ist</string>
@@ -42,7 +42,7 @@
     <string name="label_last_month">Letzten 30 Tage</string>
     <string name="label_last_week">Letzten 7 Tage</string>
     <string name="label_male">Männlich</string>
-    <string name="label_muscle">Muskelanteil</string>
+    <string name="label_muscle">Muskeln</string>
     <string name="label_no">Nein</string>
     <string name="label_ok">OK</string>
     <string name="label_scale_unit">Einheit</string>
