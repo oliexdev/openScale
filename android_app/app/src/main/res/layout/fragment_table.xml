@@ -13,18 +13,9 @@
         android:paddingTop="5dp">
     </LinearLayout>
 
-    <LinearLayout
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/tableDataView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="0.9"
-        android:gravity="bottom"
-        android:orientation="horizontal">
-
-        <ListView
-            android:id="@+id/tableDataView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginHorizontal="5dp">
-        </ListView>
-    </LinearLayout>
+        android:scrollbars="vertical" />
 </LinearLayout>

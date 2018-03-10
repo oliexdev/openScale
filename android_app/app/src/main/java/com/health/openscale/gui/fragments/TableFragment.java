@@ -19,17 +19,16 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -48,8 +47,11 @@ import static android.util.TypedValue.COMPLEX_UNIT_DIP;
 
 public class TableFragment extends Fragment implements FragmentUpdateListener {
     private View tableView;
-    private ListView tableDataView;
     private LinearLayout tableHeaderView;
+
+    private RecyclerView recyclerView;
+    private MeasurementsAdapter adapter;
+    private RecyclerView.LayoutManager layoutManager;
 
     private List<MeasurementView> measurementViews;
 
@@ -58,15 +60,19 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
-    {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         tableView = inflater.inflate(R.layout.fragment_table, container, false);
 
-        tableDataView = tableView.findViewById(R.id.tableDataView);
         tableHeaderView = tableView.findViewById(R.id.tableHeaderView);
+        recyclerView = tableView.findViewById(R.id.tableDataView);
 
-        tableDataView.setAdapter(new ListViewAdapter());
-        tableDataView.setOnItemClickListener(new onClickListenerRow());
+        recyclerView.setHasFixedSize(true);
+
+        layoutManager = new LinearLayoutManager(getContext());
+        recyclerView.setLayoutManager(layoutManager);
+
+        adapter = new MeasurementsAdapter();
+        recyclerView.setAdapter(adapter);
 
         measurementViews = MeasurementView.getMeasurementList(
                 getContext(), MeasurementView.DateTimeOrder.FIRST);
@@ -108,7 +114,6 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
             }
         }
 
-        ListViewAdapter adapter = (ListViewAdapter) tableDataView.getAdapter();
         adapter.setMeasurements(visibleMeasurements, scaleMeasurementList);
     }
 
@@ -116,16 +121,15 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
         return (int)(dp * getResources().getDisplayMetrics().density + 0.5f);
     }
 
-    private class onClickListenerRow implements AdapterView.OnItemClickListener {
-        @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            Intent intent = new Intent(tableView.getContext(), DataEntryActivity.class);
-            intent.putExtra(DataEntryActivity.EXTRA_ID, (int)id);
-            startActivity(intent);
-        }
-    }
+    private class MeasurementsAdapter extends RecyclerView.Adapter<MeasurementsAdapter.ViewHolder> {
 
-    private class ListViewAdapter extends BaseAdapter {
+        public class ViewHolder extends RecyclerView.ViewHolder {
+            public LinearLayout measurementView;
+            public ViewHolder(LinearLayout view) {
+                super(view);
+                measurementView = view;
+            }
+        }
 
         private List<MeasurementView> visibleMeasurements;
         private List<ScaleMeasurement> scaleMeasurements;
@@ -143,25 +147,42 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
         }
 
         @Override
-        public int getCount() {
-            return scaleMeasurements == null ? 0 : scaleMeasurements.size();
+        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            LinearLayout row = new LinearLayout(getContext());
+            row.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT));
+
+            final int screenSize = getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK;
+            final boolean isSmallScreen =
+                    screenSize != Configuration.SCREENLAYOUT_SIZE_XLARGE
+                            && screenSize != Configuration.SCREENLAYOUT_SIZE_LARGE;
+
+            for (int i = 0; i < visibleMeasurements.size(); ++i) {
+                TextView column = new TextView(getContext());
+                LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        1);
+                layoutParams.width = 0;
+                column.setLayoutParams(layoutParams);
+                column.setMinLines(2);
+                column.setGravity(Gravity.CENTER_HORIZONTAL);
+
+                if (isSmallScreen) {
+                    column.setTextSize(COMPLEX_UNIT_DIP, 9);
+                }
+                row.addView(column);
+            }
+
+            return new ViewHolder(row);
         }
 
         @Override
-        public Object getItem(int position) {
-            return scaleMeasurements.get(position);
-        }
+        public void onBindViewHolder(ViewHolder holder, int position) {
+            final ScaleMeasurement measurement = scaleMeasurements.get(position);
 
-        @Override
-        public long getItemId(int position) {
-            return scaleMeasurements.get(position).getId();
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
             // Create entries in stringCache if needed
             if (stringCache[position][0] == null) {
-                ScaleMeasurement measurement = scaleMeasurements.get(position);
                 ScaleMeasurement prevMeasurement = null;
                 if (position + 1 < scaleMeasurements.size()) {
                     prevMeasurement = scaleMeasurements.get(position + 1);
@@ -178,49 +199,26 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
                 }
             }
 
-            // Create view if needed
-            LinearLayout row;
-            if (convertView == null) {
-                row = new LinearLayout(getContext());
-
-                final int screenSize = getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK;
-                final boolean isSmallScreen =
-                        screenSize != Configuration.SCREENLAYOUT_SIZE_XLARGE
-                        && screenSize != Configuration.SCREENLAYOUT_SIZE_LARGE;
-
-                for (int i = 0; i < visibleMeasurements.size(); ++i) {
-                    TextView column = new TextView(getContext());
-                    LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
-                            LinearLayout.LayoutParams.WRAP_CONTENT,
-                            LinearLayout.LayoutParams.WRAP_CONTENT,
-                            1);
-                    layoutParams.width = 0;
-                    column.setLayoutParams(layoutParams);
-                    column.setMinLines(2);
-                    column.setGravity(Gravity.CENTER_HORIZONTAL);
-
-                    if (isSmallScreen) {
-                        column.setTextSize(COMPLEX_UNIT_DIP, 9);
-                    }
-                    row.addView(column);
-                }
-            }
-            else {
-                row = (LinearLayout) convertView;
-            }
-
             // Fill view with data
+            LinearLayout row = holder.measurementView;
             for (int i = 0; i < visibleMeasurements.size(); ++i) {
                 TextView column = (TextView) row.getChildAt(i);
                 column.setText(stringCache[position][i]);
             }
 
-            return row;
+            row.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(getContext(), DataEntryActivity.class);
+                    intent.putExtra(DataEntryActivity.EXTRA_ID, measurement.getId());
+                    startActivity(intent);
+                }
+            });
         }
 
         @Override
-        public boolean hasStableIds() {
-            return true;
+        public int getItemCount() {
+            return scaleMeasurements == null ? 0 : scaleMeasurements.size();
         }
     }
 }
