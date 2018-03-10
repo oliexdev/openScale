@@ -45,21 +45,18 @@ public class MuscleMeasurementView extends FloatMeasurementView {
     }
 
     @Override
-    protected float getMeasurementValue(ScaleMeasurement measurement) {
-        if (percentageEnable) {
-            return measurement.getMuscle();
-        }
+    protected boolean shouldConvertPercentageToAbsoluteWeight() {
+        return !percentageEnable;
+    }
 
-        return measurement.getConvertedWeight(getScaleUser().getScaleUnit()) / 100.0f * measurement.getMuscle();
+    @Override
+    protected float getMeasurementValue(ScaleMeasurement measurement) {
+        return measurement.getMuscle();
     }
 
     @Override
     protected void setMeasurementValue(float value, ScaleMeasurement measurement) {
-        if (percentageEnable) {
-            measurement.setMuscle(value);
-        } else {
-            measurement.setMuscle(100.0f / measurement.getConvertedWeight(getScaleUser().getScaleUnit()) * value);
-        }
+        measurement.setMuscle(value);
     }
 
     @Override
@@ -73,11 +70,7 @@ public class MuscleMeasurementView extends FloatMeasurementView {
 
     @Override
     protected float getMaxValue() {
-        if (percentageEnable) {
-            return 80;
-        }
-
-        return 300;
+        return maybeConvertPercentageToAbsolute(80);
     }
 
     @Override

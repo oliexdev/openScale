@@ -47,21 +47,18 @@ public class FatMeasurementView extends FloatMeasurementView {
     }
 
     @Override
-    protected float getMeasurementValue(ScaleMeasurement measurement) {
-        if (percentageEnable) {
-            return measurement.getFat();
-        }
+    protected boolean shouldConvertPercentageToAbsoluteWeight() {
+        return !percentageEnable;
+    }
 
-        return measurement.getConvertedWeight(getScaleUser().getScaleUnit()) / 100.0f * measurement.getFat();
+    @Override
+    protected float getMeasurementValue(ScaleMeasurement measurement) {
+        return measurement.getFat();
     }
 
     @Override
     protected void setMeasurementValue(float value, ScaleMeasurement measurement) {
-        if (percentageEnable) {
-            measurement.setFat(value);
-        } else {
-            measurement.setFat(100.0f / measurement.getConvertedWeight(getScaleUser().getScaleUnit()) * value);
-        }
+        measurement.setFat(value);
     }
 
     @Override
@@ -75,11 +72,7 @@ public class FatMeasurementView extends FloatMeasurementView {
 
     @Override
     protected float getMaxValue() {
-        if (percentageEnable) {
-            return 80;
-        }
-
-        return 300;
+        return maybeConvertPercentageToAbsolute(80);
     }
 
     @Override

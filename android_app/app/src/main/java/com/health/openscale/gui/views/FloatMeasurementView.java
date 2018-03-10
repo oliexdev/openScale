@@ -54,6 +54,7 @@ public abstract class FloatMeasurementView extends MeasurementView {
     private Date dateTime;
     private float value = NO_VALUE;
     private float previousValue = NO_VALUE;
+    private float userConvertedWeight;
     private EvaluationResult evaluationResult;
 
     private String nameText;
@@ -134,7 +135,16 @@ public abstract class FloatMeasurementView extends MeasurementView {
 
             if (getMeasurementMode() != MeasurementViewMode.ADD) {
                 EvaluationSheet evalSheet = new EvaluationSheet(getScaleUser(), dateTime);
-                evaluationResult = evaluateSheet(evalSheet, value);
+                float evalValue = value;
+                if (shouldConvertPercentageToAbsoluteWeight()) {
+                    evalValue = makeRelativeWeight(value);
+                }
+                evaluationResult = evaluateSheet(evalSheet, evalValue);
+                if (shouldConvertPercentageToAbsoluteWeight()) {
+                    evaluationResult.value = value;
+                    evaluationResult.lowLimit = makeAbsoluteWeight(evaluationResult.lowLimit);
+                    evaluationResult.highLimit = makeAbsoluteWeight(evaluationResult.highLimit);
+                }
             }
         }
         setEvaluationView(evaluationResult);
@@ -227,6 +237,38 @@ public abstract class FloatMeasurementView extends MeasurementView {
         return isEstimationEnabled() && getMeasurementMode() == MeasurementViewMode.ADD;
     }
 
+    protected boolean shouldConvertPercentageToAbsoluteWeight() {
+        return false;
+    }
+
+    private float makeAbsoluteWeight(float percentage) {
+        return userConvertedWeight / 100.0f * percentage;
+    }
+
+    private float makeRelativeWeight(float absolute) {
+        return 100.0f / userConvertedWeight * absolute;
+    }
+
+    protected float maybeConvertPercentageToAbsolute(float value) {
+        if (shouldConvertPercentageToAbsoluteWeight()) {
+            return makeAbsoluteWeight(value);
+        }
+
+        return value;
+    }
+
+    private void updateUserConvertedWeight(ScaleMeasurement measurement) {
+        if (shouldConvertPercentageToAbsoluteWeight()) {
+            // Make sure weight is never 0 to avoid division by 0
+            userConvertedWeight = Math.max(1.0f,
+                    measurement.getConvertedWeight(getScaleUser().getScaleUnit()));
+        }
+        else {
+            // Only valid when shouldConvertPercentageToAbsoluteWeight() returns true
+            userConvertedWeight = -1.0f;
+        }
+    }
+
     @Override
     public void loadFrom(ScaleMeasurement measurement, ScaleMeasurement previousMeasurement) {
         dateTime = measurement.getDateTime();
@@ -235,9 +277,21 @@ public abstract class FloatMeasurementView extends MeasurementView {
         float newPreviousValue = NO_VALUE;
 
         if (!useAutoValue()) {
-            newValue = clampValue(getMeasurementValue(measurement));
+            updateUserConvertedWeight(measurement);
+
+            newValue = getMeasurementValue(measurement);
+            newValue = maybeConvertPercentageToAbsolute(newValue);
+            newValue = clampValue(newValue);
+
             if (previousMeasurement != null) {
-                newPreviousValue = clampValue(getMeasurementValue(previousMeasurement));
+                float saveUserConvertedWeight = userConvertedWeight;
+                updateUserConvertedWeight(previousMeasurement);
+
+                newPreviousValue = getMeasurementValue(previousMeasurement);
+                newPreviousValue = maybeConvertPercentageToAbsolute(newPreviousValue);
+                newPreviousValue = clampValue(newPreviousValue);
+
+                userConvertedWeight = saveUserConvertedWeight;
             }
         }
 
@@ -247,7 +301,14 @@ public abstract class FloatMeasurementView extends MeasurementView {
     @Override
     public void saveTo(ScaleMeasurement measurement) {
         if (!useAutoValue()) {
-            setMeasurementValue(value, measurement);
+            if (shouldConvertPercentageToAbsoluteWeight()) {
+                // Make sure to use the current weight to get a correct percentage
+                updateUserConvertedWeight(measurement);
+                setMeasurementValue(makeRelativeWeight(value), measurement);
+            }
+            else {
+                setMeasurementValue(value, measurement);
+            }
         }
     }
 
