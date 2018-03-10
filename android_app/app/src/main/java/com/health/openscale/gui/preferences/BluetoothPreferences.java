@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+
 public class BluetoothPreferences extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
     private static final String PREFERENCE_KEY_BLUETOOTH_SMARTUSERASSIGN = "smartUserAssign";
     private static final String PREFERENCE_KEY_BLUETOOTH_IGNOREOUTOFRANGE = "ignoreOutOfRange";
@@ -135,6 +136,7 @@ public class BluetoothPreferences extends PreferenceFragment implements SharedPr
         super.onCreate(savedInstanceState);
 
         btAdapter = BluetoothAdapter.getDefaultAdapter();
+
 
         addPreferencesFromResource(R.xml.bluetooth_preferences);
 
