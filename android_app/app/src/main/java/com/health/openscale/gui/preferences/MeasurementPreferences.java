@@ -33,7 +33,6 @@ import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceGroup;
 import android.preference.PreferenceManager;
-import android.preference.PreferenceScreen;
 import android.preference.SwitchPreference;
 import android.view.DragEvent;
 import android.view.MotionEvent;
@@ -71,7 +70,6 @@ public class MeasurementPreferences extends PreferenceFragment implements Shared
 
     private Preference deleteAll;
 
-    private PreferenceScreen measurementOrderScreen;
     private PreferenceCategory measurementOrderCategory;
 
     private CheckBoxPreference fatEnable;
@@ -98,7 +96,6 @@ public class MeasurementPreferences extends PreferenceFragment implements Shared
         deleteAll.setOnPreferenceClickListener(new onClickListenerDeleteAll());
 
         final Context context = getActivity().getBaseContext();
-        measurementOrderScreen = (PreferenceScreen) findPreference(MeasurementView.PREF_MEASUREMENT_ORDER);
 
         measurementOrderCategory = (PreferenceCategory) findPreference(PREFERENCE_KEY_ORDER_CATEGORY);
         measurementOrderCategory.setOrderingAsAdded(true);
