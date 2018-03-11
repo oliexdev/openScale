@@ -92,11 +92,6 @@ public class DateMeasurementView extends MeasurementView {
     }
 
     @Override
-    protected boolean showSoftInputForInputDialog() {
-        return false;
-    }
-
-    @Override
     protected View getInputView() {
         DatePicker datePicker = new DatePicker(getContext());
         datePicker.setPadding(0, 15, 0, 0);

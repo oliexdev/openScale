@@ -94,11 +94,6 @@ public class TimeMeasurementView extends MeasurementView {
     }
 
     @Override
-    protected boolean showSoftInputForInputDialog() {
-        return false;
-    }
-
-    @Override
     protected View getInputView() {
         TimePicker timePicker = new TimePicker(getContext());
         timePicker.setPadding(0, 15, 0, 0);

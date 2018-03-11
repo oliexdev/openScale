@@ -59,60 +59,10 @@ public abstract class FloatMeasurementView extends MeasurementView {
 
     private String nameText;
 
-    private Button incButton;
-    private Button decButton;
-
     public FloatMeasurementView(Context context, String text, Drawable icon) {
         super(context, text, icon);
-        initView(context);
 
         nameText = text;
-    }
-
-    private void initView(Context context) {
-        incButton = new Button(context);
-        decButton = new Button(context);
-
-        LinearLayout incDecLayout = getIncDecLayout();
-        incDecLayout.addView(incButton);
-        incDecLayout.addView(decButton);
-
-        incButton.setText("+");
-        incButton.setBackgroundColor(Color.TRANSPARENT);
-        incButton.setPadding(0,0,0,0);
-        incButton.setLayoutParams(new TableRow.LayoutParams(LayoutParams.MATCH_PARENT, 0, 0.50f));
-        incButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                incValue();
-            }
-        });
-        incButton.setOnTouchListener(new RepeatListener(400, 100, new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                incValue();
-            }
-        }));
-        incButton.setVisibility(View.GONE);
-
-        decButton.setText("-");
-        decButton.setBackgroundColor(Color.TRANSPARENT);
-        decButton.setPadding(0,0,0,0);
-        decButton.setLayoutParams(new TableRow.LayoutParams(LayoutParams.MATCH_PARENT, 0, 0.50f));
-        decButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                decValue();
-            }
-        });
-
-        decButton.setOnTouchListener(new RepeatListener(400, 100, new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                decValue();
-            }
-        }));
-        decButton.setVisibility(View.GONE);
     }
 
     private float clampValue(float value) {
@@ -206,13 +156,6 @@ public abstract class FloatMeasurementView extends MeasurementView {
         if (valueChanged || previousValueChanged) {
             setPreviousValueInner(newPreviousValue, suffix);
         }
-    }
-
-    private void incValue() {
-        setValue(clampValue(value + INC_DEC_DELTA), previousValue, true);
-    }
-    private void decValue() {
-        setValue(clampValue(value - INC_DEC_DELTA), previousValue, true);
     }
 
     protected String formatValue(float value) {
@@ -385,28 +328,9 @@ public abstract class FloatMeasurementView extends MeasurementView {
     }
 
     @Override
-    public void setEditMode(MeasurementViewMode mode) {
-        super.setEditMode(mode);
-
-        if (mode == MeasurementViewMode.VIEW || !isEditable()) {
-            incButton.setVisibility(View.GONE);
-            decButton.setVisibility(View.GONE);
-        }
-        else {
-            incButton.setVisibility(View.VISIBLE);
-            decButton.setVisibility(View.VISIBLE);
-        }
-    }
-
-    @Override
     public void setExpand(boolean state) {
         final boolean show = state && isVisible() && evaluationResult != null;
         showEvaluatorRow(show);
-    }
-
-    @Override
-    protected boolean showSoftInputForInputDialog() {
-        return true;
     }
 
     private float validateAndGetInput(View view) {
@@ -441,7 +365,6 @@ public abstract class FloatMeasurementView extends MeasurementView {
 
         final EditText input = view.findViewById(R.id.float_input);
         input.setText(formatValue(value));
-        input.requestFocus();
 
         final TextView unit = view.findViewById(R.id.float_input_unit);
         unit.setText(getUnit());
