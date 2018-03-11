@@ -171,7 +171,7 @@
     <string name="label_month_view">Monatsansicht</string>
     <string name="label_weeks_view">Wochenansicht</string>
     <string name="permission_not_granted">Zugriff verweigert</string>
-    <string name="permission_bluetooth_info">openScale benötigt Zugriff auf die grobe Position, um nach Bluetooth Geräten zu suchen können</string>
+    <string name="permission_bluetooth_info">openScale benötigt die Erlaubnis, auf den ungefähren Standort zuzugreifen, um nach Bluetooth-Geräten suchen zu können.</string>
     <string name="permission_bluetooth_info_title">Information</string>
     <string name="label_next">Weiter</string>
     <string name="label_measurement_order">Messwert Reihenfolge</string>
