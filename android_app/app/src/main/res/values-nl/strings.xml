@@ -167,7 +167,7 @@
 <string name="title_general">Algemeen</string>
 
     <string name="label_share">Delen</string>
-    <string name="label_share_subject">openScale CSV data export (%s)</string>
+    <string name="label_share_subject">openScale CSV data exporteren (%s)</string>
 
     <string name="label_fat_percentage">Lichaamsvet in %</string>
     <string name="label_water_percentage">Lichaamsvocht in %</string>
