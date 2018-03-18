@@ -251,7 +251,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
                         setHasPoints(prefs.getBoolean("pointsEnable", true)).
                         setFormatter(new SimpleLineChartValueFormatter(1));
 
-                if (measurementView.isVisible()) {
+                if (measurementView.isVisible() && prefs.getBoolean(String.valueOf("actionButton" + measurementView.getName()), true)) {
                     diagramLineList.add(lineaDiagram);
                 }
             }
