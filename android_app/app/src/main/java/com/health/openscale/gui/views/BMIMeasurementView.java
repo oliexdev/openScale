@@ -16,7 +16,6 @@
 package com.health.openscale.gui.views;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.support.v4.content.ContextCompat;
 
@@ -38,8 +37,8 @@ public class BMIMeasurementView extends FloatMeasurementView {
     }
 
     @Override
-    public void updatePreferences(SharedPreferences preferences) {
-        setVisible(preferences.getBoolean("weightEnable", true));
+    public String[] getDependencyKeys() {
+        return new String[] {WeightMeasurementView.KEY};
     }
 
     @Override

@@ -16,7 +16,6 @@
 package com.health.openscale.gui.views;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.support.v4.content.ContextCompat;
 
@@ -38,9 +37,8 @@ public class WHRMeasurementView extends FloatMeasurementView {
     }
 
     @Override
-    public void updatePreferences(SharedPreferences preferences) {
-        setVisible(preferences.getBoolean("hipEnable", false)
-                && preferences.getBoolean("waistEnable", false));
+    public String[] getDependencyKeys() {
+        return new String[] {HipMeasurementView.KEY, WaistMeasurementView.KEY};
     }
 
     @Override

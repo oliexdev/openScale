@@ -16,7 +16,6 @@
 package com.health.openscale.gui.views;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.text.InputType;
@@ -65,11 +64,6 @@ public class CommentMeasurementView extends MeasurementView {
     @Override
     public void saveState(Bundle state) {
         state.putString(getKey(), comment);
-    }
-
-    @Override
-    public void updatePreferences(SharedPreferences preferences) {
-        // Empty
     }
 
     @Override

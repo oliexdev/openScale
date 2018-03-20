@@ -16,7 +16,6 @@
 package com.health.openscale.gui.views;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.view.View;
@@ -83,11 +82,6 @@ public class TimeMeasurementView extends MeasurementView {
     @Override
     public void saveState(Bundle state) {
         state.putLong(getKey(), time.getTime());
-    }
-
-    @Override
-    public void updatePreferences(SharedPreferences preferences) {
-        // Empty
     }
 
     @Override
