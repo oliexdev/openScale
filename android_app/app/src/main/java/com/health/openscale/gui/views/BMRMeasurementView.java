@@ -28,6 +28,7 @@ import com.health.openscale.core.evaluation.EvaluationSheet;
 import java.util.Locale;
 
 public class BMRMeasurementView extends FloatMeasurementView {
+    public static String KEY = "bmr";
 
     public BMRMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_bmr), ContextCompat.getDrawable(context, R.drawable.ic_bmr));
@@ -35,7 +36,7 @@ public class BMRMeasurementView extends FloatMeasurementView {
 
     @Override
     public String getKey() {
-        return "bmr";
+        return KEY;
     }
 
     @Override

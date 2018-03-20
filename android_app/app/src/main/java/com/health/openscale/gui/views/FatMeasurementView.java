@@ -26,6 +26,7 @@ import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 
 public class FatMeasurementView extends FloatMeasurementView {
+    public static String KEY = "fat";
 
     private boolean estimateFatEnable;
     private boolean percentageEnable;
@@ -36,7 +37,7 @@ public class FatMeasurementView extends FloatMeasurementView {
 
     @Override
     public String getKey() {
-        return "fat";
+        return KEY;
     }
 
     @Override

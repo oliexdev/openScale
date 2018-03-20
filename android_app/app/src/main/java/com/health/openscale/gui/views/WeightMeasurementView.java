@@ -27,6 +27,7 @@ import com.health.openscale.core.evaluation.EvaluationSheet;
 import com.health.openscale.core.utils.Converters;
 
 public class WeightMeasurementView extends FloatMeasurementView {
+    public static String KEY = "weight";
 
     public WeightMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_weight), ContextCompat.getDrawable(context, R.drawable.ic_weight));
@@ -34,7 +35,7 @@ public class WeightMeasurementView extends FloatMeasurementView {
 
     @Override
     public String getKey() {
-        return "weight";
+        return KEY;
     }
 
     @Override

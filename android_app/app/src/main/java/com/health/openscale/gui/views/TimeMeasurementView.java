@@ -30,6 +30,8 @@ import java.util.Calendar;
 import java.util.Date;
 
 public class TimeMeasurementView extends MeasurementView {
+    public static String KEY = "time";
+
     private DateFormat timeFormat;
     private Date time;
 
@@ -40,7 +42,7 @@ public class TimeMeasurementView extends MeasurementView {
 
     @Override
     public String getKey() {
-        return "time";
+        return KEY;
     }
 
     private void setValue(Date newTime, boolean callListener) {

@@ -26,6 +26,7 @@ import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 
 public class WHtRMeasurementView extends FloatMeasurementView {
+    public static String KEY = "whtr";
 
     public WHtRMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_whtr), ContextCompat.getDrawable(context, R.drawable.ic_whtr));
@@ -33,7 +34,7 @@ public class WHtRMeasurementView extends FloatMeasurementView {
 
     @Override
     public String getKey() {
-        return "whtr";
+        return KEY;
     }
 
     @Override

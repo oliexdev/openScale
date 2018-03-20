@@ -30,6 +30,8 @@ import java.util.Calendar;
 import java.util.Date;
 
 public class DateMeasurementView extends MeasurementView {
+    public static String KEY = "date";
+
     private static DateFormat dateFormat = DateFormat.getDateInstance();
     private Date date;
 
@@ -39,9 +41,8 @@ public class DateMeasurementView extends MeasurementView {
 
     @Override
     public String getKey() {
-        return "date";
+        return KEY;
     }
-
 
     private void setValue(Date newDate, boolean callListener) {
         if (!newDate.equals(date)) {
