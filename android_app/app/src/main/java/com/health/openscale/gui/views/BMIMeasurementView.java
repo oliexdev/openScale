@@ -26,6 +26,7 @@ import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 
 public class BMIMeasurementView extends FloatMeasurementView {
+    public static String KEY = "bmi";
 
     public BMIMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_bmi), ContextCompat.getDrawable(context, R.drawable.ic_bmi));
@@ -33,7 +34,7 @@ public class BMIMeasurementView extends FloatMeasurementView {
 
     @Override
     public String getKey() {
-        return "bmi";
+        return KEY;
     }
 
     @Override

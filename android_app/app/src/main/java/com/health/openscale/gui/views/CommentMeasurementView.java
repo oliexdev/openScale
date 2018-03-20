@@ -27,6 +27,8 @@ import com.health.openscale.R;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 
 public class CommentMeasurementView extends MeasurementView {
+    public static String KEY = "comment";
+
     private String comment;
 
     public CommentMeasurementView(Context context) {
@@ -35,7 +37,7 @@ public class CommentMeasurementView extends MeasurementView {
 
     @Override
     public String getKey() {
-        return "comment";
+        return KEY;
     }
 
     private void setValue(String newComment, boolean callListener) {
