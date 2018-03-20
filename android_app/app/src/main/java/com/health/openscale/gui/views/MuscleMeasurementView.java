@@ -41,7 +41,7 @@ public class MuscleMeasurementView extends FloatMeasurementView {
 
     @Override
     public void updatePreferences(SharedPreferences preferences) {
-        setVisible(preferences.getBoolean("muscleEnable", true));
+        super.updatePreferences(preferences);
         percentageEnable = preferences.getBoolean("musclePercentageEnable", true);
     }
 

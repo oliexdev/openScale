@@ -23,6 +23,7 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.CallSuper;
 import android.support.v4.content.ContextCompat;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
@@ -60,6 +61,8 @@ public abstract class MeasurementView extends TableLayout {
     public enum MeasurementViewMode {VIEW, EDIT, ADD, STATISTIC}
 
     public static String PREF_MEASUREMENT_ORDER = "measurementOrder";
+
+    private static String PREFERENCE_SUFFIX_ENABLE = "Enable";
 
     private TableRow measurementRow;
     private ImageView iconView;
@@ -242,6 +245,11 @@ public abstract class MeasurementView extends TableLayout {
     }
 
     public abstract String getKey();
+    public String[] getDependencyKeys() { return new String[]{}; }
+
+    public static String getPreferenceKey(String key, String suffix) {
+        return key + suffix;
+    }
 
     public abstract void loadFrom(ScaleMeasurement measurement, ScaleMeasurement previousMeasurement);
     public abstract void saveTo(ScaleMeasurement measurement);
@@ -249,7 +257,23 @@ public abstract class MeasurementView extends TableLayout {
     public abstract void restoreState(Bundle state);
     public abstract void saveState(Bundle state);
 
-    public abstract void updatePreferences(SharedPreferences preferences);
+    @CallSuper
+    public void updatePreferences(SharedPreferences prefs) {
+        boolean enable = prefs.getBoolean(
+                getPreferenceKey(getKey(), PREFERENCE_SUFFIX_ENABLE), true);
+
+        if (enable) {
+            for (String dep : getDependencyKeys()) {
+                if (!prefs.getBoolean(
+                        getPreferenceKey(dep, PREFERENCE_SUFFIX_ENABLE), true)) {
+                    enable = false;
+                    break;
+                }
+            }
+        }
+
+        setVisible(enable);
+    }
 
     public CharSequence getName() { return nameView.getText(); }
     public abstract String getValueAsString();

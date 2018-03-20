@@ -41,7 +41,7 @@ public class LBWMeasurementView extends FloatMeasurementView {
 
     @Override
     public void updatePreferences(SharedPreferences preferences) {
-        setVisible(preferences.getBoolean("lbwEnable", false));
+        super.updatePreferences(preferences);
         estimateLBWEnable = preferences.getBoolean("estimateLBWEnable", false);
     }
 
