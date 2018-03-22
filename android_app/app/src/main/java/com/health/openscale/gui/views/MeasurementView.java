@@ -62,7 +62,7 @@ public abstract class MeasurementView extends TableLayout {
 
     public static String PREF_MEASUREMENT_ORDER = "measurementOrder";
 
-    private static String PREFERENCE_SUFFIX_ENABLE = "Enable";
+    private MeasurementViewSettings settings;
 
     private TableRow measurementRow;
     private ImageView iconView;
@@ -78,13 +78,12 @@ public abstract class MeasurementView extends TableLayout {
     private MeasurementViewUpdateListener updateListener = null;
     private MeasurementViewMode measurementMode = VIEW;
 
-    private static SharedPreferences prefs;
-
+    private boolean isDisabledByDependency = false;
     private boolean updateViews = true;
 
     public MeasurementView(Context context, String text, Drawable icon) {
         super(context);
-        prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         String app_theme = prefs.getString("app_theme", "Light");
 
         if (app_theme.equals("Dark")) {
@@ -99,7 +98,10 @@ public abstract class MeasurementView extends TableLayout {
 
     public enum DateTimeOrder { FIRST, LAST, NONE }
 
-    public static final List<MeasurementView> getMeasurementList(Context context, DateTimeOrder dateTimeOrder) {
+    public static final List<MeasurementView> getMeasurementList(
+            Context context, DateTimeOrder dateTimeOrder) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+
         final List<MeasurementView> sorted = new ArrayList<>();
         if (dateTimeOrder == DateTimeOrder.FIRST) {
             sorted.add(new DateMeasurementView(context));
@@ -247,8 +249,12 @@ public abstract class MeasurementView extends TableLayout {
     public abstract String getKey();
     public abstract String[] getDependencyKeys();
 
-    public static String getPreferenceKey(String key, String suffix) {
-        return key + suffix;
+    public MeasurementViewSettings getSettings() {
+        if (settings ==  null) {
+            settings = new MeasurementViewSettings(
+                    PreferenceManager.getDefaultSharedPreferences(getContext()), getKey());
+        }
+        return settings;
     }
 
     public abstract void loadFrom(ScaleMeasurement measurement, ScaleMeasurement previousMeasurement);
@@ -259,19 +265,16 @@ public abstract class MeasurementView extends TableLayout {
 
     @CallSuper
     public void updatePreferences(SharedPreferences prefs) {
-        boolean enable = prefs.getBoolean(
-                getPreferenceKey(getKey(), PREFERENCE_SUFFIX_ENABLE), true);
-
-        if (enable) {
-            for (String dep : getDependencyKeys()) {
-                if (!prefs.getBoolean(
-                        getPreferenceKey(dep, PREFERENCE_SUFFIX_ENABLE), true)) {
-                    enable = false;
-                    break;
-                }
+        isDisabledByDependency = false;
+        for (String dep : getDependencyKeys()) {
+            MeasurementViewSettings depSettings = new MeasurementViewSettings(prefs, dep);
+            if (!depSettings.isEnabled()) {
+                isDisabledByDependency = true;
+                break;
             }
         }
 
+        boolean enable = !isDisabledByDependency && getSettings().isEnabled();
         setVisible(enable);
     }
 
@@ -351,6 +354,10 @@ public abstract class MeasurementView extends TableLayout {
 
     public void setExpand(boolean state) {
         showEvaluatorRow(false);
+    }
+
+    public boolean getIsDisabledByDependency() {
+        return isDisabledByDependency;
     }
 
     protected void setVisible(boolean isVisible) {
