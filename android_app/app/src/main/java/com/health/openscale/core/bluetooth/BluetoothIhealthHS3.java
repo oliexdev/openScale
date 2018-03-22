@@ -27,12 +27,9 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Set;
 import java.util.UUID;
 import java.util.Date;
-import java.util.Calendar;
 import java.util.Arrays;
 
 public class BluetoothIhealthHS3 extends BluetoothCommunication {
