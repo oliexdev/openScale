@@ -206,55 +206,50 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
 
     private void updateLastLineChart(List<ScaleMeasurement> scaleMeasurementList) {
-        int max_i = 7;
-
-        if (scaleMeasurementList.size() < 7) {
-            max_i = scaleMeasurementList.size();
-        }
-
-        List<Line> diagramLineList = new ArrayList<>();
-        List<AxisValue> axisValues = new ArrayList<>();
-
         final Calendar now = Calendar.getInstance();
         Calendar histCalendar = Calendar.getInstance();
 
+        scaleMeasurementLastDays = new ArrayList<>();
+        List<AxisValue> axisValues = new ArrayList<>();
+
+        int max_i = Math.min(7, scaleMeasurementList.size());
+        for (int i = 0; i < max_i; ++i) {
+            ScaleMeasurement measurement = scaleMeasurementList.get(max_i - i - 1);
+            scaleMeasurementLastDays.add(measurement);
+
+            histCalendar.setTime(measurement.getDateTime());
+            int days = DateTimeHelpers.daysBetween(now, histCalendar);
+            String label = getResources().getQuantityString(R.plurals.label_days, Math.abs(days), days);
+            axisValues.add(new AxisValue(i, label.toCharArray()));
+        }
+
+        List<Line> diagramLineList = new ArrayList<>();
+
         for (MeasurementView view : measurementViews) {
-            if (view instanceof FloatMeasurementView) {
-                FloatMeasurementView measurementView = (FloatMeasurementView) view;
+            if (!view.isVisible()
+                    || !prefs.getBoolean(String.valueOf("actionButton" + view.getName()), true)
+                    || view.getName().equals(getString(R.string.label_bmr))
+                    || !(view instanceof FloatMeasurementView)) {
+                continue;
+            }
 
-                if (measurementView.getName().equals(getString(R.string.label_bmr))) {
-                    continue;
-                }
+            FloatMeasurementView measurementView = (FloatMeasurementView) view;
+            Stack<PointValue> valuesStack = new Stack<PointValue>();
 
-                Stack<PointValue> valuesStack = new Stack<PointValue>();
+            for (int i = 0; i < max_i; ++i) {
+                ScaleMeasurement measurement = scaleMeasurementList.get(max_i - i - 1);
+                measurementView.loadFrom(measurement, null);
 
-                scaleMeasurementLastDays = new ArrayList<>();
-
-                for (int i=0; i<max_i; i++) {
-                    ScaleMeasurement measurement = scaleMeasurementList.get(max_i - i - 1);
-                    measurementView.loadFrom(measurement, null);
-                    scaleMeasurementLastDays.add(measurement);
-
-                    if (measurementView.getValue() != 0.0f) {
-                        valuesStack.push(new PointValue(i, measurementView.getValue()));
-                    }
-
-                    histCalendar.setTime(measurement.getDateTime());
-                    int days = DateTimeHelpers.daysBetween(now, histCalendar);
-                    String label = getResources().getQuantityString(R.plurals.label_days, Math.abs(days), days);
-                    axisValues.add(new AxisValue(i, label.toCharArray()));
-                }
-
-                Line lineaDiagram = new Line(valuesStack).
-                        setColor(measurementView.getColor()).
-                        setHasLabels(prefs.getBoolean("labelsEnable", true)).
-                        setHasPoints(prefs.getBoolean("pointsEnable", true)).
-                        setFormatter(new SimpleLineChartValueFormatter(1));
-
-                if (measurementView.isVisible() && prefs.getBoolean(String.valueOf("actionButton" + measurementView.getName()), true)) {
-                    diagramLineList.add(lineaDiagram);
+                if (measurementView.getValue() != 0.0f) {
+                    valuesStack.push(new PointValue(i, measurementView.getValue()));
                 }
             }
+
+            diagramLineList.add(new Line(valuesStack).
+                    setColor(measurementView.getColor()).
+                    setHasLabels(prefs.getBoolean("labelsEnable", true)).
+                    setHasPoints(prefs.getBoolean("pointsEnable", true)).
+                    setFormatter(new SimpleLineChartValueFormatter(1)));
         }
 
         LineChartData lineData = new LineChartData(diagramLineList);
