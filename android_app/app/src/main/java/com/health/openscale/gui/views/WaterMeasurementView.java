@@ -26,7 +26,8 @@ import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 
 public class WaterMeasurementView extends FloatMeasurementView {
-    public static String KEY = "water";
+    public static final String KEY = "water";
+    private static final String[] DEPENDENCY = {WeightMeasurementView.KEY};
 
     private boolean estimateWaterEnable;
     private boolean percentageEnable;
@@ -38,6 +39,11 @@ public class WaterMeasurementView extends FloatMeasurementView {
     @Override
     public String getKey() {
         return KEY;
+    }
+
+    @Override
+    public String[] getDependencyKeys() {
+        return DEPENDENCY;
     }
 
     @Override

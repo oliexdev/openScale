@@ -25,7 +25,8 @@ import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 
 public class BoneMeasurementView extends FloatMeasurementView {
-    public static String KEY = "bone";
+    public static final String KEY = "bone";
+    private static final String[] DEPENDENCY = {};
 
     public BoneMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_bone), ContextCompat.getDrawable(context, R.drawable.ic_bone));
@@ -34,6 +35,11 @@ public class BoneMeasurementView extends FloatMeasurementView {
     @Override
     public String getKey() {
         return KEY;
+    }
+
+    @Override
+    public String[] getDependencyKeys() {
+        return DEPENDENCY;
     }
 
     @Override

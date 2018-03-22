@@ -29,7 +29,8 @@ import java.util.Calendar;
 import java.util.Date;
 
 public class DateMeasurementView extends MeasurementView {
-    public static String KEY = "date";
+    public static final String KEY = "date";
+    private static final String[] DEPENDENCY = {};
 
     private static DateFormat dateFormat = DateFormat.getDateInstance();
     private Date date;
@@ -41,6 +42,11 @@ public class DateMeasurementView extends MeasurementView {
     @Override
     public String getKey() {
         return KEY;
+    }
+
+    @Override
+    public String[] getDependencyKeys() {
+        return DEPENDENCY;
     }
 
     private void setValue(Date newDate, boolean callListener) {
