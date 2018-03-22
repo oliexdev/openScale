@@ -227,18 +227,20 @@ public abstract class FloatMeasurementView extends MeasurementView {
 
     public abstract int getColor();
 
-    protected boolean isEstimationEnabled() {
-        return false;
-    }
+    protected boolean isEstimationSupported() { return false; }
 
     protected abstract EvaluationResult evaluateSheet(EvaluationSheet evalSheet, float value);
 
     private boolean useAutoValue() {
-        return isEstimationEnabled() && getMeasurementMode() == MeasurementViewMode.ADD;
+        return isEstimationSupported()
+                && getSettings().isEstimationEnabled()
+                && getMeasurementMode() == MeasurementViewMode.ADD;
     }
 
+    protected boolean canConvertPercentageToAbsoluteWeight() { return false; }
     protected boolean shouldConvertPercentageToAbsoluteWeight() {
-        return false;
+        return canConvertPercentageToAbsoluteWeight()
+                && !getSettings().isPercentageEnabled();
     }
 
     private float makeAbsoluteWeight(float percentage) {

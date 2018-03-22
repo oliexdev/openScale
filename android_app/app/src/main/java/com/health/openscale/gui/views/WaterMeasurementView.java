@@ -16,7 +16,6 @@
 package com.health.openscale.gui.views;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.support.v4.content.ContextCompat;
 
@@ -28,9 +27,6 @@ import com.health.openscale.core.evaluation.EvaluationSheet;
 public class WaterMeasurementView extends FloatMeasurementView {
     public static final String KEY = "water";
     private static final String[] DEPENDENCY = {WeightMeasurementView.KEY};
-
-    private boolean estimateWaterEnable;
-    private boolean percentageEnable;
 
     public WaterMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_water), ContextCompat.getDrawable(context, R.drawable.ic_water));
@@ -47,15 +43,8 @@ public class WaterMeasurementView extends FloatMeasurementView {
     }
 
     @Override
-    public void updatePreferences(SharedPreferences preferences) {
-        super.updatePreferences(preferences);
-        estimateWaterEnable = preferences.getBoolean("estimateWaterEnable", false);
-        percentageEnable = preferences.getBoolean("waterPercentageEnable", true);
-    }
-
-    @Override
-    protected boolean shouldConvertPercentageToAbsoluteWeight() {
-        return !percentageEnable;
+    protected boolean canConvertPercentageToAbsoluteWeight() {
+        return true;
     }
 
     @Override
@@ -70,11 +59,11 @@ public class WaterMeasurementView extends FloatMeasurementView {
 
     @Override
     public String getUnit() {
-        if (percentageEnable) {
-            return "%";
+        if (shouldConvertPercentageToAbsoluteWeight()) {
+            return getScaleUser().getScaleUnit().toString();
         }
 
-        return getScaleUser().getScaleUnit().toString();
+        return "%";
     }
 
     @Override
@@ -88,9 +77,7 @@ public class WaterMeasurementView extends FloatMeasurementView {
     }
 
     @Override
-    protected boolean isEstimationEnabled() {
-        return estimateWaterEnable;
-    }
+    protected boolean isEstimationSupported() { return true; }
 
     @Override
     protected EvaluationResult evaluateSheet(EvaluationSheet evalSheet, float value) {
