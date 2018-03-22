@@ -26,7 +26,8 @@ import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 
 public class LBWMeasurementView extends FloatMeasurementView {
-    public static String KEY = "lbw";
+    public static final String KEY = "lbw";
+    private static final String[] DEPENDENCY = {};
 
     private boolean estimateLBWEnable;
 
@@ -37,6 +38,11 @@ public class LBWMeasurementView extends FloatMeasurementView {
     @Override
     public String getKey() {
         return KEY;
+    }
+
+    @Override
+    public String[] getDependencyKeys() {
+        return DEPENDENCY;
     }
 
     @Override

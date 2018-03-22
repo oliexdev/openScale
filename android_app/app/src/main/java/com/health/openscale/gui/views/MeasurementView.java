@@ -245,7 +245,7 @@ public abstract class MeasurementView extends TableLayout {
     }
 
     public abstract String getKey();
-    public String[] getDependencyKeys() { return new String[]{}; }
+    public abstract String[] getDependencyKeys();
 
     public static String getPreferenceKey(String key, String suffix) {
         return key + suffix;
