@@ -63,6 +63,11 @@ public class CommentMeasurementView extends MeasurementView {
     }
 
     @Override
+    public void clearIn(ScaleMeasurement measurement) {
+        measurement.setComment("");
+    }
+
+    @Override
     public void restoreState(Bundle state) {
         setValue(state.getString(getKey()), true);
     }
