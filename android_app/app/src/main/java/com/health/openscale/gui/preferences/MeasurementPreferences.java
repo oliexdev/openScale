@@ -173,7 +173,7 @@ public class MeasurementPreferences extends PreferenceFragment {
                 measurementSwitch.setVisibility(View.INVISIBLE);
             }
             else {
-                measurementSwitch.setChecked(getPersistedBoolean(true));
+                measurementSwitch.setChecked(measurement.getSettings().isEnabledIgnoringDependencies());
                 measurementSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                     @Override
                     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
