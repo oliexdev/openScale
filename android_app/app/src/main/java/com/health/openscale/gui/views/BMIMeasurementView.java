@@ -26,7 +26,6 @@ import com.health.openscale.core.evaluation.EvaluationSheet;
 
 public class BMIMeasurementView extends FloatMeasurementView {
     public static final String KEY = "bmi";
-    private static final String[] DEPENDENCY = {WeightMeasurementView.KEY};
 
     public BMIMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_bmi), ContextCompat.getDrawable(context, R.drawable.ic_bmi));
@@ -35,11 +34,6 @@ public class BMIMeasurementView extends FloatMeasurementView {
     @Override
     public String getKey() {
         return KEY;
-    }
-
-    @Override
-    public String[] getDependencyKeys() {
-        return DEPENDENCY;
     }
 
     @Override

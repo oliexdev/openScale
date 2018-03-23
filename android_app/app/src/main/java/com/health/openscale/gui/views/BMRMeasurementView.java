@@ -28,7 +28,6 @@ import java.util.Locale;
 
 public class BMRMeasurementView extends FloatMeasurementView {
     public static final String KEY = "bmr";
-    private static final String[] DEPENDENCY = {WeightMeasurementView.KEY};
 
     public BMRMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_bmr), ContextCompat.getDrawable(context, R.drawable.ic_bmr));
@@ -37,11 +36,6 @@ public class BMRMeasurementView extends FloatMeasurementView {
     @Override
     public String getKey() {
         return KEY;
-    }
-
-    @Override
-    public String[] getDependencyKeys() {
-        return DEPENDENCY;
     }
 
     @Override

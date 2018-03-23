@@ -45,9 +45,12 @@ public class MeasurementViewSettings {
         return getPreferenceKey(PREFERENCE_SUFFIX_ENABLE);
     }
 
-    public boolean isEnabled() {
+    public boolean isEnabledIgnoringDependencies() {
         boolean defaultValue;
         switch (key) {
+            case WeightMeasurementView.KEY:
+                // Weight can't be disabled
+                return true;
             case LBWMeasurementView.KEY:
             case BoneMeasurementView.KEY:
             case WaistMeasurementView.KEY:
@@ -59,6 +62,41 @@ public class MeasurementViewSettings {
                 break;
         }
         return preferences.getBoolean(getEnabledKey(), defaultValue);
+    }
+
+    private boolean isDependencyEnabled(String dependencyKey) {
+        // Weight can't be disabled
+        if (dependencyKey.equals(WeightMeasurementView.KEY)) {
+            return true;
+        }
+
+        return (new MeasurementViewSettings(preferences, dependencyKey)).isEnabled();
+    }
+
+    public boolean areDependenciesEnabled() {
+        switch (key) {
+            case BMIMeasurementView.KEY:
+            case BMRMeasurementView.KEY:
+                return isDependencyEnabled(WeightMeasurementView.KEY);
+
+            // Requires weight as they are stored as percentage of it
+            case FatMeasurementView.KEY:
+            case MuscleMeasurementView.KEY:
+            case WaterMeasurementView.KEY:
+                return isDependencyEnabled(WeightMeasurementView.KEY);
+
+            case WHRMeasurementView.KEY:
+                return isDependencyEnabled(HipMeasurementView.KEY)
+                        && isDependencyEnabled(WaistMeasurementView.KEY);
+
+            case WHtRMeasurementView.KEY:
+                return isDependencyEnabled(WaistMeasurementView.KEY);
+        }
+        return true;
+    }
+
+    public boolean isEnabled() {
+        return isEnabledIgnoringDependencies() && areDependenciesEnabled();
     }
 
     public String getInOverviewGraphKey() {

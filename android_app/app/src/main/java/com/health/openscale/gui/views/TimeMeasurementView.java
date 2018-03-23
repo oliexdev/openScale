@@ -30,7 +30,6 @@ import java.util.Date;
 
 public class TimeMeasurementView extends MeasurementView {
     public static final String KEY = "time";
-    private static final String[] DEPENDENCY = {};
 
     private DateFormat timeFormat;
     private Date time;
@@ -43,11 +42,6 @@ public class TimeMeasurementView extends MeasurementView {
     @Override
     public String getKey() {
         return KEY;
-    }
-
-    @Override
-    public String[] getDependencyKeys() {
-        return DEPENDENCY;
     }
 
     private void setValue(Date newTime, boolean callListener) {

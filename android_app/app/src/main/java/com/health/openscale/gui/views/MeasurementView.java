@@ -24,7 +24,6 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
-import android.support.annotation.CallSuper;
 import android.support.v4.content.ContextCompat;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
@@ -78,7 +77,6 @@ public abstract class MeasurementView extends TableLayout {
     private MeasurementViewUpdateListener updateListener = null;
     private MeasurementViewMode measurementMode = VIEW;
 
-    private boolean isDisabledByDependency = false;
     private boolean updateViews = true;
 
     public MeasurementView(Context context, String text, Drawable icon) {
@@ -150,7 +148,7 @@ public abstract class MeasurementView extends TableLayout {
         }
 
         for (MeasurementView measurement : sorted) {
-            measurement.updatePreferences(prefs);
+            measurement.setVisible(measurement.getSettings().isEnabled());
         }
 
         return sorted;
@@ -247,7 +245,6 @@ public abstract class MeasurementView extends TableLayout {
     }
 
     public abstract String getKey();
-    public abstract String[] getDependencyKeys();
 
     public MeasurementViewSettings getSettings() {
         if (settings ==  null) {
@@ -263,21 +260,6 @@ public abstract class MeasurementView extends TableLayout {
 
     public abstract void restoreState(Bundle state);
     public abstract void saveState(Bundle state);
-
-    @CallSuper
-    public void updatePreferences(SharedPreferences prefs) {
-        isDisabledByDependency = false;
-        for (String dep : getDependencyKeys()) {
-            MeasurementViewSettings depSettings = new MeasurementViewSettings(prefs, dep);
-            if (!depSettings.isEnabled()) {
-                isDisabledByDependency = true;
-                break;
-            }
-        }
-
-        boolean enable = !isDisabledByDependency && getSettings().isEnabled();
-        setVisible(enable);
-    }
 
     public CharSequence getName() { return nameView.getText(); }
     public abstract String getValueAsString();
@@ -357,11 +339,7 @@ public abstract class MeasurementView extends TableLayout {
         showEvaluatorRow(false);
     }
 
-    public boolean getIsDisabledByDependency() {
-        return isDisabledByDependency;
-    }
-
-    protected void setVisible(boolean isVisible) {
+    public void setVisible(boolean isVisible) {
         if (isVisible) {
             measurementRow.setVisibility(View.VISIBLE);
         } else {
@@ -515,4 +493,3 @@ public abstract class MeasurementView extends TableLayout {
         }
     }
 }
-

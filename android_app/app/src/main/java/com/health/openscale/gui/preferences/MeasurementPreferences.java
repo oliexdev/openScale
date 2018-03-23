@@ -93,9 +93,9 @@ public class MeasurementPreferences extends PreferenceFragment {
             Preference preference = new MeasurementOrderPreference(
                     getActivity(), measurementCategory, measurement);
             preference.setKey(measurement.getSettings().getEnabledKey());
-            preference.setDefaultValue(measurement.getSettings().isEnabled());
+            preference.setDefaultValue(measurement.getSettings().isEnabledIgnoringDependencies());
             preference.setPersistent(true);
-            preference.setEnabled(!measurement.getIsDisabledByDependency());
+            preference.setEnabled(measurement.getSettings().areDependenciesEnabled());
 
             Drawable icon = measurement.getIcon();
             icon.setColorFilter(measurement.getForegroundColor(), PorterDuff.Mode.SRC_IN);
@@ -178,7 +178,11 @@ public class MeasurementPreferences extends PreferenceFragment {
                     @Override
                     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                         persistBoolean(isChecked);
-                        setEnableOnDependants(isChecked);
+                        for (int i = 0; i < getParent().getPreferenceCount(); ++i) {
+                            MeasurementOrderPreference preference =
+                                    (MeasurementOrderPreference) getParent().getPreference(i);
+                            preference.setEnabled(preference.measurement.getSettings().areDependenciesEnabled());
+                        }
                     }
                 });
             }
@@ -198,19 +202,6 @@ public class MeasurementPreferences extends PreferenceFragment {
                 }
             });
             view.setOnDragListener(new onDragListener());
-        }
-
-        private void setEnableOnDependants(boolean enable) {
-            for (int i = 0; i < getParent().getPreferenceCount(); ++i) {
-                MeasurementOrderPreference preference =
-                        (MeasurementOrderPreference) getParent().getPreference(i);
-                for (String dep : preference.measurement.getDependencyKeys()) {
-                    if (dep.equals(measurement.getKey())) {
-                        preference.setEnabled(enable);
-                        break;
-                    }
-                }
-            }
         }
 
         @Override
