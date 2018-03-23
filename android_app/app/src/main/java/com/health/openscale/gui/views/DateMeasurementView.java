@@ -78,6 +78,11 @@ public class DateMeasurementView extends MeasurementView {
     }
 
     @Override
+    public void clearIn(ScaleMeasurement measurement) {
+        // Ignore
+    }
+
+    @Override
     public void restoreState(Bundle state) {
         setValue(new Date(state.getLong(getKey())), true);
     }

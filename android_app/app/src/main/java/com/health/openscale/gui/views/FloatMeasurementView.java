@@ -323,6 +323,11 @@ public abstract class FloatMeasurementView extends MeasurementView {
     }
 
     @Override
+    public void clearIn(ScaleMeasurement measurement) {
+        setMeasurementValue(0.0f, measurement);
+    }
+
+    @Override
     public void restoreState(Bundle state) {
         setValue(state.getFloat(getKey()), previousValue, true);
     }
