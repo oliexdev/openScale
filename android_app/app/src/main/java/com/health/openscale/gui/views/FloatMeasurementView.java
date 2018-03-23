@@ -430,7 +430,7 @@ public abstract class FloatMeasurementView extends MeasurementView {
         overview.setKey(settings.getInOverviewGraphKey());
         overview.setTitle(R.string.label_include_in_overview_graph);
         overview.setPersistent(true);
-        overview.setDefaultValue(settings.isOnOverviewGraph());
+        overview.setDefaultValue(settings.isInOverviewGraph());
         screen.addPreference(overview);
 
         if (canConvertPercentageToAbsoluteWeight()) {

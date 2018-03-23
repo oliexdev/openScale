@@ -228,7 +228,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
         for (MeasurementView view : measurementViews) {
             if (!view.isVisible()
-                    || !view.getSettings().isOnOverviewGraph()
+                    || !view.getSettings().isInOverviewGraph()
                     || !(view instanceof FloatMeasurementView)) {
                 continue;
             }
