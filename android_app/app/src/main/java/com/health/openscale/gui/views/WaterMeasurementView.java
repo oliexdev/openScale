@@ -17,9 +17,11 @@ package com.health.openscale.gui.views;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.preference.ListPreference;
 import android.support.v4.content.ContextCompat;
 
 import com.health.openscale.R;
+import com.health.openscale.core.bodymetric.EstimatedWaterMetric;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
@@ -78,6 +80,22 @@ public class WaterMeasurementView extends FloatMeasurementView {
 
     @Override
     protected boolean isEstimationSupported() { return true; }
+
+    @Override
+    protected void prepareEstimationFormulaPreference(ListPreference preference) {
+        String[] entries = new String[EstimatedWaterMetric.FORMULA.values().length];
+        String[] values = new String[entries.length];
+
+        int idx = 0;
+        for (EstimatedWaterMetric.FORMULA formula : EstimatedWaterMetric.FORMULA.values()) {
+            entries[idx] = EstimatedWaterMetric.getEstimatedMetric(formula).getName();
+            values[idx] = formula.name();
+            ++idx;
+        }
+
+        preference.setEntries(entries);
+        preference.setEntryValues(values);
+    }
 
     @Override
     protected EvaluationResult evaluateSheet(EvaluationSheet evalSheet, float value) {

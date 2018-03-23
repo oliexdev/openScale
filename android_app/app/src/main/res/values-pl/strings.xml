@@ -38,11 +38,7 @@
     <string name="label_whr">Stosunek obwodu talii do obwodu bioder</string>
     <string name="label_bone">Masa kostna</string>
     <string name="label_smartUserAssign">Inteligente przypisywanie użytkowników</string>
-    
-    <string name="label_fat_percentage">Tkanka tłusczowa w %</string>
-    <string name="label_water_percentage">Woda w organizmie w %</string>
-    <string name="label_muscle_percentage">Masa mięśniowa w %</string>
-    
+
     <plurals name="label_days">
         <item quantity="other">%d dni</item>
     </plurals>
@@ -126,21 +122,12 @@
 
     <string name="label_delete_confirmation">Potwierdzenie usnięcia</string>
 
-    <string name="label_estimate_water">Wznaczaj procent wody w organizmie</string>
-    <string name="label_estimate_lbw">Wyznaczaj beztłuszczową masę ciała</string>
-    <string name="label_estimate_fat">Wyznaczaj procent tkanki tłuszczowej</string>
-   
-    <string name="label_category_display">Wyświetl</string>
-    <string name="label_category_body_metrics_estimation">Wyznaczanie wskaźników dla ciała</string>
     <string name="label_category_measurement_database">Baza pomiarów</string>
 
     <string name="label_maintainer">Opiekun</string>
     <string name="label_website">Strona internetowa</string>
     <string name="label_license">Licencja</string>
-    
-    <string name="label_estimate_water_formula">Formuła wyznaczania wody w organizmie</string>
-    <string name="label_estimate_lbw_formula">Formuła wyznaczania beztłuszczowej masy ciała</string>
-    <string name="label_estimate_fat_formula">Formuła wyznaczania tkanki tłuszczowej</string>
+
     <string name="label_automatic">auto</string>
     
     <string name="label_theme">Motyw</string>
@@ -205,7 +192,6 @@
     <string name="permission_bluetooth_info">openScale requires permission to access the coarse location to search for Bluetooth devices</string>
     <string name="permission_bluetooth_info_title">Informacje</string>
     <string name="label_next">Następny</string>
-    <string name="label_measurement_order">Kolejność pomiarów</string>
     <string name="label_press_hold_reorder">Naciśnij i przytrzymaj by zmienić kolejność</string>
     <string name="label_set_default_order">Ustaw domyślną kolejność</string>
     <string name="label_export_overwrite">Nadpisać poprzedni eksport \"%s\"?</string>
