@@ -43,6 +43,7 @@ import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.utils.PolynomialFitter;
 import com.health.openscale.gui.activities.DataEntryActivity;
+import com.health.openscale.gui.views.BMRMeasurementView;
 import com.health.openscale.gui.views.FloatMeasurementView;
 import com.health.openscale.gui.views.MeasurementView;
 import com.health.openscale.gui.views.WeightMeasurementView;
@@ -326,7 +327,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             if (view instanceof FloatMeasurementView) {
                 FloatMeasurementView measurementView = (FloatMeasurementView) view;
 
-                if (measurementView.getName().equals(getString(R.string.label_bmr))) {
+                if (measurementView instanceof BMRMeasurementView) {
                     continue;
                 }
 

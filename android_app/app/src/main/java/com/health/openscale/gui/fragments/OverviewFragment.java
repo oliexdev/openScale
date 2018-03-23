@@ -38,6 +38,7 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
 import com.health.openscale.core.utils.DateTimeHelpers;
+import com.health.openscale.gui.views.BMRMeasurementView;
 import com.health.openscale.gui.views.FloatMeasurementView;
 import com.health.openscale.gui.views.MeasurementView;
 
@@ -276,7 +277,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             if (view instanceof FloatMeasurementView) {
                 FloatMeasurementView measurementView = (FloatMeasurementView) view;
 
-                if (measurementView.getName().equals(getString(R.string.label_bmr))) {
+                if (measurementView instanceof BMRMeasurementView) {
                     continue;
                 }
 
