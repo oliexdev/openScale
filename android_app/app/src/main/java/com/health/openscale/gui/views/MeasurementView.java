@@ -23,6 +23,7 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.preference.PreferenceScreen;
 import android.support.annotation.CallSuper;
 import android.support.v4.content.ContextCompat;
 import android.text.SpannableStringBuilder;
@@ -410,6 +411,9 @@ public abstract class MeasurementView extends TableLayout {
 
         return openScale.getSelectedScaleUser();
     }
+
+    public boolean hasExtraPreferences() { return false; }
+    public void prepareExtraPreferencesScreen(PreferenceScreen screen) { };
 
     protected abstract View getInputView();
     protected abstract boolean validateAndSetInput(View view);

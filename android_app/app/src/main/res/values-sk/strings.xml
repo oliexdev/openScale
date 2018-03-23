@@ -129,20 +129,13 @@
     <string name="label_share">Zdieľať</string>
     <string name="label_share_subject">openScale CSV export údajov (%s)</string>
 
-    <string name="label_fat_percentage">Telesný tuk v %</string>
-    <string name="label_water_percentage">Voda v tele v %</string>
-    <string name="label_muscle_percentage">Svalstvo v %</string>
-
     <string name="error_user_name_too_short">Chyba: používateľské meno musí obsahovať minimálne 3 znaky</string>
     <string name="info_bluetooth_no_device_set">Nevybrali ste žiadne bluetooth zariadenie</string>
     <string name="info_new_data_duplicated">meranie s rovnakým dátumom a časom už existuje</string>
 
     <string name="label_mergeWithLastMeasurement">Zlúčiť s posledným meraním</string>
     <string name="label_bluetooth_searching_finished">Hľadanie bluetooth váh sa dokončilo</string>
-    <string name="label_estimate_water">Odhadnúť vodu v tele</string>
-    <string name="label_estimate_fat">Odhadnúť telesný tuk</string>
 
-    <string name="label_category_display">Zobraziť</string>
     <string name="label_category_measurement_database">Databáza meraní</string>
 
     <string name="label_maintainer">Správca</string>
@@ -185,7 +178,6 @@
     <string name="permission_bluetooth_info">openScale vyžaduje povolenie prístupu k približnej polohe na vyhľadávanie bluetooth zariadení</string>
     <string name="permission_bluetooth_info_title">Informácie</string>
     <string name="label_next">Ďalej</string>
-    <string name="label_measurement_order">Radenie meraní</string>
     <string name="label_press_hold_reorder">Stlačte a podržte pre zmenu radenia</string>
     <string name="label_set_default_order">Nastaviť predvolené radenie</string>
     <string name="label_export_overwrite">Prepísať predchádzajúci export \"%s\"?</string>
