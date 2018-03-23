@@ -27,7 +27,7 @@ public class MeasurementViewSettings {
     private String key;
 
     private static final String PREFERENCE_SUFFIX_ENABLE = "Enable";
-    private static final String PREFERENCE_SUFFIX_ON_OVERVIEW_GRAPH = "OnOverviewGraph";
+    private static final String PREFERENCE_SUFFIX_IN_OVERVIEW_GRAPH = "InOverviewGraph";
     private static final String PREFERENCE_SUFFIX_PERCENTAGE_ENABLE = "PercentageEnable";
     private static final String PREFERENCE_SUFFIX_ESTIMATE_ENABLE = "EstimateEnable";
     private static final String PREFERENCE_SUFFIX_ESTIMATE_FORMULA = "EstimateFormula";
@@ -61,11 +61,11 @@ public class MeasurementViewSettings {
         return preferences.getBoolean(getEnabledKey(), defaultValue);
     }
 
-    public String getShowOnOverviewGraphKey() {
-        return getPreferenceKey(PREFERENCE_SUFFIX_ON_OVERVIEW_GRAPH);
+    public String getInOverviewGraphKey() {
+        return getPreferenceKey(PREFERENCE_SUFFIX_IN_OVERVIEW_GRAPH);
     }
 
-    public boolean shouldShowOnOverviewGraph() {
+    public boolean isOnOverviewGraph() {
         boolean defaultValue;
         switch (key) {
             case BMRMeasurementView.KEY:
@@ -75,7 +75,7 @@ public class MeasurementViewSettings {
                 defaultValue = true;
                 break;
         }
-        return preferences.getBoolean(getShowOnOverviewGraphKey(), defaultValue);
+        return preferences.getBoolean(getInOverviewGraphKey(), defaultValue);
     }
 
     public String getPercentageEnabledKey() {
