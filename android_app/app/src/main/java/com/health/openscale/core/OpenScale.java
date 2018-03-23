@@ -259,21 +259,21 @@ public class OpenScale {
         }
 
         MeasurementViewSettings settings = new MeasurementViewSettings(prefs, WaterMeasurementView.KEY);
-        if (settings.isEstimationEnabled()) {
+        if (settings.isEnabled() && settings.isEstimationEnabled()) {
             EstimatedWaterMetric waterMetric = EstimatedWaterMetric.getEstimatedMetric(
                     EstimatedWaterMetric.FORMULA.valueOf(settings.getEstimationFormula()));
             scaleMeasurement.setWater(waterMetric.getWater(getScaleUser(scaleMeasurement.getUserId()), scaleMeasurement));
         }
 
         settings = new MeasurementViewSettings(prefs, LBWMeasurementView.KEY);
-        if (settings.isEstimationEnabled()) {
+        if (settings.isEnabled() && settings.isEstimationEnabled()) {
             EstimatedLBWMetric lbwMetric = EstimatedLBWMetric.getEstimatedMetric(
                     EstimatedLBWMetric.FORMULA.valueOf(settings.getEstimationFormula()));
             scaleMeasurement.setLbw(lbwMetric.getLBW(getScaleUser(scaleMeasurement.getUserId()), scaleMeasurement));
         }
 
         settings = new MeasurementViewSettings(prefs, FatMeasurementView.KEY);
-        if (settings.isEstimationEnabled()) {
+        if (settings.isEnabled() && settings.isEstimationEnabled()) {
             EstimatedFatMetric fatMetric = EstimatedFatMetric.getEstimatedMetric(
                     EstimatedFatMetric.FORMULA.valueOf(settings.getEstimationFormula()));
             scaleMeasurement.setFat(fatMetric.getFat(getScaleUser(scaleMeasurement.getUserId()), scaleMeasurement));
