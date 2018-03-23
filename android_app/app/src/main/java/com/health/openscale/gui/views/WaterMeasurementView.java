@@ -28,7 +28,6 @@ import com.health.openscale.core.evaluation.EvaluationSheet;
 
 public class WaterMeasurementView extends FloatMeasurementView {
     public static final String KEY = "water";
-    private static final String[] DEPENDENCY = {WeightMeasurementView.KEY};
 
     public WaterMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_water), ContextCompat.getDrawable(context, R.drawable.ic_water));
@@ -37,11 +36,6 @@ public class WaterMeasurementView extends FloatMeasurementView {
     @Override
     public String getKey() {
         return KEY;
-    }
-
-    @Override
-    public String[] getDependencyKeys() {
-        return DEPENDENCY;
     }
 
     @Override

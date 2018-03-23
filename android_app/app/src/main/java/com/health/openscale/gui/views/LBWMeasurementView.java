@@ -28,7 +28,6 @@ import com.health.openscale.core.evaluation.EvaluationSheet;
 
 public class LBWMeasurementView extends FloatMeasurementView {
     public static final String KEY = "lbw";
-    private static final String[] DEPENDENCY = {};
 
     public LBWMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_lbw), ContextCompat.getDrawable(context, R.drawable.ic_lbw));
@@ -37,11 +36,6 @@ public class LBWMeasurementView extends FloatMeasurementView {
     @Override
     public String getKey() {
         return KEY;
-    }
-
-    @Override
-    public String[] getDependencyKeys() {
-        return DEPENDENCY;
     }
 
     @Override

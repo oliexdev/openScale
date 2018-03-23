@@ -28,7 +28,6 @@ import com.health.openscale.core.evaluation.EvaluationSheet;
 
 public class FatMeasurementView extends FloatMeasurementView {
     public static final String KEY = "fat";
-    private static final String[] DEPENDENCY = {WeightMeasurementView.KEY};
 
     public FatMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_fat), ContextCompat.getDrawable(context, R.drawable.ic_fat));
@@ -37,11 +36,6 @@ public class FatMeasurementView extends FloatMeasurementView {
     @Override
     public String getKey() {
         return KEY;
-    }
-
-    @Override
-    public String[] getDependencyKeys() {
-        return DEPENDENCY;
     }
 
     @Override

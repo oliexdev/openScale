@@ -26,7 +26,6 @@ import com.health.openscale.core.evaluation.EvaluationSheet;
 
 public class WHtRMeasurementView extends FloatMeasurementView {
     public static final String KEY = "whtr";
-    private static final String[] DEPENDENCY = {WaistMeasurementView.KEY};
 
     public WHtRMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_whtr), ContextCompat.getDrawable(context, R.drawable.ic_whtr));
@@ -35,11 +34,6 @@ public class WHtRMeasurementView extends FloatMeasurementView {
     @Override
     public String getKey() {
         return KEY;
-    }
-
-    @Override
-    public String[] getDependencyKeys() {
-        return DEPENDENCY;
     }
 
     @Override
