@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="language_entries">
+        <item>@string/language_default</item>
+        <item>@string/language_brazilian_portuguese</item>
+        <item>@string/language_catalan</item>
+        <item>@string/language_czech</item>
+        <item>@string/language_dutch</item>
+        <item>@string/language_english</item>
+        <item>@string/language_french</item>
+        <item>@string/language_german</item>
+        <item>@string/language_japanese</item>
+        <item>@string/language_polish</item>
+        <item>@string/language_slovak</item>
+        <item>@string/language_spanish</item>
+        <item>@string/language_swedish</item>
+        <item>@string/language_turkish</item>
+    </string-array>
+
+    <string-array name="language_values">
+        <item />
+        <item>pt-BR</item>
+        <item>ca</item>
+        <item>cs</item>
+        <item>nl</item>
+        <item>en</item>
+        <item>fr</item>
+        <item>de</item>
+        <item>ja</item>
+        <item>pl</item>
+        <item>sk</item>
+        <item>es</item>
+        <item>sv</item>
+        <item>tr</item>
+    </string-array>
+</resources>

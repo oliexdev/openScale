@@ -24,7 +24,6 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.graphics.drawable.DrawableCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -49,7 +48,7 @@ import java.text.DateFormat;
 import java.util.Date;
 import java.util.List;
 
-public class DataEntryActivity extends AppCompatActivity {
+public class DataEntryActivity extends BaseAppCompatActivity {
     public static String EXTRA_ID = "id";
     private static String PREF_EXPAND = "expandEvaluator";
 
@@ -80,12 +79,6 @@ public class DataEntryActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        String app_theme = PreferenceManager.getDefaultSharedPreferences(this).getString("app_theme", "Light");
-
-        if (app_theme.equals("Dark")) {
-            setTheme(R.style.AppTheme_Dark);
-        }
-
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_dataentry);

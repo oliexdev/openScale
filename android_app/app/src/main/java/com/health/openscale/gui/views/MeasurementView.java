@@ -81,13 +81,6 @@ public abstract class MeasurementView extends TableLayout {
 
     public MeasurementView(Context context, String text, Drawable icon) {
         super(context);
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        String app_theme = prefs.getString("app_theme", "Light");
-
-        if (app_theme.equals("Dark")) {
-            context.setTheme(R.style.AppTheme_Dark);
-        }
-
         initView(context);
 
         nameView.setText(text);

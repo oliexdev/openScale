@@ -41,7 +41,6 @@ import android.support.v4.content.FileProvider;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -55,6 +54,7 @@ import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.bluetooth.BluetoothCommunication;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
+import com.health.openscale.gui.activities.BaseAppCompatActivity;
 import com.health.openscale.gui.activities.DataEntryActivity;
 import com.health.openscale.gui.activities.SettingsActivity;
 import com.health.openscale.gui.activities.UserSettingsActivity;
@@ -70,7 +70,7 @@ import java.util.List;
 
 import cat.ereza.customactivityoncrash.config.CaocConfig;
 
-public class MainActivity extends AppCompatActivity
+public class MainActivity extends BaseAppCompatActivity
         implements SharedPreferences.OnSharedPreferenceChangeListener{
     private SharedPreferences prefs;
     private static boolean firstAppStart = true;
@@ -91,16 +91,9 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        prefs = PreferenceManager.getDefaultSharedPreferences(this);
-
-        String app_theme = prefs.getString("app_theme", "Light");
-
-        if (app_theme.equals("Dark")) {
-            setTheme(R.style.AppTheme_Dark);
-        }
-
         super.onCreate(savedInstanceState);
 
+        prefs = PreferenceManager.getDefaultSharedPreferences(this);
         prefs.registerOnSharedPreferenceChangeListener(this);
 
         CaocConfig.Builder.create()

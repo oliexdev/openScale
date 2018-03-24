@@ -50,7 +50,7 @@ public class UsersPreferences extends PreferenceFragment {
 
         for (ScaleUser scaleUser : scaleUserList)
         {
-            Preference prefUser = new Preference(getActivity().getBaseContext());
+            Preference prefUser = new Preference(getActivity());
             prefUser.setOnPreferenceClickListener(new onClickListenerUserSelect());
 
             if (scaleUser.getId() == selectedUserId) {
@@ -66,7 +66,7 @@ public class UsersPreferences extends PreferenceFragment {
         }
 
 
-        Preference prefAddUser = new Preference(getActivity().getBaseContext());
+        Preference prefAddUser = new Preference(getActivity());
 
         prefAddUser.setOnPreferenceClickListener(new onClickListenerAddUser());
         prefAddUser.setTitle("+ " + getResources().getString(R.string.label_add_user));
