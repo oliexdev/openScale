@@ -215,4 +215,6 @@
     <string name="language_spanish" translatable="false">Spanish (Español)</string>
     <string name="language_swedish" translatable="false">Swedish (Svenska)</string>
     <string name="language_turkish" translatable="false">Turkish (Türkçe)</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
 </resources>
