@@ -226,7 +226,7 @@ public class MeasurementPreferences extends PreferenceFragment {
             }
 
             // Must be enabled to show extra preferences screen
-            if (!getPersistedBoolean(true)) {
+            if (!measurement.getSettings().isEnabled()) {
                 return true;
             }
 
