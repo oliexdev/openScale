@@ -16,9 +16,7 @@
 
 package com.health.openscale.gui.fragments;
 
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.text.Html;
 import android.view.LayoutInflater;
@@ -67,7 +65,6 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
     private TableLayout tableMonthAveragesLayoutColumnA;
     private TableLayout tableMonthAveragesLayoutColumnB;
 
-    private SharedPreferences prefs;
     private ScaleUser currentScaleUser;
     private ScaleMeasurement lastScaleMeasurement;
 
@@ -77,8 +74,6 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         statisticsView = inflater.inflate(R.layout.fragment_statistics, container, false);
-
-        prefs = PreferenceManager.getDefaultSharedPreferences(statisticsView.getContext());
 
         txtGoalWeight = (TextView) statisticsView.findViewById(R.id.txtGoalWeight);
         txtGoalDiff = (TextView) statisticsView.findViewById(R.id.txtGoalDiff);
@@ -110,9 +105,9 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
 
         for (MeasurementView measurement : viewMeasurementsListWeek) {
             measurement.setEditMode(STATISTIC);
-            measurement.updatePreferences(prefs);
 
-            if (measurement.isVisible()) {
+            if (measurement.getSettings().isEnabled()) {
+                measurement.setVisible(true);
                 measurement.setPadding(-1, -1, -1, paddingBottom);
                 if ((i % 2) == 0) {
                     tableWeekAveragesLayoutColumnA.addView(measurement);
@@ -138,9 +133,9 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
 
         for (MeasurementView measurement : viewMeasurementsListMonth) {
             measurement.setEditMode(STATISTIC);
-            measurement.updatePreferences(prefs);
 
-            if (measurement.isVisible()) {
+            if (measurement.getSettings().isEnabled()) {
+                measurement.setVisible(true);
                 measurement.setPadding(-1, -1, -1, paddingBottom);
                 if ((i % 2) == 0) {
                     tableMonthAveragesLayoutColumnA.addView(measurement);

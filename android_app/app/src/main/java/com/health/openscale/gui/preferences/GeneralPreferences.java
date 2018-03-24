@@ -23,7 +23,6 @@ import android.preference.MultiSelectListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceGroup;
-import android.widget.Toast;
 
 import com.health.openscale.R;
 

@@ -16,7 +16,6 @@
 package com.health.openscale.gui.views;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.support.v4.content.ContextCompat;
 
@@ -26,6 +25,7 @@ import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 
 public class BoneMeasurementView extends FloatMeasurementView {
+    public static final String KEY = "bone";
 
     public BoneMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_bone), ContextCompat.getDrawable(context, R.drawable.ic_bone));
@@ -33,12 +33,7 @@ public class BoneMeasurementView extends FloatMeasurementView {
 
     @Override
     public String getKey() {
-        return "bone";
-    }
-
-    @Override
-    public void updatePreferences(SharedPreferences preferences) {
-        setVisible(preferences.getBoolean("boneEnable", false));
+        return KEY;
     }
 
     @Override

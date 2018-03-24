@@ -17,10 +17,16 @@
 package com.health.openscale.gui.views;
 
 import android.content.Context;
+import android.database.DataSetObserver;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.CheckBoxPreference;
+import android.preference.ListPreference;
+import android.preference.Preference;
+import android.preference.PreferenceScreen;
+import android.preference.SwitchPreference;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
@@ -31,6 +37,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ListAdapter;
 import android.widget.TableRow;
 import android.widget.TextView;
 
@@ -227,18 +234,21 @@ public abstract class FloatMeasurementView extends MeasurementView {
 
     public abstract int getColor();
 
-    protected boolean isEstimationEnabled() {
-        return false;
-    }
+    protected boolean isEstimationSupported() { return false; }
+    protected void prepareEstimationFormulaPreference(ListPreference preference) {}
 
     protected abstract EvaluationResult evaluateSheet(EvaluationSheet evalSheet, float value);
 
     private boolean useAutoValue() {
-        return isEstimationEnabled() && getMeasurementMode() == MeasurementViewMode.ADD;
+        return isEstimationSupported()
+                && getSettings().isEstimationEnabled()
+                && getMeasurementMode() == MeasurementViewMode.ADD;
     }
 
+    protected boolean canConvertPercentageToAbsoluteWeight() { return false; }
     protected boolean shouldConvertPercentageToAbsoluteWeight() {
-        return false;
+        return canConvertPercentageToAbsoluteWeight()
+                && !getSettings().isPercentageEnabled();
     }
 
     private float makeAbsoluteWeight(float percentage) {
@@ -310,6 +320,11 @@ public abstract class FloatMeasurementView extends MeasurementView {
                 setMeasurementValue(value, measurement);
             }
         }
+    }
+
+    @Override
+    public void clearIn(ScaleMeasurement measurement) {
+        setMeasurementValue(0.0f, measurement);
     }
 
     @Override
@@ -402,6 +417,70 @@ public abstract class FloatMeasurementView extends MeasurementView {
     public void setExpand(boolean state) {
         final boolean show = state && isVisible() && evaluationResult != null;
         showEvaluatorRow(show);
+    }
+
+    @Override
+    public boolean hasExtraPreferences() { return true; }
+
+    @Override
+    public void prepareExtraPreferencesScreen(PreferenceScreen screen) {
+        MeasurementViewSettings settings = getSettings();
+
+        CheckBoxPreference overview = new CheckBoxPreference(screen.getContext());
+        overview.setKey(settings.getInOverviewGraphKey());
+        overview.setTitle(R.string.label_include_in_overview_graph);
+        overview.setPersistent(true);
+        overview.setDefaultValue(settings.isInOverviewGraph());
+        screen.addPreference(overview);
+
+        if (canConvertPercentageToAbsoluteWeight()) {
+            SwitchPreference percentage = new SwitchPreference(screen.getContext());
+            percentage.setKey(settings.getPercentageEnabledKey());
+            percentage.setTitle(R.string.label_measurement_in_percent);
+            percentage.setPersistent(true);
+            percentage.setDefaultValue(settings.isPercentageEnabled());
+            screen.addPreference(percentage);
+        }
+
+        if (isEstimationSupported()) {
+            final CheckBoxPreference estimate = new CheckBoxPreference(screen.getContext());
+            estimate.setKey(settings.getEstimationEnabledKey());
+            estimate.setTitle(R.string.label_estimate_measurement);
+            estimate.setPersistent(true);
+            estimate.setDefaultValue(settings.isEstimationEnabled());
+            screen.addPreference(estimate);
+
+            final ListPreference formula = new ListPreference(screen.getContext());
+            formula.setKey(settings.getEstimationFormulaKey());
+            formula.setTitle(R.string.label_estimation_formula);
+            formula.setPersistent(true);
+            formula.setDefaultValue(settings.getEstimationFormula());
+            prepareEstimationFormulaPreference(formula);
+            formula.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+                @Override
+                public boolean onPreferenceChange(Preference preference, Object newValue) {
+                    ListPreference list = (ListPreference) preference;
+                    int idx = list.findIndexOfValue((String) newValue);
+                    if (idx == -1) {
+                        return false;
+                    }
+                    preference.setSummary(list.getEntries()[idx]);
+                    return true;
+                }
+            });
+
+            final ListAdapter adapter = screen.getRootAdapter();
+            adapter.registerDataSetObserver(new DataSetObserver() {
+                @Override
+                public void onChanged() {
+                    adapter.unregisterDataSetObserver(this);
+
+                    formula.setDependency(estimate.getKey());
+                    formula.setSummary(formula.getEntry());
+                }
+            });
+            screen.addPreference(formula);
+        }
     }
 
     private float validateAndGetInput(View view) {

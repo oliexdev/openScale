@@ -16,7 +16,6 @@
 package com.health.openscale.gui.views;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.view.View;
@@ -30,6 +29,8 @@ import java.util.Calendar;
 import java.util.Date;
 
 public class TimeMeasurementView extends MeasurementView {
+    public static final String KEY = "time";
+
     private DateFormat timeFormat;
     private Date time;
 
@@ -40,7 +41,7 @@ public class TimeMeasurementView extends MeasurementView {
 
     @Override
     public String getKey() {
-        return "time";
+        return KEY;
     }
 
     private void setValue(Date newTime, boolean callListener) {
@@ -74,6 +75,11 @@ public class TimeMeasurementView extends MeasurementView {
     }
 
     @Override
+    public void clearIn(ScaleMeasurement measurement) {
+        // Ignore
+    }
+
+    @Override
     public void restoreState(Bundle state) {
         setValue(new Date(state.getLong(getKey())), true);
     }
@@ -81,11 +87,6 @@ public class TimeMeasurementView extends MeasurementView {
     @Override
     public void saveState(Bundle state) {
         state.putLong(getKey(), time.getTime());
-    }
-
-    @Override
-    public void updatePreferences(SharedPreferences preferences) {
-        // Empty
     }
 
     @Override

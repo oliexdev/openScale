@@ -43,8 +43,10 @@ import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.utils.PolynomialFitter;
 import com.health.openscale.gui.activities.DataEntryActivity;
+import com.health.openscale.gui.views.BMRMeasurementView;
 import com.health.openscale.gui.views.FloatMeasurementView;
 import com.health.openscale.gui.views.MeasurementView;
+import com.health.openscale.gui.views.MeasurementViewSettings;
 import com.health.openscale.gui.views.WeightMeasurementView;
 
 import java.text.SimpleDateFormat;
@@ -249,7 +251,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     private void addFloatingActionButton(FloatMeasurementView measurementView) {
         FloatingActionButton actionButton = new FloatingActionButton(getContext());
 
-        actionButton.setTag("actionButton" + measurementView.getName());
+        actionButton.setTag(measurementView.getKey());
         actionButton.setColorFilter(Color.parseColor("#000000"));
         actionButton.setImageDrawable(measurementView.getIcon());
         actionButton.setClickable(true);
@@ -259,11 +261,9 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         actionButton.setLayoutParams(lay);
         actionButton.setOnClickListener(new onClickListenerDiagramLines());
 
-        if (prefs.getBoolean(String.valueOf("actionButton" + measurementView.getName()), true)) {
-            actionButton.setBackgroundTintList(ColorStateList.valueOf(measurementView.getColor()));
-        } else {
-            actionButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#d3d3d3")));
-        }
+        int color = measurementView.getSettings().isInGraph()
+                ? measurementView.getColor() : Color.parseColor("#d3d3d3");
+        actionButton.setBackgroundTintList(ColorStateList.valueOf(color));
 
         floatingActionBar.addView(actionButton);
     }
@@ -326,7 +326,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             if (view instanceof FloatMeasurementView) {
                 FloatMeasurementView measurementView = (FloatMeasurementView) view;
 
-                if (measurementView.getName().equals(getString(R.string.label_bmr))) {
+                if (measurementView instanceof BMRMeasurementView) {
                     continue;
                 }
 
@@ -385,7 +385,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                 if (measurementView.isVisible()) {
                     addFloatingActionButton(measurementView);
 
-                    if (prefs.getBoolean(String.valueOf("actionButton" + measurementView.getName()), true)) {
+                    if (measurementView.getSettings().isInGraph()) {
                         diagramLineList.add(diagramLine);
                     }
                 }
@@ -587,11 +587,9 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
 
-            if (prefs.getBoolean(String.valueOf(actionButton.getTag()), true)) {
-                prefs.edit().putBoolean(String.valueOf(actionButton.getTag()), false).commit();
-            } else {
-                prefs.edit().putBoolean(String.valueOf(actionButton.getTag()), true).commit();
-            }
+            String key = String.valueOf(actionButton.getTag());
+            MeasurementViewSettings settings = new MeasurementViewSettings(prefs, key);
+            prefs.edit().putBoolean(settings.getInGraphKey(), !settings.isInGraph()).apply();
 
             generateGraphs();
         }

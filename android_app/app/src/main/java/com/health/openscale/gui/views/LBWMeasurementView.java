@@ -16,18 +16,18 @@
 package com.health.openscale.gui.views;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.preference.ListPreference;
 import android.support.v4.content.ContextCompat;
 
 import com.health.openscale.R;
+import com.health.openscale.core.bodymetric.EstimatedLBWMetric;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 
 public class LBWMeasurementView extends FloatMeasurementView {
-
-    private boolean estimateLBWEnable;
+    public static final String KEY = "lbw";
 
     public LBWMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_lbw), ContextCompat.getDrawable(context, R.drawable.ic_lbw));
@@ -35,13 +35,7 @@ public class LBWMeasurementView extends FloatMeasurementView {
 
     @Override
     public String getKey() {
-        return "lbw";
-    }
-
-    @Override
-    public void updatePreferences(SharedPreferences preferences) {
-        setVisible(preferences.getBoolean("lbwEnable", false));
-        estimateLBWEnable = preferences.getBoolean("estimateLBWEnable", false);
+        return KEY;
     }
 
     @Override
@@ -70,8 +64,22 @@ public class LBWMeasurementView extends FloatMeasurementView {
     }
 
     @Override
-    protected boolean isEstimationEnabled() {
-        return estimateLBWEnable;
+    protected boolean isEstimationSupported() { return true; }
+
+    @Override
+    protected void prepareEstimationFormulaPreference(ListPreference preference) {
+        String[] entries = new String[EstimatedLBWMetric.FORMULA.values().length];
+        String[] values = new String[entries.length];
+
+        int idx = 0;
+        for (EstimatedLBWMetric.FORMULA formula : EstimatedLBWMetric.FORMULA.values()) {
+            entries[idx] = EstimatedLBWMetric.getEstimatedMetric(formula).getName();
+            values[idx] = formula.name();
+            ++idx;
+        }
+
+        preference.setEntries(entries);
+        preference.setEntryValues(values);
     }
 
     @Override

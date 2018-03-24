@@ -16,19 +16,18 @@
 package com.health.openscale.gui.views;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.preference.ListPreference;
 import android.support.v4.content.ContextCompat;
 
 import com.health.openscale.R;
+import com.health.openscale.core.bodymetric.EstimatedWaterMetric;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 
 public class WaterMeasurementView extends FloatMeasurementView {
-
-    private boolean estimateWaterEnable;
-    private boolean percentageEnable;
+    public static final String KEY = "water";
 
     public WaterMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_water), ContextCompat.getDrawable(context, R.drawable.ic_water));
@@ -36,19 +35,12 @@ public class WaterMeasurementView extends FloatMeasurementView {
 
     @Override
     public String getKey() {
-        return "water";
+        return KEY;
     }
 
     @Override
-    public void updatePreferences(SharedPreferences preferences) {
-        setVisible(preferences.getBoolean("waterEnable", true));
-        estimateWaterEnable = preferences.getBoolean("estimateWaterEnable", false);
-        percentageEnable = preferences.getBoolean("waterPercentageEnable", true);
-    }
-
-    @Override
-    protected boolean shouldConvertPercentageToAbsoluteWeight() {
-        return !percentageEnable;
+    protected boolean canConvertPercentageToAbsoluteWeight() {
+        return true;
     }
 
     @Override
@@ -63,11 +55,11 @@ public class WaterMeasurementView extends FloatMeasurementView {
 
     @Override
     public String getUnit() {
-        if (percentageEnable) {
-            return "%";
+        if (shouldConvertPercentageToAbsoluteWeight()) {
+            return getScaleUser().getScaleUnit().toString();
         }
 
-        return getScaleUser().getScaleUnit().toString();
+        return "%";
     }
 
     @Override
@@ -81,8 +73,22 @@ public class WaterMeasurementView extends FloatMeasurementView {
     }
 
     @Override
-    protected boolean isEstimationEnabled() {
-        return estimateWaterEnable;
+    protected boolean isEstimationSupported() { return true; }
+
+    @Override
+    protected void prepareEstimationFormulaPreference(ListPreference preference) {
+        String[] entries = new String[EstimatedWaterMetric.FORMULA.values().length];
+        String[] values = new String[entries.length];
+
+        int idx = 0;
+        for (EstimatedWaterMetric.FORMULA formula : EstimatedWaterMetric.FORMULA.values()) {
+            entries[idx] = EstimatedWaterMetric.getEstimatedMetric(formula).getName();
+            values[idx] = formula.name();
+            ++idx;
+        }
+
+        preference.setEntries(entries);
+        preference.setEntryValues(values);
     }
 
     @Override

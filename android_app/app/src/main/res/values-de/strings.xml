@@ -122,15 +122,7 @@
     <string name="error_max_scale_users">Maximale Anzahl gleichzeitiger Benutzer erreicht</string>
     <string name="info_step_on_scale">Bitte steigen Sie barfuß auf die Waage zur Referenzmessung</string>
     <string name="label_automatic">auto</string>
-    <string name="label_category_body_metrics_estimation">Körpermetriken abschätzen</string>
-    <string name="label_category_display">Anzeige</string>
     <string name="label_category_measurement_database">Messwertedatenbank</string>
-    <string name="label_estimate_fat">Körperfettschätzung</string>
-    <string name="label_estimate_fat_formula">Körperfettformel</string>
-    <string name="label_estimate_water">Körperwasserschätzung</string>
-    <string name="label_estimate_water_formula">Körperwasserformel</string>
-    <string name="label_estimate_lbw">Fettfreie Körpermassenschätzung</string>
-    <string name="label_estimate_lbw_formula">Fettfreie Körpermassenformel</string>
     <string name="label_lbw">Fettfreie Körpermasse</string>
     <string name="label_license">Lizenz</string>
     <string name="label_maintainer">Hauptentwickler</string>
@@ -140,9 +132,6 @@
     <string name="close_drawer">schließen</string>
     <string name="info_bluetooth_no_device_set">Kein Bluetooth Gerät ausgewählt</string>
     <string name="info_new_data_duplicated">Messung mit gleichen Datum und Uhrzeit exisitiert bereits</string>
-    <string name="label_fat_percentage">Körperfett in %</string>
-    <string name="label_water_percentage">Wasseranteil in %</string>
-    <string name="label_muscle_percentage">Muskelanteil in %</string>
     <string name="label_feedback_message_enjoying">Gefällt Dir openScale?</string>
     <string name="label_feedback_message_rate_app">Wie wäre es dann mit einer Bewertung bei GooglePlay oder bei GitHub?</string>
     <string name="label_feedback_message_yes">Ja!</string>
@@ -174,7 +163,6 @@
     <string name="permission_bluetooth_info">openScale benötigt die Erlaubnis, auf den ungefähren Standort zuzugreifen, um nach Bluetooth-Geräten suchen zu können.</string>
     <string name="permission_bluetooth_info_title">Information</string>
     <string name="label_next">Weiter</string>
-    <string name="label_measurement_order">Messwert Reihenfolge</string>
     <string name="label_press_hold_reorder">Halten Sie die Taste gedrückt, um die Reihenfolge zu ändern</string>
     <string name="label_set_default_order">Default Reihenfolge wiederherstellen</string>
     <string name="label_share_subject">openScale CSV Datenexport (%s)</string>
