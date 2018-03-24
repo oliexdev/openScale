@@ -12,9 +12,11 @@
         android:summary="\u2022 olie.xdev &lt;olie.xdev@googlemail.com&gt;\n\u2022 Erik Johansson &lt;erik@ejohansson.se&gt;"/>
     <Preference
         android:persistent="false"
-        android:selectable="false"
         android:title="@string/label_website"
-        android:summary="https://github.com/oliexdev/openScale"/>
+        android:summary="https://github.com/oliexdev/openScale">
+        <intent android:action="android.intent.action.VIEW"
+                android:data="https://github.com/oliexdev/openScale" />
+    </Preference>
     <Preference
         android:persistent="false"
         android:selectable="false"
