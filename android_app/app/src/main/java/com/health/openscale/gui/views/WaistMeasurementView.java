@@ -16,7 +16,6 @@
 package com.health.openscale.gui.views;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.support.v4.content.ContextCompat;
 
@@ -26,6 +25,7 @@ import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 
 public class WaistMeasurementView extends FloatMeasurementView {
+    public static final String KEY = "waist";
 
     public WaistMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_waist), ContextCompat.getDrawable(context, R.drawable.ic_waist));
@@ -33,12 +33,7 @@ public class WaistMeasurementView extends FloatMeasurementView {
 
     @Override
     public String getKey() {
-        return "waist";
-    }
-
-    @Override
-    public void updatePreferences(SharedPreferences preferences) {
-        setVisible(preferences.getBoolean("waistEnable", false));
+        return KEY;
     }
 
     @Override

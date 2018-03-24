@@ -113,21 +113,12 @@
 
     <string name="label_delete_confirmation">Confirmación de borrado</string>
 
-    <string name="label_estimate_water">Estimación de agua corporal</string>
-    <string name="label_estimate_lbw">Estimación de masa corporal magra</string>
-    <string name="label_estimate_fat">Estimación de grasa coporal</string>
-
-    <string name="label_category_display">Mostrar</string>
-    <string name="label_category_body_metrics_estimation">Estimación de métricas corporales</string>
     <string name="label_category_measurement_database">Base de datos de mediciones</string>
 
     <string name="label_maintainer">Responsable</string>
     <string name="label_website">Página Web</string>
     <string name="label_license">Licencia</string>
 
-    <string name="label_estimate_water_formula">Fórmula de agua corporal</string>
-    <string name="label_estimate_lbw_formula">Fórmula de masa corporal magra</string>
-    <string name="label_estimate_fat_formula">Fórmula de grasa corporal</string>
     <string name="label_automatic">automático</string>
 
     <string name="label_reminder">Recordatorio</string>
@@ -168,10 +159,6 @@
     <string name="close_drawer">cerrar</string>
 
     <string name="label_share">Compartir</string>
-
-    <string name="label_fat_percentage">Grasa corporal en %</string>
-    <string name="label_water_percentage">Porcentaje de agua en %</string>
-    <string name="label_muscle_percentage">Porcentaje muscular en %</string>
 
     <string name="error_user_name_too_short">Error: el nombre de usuario tiene que tener al menos 3 carácteres</string>
     <string name="info_bluetooth_no_device_set">"No hay dispositivo Bluetooth seleccionado "</string>

@@ -16,7 +16,6 @@
 package com.health.openscale.gui.views;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.support.v4.content.ContextCompat;
 
@@ -28,6 +27,7 @@ import com.health.openscale.core.evaluation.EvaluationSheet;
 import java.util.Locale;
 
 public class BMRMeasurementView extends FloatMeasurementView {
+    public static final String KEY = "bmr";
 
     public BMRMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_bmr), ContextCompat.getDrawable(context, R.drawable.ic_bmr));
@@ -35,12 +35,7 @@ public class BMRMeasurementView extends FloatMeasurementView {
 
     @Override
     public String getKey() {
-        return "bmr";
-    }
-
-    @Override
-    public void updatePreferences(SharedPreferences preferences) {
-        setVisible(preferences.getBoolean("weightEnable", true));
+        return KEY;
     }
 
     @Override
