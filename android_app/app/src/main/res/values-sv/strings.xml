@@ -175,5 +175,9 @@
     <string name="label_weeks_view">Veckovy</string>
     <string name="label_mergeWithLastMeasurement">Sammanfläta med föregående mätning</string>
     <string name="label_export_overwrite">Skriv över föregående export \"%s\"?</string>
+    <string name="label_include_in_overview_graph">Visa i översiktsgraf</string>
+    <string name="label_measurement_in_percent">Mätvärde i %</string>
+    <string name="label_estimate_measurement">Estimera mätvärde</string>
+    <string name="label_estimation_formula">Estimeringsformel</string>
 
 </resources>
