@@ -185,5 +185,5 @@
     <string name="theme_light">Ljust</string>
     <string name="theme_dark">Mörkt</string>
     <string name="label_contribute_translation">Bidra översättning</string>
-    <string name="label_add_or_fix_translation">Lägga till ny eller fixa befintlig</string>
+    <string name="label_add_or_fix_translation">Lägg till ny eller fixa befintlig</string>
 </resources>
