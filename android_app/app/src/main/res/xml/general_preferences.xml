@@ -6,6 +6,11 @@
         android:entryValues="@array/language_values"
         android:key="language"
         android:title="@string/label_language" />
+    <Preference android:title="@string/label_contribute_translation"
+        android:summary="@string/label_add_or_fix_translation">
+        <intent android:action="android.intent.action.VIEW"
+            android:data="https://hosted.weblate.org/engage/openscale/" />
+    </Preference>
     <ListPreference
         android:defaultValue="Light"
         android:entries="@array/theme_entries"

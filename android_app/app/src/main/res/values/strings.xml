@@ -217,4 +217,6 @@
     <string name="language_turkish" translatable="false">Turkish (Türkçe)</string>
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
+    <string name="label_contribute_translation">Contribute translation</string>
+    <string name="label_add_or_fix_translation">Add new or fix existing</string>
 </resources>
