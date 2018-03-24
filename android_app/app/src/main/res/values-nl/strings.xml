@@ -115,12 +115,21 @@
 
     <string name="label_delete_confirmation">Bevestiging verwijderen</string>
 
+    <string name="label_estimate_water">Geschat vochtmassa</string>
+    <string name="label_estimate_lbw">Geschat vetvrije massa</string>
+    <string name="label_estimate_fat">Geschat vetmassa</string>
+
+    <string name="label_category_display">Scherm</string>
+    <string name="label_category_body_metrics_estimation">Schatting Lichaamssamenstelling</string>
     <string name="label_category_measurement_database">Metingen database</string>
 
     <string name="label_maintainer">Beheerder</string>
     <string name="label_website">Website</string>
     <string name="label_license">Licentie</string>
 
+    <string name="label_estimate_water_formula">Formule vochtmassa</string>
+    <string name="label_estimate_lbw_formula">Formule vetvrije massa</string>
+    <string name="label_estimate_fat_formula">Formule vetmassa</string>
     <string name="label_automatic">auto</string>
 
     <string name="label_reminder">Herinnering</string>
@@ -159,6 +168,10 @@
 
     <string name="label_share">Delen</string>
     <string name="label_share_subject">openScale CSV data exporteren (%s)</string>
+
+    <string name="label_fat_percentage">Lichaamsvet in %</string>
+    <string name="label_water_percentage">Lichaamsvocht in %</string>
+    <string name="label_muscle_percentage">Spiermassa in %</string>
 
     <string name="error_user_name_too_short">Fout: Gebruikersnaam dient minimaal 3 karakters lang te zijn</string>
     <string name="info_bluetooth_no_device_set">Geen Bluetooth apparaat geselecteerd</string>
@@ -201,6 +214,7 @@
     <string name="permission_bluetooth_info">openScale heeft toestemming nodig tot uw locatie om te kunnen zoeken naar Bluetooth apparaten</string>
     <string name="permission_bluetooth_info_title">Informatie</string>
     <string name="label_next">Volgende</string>
+    <string name="label_measurement_order">Meting volgorde</string>
     <string name="label_press_hold_reorder">Indrukken en vasthouden om opnieuw in te delen</string>
     <string name="label_set_default_order">Stel standaard volgorde in</string>
     <string name="label_export_overwrite">Vorige export \"%s\" overschrijven?</string>

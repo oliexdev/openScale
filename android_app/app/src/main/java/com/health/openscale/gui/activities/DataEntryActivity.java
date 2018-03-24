@@ -302,15 +302,6 @@ public class DataEntryActivity extends AppCompatActivity {
             }
 
             isDirty = true;
-
-            // Measurements that aren't visible should not store any value. Since we use values from
-            // the previous measurement there might be values for entries not shown. The loop below
-            // clears these values.
-            for (MeasurementView measurement : dataEntryMeasurements) {
-                if (!measurement.isVisible()) {
-                    measurement.clearIn(scaleMeasurement);
-                }
-            }
         }
 
         for (MeasurementView measurement : dataEntryMeasurements) {

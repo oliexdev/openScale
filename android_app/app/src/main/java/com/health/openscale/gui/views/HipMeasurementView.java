@@ -16,6 +16,7 @@
 package com.health.openscale.gui.views;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.support.v4.content.ContextCompat;
 
@@ -25,7 +26,6 @@ import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 
 public class HipMeasurementView extends FloatMeasurementView {
-    public static final String KEY = "hip";
 
     public HipMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_hip), ContextCompat.getDrawable(context, R.drawable.ic_hip));
@@ -33,7 +33,12 @@ public class HipMeasurementView extends FloatMeasurementView {
 
     @Override
     public String getKey() {
-        return KEY;
+        return "hip";
+    }
+
+    @Override
+    public void updatePreferences(SharedPreferences preferences) {
+        setVisible(preferences.getBoolean("hipEnable", false));
     }
 
     @Override

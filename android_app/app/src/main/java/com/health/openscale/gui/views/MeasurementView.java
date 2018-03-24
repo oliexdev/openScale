@@ -23,7 +23,6 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.preference.PreferenceScreen;
 import android.support.v4.content.ContextCompat;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
@@ -31,6 +30,7 @@ import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -61,8 +61,6 @@ public abstract class MeasurementView extends TableLayout {
 
     public static String PREF_MEASUREMENT_ORDER = "measurementOrder";
 
-    private MeasurementViewSettings settings;
-
     private TableRow measurementRow;
     private ImageView iconView;
     private TextView nameView;
@@ -77,11 +75,13 @@ public abstract class MeasurementView extends TableLayout {
     private MeasurementViewUpdateListener updateListener = null;
     private MeasurementViewMode measurementMode = VIEW;
 
+    private static SharedPreferences prefs;
+
     private boolean updateViews = true;
 
     public MeasurementView(Context context, String text, Drawable icon) {
         super(context);
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        prefs = PreferenceManager.getDefaultSharedPreferences(context);
         String app_theme = prefs.getString("app_theme", "Light");
 
         if (app_theme.equals("Dark")) {
@@ -96,10 +96,7 @@ public abstract class MeasurementView extends TableLayout {
 
     public enum DateTimeOrder { FIRST, LAST, NONE }
 
-    public static final List<MeasurementView> getMeasurementList(
-            Context context, DateTimeOrder dateTimeOrder) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-
+    public static final List<MeasurementView> getMeasurementList(Context context, DateTimeOrder dateTimeOrder) {
         final List<MeasurementView> sorted = new ArrayList<>();
         if (dateTimeOrder == DateTimeOrder.FIRST) {
             sorted.add(new DateMeasurementView(context));
@@ -148,7 +145,7 @@ public abstract class MeasurementView extends TableLayout {
         }
 
         for (MeasurementView measurement : sorted) {
-            measurement.setVisible(measurement.getSettings().isEnabled());
+            measurement.updatePreferences(prefs);
         }
 
         return sorted;
@@ -246,20 +243,13 @@ public abstract class MeasurementView extends TableLayout {
 
     public abstract String getKey();
 
-    public MeasurementViewSettings getSettings() {
-        if (settings ==  null) {
-            settings = new MeasurementViewSettings(
-                    PreferenceManager.getDefaultSharedPreferences(getContext()), getKey());
-        }
-        return settings;
-    }
-
     public abstract void loadFrom(ScaleMeasurement measurement, ScaleMeasurement previousMeasurement);
     public abstract void saveTo(ScaleMeasurement measurement);
-    public abstract void clearIn(ScaleMeasurement measurement);
 
     public abstract void restoreState(Bundle state);
     public abstract void saveState(Bundle state);
+
+    public abstract void updatePreferences(SharedPreferences preferences);
 
     public CharSequence getName() { return nameView.getText(); }
     public abstract String getValueAsString();
@@ -339,7 +329,7 @@ public abstract class MeasurementView extends TableLayout {
         showEvaluatorRow(false);
     }
 
-    public void setVisible(boolean isVisible) {
+    protected void setVisible(boolean isVisible) {
         if (isVisible) {
             measurementRow.setVisibility(View.VISIBLE);
         } else {
@@ -390,9 +380,6 @@ public abstract class MeasurementView extends TableLayout {
 
         return openScale.getSelectedScaleUser();
     }
-
-    public boolean hasExtraPreferences() { return false; }
-    public void prepareExtraPreferencesScreen(PreferenceScreen screen) { };
 
     protected abstract View getInputView();
     protected abstract boolean validateAndSetInput(View view);
@@ -493,3 +480,4 @@ public abstract class MeasurementView extends TableLayout {
         }
     }
 }
+

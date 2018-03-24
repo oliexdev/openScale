@@ -113,12 +113,21 @@
 
     <string name="label_delete_confirmation">Confirmació d\'eliminació</string>
 
+    <string name="label_estimate_water">Estimació d\'aigua corporal</string>
+    <string name="label_estimate_lbw">Estimació de massa corporal magra</string>
+    <string name="label_estimate_fat">Estimació de greix corporal</string>
+
+    <string name="label_category_display">Mostreu</string>
+    <string name="label_category_body_metrics_estimation">Estimació de mètriques corporals</string>
     <string name="label_category_measurement_database">Base de dades de mesures</string>
 
     <string name="label_maintainer">Responsable</string>
     <string name="label_website">Pàgina Web</string>
     <string name="label_license">Llicència</string>
 
+    <string name="label_estimate_water_formula">Fórmula d\'aigua corporal</string>
+    <string name="label_estimate_lbw_formula">Fórmula de massa corporal magra</string>
+    <string name="label_estimate_fat_formula">Fórmula de greix corporal</string>
     <string name="label_automatic">automàtic</string>
 
     <string name="label_reminder">Recordatori</string>

@@ -109,8 +109,16 @@
     <string name="label_enable_labels">Etikett på datapunkt</string>
     <string name="label_enable_points">Punkt på datapunkt</string>
     <string name="label_delete_confirmation">Borttagningsbekräftelse</string>
+    <string name="label_estimate_water">Estimera kroppsvatten</string>
+    <string name="label_estimate_lbw">Estimera fettfri kroppsvikt</string>
+    <string name="label_estimate_fat">Estimera kroppsfett</string>
+    <string name="label_category_display">Visa</string>
+    <string name="label_category_body_metrics_estimation">Uppskatta mätvärden</string>
     <string name="label_category_measurement_database">Mätningsdatabas</string>
     <string name="label_maintainer">Utvecklare</string>
+    <string name="label_estimate_water_formula">Formel för kroppsvatten</string>
+    <string name="label_estimate_lbw_formula">Formel för fettfri kroppsvikt</string>
+    <string name="label_estimate_fat_formula">Formel för kroppsfett</string>
     <string name="label_automatic">auto</string>
     <string name="label_reminder">Påminnelse</string>
     <string name="label_reminder_notify_text">Meddelandetext</string>
@@ -130,6 +138,9 @@
     <string name="info_measuring">Mäter vikt: %.2f</string>
     <string name="open_drawer">öppna</string>
     <string name="close_drawer">stäng</string>
+    <string name="label_fat_percentage">Kroppsfett i %</string>
+    <string name="label_muscle_percentage">Muskler i %</string>
+    <string name="label_water_percentage">Kroppsvatten i %</string>
     <string name="info_bluetooth_no_device_set">Ingen Bluetooth-enhet vald</string>
     <string name="info_new_data_duplicated">mätning med samma datum och tid existerar redan</string>
     <string name="title_general">Allmänt</string>
@@ -169,6 +180,7 @@
     <string name="label_share_subject">openScale CSV dataexport (%s)</string>
 
     <string name="label_next">Nästa</string>
+    <string name="label_measurement_order">Mätordning</string>
     <string name="label_press_hold_reorder">Tryck och håll för att ändra ordning</string>
     <string name="label_set_default_order">Ställ in standardordning</string>
 

@@ -47,10 +47,6 @@ import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
 import com.health.openscale.core.utils.CsvHelper;
 import com.health.openscale.gui.fragments.FragmentUpdateListener;
-import com.health.openscale.gui.views.FatMeasurementView;
-import com.health.openscale.gui.views.LBWMeasurementView;
-import com.health.openscale.gui.views.MeasurementViewSettings;
-import com.health.openscale.gui.views.WaterMeasurementView;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -258,24 +254,21 @@ public class OpenScale {
             }
         }
 
-        MeasurementViewSettings settings = new MeasurementViewSettings(prefs, WaterMeasurementView.KEY);
-        if (settings.isEnabled() && settings.isEstimationEnabled()) {
-            EstimatedWaterMetric waterMetric = EstimatedWaterMetric.getEstimatedMetric(
-                    EstimatedWaterMetric.FORMULA.valueOf(settings.getEstimationFormula()));
+        if (prefs.getBoolean("estimateWaterEnable", false)) {
+            EstimatedWaterMetric waterMetric = EstimatedWaterMetric.getEstimatedMetric(EstimatedWaterMetric.FORMULA.valueOf(prefs.getString("estimateWaterFormula", "TBW_LEESONGKIM")));
+
             scaleMeasurement.setWater(waterMetric.getWater(getScaleUser(scaleMeasurement.getUserId()), scaleMeasurement));
         }
 
-        settings = new MeasurementViewSettings(prefs, LBWMeasurementView.KEY);
-        if (settings.isEnabled() && settings.isEstimationEnabled()) {
-            EstimatedLBWMetric lbwMetric = EstimatedLBWMetric.getEstimatedMetric(
-                    EstimatedLBWMetric.FORMULA.valueOf(settings.getEstimationFormula()));
+        if (prefs.getBoolean("estimateLBWEnable", false)) {
+            EstimatedLBWMetric lbwMetric = EstimatedLBWMetric.getEstimatedMetric(EstimatedLBWMetric.FORMULA.valueOf(prefs.getString("estimateLBWFormula", "LBW_HUME")));
+
             scaleMeasurement.setLbw(lbwMetric.getLBW(getScaleUser(scaleMeasurement.getUserId()), scaleMeasurement));
         }
 
-        settings = new MeasurementViewSettings(prefs, FatMeasurementView.KEY);
-        if (settings.isEnabled() && settings.isEstimationEnabled()) {
-            EstimatedFatMetric fatMetric = EstimatedFatMetric.getEstimatedMetric(
-                    EstimatedFatMetric.FORMULA.valueOf(settings.getEstimationFormula()));
+        if (prefs.getBoolean("estimateFatEnable", false)) {
+            EstimatedFatMetric fatMetric = EstimatedFatMetric.getEstimatedMetric(EstimatedFatMetric.FORMULA.valueOf(prefs.getString("estimateFatFormula", "BF_GALLAGHER")));
+
             scaleMeasurement.setFat(fatMetric.getFat(getScaleUser(scaleMeasurement.getUserId()), scaleMeasurement));
         }
 

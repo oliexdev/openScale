@@ -16,18 +16,19 @@
 package com.health.openscale.gui.views;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.preference.ListPreference;
 import android.support.v4.content.ContextCompat;
 
 import com.health.openscale.R;
-import com.health.openscale.core.bodymetric.EstimatedFatMetric;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 
 public class FatMeasurementView extends FloatMeasurementView {
-    public static final String KEY = "fat";
+
+    private boolean estimateFatEnable;
+    private boolean percentageEnable;
 
     public FatMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_fat), ContextCompat.getDrawable(context, R.drawable.ic_fat));
@@ -35,12 +36,19 @@ public class FatMeasurementView extends FloatMeasurementView {
 
     @Override
     public String getKey() {
-        return KEY;
+        return "fat";
     }
 
     @Override
-    protected boolean canConvertPercentageToAbsoluteWeight() {
-        return true;
+    public void updatePreferences(SharedPreferences preferences) {
+        setVisible(preferences.getBoolean("fatEnable", true));
+        estimateFatEnable = preferences.getBoolean("estimateFatEnable", false);
+        percentageEnable = preferences.getBoolean("fatPercentageEnable", true);
+    }
+
+    @Override
+    protected boolean shouldConvertPercentageToAbsoluteWeight() {
+        return !percentageEnable;
     }
 
     @Override
@@ -55,11 +63,11 @@ public class FatMeasurementView extends FloatMeasurementView {
 
     @Override
     public String getUnit() {
-        if (shouldConvertPercentageToAbsoluteWeight()) {
-            return getScaleUser().getScaleUnit().toString();
+        if (percentageEnable) {
+            return "%";
         }
 
-        return "%";
+        return getScaleUser().getScaleUnit().toString();
     }
 
     @Override
@@ -73,22 +81,8 @@ public class FatMeasurementView extends FloatMeasurementView {
     }
 
     @Override
-    protected boolean isEstimationSupported() { return true; }
-
-    @Override
-    protected void prepareEstimationFormulaPreference(ListPreference preference) {
-        String[] entries = new String[EstimatedFatMetric.FORMULA.values().length];
-        String[] values = new String[entries.length];
-
-        int idx = 0;
-        for (EstimatedFatMetric.FORMULA formula : EstimatedFatMetric.FORMULA.values()) {
-            entries[idx] = EstimatedFatMetric.getEstimatedMetric(formula).getName();
-            values[idx] = formula.name();
-            ++idx;
-        }
-
-        preference.setEntries(entries);
-        preference.setEntryValues(values);
+    protected boolean isEstimationEnabled() {
+        return estimateFatEnable;
     }
 
     @Override

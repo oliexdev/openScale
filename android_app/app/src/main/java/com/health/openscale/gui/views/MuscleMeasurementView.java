@@ -16,6 +16,7 @@
 package com.health.openscale.gui.views;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.support.v4.content.ContextCompat;
 
@@ -25,7 +26,8 @@ import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 
 public class MuscleMeasurementView extends FloatMeasurementView {
-    public static final String KEY = "muscle";
+
+    private boolean percentageEnable;
 
     public MuscleMeasurementView(Context context) {
         super(context, context.getResources().getString(R.string.label_muscle), ContextCompat.getDrawable(context, R.drawable.ic_muscle));
@@ -33,12 +35,18 @@ public class MuscleMeasurementView extends FloatMeasurementView {
 
     @Override
     public String getKey() {
-        return KEY;
+        return "muscle";
     }
 
     @Override
-    protected boolean canConvertPercentageToAbsoluteWeight() {
-        return true;
+    public void updatePreferences(SharedPreferences preferences) {
+        setVisible(preferences.getBoolean("muscleEnable", true));
+        percentageEnable = preferences.getBoolean("musclePercentageEnable", true);
+    }
+
+    @Override
+    protected boolean shouldConvertPercentageToAbsoluteWeight() {
+        return !percentageEnable;
     }
 
     @Override
@@ -53,11 +61,11 @@ public class MuscleMeasurementView extends FloatMeasurementView {
 
     @Override
     public String getUnit() {
-        if (shouldConvertPercentageToAbsoluteWeight()) {
-            return getScaleUser().getScaleUnit().toString();
+        if (percentageEnable) {
+            return "%";
         }
 
-        return "%";
+        return getScaleUser().getScaleUnit().toString();
     }
 
     @Override

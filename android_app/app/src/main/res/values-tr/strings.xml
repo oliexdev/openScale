@@ -111,12 +111,21 @@
 
     <string name="label_delete_confirmation">Delete confirmation</string>
 
+    <string name="label_estimate_water">Tahmini Vücüt suyu oraný</string>
+    <string name="label_estimate_lbw">Tahmini Yaðsýz vücüt oraný</string>
+    <string name="label_estimate_fat">Tahmini Vücüt yað oraný</string>
+
+    <string name="label_category_display">Display</string>
+    <string name="label_category_body_metrics_estimation">Vücüt ölçütleri tahmini</string>
     <string name="label_category_measurement_database">Ölçüm veritabaný</string>
 
     <string name="label_maintainer">Maintainer</string>
     <string name="label_website">Websitesi</string>
     <string name="label_license">Lisan</string>
 
+    <string name="label_estimate_water_formula">Vücüt oraný hesaplama formulü</string>
+    <string name="label_estimate_lbw_formula">Yað oraný hesaplama formulü</string>
+    <string name="label_estimate_fat_formula">Vücut yaðý formülü</string>
     <string name="label_automatic">otomatik</string>
 
     <string name="label_reminder">Hatýrlatma</string>

@@ -40,6 +40,10 @@
     <string name="label_bone">Bone mass</string>
     <string name="label_smartUserAssign">Smart User assignment</string>
 
+    <string name="label_fat_percentage">Body fat in %</string>
+    <string name="label_water_percentage">Body water in %</string>
+    <string name="label_muscle_percentage">Muscle in %</string>
+
     <plurals name="label_days">
         <item quantity="one">%d day</item>
         <item quantity="other">%d days</item>
@@ -123,12 +127,21 @@
 
     <string name="label_delete_confirmation">Delete confirmation</string>
 
+    <string name="label_estimate_water">Estimate body water</string>
+    <string name="label_estimate_lbw">Estimate lean body weight</string>
+    <string name="label_estimate_fat">Estimate body fat</string>
+
+    <string name="label_category_display">Display</string>
+    <string name="label_category_body_metrics_estimation">Body metrics estimation</string>
     <string name="label_category_measurement_database">Measurement database</string>
 
     <string name="label_maintainer">Maintainer</string>
     <string name="label_website">Website</string>
     <string name="label_license">License</string>
 
+    <string name="label_estimate_water_formula">Body water formula</string>
+    <string name="label_estimate_lbw_formula">Lean body weight formula</string>
+    <string name="label_estimate_fat_formula">Body fat formula</string>
     <string name="label_automatic">auto</string>
 
     <string name="label_theme">Theme</string>
@@ -193,11 +206,10 @@
     <string name="permission_bluetooth_info">openScale requires permission to access the coarse location to search for Bluetooth devices</string>
     <string name="permission_bluetooth_info_title">Information</string>
     <string name="label_next">Next</string>
+    <string name="label_measurement_order">Measurement order</string>
     <string name="label_press_hold_reorder">Press and hold to reorder</string>
     <string name="label_set_default_order">Set default order</string>
     <string name="label_export_overwrite">Overwrite previous export \"%s\"?</string>
-    <string name="label_include_in_overview_graph">Include in overview graph</string>
-    <string name="label_measurement_in_percent">Measurement in %</string>
-    <string name="label_estimate_measurement">Estimate measurement</string>
-    <string name="label_estimation_formula">Estimation formula</string>
+
+
 </resources>

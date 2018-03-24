@@ -29,6 +29,10 @@
     <string name="label_comment">Komentář</string>
     <string name="label_smartUserAssign">Chytré přiřazení uživatele</string>
 
+    <string name="label_fat_percentage">Tělesný tuk v %</string>
+    <string name="label_water_percentage">Tělesná voda v %</string>
+    <string name="label_muscle_percentage">Svalová hmota v %</string>
+
     <plurals name="label_days">
 	<item quantity="one">%d den</item>
 	<item quantity="few">%d dny</item>
@@ -96,6 +100,10 @@
 
     <string name="label_delete_confirmation">Potvrzení smazání</string>
 
+    <string name="label_estimate_water">Odhadnout vodu v těle</string>
+    <string name="label_estimate_fat">Odhadnout tělesný tuk</string>
+
+    <string name="label_category_display">Zobrazit</string>
     <string name="label_maintainer">Správce</string>
     <string name="label_website">Webové stránky</string>
     <string name="label_license">Licence</string>
