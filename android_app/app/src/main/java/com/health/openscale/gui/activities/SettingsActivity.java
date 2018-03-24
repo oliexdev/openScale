@@ -16,6 +16,7 @@
 package com.health.openscale.gui.activities;
 
 import android.app.Fragment;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
@@ -38,13 +39,13 @@ public class SettingsActivity extends PreferenceActivity
     private Fragment currentFragment;
 
     @Override
+    protected void attachBaseContext(Context context) {
+        super.attachBaseContext(BaseAppCompatActivity.createBaseContext(context));
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
-        String app_theme = PreferenceManager.getDefaultSharedPreferences(this).getString("app_theme", "Light");
-
-        if (app_theme.equals("Dark")) {
-            setTheme(R.style.AppTheme_Dark);
-        }
-
+        BaseAppCompatActivity.applyTheme(this);
         super.onCreate(savedInstanceState);
     }
 
@@ -65,7 +66,8 @@ public class SettingsActivity extends PreferenceActivity
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences preferences, String key) {
-        if (key.equals("app_theme")) {
+        if (key.equals(BaseAppCompatActivity.PREFERENCE_APP_THEME)
+                || key.equals(BaseAppCompatActivity.PREFERENCE_LANGUAGE)) {
             recreate();
         }
     }

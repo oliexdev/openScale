@@ -41,7 +41,6 @@ import android.support.v4.content.FileProvider;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -55,6 +54,7 @@ import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.bluetooth.BluetoothCommunication;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
+import com.health.openscale.gui.activities.BaseAppCompatActivity;
 import com.health.openscale.gui.activities.DataEntryActivity;
 import com.health.openscale.gui.activities.SettingsActivity;
 import com.health.openscale.gui.activities.UserSettingsActivity;
@@ -70,7 +70,7 @@ import java.util.List;
 
 import cat.ereza.customactivityoncrash.config.CaocConfig;
 
-public class MainActivity extends AppCompatActivity
+public class MainActivity extends BaseAppCompatActivity
         implements SharedPreferences.OnSharedPreferenceChangeListener{
     private SharedPreferences prefs;
     private static boolean firstAppStart = true;
@@ -91,18 +91,10 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        prefs = PreferenceManager.getDefaultSharedPreferences(this);
-
-        String app_theme = prefs.getString("app_theme", "Light");
-
-        if (app_theme.equals("Dark")) {
-            setTheme(R.style.AppTheme_Dark);
-        }
-
         super.onCreate(savedInstanceState);
 
-        PreferenceManager.getDefaultSharedPreferences(this)
-                .registerOnSharedPreferenceChangeListener(this);
+        prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        prefs.registerOnSharedPreferenceChangeListener(this);
 
         CaocConfig.Builder.create()
                 .trackActivities(true)
@@ -203,8 +195,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onDestroy() {
-        PreferenceManager.getDefaultSharedPreferences(this)
-                .unregisterOnSharedPreferenceChangeListener(this);
+        prefs.unregisterOnSharedPreferenceChangeListener(this);
         super.onDestroy();
     }
 
@@ -317,7 +308,6 @@ public class MainActivity extends AppCompatActivity
                 return;
         }
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         prefs.edit().putInt("lastFragmentId", menuItemId).commit();
 
         FragmentManager fragmentManager = getSupportFragmentManager();
@@ -416,8 +406,6 @@ public class MainActivity extends AppCompatActivity
 
         bluetoothStatus = menu.findItem(R.id.action_bluetooth_status);
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-
         // Just search for a bluetooth device just once at the start of the app and if start preference enabled
         if (firstAppStart && prefs.getBoolean("btEnable", false)) {
             invokeSearchBluetoothDevice();
@@ -447,8 +435,6 @@ public class MainActivity extends AppCompatActivity
             showNoSelectedUserDialog();
             return;
         }
-
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         String deviceName = prefs.getString("btDeviceName", "-");
 
@@ -597,8 +583,6 @@ public class MainActivity extends AppCompatActivity
         OpenScale openScale = OpenScale.getInstance(getApplicationContext());
         final ScaleUser selectedScaleUser = openScale.getSelectedScaleUser();
 
-        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-
         Uri uri;
         try {
             String exportUri = prefs.getString(getExportPreferenceKey(selectedScaleUser), "");
@@ -686,7 +670,6 @@ public class MainActivity extends AppCompatActivity
                 break;
             case EXPORT_DATA_REQUEST:
                 if (doExportData(data.getData())) {
-                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
                     SharedPreferences.Editor editor = prefs.edit();
 
                     String key = getExportPreferenceKey(openScale.getSelectedScaleUser());

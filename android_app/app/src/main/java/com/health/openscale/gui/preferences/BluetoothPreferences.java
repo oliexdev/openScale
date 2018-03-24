@@ -97,11 +97,11 @@ public class BluetoothPreferences extends PreferenceFragment implements SharedPr
 
                 for (Map.Entry<String, String> entry : foundDevices.entrySet()) {
                     if (getActivity() != null) {
-                        Preference prefBtDevice = new Preference(getActivity().getBaseContext());
+                        Preference prefBtDevice = new Preference(getActivity());
                         prefBtDevice.setSummary(entry.getKey());
 
                         for (BluetoothCommunication.BT_DEVICE_ID btScaleID : BluetoothCommunication.BT_DEVICE_ID.values()) {
-                            BluetoothCommunication btDevice = BluetoothCommunication.getBtDevice(getActivity().getBaseContext(), btScaleID);
+                            BluetoothCommunication btDevice = BluetoothCommunication.getBtDevice(getActivity(), btScaleID);
 
                             if (btDevice.checkDeviceName(entry.getValue())) {
                                 prefBtDevice.setOnPreferenceClickListener(new onClickListenerDeviceSelect());
