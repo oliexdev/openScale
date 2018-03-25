@@ -590,7 +590,7 @@ public class MainActivity extends BaseAppCompatActivity
 
             // Verify that the file still exists and that we have write permission
             getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-            openScale.getFilenameFromUri(uri);
+            openScale.getFilenameFromUriMayThrow(uri);
         }
         catch (Exception ex) {
             uri = null;

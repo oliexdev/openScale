@@ -356,11 +356,28 @@ public class OpenScale {
         updateScaleData();
     }
 
-    public String getFilenameFromUri(Uri uri) {
+    public String getFilenameFromUriMayThrow(Uri uri) {
         Cursor cursor = context.getContentResolver().query(
                 uri, null, null, null, null);
         cursor.moveToFirst();
         return cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+    }
+
+    public String getFilenameFromUri(Uri uri) {
+        try {
+            return getFilenameFromUriMayThrow(uri);
+        }
+        catch (Exception e) {
+            String name = uri.getLastPathSegment();
+            if (name != null) {
+                return name;
+            }
+            name = uri.getPath();
+            if (name != null) {
+                return name;
+            }
+            return uri.toString();
+        }
     }
 
     public void importData(Uri uri) {
