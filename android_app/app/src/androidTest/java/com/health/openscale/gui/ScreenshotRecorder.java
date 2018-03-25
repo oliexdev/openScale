@@ -36,6 +36,7 @@ import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.CsvHelper;
+import com.health.openscale.gui.activities.BaseAppCompatActivity;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -74,15 +75,6 @@ public class ScreenshotRecorder {
     @Rule
     public ActivityTestRule<MainActivity> mActivityTestRule = new ActivityTestRule<>(MainActivity.class, false , false);
 
-    private void setLangauge(String language, String country) {
-        Locale locale = new Locale(language, country);
-        Locale.setDefault(locale);
-        Resources res = context.getResources();
-        Configuration config = res.getConfiguration();
-        config.locale = locale;
-        res.updateConfiguration(config, res.getDisplayMetrics());
-    }
-
     @Before
     public void initRecorder() {
         context = InstrumentationRegistry.getTargetContext();
@@ -111,12 +103,16 @@ public class ScreenshotRecorder {
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
-        prefs.edit().remove("lastFragmentId").commit();
-        setLangauge("en", "EN");
+        prefs.edit()
+                .remove("lastFragmentId")
+                .putString(BaseAppCompatActivity.PREFERENCE_LANGUAGE, "en")
+                .commit();
         screenshotRecorder();
 
-        prefs.edit().remove("lastFragmentId").commit();
-        setLangauge("de", "DE");
+        prefs.edit()
+                .remove("lastFragmentId")
+                .putString(BaseAppCompatActivity.PREFERENCE_LANGUAGE, "de")
+                .commit();
         screenshotRecorder();
     }
 
