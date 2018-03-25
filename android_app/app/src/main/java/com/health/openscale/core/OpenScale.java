@@ -126,7 +126,11 @@ public class OpenScale {
     }
 
     private void migrateSQLtoRoom() {
-        // TODO: check if databases exist before opening and possibly creating them
+        if (!context.getDatabasePath(ScaleUserDatabase.DATABASE_NAME).exists()
+            || !context.getDatabasePath(ScaleDatabase.DATABASE_NAME).exists()) {
+            return;
+        }
+
         ScaleDatabase scaleDB = new ScaleDatabase(context);
         ScaleUserDatabase scaleUserDB = new ScaleUserDatabase(context);
 

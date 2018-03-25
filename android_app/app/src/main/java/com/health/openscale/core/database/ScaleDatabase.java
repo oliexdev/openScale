@@ -32,7 +32,7 @@ import java.util.Locale;
 
 public class ScaleDatabase extends SQLiteOpenHelper {
     private static final int DATABASE_VERSION = 6;
-    private static final String DATABASE_NAME = "openScaleDatabase.db";
+    public static final String DATABASE_NAME = "openScaleDatabase.db";
 
     private static final String TABLE_NAME = "scaledata";
     private static final String COLUMN_NAME_ID = "id";
