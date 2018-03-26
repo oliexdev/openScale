@@ -23,6 +23,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
+import android.widget.EditText;
 
 import com.health.openscale.R;
 import com.health.openscale.gui.preferences.BackupPreferences;
@@ -34,13 +35,15 @@ import java.util.List;
 
 public class SettingsActivity extends PreferenceActivity
         implements SharedPreferences.OnSharedPreferenceChangeListener {
-    public static String EXTRA_TINT_COLOR = "tintColor";
     private static List<String> fragments = new ArrayList<String>();
     private Fragment currentFragment;
 
     @Override
     protected void attachBaseContext(Context context) {
         super.attachBaseContext(BaseAppCompatActivity.createBaseContext(context));
+        if (!fragments.isEmpty()) {
+            invalidateHeaders();
+        }
     }
 
     @Override
@@ -76,7 +79,7 @@ public class SettingsActivity extends PreferenceActivity
     public void onBuildHeaders(List<Header> target) {
         loadHeadersFromResource(R.xml.header_preferences, target);
 
-        int tintColor = getIntent().getIntExtra(EXTRA_TINT_COLOR, 0);
+        int tintColor = new EditText(this).getCurrentTextColor();
 
         fragments.clear();
         for (Header header : target) {

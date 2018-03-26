@@ -297,7 +297,6 @@ public class MainActivity extends BaseAppCompatActivity
                 break;
             case R.id.nav_settings:
                 Intent settingsIntent = new Intent(this, SettingsActivity.class);
-                settingsIntent.putExtra(SettingsActivity.EXTRA_TINT_COLOR, navDrawer.getItemTextColor().getDefaultColor());
                 startActivity(settingsIntent);
                 settingsActivityRunning = true;
                 drawerLayout.closeDrawers();
