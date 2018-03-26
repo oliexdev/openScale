@@ -22,6 +22,8 @@ import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TableLayout;
 import android.widget.TextView;
 
@@ -74,6 +76,14 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         statisticsView = inflater.inflate(R.layout.fragment_statistics, container, false);
+
+        // Set android:tint="?attr/editTextColor" programmatically as setting it in xml layout
+        // throws an exception on API 19.
+        int color = new EditText(getContext()).getCurrentTextColor();
+        for (int id : new int[]{R.id.imageGoalWeight, R.id.imageGoalDiff, R.id.imageDayLeft}) {
+            ImageView image = statisticsView.findViewById(id);
+            image.setColorFilter(color);
+        }
 
         txtGoalWeight = (TextView) statisticsView.findViewById(R.id.txtGoalWeight);
         txtGoalDiff = (TextView) statisticsView.findViewById(R.id.txtGoalDiff);

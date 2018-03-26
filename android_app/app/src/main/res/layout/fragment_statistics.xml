@@ -41,12 +41,11 @@
                     android:orientation="horizontal">
 
                     <ImageView
-                        android:id="@+id/imageView5"
+                        android:id="@+id/imageGoalWeight"
                         android:layout_width="match_parent"
                         android:layout_height="20dp"
                         android:layout_gravity="center"
-                        android:src="@drawable/ic_target"
-                        android:tint="?attr/editTextColor" />
+                        android:src="@drawable/ic_target" />
 
                     <TextView
                         android:id="@+id/txtLabelGoalWeight"
@@ -85,12 +84,11 @@
                     android:orientation="horizontal">
 
                     <ImageView
-                        android:id="@+id/imageView6"
+                        android:id="@+id/imageGoalDiff"
                         android:layout_width="match_parent"
                         android:layout_height="20dp"
                         android:layout_gravity="center"
-                        android:src="@drawable/ic_difference"
-                        android:tint="?attr/editTextColor" />
+                        android:src="@drawable/ic_difference" />
 
                     <TextView
                         android:id="@+id/txtLabelGoalDiff"
@@ -129,12 +127,11 @@
                     android:orientation="horizontal">
 
                     <ImageView
-                        android:id="@+id/imageView7"
+                        android:id="@+id/imageDayLeft"
                         android:layout_width="match_parent"
                         android:layout_height="20dp"
                         android:layout_gravity="center"
-                        android:src="@drawable/ic_daysleft"
-                        android:tint="?attr/editTextColor" />
+                        android:src="@drawable/ic_daysleft" />
 
                     <TextView
                         android:id="@+id/txtLabelDayLeft"
