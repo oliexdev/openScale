@@ -296,10 +296,10 @@ public class MainActivity extends BaseAppCompatActivity
                 fragmentTitle = getResources().getString(R.string.title_statistics);
                 break;
             case R.id.nav_settings:
+                drawerLayout.closeDrawer(navDrawer, false);
                 Intent settingsIntent = new Intent(this, SettingsActivity.class);
-                startActivity(settingsIntent);
                 settingsActivityRunning = true;
-                drawerLayout.closeDrawers();
+                startActivity(settingsIntent);
                 return;
             case R.id.nav_help:
                 startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/oliexdev/openScale/wiki")));
