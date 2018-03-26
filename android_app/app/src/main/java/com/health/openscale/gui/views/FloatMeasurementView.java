@@ -17,6 +17,7 @@
 package com.health.openscale.gui.views;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.database.DataSetObserver;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
@@ -417,6 +418,30 @@ public abstract class FloatMeasurementView extends MeasurementView {
     public void setExpand(boolean state) {
         final boolean show = state && isVisible() && evaluationResult != null;
         showEvaluatorRow(show);
+    }
+
+    @Override
+    public String getPreferenceSummary() {
+        MeasurementViewSettings settings = getSettings();
+        Resources res = getResources();
+
+        final String separator = ", ";
+        String summary = "";
+        if (settings.isInOverviewGraph()) {
+            summary += res.getString(R.string.label_overview_graph) + separator;
+        }
+        if (canConvertPercentageToAbsoluteWeight() && settings.isPercentageEnabled()) {
+            summary += res.getString(R.string.label_percent) + separator;
+        }
+        if (isEstimationSupported() && settings.isEstimationEnabled()) {
+            summary += res.getString(R.string.label_estimated) + separator;
+        }
+
+        if (!summary.isEmpty()) {
+            return summary.substring(0, summary.length() - separator.length());
+        }
+
+        return "";
     }
 
     @Override

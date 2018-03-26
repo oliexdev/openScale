@@ -219,4 +219,7 @@
     <string name="theme_dark">Dark</string>
     <string name="label_contribute_translation">Contribute translation</string>
     <string name="label_add_or_fix_translation">Add new or fix existing</string>
+    <string name="label_overview_graph">Overview graph</string>
+    <string name="label_percent">Percent</string>
+    <string name="label_estimated">Estimated</string>
 </resources>

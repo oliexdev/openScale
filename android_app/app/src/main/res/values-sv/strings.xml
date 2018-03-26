@@ -186,4 +186,7 @@
     <string name="theme_dark">Mörkt</string>
     <string name="label_contribute_translation">Bidra översättning</string>
     <string name="label_add_or_fix_translation">Lägg till ny eller fixa befintlig</string>
+    <string name="label_overview_graph">Översiktsgraf</string>
+    <string name="label_percent">Procent</string>
+    <string name="label_estimated">Estimerat</string>
 </resources>

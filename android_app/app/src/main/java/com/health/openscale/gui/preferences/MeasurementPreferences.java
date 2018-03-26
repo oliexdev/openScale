@@ -102,6 +102,7 @@ public class MeasurementPreferences extends PreferenceFragment {
             preference.setIcon(icon);
 
             preference.setTitle(measurement.getName());
+            preference.setSummary(measurement.getPreferenceSummary());
 
             measurementCategory.addPreference(preference);
         }
@@ -256,6 +257,7 @@ public class MeasurementPreferences extends PreferenceFragment {
                         public void onDismiss(DialogInterface dialog) {
                             screen.onDismiss(dialog);
                             getPreferenceScreen().removePreference(screen);
+                            setSummary(measurement.getPreferenceSummary());
                         }
                     });
                 }

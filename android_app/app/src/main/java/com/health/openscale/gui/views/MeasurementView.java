@@ -384,6 +384,7 @@ public abstract class MeasurementView extends TableLayout {
         return openScale.getSelectedScaleUser();
     }
 
+    public String getPreferenceSummary() { return ""; }
     public boolean hasExtraPreferences() { return false; }
     public void prepareExtraPreferencesScreen(PreferenceScreen screen) { };
 
