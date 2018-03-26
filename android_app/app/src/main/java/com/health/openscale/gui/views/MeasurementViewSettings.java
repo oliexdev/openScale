@@ -107,11 +107,11 @@ public class MeasurementViewSettings {
     public boolean isInOverviewGraph() {
         boolean defaultValue;
         switch (key) {
-            case BMRMeasurementView.KEY:
-                defaultValue = false;
+            case WeightMeasurementView.KEY:
+                defaultValue = true;
                 break;
             default:
-                defaultValue = true;
+                defaultValue = false;
                 break;
         }
         return preferences.getBoolean(getInOverviewGraphKey(), defaultValue);
