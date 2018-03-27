@@ -471,6 +471,7 @@ public abstract class FloatMeasurementView extends MeasurementView {
             final CheckBoxPreference estimate = new CheckBoxPreference(screen.getContext());
             estimate.setKey(settings.getEstimationEnabledKey());
             estimate.setTitle(R.string.label_estimate_measurement);
+            estimate.setSummary(R.string.label_estimate_measurement_summary);
             estimate.setPersistent(true);
             estimate.setDefaultValue(settings.isEstimationEnabled());
             screen.addPreference(estimate);

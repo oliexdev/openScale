@@ -222,4 +222,5 @@
     <string name="label_overview_graph">Overview graph</string>
     <string name="label_percent">Percent</string>
     <string name="label_estimated">Estimated</string>
+    <string name="label_estimate_measurement_summary">Based on weight, height, age, gender, etc.</string>
 </resources>
