@@ -67,7 +67,7 @@
     <string name="label_export">Exportar</string>
     <string name="label_exportBackup">Exportar Backup</string>
     <string name="label_export_dir">Diretório de exportação</string>
-    <string name="label_fat">Percentagem de gordura corporal</string>
+    <string name="label_fat">Gordura corporal</string>
     <string name="label_gender">Gênero</string>
     <string name="label_goal_date">Data objetivo</string>
     <string name="label_goal_date_is">A data objetivo é</string>
@@ -81,7 +81,7 @@
     <string name="label_last_month">Últimos 30 dias</string>
     <string name="label_last_week">Últimos 7 dias</string>
     <string name="label_male">Masc</string>
-    <string name="label_muscle">Porcentagem de massa muscular</string>
+    <string name="label_muscle">Massa muscular</string>
     <string name="label_no">Não</string>
     <string name="label_ok">OK</string>
     <string name="label_not_found">não encontrado</string>
@@ -99,7 +99,7 @@
     <string name="label_title_user">usuário</string>
     <string name="label_user_name">Nome</string>
     <string name="label_waist">Circunferência de quadril</string>
-    <string name="label_water">Porcentagem de água</string>
+    <string name="label_water">Quantidade de água</string>
     <string name="label_weight">Peso</string>
     <string name="label_weight_difference">Diferença de peso</string>
     <string name="label_whr">Relação quadril-cintura</string>
@@ -115,5 +115,16 @@
     <string name="title_statistics">Estatísticas</string>
     <string name="title_table">Tabela</string>
     <string name="title_users">Usuários</string>
-<string name="title_about">About</string>
+<string name="title_about">Versao</string>
+    <string name="title_general">Menu</string>
+
+    <string name="open_drawer">abrir</string>
+    <string name="close_drawer">fechar</string>
+
+    <string name="label_share">Partilhar</string>
+    <string name="label_share_subject">Exportar dados openScale para CSV (%s)</string>
+
+    <string name="label_bmr">Taxa Metabolica Basal (TMB)</string>
+    <string name="label_lbw">Massa Magra</string>
+    <string name="label_bone">Massa ossea</string>
     </resources>
