@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <resources>
     <string name="Friday">Sexta</string>
     <string name="Monday">Segunda</string>
@@ -115,4 +115,5 @@
     <string name="title_statistics">Estatísticas</string>
     <string name="title_table">Tabela</string>
     <string name="title_users">Usuários</string>
-</resources>
+<string name="title_about">About</string>
+    </resources>
