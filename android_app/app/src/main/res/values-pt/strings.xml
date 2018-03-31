@@ -41,7 +41,7 @@
     <string name="info_is_visible">está visível</string>
     <string name="info_measuring">Medindo peso: %.2f</string>
     <string name="info_no_evaluation_available">Valor não pode ser processado</string>
-    <string name="info_on_date">em</string>
+    <string name="info_on_date">on</string>
     <string name="info_no_selected_user">Nenhum utilizador existe. Por favor, crie um novo utilizador em Configurações.</string>
     <string name="info_step_on_scale">Por favor suba na balança para medidas de referência</string>
     <string name="label_add_user">Adicionar utilizador</string>
@@ -61,8 +61,8 @@
     <string name="label_days_left">Dias restantes</string>
     <string name="label_delete">Apagar</string>
     <string name="label_delete_all">Apagar tudo</string>
-    <string name="label_delete_confirmation">Confirmar deleção</string>
-    <string name="label_device_type">Tipo do dispositivo</string>
+    <string name="label_delete_confirmation">Confirma remoção</string>
+    <string name="label_device_type">Tipo de dispositivo</string>
     <string name="label_enable_labels">Etiquetas nos pontos de dados</string>
     <string name="label_enable_points">Circular pontos de dados</string>
     <string name="label_export">Exportar</string>
@@ -132,14 +132,14 @@
     <string name="info_new_data_added">%1$.2f%2$s [%3$s] para %4$s adicionado</string>
     <string name="info_new_data_duplicated">media já inserida com a mesma data e hora</string>
 
-    <string name="label_mergeWithLastMeasurement">Juntar com a última medida</string>
-    <string name="label_bluetooth_searching">A procura de balancas Bluetooth</string>
-    <string name="label_bluetooth_searching_finished">Procura de balancas Bluetooth terminado</string>
+    <string name="label_mergeWithLastMeasurement">Juntar à última medida</string>
+    <string name="label_bluetooth_searching">À procura de balanças Bluetooth</string>
+    <string name="label_bluetooth_searching_finished">Procura de balanças Bluetooth terminado</string>
     <string name="label_category_measurement_database">Base de dados de medidas</string>
 
-    <string name="label_maintainer">Manutencao</string>
+    <string name="label_maintainer">Manutenção</string>
     <string name="label_website">Website</string>
-    <string name="label_license">Licenca</string>
+    <string name="label_license">Licença</string>
 
     <string name="label_automatic">auto</string>
 
