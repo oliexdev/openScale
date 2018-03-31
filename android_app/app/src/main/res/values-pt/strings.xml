@@ -20,7 +20,7 @@
     <string name="error_value_range">Valor não está no intervalo</string>
     <string name="error_value_required">Valor é obrigatório</string>
     <string name="info_bluetooth_connection_error">Ocorreu um erro inesperado com o Bluetooth</string>
-    <string name="info_bluetooth_connection_lost">Conexão com bluetooth perdida</string>
+    <string name="info_bluetooth_connection_lost">Ligacao bluetooth perdida</string>
     <string name="info_bluetooth_connection_successful">Conexão estabelecida</string>
     <string name="info_bluetooth_init">Iniciar aparelho Bluetooh</string>
     <string name="info_bluetooth_no_device">Nenhum aparelho Bluetooth encontrado</string>
@@ -144,5 +144,53 @@
 
     <string name="label_theme">Tema</string>
 
-    <string name="label_bt_device_no_support">Traducao</string>
-    </resources>
+    <string name="label_bt_device_no_support">dispositivo nao suportado</string>
+    <string name="error_user_name_too_short">Erro: nome de utilizador tem de mais de dois caracteres</string>
+    <string name="label_help">Ajuda</string>
+
+    <string name="label_feedback_message_enjoying">Gostou do openScale?</string>
+    <string name="label_feedback_message_rate_app">Que tal, avaliar openScale no GooglePlay ou no GitHub?</string>
+    <string name="label_feedback_message_issue">Qual e a sua opiniao sobre a app?</string>
+    <string name="label_feedback_message_yes">Sim!</string>
+    <string name="label_feedback_message_no">Nao necessariamente</string>
+    <string name="label_feedback_message_positive">Ok, claro</string>
+    <string name="label_feedback_message_negative">Nao, obrigado</string>
+
+    <string name="customactivityoncrash_error_activity_error_occurred_explanation">Um erro inesperado ocorreu. Por favor crie um novo issue incluindo os detalhes do erro no https://github.com/oliexdev/openScale/issues</string>
+    <string name="customactivityoncrash_error_activity_restart_app">Recomeca a app</string>
+    <string name="customactivityoncrash_error_activity_close_app">Fecha a app</string>
+    <string name="customactivityoncrash_error_activity_error_details">Detalhes do erro</string>
+    <string name="customactivityoncrash_error_activity_error_details_title">Detalhes do erro</string>
+    <string name="customactivityoncrash_error_activity_error_details_close">Fechar</string>
+    <string name="customactivityoncrash_error_activity_error_details_copy">Copiar para o clipboard</string>
+    <string name="customactivityoncrash_error_activity_error_details_copied">Copiado para o clipboard</string>
+    <string name="customactivityoncrash_error_activity_error_details_clipboard_label">Informacao sobre o erro</string>
+    <string name="toggle_expand">Abrir menu</string>
+    <string name="edit">Edicao</string>
+    <string name="save">Guardar</string>
+
+    <string name="label_month_view">Visao mensal</string>
+    <string name="label_weeks_view">Visao semanal</string>
+
+    <string name="permission_not_granted">Nao permitido</string>
+    <string name="permission_bluetooth_info">openScale precisa de permissao para procurar dispositivos Bluetooth</string>
+    <string name="permission_bluetooth_info_title">Informacao</string>
+    <string name="label_next">Proximo</string>
+    <string name="label_press_hold_reorder">Carrega e espera para reordenar</string>
+    <string name="label_set_default_order">Define ordem por defeito</string>
+    <string name="label_export_overwrite">"Gravar sobre o export \"%s\"  anterior ?"</string>
+    <string name="label_include_in_overview_graph">Incluir no grafico geral</string>
+    <string name="label_measurement_in_percent">Medida em %</string>
+    <string name="label_estimate_measurement">Medida estimada</string>
+    <string name="label_estimation_formula">Formula de estimativa</string>
+    <string name="language_default">Sistema por defeito</string>
+    <string name="label_language">Linguagem</string>
+    <string name="theme_light">Luz</string>
+    <string name="theme_dark">Escuro</string>
+    <string name="label_contribute_translation">Traducao efetuada</string>
+    <string name="label_add_or_fix_translation">adicionar nova ou alterar existente</string>
+    <string name="label_overview_graph">Gafico geral</string>
+    <string name="label_percent">Percentagem</string>
+    <string name="label_estimated">Estimada</string>
+    <string name="label_estimate_measurement_summary">Baseado no peso, altura, idade, sexo, etc.</string>
+</resources>
