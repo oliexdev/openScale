@@ -10,13 +10,13 @@
     <string name="action_bluetooth_status">Estado do Bluetooth</string>
     <string name="action_settings">Configurações</string>
     <string name="default_value_reminder_notify_text">Hora de pesar-se</string>
-    <string name="error_height_required">Erro: Altura é obrigatória</string>
+    <string name="error_height_required">Erro: Altura é necessária</string>
     <string name="error_exporting">Erro ao exportar</string>
     <string name="error_goal_weight_required">Erro: Objetivo de peso é obrigatório</string>
     <string name="error_importing">Erro ao importar</string>
     <string name="error_initial_weight_required">Erro: Peso inicial é obrigatório</string>
     <string name="error_max_scale_users">Numero máximo de balanças concorrentes alcançado</string>
-    <string name="error_user_name_required">Erro: Nome de usuário é obrigatório</string>
+    <string name="error_user_name_required">Erro: Nome do utilizador é obrigatório</string>
     <string name="error_value_range">Valor não está no intervalo</string>
     <string name="error_value_required">Valor é obrigatório</string>
     <string name="info_bluetooth_connection_error">Ocorreu um erro inesperado com o Bluetooth</string>
@@ -60,7 +60,7 @@
 </plurals>
     <string name="label_days_left">Dias restantes</string>
     <string name="label_delete">Apagar</string>
-    <string name="label_delete_all">Deletar tudo</string>
+    <string name="label_delete_all">Apagar tudo</string>
     <string name="label_delete_confirmation">Confirmar deleção</string>
     <string name="label_device_type">Tipo do dispositivo</string>
     <string name="label_enable_labels">Etiquetas nos pontos de dados</string>
@@ -69,11 +69,11 @@
     <string name="label_exportBackup">Exportar Backup</string>
     <string name="label_export_dir">Diretório de exportação</string>
     <string name="label_fat">Gordura corporal</string>
-    <string name="label_gender">Gênero</string>
-    <string name="label_goal_date">Data objetivo</string>
+    <string name="label_gender">Sexo</string>
+    <string name="label_goal_date">Data do objetivo</string>
     <string name="label_goal_date_is">A data objetivo é</string>
     <string name="label_goal_line">Linha objetivo</string>
-    <string name="label_goal_weight">Objetivo de peso</string>
+    <string name="label_goal_weight">Peso a atingir</string>
     <string name="label_hip">Perimetro da anca</string>
     <string name="label_ignoreOutOfRange">Ignorar dados fora do intervalo</string>
     <string name="label_import">Importar</string>
@@ -81,7 +81,7 @@
     <string name="label_initial_weight">Peso inicial</string>
     <string name="label_last_month">Últimos 30 dias</string>
     <string name="label_last_week">Últimos 7 dias</string>
-    <string name="label_male">Masc</string>
+    <string name="label_male">Masculino</string>
     <string name="label_muscle">Massa muscular</string>
     <string name="label_no">Não</string>
     <string name="label_ok">OK</string>
@@ -97,7 +97,7 @@
     <string name="label_time">Hora</string>
     <string name="label_title_goal">objetivo</string>
     <string name="label_title_last_measurement">última medida</string>
-    <string name="label_title_user">usuário</string>
+    <string name="label_title_user">utilizador</string>
     <string name="label_user_name">Nome</string>
     <string name="label_waist">Perimetro abdominal</string>
     <string name="label_water">Quantidade de água</string>
@@ -105,7 +105,7 @@
     <string name="label_weight_difference">Diferença de peso</string>
     <string name="label_whr">Relação anca-cintura</string>
     <string name="label_whtr">Relação cintura-altura</string>
-    <string name="label_woman">Fem</string>
+    <string name="label_woman">Femino</string>
     <string name="label_yes">Sim</string>
     <string name="question_really_delete">Tem certeza que quer deletar essa entrada da base?</string>
     <string name="question_really_delete_all">Tem certeza que quer deletar todas as entradas da base?</string>
@@ -146,7 +146,7 @@
     <string name="label_theme">Tema</string>
 
     <string name="label_bt_device_no_support">dispositivo nao suportado</string>
-    <string name="error_user_name_too_short">Erro: nome de utilizador tem de mais de dois caracteres</string>
+    <string name="error_user_name_too_short">Erro: nome de utilizador tem de ter mais de dois caracteres</string>
     <string name="label_help">Ajuda</string>
 
     <string name="label_feedback_message_enjoying">Gostou do openScale?</string>
