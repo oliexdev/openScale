@@ -44,21 +44,22 @@
     <string name="info_on_date">em</string>
     <string name="info_no_selected_user">Nenhum usuário existe. Por favor, crie um novo usuário em Configurações.</string>
     <string name="info_step_on_scale">Por favor suba na balança para medidas de referência</string>
-    <string name="label_add_user">Adicionar usuário</string>
+    <string name="label_add_user">Adicionar utilizador</string>
     <string name="label_backup">Backup</string>
     <string name="label_birthday">Data de nascimento</string>
     <string name="label_bluetooth_enable">Procurar por balança ao iniciar</string>
     <string name="label_bluetooth_title">Bluetooth</string>
-    <string name="label_bmi">IMC</string>
+    <string name="label_bmi">Índice de Massa Corporal (IMC)</string>
     <string name="label_height">Altura</string>
     <string name="label_cancel">Cancelar</string>
     <string name="label_comment">Comentário</string>
     <string name="label_date">Data</string>
     <plurals name="label_days">
-        <item quantity="other">%d dias</item>
-    </plurals>
+	<item quantity="one">%d dia</item>
+	<item quantity="other">%d dias</item>
+</plurals>
     <string name="label_days_left">Dias restantes</string>
-    <string name="label_delete">Deletar</string>
+    <string name="label_delete">Apagar</string>
     <string name="label_delete_all">Deletar tudo</string>
     <string name="label_delete_confirmation">Confirmar deleção</string>
     <string name="label_device_type">Tipo do dispositivo</string>
@@ -73,7 +74,7 @@
     <string name="label_goal_date_is">A data objetivo é</string>
     <string name="label_goal_line">Linha objetivo</string>
     <string name="label_goal_weight">Objetivo de peso</string>
-    <string name="label_hip">Circunferência de quadril</string>
+    <string name="label_hip">Perimetro da anca</string>
     <string name="label_ignoreOutOfRange">Ignorar dados fora do intervalo</string>
     <string name="label_import">Importar</string>
     <string name="label_importBackup">Importar Backup</string>
@@ -92,18 +93,18 @@
     <string name="label_reminder_time">Hora</string>
     <string name="label_reminder_weekdays">Dias da semana</string>
     <string name="label_scale_unit">Unidade de medida</string>
-    <string name="label_smartUserAssign">Aferição inteligente de usuário</string>
+    <string name="label_smartUserAssign">Identificação inteligente de utilizador</string>
     <string name="label_time">Hora</string>
     <string name="label_title_goal">objetivo</string>
     <string name="label_title_last_measurement">última medida</string>
     <string name="label_title_user">usuário</string>
     <string name="label_user_name">Nome</string>
-    <string name="label_waist">Circunferência de quadril</string>
+    <string name="label_waist">Perimetro abdominal</string>
     <string name="label_water">Quantidade de água</string>
     <string name="label_weight">Peso</string>
     <string name="label_weight_difference">Diferença de peso</string>
-    <string name="label_whr">Relação quadril-cintura</string>
-    <string name="label_whtr">Relação quadril-altura</string>
+    <string name="label_whr">Relação anca-cintura</string>
+    <string name="label_whtr">Relação cintura-altura</string>
     <string name="label_woman">Fem</string>
     <string name="label_yes">Sim</string>
     <string name="question_really_delete">Tem certeza que quer deletar essa entrada da base?</string>
@@ -114,8 +115,8 @@
     <string name="title_overview">Visão geral</string>
     <string name="title_statistics">Estatísticas</string>
     <string name="title_table">Tabela</string>
-    <string name="title_users">Usuários</string>
-<string name="title_about">Versao</string>
+    <string name="title_users">Utilizadores</string>
+<string name="title_about">Versão</string>
     <string name="title_general">Menu</string>
 
     <string name="open_drawer">abrir</string>
@@ -124,9 +125,9 @@
     <string name="label_share">Partilhar</string>
     <string name="label_share_subject">Exportar dados openScale para CSV (%s)</string>
 
-    <string name="label_bmr">Taxa Metabolica Basal (TMB)</string>
+    <string name="label_bmr">Taxa Metabólica Basal (TMB)</string>
     <string name="label_lbw">Massa Magra</string>
-    <string name="label_bone">Massa ossea</string>
+    <string name="label_bone">Massa óssea</string>
     <string name="info_bluetooth_no_device_set">Sem dispositivo Bluetooth selecionado</string>
     <string name="info_new_data_added">%1$.2f%2$s [%3$s] para %4$s adicionado</string>
     <string name="info_new_data_duplicated">media ja inserida com a mesma data e hora</string>
