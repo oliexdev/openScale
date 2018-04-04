@@ -47,7 +47,7 @@ dependencies {
     implementation 'com.github.lecho:hellocharts-library:1.5.8@aar'
 
     // Simple CSV
-    implementation 'com.j256.simplecsv:simplecsv:2.2'
+    implementation 'com.j256.simplecsv:simplecsv:2.3'
 
     // CustomActivityOnCrash
     implementation 'cat.ereza:customactivityoncrash:2.2.0'
