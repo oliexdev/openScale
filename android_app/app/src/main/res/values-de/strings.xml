@@ -107,8 +107,6 @@
     <string name="label_not_found">nicht gefunden</string>
     <string name="label_ignoreOutOfRange">Ignoriere Daten außerhalb des zulässigen Bereiches</string>
     <string name="label_initial_weight">Anfangsgewicht</string>
-    <string name="info_enter_initial_weight">Gebe dein Gewicht in deiner Einheit an</string>
-    <string name="info_enter_goal_weight">Gebe dein Gewicht in deiner Einheit an</string>
     <string name="error_initial_weight_required">Fehler Anfangsgewicht ist erforderlich</string>
     <string name="label_bt_device_no_support">Gerät wird nicht unterstützt</string>
     <string name="label_goal_line">Ziellinie</string>

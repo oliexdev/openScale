@@ -78,8 +78,6 @@
     <string name="info_data_imported">Veri içeri aktarma</string>
     <string name="info_enter_value_cm">Deðeri cm olarak girin</string>
     <string name="info_enter_comment">Ýsteðebaðlý açýklama girin</string>
-    <string name="info_enter_initial_weight">Kendi baþlangýç aðýrlýðýnýzý girin</string>
-    <string name="info_enter_goal_weight">Kendi Hedef hedef kilonuzu girin </string>
     <string name="info_is_visible">görünür</string>
     <string name="info_is_not_visible">görünmez</string>
     <string name="info_is_enable">etkindir</string>

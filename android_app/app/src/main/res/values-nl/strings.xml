@@ -82,8 +82,6 @@
     <string name="info_data_imported">Data geïmporteerd van</string>
     <string name="info_enter_value_cm">Geef waarde in cm</string>
     <string name="info_enter_comment">Voeg een optionele opmerking toe</string>
-    <string name="info_enter_initial_weight">Voer uw startgewicht in uw weegschaal in</string>
-    <string name="info_enter_goal_weight">Voer uw streefgewicht in uw weegschaal in</string>
     <string name="info_is_visible">is zichtbaar</string>
     <string name="info_is_not_visible">is niet zichtbaar</string>
     <string name="info_is_enable">is ingeschakeld</string>

@@ -74,7 +74,6 @@
     <string name="info_data_imported">Donnéees importées depuis</string>
     <string name="info_enter_value_cm">Entrez la valeur en cm</string>
     <string name="info_enter_comment">Ajouter un commentaire optionnel</string>
-    <string name="info_enter_goal_weight">Entrez votre objectif de poids dans votre unité d\'échelle</string>
     <string name="info_is_visible">est visible</string>
     <string name="info_is_not_visible">n\'est pas visible</string>
     <string name="info_is_enable">est activé</string>
@@ -120,7 +119,6 @@
     <string name="Saturday">Samedi</string>
     <string name="Sunday">Dimanche</string>
     <string name="title_statistics">Statistiques</string>
-    <string name="info_enter_initial_weight">Entrez votre objectif de poids dans votre unité d\'échelle</string>
     <string name="label_bone">Masse osseuse</string>
     <string name="label_bmr">Taux métabolique basal (BMR)</string>
 </resources>

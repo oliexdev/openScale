@@ -80,8 +80,6 @@
     <string name="info_data_imported">Dades importades de</string>
     <string name="info_enter_value_cm">Valor en cm</string>
     <string name="info_enter_comment">Comentari opcional</string>
-    <string name="info_enter_initial_weight">Pes inicial en la seua unitat de mesura</string>
-    <string name="info_enter_goal_weight">Pes objectiu en la seua unitat de mesura</string>
     <string name="info_is_visible">està visible</string>
     <string name="info_is_not_visible">no està visible</string>
     <string name="info_is_enable">està activat</string>

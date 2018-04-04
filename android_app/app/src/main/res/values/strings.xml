@@ -86,8 +86,7 @@
     <string name="info_data_imported">Data imported from</string>
     <string name="info_enter_value_cm">Enter value in cm</string>
     <string name="info_enter_comment">Enter an optional comment</string>
-    <string name="info_enter_initial_weight">Enter your initial weight in your scale unit</string>
-    <string name="info_enter_goal_weight">Enter your goal weight in your scale unit</string>
+    <string name="info_enter_value_scale_unit">Enter value in scale unit</string>
     <string name="info_is_visible">is visible</string>
     <string name="info_is_not_visible">is not visible</string>
     <string name="info_is_enable">is enabled</string>

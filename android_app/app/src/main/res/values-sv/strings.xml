@@ -82,8 +82,7 @@
     <string name="info_data_imported">Data importerad från</string>
     <string name="info_enter_value_cm">Ange värde i cm</string>
     <string name="info_enter_comment">Ange en frivillig kommentar</string>
-    <string name="info_enter_initial_weight">Ange din startvikt i din viktenhet</string>
-    <string name="info_enter_goal_weight">Ange din målvikt i din viktenhet</string>
+    <string name="info_enter_value_scale_unit">Ange värde i viktenhet</string>
     <string name="info_is_visible">är synlig</string>
     <string name="info_is_not_visible">är inte synlig</string>
     <string name="info_is_enable">är aktiverad</string>
