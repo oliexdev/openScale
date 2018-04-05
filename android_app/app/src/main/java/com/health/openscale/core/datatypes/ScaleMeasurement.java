@@ -89,7 +89,7 @@ public class ScaleMeasurement implements Cloneable {
         bone = 0.0f;
         waist = 0.0f;
         hip = 0.0f;
-        comment = new String();
+        comment = "";
     }
 
     @Override

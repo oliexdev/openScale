@@ -382,7 +382,7 @@ public abstract class BluetoothCommunication {
     protected String byteInHex(byte[] data) {
         if (data == null) {
             Log.e("BluetoothCommunication", "Data is null");
-            return new String();
+            return "";
         }
 
         final StringBuilder stringBuilder = new StringBuilder(data.length);

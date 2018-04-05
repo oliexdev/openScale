@@ -52,7 +52,7 @@ public class ScaleUser {
     private Date goalDate;
 
     public ScaleUser() {
-        userName = new String();
+        userName = "";
         birthday = new Date();
         bodyHeight = -1;
         scaleUnit = Converters.WeightUnit.KG;
