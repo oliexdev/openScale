@@ -103,14 +103,16 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
     private static final UUID CUSTOM_CHARACTERISTIC_WEIGHT = // write-only, notify ; handle=0x002e
             UUID.fromString("0000FFE1-0000-1000-8000-00805F9B34FB");
 
-    // Command bytes
-    private static final byte[] SET_UNIT_COMMAND = new byte[] {(byte) 0xf7, (byte) 0x4d, (byte) 0x00};
-
+    private int startByte;
     private int currentScaleUserId;
     private int countRegisteredScaleUsers;
     private TreeSet<Integer> seenUsers;
     private int maxRegisteredScaleUser;
     private ByteArrayOutputStream receivedScaleData;
+
+    private int getAlternativeStartByte(int id) {
+        return (startByte & 0xF0) | (id & 0x0F);
+    }
 
     public BluetoothBeurerBF700_800(Context context) {
         super(context);
@@ -118,12 +120,12 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
 
     @Override
     public String deviceName() {
-        return "Beurer BF700/800 / Runtastic Libra";
+        return "Beurer BF700/710/800 / Runtastic Libra";
     }
 
     @Override
     public String defaultDeviceName() {
-        return "BEURER BF700/800";
+        return "BEURER BF700/710/800";
     }
 
     @Override
@@ -134,6 +136,12 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
                 || name.startsWith("BF-800".toLowerCase())
                 || name.startsWith("BF-700".toLowerCase())
                 || name.startsWith("RT-Libra-B".toLowerCase())) {
+            startByte = 0xf7;
+            return true;
+        }
+
+        if (name.startsWith("BEURER BF710".toLowerCase())) {
+            startByte = 0xe7;
             return true;
         }
 
@@ -156,7 +164,7 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
                 break;
             case 1:
                 // Say "Hello" to the scale
-                writeBytes(new byte[]{(byte) 0xf6, (byte) 0x01});
+                writeBytes(new byte[]{(byte) getAlternativeStartByte(6), (byte) 0x01});
                 break;
             case 2:
                 // Update timestamp of the scale
@@ -168,7 +176,7 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
                 break;
             case 4:
                 // Request general user information
-                writeBytes(new byte[]{(byte) 0xf7, (byte) 0x33});
+                writeBytes(new byte[]{(byte) startByte, (byte) 0x33});
                 break;
             case 5:
                 // Wait for ack of all users
@@ -201,7 +209,7 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
                     Log.d(TAG, "Create User:" + selectedUser.getUserName());
 
                     writeBytes(new byte[]{
-                            (byte) 0xf7, (byte) 0x31, (byte) 0x0, (byte) 0x0, (byte) 0x0,
+                            (byte) startByte, (byte) 0x31, (byte) 0x0, (byte) 0x0, (byte) 0x0,
                             (byte) 0x0, (byte) 0x0, (byte) 0x0, (byte) 0x0,
                             (byte) (seenUsers.size() > 0 ? Collections.max(seenUsers) + 1 : 101),
                             nick[0], nick[1], nick[2],
@@ -215,7 +223,7 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
                     // Get existing user information
                     Log.d(TAG, "Request getUserInfo " + currentScaleUserId);
                     writeBytes(new byte[]{
-                            (byte) 0xf7, (byte) 0x36, (byte) 0x0, (byte) 0x0, (byte) 0x0,
+                            (byte) startByte, (byte) 0x36, (byte) 0x0, (byte) 0x0, (byte) 0x0,
                             (byte) 0x0, (byte) 0x0, (byte) 0x0, (byte) 0x0, (byte) currentScaleUserId
                     });
 
@@ -247,7 +255,7 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
 
                 Log.d(TAG, "Request Saved User Measurements");
                 writeBytes(new byte[]{
-                        (byte) 0xf7, (byte) 0x41, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, (byte) currentScaleUserId
+                        (byte) startByte, (byte) 0x41, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, (byte) currentScaleUserId
                 });
 
                 break;
@@ -285,12 +293,12 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
         if (data.length == 0)
             return;
 
-        if ((data[0] & 0xFF) == 0xf6 && (data[1] & 0xFF) == 0x00) {
+        if ((data[0] & 0xFF) == getAlternativeStartByte(6) && (data[1] & 0xFF) == 0x00) {
             Log.d(TAG, "ACK Scale is ready");
             return;
         }
 
-        if ((data[0] & 0xFF) == 0xf7 && (data[1] & 0xFF) == 0xf0 && data[2] == 0x33) {
+        if ((data[0] & 0xFF) == startByte && (data[1] & 0xFF) == 0xf0 && data[2] == 0x33) {
             Log.d(TAG, "ACK Got general user information");
 
             int count = (byte) (data[4] & 0xFF);
@@ -307,7 +315,7 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
             return;
         }
 
-        if ((data[0] & 0xFF) == 0xf7 && (data[1] & 0xFF) == 0x34) {
+        if ((data[0] & 0xFF) == startByte && (data[1] & 0xFF) == 0x34) {
             Log.d(TAG, "Ack Get UUIDSs List of Users");
 
             byte currentUserMax = (byte) (data[2] & 0xFF);
@@ -333,7 +341,7 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
                 }
                 Log.d(TAG, "Send ack gotUser");
                 writeBytes(new byte[]{
-                        (byte) 0xf7, (byte) 0xf1, (byte) 0x34, currentUserMax,
+                        (byte) startByte, (byte) 0xf1, (byte) 0x34, currentUserMax,
                         currentUserID
                 });
             }
@@ -341,7 +349,7 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
             return;
         }
 
-        if ((data[0] & 0xFF) == 0xf7 && (data[1] & 0xFF) == 0xF0 && (data[2] & 0xFF) == 0x36) {
+        if ((data[0] & 0xFF) == startByte && (data[1] & 0xFF) == 0xF0 && (data[2] & 0xFF) == 0x36) {
             Log.d(TAG, "Ack Get User Info Initials");
             String name = new String(data, 4, 3);
             byte year = (byte) (data[7] & 0xFF);
@@ -358,7 +366,7 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
 
             // Get scale status for user
             writeBytes(new byte[]{
-                    (byte) 0xf7, (byte) 0x4f, (byte) 0x0, (byte) 0x0, (byte) 0x0, (byte) 0x0,
+                    (byte) startByte, (byte) 0x4f, (byte) 0x0, (byte) 0x0, (byte) 0x0, (byte) 0x0,
                     (byte) 0x0, (byte) 0x0, (byte) 0x0, (byte) currentScaleUserId
             });
 
@@ -366,7 +374,7 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
             return;
         }
 
-        if ((data[0] & 0xFF) == 0xf7 && (data[1] & 0xFF) == 0xf0 && (data[2] & 0xFF) == 0x4F) {
+        if ((data[0] & 0xFF) == startByte && (data[1] & 0xFF) == 0xf0 && (data[2] & 0xFF) == 0x4F) {
             Log.d(TAG, "Ack Get scale status");
 
             int unknown = data[3];
@@ -386,7 +394,7 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
             return;
         }
 
-        if ((data[0] & 0xFF) == 0xf7 && (data[1] & 0xFF) == 0xf0 && data[2] == 0x31) {
+        if ((data[0] & 0xFF) == startByte && (data[1] & 0xFF) == 0xf0 && data[2] == 0x31) {
             Log.d(TAG, "Acknowledge creation of user");
 
             // Indicate user to step on scale
@@ -394,16 +402,15 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
 
             // Request basement measurement
             writeBytes(new byte[]{
-                    (byte) 0xf7, 0x40, 0, 0, 0, 0, 0, 0, 0,
+                    (byte) startByte, 0x40, 0, 0, 0, 0, 0, 0, 0,
                     (byte) (seenUsers.size() > 0 ? Collections.max(seenUsers) + 1 : 101)
             });
 
             return;
-
         }
 
 
-        if ((data[0] & 0xFF) == 0xf7 && (data[1] & 0xFF) == 0xf0 && (data[2] & 0xFF) == 0x41) {
+        if ((data[0] & 0xFF) == startByte && (data[1] & 0xFF) == 0xf0 && (data[2] & 0xFF) == 0x41) {
             Log.d(TAG, "Will start to receive measurements User Specific");
 
             byte nr_measurements = data[3];
@@ -412,7 +419,7 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
             return;
         }
 
-        if ((data[0] & 0xFF) == 0xf7 && (data[1] & 0xFF) == 0x42) {
+        if ((data[0] & 0xFF) == startByte && (data[1] & 0xFF) == 0x42) {
             Log.d(TAG, "Specific measurement User specific");
 
             // Measurements are split into two parts
@@ -433,7 +440,7 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
 
             // Send acknowledgement
             writeBytes(new byte[]{
-                    (byte) 0xf7, (byte) 0xf1, (byte) 0x42, (byte) (data[2] & 0xFF),
+                    (byte) startByte, (byte) 0xf1, (byte) 0x42, (byte) (data[2] & 0xFF),
                     (byte) (data[3] & 0xFF)
             });
 
@@ -454,7 +461,7 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
             return;
         }
 
-        if ((data[0] & 0xFF) == 0xf7 && (data[1] & 0xFF) == 0x58) {
+        if ((data[0] & 0xFF) == startByte && (data[1] & 0xFF) == 0x58) {
             Log.d(TAG, "Active measurement");
             if ((data[2] & 0xFF) != 0x00) {
                 // little endian
@@ -477,7 +484,7 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
 
 
             writeBytes(new byte[]{
-                    (byte) 0xf7, (byte) 0xf1, (byte) (data[1] & 0xFF),
+                    (byte) startByte, (byte) 0xf1, (byte) (data[1] & 0xFF),
                     (byte) (data[2] & 0xFF), (byte) (data[3] & 0xFF),
             });
 
@@ -485,7 +492,7 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
 
         }
 
-        if ((data[0] & 0xFF) == 0xf7 && (data[1] & 0xFF) == 0x59) {
+        if ((data[0] & 0xFF) == startByte && (data[1] & 0xFF) == 0x59) {
             // Get stable measurement results
             Log.d(TAG, "Get measurement data " + ((int) data[3]));
 
@@ -505,7 +512,7 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
 
             // Send ack that we got the data
             writeBytes(new byte[]{
-                    (byte) 0xf7, (byte) 0xf1,
+                    (byte) startByte, (byte) 0xf1,
                     (byte) (data[1] & 0xFF), (byte) (data[2] & 0xFF),
                     (byte) (data[3] & 0xFF),
             });
@@ -526,7 +533,7 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
             return;
         }
 
-        if ((data[0] & 0xFF) == 0xf7 && (data[1] & 0xFF) == 0xf0 && (data[2] & 0xFF) == 0x43) {
+        if ((data[0] & 0xFF) == startByte && (data[1] & 0xFF) == 0xf0 && (data[2] & 0xFF) == 0x43) {
             Log.d(TAG, "Acknowledge: Data deleted.");
             return;
         }
@@ -536,7 +543,7 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
 
     private void deleteScaleData() {
         writeBytes(new byte[]{
-                (byte) 0xf7, (byte) 0x43, (byte) 0x0, (byte) 0x0, (byte) 0x0,
+                (byte) startByte, (byte) 0x43, (byte) 0x0, (byte) 0x0, (byte) 0x0,
                 (byte) 0x0, (byte) 0x0, (byte) 0x0, (byte) 0x0,
                 (byte) currentScaleUserId
         });
@@ -606,11 +613,11 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
         byte[] unixTimeBytes = ByteBuffer.allocate(Long.SIZE / 8).putLong(unixTime).array();
         Log.d(TAG, "Write new Date/Time:" + unixTime + " " + byteInHex(unixTimeBytes));
 
-        writeBytes(new byte[]{(byte) 0xf9, unixTimeBytes[4], unixTimeBytes[5], unixTimeBytes[6], unixTimeBytes[7]});
+        writeBytes(new byte[]{(byte) getAlternativeStartByte(9), unixTimeBytes[4], unixTimeBytes[5], unixTimeBytes[6], unixTimeBytes[7]});
     }
 
     private void setUnitCommand() {
-        byte[] command = SET_UNIT_COMMAND;
+        byte[] command = new byte[] {(byte) startByte, 0x4d, 0x00};
         final ScaleUser selectedUser = OpenScale.getInstance(context).getSelectedScaleUser();
 
         switch (selectedUser.getScaleUnit()) {
