@@ -181,15 +181,6 @@ public abstract class BluetoothCommunication {
     }
 
     /**
-     * Supports Bluetooth device BLE (Bluetooth 4.x/smart).
-     *
-     * @return true if it Bluetooth 4.x (smart) otherwise false
-     */
-    public boolean isBLE() {
-        return true;
-    }
-
-    /**
      * Return the Bluetooth device name
      *
      * @return a string in a human readable name
