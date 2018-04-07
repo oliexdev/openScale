@@ -37,6 +37,7 @@ import android.widget.BaseAdapter;
 import android.widget.Toast;
 
 import com.health.openscale.R;
+import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.bluetooth.BluetoothCommunication;
 import com.health.openscale.core.bluetooth.BluetoothFactory;
 import com.health.openscale.gui.utils.PermissionHelper;
@@ -73,6 +74,7 @@ public class BluetoothPreferences extends PreferenceFragment implements SharedPr
 
         getActivity().registerReceiver(mReceiver, filter);
         isReceiverRegistered = true;
+        OpenScale.getInstance(getActivity()).stopSearchingForBluetooth();
         btAdapter.startDiscovery();
     }
 
