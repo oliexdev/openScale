@@ -115,38 +115,14 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
         return (startByte & 0xF0) | (id & 0x0F);
     }
 
-    public BluetoothBeurerBF700_800(Context context) {
+    public BluetoothBeurerBF700_800(Context context, int startByte) {
         super(context);
+        this.startByte = startByte;
     }
 
     @Override
     public String deviceName() {
         return "Beurer BF700/710/800 / Runtastic Libra";
-    }
-
-    @Override
-    public String defaultDeviceName() {
-        return "BEURER BF700/710/800";
-    }
-
-    @Override
-    public boolean checkDeviceName(String btDeviceName) {
-        String name = btDeviceName.toLowerCase();
-        if (name.startsWith("BEURER BF700".toLowerCase())
-                || name.startsWith("BEURER BF800".toLowerCase())
-                || name.startsWith("BF-800".toLowerCase())
-                || name.startsWith("BF-700".toLowerCase())
-                || name.startsWith("RT-Libra-B".toLowerCase())) {
-            startByte = 0xf7;
-            return true;
-        }
-
-        if (name.startsWith("BEURER BF710".toLowerCase())) {
-            startByte = 0xe7;
-            return true;
-        }
-
-        return false;
     }
 
     @Override
@@ -283,7 +259,6 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
         }
         return true;
     }
-
 
     @Override
     public void onBluetoothDataChange(BluetoothGatt bluetoothGatt, BluetoothGattCharacteristic gattCharacteristic) {

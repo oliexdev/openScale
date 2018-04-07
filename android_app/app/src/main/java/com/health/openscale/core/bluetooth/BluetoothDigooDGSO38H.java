@@ -43,11 +43,6 @@ public class BluetoothDigooDGSO38H extends BluetoothCommunication {
     }
 
     @Override
-    public String defaultDeviceName() {
-        return "Mengii";
-    }
-
-    @Override
     public void onBluetoothDataRead(BluetoothGatt bluetoothGatt, BluetoothGattCharacteristic gattCharacteristic, int status) {
     }
 

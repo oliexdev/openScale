@@ -45,11 +45,6 @@ public class BluetoothOneByone extends BluetoothCommunication {
     }
 
     @Override
-    public String defaultDeviceName() {
-        return "Health Scale";
-    }
-
-    @Override
     boolean nextInitCmd(int stateNr) {
         switch (stateNr) {
             case 0:

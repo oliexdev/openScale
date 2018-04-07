@@ -58,11 +58,6 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
     }
 
     @Override
-    public String defaultDeviceName() {
-        return "MIBCS";
-    }
-
-    @Override
     public void onBluetoothDataChange(BluetoothGatt bluetoothGatt, BluetoothGattCharacteristic gattCharacteristic) {
         final byte[] data = gattCharacteristic.getValue();
 

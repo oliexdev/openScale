@@ -38,6 +38,7 @@ import android.widget.Toast;
 
 import com.health.openscale.R;
 import com.health.openscale.core.bluetooth.BluetoothCommunication;
+import com.health.openscale.core.bluetooth.BluetoothFactory;
 import com.health.openscale.gui.utils.PermissionHelper;
 
 import java.util.ArrayList;
@@ -83,7 +84,7 @@ public class BluetoothPreferences extends PreferenceFragment implements SharedPr
                 //discovery starts, we can show progress dialog or perform other tasks
                 Toast.makeText(getActivity().getApplicationContext(), R.string.label_bluetooth_searching, Toast.LENGTH_SHORT).show();
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
-                //discovery finishes, dismis progress dialog
+                //discovery finishes, dismiss progress dialog
                 Toast.makeText(getActivity().getApplicationContext(), R.string.label_bluetooth_searching_finished, Toast.LENGTH_SHORT).show();
             } else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 //bluetooth device found
@@ -94,25 +95,23 @@ public class BluetoothPreferences extends PreferenceFragment implements SharedPr
                 }
 
                 foundDevices.put(device.getAddress(), device.getName());
+                btScanner.removeAll();
 
                 for (Map.Entry<String, String> entry : foundDevices.entrySet()) {
                     if (getActivity() != null) {
                         Preference prefBtDevice = new Preference(getActivity());
                         prefBtDevice.setSummary(entry.getKey());
 
-                        for (BluetoothCommunication.BT_DEVICE_ID btScaleID : BluetoothCommunication.BT_DEVICE_ID.values()) {
-                            BluetoothCommunication btDevice = BluetoothCommunication.getBtDevice(getActivity(), btScaleID);
-
-                            if (btDevice.checkDeviceName(entry.getValue())) {
-                                prefBtDevice.setOnPreferenceClickListener(new onClickListenerDeviceSelect());
-                                prefBtDevice.setKey(entry.getKey());
-                                prefBtDevice.setIcon(R.drawable.ic_bluetooth_connection_lost);
-                                prefBtDevice.setTitle(entry.getValue() + " [" + btDevice.deviceName() + "]");
-                                break;
-                            } else {
-                                prefBtDevice.setIcon(R.drawable.ic_bluetooth_disabled);
-                                prefBtDevice.setTitle(entry.getValue() + " [" + getResources().getString(R.string.label_bt_device_no_support) + "]");
-                            }
+                        BluetoothCommunication btDevice = BluetoothFactory.createDeviceDriver(getActivity(), entry.getValue());
+                        if (btDevice != null) {
+                            prefBtDevice.setOnPreferenceClickListener(new onClickListenerDeviceSelect());
+                            prefBtDevice.setKey(entry.getKey());
+                            prefBtDevice.setIcon(R.drawable.ic_bluetooth_connection_lost);
+                            prefBtDevice.setTitle(entry.getValue() + " [" + btDevice.deviceName() + "]");
+                        }
+                        else {
+                            prefBtDevice.setIcon(R.drawable.ic_bluetooth_disabled);
+                            prefBtDevice.setTitle(entry.getValue() + " [" + getResources().getString(R.string.label_bt_device_no_support) + "]");
                         }
 
                         btScanner.addPreference(prefBtDevice);

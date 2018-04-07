@@ -34,6 +34,7 @@ import android.widget.Toast;
 import com.health.openscale.R;
 import com.health.openscale.core.alarm.AlarmHandler;
 import com.health.openscale.core.bluetooth.BluetoothCommunication;
+import com.health.openscale.core.bluetooth.BluetoothFactory;
 import com.health.openscale.core.bodymetric.EstimatedFatMetric;
 import com.health.openscale.core.bodymetric.EstimatedLBWMetric;
 import com.health.openscale.core.bodymetric.EstimatedWaterMetric;
@@ -474,20 +475,17 @@ public class OpenScale {
     public boolean startSearchingForBluetooth(String deviceName, Handler callbackBtHandler) {
         Log.d("OpenScale", "Bluetooth Server started! I am searching for device ...");
 
-        for (BluetoothCommunication.BT_DEVICE_ID btScaleID : BluetoothCommunication.BT_DEVICE_ID.values()) {
-            btCom = BluetoothCommunication.getBtDevice(context, btScaleID);
-
-            if (btCom.checkDeviceName(deviceName)) {
-                btCom.registerCallbackHandler(callbackBtHandler);
-                btDeviceName = deviceName;
-
-                btCom.startSearching(btDeviceName);
-
-                return true;
-            }
+        btCom = BluetoothFactory.createDeviceDriver(context, deviceName);
+        if (btCom == null) {
+            return false;
         }
 
-        return false;
+        btCom.registerCallbackHandler(callbackBtHandler);
+        btDeviceName = deviceName;
+
+        btCom.startSearching(btDeviceName);
+
+        return true;
     }
 
     public void stopSearchingForBluetooth() {

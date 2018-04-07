@@ -49,20 +49,6 @@ public class BluetoothYunmaiMini extends BluetoothCommunication {
     }
 
     @Override
-    public String defaultDeviceName() {
-        return "YUNMAI-SIGNAL-M1US";
-    }
-
-    @Override
-    public boolean checkDeviceName(String btDeviceName) {
-        if (btDeviceName.startsWith("YUNMAI-SIGNAL-M") || btDeviceName.startsWith("YUNMAI-ISM2-W")) {
-            return true;
-        }
-
-        return false;
-    }
-
-    @Override
     boolean nextInitCmd(int stateNr) {
         switch (stateNr) {
             case 0:

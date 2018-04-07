@@ -43,11 +43,6 @@ public class BluetoothExingtechY1 extends BluetoothCommunication {
     }
 
     @Override
-    public String defaultDeviceName() {
-        return "VScale";
-    }
-
-    @Override
     boolean nextInitCmd(int stateNr) {
         switch (stateNr) {
             case 0:

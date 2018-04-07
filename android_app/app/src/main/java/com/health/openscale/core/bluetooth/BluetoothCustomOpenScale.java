@@ -48,11 +48,6 @@ public class BluetoothCustomOpenScale extends BluetoothCommunication {
     }
 
     @Override
-    public String defaultDeviceName() {
-        return "openScale_MCU";
-    }
-
-    @Override
     boolean nextInitCmd(int stateNr) {
         return false;
     }

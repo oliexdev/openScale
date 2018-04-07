@@ -49,20 +49,6 @@ public class BluetoothYunmaiSE extends BluetoothCommunication {
     }
 
     @Override
-    public String defaultDeviceName() {
-        return "YUNMAI-ISSE-US";
-    }
-
-    @Override
-    public boolean checkDeviceName(String btDeviceName) {
-        if (btDeviceName.startsWith("YUNMAI-ISSE")) {
-            return true;
-        }
-
-        return false;
-    }
-
-    @Override
     boolean nextInitCmd(int stateNr) {
         switch (stateNr) {
             case 0:

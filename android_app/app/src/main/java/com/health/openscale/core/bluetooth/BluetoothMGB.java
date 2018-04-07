@@ -84,22 +84,6 @@ public class BluetoothMGB extends BluetoothCommunication {
     }
 
     @Override
-    public String defaultDeviceName() {
-        return "SWAN";
-    }
-
-    @Override
-    public boolean checkDeviceName(String btDeviceName) {
-        if (btDeviceName.startsWith("SWAN")) {
-            return true;
-        }
-
-        return false;
-    }
-
-
-
-    @Override
     boolean nextInitCmd(int stateNr) {
         switch (stateNr) {
             case 0:

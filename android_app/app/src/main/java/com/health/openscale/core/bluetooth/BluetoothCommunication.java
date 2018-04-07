@@ -42,9 +42,6 @@ public abstract class BluetoothCommunication {
     }
 
     public enum BT_MACHINE_STATE {BT_INIT_STATE, BT_CMD_STATE, BT_CLEANUP_STATE}
-    public enum BT_DEVICE_ID {CUSTOM_OPENSCALE, MI_SCALE_V1, MI_SCALE_V2,
-        SANITAS_SBF70, MEDISANA_BS444, DIGOO_DGS038H, EXCELVANT_CF369BLE,
-        YUNMAI_MINI, YUNMAI_SE, MGB, EXINGTECH_Y1, BEURER_BF700_800, HESLEY, ONEBYONE, IHEALTH_HS3}
 
     protected Context context;
 
@@ -73,50 +70,6 @@ public abstract class BluetoothCommunication {
         gattCallback = new GattCallback();
         isReceiverRegistered = false;
         bluetoothGatt = null;
-    }
-
-    /**
-     * Create and return a new Bluetooth object.
-     *
-     * @param context In which context should the Bluetooth device created
-     * @param btDeviceID the specific device ID of which Bluetooth device should be created
-     * @return created object specified by the number i otherwise null
-     */
-    public static BluetoothCommunication getBtDevice(Context context, BT_DEVICE_ID btDeviceID) {
-        switch (btDeviceID) {
-            case CUSTOM_OPENSCALE:
-                return new BluetoothCustomOpenScale(context);
-            case MI_SCALE_V1:
-                return new BluetoothMiScale(context);
-            case MI_SCALE_V2:
-                return new BluetoothMiScale2(context);
-            case SANITAS_SBF70:
-                return new BluetoothSanitasSbf70(context);
-            case MEDISANA_BS444:
-                return new BluetoothMedisanaBS444(context);
-            case DIGOO_DGS038H:
-                return new BluetoothDigooDGSO38H(context);
-            case EXCELVANT_CF369BLE:
-                return new BluetoothExcelvanCF369BLE(context);
-            case YUNMAI_MINI:
-                return new BluetoothYunmaiMini(context);
-            case YUNMAI_SE:
-                return new BluetoothYunmaiSE(context);
-            case MGB:
-                return new BluetoothMGB(context);
-            case EXINGTECH_Y1:
-                return new BluetoothExingtechY1(context);
-            case BEURER_BF700_800:
-                return new BluetoothBeurerBF700_800(context);
-            case HESLEY:
-                return new BluetoothHesley(context);
-            case ONEBYONE:
-                return new BluetoothOneByone(context);
-            case IHEALTH_HS3:
-                return new BluetoothIhealthHS3(context);
-        }
-
-        return null;
     }
 
     /**
@@ -167,32 +120,11 @@ public abstract class BluetoothCommunication {
     }
 
     /**
-     * Check if the a device name is supported of the scale
-     *
-     * @param btDeviceName the device name that is checked
-     * @return true if it valid otherwise false
-     */
-    public boolean checkDeviceName(String btDeviceName) {
-        if (btDeviceName.toLowerCase().equals(defaultDeviceName().toLowerCase())) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
      * Return the Bluetooth device name
      *
      * @return a string in a human readable name
      */
     abstract public String deviceName();
-
-    /**
-     * Return the Bluetooth default device name
-     *
-     * @return the Bluetooth default device name for the scale
-     */
-    abstract public String defaultDeviceName();
 
     /**
      * State machine for the initialization process of the Bluetooth device.

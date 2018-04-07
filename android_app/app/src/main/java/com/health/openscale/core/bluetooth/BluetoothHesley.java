@@ -41,11 +41,6 @@ public class BluetoothHesley extends BluetoothCommunication {
     }
 
     @Override
-    public String defaultDeviceName() {
-        return "YunChen";
-    }
-
-    @Override
     boolean nextInitCmd(int stateNr) {
         switch (stateNr) {
             case 0:

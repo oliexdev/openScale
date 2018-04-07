@@ -46,11 +46,6 @@ public class BluetoothExcelvanCF369BLE extends BluetoothCommunication {
     }
 
     @Override
-    public String defaultDeviceName() {
-        return "Electronic Scale";
-    }
-
-    @Override
     boolean nextInitCmd(int stateNr) {
         return false;
     }

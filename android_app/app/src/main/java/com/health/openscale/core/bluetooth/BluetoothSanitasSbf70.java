@@ -119,22 +119,6 @@ public class BluetoothSanitasSbf70 extends BluetoothCommunication {
     }
 
     @Override
-    public String defaultDeviceName() {
-        return "SANITAS SBF70";
-    }
-
-    @Override
-    public boolean checkDeviceName(String btDeviceName) {
-        // SilverCrest SBF75 (also known as HealthForYou by SilverCrest)
-        String name = btDeviceName.toLowerCase();
-        if (name.startsWith("SANITAS SBF70".toLowerCase()) || name.startsWith("sbf75")) {
-            return true;
-        }
-
-        return false;
-    }
-
-    @Override
     boolean nextInitCmd(int stateNr) {
 
         switch (stateNr) {

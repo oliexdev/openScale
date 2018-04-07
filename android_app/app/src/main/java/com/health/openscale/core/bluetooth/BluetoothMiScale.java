@@ -54,11 +54,6 @@ public class BluetoothMiScale extends BluetoothCommunication {
     }
 
     @Override
-    public String defaultDeviceName() {
-        return "MI_SCALE";
-    }
-
-    @Override
     public void onBluetoothDataRead(BluetoothGatt bluetoothGatt, BluetoothGattCharacteristic gattCharacteristic, int status) {
         byte[] data = gattCharacteristic.getValue();
 
