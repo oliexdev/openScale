@@ -79,4 +79,13 @@ public class ConvertersTest {
                     Converters.toKilogram(Converters.fromKilogram(10.0f, unit), unit));
         }
     }
+
+    @Test
+    public void unsignedIntConverters() throws Exception {
+        byte[] data = new byte[]{(byte) 0xfd, (byte) 0xfe, (byte) 0xfc, (byte) 0x10, (byte) 0x7f};
+        assertEquals(0xfdfe, Converters.parseUnsignedInt16Be(data, 0));
+        assertEquals(0xfefc, Converters.parseUnsignedInt16Be(data, 1));
+        assertEquals(0xfc10, Converters.parseUnsignedInt16Be(data, 2));
+        assertEquals(0x107f, Converters.parseUnsignedInt16Be(data, 3));
+    }
 }
