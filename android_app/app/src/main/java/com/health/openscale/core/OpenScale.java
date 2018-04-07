@@ -488,11 +488,14 @@ public class OpenScale {
         return true;
     }
 
-    public void stopSearchingForBluetooth() {
+    public boolean stopSearchingForBluetooth() {
         if (btCom != null) {
             btCom.stopSearching();
+            btCom = null;
             Log.d("OpenScale", "Bluetooth Server explicit stopped!");
+            return true;
         }
+        return false;
     }
 
     public void registerFragment(FragmentUpdateListener fragment) {

@@ -430,8 +430,15 @@ public class MainActivity extends BaseAppCompatActivity
     }
 
     private void invokeSearchBluetoothDevice() {
-        if (OpenScale.getInstance(getApplicationContext()).getSelectedScaleUserId() == -1) {
+        final OpenScale openScale = OpenScale.getInstance(getApplicationContext());
+
+        if (openScale.getSelectedScaleUserId() == -1) {
             showNoSelectedUserDialog();
+            return;
+        }
+
+        if (openScale.stopSearchingForBluetooth()) {
+            setBluetoothStatusIcon(R.drawable.ic_bluetooth_disabled);
             return;
         }
 
@@ -440,14 +447,14 @@ public class MainActivity extends BaseAppCompatActivity
         boolean permGrantedCoarseLocation = false;
 
         // Check if Bluetooth 4.x is available
-        if (deviceName != "openScale_MCU") {
+        if (!deviceName.equals("openScale_MCU")) {
             permGrantedCoarseLocation = PermissionHelper.requestBluetoothPermission(this, false);
         } else {
             permGrantedCoarseLocation = PermissionHelper.requestBluetoothPermission(this, true);
         }
 
         if (permGrantedCoarseLocation) {
-            if (deviceName == "-") {
+            if (deviceName.equals("-")) {
                 Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_no_device_set), Toast.LENGTH_SHORT).show();
                 return;
             }
@@ -455,8 +462,7 @@ public class MainActivity extends BaseAppCompatActivity
             Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_try_connection) + " " + deviceName, Toast.LENGTH_SHORT).show();
             setBluetoothStatusIcon(R.drawable.ic_bluetooth_searching);
 
-            OpenScale.getInstance(getApplicationContext()).stopSearchingForBluetooth();
-            if (!OpenScale.getInstance(getApplicationContext()).startSearchingForBluetooth(deviceName, callbackBtHandler)) {
+            if (!openScale.startSearchingForBluetooth(deviceName, callbackBtHandler)) {
                 Toast.makeText(getApplicationContext(), deviceName + " " + getResources().getString(R.string.label_bt_device_no_support), Toast.LENGTH_SHORT).show();
             }
         }
