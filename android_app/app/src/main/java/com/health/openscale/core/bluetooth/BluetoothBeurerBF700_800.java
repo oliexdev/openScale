@@ -26,14 +26,15 @@ import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
+import com.health.openscale.core.utils.Converters;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.TreeSet;
 import java.util.UUID;
 
@@ -360,7 +361,6 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
             boolean male = (data[11] & 0xF0) != 0;
             byte activity = (byte) (data[11] & 0x0F);
 
-
             Log.d(TAG, "Name " + name + " YY-MM-DD: " + year + " " + month + " " + day +
                     "Height: " + height + " Sex:" + (male ? "M" : "F") + "activity: " + activity);
 
@@ -369,7 +369,6 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
                     (byte) startByte, (byte) 0x4f, (byte) 0x0, (byte) 0x0, (byte) 0x0, (byte) 0x0,
                     (byte) 0x0, (byte) 0x0, (byte) 0x0, (byte) currentScaleUserId
             });
-
 
             return;
         }
@@ -463,25 +462,14 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
 
         if ((data[0] & 0xFF) == startByte && (data[1] & 0xFF) == 0x58) {
             Log.d(TAG, "Active measurement");
+            float weight = parseKiloGram(data, 3);
             if ((data[2] & 0xFF) != 0x00) {
-                // little endian
-                float weight = ((float) (
-                        ((data[3] & 0xFF) << 8) + (data[4] & 0xFF)
-                )) * 50.0f / 1000.0f; // unit is 50g
-
                 // temporary value;
                 sendMessage(R.string.info_measuring, weight);
                 return;
             }
 
-            // stabilized value
-            // little endian
-            float weight = ((float) (
-                    ((data[3] & 0xFF) << 8) + (data[4] & 0xFF)
-            )) * 50.0f / 1000.0f; // unit is 50g
-
             Log.i(TAG, "Got weight: " + weight);
-
 
             writeBytes(new byte[]{
                     (byte) startByte, (byte) 0xf1, (byte) (data[1] & 0xFF),
@@ -489,7 +477,6 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
             });
 
             return;
-
         }
 
         if ((data[0] & 0xFF) == startByte && (data[1] & 0xFF) == 0x59) {
@@ -519,9 +506,8 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
 
             if (current_item == max_items) {
                 // received all parts
-                ScaleMeasurement parsedData = null;
                 try {
-                    parsedData = parseScaleData(receivedScaleData.toByteArray());
+                    ScaleMeasurement parsedData = parseScaleData(receivedScaleData.toByteArray());
                     addScaleData(parsedData);
                     // Delete data
                     deleteScaleData();
@@ -549,60 +535,44 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
         });
     }
 
+    private float parseKiloGram(byte[] data, int offset) {
+        // Unit is 50 g
+        return Converters.parseUnsignedInt16Be(data, offset) * 50.0f / 1000.0f;
+    }
+
+    private float parsePercent(byte[] data, int offset) {
+        // Unit is 0.1 %
+        return Converters.parseUnsignedInt16Be(data, offset) / 10.0f;
+    }
+
     private ScaleMeasurement parseScaleData(byte[] data) throws ParseException {
-        if (data.length != 11 + 11)
+        if (data.length != 11 + 11) {
             throw new ParseException("Parse scala data: unexpected length", 0);
+        }
+
+        long timestamp = ByteBuffer.wrap(data, 0, 4).getInt() * 1000L;
+        float weight = parseKiloGram(data, 4);
+        int impedance = Converters.parseUnsignedInt16Be(data, 6);
+        float fat = parsePercent(data, 8);
+        float water = parsePercent(data, 10);
+        float muscle = parsePercent(data, 12);
+        float bone = parseKiloGram(data, 14);
+        int bmr = Converters.parseUnsignedInt16Be(data, 16);
+        int amr = Converters.parseUnsignedInt16Be(data, 18);
+        float bmi = Converters.parseUnsignedInt16Be(data, 20) / 10.0f;
 
         ScaleMeasurement receivedMeasurement = new ScaleMeasurement();
-
-        // Parse timestamp
-        long timestamp = ByteBuffer.wrap(data, 0, 4).getInt() * 1000L;
-        SimpleDateFormat sdf = new SimpleDateFormat("MMMM d, yyyy 'at' h:mm a");
-        String date = sdf.format(timestamp);
-
-        // little endian
-        float weight = ((float) (
-                ((data[4] & 0xFF) << 8) + (data[5] & 0xFF)
-        )) * 50.0f / 1000.0f; // unit is 50g
+        receivedMeasurement.setDateTime(new Date(timestamp));
         receivedMeasurement.setWeight(weight);
-
-        // Parse impedance level
-        int impedance = ((data[6] & 0xFF) << 8) + (data[7] & 0xFF);
-
-        // Parse fat
-        float fat = ((float) (
-                ((data[8] & 0xFF) << 8) + (data[9] & 0xFF)
-        )) / 10.0f; // unit is 0.1%
         receivedMeasurement.setFat(fat);
-
-        float water = ((float) (
-                ((data[10] & 0xFF) << 8) + (data[11] & 0xFF)
-        )) / 10.0f; // unit is 0.1%
         receivedMeasurement.setWater(water);
-
-        float muscle = ((float) (
-                ((data[12] & 0xFF) << 8) + (data[13] & 0xFF)
-        )) / 10.0f; // unit is 0.1%
         receivedMeasurement.setMuscle(muscle);
+        receivedMeasurement.setBone(bone);
 
-        float boneMass = ((float) (
-                ((data[14] & 0xFF) << 8) + (data[15] & 0xFF)
-        )) * 50.0f / 1000.0f; // unit is 50g
-        receivedMeasurement.setBone(boneMass);
-
-        // basal metabolic rate
-        float bmr = ((float) (
-                ((data[16] & 0xFF) << 8) + (data[17] & 0xFF)
-        )) / 10.0f;
-
-        // active metabolic rate
-        int amr = ((data[18] & 0xFF) << 8) + (data[19] & 0xFF);
-
-        float bmi = ((data[20] & 0xFF) << 8) + (data[21] & 0xFF);
-
-        Log.i(TAG, "Measurement: " + date + " Impedance: " + impedance + " Weight:" + weight +
+        Log.i(TAG, "Measurement: " + receivedMeasurement.getDateTime().toString() +
+                " Impedance: " + impedance + " Weight:" + weight +
                 " Fat: " + fat + " Water: " + water + " Muscle: " + muscle +
-                " BoneMass: " + boneMass + " BMR: " + bmr + " AMR: " + amr + " BMI: " + bmi);
+                " Bone: " + bone + " BMR: " + bmr + " AMR: " + amr + " BMI: " + bmi);
 
         return receivedMeasurement;
     }
