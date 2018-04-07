@@ -203,7 +203,7 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
                     final ScaleUser selectedUser = OpenScale.getInstance(context).getSelectedScaleUser();
 
                     // We can only use up to 3 characters and have to handle them uppercase
-                    int maxIdx = selectedUser.getUserName().length() >= 3 ? 3 : selectedUser.getUserName().length();
+                    int maxIdx = Math.min(3, selectedUser.getUserName().length());
                     byte[] nick = selectedUser.getUserName().toUpperCase().substring(0, maxIdx).getBytes();
 
                     byte activity = 2; // activity level: 1 - 5
@@ -231,8 +231,6 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
                 }
                 Log.d(TAG, "scaleuserid:" + currentScaleUserId + " registered users: " + countRegisteredScaleUsers +
                         " extracted users: " + seenUsers.size());
-
-
                 break;
             case 6:
                 break;
@@ -240,7 +238,6 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
                 // Finish init if everything is done
                 return false;
         }
-
 
         return true;
     }
@@ -308,8 +305,9 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
 
             countRegisteredScaleUsers = count;
             // Check if any scale user is registered
-            if (count == 0)
+            if (count == 0) {
                 currentScaleUserId = 0; // Unknown user
+            }
             maxRegisteredScaleUser = maxUsers;
 
             nextMachineStateStep();
@@ -388,8 +386,8 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
 
             Log.d(TAG, "BatteryLevel:" + batteryLevel + " weightThreshold: " + weightThreshold +
                     " BodyFatThresh: " + bodyFatThreshold + " Unit: " + unit + " userExists: " + userExists +
-                    " UserReference Weight Exists:" + userReferWeightExists + " UserMeasurementExists " + userMeasurementExist +
-                    " scaleVersion" + scaleVersion);
+                    " UserReference Weight Exists: " + userReferWeightExists + " UserMeasurementExists: " + userMeasurementExist +
+                    " scaleVersion: " + scaleVersion);
             return;
         }
 
