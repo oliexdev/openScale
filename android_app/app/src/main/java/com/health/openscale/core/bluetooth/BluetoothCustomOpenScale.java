@@ -62,11 +62,7 @@ public class BluetoothCustomOpenScale extends BluetoothCommunication {
         return false;
     }
 
-    public boolean isBLE() {
-        return false;
-    }
-
-        @Override
+    @Override
     public void startSearching(String deviceName) {
 
         if (btAdapter == null) {

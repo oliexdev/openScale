@@ -73,13 +73,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
         return false;
     }
 
-    public boolean isBLE() {
-        Log.w("openscale","iHealth HS3 - isBLE - returning false");
-        return false;
-    }
-
-
-        @Override
+    @Override
     public void startSearching(String deviceName) {
 
 //       Log.w("openscale","iHealth HS3 - startSearching "+deviceName);
