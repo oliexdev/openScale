@@ -128,7 +128,7 @@ public class DataEntryActivity extends BaseAppCompatActivity {
         onMeasurementViewUpdateListener updateListener = new onMeasurementViewUpdateListener();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         final boolean expand = isAddActivity()
-                ? false : prefs.getBoolean(PREF_EXPAND, true);
+                ? false : prefs.getBoolean(PREF_EXPAND, false);
 
         for (MeasurementView measurement : dataEntryMeasurements) {
             tableLayoutDataEntry.addView(measurement);
@@ -215,7 +215,7 @@ public class DataEntryActivity extends BaseAppCompatActivity {
 
             case R.id.expandButton:
                 SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-                final boolean expand = !prefs.getBoolean(PREF_EXPAND, true);
+                final boolean expand = !prefs.getBoolean(PREF_EXPAND, false);
                 prefs.edit().putBoolean(PREF_EXPAND, expand).apply();
 
                 for (MeasurementView measurement : dataEntryMeasurements) {
