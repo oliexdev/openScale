@@ -380,7 +380,7 @@ public abstract class BluetoothCommunication {
                 if (device.getName().toLowerCase().equals(btDeviceName.toLowerCase())) {
                     Log.d("BluetoothCommunication", btDeviceName + " found trying to connect...");
 
-                    bluetoothGatt = device.connectGatt(context, false, gattCallback);
+                    bluetoothGatt = device.connectGatt(context, true, gattCallback);
                 }
             }
         }
