@@ -435,7 +435,7 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
 
         if ((data[0] & 0xFF) == startByte && (data[1] & 0xFF) == 0x58) {
             Log.d(TAG, "Active measurement");
-            float weight = parseKiloGram(data, 3);
+            float weight = getKiloGram(data, 3);
             if ((data[2] & 0xFF) != 0x00) {
                 // temporary value;
                 sendMessage(R.string.info_measuring, weight);
@@ -508,14 +508,14 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
         });
     }
 
-    private float parseKiloGram(byte[] data, int offset) {
+    private float getKiloGram(byte[] data, int offset) {
         // Unit is 50 g
-        return Converters.parseUnsignedInt16Be(data, offset) * 50.0f / 1000.0f;
+        return Converters.fromUnsignedInt16Be(data, offset) * 50.0f / 1000.0f;
     }
 
-    private float parsePercent(byte[] data, int offset) {
+    private float getPercent(byte[] data, int offset) {
         // Unit is 0.1 %
-        return Converters.parseUnsignedInt16Be(data, offset) / 10.0f;
+        return Converters.fromUnsignedInt16Be(data, offset) / 10.0f;
     }
 
     private ScaleMeasurement parseScaleData(byte[] data) throws ParseException {
@@ -524,15 +524,15 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
         }
 
         long timestamp = ByteBuffer.wrap(data, 0, 4).getInt() * 1000L;
-        float weight = parseKiloGram(data, 4);
-        int impedance = Converters.parseUnsignedInt16Be(data, 6);
-        float fat = parsePercent(data, 8);
-        float water = parsePercent(data, 10);
-        float muscle = parsePercent(data, 12);
-        float bone = parseKiloGram(data, 14);
-        int bmr = Converters.parseUnsignedInt16Be(data, 16);
-        int amr = Converters.parseUnsignedInt16Be(data, 18);
-        float bmi = Converters.parseUnsignedInt16Be(data, 20) / 10.0f;
+        float weight = getKiloGram(data, 4);
+        int impedance = Converters.fromUnsignedInt16Be(data, 6);
+        float fat = getPercent(data, 8);
+        float water = getPercent(data, 10);
+        float muscle = getPercent(data, 12);
+        float bone = getKiloGram(data, 14);
+        int bmr = Converters.fromUnsignedInt16Be(data, 16);
+        int amr = Converters.fromUnsignedInt16Be(data, 18);
+        float bmi = Converters.fromUnsignedInt16Be(data, 20) / 10.0f;
 
         ScaleMeasurement receivedMeasurement = new ScaleMeasurement();
         receivedMeasurement.setDateTime(new Date(timestamp));
