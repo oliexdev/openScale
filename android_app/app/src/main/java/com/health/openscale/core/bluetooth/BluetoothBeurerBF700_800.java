@@ -30,7 +30,6 @@ import com.health.openscale.core.utils.Converters;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -523,7 +522,7 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
             throw new ParseException("Parse scala data: unexpected length", 0);
         }
 
-        long timestamp = ByteBuffer.wrap(data, 0, 4).getInt() * 1000L;
+        long timestamp = Converters.fromUnsignedInt32Be(data, 0) * 1000;
         float weight = getKiloGram(data, 4);
         int impedance = Converters.fromUnsignedInt16Be(data, 6);
         float fat = getPercent(data, 8);
@@ -553,10 +552,11 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
     private void updateDateTimeBeurer() {
         // Update date/time of the scale
         long unixTime = System.currentTimeMillis() / 1000L;
-        byte[] unixTimeBytes = ByteBuffer.allocate(Long.SIZE / 8).putLong(unixTime).array();
+        byte[] unixTimeBytes = Converters.toUnsignedInt32Be(unixTime);
         Log.d(TAG, "Write new Date/Time:" + unixTime + " " + byteInHex(unixTimeBytes));
 
-        writeBytes(new byte[]{(byte) getAlternativeStartByte(9), unixTimeBytes[4], unixTimeBytes[5], unixTimeBytes[6], unixTimeBytes[7]});
+        writeBytes(new byte[]{(byte) getAlternativeStartByte(9),
+                unixTimeBytes[0], unixTimeBytes[1], unixTimeBytes[2], unixTimeBytes[3]});
     }
 
     private void setUnitCommand() {
