@@ -71,10 +71,10 @@ public class BluetoothFactory {
             return new BluetoothSanitasSbf70(context);
         }
         if (deviceName.startsWith("YUNMAI-SIGNAL-M") || deviceName.startsWith("YUNMAI-ISM2-W")) {
-            return new BluetoothYunmaiMini(context);
+            return new BluetoothYunmaiSE_Mini(context, true);
         }
         if (deviceName.startsWith("YUNMAI-ISSE")) {
-            return new BluetoothYunmaiSE(context);
+            return new BluetoothYunmaiSE_Mini(context, false);
         }
         return null;
     }

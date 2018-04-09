@@ -31,7 +31,7 @@ import java.util.Date;
 import java.util.Random;
 import java.util.UUID;
 
-public class BluetoothYunmaiSE extends BluetoothCommunication {
+public class BluetoothYunmaiSE_Mini extends BluetoothCommunication {
     private final UUID WEIGHT_MEASUREMENT_SERVICE = UUID.fromString("0000ffe0-0000-1000-8000-00805f9b34fb");
     private final UUID WEIGHT_MEASUREMENT_CHARACTERISTIC = UUID.fromString("0000ffe4-0000-1000-8000-00805f9b34fb");
     private final UUID WEIGHT_CMD_SERVICE = UUID.fromString("0000ffe5-0000-1000-8000-00805f9b34fb");
@@ -39,13 +39,16 @@ public class BluetoothYunmaiSE extends BluetoothCommunication {
 
     private final UUID WEIGHT_MEASUREMENT_CONFIG = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
 
-    public BluetoothYunmaiSE(Context context) {
+    private boolean isMini;
+
+    public BluetoothYunmaiSE_Mini(Context context, boolean isMini) {
         super(context);
+        this.isMini = isMini;
     }
 
     @Override
     public String deviceName() {
-        return "Yunmai SE";
+        return isMini ? "Yunmai Mini" : "Yunmai SE";
     }
 
     @Override
@@ -120,6 +123,11 @@ public class BluetoothYunmaiSE extends BluetoothCommunication {
 
         scaleBtData.setConvertedWeight(weight, selectedUser.getScaleUnit());
         scaleBtData.setDateTime(btDate);
+
+        if (isMini) {
+            float fat = (float)(((weightBytes[17] & 0xFF) << 8) | (weightBytes[18] & 0xFF)) / 100.0f;
+            scaleBtData.setFat(fat);
+        }
 
         addScaleData(scaleBtData);
     }
