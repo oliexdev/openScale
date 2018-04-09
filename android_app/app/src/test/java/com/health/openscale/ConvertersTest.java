@@ -88,6 +88,12 @@ public class ConvertersTest {
         assertEquals(0xfefc, Converters.fromUnsignedInt16Be(data, 1));
         assertEquals(0xfc10, Converters.fromUnsignedInt16Be(data, 2));
         assertEquals(0x107f, Converters.fromUnsignedInt16Be(data, 3));
+
+        data = new byte[]{(byte) 0xff, (byte) 0xfe};
+        assertArrayEquals(data, Converters.toUnsignedInt16Be(0xfffe));
+        assertEquals(0xffff,
+                Converters.fromUnsignedInt16Be(
+                        Converters.toUnsignedInt16Be(0xffff), 0));
     }
 
     @Test

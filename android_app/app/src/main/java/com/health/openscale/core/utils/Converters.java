@@ -130,6 +130,13 @@ public class Converters {
         return value;
     }
 
+    public static byte[] toUnsignedInt16Be(int value) {
+        byte[] data = new byte[2];
+        data[0] = (byte) ((value >> 8) & 0xFF);
+        data[1] = (byte) (value & 0xFF);
+        return data;
+    }
+
     public static long fromUnsignedInt32Be(byte[] data, int offset) {
         long value = (long) (data[offset] & 0xFF) << 24;
         value += (data[offset + 1] & 0xFF) << 16;
