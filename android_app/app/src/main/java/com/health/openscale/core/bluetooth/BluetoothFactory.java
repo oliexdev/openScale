@@ -28,7 +28,6 @@ public class BluetoothFactory {
                 || name.startsWith("BEURER BF800".toLowerCase(Locale.US))
                 || name.startsWith("BF-800".toLowerCase(Locale.US))
                 || name.startsWith("BF-700".toLowerCase(Locale.US))
-                || name.startsWith("BF600".toLowerCase(Locale.US))
                 || name.startsWith("RT-Libra-B".toLowerCase(Locale.US))) {
             return new BluetoothBeurerBF700_800(context, 0xf7);
         }
