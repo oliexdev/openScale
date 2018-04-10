@@ -222,4 +222,10 @@
     <string name="label_percent">Percent</string>
     <string name="label_estimated">Estimated</string>
     <string name="label_estimate_measurement_summary">Based on weight, height, age, gender, etc.</string>
+
+    <string name="label_auto_backup">Auto backup</string>
+    <string name="label_auto_backup_schedule">Backup schedule</string>
+    <string name="label_daily">daily</string>
+    <string name="label_weekly">weekly</string>
+    <string name="label_monthly">monthly</string>
 </resources>

@@ -15,9 +15,12 @@
 */
 package com.health.openscale.gui.preferences;
 
+import android.content.ComponentName;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
+import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.MultiSelectListPreference;
@@ -29,6 +32,8 @@ import android.widget.Toast;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
+import com.health.openscale.core.alarm.AlarmBackupHandler;
+import com.health.openscale.core.alarm.ReminderBootReceiver;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.gui.utils.PermissionHelper;
 
@@ -41,12 +46,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public class BackupPreferences extends PreferenceFragment {
+public class BackupPreferences extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
     private static final String PREFERENCE_KEY_IMPORT_BACKUP = "importBackup";
     private static final String PREFERENCE_KEY_EXPORT_BACKUP = "exportBackup";
+    private static final String PREFERENCE_KEY_AUTO_BACKUP = "autoBackup";
+    private static final String PREFERENCE_KEY_AUTO_BACKUP_SCHEDULE = "autoBackup_Schedule";
 
     private Preference importBackup;
     private Preference exportBackup;
+
+    private CheckBoxPreference autoBackup;
+    private ListPreference autoBackupSchedule;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -60,7 +70,55 @@ public class BackupPreferences extends PreferenceFragment {
         exportBackup = (Preference) findPreference(PREFERENCE_KEY_EXPORT_BACKUP);
         exportBackup.setOnPreferenceClickListener(new onClickListenerExportBackup());
 
+        autoBackup = (CheckBoxPreference) findPreference(PREFERENCE_KEY_AUTO_BACKUP);
+        autoBackupSchedule = (ListPreference) findPreference(PREFERENCE_KEY_AUTO_BACKUP_SCHEDULE);
+
         initSummary(getPreferenceScreen());
+        updateBackupPreferences();
+    }
+
+    void updateBackupPreferences() {
+        ComponentName receiver = new ComponentName(getActivity().getApplicationContext(), ReminderBootReceiver.class);
+        PackageManager pm = getActivity().getApplicationContext().getPackageManager();
+
+        AlarmBackupHandler alarmBackupHandler = new AlarmBackupHandler();
+
+        if (autoBackup.isChecked()) {
+            alarmBackupHandler.scheduleAlarms(getActivity());
+
+            pm.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                    PackageManager.DONT_KILL_APP);
+
+            autoBackupSchedule.setEnabled(true);
+        } else {
+            alarmBackupHandler.disableAlarm(getActivity());
+
+            pm.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                    PackageManager.DONT_KILL_APP);
+
+            autoBackupSchedule.setEnabled(false);
+        }
+    }
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+        getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
+    public void onPause()
+    {
+        getPreferenceManager().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
+        super.onPause();
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key)
+    {
+        updatePrefSummary(findPreference(key));
+        updateBackupPreferences();
     }
 
     private void initSummary(Preference p) {
