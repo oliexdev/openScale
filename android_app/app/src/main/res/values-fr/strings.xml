@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <resources>
 
     <string name="title_overview">Vue d\'ensemble</string>
@@ -121,4 +121,30 @@
     <string name="title_statistics">Statistiques</string>
     <string name="label_bone">Masse osseuse</string>
     <string name="label_bmr">Taux métabolique basal (BMR)</string>
-</resources>
+<string name="title_general">Général</string>
+
+    <string name="info_bluetooth_no_device_set">Aucun appareil Bluetooth sélectionné</string>
+    <string name="label_website">Site web</string>
+    <string name="label_license">License</string>
+
+    <string name="label_theme">Thème</string>
+
+    <string name="label_bt_device_no_support">Appareil non pris en charge</string>
+    <string name="label_initial_weight">Poids initial</string>
+    <string name="label_feedback_message_yes">Oui !</string>
+    <string name="label_feedback_message_no">Pas vraiment</string>
+    <string name="label_feedback_message_positive">Ok, bien sûr</string>
+    <string name="label_feedback_message_negative">Non merci</string>
+
+    <string name="customactivityoncrash_error_activity_restart_app">Redémarrer l\'application</string>
+    <string name="customactivityoncrash_error_activity_close_app">Fermer l\'application</string>
+    <string name="customactivityoncrash_error_activity_error_details_close">Fermer</string>
+    <string name="customactivityoncrash_error_activity_error_details_copy">Copier dans le presse-papiers</string>
+    <string name="customactivityoncrash_error_activity_error_details_copied">Copié dans le presse-papiers</string>
+    <string name="edit">Modifier</string>
+    <string name="save">Sauvegarder</string>
+
+    <string name="permission_not_granted">Permission non accordée</string>
+    <string name="permission_bluetooth_info_title">Information</string>
+    <string name="label_next">Suivant</string>
+    </resources>
