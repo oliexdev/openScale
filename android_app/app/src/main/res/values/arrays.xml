@@ -10,6 +10,7 @@
         <item>@string/language_french</item>
         <item>@string/language_german</item>
         <item>@string/language_japanese</item>
+        <item>@string/language_norwegian_bokmal</item>
         <item>@string/language_polish</item>
         <item>@string/language_slovak</item>
         <item>@string/language_spanish</item>
@@ -27,6 +28,7 @@
         <item>fr</item>
         <item>de</item>
         <item>ja</item>
+        <item>nb</item>
         <item>pl</item>
         <item>sk</item>
         <item>es</item>

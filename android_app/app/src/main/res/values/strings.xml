@@ -209,6 +209,7 @@
     <string name="language_french" translatable="false">French (français)</string>
     <string name="language_german" translatable="false">German (Deutsch)</string>
     <string name="language_japanese" translatable="false">Japanese (日本語 (にほんご))</string>
+    <string name="language_norwegian_bokmal" translatable="false">Norwegian Bokmål (Norsk)</string>
     <string name="language_polish" translatable="false">Polish (język polski)</string>
     <string name="language_slovak" translatable="false">Slovak (Slovenčina)</string>
     <string name="language_spanish" translatable="false">Spanish (Español)</string>
