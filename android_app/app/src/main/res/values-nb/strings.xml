@@ -1,2 +1,36 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<?xml version='1.0' encoding='UTF-8'?>
+<resources><string name="title_overview">Oversikt</string>
+    <string name="title_graph">Diagram</string>
+    <string name="title_table">Tabell</string>
+    <string name="title_statistics">Statistikker</string>
+    <string name="title_users">Brukere</string>
+    <string name="title_measurements">Målinger</string>
+    <string name="title_about">Om</string>
+    <string name="title_general">Allment</string>
+
+    <string name="action_settings">Innstillinger</string>
+    <string name="action_bluetooth_status">Bluetooth-tilstand</string>
+    <string name="open_drawer">åpne</string>
+    <string name="close_drawer">lukk</string>
+
+    <string name="label_cancel">Avbryt</string>
+    <string name="label_ok">OK</string>
+    <string name="label_yes">Ja</string>
+    <string name="label_no">Nei</string>
+    <string name="label_delete">Slett</string>
+    <string name="label_add_user">Legg til en bruker</string>
+    <string name="label_share">Del</string>
+    <string name="label_share_subject">openScale CVS-dataeksport (%s)</string>
+
+    <string name="label_weight">Vekt</string>
+    <string name="label_bmi">Kroppsmasseindeks (BMI)</string>
+    <string name="label_bmr">Basalmetabolisme (BMR)</string>
+    <string name="label_fat">Kroppsfett</string>
+    <string name="label_water">Kroppsvann</string>
+    <string name="label_muscle">Muskler</string>
+    <string name="label_waist">Livvidde</string>
+    <string name="label_hip">Hoftevidde</string>
+    <string name="label_comment">Kommentar</string>
+    <string name="label_bone">Beinmasse</string>
+    <string name="label_estimate_measurement_summary">Basert på vekt, høyde, alder, kjønn, etc.</string>
+</resources>
