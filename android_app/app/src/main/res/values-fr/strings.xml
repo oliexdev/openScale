@@ -19,7 +19,7 @@
 
     <string name="label_weight">Poids</string>
     <string name="label_bmi">IMC</string>
-    <string name="label_fat">Pourcentage de graisse corporelle</string>
+    <string name="label_fat">Graisse corporelle</string>
     <string name="label_water">Pourcentage d\'eau</string>
     <string name="label_muscle">Pourcentage musculaire</string>
     <string name="label_waist">Tour de taille</string>
@@ -43,7 +43,7 @@
     <string name="label_time">Heure</string>
     <string name="label_birthday">Date de naissance</string>
     <string name="label_user_name">Nom</string>
-    <string name="label_height">Hauteur du corps</string>
+    <string name="label_height">Taille</string>
     <string name="label_scale_unit">Unité d\'échelle</string>
     <string name="label_gender">Sexe</string>
     <string name="label_male">Homme</string>
@@ -147,4 +147,29 @@
     <string name="permission_not_granted">Permission non accordée</string>
     <string name="permission_bluetooth_info_title">Information</string>
     <string name="label_next">Suivant</string>
-    </resources>
+    <string name="title_about">À propos</string>
+    <string name="label_share">Partager</string>
+    <string name="error_user_name_too_short">Erreur : Le nom d\'utilisateur doit contenir au moins 3 caractères</string>
+    <string name="error_initial_weight_required">Erreur : le poids initial est requis</string>
+    <string name="info_enter_value_scale_unit">Entrez la valeur en unité d\'échelle</string>
+    <string name="label_exportBackup">Exporter la sauvegarde</string>
+    <string name="label_importBackup">Importer la sauvegarde</string>
+    <string name="label_backup">La sauvegarde</string>
+    <string name="label_help">Aide</string>
+
+    <string name="label_feedback_message_issue">Pourriez-vous nous donner quelques retours?</string>
+    <string name="customactivityoncrash_error_activity_error_details">Détail de l\'erreur</string>
+    <string name="customactivityoncrash_error_activity_error_details_title">Détail de l\'erreur</string>
+    <string name="label_month_view">Vue mensuelle</string>
+    <string name="label_weeks_view">Vue hebdomadaire</string>
+
+    <string name="label_press_hold_reorder">Appuyez et maintenez pour réorganiser</string>
+    <string name="label_set_default_order">Définir l\'ordre par défaut</string>
+    <string name="label_measurement_in_percent">Mesure en %</string>
+    <string name="theme_light">Clair</string>
+    <string name="theme_dark">Sombre</string>
+    <string name="label_contribute_translation">Contribuer à la traduction</string>
+    <string name="label_percent">Pourcent</string>
+    <string name="label_estimated">Estimé</string>
+    <string name="label_estimate_measurement_summary">Basé sur le poids, la taille, l\'âge, le genre, etc.</string>
+</resources>
