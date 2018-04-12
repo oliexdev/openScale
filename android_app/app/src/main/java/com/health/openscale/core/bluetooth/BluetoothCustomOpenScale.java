@@ -27,7 +27,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Set;
 import java.util.UUID;
 
 public class BluetoothCustomOpenScale extends BluetoothCommunication {
@@ -63,18 +62,15 @@ public class BluetoothCustomOpenScale extends BluetoothCommunication {
     }
 
     @Override
-    public void startSearching(String deviceName) {
+    public void connect(String hwAddress) {
 
         if (btAdapter == null) {
             setBtStatus(BT_STATUS_CODE.BT_NO_DEVICE_FOUND);
             return;
         }
 
-        Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
-
-        for (BluetoothDevice device : pairedDevices) {
-            // check if we can found bluetooth device name in the pairing list
-            if (device != null && device.getName().equals(deviceName)) {
+        for (BluetoothDevice device : btAdapter.getBondedDevices()) {
+            if (device != null && device.getAddress().equals(hwAddress)) {
                 btDevice = device;
 
                 try {
@@ -101,7 +97,7 @@ public class BluetoothCustomOpenScale extends BluetoothCommunication {
                             }
                         } catch (IOException connectException) {
                             // Unable to connect; close the socket and get out
-                            stopSearching();
+                            disconnect(false);
                             setBtStatus(BT_STATUS_CODE.BT_NO_DEVICE_FOUND);
                         }
                     }
@@ -116,7 +112,7 @@ public class BluetoothCustomOpenScale extends BluetoothCommunication {
     }
 
     @Override
-    public void stopSearching() {
+    public void disconnect(boolean doCleanup) {
         if (btSocket != null) {
             if (btSocket.isConnected()) {
                 try {

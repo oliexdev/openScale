@@ -83,7 +83,7 @@ public class BluetoothPreferences extends PreferenceFragment {
             }
         }, progressUpdatePeriod);
 
-        OpenScale.getInstance(getActivity()).stopSearchingForBluetooth();
+        OpenScale.getInstance(getActivity()).disconnectFromBluetoothDevice();
 
         btScanner.getDialog().setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
@@ -210,7 +210,7 @@ public class BluetoothPreferences extends PreferenceFragment {
             btScanner.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
-                    if (PermissionHelper.requestBluetoothPermission(getActivity(), true)) {
+                    if (PermissionHelper.requestBluetoothPermission(getActivity())) {
                         startBluetoothDiscovery();
                     }
                     return true;

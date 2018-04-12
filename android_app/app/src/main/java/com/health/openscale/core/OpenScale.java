@@ -78,8 +78,7 @@ public class OpenScale {
     private ScaleUser selectedScaleUser;
     private List<ScaleMeasurement> scaleMeasurementList;
 
-    private BluetoothCommunication btCom;
-    private String btDeviceName;
+    private BluetoothCommunication btDeviceDriver;
     private AlarmHandler alarmHandler;
 
     private Context context;
@@ -89,7 +88,7 @@ public class OpenScale {
     private OpenScale(Context context) {
         this.context = context;
         alarmHandler = new AlarmHandler();
-        btCom = null;
+        btDeviceDriver = null;
         fragmentList = new ArrayList<>();
 
         reopenDatabase();
@@ -472,30 +471,33 @@ public class OpenScale {
         return measurementDAO.getAllInRange(startCalender.getTime(), endCalender.getTime(), selectedUserId);
     }
 
-    public boolean startSearchingForBluetooth(String deviceName, Handler callbackBtHandler) {
-        Log.d("OpenScale", "Bluetooth Server started! I am searching for device ...");
+    public boolean connectToBluetoothDevice(String deviceName, String hwAddress, Handler callbackBtHandler) {
+        Log.d("OpenScale", "Trying to connect to bluetooth device " + hwAddress
+                + " (" + deviceName + ")");
 
-        btCom = BluetoothFactory.createDeviceDriver(context, deviceName);
-        if (btCom == null) {
+        disconnectFromBluetoothDevice();
+
+        btDeviceDriver = BluetoothFactory.createDeviceDriver(context, deviceName);
+        if (btDeviceDriver == null) {
             return false;
         }
 
-        btCom.registerCallbackHandler(callbackBtHandler);
-        btDeviceName = deviceName;
-
-        btCom.startSearching(btDeviceName);
+        btDeviceDriver.registerCallbackHandler(callbackBtHandler);
+        btDeviceDriver.connect(hwAddress);
 
         return true;
     }
 
-    public boolean stopSearchingForBluetooth() {
-        if (btCom != null) {
-            btCom.stopSearching();
-            btCom = null;
-            Log.d("OpenScale", "Bluetooth Server explicit stopped!");
-            return true;
+    public boolean disconnectFromBluetoothDevice() {
+        if (btDeviceDriver == null) {
+            return false;
         }
-        return false;
+
+        Log.d("OpenScale", "Disconnecting from bluetooth device");
+        btDeviceDriver.disconnect(true);
+        btDeviceDriver = null;
+
+        return true;
     }
 
     public void registerFragment(FragmentUpdateListener fragment) {

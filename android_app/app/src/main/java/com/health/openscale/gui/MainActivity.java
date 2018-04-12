@@ -18,11 +18,11 @@ package com.health.openscale.gui;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.bluetooth.BluetoothManager;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
@@ -62,7 +62,7 @@ import com.health.openscale.gui.fragments.GraphFragment;
 import com.health.openscale.gui.fragments.OverviewFragment;
 import com.health.openscale.gui.fragments.StatisticsFragment;
 import com.health.openscale.gui.fragments.TableFragment;
-import com.health.openscale.gui.utils.PermissionHelper;
+import com.health.openscale.gui.preferences.BluetoothPreferences;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -196,6 +196,7 @@ public class MainActivity extends BaseAppCompatActivity
     @Override
     public void onDestroy() {
         prefs.unregisterOnSharedPreferenceChangeListener(this);
+        OpenScale.getInstance(getApplicationContext()).disconnectFromBluetoothDevice();
         super.onDestroy();
     }
 
@@ -382,7 +383,12 @@ public class MainActivity extends BaseAppCompatActivity
                 startActivity(intent);
                 return true;
             case R.id.action_bluetooth_status:
-                invokeSearchBluetoothDevice();
+                if (OpenScale.getInstance(getApplicationContext()).disconnectFromBluetoothDevice()) {
+                    setBluetoothStatusIcon(R.drawable.ic_bluetooth_disabled);
+                }
+                else {
+                    invokeConnectToBluetoothDevice();
+                }
                 return true;
             case R.id.importData:
                 importCsvFile();
@@ -405,11 +411,19 @@ public class MainActivity extends BaseAppCompatActivity
 
         bluetoothStatus = menu.findItem(R.id.action_bluetooth_status);
 
+        BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
+        boolean hasBluetooth = bluetoothManager.getAdapter() != null;
+
+        if (!hasBluetooth) {
+            bluetoothStatus.setEnabled(false);
+            setBluetoothStatusIcon(R.drawable.ic_bluetooth_disabled);
+        }
         // Just search for a bluetooth device just once at the start of the app and if start preference enabled
-        if (firstAppStart && prefs.getBoolean("btEnable", false)) {
-            invokeSearchBluetoothDevice();
+        else if (firstAppStart && prefs.getBoolean("btEnable", false)) {
+            invokeConnectToBluetoothDevice();
             firstAppStart = false;
-        } else {
+        }
+        else {
             // Set current bluetooth status icon while e.g. orientation changes
             setBluetoothStatusIcon(bluetoothStatusIcon);
         }
@@ -429,7 +443,7 @@ public class MainActivity extends BaseAppCompatActivity
         drawerToggle.onConfigurationChanged(newConfig);
     }
 
-    private void invokeSearchBluetoothDevice() {
+    private void invokeConnectToBluetoothDevice() {
         final OpenScale openScale = OpenScale.getInstance(getApplicationContext());
 
         if (openScale.getSelectedScaleUserId() == -1) {
@@ -437,34 +451,21 @@ public class MainActivity extends BaseAppCompatActivity
             return;
         }
 
-        if (openScale.stopSearchingForBluetooth()) {
-            setBluetoothStatusIcon(R.drawable.ic_bluetooth_disabled);
+        String deviceName = prefs.getString(
+                BluetoothPreferences.PREFERENCE_KEY_BLUETOOTH_DEVICE_NAME, "-");
+        String hwAddress = prefs.getString(
+                BluetoothPreferences.PREFERENCE_KEY_BLUETOOTH_HW_ADDRESS, "");
+
+        if (deviceName.equals("-")) {
+            Toast.makeText(getApplicationContext(), R.string.info_bluetooth_no_device_set, Toast.LENGTH_SHORT).show();
             return;
         }
 
-        String deviceName = prefs.getString("btDeviceName", "-");
+        Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_try_connection) + " " + deviceName, Toast.LENGTH_SHORT).show();
+        setBluetoothStatusIcon(R.drawable.ic_bluetooth_searching);
 
-        boolean permGrantedCoarseLocation = false;
-
-        // Check if Bluetooth 4.x is available
-        if (!deviceName.equals("openScale_MCU")) {
-            permGrantedCoarseLocation = PermissionHelper.requestBluetoothPermission(this, false);
-        } else {
-            permGrantedCoarseLocation = PermissionHelper.requestBluetoothPermission(this, true);
-        }
-
-        if (permGrantedCoarseLocation) {
-            if (deviceName.equals("-")) {
-                Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_no_device_set), Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_try_connection) + " " + deviceName, Toast.LENGTH_SHORT).show();
-            setBluetoothStatusIcon(R.drawable.ic_bluetooth_searching);
-
-            if (!openScale.startSearchingForBluetooth(deviceName, callbackBtHandler)) {
-                Toast.makeText(getApplicationContext(), deviceName + " " + getResources().getString(R.string.label_bt_device_no_support), Toast.LENGTH_SHORT).show();
-            }
+        if (!openScale.connectToBluetoothDevice(deviceName, hwAddress, callbackBtHandler)) {
+            Toast.makeText(getApplicationContext(), deviceName + " " + getResources().getString(R.string.label_bt_device_no_support), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -704,28 +705,6 @@ public class MainActivity extends BaseAppCompatActivity
                 }
                 break;
         }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
-        boolean permissionGranted = true;
-        switch (requestCode) {
-            case PermissionHelper.PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    invokeSearchBluetoothDevice();
-                } else {
-                    setBluetoothStatusIcon(R.drawable.ic_bluetooth_disabled);
-                    permissionGranted = false;
-                }
-                break;
-        }
-
-        if (!permissionGranted) {
-            Toast.makeText(getApplicationContext(), getResources().getString(
-                    R.string.permission_not_granted), Toast.LENGTH_SHORT).show();
-        }
-
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     @SuppressLint("RestrictedApi")

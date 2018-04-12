@@ -23,10 +23,7 @@ import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothProfile;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Handler;
 import android.util.Log;
 
@@ -46,12 +43,10 @@ public abstract class BluetoothCommunication {
     protected Context context;
 
     private Handler callbackBtHandler;
-    private static BluetoothGatt bluetoothGatt;
+    private BluetoothGatt bluetoothGatt;
+    private boolean connectionEstablished;
     protected BluetoothGattCallback gattCallback;
     protected BluetoothAdapter btAdapter;
-    private Handler searchHandler;
-    private String btDeviceName;
-    public boolean isReceiverRegistered;
 
     private int cmdStepNr;
     private int initStepNr;
@@ -66,10 +61,9 @@ public abstract class BluetoothCommunication {
     {
         this.context = context;
         btAdapter = BluetoothAdapter.getDefaultAdapter();
-        searchHandler = new Handler();
         gattCallback = new GattCallback();
-        isReceiverRegistered = false;
         bluetoothGatt = null;
+        connectionEstablished = false;
     }
 
     /**
@@ -328,86 +322,36 @@ public abstract class BluetoothCommunication {
     }
 
     /**
-     * Start searching for a Bluetooth device.
-     *
-     * @note the hardware address is checked. Bluetooth device address has to be start with one of hwAddresses().
+     * Connect to a Bluetooth device.
      *
      * On successfully connection Bluetooth machine state is automatically triggered.
-     * If no device was found the search process is automatically stopped.
+     * If the device is not found the process is automatically stopped.
      *
-     * @param deviceName the Bluetooth device name that is compared to the found devices.
+     * @param hwAddress the Bluetooth address to connect to
      */
-    public void startSearching(String deviceName) {
-        btDeviceName = deviceName;
+    public void connect(String hwAddress) {
+        btAdapter.cancelDiscovery();
 
-        IntentFilter filter = new IntentFilter();
-
-        filter.addAction(BluetoothDevice.ACTION_FOUND);
-        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-
-        if (isReceiverRegistered == false) {
-            context.registerReceiver(mReceiver, filter);
-            isReceiverRegistered = true;
-            btAdapter.startDiscovery();
-        } else {
-            try {
-                context.unregisterReceiver(mReceiver);
-                isReceiverRegistered = false;
-            } catch (Exception e) {
-                isReceiverRegistered = false;
-            }
-            startSearching(deviceName);
-        }
+        BluetoothDevice device = btAdapter.getRemoteDevice(hwAddress);
+        bluetoothGatt = device.connectGatt(context, false, gattCallback);
     }
 
-    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-
-            if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
-                //discovery finishes, dismis progress dialog
-                if (bluetoothGatt == null) {
-                    setBtStatus(BT_STATUS_CODE.BT_NO_DEVICE_FOUND);
-                }
-            } else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-                //bluetooth device found
-                BluetoothDevice device = (BluetoothDevice) intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-
-                if (device.getName() == null) {
-                    return;
-                }
-
-                if (device.getName().toLowerCase().equals(btDeviceName.toLowerCase())) {
-                    Log.d("BluetoothCommunication", btDeviceName + " found trying to connect...");
-
-                    bluetoothGatt = device.connectGatt(context, true, gattCallback);
-                }
-            }
-        }
-    };
-
     /**
-     * Stop searching for a Bluetooth device
+     * Disconnect from a Bluetooth device
      */
-    public void stopSearching() {
-        if (bluetoothGatt != null)
-        {
-            bluetoothGatt.disconnect();
-            bluetoothGatt.close();
-            bluetoothGatt = null;
+    public void disconnect(boolean doCleanup) {
+        if (bluetoothGatt == null) {
+            return;
         }
 
-        if (isReceiverRegistered == true) {
-            try {
-                context.unregisterReceiver(mReceiver);
-                isReceiverRegistered = false;
-            } catch (Exception e) {
-                isReceiverRegistered = false;
-            }
+        if (btMachineState != BT_MACHINE_STATE.BT_CLEANUP_STATE && doCleanup) {
+            setBtMachineState(BT_MACHINE_STATE.BT_CLEANUP_STATE);
+            nextMachineStateStep();
         }
 
-        searchHandler.removeCallbacksAndMessages(null);
-        btAdapter.cancelDiscovery();
+        bluetoothGatt.disconnect();
+        bluetoothGatt.close();
+        bluetoothGatt = null;
     }
 
     /**
@@ -439,14 +383,16 @@ public abstract class BluetoothCommunication {
     private void handleRequests() {
         synchronized (openRequest) {
             // check for pending request
-            if (openRequest)
+            if (openRequest) {
                 return; // yes, do nothing
+            }
 
             // handle descriptor requests first
             BluetoothGattDescriptor descriptorRequest = descriptorRequestQueue.poll();
             if (descriptorRequest != null) {
-                if (!bluetoothGatt.writeDescriptor(descriptorRequest))
+                if (!bluetoothGatt.writeDescriptor(descriptorRequest)) {
                     Log.d("BTC", "Descriptor Write failed(" + byteInHex(descriptorRequest.getValue()) + ")");
+                }
                 openRequest = true;
                 return;
             }
@@ -454,8 +400,9 @@ public abstract class BluetoothCommunication {
             // handle characteristics requests second
             BluetoothGattCharacteristic characteristicRequest = characteristicRequestQueue.poll();
             if (characteristicRequest != null) {
-                if (!bluetoothGatt.writeCharacteristic(characteristicRequest))
+                if (!bluetoothGatt.writeCharacteristic(characteristicRequest)) {
                     Log.d("BTC", "Characteristic Write failed(" + byteInHex(characteristicRequest.getValue()) + ")");
+                }
                 openRequest = true;
                 return;
             }
@@ -472,11 +419,15 @@ public abstract class BluetoothCommunication {
         @Override
         public void onConnectionStateChange(final BluetoothGatt gatt, int status, int newState) {
             if (newState == BluetoothProfile.STATE_CONNECTED) {
+                connectionEstablished = true;
                 setBtStatus(BT_STATUS_CODE.BT_CONNECTION_ESTABLISHED);
                 gatt.discoverServices();
-            } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                setBtStatus(BT_STATUS_CODE.BT_CONNECTION_LOST);
-                stopSearching();
+            }
+            else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                setBtStatus(connectionEstablished
+                        ? BT_STATUS_CODE.BT_CONNECTION_LOST
+                        : BT_STATUS_CODE.BT_NO_DEVICE_FOUND);
+                disconnect(false);
             }
         }
 
@@ -501,8 +452,8 @@ public abstract class BluetoothCommunication {
                 // Empty
             }
 
-            btMachineState = BT_MACHINE_STATE.BT_INIT_STATE;
-            nextMachineStateStep();
+            // Start the state machine
+            setBtMachineState(BT_MACHINE_STATE.BT_INIT_STATE);
         }
 
         @Override
@@ -516,9 +467,9 @@ public abstract class BluetoothCommunication {
         }
 
         @Override
-        public void onCharacteristicWrite (BluetoothGatt gatt,
-                                           BluetoothGattCharacteristic characteristic,
-                                           int status) {
+        public void onCharacteristicWrite(BluetoothGatt gatt,
+                                          BluetoothGattCharacteristic characteristic,
+                                          int status) {
             synchronized (openRequest) {
                 openRequest = false;
                 handleRequests();
@@ -526,9 +477,9 @@ public abstract class BluetoothCommunication {
         }
 
         @Override
-        public void onCharacteristicRead (BluetoothGatt gatt,
-                                          BluetoothGattCharacteristic characteristic,
-                                          int status) {
+        public void onCharacteristicRead(BluetoothGatt gatt,
+                                         BluetoothGattCharacteristic characteristic,
+                                         int status) {
             onBluetoothDataRead(gatt, characteristic, status);
             synchronized (openRequest) {
                 openRequest = false;
@@ -543,4 +494,3 @@ public abstract class BluetoothCommunication {
         }
     }
 }
-

@@ -27,7 +27,6 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Set;
 import java.util.UUID;
 import java.util.Date;
 import java.util.Arrays;
@@ -74,24 +73,22 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
     }
 
     @Override
-    public void startSearching(String deviceName) {
+    public void connect(String hwAddress) {
 
-//       Log.w("openscale","iHealth HS3 - startSearching "+deviceName);
+//       Log.w("openscale","iHealth HS3 - connect "+hwAddress);
 
         if (btAdapter == null) {
             setBtStatus(BT_STATUS_CODE.BT_NO_DEVICE_FOUND);
             return;
         }
 
-        Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
-
 //       Log.w("openscale","about to start searching paired devices");
 
-        for (BluetoothDevice device : pairedDevices) {
+        for (BluetoothDevice device : btAdapter.getBondedDevices()) {
             // check if we can found bluetooth device name in the pairing list
 //            if (device != null ) { Log.w("openscale","Looking at device "+device.getName()); } ;
                 
-            if (device != null && device.getName().equals(deviceName)) {
+            if (device != null && device.getAddress().equals(hwAddress)) {
                 btDevice = device;
 
                 try {
@@ -118,7 +115,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
                             }
                         } catch (IOException connectException) {
                             // Unable to connect; close the socket and get out
-                            stopSearching();
+                            disconnect(false);
                             setBtStatus(BT_STATUS_CODE.BT_NO_DEVICE_FOUND);
                         }
                     }
@@ -133,9 +130,9 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
     }
 
     @Override
-    public void stopSearching() {
+    public void disconnect(boolean doCleanup) {
 
-        Log.w("openscale","HS3 - stopSearching");
+        Log.w("openscale","HS3 - disconnect");
         if (btSocket != null) {
             if (btSocket.isConnected()) {
                 try {
