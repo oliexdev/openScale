@@ -143,18 +143,21 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
                 writeBytes(new byte[]{(byte) getAlternativeStartByte(6), (byte) 0x01});
                 break;
             case 2:
+                // Wait for "Hello" ack from scale
+                break;
+            case 3:
                 // Update timestamp of the scale
                 updateDateTimeBeurer();
                 break;
-            case 3:
+            case 4:
                 // Set measurement unit
                 setUnitCommand();
                 break;
-            case 4:
+            case 5:
                 // Request general user information
                 writeBytes(new byte[]{(byte) startByte, (byte) 0x33});
                 break;
-            case 5:
+            case 6:
                 // Wait for ack of all users
                 if (seenUsers.size() < countRegisteredScaleUsers || (countRegisteredScaleUsers == -1)) {
                     // Request this state again
@@ -207,7 +210,7 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
                 Log.d(TAG, "scaleuserid:" + currentScaleUserId + " registered users: " + countRegisteredScaleUsers +
                         " extracted users: " + seenUsers.size());
                 break;
-            case 6:
+            case 7:
                 break;
             default:
                 // Finish init if everything is done
@@ -267,6 +270,7 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
 
         if ((data[0] & 0xFF) == getAlternativeStartByte(6) && (data[1] & 0xFF) == 0x00) {
             Log.d(TAG, "ACK Scale is ready");
+            nextMachineStateStep();
             return;
         }
 
