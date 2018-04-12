@@ -491,6 +491,15 @@ public abstract class BluetoothCommunication {
             descriptorRequestQueue = new LinkedList<>();
             openRequest = false;
 
+            try {
+                // Sleeping a while after discovering services fixes connection problems.
+                // See https://github.com/NordicSemiconductor/Android-DFU-Library/issues/10
+                // for some technical background.
+                Thread.sleep(1000);
+            }
+            catch (Exception e) {
+                // Empty
+            }
 
             btMachineState = BT_MACHINE_STATE.BT_INIT_STATE;
             nextMachineStateStep();
