@@ -15,6 +15,8 @@
 */
 package com.health.openscale.gui.preferences;
 
+import android.app.Activity;
+import android.app.Fragment;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
@@ -207,10 +209,11 @@ public class BluetoothPreferences extends PreferenceFragment {
             // Might have been started by another app
             btAdapter.cancelDiscovery();
 
+            final Fragment fragment = this;
             btScanner.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
-                    if (PermissionHelper.requestBluetoothPermission(getActivity())) {
+                    if (PermissionHelper.requestBluetoothPermission(getActivity(), fragment)) {
                         startBluetoothDiscovery();
                     }
                     return true;
@@ -244,6 +247,20 @@ public class BluetoothPreferences extends PreferenceFragment {
         super.onDestroy();
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == PermissionHelper.ENABLE_BLUETOOTH_REQUEST) {
+            if (resultCode == Activity.RESULT_OK) {
+                if (PermissionHelper.requestBluetoothPermission(getActivity(), this)) {
+                    startBluetoothDiscovery();
+                }
+            }
+            else {
+                btScanner.getDialog().dismiss();
+            }
+        }
+    }
+
     private class onClickListenerDeviceSelect implements Preference.OnPreferenceClickListener {
         @Override
         public boolean onPreferenceClick(final Preference preference) {
@@ -267,7 +284,7 @@ public class BluetoothPreferences extends PreferenceFragment {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     startBluetoothDiscovery();
                 } else {
-                    Toast.makeText(getActivity().getApplicationContext(), R.string.permission_not_granted, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), R.string.permission_not_granted, Toast.LENGTH_SHORT).show();
                 }
                 break;
             }

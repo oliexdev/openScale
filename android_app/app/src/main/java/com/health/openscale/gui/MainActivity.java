@@ -18,6 +18,7 @@ package com.health.openscale.gui;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
@@ -80,6 +81,7 @@ public class MainActivity extends BaseAppCompatActivity
 
     private static final int IMPORT_DATA_REQUEST = 100;
     private static final int EXPORT_DATA_REQUEST = 101;
+    private static final int ENABLE_BLUETOOTH_REQUEST = 102;
 
     private DrawerLayout drawerLayout;
     private Toolbar toolbar;
@@ -461,6 +463,13 @@ public class MainActivity extends BaseAppCompatActivity
             return;
         }
 
+        BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
+        if (!bluetoothManager.getAdapter().isEnabled()) {
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableBtIntent, ENABLE_BLUETOOTH_REQUEST);
+            return;
+        }
+
         Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_try_connection) + " " + deviceName, Toast.LENGTH_SHORT).show();
         setBluetoothStatusIcon(R.drawable.ic_bluetooth_searching);
 
@@ -663,6 +672,16 @@ public class MainActivity extends BaseAppCompatActivity
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == ENABLE_BLUETOOTH_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                invokeConnectToBluetoothDevice();
+            }
+            else {
+                Toast.makeText(this, "Bluetooth " + getResources().getString(R.string.info_is_not_enable), Toast.LENGTH_SHORT).show();
+            }
+            return;
+        }
 
         if (resultCode != RESULT_OK || data == null) {
             return;

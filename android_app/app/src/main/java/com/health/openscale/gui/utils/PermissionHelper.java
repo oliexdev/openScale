@@ -18,6 +18,7 @@ package com.health.openscale.gui.utils;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Fragment;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
@@ -34,24 +35,25 @@ public class PermissionHelper {
     public final static int PERMISSIONS_REQUEST_ACCESS_READ_STORAGE = 2;
     public final static int PERMISSIONS_REQUEST_ACCESS_WRITE_STORAGE = 3;
 
-    public static boolean requestBluetoothPermission(final Activity activity) {
+    public final static int ENABLE_BLUETOOTH_REQUEST = 5;
+
+    public static boolean requestBluetoothPermission(final Activity activity, Fragment fragment) {
         final BluetoothManager bluetoothManager = (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
         BluetoothAdapter btAdapter = bluetoothManager.getAdapter();
 
         if (btAdapter == null || !btAdapter.isEnabled()) {
-
-            Toast.makeText(activity.getApplicationContext(), "Bluetooth " + activity.getResources().getString(R.string.info_is_not_enable), Toast.LENGTH_SHORT).show();
+            Toast.makeText(activity, "Bluetooth " + activity.getResources().getString(R.string.info_is_not_enable), Toast.LENGTH_SHORT).show();
 
             if (btAdapter != null) {
                 Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                activity.startActivity(enableBtIntent);
+                fragment.startActivityForResult(enableBtIntent, ENABLE_BLUETOOTH_REQUEST);
             }
             return false;
         }
 
         // Check if Bluetooth 4.x is available
         if (!activity.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-            Toast.makeText(activity.getApplicationContext(), "Bluetooth 4.x " + activity.getResources().getString(R.string.info_is_not_available), Toast.LENGTH_SHORT).show();
+            Toast.makeText(activity, "Bluetooth 4.x " + activity.getResources().getString(R.string.info_is_not_available), Toast.LENGTH_SHORT).show();
             return false;
          }
 
