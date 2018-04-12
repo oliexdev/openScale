@@ -223,4 +223,6 @@
     <string name="label_percent">Percent</string>
     <string name="label_estimated">Estimated</string>
     <string name="label_estimate_measurement_summary">Based on weight, height, age, gender, etc.</string>
+    <string name="label_scale_not_supported">Is your scale not supported?</string>
+    <string name="label_click_to_help_add_support">Click here if you want to help add support for it</string>
 </resources>
