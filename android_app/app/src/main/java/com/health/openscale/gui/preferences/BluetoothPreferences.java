@@ -66,6 +66,7 @@ public class BluetoothPreferences extends PreferenceFragment {
         scanning.setEnabled(false);
         btScanner.addPreference(scanning);
 
+        // Draw a simple progressbar during the discovery/scanning
         final int progressUpdatePeriod = 150;
         final String[] blocks = {"▏","▎","▍","▌","▋","▊","▉","█"};
         scanning.setSummary(blocks[0]);
@@ -85,6 +86,7 @@ public class BluetoothPreferences extends PreferenceFragment {
             }
         }, progressUpdatePeriod);
 
+        // Close any existing connection during the scan
         OpenScale.getInstance(getActivity()).disconnectFromBluetoothDevice();
 
         btScanner.getDialog().setOnDismissListener(new DialogInterface.OnDismissListener() {
@@ -113,6 +115,7 @@ public class BluetoothPreferences extends PreferenceFragment {
             public void run() {
                 handler.removeCallbacksAndMessages(null);
                 btAdapter.stopLeScan(leScanCallback);
+                btScanner.getDialog().setOnDismissListener(null);
 
                 Preference scanning = btScanner.getPreference(0);
                 scanning.setTitle(R.string.label_bluetooth_searching_finished);
@@ -204,8 +207,7 @@ public class BluetoothPreferences extends PreferenceFragment {
         if (btAdapter == null) {
             btScanner.setEnabled(false);
             btScanner.setSummary("Bluetooth " + getResources().getString(R.string.info_is_not_available));
-        }
-        else {
+        } else {
             // Might have been started by another app
             btAdapter.cancelDiscovery();
 
@@ -231,6 +233,11 @@ public class BluetoothPreferences extends PreferenceFragment {
             // Dummy preference to make screen open
             btScanner.addPreference(new Preference(getActivity()));
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
 
         // Intent filter for the scanning process
         IntentFilter filter = new IntentFilter();
@@ -241,10 +248,13 @@ public class BluetoothPreferences extends PreferenceFragment {
     }
 
     @Override
-    public void onDestroy() {
+    public void onPause() {
         getActivity().unregisterReceiver(mReceiver);
+        if (btScanner.getDialog() != null) {
+            btScanner.getDialog().dismiss();
+        }
 
-        super.onDestroy();
+        super.onPause();
     }
 
     @Override
