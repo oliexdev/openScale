@@ -2,6 +2,7 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <EditTextPreference android:title="@string/label_export_dir" android:key="exportDir" android:defaultValue="openScale backup" />
     <CheckBoxPreference android:title="@string/label_auto_backup" android:summaryOn="@string/info_is_enable" android:summaryOff="@string/info_is_not_enable" android:key="autoBackup" android:defaultValue="true"/>
+    <CheckBoxPreference android:title="@string/label_overwrite_backup" android:summaryOn="@string/info_is_enable" android:summaryOff="@string/info_is_not_enable" android:key="overwriteBackup" android:defaultValue="false"/>
     <ListPreference
         android:enabled="false"
         android:entries="@array/auto_backup_entries"

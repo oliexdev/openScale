@@ -54,11 +54,15 @@ import com.health.openscale.gui.views.MeasurementViewSettings;
 import com.health.openscale.gui.views.WaterMeasurementView;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.nio.channels.FileChannel;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -382,6 +386,33 @@ public class OpenScale {
                 return name;
             }
             return uri.toString();
+        }
+    }
+
+    public void importDatabase(File importFile) throws IOException {
+        File exportFile = context.getApplicationContext().getDatabasePath("openScale.db");
+
+        exportFile.createNewFile();
+        copyFile(importFile, exportFile);
+    }
+
+    public void exportDatase(File exportFile) throws IOException {
+        File dbFile = context.getApplicationContext().getDatabasePath("openScale.db");
+
+        exportFile.createNewFile();
+        copyFile(dbFile, exportFile);
+    }
+
+    private void copyFile(File src, File dst) throws IOException {
+        FileChannel inChannel = new FileInputStream(src).getChannel();
+        FileChannel outChannel = new FileOutputStream(dst).getChannel();
+        try {
+            inChannel.transferTo(0, inChannel.size(), outChannel);
+        } finally {
+            if (inChannel != null)
+                inChannel.close();
+            if (outChannel != null)
+                outChannel.close();
         }
     }
 

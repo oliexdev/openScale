@@ -225,6 +225,7 @@
 
     <string name="label_auto_backup">Auto backup</string>
     <string name="label_auto_backup_schedule">Backup schedule</string>
+    <string name="label_overwrite_backup">Overwrite previous backup</string>
     <string name="label_daily">daily</string>
     <string name="label_weekly">weekly</string>
     <string name="label_monthly">monthly</string>

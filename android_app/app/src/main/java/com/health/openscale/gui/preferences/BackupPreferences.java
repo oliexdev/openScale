@@ -38,10 +38,7 @@ import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.gui.utils.PermissionHelper;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -50,13 +47,17 @@ public class BackupPreferences extends PreferenceFragment implements SharedPrefe
     private static final String PREFERENCE_KEY_IMPORT_BACKUP = "importBackup";
     private static final String PREFERENCE_KEY_EXPORT_BACKUP = "exportBackup";
     private static final String PREFERENCE_KEY_AUTO_BACKUP = "autoBackup";
+    private static final String PREFERENCE_KEY_OVERWRITE_BACKUP = "overwriteBackup";
     private static final String PREFERENCE_KEY_AUTO_BACKUP_SCHEDULE = "autoBackup_Schedule";
 
     private Preference importBackup;
     private Preference exportBackup;
 
     private CheckBoxPreference autoBackup;
+    private CheckBoxPreference overwriteBackup;
     private ListPreference autoBackupSchedule;
+
+    private boolean isAutoBackupAskForPermission;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -71,6 +72,8 @@ public class BackupPreferences extends PreferenceFragment implements SharedPrefe
         exportBackup.setOnPreferenceClickListener(new onClickListenerExportBackup());
 
         autoBackup = (CheckBoxPreference) findPreference(PREFERENCE_KEY_AUTO_BACKUP);
+        autoBackup.setOnPreferenceClickListener(new onClickListenerAutoBackup());
+        overwriteBackup = (CheckBoxPreference) findPreference(PREFERENCE_KEY_OVERWRITE_BACKUP);
         autoBackupSchedule = (ListPreference) findPreference(PREFERENCE_KEY_AUTO_BACKUP_SCHEDULE);
 
         initSummary(getPreferenceScreen());
@@ -83,6 +86,8 @@ public class BackupPreferences extends PreferenceFragment implements SharedPrefe
 
         AlarmBackupHandler alarmBackupHandler = new AlarmBackupHandler();
 
+        isAutoBackupAskForPermission = false;
+
         if (autoBackup.isChecked()) {
             alarmBackupHandler.scheduleAlarms(getActivity());
 
@@ -90,6 +95,7 @@ public class BackupPreferences extends PreferenceFragment implements SharedPrefe
                     PackageManager.DONT_KILL_APP);
 
             autoBackupSchedule.setEnabled(true);
+            overwriteBackup.setEnabled(true);
         } else {
             alarmBackupHandler.disableAlarm(getActivity());
 
@@ -97,6 +103,7 @@ public class BackupPreferences extends PreferenceFragment implements SharedPrefe
                     PackageManager.DONT_KILL_APP);
 
             autoBackupSchedule.setEnabled(false);
+            overwriteBackup.setEnabled(false);
         }
     }
 
@@ -171,6 +178,19 @@ public class BackupPreferences extends PreferenceFragment implements SharedPrefe
         }
     }
 
+    private class onClickListenerAutoBackup implements Preference.OnPreferenceClickListener {
+        @Override
+        public boolean onPreferenceClick(Preference preference) {
+            if (autoBackup.isChecked()) {
+                isAutoBackupAskForPermission = true;
+
+                PermissionHelper.requestWritePermission(getActivity());
+            }
+
+            return true;
+        }
+    }
+
     private class onClickListenerImportBackup implements Preference.OnPreferenceClickListener {
         @Override
         public boolean onPreferenceClick(Preference preference) {
@@ -198,10 +218,11 @@ public class BackupPreferences extends PreferenceFragment implements SharedPrefe
 
         String databaseName = "openScale.db";
 
+        OpenScale openScale = OpenScale.getInstance(getActivity().getApplicationContext());
+
         if (!isExternalStoragePresent())
             return false;
 
-        File exportFile = getActivity().getApplicationContext().getDatabasePath(databaseName);
         File importFile = new File(exportDir, databaseName);
 
         if (!importFile.exists()) {
@@ -210,15 +231,13 @@ public class BackupPreferences extends PreferenceFragment implements SharedPrefe
         }
 
         try {
-            exportFile.createNewFile();
-            copyFile(importFile, exportFile);
+            openScale.importDatabase(importFile);
             Toast.makeText(getActivity().getApplicationContext(), getResources().getString(R.string.info_data_imported) + " " + exportDir + "/" + databaseName, Toast.LENGTH_SHORT).show();
         } catch (IOException e) {
             Toast.makeText(getActivity().getApplicationContext(), getResources().getString(R.string.error_importing) + " " + e.getMessage(), Toast.LENGTH_SHORT).show();
             return false;
         }
 
-        OpenScale openScale = OpenScale.getInstance(getActivity().getApplicationContext());
         openScale.reopenDatabase();
 
         List<ScaleUser> scaleUserList = openScale.getScaleUserList();
@@ -239,17 +258,16 @@ public class BackupPreferences extends PreferenceFragment implements SharedPrefe
         if (!isExternalStoragePresent())
             return false;
 
-        File dbFile = getActivity().getApplicationContext().getDatabasePath(databaseName);
-        File file = new File(exportDir, databaseName);
+        OpenScale openScale = OpenScale.getInstance(getActivity().getApplicationContext());
+
+        File exportFile = new File(exportDir, databaseName);
 
         if (!exportDir.exists()) {
             exportDir.mkdirs();
         }
 
         try {
-            file.createNewFile();
-            copyFile(dbFile, file);
-
+            openScale.exportDatase(exportFile);
             Toast.makeText(getActivity().getApplicationContext(), getResources().getString(R.string.info_data_exported) +  " " + exportDir + "/" + databaseName, Toast.LENGTH_SHORT).show();
         } catch (IOException e) {
             Toast.makeText(getActivity().getApplicationContext(), getResources().getString(R.string.error_exporting) + " " + e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -257,19 +275,6 @@ public class BackupPreferences extends PreferenceFragment implements SharedPrefe
         }
 
         return true;
-    }
-
-    private void copyFile(File src, File dst) throws IOException {
-        FileChannel inChannel = new FileInputStream(src).getChannel();
-        FileChannel outChannel = new FileOutputStream(dst).getChannel();
-        try {
-            inChannel.transferTo(0, inChannel.size(), outChannel);
-        } finally {
-            if (inChannel != null)
-                inChannel.close();
-            if (outChannel != null)
-                outChannel.close();
-        }
     }
 
     private boolean isExternalStoragePresent() {
@@ -287,8 +292,17 @@ public class BackupPreferences extends PreferenceFragment implements SharedPrefe
             break;
             case PermissionHelper.PERMISSIONS_REQUEST_ACCESS_WRITE_STORAGE:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    exportBackup();
+                    if (isAutoBackupAskForPermission) {
+                        autoBackup.setChecked(true);
+                    } else {
+                        exportBackup();
+                    }
+
                 } else {
+                    if (isAutoBackupAskForPermission) {
+                        autoBackup.setChecked(false);
+                    }
+
                     Toast.makeText(getActivity().getApplicationContext(), getResources().getString(R.string.permission_not_granted), Toast.LENGTH_SHORT).show();
                 }
             break;

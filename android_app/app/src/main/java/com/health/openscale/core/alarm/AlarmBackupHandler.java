@@ -20,10 +20,16 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.health.openscale.core.OpenScale;
+
+import java.io.File;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.util.Date;
 
 public class AlarmBackupHandler
 {
@@ -78,7 +84,29 @@ public class AlarmBackupHandler
     public void executeBackup(Context context) {
         OpenScale openScale = OpenScale.getInstance(context);
 
-        // TODO implement backup routine
-        Log.d("ALARM HANDLER", "EXCECUTED BACKUP");
+        String databaseName = "openScale.db";
+
+        File exportDir = new File(Environment.getExternalStorageDirectory(), PreferenceManager.getDefaultSharedPreferences(context).getString("exportDir", "openScale Backup"));
+        if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED))
+            return;
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+
+        if (!prefs.getBoolean("overwriteBackup", false)) {
+            databaseName = DateFormat.getDateInstance(DateFormat.SHORT).format(new Date()) + "_" + databaseName;
+        }
+
+        File exportFile = new File(exportDir, databaseName);
+
+        if (!exportDir.exists()) {
+            exportDir.mkdirs();
+        }
+
+        try {
+            openScale.exportDatase(exportFile);
+            Log.d("AlarmBackupHandler", "openScale Auto Backup to " + exportFile);
+        } catch (IOException e) {
+            Log.e("AlarmBackupHandler", "Error while exporting database: " + e.getMessage());
+        }
     }
 }
