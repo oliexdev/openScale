@@ -27,7 +27,7 @@
 
     <string name="label_weight">Weight</string>
     <string name="label_bmi">Body mass index (BMI)</string>
-    <string name="label_bmr">Basal metabolic rate (BMR)</string>
+    <string name="label_bmr">Resting metabolic rate (RMR)</string>
     <string name="label_fat">Body fat</string>
     <string name="label_water">Body water</string>
     <string name="label_muscle">Muscle</string>
@@ -47,7 +47,7 @@
     <string name="label_last_week">Last 7 days</string>
     <string name="label_last_month">Last 30 days</string>
     <string name="label_weight_difference">Weight difference</string>
-    <string name="label_goal_date_is">Goal date is</string>
+    <string name="label_goal_date_is">Goal date:</string>
     <string name="label_days_left">Days left</string>
 
     <string name="label_date">Date</string>
@@ -70,8 +70,8 @@
     <string name="label_export">Export</string>
     <string name="label_delete_all">Delete all</string>
 
-    <string name="error_value_required">Value is required</string>
-    <string name="error_value_range">The value is not in range</string>
+    <string name="error_value_required">Value required</string>
+    <string name="error_value_range">The value not in range</string>
     <string name="error_exporting">Error exporting</string>
     <string name="error_importing">Error importing</string>
     <string name="error_user_name_required">Error: Username required</string>
@@ -189,7 +189,7 @@
     <string name="label_weeks_view">Week view</string>
 
     <string name="permission_not_granted">Permission not granted</string>
-    <string name="permission_bluetooth_info">Coarse location permission is needed to search for Bluetooth devices. It can be revoked after the device is found.</string>
+    <string name="permission_bluetooth_info">Coarse location permission needed to search for Bluetooth devices. It can be revoked after the device is found.</string>
     <string name="permission_bluetooth_info_title">Info</string>
     <string name="label_next">Next</string>
     <string name="label_press_hold_reorder">Press and hold to reorder</string>
