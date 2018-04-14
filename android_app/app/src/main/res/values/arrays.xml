@@ -19,7 +19,7 @@
     </string-array>
 
     <string-array name="language_values">
-        <item />
+        <item>default</item>
         <item>pt-BR</item>
         <item>ca</item>
         <item>cs</item>

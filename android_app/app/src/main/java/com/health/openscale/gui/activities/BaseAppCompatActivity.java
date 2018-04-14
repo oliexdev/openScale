@@ -36,7 +36,7 @@ public class BaseAppCompatActivity extends AppCompatActivity {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
         String language = prefs.getString(PREFERENCE_LANGUAGE, "");
-        if (language.isEmpty()) {
+        if (language.isEmpty() || language.equals("default")) {
             return context;
         }
 
