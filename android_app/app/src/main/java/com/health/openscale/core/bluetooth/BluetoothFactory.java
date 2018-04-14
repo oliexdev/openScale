@@ -29,10 +29,10 @@ public class BluetoothFactory {
                 || name.startsWith("BF-800".toLowerCase(Locale.US))
                 || name.startsWith("BF-700".toLowerCase(Locale.US))
                 || name.startsWith("RT-Libra-B".toLowerCase(Locale.US))) {
-            return new BluetoothBeurerBF700_800(context, 0xf7);
+            return new BluetoothBeurerSanitas(context, BluetoothBeurerSanitas.DeviceType.BEURER_BF700_800_RT_LIBRA);
         }
         if (name.startsWith("BEURER BF710".toLowerCase(Locale.US))) {
-            return new BluetoothBeurerBF700_800(context, 0xe7);
+            return new BluetoothBeurerSanitas(context, BluetoothBeurerSanitas.DeviceType.BEURER_BF710);
         }
         if (name.equals("openScale_MCU".toLowerCase(Locale.US))) {
             return new BluetoothCustomOpenScale(context);
@@ -68,7 +68,7 @@ public class BluetoothFactory {
             return new BluetoothOneByone(context);
         }
         if (name.startsWith("SANITAS SBF70".toLowerCase(Locale.US)) || name.startsWith("sbf75")) {
-            return new BluetoothSanitasSbf70(context);
+            return new BluetoothBeurerSanitas(context, BluetoothBeurerSanitas.DeviceType.SANITAS_SBF70_70);
         }
         if (deviceName.startsWith("YUNMAI-SIGNAL-M") || deviceName.startsWith("YUNMAI-ISM2-W")) {
             return new BluetoothYunmaiSE_Mini(context, true);
