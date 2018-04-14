@@ -298,18 +298,22 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
                 int userId = getIntent().getExtras().getInt(EXTRA_ID);
 
                 OpenScale openScale = OpenScale.getInstance(getApplicationContext());
+                boolean isSelected = openScale.getSelectedScaleUserId() == userId;
+
                 openScale.clearScaleData(userId);
                 openScale.deleteScaleUser(userId);
 
-                List<ScaleUser> scaleUser = openScale.getScaleUserList();
+                if (isSelected) {
+                    List<ScaleUser> scaleUser = openScale.getScaleUserList();
 
-                int lastUserId = -1;
+                    int lastUserId = -1;
+                    if (!scaleUser.isEmpty()) {
+                        lastUserId = scaleUser.get(0).getId();
+                    }
 
-                if (!scaleUser.isEmpty()) {
-                    lastUserId = scaleUser.get(0).getId();
+                    openScale.selectScaleUser(lastUserId);
                 }
 
-                openScale.selectScaleUser(lastUserId);
                 openScale.updateScaleData();
 
                 Intent returnIntent = new Intent();
