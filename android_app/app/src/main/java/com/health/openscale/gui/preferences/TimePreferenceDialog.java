@@ -108,8 +108,4 @@ public class TimePreferenceDialog extends DialogPreference {
         }
         return DateFormat.getTimeFormat(getContext()).format(calendar.getTime());
     }
-
-    public long getTimeInMillis() {
-        return calendar.getTimeInMillis();
-    }
 }

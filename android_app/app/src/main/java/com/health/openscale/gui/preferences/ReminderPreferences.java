@@ -36,8 +36,7 @@ import java.util.List;
 import java.util.Set;
 
 public class ReminderPreferences extends PreferenceFragment
-        implements SharedPreferences.OnSharedPreferenceChangeListener
-{
+        implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     public static final String PREFERENCE_KEY_REMINDER_NOTIFY_TEXT = "reminderNotifyText";
     public static final String PREFERENCE_KEY_REMINDER_WEEKDAYS = "reminderWeekdays";
@@ -45,10 +44,6 @@ public class ReminderPreferences extends PreferenceFragment
     private static final String PREFERENCE_KEY_REMINDER_ENABLE = "reminderEnable";
 
     private CheckBoxPreference reminderEnable;
-    private MultiSelectListPreference reminderWeekdays;
-    private TimePreferenceDialog reminderTime;
-    private EditTextPreference reminderNotifyText;
-
 
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -58,9 +53,6 @@ public class ReminderPreferences extends PreferenceFragment
         addPreferencesFromResource(R.xml.reminder_preferences);
 
         reminderEnable = (CheckBoxPreference) findPreference(PREFERENCE_KEY_REMINDER_ENABLE);
-        reminderWeekdays = (MultiSelectListPreference) findPreference(PREFERENCE_KEY_REMINDER_WEEKDAYS);
-        reminderTime = (TimePreferenceDialog) findPreference(PREFERENCE_KEY_REMINDER_TIME);
-        reminderNotifyText = (EditTextPreference) findPreference(PREFERENCE_KEY_REMINDER_NOTIFY_TEXT);
 
         updateAlarmPreferences();
         initSummary(getPreferenceScreen());
@@ -109,28 +101,18 @@ public class ReminderPreferences extends PreferenceFragment
         PackageManager pm = getActivity().getApplicationContext().getPackageManager();
 
         AlarmHandler alarmHandler = new AlarmHandler();
-        if (reminderEnable.isChecked())
-        {
+        if (reminderEnable.isChecked()) {
             alarmHandler.scheduleAlarms(getActivity());
 
             pm.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
                     PackageManager.DONT_KILL_APP);
-
-            reminderWeekdays.setEnabled(true);
-            reminderTime.setEnabled(true);
-            reminderNotifyText.setEnabled(true);
         }
-        else
-        {
+        else {
             alarmHandler.disableAllAlarms(getActivity());
 
             pm.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
                     PackageManager.DONT_KILL_APP);
-
-            reminderWeekdays.setEnabled(false);
-            reminderTime.setEnabled(false);
-            reminderNotifyText.setEnabled(false);
-        }
+            }
     }
 
     private void updatePrefSummary(Preference p)
