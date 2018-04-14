@@ -17,8 +17,6 @@ package com.health.openscale.gui;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.preference.PreferenceManager;
 import android.support.test.InstrumentationRegistry;
@@ -99,7 +97,7 @@ public class ScreenshotRecorder {
             });
         } catch (Throwable throwable) {
             throwable.printStackTrace();
-        };
+        }
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 

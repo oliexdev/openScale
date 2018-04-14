@@ -42,7 +42,7 @@ import java.util.UUID;
 public class BluetoothBeurerSanitas extends BluetoothCommunication {
     public final static String TAG = "BeurerSanitas";
 
-    enum DeviceType { BEURER_BF700_800_RT_LIBRA, BEURER_BF710, SANITAS_SBF70_70 };
+    enum DeviceType { BEURER_BF700_800_RT_LIBRA, BEURER_BF710, SANITAS_SBF70_70 }
 
     private static final int PRIMARY_SERVICE = 0x180A;
     private static final UUID SYSTEM_ID = UUID.fromString("00002A23-0000-1000-8000-00805F9B34FB");

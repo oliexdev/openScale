@@ -69,6 +69,8 @@ import java.util.TreeMap;
 
 public class OpenScale {
 
+    public static final String DATABASE_NAME = "openScale.db";
+
     private static OpenScale instance;
 
     private AppDatabase appDB;
@@ -110,7 +112,7 @@ public class OpenScale {
             appDB.close();
         }
 
-        appDB = Room.databaseBuilder(context, AppDatabase.class, "openScale.db")
+        appDB = Room.databaseBuilder(context, AppDatabase.class, DATABASE_NAME)
                 .allowMainThreadQueries()
                 .addCallback(new RoomDatabase.Callback() {
                     @Override

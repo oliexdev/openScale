@@ -386,7 +386,7 @@ public abstract class MeasurementView extends TableLayout {
 
     public String getPreferenceSummary() { return ""; }
     public boolean hasExtraPreferences() { return false; }
-    public void prepareExtraPreferencesScreen(PreferenceScreen screen) { };
+    public void prepareExtraPreferencesScreen(PreferenceScreen screen) { }
 
     protected abstract View getInputView();
     protected abstract boolean validateAndSetInput(View view);
