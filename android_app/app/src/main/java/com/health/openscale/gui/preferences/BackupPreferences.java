@@ -45,19 +45,16 @@ public class BackupPreferences extends PreferenceFragment {
     private static final String PREFERENCE_KEY_IMPORT_BACKUP = "importBackup";
     private static final String PREFERENCE_KEY_EXPORT_BACKUP = "exportBackup";
 
-    private Preference importBackup;
-    private Preference exportBackup;
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         addPreferencesFromResource(R.xml.backup_preferences);
 
-        importBackup = (Preference) findPreference(PREFERENCE_KEY_IMPORT_BACKUP);
+        Preference importBackup = findPreference(PREFERENCE_KEY_IMPORT_BACKUP);
         importBackup.setOnPreferenceClickListener(new onClickListenerImportBackup());
 
-        exportBackup = (Preference) findPreference(PREFERENCE_KEY_EXPORT_BACKUP);
+        Preference exportBackup = findPreference(PREFERENCE_KEY_EXPORT_BACKUP);
         exportBackup.setOnPreferenceClickListener(new onClickListenerExportBackup());
 
         initSummary(getPreferenceScreen());

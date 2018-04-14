@@ -55,7 +55,6 @@ public class DataEntryActivity extends BaseAppCompatActivity {
     private MeasurementView.MeasurementViewMode measurementViewMode;
 
     private List<MeasurementView> dataEntryMeasurements;
-    private TableLayout tableLayoutDataEntry;
 
     private TextView txtDataNr;
     private Button btnLeft;
@@ -91,7 +90,7 @@ public class DataEntryActivity extends BaseAppCompatActivity {
 
         context = this;
 
-        tableLayoutDataEntry = (TableLayout) findViewById(R.id.tableLayoutDataEntry);
+        TableLayout tableLayoutDataEntry = findViewById(R.id.tableLayoutDataEntry);
 
         dataEntryMeasurements = MeasurementView.getMeasurementList(
                 context, MeasurementView.DateTimeOrder.LAST);

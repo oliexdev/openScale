@@ -69,8 +69,6 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
     private TextView txtTitleUser;
     private TextView txtTitleLastMeasurement;
 
-    private TableLayout tableOverviewLayout;
-
     private List<MeasurementView> measurementViews;
 
     private PieChartView pieChartLast;
@@ -107,8 +105,6 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         txtTitleUser = (TextView) overviewView.findViewById(R.id.txtTitleUser);
         txtTitleLastMeasurement = (TextView) overviewView.findViewById(R.id.txtTitleLastMeasurment);
 
-        tableOverviewLayout = (TableLayout)overviewView.findViewById(R.id.tableLayoutMeasurements);
-
         pieChartLast = (PieChartView) overviewView.findViewById(R.id.pieChartLast);
         lineChartLast = (LineChartView) overviewView.findViewById(R.id.lineChartLast);
 
@@ -121,6 +117,8 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
         measurementViews = MeasurementView.getMeasurementList(
                 getContext(), MeasurementView.DateTimeOrder.NONE);
+
+        TableLayout tableOverviewLayout = overviewView.findViewById(R.id.tableLayoutMeasurements);
 
         for (MeasurementView measurement : measurementViews) {
             tableOverviewLayout.addView(measurement);

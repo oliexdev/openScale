@@ -82,7 +82,6 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     private Button btnLeftYear;
     private Button btnRightYear;
     private LinearLayout floatingActionBar;
-    private ImageView optionMenu;
     private PopupMenu popup;
     private SharedPreferences prefs;
 
@@ -139,7 +138,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         floatingActionBar = (LinearLayout) graphView.findViewById(R.id.floatingActionBar);
 
-        optionMenu = (ImageView) graphView.findViewById(R.id.optionMenu);
+        ImageView optionMenu = graphView.findViewById(R.id.optionMenu);
         optionMenu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

@@ -89,7 +89,7 @@ public abstract class MeasurementView extends TableLayout {
 
     public enum DateTimeOrder { FIRST, LAST, NONE }
 
-    public static final List<MeasurementView> getMeasurementList(
+    public static List<MeasurementView> getMeasurementList(
             Context context, DateTimeOrder dateTimeOrder) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 

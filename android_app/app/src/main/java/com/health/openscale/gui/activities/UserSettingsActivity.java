@@ -63,9 +63,6 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
     private RadioGroup radioScaleUnit;
     private RadioGroup radioGender;
 
-    private MenuItem saveButton;
-    private MenuItem deleteButton;
-
     private DateFormat dateFormat = DateFormat.getDateInstance();
 
     private Context context;
@@ -155,8 +152,7 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
             item.setIcon(wrapped);
         }
 
-        saveButton = menu.findItem(R.id.saveButton);
-        deleteButton = menu.findItem(R.id.deleteButton);
+        MenuItem deleteButton = menu.findItem(R.id.deleteButton);
 
         if (getIntent().getExtras().getInt(EXTRA_MODE) == EDIT_USER_REQUEST) {
             editMode();

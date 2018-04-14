@@ -62,11 +62,6 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
     private TextView txtLabelGoalDiff;
     private TextView txtLabelDayLeft;
 
-    private TableLayout tableWeekAveragesLayoutColumnA;
-    private TableLayout tableWeekAveragesLayoutColumnB;
-    private TableLayout tableMonthAveragesLayoutColumnA;
-    private TableLayout tableMonthAveragesLayoutColumnB;
-
     private ScaleUser currentScaleUser;
     private ScaleMeasurement lastScaleMeasurement;
 
@@ -93,10 +88,10 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
         txtLabelGoalDiff = (TextView) statisticsView.findViewById(R.id.txtLabelGoalDiff);
         txtLabelDayLeft = (TextView) statisticsView.findViewById(R.id.txtLabelDayLeft);
 
-        tableWeekAveragesLayoutColumnA = (TableLayout) statisticsView.findViewById(R.id.tableWeekAveragesLayoutColumnA);
-        tableWeekAveragesLayoutColumnB = (TableLayout) statisticsView.findViewById(R.id.tableWeekAveragesLayoutColumnB);
-        tableMonthAveragesLayoutColumnA = (TableLayout) statisticsView.findViewById(R.id.tableMonthAveragesLayoutColumnA);
-        tableMonthAveragesLayoutColumnB = (TableLayout) statisticsView.findViewById(R.id.tableMonthAveragesLayoutColumnB);
+        TableLayout tableWeekAveragesLayoutColumnA = statisticsView.findViewById(R.id.tableWeekAveragesLayoutColumnA);
+        TableLayout tableWeekAveragesLayoutColumnB = statisticsView.findViewById(R.id.tableWeekAveragesLayoutColumnB);
+        TableLayout tableMonthAveragesLayoutColumnA = statisticsView.findViewById(R.id.tableMonthAveragesLayoutColumnA);
+        TableLayout tableMonthAveragesLayoutColumnB = statisticsView.findViewById(R.id.tableMonthAveragesLayoutColumnB);
 
         viewMeasurementsListWeek = new ArrayList<>();
 

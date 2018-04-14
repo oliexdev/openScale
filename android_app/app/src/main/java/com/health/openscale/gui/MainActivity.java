@@ -84,7 +84,6 @@ public class MainActivity extends BaseAppCompatActivity
     private static final int ENABLE_BLUETOOTH_REQUEST = 102;
 
     private DrawerLayout drawerLayout;
-    private Toolbar toolbar;
     private NavigationView navDrawer;
     private BottomNavigationView navBottomDrawer;
     private ActionBarDrawerToggle drawerToggle;
@@ -105,7 +104,7 @@ public class MainActivity extends BaseAppCompatActivity
         setContentView(R.layout.activity_main);
 
         // Set a Toolbar to replace the ActionBar.
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         getSupportActionBar().setDisplayShowHomeEnabled(true);
