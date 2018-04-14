@@ -55,7 +55,7 @@ public class BluetoothPreferences extends PreferenceFragment {
     private PreferenceScreen btScanner;
     private BluetoothAdapter btAdapter = null;
     private Handler handler = null;
-    private Map<String, String> foundDevices = new HashMap<>();
+    private Map<String, BluetoothDevice> foundDevices = new HashMap<>();
 
     private void startBluetoothDiscovery() {
         foundDevices.clear();
@@ -169,7 +169,7 @@ public class BluetoothPreferences extends PreferenceFragment {
             prefBtDevice.setEnabled(false);
         }
 
-        foundDevices.put(device.getAddress(), device.getName());
+        foundDevices.put(device.getAddress(), prefBtDevice.isEnabled() ? device : null);
         btScanner.addPreference(prefBtDevice);
     }
 
@@ -274,9 +274,11 @@ public class BluetoothPreferences extends PreferenceFragment {
     private class onClickListenerDeviceSelect implements Preference.OnPreferenceClickListener {
         @Override
         public boolean onPreferenceClick(final Preference preference) {
+            BluetoothDevice device = foundDevices.get(preference.getKey());
+
             preference.getSharedPreferences().edit()
-                    .putString(PREFERENCE_KEY_BLUETOOTH_HW_ADDRESS, preference.getKey())
-                    .putString(PREFERENCE_KEY_BLUETOOTH_DEVICE_NAME, foundDevices.get(preference.getKey()))
+                    .putString(PREFERENCE_KEY_BLUETOOTH_HW_ADDRESS, device.getAddress())
+                    .putString(PREFERENCE_KEY_BLUETOOTH_DEVICE_NAME, device.getName())
                     .apply();
 
             // Set summary text and trigger data set changed to make UI update
@@ -284,6 +286,12 @@ public class BluetoothPreferences extends PreferenceFragment {
             ((BaseAdapter)getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
 
             btScanner.getDialog().dismiss();
+
+            // Perform an explicit bonding with classic devices
+            if (device.getType() == BluetoothDevice.DEVICE_TYPE_CLASSIC
+                    && device.getBondState() == BluetoothDevice.BOND_NONE) {
+                device.createBond();
+            }
             return true;
         }
     }

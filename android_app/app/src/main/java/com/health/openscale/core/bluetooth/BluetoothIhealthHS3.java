@@ -75,58 +75,45 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
     @Override
     public void connect(String hwAddress) {
 
-//       Log.w("openscale","iHealth HS3 - connect "+hwAddress);
-
         if (btAdapter == null) {
             setBtStatus(BT_STATUS_CODE.BT_NO_DEVICE_FOUND);
             return;
         }
 
-//       Log.w("openscale","about to start searching paired devices");
-
-        for (BluetoothDevice device : btAdapter.getBondedDevices()) {
-            // check if we can found bluetooth device name in the pairing list
-//            if (device != null ) { Log.w("openscale","Looking at device "+device.getName()); } ;
-                
-            if (device != null && device.getAddress().equals(hwAddress)) {
-                btDevice = device;
-
-                try {
-                    // Get a BluetoothSocket to connect with the given BluetoothDevice
-                    btSocket = btDevice.createRfcommSocketToServiceRecord(uuid);
-                } catch (IOException e) {
-                    setBtStatus(BT_STATUS_CODE.BT_UNEXPECTED_ERROR, "Can't get a bluetooth socket");
-                }
-
-                Thread socketThread = new Thread() {
-                    @Override
-                    public void run() {
-                        try {
-                            if (!btSocket.isConnected()) {
-                                // Connect the device through the socket. This will block
-                                // until it succeeds or throws an exception
-                                btSocket.connect();
-
-                                // Bluetooth connection was successful
-                                setBtStatus(BT_STATUS_CODE.BT_CONNECTION_ESTABLISHED);
-
-                                btConnectThread = new BluetoothConnectedThread();
-                                btConnectThread.start();
-                            }
-                        } catch (IOException connectException) {
-                            // Unable to connect; close the socket and get out
-                            disconnect(false);
-                            setBtStatus(BT_STATUS_CODE.BT_NO_DEVICE_FOUND);
-                        }
-                    }
-                };
-
-                socketThread.start();
-                return;
-            }
+        btDevice = btAdapter.getRemoteDevice(hwAddress);
+        try {
+            // Get a BluetoothSocket to connect with the given BluetoothDevice
+            btSocket = btDevice.createRfcommSocketToServiceRecord(uuid);
+        } catch (IOException e) {
+            setBtStatus(BT_STATUS_CODE.BT_UNEXPECTED_ERROR, "Can't get a bluetooth socket");
+            btDevice = null;
+            return;
         }
 
-        setBtStatus(BT_STATUS_CODE.BT_NO_DEVICE_FOUND);
+        Thread socketThread = new Thread() {
+            @Override
+            public void run() {
+                try {
+                    if (!btSocket.isConnected()) {
+                        // Connect the device through the socket. This will block
+                        // until it succeeds or throws an exception
+                        btSocket.connect();
+
+                        // Bluetooth connection was successful
+                        setBtStatus(BT_STATUS_CODE.BT_CONNECTION_ESTABLISHED);
+
+                        btConnectThread = new BluetoothConnectedThread();
+                        btConnectThread.start();
+                    }
+                } catch (IOException connectException) {
+                    // Unable to connect; close the socket and get out
+                    disconnect(false);
+                    setBtStatus(BT_STATUS_CODE.BT_NO_DEVICE_FOUND);
+                }
+            }
+        };
+
+        socketThread.start();
     }
 
     @Override
@@ -148,6 +135,8 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
             btConnectThread.cancel();
             btConnectThread = null;
         }
+
+        btDevice = null;
     }
 
 

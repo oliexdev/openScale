@@ -454,11 +454,11 @@ public class MainActivity extends BaseAppCompatActivity
         }
 
         String deviceName = prefs.getString(
-                BluetoothPreferences.PREFERENCE_KEY_BLUETOOTH_DEVICE_NAME, "-");
+                BluetoothPreferences.PREFERENCE_KEY_BLUETOOTH_DEVICE_NAME, "");
         String hwAddress = prefs.getString(
                 BluetoothPreferences.PREFERENCE_KEY_BLUETOOTH_HW_ADDRESS, "");
 
-        if (deviceName.equals("-")) {
+        if (!BluetoothAdapter.checkBluetoothAddress(hwAddress)) {
             Toast.makeText(getApplicationContext(), R.string.info_bluetooth_no_device_set, Toast.LENGTH_SHORT).show();
             return;
         }
