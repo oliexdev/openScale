@@ -49,8 +49,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
     }
 
     @Override
-    public String deviceName() {
-        Log.w("openscale","ihealthHS3 - DeviceName - returning iHealth HS33FA4A");
+    public String driverName() {
         return "iHealth HS33FA4A";
     }
 

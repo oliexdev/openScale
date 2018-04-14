@@ -97,7 +97,7 @@ public class BluetoothPreferences extends PreferenceFragment {
             }
         });
 
-        // Do old school bluetooth discovery first and BLE scan afterwards
+        // Do classic bluetooth discovery first and BLE scan afterwards
         btAdapter.startDiscovery();
     }
 
@@ -158,7 +158,7 @@ public class BluetoothPreferences extends PreferenceFragment {
             prefBtDevice.setOnPreferenceClickListener(new onClickListenerDeviceSelect());
             prefBtDevice.setKey(device.getAddress());
             prefBtDevice.setIcon(R.drawable.ic_bluetooth_connection_lost);
-            prefBtDevice.setSummary(btDevice.deviceName());
+            prefBtDevice.setSummary(btDevice.driverName());
 
             int tintColor = new EditText(getActivity()).getCurrentTextColor();
             prefBtDevice.getIcon().setColorFilter(tintColor, PorterDuff.Mode.SRC_IN);

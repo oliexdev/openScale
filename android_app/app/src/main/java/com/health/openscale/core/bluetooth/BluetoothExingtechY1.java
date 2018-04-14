@@ -38,7 +38,7 @@ public class BluetoothExingtechY1 extends BluetoothCommunication {
     }
 
     @Override
-    public String deviceName() {
+    public String driverName() {
         return "Exingtech Y1";
     }
 

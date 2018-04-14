@@ -114,11 +114,11 @@ public abstract class BluetoothCommunication {
     }
 
     /**
-     * Return the Bluetooth device name
+     * Return the Bluetooth driver name
      *
      * @return a string in a human readable name
      */
-    abstract public String deviceName();
+    abstract public String driverName();
 
     /**
      * State machine for the initialization process of the Bluetooth device.

@@ -120,7 +120,7 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
     }
 
     @Override
-    public String deviceName() {
+    public String driverName() {
         return "Beurer BF700/710/800 / Runtastic Libra";
     }
 

@@ -38,7 +38,7 @@ public class BluetoothDigooDGSO38H extends BluetoothCommunication {
     }
 
     @Override
-    public String deviceName() {
+    public String driverName() {
         return "Digoo DG-SO38H";
     }
 

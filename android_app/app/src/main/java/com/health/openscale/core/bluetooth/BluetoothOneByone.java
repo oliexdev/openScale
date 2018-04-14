@@ -40,7 +40,7 @@ public class BluetoothOneByone extends BluetoothCommunication {
     }
 
     @Override
-    public String deviceName() {
+    public String driverName() {
         return "1byone scale";
     }
 

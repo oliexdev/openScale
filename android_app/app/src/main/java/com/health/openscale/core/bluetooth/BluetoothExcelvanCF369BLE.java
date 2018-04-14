@@ -41,7 +41,7 @@ public class BluetoothExcelvanCF369BLE extends BluetoothCommunication {
     }
 
     @Override
-    public String deviceName() {
+    public String driverName() {
         return "Excelvan CF369BLE";
     }
 

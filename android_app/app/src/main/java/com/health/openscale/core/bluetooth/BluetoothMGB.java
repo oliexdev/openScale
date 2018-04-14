@@ -79,7 +79,7 @@ public class BluetoothMGB extends BluetoothCommunication {
     }
 
     @Override
-    public String deviceName() {
+    public String driverName() {
         return "SWAN";
     }
 

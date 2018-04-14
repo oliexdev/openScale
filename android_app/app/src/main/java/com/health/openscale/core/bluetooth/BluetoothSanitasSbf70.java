@@ -114,7 +114,7 @@ public class BluetoothSanitasSbf70 extends BluetoothCommunication {
     }
 
     @Override
-    public String deviceName() {
+    public String driverName() {
         return "Sanitas SBF70/SilverCrest SBF75";
     }
 

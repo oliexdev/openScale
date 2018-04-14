@@ -53,7 +53,7 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
     }
 
     @Override
-    public String deviceName() {
+    public String driverName() {
         return "Xiaomi Mi Scale v2";
     }
 

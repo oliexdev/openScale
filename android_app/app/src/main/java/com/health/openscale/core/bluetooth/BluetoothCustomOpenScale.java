@@ -42,7 +42,7 @@ public class BluetoothCustomOpenScale extends BluetoothCommunication {
     }
 
     @Override
-    public String deviceName() {
+    public String driverName() {
         return "Custom Open Scale";
     }
 

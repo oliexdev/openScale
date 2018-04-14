@@ -36,7 +36,7 @@ public class BluetoothHesley extends BluetoothCommunication {
     }
 
     @Override
-    public String deviceName() {
+    public String driverName() {
         return "Hesley scale";
     }
 
