@@ -54,6 +54,7 @@ public class BluetoothPreferences extends PreferenceFragment {
 
     private PreferenceScreen btScanner;
     private BluetoothAdapter btAdapter = null;
+    private BluetoothAdapter.LeScanCallback leScanCallback = null;
     private Handler handler = null;
     private Map<String, BluetoothDevice> foundDevices = new HashMap<>();
 
@@ -86,23 +87,30 @@ public class BluetoothPreferences extends PreferenceFragment {
             }
         }, progressUpdatePeriod);
 
-        // Close any existing connection during the scan
-        OpenScale.getInstance(getActivity()).disconnectFromBluetoothDevice();
-
+        // Abort discovery and scan if back is pressed or a scale is selected
         btScanner.getDialog().setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
             public void onDismiss(DialogInterface dialog) {
-                handler.removeCallbacksAndMessages(null);
-                btAdapter.cancelDiscovery();
+                stopDiscoveryAndLeScan();
             }
         });
+
+        // Close any existing connection during the scan
+        OpenScale.getInstance(getActivity()).disconnectFromBluetoothDevice();
+
+        // Intent filter for the scanning process
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(BluetoothDevice.ACTION_FOUND);
+        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
+        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+        getActivity().registerReceiver(mReceiver, filter);
 
         // Do classic bluetooth discovery first and BLE scan afterwards
         btAdapter.startDiscovery();
     }
 
     private void startBleScan() {
-        final BluetoothAdapter.LeScanCallback leScanCallback = new BluetoothAdapter.LeScanCallback() {
+        leScanCallback = new BluetoothAdapter.LeScanCallback() {
             @Override
             public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
                 onDeviceFound(device);
@@ -113,9 +121,7 @@ public class BluetoothPreferences extends PreferenceFragment {
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                handler.removeCallbacksAndMessages(null);
-                btAdapter.stopLeScan(leScanCallback);
-                btScanner.getDialog().setOnDismissListener(null);
+                stopDiscoveryAndLeScan();
 
                 Preference scanning = btScanner.getPreference(0);
                 scanning.setTitle(R.string.label_bluetooth_searching_finished);
@@ -133,16 +139,26 @@ public class BluetoothPreferences extends PreferenceFragment {
             }
         }, 10 * 1000);
 
-        // Also cancel scan if dialog is dismissed
-        btScanner.getDialog().setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialog) {
-                handler.removeCallbacksAndMessages(null);
-                btAdapter.stopLeScan(leScanCallback);
-            }
-        });
-
         btAdapter.startLeScan(leScanCallback);
+    }
+
+    private void stopDiscoveryAndLeScan() {
+        if (handler != null) {
+            handler.removeCallbacksAndMessages(null);
+            handler = null;
+
+            getActivity().unregisterReceiver(mReceiver);
+            btAdapter.cancelDiscovery();
+        }
+
+        if (leScanCallback != null) {
+            btAdapter.stopLeScan(leScanCallback);
+            leScanCallback = null;
+        }
+
+        if (btScanner.getDialog() != null) {
+            btScanner.getDialog().setOnDismissListener(null);
+        }
     }
 
     private void onDeviceFound(BluetoothDevice device) {
@@ -175,11 +191,6 @@ public class BluetoothPreferences extends PreferenceFragment {
 
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         public void onReceive(final Context context, Intent intent) {
-            // May be called before the dialog is shown or while it is being dismissed
-            if (btScanner.getDialog() == null || !btScanner.getDialog().isShowing()) {
-                return;
-            }
-
             String action = intent.getAction();
 
             if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
@@ -236,25 +247,22 @@ public class BluetoothPreferences extends PreferenceFragment {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
+    public void onStart() {
+        super.onStart();
 
-        // Intent filter for the scanning process
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(BluetoothDevice.ACTION_FOUND);
-        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
-        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-        getActivity().registerReceiver(mReceiver, filter);
+        // Restart discovery after e.g. orientation change
+        if (btScanner.getDialog() != null) {
+            startBluetoothDiscovery();
+        }
     }
 
     @Override
-    public void onPause() {
-        getActivity().unregisterReceiver(mReceiver);
+    public void onStop() {
         if (btScanner.getDialog() != null) {
-            btScanner.getDialog().dismiss();
+            stopDiscoveryAndLeScan();
         }
 
-        super.onPause();
+        super.onStop();
     }
 
     @Override
@@ -300,9 +308,10 @@ public class BluetoothPreferences extends PreferenceFragment {
         switch (requestCode) {
             case PermissionHelper.PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    //startBluetoothDiscovery();
+                    startBluetoothDiscovery();
                 } else {
                     Toast.makeText(getActivity(), R.string.permission_not_granted, Toast.LENGTH_SHORT).show();
+                    btScanner.getDialog().dismiss();
                 }
                 break;
             }
