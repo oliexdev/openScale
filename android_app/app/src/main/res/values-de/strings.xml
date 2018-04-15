@@ -158,7 +158,7 @@
     <string name="label_month_view">Monatsansicht</string>
     <string name="label_weeks_view">Wochenansicht</string>
     <string name="permission_not_granted">Zugriff verweigert</string>
-    <string name="permission_bluetooth_info">openScale benötigt die Erlaubnis, auf den ungefähren Standort zuzugreifen, um nach Bluetooth-Geräten suchen zu können.</string>
+    <string name="permission_bluetooth_info">openScale benötigt die Berechtigung, auf den ungefähren Standort zuzugreifen, um nach Bluetooth-Geräten suchen zu können. Die Berechtigung kann anschließend zurückgenommen werden, wenn das Bluetooth Gerät gefunden wurde.</string>
     <string name="permission_bluetooth_info_title">Information</string>
     <string name="label_next">Weiter</string>
     <string name="label_press_hold_reorder">Halten Sie die Taste gedrückt, um die Reihenfolge zu ändern</string>
@@ -182,4 +182,6 @@
     <string name="label_percent">Prozent</string>
     <string name="label_estimated">Geschätzt</string>
     <string name="label_estimate_measurement_summary">Basierend auf Gewicht, Größe, Alter, Geschlecht, etc.</string>
+<string name="label_scale_not_supported">Wird deine Waage nicht unterstützt?</string>
+    <string name="label_click_to_help_add_support">Klicke hier, wenn du helfen möchtest</string>
 </resources>
