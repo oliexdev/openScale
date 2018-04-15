@@ -114,7 +114,7 @@
     <string name="label_reminder">Påminnelse</string>
     <string name="label_reminder_notify_text">Meddelandetext</string>
     <string name="info_on_date">på</string>
-    <string name="label_bt_device_no_support">enheten stöds inte</string>
+    <string name="label_bt_device_no_support">enheten stödjs inte</string>
     <string name="label_exportBackup">Exportera säkerhetskopia</string>
     <string name="label_importBackup">Importera säkerhetskopia</string>
     <string name="label_export_dir">Exportkatalog</string>
