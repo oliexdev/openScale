@@ -162,7 +162,7 @@
     <string name="label_month_view">Månadsvy</string>
 
     <string name="permission_not_granted">Tillstånd beviljas inte</string>
-    <string name="permission_bluetooth_info">openScale kräver åtkomst till grov platsbestämning för att söka efter Bluetooth-enheter</string>
+    <string name="permission_bluetooth_info">openScale kräver åtkomst till grov platsbestämning för att söka efter Bluetooth-enheter. Tillståndet kan återtas när enheten har hittats.</string>
     <string name="permission_bluetooth_info_title">Information</string>
 
     <string name="label_share_subject">openScale CSV dataexport (%s)</string>
@@ -189,4 +189,6 @@
     <string name="label_percent">Procent</string>
     <string name="label_estimated">Estimerat</string>
     <string name="label_estimate_measurement_summary">Baserat på vikt, längd, ålder, kön, m.m.</string>
+<string name="label_scale_not_supported">Stödjs inte din våg?</string>
+    <string name="label_click_to_help_add_support">Klicka här om du vill hjälpa till att lägga till stöd för den</string>
 </resources>
