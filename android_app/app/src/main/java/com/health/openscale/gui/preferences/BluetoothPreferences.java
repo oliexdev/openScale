@@ -300,7 +300,7 @@ public class BluetoothPreferences extends PreferenceFragment {
         switch (requestCode) {
             case PermissionHelper.PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    startBluetoothDiscovery();
+                    //startBluetoothDiscovery();
                 } else {
                     Toast.makeText(getActivity(), R.string.permission_not_granted, Toast.LENGTH_SHORT).show();
                 }
