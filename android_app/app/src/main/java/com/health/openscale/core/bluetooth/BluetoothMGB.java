@@ -201,7 +201,7 @@ public class BluetoothMGB extends BluetoothCommunication {
             addScaleData(measurement);
 
             //    Visceral fat?
-            //    Standart weight?
+            //    Standard weight?
             //    WeightControl?
             //    Body fat?
             //    Muscle weight?

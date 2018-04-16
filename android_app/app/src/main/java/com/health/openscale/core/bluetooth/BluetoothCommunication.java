@@ -315,7 +315,7 @@ public abstract class BluetoothCommunication {
      *
      * @param value byte which is tested
      * @param bit bit position which is tested
-     * @return true if bit is set (1) ohterwise false (0)
+     * @return true if bit is set (1) otherwise false (0)
      */
     protected boolean isBitSet(byte value, int bit) {
         return (value & (1 << bit)) != 0;

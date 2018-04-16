@@ -143,7 +143,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
 
             cursorScaleDB.close();
         } catch (SQLException ex) {
-            Log.e("ScaleDatabase", "SQL exception occured while getting scale data list: " + ex.getMessage());
+            Log.e("ScaleDatabase", "SQL exception occurred while getting scale data list: " + ex.getMessage());
         }
 
         return scaleMeasurementList;

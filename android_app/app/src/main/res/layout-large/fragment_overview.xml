@@ -75,7 +75,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/label_title_last_measurement"
-                android:id="@+id/txtTitleLastMeasurment"
+                android:id="@+id/txtTitleLastMeasurement"
                 android:autoText="false"
                 android:textSize="20dp"
                 android:typeface="monospace" />

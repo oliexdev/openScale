@@ -103,7 +103,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         context = overviewView.getContext();
 
         txtTitleUser = overviewView.findViewById(R.id.txtTitleUser);
-        txtTitleLastMeasurement = overviewView.findViewById(R.id.txtTitleLastMeasurment);
+        txtTitleLastMeasurement = overviewView.findViewById(R.id.txtTitleLastMeasurement);
 
         pieChartLast = overviewView.findViewById(R.id.pieChartLast);
         lineChartLast = overviewView.findViewById(R.id.lineChartLast);

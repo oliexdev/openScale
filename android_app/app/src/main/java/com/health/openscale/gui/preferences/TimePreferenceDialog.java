@@ -31,16 +31,16 @@ public class TimePreferenceDialog extends DialogPreference {
     private Calendar calendar;
     private TimePicker picker = null;
 
-    public TimePreferenceDialog(Context ctxt) {
-        this(ctxt, null);
+    public TimePreferenceDialog(Context context) {
+        this(context, null);
     }
 
-    public TimePreferenceDialog(Context ctxt, AttributeSet attrs) {
-        this(ctxt, attrs, android.R.attr.dialogPreferenceStyle);
+    public TimePreferenceDialog(Context context, AttributeSet attrs) {
+        this(context, attrs, android.R.attr.dialogPreferenceStyle);
     }
 
-    public TimePreferenceDialog(Context ctxt, AttributeSet attrs, int defStyle) {
-        super(ctxt, attrs, defStyle);
+    public TimePreferenceDialog(Context context, AttributeSet attrs, int defStyle) {
+        super(context, attrs, defStyle);
 
         setPositiveButtonText(R.string.label_ok);
         setNegativeButtonText(R.string.label_cancel);
