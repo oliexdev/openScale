@@ -74,21 +74,21 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
         setContentView(R.layout.activity_usersettings);
         context = this;
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.userEntryToolbar);
+        Toolbar toolbar = findViewById(R.id.userEntryToolbar);
         setSupportActionBar(toolbar);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle(R.string.label_add_user);
 
-        txtUserName = (EditText) findViewById(R.id.txtUserName);
-        txtBodyHeight = (EditText) findViewById(R.id.txtBodyHeight);
-        radioScaleUnit = (RadioGroup) findViewById(R.id.groupScaleUnit);
-        radioGender = (RadioGroup) findViewById(R.id.groupGender);
-        txtInitialWeight = (EditText) findViewById(R.id.txtInitialWeight);
-        txtGoalWeight = (EditText) findViewById(R.id.txtGoalWeight);
+        txtUserName = findViewById(R.id.txtUserName);
+        txtBodyHeight = findViewById(R.id.txtBodyHeight);
+        radioScaleUnit = findViewById(R.id.groupScaleUnit);
+        radioGender = findViewById(R.id.groupGender);
+        txtInitialWeight = findViewById(R.id.txtInitialWeight);
+        txtGoalWeight = findViewById(R.id.txtGoalWeight);
 
-        txtBirthday = (EditText) findViewById(R.id.txtBirthday);
-        txtGoalDate = (EditText) findViewById(R.id.txtGoalDate);
+        txtBirthday = findViewById(R.id.txtBirthday);
+        txtGoalDate = findViewById(R.id.txtGoalDate);
 
         Calendar birthdayCal = Calendar.getInstance();
         birthdayCal.setTime(birthday);

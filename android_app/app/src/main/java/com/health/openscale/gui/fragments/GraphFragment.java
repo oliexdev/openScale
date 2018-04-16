@@ -123,8 +123,8 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         graphView = inflater.inflate(R.layout.fragment_graph, container, false);
 
-        chartBottom = (LineChartView) graphView.findViewById(R.id.chart_bottom);
-        chartTop = (ColumnChartView) graphView.findViewById(R.id.chart_top);
+        chartBottom = graphView.findViewById(R.id.chart_bottom);
+        chartTop = graphView.findViewById(R.id.chart_top);
 
         chartBottom.setOnTouchListener(new chartBottomListener());
         chartBottom.setOnValueTouchListener(new chartBottomValueTouchListener());
@@ -133,10 +133,10 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         // HACK: get default text color from hidden text view to set the correct axis colors
         textColor = ((TextView)graphView.findViewById(R.id.colorHack)).getCurrentTextColor();
 
-        txtYear = (TextView) graphView.findViewById(R.id.txtYear);
+        txtYear = graphView.findViewById(R.id.txtYear);
         txtYear.setText(Integer.toString(calYears.get(Calendar.YEAR)));
 
-        floatingActionBar = (LinearLayout) graphView.findViewById(R.id.floatingActionBar);
+        floatingActionBar = graphView.findViewById(R.id.floatingActionBar);
 
         ImageView optionMenu = graphView.findViewById(R.id.optionMenu);
         optionMenu.setOnClickListener(new View.OnClickListener() {

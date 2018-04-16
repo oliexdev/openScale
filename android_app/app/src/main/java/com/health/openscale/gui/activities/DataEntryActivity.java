@@ -82,7 +82,7 @@ public class DataEntryActivity extends BaseAppCompatActivity {
 
         setContentView(R.layout.activity_dataentry);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.dataEntryToolbar);
+        Toolbar toolbar = findViewById(R.id.dataEntryToolbar);
         setSupportActionBar(toolbar);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -95,9 +95,9 @@ public class DataEntryActivity extends BaseAppCompatActivity {
         dataEntryMeasurements = MeasurementView.getMeasurementList(
                 context, MeasurementView.DateTimeOrder.LAST);
 
-        txtDataNr = (TextView) findViewById(R.id.txtDataNr);
-        btnLeft = (Button) findViewById(R.id.btnLeft);
-        btnRight = (Button) findViewById(R.id.btnRight);
+        txtDataNr = findViewById(R.id.txtDataNr);
+        btnLeft = findViewById(R.id.btnLeft);
+        btnRight = findViewById(R.id.btnRight);
 
         btnLeft.setVisibility(View.INVISIBLE);
         btnRight.setVisibility(View.INVISIBLE);

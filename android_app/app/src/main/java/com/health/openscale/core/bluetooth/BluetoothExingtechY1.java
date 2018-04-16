@@ -91,7 +91,7 @@ public class BluetoothExingtechY1 extends BluetoothCommunication {
     }
 
     private void parseBytes(byte[] weightBytes) {
-        int userId = (int)(weightBytes[0] & 0x0F);
+        int userId = weightBytes[0] & 0x0F;
         int gender = (int)(weightBytes[1]); // 0x00 male; 0x01 female
         int age = (int)(weightBytes[2]); // 10 ~ 99
         int height = (int)(weightBytes[3]); // 0 ~ 255

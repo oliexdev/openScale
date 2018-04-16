@@ -111,12 +111,12 @@ public class MainActivity extends BaseAppCompatActivity
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // Find our drawer view
-        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawerLayout = findViewById(R.id.drawer_layout);
 
         // Find our drawer view
-        navDrawer = (NavigationView) findViewById(R.id.navigation_view);
+        navDrawer = findViewById(R.id.navigation_view);
 
-        navBottomDrawer = (BottomNavigationView) findViewById(R.id.navigation_bottom_view);
+        navBottomDrawer = findViewById(R.id.navigation_bottom_view);
         navBottomDrawer.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
