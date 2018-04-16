@@ -183,4 +183,7 @@
 
 <string name="language_default">Predvolený</string>
     <string name="label_language">Jazyk</string>
+    <string name="theme_light">Svetlý</string>
+    <string name="theme_dark">Tmavý</string>
+    <string name="label_contribute_translation">Pomôžte s prekladom</string>
     </resources>
