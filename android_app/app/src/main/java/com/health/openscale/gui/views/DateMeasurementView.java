@@ -29,6 +29,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 public class DateMeasurementView extends MeasurementView {
+    // Don't change key value, it may be stored persistent in preferences
     public static final String KEY = "date";
 
     private static final DateFormat dateFormat = DateFormat.getDateInstance();
