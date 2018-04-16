@@ -78,7 +78,7 @@ public class CsvHelper {
     public static List<ScaleMeasurement> importFrom(BufferedReader reader)
             throws IOException, ParseException {
         CsvProcessor<ScaleMeasurement> csvProcessor =
-                new CsvProcessor<ScaleMeasurement>(ScaleMeasurement.class)
+                new CsvProcessor<>(ScaleMeasurement.class)
                     .withHeaderValidation(true)
                     .withFlexibleOrder(true)
                     .withAlwaysTrimInput(true)

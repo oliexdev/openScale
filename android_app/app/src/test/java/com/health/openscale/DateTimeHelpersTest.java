@@ -25,13 +25,13 @@ import java.util.Calendar;
 import static junit.framework.Assert.assertEquals;
 
 public class DateTimeHelpersTest {
-    Calendar getDate(int year, int month, int day, int hour, int minute, int second, int ms) {
+    private Calendar getDate(int year, int month, int day, int hour, int minute, int second, int ms) {
         Calendar cal = Calendar.getInstance();
         cal.set(year, month - 1, day, hour, minute, second);
         cal.set(Calendar.MILLISECOND, ms);
         return cal;
     }
-    Calendar getDate(int year, int month, int day) {
+    private Calendar getDate(int year, int month, int day) {
         return getDate(year, month, day, 0, 0, 0, 0);
     }
 

@@ -37,7 +37,7 @@ public class UsersPreferences extends PreferenceFragment {
     private static final String PREFERENCE_KEY_ADD_USER = "addUser";
     private static final String PREFERENCE_KEY_USERS = "users";
 
-    PreferenceCategory users;
+    private PreferenceCategory users;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

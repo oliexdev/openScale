@@ -45,7 +45,7 @@ public abstract class BluetoothCommunication {
     private Handler callbackBtHandler;
     private BluetoothGatt bluetoothGatt;
     private boolean connectionEstablished;
-    protected BluetoothGattCallback gattCallback;
+    private BluetoothGattCallback gattCallback;
     protected BluetoothAdapter btAdapter;
 
     private int cmdStepNr;

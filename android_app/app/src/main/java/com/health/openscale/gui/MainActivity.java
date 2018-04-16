@@ -111,12 +111,12 @@ public class MainActivity extends BaseAppCompatActivity
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // Find our drawer view
-        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawerLayout = findViewById(R.id.drawer_layout);
 
         // Find our drawer view
-        navDrawer = (NavigationView) findViewById(R.id.navigation_view);
+        navDrawer = findViewById(R.id.navigation_view);
 
-        navBottomDrawer = (BottomNavigationView) findViewById(R.id.navigation_bottom_view);
+        navBottomDrawer = findViewById(R.id.navigation_bottom_view);
         navBottomDrawer.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -129,15 +129,7 @@ public class MainActivity extends BaseAppCompatActivity
 
         //Create Drawer Toggle
         drawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.open_drawer, R.string.close_drawer){
-            @Override
-            public void onDrawerOpened(View drawerView) {
-                super.onDrawerOpened(drawerView);
-            }
 
-            @Override
-            public void onDrawerClosed(View drawerView) {
-                super.onDrawerClosed(drawerView);
-            }
         };
 
         drawerLayout.addDrawerListener(drawerToggle);
@@ -154,7 +146,7 @@ public class MainActivity extends BaseAppCompatActivity
             intent.putExtra(UserSettingsActivity.EXTRA_MODE, UserSettingsActivity.ADD_USER_REQUEST);
             startActivity(intent);
 
-            prefs.edit().putBoolean("firstStart", false).commit();
+            prefs.edit().putBoolean("firstStart", false).apply();
         }
 
         if(!valueOfCountModified){
@@ -274,7 +266,7 @@ public class MainActivity extends BaseAppCompatActivity
                 });
     }
 
-    public void selectDrawerItem(int menuItemId) {
+    private void selectDrawerItem(int menuItemId) {
         // Create a new fragment and specify the fragment to show based on nav item clicked
         Class fragmentClass;
         String fragmentTitle;
@@ -309,7 +301,7 @@ public class MainActivity extends BaseAppCompatActivity
                 return;
         }
 
-        prefs.edit().putInt("lastFragmentId", menuItemId).commit();
+        prefs.edit().putInt("lastFragmentId", menuItemId).apply();
 
         FragmentManager fragmentManager = getSupportFragmentManager();
 
@@ -726,7 +718,7 @@ public class MainActivity extends BaseAppCompatActivity
     }
 
     @SuppressLint("RestrictedApi")
-    public static void disableShiftMode(BottomNavigationView view) {
+    private static void disableShiftMode(BottomNavigationView view) {
         BottomNavigationMenuView menuView = (BottomNavigationMenuView) view.getChildAt(0);
         try {
             Field shiftingMode = menuView.getClass().getDeclaredField("mShiftingMode");

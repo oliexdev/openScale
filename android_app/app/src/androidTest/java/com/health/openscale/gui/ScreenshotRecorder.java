@@ -114,7 +114,7 @@ public class ScreenshotRecorder {
         screenshotRecorder();
     }
 
-    ScaleUser getTestUser() {
+    private ScaleUser getTestUser() {
         ScaleUser user = new ScaleUser();
         user.setUserName("Test");
         user.setBodyHeight(180);
@@ -138,7 +138,7 @@ public class ScreenshotRecorder {
         return user;
     }
 
-    List<ScaleMeasurement> getTestMeasurements() {
+    private List<ScaleMeasurement> getTestMeasurements() {
         List<ScaleMeasurement> scaleMeasurementList = new ArrayList<>();
 
         String data = "\"dateTime\",\"weight\",\"fat\",\"water\",\"muscle\",\"lbw\",\"bone\",\"waist\",\"hip\",\"comment\"\n" +
@@ -193,9 +193,7 @@ public class ScreenshotRecorder {
 
         try {
             scaleMeasurementList = CsvHelper.importFrom(new BufferedReader(new StringReader(data)));
-        } catch (IOException e) {
-            Log.e("ScreenshotRecorder", e.getMessage());
-        } catch (ParseException e) {
+        } catch (IOException | ParseException e) {
             Log.e("ScreenshotRecorder", e.getMessage());
         }
 

@@ -23,8 +23,8 @@ import com.health.openscale.core.bodymetric.EstimatedLBWMetric;
 import com.health.openscale.core.bodymetric.EstimatedWaterMetric;
 
 public class MeasurementViewSettings {
-    private SharedPreferences preferences;
-    private String key;
+    private final SharedPreferences preferences;
+    private final String key;
 
     private static final String PREFERENCE_SUFFIX_ENABLE = "Enable";
     private static final String PREFERENCE_SUFFIX_IN_OVERVIEW_GRAPH = "InOverviewGraph";

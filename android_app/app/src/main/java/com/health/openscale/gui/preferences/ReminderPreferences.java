@@ -95,7 +95,7 @@ public class ReminderPreferences extends PreferenceFragment
         updateAlarmPreferences();
     }
 
-    public void updateAlarmPreferences()
+    private void updateAlarmPreferences()
     {
         ComponentName receiver = new ComponentName(getActivity().getApplicationContext(), ReminderBootReceiver.class);
         PackageManager pm = getActivity().getApplicationContext().getPackageManager();

@@ -91,11 +91,11 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
     private OpenScale openScale;
 
-    private Calendar calYears;
+    private final Calendar calYears;
     private Calendar calLastSelected;
 
-    private static String CAL_YEARS_KEY = "calYears";
-    private static String CAL_LAST_SELECTED_KEY = "calLastSelected";
+    private static final String CAL_YEARS_KEY = "calYears";
+    private static final String CAL_LAST_SELECTED_KEY = "calLastSelected";
 
     private List<ScaleMeasurement> pointIndexScaleMeasurementList;
 
@@ -123,8 +123,8 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         graphView = inflater.inflate(R.layout.fragment_graph, container, false);
 
-        chartBottom = (LineChartView) graphView.findViewById(R.id.chart_bottom);
-        chartTop = (ColumnChartView) graphView.findViewById(R.id.chart_top);
+        chartBottom = graphView.findViewById(R.id.chart_bottom);
+        chartTop = graphView.findViewById(R.id.chart_top);
 
         chartBottom.setOnTouchListener(new chartBottomListener());
         chartBottom.setOnValueTouchListener(new chartBottomValueTouchListener());
@@ -133,10 +133,10 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         // HACK: get default text color from hidden text view to set the correct axis colors
         textColor = ((TextView)graphView.findViewById(R.id.colorHack)).getCurrentTextColor();
 
-        txtYear = (TextView) graphView.findViewById(R.id.txtYear);
+        txtYear = graphView.findViewById(R.id.txtYear);
         txtYear.setText(Integer.toString(calYears.get(Calendar.YEAR)));
 
-        floatingActionBar = (LinearLayout) graphView.findViewById(R.id.floatingActionBar);
+        floatingActionBar = graphView.findViewById(R.id.floatingActionBar);
 
         ImageView optionMenu = graphView.findViewById(R.id.optionMenu);
         optionMenu.setOnClickListener(new View.OnClickListener() {
@@ -188,10 +188,10 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                     case R.id.enableMonth:
                         if (item.isChecked()) {
                             item.setChecked(false);
-                            prefs.edit().putBoolean("showMonth", false).commit();
+                            prefs.edit().putBoolean("showMonth", false).apply();
                         } else {
                             item.setChecked(true);
-                            prefs.edit().putBoolean("showMonth", true).commit();
+                            prefs.edit().putBoolean("showMonth", true).apply();
                         }
 
                         generateGraphs();
@@ -199,10 +199,10 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                     case R.id.enableWeek:
                         if (item.isChecked()) {
                             item.setChecked(false);
-                            prefs.edit().putBoolean("showWeek", false).commit();
+                            prefs.edit().putBoolean("showWeek", false).apply();
                         } else {
                             item.setChecked(true);
-                            prefs.edit().putBoolean("showWeek", true).commit();
+                            prefs.edit().putBoolean("showWeek", true).apply();
                         }
 
                         generateGraphs();
@@ -311,7 +311,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             calDays.add(field, 1);
         }
 
-        List<Line> diagramLineList = new ArrayList<Line>();
+        List<Line> diagramLineList = new ArrayList<>();
 
         Calendar calDB = Calendar.getInstance();
 
@@ -408,7 +408,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         defaultTopViewport = new Viewport(calDays.getActualMinimum(field), chartBottom.getCurrentViewport().top, calDays.getMaximum(field)+1, chartBottom.getCurrentViewport().bottom);
 
         if (prefs.getBoolean("goalLine", true)) {
-            Stack<PointValue> valuesGoalLine = new Stack<PointValue>();
+            Stack<PointValue> valuesGoalLine = new Stack<>();
 
             float goalWeight = openScale.getSelectedScaleUser().getGoalWeight();
 
@@ -457,14 +457,14 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         SimpleDateFormat month_date = new SimpleDateFormat("MMM", Locale.getDefault());
 
-        List<AxisValue> axisValues = new ArrayList<AxisValue>();
-        List<Column> columns = new ArrayList<Column>();
+        List<AxisValue> axisValues = new ArrayList<>();
+        List<Column> columns = new ArrayList<>();
 
         for (int i=0; i<12; i++) {
             String month_name = month_date.format(calMonths.getTime());
 
             axisValues.add(new AxisValue(i, month_name.toCharArray()));
-            List<SubcolumnValue> values = new ArrayList<SubcolumnValue>();
+            List<SubcolumnValue> values = new ArrayList<>();
             values.add(new SubcolumnValue(numOfMonth[i], ChartUtils.COLORS[i % ChartUtils.COLORS.length]));
 
             columns.add(new Column(values).setHasLabelsOnlyForSelected(true));

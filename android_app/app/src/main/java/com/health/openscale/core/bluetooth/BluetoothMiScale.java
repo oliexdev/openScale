@@ -277,7 +277,7 @@ public class BluetoothMiScale extends BluetoothCommunication {
             Random r = new Random();
             uniqueNumber = r.nextInt(65535 - 100 + 1) + 100;
 
-            prefs.edit().putInt("uniqueNumber", uniqueNumber).commit();
+            prefs.edit().putInt("uniqueNumber", uniqueNumber).apply();
         }
 
         int userId = OpenScale.getInstance(context).getSelectedScaleUserId();

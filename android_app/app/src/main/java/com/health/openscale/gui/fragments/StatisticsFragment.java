@@ -80,13 +80,13 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
             image.setColorFilter(color);
         }
 
-        txtGoalWeight = (TextView) statisticsView.findViewById(R.id.txtGoalWeight);
-        txtGoalDiff = (TextView) statisticsView.findViewById(R.id.txtGoalDiff);
-        txtGoalDayLeft = (TextView) statisticsView.findViewById(R.id.txtGoalDayLeft);
+        txtGoalWeight = statisticsView.findViewById(R.id.txtGoalWeight);
+        txtGoalDiff = statisticsView.findViewById(R.id.txtGoalDiff);
+        txtGoalDayLeft = statisticsView.findViewById(R.id.txtGoalDayLeft);
 
-        txtLabelGoalWeight = (TextView) statisticsView.findViewById(R.id.txtLabelGoalWeight);
-        txtLabelGoalDiff = (TextView) statisticsView.findViewById(R.id.txtLabelGoalDiff);
-        txtLabelDayLeft = (TextView) statisticsView.findViewById(R.id.txtLabelDayLeft);
+        txtLabelGoalWeight = statisticsView.findViewById(R.id.txtLabelGoalWeight);
+        txtLabelGoalDiff = statisticsView.findViewById(R.id.txtLabelGoalDiff);
+        txtLabelDayLeft = statisticsView.findViewById(R.id.txtLabelDayLeft);
 
         TableLayout tableWeekAveragesLayoutColumnA = statisticsView.findViewById(R.id.tableWeekAveragesLayoutColumnA);
         TableLayout tableWeekAveragesLayoutColumnB = statisticsView.findViewById(R.id.tableWeekAveragesLayoutColumnB);

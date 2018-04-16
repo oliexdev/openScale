@@ -32,7 +32,7 @@ import java.util.List;
 import static junit.framework.Assert.assertEquals;
 
 public class CsvHelperTest {
-    private static String HEADERS =
+    private static final String HEADERS =
             "\"bone\",\"comment\",\"dateTime\",\"fat\",\"hip\",\"lbw\","
             + "\"muscle\",\"waist\",\"water\",\"weight\"\n";
 

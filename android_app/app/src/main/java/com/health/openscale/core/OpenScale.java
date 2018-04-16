@@ -160,7 +160,7 @@ public class OpenScale {
 
     public void selectScaleUser(int userId) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        prefs.edit().putInt("selectedUserId", userId).commit();
+        prefs.edit().putInt("selectedUserId", userId).apply();
 
         selectedScaleUser = null;
     }
@@ -365,8 +365,15 @@ public class OpenScale {
     public String getFilenameFromUriMayThrow(Uri uri) {
         Cursor cursor = context.getContentResolver().query(
                 uri, null, null, null, null);
-        cursor.moveToFirst();
-        return cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+        try {
+            cursor.moveToFirst();
+            return cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+        }
+        finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
     }
 
     public String getFilenameFromUri(Uri uri) {
@@ -402,9 +409,7 @@ public class OpenScale {
             measurementDAO.insertAll(csvScaleMeasurementList);
             updateScaleData();
             Toast.makeText(context, context.getString(R.string.info_data_imported) + " " + filename, Toast.LENGTH_SHORT).show();
-        } catch (IOException e) {
-            Toast.makeText(context, context.getString(R.string.error_importing) + ": " + e.getMessage(), Toast.LENGTH_SHORT).show();
-        } catch (ParseException e) {
+        } catch (IOException | ParseException e) {
             Toast.makeText(context, context.getString(R.string.error_importing) + ": " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
@@ -423,7 +428,7 @@ public class OpenScale {
 
     public void clearScaleData(int userId) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        prefs.edit().putInt("uniqueNumber", 0x00).commit();
+        prefs.edit().putInt("uniqueNumber", 0x00).apply();
         measurementDAO.deleteAll(userId);
 
         updateScaleData();
