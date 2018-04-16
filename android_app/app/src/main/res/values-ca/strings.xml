@@ -25,7 +25,7 @@
     <string name="label_fat">Percentatge de greix corporal</string>
     <string name="label_water">Percentatge d\'aigua</string>
     <string name="label_muscle">Percentatge muscular</string>
-    <string name="label_lbw">Massa corporal magra</string>
+    <string name="label_lbm">Massa corporal magra</string>
     <string name="label_waist">Circumferència de la cintura</string>
     <string name="label_hip">Circumferència del maluc</string>
     <string name="label_comment">Comentari</string>

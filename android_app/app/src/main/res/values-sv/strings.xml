@@ -58,7 +58,7 @@
     <string name="label_last_week">Senast 7 dagarna</string>
     <string name="label_last_month">Senast 30 dagarna</string>
     <string name="label_muscle">Muskler</string>
-    <string name="label_lbw">Fettfri kroppsvikt</string>
+    <string name="label_lbm">Fettfri kroppsvikt</string>
     <string name="label_waist">Midjemått</string>
     <string name="label_hip">Höftomkrets</string>
     <string name="label_comment">Kommentar</string>

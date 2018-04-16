@@ -36,7 +36,7 @@ import com.health.openscale.core.alarm.AlarmHandler;
 import com.health.openscale.core.bluetooth.BluetoothCommunication;
 import com.health.openscale.core.bluetooth.BluetoothFactory;
 import com.health.openscale.core.bodymetric.EstimatedFatMetric;
-import com.health.openscale.core.bodymetric.EstimatedLBWMetric;
+import com.health.openscale.core.bodymetric.EstimatedLBMMetric;
 import com.health.openscale.core.bodymetric.EstimatedWaterMetric;
 import com.health.openscale.core.database.AppDatabase;
 import com.health.openscale.core.database.ScaleDatabase;
@@ -49,7 +49,7 @@ import com.health.openscale.core.utils.Converters;
 import com.health.openscale.core.utils.CsvHelper;
 import com.health.openscale.gui.fragments.FragmentUpdateListener;
 import com.health.openscale.gui.views.FatMeasurementView;
-import com.health.openscale.gui.views.LBWMeasurementView;
+import com.health.openscale.gui.views.LBMMeasurementView;
 import com.health.openscale.gui.views.MeasurementViewSettings;
 import com.health.openscale.gui.views.WaterMeasurementView;
 
@@ -271,11 +271,11 @@ public class OpenScale {
             scaleMeasurement.setWater(waterMetric.getWater(getScaleUser(scaleMeasurement.getUserId()), scaleMeasurement));
         }
 
-        settings = new MeasurementViewSettings(prefs, LBWMeasurementView.KEY);
+        settings = new MeasurementViewSettings(prefs, LBMMeasurementView.KEY);
         if (settings.isEnabled() && settings.isEstimationEnabled()) {
-            EstimatedLBWMetric lbwMetric = EstimatedLBWMetric.getEstimatedMetric(
-                    EstimatedLBWMetric.FORMULA.valueOf(settings.getEstimationFormula()));
-            scaleMeasurement.setLbw(lbwMetric.getLBW(getScaleUser(scaleMeasurement.getUserId()), scaleMeasurement));
+            EstimatedLBMMetric lbmMetric = EstimatedLBMMetric.getEstimatedMetric(
+                    EstimatedLBMMetric.FORMULA.valueOf(settings.getEstimationFormula()));
+            scaleMeasurement.setLbm(lbmMetric.getLBM(getScaleUser(scaleMeasurement.getUserId()), scaleMeasurement));
         }
 
         settings = new MeasurementViewSettings(prefs, FatMeasurementView.KEY);

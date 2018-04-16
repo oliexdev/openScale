@@ -141,7 +141,7 @@ public class ScreenshotRecorder {
     private List<ScaleMeasurement> getTestMeasurements() {
         List<ScaleMeasurement> scaleMeasurementList = new ArrayList<>();
 
-        String data = "\"dateTime\",\"weight\",\"fat\",\"water\",\"muscle\",\"lbw\",\"bone\",\"waist\",\"hip\",\"comment\"\n" +
+        String data = "\"dateTime\",\"weight\",\"fat\",\"water\",\"muscle\",\"lbm\",\"bone\",\"waist\",\"hip\",\"comment\"\n" +
                         "04.08.2015 08:08,89.7,21.2,58.0,41.5\n" +
                         "03.08.2015 05:17,89.0,26.4,54.6,41.6\n" +
                         "02.08.2015 07:32,88.8,25.0,55.6,41.7\n" +

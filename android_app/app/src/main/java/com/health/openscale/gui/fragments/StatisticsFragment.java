@@ -36,7 +36,7 @@ import com.health.openscale.core.utils.DateTimeHelpers;
 import com.health.openscale.gui.views.BoneMeasurementView;
 import com.health.openscale.gui.views.FatMeasurementView;
 import com.health.openscale.gui.views.HipMeasurementView;
-import com.health.openscale.gui.views.LBWMeasurementView;
+import com.health.openscale.gui.views.LBMMeasurementView;
 import com.health.openscale.gui.views.MeasurementView;
 import com.health.openscale.gui.views.MuscleMeasurementView;
 import com.health.openscale.gui.views.WaistMeasurementView;
@@ -98,7 +98,7 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
         viewMeasurementsListWeek.add(new WeightMeasurementView(statisticsView.getContext()));
         viewMeasurementsListWeek.add(new WaterMeasurementView(statisticsView.getContext()));
         viewMeasurementsListWeek.add(new MuscleMeasurementView(statisticsView.getContext()));
-        viewMeasurementsListWeek.add(new LBWMeasurementView(statisticsView.getContext()));
+        viewMeasurementsListWeek.add(new LBMMeasurementView(statisticsView.getContext()));
         viewMeasurementsListWeek.add(new FatMeasurementView(statisticsView.getContext()));
         viewMeasurementsListWeek.add(new BoneMeasurementView(statisticsView.getContext()));
         viewMeasurementsListWeek.add(new WaistMeasurementView(statisticsView.getContext()));
@@ -128,7 +128,7 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
         viewMeasurementsListMonth.add(new WeightMeasurementView(statisticsView.getContext()));
         viewMeasurementsListMonth.add(new WaterMeasurementView(statisticsView.getContext()));
         viewMeasurementsListMonth.add(new MuscleMeasurementView(statisticsView.getContext()));
-        viewMeasurementsListMonth.add(new LBWMeasurementView(statisticsView.getContext()));
+        viewMeasurementsListMonth.add(new LBMMeasurementView(statisticsView.getContext()));
         viewMeasurementsListMonth.add(new FatMeasurementView(statisticsView.getContext()));
         viewMeasurementsListMonth.add(new BoneMeasurementView(statisticsView.getContext()));
         viewMeasurementsListMonth.add(new WaistMeasurementView(statisticsView.getContext()));

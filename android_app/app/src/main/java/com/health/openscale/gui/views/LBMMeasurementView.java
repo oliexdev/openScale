@@ -21,16 +21,17 @@ import android.preference.ListPreference;
 import android.support.v4.content.ContextCompat;
 
 import com.health.openscale.R;
-import com.health.openscale.core.bodymetric.EstimatedLBWMetric;
+import com.health.openscale.core.bodymetric.EstimatedLBMMetric;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 
-public class LBWMeasurementView extends FloatMeasurementView {
+public class LBMMeasurementView extends FloatMeasurementView {
+    // Don't change key value, it may be stored persistent in preferences
     public static final String KEY = "lbw";
 
-    public LBWMeasurementView(Context context) {
-        super(context, context.getResources().getString(R.string.label_lbw), ContextCompat.getDrawable(context, R.drawable.ic_lbw));
+    public LBMMeasurementView(Context context) {
+        super(context, context.getResources().getString(R.string.label_lbm), ContextCompat.getDrawable(context, R.drawable.ic_lbm));
     }
 
     @Override
@@ -40,12 +41,12 @@ public class LBWMeasurementView extends FloatMeasurementView {
 
     @Override
     protected float getMeasurementValue(ScaleMeasurement measurement) {
-        return measurement.getLbw();
+        return measurement.getLbm();
     }
 
     @Override
     protected void setMeasurementValue(float value, ScaleMeasurement measurement) {
-        measurement.setLbw(value);
+        measurement.setLbm(value);
     }
 
     @Override
@@ -68,12 +69,12 @@ public class LBWMeasurementView extends FloatMeasurementView {
 
     @Override
     protected void prepareEstimationFormulaPreference(ListPreference preference) {
-        String[] entries = new String[EstimatedLBWMetric.FORMULA.values().length];
+        String[] entries = new String[EstimatedLBMMetric.FORMULA.values().length];
         String[] values = new String[entries.length];
 
         int idx = 0;
-        for (EstimatedLBWMetric.FORMULA formula : EstimatedLBWMetric.FORMULA.values()) {
-            entries[idx] = EstimatedLBWMetric.getEstimatedMetric(formula).getName();
+        for (EstimatedLBMMetric.FORMULA formula : EstimatedLBMMetric.FORMULA.values()) {
+            entries[idx] = EstimatedLBMMetric.getEstimatedMetric(formula).getName();
             values[idx] = formula.name();
             ++idx;
         }

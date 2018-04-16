@@ -31,7 +31,7 @@
     <string name="label_fat">Body fat</string>
     <string name="label_water">Body water</string>
     <string name="label_muscle">Muscle</string>
-    <string name="label_lbw">Lean body weight</string>
+    <string name="label_lbm">Lean body mass</string>
     <string name="label_waist">Waist circumference</string>
     <string name="label_hip">Hip circumference</string>
     <string name="label_comment">Comment</string>

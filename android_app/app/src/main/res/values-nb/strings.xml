@@ -33,15 +33,15 @@
     <string name="label_comment">Kommentar</string>
     <string name="label_bone">Beinmasse</string>
     <string name="label_estimate_measurement_summary">Basert på vekt, høyde, alder, kjønn, etc.</string>
-<string name="label_lbw">Fettfri kroppsvekt</string>
+    <string name="label_lbm">Fettfri kroppsvekt</string>
     <string name="label_whtr">Midje-til-høyde -forhold</string>
     <string name="label_whr">Midje-til-hofte -forhold</string>
     <string name="label_smartUserAssign">Smart brukertildeling</string>
 
     <plurals name="label_days">
-	<item quantity="one">%d dag</item>
-	<item quantity="other">%d dager</item>
-</plurals>
+	    <item quantity="one">%d dag</item>
+	    <item quantity="other">%d dager</item>
+    </plurals>
     <string name="label_last_week">De siste 7 dagene</string>
     <string name="label_last_month">De siste 30 dagene</string>
     <string name="label_weight_difference">Vektforskjell</string>

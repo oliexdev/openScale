@@ -161,7 +161,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
             scaleMeasurement.setFat(cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_FAT)));
             scaleMeasurement.setWater(cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_WATER)));
             scaleMeasurement.setMuscle(cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_MUSCLE)));
-            scaleMeasurement.setLbw(cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_LBW)));
+            scaleMeasurement.setLbm(cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_LBW)));
             scaleMeasurement.setBone(cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_BONE)));
             scaleMeasurement.setWaist(cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_WAIST)));
             scaleMeasurement.setHip(cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_HIP)));

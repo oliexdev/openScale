@@ -106,7 +106,7 @@ public abstract class MeasurementView extends TableLayout {
             unsorted.add(new BMIMeasurementView(context));
             unsorted.add(new WaterMeasurementView(context));
             unsorted.add(new MuscleMeasurementView(context));
-            unsorted.add(new LBWMeasurementView(context));
+            unsorted.add(new LBMMeasurementView(context));
             unsorted.add(new FatMeasurementView(context));
             unsorted.add(new BoneMeasurementView(context));
             unsorted.add(new WaistMeasurementView(context));

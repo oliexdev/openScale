@@ -19,7 +19,7 @@ package com.health.openscale.gui.views;
 import android.content.SharedPreferences;
 
 import com.health.openscale.core.bodymetric.EstimatedFatMetric;
-import com.health.openscale.core.bodymetric.EstimatedLBWMetric;
+import com.health.openscale.core.bodymetric.EstimatedLBMMetric;
 import com.health.openscale.core.bodymetric.EstimatedWaterMetric;
 
 public class MeasurementViewSettings {
@@ -52,7 +52,7 @@ public class MeasurementViewSettings {
             case WeightMeasurementView.KEY:
                 // Weight can't be disabled
                 return true;
-            case LBWMeasurementView.KEY:
+            case LBMMeasurementView.KEY:
             case BoneMeasurementView.KEY:
             case WaistMeasurementView.KEY:
             case HipMeasurementView.KEY:
@@ -137,7 +137,7 @@ public class MeasurementViewSettings {
         switch (key) {
             case FatMeasurementView.KEY:
                 return "estimateFatEnable";
-            case LBWMeasurementView.KEY:
+            case LBMMeasurementView.KEY:
                 return "estimateLBWEnable";
             case WaterMeasurementView.KEY:
                 return "estimateWaterEnable";
@@ -153,7 +153,7 @@ public class MeasurementViewSettings {
         switch (key) {
             case FatMeasurementView.KEY:
                 return "estimateFatFormula";
-            case LBWMeasurementView.KEY:
+            case LBMMeasurementView.KEY:
                 return "estimateLBWFormula";
             case WaterMeasurementView.KEY:
                 return "estimateWaterFormula";
@@ -167,8 +167,8 @@ public class MeasurementViewSettings {
             case FatMeasurementView.KEY:
                 defaultValue = EstimatedFatMetric.FORMULA.BF_GALLAGHER.name();
                 break;
-            case LBWMeasurementView.KEY:
-                defaultValue = EstimatedLBWMetric.FORMULA.LBW_HUME.name();
+            case LBMMeasurementView.KEY:
+                defaultValue = EstimatedLBMMetric.FORMULA.LBW_HUME.name();
                 break;
             case WaterMeasurementView.KEY:
                 defaultValue = EstimatedWaterMetric.FORMULA.TBW_LEESONGKIM.name();
