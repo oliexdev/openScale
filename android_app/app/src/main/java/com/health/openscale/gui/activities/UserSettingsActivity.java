@@ -78,7 +78,7 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
         setSupportActionBar(toolbar);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setTitle(getResources().getString(R.string.label_title_user));
+        getSupportActionBar().setTitle(R.string.label_add_user);
 
         txtUserName = (EditText) findViewById(R.id.txtUserName);
         txtBodyHeight = (EditText) findViewById(R.id.txtBodyHeight);
