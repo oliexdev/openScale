@@ -272,7 +272,7 @@ public class ScaleMeasurement implements Cloneable {
     }
 
     public float getBMR(ScaleUser scaleUser) {
-        float bmr = 0.0f;
+        float bmr;
 
         // BMR formula by Mifflin, St Jeor et al: A new predictive equation for resting energy expenditure in healthy individuals
         if (scaleUser.getGender().isMale()) {

@@ -163,6 +163,7 @@
                         android:id="@+id/lblBirthday"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:labelFor="@id/txtBirthday"
                         android:text="@string/label_birthday" />
 
                     <EditText
@@ -225,6 +226,7 @@
                         android:id="@+id/lblGoalDate"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:labelFor="@id/txtGoalDate"
                         android:text="@string/label_goal_date" />
 
                     <EditText

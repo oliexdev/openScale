@@ -46,7 +46,6 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.Toast;
 
 import com.health.openscale.BuildConfig;
@@ -209,7 +208,7 @@ public class MainActivity extends BaseAppCompatActivity
                         dialog.dismiss();
                         Uri uri = Uri.parse("market://details?id=" + getPackageName());
                         Intent goToMarket = new Intent(Intent.ACTION_VIEW, uri);
-                        // To count with Play market backstack, After pressing back button,
+                        // To count with Play market back stack, After pressing back button,
                         // to taken back to our application, we need to add following flags to intent.
                         goToMarket.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY |
                                 Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET |
@@ -526,8 +525,8 @@ public class MainActivity extends BaseAppCompatActivity
         }
     };
 
-    private void setBluetoothStatusIcon(int iconRessource) {
-        bluetoothStatusIcon = iconRessource;
+    private void setBluetoothStatusIcon(int iconResource) {
+        bluetoothStatusIcon = iconResource;
         bluetoothStatus.setIcon(getResources().getDrawable(bluetoothStatusIcon));
     }
 

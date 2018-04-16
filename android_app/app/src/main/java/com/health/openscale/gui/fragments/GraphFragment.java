@@ -424,12 +424,12 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         }
 
         if (prefs.getBoolean("regressionLine", false)) {
-            PolynomialFitter.Polynomial polynom = polyFitter.getBestFit();
+            PolynomialFitter.Polynomial polynomial = polyFitter.getBestFit();
 
             Stack<PointValue> valuesLinearRegression = new Stack<>();
 
             for (int i = 0; i < maxDays; i++) {
-                    double y_value = polynom.getY(i);
+                    double y_value = polynomial.getY(i);
                     valuesLinearRegression.push(new PointValue((float) i, (float) y_value));
             }
 

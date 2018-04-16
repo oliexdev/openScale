@@ -68,7 +68,7 @@ public class UserAddTest {
     @Rule
     public ActivityTestRule<MainActivity> mActivityTestRule = new ActivityTestRule<>(MainActivity.class, false, false);
 
-    private void setLangauge(String language, String country) {
+    private void setLanguage(String language, String country) {
         Locale locale = new Locale(language, country);
         Locale.setDefault(locale);
         Resources res = context.getResources();
@@ -82,7 +82,7 @@ public class UserAddTest {
         context = InstrumentationRegistry.getTargetContext();
 
         // set app language to English
-        setLangauge("en", "EN");
+        setLanguage("en", "EN");
 
         // Set first start to true to get the user add dialog
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);

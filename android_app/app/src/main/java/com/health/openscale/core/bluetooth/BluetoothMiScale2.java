@@ -175,8 +175,6 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
 
     private void parseBytes(byte[] weightBytes) {
         try {
-            float weight = 0.0f;
-
             final byte ctrlByte0 = weightBytes[0];
             final byte ctrlByte1 = weightBytes[1];
 
@@ -195,6 +193,7 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
                 final int min = (int) weightBytes[7];
                 final int sec = (int) weightBytes[8];
 
+                float weight;
                 if (isLBSUnit || isCattyUnit) {
                     weight = (float) (((weightBytes[12] & 0xFF) << 8) | (weightBytes[11] & 0xFF)) / 100.0f;
                 } else {

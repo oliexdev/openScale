@@ -242,8 +242,6 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
         private Spanned[][] stringCache;
 
-        private ArrayList<HashMap<Integer, Spanned>> dataList;
-
         public void setMeasurements(List<MeasurementView> visibleMeasurements,
                                     List<ScaleMeasurement> scaleMeasurements,
                                     int maxSize) {
