@@ -173,7 +173,7 @@
     <string name="label_weeks_view">Týždenný prehľad</string>
 
     <string name="permission_not_granted">Povolenie nebolo udelené</string>
-    <string name="permission_bluetooth_info">openScale vyžaduje povolenie prístupu k približnej polohe na vyhľadávanie bluetooth zariadení</string>
+    <string name="permission_bluetooth_info">openScale vyžaduje povolenie prístupu k približnej polohe na vyhľadávanie bluetooth zariadení. Po nájdení zaradenia môžete toto povolenie zamietnuť.</string>
     <string name="permission_bluetooth_info_title">Informácie</string>
     <string name="label_next">Ďalej</string>
     <string name="label_press_hold_reorder">Stlačte a podržte pre zmenu radenia</string>
@@ -186,4 +186,5 @@
     <string name="theme_light">Svetlý</string>
     <string name="theme_dark">Tmavý</string>
     <string name="label_contribute_translation">Pomôžte s prekladom</string>
+    <string name="label_add_or_fix_translation"></string>
     </resources>
