@@ -319,7 +319,7 @@ public class OpenScale {
         for (int i = 0; i < scaleUsers.size(); i++) {
             List<ScaleMeasurement> scaleUserData = measurementDAO.getAll(scaleUsers.get(i).getId());
 
-            float lastWeight = 0;
+            float lastWeight;
 
             if (scaleUserData.size() > 0) {
                 lastWeight = scaleUserData.get(0).getWeight();
