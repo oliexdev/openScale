@@ -30,7 +30,7 @@
     <string name="label_fat">Procent tkanki tłuszczowej</string>
     <string name="label_water">Procent wody w organizmie</string>
     <string name="label_muscle">Procent masy mięśniowej</string>
-    <string name="label_lbw">Beztłuszczowa masa ciała</string>
+    <string name="label_lbm">Beztłuszczowa masa ciała</string>
     <string name="label_waist">Obwód talii</string>
     <string name="label_hip">Obwód bioder</string>
     <string name="label_comment">Komentarz</string>

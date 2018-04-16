@@ -24,7 +24,7 @@
     <string name="label_fat">Vücüt Yað Yüzdesi</string>
     <string name="label_water">Su Yüzdesi</string>
     <string name="label_muscle">Kas Yüzdesi</string>
-    <string name="label_lbw">Yaðsýz vücüt aðýrlýðý</string>
+    <string name="label_lbm">Yaðsýz vücüt aðýrlýðý</string>
     <string name="label_waist">Bel çevresi</string>
     <string name="label_hip">Kalça çevresi</string>
     <string name="label_comment">Yorum</string>

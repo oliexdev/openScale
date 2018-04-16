@@ -19,6 +19,7 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 
 public abstract class EstimatedFatMetric {
+    // Don't change enum names, they are stored persistent in preferences
     public enum FORMULA { BF_DEURENBERG, BF_DEURENBERG_II, BF_EDDY, BF_GALLAGHER, BF_GALLAGHER_ASIAN }
 
     public static EstimatedFatMetric getEstimatedMetric(FORMULA metric) {

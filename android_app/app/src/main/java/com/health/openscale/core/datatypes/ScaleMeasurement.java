@@ -62,7 +62,7 @@ public class ScaleMeasurement implements Cloneable {
     private float muscle;
     @CsvColumn
     @ColumnInfo(name = "lbw")
-    private float lbw;
+    private float lbm;
     @CsvColumn
     @ColumnInfo(name = "waist")
     private float waist;
@@ -85,7 +85,7 @@ public class ScaleMeasurement implements Cloneable {
         fat = 0.0f;
         water = 0.0f;
         muscle = 0.0f;
-        lbw = 0.0f;
+        lbm = 0.0f;
         bone = 0.0f;
         waist = 0.0f;
         hip = 0.0f;
@@ -231,12 +231,12 @@ public class ScaleMeasurement implements Cloneable {
         this.muscle = muscle;
     }
 
-    public float getLbw() {
-        return lbw;
+    public float getLbm() {
+        return lbm;
     }
 
-    public void setLbw(float lbw) {
-        this.lbw = lbw;
+    public void setLbm(float lbm) {
+        this.lbm = lbm;
     }
 
     public float getWaist() {
@@ -301,8 +301,8 @@ public class ScaleMeasurement implements Cloneable {
     {
         return String.format(
                 "ID: %d, USER_ID: %d, DATE_TIME: %s, WEIGHT: %.2f, FAT: %.2f, WATER: %.2f, " +
-                "MUSCLE: %.2f, LBW: %.2f, WAIST: %.2f, HIP: %.2f, BONE: %.2f, COMMENT: %s",
+                "MUSCLE: %.2f, LBM: %.2f, WAIST: %.2f, HIP: %.2f, BONE: %.2f, COMMENT: %s",
                 id, userId, dateTime.toString(), weight, fat, water,
-                muscle, lbw, waist, hip, bone, comment);
+                muscle, lbm, waist, hip, bone, comment);
     }
 }

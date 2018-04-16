@@ -19,6 +19,7 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 
 public abstract class EstimatedWaterMetric {
+    // Don't change enum names, they are stored persistent in preferences
     public enum FORMULA { TBW_BEHNKE, TBW_DELWAIDECRENIER, TBW_HUMEWEYERS, TBW_LEESONGKIM }
 
     public static EstimatedWaterMetric getEstimatedMetric(FORMULA metric) {

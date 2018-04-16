@@ -27,6 +27,7 @@ import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 
 public class WaterMeasurementView extends FloatMeasurementView {
+    // Don't change key value, it may be stored persistent in preferences
     public static final String KEY = "water";
 
     public WaterMeasurementView(Context context) {

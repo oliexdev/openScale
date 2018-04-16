@@ -121,7 +121,7 @@
     <string name="info_step_on_scale">Bitte steigen Sie barfuß auf die Waage zur Referenzmessung</string>
     <string name="label_automatic">auto</string>
     <string name="label_category_measurement_database">Messwertedatenbank</string>
-    <string name="label_lbw">Fettfreie Körpermasse</string>
+    <string name="label_lbm">Fettfreie Körpermasse</string>
     <string name="label_license">Lizenz</string>
     <string name="label_maintainer">Hauptentwickler</string>
     <string name="label_website">Webseite</string>

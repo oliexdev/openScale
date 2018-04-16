@@ -26,6 +26,7 @@ import com.health.openscale.core.evaluation.EvaluationSheet;
 import com.health.openscale.core.utils.Converters;
 
 public class WeightMeasurementView extends FloatMeasurementView {
+    // Don't change key value, it may be stored persistent in preferences
     public static final String KEY = "weight";
 
     public WeightMeasurementView(Context context) {

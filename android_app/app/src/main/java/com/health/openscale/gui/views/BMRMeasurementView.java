@@ -27,6 +27,7 @@ import com.health.openscale.core.evaluation.EvaluationSheet;
 import java.util.Locale;
 
 public class BMRMeasurementView extends FloatMeasurementView {
+    // Don't change key value, it may be stored persistent in preferences
     public static final String KEY = "bmr";
 
     public BMRMeasurementView(Context context) {

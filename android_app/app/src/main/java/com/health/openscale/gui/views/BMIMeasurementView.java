@@ -25,6 +25,7 @@ import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 
 public class BMIMeasurementView extends FloatMeasurementView {
+    // Don't change key value, it may be stored persistent in preferences
     public static final String KEY = "bmi";
 
     public BMIMeasurementView(Context context) {
