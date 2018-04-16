@@ -181,4 +181,6 @@
     <string name="label_export_overwrite">Prepísať predchádzajúci export \"%s\"?</string>
 
 
-</resources>
+<string name="language_default">Predvolený</string>
+    <string name="label_language">Jazyk</string>
+    </resources>
