@@ -70,48 +70,48 @@
     <string name="label_export">Export</string>
     <string name="label_delete_all">Delete all</string>
 
-    <string name="error_value_required">Value is required</string>
-    <string name="error_value_range">The value is not in range</string>
+    <string name="error_value_required">Value required</string>
+    <string name="error_value_range">Value not in range</string>
     <string name="error_exporting">Error exporting</string>
     <string name="error_importing">Error importing</string>
-    <string name="error_user_name_required">Error: user name is required</string>
-    <string name="error_user_name_too_short">Error: user name have to be at least 3 characters</string>
-    <string name="error_height_required">Error: height is required</string>
-    <string name="error_initial_weight_required">Error: initial weight is required</string>
-    <string name="error_goal_weight_required">Error: goal weight is required</string>
+    <string name="error_user_name_required">Error: Name required</string>
+    <string name="error_user_name_too_short">Error: Name must be 3 characters or longer</string>
+    <string name="error_height_required">Error: Height required</string>
+    <string name="error_initial_weight_required">Error: Initial weight required</string>
+    <string name="error_goal_weight_required">Error: Goal weight required</string>
 
     <string name="info_data_deleted">Database entry deleted</string>
     <string name="info_data_all_deleted">All database entries deleted</string>
     <string name="info_data_exported">Data exported to</string>
     <string name="info_data_imported">Data imported from</string>
-    <string name="info_enter_value_cm">Enter value in cm</string>
-    <string name="info_enter_comment">Enter an optional comment</string>
-    <string name="info_enter_value_scale_unit">Enter value in scale unit</string>
+    <string name="info_enter_value_cm">Value in cm</string>
+    <string name="info_enter_comment">Optional comment</string>
+    <string name="info_enter_value_scale_unit">Value in scale unit</string>
     <string name="info_is_visible">is visible</string>
     <string name="info_is_not_visible">is not visible</string>
     <string name="info_is_enable">is enabled</string>
     <string name="info_is_not_enable">is disabled</string>
     <string name="info_is_not_available">is not available</string>
-    <string name="info_bluetooth_try_connection">Trying to connect to</string>
+    <string name="info_bluetooth_try_connection">Connecting to</string>
     <string name="info_bluetooth_connection_lost">Lost Bluetooth connection</string>
     <string name="info_bluetooth_no_device">No Bluetooth device found</string>
     <string name="info_bluetooth_no_device_set">No Bluetooth device selected</string>
-    <string name="info_bluetooth_connection_successful">Connection successful established</string>
+    <string name="info_bluetooth_connection_successful">Connection established</string>
     <string name="info_bluetooth_init">Initialize Bluetooth device</string>
-    <string name="info_bluetooth_connection_error">Bluetooth has an unexpected error</string>
+    <string name="info_bluetooth_connection_error">Unexpected Bluetooth error</string>
     <string name="info_new_data_added">%1$.2f%2$s [%3$s] to %4$s added</string>
     <string name="info_new_data_duplicated">measurement with the same date and time already exist</string>
 
-    <string name="info_enter_user_name">Enter your name</string>
-    <string name="info_no_selected_user">No user exists. Please create a new user in the settings.</string>
-    <string name="info_no_evaluation_available">Can\'t evaluate the value</string>
+    <string name="info_enter_user_name">Your name</string>
+    <string name="info_no_selected_user">No user exists. Please create one in the settings.</string>
+    <string name="info_no_evaluation_available">Could not evaluate the value</string>
 
     <string name="question_really_delete">Do you really want to delete database entry?</string>
     <string name="question_really_delete_all">Do you really want to delete all database entries?</string>
     <string name="question_really_delete_user">Do you really want to delete the user? </string>
 
     <string name="label_bluetooth_title">Bluetooth</string>
-    <string name="label_bluetooth_enable">Search for scale on startup</string>
+    <string name="label_bluetooth_enable">Connect to scale on startup</string>
     <string name="label_mergeWithLastMeasurement">Merge with last measurement</string>
     <string name="label_bluetooth_searching">Searching for Bluetooth scales</string>
     <string name="label_bluetooth_searching_finished">Finished searching for Bluetooth scales</string>
@@ -189,7 +189,7 @@
     <string name="label_weeks_view">Week view</string>
 
     <string name="permission_not_granted">Permission not granted</string>
-    <string name="permission_bluetooth_info">openScale requires permission to access the coarse location to search for Bluetooth devices. The permission can be revoked after the device is found.</string>
+    <string name="permission_bluetooth_info">Coarse location permission needed to search for Bluetooth devices. It can be revoked after the device is found.</string>
     <string name="permission_bluetooth_info_title">Information</string>
     <string name="label_next">Next</string>
     <string name="label_press_hold_reorder">Press and hold to reorder</string>
@@ -224,5 +224,5 @@
     <string name="label_estimated">Estimated</string>
     <string name="label_estimate_measurement_summary">Based on weight, height, age, gender, etc.</string>
     <string name="label_scale_not_supported">Is your scale not supported?</string>
-    <string name="label_click_to_help_add_support">Click here if you want to help add support for it</string>
+    <string name="label_click_to_help_add_support">Click here to help add support for it</string>
 </resources>
