@@ -402,9 +402,7 @@ public class OpenScale {
             measurementDAO.insertAll(csvScaleMeasurementList);
             updateScaleData();
             Toast.makeText(context, context.getString(R.string.info_data_imported) + " " + filename, Toast.LENGTH_SHORT).show();
-        } catch (IOException e) {
-            Toast.makeText(context, context.getString(R.string.error_importing) + ": " + e.getMessage(), Toast.LENGTH_SHORT).show();
-        } catch (ParseException e) {
+        } catch (IOException | ParseException e) {
             Toast.makeText(context, context.getString(R.string.error_importing) + ": " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }

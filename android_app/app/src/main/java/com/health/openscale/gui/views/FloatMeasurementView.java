@@ -51,13 +51,13 @@ import java.util.Date;
 import java.util.Locale;
 
 public abstract class FloatMeasurementView extends MeasurementView {
-    private static char SYMBOL_UP = '\u279a';
-    private static char SYMBOL_NEUTRAL = '\u2799';
-    private static char SYMBOL_DOWN = '\u2798';
+    private static final char SYMBOL_UP = '\u279a';
+    private static final char SYMBOL_NEUTRAL = '\u2799';
+    private static final char SYMBOL_DOWN = '\u2798';
 
-    private static float NO_VALUE = -1.0f;
-    private static float AUTO_VALUE = -2.0f;
-    private static float INC_DEC_DELTA = 0.1f;
+    private static final float NO_VALUE = -1.0f;
+    private static final float AUTO_VALUE = -2.0f;
+    private static final float INC_DEC_DELTA = 0.1f;
 
     private Date dateTime;
     private float value = NO_VALUE;
@@ -65,7 +65,7 @@ public abstract class FloatMeasurementView extends MeasurementView {
     private float userConvertedWeight;
     private EvaluationResult evaluationResult;
 
-    private String nameText;
+    private final String nameText;
 
     private Button incButton;
     private Button decButton;
@@ -593,13 +593,13 @@ public abstract class FloatMeasurementView extends MeasurementView {
     }
 
     private class RepeatListener implements OnTouchListener {
-        private Handler handler = new Handler();
+        private final Handler handler = new Handler();
 
         private int initialInterval;
         private final int normalInterval;
         private final OnClickListener clickListener;
 
-        private Runnable handlerRunnable = new Runnable() {
+        private final Runnable handlerRunnable = new Runnable() {
             @Override
             public void run() {
                 handler.postDelayed(this, normalInterval);

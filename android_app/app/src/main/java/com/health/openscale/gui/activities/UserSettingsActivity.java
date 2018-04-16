@@ -45,8 +45,8 @@ import java.util.Date;
 import java.util.List;
 
 public class UserSettingsActivity extends BaseAppCompatActivity {
-    public static String EXTRA_ID = "id";
-    public static String EXTRA_MODE = "mode";
+    public static final String EXTRA_ID = "id";
+    public static final String EXTRA_MODE = "mode";
 
     public static final int ADD_USER_REQUEST = 0;
     public static final int EDIT_USER_REQUEST = 1;
@@ -63,7 +63,7 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
     private RadioGroup radioScaleUnit;
     private RadioGroup radioGender;
 
-    private DateFormat dateFormat = DateFormat.getDateInstance();
+    private final DateFormat dateFormat = DateFormat.getDateInstance();
 
     private Context context;
 
@@ -266,7 +266,7 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
         return validate;
     }
 
-   private DatePickerDialog.OnDateSetListener birthdayPickerListener = new DatePickerDialog.OnDateSetListener() {
+   private final DatePickerDialog.OnDateSetListener birthdayPickerListener = new DatePickerDialog.OnDateSetListener() {
         @Override
         public void onDateSet(DatePicker view, int selectedYear, int selectedMonth, int selectedDay) {
             Calendar cal = Calendar.getInstance();
@@ -277,7 +277,7 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
            }
         };
 
-    private DatePickerDialog.OnDateSetListener goalDatePickerListener = new DatePickerDialog.OnDateSetListener() {
+    private final DatePickerDialog.OnDateSetListener goalDatePickerListener = new DatePickerDialog.OnDateSetListener() {
         @Override
         public void onDateSet(DatePicker view, int selectedYear, int selectedMonth, int selectedDay) {
             Calendar cal = Calendar.getInstance();

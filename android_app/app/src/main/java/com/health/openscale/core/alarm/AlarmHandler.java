@@ -66,7 +66,7 @@ public class AlarmHandler
         }
     }
 
-    public static boolean isSameDate(Calendar c1, Calendar c2)
+    private static boolean isSameDate(Calendar c1, Calendar c2)
     {
         int[] dateFields = {Calendar.YEAR, Calendar.MONTH, Calendar.DAY_OF_MONTH};
         for (int dateField : dateFields)
@@ -126,7 +126,7 @@ public class AlarmHandler
             alarmMgr.cancel(pendingIntent);
     }
 
-    public void cancelAndRescheduleAlarmForNextWeek(Context context, Calendar timestamp)
+    private void cancelAndRescheduleAlarmForNextWeek(Context context, Calendar timestamp)
     {
         AlarmEntryReader reader = AlarmEntryReader.construct(context);
         Set<AlarmEntry> alarmEntries = reader.getEntries();
@@ -169,7 +169,7 @@ public class AlarmHandler
         mNotifyMgr.notify(ALARM_NOTIFICATION_ID, notification);
     }
 
-    public void cancelAlarmNotification(Context context)
+    private void cancelAlarmNotification(Context context)
     {
         NotificationManager mNotifyMgr = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)

@@ -232,7 +232,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             }
 
             FloatMeasurementView measurementView = (FloatMeasurementView) view;
-            Stack<PointValue> valuesStack = new Stack<PointValue>();
+            Stack<PointValue> valuesStack = new Stack<>();
 
             for (int i = 0; i < max_i; ++i) {
                 ScaleMeasurement measurement = scaleMeasurementList.get(max_i - i - 1);

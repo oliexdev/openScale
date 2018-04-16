@@ -118,7 +118,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
     }
 
     public ArrayList<ScaleMeasurement> getScaleDataList(int userId) {
-        ArrayList<ScaleMeasurement> scaleMeasurementList = new ArrayList<ScaleMeasurement>();
+        ArrayList<ScaleMeasurement> scaleMeasurementList = new ArrayList<>();
 
         try {
             String sortOrder = COLUMN_NAME_DATE_TIME + " DESC";

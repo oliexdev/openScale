@@ -43,10 +43,6 @@ public class BluetoothDigooDGSO38H extends BluetoothCommunication {
     }
 
     @Override
-    public void onBluetoothDataRead(BluetoothGatt bluetoothGatt, BluetoothGattCharacteristic gattCharacteristic, int status) {
-    }
-
-    @Override
     public void onBluetoothDataChange(BluetoothGatt bluetoothGatt, BluetoothGattCharacteristic gattCharacteristic) {
         final byte[] data = gattCharacteristic.getValue();
 

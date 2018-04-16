@@ -49,8 +49,8 @@ import java.util.Date;
 import java.util.List;
 
 public class DataEntryActivity extends BaseAppCompatActivity {
-    public static String EXTRA_ID = "id";
-    private static String PREF_EXPAND = "expandEvaluator";
+    public static final String EXTRA_ID = "id";
+    private static final String PREF_EXPAND = "expandEvaluator";
 
     private MeasurementView.MeasurementViewMode measurementViewMode;
 

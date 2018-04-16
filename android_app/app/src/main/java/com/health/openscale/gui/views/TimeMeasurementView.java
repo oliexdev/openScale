@@ -31,7 +31,7 @@ import java.util.Date;
 public class TimeMeasurementView extends MeasurementView {
     public static final String KEY = "time";
 
-    private DateFormat timeFormat;
+    private final DateFormat timeFormat;
     private Date time;
 
     public TimeMeasurementView(Context context) {

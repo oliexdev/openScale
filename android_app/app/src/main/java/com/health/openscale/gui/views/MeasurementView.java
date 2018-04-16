@@ -59,7 +59,7 @@ import static com.health.openscale.gui.views.MeasurementView.MeasurementViewMode
 public abstract class MeasurementView extends TableLayout {
     public enum MeasurementViewMode {VIEW, EDIT, ADD, STATISTIC}
 
-    public static String PREF_MEASUREMENT_ORDER = "measurementOrder";
+    public static final String PREF_MEASUREMENT_ORDER = "measurementOrder";
 
     private MeasurementViewSettings settings;
 

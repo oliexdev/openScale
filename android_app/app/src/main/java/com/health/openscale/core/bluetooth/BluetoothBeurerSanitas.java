@@ -40,7 +40,7 @@ import java.util.TreeSet;
 import java.util.UUID;
 
 public class BluetoothBeurerSanitas extends BluetoothCommunication {
-    public final static String TAG = "BeurerSanitas";
+    private final static String TAG = "BeurerSanitas";
 
     enum DeviceType { BEURER_BF700_800_RT_LIBRA, BEURER_BF710, SANITAS_SBF70_70 }
 
@@ -104,7 +104,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
     private static final UUID CUSTOM_CHARACTERISTIC_IMG_BLOCK = // write-only, notify
             UUID.fromString("F000FFC2-0451-4000-8000-000000000000");
 
-    private DeviceType deviceType;
+    private final DeviceType deviceType;
     private int startByte;
     private int currentScaleUserId;
     private int countRegisteredScaleUsers;

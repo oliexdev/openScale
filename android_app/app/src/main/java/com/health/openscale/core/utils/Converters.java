@@ -71,8 +71,8 @@ public class Converters {
         }
     }
 
-    private static float KG_LB = 2.20462f;
-    private static float KG_ST = 0.157473f;
+    private static final float KG_LB = 2.20462f;
+    private static final float KG_ST = 0.157473f;
 
     @TypeConverter
     public static Date fromTimestamp(Long value) {

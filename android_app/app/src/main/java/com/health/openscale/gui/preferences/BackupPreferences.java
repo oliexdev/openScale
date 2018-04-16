@@ -19,12 +19,8 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.EditTextPreference;
-import android.preference.ListPreference;
-import android.preference.MultiSelectListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
-import android.preference.PreferenceGroup;
-import android.preference.PreferenceManager;
 import android.widget.Toast;
 
 import com.health.openscale.R;
@@ -37,16 +33,14 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 public class BackupPreferences extends PreferenceFragment {
     private static final String PREFERENCE_KEY_EXPORT_DIR = "exportDir";
     private static final String PREFERENCE_KEY_IMPORT_BACKUP = "importBackup";
     private static final String PREFERENCE_KEY_EXPORT_BACKUP = "exportBackup";
 
-    EditTextPreference exportDir;
+    private EditTextPreference exportDir;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
