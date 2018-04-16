@@ -160,7 +160,7 @@ public class OpenScale {
 
     public void selectScaleUser(int userId) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        prefs.edit().putInt("selectedUserId", userId).commit();
+        prefs.edit().putInt("selectedUserId", userId).apply();
 
         selectedScaleUser = null;
     }
@@ -421,7 +421,7 @@ public class OpenScale {
 
     public void clearScaleData(int userId) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        prefs.edit().putInt("uniqueNumber", 0x00).commit();
+        prefs.edit().putInt("uniqueNumber", 0x00).apply();
         measurementDAO.deleteAll(userId);
 
         updateScaleData();

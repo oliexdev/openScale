@@ -188,10 +188,10 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                     case R.id.enableMonth:
                         if (item.isChecked()) {
                             item.setChecked(false);
-                            prefs.edit().putBoolean("showMonth", false).commit();
+                            prefs.edit().putBoolean("showMonth", false).apply();
                         } else {
                             item.setChecked(true);
-                            prefs.edit().putBoolean("showMonth", true).commit();
+                            prefs.edit().putBoolean("showMonth", true).apply();
                         }
 
                         generateGraphs();
@@ -199,10 +199,10 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                     case R.id.enableWeek:
                         if (item.isChecked()) {
                             item.setChecked(false);
-                            prefs.edit().putBoolean("showWeek", false).commit();
+                            prefs.edit().putBoolean("showWeek", false).apply();
                         } else {
                             item.setChecked(true);
-                            prefs.edit().putBoolean("showWeek", true).commit();
+                            prefs.edit().putBoolean("showWeek", true).apply();
                         }
 
                         generateGraphs();

@@ -146,7 +146,7 @@ public class MainActivity extends BaseAppCompatActivity
             intent.putExtra(UserSettingsActivity.EXTRA_MODE, UserSettingsActivity.ADD_USER_REQUEST);
             startActivity(intent);
 
-            prefs.edit().putBoolean("firstStart", false).commit();
+            prefs.edit().putBoolean("firstStart", false).apply();
         }
 
         if(!valueOfCountModified){
@@ -301,7 +301,7 @@ public class MainActivity extends BaseAppCompatActivity
                 return;
         }
 
-        prefs.edit().putInt("lastFragmentId", menuItemId).commit();
+        prefs.edit().putInt("lastFragmentId", menuItemId).apply();
 
         FragmentManager fragmentManager = getSupportFragmentManager();
 

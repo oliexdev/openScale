@@ -154,7 +154,7 @@ public abstract class MeasurementView extends TableLayout {
         }
         PreferenceManager.getDefaultSharedPreferences(context).edit()
                 .putString(PREF_MEASUREMENT_ORDER, TextUtils.join(",", order))
-                .commit();
+                .apply();
     }
 
     private void initView(Context context) {
