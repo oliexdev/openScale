@@ -57,9 +57,9 @@
                 android:weightSum="100">
 
                 <lecho.lib.hellocharts.view.PieChartView
-                     android:id="@+id/pieChartLast"
-                     android:layout_width="300dp"
-                     android:layout_height="200dp"
+                    android:id="@+id/pieChartLast"
+                    android:layout_width="300dp"
+                    android:layout_height="200dp"
                     android:measureWithLargestChild="false"
                     android:layout_weight="30" />
 
