@@ -54,7 +54,7 @@
     <string name="label_water">Wassergehalt</string>
     <string name="label_weight">Gewicht</string>
     <string name="label_weight_difference">Gewichtsunterschied</string>
-    <string name="label_woman">Weiblich</string>
+    <string name="label_female">Weiblich</string>
     <string name="label_yes">Ja</string>
     <string name="question_really_delete_user">Wollen Sie wirklich den Benutzer löschen?</string>
     <string name="question_really_delete_all">Wollen Sie wirklich alle Datenbankeinträge löschen?</string>

@@ -36,7 +36,7 @@
     <string name="error_exporting">Fel vid export</string>
     <string name="label_gender">Kön</string>
     <string name="label_male">Man</string>
-    <string name="label_woman">Kvinna</string>
+    <string name="label_female">Kvinna</string>
     <string name="label_goal_weight">Målvikt</string>
     <string name="label_goal_date">Måldatum</string>
     <string name="label_title_user">användare</string>

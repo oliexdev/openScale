@@ -103,7 +103,7 @@
     <string name="label_weight_difference">Diferença de peso</string>
     <string name="label_whr">Relação anca-cintura</string>
     <string name="label_whtr">Relação cintura-altura</string>
-    <string name="label_woman">Femino</string>
+    <string name="label_female">Femino</string>
     <string name="label_yes">Sim</string>
     <string name="question_really_delete">Tem certeza que quer apagar o valor da base de dados?</string>
     <string name="question_really_delete_all">Tem certeza que quer apagar a base de dados?</string>

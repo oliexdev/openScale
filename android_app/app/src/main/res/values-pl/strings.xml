@@ -56,7 +56,7 @@
     <string name="label_scale_unit">Jednostka wagi</string>
     <string name="label_gender">Płęć</string>
     <string name="label_male">Mężczyzna</string>
-    <string name="label_woman">Kobieta</string>
+    <string name="label_female">Kobieta</string>
     <string name="label_goal_weight">Docelowa waga</string>
     <string name="label_goal_date">Data celu</string>
 

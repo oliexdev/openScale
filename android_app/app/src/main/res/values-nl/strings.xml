@@ -54,7 +54,7 @@
     <string name="label_scale_unit">Schaal</string>
     <string name="label_gender">Geslacht</string>
     <string name="label_male">Man</string>
-    <string name="label_woman">Vrouw</string>
+    <string name="label_female">Vrouw</string>
     <string name="label_goal_weight">Streefgewicht</string>
     <string name="label_goal_date">Streefdatum</string>
 

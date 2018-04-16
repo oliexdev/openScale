@@ -47,7 +47,7 @@
     <string name="label_height">Tělesná hmotnost</string>
     <string name="label_gender">Pohlaví</string>
     <string name="label_male">Muž</string>
-    <string name="label_woman">Žena</string>
+    <string name="label_female">Žena</string>
     <string name="label_goal_weight">Cílová hmotnost</string>
     <string name="label_goal_date">Cílové datum</string>
 
