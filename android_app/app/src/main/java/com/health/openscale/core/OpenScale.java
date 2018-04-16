@@ -365,8 +365,15 @@ public class OpenScale {
     public String getFilenameFromUriMayThrow(Uri uri) {
         Cursor cursor = context.getContentResolver().query(
                 uri, null, null, null, null);
-        cursor.moveToFirst();
-        return cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+        try {
+            cursor.moveToFirst();
+            return cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+        }
+        finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
     }
 
     public String getFilenameFromUri(Uri uri) {
