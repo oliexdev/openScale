@@ -57,6 +57,9 @@ dependencies {
     annotationProcessor 'android.arch.persistence.room:compiler:1.0.0'
     androidTestImplementation 'android.arch.persistence.room:testing:1.0.0'
 
+    // Timber
+    implementation 'com.jakewharton.timber:timber:4.7.0'
+
     // Local unit tests
     testImplementation 'junit:junit:4.12'
 
