@@ -332,6 +332,9 @@ public abstract class BluetoothCommunication {
     public void connect(String hwAddress) {
         btAdapter.cancelDiscovery();
 
+        // Don't do any cleanup if disconnected before fully connected
+        btMachineState = BT_MACHINE_STATE.BT_CLEANUP_STATE;
+
         BluetoothDevice device = btAdapter.getRemoteDevice(hwAddress);
         bluetoothGatt = device.connectGatt(context, false, gattCallback);
     }
