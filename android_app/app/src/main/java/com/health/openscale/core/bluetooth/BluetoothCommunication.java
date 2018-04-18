@@ -312,6 +312,14 @@ public abstract class BluetoothCommunication {
         return stringBuilder.toString();
     }
 
+    protected byte xorChecksum(byte[] data, int offset, int length) {
+        byte checksum = 0;
+        for (int i = offset; i < offset + length; ++i) {
+            checksum ^= data[i];
+        }
+        return checksum;
+    }
+
     /**
      * Test in a byte if a bit is set (1) or not (0)
      *

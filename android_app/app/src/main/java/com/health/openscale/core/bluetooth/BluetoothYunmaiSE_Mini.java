@@ -66,7 +66,8 @@ public class BluetoothYunmaiSE_Mini extends BluetoothCommunication {
                         userId[0], userId[1], (byte) selectedUser.getBodyHeight(), sex,
                         (byte) selectedUser.getAge(), (byte) 0x55, (byte) 0x5a, (byte) 0x00,
                         (byte)0x00, display_unit, (byte) 0x03, (byte) 0x00};
-                user_add_or_query[17] = xor_checksum(user_add_or_query);
+                user_add_or_query[user_add_or_query.length - 1] =
+                        xorChecksum(user_add_or_query, 0, user_add_or_query.length - 1);
                 writeBytes(WEIGHT_CMD_SERVICE, WEIGHT_CMD_CHARACTERISTIC, user_add_or_query);
                 break;
             case 1:
@@ -75,8 +76,9 @@ public class BluetoothYunmaiSE_Mini extends BluetoothCommunication {
                 byte[] set_time = new byte[]{(byte)0x0d, (byte) 0x0d, (byte) 0x11,
                         unixTime[0], unixTime[1], unixTime[2], unixTime[3],
                         (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00};
+                set_time[set_time.length - 1] =
+                        xorChecksum(set_time, 0, set_time.length - 1);
 
-                set_time[12] = xor_checksum(set_time);
                 writeBytes(WEIGHT_CMD_SERVICE, WEIGHT_CMD_CHARACTERISTIC, set_time);
                 break;
             case 2:
@@ -152,15 +154,5 @@ public class BluetoothYunmaiSE_Mini extends BluetoothCommunication {
         int userId = OpenScale.getInstance(context).getSelectedScaleUserId();
 
         return uniqueNumber + userId;
-    }
-
-    private byte xor_checksum(byte[] data) {
-        byte checksum = 0x00;
-
-        for (int i=0; i<data.length-1; i++) {
-            checksum ^= data[i];
-        }
-
-        return checksum;
     }
 }
