@@ -138,7 +138,7 @@ public class BluetoothDigooDGSO38H extends BluetoothCommunication {
                     scaleBtData.setWater(water);
                     scaleBtData.setBone(boneWeight);
                 }
-                scaleBtData.setConvertedWeight(weight, selectedUser.getScaleUnit());
+                scaleBtData.setWeight(weight);
                 addScaleData(scaleBtData);
             }
     }
