@@ -52,7 +52,7 @@ public class BluetoothYunmaiSE_Mini extends BluetoothCommunication {
     }
 
     @Override
-    boolean nextInitCmd(int stateNr) {
+    protected boolean nextInitCmd(int stateNr) {
         switch (stateNr) {
             case 0:
                 byte[] userId = Converters.toUnsignedInt16Be(getUniqueNumber());
@@ -94,12 +94,12 @@ public class BluetoothYunmaiSE_Mini extends BluetoothCommunication {
     }
 
     @Override
-    boolean nextBluetoothCmd(int stateNr) {
+    protected boolean nextBluetoothCmd(int stateNr) {
         return false;
     }
 
     @Override
-    boolean nextCleanUpCmd(int stateNr) {
+    protected boolean nextCleanUpCmd(int stateNr) {
         return false;
     }
 

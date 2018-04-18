@@ -46,12 +46,12 @@ public class BluetoothExcelvanCF369BLE extends BluetoothCommunication {
     }
 
     @Override
-    boolean nextInitCmd(int stateNr) {
+    protected boolean nextInitCmd(int stateNr) {
         return false;
     }
 
     @Override
-    boolean nextBluetoothCmd(int stateNr) {
+    protected boolean nextBluetoothCmd(int stateNr) {
         switch (stateNr) {
             case 0:
                 final ScaleUser selectedUser = OpenScale.getInstance(context).getSelectedScaleUser();
@@ -87,7 +87,7 @@ public class BluetoothExcelvanCF369BLE extends BluetoothCommunication {
     }
 
     @Override
-    boolean nextCleanUpCmd(int stateNr) {
+    protected boolean nextCleanUpCmd(int stateNr) {
         return false;
     }
 

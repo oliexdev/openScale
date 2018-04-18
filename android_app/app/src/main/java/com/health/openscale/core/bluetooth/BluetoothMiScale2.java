@@ -85,7 +85,7 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
 
 
     @Override
-    boolean nextInitCmd(int stateNr) {
+    protected boolean nextInitCmd(int stateNr) {
         switch (stateNr) {
             case 0:
                 // set scale units
@@ -119,7 +119,7 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
     }
 
     @Override
-    boolean nextBluetoothCmd(int stateNr) {
+    protected boolean nextBluetoothCmd(int stateNr) {
         switch (stateNr) {
             case 0:
                 // configure scale to get only last measurements
@@ -148,7 +148,7 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
     }
 
     @Override
-    boolean nextCleanUpCmd(int stateNr) {
+    protected boolean nextCleanUpCmd(int stateNr) {
 
         switch (stateNr) {
             case 0:

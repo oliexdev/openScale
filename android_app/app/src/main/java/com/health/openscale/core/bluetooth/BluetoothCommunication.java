@@ -126,7 +126,7 @@ public abstract class BluetoothCommunication {
      * @param stateNr the current step number
      * @return false if no next step is available otherwise true
      */
-    abstract boolean nextInitCmd(int stateNr);
+    abstract protected boolean nextInitCmd(int stateNr);
 
     /**
      * State machine for the normal/command process of the Bluetooth device.
@@ -136,7 +136,7 @@ public abstract class BluetoothCommunication {
      * @param stateNr the current step number
      * @return false if no next step is available otherwise true
      */
-    abstract boolean nextBluetoothCmd(int stateNr);
+    abstract protected boolean nextBluetoothCmd(int stateNr);
 
     /**
      * Set the next command number of the current state.
@@ -165,7 +165,7 @@ public abstract class BluetoothCommunication {
      * @param stateNr the current step number
      * @return false if no next step is available otherwise true
      */
-    abstract boolean nextCleanUpCmd(int stateNr);
+    abstract protected boolean nextCleanUpCmd(int stateNr);
 
     /**
      * Method is triggered if a Bluetooth data is read from a device.
