@@ -64,7 +64,7 @@ public class BluetoothYunmaiSE_Mini extends BluetoothCommunication {
                 byte[] user_add_or_query = new byte[]{
                         (byte) 0x0d, (byte) 0x12, (byte) 0x10, (byte) 0x01, (byte) 0x00, (byte) 0x00,
                         userId[0], userId[1], (byte) selectedUser.getBodyHeight(), sex,
-                        (byte) selectedUser.getAge(new Date()), (byte) 0x55, (byte) 0x5a, (byte) 0x00,
+                        (byte) selectedUser.getAge(), (byte) 0x55, (byte) 0x5a, (byte) 0x00,
                         (byte)0x00, display_unit, (byte) 0x03, (byte) 0x00};
                 user_add_or_query[17] = xor_checksum(user_add_or_query);
                 writeBytes(WEIGHT_CMD_SERVICE, WEIGHT_CMD_CHARACTERISTIC, user_add_or_query);

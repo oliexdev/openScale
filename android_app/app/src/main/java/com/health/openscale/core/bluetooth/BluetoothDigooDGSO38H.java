@@ -97,7 +97,7 @@ public class BluetoothDigooDGSO38H extends BluetoothCommunication {
                 //The weight is stabilized, now we want to measure all available values
                 byte gender = selectedUser.getGender().isMale() ? (byte)0x00: (byte)0x01;
                 byte height = (byte) (selectedUser.getBodyHeight() & 0xFF);
-                byte age = (byte)(selectedUser.getAge(new Date()) & 0xff);
+                byte age = (byte)(selectedUser.getAge() & 0xff);
                 byte unit = 0x01; // kg
                 switch (selectedUser.getScaleUnit()) {
                     case LB:
