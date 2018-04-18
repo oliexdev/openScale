@@ -54,19 +54,19 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
     }
 
     @Override
-    boolean nextInitCmd(int stateNr) {
+    protected boolean nextInitCmd(int stateNr) {
         Log.w("openscale","ihealthHS3 - nextInitCmd - returning false");
         return false;
     }
 
     @Override
-    boolean nextBluetoothCmd(int stateNr) {
+    protected boolean nextBluetoothCmd(int stateNr) {
         Log.w("openscale","ihealthHS3 - nextBluetoothCmd - returning false");
         return false;
     }
 
     @Override
-    boolean nextCleanUpCmd(int stateNr) {
+    protected boolean nextCleanUpCmd(int stateNr) {
         Log.w("openscale","ihealthHS3 - nextCleanUpCmd - returning false");
         return false;
     }
