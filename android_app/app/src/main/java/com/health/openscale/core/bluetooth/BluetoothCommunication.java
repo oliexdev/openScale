@@ -25,13 +25,14 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.os.Handler;
-import android.util.Log;
 
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.UUID;
+
+import timber.log.Timber;
 
 public abstract class BluetoothCommunication {
     public enum BT_STATUS_CODE {BT_RETRIEVE_SCALE_DATA, BT_INIT_PROCESS, BT_CONNECTION_ESTABLISHED,
@@ -300,7 +301,7 @@ public abstract class BluetoothCommunication {
      */
     protected String byteInHex(byte[] data) {
         if (data == null) {
-            Log.e("BluetoothCommunication", "Data is null");
+            Timber.e("Data is null");
             return "";
         }
 
@@ -377,7 +378,7 @@ public abstract class BluetoothCommunication {
     protected void nextMachineStateStep() {
         switch (btMachineState) {
             case BT_INIT_STATE:
-                Log.d("BluetoothCommunication", "INIT STATE: " + initStepNr);
+                Timber.d("INIT STATE: " + initStepNr);
                 if (!nextInitCmd(initStepNr)) {
                     btMachineState = BT_MACHINE_STATE.BT_CMD_STATE;
                     nextMachineStateStep();
@@ -385,12 +386,12 @@ public abstract class BluetoothCommunication {
                 initStepNr++;
                 break;
             case BT_CMD_STATE:
-                Log.d("BluetoothCommunication", "CMD STATE: " + cmdStepNr);
+                Timber.d("CMD STATE: " + cmdStepNr);
                 nextBluetoothCmd(cmdStepNr);
                 cmdStepNr++;
                 break;
             case BT_CLEANUP_STATE:
-                Log.d("BluetoothCommunication", "CLEANUP STATE: " + cleanupStepNr);
+                Timber.d("CLEANUP STATE: " + cleanupStepNr);
                 nextCleanUpCmd(cleanupStepNr);
                 cleanupStepNr++;
                 break;
@@ -408,7 +409,7 @@ public abstract class BluetoothCommunication {
             BluetoothGattDescriptor descriptorRequest = descriptorRequestQueue.poll();
             if (descriptorRequest != null) {
                 if (!bluetoothGatt.writeDescriptor(descriptorRequest)) {
-                    Log.d("BTC", "Descriptor Write failed(" + byteInHex(descriptorRequest.getValue()) + ")");
+                    Timber.d("Descriptor Write failed(" + byteInHex(descriptorRequest.getValue()) + ")");
                 }
                 openRequest = true;
                 return;
@@ -418,7 +419,7 @@ public abstract class BluetoothCommunication {
             BluetoothGattCharacteristic characteristicRequest = characteristicRequestQueue.poll();
             if (characteristicRequest != null) {
                 if (!bluetoothGatt.writeCharacteristic(characteristicRequest)) {
-                    Log.d("BTC", "Characteristic Write failed(" + byteInHex(characteristicRequest.getValue()) + ")");
+                    Timber.d("Characteristic Write failed(" + byteInHex(characteristicRequest.getValue()) + ")");
                 }
                 openRequest = true;
                 return;

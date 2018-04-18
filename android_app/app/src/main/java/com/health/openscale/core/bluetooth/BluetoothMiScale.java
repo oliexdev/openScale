@@ -21,7 +21,6 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.util.Log;
 
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
@@ -34,6 +33,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Random;
 import java.util.UUID;
+
+import timber.log.Timber;
 
 import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_STATUS_CODE.BT_UNEXPECTED_ERROR;
 
@@ -67,7 +68,7 @@ public class BluetoothMiScale extends BluetoothCommunication {
         if (currentYear == scaleYear && currentMonth == scaleMonth && currentDay == scaleDay) {
             setBtMachineState(BT_MACHINE_STATE.BT_CMD_STATE);
         } else {
-            Log.d("BluetoothMiScale", "Current year and scale year is different");
+            Timber.d("Current year and scale year is different");
         }
     }
 
@@ -203,14 +204,14 @@ public class BluetoothMiScale extends BluetoothCommunication {
             final boolean isLBSUnit = isBitSet(ctrlByte, 0);
             final boolean isCattyUnit = isBitSet(ctrlByte, 4);
 
-            /*Log.d("GattCallback", "IsWeightRemoved: " + isBitSet(ctrlByte, 7));
-            Log.d("GattCallback", "6 LSB Unknown: " + isBitSet(ctrlByte, 6));
-            Log.d("GattCallback", "IsStabilized: " + isBitSet(ctrlByte, 5));
-            Log.d("GattCallback", "IsCattyOrKg: " + isBitSet(ctrlByte, 4));
-            Log.d("GattCallback", "3 LSB Unknown: " + isBitSet(ctrlByte, 3));
-            Log.d("GattCallback", "2 LSB Unknown: " + isBitSet(ctrlByte, 2));
-            Log.d("GattCallback", "1 LSB Unknown: " + isBitSet(ctrlByte, 1));
-            Log.d("GattCallback", "IsLBS: " + isBitSet(ctrlByte, 0));*/
+            /*Timber.d("IsWeightRemoved: " + isBitSet(ctrlByte, 7));
+            Timber.d("6 LSB Unknown: " + isBitSet(ctrlByte, 6));
+            Timber.d("IsStabilized: " + isBitSet(ctrlByte, 5));
+            Timber.d("IsCattyOrKg: " + isBitSet(ctrlByte, 4));
+            Timber.d("3 LSB Unknown: " + isBitSet(ctrlByte, 3));
+            Timber.d("2 LSB Unknown: " + isBitSet(ctrlByte, 2));
+            Timber.d("1 LSB Unknown: " + isBitSet(ctrlByte, 1));
+            Timber.d("IsLBS: " + isBitSet(ctrlByte, 0));*/
 
             // Only if the value is stabilized and the weight is *not* removed, the date is valid
             if (isStabilized && !isWeightRemoved) {
@@ -242,7 +243,7 @@ public class BluetoothMiScale extends BluetoothCommunication {
 
                     addScaleData(scaleBtData);
                 } else {
-                    Log.e("BluetoothMiScale", "Invalid Mi scale weight year " + year);
+                    Timber.e("Invalid Mi scale weight year " + year);
                 }
             }
         } catch (ParseException e) {

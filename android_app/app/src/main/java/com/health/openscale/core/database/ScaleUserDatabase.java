@@ -20,7 +20,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
 
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
@@ -29,6 +28,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Locale;
+
+import timber.log.Timber;
 
 public class ScaleUserDatabase extends SQLiteOpenHelper {
     private static final int DATABASE_VERSION = 3;
@@ -143,10 +144,10 @@ public class ScaleUserDatabase extends SQLiteOpenHelper {
             scaleUser.setInitialWeight(Math.round(initial_weight * 100.0f) / 100.0f);
             scaleUser.setGoalWeight(Math.round(goal_weight * 100.0f) / 100.0f);
         } catch (ParseException ex) {
-            Log.e("ScaleDatabase", "Can't parse the date time string: " + ex.getMessage());
+            Timber.e(ex, "Can't parse the date time string");
         }
         catch (IllegalArgumentException ex) {
-            Log.e("ScaleDatabase", "Illegal argument while reading from scale database: " + ex.getMessage());
+            Timber.e(ex, "Illegal argument while reading from scale database");
         }
 
         return scaleUser;

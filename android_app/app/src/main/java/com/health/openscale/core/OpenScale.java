@@ -29,7 +29,6 @@ import android.preference.PreferenceManager;
 import android.provider.OpenableColumns;
 import android.support.v4.app.Fragment;
 import android.text.format.DateFormat;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.health.openscale.R;
@@ -69,6 +68,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import timber.log.Timber;
+
 public class OpenScale {
 
     public static final String DATABASE_NAME = "openScale.db";
@@ -103,6 +104,7 @@ public class OpenScale {
 
     public static OpenScale getInstance(Context context) {
         if (instance == null) {
+            Timber.d("Creating instance");
             instance = new OpenScale(context.getApplicationContext());
         }
 
@@ -161,6 +163,7 @@ public class OpenScale {
     }
 
     public void selectScaleUser(int userId) {
+        Timber.d("Select user %d", userId);
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         prefs.edit().putInt("selectedUserId", userId).apply();
 
@@ -202,6 +205,7 @@ public class OpenScale {
                 return selectedScaleUser;
             }
         } catch (Exception e) {
+            Timber.e(e);
             Toast.makeText(context, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
 
@@ -209,6 +213,7 @@ public class OpenScale {
     }
 
     public void deleteScaleUser(int id) {
+        Timber.d("Delete user %d", id);
         userDAO.delete(userDAO.get(id));
         selectedScaleUser = null;
 
@@ -531,8 +536,7 @@ public class OpenScale {
     }
 
     public boolean connectToBluetoothDevice(String deviceName, String hwAddress, Handler callbackBtHandler) {
-        Log.d("OpenScale", "Trying to connect to bluetooth device " + hwAddress
-                + " (" + deviceName + ")");
+        Timber.d("Trying to connect to bluetooth device %s (%s)", hwAddress, deviceName);
 
         disconnectFromBluetoothDevice();
 
@@ -552,7 +556,7 @@ public class OpenScale {
             return false;
         }
 
-        Log.d("OpenScale", "Disconnecting from bluetooth device");
+        Timber.d("Disconnecting from bluetooth device");
         btDeviceDriver.disconnect(true);
         btDeviceDriver = null;
 

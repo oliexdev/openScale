@@ -26,7 +26,6 @@ import android.support.test.runner.screenshot.BasicScreenCaptureProcessor;
 import android.support.test.runner.screenshot.ScreenCapture;
 import android.support.test.runner.screenshot.Screenshot;
 import android.test.suitebuilder.annotation.LargeTest;
-import android.util.Log;
 import android.view.Gravity;
 
 import com.health.openscale.R;
@@ -50,6 +49,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
+
+import timber.log.Timber;
 
 import static android.os.Environment.DIRECTORY_PICTURES;
 import static android.os.Environment.getExternalStoragePublicDirectory;
@@ -194,7 +195,7 @@ public class ScreenshotRecorder {
         try {
             scaleMeasurementList = CsvHelper.importFrom(new BufferedReader(new StringReader(data)));
         } catch (IOException | ParseException e) {
-            Log.e("ScreenshotRecorder", e.getMessage());
+            Timber.e(e);
         }
 
         // set current year to the measurement data
@@ -282,7 +283,7 @@ public class ScreenshotRecorder {
 
             mActivityTestRule.finishActivity();
         } catch (InterruptedException e) {
-            Log.e("ScreenshotRecorder", e.getMessage());
+            Timber.e(e);
         }
     }
 

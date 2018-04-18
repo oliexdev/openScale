@@ -29,5 +29,8 @@ public class Application extends android.app.Application {
         if (BuildConfig.DEBUG) {
             Timber.plant(new Timber.DebugTree());
         }
+
+        // Create OpenScale instance
+        OpenScale.getInstance(getApplicationContext());
     }
 }
