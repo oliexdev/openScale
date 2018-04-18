@@ -21,9 +21,11 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
 import android.widget.Toast;
 
+import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
+import com.health.openscale.core.datatypes.ScaleUser;
+import com.health.openscale.core.utils.Converters;
 
-import java.util.Date;
 import java.util.UUID;
 
 public class BluetoothOneByone extends BluetoothCommunication {
@@ -41,7 +43,7 @@ public class BluetoothOneByone extends BluetoothCommunication {
 
     @Override
     public String driverName() {
-        return "1byone scale";
+        return "1byone";
     }
 
     @Override
@@ -54,11 +56,35 @@ public class BluetoothOneByone extends BluetoothCommunication {
                 setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, CMD_MEASUREMENT_CUSTOM_CHARACTERISTIC, WEIGHT_MEASUREMENT_CONFIG);
                 break;
             case 2:
-                byte[] magicBytes = {(byte)0xfd,(byte)0x37,(byte)0x01,(byte)0x01,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0xca};
+                byte[] magicBytes = {(byte)0xfd,(byte)0x37,(byte)0x01,(byte)0x01,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00};
+                magicBytes[magicBytes.length - 1] =
+                        xorChecksum(magicBytes, 0, magicBytes.length - 1);
                 writeBytes(WEIGHT_MEASUREMENT_SERVICE, CMD_MEASUREMENT_CHARACTERISTIC, magicBytes);
                 break;
             case 3:
-                byte[] magicBytes2 = {(byte)0xfe, (byte)0x01, (byte)0x01, (byte)0x00, (byte)0xaa, (byte)0x2d, (byte)0x02, (byte)0x85};
+                final ScaleUser selectedUser = OpenScale.getInstance(context).getSelectedScaleUser();
+
+                byte userId = (byte) 0x01;
+                byte sex = selectedUser.getGender().isMale() ? (byte) 0x01 : (byte) 0x00;
+                // 0x00 = ordinary, 0x01 = amateur, 0x02 = professional
+                byte exerciseLevel = (byte) 0x00;
+                byte height = (byte) selectedUser.getBodyHeight();
+                byte age = (byte) selectedUser.getAge();
+
+                byte unit = 0x01; // kg
+                switch (selectedUser.getScaleUnit()) {
+                    case LB:
+                        unit = 0x02;
+                        break;
+                    case ST:
+                        unit = 0x04;
+                        break;
+                }
+
+                byte[] magicBytes2 = {(byte) 0xfe, userId, sex, exerciseLevel, height, age, unit, (byte) 0x00};
+                magicBytes2[magicBytes2.length - 1] =
+                        xorChecksum(magicBytes2, 1, magicBytes2.length - 2);
+
                 writeBytes(WEIGHT_MEASUREMENT_SERVICE, CMD_MEASUREMENT_CHARACTERISTIC, magicBytes2);
                 break;
             default:
@@ -84,22 +110,20 @@ public class BluetoothOneByone extends BluetoothCommunication {
 
         Toast.makeText(context, "Log Data: " + byteInHex(data), Toast.LENGTH_LONG).show();
 
-        if (data != null && data.length > 0) {
-            // if data is valid data
-            if (data.length == 16) {
-                parseBytes(data);
-            }
+        // if data is valid data
+        if (data != null && data.length == 16) {
+            parseBytes(data);
         }
     }
 
     private void parseBytes(byte[] weightBytes) {
-        float weight = (float) (((weightBytes[4] & 0xFF) << 8) | (weightBytes[5] & 0xFF)) / 10.0f; // kg
-        float fat = (float)(((weightBytes[6] & 0xFF) << 8) | (weightBytes[7] & 0xFF)) / 10.0f; // %
-        float bone = (float)(((weightBytes[8] & 0xFF) & 0xFF)) / 10.0f; // %
-        float muscle = (float)(((weightBytes[9] & 0xFF) << 8) | (weightBytes[10] & 0xFF)) / 10.0f; // %
-        float visfat = (float)(((weightBytes[11] & 0xFF) & 0xFF)) / 10.0f; // %
-        float water = (float)(((weightBytes[12] & 0xFF) << 8) | (weightBytes[13] & 0xFF)) / 10.0f; // %
-        float bmr = (float)(((weightBytes[14] & 0xFF) << 8) | (weightBytes[15] & 0xFF)); // kcal
+        float weight = Converters.fromUnsignedInt16Be(weightBytes, 4) / 10.0f; // kg
+        float fat = Converters.fromUnsignedInt16Be(weightBytes, 6) / 10.0f; // %
+        float bone = weightBytes[8] & 0xFF; // %
+        float muscle = Converters.fromUnsignedInt16Be(weightBytes, 9) / 10.0f; // %
+        float visceralFat = weightBytes[11] & 0xFF; // %
+        float water = Converters.fromUnsignedInt16Be(weightBytes, 12) / 10.0f; // %
+        float bmr = Converters.fromUnsignedInt16Be(weightBytes, 14); // kCal
 
         ScaleMeasurement scaleBtData = new ScaleMeasurement();
 
@@ -108,7 +132,6 @@ public class BluetoothOneByone extends BluetoothCommunication {
         scaleBtData.setMuscle(muscle);
         scaleBtData.setWater(water);
         scaleBtData.setBone(bone);
-        scaleBtData.setDateTime(new Date());
 
         addScaleData(scaleBtData);
     }
