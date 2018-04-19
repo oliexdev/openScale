@@ -79,7 +79,6 @@
     <string name="info_bluetooth_connection_successful">接続が確立しました</string>
     <string name="label_device_type">デバイスタイプ</string>
     <string name="info_bluetooth_init">Bluetooth接続を初期化する</string>
-    <string name="label_smartUserAssign"></string>
     <string name="default_value_reminder_notify_text">体重測定の時間</string>
     <string name="label_reminder">リマインダー</string>
     <string name="label_reminder_notify_text">通知内容</string>
@@ -129,7 +128,6 @@
     <string name="label_ignoreOutOfRange">範囲外のデータを無視する</string>
     <string name="label_help">ヘルプ</string>
 
-    <string name="label_feedback_message_yes"></string>
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">予期せぬエラーが生じました。
 \n
 \nエラーの詳細を含む新しいIssueを作成してください。

@@ -118,7 +118,7 @@
   <string name="error_max_scale_users">Dosiahli ste maximálny počet viacerých používateľov</string>
   <string name="info_step_on_scale">Prosím, postavte sa na váhu pre referenčné meranie</string>
   <string name="info_measuring">Nameraná hmotnosť: %.2f</string>
-<string name="title_about">O aplikácii</string>
+    <string name="title_about">O aplikácii</string>
     <string name="title_general">Všeobecné</string>
 
     <string name="open_drawer">otvoriť</string>
@@ -180,11 +180,9 @@
     <string name="label_set_default_order">Nastaviť predvolené radenie</string>
     <string name="label_export_overwrite">Prepísať predchádzajúci export \"%s\"?</string>
 
-
-<string name="language_default">Predvolený</string>
+    <string name="language_default">Predvolený</string>
     <string name="label_language">Jazyk</string>
     <string name="theme_light">Svetlý</string>
     <string name="theme_dark">Tmavý</string>
     <string name="label_contribute_translation">Pomôžte s prekladom</string>
-    <string name="label_add_or_fix_translation"></string>
-    </resources>
+</resources>
