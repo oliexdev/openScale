@@ -26,7 +26,6 @@ import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
 
 import java.util.Arrays;
-import java.util.Date;
 import java.util.UUID;
 
 public class BluetoothExcelvanCF369BLE extends BluetoothCommunication {

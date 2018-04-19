@@ -5,6 +5,7 @@
         <!-- Keep the list below alphabetically sorted -->
         <item>Brazilian Portuguese</item>
         <item>Catalan (català)</item>
+        <item>Chinese (中文)</item>
         <item>Czech (čeština)</item>
         <item>Dutch (Nederlands)</item>
         <item>English</item>
@@ -24,6 +25,7 @@
         <!-- The order below should match the langage order above -->
         <item>pt-BR</item>
         <item>ca</item>
+        <item>zh-HK</item>
         <item>cs</item>
         <item>nl</item>
         <item>en</item>
