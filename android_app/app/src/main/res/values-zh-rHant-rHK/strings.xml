@@ -4,14 +4,14 @@
     <string name="title_table">列表</string>
     <string name="title_statistics">統計</string>
     <string name="title_users">用戶</string>
-    <string name="title_measurements">量度數據</string>
+    <string name="title_measurements">測量數據</string>
     <string name="title_about">關於</string>
     <string name="title_general">總覽</string>
 
     <string name="action_settings">設定</string>
     <string name="action_bluetooth_status">藍芽狀況</string>
     <string name="open_drawer">開啟</string>
-    <string name="close_drawer">結束</string>
+    <string name="close_drawer">關閉</string>
 
     <string name="label_cancel">取消</string>
     <string name="label_ok">決定</string>
@@ -67,7 +67,7 @@
     <string name="label_delete_all">全取消</string>
 
     <string name="error_value_required">須要輸入數值</string>
-    <string name="error_value_range">數目超出範圍</string>
+    <string name="error_value_range">數值超出範圍</string>
     <string name="error_exporting">滙出出錯</string>
     <string name="error_importing">滙入出錯</string>
     <string name="error_user_name_required">錯誤: 必須輸入名字</string>
@@ -82,7 +82,7 @@
     <string name="info_data_imported">數據滙入來源</string>
     <string name="info_enter_value_cm">數值單位為 cm</string>
     <string name="info_enter_comment">可加備註</string>
-    <string name="info_enter_value_scale_unit">數值採用儀器上單位</string>
+    <string name="info_enter_value_scale_unit">採用量重器上單位</string>
     <string name="info_is_visible">可表示</string>
     <string name="info_is_not_visible">不表示</string>
     <string name="info_is_enable">已啟用</string>
@@ -114,7 +114,7 @@
     <string name="label_device_type">器材類別</string>
 
     <string name="label_enable_labels">標記數據點</string>
-    <string name="label_enable_points">點擊數據點</string>
+    <string name="label_enable_points">點示數據點</string>
 
     <string name="label_delete_confirmation">確認刪除</string>
 
@@ -152,7 +152,7 @@
     <string name="label_ignoreOutOfRange">超出範圍的數據無效</string>
     <string name="label_initial_weight">初始體重</string>
     <string name="label_regression_line">體重回歸線</string>
-    <string name="label_regression_line_degree">回歸曲線度數</string>
+    <string name="label_regression_line_degree">回歸線曲度</string>
     <string name="label_goal_line">目標線</string>
     <string name="label_help">協助</string>
 
@@ -162,10 +162,10 @@
     <string name="label_feedback_message_yes">可以 !</string>
     <string name="label_feedback_message_no">暫時不想</string>
     <string name="label_feedback_message_positive">當然可以</string>
-    <string name="label_feedback_message_negative">不用了，謝謝。</string>
+    <string name="label_feedback_message_negative">不用了，謝謝</string>
 
     <string name="error_max_scale_users">用戶數量已達頂點</string>
-    <string name="info_step_on_scale">請赤腳站到量重器上， 以測量其他相關數據。</string>
+    <string name="info_step_on_scale">請赤腳站到量重器上， 以測量其他相關數據</string>
     <string name="info_measuring">測得體重: %.2f</string>
 
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">運行出錯。
@@ -182,7 +182,7 @@
     <string name="customactivityoncrash_error_activity_error_details_clipboard_label">錯誤信息</string>
     <string name="toggle_expand">切換收展</string>
     <string name="edit">編輯</string>
-    <string name="save">記錄</string>
+    <string name="save">存檔</string>
 
     <string name="label_month_view">按月顯示</string>
     <string name="label_weeks_view">按周顯示</string>
@@ -192,14 +192,14 @@
 \n當搜尋完成時， 此權限可以再次關上。</string>
     <string name="permission_bluetooth_info_title">資料</string>
     <string name="label_next">下一項</string>
-    <string name="label_press_hold_reorder">長按去排序</string>
-    <string name="label_set_default_order">設定預定的排序</string>
+    <string name="label_press_hold_reorder">長按下去排序</string>
+    <string name="label_set_default_order">設定預設的排序</string>
     <string name="label_export_overwrite">覆寫舊有的滙出資料 \"%s\"?</string>
     <string name="label_include_in_overview_graph">附設在大圖表中</string>
     <string name="label_measurement_in_percent">測量單位為 %</string>
     <string name="label_estimate_measurement">評估的量度</string>
     <string name="label_estimation_formula">評估的數學程式</string>
-    <string name="language_default">系統預定</string>
+    <string name="language_default">系統預設</string>
     <string name="label_language">語言</string>
     <string name="theme_light">明亮</string>
     <string name="theme_dark">暗淡</string>
@@ -209,6 +209,6 @@
     <string name="label_percent">百分比</string>
     <string name="label_estimated">評估</string>
     <string name="label_estimate_measurement_summary">基於體重， 身高，年齡，性別 等。</string>
-    <string name="label_scale_not_supported">你的測重器不支援嗎？</string>
+    <string name="label_scale_not_supported">你的量重器不支援嗎？</string>
     <string name="label_click_to_help_add_support">請點擊此處以協助支援</string>
 </resources>
