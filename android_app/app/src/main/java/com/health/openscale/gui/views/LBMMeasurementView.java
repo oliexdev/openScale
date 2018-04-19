@@ -25,6 +25,7 @@ import com.health.openscale.core.bodymetric.EstimatedLBMMetric;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
+import com.health.openscale.core.utils.Converters;
 
 public class LBMMeasurementView extends FloatMeasurementView {
     // Don't change key value, it may be stored persistent in preferences
@@ -41,22 +42,22 @@ public class LBMMeasurementView extends FloatMeasurementView {
 
     @Override
     protected float getMeasurementValue(ScaleMeasurement measurement) {
-        return measurement.getLbm();
+        return Converters.fromKilogram(measurement.getLbm(), getScaleUser().getScaleUnit());
     }
 
     @Override
     protected void setMeasurementValue(float value, ScaleMeasurement measurement) {
-        measurement.setLbm(value);
+        measurement.setLbm(Converters.toKilogram(value, getScaleUser().getScaleUnit()));
     }
 
     @Override
     public String getUnit() {
-        return "kg";
+        return getScaleUser().getScaleUnit().toString();
     }
 
     @Override
     protected float getMaxValue() {
-        return 300;
+        return Converters.fromKilogram(300, getScaleUser().getScaleUnit());
     }
 
     @Override
