@@ -599,7 +599,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                 command[2] = (byte) 0x02;
                 break;
             case ST:
-                command[3] = (byte) 0x04;
+                command[2] = (byte) 0x04;
                 break;
         }
         Log.d(TAG, "Setting unit " + selectedUser.getScaleUnit().toString());
