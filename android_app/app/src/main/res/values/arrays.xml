@@ -3,7 +3,8 @@
     <string-array name="language_entries">
         <item>@string/language_default</item>
         <!-- Keep the list below alphabetically sorted -->
-        <item>Brazilian Portuguese</item>
+        <!-- Native names from https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes -->
+        <item>Brazilian Portuguese (Português)</item>
         <item>Catalan (català)</item>
         <item>Chinese (中文)</item>
         <item>Czech (čeština)</item>
@@ -22,7 +23,7 @@
 
     <string-array name="language_values">
         <item>default</item>
-        <!-- The order below should match the langage order above -->
+        <!-- The order below should match the language order above -->
         <item>pt-BR</item>
         <item>ca</item>
         <item>zh-HK</item>
