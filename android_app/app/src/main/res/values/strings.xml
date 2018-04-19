@@ -201,20 +201,6 @@
     <string name="label_estimation_formula">Estimation formula</string>
     <string name="language_default">System default</string>
     <string name="label_language">Language</string>
-    <string name="language_brazilian_portuguese" translatable="false">Brazilian Portuguese</string>
-    <string name="language_catalan" translatable="false">Catalan (català)</string>
-    <string name="language_czech" translatable="false">Czech (čeština)</string>
-    <string name="language_dutch" translatable="false">Dutch (Nederlands)</string>
-    <string name="language_english" translatable="false">English</string>
-    <string name="language_french" translatable="false">French (français)</string>
-    <string name="language_german" translatable="false">German (Deutsch)</string>
-    <string name="language_japanese" translatable="false">Japanese (日本語 (にほんご))</string>
-    <string name="language_norwegian_bokmal" translatable="false">Norwegian Bokmål (Norsk)</string>
-    <string name="language_polish" translatable="false">Polish (język polski)</string>
-    <string name="language_slovak" translatable="false">Slovak (Slovenčina)</string>
-    <string name="language_spanish" translatable="false">Spanish (Español)</string>
-    <string name="language_swedish" translatable="false">Swedish (Svenska)</string>
-    <string name="language_turkish" translatable="false">Turkish (Türkçe)</string>
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
     <string name="label_contribute_translation">Contribute translation</string>
