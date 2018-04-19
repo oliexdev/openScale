@@ -187,11 +187,17 @@
     <string name="label_weeks_view">Widok tygodnia</string>
 
     <string name="permission_not_granted">Nie przyznano uprawnień</string>
-    <string name="permission_bluetooth_info">openScale requires permission to access the coarse location to search for Bluetooth devices</string>
+    <string name="permission_bluetooth_info">Wymagane zezwolenie na dostęp do lokalizacji w celu znalezienia urządzeń Bluetooth. Po znalezieniu urządzenia zezwolenie można wycofać.</string>
     <string name="permission_bluetooth_info_title">Informacje</string>
     <string name="label_next">Następny</string>
     <string name="label_press_hold_reorder">Naciśnij i przytrzymaj by zmienić kolejność</string>
     <string name="label_set_default_order">Ustaw domyślną kolejność</string>
     <string name="label_export_overwrite">Nadpisać poprzedni eksport \"%s\"?</string>
 
-</resources>
+<string name="label_include_in_overview_graph">Umieść na wykresie</string>
+    <string name="label_measurement_in_percent">Pomiar w %</string>
+    <string name="label_estimate_measurement">Pomiar szacunkowy</string>
+    <string name="label_language">Język</string>
+    <string name="theme_light">Jasny</string>
+    <string name="theme_dark">Ciemny</string>
+    </resources>
