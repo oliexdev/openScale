@@ -130,7 +130,16 @@ public class MeasurementViewSettings {
     }
 
     public boolean isPercentageEnabled() {
-        return preferences.getBoolean(getPercentageEnabledKey(), true);
+        boolean defaultValue;
+        switch (key) {
+            case BoneMeasurementView.KEY:
+                defaultValue = false;
+                break;
+            default:
+                defaultValue = true;
+                break;
+        }
+        return preferences.getBoolean(getPercentageEnabledKey(), defaultValue);
     }
 
     public String getEstimationEnabledKey() {

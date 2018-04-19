@@ -39,6 +39,11 @@ public class BoneMeasurementView extends FloatMeasurementView {
     }
 
     @Override
+    protected boolean supportsAbsoluteWeightToPercentageConversion() {
+        return true;
+    }
+
+    @Override
     protected float getMeasurementValue(ScaleMeasurement measurement) {
         return Converters.fromKilogram(measurement.getBone(), getScaleUser().getScaleUnit());
     }
@@ -50,12 +55,17 @@ public class BoneMeasurementView extends FloatMeasurementView {
 
     @Override
     public String getUnit() {
+        if (shouldConvertAbsoluteWeightToPercentage()) {
+            return "%";
+        }
+
         return getScaleUser().getScaleUnit().toString();
     }
 
     @Override
     protected float getMaxValue() {
-        return Converters.fromKilogram(50, getScaleUser().getScaleUnit());
+        return maybeConvertAbsoluteWeightToPercentage(
+                Converters.fromKilogram(50, getScaleUser().getScaleUnit()));
     }
 
     @Override

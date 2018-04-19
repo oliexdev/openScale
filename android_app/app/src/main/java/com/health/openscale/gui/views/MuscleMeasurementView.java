@@ -38,7 +38,7 @@ public class MuscleMeasurementView extends FloatMeasurementView {
     }
 
     @Override
-    protected boolean canConvertPercentageToAbsoluteWeight() {
+    protected boolean supportsPercentageToAbsoluteWeightConversion() {
         return true;
     }
 
@@ -63,7 +63,7 @@ public class MuscleMeasurementView extends FloatMeasurementView {
 
     @Override
     protected float getMaxValue() {
-        return maybeConvertPercentageToAbsolute(80);
+        return maybeConvertPercentageToAbsoluteWeight(80);
     }
 
     @Override
