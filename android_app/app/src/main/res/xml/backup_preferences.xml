@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <EditTextPreference android:title="@string/label_export_dir" android:key="exportDir" android:defaultValue="openScale backup" />
+    <Preference android:title="@string/label_exportBackup" android:key="exportBackup"/>
+    <Preference android:title="@string/label_importBackup" android:key="importBackup"/>
+
     <CheckBoxPreference android:title="@string/label_auto_backup" android:summaryOn="@string/info_is_enable" android:summaryOff="@string/info_is_not_enable" android:key="autoBackup" android:defaultValue="true"/>
-    <CheckBoxPreference android:title="@string/label_overwrite_backup" android:summaryOn="@string/info_is_enable" android:summaryOff="@string/info_is_not_enable" android:key="overwriteBackup" android:defaultValue="false"/>
+    <CheckBoxPreference android:title="@string/label_overwrite_backup" android:dependency="autoBackup" android:summaryOn="@string/info_is_enable" android:summaryOff="@string/info_is_not_enable" android:key="overwriteBackup" android:defaultValue="false"/>
     <ListPreference
-        android:enabled="false"
+        android:dependency="autoBackup"
         android:entries="@array/auto_backup_entries"
         android:entryValues="@array/auto_backup_values"
         android:key="autoBackup_Schedule"
         android:title="@string/label_auto_backup_schedule"
         android:defaultValue="Monthly"/>
-
-    <Preference android:title="@string/label_exportBackup" android:key="exportBackup"/>
-    <Preference android:title="@string/label_importBackup" android:key="importBackup"/>
+    <EditTextPreference android:title="@string/label_export_dir" android:key="exportDir" android:dependency="autoBackup" android:defaultValue="openScale backup" />
 </PreferenceScreen>

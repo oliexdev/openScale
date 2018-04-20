@@ -16,10 +16,11 @@
 package com.health.openscale.gui.preferences;
 
 import android.content.ComponentName;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
 import android.preference.ListPreference;
@@ -27,35 +28,33 @@ import android.preference.MultiSelectListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceGroup;
-import android.preference.PreferenceManager;
 import android.widget.Toast;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.alarm.AlarmBackupHandler;
 import com.health.openscale.core.alarm.ReminderBootReceiver;
-import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.gui.utils.PermissionHelper;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import static android.app.Activity.RESULT_OK;
+
 public class BackupPreferences extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
     private static final String PREFERENCE_KEY_IMPORT_BACKUP = "importBackup";
     private static final String PREFERENCE_KEY_EXPORT_BACKUP = "exportBackup";
     private static final String PREFERENCE_KEY_AUTO_BACKUP = "autoBackup";
-    private static final String PREFERENCE_KEY_OVERWRITE_BACKUP = "overwriteBackup";
-    private static final String PREFERENCE_KEY_AUTO_BACKUP_SCHEDULE = "autoBackup_Schedule";
+
+    private static final int IMPORT_DATA_REQUEST = 100;
+    private static final int EXPORT_DATA_REQUEST = 101;
 
     private Preference importBackup;
     private Preference exportBackup;
 
     private CheckBoxPreference autoBackup;
-    private CheckBoxPreference overwriteBackup;
-    private ListPreference autoBackupSchedule;
 
     private boolean isAutoBackupAskForPermission;
 
@@ -73,8 +72,6 @@ public class BackupPreferences extends PreferenceFragment implements SharedPrefe
 
         autoBackup = (CheckBoxPreference) findPreference(PREFERENCE_KEY_AUTO_BACKUP);
         autoBackup.setOnPreferenceClickListener(new onClickListenerAutoBackup());
-        overwriteBackup = (CheckBoxPreference) findPreference(PREFERENCE_KEY_OVERWRITE_BACKUP);
-        autoBackupSchedule = (ListPreference) findPreference(PREFERENCE_KEY_AUTO_BACKUP_SCHEDULE);
 
         initSummary(getPreferenceScreen());
         updateBackupPreferences();
@@ -93,17 +90,11 @@ public class BackupPreferences extends PreferenceFragment implements SharedPrefe
 
             pm.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
                     PackageManager.DONT_KILL_APP);
-
-            autoBackupSchedule.setEnabled(true);
-            overwriteBackup.setEnabled(true);
         } else {
             alarmBackupHandler.disableAlarm(getActivity());
 
             pm.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
                     PackageManager.DONT_KILL_APP);
-
-            autoBackupSchedule.setEnabled(false);
-            overwriteBackup.setEnabled(false);
         }
     }
 
@@ -213,72 +204,65 @@ public class BackupPreferences extends PreferenceFragment implements SharedPrefe
         }
     }
 
-    private boolean importBackup() {
-        File exportDir = new File(Environment.getExternalStorageDirectory(), PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext()).getString("exportDir", "openScale Backup"));
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
 
-        String databaseName = "openScale.db";
+        if (resultCode != RESULT_OK || data == null) {
+            return;
+        }
 
         OpenScale openScale = OpenScale.getInstance(getActivity().getApplicationContext());
 
-        if (!isExternalStoragePresent())
-            return false;
+        switch (requestCode) {
+            case IMPORT_DATA_REQUEST:
+                Uri importURI = data.getData();
 
-        File importFile = new File(exportDir, databaseName);
+                try {
+                    openScale.importDatabase(importURI);
+                    Toast.makeText(getActivity().getApplicationContext(), getResources().getString(R.string.info_data_imported) + " " + importURI.getPath(), Toast.LENGTH_SHORT).show();
+                } catch (IOException e) {
+                    Toast.makeText(getActivity().getApplicationContext(), getResources().getString(R.string.error_importing) + " " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    return;
+                }
+                break;
 
-        if (!importFile.exists()) {
-            Toast.makeText(getActivity().getApplicationContext(), getResources().getString(R.string.error_importing) + " "  + exportDir + "/" + databaseName  + " " + getResources().getString(R.string.label_not_found), Toast.LENGTH_SHORT).show();
-            return false;
+            case EXPORT_DATA_REQUEST:
+                Uri exportURI = data.getData();
+
+                try {
+                    openScale.exportDatabase(exportURI);
+                    Toast.makeText(getActivity().getApplicationContext(), getResources().getString(R.string.info_data_exported) +  " " + exportURI.getPath(), Toast.LENGTH_SHORT).show();
+                } catch (IOException e) {
+                    Toast.makeText(getActivity().getApplicationContext(), getResources().getString(R.string.error_exporting) + " " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    return;
+                }
+                break;
         }
+    }
 
-        try {
-            openScale.importDatabase(importFile);
-            Toast.makeText(getActivity().getApplicationContext(), getResources().getString(R.string.info_data_imported) + " " + exportDir + "/" + databaseName, Toast.LENGTH_SHORT).show();
-        } catch (IOException e) {
-            Toast.makeText(getActivity().getApplicationContext(), getResources().getString(R.string.error_importing) + " " + e.getMessage(), Toast.LENGTH_SHORT).show();
-            return false;
-        }
+    private boolean importBackup() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        intent.setType("*/*");
 
-        openScale.reopenDatabase();
-
-        List<ScaleUser> scaleUserList = openScale.getScaleUserList();
-
-        if (!scaleUserList.isEmpty()) {
-            openScale.selectScaleUser(scaleUserList.get(0).getId());
-            openScale.updateScaleData();
-        }
+        startActivityForResult(
+                Intent.createChooser(intent, getResources().getString(R.string.label_import)),
+                IMPORT_DATA_REQUEST);
 
         return true;
     }
 
     private boolean exportBackup() {
-        File exportDir = new File(Environment.getExternalStorageDirectory(), PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext()).getString("exportDir", "openScale Backup"));
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+        intent.setType("*/*");
 
-        String databaseName = "openScale.db";
-
-        if (!isExternalStoragePresent())
-            return false;
-
-        OpenScale openScale = OpenScale.getInstance(getActivity().getApplicationContext());
-
-        File exportFile = new File(exportDir, databaseName);
-
-        if (!exportDir.exists()) {
-            exportDir.mkdirs();
-        }
-
-        try {
-            openScale.exportDatase(exportFile);
-            Toast.makeText(getActivity().getApplicationContext(), getResources().getString(R.string.info_data_exported) +  " " + exportDir + "/" + databaseName, Toast.LENGTH_SHORT).show();
-        } catch (IOException e) {
-            Toast.makeText(getActivity().getApplicationContext(), getResources().getString(R.string.error_exporting) + " " + e.getMessage(), Toast.LENGTH_SHORT).show();
-            return false;
-        }
+        startActivityForResult(intent, EXPORT_DATA_REQUEST);
 
         return true;
-    }
-
-    private boolean isExternalStoragePresent() {
-        return Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
     }
 
     public void onMyOwnRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {

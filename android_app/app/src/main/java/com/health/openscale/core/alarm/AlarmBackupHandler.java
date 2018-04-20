@@ -20,6 +20,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -103,7 +104,7 @@ public class AlarmBackupHandler
         }
 
         try {
-            openScale.exportDatase(exportFile);
+            openScale.exportDatabase(Uri.fromFile(exportFile));
             Log.d("AlarmBackupHandler", "openScale Auto Backup to " + exportFile);
         } catch (IOException e) {
             Log.e("AlarmBackupHandler", "Error while exporting database: " + e.getMessage());
