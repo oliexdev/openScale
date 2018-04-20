@@ -427,11 +427,13 @@ public class OpenScale {
                 output.write(bytes, 0, count);
             }
         } finally {
-            if (input != null)
+            if (input != null) {
                 input.close();
-            if (output != null)
+            }
+            if (output != null) {
                 output.flush();
                 output.close();
+            }
         }
     }
 
