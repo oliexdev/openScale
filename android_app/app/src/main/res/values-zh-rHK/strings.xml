@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<resources><string name="title_overview">慨覽</string>
+<resources><string name="title_overview">概覽</string>
     <string name="title_graph">圖表</string>
     <string name="title_table">列表</string>
     <string name="title_statistics">統計</string>
-    <string name="title_users">用戶</string>
+    <string name="title_users">用戶群</string>
     <string name="title_measurements">測量數據</string>
     <string name="title_about">關於</string>
     <string name="title_general">總覽</string>
@@ -31,18 +31,18 @@
     <string name="label_lbm">淨肉量</string>
     <string name="label_waist">腰圍</string>
     <string name="label_hip">臀圍</string>
-    <string name="label_comment">注備</string>
+    <string name="label_comment">備註</string>
     <string name="label_whtr">腰圍身高比例</string>
     <string name="label_whr">腰臀比例</string>
     <string name="label_bone">骨量</string>
-    <string name="label_smartUserAssign">自動用戶配對</string>
+    <string name="label_smartUserAssign">用戶自動配對</string>
 
     <plurals name="label_days">
 	<item quantity="other">日</item>
 </plurals>
     <string name="label_last_week">過去7日</string>
     <string name="label_last_month">過去30日</string>
-    <string name="label_weight_difference">體重差別</string>
+    <string name="label_weight_difference">體重差距</string>
     <string name="label_goal_date_is">目標日期是</string>
     <string name="label_days_left">餘下日數</string>
 
@@ -59,7 +59,7 @@
     <string name="label_goal_date">目標日期</string>
 
     <string name="label_title_user">用戶</string>
-    <string name="label_title_last_measurement">前次的量度數值</string>
+    <string name="label_title_last_measurement">最新的量度數值</string>
     <string name="label_title_goal">目標</string>
 
     <string name="label_import">滙入</string>
@@ -76,8 +76,8 @@
     <string name="error_initial_weight_required">錯誤: 必須輸入初始體重</string>
     <string name="error_goal_weight_required">錯誤: 必須輸入目標體重</string>
 
-    <string name="info_data_deleted">刪除數據庫項目</string>
-    <string name="info_data_all_deleted">刪除數據庫所有項目</string>
+    <string name="info_data_deleted">數據庫項目已被刪除</string>
+    <string name="info_data_all_deleted">數據庫所有項目已被刪除</string>
     <string name="info_data_exported">數據滙出去處</string>
     <string name="info_data_imported">數據滙入來源</string>
     <string name="info_enter_value_cm">數值單位為 cm</string>
@@ -92,7 +92,7 @@
     <string name="info_bluetooth_connection_lost">藍芽連結中斷</string>
     <string name="info_bluetooth_no_device">找不到藍芽設備</string>
     <string name="info_bluetooth_no_device_set">沒有指定藍芽設備</string>
-    <string name="info_bluetooth_connection_successful">連結完成</string>
+    <string name="info_bluetooth_connection_successful">連結成功</string>
     <string name="info_bluetooth_init">啟動藍芽設備</string>
     <string name="info_bluetooth_connection_error">藍芽出現錯誤</string>
     <string name="info_new_data_added">"%1$.2f%2$s [%3$s] 加入至 %4$s "</string>
@@ -126,13 +126,13 @@
 
     <string name="label_automatic">自動</string>
 
-    <string name="label_theme">主題</string>
+    <string name="label_theme">佈景</string>
 
     <string name="label_reminder">提示</string>
     <string name="label_reminder_weekdays">周一至周五</string>
     <string name="label_reminder_time">時間</string>
     <string name="label_reminder_notify_text">提示文字</string>
-    <string name="default_value_reminder_notify_text">到期量體重</string>
+    <string name="default_value_reminder_notify_text">到期量體重了</string>
 
     <string name="info_on_date">在</string>
 
@@ -164,7 +164,7 @@
     <string name="label_feedback_message_positive">當然可以</string>
     <string name="label_feedback_message_negative">不用了，謝謝</string>
 
-    <string name="error_max_scale_users">用戶數量已達頂點</string>
+    <string name="error_max_scale_users">用戶數量已達上限</string>
     <string name="info_step_on_scale">請赤腳站到量重器上， 以測量其他相關數據</string>
     <string name="info_measuring">測得體重: %.2f</string>
 
@@ -177,10 +177,10 @@
     <string name="customactivityoncrash_error_activity_error_details">出錯資料</string>
     <string name="customactivityoncrash_error_activity_error_details_title">出錯資料</string>
     <string name="customactivityoncrash_error_activity_error_details_close">關閉</string>
-    <string name="customactivityoncrash_error_activity_error_details_copy">抄錄至貼板</string>
-    <string name="customactivityoncrash_error_activity_error_details_copied">已抄錄至貼板</string>
+    <string name="customactivityoncrash_error_activity_error_details_copy">抄錄至剪貼板</string>
+    <string name="customactivityoncrash_error_activity_error_details_copied">已抄錄至剪貼板</string>
     <string name="customactivityoncrash_error_activity_error_details_clipboard_label">錯誤信息</string>
-    <string name="toggle_expand">切換收展</string>
+    <string name="toggle_expand">收展切換</string>
     <string name="edit">編輯</string>
     <string name="save">存檔</string>
 
@@ -188,7 +188,7 @@
     <string name="label_weeks_view">按周顯示</string>
 
     <string name="permission_not_granted">未有開放權限</string>
-    <string name="permission_bluetooth_info">搜尋藍芽器材時， 需要開放粗略位置權限。
+    <string name="permission_bluetooth_info">搜尋藍芽器材時， 需要開放大概位置的權限。 
 \n當搜尋完成時， 此權限可以再次關上。</string>
     <string name="permission_bluetooth_info_title">資料</string>
     <string name="label_next">下一項</string>
