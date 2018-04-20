@@ -124,6 +124,12 @@ public class Converters {
         return kg;
     }
 
+    public static int fromUnsignedInt16Le(byte[] data, int offset) {
+        int value = (data[offset + 1] & 0xFF) << 8;
+        value += data[offset] & 0xFF;
+        return value;
+    }
+
     public static int fromUnsignedInt16Be(byte[] data, int offset) {
         int value = (data[offset] & 0xFF) << 8;
         value += data[offset + 1] & 0xFF;
