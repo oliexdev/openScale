@@ -32,12 +32,22 @@ public class BaseAppCompatActivity extends AppCompatActivity {
     public static final String PREFERENCE_APP_THEME = "app_theme";
     public static final String PREFERENCE_LANGUAGE = "language";
 
+    private static Locale systemDefaultLocale = null;
+
     public static Context createBaseContext(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
         String language = prefs.getString(PREFERENCE_LANGUAGE, "");
         if (language.isEmpty() || language.equals("default")) {
+            if (systemDefaultLocale != null) {
+                Locale.setDefault(systemDefaultLocale);
+                systemDefaultLocale = null;
+            }
             return context;
+        }
+
+        if (systemDefaultLocale == null) {
+            systemDefaultLocale = Locale.getDefault();
         }
 
         Locale locale;
