@@ -106,9 +106,9 @@
     <string name="info_no_selected_user">No user exists. Please create one in the settings.</string>
     <string name="info_no_evaluation_available">Could not evaluate the value</string>
 
-    <string name="question_really_delete">Confirm deletion of entry.</string>
-    <string name="question_really_delete_all">Confirm deletion of all entries.</string>
-    <string name="question_really_delete_user">Confirm deletion of user.</string>
+    <string name="question_really_delete">Delete entry?</string>
+    <string name="question_really_delete_all">Delete all entries for all users?</string>
+    <string name="question_really_delete_user">Delete user?</string>
 
     <string name="label_bluetooth_title">Bluetooth</string>
     <string name="label_bluetooth_enable">Connect to scale on startup</string>
@@ -117,7 +117,7 @@
     <string name="label_bluetooth_searching_finished">Search finished</string>
     <string name="label_device_type">Device Type</string>
 
-    <string name="label_enable_labels">Data point label</string>
+    <string name="label_enable_labels">Data label</string>
     <string name="label_enable_points">Data point</string>
 
     <string name="label_delete_confirmation">Delete confirmation</string>
@@ -162,17 +162,17 @@
 
     <string name="label_feedback_message_enjoying">Enjoying openScale?</string>
     <string name="label_feedback_message_rate_app">How about a rating on Google Play or GitHub?</string>
-    <string name="label_feedback_message_issue">Would you mind providing some feedback?</string>
+    <string name="label_feedback_message_issue">Would you like to provide some feedback?</string>
     <string name="label_feedback_message_yes">Yes</string>
     <string name="label_feedback_message_no">Not really</string>
     <string name="label_feedback_message_positive">OK</string>
-    <string name="label_feedback_message_negative">No</string>
+    <string name="label_feedback_message_negative">No, thanks</string>
 
     <string name="error_max_scale_users">Max. number of concurrent scale users reached</string>
     <string name="info_step_on_scale">Please step barefoot on the scale for reference measurements</string>
     <string name="info_measuring">Measuring weight: %.2f</string>
 
-    <string name="customactivityoncrash_error_activity_error_occurred_explanation">An unexpected error occurred.\n\nPlease create a new issue including containing detailed errors on\nhttps://github.com/oliexdev/openScale/issues</string>
+    <string name="customactivityoncrash_error_activity_error_occurred_explanation">An unexpected error occurred.\n\nPlease create a new issue including the error details on\nhttps://github.com/oliexdev/openScale/issues</string>
     <string name="customactivityoncrash_error_activity_restart_app">Restart app</string>
     <string name="customactivityoncrash_error_activity_close_app">Close app</string>
     <string name="customactivityoncrash_error_activity_error_details">Error details</string>
