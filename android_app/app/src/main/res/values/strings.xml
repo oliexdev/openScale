@@ -23,7 +23,7 @@
     <string name="label_delete">Delete</string>
     <string name="label_add_user">Add user</string>
     <string name="label_share">Share</string>
-    <string name="label_share_subject">openScale CSV data export (%s)</string>
+    <string name="label_share_subject">CSV data export (%s)</string>
 
     <string name="label_weight">Weight</string>
     <string name="label_bmi">Body mass index (BMI)</string>
@@ -47,7 +47,7 @@
     <string name="label_last_week">Last 7 days</string>
     <string name="label_last_month">Last 30 days</string>
     <string name="label_weight_difference">Weight difference</string>
-    <string name="label_goal_date_is">Goal date is</string>
+    <string name="label_goal_date_is">Goal date:</string>
     <string name="label_days_left">Days left</string>
 
     <string name="label_date">Date</string>
@@ -71,28 +71,28 @@
     <string name="label_delete_all">Delete all</string>
 
     <string name="error_value_required">Value required</string>
-    <string name="error_value_range">Value not in range</string>
+    <string name="error_value_range">Value out of range</string>
     <string name="error_exporting">Error exporting</string>
     <string name="error_importing">Error importing</string>
     <string name="error_user_name_required">Error: Name required</string>
-    <string name="error_user_name_too_short">Error: Name must be 3 characters or longer</string>
+    <string name="error_user_name_too_short">Error: Name must be 3 characters or more</string>
     <string name="error_height_required">Error: Height required</string>
     <string name="error_initial_weight_required">Error: Initial weight required</string>
     <string name="error_goal_weight_required">Error: Goal weight required</string>
 
-    <string name="info_data_deleted">Database entry deleted</string>
-    <string name="info_data_all_deleted">All database entries deleted</string>
-    <string name="info_data_exported">Data exported to</string>
-    <string name="info_data_imported">Data imported from</string>
+    <string name="info_data_deleted">Entry deleted</string>
+    <string name="info_data_all_deleted">All entries deleted</string>
+    <string name="info_data_exported">Exported to</string>
+    <string name="info_data_imported">Imported from</string>
     <string name="info_enter_value_cm">Value in cm</string>
     <string name="info_enter_comment">Optional comment</string>
     <string name="info_enter_value_scale_unit">Value in scale unit</string>
     <string name="info_is_visible">is visible</string>
     <string name="info_is_not_visible">is not visible</string>
-    <string name="info_is_enable">is enabled</string>
-    <string name="info_is_not_enable">is disabled</string>
-    <string name="info_is_not_available">is not available</string>
-    <string name="info_bluetooth_try_connection">Connecting to</string>
+    <string name="info_is_enable">enabled</string>
+    <string name="info_is_not_enable">disabled</string>
+    <string name="info_is_not_available">not available</string>
+    <string name="info_bluetooth_try_connection">Connecting to:</string>
     <string name="info_bluetooth_connection_lost">Lost Bluetooth connection</string>
     <string name="info_bluetooth_no_device">No Bluetooth device found</string>
     <string name="info_bluetooth_no_device_set">No Bluetooth device selected</string>
@@ -106,19 +106,19 @@
     <string name="info_no_selected_user">No user exists. Please create one in the settings.</string>
     <string name="info_no_evaluation_available">Could not evaluate the value</string>
 
-    <string name="question_really_delete">Do you really want to delete database entry?</string>
-    <string name="question_really_delete_all">Do you really want to delete all database entries?</string>
-    <string name="question_really_delete_user">Do you really want to delete the user? </string>
+    <string name="question_really_delete">Delete entry?</string>
+    <string name="question_really_delete_all">Delete all entries for all users?</string>
+    <string name="question_really_delete_user">Delete user?</string>
 
     <string name="label_bluetooth_title">Bluetooth</string>
     <string name="label_bluetooth_enable">Connect to scale on startup</string>
     <string name="label_mergeWithLastMeasurement">Merge with last measurement</string>
     <string name="label_bluetooth_searching">Searching for Bluetooth scales</string>
-    <string name="label_bluetooth_searching_finished">Finished searching for Bluetooth scales</string>
+    <string name="label_bluetooth_searching_finished">Search finished</string>
     <string name="label_device_type">Device Type</string>
 
-    <string name="label_enable_labels">Label on data point</string>
-    <string name="label_enable_points">Point on data point</string>
+    <string name="label_enable_labels">Data label</string>
+    <string name="label_enable_points">Data point</string>
 
     <string name="label_delete_confirmation">Delete confirmation</string>
 
@@ -153,7 +153,7 @@
     <string name="label_backup">Backup</string>
     <string name="label_export_dir">Export dir</string>
     <string name="label_not_found">not found</string>
-    <string name="label_ignoreOutOfRange">Ignore data that are out of range</string>
+    <string name="label_ignoreOutOfRange">Ignore out of range data</string>
     <string name="label_initial_weight">Initial weight</string>
     <string name="label_regression_line">Regression weight line</string>
     <string name="label_regression_line_degree">Regression polynomial degree</string>
@@ -161,18 +161,18 @@
     <string name="label_help">Help</string>
 
     <string name="label_feedback_message_enjoying">Enjoying openScale?</string>
-    <string name="label_feedback_message_rate_app">How about a rating on GooglePlay or on GitHub, then?</string>
-    <string name="label_feedback_message_issue">Would you mind giving us some feedback?</string>
-    <string name="label_feedback_message_yes">Yes!</string>
+    <string name="label_feedback_message_rate_app">How about a rating on Google Play or GitHub?</string>
+    <string name="label_feedback_message_issue">Would you like to provide some feedback?</string>
+    <string name="label_feedback_message_yes">Yes</string>
     <string name="label_feedback_message_no">Not really</string>
-    <string name="label_feedback_message_positive">Ok, sure</string>
+    <string name="label_feedback_message_positive">OK</string>
     <string name="label_feedback_message_negative">No, thanks</string>
 
-    <string name="error_max_scale_users">Maximum number of concurrent scale users reached</string>
+    <string name="error_max_scale_users">Max. number of concurrent scale users reached</string>
     <string name="info_step_on_scale">Please step barefoot on the scale for reference measurements</string>
     <string name="info_measuring">Measuring weight: %.2f</string>
 
-    <string name="customactivityoncrash_error_activity_error_occurred_explanation">An unexpected error occurred.\n\nPlease create a new issue including the detailed error details on\nhttps://github.com/oliexdev/openScale/issues</string>
+    <string name="customactivityoncrash_error_activity_error_occurred_explanation">An unexpected error occurred.\n\nPlease create a new issue including the error details on\nhttps://github.com/oliexdev/openScale/issues</string>
     <string name="customactivityoncrash_error_activity_restart_app">Restart app</string>
     <string name="customactivityoncrash_error_activity_close_app">Close app</string>
     <string name="customactivityoncrash_error_activity_error_details">Error details</string>
@@ -180,7 +180,7 @@
     <string name="customactivityoncrash_error_activity_error_details_close">Close</string>
     <string name="customactivityoncrash_error_activity_error_details_copy">Copy to clipboard</string>
     <string name="customactivityoncrash_error_activity_error_details_copied">Copied to clipboard</string>
-    <string name="customactivityoncrash_error_activity_error_details_clipboard_label">Error information</string>
+    <string name="customactivityoncrash_error_activity_error_details_clipboard_label">Error info</string>
     <string name="toggle_expand">Toggle expand</string>
     <string name="edit">Edit</string>
     <string name="save">Save</string>
@@ -190,7 +190,7 @@
 
     <string name="permission_not_granted">Permission not granted</string>
     <string name="permission_bluetooth_info">Coarse location permission needed to search for Bluetooth devices. It can be revoked after the device is found.</string>
-    <string name="permission_bluetooth_info_title">Information</string>
+    <string name="permission_bluetooth_info_title">Info</string>
     <string name="label_next">Next</string>
     <string name="label_press_hold_reorder">Press and hold to reorder</string>
     <string name="label_set_default_order">Set default order</string>
