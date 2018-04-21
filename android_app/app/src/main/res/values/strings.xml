@@ -27,7 +27,7 @@
 
     <string name="label_weight">Weight</string>
     <string name="label_bmi">Body mass index (BMI)</string>
-    <string name="label_bmr">Resting metabolic rate (RMR)</string>
+    <string name="label_bmr">Basal metabolic rate (BMR)</string>
     <string name="label_fat">Body fat</string>
     <string name="label_water">Body water</string>
     <string name="label_muscle">Muscle</string>
@@ -71,7 +71,7 @@
     <string name="label_delete_all">Delete all</string>
 
     <string name="error_value_required">Value required</string>
-    <string name="error_value_range">The value not in range</string>
+    <string name="error_value_range">Value out of range</string>
     <string name="error_exporting">Error exporting</string>
     <string name="error_importing">Error importing</string>
     <string name="error_user_name_required">Error: Username required</string>
@@ -84,7 +84,7 @@
     <string name="info_data_all_deleted">All entries deleted</string>
     <string name="info_data_exported">Exported to</string>
     <string name="info_data_imported">Imported from</string>
-    <string name="info_enter_value_cm">Value in cm:</string>
+    <string name="info_enter_value_cm">Value in cm</string>
     <string name="info_enter_comment">Optional comment:</string>
     <string name="info_enter_value_scale_unit">Value in scale unit:</string>
     <string name="info_is_visible">is visible</string>
@@ -172,7 +172,7 @@
     <string name="info_step_on_scale">Please step barefoot on the scale for reference measurements</string>
     <string name="info_measuring">Measuring weight: %.2f</string>
 
-    <string name="customactivityoncrash_error_activity_error_occurred_explanation">An unexpected error occurred.\n\nPlease create a new detailed issue on\nhttps://github.com/oliexdev/openScale/issues</string>
+    <string name="customactivityoncrash_error_activity_error_occurred_explanation">An unexpected error occurred.\n\nPlease create a new issue including containing detailed errors on\nhttps://github.com/oliexdev/openScale/issues</string>
     <string name="customactivityoncrash_error_activity_restart_app">Restart app</string>
     <string name="customactivityoncrash_error_activity_close_app">Close app</string>
     <string name="customactivityoncrash_error_activity_error_details">Error details</string>
