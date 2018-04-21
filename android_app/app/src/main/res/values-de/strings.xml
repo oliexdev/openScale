@@ -187,4 +187,10 @@
     <string name="label_estimate_measurement_summary">Basierend auf Gewicht, Größe, Alter, Geschlecht, etc.</string>
 <string name="label_scale_not_supported">Wird deine Waage nicht unterstützt?</string>
     <string name="label_click_to_help_add_support">Klicke hier, wenn du helfen möchtest</string>
+    <string name="label_auto_backup">Automatiches Backup</string>
+    <string name="label_auto_backup_schedule">Backup Zeitplan</string>
+    <string name="label_overwrite_backup">Überschreibe Backup</string>
+    <string name="label_daily">täglich</string>
+    <string name="label_weekly">wöchentlich</string>
+    <string name="label_monthly">monatlich</string>
 </resources>
