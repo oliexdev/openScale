@@ -191,4 +191,10 @@
     <string name="label_estimate_measurement_summary">Baserat på vikt, längd, ålder, kön, m.m.</string>
 <string name="label_scale_not_supported">Stödjs inte din våg?</string>
     <string name="label_click_to_help_add_support">Klicka här för att hjälpa till att lägga till stöd för den</string>
-</resources>
+<string name="label_auto_backup">Automatisk säkerhetskopiering</string>
+    <string name="label_auto_backup_schedule">Schema för säkerhetskopiering</string>
+    <string name="label_overwrite_backup">Skriv över tidigare säkerhetskopia</string>
+    <string name="label_daily">dagligen</string>
+    <string name="label_weekly">veckovis</string>
+    <string name="label_monthly">månadsvis</string>
+    </resources>
