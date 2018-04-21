@@ -209,6 +209,12 @@
     <string name="label_percent">Percent</string>
     <string name="label_estimated">Estimated</string>
     <string name="label_estimate_measurement_summary">Based on weight, height, age, gender, etc.</string>
+    <string name="label_auto_backup">Auto backup</string>
+    <string name="label_auto_backup_schedule">Backup schedule</string>
+    <string name="label_overwrite_backup">Overwrite previous backup</string>
+    <string name="label_daily">daily</string>
+    <string name="label_weekly">weekly</string>
+    <string name="label_monthly">monthly</string>
     <string name="label_scale_not_supported">Is your scale not supported?</string>
     <string name="label_click_to_help_add_support">Click here to help add support for it</string>
 </resources>

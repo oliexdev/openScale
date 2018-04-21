@@ -22,6 +22,7 @@ import android.arch.persistence.room.RoomDatabase;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabaseCorruptException;
 import android.net.Uri;
 import android.os.Handler;
 import android.preference.PreferenceManager;
@@ -54,6 +55,7 @@ import com.health.openscale.gui.views.MeasurementViewSettings;
 import com.health.openscale.gui.views.WaterMeasurementView;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -107,7 +109,7 @@ public class OpenScale {
         return instance;
     }
 
-    public void reopenDatabase() {
+    public void reopenDatabase() throws SQLiteDatabaseCorruptException {
         if (appDB != null) {
             appDB.close();
         }
@@ -390,6 +392,56 @@ public class OpenScale {
                 return name;
             }
             return uri.toString();
+        }
+    }
+
+    public void importDatabase(Uri importFile) throws IOException {
+        File exportFile = context.getApplicationContext().getDatabasePath("openScale.db");
+        File tmpExportFile = context.getApplicationContext().getDatabasePath("openScale_tmp.db");
+
+        try {
+            copyFile(Uri.fromFile(exportFile), Uri.fromFile(tmpExportFile));
+            copyFile(importFile, Uri.fromFile(exportFile));
+
+            reopenDatabase();
+
+            if (!getScaleUserList().isEmpty()) {
+                selectScaleUser(getScaleUserList().get(0).getId());
+                updateScaleData();
+            }
+        } catch (SQLiteDatabaseCorruptException e) {
+            copyFile(Uri.fromFile(tmpExportFile), Uri.fromFile(exportFile));
+            throw new IOException(e.getMessage());
+        } finally {
+            tmpExportFile.delete();
+        }
+    }
+
+    public void exportDatabase(Uri exportFile) throws IOException {
+        File dbFile = context.getApplicationContext().getDatabasePath("openScale.db");
+
+        copyFile(Uri.fromFile(dbFile), exportFile);
+    }
+
+    private void copyFile(Uri src, Uri dst) throws IOException {
+        InputStream input = context.getContentResolver().openInputStream(src);
+        OutputStream output = context.getContentResolver().openOutputStream(dst);
+
+        try {
+            byte[] bytes = new byte[4096];
+            int count;
+
+            while ((count = input.read(bytes)) != -1){
+                output.write(bytes, 0, count);
+            }
+        } finally {
+            if (input != null) {
+                input.close();
+            }
+            if (output != null) {
+                output.flush();
+                output.close();
+            }
         }
     }
 
