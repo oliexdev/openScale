@@ -45,8 +45,8 @@ import java.util.Date;
 import java.util.List;
 
 public class UserSettingsActivity extends BaseAppCompatActivity {
-    public static String EXTRA_ID = "id";
-    public static String EXTRA_MODE = "mode";
+    public static final String EXTRA_ID = "id";
+    public static final String EXTRA_MODE = "mode";
 
     public static final int ADD_USER_REQUEST = 0;
     public static final int EDIT_USER_REQUEST = 1;
@@ -63,10 +63,7 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
     private RadioGroup radioScaleUnit;
     private RadioGroup radioGender;
 
-    private MenuItem saveButton;
-    private MenuItem deleteButton;
-
-    private DateFormat dateFormat = DateFormat.getDateInstance();
+    private final DateFormat dateFormat = DateFormat.getDateInstance();
 
     private Context context;
 
@@ -77,21 +74,21 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
         setContentView(R.layout.activity_usersettings);
         context = this;
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.userEntryToolbar);
+        Toolbar toolbar = findViewById(R.id.userEntryToolbar);
         setSupportActionBar(toolbar);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setTitle(getResources().getString(R.string.label_title_user));
+        getSupportActionBar().setTitle(R.string.label_add_user);
 
-        txtUserName = (EditText) findViewById(R.id.txtUserName);
-        txtBodyHeight = (EditText) findViewById(R.id.txtBodyHeight);
-        radioScaleUnit = (RadioGroup) findViewById(R.id.groupScaleUnit);
-        radioGender = (RadioGroup) findViewById(R.id.groupGender);
-        txtInitialWeight = (EditText) findViewById(R.id.txtInitialWeight);
-        txtGoalWeight = (EditText) findViewById(R.id.txtGoalWeight);
+        txtUserName = findViewById(R.id.txtUserName);
+        txtBodyHeight = findViewById(R.id.txtBodyHeight);
+        radioScaleUnit = findViewById(R.id.groupScaleUnit);
+        radioGender = findViewById(R.id.groupGender);
+        txtInitialWeight = findViewById(R.id.txtInitialWeight);
+        txtGoalWeight = findViewById(R.id.txtGoalWeight);
 
-        txtBirthday = (EditText) findViewById(R.id.txtBirthday);
-        txtGoalDate = (EditText) findViewById(R.id.txtGoalDate);
+        txtBirthday = findViewById(R.id.txtBirthday);
+        txtGoalDate = findViewById(R.id.txtGoalDate);
 
         Calendar birthdayCal = Calendar.getInstance();
         birthdayCal.setTime(birthday);
@@ -155,8 +152,7 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
             item.setIcon(wrapped);
         }
 
-        saveButton = menu.findItem(R.id.saveButton);
-        deleteButton = menu.findItem(R.id.deleteButton);
+        MenuItem deleteButton = menu.findItem(R.id.deleteButton);
 
         if (getIntent().getExtras().getInt(EXTRA_MODE) == EDIT_USER_REQUEST) {
             editMode();
@@ -270,7 +266,7 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
         return validate;
     }
 
-   private DatePickerDialog.OnDateSetListener birthdayPickerListener = new DatePickerDialog.OnDateSetListener() {
+   private final DatePickerDialog.OnDateSetListener birthdayPickerListener = new DatePickerDialog.OnDateSetListener() {
         @Override
         public void onDateSet(DatePicker view, int selectedYear, int selectedMonth, int selectedDay) {
             Calendar cal = Calendar.getInstance();
@@ -281,7 +277,7 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
            }
         };
 
-    private DatePickerDialog.OnDateSetListener goalDatePickerListener = new DatePickerDialog.OnDateSetListener() {
+    private final DatePickerDialog.OnDateSetListener goalDatePickerListener = new DatePickerDialog.OnDateSetListener() {
         @Override
         public void onDateSet(DatePicker view, int selectedYear, int selectedMonth, int selectedDay) {
             Calendar cal = Calendar.getInstance();
@@ -302,18 +298,22 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
                 int userId = getIntent().getExtras().getInt(EXTRA_ID);
 
                 OpenScale openScale = OpenScale.getInstance(getApplicationContext());
+                boolean isSelected = openScale.getSelectedScaleUserId() == userId;
+
                 openScale.clearScaleData(userId);
                 openScale.deleteScaleUser(userId);
 
-                List<ScaleUser> scaleUser = openScale.getScaleUserList();
+                if (isSelected) {
+                    List<ScaleUser> scaleUser = openScale.getScaleUserList();
 
-                int lastUserId = -1;
+                    int lastUserId = -1;
+                    if (!scaleUser.isEmpty()) {
+                        lastUserId = scaleUser.get(0).getId();
+                    }
 
-                if (!scaleUser.isEmpty()) {
-                    lastUserId = scaleUser.get(0).getId();
+                    openScale.selectScaleUser(lastUserId);
                 }
 
-                openScale.selectScaleUser(lastUserId);
                 openScale.updateScaleData();
 
                 Intent returnIntent = new Intent();

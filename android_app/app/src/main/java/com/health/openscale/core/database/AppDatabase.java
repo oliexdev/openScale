@@ -32,6 +32,9 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract ScaleMeasurementDAO measurementDAO();
     public abstract ScaleUserDAO userDAO();
 
+    // For the next database version:
+    // - rename lbw column to lbm
+
     public static final Migration MIGRATION_1_2 = new Migration(1, 2) {
         @Override
         public void migrate(SupportSQLiteDatabase database) {

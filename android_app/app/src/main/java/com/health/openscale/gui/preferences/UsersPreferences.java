@@ -1,4 +1,5 @@
 /* Copyright (C) 2014  olie.xdev <olie.xdev@googlemail.com>
+*                2018  Erik Johansson <erik@ejohansson.se>
 *
 *    This program is free software: you can redistribute it and/or modify
 *    it under the terms of the GNU General Public License as published by
@@ -15,103 +16,120 @@
 */
 package com.health.openscale.gui.preferences;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.preference.Preference;
+import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
+import android.util.TypedValue;
+import android.view.View;
+import android.widget.RadioButton;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.gui.activities.UserSettingsActivity;
 
-import java.util.List;
-
 import static android.app.Activity.RESULT_OK;
 
 public class UsersPreferences extends PreferenceFragment {
+    private static final String PREFERENCE_KEY_ADD_USER = "addUser";
+    private static final String PREFERENCE_KEY_USERS = "users";
+
+    private PreferenceCategory users;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         addPreferencesFromResource(R.xml.users_preferences);
 
+        Preference addUser = findPreference(PREFERENCE_KEY_ADD_USER);
+        addUser.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                Intent intent = new Intent(preference.getContext(), UserSettingsActivity.class);
+                intent.putExtra(UserSettingsActivity.EXTRA_MODE, UserSettingsActivity.ADD_USER_REQUEST);
+                startActivityForResult(intent, UserSettingsActivity.ADD_USER_REQUEST);
+                return true;
+            }
+        });
+
+        users = (PreferenceCategory) findPreference(PREFERENCE_KEY_USERS);
         updateUserPreferences();
     }
 
     private void updateUserPreferences() {
-        OpenScale openScale = OpenScale.getInstance(getActivity().getApplicationContext());
-
-        int selectedUserId = openScale.getSelectedScaleUserId();
-
-        getPreferenceScreen().removeAll();
-
-        List<ScaleUser> scaleUserList = openScale.getScaleUserList();
-
-        for (ScaleUser scaleUser : scaleUserList)
-        {
-            Preference prefUser = new Preference(getActivity());
-            prefUser.setOnPreferenceClickListener(new onClickListenerUserSelect());
-
-            if (scaleUser.getId() == selectedUserId) {
-                prefUser.setTitle("> " + scaleUser.getUserName());
-            } else
-            {
-                prefUser.setTitle(scaleUser.getUserName());
-            }
-
-            prefUser.setKey(Integer.toString(scaleUser.getId()));
-
-            getPreferenceScreen().addPreference(prefUser);
+        users.removeAll();
+        for (ScaleUser scaleUser : OpenScale.getInstance(getActivity()).getScaleUserList()) {
+            users.addPreference(new UserPreference(getActivity(), users, scaleUser));
         }
-
-
-        Preference prefAddUser = new Preference(getActivity());
-
-        prefAddUser.setOnPreferenceClickListener(new onClickListenerAddUser());
-        prefAddUser.setTitle("+ " + getResources().getString(R.string.label_add_user));
-
-        getPreferenceScreen().addPreference(prefAddUser);
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data)
-    {
-        if (requestCode == UserSettingsActivity.ADD_USER_REQUEST) {
-            if (resultCode == RESULT_OK) {
-                updateUserPreferences();
-            }
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode != RESULT_OK) {
+            return;
         }
-
-
-        if (requestCode == UserSettingsActivity.EDIT_USER_REQUEST) {
-            if (resultCode == RESULT_OK) {
-                updateUserPreferences();
-            }
+        if (requestCode == UserSettingsActivity.ADD_USER_REQUEST
+            || requestCode == UserSettingsActivity.EDIT_USER_REQUEST) {
+            updateUserPreferences();
         }
     }
 
-    private class onClickListenerUserSelect implements Preference.OnPreferenceClickListener {
+    class UserPreference extends Preference {
+        PreferenceCategory preferenceCategory;
+        ScaleUser scaleUser;
+        RadioButton radioButton;
+
+        UserPreference(Context context, PreferenceCategory category, ScaleUser scaleUser) {
+            super(context);
+
+            preferenceCategory = category;
+            this.scaleUser = scaleUser;
+
+            setTitle(scaleUser.getUserName());
+            setWidgetLayoutResource(R.layout.user_preference_widget_layout);
+        }
+
         @Override
-        public boolean onPreferenceClick(Preference preference) {
-            Intent intent = new Intent(preference.getContext(), UserSettingsActivity.class);
-            intent.putExtra(UserSettingsActivity.EXTRA_MODE, UserSettingsActivity.EDIT_USER_REQUEST);
-            intent.putExtra(UserSettingsActivity.EXTRA_ID, Integer.parseInt(preference.getKey()));
-            startActivityForResult(intent, UserSettingsActivity.EDIT_USER_REQUEST);
+        protected void onBindView(View view) {
+            super.onBindView(view);
 
-            return false;
+            view.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(getActivity(), UserSettingsActivity.class);
+                    intent.putExtra(UserSettingsActivity.EXTRA_MODE, UserSettingsActivity.EDIT_USER_REQUEST);
+                    intent.putExtra(UserSettingsActivity.EXTRA_ID, scaleUser.getId());
+                    startActivityForResult(intent, UserSettingsActivity.EDIT_USER_REQUEST);
+                }
+            });
+
+            TypedValue outValue = new TypedValue();
+            getActivity().getTheme().resolveAttribute(R.attr.selectableItemBackground, outValue, true);
+            view.setBackgroundResource(outValue.resourceId);
+
+            radioButton = view.findViewById(R.id.user_radio_button);
+            radioButton.setChecked(scaleUser.getId() == OpenScale.getInstance(getContext()).getSelectedScaleUserId());
+
+            radioButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    for (int i = 0; i < preferenceCategory.getPreferenceCount(); ++i) {
+                        UserPreference pref = (UserPreference) preferenceCategory.getPreference(i);
+                        pref.setChecked(false);
+                    }
+
+                    radioButton.setChecked(true);
+                    OpenScale.getInstance(getContext()).selectScaleUser(scaleUser.getId());
+                }
+            });
+        }
+
+        public void setChecked(boolean checked) {
+            radioButton.setChecked(checked);
         }
     }
-
-    private class onClickListenerAddUser implements Preference.OnPreferenceClickListener {
-        @Override
-        public boolean onPreferenceClick(Preference preference) {
-            Intent intent = new Intent(preference.getContext(), UserSettingsActivity.class);
-            intent.putExtra(UserSettingsActivity.EXTRA_MODE, UserSettingsActivity.ADD_USER_REQUEST);
-            startActivityForResult(intent, UserSettingsActivity.ADD_USER_REQUEST);
-
-            return false;
-        }
-    }
-
 }

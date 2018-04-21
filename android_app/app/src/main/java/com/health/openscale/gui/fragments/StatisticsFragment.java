@@ -36,7 +36,7 @@ import com.health.openscale.core.utils.DateTimeHelpers;
 import com.health.openscale.gui.views.BoneMeasurementView;
 import com.health.openscale.gui.views.FatMeasurementView;
 import com.health.openscale.gui.views.HipMeasurementView;
-import com.health.openscale.gui.views.LBWMeasurementView;
+import com.health.openscale.gui.views.LBMMeasurementView;
 import com.health.openscale.gui.views.MeasurementView;
 import com.health.openscale.gui.views.MuscleMeasurementView;
 import com.health.openscale.gui.views.WaistMeasurementView;
@@ -62,11 +62,6 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
     private TextView txtLabelGoalDiff;
     private TextView txtLabelDayLeft;
 
-    private TableLayout tableWeekAveragesLayoutColumnA;
-    private TableLayout tableWeekAveragesLayoutColumnB;
-    private TableLayout tableMonthAveragesLayoutColumnA;
-    private TableLayout tableMonthAveragesLayoutColumnB;
-
     private ScaleUser currentScaleUser;
     private ScaleMeasurement lastScaleMeasurement;
 
@@ -85,25 +80,25 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
             image.setColorFilter(color);
         }
 
-        txtGoalWeight = (TextView) statisticsView.findViewById(R.id.txtGoalWeight);
-        txtGoalDiff = (TextView) statisticsView.findViewById(R.id.txtGoalDiff);
-        txtGoalDayLeft = (TextView) statisticsView.findViewById(R.id.txtGoalDayLeft);
+        txtGoalWeight = statisticsView.findViewById(R.id.txtGoalWeight);
+        txtGoalDiff = statisticsView.findViewById(R.id.txtGoalDiff);
+        txtGoalDayLeft = statisticsView.findViewById(R.id.txtGoalDayLeft);
 
-        txtLabelGoalWeight = (TextView) statisticsView.findViewById(R.id.txtLabelGoalWeight);
-        txtLabelGoalDiff = (TextView) statisticsView.findViewById(R.id.txtLabelGoalDiff);
-        txtLabelDayLeft = (TextView) statisticsView.findViewById(R.id.txtLabelDayLeft);
+        txtLabelGoalWeight = statisticsView.findViewById(R.id.txtLabelGoalWeight);
+        txtLabelGoalDiff = statisticsView.findViewById(R.id.txtLabelGoalDiff);
+        txtLabelDayLeft = statisticsView.findViewById(R.id.txtLabelDayLeft);
 
-        tableWeekAveragesLayoutColumnA = (TableLayout) statisticsView.findViewById(R.id.tableWeekAveragesLayoutColumnA);
-        tableWeekAveragesLayoutColumnB = (TableLayout) statisticsView.findViewById(R.id.tableWeekAveragesLayoutColumnB);
-        tableMonthAveragesLayoutColumnA = (TableLayout) statisticsView.findViewById(R.id.tableMonthAveragesLayoutColumnA);
-        tableMonthAveragesLayoutColumnB = (TableLayout) statisticsView.findViewById(R.id.tableMonthAveragesLayoutColumnB);
+        TableLayout tableWeekAveragesLayoutColumnA = statisticsView.findViewById(R.id.tableWeekAveragesLayoutColumnA);
+        TableLayout tableWeekAveragesLayoutColumnB = statisticsView.findViewById(R.id.tableWeekAveragesLayoutColumnB);
+        TableLayout tableMonthAveragesLayoutColumnA = statisticsView.findViewById(R.id.tableMonthAveragesLayoutColumnA);
+        TableLayout tableMonthAveragesLayoutColumnB = statisticsView.findViewById(R.id.tableMonthAveragesLayoutColumnB);
 
         viewMeasurementsListWeek = new ArrayList<>();
 
         viewMeasurementsListWeek.add(new WeightMeasurementView(statisticsView.getContext()));
         viewMeasurementsListWeek.add(new WaterMeasurementView(statisticsView.getContext()));
         viewMeasurementsListWeek.add(new MuscleMeasurementView(statisticsView.getContext()));
-        viewMeasurementsListWeek.add(new LBWMeasurementView(statisticsView.getContext()));
+        viewMeasurementsListWeek.add(new LBMMeasurementView(statisticsView.getContext()));
         viewMeasurementsListWeek.add(new FatMeasurementView(statisticsView.getContext()));
         viewMeasurementsListWeek.add(new BoneMeasurementView(statisticsView.getContext()));
         viewMeasurementsListWeek.add(new WaistMeasurementView(statisticsView.getContext()));
@@ -133,7 +128,7 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
         viewMeasurementsListMonth.add(new WeightMeasurementView(statisticsView.getContext()));
         viewMeasurementsListMonth.add(new WaterMeasurementView(statisticsView.getContext()));
         viewMeasurementsListMonth.add(new MuscleMeasurementView(statisticsView.getContext()));
-        viewMeasurementsListMonth.add(new LBWMeasurementView(statisticsView.getContext()));
+        viewMeasurementsListMonth.add(new LBMMeasurementView(statisticsView.getContext()));
         viewMeasurementsListMonth.add(new FatMeasurementView(statisticsView.getContext()));
         viewMeasurementsListMonth.add(new BoneMeasurementView(statisticsView.getContext()));
         viewMeasurementsListMonth.add(new WaistMeasurementView(statisticsView.getContext()));

@@ -31,17 +31,11 @@ import java.util.List;
 import java.util.Set;
 
 public class GeneralPreferences extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
-    private static final String PREFERENCE_KEY_APP_THEME = "app_theme";
-
-    private ListPreference appThemeList;
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         addPreferencesFromResource(R.xml.general_preferences);
-
-        appThemeList = (ListPreference)findPreference(PREFERENCE_KEY_APP_THEME);
 
         initSummary(getPreferenceScreen());
     }

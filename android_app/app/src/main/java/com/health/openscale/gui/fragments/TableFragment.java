@@ -70,10 +70,10 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
     {
         tableView = inflater.inflate(R.layout.fragment_table, container, false);
 
-        subpageView = (LinearLayout) tableView.findViewById(R.id.subpageView);
+        subpageView = tableView.findViewById(R.id.subpageView);
 
-        tableDataView = (ListView) tableView.findViewById(R.id.tableDataView);
-        tableHeaderView = (LinearLayout) tableView.findViewById(R.id.tableHeaderView);
+        tableDataView = tableView.findViewById(R.id.tableDataView);
+        tableHeaderView = tableView.findViewById(R.id.tableHeaderView);
 
         tableDataView.setAdapter(new ListViewAdapter());
         tableDataView.setOnItemClickListener(new onClickListenerRow());
@@ -241,8 +241,6 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
         private int measurementsToShow = 0;
 
         private Spanned[][] stringCache;
-
-        private ArrayList<HashMap<Integer, Spanned>> dataList;
 
         public void setMeasurements(List<MeasurementView> visibleMeasurements,
                                     List<ScaleMeasurement> scaleMeasurements,

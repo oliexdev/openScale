@@ -18,11 +18,12 @@ package com.health.openscale.gui;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothManager;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
@@ -45,7 +46,6 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.Toast;
 
 import com.health.openscale.BuildConfig;
@@ -62,7 +62,7 @@ import com.health.openscale.gui.fragments.GraphFragment;
 import com.health.openscale.gui.fragments.OverviewFragment;
 import com.health.openscale.gui.fragments.StatisticsFragment;
 import com.health.openscale.gui.fragments.TableFragment;
-import com.health.openscale.gui.utils.PermissionHelper;
+import com.health.openscale.gui.preferences.BluetoothPreferences;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -80,9 +80,9 @@ public class MainActivity extends BaseAppCompatActivity
 
     private static final int IMPORT_DATA_REQUEST = 100;
     private static final int EXPORT_DATA_REQUEST = 101;
+    private static final int ENABLE_BLUETOOTH_REQUEST = 102;
 
     private DrawerLayout drawerLayout;
-    private Toolbar toolbar;
     private NavigationView navDrawer;
     private BottomNavigationView navBottomDrawer;
     private ActionBarDrawerToggle drawerToggle;
@@ -103,19 +103,19 @@ public class MainActivity extends BaseAppCompatActivity
         setContentView(R.layout.activity_main);
 
         // Set a Toolbar to replace the ActionBar.
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // Find our drawer view
-        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawerLayout = findViewById(R.id.drawer_layout);
 
         // Find our drawer view
-        navDrawer = (NavigationView) findViewById(R.id.navigation_view);
+        navDrawer = findViewById(R.id.navigation_view);
 
-        navBottomDrawer = (BottomNavigationView) findViewById(R.id.navigation_bottom_view);
+        navBottomDrawer = findViewById(R.id.navigation_bottom_view);
         navBottomDrawer.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -128,15 +128,7 @@ public class MainActivity extends BaseAppCompatActivity
 
         //Create Drawer Toggle
         drawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.open_drawer, R.string.close_drawer){
-            @Override
-            public void onDrawerOpened(View drawerView) {
-                super.onDrawerOpened(drawerView);
-            }
 
-            @Override
-            public void onDrawerClosed(View drawerView) {
-                super.onDrawerClosed(drawerView);
-            }
         };
 
         drawerLayout.addDrawerListener(drawerToggle);
@@ -153,7 +145,7 @@ public class MainActivity extends BaseAppCompatActivity
             intent.putExtra(UserSettingsActivity.EXTRA_MODE, UserSettingsActivity.ADD_USER_REQUEST);
             startActivity(intent);
 
-            prefs.edit().putBoolean("firstStart", false).commit();
+            prefs.edit().putBoolean("firstStart", false).apply();
         }
 
         if(!valueOfCountModified){
@@ -196,6 +188,7 @@ public class MainActivity extends BaseAppCompatActivity
     @Override
     public void onDestroy() {
         prefs.unregisterOnSharedPreferenceChangeListener(this);
+        OpenScale.getInstance(getApplicationContext()).disconnectFromBluetoothDevice();
         super.onDestroy();
     }
 
@@ -215,7 +208,7 @@ public class MainActivity extends BaseAppCompatActivity
                         dialog.dismiss();
                         Uri uri = Uri.parse("market://details?id=" + getPackageName());
                         Intent goToMarket = new Intent(Intent.ACTION_VIEW, uri);
-                        // To count with Play market backstack, After pressing back button,
+                        // To count with Play market back stack, After pressing back button,
                         // to taken back to our application, we need to add following flags to intent.
                         goToMarket.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY |
                                 Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET |
@@ -272,7 +265,7 @@ public class MainActivity extends BaseAppCompatActivity
                 });
     }
 
-    public void selectDrawerItem(int menuItemId) {
+    private void selectDrawerItem(int menuItemId) {
         // Create a new fragment and specify the fragment to show based on nav item clicked
         Class fragmentClass;
         String fragmentTitle;
@@ -307,7 +300,7 @@ public class MainActivity extends BaseAppCompatActivity
                 return;
         }
 
-        prefs.edit().putInt("lastFragmentId", menuItemId).commit();
+        prefs.edit().putInt("lastFragmentId", menuItemId).apply();
 
         FragmentManager fragmentManager = getSupportFragmentManager();
 
@@ -382,7 +375,12 @@ public class MainActivity extends BaseAppCompatActivity
                 startActivity(intent);
                 return true;
             case R.id.action_bluetooth_status:
-                invokeSearchBluetoothDevice();
+                if (OpenScale.getInstance(getApplicationContext()).disconnectFromBluetoothDevice()) {
+                    setBluetoothStatusIcon(R.drawable.ic_bluetooth_disabled);
+                }
+                else {
+                    invokeConnectToBluetoothDevice();
+                }
                 return true;
             case R.id.importData:
                 importCsvFile();
@@ -405,11 +403,19 @@ public class MainActivity extends BaseAppCompatActivity
 
         bluetoothStatus = menu.findItem(R.id.action_bluetooth_status);
 
+        BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
+        boolean hasBluetooth = bluetoothManager.getAdapter() != null;
+
+        if (!hasBluetooth) {
+            bluetoothStatus.setEnabled(false);
+            setBluetoothStatusIcon(R.drawable.ic_bluetooth_disabled);
+        }
         // Just search for a bluetooth device just once at the start of the app and if start preference enabled
-        if (firstAppStart && prefs.getBoolean("btEnable", false)) {
-            invokeSearchBluetoothDevice();
+        else if (firstAppStart && prefs.getBoolean("btEnable", false)) {
+            invokeConnectToBluetoothDevice();
             firstAppStart = false;
-        } else {
+        }
+        else {
             // Set current bluetooth status icon while e.g. orientation changes
             setBluetoothStatusIcon(bluetoothStatusIcon);
         }
@@ -429,7 +435,7 @@ public class MainActivity extends BaseAppCompatActivity
         drawerToggle.onConfigurationChanged(newConfig);
     }
 
-    private void invokeSearchBluetoothDevice() {
+    private void invokeConnectToBluetoothDevice() {
         final OpenScale openScale = OpenScale.getInstance(getApplicationContext());
 
         if (openScale.getSelectedScaleUserId() == -1) {
@@ -437,34 +443,28 @@ public class MainActivity extends BaseAppCompatActivity
             return;
         }
 
-        if (openScale.stopSearchingForBluetooth()) {
-            setBluetoothStatusIcon(R.drawable.ic_bluetooth_disabled);
+        String deviceName = prefs.getString(
+                BluetoothPreferences.PREFERENCE_KEY_BLUETOOTH_DEVICE_NAME, "");
+        String hwAddress = prefs.getString(
+                BluetoothPreferences.PREFERENCE_KEY_BLUETOOTH_HW_ADDRESS, "");
+
+        if (!BluetoothAdapter.checkBluetoothAddress(hwAddress)) {
+            Toast.makeText(getApplicationContext(), R.string.info_bluetooth_no_device_set, Toast.LENGTH_SHORT).show();
             return;
         }
 
-        String deviceName = prefs.getString("btDeviceName", "-");
-
-        boolean permGrantedCoarseLocation = false;
-
-        // Check if Bluetooth 4.x is available
-        if (!deviceName.equals("openScale_MCU")) {
-            permGrantedCoarseLocation = PermissionHelper.requestBluetoothPermission(this, false);
-        } else {
-            permGrantedCoarseLocation = PermissionHelper.requestBluetoothPermission(this, true);
+        BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
+        if (!bluetoothManager.getAdapter().isEnabled()) {
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableBtIntent, ENABLE_BLUETOOTH_REQUEST);
+            return;
         }
 
-        if (permGrantedCoarseLocation) {
-            if (deviceName.equals("-")) {
-                Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_no_device_set), Toast.LENGTH_SHORT).show();
-                return;
-            }
+        Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_try_connection) + " " + deviceName, Toast.LENGTH_SHORT).show();
+        setBluetoothStatusIcon(R.drawable.ic_bluetooth_searching);
 
-            Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_try_connection) + " " + deviceName, Toast.LENGTH_SHORT).show();
-            setBluetoothStatusIcon(R.drawable.ic_bluetooth_searching);
-
-            if (!openScale.startSearchingForBluetooth(deviceName, callbackBtHandler)) {
-                Toast.makeText(getApplicationContext(), deviceName + " " + getResources().getString(R.string.label_bt_device_no_support), Toast.LENGTH_SHORT).show();
-            }
+        if (!openScale.connectToBluetoothDevice(deviceName, hwAddress, callbackBtHandler)) {
+            Toast.makeText(getApplicationContext(), deviceName + " " + getResources().getString(R.string.label_bt_device_no_support), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -525,8 +525,8 @@ public class MainActivity extends BaseAppCompatActivity
         }
     };
 
-    private void setBluetoothStatusIcon(int iconRessource) {
-        bluetoothStatusIcon = iconRessource;
+    private void setBluetoothStatusIcon(int iconResource) {
+        bluetoothStatusIcon = iconResource;
         bluetoothStatus.setIcon(getResources().getDrawable(bluetoothStatusIcon));
     }
 
@@ -663,6 +663,16 @@ public class MainActivity extends BaseAppCompatActivity
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
+        if (requestCode == ENABLE_BLUETOOTH_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                invokeConnectToBluetoothDevice();
+            }
+            else {
+                Toast.makeText(this, "Bluetooth " + getResources().getString(R.string.info_is_not_enable), Toast.LENGTH_SHORT).show();
+            }
+            return;
+        }
+
         if (resultCode != RESULT_OK || data == null) {
             return;
         }
@@ -706,30 +716,8 @@ public class MainActivity extends BaseAppCompatActivity
         }
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
-        boolean permissionGranted = true;
-        switch (requestCode) {
-            case PermissionHelper.PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    invokeSearchBluetoothDevice();
-                } else {
-                    setBluetoothStatusIcon(R.drawable.ic_bluetooth_disabled);
-                    permissionGranted = false;
-                }
-                break;
-        }
-
-        if (!permissionGranted) {
-            Toast.makeText(getApplicationContext(), getResources().getString(
-                    R.string.permission_not_granted), Toast.LENGTH_SHORT).show();
-        }
-
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-    }
-
     @SuppressLint("RestrictedApi")
-    public static void disableShiftMode(BottomNavigationView view) {
+    private static void disableShiftMode(BottomNavigationView view) {
         BottomNavigationMenuView menuView = (BottomNavigationMenuView) view.getChildAt(0);
         try {
             Field shiftingMode = menuView.getClass().getDeclaredField("mShiftingMode");

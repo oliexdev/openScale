@@ -13,24 +13,26 @@
 *    You should have received a copy of the GNU General Public License
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
-
 package com.health.openscale.core.bodymetric;
 
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 
-public class LBWHume extends EstimatedLBWMetric {
-    @Override
-    public String getName() {
-        return "Hume (1966)";
-    }
+public abstract class EstimatedLBMMetric {
+    // Don't change enum names, they are stored persistent in preferences
+    public enum FORMULA { LBW_HUME, LBW_BOER }
 
-    @Override
-    public float getLBW(ScaleUser user, ScaleMeasurement data) {
-        if (user.getGender().isMale()) {
-            return (0.32810f * data.getWeight()) + (0.33929f * user.getBodyHeight()) - 29.5336f;
+    public static EstimatedLBMMetric getEstimatedMetric(FORMULA metric) {
+        switch (metric) {
+            case LBW_HUME:
+                return new LBMHume();
+            case LBW_BOER:
+                return new LBMBoer();
         }
 
-        return (0.29569f * data.getWeight()) + (0.41813f * user.getBodyHeight()) - 43.2933f;
+        return null;
     }
+
+    public abstract String getName();
+    public abstract float getLBM(ScaleUser user, ScaleMeasurement data);
 }

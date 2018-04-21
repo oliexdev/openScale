@@ -37,7 +37,7 @@ import com.health.openscale.core.alarm.AlarmHandler;
 import com.health.openscale.core.bluetooth.BluetoothCommunication;
 import com.health.openscale.core.bluetooth.BluetoothFactory;
 import com.health.openscale.core.bodymetric.EstimatedFatMetric;
-import com.health.openscale.core.bodymetric.EstimatedLBWMetric;
+import com.health.openscale.core.bodymetric.EstimatedLBMMetric;
 import com.health.openscale.core.bodymetric.EstimatedWaterMetric;
 import com.health.openscale.core.database.AppDatabase;
 import com.health.openscale.core.database.ScaleDatabase;
@@ -50,7 +50,7 @@ import com.health.openscale.core.utils.Converters;
 import com.health.openscale.core.utils.CsvHelper;
 import com.health.openscale.gui.fragments.FragmentUpdateListener;
 import com.health.openscale.gui.views.FatMeasurementView;
-import com.health.openscale.gui.views.LBWMeasurementView;
+import com.health.openscale.gui.views.LBMMeasurementView;
 import com.health.openscale.gui.views.MeasurementViewSettings;
 import com.health.openscale.gui.views.WaterMeasurementView;
 
@@ -71,6 +71,8 @@ import java.util.TreeMap;
 
 public class OpenScale {
 
+    public static final String DATABASE_NAME = "openScale.db";
+
     private static OpenScale instance;
 
     private AppDatabase appDB;
@@ -80,8 +82,7 @@ public class OpenScale {
     private ScaleUser selectedScaleUser;
     private List<ScaleMeasurement> scaleMeasurementList;
 
-    private BluetoothCommunication btCom;
-    private String btDeviceName;
+    private BluetoothCommunication btDeviceDriver;
     private AlarmHandler alarmHandler;
 
     private Context context;
@@ -91,7 +92,7 @@ public class OpenScale {
     private OpenScale(Context context) {
         this.context = context;
         alarmHandler = new AlarmHandler();
-        btCom = null;
+        btDeviceDriver = null;
         fragmentList = new ArrayList<>();
 
         reopenDatabase();
@@ -113,7 +114,7 @@ public class OpenScale {
             appDB.close();
         }
 
-        appDB = Room.databaseBuilder(context, AppDatabase.class, "openScale.db")
+        appDB = Room.databaseBuilder(context, AppDatabase.class, DATABASE_NAME)
                 .allowMainThreadQueries()
                 .addCallback(new RoomDatabase.Callback() {
                     @Override
@@ -161,7 +162,7 @@ public class OpenScale {
 
     public void selectScaleUser(int userId) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        prefs.edit().putInt("selectedUserId", userId).commit();
+        prefs.edit().putInt("selectedUserId", userId).apply();
 
         selectedScaleUser = null;
     }
@@ -272,11 +273,11 @@ public class OpenScale {
             scaleMeasurement.setWater(waterMetric.getWater(getScaleUser(scaleMeasurement.getUserId()), scaleMeasurement));
         }
 
-        settings = new MeasurementViewSettings(prefs, LBWMeasurementView.KEY);
+        settings = new MeasurementViewSettings(prefs, LBMMeasurementView.KEY);
         if (settings.isEnabled() && settings.isEstimationEnabled()) {
-            EstimatedLBWMetric lbwMetric = EstimatedLBWMetric.getEstimatedMetric(
-                    EstimatedLBWMetric.FORMULA.valueOf(settings.getEstimationFormula()));
-            scaleMeasurement.setLbw(lbwMetric.getLBW(getScaleUser(scaleMeasurement.getUserId()), scaleMeasurement));
+            EstimatedLBMMetric lbmMetric = EstimatedLBMMetric.getEstimatedMetric(
+                    EstimatedLBMMetric.FORMULA.valueOf(settings.getEstimationFormula()));
+            scaleMeasurement.setLbm(lbmMetric.getLBM(getScaleUser(scaleMeasurement.getUserId()), scaleMeasurement));
         }
 
         settings = new MeasurementViewSettings(prefs, FatMeasurementView.KEY);
@@ -320,7 +321,7 @@ public class OpenScale {
         for (int i = 0; i < scaleUsers.size(); i++) {
             List<ScaleMeasurement> scaleUserData = measurementDAO.getAll(scaleUsers.get(i).getId());
 
-            float lastWeight = 0;
+            float lastWeight;
 
             if (scaleUserData.size() > 0) {
                 lastWeight = scaleUserData.get(0).getWeight();
@@ -366,8 +367,15 @@ public class OpenScale {
     public String getFilenameFromUriMayThrow(Uri uri) {
         Cursor cursor = context.getContentResolver().query(
                 uri, null, null, null, null);
-        cursor.moveToFirst();
-        return cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+        try {
+            cursor.moveToFirst();
+            return cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+        }
+        finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
     }
 
     public String getFilenameFromUri(Uri uri) {
@@ -453,9 +461,7 @@ public class OpenScale {
             measurementDAO.insertAll(csvScaleMeasurementList);
             updateScaleData();
             Toast.makeText(context, context.getString(R.string.info_data_imported) + " " + filename, Toast.LENGTH_SHORT).show();
-        } catch (IOException e) {
-            Toast.makeText(context, context.getString(R.string.error_importing) + ": " + e.getMessage(), Toast.LENGTH_SHORT).show();
-        } catch (ParseException e) {
+        } catch (IOException | ParseException e) {
             Toast.makeText(context, context.getString(R.string.error_importing) + ": " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
@@ -474,7 +480,7 @@ public class OpenScale {
 
     public void clearScaleData(int userId) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        prefs.edit().putInt("uniqueNumber", 0x00).commit();
+        prefs.edit().putInt("uniqueNumber", 0x00).apply();
         measurementDAO.deleteAll(userId);
 
         updateScaleData();
@@ -524,30 +530,33 @@ public class OpenScale {
         return measurementDAO.getAllInRange(startCalender.getTime(), endCalender.getTime(), selectedUserId);
     }
 
-    public boolean startSearchingForBluetooth(String deviceName, Handler callbackBtHandler) {
-        Log.d("OpenScale", "Bluetooth Server started! I am searching for device ...");
+    public boolean connectToBluetoothDevice(String deviceName, String hwAddress, Handler callbackBtHandler) {
+        Log.d("OpenScale", "Trying to connect to bluetooth device " + hwAddress
+                + " (" + deviceName + ")");
 
-        btCom = BluetoothFactory.createDeviceDriver(context, deviceName);
-        if (btCom == null) {
+        disconnectFromBluetoothDevice();
+
+        btDeviceDriver = BluetoothFactory.createDeviceDriver(context, deviceName);
+        if (btDeviceDriver == null) {
             return false;
         }
 
-        btCom.registerCallbackHandler(callbackBtHandler);
-        btDeviceName = deviceName;
-
-        btCom.startSearching(btDeviceName);
+        btDeviceDriver.registerCallbackHandler(callbackBtHandler);
+        btDeviceDriver.connect(hwAddress);
 
         return true;
     }
 
-    public boolean stopSearchingForBluetooth() {
-        if (btCom != null) {
-            btCom.stopSearching();
-            btCom = null;
-            Log.d("OpenScale", "Bluetooth Server explicit stopped!");
-            return true;
+    public boolean disconnectFromBluetoothDevice() {
+        if (btDeviceDriver == null) {
+            return false;
         }
-        return false;
+
+        Log.d("OpenScale", "Disconnecting from bluetooth device");
+        btDeviceDriver.disconnect(true);
+        btDeviceDriver = null;
+
+        return true;
     }
 
     public void registerFragment(FragmentUpdateListener fragment) {

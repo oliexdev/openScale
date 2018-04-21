@@ -96,7 +96,7 @@ public class ScaleUserDatabase extends SQLiteOpenHelper {
 
     public ArrayList<ScaleUser> getScaleUserList() {
         SQLiteDatabase db = getReadableDatabase();
-        ArrayList<ScaleUser> scaleUserDBEntries = new ArrayList<ScaleUser>();
+        ArrayList<ScaleUser> scaleUserDBEntries = new ArrayList<>();
 
         String sortOrder = COLUMN_NAME_ID + " ASC";
 

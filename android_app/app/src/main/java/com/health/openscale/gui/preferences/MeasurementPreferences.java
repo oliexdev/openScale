@@ -51,11 +51,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MeasurementPreferences extends PreferenceFragment {
-    public static final String PREFERENCE_KEY_DELETE_ALL = "deleteAll";
-    public static final String PREFERENCE_KEY_RESET_ORDER = "resetOrder";
-    public static final String PREFERENCE_KEY_MEASUREMENTS = "measurements";
+    private static final String PREFERENCE_KEY_DELETE_ALL = "deleteAll";
+    private static final String PREFERENCE_KEY_RESET_ORDER = "resetOrder";
+    private static final String PREFERENCE_KEY_MEASUREMENTS = "measurements";
 
-    private Preference deleteAll;
     private PreferenceCategory measurementCategory;
 
     @Override
@@ -64,7 +63,7 @@ public class MeasurementPreferences extends PreferenceFragment {
 
         addPreferencesFromResource(R.xml.measurement_preferences);
 
-        deleteAll = findPreference(PREFERENCE_KEY_DELETE_ALL);
+        Preference deleteAll = findPreference(PREFERENCE_KEY_DELETE_ALL);
         deleteAll.setOnPreferenceClickListener(new onClickListenerDeleteAll());
 
         measurementCategory = (PreferenceCategory) findPreference(PREFERENCE_KEY_MEASUREMENTS);

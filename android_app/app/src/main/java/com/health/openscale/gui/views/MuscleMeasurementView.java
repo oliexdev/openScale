@@ -25,6 +25,7 @@ import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 
 public class MuscleMeasurementView extends FloatMeasurementView {
+    // Don't change key value, it may be stored persistent in preferences
     public static final String KEY = "muscle";
 
     public MuscleMeasurementView(Context context) {
@@ -37,7 +38,7 @@ public class MuscleMeasurementView extends FloatMeasurementView {
     }
 
     @Override
-    protected boolean canConvertPercentageToAbsoluteWeight() {
+    protected boolean supportsPercentageToAbsoluteWeightConversion() {
         return true;
     }
 
@@ -62,7 +63,7 @@ public class MuscleMeasurementView extends FloatMeasurementView {
 
     @Override
     protected float getMaxValue() {
-        return maybeConvertPercentageToAbsolute(80);
+        return maybeConvertPercentageToAbsoluteWeight(80);
     }
 
     @Override

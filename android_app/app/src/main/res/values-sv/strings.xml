@@ -36,7 +36,7 @@
     <string name="error_exporting">Fel vid export</string>
     <string name="label_gender">Kön</string>
     <string name="label_male">Man</string>
-    <string name="label_woman">Kvinna</string>
+    <string name="label_female">Kvinna</string>
     <string name="label_goal_weight">Målvikt</string>
     <string name="label_goal_date">Måldatum</string>
     <string name="label_title_user">användare</string>
@@ -58,7 +58,7 @@
     <string name="label_last_week">Senast 7 dagarna</string>
     <string name="label_last_month">Senast 30 dagarna</string>
     <string name="label_muscle">Muskler</string>
-    <string name="label_lbw">Fettfri kroppsvikt</string>
+    <string name="label_lbm">Fettfri kroppsvikt</string>
     <string name="label_waist">Midjemått</string>
     <string name="label_hip">Höftomkrets</string>
     <string name="label_comment">Kommentar</string>
@@ -70,7 +70,7 @@
     <string name="label_export">Exportera</string>
     <string name="label_delete_all">Ta bort alla</string>
     <string name="error_value_required">Värde krävs</string>
-    <string name="error_value_range">Värdet är inte inom intervallet</string>
+    <string name="error_value_range">Värde är inte inom intervallet</string>
     <string name="error_importing">Fel vid import</string>
     <string name="error_user_name_required">Fel: namn krävs</string>
     <string name="error_height_required">Fel: längd krävs</string>
@@ -80,29 +80,29 @@
     <string name="info_data_all_deleted">Alla databasposter borttagna</string>
     <string name="info_data_exported">Data exporterad till</string>
     <string name="info_data_imported">Data importerad från</string>
-    <string name="info_enter_value_cm">Ange värde i cm</string>
-    <string name="info_enter_comment">Ange en frivillig kommentar</string>
-    <string name="info_enter_value_scale_unit">Ange värde i viktenhet</string>
+    <string name="info_enter_value_cm">Värde i cm</string>
+    <string name="info_enter_comment">Frivillig kommentar</string>
+    <string name="info_enter_value_scale_unit">Värde i viktenhet</string>
     <string name="info_is_visible">är synlig</string>
     <string name="info_is_not_visible">är inte synlig</string>
     <string name="info_is_enable">är aktiverad</string>
     <string name="info_is_not_enable">är inaktiverad</string>
     <string name="info_is_not_available">är inte tillgänglig</string>
-    <string name="info_bluetooth_try_connection">Försöker ansluta till</string>
+    <string name="info_bluetooth_try_connection">Ansluter till</string>
     <string name="info_bluetooth_connection_lost">Förlorade Bluetooth-anslutningen</string>
     <string name="info_bluetooth_no_device">Ingen Bluetooth-enhet hittades</string>
     <string name="info_bluetooth_connection_successful">Anslutning etablerad</string>
     <string name="info_bluetooth_init">Initiera Bluetooth-enhet</string>
-    <string name="info_bluetooth_connection_error">Bluetooth stötte på ett oväntat fel</string>
+    <string name="info_bluetooth_connection_error">Oväntat Bluetooth fel</string>
     <string name="info_new_data_added">La till %1$.2f%2$s [%3$s] till %4$s</string>
-    <string name="info_enter_user_name">Ange ditt namn</string>
-    <string name="info_no_selected_user">Ingen användare finns. Skapa en ny användare i inställningarna.</string>
-    <string name="info_no_evaluation_available">Kan inte utvärdera värdet</string>
+    <string name="info_enter_user_name">Ditt namn</string>
+    <string name="info_no_selected_user">Ingen användare finns. Skapa en i inställningarna.</string>
+    <string name="info_no_evaluation_available">Kunde inte utvärdera värdet</string>
     <string name="question_really_delete">Vill du verkligen ta bort databaspost?</string>
     <string name="question_really_delete_all">Vill du verkligen ta bort alla databasposter?</string>
     <string name="question_really_delete_user">Vill du verkligen ta bort användaren?</string>
     <string name="label_bluetooth_title">Bluetooth</string>
-    <string name="label_bluetooth_enable">Sök efter våg vid start</string>
+    <string name="label_bluetooth_enable">Anslut till våg vid start</string>
     <string name="label_bluetooth_searching">Söker efter Bluetooth-våg</string>
     <string name="label_device_type">Enhetstyp</string>
     <string name="label_enable_labels">Etikett på datapunkt</string>
@@ -114,7 +114,7 @@
     <string name="label_reminder">Påminnelse</string>
     <string name="label_reminder_notify_text">Meddelandetext</string>
     <string name="info_on_date">på</string>
-    <string name="label_bt_device_no_support">enheten stöds inte</string>
+    <string name="label_bt_device_no_support">enheten stödjs inte</string>
     <string name="label_exportBackup">Exportera säkerhetskopia</string>
     <string name="label_importBackup">Importera säkerhetskopia</string>
     <string name="label_export_dir">Exportkatalog</string>
@@ -132,7 +132,7 @@
     <string name="info_bluetooth_no_device_set">Ingen Bluetooth-enhet vald</string>
     <string name="info_new_data_duplicated">mätning med samma datum och tid existerar redan</string>
     <string name="title_general">Allmänt</string>
-    <string name="error_user_name_too_short">Fel: namnet måste vara minst 3 tecken</string>
+    <string name="error_user_name_too_short">Fel: namn måste vara minst 3 tecken</string>
     <string name="label_theme">Tema</string>
     <string name="label_feedback_message_enjoying">Uppskattar du openScale?</string>
     <string name="label_feedback_message_rate_app">Vad sägs om ett betyg på GooglePlay eller på GitHub?</string>
@@ -162,7 +162,7 @@
     <string name="label_month_view">Månadsvy</string>
 
     <string name="permission_not_granted">Tillstånd beviljas inte</string>
-    <string name="permission_bluetooth_info">openScale kräver åtkomst till grov platsbestämning för att söka efter Bluetooth-enheter</string>
+    <string name="permission_bluetooth_info">Tillstånd till grov platsbestämning krävs för att söka efter Bluetooth-enheter. Det kan återtas när enheten har hittats.</string>
     <string name="permission_bluetooth_info_title">Information</string>
 
     <string name="label_share_subject">openScale CSV dataexport (%s)</string>
@@ -189,4 +189,6 @@
     <string name="label_percent">Procent</string>
     <string name="label_estimated">Estimerat</string>
     <string name="label_estimate_measurement_summary">Baserat på vikt, längd, ålder, kön, m.m.</string>
+<string name="label_scale_not_supported">Stödjs inte din våg?</string>
+    <string name="label_click_to_help_add_support">Klicka här för att hjälpa till att lägga till stöd för den</string>
 </resources>

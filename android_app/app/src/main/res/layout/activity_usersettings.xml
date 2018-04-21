@@ -86,6 +86,7 @@
                         android:id="@+id/lblGender"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
                         android:text="@string/label_gender" />
 
                     <RadioGroup
@@ -105,7 +106,7 @@
                         <RadioButton
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/label_woman"
+                            android:text="@string/label_female"
                             android:id="@+id/btnRadioWoman" />
 
                     </RadioGroup>
@@ -121,6 +122,7 @@
                         android:id="@+id/lblUnit"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
                         android:text="@string/label_scale_unit" />
 
                     <RadioGroup
@@ -161,6 +163,7 @@
                         android:id="@+id/lblBirthday"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:labelFor="@id/txtBirthday"
                         android:text="@string/label_birthday" />
 
                     <EditText
@@ -223,6 +226,7 @@
                         android:id="@+id/lblGoalDate"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:labelFor="@id/txtGoalDate"
                         android:text="@string/label_goal_date" />
 
                     <EditText

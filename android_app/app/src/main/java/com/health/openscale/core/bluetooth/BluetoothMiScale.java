@@ -49,7 +49,7 @@ public class BluetoothMiScale extends BluetoothCommunication {
     }
 
     @Override
-    public String deviceName() {
+    public String driverName() {
         return "Xiaomi Mi Scale v1";
     }
 
@@ -98,7 +98,7 @@ public class BluetoothMiScale extends BluetoothCommunication {
 
 
     @Override
-    boolean nextInitCmd(int stateNr) {
+    protected boolean nextInitCmd(int stateNr) {
         switch (stateNr) {
             case 0:
                 // read device time
@@ -136,7 +136,7 @@ public class BluetoothMiScale extends BluetoothCommunication {
     }
 
     @Override
-    boolean nextBluetoothCmd(int stateNr) {
+    protected boolean nextBluetoothCmd(int stateNr) {
         switch (stateNr) {
             case 0:
                 // set notification on for weight measurement history
@@ -173,7 +173,7 @@ public class BluetoothMiScale extends BluetoothCommunication {
     }
 
     @Override
-    boolean nextCleanUpCmd(int stateNr) {
+    protected boolean nextCleanUpCmd(int stateNr) {
 
         switch (stateNr) {
             case 0:
@@ -196,8 +196,6 @@ public class BluetoothMiScale extends BluetoothCommunication {
 
     private void parseBytes(byte[] weightBytes) {
         try {
-            float weight = 0.0f;
-
             final byte ctrlByte = weightBytes[0];
 
             final boolean isWeightRemoved = isBitSet(ctrlByte, 7);
@@ -224,6 +222,7 @@ public class BluetoothMiScale extends BluetoothCommunication {
                 final int min = (int) weightBytes[8];
                 final int sec = (int) weightBytes[9];
 
+                float weight;
                 if (isLBSUnit || isCattyUnit) {
                     weight = (float) (((weightBytes[2] & 0xFF) << 8) | (weightBytes[1] & 0xFF)) / 100.0f;
                 } else {
@@ -277,7 +276,7 @@ public class BluetoothMiScale extends BluetoothCommunication {
             Random r = new Random();
             uniqueNumber = r.nextInt(65535 - 100 + 1) + 100;
 
-            prefs.edit().putInt("uniqueNumber", uniqueNumber).commit();
+            prefs.edit().putInt("uniqueNumber", uniqueNumber).apply();
         }
 
         int userId = OpenScale.getInstance(context).getSelectedScaleUserId();

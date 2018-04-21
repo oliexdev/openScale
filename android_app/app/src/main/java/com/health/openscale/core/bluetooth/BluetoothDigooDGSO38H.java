@@ -38,12 +38,8 @@ public class BluetoothDigooDGSO38H extends BluetoothCommunication {
     }
 
     @Override
-    public String deviceName() {
+    public String driverName() {
         return "Digoo DG-SO38H";
-    }
-
-    @Override
-    public void onBluetoothDataRead(BluetoothGatt bluetoothGatt, BluetoothGattCharacteristic gattCharacteristic, int status) {
     }
 
     @Override
@@ -60,7 +56,7 @@ public class BluetoothDigooDGSO38H extends BluetoothCommunication {
 
 
     @Override
-    boolean nextInitCmd(int stateNr) {
+    protected boolean nextInitCmd(int stateNr) {
         switch (stateNr) {
             case 0:
                 //Tell device to send us weight measurements
@@ -72,7 +68,7 @@ public class BluetoothDigooDGSO38H extends BluetoothCommunication {
     }
 
     @Override
-    boolean nextBluetoothCmd(int stateNr) {
+    protected boolean nextBluetoothCmd(int stateNr) {
         switch (stateNr) {
             default:
                 return false;
@@ -80,7 +76,7 @@ public class BluetoothDigooDGSO38H extends BluetoothCommunication {
     }
 
     @Override
-    boolean nextCleanUpCmd(int stateNr) {
+    protected boolean nextCleanUpCmd(int stateNr) {
 
         switch (stateNr) {
             default:
@@ -101,7 +97,7 @@ public class BluetoothDigooDGSO38H extends BluetoothCommunication {
                 //The weight is stabilized, now we want to measure all available values
                 byte gender = selectedUser.getGender().isMale() ? (byte)0x00: (byte)0x01;
                 byte height = (byte) (selectedUser.getBodyHeight() & 0xFF);
-                byte age = (byte)(selectedUser.getAge(new Date()) & 0xff);
+                byte age = (byte)(selectedUser.getAge() & 0xff);
                 byte unit = 0x01; // kg
                 switch (selectedUser.getScaleUnit()) {
                     case LB:
@@ -142,7 +138,7 @@ public class BluetoothDigooDGSO38H extends BluetoothCommunication {
                     scaleBtData.setWater(water);
                     scaleBtData.setBone(boneWeight);
                 }
-                scaleBtData.setConvertedWeight(weight, selectedUser.getScaleUnit());
+                scaleBtData.setWeight(weight);
                 addScaleData(scaleBtData);
             }
     }

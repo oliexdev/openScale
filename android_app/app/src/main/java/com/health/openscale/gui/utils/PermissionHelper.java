@@ -18,6 +18,7 @@ package com.health.openscale.gui.utils;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Fragment;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
@@ -34,26 +35,27 @@ public class PermissionHelper {
     public final static int PERMISSIONS_REQUEST_ACCESS_READ_STORAGE = 2;
     public final static int PERMISSIONS_REQUEST_ACCESS_WRITE_STORAGE = 3;
 
-    public static boolean requestBluetoothPermission(final Activity activity, boolean BLE) {
+    public final static int ENABLE_BLUETOOTH_REQUEST = 5;
+
+    public static boolean requestBluetoothPermission(final Activity activity, Fragment fragment) {
         final BluetoothManager bluetoothManager = (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
         BluetoothAdapter btAdapter = bluetoothManager.getAdapter();
 
         if (btAdapter == null || !btAdapter.isEnabled()) {
+            Toast.makeText(activity, "Bluetooth " + activity.getResources().getString(R.string.info_is_not_enable), Toast.LENGTH_SHORT).show();
 
-            Toast.makeText(activity.getApplicationContext(), "Bluetooth " + activity.getResources().getString(R.string.info_is_not_enable), Toast.LENGTH_SHORT).show();
-
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            activity.startActivityForResult(enableBtIntent, 1);
+            if (btAdapter != null) {
+                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                fragment.startActivityForResult(enableBtIntent, ENABLE_BLUETOOTH_REQUEST);
+            }
             return false;
         }
 
         // Check if Bluetooth 4.x is available
-        if (BLE) {
-            if (!activity.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-                Toast.makeText(activity.getApplicationContext(), "Bluetooth 4.x " + activity.getResources().getString(R.string.info_is_not_available), Toast.LENGTH_SHORT).show();
-                return false;
-             }
-        }
+        if (!activity.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+            Toast.makeText(activity, "Bluetooth 4.x " + activity.getResources().getString(R.string.info_is_not_available), Toast.LENGTH_SHORT).show();
+            return false;
+         }
 
         if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             AlertDialog.Builder builder = new AlertDialog.Builder(activity);
@@ -68,13 +70,11 @@ public class PermissionHelper {
                         }
                     });
 
-            AlertDialog dialog = builder.create();
-            dialog.show();
-        } else {
-            return true;
+            builder.show();
+            return false;
         }
 
-        return false;
+        return true;
     }
 
     public static boolean requestReadPermission(final Activity activity) {

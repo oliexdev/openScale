@@ -27,7 +27,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Set;
 import java.util.UUID;
 
 public class BluetoothCustomOpenScale extends BluetoothCommunication {
@@ -43,84 +42,71 @@ public class BluetoothCustomOpenScale extends BluetoothCommunication {
     }
 
     @Override
-    public String deviceName() {
+    public String driverName() {
         return "Custom Open Scale";
     }
 
     @Override
-    boolean nextInitCmd(int stateNr) {
+    protected boolean nextInitCmd(int stateNr) {
         return false;
     }
 
     @Override
-    boolean nextBluetoothCmd(int stateNr) {
+    protected boolean nextBluetoothCmd(int stateNr) {
         return false;
     }
 
     @Override
-    boolean nextCleanUpCmd(int stateNr) {
+    protected boolean nextCleanUpCmd(int stateNr) {
         return false;
     }
 
-    public boolean isBLE() {
-        return false;
-    }
-
-        @Override
-    public void startSearching(String deviceName) {
+    @Override
+    public void connect(String hwAddress) {
 
         if (btAdapter == null) {
             setBtStatus(BT_STATUS_CODE.BT_NO_DEVICE_FOUND);
             return;
         }
 
-        Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
-
-        for (BluetoothDevice device : pairedDevices) {
-            // check if we can found bluetooth device name in the pairing list
-            if (device != null && device.getName().equals(deviceName)) {
-                btDevice = device;
-
-                try {
-                    // Get a BluetoothSocket to connect with the given BluetoothDevice
-                    btSocket = btDevice.createRfcommSocketToServiceRecord(uuid);
-                } catch (IOException e) {
-                    setBtStatus(BT_STATUS_CODE.BT_UNEXPECTED_ERROR, "Can't get a bluetooth socket");
-                }
-
-                Thread socketThread = new Thread() {
-                    @Override
-                    public void run() {
-                        try {
-                            if (!btSocket.isConnected()) {
-                                // Connect the device through the socket. This will block
-                                // until it succeeds or throws an exception
-                                btSocket.connect();
-
-                                // Bluetooth connection was successful
-                                setBtStatus(BT_STATUS_CODE.BT_CONNECTION_ESTABLISHED);
-
-                                btConnectThread = new BluetoothConnectedThread();
-                                btConnectThread.start();
-                            }
-                        } catch (IOException connectException) {
-                            // Unable to connect; close the socket and get out
-                            stopSearching();
-                            setBtStatus(BT_STATUS_CODE.BT_NO_DEVICE_FOUND);
-                        }
-                    }
-                };
-
-                socketThread.start();
-                return;
-            }
+        btDevice = btAdapter.getRemoteDevice(hwAddress);
+        try {
+            // Get a BluetoothSocket to connect with the given BluetoothDevice
+            btSocket = btDevice.createRfcommSocketToServiceRecord(uuid);
+        } catch (IOException e) {
+            setBtStatus(BT_STATUS_CODE.BT_UNEXPECTED_ERROR, "Can't get a bluetooth socket");
+            btDevice = null;
+            return;
         }
 
-        setBtStatus(BT_STATUS_CODE.BT_NO_DEVICE_FOUND);
+        Thread socketThread = new Thread() {
+            @Override
+            public void run() {
+                try {
+                    if (!btSocket.isConnected()) {
+                        // Connect the device through the socket. This will block
+                        // until it succeeds or throws an exception
+                        btSocket.connect();
+
+                        // Bluetooth connection was successful
+                        setBtStatus(BT_STATUS_CODE.BT_CONNECTION_ESTABLISHED);
+
+                        btConnectThread = new BluetoothConnectedThread();
+                        btConnectThread.start();
+                    }
+                } catch (IOException connectException) {
+                    // Unable to connect; close the socket and get out
+                    disconnect(false);
+                    setBtStatus(BT_STATUS_CODE.BT_NO_DEVICE_FOUND);
+                }
+            }
+        };
+
+        socketThread.start();
     }
 
     @Override
-    public void stopSearching() {
+    public void disconnect(boolean doCleanup) {
         if (btSocket != null) {
             if (btSocket.isConnected()) {
                 try {
@@ -136,6 +122,8 @@ public class BluetoothCustomOpenScale extends BluetoothCommunication {
             btConnectThread.cancel();
             btConnectThread = null;
         }
+
+        btDevice = null;
     }
 
     public void clearEEPROM()

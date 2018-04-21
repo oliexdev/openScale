@@ -23,9 +23,9 @@ import android.content.Context;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
+import com.health.openscale.core.utils.Converters;
 
 import java.util.Arrays;
-import java.util.Date;
 import java.util.UUID;
 
 public class BluetoothExcelvanCF369BLE extends BluetoothCommunication {
@@ -41,26 +41,29 @@ public class BluetoothExcelvanCF369BLE extends BluetoothCommunication {
     }
 
     @Override
-    public String deviceName() {
+    public String driverName() {
         return "Excelvan CF369BLE";
     }
 
     @Override
-    boolean nextInitCmd(int stateNr) {
+    protected boolean nextInitCmd(int stateNr) {
         return false;
     }
 
     @Override
-    boolean nextBluetoothCmd(int stateNr) {
+    protected boolean nextBluetoothCmd(int stateNr) {
         switch (stateNr) {
             case 0:
                 final ScaleUser selectedUser = OpenScale.getInstance(context).getSelectedScaleUser();
 
-                byte sex = selectedUser.getGender().isMale() ? (byte)0x01 : (byte)0x00; // 01 - male; 00 - female
-                byte height = (byte)(selectedUser.getBodyHeight() & 0xff); // cm
-                byte age = (byte)(selectedUser.getAge(new Date()) & 0xff);
-                byte unit = 0x01; // kg
+                byte userId = (byte) 0x01;
+                byte sex = selectedUser.getGender().isMale() ? (byte) 0x01 : (byte) 0x00;
+                // 0x00 = ordinary, 0x01 = amateur, 0x02 = professional
+                byte exerciseLevel = (byte) 0x01;
+                byte height = (byte) selectedUser.getBodyHeight();
+                byte age = (byte) selectedUser.getAge();
 
+                byte unit = 0x01; // kg
                 switch (selectedUser.getScaleUnit()) {
                     case LB:
                         unit = 0x02;
@@ -70,9 +73,9 @@ public class BluetoothExcelvanCF369BLE extends BluetoothCommunication {
                         break;
                 }
 
-                byte xor_checksum = (byte)((byte)(0x01) ^ sex ^ (byte)(0x01) ^ height ^ age ^ unit);
-
-                byte[] configBytes = {(byte)(0xfe), (byte)(0x01), sex, (byte)(0x01), height, age, unit, xor_checksum};
+                byte[] configBytes = {(byte) 0xfe, userId, sex, exerciseLevel, height, age, unit, (byte) 0x00};
+                configBytes[configBytes.length - 1] =
+                        xorChecksum(configBytes, 1, configBytes.length - 2);
 
                 writeBytes(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC, configBytes);
                 break;
@@ -87,7 +90,7 @@ public class BluetoothExcelvanCF369BLE extends BluetoothCommunication {
     }
 
     @Override
-    boolean nextCleanUpCmd(int stateNr) {
+    protected boolean nextCleanUpCmd(int stateNr) {
         return false;
     }
 
@@ -108,13 +111,13 @@ public class BluetoothExcelvanCF369BLE extends BluetoothCommunication {
     }
 
     private void parseBytes(byte[] weightBytes) {
-        float weight = (float) (((weightBytes[4] & 0xFF) << 8) | (weightBytes[5] & 0xFF)) / 10.0f;
-        float fat = (float)(((weightBytes[6] & 0xFF) << 8) | (weightBytes[7] & 0xFF)) / 10.0f;
-        float bone = (float)(weightBytes[8]) / 10.0f;
-        float muscle = (float)(((weightBytes[9] & 0xFF) << 8) | (weightBytes[10] & 0xFF)) / 10.0f;
-        float viscal_fat = (float)(weightBytes[11]);
-        float water = (float)(((weightBytes[12] & 0xFF) << 8) | (weightBytes[13] & 0xFF)) / 10.0f;
-        float bmr = (float)(((weightBytes[14] & 0xFF) << 8) | (weightBytes[15] & 0xFF));
+        float weight = Converters.fromUnsignedInt16Be(weightBytes, 4) / 10.0f;
+        float fat = Converters.fromUnsignedInt16Be(weightBytes, 6) / 10.0f;
+        float bone = (weightBytes[8] & 0xFF) / 10.0f;
+        float muscle = Converters.fromUnsignedInt16Be(weightBytes, 9) / 10.0f;
+        float visceralFat = weightBytes[11] & 0xFF;
+        float water = Converters.fromUnsignedInt16Be(weightBytes, 12) / 10.0f;
+        float bmr = Converters.fromUnsignedInt16Be(weightBytes, 14);
 
         ScaleMeasurement scaleBtData = new ScaleMeasurement();
 
@@ -125,7 +128,6 @@ public class BluetoothExcelvanCF369BLE extends BluetoothCommunication {
         scaleBtData.setMuscle(muscle);
         scaleBtData.setWater(water);
         scaleBtData.setBone(bone);
-        scaleBtData.setDateTime(new Date());
 
         addScaleData(scaleBtData);
     }

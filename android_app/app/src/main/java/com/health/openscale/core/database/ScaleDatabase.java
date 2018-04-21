@@ -118,7 +118,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
     }
 
     public ArrayList<ScaleMeasurement> getScaleDataList(int userId) {
-        ArrayList<ScaleMeasurement> scaleMeasurementList = new ArrayList<ScaleMeasurement>();
+        ArrayList<ScaleMeasurement> scaleMeasurementList = new ArrayList<>();
 
         try {
             String sortOrder = COLUMN_NAME_DATE_TIME + " DESC";
@@ -143,7 +143,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
 
             cursorScaleDB.close();
         } catch (SQLException ex) {
-            Log.e("ScaleDatabase", "SQL exception occured while getting scale data list: " + ex.getMessage());
+            Log.e("ScaleDatabase", "SQL exception occurred while getting scale data list: " + ex.getMessage());
         }
 
         return scaleMeasurementList;
@@ -161,7 +161,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
             scaleMeasurement.setFat(cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_FAT)));
             scaleMeasurement.setWater(cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_WATER)));
             scaleMeasurement.setMuscle(cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_MUSCLE)));
-            scaleMeasurement.setLbw(cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_LBW)));
+            scaleMeasurement.setLbm(cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_LBW)));
             scaleMeasurement.setBone(cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_BONE)));
             scaleMeasurement.setWaist(cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_WAIST)));
             scaleMeasurement.setHip(cur.getFloat(cur.getColumnIndexOrThrow(COLUMN_NAME_HIP)));

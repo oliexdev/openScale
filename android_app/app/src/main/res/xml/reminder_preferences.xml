@@ -9,24 +9,21 @@
 
     <MultiSelectListPreference
         android:defaultValue="@array/weekdays_default"
+        android:dependency="reminderEnable"
         android:dialogTitle="@string/label_reminder_weekdays"
-        android:enabled="false"
         android:entries="@array/weekdays_entries"
         android:entryValues="@array/weekdays_values"
         android:key="reminderWeekdays"
-        android:title="@string/label_reminder_weekdays"
-        />
+        android:title="@string/label_reminder_weekdays" />
 
     <com.health.openscale.gui.preferences.TimePreferenceDialog
-        android:enabled="false"
+        android:dependency="reminderEnable"
         android:key="reminderTime"
-        android:title="@string/label_reminder_time"
-        />
+        android:title="@string/label_reminder_time" />
 
     <EditTextPreference
         android:defaultValue="@string/default_value_reminder_notify_text"
-        android:enabled="false"
+        android:dependency="reminderEnable"
         android:key="reminderNotifyText"
-        android:title="@string/label_reminder_notify_text"
-        />
+        android:title="@string/label_reminder_notify_text" />
 </PreferenceScreen>

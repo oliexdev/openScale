@@ -23,8 +23,10 @@ import com.health.openscale.R;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
+import com.health.openscale.core.utils.Converters;
 
 public class BoneMeasurementView extends FloatMeasurementView {
+    // Don't change key value, it may be stored persistent in preferences
     public static final String KEY = "bone";
 
     public BoneMeasurementView(Context context) {
@@ -37,23 +39,33 @@ public class BoneMeasurementView extends FloatMeasurementView {
     }
 
     @Override
+    protected boolean supportsAbsoluteWeightToPercentageConversion() {
+        return true;
+    }
+
+    @Override
     protected float getMeasurementValue(ScaleMeasurement measurement) {
-        return measurement.getBone();
+        return Converters.fromKilogram(measurement.getBone(), getScaleUser().getScaleUnit());
     }
 
     @Override
     protected void setMeasurementValue(float value, ScaleMeasurement measurement) {
-        measurement.setBone(value);
+        measurement.setBone(Converters.toKilogram(value, getScaleUser().getScaleUnit()));
     }
 
     @Override
     public String getUnit() {
-        return "kg";
+        if (shouldConvertAbsoluteWeightToPercentage()) {
+            return "%";
+        }
+
+        return getScaleUser().getScaleUnit().toString();
     }
 
     @Override
     protected float getMaxValue() {
-        return 50;
+        return maybeConvertAbsoluteWeightToPercentage(
+                Converters.fromKilogram(50, getScaleUser().getScaleUnit()));
     }
 
     @Override

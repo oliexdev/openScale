@@ -32,16 +32,16 @@ import java.util.Locale;
 
 public class LinearGaugeView extends View {
 
-    public static final int COLOR_BLUE = Color.parseColor("#33B5E5");
-    public static final int COLOR_GREEN = Color.parseColor("#99CC00");
-    public static final int COLOR_RED = Color.parseColor("#FF4444");
+    private static final int COLOR_BLUE = Color.parseColor("#33B5E5");
+    private static final int COLOR_GREEN = Color.parseColor("#99CC00");
+    private static final int COLOR_RED = Color.parseColor("#FF4444");
 
     private static final float barHeight = 10;
     private static final float textOffset = 10.0f;
-    private RectF limitRect = new RectF(0, 0, barHeight / 2, barHeight * 2);
+    private final RectF limitRect = new RectF(0, 0, barHeight / 2, barHeight * 2);
 
     // Pre-created rect to avoid creating object in onDraw
-    private Rect bounds = new Rect();
+    private final Rect bounds = new Rect();
 
     private Paint rectPaintLow;
     private Paint rectPaintNormal;

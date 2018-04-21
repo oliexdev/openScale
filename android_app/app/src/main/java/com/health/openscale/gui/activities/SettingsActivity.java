@@ -35,7 +35,7 @@ import java.util.List;
 
 public class SettingsActivity extends PreferenceActivity
         implements SharedPreferences.OnSharedPreferenceChangeListener {
-    private static List<String> fragments = new ArrayList<String>();
+    private static List<String> fragments = new ArrayList<>();
     private Fragment currentFragment;
 
     @Override

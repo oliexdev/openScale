@@ -24,7 +24,7 @@
     <string name="label_fat">Vücüt Yað Yüzdesi</string>
     <string name="label_water">Su Yüzdesi</string>
     <string name="label_muscle">Kas Yüzdesi</string>
-    <string name="label_lbw">Yaðsýz vücüt aðýrlýðý</string>
+    <string name="label_lbm">Yaðsýz vücüt aðýrlýðý</string>
     <string name="label_waist">Bel çevresi</string>
     <string name="label_hip">Kalça çevresi</string>
     <string name="label_comment">Yorum</string>
@@ -50,7 +50,7 @@
     <string name="label_scale_unit">Ölçek birimi</string>
     <string name="label_gender">Cinsiyet</string>
     <string name="label_male">Erkek</string>
-    <string name="label_woman">Kadýn</string>
+    <string name="label_female">Kadýn</string>
     <string name="label_goal_weight">Hedef Kilo</string>
     <string name="label_goal_date">Hedef Tarihi</string>
 

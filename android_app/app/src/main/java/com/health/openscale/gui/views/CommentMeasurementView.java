@@ -26,6 +26,7 @@ import com.health.openscale.R;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 
 public class CommentMeasurementView extends MeasurementView {
+    // Don't change key value, it may be stored persistent in preferences
     public static final String KEY = "comment";
 
     private String comment;

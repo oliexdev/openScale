@@ -23,6 +23,7 @@ import org.junit.Test;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertArrayEquals;
 
 public class ConvertersTest {
 
@@ -81,11 +82,34 @@ public class ConvertersTest {
     }
 
     @Test
-    public void unsignedIntConverters() throws Exception {
+    public void unsignedInt16Converters() throws Exception {
         byte[] data = new byte[]{(byte) 0xfd, (byte) 0xfe, (byte) 0xfc, (byte) 0x10, (byte) 0x7f};
-        assertEquals(0xfdfe, Converters.parseUnsignedInt16Be(data, 0));
-        assertEquals(0xfefc, Converters.parseUnsignedInt16Be(data, 1));
-        assertEquals(0xfc10, Converters.parseUnsignedInt16Be(data, 2));
-        assertEquals(0x107f, Converters.parseUnsignedInt16Be(data, 3));
+        assertEquals(0xfdfe, Converters.fromUnsignedInt16Be(data, 0));
+        assertEquals(0xfefc, Converters.fromUnsignedInt16Be(data, 1));
+        assertEquals(0xfc10, Converters.fromUnsignedInt16Be(data, 2));
+        assertEquals(0x107f, Converters.fromUnsignedInt16Be(data, 3));
+
+        data = new byte[]{(byte) 0xff, (byte) 0xfe};
+        assertArrayEquals(data, Converters.toUnsignedInt16Be(0xfffe));
+        assertEquals(0xffff,
+                Converters.fromUnsignedInt16Be(
+                        Converters.toUnsignedInt16Be(0xffff), 0));
+    }
+
+    @Test
+    public void unsignedInt32Converters() throws Exception {
+        byte[] data = new byte[]{(byte) 0xf1, (byte) 0xf2, (byte) 0xf3, (byte) 0x7f, (byte) 0x7e};
+        assertEquals(0xf1f2f37fL, Converters.fromUnsignedInt32Be(data, 0));
+        assertEquals(0xf2f37f7eL, Converters.fromUnsignedInt32Be(data, 1));
+
+        data = new byte[]{(byte) 0x80, (byte) 0x00, (byte) 0x01, (byte) 0xff, (byte) 0x00};
+        assertEquals(0x800001ffL, Converters.fromUnsignedInt32Be(data, 0));
+        assertEquals(0x1ff00L, Converters.fromUnsignedInt32Be(data, 1));
+
+        data = new byte[]{(byte) 0xff, (byte) 0xfe, (byte) 0xfd, (byte) 0xfc};
+        assertArrayEquals(data, Converters.toUnsignedInt32Be(0xfffefdfcL));
+        assertEquals(0xffffffffL,
+                Converters.fromUnsignedInt32Be(
+                        Converters.toUnsignedInt32Be(0xffffffffL), 0));
     }
 }

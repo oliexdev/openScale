@@ -69,8 +69,6 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
     private TextView txtTitleUser;
     private TextView txtTitleLastMeasurement;
 
-    private TableLayout tableOverviewLayout;
-
     private List<MeasurementView> measurementViews;
 
     private PieChartView pieChartLast;
@@ -104,15 +102,13 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
         context = overviewView.getContext();
 
-        txtTitleUser = (TextView) overviewView.findViewById(R.id.txtTitleUser);
-        txtTitleLastMeasurement = (TextView) overviewView.findViewById(R.id.txtTitleLastMeasurment);
+        txtTitleUser = overviewView.findViewById(R.id.txtTitleUser);
+        txtTitleLastMeasurement = overviewView.findViewById(R.id.txtTitleLastMeasurement);
 
-        tableOverviewLayout = (TableLayout)overviewView.findViewById(R.id.tableLayoutMeasurements);
+        pieChartLast = overviewView.findViewById(R.id.pieChartLast);
+        lineChartLast = overviewView.findViewById(R.id.lineChartLast);
 
-        pieChartLast = (PieChartView) overviewView.findViewById(R.id.pieChartLast);
-        lineChartLast = (LineChartView) overviewView.findViewById(R.id.lineChartLast);
-
-        spinUser = (Spinner) overviewView.findViewById(R.id.spinUser);
+        spinUser = overviewView.findViewById(R.id.spinUser);
 
         lineChartLast.setOnValueTouchListener(new LineChartTouchListener());
 
@@ -121,6 +117,8 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
         measurementViews = MeasurementView.getMeasurementList(
                 getContext(), MeasurementView.DateTimeOrder.NONE);
+
+        TableLayout tableOverviewLayout = overviewView.findViewById(R.id.tableLayoutMeasurements);
 
         for (MeasurementView measurement : measurementViews) {
             tableOverviewLayout.addView(measurement);
@@ -234,7 +232,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             }
 
             FloatMeasurementView measurementView = (FloatMeasurementView) view;
-            Stack<PointValue> valuesStack = new Stack<PointValue>();
+            Stack<PointValue> valuesStack = new Stack<>();
 
             for (int i = 0; i < max_i; ++i) {
                 ScaleMeasurement measurement = scaleMeasurementList.get(max_i - i - 1);

@@ -19,11 +19,10 @@ package com.health.openscale.core.bluetooth;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
-import android.widget.Toast;
 
 import com.health.openscale.core.datatypes.ScaleMeasurement;
+import com.health.openscale.core.utils.Converters;
 
-import java.util.Date;
 import java.util.UUID;
 
 public class BluetoothOneByone extends BluetoothCommunication {
@@ -40,26 +39,21 @@ public class BluetoothOneByone extends BluetoothCommunication {
     }
 
     @Override
-    public String deviceName() {
-        return "1byone scale";
+    public String driverName() {
+        return "1byone";
     }
 
     @Override
-    boolean nextInitCmd(int stateNr) {
+    protected boolean nextInitCmd(int stateNr) {
         switch (stateNr) {
             case 0:
                 setIndicationOn(WEIGHT_MEASUREMENT_SERVICE_BODY_COMPOSITION, WEIGHT_MEASUREMENT_CHARACTERISTIC_BODY_COMPOSITION, WEIGHT_MEASUREMENT_CONFIG);
                 break;
             case 1:
-                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, CMD_MEASUREMENT_CUSTOM_CHARACTERISTIC, WEIGHT_MEASUREMENT_CONFIG);
-                break;
-            case 2:
-                byte[] magicBytes = {(byte)0xfd,(byte)0x37,(byte)0x01,(byte)0x01,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0xca};
+                byte[] magicBytes = {(byte)0xfd,(byte)0x37,(byte)0x01,(byte)0x01,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00,(byte)0x00};
+                magicBytes[magicBytes.length - 1] =
+                        xorChecksum(magicBytes, 0, magicBytes.length - 1);
                 writeBytes(WEIGHT_MEASUREMENT_SERVICE, CMD_MEASUREMENT_CHARACTERISTIC, magicBytes);
-                break;
-            case 3:
-                byte[] magicBytes2 = {(byte)0xfe, (byte)0x01, (byte)0x01, (byte)0x00, (byte)0xaa, (byte)0x2d, (byte)0x02, (byte)0x85};
-                writeBytes(WEIGHT_MEASUREMENT_SERVICE, CMD_MEASUREMENT_CHARACTERISTIC, magicBytes2);
                 break;
             default:
                 return false;
@@ -69,12 +63,12 @@ public class BluetoothOneByone extends BluetoothCommunication {
     }
 
     @Override
-    boolean nextBluetoothCmd(int stateNr) {
+    protected boolean nextBluetoothCmd(int stateNr) {
         return false;
     }
 
     @Override
-    boolean nextCleanUpCmd(int stateNr) {
+    protected boolean nextCleanUpCmd(int stateNr) {
         return false;
     }
 
@@ -82,33 +76,18 @@ public class BluetoothOneByone extends BluetoothCommunication {
     public void onBluetoothDataChange(BluetoothGatt bluetoothGatt, BluetoothGattCharacteristic gattCharacteristic) {
         final byte[] data = gattCharacteristic.getValue();
 
-        Toast.makeText(context, "Log Data: " + byteInHex(data), Toast.LENGTH_LONG).show();
-
-        if (data != null && data.length > 0) {
-            // if data is valid data
-            if (data.length == 16) {
-                parseBytes(data);
-            }
+        // if data is valid data
+        if (data != null && data.length == 20) {
+            parseBytes(data);
         }
     }
 
     private void parseBytes(byte[] weightBytes) {
-        float weight = (float) (((weightBytes[4] & 0xFF) << 8) | (weightBytes[5] & 0xFF)) / 10.0f; // kg
-        float fat = (float)(((weightBytes[6] & 0xFF) << 8) | (weightBytes[7] & 0xFF)) / 10.0f; // %
-        float bone = (float)(((weightBytes[8] & 0xFF) & 0xFF)) / 10.0f; // %
-        float muscle = (float)(((weightBytes[9] & 0xFF) << 8) | (weightBytes[10] & 0xFF)) / 10.0f; // %
-        float visfat = (float)(((weightBytes[11] & 0xFF) & 0xFF)) / 10.0f; // %
-        float water = (float)(((weightBytes[12] & 0xFF) << 8) | (weightBytes[13] & 0xFF)) / 10.0f; // %
-        float bmr = (float)(((weightBytes[14] & 0xFF) << 8) | (weightBytes[15] & 0xFF)); // kcal
+        float weight = Converters.fromUnsignedInt16Le(weightBytes, 11) / 100.0f;
 
         ScaleMeasurement scaleBtData = new ScaleMeasurement();
 
         scaleBtData.setWeight(weight);
-        scaleBtData.setFat(fat);
-        scaleBtData.setMuscle(muscle);
-        scaleBtData.setWater(water);
-        scaleBtData.setBone(bone);
-        scaleBtData.setDateTime(new Date());
 
         addScaleData(scaleBtData);
     }

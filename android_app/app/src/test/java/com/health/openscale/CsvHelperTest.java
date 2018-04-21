@@ -32,8 +32,8 @@ import java.util.List;
 import static junit.framework.Assert.assertEquals;
 
 public class CsvHelperTest {
-    private static String HEADERS =
-            "\"bone\",\"comment\",\"dateTime\",\"fat\",\"hip\",\"lbw\","
+    private static final String HEADERS =
+            "\"bone\",\"comment\",\"dateTime\",\"fat\",\"hip\",\"lbm\","
             + "\"muscle\",\"waist\",\"water\",\"weight\"\n";
 
     private void validateEntry(ScaleMeasurement m, int version) throws Exception {
@@ -63,10 +63,10 @@ public class CsvHelperTest {
             assertEquals(0.0, m.getBone(), 0.001);
         }
         if (version > 3) {
-            assertEquals(4.0, m.getLbw(), 0.001);
+            assertEquals(4.0, m.getLbm(), 0.001);
         }
         else {
-            assertEquals(0.0, m.getLbw(), 0.001);
+            assertEquals(0.0, m.getLbm(), 0.001);
         }
 
         assertEquals("some text", m.getComment());
@@ -90,13 +90,25 @@ public class CsvHelperTest {
     }
 
     @Test
+    public void newStyleOldLbwHeaderNameSingleEntry() throws Exception {
+        final String data = HEADERS.replace("lbm", "lbw")
+                + "1.0,\"some text\",\"01.03.2018 12:45\",2.0,3.0,4.0,5.0,6.0,7.0,8.0\n";
+
+        List<ScaleMeasurement> list = CsvHelper.importFrom(
+                new BufferedReader(new StringReader(data)));
+
+        assertEquals(1, list.size());
+        validateEntry(list.get(0), 5);
+    }
+
+    @Test
     public void exportImport() throws Exception {
         ScaleMeasurement m = new ScaleMeasurement();
         m.setWeight(8.0f);
         m.setFat(2.0f);
         m.setWater(7.0f);
         m.setMuscle(5.0f);
-        m.setLbw(4.0f);
+        m.setLbm(4.0f);
         m.setBone(1.0f);
         m.setWaist(6.0f);
         m.setHip(3.0f);

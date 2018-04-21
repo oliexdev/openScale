@@ -2,32 +2,39 @@
 <resources>
     <string-array name="language_entries">
         <item>@string/language_default</item>
-        <item>@string/language_brazilian_portuguese</item>
-        <item>@string/language_catalan</item>
-        <item>@string/language_czech</item>
-        <item>@string/language_dutch</item>
-        <item>@string/language_english</item>
-        <item>@string/language_french</item>
-        <item>@string/language_german</item>
-        <item>@string/language_japanese</item>
-        <item>@string/language_polish</item>
-        <item>@string/language_slovak</item>
-        <item>@string/language_spanish</item>
-        <item>@string/language_swedish</item>
-        <item>@string/language_turkish</item>
+        <!-- Keep the list below alphabetically sorted -->
+        <!-- Native names from https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes -->
+        <item>Catalan (català)</item>
+        <item>Chinese, traditional (中文 (繁體))</item>
+        <item>Czech (čeština)</item>
+        <item>Dutch (Nederlands)</item>
+        <item>English</item>
+        <item>French (français)</item>
+        <item>German (Deutsch)</item>
+        <item>Japanese (日本語 (にほんご))</item>
+        <item>Norwegian, Bokmål (Norsk)</item>
+        <item>Polish (język polski)</item>
+        <item>Portuguese, Brazilian (Português)</item>
+        <item>Slovak (Slovenčina)</item>
+        <item>Spanish (Español)</item>
+        <item>Swedish (Svenska)</item>
+        <item>Turkish (Türkçe)</item>
     </string-array>
 
     <string-array name="language_values">
-        <item />
-        <item>pt-BR</item>
+        <item>default</item>
+        <!-- The order below should match the language order above -->
         <item>ca</item>
+        <item>zh-TW</item>
         <item>cs</item>
         <item>nl</item>
         <item>en</item>
         <item>fr</item>
         <item>de</item>
         <item>ja</item>
+        <item>nb</item>
         <item>pl</item>
+        <item>pt-BR</item>
         <item>sk</item>
         <item>es</item>
         <item>sv</item>

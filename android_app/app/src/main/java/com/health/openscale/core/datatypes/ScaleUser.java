@@ -128,12 +128,18 @@ public class ScaleUser {
 
     public int getAge(Date todayDate) {
         Calendar calToday = Calendar.getInstance();
-        calToday.setTime(todayDate);
+        if (todayDate != null) {
+            calToday.setTime(todayDate);
+        }
 
         Calendar calBirthday = Calendar.getInstance();
         calBirthday.setTime(birthday);
 
         return DateTimeHelpers.yearsBetween(calBirthday, calToday);
+    }
+
+    public int getAge() {
+        return getAge(null);
     }
 
     public void setInitialWeight(float weight) {

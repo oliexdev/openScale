@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <resources>
 
     <string name="title_overview">Przegląd</string>
@@ -30,7 +30,7 @@
     <string name="label_fat">Procent tkanki tłuszczowej</string>
     <string name="label_water">Procent wody w organizmie</string>
     <string name="label_muscle">Procent masy mięśniowej</string>
-    <string name="label_lbw">Beztłuszczowa masa ciała</string>
+    <string name="label_lbm">Beztłuszczowa masa ciała</string>
     <string name="label_waist">Obwód talii</string>
     <string name="label_hip">Obwód bioder</string>
     <string name="label_comment">Komentarz</string>
@@ -56,7 +56,7 @@
     <string name="label_scale_unit">Jednostka wagi</string>
     <string name="label_gender">Płęć</string>
     <string name="label_male">Mężczyzna</string>
-    <string name="label_woman">Kobieta</string>
+    <string name="label_female">Kobieta</string>
     <string name="label_goal_weight">Docelowa waga</string>
     <string name="label_goal_date">Data celu</string>
 
@@ -84,14 +84,14 @@
     <string name="info_data_exported">Dane wyeksportowane do</string>
     <string name="info_data_imported">Dane zaimportowane z</string>
     <string name="info_enter_value_cm">Wprowadź wartość w cm</string>
-    <string name="info_enter_comment">Wprowadź opcjonlany komentarz</string>
+    <string name="info_enter_comment">Wprowadź opcjonalny komentarz</string>
     <string name="info_is_visible">jest widoczne</string>
     <string name="info_is_not_visible">nie jest widoczne</string>
     <string name="info_is_enable">jest włączone</string>
     <string name="info_is_not_enable">jest wyłączone</string>
     <string name="info_is_not_available">jest niedostępne</string>
     <string name="info_bluetooth_try_connection">Próba połączenia do</string>
-    <string name="info_bluetooth_connection_lost">Utracono połączenie Bluetooth.</string>
+    <string name="info_bluetooth_connection_lost">Utracono połączenie Bluetooth</string>
     <string name="info_bluetooth_no_device">Nie znaleziono urządzeń Bluetooth</string>
     <string name="info_bluetooth_no_device_set">Nie wybrano urządzenia Bluetooth</string>
     <string name="info_bluetooth_connection_successful">Udało się nawiązać połączenie</string>
@@ -100,7 +100,7 @@
     <string name="info_new_data_added">%1$.2f%2$s [%3$s] dodano do %4$s</string>
     <string name="info_new_data_duplicated">istnieje pomiar z tą samą datą i czasem</string>
 
-    <string name="info_enter_user_name">Wprowadź swoje imie</string>
+    <string name="info_enter_user_name">Wprowadź swoje imię</string>
     <string name="info_no_selected_user">Brak użytkowników. Proszę utworzyć nowego użytkownika w ustawieniach.</string>
     <string name="info_no_evaluation_available">Nie można określić wartości</string>
 
@@ -109,7 +109,7 @@
     <string name="question_really_delete_user">Czy napewno chcesz usunąć użytkownika? </string>
 
     <string name="label_bluetooth_title">Bluetooth</string>
-    <string name="label_bluetooth_enable">Wyszukaj wagę przy starcie</string>
+    <string name="label_bluetooth_enable">Połącz z wagą przy starcie</string>
     <string name="label_mergeWithLastMeasurement">Scal z ostatnim pomiarem</string>
     <string name="label_bluetooth_searching">Wyszukuje wagi Bluetooth</string>
     <string name="label_bluetooth_searching_finished">Zakończono wyszukiwanie wag Bluetooth</string>
@@ -153,8 +153,8 @@
     <string name="label_not_found">nie znaleziono</string>
     <string name="label_ignoreOutOfRange">Ignoruj dane spoza zakresu</string>
     <string name="label_initial_weight">Waga początkowa</string>
-    <string name="label_regression_line">Regression weight line</string>
-    <string name="label_regression_line_degree">Regression polynom degree</string>
+    <string name="label_regression_line">Krzywa aproksymacji wagi</string>
+    <string name="label_regression_line_degree">Stopień wielomianu aproksymacji</string>
     <string name="label_goal_line">Linia celu</string>
     <string name="label_help">Pomoc</string>
     
@@ -166,8 +166,8 @@
     <string name="label_feedback_message_positive">Ok, jasne</string>
     <string name="label_feedback_message_negative">No, dzięki</string>
     
-    <string name="error_max_scale_users">Osiągnięto maksymalną ilość użytkowników wagi.</string>
-    <string name="info_step_on_scale">Proszę stanąć boso na wadze w celu przeprowadzenia pomiaru referencyjnego.</string>
+    <string name="error_max_scale_users">Osiągnięto maksymalną ilość użytkowników wagi</string>
+    <string name="info_step_on_scale">Proszę stanąć boso na wadze w celu przeprowadzenia pomiaru referencyjnego</string>
     <string name="info_measuring">Mierzona waga: %.2f</string>
 
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">Wystąpił nespodziewany błąd.\n\nProszę stworzyć nowy problem załączając szczegóły błędu na \nhttps://github.com/oliexdev/openScale/issues</string>
@@ -187,11 +187,17 @@
     <string name="label_weeks_view">Widok tygodnia</string>
 
     <string name="permission_not_granted">Nie przyznano uprawnień</string>
-    <string name="permission_bluetooth_info">openScale requires permission to access the coarse location to search for Bluetooth devices</string>
+    <string name="permission_bluetooth_info">Wymagane zezwolenie na dostęp do lokalizacji w celu znalezienia urządzeń Bluetooth. Po znalezieniu urządzenia zezwolenie można wycofać.</string>
     <string name="permission_bluetooth_info_title">Informacje</string>
     <string name="label_next">Następny</string>
     <string name="label_press_hold_reorder">Naciśnij i przytrzymaj by zmienić kolejność</string>
     <string name="label_set_default_order">Ustaw domyślną kolejność</string>
     <string name="label_export_overwrite">Nadpisać poprzedni eksport \"%s\"?</string>
 
-</resources>
+<string name="label_include_in_overview_graph">Umieść na wykresie</string>
+    <string name="label_measurement_in_percent">Pomiar w %</string>
+    <string name="label_estimate_measurement">Pomiar szacunkowy</string>
+    <string name="label_language">Język</string>
+    <string name="theme_light">Jasny</string>
+    <string name="theme_dark">Ciemny</string>
+    </resources>

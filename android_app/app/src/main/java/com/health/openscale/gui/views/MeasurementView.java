@@ -59,7 +59,7 @@ import static com.health.openscale.gui.views.MeasurementView.MeasurementViewMode
 public abstract class MeasurementView extends TableLayout {
     public enum MeasurementViewMode {VIEW, EDIT, ADD, STATISTIC}
 
-    public static String PREF_MEASUREMENT_ORDER = "measurementOrder";
+    public static final String PREF_MEASUREMENT_ORDER = "measurementOrder";
 
     private MeasurementViewSettings settings;
 
@@ -89,7 +89,7 @@ public abstract class MeasurementView extends TableLayout {
 
     public enum DateTimeOrder { FIRST, LAST, NONE }
 
-    public static final List<MeasurementView> getMeasurementList(
+    public static List<MeasurementView> getMeasurementList(
             Context context, DateTimeOrder dateTimeOrder) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
@@ -106,7 +106,7 @@ public abstract class MeasurementView extends TableLayout {
             unsorted.add(new BMIMeasurementView(context));
             unsorted.add(new WaterMeasurementView(context));
             unsorted.add(new MuscleMeasurementView(context));
-            unsorted.add(new LBWMeasurementView(context));
+            unsorted.add(new LBMMeasurementView(context));
             unsorted.add(new FatMeasurementView(context));
             unsorted.add(new BoneMeasurementView(context));
             unsorted.add(new WaistMeasurementView(context));
@@ -154,7 +154,7 @@ public abstract class MeasurementView extends TableLayout {
         }
         PreferenceManager.getDefaultSharedPreferences(context).edit()
                 .putString(PREF_MEASUREMENT_ORDER, TextUtils.join(",", order))
-                .commit();
+                .apply();
     }
 
     private void initView(Context context) {
@@ -386,7 +386,7 @@ public abstract class MeasurementView extends TableLayout {
 
     public String getPreferenceSummary() { return ""; }
     public boolean hasExtraPreferences() { return false; }
-    public void prepareExtraPreferencesScreen(PreferenceScreen screen) { };
+    public void prepareExtraPreferencesScreen(PreferenceScreen screen) { }
 
     protected abstract View getInputView();
     protected abstract boolean validateAndSetInput(View view);

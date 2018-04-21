@@ -2,6 +2,8 @@
 *                2017  jflesch <jflesch@kwain.net>
 *                2017  Martin Nowack
 *                2017  linuxlurak with help of Dododappere, see: https://github.com/oliexdev/openScale/issues/111
+*                2018  Erik Johansson <erik@ejohansson.se>
+*
 *    This program is free software: you can redistribute it and/or modify
 *    it under the terms of the GNU General Public License as published by
 *    the Free Software Foundation, either version 3 of the License, or
@@ -30,7 +32,6 @@ import com.health.openscale.core.utils.Converters;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -38,8 +39,10 @@ import java.util.Date;
 import java.util.TreeSet;
 import java.util.UUID;
 
-public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
-    public final static String TAG = "BEURER BF700/800";
+public class BluetoothBeurerSanitas extends BluetoothCommunication {
+    private final static String TAG = "BeurerSanitas";
+
+    enum DeviceType { BEURER_BF700_800_RT_LIBRA, BEURER_BF710, SANITAS_SBF70_70 }
 
     private static final int PRIMARY_SERVICE = 0x180A;
     private static final UUID SYSTEM_ID = UUID.fromString("00002A23-0000-1000-8000-00805F9B34FB");
@@ -55,10 +58,8 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
             UUID.fromString("00002A28-0000-1000-8000-00805F9B34FB");
     private static final UUID MANUFACTURER_NAME_STRING =
             UUID.fromString("00002A29-0000-1000-8000-00805F9B34FB");
-    //nachfolgend nicht geprüft
     private static final UUID IEEE_11073_20601_REGULATORY_CERTIFICATION_DATA_LIST =
             UUID.fromString("00002A2A-0000-1000-8000-00805F9B34FB");
-    //nachfolgend nicht geprüft
     private static final UUID PNP_ID =
             UUID.fromString("00002A50-0000-1000-8000-00805F9B34FB");
 
@@ -66,13 +67,10 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
             UUID.fromString("00002A00-0000-1000-8000-00805F9B34FB");
     private static final UUID APPEARANCE =
             UUID.fromString("00002A01-0000-1000-8000-00805F9B34FB");
-    //nachfolgend nicht geprüft
     private static final UUID PERIPHERICAL_PRIVACY_FLAG =
             UUID.fromString("00002A02-0000-1000-8000-00805F9B34FB");
-    //nachfolgend nicht geprüft
     private static final UUID RECONNECTION_ADDRESS =
             UUID.fromString("00002A03-0000-1000-8000-00805F9B34FB");
-    //nachfolgend nicht geprüft
     private static final UUID PERIPHERICAL_PREFERRED_CONNECTION_PARAMETERS =
             UUID.fromString("00002A04-0000-1000-8000-00805F9B34FB");
 
@@ -81,29 +79,32 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
     private static final UUID SERVICE_CHANGED =
             UUID.fromString("00002A05-0000-1000-8000-00805F9B34FB");
 
-    // descriptor ; handle = 0x000f  <-- kommentar nicht geprüft
-    //unterschied zur sanitas (00002901) hier bei Beurer BF700 00002902
-    //2902 = Client Characteristic Configuration
-    //2901 = Characteristic User Description
-    //see https://www.bluetooth.com/specifications/gatt/descriptors
-    private static final UUID CLIENT_CHARACTERISTICS_CONFIGURATION =
+    private static final UUID CLIENT_CHARACTERISTICS_CONFIGURATION_BEURER =
             UUID.fromString("00002902-0000-1000-8000-00805F9B34FB");
+    private static final UUID CLIENT_CHARACTERISTICS_CONFIGURATION_SANITAS =
+            UUID.fromString("00002901-0000-1000-8000-00805F9B34FB");
 
-    //service mit gleicher uuid exisitert
-    //aus com.beurer.connect.healthmanager_2017-07-06_source_from_JADX\com\ilink\bleapi\SupportedServices.java:
-    //     public static final String SCALE_SERVICE_UUID = "0000ffe0-0000-1000-8000-00805f9b34fb";
     private static final UUID CUSTOM_SERVICE_1 =
             UUID.fromString("0000FFE0-0000-1000-8000-00805F9B34FB");
-    //characteristic FFE2 existiert mit notify, read, write, write no response
+    private static final UUID CUSTOM_CHARACTERISTIC_1 = // read-write
+            UUID.fromString("0000FFE4-0000-1000-8000-00805F9B34FB");
     private static final UUID CUSTOM_CHARACTERISTIC_2 = // read-only
             UUID.fromString("0000FFE2-0000-1000-8000-00805F9B34FB");
-    //characteristic FFE1 existiert mit notify, read, write, write no response
-    //aus com.beurer.connect.healthmanager_2017-07-06_source_from_JADX\com\ilink\bleapi\SupportedServices.java:
-    //    public static final String SCALE_CHARACTERISTIC_UUID_1 = "0000ffe1-0000-1000-8000-00805f9b34fb";
-    //    public static final String SCALE_CHARACTERISTIC_UUID_2 = "0000ffe2-0000-1000-8000-00805f9b34fb";
+    private static final UUID CUSTOM_CHARACTERISTIC_3 = // write-only
+            UUID.fromString("0000FFE3-0000-1000-8000-00805F9B34FB");
     private static final UUID CUSTOM_CHARACTERISTIC_WEIGHT = // write-only, notify ; handle=0x002e
             UUID.fromString("0000FFE1-0000-1000-8000-00805F9B34FB");
+    private static final UUID CUSTOM_CHARACTERISTIC_5 = // write-only, notify
+            UUID.fromString("0000FFE5-0000-1000-8000-00805F9B34FB");
 
+    private static final UUID CUSTOM_SERVICE_2 =
+            UUID.fromString("F000FFCD-0451-4000-8000-000000000000"); // primary service
+    private static final UUID CUSTOM_CHARACTERISTIC_IMG_IDENTIFY = // write-only, notify
+            UUID.fromString("F000FFC1-0451-4000-8000-000000000000");
+    private static final UUID CUSTOM_CHARACTERISTIC_IMG_BLOCK = // write-only, notify
+            UUID.fromString("F000FFC2-0451-4000-8000-000000000000");
+
+    private final DeviceType deviceType;
     private int startByte;
     private int currentScaleUserId;
     private int countRegisteredScaleUsers;
@@ -115,18 +116,37 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
         return (startByte & 0xF0) | (id & 0x0F);
     }
 
-    public BluetoothBeurerBF700_800(Context context, int startByte) {
+    public BluetoothBeurerSanitas(Context context, DeviceType deviceType) {
         super(context);
-        this.startByte = startByte;
+
+        this.deviceType = deviceType;
+        switch (deviceType) {
+            case BEURER_BF700_800_RT_LIBRA:
+                startByte = 0xf7;
+                break;
+            case BEURER_BF710:
+            case SANITAS_SBF70_70:
+                startByte = 0xe7;
+                break;
+        }
     }
 
     @Override
-    public String deviceName() {
-        return "Beurer BF700/710/800 / Runtastic Libra";
+    public String driverName() {
+        switch (deviceType) {
+            case BEURER_BF700_800_RT_LIBRA:
+                return "Beurer BF700/800 / Runtastic Libra";
+            case BEURER_BF710:
+                return "Beurer BF710";
+            case SANITAS_SBF70_70:
+                return "Sanitas SBF70/SilverCrest SBF75";
+        }
+
+        return "Unknown device type";
     }
 
     @Override
-    boolean nextInitCmd(int stateNr) {
+    protected boolean nextInitCmd(int stateNr) {
 
         switch (stateNr) {
             case 0:
@@ -137,25 +157,31 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
                 seenUsers = new TreeSet<>();
 
                 // Setup notification
-                setNotificationOn(CUSTOM_SERVICE_1, CUSTOM_CHARACTERISTIC_WEIGHT, CLIENT_CHARACTERISTICS_CONFIGURATION);
+                UUID clientCharacteristicsConfiguration = deviceType == DeviceType.SANITAS_SBF70_70
+                        ? CLIENT_CHARACTERISTICS_CONFIGURATION_SANITAS
+                        : CLIENT_CHARACTERISTICS_CONFIGURATION_BEURER;
+                setNotificationOn(CUSTOM_SERVICE_1, CUSTOM_CHARACTERISTIC_WEIGHT, clientCharacteristicsConfiguration);
                 break;
             case 1:
                 // Say "Hello" to the scale
                 writeBytes(new byte[]{(byte) getAlternativeStartByte(6), (byte) 0x01});
                 break;
             case 2:
-                // Update timestamp of the scale
-                updateDateTimeBeurer();
+                // Wait for "Hello" ack from scale
                 break;
             case 3:
+                // Update timestamp of the scale
+                updateDateTime();
+                break;
+            case 4:
                 // Set measurement unit
                 setUnitCommand();
                 break;
-            case 4:
+            case 5:
                 // Request general user information
                 writeBytes(new byte[]{(byte) startByte, (byte) 0x33});
                 break;
-            case 5:
+            case 6:
                 // Wait for ack of all users
                 if (seenUsers.size() < countRegisteredScaleUsers || (countRegisteredScaleUsers == -1)) {
                     // Request this state again
@@ -208,7 +234,7 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
                 Log.d(TAG, "scaleuserid:" + currentScaleUserId + " registered users: " + countRegisteredScaleUsers +
                         " extracted users: " + seenUsers.size());
                 break;
-            case 6:
+            case 7:
                 break;
             default:
                 // Finish init if everything is done
@@ -219,7 +245,7 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
     }
 
     @Override
-    boolean nextBluetoothCmd(int stateNr) {
+    protected boolean nextBluetoothCmd(int stateNr) {
 
         switch (stateNr) {
             case 0:
@@ -248,7 +274,7 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
     }
 
     @Override
-    boolean nextCleanUpCmd(int stateNr) {
+    protected boolean nextCleanUpCmd(int stateNr) {
         switch (stateNr) {
             case 0:
                 // Force disconnect
@@ -268,6 +294,7 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
 
         if ((data[0] & 0xFF) == getAlternativeStartByte(6) && (data[1] & 0xFF) == 0x00) {
             Log.d(TAG, "ACK Scale is ready");
+            nextMachineStateStep();
             return;
         }
 
@@ -435,7 +462,7 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
 
         if ((data[0] & 0xFF) == startByte && (data[1] & 0xFF) == 0x58) {
             Log.d(TAG, "Active measurement");
-            float weight = parseKiloGram(data, 3);
+            float weight = getKiloGram(data, 3);
             if ((data[2] & 0xFF) != 0x00) {
                 // temporary value;
                 sendMessage(R.string.info_measuring, weight);
@@ -508,14 +535,14 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
         });
     }
 
-    private float parseKiloGram(byte[] data, int offset) {
+    private float getKiloGram(byte[] data, int offset) {
         // Unit is 50 g
-        return Converters.parseUnsignedInt16Be(data, offset) * 50.0f / 1000.0f;
+        return Converters.fromUnsignedInt16Be(data, offset) * 50.0f / 1000.0f;
     }
 
-    private float parsePercent(byte[] data, int offset) {
+    private float getPercent(byte[] data, int offset) {
         // Unit is 0.1 %
-        return Converters.parseUnsignedInt16Be(data, offset) / 10.0f;
+        return Converters.fromUnsignedInt16Be(data, offset) / 10.0f;
     }
 
     private ScaleMeasurement parseScaleData(byte[] data) throws ParseException {
@@ -523,16 +550,16 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
             throw new ParseException("Parse scala data: unexpected length", 0);
         }
 
-        long timestamp = ByteBuffer.wrap(data, 0, 4).getInt() * 1000L;
-        float weight = parseKiloGram(data, 4);
-        int impedance = Converters.parseUnsignedInt16Be(data, 6);
-        float fat = parsePercent(data, 8);
-        float water = parsePercent(data, 10);
-        float muscle = parsePercent(data, 12);
-        float bone = parseKiloGram(data, 14);
-        int bmr = Converters.parseUnsignedInt16Be(data, 16);
-        int amr = Converters.parseUnsignedInt16Be(data, 18);
-        float bmi = Converters.parseUnsignedInt16Be(data, 20) / 10.0f;
+        long timestamp = Converters.fromUnsignedInt32Be(data, 0) * 1000;
+        float weight = getKiloGram(data, 4);
+        int impedance = Converters.fromUnsignedInt16Be(data, 6);
+        float fat = getPercent(data, 8);
+        float water = getPercent(data, 10);
+        float muscle = getPercent(data, 12);
+        float bone = getKiloGram(data, 14);
+        int bmr = Converters.fromUnsignedInt16Be(data, 16);
+        int amr = Converters.fromUnsignedInt16Be(data, 18);
+        float bmi = Converters.fromUnsignedInt16Be(data, 20) / 10.0f;
 
         ScaleMeasurement receivedMeasurement = new ScaleMeasurement();
         receivedMeasurement.setDateTime(new Date(timestamp));
@@ -550,13 +577,14 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
         return receivedMeasurement;
     }
 
-    private void updateDateTimeBeurer() {
+    private void updateDateTime() {
         // Update date/time of the scale
         long unixTime = System.currentTimeMillis() / 1000L;
-        byte[] unixTimeBytes = ByteBuffer.allocate(Long.SIZE / 8).putLong(unixTime).array();
+        byte[] unixTimeBytes = Converters.toUnsignedInt32Be(unixTime);
         Log.d(TAG, "Write new Date/Time:" + unixTime + " " + byteInHex(unixTimeBytes));
 
-        writeBytes(new byte[]{(byte) getAlternativeStartByte(9), unixTimeBytes[4], unixTimeBytes[5], unixTimeBytes[6], unixTimeBytes[7]});
+        writeBytes(new byte[]{(byte) getAlternativeStartByte(9),
+                unixTimeBytes[0], unixTimeBytes[1], unixTimeBytes[2], unixTimeBytes[3]});
     }
 
     private void setUnitCommand() {
@@ -571,7 +599,7 @@ public class BluetoothBeurerBF700_800 extends BluetoothCommunication {
                 command[2] = (byte) 0x02;
                 break;
             case ST:
-                command[3] = (byte) 0x04;
+                command[2] = (byte) 0x04;
                 break;
         }
         Log.d(TAG, "Setting unit " + selectedUser.getScaleUnit().toString());

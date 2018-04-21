@@ -29,9 +29,10 @@ import java.util.Calendar;
 import java.util.Date;
 
 public class TimeMeasurementView extends MeasurementView {
+    // Don't change key value, it may be stored persistent in preferences
     public static final String KEY = "time";
 
-    private DateFormat timeFormat;
+    private final DateFormat timeFormat;
     private Date time;
 
     public TimeMeasurementView(Context context) {

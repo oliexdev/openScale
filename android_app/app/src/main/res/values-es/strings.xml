@@ -25,7 +25,7 @@
     <string name="label_fat">Porcentaje de grasa corporal</string>
     <string name="label_water">Porcentaje de agua</string>
     <string name="label_muscle">Porcentaje muscular</string>
-    <string name="label_lbw">Masa corporal magra</string>
+    <string name="label_lbm">Masa corporal magra</string>
     <string name="label_waist">Circunferencia de la cintura</string>
     <string name="label_hip">Circunferencia de la cadera</string>
     <string name="label_comment">Comentario</string>
@@ -52,7 +52,7 @@
     <string name="label_scale_unit">Unidad</string>
     <string name="label_gender">Género</string>
     <string name="label_male">Hombre</string>
-    <string name="label_woman">Mujer</string>
+    <string name="label_female">Mujer</string>
     <string name="label_goal_weight">Peso objetivo</string>
     <string name="label_goal_date">Fecha objetivo</string>
 

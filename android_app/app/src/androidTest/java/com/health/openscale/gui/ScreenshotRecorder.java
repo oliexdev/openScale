@@ -17,8 +17,6 @@ package com.health.openscale.gui;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.preference.PreferenceManager;
 import android.support.test.InstrumentationRegistry;
@@ -99,7 +97,7 @@ public class ScreenshotRecorder {
             });
         } catch (Throwable throwable) {
             throwable.printStackTrace();
-        };
+        }
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
@@ -116,7 +114,7 @@ public class ScreenshotRecorder {
         screenshotRecorder();
     }
 
-    ScaleUser getTestUser() {
+    private ScaleUser getTestUser() {
         ScaleUser user = new ScaleUser();
         user.setUserName("Test");
         user.setBodyHeight(180);
@@ -140,10 +138,10 @@ public class ScreenshotRecorder {
         return user;
     }
 
-    List<ScaleMeasurement> getTestMeasurements() {
+    private List<ScaleMeasurement> getTestMeasurements() {
         List<ScaleMeasurement> scaleMeasurementList = new ArrayList<>();
 
-        String data = "\"dateTime\",\"weight\",\"fat\",\"water\",\"muscle\",\"lbw\",\"bone\",\"waist\",\"hip\",\"comment\"\n" +
+        String data = "\"dateTime\",\"weight\",\"fat\",\"water\",\"muscle\",\"lbm\",\"bone\",\"waist\",\"hip\",\"comment\"\n" +
                         "04.08.2015 08:08,89.7,21.2,58.0,41.5\n" +
                         "03.08.2015 05:17,89.0,26.4,54.6,41.6\n" +
                         "02.08.2015 07:32,88.8,25.0,55.6,41.7\n" +
@@ -195,9 +193,7 @@ public class ScreenshotRecorder {
 
         try {
             scaleMeasurementList = CsvHelper.importFrom(new BufferedReader(new StringReader(data)));
-        } catch (IOException e) {
-            Log.e("ScreenshotRecorder", e.getMessage());
-        } catch (ParseException e) {
+        } catch (IOException | ParseException e) {
             Log.e("ScreenshotRecorder", e.getMessage());
         }
 

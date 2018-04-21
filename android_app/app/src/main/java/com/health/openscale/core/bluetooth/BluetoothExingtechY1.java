@@ -38,12 +38,12 @@ public class BluetoothExingtechY1 extends BluetoothCommunication {
     }
 
     @Override
-    public String deviceName() {
+    public String driverName() {
         return "Exingtech Y1";
     }
 
     @Override
-    boolean nextInitCmd(int stateNr) {
+    protected boolean nextInitCmd(int stateNr) {
         switch (stateNr) {
             case 0:
                 setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC, WEIGHT_MEASUREMENT_CONFIG);
@@ -53,7 +53,7 @@ public class BluetoothExingtechY1 extends BluetoothCommunication {
 
                 byte gender = selectedUser.getGender().isMale() ? (byte)0x00 : (byte)0x01; // 00 - male; 01 - female
                 byte height = (byte)(selectedUser.getBodyHeight() & 0xff); // cm
-                byte age = (byte)(selectedUser.getAge(new Date()) & 0xff);
+                byte age = (byte)(selectedUser.getAge() & 0xff);
 
                 int userId = selectedUser.getId();
 
@@ -69,12 +69,12 @@ public class BluetoothExingtechY1 extends BluetoothCommunication {
     }
 
     @Override
-    boolean nextBluetoothCmd(int stateNr) {
+    protected boolean nextBluetoothCmd(int stateNr) {
         return false;
     }
 
     @Override
-    boolean nextCleanUpCmd(int stateNr) {
+    protected boolean nextCleanUpCmd(int stateNr) {
         return false;
     }
 
@@ -91,7 +91,7 @@ public class BluetoothExingtechY1 extends BluetoothCommunication {
     }
 
     private void parseBytes(byte[] weightBytes) {
-        int userId = (int)(weightBytes[0] & 0x0F);
+        int userId = weightBytes[0] & 0x0F;
         int gender = (int)(weightBytes[1]); // 0x00 male; 0x01 female
         int age = (int)(weightBytes[2]); // 10 ~ 99
         int height = (int)(weightBytes[3]); // 0 ~ 255

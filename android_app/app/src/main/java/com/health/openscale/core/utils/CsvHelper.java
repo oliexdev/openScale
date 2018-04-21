@@ -17,6 +17,7 @@
 package com.health.openscale.core.utils;
 
 import com.health.openscale.core.datatypes.ScaleMeasurement;
+import com.j256.simplecsv.processor.ColumnNameMatcher;
 import com.j256.simplecsv.processor.CsvProcessor;
 
 import java.io.BufferedReader;
@@ -44,31 +45,31 @@ public class CsvHelper {
         if (fields.length == 10) {
             // From version 1.6 up to 1.7
             return new String[]{
-                    "dateTime", "weight", "fat", "water", "muscle", "lbw", "bone", "waist", "hip", "comment"};
+                    "dateTime", "weight", "fat", "water", "muscle", "lbm", "bone", "waist", "hip", "comment"};
         }
         else if (fields.length == 9) {
-            // From version 1.5.5 (lbw unused)
+            // From version 1.5.5 (lbm unused)
             return new String[]{
                     "dateTime", "weight", "fat", "water", "muscle", "bone", "waist", "hip", "comment",
-                    "lbw"};
+                    "lbm"};
         }
         else if (fields.length == 8) {
-            // From version 1.3 (lbw and bone unused)
+            // From version 1.3 (lbm and bone unused)
             return new String[]{
                     "dateTime", "weight", "fat", "water", "muscle", "waist", "hip", "comment",
-                    "lbw", "bone"};
+                    "lbm", "bone"};
         }
         else if (fields.length == 6) {
-            // From version 1.2 (lbw, bone, waist and hip unused)
+            // From version 1.2 (lbm, bone, waist and hip unused)
             return new String[]{
                     "dateTime", "weight", "fat", "water", "muscle", "comment",
-                    "lbw", "bone", "waist", "hip"};
+                    "lbm", "bone", "waist", "hip"};
         }
         else if (fields.length == 5) {
-            // From version 1.0 (lbw, bone, waist, hip and muscle unused)
+            // From version 1.0 (lbm, bone, waist, hip and muscle unused)
             return new String[]{
                     "dateTime", "weight", "fat", "water", "comment",
-                    "lbw", "bone", "waist", "hip", "muscle"};
+                    "lbm", "bone", "waist", "hip", "muscle"};
         }
 
         // Unknown input data format
@@ -78,11 +79,19 @@ public class CsvHelper {
     public static List<ScaleMeasurement> importFrom(BufferedReader reader)
             throws IOException, ParseException {
         CsvProcessor<ScaleMeasurement> csvProcessor =
-                new CsvProcessor<ScaleMeasurement>(ScaleMeasurement.class)
+                new CsvProcessor<>(ScaleMeasurement.class)
                     .withHeaderValidation(true)
                     .withFlexibleOrder(true)
                     .withAlwaysTrimInput(true)
                     .withAllowPartialLines(true);
+
+        csvProcessor.setColumnNameMatcher(new ColumnNameMatcher() {
+            @Override
+            public boolean matchesColumnName(String definitionName, String csvName) {
+                return definitionName.equals(csvName)
+                        || (definitionName.equals("lbm") && csvName.equals("lbw"));
+            }
+        });
 
         reader.mark(1000);
         try {

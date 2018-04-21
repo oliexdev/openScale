@@ -15,132 +15,35 @@
 */
 package com.health.openscale.gui.preferences;
 
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
-import android.preference.ListPreference;
-import android.preference.MultiSelectListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
-import android.preference.PreferenceGroup;
 import android.text.method.DigitsKeyListener;
 
 import com.health.openscale.R;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+public class GraphPreferences extends PreferenceFragment {
 
-public class GraphPreferences extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
-
-    public static final String PREFERENCE_KEY_REGRESSION_LINE = "regressionLine";
-    public static final String PREFERENCE_KEY_REGRESSION_LINE_ORDER = "regressionLineOrder";
-
-    private CheckBoxPreference regressionLine;
-    private EditTextPreference regressionLineOrder;
+    private static final String PREFERENCE_KEY_REGRESSION_LINE_ORDER = "regressionLineOrder";
 
     @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         addPreferencesFromResource(R.xml.graph_preferences);
 
-        regressionLine = (CheckBoxPreference) findPreference(PREFERENCE_KEY_REGRESSION_LINE);
-        regressionLineOrder = (EditTextPreference) findPreference(PREFERENCE_KEY_REGRESSION_LINE_ORDER);
-
+        EditTextPreference regressionLineOrder =
+                (EditTextPreference) findPreference(PREFERENCE_KEY_REGRESSION_LINE_ORDER);
         regressionLineOrder.getEditText().setKeyListener(new DigitsKeyListener());
-
-        updateGraphPreferences();
-        initSummary(getPreferenceScreen());
-    }
-
-    @Override
-    public void onResume()
-    {
-        super.onResume();
-        getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
-    }
-
-    @Override
-    public void onPause()
-    {
-        getPreferenceManager().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
-        super.onPause();
-    }
-
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key)
-    {
-        updatePrefSummary(findPreference(key));
-        updateGraphPreferences();
-    }
-
-    private void initSummary(Preference p)
-    {
-        if (p instanceof PreferenceGroup)
-        {
-            PreferenceGroup pGrp = (PreferenceGroup) p;
-            for (int i = 0; i < pGrp.getPreferenceCount(); i++)
-            {
-                initSummary(pGrp.getPreference(i));
+        regressionLineOrder.getEditText().setSelectAllOnFocus(true);
+        regressionLineOrder.setSummary(regressionLineOrder.getText());
+        regressionLineOrder.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                preference.setSummary((String) newValue);
+                return true;
             }
-        }
-        else
-        {
-            updatePrefSummary(p);
-        }
-    }
-
-    public void updateGraphPreferences()
-    {
-        if (regressionLine.isChecked())
-        {
-            regressionLineOrder.setEnabled(true);
-        }
-        else
-        {
-            regressionLineOrder.setEnabled(false);
-        }
-    }
-
-    private void updatePrefSummary(Preference p)
-    {
-        if (p instanceof ListPreference)
-        {
-            ListPreference listPref = (ListPreference) p;
-            p.setSummary(listPref.getEntry());
-        }
-
-        if (p instanceof EditTextPreference)
-        {
-            EditTextPreference editTextPref = (EditTextPreference) p;
-            if (p.getTitle().toString().contains("assword"))
-            {
-                p.setSummary("******");
-            }
-            else
-            {
-                p.setSummary(editTextPref.getText());
-            }
-        }
-
-        if (p instanceof MultiSelectListPreference)
-        {
-            MultiSelectListPreference editMultiListPref = (MultiSelectListPreference) p;
-
-            CharSequence[] entries = editMultiListPref.getEntries();
-            CharSequence[] entryValues = editMultiListPref.getEntryValues();
-            List<String> currentEntries = new ArrayList<>();
-            Set<String> currentEntryValues = editMultiListPref.getValues();
-
-            for (int i = 0; i < entries.length; i++)
-            {
-                if (currentEntryValues.contains(entryValues[i].toString())) currentEntries.add(entries[i].toString());
-            }
-
-            p.setSummary(currentEntries.toString());
-        }
+        });
     }
 }
