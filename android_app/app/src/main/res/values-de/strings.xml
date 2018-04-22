@@ -5,16 +5,16 @@
     <string name="error_exporting">Fehler beim Exportieren</string>
     <string name="error_importing">Fehler beim Importieren</string>
     <string name="error_user_name_required">Fehler: Benutzername erfoderlich</string>
-    <string name="info_data_all_deleted">Alle Datenbank Einträge wurden gelöscht</string>
-    <string name="info_data_deleted">Datenbank Eintrag wurde gelöscht</string>
-    <string name="info_data_exported">Daten werden exportiert nach</string>
-    <string name="info_data_imported">Daten werden importiert von</string>
+    <string name="info_data_all_deleted">Alle Einträge wurden gelöscht</string>
+    <string name="info_data_deleted">Eintrag wurde gelöscht</string>
+    <string name="info_data_exported">Exportiert nach</string>
+    <string name="info_data_imported">Importiert von</string>
     <string name="info_enter_comment">Gib einen optionalen Kommentar ein</string>
     <string name="info_enter_user_name">Dein Name</string>
     <string name="info_enter_value_cm">Wert in cm</string>
     <string name="info_is_not_visible">ist nicht sichtbar</string>
     <string name="info_is_visible">ist sichtbar</string>
-    <string name="info_is_not_available">ist nicht verfügbar</string>
+    <string name="info_is_not_available">nicht verfügbar</string>
     <string name="info_no_selected_user">Kein Benutzer vorhanden. Bitte erzeugen Sie einen neuen Benutzer in den Einstellungen.</string>
     <string name="info_on_date">am</string>
     <string name="label_birthday">Geburtstag</string>
@@ -31,12 +31,12 @@
     <string name="label_days_left">Tage übrig</string>
     <string name="label_delete">Löschen</string>
     <string name="label_delete_all">Alles löschen</string>
-    <string name="label_enable_labels">Notiz auf den Datenpunkt</string>
+    <string name="label_enable_labels">Datenpunktnotiz</string>
     <string name="label_export">Exportieren</string>
     <string name="label_fat">Körperfett</string>
     <string name="label_gender">Geschlecht</string>
     <string name="label_goal_date">Zieldatum</string>
-    <string name="label_goal_date_is">Das Zieldatum ist</string>
+    <string name="label_goal_date_is">Zieldatum:</string>
     <string name="label_goal_weight">Zielgewicht</string>
     <string name="label_import">Importieren</string>
     <string name="label_last_month">Letzte 30 Tage</string>
@@ -56,16 +56,16 @@
     <string name="label_weight_difference">Gewichtsunterschied</string>
     <string name="label_female">Weiblich</string>
     <string name="label_yes">Ja</string>
-    <string name="question_really_delete_user">Wollen Sie wirklich den Benutzer löschen?</string>
-    <string name="question_really_delete_all">Wollen Sie wirklich alle Datenbankeinträge löschen?</string>
+    <string name="question_really_delete_user">Benutzer löschen?</string>
+    <string name="question_really_delete_all">Wollen Sie wirklich alle Benutzereinträge löschen?</string>
     <string name="title_table">Tabelle</string>
     <string name="title_graph">Diagramm</string>
     <string name="title_overview">Übersicht</string>
     <string name="title_users">Benutzer</string>
     <string name="label_add_user">Benutzer hinzufügen</string>
     <string name="error_goal_weight_required">Fehler: Zielgewicht ist erforderlich</string>
-    <string name="info_is_not_enable">ist ausgeschaltet</string>
-    <string name="info_is_enable">ist eingeschaltet</string>
+    <string name="info_is_not_enable">ausgeschaltet</string>
+    <string name="info_is_enable">eingeschaltet</string>
     <string name="label_waist">Taillenumfang</string>
     <string name="label_hip">Hüftumfang</string>
     <string name="info_no_evaluation_available">Kann den Wert nicht ermitteln</string>
@@ -76,7 +76,7 @@
     <string name="info_bluetooth_connection_lost">Bluetooth Verbindung verloren</string>
     <string name="info_bluetooth_connection_successful">Verbindung hergestellt</string>
     <string name="info_bluetooth_no_device">Kein Bluetooth Gerät gefunden</string>
-    <string name="info_bluetooth_try_connection">Verbinde mit</string>
+    <string name="info_bluetooth_try_connection">Verbinde mit:</string>
     <string name="label_device_type">Gerätetyp</string>
     <string name="info_bluetooth_init">Initializiere Bluetooth Gerät</string>
     <string name="label_smartUserAssign">Intelligente Benutzer-Zuweisung</string>
@@ -87,8 +87,8 @@
     <string name="label_reminder_weekdays">Wochentage</string>
     <string name="title_measurements">Messwerte</string>
     <string name="label_delete_confirmation">Löschbestätigung</string>
-    <string name="question_really_delete">Wollen Sie wirklich den Datenbankeintrag löschen?</string>
-    <string name="label_enable_points">Punkt auf den Datenpunkt</string>
+    <string name="question_really_delete">Eintrag löschen?</string>
+    <string name="label_enable_points">Datenpunkt</string>
     <string name="Monday">Montag</string>
     <string name="Tuesday">Dienstag</string>
     <string name="Wednesday">Mittwoch</string>
@@ -132,15 +132,15 @@
     <string name="info_new_data_duplicated">Messung mit gleichen Datum und Uhrzeit exisitiert bereits</string>
     <string name="label_feedback_message_enjoying">Gefällt Dir openScale?</string>
     <string name="label_feedback_message_rate_app">Wie wäre es dann mit einer Bewertung bei GooglePlay oder bei GitHub?</string>
-    <string name="label_feedback_message_yes">Ja!</string>
+    <string name="label_feedback_message_yes">Ja</string>
     <string name="label_feedback_message_no">Nicht wirklich</string>
     <string name="label_feedback_message_positive">Ja klar</string>
     <string name="label_feedback_message_negative">Nein danke</string>
     <string name="label_feedback_message_issue">Würdest Du uns etwas Feedback geben?</string>
     <string name="error_user_name_too_short">Fehler: Benutzername muss aus mind. 3 Zeichen bestehen</string>
-    <string name="customactivityoncrash_error_activity_error_occurred_explanation">Ein unerwarteter Fehler ist aufgetreten.
-\n
-\n Bitte erstellen Sie ein neues Issue mit eingefügtem detailliertem Fehlerbericht auf
+    <string name="customactivityoncrash_error_activity_error_occurred_explanation">Ein unerwarteter Fehler ist aufgetreten. 
+\n 
+\n Bitte erstellen Sie ein neues Issue mit detailliertem Fehlerbericht auf 
 \nhttps://github.com/oliexdev/openScale/issues</string>
     <string name="customactivityoncrash_error_activity_restart_app">App Neustart</string>
     <string name="customactivityoncrash_error_activity_close_app">Schließe App</string>
@@ -153,7 +153,7 @@
     <string name="title_general">Allgemein</string>
     <string name="label_theme">Theme</string>
     <string name="label_share">Teilen</string>
-    <string name="label_bluetooth_searching_finished">Suche beendet nach Bluetooth Waagen</string>
+    <string name="label_bluetooth_searching_finished">Suche beendet</string>
     <string name="label_help">Hilfe</string>
 <string name="toggle_expand">Umschalten expandieren</string>
     <string name="edit">Editieren</string>
@@ -166,7 +166,7 @@
     <string name="label_next">Weiter</string>
     <string name="label_press_hold_reorder">Halten Sie die Taste gedrückt, um die Reihenfolge zu ändern</string>
     <string name="label_set_default_order">Default Reihenfolge wiederherstellen</string>
-    <string name="label_share_subject">openScale CSV Datenexport (%s)</string>
+    <string name="label_share_subject">CSV Datenexport (%s)</string>
     <string name="label_mergeWithLastMeasurement">Zusammenführen mit der letzten Messung</string>
     <string name="label_export_overwrite">Vorherigen Export überschreiben %s?</string>
 
