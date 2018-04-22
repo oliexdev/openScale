@@ -182,7 +182,7 @@
     <string name="label_estimate_measurement">Estimera mätvärde</string>
     <string name="label_estimation_formula">Estimeringsformel</string>
 
-<string name="language_default">Systemstandard</string>
+    <string name="language_default">Systemstandard</string>
     <string name="label_language">Språk</string>
     <string name="theme_light">Ljust</string>
     <string name="theme_dark">Mörkt</string>
@@ -192,12 +192,14 @@
     <string name="label_percent">Procent</string>
     <string name="label_estimated">Estimerat</string>
     <string name="label_estimate_measurement_summary">Baserat på vikt, längd, ålder, kön, m.m.</string>
-<string name="label_scale_not_supported">Stödjs inte din våg?</string>
+    <string name="label_scale_not_supported">Stödjs inte din våg?</string>
     <string name="label_click_to_help_add_support">Klicka här för att hjälpa till att lägga till stöd för den</string>
-<string name="label_auto_backup">Automatisk säkerhetskopiering</string>
+    <string name="label_auto_backup">Automatisk säkerhetskopiering</string>
     <string name="label_auto_backup_schedule">Schema för säkerhetskopiering</string>
     <string name="label_overwrite_backup">Skriv över tidigare säkerhetskopia</string>
     <string name="label_daily">dagligen</string>
     <string name="label_weekly">veckovis</string>
     <string name="label_monthly">månadsvis</string>
-    </resources>
+    <string name="label_development">Utveckling</string>
+    <string name="label_debug_log">Spara felsökningslogg till fil</string>
+</resources>
