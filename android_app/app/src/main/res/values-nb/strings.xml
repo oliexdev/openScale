@@ -115,7 +115,7 @@
     <string name="label_bluetooth_searching_finished">Søk fullført</string>
     <string name="label_device_type">Enhetstype</string>
 
-    <string name="label_enable_labels">Etikett</string>
+    <string name="label_enable_labels">Dataetikett</string>
     <string name="label_enable_points">Datapunkt</string>
 
     <string name="label_delete_confirmation">Slett bekreftelse</string>
@@ -190,7 +190,7 @@
     <string name="label_weeks_view">Ukesvisning</string>
 
     <string name="permission_not_granted">Tilgang ikke innvilget</string>
-    <string name="permission_bluetooth_info">openScale krever tilgang til omtrentlig informasjon for å søke etter Blåtannsenheter. Tilgangen kan tilbakekalles etter at enheten er funnet.</string>
+    <string name="permission_bluetooth_info">Omtrentlig tilgang til plassering kreves for å søke etter Blåtannsenheter. Tilgangen kan tilbakekalles etter at enheten er funnet.</string>
     <string name="permission_bluetooth_info_title">Info</string>
     <string name="label_next">Neste</string>
     <string name="label_press_hold_reorder">Trykk og hold for å endre rekkefølge</string>
@@ -217,4 +217,6 @@
     <string name="label_daily">daglig</string>
     <string name="label_weekly">ukentlig</string>
     <string name="label_monthly">månedlig</string>
-    </resources>
+    <string name="label_development">Utvikling</string>
+    <string name="label_debug_log">Lagre feilrettingslogg til fil</string>
+</resources>
