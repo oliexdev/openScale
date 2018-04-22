@@ -24,7 +24,6 @@ import android.content.Intent;
 import android.os.Build;
 import android.service.notification.StatusBarNotification;
 import android.support.v4.app.NotificationCompat;
-import android.util.Log;
 
 import com.health.openscale.R;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
@@ -35,13 +34,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import timber.log.Timber;
+
 import static android.content.Context.NOTIFICATION_SERVICE;
 
 public class AlarmHandler
 {
     public static final String INTENT_EXTRA_ALARM = "alarmIntent";
     private static final int ALARM_NOTIFICATION_ID = 0x01;
-    private static final String LOG_TAG = "AlarmBuilder";
 
     public void scheduleAlarms(Context context)
     {
@@ -92,7 +92,7 @@ public class AlarmHandler
 
     private void setRepeatingAlarm(Context context, int dayOfWeek, Calendar nextAlarmTimestamp)
     {
-        Log.d(LOG_TAG, "Set repeating alarm for " + nextAlarmTimestamp.getTime());
+        Timber.d("Set repeating alarm for %s", nextAlarmTimestamp.getTime());
         PendingIntent alarmPendingIntent = getPendingAlarmIntent(context, dayOfWeek);
         AlarmManager alarmMgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         alarmMgr.setInexactRepeating(AlarmManager.RTC_WAKEUP, nextAlarmTimestamp.getTimeInMillis(),

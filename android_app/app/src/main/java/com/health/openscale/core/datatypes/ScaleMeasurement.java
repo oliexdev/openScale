@@ -21,13 +21,14 @@ import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.ForeignKey;
 import android.arch.persistence.room.Index;
 import android.arch.persistence.room.PrimaryKey;
-import android.util.Log;
 
 import com.health.openscale.core.utils.Converters;
 import com.j256.simplecsv.common.CsvColumn;
 
 import java.lang.reflect.Field;
 import java.util.Date;
+
+import timber.log.Timber;
 
 @Entity(tableName = "scaleMeasurements",
         indices = {@Index(value = {"userId", "datetime"}, unique = true)},
@@ -119,7 +120,7 @@ public class ScaleMeasurement implements Cloneable {
                 field.setAccessible(false);
             }
         } catch (IllegalAccessException e) {
-            Log.e("ScaleMeasurement", "Error: " + e.getMessage());
+            Timber.e(e);
         }
     }
 
@@ -136,7 +137,7 @@ public class ScaleMeasurement implements Cloneable {
                 field.setAccessible(false);
             }
         } catch (IllegalAccessException e) {
-            Log.e("ScaleMeasurement", "Error: " + e.getMessage());
+            Timber.e(e);
         }
     }
 
@@ -155,7 +156,7 @@ public class ScaleMeasurement implements Cloneable {
                 field.setAccessible(false);
             }
         } catch (IllegalAccessException e) {
-            Log.e("ScaleMeasurement", "Error: " + e.getMessage());
+            Timber.e(e);
         }
     }
 

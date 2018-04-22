@@ -19,7 +19,6 @@ package com.health.openscale.core.bluetooth;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
-import android.util.Log;
 
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
@@ -27,6 +26,8 @@ import com.health.openscale.core.datatypes.ScaleUser;
 
 import java.util.Date;
 import java.util.UUID;
+
+import timber.log.Timber;
 
 public class BluetoothDigooDGSO38H extends BluetoothCommunication {
     private final UUID WEIGHT_MEASUREMENT_SERVICE = UUID.fromString("0000fff0-0000-1000-8000-00805f9b34fb");
@@ -120,8 +121,8 @@ public class BluetoothDigooDGSO38H extends BluetoothCommunication {
                 weight = (float) (((weightBytes[3] & 0xFF) << 8) | (weightBytes[4] & 0xFF)) / 100.0f;
                 fat = (float) (((weightBytes[6] & 0xFF) << 8) | (weightBytes[7] & 0xFF)) / 10.0f;
                 if (Math.abs(fat - 0.0) < 0.00001) {
-                        Log.d("BluetoothDigooDGSO38H", "Scale signaled that measurement of all data " +
-                                "is done, but fat ist still zero. Settling for just adding weight.");
+                        Timber.d("Scale signaled that measurement of all data " +
+                                "is done, but fat is still zero. Settling for just adding weight.");
                 } else {
                     //subcutaneousFat = (float) (((weightBytes[8] & 0xFF) << 8) | (weightBytes[9] & 0xFF)) / 10.0f;
                     //visceralFat = (float) (weightBytes[10] & 0xFF) / 10.0f;

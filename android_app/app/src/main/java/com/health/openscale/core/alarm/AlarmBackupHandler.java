@@ -23,7 +23,6 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Environment;
 import android.preference.PreferenceManager;
-import android.util.Log;
 
 import com.health.openscale.core.OpenScale;
 
@@ -31,6 +30,8 @@ import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.util.Date;
+
+import timber.log.Timber;
 
 public class AlarmBackupHandler
 {
@@ -105,9 +106,9 @@ public class AlarmBackupHandler
 
         try {
             openScale.exportDatabase(Uri.fromFile(exportFile));
-            Log.d("AlarmBackupHandler", "openScale Auto Backup to " + exportFile);
+            Timber.d("openScale Auto Backup to %s", exportFile);
         } catch (IOException e) {
-            Log.e("AlarmBackupHandler", "Error while exporting database: " + e.getMessage());
+            Timber.e(e, "Error while exporting database");
         }
     }
 }

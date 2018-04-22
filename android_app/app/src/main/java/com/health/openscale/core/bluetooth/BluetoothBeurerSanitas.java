@@ -22,7 +22,6 @@ package com.health.openscale.core.bluetooth;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
-import android.util.Log;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
@@ -39,9 +38,9 @@ import java.util.Date;
 import java.util.TreeSet;
 import java.util.UUID;
 
-public class BluetoothBeurerSanitas extends BluetoothCommunication {
-    private final static String TAG = "BeurerSanitas";
+import timber.log.Timber;
 
+public class BluetoothBeurerSanitas extends BluetoothCommunication {
     enum DeviceType { BEURER_BF700_800_RT_LIBRA, BEURER_BF710, SANITAS_SBF70_70 }
 
     private static final int PRIMARY_SERVICE = 0x180A;
@@ -196,7 +195,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                     // Unknown user, request creation of new user
                     if (countRegisteredScaleUsers == maxRegisteredScaleUser) {
                         setBtMachineState(BT_MACHINE_STATE.BT_CLEANUP_STATE);
-                        Log.d(TAG, "Cannot create additional scale user");
+                        Timber.d("Cannot create additional scale user");
                         sendMessage(R.string.error_max_scale_users, 0);
                         break;
                     }
@@ -209,7 +208,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                     byte[] nick = selectedUser.getUserName().toUpperCase().substring(0, maxIdx).getBytes();
 
                     byte activity = 2; // activity level: 1 - 5
-                    Log.d(TAG, "Create User:" + selectedUser.getUserName());
+                    Timber.d("Create User:" + selectedUser.getUserName());
 
                     writeBytes(new byte[]{
                             (byte) startByte, (byte) 0x31, (byte) 0x0, (byte) 0x0, (byte) 0x0,
@@ -224,14 +223,14 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                     });
                 } else {
                     // Get existing user information
-                    Log.d(TAG, "Request getUserInfo " + currentScaleUserId);
+                    Timber.d("Request getUserInfo " + currentScaleUserId);
                     writeBytes(new byte[]{
                             (byte) startByte, (byte) 0x36, (byte) 0x0, (byte) 0x0, (byte) 0x0,
                             (byte) 0x0, (byte) 0x0, (byte) 0x0, (byte) 0x0, (byte) currentScaleUserId
                     });
 
                 }
-                Log.d(TAG, "scaleuserid:" + currentScaleUserId + " registered users: " + countRegisteredScaleUsers +
+                Timber.d("scaleuserid:" + currentScaleUserId + " registered users: " + countRegisteredScaleUsers +
                         " extracted users: " + seenUsers.size());
                 break;
             case 7:
@@ -253,7 +252,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                 if (currentScaleUserId == 0)
                     break;
 
-                Log.d(TAG, "Request Saved User Measurements");
+                Timber.d("Request Saved User Measurements");
                 writeBytes(new byte[]{
                         (byte) startByte, (byte) 0x41, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, (byte) currentScaleUserId
                 });
@@ -293,17 +292,17 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
             return;
 
         if ((data[0] & 0xFF) == getAlternativeStartByte(6) && (data[1] & 0xFF) == 0x00) {
-            Log.d(TAG, "ACK Scale is ready");
+            Timber.d("ACK Scale is ready");
             nextMachineStateStep();
             return;
         }
 
         if ((data[0] & 0xFF) == startByte && (data[1] & 0xFF) == 0xf0 && data[2] == 0x33) {
-            Log.d(TAG, "ACK Got general user information");
+            Timber.d("ACK Got general user information");
 
             int count = (byte) (data[4] & 0xFF);
             int maxUsers = (byte) (data[5] & 0xFF);
-            Log.d(TAG, "Count:" + count + " maxUsers:" + maxUsers);
+            Timber.d("Count:" + count + " maxUsers:" + maxUsers);
 
             countRegisteredScaleUsers = count;
             // Check if any scale user is registered
@@ -317,7 +316,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
         }
 
         if ((data[0] & 0xFF) == startByte && (data[1] & 0xFF) == 0x34) {
-            Log.d(TAG, "Ack Get UUIDSs List of Users");
+            Timber.d("Ack Get UUIDSs List of Users");
 
             byte currentUserMax = (byte) (data[2] & 0xFF);
             byte currentUserID = (byte) (data[3] & 0xFF);
@@ -340,7 +339,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                     // We have seen all users: user is unknown
                     currentScaleUserId = 0;
                 }
-                Log.d(TAG, "Send ack gotUser");
+                Timber.d("Send ack gotUser");
                 writeBytes(new byte[]{
                         (byte) startByte, (byte) 0xf1, (byte) 0x34, currentUserMax,
                         currentUserID
@@ -351,7 +350,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
         }
 
         if ((data[0] & 0xFF) == startByte && (data[1] & 0xFF) == 0xF0 && (data[2] & 0xFF) == 0x36) {
-            Log.d(TAG, "Ack Get User Info Initials");
+            Timber.d("Ack Get User Info Initials");
             String name = new String(data, 4, 3);
             byte year = (byte) (data[7] & 0xFF);
             byte month = (byte) (data[8] & 0xFF);
@@ -361,7 +360,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
             boolean male = (data[11] & 0xF0) != 0;
             byte activity = (byte) (data[11] & 0x0F);
 
-            Log.d(TAG, "Name " + name + " YY-MM-DD: " + year + " " + month + " " + day +
+            Timber.d("Name " + name + " YY-MM-DD: " + year + " " + month + " " + day +
                     "Height: " + height + " Sex:" + (male ? "M" : "F") + "activity: " + activity);
 
             // Get scale status for user
@@ -374,7 +373,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
         }
 
         if ((data[0] & 0xFF) == startByte && (data[1] & 0xFF) == 0xf0 && (data[2] & 0xFF) == 0x4F) {
-            Log.d(TAG, "Ack Get scale status");
+            Timber.d("Ack Get scale status");
 
             int unknown = data[3];
             int batteryLevel = (data[4] & 0xFF);
@@ -386,7 +385,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
             boolean userMeasurementExist = (data[10] == 0);
             int scaleVersion = data[11];
 
-            Log.d(TAG, "BatteryLevel:" + batteryLevel + " weightThreshold: " + weightThreshold +
+            Timber.d("BatteryLevel:" + batteryLevel + " weightThreshold: " + weightThreshold +
                     " BodyFatThresh: " + bodyFatThreshold + " Unit: " + unit + " userExists: " + userExists +
                     " UserReference Weight Exists: " + userReferWeightExists + " UserMeasurementExists: " + userMeasurementExist +
                     " scaleVersion: " + scaleVersion);
@@ -394,7 +393,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
         }
 
         if ((data[0] & 0xFF) == startByte && (data[1] & 0xFF) == 0xf0 && data[2] == 0x31) {
-            Log.d(TAG, "Acknowledge creation of user");
+            Timber.d("Acknowledge creation of user");
 
             // Indicate user to step on scale
             sendMessage(R.string.info_step_on_scale, 0);
@@ -410,16 +409,16 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
 
 
         if ((data[0] & 0xFF) == startByte && (data[1] & 0xFF) == 0xf0 && (data[2] & 0xFF) == 0x41) {
-            Log.d(TAG, "Will start to receive measurements User Specific");
+            Timber.d("Will start to receive measurements User Specific");
 
             byte nr_measurements = data[3];
 
-            Log.d(TAG, "New measurements: " + nr_measurements / 2);
+            Timber.d("New measurements: " + nr_measurements / 2);
             return;
         }
 
         if ((data[0] & 0xFF) == startByte && (data[1] & 0xFF) == 0x42) {
-            Log.d(TAG, "Specific measurement User specific");
+            Timber.d("Specific measurement User specific");
 
             // Measurements are split into two parts
 
@@ -448,7 +447,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                     ScaleMeasurement parsedData = parseScaleData(receivedScaleData.toByteArray());
                     addScaleData(parsedData);
                 } catch (ParseException e) {
-                    Log.d(TAG, "Could not parse byte array: " + byteInHex(receivedScaleData.toByteArray()));
+                    Timber.d(e, "Could not parse byte array: " + byteInHex(receivedScaleData.toByteArray()));
                     e.printStackTrace();
                 }
             }
@@ -461,7 +460,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
         }
 
         if ((data[0] & 0xFF) == startByte && (data[1] & 0xFF) == 0x58) {
-            Log.d(TAG, "Active measurement");
+            Timber.d("Active measurement");
             float weight = getKiloGram(data, 3);
             if ((data[2] & 0xFF) != 0x00) {
                 // temporary value;
@@ -469,7 +468,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                 return;
             }
 
-            Log.i(TAG, "Got weight: " + weight);
+            Timber.i("Got weight: " + weight);
 
             writeBytes(new byte[]{
                     (byte) startByte, (byte) 0xf1, (byte) (data[1] & 0xFF),
@@ -481,7 +480,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
 
         if ((data[0] & 0xFF) == startByte && (data[1] & 0xFF) == 0x59) {
             // Get stable measurement results
-            Log.d(TAG, "Get measurement data " + ((int) data[3]));
+            Timber.d("Get measurement data " + ((int) data[3]));
 
             int max_items = (data[2] & 0xFF);
             int current_item = (data[3] & 0xFF);
@@ -512,7 +511,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                     // Delete data
                     deleteScaleData();
                 } catch (ParseException e) {
-                    Log.d(TAG, "Parse Exception " + byteInHex(receivedScaleData.toByteArray()));
+                    Timber.d(e, "Parse Exception " + byteInHex(receivedScaleData.toByteArray()));
                 }
             }
 
@@ -520,11 +519,11 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
         }
 
         if ((data[0] & 0xFF) == startByte && (data[1] & 0xFF) == 0xf0 && (data[2] & 0xFF) == 0x43) {
-            Log.d(TAG, "Acknowledge: Data deleted.");
+            Timber.d("Acknowledge: Data deleted.");
             return;
         }
 
-        Log.d(TAG, "DataChanged - not handled: " + byteInHex(data));
+        Timber.d("DataChanged - not handled: " + byteInHex(data));
     }
 
     private void deleteScaleData() {
@@ -569,7 +568,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
         receivedMeasurement.setMuscle(muscle);
         receivedMeasurement.setBone(bone);
 
-        Log.i(TAG, "Measurement: " + receivedMeasurement.getDateTime().toString() +
+        Timber.i("Measurement: " + receivedMeasurement.getDateTime().toString() +
                 " Impedance: " + impedance + " Weight:" + weight +
                 " Fat: " + fat + " Water: " + water + " Muscle: " + muscle +
                 " Bone: " + bone + " BMR: " + bmr + " AMR: " + amr + " BMI: " + bmi);
@@ -581,7 +580,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
         // Update date/time of the scale
         long unixTime = System.currentTimeMillis() / 1000L;
         byte[] unixTimeBytes = Converters.toUnsignedInt32Be(unixTime);
-        Log.d(TAG, "Write new Date/Time:" + unixTime + " " + byteInHex(unixTimeBytes));
+        Timber.d("Write new Date/Time:" + unixTime + " " + byteInHex(unixTimeBytes));
 
         writeBytes(new byte[]{(byte) getAlternativeStartByte(9),
                 unixTimeBytes[0], unixTimeBytes[1], unixTimeBytes[2], unixTimeBytes[3]});
@@ -602,7 +601,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                 command[2] = (byte) 0x04;
                 break;
         }
-        Log.d(TAG, "Setting unit " + selectedUser.getScaleUnit().toString());
+        Timber.d("Setting unit " + selectedUser.getScaleUnit().toString());
         writeBytes(command);
     }
 

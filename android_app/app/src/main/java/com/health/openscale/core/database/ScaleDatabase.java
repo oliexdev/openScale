@@ -21,7 +21,6 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
 
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 
@@ -29,6 +28,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Locale;
+
+import timber.log.Timber;
 
 public class ScaleDatabase extends SQLiteOpenHelper {
     private static final int DATABASE_VERSION = 6;
@@ -143,7 +144,7 @@ public class ScaleDatabase extends SQLiteOpenHelper {
 
             cursorScaleDB.close();
         } catch (SQLException ex) {
-            Log.e("ScaleDatabase", "SQL exception occurred while getting scale data list: " + ex.getMessage());
+            Timber.e(ex, "SQL exception occurred while getting scale data list");
         }
 
         return scaleMeasurementList;
@@ -169,10 +170,10 @@ public class ScaleDatabase extends SQLiteOpenHelper {
 
             scaleMeasurement.setDateTime(formatDateTime.parse(date_time));
         } catch (ParseException ex) {
-            Log.e("ScaleDatabase", "Can't parse the date time string: " + ex.getMessage());
+            Timber.e(ex, "Can't parse the date time string");
         }
         catch (IllegalArgumentException ex) {
-            Log.e("ScaleDatabase", "Illegal argument while reading from scale database: " + ex.getMessage());
+            Timber.e(ex, "Illegal argument while reading from scale database");
         }
 
         return scaleMeasurement;

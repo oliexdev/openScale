@@ -18,7 +18,6 @@ package com.health.openscale.core.bluetooth;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
-import android.util.Log;
 
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 
@@ -28,6 +27,8 @@ import java.io.OutputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.UUID;
+
+import timber.log.Timber;
 
 public class BluetoothCustomOpenScale extends BluetoothCommunication {
     private final UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb"); // Standard SerialPortService ID
@@ -201,13 +202,13 @@ public class BluetoothCustomOpenScale extends BluetoothCommunication {
 
             switch (btString.charAt(1)) {
                 case 'I':
-                    Log.i("OpenScale", "MCU Information: " + btMsg);
+                    Timber.i("MCU Information: " + btMsg);
                     break;
                 case 'E':
-                    Log.e("OpenScale", "MCU Error: " + btMsg);
+                    Timber.e("MCU Error: " + btMsg);
                     break;
                 case 'S':
-                    Log.i("OpenScale", "MCU stored data size: " + btMsg);
+                    Timber.i("MCU stored data size: " + btMsg);
                     break;
                 case 'D':
                     String[] csvField = btMsg.split(",");

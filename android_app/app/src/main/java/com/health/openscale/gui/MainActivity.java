@@ -43,7 +43,6 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -69,6 +68,7 @@ import java.lang.reflect.Field;
 import java.util.List;
 
 import cat.ereza.customactivityoncrash.config.CaocConfig;
+import timber.log.Timber;
 
 public class MainActivity extends BaseAppCompatActivity
         implements SharedPreferences.OnSharedPreferenceChangeListener{
@@ -495,27 +495,27 @@ public class MainActivity extends BaseAppCompatActivity
                 case BT_INIT_PROCESS:
                     setBluetoothStatusIcon(R.drawable.ic_bluetooth_connection_success);
                     Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_init), Toast.LENGTH_SHORT).show();
-                    Log.d("OpenScale", "Bluetooth initializing");
+                    Timber.d("Bluetooth initializing");
                     break;
                 case BT_CONNECTION_LOST:
                     setBluetoothStatusIcon(R.drawable.ic_bluetooth_connection_lost);
                     Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_connection_lost), Toast.LENGTH_SHORT).show();
-                    Log.d("OpenScale", "Bluetooth connection lost");
+                    Timber.d("Bluetooth connection lost");
                     break;
                 case BT_NO_DEVICE_FOUND:
                     setBluetoothStatusIcon(R.drawable.ic_bluetooth_connection_lost);
                     Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_no_device), Toast.LENGTH_SHORT).show();
-                    Log.d("OpenScale", "No Bluetooth device found");
+                    Timber.d("No Bluetooth device found");
                     break;
                 case BT_CONNECTION_ESTABLISHED:
                     setBluetoothStatusIcon(R.drawable.ic_bluetooth_connection_success);
                     Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_connection_successful), Toast.LENGTH_SHORT).show();
-                    Log.d("OpenScale", "Bluetooth connection successful established");
+                    Timber.d("Bluetooth connection successful established");
                     break;
                 case BT_UNEXPECTED_ERROR:
                     setBluetoothStatusIcon(R.drawable.ic_bluetooth_connection_lost);
                     Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_connection_error) + ": " + msg.obj, Toast.LENGTH_SHORT).show();
-                    Log.e("OpenScale", "Bluetooth unexpected error: " + msg.obj);
+                    Timber.e("Bluetooth unexpected error: " + msg.obj);
                     break;
                 case BT_SCALE_MESSAGE:
                     String toastMessage = String.format(getResources().getString(msg.arg1), msg.obj);
@@ -734,9 +734,9 @@ public class MainActivity extends BaseAppCompatActivity
                 item.setChecked(item.getItemData().isChecked());
             }
         } catch (NoSuchFieldException e) {
-            Log.e("BNVHelper", "Unable to get shift mode field", e);
+            Timber.e(e, "Unable to get shift mode field");
         } catch (IllegalAccessException e) {
-            Log.e("BNVHelper", "Unable to change value of shift mode", e);
+            Timber.e(e, "Unable to change value of shift mode");
         }
     }
 }

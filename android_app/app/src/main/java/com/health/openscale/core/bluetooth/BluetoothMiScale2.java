@@ -21,7 +21,6 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.util.Log;
 
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
@@ -34,6 +33,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Random;
 import java.util.UUID;
+
+import timber.log.Timber;
 
 import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_STATUS_CODE.BT_UNEXPECTED_ERROR;
 
@@ -62,7 +63,7 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
         final byte[] data = gattCharacteristic.getValue();
 
         if (data != null && data.length > 0) {
-            Log.d("MIScale_v2", "DataChange hex data: "+ byteInHex(data));
+            Timber.d("DataChange hex data: "+ byteInHex(data));
 
             // Stop command from mi scale received
             if (data[0] == 0x03) {
@@ -213,7 +214,7 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
 
                     addScaleData(scaleBtData);
                 } else {
-                    Log.e("BluetoothMiScale", "Invalid Mi scale weight year " + year);
+                    Timber.e("Invalid Mi scale weight year " + year);
                 }
             }
         } catch (ParseException e) {

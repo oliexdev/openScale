@@ -217,4 +217,6 @@
     <string name="label_monthly">monthly</string>
     <string name="label_scale_not_supported">Is your scale not supported?</string>
     <string name="label_click_to_help_add_support">Click here to help add support for it</string>
+    <string name="label_development">Development</string>
+    <string name="label_debug_log">Save debug log to file</string>
 </resources>
