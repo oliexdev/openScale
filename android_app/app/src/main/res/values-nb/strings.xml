@@ -20,7 +20,7 @@
     <string name="label_delete">Slett</string>
     <string name="label_add_user">Legg til bruker</string>
     <string name="label_share">Del</string>
-    <string name="label_share_subject">openScale CVS-dataeksport (%s)</string>
+    <string name="label_share_subject">CVS-dataeksport (%s)</string>
 
     <string name="label_weight">Vekt</string>
     <string name="label_bmi">Kroppsmasseindeks (BMI)</string>
@@ -45,7 +45,7 @@
     <string name="label_last_week">De siste 7 dagene</string>
     <string name="label_last_month">De siste 30 dagene</string>
     <string name="label_weight_difference">Vektforskjell</string>
-    <string name="label_goal_date_is">Måldatoer</string>
+    <string name="label_goal_date_is">Måldato:</string>
     <string name="label_days_left">Dager igjen</string>
 
     <string name="label_date">Dato</string>
@@ -69,7 +69,7 @@
     <string name="label_delete_all">Slett alle</string>
 
     <string name="error_value_required">Verdi kreves</string>
-    <string name="error_value_range">Verdien er ikke i tillatt rekkevidde</string>
+    <string name="error_value_range">Verdien utenfor tillatt rekkevidde</string>
     <string name="error_exporting">Feil ved eksport</string>
     <string name="error_importing">Feil ved import</string>
     <string name="error_user_name_required">Feil: Brukernavn kreves</string>
@@ -78,45 +78,45 @@
     <string name="error_initial_weight_required">Feil: Startvekt kreves</string>
     <string name="error_goal_weight_required">Feil: Målvekt kreves</string>
 
-    <string name="info_data_deleted">Databaseoppføring slettet</string>
-    <string name="info_data_all_deleted">Alle databaseoppføringer slettet</string>
-    <string name="info_data_exported">Data eksportert til</string>
-    <string name="info_data_imported">Data importert fra</string>
-    <string name="info_enter_value_cm">Skriv inn verd i cm</string>
-    <string name="info_enter_comment">Skriv inn valgfri kommentar</string>
-    <string name="info_enter_value_scale_unit">Skriv inn verdi i vektenhet</string>
+    <string name="info_data_deleted">Oppføring slettet</string>
+    <string name="info_data_all_deleted">Alle oppføringer slettet</string>
+    <string name="info_data_exported">Eksportert til</string>
+    <string name="info_data_imported">Importert fra</string>
+    <string name="info_enter_value_cm">Verdi i cm</string>
+    <string name="info_enter_comment">Valgfri kommentar</string>
+    <string name="info_enter_value_scale_unit">Verdi i vektenhet</string>
     <string name="info_is_visible">er synlig</string>
     <string name="info_is_not_visible">er ikke synlig</string>
-    <string name="info_is_enable">er påskrudd</string>
-    <string name="info_is_not_enable">er avskrudd</string>
-    <string name="info_is_not_available">er ikke tilgjengelig</string>
-    <string name="info_bluetooth_try_connection">Prøver å koble til</string>
+    <string name="info_is_enable">påskrudd</string>
+    <string name="info_is_not_enable">avskrudd</string>
+    <string name="info_is_not_available">ikke tilgjengelig</string>
+    <string name="info_bluetooth_try_connection">Kobler til:</string>
     <string name="info_bluetooth_connection_lost">Mistet Blåtanns-tilkobling</string>
     <string name="info_bluetooth_no_device">Fant ingen Blåtannsenheter</string>
     <string name="info_bluetooth_no_device_set">Ingen Blåtannsenhet valgt</string>
     <string name="info_bluetooth_connection_successful">Tilkobling etablert</string>
     <string name="info_bluetooth_init">Igangsett Blåtannsenhet</string>
-    <string name="info_bluetooth_connection_error">Blåtann støtte på uventet feil</string>
+    <string name="info_bluetooth_connection_error">Uventet Blåtannsfeil</string>
     <string name="info_new_data_added">%1$.2f%2$s [%3$s] til %4$s lagt til</string>
     <string name="info_new_data_duplicated">måling med samme dato og tid finnes allerede</string>
 
-    <string name="info_enter_user_name">Skriv inn navnet ditt</string>
-    <string name="info_no_selected_user">Ingen bruker finnes. Opprett en ny bruker i innstillingene.</string>
+    <string name="info_enter_user_name">Ditt navn</string>
+    <string name="info_no_selected_user">Ingen bruker finnes. Opprett en i innstillingene.</string>
     <string name="info_no_evaluation_available">Kan ikke vurdere verdien</string>
 
-    <string name="question_really_delete">Ønsker du virkelig å slette databaseoppføringen?</string>
-    <string name="question_really_delete_all">Ønsker du virkelig å slette alle databaseoppføringene?</string>
-    <string name="question_really_delete_user">Ønsker du virkelig å slette brukeren?</string>
+    <string name="question_really_delete">Slett oppføring?</string>
+    <string name="question_really_delete_all">Slett alle oppføringer for alle brukere?</string>
+    <string name="question_really_delete_user">Slett bruker?</string>
 
     <string name="label_bluetooth_title">Blåtann</string>
-    <string name="label_bluetooth_enable">Søk etter skala ved oppstart</string>
+    <string name="label_bluetooth_enable">Koble til vekt ved oppstart</string>
     <string name="label_mergeWithLastMeasurement">Flett med foregående måling</string>
     <string name="label_bluetooth_searching">Søker etter Blåtannsvekt</string>
-    <string name="label_bluetooth_searching_finished">Ferdig med å søke etter Blåtannsvekt</string>
+    <string name="label_bluetooth_searching_finished">Søk fullført</string>
     <string name="label_device_type">Enhetstype</string>
 
-    <string name="label_enable_labels">Etikett for datapunkt</string>
-    <string name="label_enable_points">Punkt for datapunkt</string>
+    <string name="label_enable_labels">Etikett</string>
+    <string name="label_enable_points">Datapunkt</string>
 
     <string name="label_delete_confirmation">Slett bekreftelse</string>
 
@@ -163,10 +163,10 @@
     <string name="label_feedback_message_issue">Ønsker du å gi tilbakemelding?</string>
     <string name="label_feedback_message_yes">Ja</string>
     <string name="label_feedback_message_no">Ikke egentlig</string>
-    <string name="label_feedback_message_positive">OK, greit</string>
+    <string name="label_feedback_message_positive">OK</string>
     <string name="label_feedback_message_negative">Nei takk</string>
 
-    <string name="error_max_scale_users">Maksimalt antall samtidige vektbrukere nådd</string>
+    <string name="error_max_scale_users">Maks antall samtidige vektbrukere nådd</string>
     <string name="info_step_on_scale">Stig på vekten barføtt for referansemåling</string>
     <string name="info_measuring">Måler vekt: %.2f</string>
 
@@ -181,7 +181,7 @@
     <string name="customactivityoncrash_error_activity_error_details_close">Lukk</string>
     <string name="customactivityoncrash_error_activity_error_details_copy">Kopier til utklippstavle</string>
     <string name="customactivityoncrash_error_activity_error_details_copied">Kopiert til utklippstavle</string>
-    <string name="customactivityoncrash_error_activity_error_details_clipboard_label">Feilinformasjon</string>
+    <string name="customactivityoncrash_error_activity_error_details_clipboard_label">Feilinfo</string>
     <string name="toggle_expand">Veksle utvidning</string>
     <string name="edit">Rediger</string>
     <string name="save">Lagre</string>
@@ -191,7 +191,7 @@
 
     <string name="permission_not_granted">Tilgang ikke innvilget</string>
     <string name="permission_bluetooth_info">openScale krever tilgang til omtrentlig informasjon for å søke etter Blåtannsenheter. Tilgangen kan tilbakekalles etter at enheten er funnet.</string>
-    <string name="permission_bluetooth_info_title">Informasjon</string>
+    <string name="permission_bluetooth_info_title">Info</string>
     <string name="label_next">Neste</string>
     <string name="label_press_hold_reorder">Trykk og hold for å endre rekkefølge</string>
     <string name="label_set_default_order">Sett forvalgt rekkefølge</string>
@@ -210,5 +210,11 @@
     <string name="label_percent">Prosent</string>
     <string name="label_estimated">Estimert</string>
     <string name="label_scale_not_supported">Støttes ikke vekten din?</string>
-    <string name="label_click_to_help_add_support">Klikk her hvis du ønsker å legge til støtte for den</string>
-</resources>
+    <string name="label_click_to_help_add_support">Klikk her for å hjelpe til å legge til støtte for den</string>
+<string name="label_auto_backup">Automatisk sikkerhetskopiering</string>
+    <string name="label_auto_backup_schedule">Sikkerhetskopi-intervall</string>
+    <string name="label_overwrite_backup">Overskriv tidligere sikkerhetskopi</string>
+    <string name="label_daily">daglig</string>
+    <string name="label_weekly">ukentlig</string>
+    <string name="label_monthly">månedlig</string>
+    </resources>
