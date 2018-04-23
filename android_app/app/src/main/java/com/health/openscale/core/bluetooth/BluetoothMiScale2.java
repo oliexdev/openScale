@@ -90,7 +90,7 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
         switch (stateNr) {
             case 0:
                 // set scale units
-                final ScaleUser selectedUser = OpenScale.getInstance(context).getSelectedScaleUser();
+                final ScaleUser selectedUser = OpenScale.getInstance().getSelectedScaleUser();
                 byte[] setUnitCmd = new byte[]{(byte)0x06, (byte)0x04, (byte)0x00, (byte) selectedUser.getScaleUnit().toInt()};
                 writeBytes(WEIGHT_CUSTOM_SERVICE, WEIGHT_CUSTOM_CONFIG, setUnitCmd);
                 break;
@@ -206,7 +206,7 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
 
                 // Is the year plausible? Check if the year is in the range of 20 years...
                 if (validateDate(date_time, 20)) {
-                    final ScaleUser selectedUser = OpenScale.getInstance(context).getSelectedScaleUser();
+                    final ScaleUser selectedUser = OpenScale.getInstance().getSelectedScaleUser();
                     ScaleMeasurement scaleBtData = new ScaleMeasurement();
 
                     scaleBtData.setConvertedWeight(weight, selectedUser.getScaleUnit());
@@ -251,7 +251,7 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
             prefs.edit().putInt("uniqueNumber", uniqueNumber).apply();
         }
 
-        int userId = OpenScale.getInstance(context).getSelectedScaleUserId();
+        int userId = OpenScale.getInstance().getSelectedScaleUserId();
 
         return uniqueNumber + userId;
     }

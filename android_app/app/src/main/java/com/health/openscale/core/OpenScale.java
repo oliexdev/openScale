@@ -102,10 +102,17 @@ public class OpenScale {
         updateScaleData();
     }
 
-    public static OpenScale getInstance(Context context) {
+    public static void createInstance(Context context) {
+        if (instance != null) {
+            throw new RuntimeException("OpenScale instance already created");
+        }
+
+        instance = new OpenScale(context);
+    }
+
+    public static OpenScale getInstance() {
         if (instance == null) {
-            Timber.d("Creating instance");
-            instance = new OpenScale(context.getApplicationContext());
+            throw new RuntimeException("No OpenScale instance created");
         }
 
         return instance;

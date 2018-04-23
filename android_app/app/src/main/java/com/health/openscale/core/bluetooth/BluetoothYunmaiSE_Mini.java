@@ -57,7 +57,7 @@ public class BluetoothYunmaiSE_Mini extends BluetoothCommunication {
             case 0:
                 byte[] userId = Converters.toUnsignedInt16Be(getUniqueNumber());
 
-                final ScaleUser selectedUser = OpenScale.getInstance(context).getSelectedScaleUser();
+                final ScaleUser selectedUser = OpenScale.getInstance().getSelectedScaleUser();
                 byte sex = selectedUser.getGender().isMale() ? (byte)0x01 : (byte)0x02;
                 byte display_unit = selectedUser.getScaleUnit() == Converters.WeightUnit.KG ? (byte) 0x01 : (byte) 0x02;
 
@@ -119,7 +119,7 @@ public class BluetoothYunmaiSE_Mini extends BluetoothCommunication {
     }
 
     private void parseBytes(byte[] weightBytes) {
-        final ScaleUser selectedUser = OpenScale.getInstance(context).getSelectedScaleUser();
+        final ScaleUser selectedUser = OpenScale.getInstance().getSelectedScaleUser();
 
         ScaleMeasurement scaleBtData = new ScaleMeasurement();
 
@@ -151,7 +151,7 @@ public class BluetoothYunmaiSE_Mini extends BluetoothCommunication {
             prefs.edit().putInt("uniqueNumber", uniqueNumber).apply();
         }
 
-        int userId = OpenScale.getInstance(context).getSelectedScaleUserId();
+        int userId = OpenScale.getInstance().getSelectedScaleUserId();
 
         return uniqueNumber + userId;
     }

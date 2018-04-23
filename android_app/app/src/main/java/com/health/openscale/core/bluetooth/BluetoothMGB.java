@@ -89,7 +89,7 @@ public class BluetoothMGB extends BluetoothCommunication {
             case 0:
                 setNotificationOn(uuid_service, uuid_char_ctrl, uuid_desc_ctrl);
                 now  = Calendar.getInstance();
-                user = OpenScale.getInstance(context).getSelectedScaleUser();
+                user = OpenScale.getInstance().getSelectedScaleUser();
                 break;
 
             case 1:

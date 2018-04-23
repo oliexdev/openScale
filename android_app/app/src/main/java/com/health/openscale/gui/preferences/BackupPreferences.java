@@ -212,7 +212,7 @@ public class BackupPreferences extends PreferenceFragment implements SharedPrefe
             return;
         }
 
-        OpenScale openScale = OpenScale.getInstance(getActivity().getApplicationContext());
+        OpenScale openScale = OpenScale.getInstance();
 
         switch (requestCode) {
             case IMPORT_DATA_REQUEST:

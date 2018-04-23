@@ -91,7 +91,7 @@ public class UserAddTest {
 
     @After
     public void verifyUserAdd() {
-        ScaleUser user = OpenScale.getInstance(context).getSelectedScaleUser();
+        ScaleUser user = OpenScale.getInstance().getSelectedScaleUser();
 
         assertEquals("test", user.getUserName());
         assertEquals(180, user.getBodyHeight());

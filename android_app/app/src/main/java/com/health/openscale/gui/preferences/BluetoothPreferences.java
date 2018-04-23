@@ -96,7 +96,7 @@ public class BluetoothPreferences extends PreferenceFragment {
         });
 
         // Close any existing connection during the scan
-        OpenScale.getInstance(getActivity()).disconnectFromBluetoothDevice();
+        OpenScale.getInstance().disconnectFromBluetoothDevice();
 
         // Intent filter for the scanning process
         IntentFilter filter = new IntentFilter();

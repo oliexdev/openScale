@@ -92,14 +92,14 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
             measurement.setUpdateViews(false);
         }
 
-        OpenScale.getInstance(getContext()).registerFragment(this);
+        OpenScale.getInstance().registerFragment(this);
 
         return tableView;
     }
 
     @Override
     public void onDestroyView() {
-        OpenScale.getInstance(getContext()).unregisterFragment(this);
+        OpenScale.getInstance().unregisterFragment(this);
         super.onDestroyView();
     }
 
@@ -209,7 +209,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
         public void onClick(View v) {
             if (selectedSubpageNr > 0) {
                 selectedSubpageNr--;
-                updateOnView(OpenScale.getInstance(getContext()).getScaleMeasurementList());
+                updateOnView(OpenScale.getInstance().getScaleMeasurementList());
             }
         }
     }
@@ -219,7 +219,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
         public void onClick(View v) {
             if (selectedSubpageNr < (subpageView.getChildCount() - 3)) {
                 selectedSubpageNr++;
-                updateOnView(OpenScale.getInstance(getContext()).getScaleMeasurementList());
+                updateOnView(OpenScale.getInstance().getScaleMeasurementList());
             }
         }
     }
@@ -230,7 +230,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
             TextView nrView = (TextView)v;
 
             selectedSubpageNr = Integer.parseInt(nrView.getText().toString())-1;
-            updateOnView(OpenScale.getInstance(getContext()).getScaleMeasurementList());
+            updateOnView(OpenScale.getInstance().getScaleMeasurementList());
         }
     }
 

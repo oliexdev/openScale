@@ -77,7 +77,7 @@ public class ScreenshotRecorder {
     @Before
     public void initRecorder() {
         context = InstrumentationRegistry.getTargetContext();
-        openScale = OpenScale.getInstance(context);
+        openScale = OpenScale.getInstance();
 
         // Set first start to true to get the user add dialog
         PreferenceManager.getDefaultSharedPreferences(context).edit()

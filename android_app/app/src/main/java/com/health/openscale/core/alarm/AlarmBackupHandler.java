@@ -84,7 +84,7 @@ public class AlarmBackupHandler
     }
 
     public void executeBackup(Context context) {
-        OpenScale openScale = OpenScale.getInstance(context);
+        OpenScale openScale = OpenScale.getInstance();
 
         String databaseName = "openScale.db";
 

@@ -62,7 +62,7 @@ public class UsersPreferences extends PreferenceFragment {
 
     private void updateUserPreferences() {
         users.removeAll();
-        for (ScaleUser scaleUser : OpenScale.getInstance(getActivity()).getScaleUserList()) {
+        for (ScaleUser scaleUser : OpenScale.getInstance().getScaleUserList()) {
             users.addPreference(new UserPreference(getActivity(), users, scaleUser));
         }
     }
@@ -112,7 +112,7 @@ public class UsersPreferences extends PreferenceFragment {
             view.setBackgroundResource(outValue.resourceId);
 
             radioButton = view.findViewById(R.id.user_radio_button);
-            radioButton.setChecked(scaleUser.getId() == OpenScale.getInstance(getContext()).getSelectedScaleUserId());
+            radioButton.setChecked(scaleUser.getId() == OpenScale.getInstance().getSelectedScaleUserId());
 
             radioButton.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -123,7 +123,7 @@ public class UsersPreferences extends PreferenceFragment {
                     }
 
                     radioButton.setChecked(true);
-                    OpenScale.getInstance(getContext()).selectScaleUser(scaleUser.getId());
+                    OpenScale.getInstance().selectScaleUser(scaleUser.getId());
                 }
             });
         }

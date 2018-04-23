@@ -195,7 +195,7 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
     {
         int id = getIntent().getExtras().getInt(EXTRA_ID);
 
-        OpenScale openScale = OpenScale.getInstance(getApplicationContext());
+        OpenScale openScale = OpenScale.getInstance();
 
         ScaleUser scaleUser = openScale.getScaleUser(id);
 
@@ -297,7 +297,7 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
             public void onClick(DialogInterface dialog, int id) {
                 int userId = getIntent().getExtras().getInt(EXTRA_ID);
 
-                OpenScale openScale = OpenScale.getInstance(getApplicationContext());
+                OpenScale openScale = OpenScale.getInstance();
                 boolean isSelected = openScale.getSelectedScaleUserId() == userId;
 
                 openScale.clearScaleData(userId);
@@ -335,7 +335,7 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
     private boolean saveUserData() {
         try {
             if (validateInput()) {
-                OpenScale openScale = OpenScale.getInstance(getApplicationContext());
+                OpenScale openScale = OpenScale.getInstance();
 
                 String name = txtUserName.getText().toString();
                 int body_height = Integer.valueOf(txtBodyHeight.getText().toString());

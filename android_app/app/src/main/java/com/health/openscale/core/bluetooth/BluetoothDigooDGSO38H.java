@@ -92,7 +92,7 @@ public class BluetoothDigooDGSO38H extends BluetoothCommunication {
             final byte ctrlByte = weightBytes[5];
             final boolean allValues = isBitSet(ctrlByte, 1);
             final boolean weightStabilized = isBitSet(ctrlByte, 0);
-            final ScaleUser selectedUser = OpenScale.getInstance(context).getSelectedScaleUser();
+            final ScaleUser selectedUser = OpenScale.getInstance().getSelectedScaleUser();
 
             if (weightStabilized) {
                 //The weight is stabilized, now we want to measure all available values

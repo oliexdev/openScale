@@ -379,7 +379,7 @@ public abstract class MeasurementView extends TableLayout {
     }
 
     protected ScaleUser getScaleUser() {
-        OpenScale openScale = OpenScale.getInstance(getContext());
+        OpenScale openScale = OpenScale.getInstance();
 
         return openScale.getSelectedScaleUser();
     }
