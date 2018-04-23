@@ -106,6 +106,7 @@ public class BluetoothPreferences extends PreferenceFragment {
         getActivity().registerReceiver(mReceiver, filter);
 
         // Do classic bluetooth discovery first and BLE scan afterwards
+        Timber.d("Start discovery");
         btAdapter.startDiscovery();
     }
 
@@ -139,10 +140,13 @@ public class BluetoothPreferences extends PreferenceFragment {
             }
         }, 10 * 1000);
 
+        Timber.d("Start LE scan");
         btAdapter.startLeScan(leScanCallback);
     }
 
     private void stopDiscoveryAndLeScan() {
+        Timber.d("Stop discovery and LE scan");
+
         if (handler != null) {
             handler.removeCallbacksAndMessages(null);
             handler = null;
@@ -171,6 +175,8 @@ public class BluetoothPreferences extends PreferenceFragment {
 
         BluetoothCommunication btDevice = BluetoothFactory.createDeviceDriver(getActivity(), device.getName());
         if (btDevice != null) {
+            Timber.d("Found supported device '%s' (driver: %s, type: %d) [%s]",
+                    device.getName(), btDevice.driverName(), device.getType(), device.getAddress());
             prefBtDevice.setOnPreferenceClickListener(new onClickListenerDeviceSelect());
             prefBtDevice.setKey(device.getAddress());
             prefBtDevice.setIcon(R.drawable.ic_bluetooth_connection_lost);
@@ -180,6 +186,8 @@ public class BluetoothPreferences extends PreferenceFragment {
             prefBtDevice.getIcon().setColorFilter(tintColor, PorterDuff.Mode.SRC_IN);
         }
         else {
+            Timber.d("Found unsupported device '%s' (type: %d) [%s]",
+                    device.getName(), device.getType(), device.getAddress());
             prefBtDevice.setIcon(R.drawable.ic_bluetooth_disabled);
             prefBtDevice.setSummary(R.string.label_bt_device_no_support);
             prefBtDevice.setEnabled(false);
