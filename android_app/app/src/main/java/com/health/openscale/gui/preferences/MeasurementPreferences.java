@@ -117,7 +117,7 @@ public class MeasurementPreferences extends PreferenceFragment {
 
             deleteAllDialog.setPositiveButton(getResources().getString(R.string.label_yes), new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
-                    OpenScale openScale = OpenScale.getInstance(getActivity().getApplicationContext());
+                    OpenScale openScale = OpenScale.getInstance();
                     int selectedUserId = openScale.getSelectedScaleUserId();
 
                     openScale.clearScaleData(selectedUserId);

@@ -151,20 +151,20 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
             }
         }
 
-        OpenScale.getInstance(getContext()).registerFragment(this);
+        OpenScale.getInstance().registerFragment(this);
 
         return statisticsView;
     }
 
     @Override
     public void onDestroyView() {
-        OpenScale.getInstance(getContext()).unregisterFragment(this);
+        OpenScale.getInstance().unregisterFragment(this);
         super.onDestroyView();
     }
 
     @Override
     public void updateOnView(List<ScaleMeasurement> scaleMeasurementList) {
-        currentScaleUser = OpenScale.getInstance(getContext()).getSelectedScaleUser();
+        currentScaleUser = OpenScale.getInstance().getSelectedScaleUser();
 
         if (scaleMeasurementList.isEmpty()) {
             lastScaleMeasurement = new ScaleMeasurement();

@@ -201,7 +201,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                     }
 
                     // Request creation of user
-                    final ScaleUser selectedUser = OpenScale.getInstance(context).getSelectedScaleUser();
+                    final ScaleUser selectedUser = OpenScale.getInstance().getSelectedScaleUser();
 
                     // We can only use up to 3 characters and have to handle them uppercase
                     int maxIdx = Math.min(3, selectedUser.getUserName().length());
@@ -324,7 +324,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
             String name = new String(data, 12, 3);
             int year = (byte) (data[15] & 0xFF);
 
-            final ScaleUser selectedUser = OpenScale.getInstance(context).getSelectedScaleUser();
+            final ScaleUser selectedUser = OpenScale.getInstance().getSelectedScaleUser();
 
             // Check if we found the currently selected user
             if (selectedUser.getUserName().toLowerCase().startsWith(name.toLowerCase()) &&
@@ -588,7 +588,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
 
     private void setUnitCommand() {
         byte[] command = new byte[] {(byte) startByte, 0x4d, 0x00};
-        final ScaleUser selectedUser = OpenScale.getInstance(context).getSelectedScaleUser();
+        final ScaleUser selectedUser = OpenScale.getInstance().getSelectedScaleUser();
 
         switch (selectedUser.getScaleUnit()) {
             case KG:

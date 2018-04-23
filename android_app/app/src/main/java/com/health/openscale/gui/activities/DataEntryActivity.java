@@ -266,7 +266,7 @@ public class DataEntryActivity extends BaseAppCompatActivity {
             nextMeasurement = null;
         }
 
-        OpenScale openScale = OpenScale.getInstance(context);
+        OpenScale openScale = OpenScale.getInstance();
 
         if (id > 0) {
             // Show selected scale data
@@ -368,7 +368,7 @@ public class DataEntryActivity extends BaseAppCompatActivity {
             return;
         }
 
-        OpenScale openScale = OpenScale.getInstance(getApplicationContext());
+        OpenScale openScale = OpenScale.getInstance();
         if (openScale.getSelectedScaleUserId() == -1) {
             return;
         }
@@ -410,7 +410,7 @@ public class DataEntryActivity extends BaseAppCompatActivity {
     }
 
     private void doDeleteMeasurement() {
-        OpenScale.getInstance(getApplicationContext()).deleteScaleData(scaleMeasurement.getId());
+        OpenScale.getInstance().deleteScaleData(scaleMeasurement.getId());
         Toast.makeText(context, getResources().getString(R.string.info_data_deleted), Toast.LENGTH_SHORT).show();
 
         final boolean hasNext = moveLeft() || moveRight();

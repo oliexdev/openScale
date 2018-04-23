@@ -107,7 +107,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
-        openScale = OpenScale.getInstance(getContext());
+        openScale = OpenScale.getInstance();
 
         if (savedInstanceState == null) {
             List<ScaleMeasurement> scaleMeasurementList = openScale.getScaleMeasurementList();
@@ -153,7 +153,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                 txtYear.setText(Integer.toString(calYears.get(Calendar.YEAR)));
 
                 List<ScaleMeasurement> scaleMeasurementList =
-                        OpenScale.getInstance(getContext()).getScaleDataOfYear(calYears.get(Calendar.YEAR));
+                        OpenScale.getInstance().getScaleDataOfYear(calYears.get(Calendar.YEAR));
                 if (!scaleMeasurementList.isEmpty()) {
                     calLastSelected.setTime(scaleMeasurementList.get(0).getDateTime());
                 }
@@ -168,7 +168,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                 txtYear.setText(Integer.toString(calYears.get(Calendar.YEAR)));
 
                 List<ScaleMeasurement> scaleMeasurementList =
-                        OpenScale.getInstance(getContext()).getScaleDataOfYear(calYears.get(Calendar.YEAR));
+                        OpenScale.getInstance().getScaleDataOfYear(calYears.get(Calendar.YEAR));
                 if (!scaleMeasurementList.isEmpty()) {
                     calLastSelected.setTime(scaleMeasurementList.get(scaleMeasurementList.size() - 1).getDateTime());
                 }
@@ -229,7 +229,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
     @Override
     public void onDestroyView() {
-        OpenScale.getInstance(getContext()).unregisterFragment(this);
+        OpenScale.getInstance().unregisterFragment(this);
         super.onDestroyView();
     }
 

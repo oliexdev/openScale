@@ -49,7 +49,7 @@ public class BluetoothExingtechY1 extends BluetoothCommunication {
                 setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC, WEIGHT_MEASUREMENT_CONFIG);
                 break;
             case 1:
-                final ScaleUser selectedUser = OpenScale.getInstance(context).getSelectedScaleUser();
+                final ScaleUser selectedUser = OpenScale.getInstance().getSelectedScaleUser();
 
                 byte gender = selectedUser.getGender().isMale() ? (byte)0x00 : (byte)0x01; // 00 - male; 01 - female
                 byte height = (byte)(selectedUser.getBodyHeight() & 0xff); // cm
@@ -106,7 +106,7 @@ public class BluetoothExingtechY1 extends BluetoothCommunication {
 
         ScaleMeasurement scaleBtData = new ScaleMeasurement();
 
-        final ScaleUser selectedUser = OpenScale.getInstance(context).getSelectedScaleUser();
+        final ScaleUser selectedUser = OpenScale.getInstance().getSelectedScaleUser();
 
         scaleBtData.setConvertedWeight(weight, selectedUser.getScaleUnit());
         scaleBtData.setFat(fat);

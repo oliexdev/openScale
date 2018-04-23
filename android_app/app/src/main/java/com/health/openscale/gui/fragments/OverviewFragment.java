@@ -142,14 +142,14 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
         prefs = PreferenceManager.getDefaultSharedPreferences(overviewView.getContext());
 
-        OpenScale.getInstance(getContext()).registerFragment(this);
+        OpenScale.getInstance().registerFragment(this);
 
         return overviewView;
     }
 
     @Override
     public void onDestroyView() {
-        OpenScale.getInstance(getContext()).unregisterFragment(this);
+        OpenScale.getInstance().unregisterFragment(this);
         super.onDestroyView();
     }
 
@@ -163,7 +163,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             lastScaleMeasurement = scaleMeasurementList.get(0);
         }
 
-        ScaleMeasurement[] tupleScaleData = OpenScale.getInstance(context).getTupleScaleData(lastScaleMeasurement.getId());
+        ScaleMeasurement[] tupleScaleData = OpenScale.getInstance().getTupleScaleData(lastScaleMeasurement.getId());
         ScaleMeasurement prevScaleMeasurement = tupleScaleData[0];
 
         updateUserSelection();
@@ -177,12 +177,12 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
     private void updateUserSelection() {
 
-        currentScaleUser = OpenScale.getInstance(getContext()).getSelectedScaleUser();
+        currentScaleUser = OpenScale.getInstance().getSelectedScaleUser();
 
         userSelectedData = null;
 
         spinUserAdapter.clear();
-        List<ScaleUser> scaleUserList = OpenScale.getInstance(getContext()).getScaleUserList();
+        List<ScaleUser> scaleUserList = OpenScale.getInstance().getScaleUserList();
 
         int posUser = 0;
 
@@ -343,7 +343,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         public void onValueSelected(int lineIndex, int pointIndex, PointValue pointValue) {
             userSelectedData = scaleMeasurementLastDays.get(pointIndex);
 
-            updateOnView(OpenScale.getInstance(getContext()).getScaleMeasurementList());
+            updateOnView(OpenScale.getInstance().getScaleMeasurementList());
         }
 
         @Override
@@ -359,7 +359,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
              if (parent.getChildCount() > 0) {
                  ((TextView) parent.getChildAt(0)).setTextColor(Color.GRAY);
 
-                 OpenScale openScale = OpenScale.getInstance(getContext());
+                 OpenScale openScale = OpenScale.getInstance();
 
                  List<ScaleUser> scaleUserList = openScale.getScaleUserList();
                  ScaleUser scaleUser = scaleUserList.get(position);

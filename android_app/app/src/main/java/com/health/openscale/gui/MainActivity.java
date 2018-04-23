@@ -188,7 +188,7 @@ public class MainActivity extends BaseAppCompatActivity
     @Override
     public void onDestroy() {
         prefs.unregisterOnSharedPreferenceChangeListener(this);
-        OpenScale.getInstance(getApplicationContext()).disconnectFromBluetoothDevice();
+        OpenScale.getInstance().disconnectFromBluetoothDevice();
         super.onDestroy();
     }
 
@@ -366,7 +366,7 @@ public class MainActivity extends BaseAppCompatActivity
                 drawerLayout.openDrawer(GravityCompat.START);
                 return true;
             case R.id.action_add_measurement:
-                if (OpenScale.getInstance(getApplicationContext()).getSelectedScaleUserId() == -1) {
+                if (OpenScale.getInstance().getSelectedScaleUserId() == -1) {
                     showNoSelectedUserDialog();
                     return true;
                 }
@@ -375,7 +375,7 @@ public class MainActivity extends BaseAppCompatActivity
                 startActivity(intent);
                 return true;
             case R.id.action_bluetooth_status:
-                if (OpenScale.getInstance(getApplicationContext()).disconnectFromBluetoothDevice()) {
+                if (OpenScale.getInstance().disconnectFromBluetoothDevice()) {
                     setBluetoothStatusIcon(R.drawable.ic_bluetooth_disabled);
                 }
                 else {
@@ -436,7 +436,7 @@ public class MainActivity extends BaseAppCompatActivity
     }
 
     private void invokeConnectToBluetoothDevice() {
-        final OpenScale openScale = OpenScale.getInstance(getApplicationContext());
+        final OpenScale openScale = OpenScale.getInstance();
 
         if (openScale.getSelectedScaleUserId() == -1) {
             showNoSelectedUserDialog();
@@ -479,7 +479,7 @@ public class MainActivity extends BaseAppCompatActivity
                     setBluetoothStatusIcon(R.drawable.ic_bluetooth_connection_success);
                     ScaleMeasurement scaleBtData = (ScaleMeasurement) msg.obj;
 
-                    OpenScale openScale = OpenScale.getInstance(getApplicationContext());
+                    OpenScale openScale = OpenScale.getInstance();
 
                     if (prefs.getBoolean("mergeWithLastMeasurement", true)) {
                         List<ScaleMeasurement> scaleMeasurementList = openScale.getScaleMeasurementList();
@@ -531,7 +531,7 @@ public class MainActivity extends BaseAppCompatActivity
     }
 
     private void importCsvFile() {
-        int selectedUserId = OpenScale.getInstance(getApplicationContext()).getSelectedScaleUserId();
+        int selectedUserId = OpenScale.getInstance().getSelectedScaleUserId();
 
         if (selectedUserId == -1) {
             AlertDialog.Builder infoDialog = new AlertDialog.Builder(this);
@@ -557,7 +557,7 @@ public class MainActivity extends BaseAppCompatActivity
     }
 
     private void startActionCreateDocumentForExportIntent() {
-        OpenScale openScale = OpenScale.getInstance(getApplicationContext());
+        OpenScale openScale = OpenScale.getInstance();
         ScaleUser selectedScaleUser = openScale.getSelectedScaleUser();
 
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
@@ -569,7 +569,7 @@ public class MainActivity extends BaseAppCompatActivity
     }
 
     private boolean doExportData(Uri uri) {
-        OpenScale openScale = OpenScale.getInstance(getApplicationContext());
+        OpenScale openScale = OpenScale.getInstance();
         if (openScale.exportData(uri)) {
             String filename = openScale.getFilenameFromUri(uri);
             Toast.makeText(this,
@@ -585,7 +585,7 @@ public class MainActivity extends BaseAppCompatActivity
     }
 
     private void exportCsvFile() {
-        OpenScale openScale = OpenScale.getInstance(getApplicationContext());
+        OpenScale openScale = OpenScale.getInstance();
         final ScaleUser selectedScaleUser = openScale.getSelectedScaleUser();
 
         Uri uri;
@@ -637,11 +637,11 @@ public class MainActivity extends BaseAppCompatActivity
     }
 
     private void shareCsvFile() {
-        final ScaleUser selectedScaleUser = OpenScale.getInstance(getApplicationContext()).getSelectedScaleUser();
+        final ScaleUser selectedScaleUser = OpenScale.getInstance().getSelectedScaleUser();
 
         File shareFile = new File(getApplicationContext().getCacheDir(),
                 getExportFilename(selectedScaleUser));
-        if (!OpenScale.getInstance(getApplicationContext()).exportData(Uri.fromFile(shareFile))) {
+        if (!OpenScale.getInstance().exportData(Uri.fromFile(shareFile))) {
             return;
         }
 
@@ -677,7 +677,7 @@ public class MainActivity extends BaseAppCompatActivity
             return;
         }
 
-        OpenScale openScale = OpenScale.getInstance(getApplicationContext());
+        OpenScale openScale = OpenScale.getInstance();
 
         switch (requestCode) {
             case IMPORT_DATA_REQUEST:

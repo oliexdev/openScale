@@ -54,7 +54,7 @@ public class BluetoothExcelvanCF369BLE extends BluetoothCommunication {
     protected boolean nextBluetoothCmd(int stateNr) {
         switch (stateNr) {
             case 0:
-                final ScaleUser selectedUser = OpenScale.getInstance(context).getSelectedScaleUser();
+                final ScaleUser selectedUser = OpenScale.getInstance().getSelectedScaleUser();
 
                 byte userId = (byte) 0x01;
                 byte sex = selectedUser.getGender().isMale() ? (byte) 0x01 : (byte) 0x00;
@@ -121,7 +121,7 @@ public class BluetoothExcelvanCF369BLE extends BluetoothCommunication {
 
         ScaleMeasurement scaleBtData = new ScaleMeasurement();
 
-        final ScaleUser selectedUser = OpenScale.getInstance(context).getSelectedScaleUser();
+        final ScaleUser selectedUser = OpenScale.getInstance().getSelectedScaleUser();
 
         scaleBtData.setConvertedWeight(weight, selectedUser.getScaleUnit());
         scaleBtData.setFat(fat);

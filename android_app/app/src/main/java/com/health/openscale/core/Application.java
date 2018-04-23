@@ -31,6 +31,6 @@ public class Application extends android.app.Application {
         }
 
         // Create OpenScale instance
-        OpenScale.getInstance(getApplicationContext());
+        OpenScale.createInstance(getApplicationContext());
     }
 }
