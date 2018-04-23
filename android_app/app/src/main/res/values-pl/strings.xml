@@ -22,7 +22,7 @@
     <string name="label_delete">Usuń</string>
     <string name="label_add_user">Dodaj użytkownika</string>
     <string name="label_share">Udostępnij</string>
-    <string name="label_share_subject">Export danych openScale do CSV (%s)</string>
+    <string name="label_share_subject">Export danych do CSV (%s)</string>
 
     <string name="label_weight">Waga</string>
     <string name="label_bmi">Wskaźnik masy ciała (BMI)</string>
@@ -45,7 +45,7 @@
     <string name="label_last_week">Ostatnie 7 dni</string>
     <string name="label_last_month">Ostatnie 30 dni</string>
     <string name="label_weight_difference">Różnica wagi</string>
-    <string name="label_goal_date_is">Data celu to</string>
+    <string name="label_goal_date_is">Data realizacji celu:</string>
     <string name="label_days_left">Pozostało dni</string>
 
     <string name="label_date">Data</string>
@@ -69,8 +69,8 @@
     <string name="label_export">Export</string>
     <string name="label_delete_all">Usuń wszystko</string>
 
-    <string name="error_value_required">Wartość jest wymagana</string>
-    <string name="error_value_range">Wartość nie jest w zakresie</string>
+    <string name="error_value_required">Wymagana wartość</string>
+    <string name="error_value_range">Wartość poza zakresem</string>
     <string name="error_exporting">Błąd eksportu</string>
     <string name="error_importing">Błąd importu</string>
     <string name="error_user_name_required">Błąd: nazwa użytkownika jest wymagana</string>
@@ -79,22 +79,22 @@
     <string name="error_initial_weight_required">Błąd: waga początkowa jest wymagana</string>
     <string name="error_goal_weight_required">Błąd: waga docelowa jest wymagana</string>
 
-    <string name="info_data_deleted">Wpis w bazie danych usunięty</string>
-    <string name="info_data_all_deleted">Wszytkie wpisy w bazie danych usunięte</string>
+    <string name="info_data_deleted">Wpis usunięty</string>
+    <string name="info_data_all_deleted">Wszystkie wpisy usunięte</string>
     <string name="info_data_exported">Dane wyeksportowane do</string>
     <string name="info_data_imported">Dane zaimportowane z</string>
-    <string name="info_enter_value_cm">Wprowadź wartość w cm</string>
+    <string name="info_enter_value_cm">Wartość w cm</string>
     <string name="info_enter_comment">Wprowadź opcjonalny komentarz</string>
     <string name="info_is_visible">jest widoczne</string>
     <string name="info_is_not_visible">nie jest widoczne</string>
-    <string name="info_is_enable">jest włączone</string>
-    <string name="info_is_not_enable">jest wyłączone</string>
+    <string name="info_is_enable">włączono</string>
+    <string name="info_is_not_enable">wyłączono</string>
     <string name="info_is_not_available">jest niedostępne</string>
-    <string name="info_bluetooth_try_connection">Próba połączenia do</string>
+    <string name="info_bluetooth_try_connection">Łączenie z:</string>
     <string name="info_bluetooth_connection_lost">Utracono połączenie Bluetooth</string>
     <string name="info_bluetooth_no_device">Nie znaleziono urządzeń Bluetooth</string>
     <string name="info_bluetooth_no_device_set">Nie wybrano urządzenia Bluetooth</string>
-    <string name="info_bluetooth_connection_successful">Udało się nawiązać połączenie</string>
+    <string name="info_bluetooth_connection_successful">Nawiązano połączenie</string>
     <string name="info_bluetooth_init">Inicjalizacja urządzeń Bluetooth</string>
     <string name="info_bluetooth_connection_error">Nieznany błąd Bluetooth</string>
     <string name="info_new_data_added">%1$.2f%2$s [%3$s] dodano do %4$s</string>
@@ -104,19 +104,19 @@
     <string name="info_no_selected_user">Brak użytkowników. Proszę utworzyć nowego użytkownika w ustawieniach.</string>
     <string name="info_no_evaluation_available">Nie można określić wartości</string>
 
-    <string name="question_really_delete">Czy napewno chcesz usunąć wpis z bazy danych?</string>
-    <string name="question_really_delete_all">Czy napewno chcesz usunąć wszystkie wpisy z bazy danych?</string>
-    <string name="question_really_delete_user">Czy napewno chcesz usunąć użytkownika? </string>
+    <string name="question_really_delete">Usunąć wpis?</string>
+    <string name="question_really_delete_all">Usunąć wszystkie wpisy wszystkich użytkowników?</string>
+    <string name="question_really_delete_user">Usunąć użytkownika?</string>
 
     <string name="label_bluetooth_title">Bluetooth</string>
     <string name="label_bluetooth_enable">Połącz z wagą przy starcie</string>
     <string name="label_mergeWithLastMeasurement">Scal z ostatnim pomiarem</string>
     <string name="label_bluetooth_searching">Wyszukuje wagi Bluetooth</string>
-    <string name="label_bluetooth_searching_finished">Zakończono wyszukiwanie wag Bluetooth</string>
+    <string name="label_bluetooth_searching_finished">Wyszukiwanie zakończone</string>
     <string name="label_device_type">Rodzaj urządzenia</string>
 
-    <string name="label_enable_labels">Label on data point</string>
-    <string name="label_enable_points">Point on data point</string>
+    <string name="label_enable_labels">Etykiety danych</string>
+    <string name="label_enable_points">Punkt danych</string>
 
     <string name="label_delete_confirmation">Potwierdzenie usnięcia</string>
 
@@ -161,16 +161,19 @@
     <string name="label_feedback_message_enjoying">Podoba Ci się openScale?</string>
     <string name="label_feedback_message_rate_app">Może w takim razie oceniłbyś/oceniłabyś openScale na GooglePlay lub na GitHub?</string>
     <string name="label_feedback_message_issue">Masz dla nas jakieś sugestie?</string>
-    <string name="label_feedback_message_yes">Tak!</string>
+    <string name="label_feedback_message_yes">Tak</string>
     <string name="label_feedback_message_no">Nie bardzo</string>
-    <string name="label_feedback_message_positive">Ok, jasne</string>
+    <string name="label_feedback_message_positive">OK</string>
     <string name="label_feedback_message_negative">No, dzięki</string>
     
     <string name="error_max_scale_users">Osiągnięto maksymalną ilość użytkowników wagi</string>
     <string name="info_step_on_scale">Proszę stanąć boso na wadze w celu przeprowadzenia pomiaru referencyjnego</string>
     <string name="info_measuring">Mierzona waga: %.2f</string>
 
-    <string name="customactivityoncrash_error_activity_error_occurred_explanation">Wystąpił nespodziewany błąd.\n\nProszę stworzyć nowy problem załączając szczegóły błędu na \nhttps://github.com/oliexdev/openScale/issues</string>
+    <string name="customactivityoncrash_error_activity_error_occurred_explanation">Wystąpił nieoczekiwany błąd.
+\n
+\nUtwórz nowy problem zawierający szczegółowe informacje o błędach na
+\nhttps://github.com/oliexdev/openScale/issues</string>
     <string name="customactivityoncrash_error_activity_restart_app">Zrestartuj apkę</string>
     <string name="customactivityoncrash_error_activity_close_app">Zamknij apkę</string>
     <string name="customactivityoncrash_error_activity_error_details">Szczegóły błędu</string>
@@ -200,4 +203,19 @@
     <string name="label_language">Język</string>
     <string name="theme_light">Jasny</string>
     <string name="theme_dark">Ciemny</string>
-    </resources>
+    <string name="label_estimation_formula">Formuła szacowania</string>
+    <string name="language_default">Domyślne ustawienie systemowe</string>
+    <string name="label_overview_graph">Wykres przeglądowy</string>
+    <string name="label_percent">Procent</string>
+    <string name="label_estimated">Szacowany</string>
+    <string name="label_estimate_measurement_summary">Na podstawie wagi, wzrostu, wieku, płci, itd.</string>
+    <string name="label_auto_backup">Automatyczna kopia zapasowa</string>
+    <string name="label_auto_backup_schedule">Harmonogram tworzenia kopii zapasowych</string>
+    <string name="label_overwrite_backup">Nadpisz poprzednią kopię zapasową</string>
+    <string name="label_daily">codziennie</string>
+    <string name="label_weekly">co tydzień</string>
+    <string name="label_monthly">co miesiąc</string>
+    <string name="label_scale_not_supported">Czy twoja waga nie jest obsługiwana?</string>
+    <string name="label_click_to_help_add_support">Kliknij tutaj, aby pomóc dodać obsługę</string>
+    <string name="label_debug_log">Zapisz log debugowania do pliku</string>
+</resources>
