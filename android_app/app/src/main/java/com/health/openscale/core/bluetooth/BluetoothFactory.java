@@ -21,6 +21,10 @@ import android.content.Context;
 import java.util.Locale;
 
 public class BluetoothFactory {
+    public static BluetoothCommunication createDebugDriver(Context context) {
+        return new BluetoothDebug(context);
+    }
+
     public static BluetoothCommunication createDeviceDriver(Context context, String deviceName) {
         final String name = deviceName.toLowerCase(Locale.US);
 

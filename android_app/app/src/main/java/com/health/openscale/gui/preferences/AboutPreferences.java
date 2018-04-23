@@ -24,6 +24,7 @@ import android.util.Log;
 
 import com.health.openscale.BuildConfig;
 import com.health.openscale.R;
+import com.health.openscale.core.OpenScale;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -110,6 +111,7 @@ public class AboutPreferences extends PreferenceFragment {
                     tree.close();
                     Timber.uproot(tree);
                     preference.setSummary(R.string.info_is_not_enable);
+                    OpenScale.DEBUG_MODE = false;
                     return true;
                 }
 
@@ -133,6 +135,7 @@ public class AboutPreferences extends PreferenceFragment {
             OutputStream output = getActivity().getContentResolver().openOutputStream(uri);
             Timber.plant(new FileDebugTree(output));
             findPreference(KEY_DEBUG_LOG).setSummary(R.string.info_is_enable);
+            OpenScale.DEBUG_MODE = true;
             Timber.d("Debug log enabled (%s v%s (%d))",
                     getResources().getString(R.string.app_name),
                     BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE);

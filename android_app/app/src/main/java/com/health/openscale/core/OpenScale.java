@@ -71,6 +71,7 @@ import java.util.TreeMap;
 import timber.log.Timber;
 
 public class OpenScale {
+    public static boolean DEBUG_MODE = false;
 
     public static final String DATABASE_NAME = "openScale.db";
 
@@ -542,8 +543,18 @@ public class OpenScale {
         return measurementDAO.getAllInRange(startCalender.getTime(), endCalender.getTime(), selectedUserId);
     }
 
+    public void connectToBluetoothDeviceDebugMode(String hwAddress, Handler callbackBtHandler) {
+        Timber.d("Trying to connect to bluetooth device [%s] in debug mode", hwAddress);
+
+        disconnectFromBluetoothDevice();
+
+        btDeviceDriver = BluetoothFactory.createDebugDriver(context);
+        btDeviceDriver.registerCallbackHandler(callbackBtHandler);
+        btDeviceDriver.connect(hwAddress);
+    }
+
     public boolean connectToBluetoothDevice(String deviceName, String hwAddress, Handler callbackBtHandler) {
-        Timber.d("Trying to connect to bluetooth device %s (%s)", hwAddress, deviceName);
+        Timber.d("Trying to connect to bluetooth device [%s] (%s)", hwAddress, deviceName);
 
         disconnectFromBluetoothDevice();
 
