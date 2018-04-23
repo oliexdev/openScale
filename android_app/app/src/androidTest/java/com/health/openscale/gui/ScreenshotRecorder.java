@@ -102,6 +102,8 @@ public class ScreenshotRecorder {
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
+        String language = prefs.getString(BaseAppCompatActivity.PREFERENCE_LANGUAGE, "default");
+
         prefs.edit()
                 .remove("lastFragmentId")
                 .putString(BaseAppCompatActivity.PREFERENCE_LANGUAGE, "en")
@@ -113,6 +115,11 @@ public class ScreenshotRecorder {
                 .putString(BaseAppCompatActivity.PREFERENCE_LANGUAGE, "de")
                 .commit();
         screenshotRecorder();
+
+        // Restore language setting
+        prefs.edit()
+                .putString(BaseAppCompatActivity.PREFERENCE_LANGUAGE, language)
+                .commit();
     }
 
     private ScaleUser getTestUser() {
