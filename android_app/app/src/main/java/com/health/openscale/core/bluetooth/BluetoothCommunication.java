@@ -22,13 +22,16 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
+import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.os.Handler;
 
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 import java.util.UUID;
 
@@ -66,6 +69,14 @@ public abstract class BluetoothCommunication {
         gattCallback = new GattCallback();
         bluetoothGatt = null;
         connectionEstablished = false;
+    }
+
+    protected List<BluetoothGattService> getBluetoothGattServices() {
+        if (bluetoothGatt == null) {
+            return new ArrayList<>();
+        }
+
+        return bluetoothGatt.getServices();
     }
 
     /**
@@ -231,6 +242,13 @@ public abstract class BluetoothCommunication {
                 .getCharacteristic(characteristic);
 
         bluetoothGatt.readCharacteristic(gattCharacteristic);
+    }
+
+    protected void readBytes(UUID service, UUID characteristic, UUID descriptor) {
+        BluetoothGattDescriptor gattDescriptor = bluetoothGatt.getService(service)
+                .getCharacteristic(characteristic).getDescriptor(descriptor);
+
+        bluetoothGatt.readDescriptor(gattDescriptor);
     }
 
     /**
@@ -520,8 +538,8 @@ public abstract class BluetoothCommunication {
         public void onCharacteristicRead(BluetoothGatt gatt,
                                          BluetoothGattCharacteristic characteristic,
                                          int status) {
-            Timber.d("onCharacteristicRead %s: %s",
-                    characteristic.getUuid(), byteInHex(characteristic.getValue()));
+            Timber.d("onCharacteristicRead %s (status=%d): %s",
+                    characteristic.getUuid(), status, byteInHex(characteristic.getValue()));
 
             synchronized (lock) {
                 onBluetoothDataRead(gatt, characteristic, status);
@@ -540,5 +558,19 @@ public abstract class BluetoothCommunication {
                 onBluetoothDataChange(gatt, characteristic);
             }
         }
+
+        @Override
+        public void onDescriptorRead(BluetoothGatt gatt,
+                                     BluetoothGattDescriptor descriptor,
+                                     int status) {
+            Timber.d("onDescriptorRead %s (status=%d): %s",
+                    descriptor.getUuid(), status, byteInHex(descriptor.getValue()));
+
+            synchronized (lock) {
+                openRequest = false;
+                handleRequests();
+            }
+        }
+
     }
 }
