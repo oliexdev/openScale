@@ -103,6 +103,15 @@ public class ConvertersTest {
     }
 
     @Test
+    public void unsignedInt24Converters() throws Exception {
+        byte[] data = new byte[]{(byte) 0xfd, (byte) 0xfe, (byte) 0xfc, (byte) 0x10, (byte) 0x7f};
+
+        assertEquals(0xfcfefd, Converters.fromUnsignedInt24Le(data, 0));
+        assertEquals(0x10fcfe, Converters.fromUnsignedInt24Le(data, 1));
+        assertEquals(0x7f10fc, Converters.fromUnsignedInt24Le(data, 2));
+    }
+
+    @Test
     public void unsignedInt32Converters() throws Exception {
         byte[] data = new byte[]{(byte) 0xf1, (byte) 0xf2, (byte) 0xf3, (byte) 0x7f, (byte) 0x7e};
         assertEquals(0xf1f2f37fL, Converters.fromUnsignedInt32Be(data, 0));

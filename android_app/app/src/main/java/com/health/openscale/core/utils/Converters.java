@@ -143,6 +143,13 @@ public class Converters {
         return data;
     }
 
+    public static int fromUnsignedInt24Le(byte[] data, int offset) {
+        int value = (data[offset + 2] & 0xFF) << 16;
+        value += (data[offset + 1] & 0xFF) << 8;
+        value += data[offset] & 0xFF;
+        return value;
+    }
+
     public static long fromUnsignedInt32Be(byte[] data, int offset) {
         long value = (long) (data[offset] & 0xFF) << 24;
         value += (data[offset + 1] & 0xFF) << 16;
