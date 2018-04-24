@@ -22,9 +22,9 @@
     <string name="label_weight">Peso</string>
     <string name="label_bmi">Índice de masa corporal (IMC)</string>
     <string name="label_bmr">Tasa metabólica basal (TMB)</string>
-    <string name="label_fat">Porcentaje de grasa corporal</string>
-    <string name="label_water">Porcentaje de agua</string>
-    <string name="label_muscle">Porcentaje muscular</string>
+    <string name="label_fat">Grasa corporal</string>
+    <string name="label_water">Agua corporal</string>
+    <string name="label_muscle">Músculo</string>
     <string name="label_lbm">Masa corporal magra</string>
     <string name="label_waist">Circunferencia de la cintura</string>
     <string name="label_hip">Circunferencia de la cadera</string>
@@ -197,4 +197,6 @@
     <string name="permission_bluetooth_info">"openScale requiere permiso para acceder a la localización para buscar dispositivos Bluetooth "</string>
     <string name="permission_bluetooth_info_title">Información</string>
 
-</resources>
+<string name="label_share_subject">"Exportar a CSV (%s) "</string>
+
+    </resources>
