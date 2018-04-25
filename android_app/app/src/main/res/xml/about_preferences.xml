@@ -23,7 +23,7 @@
         android:title="@string/label_license"
         android:summary="GPLv3"/>
     <PreferenceCategory android:title="@string/label_development">
-        <Preference
+        <CheckBoxPreference
             android:key="debug_log"
             android:persistent="false"
             android:title="@string/label_debug_log" />

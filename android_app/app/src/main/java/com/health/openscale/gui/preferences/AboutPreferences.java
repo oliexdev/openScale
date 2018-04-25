@@ -18,6 +18,7 @@ package com.health.openscale.gui.preferences;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.util.Log;
@@ -42,6 +43,8 @@ public class AboutPreferences extends PreferenceFragment {
     private static final String KEY_DEBUG_LOG = "debug_log";
 
     private static final int DEBUG_LOG_REQUEST = 100;
+
+    private CheckBoxPreference debugLog;
 
     class FileDebugTree extends Timber.DebugTree {
         PrintWriter writer;
@@ -99,31 +102,32 @@ public class AboutPreferences extends PreferenceFragment {
         findPreference(KEY_APP_VERSION).setSummary(
                 String.format("v%s (%d)", BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE));
 
-        Preference debugLog = findPreference(KEY_DEBUG_LOG);
+        debugLog = (CheckBoxPreference)findPreference(KEY_DEBUG_LOG);
         debugLog.setSummary(getEnabledFileDebugTree() != null
                 ? R.string.info_is_enable : R.string.info_is_not_enable);
         debugLog.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                FileDebugTree tree = getEnabledFileDebugTree();
-                if (tree != null) {
-                    Timber.d("Debug log disabled");
-                    tree.close();
-                    Timber.uproot(tree);
-                    preference.setSummary(R.string.info_is_not_enable);
-                    OpenScale.DEBUG_MODE = false;
-                    return true;
+                if (debugLog.isChecked()) {
+                    DateFormat format = new SimpleDateFormat("yyyy-MM-dd_HH-mm");
+                    String fileName = String.format("openScale_%s.txt", format.format(new Date()));
+
+                    Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+                    intent.addCategory(Intent.CATEGORY_OPENABLE);
+                    intent.setType("text/plain");
+                    intent.putExtra(Intent.EXTRA_TITLE, fileName);
+
+                    startActivityForResult(intent, DEBUG_LOG_REQUEST);
+                } else {
+                    FileDebugTree tree = getEnabledFileDebugTree();
+                    if (tree != null) {
+                        Timber.d("Debug log disabled");
+                        tree.close();
+                        Timber.uproot(tree);
+                        preference.setSummary(R.string.info_is_not_enable);
+                        OpenScale.DEBUG_MODE = false;
+                    }
                 }
-
-                DateFormat format = new SimpleDateFormat("yyyy-MM-dd_HH-mm");
-                String fileName = String.format("openScale_%s.txt", format.format(new Date()));
-
-                Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-                intent.addCategory(Intent.CATEGORY_OPENABLE);
-                intent.setType("text/plain");
-                intent.putExtra(Intent.EXTRA_TITLE, fileName);
-
-                startActivityForResult(intent, DEBUG_LOG_REQUEST);
 
                 return true;
             }
@@ -151,6 +155,13 @@ public class AboutPreferences extends PreferenceFragment {
 
         if (requestCode == DEBUG_LOG_REQUEST && resultCode == RESULT_OK && data != null) {
             startLogTo(data.getData());
+
+            debugLog.setSummary(getEnabledFileDebugTree() != null
+                    ? R.string.info_is_enable : R.string.info_is_not_enable);
+
+            debugLog.setChecked(true);
+        } else {
+            debugLog.setChecked(false);
         }
     }
 }
