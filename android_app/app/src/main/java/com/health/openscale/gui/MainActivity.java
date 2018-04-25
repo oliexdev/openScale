@@ -449,12 +449,14 @@ public class MainActivity extends BaseAppCompatActivity
                 BluetoothPreferences.PREFERENCE_KEY_BLUETOOTH_HW_ADDRESS, "");
 
         if (!BluetoothAdapter.checkBluetoothAddress(hwAddress)) {
+            setBluetoothStatusIcon(R.drawable.ic_bluetooth_connection_lost);
             Toast.makeText(getApplicationContext(), R.string.info_bluetooth_no_device_set, Toast.LENGTH_SHORT).show();
             return;
         }
 
         BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
         if (!bluetoothManager.getAdapter().isEnabled()) {
+            setBluetoothStatusIcon(R.drawable.ic_bluetooth_connection_lost);
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, ENABLE_BLUETOOTH_REQUEST);
             return;
@@ -464,6 +466,7 @@ public class MainActivity extends BaseAppCompatActivity
         setBluetoothStatusIcon(R.drawable.ic_bluetooth_searching);
 
         if (!openScale.connectToBluetoothDevice(deviceName, hwAddress, callbackBtHandler)) {
+            setBluetoothStatusIcon(R.drawable.ic_bluetooth_connection_lost);
             Toast.makeText(getApplicationContext(), deviceName + " " + getResources().getString(R.string.label_bt_device_no_support), Toast.LENGTH_SHORT).show();
         }
     }
