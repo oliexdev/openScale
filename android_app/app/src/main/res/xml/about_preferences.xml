@@ -26,6 +26,8 @@
         <CheckBoxPreference
             android:key="debug_log"
             android:persistent="false"
+            android:summaryOff="@string/info_is_not_enable"
+            android:summaryOn="@string/info_is_enable"
             android:title="@string/label_debug_log" />
     </PreferenceCategory>
 </PreferenceScreen>

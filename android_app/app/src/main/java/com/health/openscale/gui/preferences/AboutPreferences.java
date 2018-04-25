@@ -103,8 +103,7 @@ public class AboutPreferences extends PreferenceFragment {
                 String.format("v%s (%d)", BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE));
 
         debugLog = (CheckBoxPreference)findPreference(KEY_DEBUG_LOG);
-        debugLog.setSummary(getEnabledFileDebugTree() != null
-                ? R.string.info_is_enable : R.string.info_is_not_enable);
+        debugLog.setChecked(getEnabledFileDebugTree() != null);
         debugLog.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
@@ -155,13 +154,8 @@ public class AboutPreferences extends PreferenceFragment {
 
         if (requestCode == DEBUG_LOG_REQUEST && resultCode == RESULT_OK && data != null) {
             startLogTo(data.getData());
-
-            debugLog.setSummary(getEnabledFileDebugTree() != null
-                    ? R.string.info_is_enable : R.string.info_is_not_enable);
-
-            debugLog.setChecked(true);
-        } else {
-            debugLog.setChecked(false);
         }
+
+        debugLog.setChecked(getEnabledFileDebugTree() != null);
     }
 }
