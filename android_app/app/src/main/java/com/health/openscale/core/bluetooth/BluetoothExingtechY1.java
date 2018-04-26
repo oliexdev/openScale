@@ -98,7 +98,7 @@ public class BluetoothExingtechY1 extends BluetoothCommunication {
         float weight = (float) (((weightBytes[4] & 0xFF) << 8) | (weightBytes[5] & 0xFF)) / 10.0f; // kg
         float fat = (float)(((weightBytes[6] & 0xFF) << 8) | (weightBytes[7] & 0xFF)) / 10.0f; // %
         float water = (float)(((weightBytes[8] & 0xFF) << 8) | (weightBytes[9] & 0xFF)) / 10.0f; // %
-        float bone = (float)(((weightBytes[10] & 0xFF) << 8) | (weightBytes[11] & 0xFF)) / weight * 10.0f; // kg
+        float bone = (float)(((weightBytes[10] & 0xFF) << 8) | (weightBytes[11] & 0xFF)) / 10.0f; // kg
         float muscle = (float)(((weightBytes[12] & 0xFF) << 8) | (weightBytes[13] & 0xFF)) / 10.0f; // %
         float visc_muscle = (float)(weightBytes[14] & 0xFF); // %
         float calorie = (float)(((weightBytes[15] & 0xFF) << 8) | (weightBytes[16] & 0xFF));
