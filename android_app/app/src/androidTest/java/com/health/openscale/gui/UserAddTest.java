@@ -34,6 +34,7 @@ import android.widget.DatePicker;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleUser;
+import com.health.openscale.gui.activities.BaseAppCompatActivity;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -68,25 +69,16 @@ public class UserAddTest {
     @Rule
     public ActivityTestRule<MainActivity> mActivityTestRule = new ActivityTestRule<>(MainActivity.class, false, false);
 
-    private void setLanguage(String language, String country) {
-        Locale locale = new Locale(language, country);
-        Locale.setDefault(locale);
-        Resources res = context.getResources();
-        Configuration config = res.getConfiguration();
-        config.locale = locale;
-        res.updateConfiguration(config, res.getDisplayMetrics());
-    }
-
     @Before
     public void initTest() {
         context = InstrumentationRegistry.getTargetContext();
 
-        // set app language to English
-        setLanguage("en", "EN");
-
         // Set first start to true to get the user add dialog
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        prefs.edit().putBoolean("firstStart", true).commit();
+        prefs.edit()
+                .putBoolean("firstStart", true)
+                .putString(BaseAppCompatActivity.PREFERENCE_LANGUAGE, "en")
+                .commit();
     }
 
     @After
