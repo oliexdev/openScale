@@ -36,7 +36,7 @@
     <string name="label_last_week">7 derniers jours</string>
     <string name="label_last_month">30 derniers jours</string>
     <string name="label_weight_difference">Différence de poids</string>
-    <string name="label_goal_date_is">La date de l\'objectif est le</string>
+    <string name="label_goal_date_is">La date de l\'objectif :</string>
     <string name="label_days_left">Jours restants</string>
 
     <string name="label_date">Date</string>
@@ -60,46 +60,46 @@
     <string name="label_export">Exporter</string>
     <string name="label_delete_all">Tout supprimer</string>
 
-    <string name="error_value_required">La valeur est requise</string>
+    <string name="error_value_required">Valeur requise</string>
     <string name="error_value_range">La valeur n\'est pas dans la plage</string>
     <string name="error_exporting">Erreur durant l\'exportation</string>
     <string name="error_importing">Erreur durant l\'importation</string>
-    <string name="error_user_name_required">Erreur : le nom d\'utilisateur est requis</string>
-    <string name="error_height_required">Erreur : la hauteur du corps est requise</string>
-    <string name="error_goal_weight_required">Erreur : un objectif de poids est requis</string>
+    <string name="error_user_name_required">Erreur : Nom d\'utilisateur requis</string>
+    <string name="error_height_required">Erreur : hauteur requise</string>
+    <string name="error_goal_weight_required">Erreur : Objectif de poids requis</string>
 
-    <string name="info_data_deleted">L\'entrée a été supprimée de la base de données</string>
-    <string name="info_data_all_deleted">Toutes les entrées ont été supprimées de la base de données</string>
+    <string name="info_data_deleted">L\'entrée a été supprimée</string>
+    <string name="info_data_all_deleted">Toutes les entrées ont été supprimées</string>
     <string name="info_data_exported">Données exportées vers</string>
     <string name="info_data_imported">Donnéees importées depuis</string>
-    <string name="info_enter_value_cm">Entrez la valeur en cm</string>
-    <string name="info_enter_comment">Ajouter un commentaire optionnel</string>
+    <string name="info_enter_value_cm">Valeur en cm</string>
+    <string name="info_enter_comment">Commentaire optionnel</string>
     <string name="info_is_visible">est visible</string>
     <string name="info_is_not_visible">n\'est pas visible</string>
-    <string name="info_is_enable">est activé</string>
-    <string name="info_is_not_enable">est désactivé</string>
-    <string name="info_is_not_available">n\'est pas disponible</string>
-    <string name="info_bluetooth_try_connection">Tentative de connexion à</string>
+    <string name="info_is_enable">activé</string>
+    <string name="info_is_not_enable">désactivé</string>
+    <string name="info_is_not_available">pas disponible</string>
+    <string name="info_bluetooth_try_connection">Tentative de connexion à :</string>
     <string name="info_bluetooth_connection_lost">La connexion Bluetooth a été perdue</string>
     <string name="info_bluetooth_no_device">Aucun appareil Bluetooth détecté</string>
     <string name="info_bluetooth_connection_successful">Connexion établie</string>
     <string name="info_bluetooth_init">Initialisation du périphérique Bluetooth</string>
-    <string name="info_bluetooth_connection_error">La connexion Bluetooth a rencontré une erreur inattendue</string>
+    <string name="info_bluetooth_connection_error">Erreur Bluetooth</string>
 
-    <string name="info_enter_user_name">Entrez votre nom</string>
-    <string name="info_no_selected_user">Aucun utilisateur existant. Veuillez en créer un nouveau dans les paramètres.</string>
-    <string name="info_no_evaluation_available">Impossible d\'évaluer</string>
+    <string name="info_enter_user_name">Votre nom</string>
+    <string name="info_no_selected_user">Aucun utilisateur existant. Veuillez en créer un dans les paramètres.</string>
+    <string name="info_no_evaluation_available">Impossible d\'évaluer la valeur</string>
 
-    <string name="question_really_delete">Voulez-vous vraiment supprimer cette entrée de la base de données?</string>
-    <string name="question_really_delete_all">Voulez-vous vraiment supprimer toutes les entrées de la base de données?</string>
-    <string name="question_really_delete_user">Voulez-vous vraiment supprimer cet utilisateur?</string>
+    <string name="question_really_delete">Supprimer cette entrée ?</string>
+    <string name="question_really_delete_all">Voulez-vous supprimer toutes les mesures de tous les utilisateurs ?</string>
+    <string name="question_really_delete_user">Supprimer cet utilisateur ?</string>
 
     <string name="label_bluetooth_title">Bluetooth</string>
-    <string name="label_bluetooth_enable">Rechercher une balance au lancement de l\'application</string>
+    <string name="label_bluetooth_enable">Se connecter à une balance au lancement de l\'application</string>
     <string name="label_device_type">Type d\'appareil</string>
 
-    <string name="label_enable_labels">Étiquette sur point de données</string>
-    <string name="label_enable_points">Point sur point de données</string>
+    <string name="label_enable_labels">Étiquette sur les données</string>
+    <string name="label_enable_points">Point de données</string>
 
     <string name="label_delete_confirmation">Supprimer la confirmation</string>
 
@@ -125,15 +125,15 @@
 
     <string name="info_bluetooth_no_device_set">Aucun appareil Bluetooth sélectionné</string>
     <string name="label_website">Site web</string>
-    <string name="label_license">License</string>
+    <string name="label_license">Licence</string>
 
     <string name="label_theme">Thème</string>
 
     <string name="label_bt_device_no_support">Appareil non pris en charge</string>
     <string name="label_initial_weight">Poids initial</string>
-    <string name="label_feedback_message_yes">Oui !</string>
+    <string name="label_feedback_message_yes">Oui</string>
     <string name="label_feedback_message_no">Pas vraiment</string>
-    <string name="label_feedback_message_positive">Ok, bien sûr</string>
+    <string name="label_feedback_message_positive">OK</string>
     <string name="label_feedback_message_negative">Non merci</string>
 
     <string name="customactivityoncrash_error_activity_restart_app">Redémarrer l\'application</string>
@@ -149,15 +149,15 @@
     <string name="label_next">Suivant</string>
     <string name="title_about">À propos</string>
     <string name="label_share">Partager</string>
-    <string name="error_user_name_too_short">Erreur : Le nom d\'utilisateur doit contenir au moins 3 caractères</string>
-    <string name="error_initial_weight_required">Erreur : le poids initial est requis</string>
-    <string name="info_enter_value_scale_unit">Entrez la valeur en unité d\'échelle</string>
+    <string name="error_user_name_too_short">Erreur : Le nom doit contenir au moins 3 caractères</string>
+    <string name="error_initial_weight_required">Erreur : Poids initial requis</string>
+    <string name="info_enter_value_scale_unit">Valeur en unité de l\'échelle</string>
     <string name="label_exportBackup">Exporter la sauvegarde</string>
     <string name="label_importBackup">Importer la sauvegarde</string>
     <string name="label_backup">La sauvegarde</string>
     <string name="label_help">Aide</string>
 
-    <string name="label_feedback_message_issue">Pourriez-vous nous donner quelques retours?</string>
+    <string name="label_feedback_message_issue">Pourriez-vous nous donner quelques retours ?</string>
     <string name="customactivityoncrash_error_activity_error_details">Détail de l\'erreur</string>
     <string name="customactivityoncrash_error_activity_error_details_title">Détail de l\'erreur</string>
     <string name="label_month_view">Vue mensuelle</string>
@@ -172,4 +172,58 @@
     <string name="label_percent">Pourcent</string>
     <string name="label_estimated">Estimé</string>
     <string name="label_estimate_measurement_summary">Basé sur le poids, la taille, l\'âge, le genre, etc.</string>
+<string name="open_drawer">ouvrir</string>
+    <string name="close_drawer">fermer</string>
+
+    <string name="label_share_subject">Exporter comme fichier CSV (%s)</string>
+
+    <string name="label_lbm">Masse sans graisse</string>
+    <string name="info_new_data_added">%1$.2f%2$s [%3$s] to %4$s rajouté</string>
+    <string name="info_new_data_duplicated">des mesures à la même date et heure existent déjà</string>
+
+    <string name="label_mergeWithLastMeasurement">Fusionner avec la dernière mesure</string>
+    <string name="label_bluetooth_searching">Détection de pèse personne en cours</string>
+    <string name="label_bluetooth_searching_finished">Détection finalisé</string>
+    <string name="label_category_measurement_database">Base de données de mesures</string>
+
+    <string name="label_maintainer">Développeur</string>
+    <string name="label_automatic">auto</string>
+
+    <string name="label_export_dir">Dossier pour l\'exportation</string>
+    <string name="label_not_found">non trouvé</string>
+    <string name="label_ignoreOutOfRange">Ignorer les valeurs hors de plage valide</string>
+    <string name="label_regression_line">Ligne de régression</string>
+    <string name="label_regression_line_degree">Degré du polynôme pour la ligne</string>
+    <string name="label_goal_line">Ligne pour l\'objectif</string>
+    <string name="label_feedback_message_enjoying">Êtes-vous satisfait d\'openScale ?</string>
+    <string name="label_feedback_message_rate_app">Laisser une évaluation sur Google Play ou GitHub ?</string>
+    <string name="error_max_scale_users">Le nombre maximum d\'utilisateurs de la balance atteint</string>
+    <string name="info_step_on_scale">Montez svp sur la balance, pieds nus, pour les mesures de référence</string>
+    <string name="info_measuring">En train de mesurer le poids : %.2f</string>
+
+    <string name="customactivityoncrash_error_activity_error_occurred_explanation">Une erreur est apparue.
+\n
+\nUtilisez svp les détails de l\'erreur pour créer un commentaire sur 
+\nhttps://github.com/oliexdev/openScale/issues</string>
+    <string name="customactivityoncrash_error_activity_error_details_clipboard_label">Informations sur l\'erreur</string>
+    <string name="toggle_expand">Basculer en mode étendu</string>
+    <string name="permission_bluetooth_info">Des permissions d\'accès à la location sont nécessaires pour chercher des dispositifs Bluetooth. Ces permissions peuvent être enlevées par la suite.</string>
+    <string name="label_export_overwrite">Écraser les données exportés précédemment \"%s\" ?</string>
+    <string name="label_include_in_overview_graph">Inclure dans la diagramme générale</string>
+    <string name="label_estimate_measurement">Mesure estimée</string>
+    <string name="label_estimation_formula">Formule pour les mesures estimées</string>
+    <string name="language_default">Langue du système</string>
+    <string name="label_language">Langue</string>
+    <string name="label_add_or_fix_translation">Ajouter nouvelle ou modifier existante</string>
+    <string name="label_overview_graph">Diagramme générale</string>
+    <string name="label_auto_backup">Sauvegarde automatique</string>
+    <string name="label_auto_backup_schedule">Programmation de sauvegardes</string>
+    <string name="label_overwrite_backup">Écraser la sauvegarde précédente</string>
+    <string name="label_daily">chaque jour</string>
+    <string name="label_weekly">hebdomadaire</string>
+    <string name="label_monthly">mensuel</string>
+    <string name="label_scale_not_supported">Votre pèse personne n\'est pas parmi les dispositif reconnus ?</string>
+    <string name="label_click_to_help_add_support">Cliquer ici pour contribuer</string>
+    <string name="label_development">Développement</string>
+    <string name="label_debug_log">Enregistrez les données de débogage dans un fichier</string>
 </resources>
