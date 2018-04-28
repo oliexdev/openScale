@@ -16,6 +16,7 @@
 
 package com.health.openscale.core.bluetooth;
 
+import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
@@ -25,7 +26,9 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.Handler;
+import android.support.v4.content.ContextCompat;
 
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 
@@ -50,6 +53,7 @@ public abstract class BluetoothCommunication {
     private BluetoothGatt bluetoothGatt;
     private boolean connectionEstablished;
     private BluetoothGattCallback gattCallback;
+    private BluetoothAdapter.LeScanCallback leScanCallback;
     protected BluetoothAdapter btAdapter;
 
     private int cmdStepNr;
@@ -68,6 +72,7 @@ public abstract class BluetoothCommunication {
         btAdapter = BluetoothAdapter.getDefaultAdapter();
         gattCallback = new GattCallback();
         bluetoothGatt = null;
+        leScanCallback = null;
         connectionEstablished = false;
     }
 
@@ -367,7 +372,27 @@ public abstract class BluetoothCommunication {
     public void connect(String hwAddress) {
         Timber.i("Connecting to [%s] (driver: %s)", hwAddress, driverName());
 
+        // Some good tips to improve BLE connections:
+        // https://android.jlelse.eu/lessons-for-first-time-android-bluetooth-le-developers-i-learned-the-hard-way-fee07646624
+
+        // Running an LE scan during connect improves connectivity on some phones
+        // (e.g. Sony Xperia Z5 compact, Android 7.1.1).
         btAdapter.cancelDiscovery();
+        if (leScanCallback == null) {
+            if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION)
+                    == PackageManager.PERMISSION_GRANTED) {
+                Timber.d("Starting LE scan");
+                leScanCallback = new BluetoothAdapter.LeScanCallback() {
+                    @Override
+                    public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
+                    }
+                };
+                btAdapter.startLeScan(leScanCallback);
+            }
+            else {
+                Timber.d("No coarse location permission, skipping LE scan");
+            }
+        }
 
         // Don't do any cleanup if disconnected before fully connected
         btMachineState = BT_MACHINE_STATE.BT_CLEANUP_STATE;
@@ -383,6 +408,10 @@ public abstract class BluetoothCommunication {
         if (bluetoothGatt == null) {
             return;
         }
+        if (leScanCallback != null) {
+            btAdapter.stopLeScan(leScanCallback);
+            leScanCallback = null;
+        }
 
         Timber.i("Disconnecting%s", doCleanup ? " (with cleanup)" : "");
 
@@ -395,7 +424,6 @@ public abstract class BluetoothCommunication {
             }
         }
 
-        bluetoothGatt.disconnect();
         bluetoothGatt.close();
         bluetoothGatt = null;
     }
@@ -473,6 +501,11 @@ public abstract class BluetoothCommunication {
             Timber.d("onConnectionStateChange: status=%d, newState=%d", status, newState);
 
             if (newState == BluetoothProfile.STATE_CONNECTED) {
+                if (leScanCallback != null) {
+                    btAdapter.stopLeScan(leScanCallback);
+                    leScanCallback = null;
+                }
+
                 connectionEstablished = true;
                 setBtStatus(BT_STATUS_CODE.BT_CONNECTION_ESTABLISHED);
                 gatt.discoverServices();
