@@ -2,9 +2,8 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceScreen
         android:key="btScanner"
-        android:title="@string/label_device_type"
-        android:persistent="false">
-    </PreferenceScreen>
+        android:title="@string/label_your_bluetooth_scale"
+        android:persistent="false" />
     <CheckBoxPreference
         android:defaultValue="true"
         android:key="mergeWithLastMeasurement"

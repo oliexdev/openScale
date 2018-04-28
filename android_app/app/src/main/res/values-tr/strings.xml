@@ -102,7 +102,6 @@
     <string name="label_bluetooth_title">Bluetooth</string>
     <string name="label_bluetooth_enable">Baskülü aramaya baþlandý</string>
     <string name="label_bluetooth_searching">Bluetooth Baskül aranýyor</string>
-    <string name="label_device_type">Cihaz Tipi</string>
 
     <string name="label_enable_labels">Label on data point</string>
     <string name="label_enable_points">Point on data point</string>

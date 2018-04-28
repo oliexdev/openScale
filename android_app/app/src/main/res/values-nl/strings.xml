@@ -106,7 +106,6 @@
     <string name="label_bluetooth_title">Bluetooth</string>
     <string name="label_bluetooth_enable">Zoek naar weegschaal bij opstarten</string>
     <string name="label_bluetooth_searching">Zoeken naar Bluetooth weegschalen</string>
-    <string name="label_device_type">Apparaat Type</string>
 
     <string name="label_enable_labels">Label op gegevenspunt</string>
     <string name="label_enable_points">Punt op gegevenspunt</string>

@@ -92,7 +92,6 @@
     <string name="question_really_delete_user">Opravdu chcete smazat tohoto uživatele?</string>
 
     <string name="label_bluetooth_title">Bluetooth</string>
-    <string name="label_device_type">Typ zařízení</string>
 
     <string name="label_delete_confirmation">Potvrzení smazání</string>
 

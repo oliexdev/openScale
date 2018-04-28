@@ -113,7 +113,6 @@
     <string name="label_mergeWithLastMeasurement">Adaugă la ultima măsurătoare</string>
     <string name="label_bluetooth_searching">În curs de căutare a unui cântar Bluetooth</string>
     <string name="label_bluetooth_searching_finished">Căutare încheiată</string>
-    <string name="label_device_type">Tip de aparat</string>
 
     <string name="label_enable_labels">Etichetare date</string>
     <string name="label_enable_points">Poziție</string>

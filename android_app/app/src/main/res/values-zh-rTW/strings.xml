@@ -111,7 +111,6 @@
     <string name="label_mergeWithLastMeasurement">滙合舊有測量數值</string>
     <string name="label_bluetooth_searching">藍芽量重器搜尋中</string>
     <string name="label_bluetooth_searching_finished">搜尋完成</string>
-    <string name="label_device_type">器材類別</string>
 
     <string name="label_enable_labels">數據標記</string>
     <string name="label_enable_points">數據點</string>

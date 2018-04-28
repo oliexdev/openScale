@@ -87,7 +87,6 @@
   <string name="label_bluetooth_title">Bluetooth</string>
   <string name="label_bluetooth_enable">Vyhľadať váhu po spustení</string>
   <string name="label_bluetooth_searching">Prebieha vyhľadávanie Bluetooth váhy</string>
-  <string name="label_device_type">Typ zariadenia</string>
   <string name="label_enable_labels">Štítok na údajový bod</string>
   <string name="label_enable_points">Bod na údajový bod</string>
   <string name="label_delete_confirmation">Potvrďte vymazanie</string>

@@ -104,7 +104,6 @@
     <string name="label_bluetooth_title">Bluetooth</string>
     <string name="label_bluetooth_enable">Buscar bàscula en iniciar</string>
     <string name="label_bluetooth_searching">Buscant bàscules Bluetooth</string>
-    <string name="label_device_type">Tipus de dispositiu</string>
 
     <string name="label_enable_labels">Etiqueta en el punt de mesura</string>
     <string name="label_enable_points">Mostreu un punt en la mesura</string>

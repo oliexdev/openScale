@@ -113,7 +113,6 @@
     <string name="label_mergeWithLastMeasurement">Flett med foregående måling</string>
     <string name="label_bluetooth_searching">Søker etter Blåtannsvekt</string>
     <string name="label_bluetooth_searching_finished">Søk fullført</string>
-    <string name="label_device_type">Enhetstype</string>
 
     <string name="label_enable_labels">Dataetikett</string>
     <string name="label_enable_points">Datapunkt</string>

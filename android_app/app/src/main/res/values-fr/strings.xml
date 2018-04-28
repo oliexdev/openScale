@@ -96,7 +96,6 @@
 
     <string name="label_bluetooth_title">Bluetooth</string>
     <string name="label_bluetooth_enable">Se connecter à une balance au lancement de l\'application</string>
-    <string name="label_device_type">Type d\'appareil</string>
 
     <string name="label_enable_labels">Étiquette sur les données</string>
     <string name="label_enable_points">Point de données</string>

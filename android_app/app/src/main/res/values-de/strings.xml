@@ -77,7 +77,6 @@
     <string name="info_bluetooth_connection_successful">Verbindung hergestellt</string>
     <string name="info_bluetooth_no_device">Kein Bluetooth Gerät gefunden</string>
     <string name="info_bluetooth_try_connection">Verbinde mit:</string>
-    <string name="label_device_type">Gerätetyp</string>
     <string name="info_bluetooth_init">Initializiere Bluetooth Gerät</string>
     <string name="label_smartUserAssign">Intelligente Benutzer-Zuweisung</string>
     <string name="default_value_reminder_notify_text">Zeit zum Wiegen</string>

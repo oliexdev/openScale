@@ -113,9 +113,8 @@
     <string name="label_bluetooth_title">Bluetooth</string>
     <string name="label_bluetooth_enable">Connect to scale on startup</string>
     <string name="label_mergeWithLastMeasurement">Merge with last measurement</string>
-    <string name="label_bluetooth_searching">Searching for Bluetooth scales</string>
+    <string name="label_bluetooth_searching">Searching for your Bluetooth scale</string>
     <string name="label_bluetooth_searching_finished">Search finished</string>
-    <string name="label_device_type">Device Type</string>
 
     <string name="label_enable_labels">Data label</string>
     <string name="label_enable_points">Data point</string>
@@ -219,4 +218,5 @@
     <string name="label_click_to_help_add_support">Click here to help add support for it</string>
     <string name="label_development">Development</string>
     <string name="label_debug_log">Save debug log to file</string>
+    <string name="label_your_bluetooth_scale">Your Bluetooth scale</string>
 </resources>

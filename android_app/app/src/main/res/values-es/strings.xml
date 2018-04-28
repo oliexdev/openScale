@@ -104,7 +104,6 @@
     <string name="label_bluetooth_title">Bluetooth</string>
     <string name="label_bluetooth_enable">Conectar a la báscula al iniciar</string>
     <string name="label_bluetooth_searching">Buscando básculas Bluetooth</string>
-    <string name="label_device_type">Tipo de dispositivo</string>
 
     <string name="label_enable_labels">Etiqueta de datos</string>
     <string name="label_enable_points">Punto de datos</string>

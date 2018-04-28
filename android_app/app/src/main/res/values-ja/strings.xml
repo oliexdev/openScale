@@ -77,7 +77,6 @@
     <string name="info_bluetooth_connection_error">予期しないBluetoothエラー</string>
     <string name="info_bluetooth_connection_lost">Bluetooth接続が切断されました</string>
     <string name="info_bluetooth_connection_successful">接続が確立しました</string>
-    <string name="label_device_type">デバイスタイプ</string>
     <string name="info_bluetooth_init">Bluetooth接続を初期化する</string>
     <string name="default_value_reminder_notify_text">体重測定の時間</string>
     <string name="label_reminder">リマインダー</string>

@@ -25,6 +25,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.PorterDuff;
 import android.net.Uri;
@@ -61,6 +62,24 @@ public class BluetoothPreferences extends PreferenceFragment {
     private BluetoothAdapter.LeScanCallback leScanCallback = null;
     private Handler handler = null;
     private Map<String, BluetoothDevice> foundDevices = new HashMap<>();
+
+    private static final String formatDeviceName(String name, String address) {
+        if (name.isEmpty() || address.isEmpty()) {
+            return "-";
+        }
+        return String.format("%s [%s]", name, address);
+    }
+
+    private static final String formatDeviceName(BluetoothDevice device) {
+        return formatDeviceName(device.getName(), device.getAddress());
+    }
+
+    private String getCurrentDeviceName() {
+        SharedPreferences prefs = getPreferenceManager().getSharedPreferences();
+        return formatDeviceName(
+                prefs.getString(PREFERENCE_KEY_BLUETOOTH_DEVICE_NAME, ""),
+                prefs.getString(PREFERENCE_KEY_BLUETOOTH_HW_ADDRESS, ""));
+    }
 
     private void startBluetoothDiscovery() {
         foundDevices.clear();
@@ -177,12 +196,12 @@ public class BluetoothPreferences extends PreferenceFragment {
         }
 
         Preference prefBtDevice = new Preference(getActivity());
-        prefBtDevice.setTitle(device.getName() + " [" + device.getAddress() + "]");
+        prefBtDevice.setTitle(formatDeviceName(device));
 
         BluetoothCommunication btDevice = BluetoothFactory.createDeviceDriver(getActivity(), device.getName());
         if (btDevice != null) {
-            Timber.d("Found supported device '%s' (driver: %s, type: %d) [%s]",
-                    device.getName(), btDevice.driverName(), device.getType(), device.getAddress());
+            Timber.d("Found supported device %s (driver: %s, type: %d)",
+                    formatDeviceName(device), btDevice.driverName(), device.getType());
             prefBtDevice.setOnPreferenceClickListener(new onClickListenerDeviceSelect());
             prefBtDevice.setKey(device.getAddress());
             prefBtDevice.setIcon(R.drawable.ic_bluetooth_connection_lost);
@@ -192,8 +211,8 @@ public class BluetoothPreferences extends PreferenceFragment {
             prefBtDevice.getIcon().setColorFilter(tintColor, PorterDuff.Mode.SRC_IN);
         }
         else {
-            Timber.d("Found unsupported device '%s' (type: %d) [%s]",
-                    device.getName(), device.getType(), device.getAddress());
+            Timber.d("Found unsupported device %s (type: %d)",
+                    formatDeviceName(device), device.getType());
             prefBtDevice.setIcon(R.drawable.ic_bluetooth_disabled);
             prefBtDevice.setSummary(R.string.label_bt_device_no_support);
             prefBtDevice.setEnabled(false);
@@ -231,6 +250,12 @@ public class BluetoothPreferences extends PreferenceFragment {
         }
     };
 
+    private void updateBtScannerSummary() {
+        // Set summary text and trigger data set changed to make UI update
+        btScanner.setSummary(getCurrentDeviceName());
+        ((BaseAdapter)getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -258,13 +283,7 @@ public class BluetoothPreferences extends PreferenceFragment {
                 }
             });
 
-            String deviceName = btScanner.getSharedPreferences().getString(
-                    PREFERENCE_KEY_BLUETOOTH_DEVICE_NAME, "-");
-            if (!deviceName.equals("-")) {
-                deviceName += " [" + btScanner.getSharedPreferences().getString(
-                        PREFERENCE_KEY_BLUETOOTH_HW_ADDRESS, "") + "]";
-            }
-            btScanner.setSummary(deviceName);
+            updateBtScannerSummary();
 
             // Dummy preference to make screen open
             btScanner.addPreference(new Preference(getActivity()));
@@ -307,7 +326,7 @@ public class BluetoothPreferences extends PreferenceFragment {
     private void getDebugInfo(final BluetoothDevice device) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle("Fetching info")
-                .setMessage("Please wait while we fetch extended info from the device...")
+                .setMessage("Please wait while we fetch extended info from your scale...")
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -345,9 +364,7 @@ public class BluetoothPreferences extends PreferenceFragment {
                     .putString(PREFERENCE_KEY_BLUETOOTH_DEVICE_NAME, device.getName())
                     .apply();
 
-            // Set summary text and trigger data set changed to make UI update
-            btScanner.setSummary(preference.getTitle());
-            ((BaseAdapter)getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
+            updateBtScannerSummary();
 
             stopDiscoveryAndLeScan();
             btScanner.getDialog().dismiss();

@@ -60,7 +60,6 @@
     <string name="label_delete">Apagar</string>
     <string name="label_delete_all">Apagar tudo</string>
     <string name="label_delete_confirmation">Confirma remoção</string>
-    <string name="label_device_type">Tipo de dispositivo</string>
     <string name="label_enable_labels">Etiquetas nos pontos de dados</string>
     <string name="label_enable_points">Circular pontos de dados</string>
     <string name="label_export">Exportar</string>

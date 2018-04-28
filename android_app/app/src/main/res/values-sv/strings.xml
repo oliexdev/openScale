@@ -103,8 +103,7 @@
     <string name="question_really_delete_user">Ta bort användare?</string>
     <string name="label_bluetooth_title">Bluetooth</string>
     <string name="label_bluetooth_enable">Anslut till våg vid start</string>
-    <string name="label_bluetooth_searching">Söker efter Bluetooth-våg</string>
-    <string name="label_device_type">Enhetstyp</string>
+    <string name="label_bluetooth_searching">Söker efter din Bluetooth-våg</string>
     <string name="label_enable_labels">Dataetikett</string>
     <string name="label_enable_points">Datapunkt</string>
     <string name="label_delete_confirmation">Borttagningsbekräftelse</string>
@@ -202,4 +201,5 @@
     <string name="label_monthly">månadsvis</string>
     <string name="label_development">Utveckling</string>
     <string name="label_debug_log">Spara felsökningslogg till fil</string>
+    <string name="label_your_bluetooth_scale">Din Bluetooth-våg</string>
 </resources>

@@ -113,7 +113,6 @@
     <string name="label_mergeWithLastMeasurement">Scal z ostatnim pomiarem</string>
     <string name="label_bluetooth_searching">Wyszukuje wagi Bluetooth</string>
     <string name="label_bluetooth_searching_finished">Wyszukiwanie zakończone</string>
-    <string name="label_device_type">Rodzaj urządzenia</string>
 
     <string name="label_enable_labels">Etykiety danych</string>
     <string name="label_enable_points">Punkt danych</string>
