@@ -146,16 +146,8 @@ public class ScaleUser {
         this.initialWeight = weight;
     }
 
-    public void setConvertedInitialWeight(float weight) {
-        initialWeight = Converters.toKilogram(weight, scaleUnit);
-    }
-
     public float getInitialWeight() {
         return initialWeight;
-    }
-
-    public float getConvertedInitialWeight() {
-        return Converters.fromKilogram(initialWeight, scaleUnit);
     }
 
     public static String getPreferenceKey(int userId, String key) {
@@ -171,8 +163,8 @@ public class ScaleUser {
     {
         return String.format(
                 "ID: %d, NAME: %s, BIRTHDAY: %s, BODY_HEIGHT: %d, SCALE_UNIT: %s, " +
-                "GENDER: %s, INITIAL_WEIGHT: %.2f, GOAL_WEIGHT: %.2f, GOAL_DATE: %s",
+                "GENDER: %s, GOAL_WEIGHT: %.2f, GOAL_DATE: %s",
                 id, userName, birthday.toString(), bodyHeight, scaleUnit.toString(),
-                gender.toString().toLowerCase(), initialWeight, goalWeight, goalDate.toString());
+                gender.toString().toLowerCase(), goalWeight, goalDate.toString());
     }
 }

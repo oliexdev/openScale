@@ -98,8 +98,6 @@
     <string name="error_value_required">値が必要です</string>
     <string name="error_value_range">範囲外の値</string>
     <string name="title_statistics">統計</string>
-    <string name="error_initial_weight_required">エラー：初期体重が必要です</string>
-    <string name="label_initial_weight">初期体重</string>
 <string name="title_about">アプリについて</string>
     <string name="title_general">一般</string>
 

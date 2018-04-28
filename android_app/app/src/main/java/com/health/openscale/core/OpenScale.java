@@ -334,12 +334,10 @@ public class OpenScale {
         for (int i = 0; i < scaleUsers.size(); i++) {
             List<ScaleMeasurement> scaleUserData = measurementDAO.getAll(scaleUsers.get(i).getId());
 
-            float lastWeight;
+            float lastWeight = 0;
 
             if (scaleUserData.size() > 0) {
                 lastWeight = scaleUserData.get(0).getWeight();
-            } else {
-                lastWeight = scaleUsers.get(i).getInitialWeight();
             }
 
             if ((lastWeight - range) <= weight && (lastWeight + range) >= weight) {

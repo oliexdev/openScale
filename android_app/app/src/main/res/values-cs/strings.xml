@@ -66,7 +66,6 @@
     <string name="error_user_name_required">Chyba: je třeba uživatelské jméno</string>
     <string name="error_user_name_too_short">Chyba: je třeba, aby uživatelské jméno bylo alespoň 3 znaky dlouhé</string>
     <string name="error_height_required">Chyba: je třeba zadat výšku člověka</string>
-    <string name="error_initial_weight_required">Chyba: je třeba zadat počáteční hmotnost</string>
     <string name="error_goal_weight_required">Chyba: je třeba zadat cílovou hmotnost</string>
     <string name="info_data_deleted">Položka v databázi smazána</string>
     <string name="info_data_all_deleted">Všechny položky vymazány z databáze</string>
@@ -124,7 +123,6 @@
     <string name="label_export_dir">Složka s exportem</string>
     <string name="label_not_found">nenalezeno</string>
     <string name="label_ignoreOutOfRange">Ignorovat data která jsou mimo rozsah</string>
-    <string name="label_initial_weight">Počáteční hmotnost</string>
     <string name="label_help">Nápověda</string>
 
     <string name="label_feedback_message_enjoying">Líbí se vám openScale?</string>
