@@ -116,4 +116,73 @@
     <string name="label_device_type">Tip de aparat</string>
 
     <string name="label_enable_labels">Etichetare date</string>
+    <string name="label_enable_points">Poziție</string>
+
+    <string name="label_delete_confirmation">Confirmare a ștergerii</string>
+
+    <string name="label_category_measurement_database">Baza de date cu măsurătorile</string>
+
+    <string name="label_maintainer">Programator</string>
+    <string name="label_website">Sit Internet</string>
+    <string name="label_license">Licență</string>
+
+    <string name="label_automatic">auto</string>
+
+    <string name="label_theme">Temă</string>
+
+    <string name="label_reminder">Alarmă</string>
+    <string name="Thursday">Joi</string>
+    <string name="Friday">Vineri</string>
+    <string name="Saturday">Sâmbătă</string>
+    <string name="Sunday">Duminică</string>
+    <string name="label_bt_device_no_support">aparat care nu face parte din cele cunoscute</string>
+    <string name="label_exportBackup">Exportate copie de rezervă</string>
+    <string name="label_importBackup">Importate copie de rezervă</string>
+    <string name="label_backup">Copie de rezervă</string>
+    <string name="label_export_dir">Dosar pentru export</string>
+    <string name="label_not_found">negăsit</string>
+    <string name="label_ignoreOutOfRange">Ignorare a valorilor invalide</string>
+    <string name="label_initial_weight">Greutate inițială</string>
+    <string name="label_regression_line">Linie de regresie</string>
+    <string name="label_regression_line_degree">Gradul polinomului</string>
+    <string name="label_goal_line">Linie pentru obiectiv</string>
+    <string name="label_help">Ajutor</string>
+
+    <string name="label_feedback_message_enjoying">Satisfăcut de openScale?</string>
+    <string name="label_feedback_message_rate_app">Lăsați o evaluare pe Google Play sau GitHub?</string>
+    <string name="label_feedback_message_issue">Doriți să furnizați comentarii despre aplicație?</string>
+    <string name="label_feedback_message_yes">Da</string>
+    <string name="label_feedback_message_no">Nu neapărat</string>
+    <string name="label_feedback_message_positive">OK</string>
+    <string name="label_feedback_message_negative">Nu, mulțumesc</string>
+
+    <string name="error_max_scale_users">Numărul maxim de utilizatori al unui același aparat depășit</string>
+    <string name="info_step_on_scale">Urcați vă rog pe cântar desculț pentru măsurătorile de referință</string>
+    <string name="info_measuring">Măsurare a greutății în curs: %.2f</string>
+
+    <string name="customactivityoncrash_error_activity_error_occurred_explanation">O eroare a apărut.
+\n
+\nVă rugăm să adăugați un comentariu cu detaliile erorii la
+\nhttps://github.com/oliexdev/openScale/issues</string>
+    <string name="customactivityoncrash_error_activity_restart_app">Repornește aplicația</string>
+    <string name="customactivityoncrash_error_activity_close_app">Închide aplicația</string>
+    <string name="customactivityoncrash_error_activity_error_details">Detalii despre eroare</string>
+    <string name="customactivityoncrash_error_activity_error_details_title">Detalii despre eroare</string>
+    <string name="customactivityoncrash_error_activity_error_details_close">Închide</string>
+    <string name="customactivityoncrash_error_activity_error_details_copy">Copiază spre clipboard</string>
+    <string name="customactivityoncrash_error_activity_error_details_copied">Copiat în clipboard</string>
+    <string name="customactivityoncrash_error_activity_error_details_clipboard_label">Informații despre eroare</string>
+    <string name="toggle_expand">Activarea modului extins</string>
+    <string name="edit">Modificare</string>
+    <string name="save">Salvare</string>
+
+    <string name="label_month_view">Vizualizare a lunii</string>
+    <string name="label_weeks_view">Vizualizare a săptămânii</string>
+
+    <string name="permission_not_granted">Permisiune neacordată</string>
+    <string name="permission_bluetooth_info">Permisiunea accesului la localizare e necesară pentru a căuta dispozitive Bluetooth. Permisiunea poate fi revocată o dată ce dispozitivul a fost găsit.</string>
+    <string name="permission_bluetooth_info_title">Informație</string>
+    <string name="label_next">Următoarea</string>
+    <string name="label_press_hold_reorder">Apăsați și mențineți pentru a reorganiza</string>
+    <string name="label_set_default_order">Definire a ordinii de bază</string>
     </resources>
