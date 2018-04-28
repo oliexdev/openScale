@@ -185,4 +185,39 @@
     <string name="label_next">Următoarea</string>
     <string name="label_press_hold_reorder">Apăsați și mențineți pentru a reorganiza</string>
     <string name="label_set_default_order">Definire a ordinii de bază</string>
-    </resources>
+    <string name="label_reminder_weekdays">Zile lucrătoare</string>
+    <string name="label_reminder_time">Ora</string>
+    <string name="label_reminder_notify_text">Textul notificării</string>
+    <string name="default_value_reminder_notify_text">E momentul de a se cântări</string>
+
+    <string name="info_on_date">în</string>
+
+    <string name="Monday">Luni</string>
+    <string name="Tuesday">Marți</string>
+    <string name="Wednesday">Miercuri</string>
+    <string name="label_export_overwrite">Scriere peste exportul precedent \"%s\"?</string>
+    <string name="label_include_in_overview_graph">Includere în diagrama generală</string>
+    <string name="label_measurement_in_percent">Măsurătoare în %</string>
+    <string name="label_estimate_measurement">Estimare a măsurătorii</string>
+    <string name="label_estimation_formula">Formulă pentru estimări</string>
+    <string name="language_default">Limba sistemului</string>
+    <string name="label_language">Limbă</string>
+    <string name="theme_light">Clară</string>
+    <string name="theme_dark">Întunecată</string>
+    <string name="label_contribute_translation">Contribuiți la traducere</string>
+    <string name="label_add_or_fix_translation">Adăugați sau modificați</string>
+    <string name="label_overview_graph">Diagrama generală</string>
+    <string name="label_percent">Procent</string>
+    <string name="label_estimated">Estimată</string>
+    <string name="label_estimate_measurement_summary">Bazată pe greutate, înălțime, vârstă, sex, etc.</string>
+    <string name="label_auto_backup">Copie de securitate automată</string>
+    <string name="label_auto_backup_schedule">Programare a copiilor de securitate</string>
+    <string name="label_overwrite_backup">Scriere peste copia de securitate precedentă</string>
+    <string name="label_daily">zilnic</string>
+    <string name="label_weekly">săptămânal</string>
+    <string name="label_monthly">lunar</string>
+    <string name="label_scale_not_supported">Cântarul dumneavostră nu e printre dispozitivele cunoscute?</string>
+    <string name="label_click_to_help_add_support">Clic aici pentru a ajuta la adăugare printre dispozitivele cunoscute</string>
+    <string name="label_development">Programare</string>
+    <string name="label_debug_log">Înregistrarea datelor de diagnostic într-un fișier</string>
+</resources>
