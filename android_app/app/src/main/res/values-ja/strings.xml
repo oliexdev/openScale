@@ -38,7 +38,7 @@
     <string name="label_goal_date">目標期日</string>
     <string name="label_scale_unit">目盛り単位</string>
     <string name="label_title_last_measurement">最新測定</string>
-    <string name="label_goal_date_is">目標期日は</string>
+    <string name="label_goal_date_is">目標日：</string>
     <string name="label_delete_all">全て削除する</string>
     <string name="label_bluetooth_enable">体重計との起動時の接続</string>
     <string name="label_last_month">過去30日</string>
@@ -47,25 +47,25 @@
     <string name="error_importing">インポートのエラー</string>
     <string name="error_height_required">エラー：身長が必要です</string>
     <string name="error_user_name_required">エラー：名前が必要です</string>
-    <string name="info_data_all_deleted">すべてのデータベース項目が削除されます</string>
-    <string name="info_data_deleted">データベース項目が削除されます</string>
-    <string name="info_data_exported">データのエクスポート</string>
-    <string name="info_data_imported">データのインポート</string>
-    <string name="info_on_date">でした -</string>
-    <string name="info_no_selected_user">ユーザーは存在しません。設定で作成してください。</string>
+    <string name="info_data_all_deleted">全記録が削除されました</string>
+    <string name="info_data_deleted">記録が削除されました</string>
+    <string name="info_data_exported">エクスポート先</string>
+    <string name="info_data_imported">インポート元</string>
+    <string name="info_on_date"></string>
+    <string name="info_no_selected_user">ユーザーが存在しません。設定で作成してください。</string>
     <string name="label_add_user">ユーザーの追加</string>
-    <string name="label_enable_labels">データ点上のラベル</string>
+    <string name="label_enable_labels">データラベル</string>
     <string name="info_is_visible">表示されています</string>
     <string name="info_is_not_visible">表示されていません</string>
-    <string name="info_is_not_available">利用できません</string>
+    <string name="info_is_not_available">利用不可</string>
     <string name="info_enter_user_name">あなたの名前</string>
-    <string name="info_enter_comment">コメント(任意)</string>
-    <string name="info_enter_value_cm">値(cm)</string>
-    <string name="question_really_delete_all">本当にすべてのデータベース項目を削除しますか？</string>
-    <string name="question_really_delete_user">本当にユーザーを削除しますか？</string>
+    <string name="info_enter_comment">コメント（任意）</string>
+    <string name="info_enter_value_cm">値 (cm)</string>
+    <string name="question_really_delete_all">全ユーザーの全記録を削除しますか？</string>
+    <string name="question_really_delete_user">ユーザーを削除しますか？</string>
     <string name="error_goal_weight_required">エラー：目標体重が必要です</string>
-    <string name="info_is_not_enable">無効です</string>
-    <string name="info_is_enable">有効です</string>
+    <string name="info_is_not_enable">無効</string>
+    <string name="info_is_enable">有効</string>
     <string name="label_waist">胴囲</string>
     <string name="label_hip">腰囲</string>
     <string name="info_no_evaluation_available">値を評価できません</string>
@@ -73,7 +73,7 @@
     <string name="label_whr">ウエストヒップ比</string>
     <string name="action_bluetooth_status">Bluetoothステータス</string>
     <string name="info_bluetooth_no_device">Bluetooth端末が見つかりませんでした</string>
-    <string name="info_bluetooth_try_connection">接続中</string>
+    <string name="info_bluetooth_try_connection">接続中：</string>
     <string name="info_bluetooth_connection_error">予期しないBluetoothエラー</string>
     <string name="info_bluetooth_connection_lost">Bluetooth接続が切断されました</string>
     <string name="info_bluetooth_connection_successful">接続が確立しました</string>
@@ -86,8 +86,8 @@
     <string name="label_reminder_weekdays">曜日</string>
     <string name="title_measurements">測定</string>
     <string name="label_delete_confirmation">削除の確認</string>
-    <string name="question_really_delete">本当にデータベース項目を削除しますか？</string>
-    <string name="label_enable_points">データ点上の点</string>
+    <string name="question_really_delete">記録を削除しますか？</string>
+    <string name="label_enable_points">データ点</string>
     <string name="Friday">金曜日</string>
     <string name="Saturday">土曜日</string>
     <string name="Thursday">木曜日</string>
@@ -96,27 +96,27 @@
     <string name="Monday">月曜日</string>
     <string name="Sunday">日曜日</string>
     <string name="error_value_required">値が必要です</string>
-    <string name="error_value_range">範囲にない値</string>
+    <string name="error_value_range">範囲外の値</string>
     <string name="title_statistics">統計</string>
     <string name="error_initial_weight_required">エラー：初期体重が必要です</string>
     <string name="label_initial_weight">初期体重</string>
-<string name="title_about">このアプリについて</string>
+<string name="title_about">アプリについて</string>
     <string name="title_general">一般</string>
 
     <string name="open_drawer">開く</string>
     <string name="close_drawer">閉じる</string>
 
-    <string name="label_share">シェア</string>
-    <string name="label_bmr">基礎代謝率(BMR)</string>
+    <string name="label_share">共有</string>
+    <string name="label_bmr">基礎代謝率 (BMR)</string>
     <string name="label_lbm">除脂肪体重</string>
     <string name="label_bone">骨密度</string>
     <string name="error_user_name_too_short">エラー：名前は3文字以上でなければいけません</string>
-    <string name="info_enter_value_scale_unit">値</string>
+    <string name="info_enter_value_scale_unit">値（目盛り単位）</string>
     <string name="info_bluetooth_no_device_set">Bluetooth端末が選択されていません</string>
     <string name="info_new_data_duplicated">同じ日時のものがすでに存在している測定</string>
 
     <string name="label_bluetooth_searching">Bluetooth対応体重計を検索中</string>
-    <string name="label_bluetooth_searching_finished">Bluetooth対応体重計の検索が終了しました</string>
+    <string name="label_bluetooth_searching_finished">検索終了</string>
     <string name="label_maintainer">メンテナー</string>
     <string name="label_website">ウェブサイト</string>
     <string name="label_license">ライセンス</string>
@@ -135,7 +135,7 @@
     <string name="customactivityoncrash_error_activity_restart_app">アプリを再起動する</string>
     <string name="customactivityoncrash_error_activity_close_app">アプリを閉じる</string>
     <string name="customactivityoncrash_error_activity_error_details">エラーの詳細</string>
-    <string name="customactivityoncrash_error_activity_error_details_copy">クリップボードにコピーする</string>
+    <string name="customactivityoncrash_error_activity_error_details_copy">クリップボードにコピー</string>
     <string name="customactivityoncrash_error_activity_error_details_copied">クリップボードにコピーしました</string>
     <string name="customactivityoncrash_error_activity_error_details_clipboard_label">エラー情報</string>
     <string name="edit">編集</string>
@@ -154,4 +154,24 @@
     <string name="label_estimate_measurement_summary">体重、身長、年齢、性別等に基づきます。</string>
     <string name="label_scale_not_supported">あなたの体重計はサポートされていませんか？</string>
     <string name="label_click_to_help_add_support">サポートの追加に協力するにはここをクリックしてください</string>
+<string name="label_mergeWithLastMeasurement">最新測定との統合</string>
+    <string name="label_automatic">自動</string>
+
+    <string name="label_exportBackup">バックアップをエクスポート</string>
+    <string name="label_importBackup">パックアップをインポート</string>
+    <string name="label_feedback_message_enjoying">openScaleに満足していただけましたか？</string>
+    <string name="label_feedback_message_rate_app">Google PlayかGithubで評価しませんか？</string>
+    <string name="label_feedback_message_issue">フィードバックを提供しますか？</string>
+    <string name="label_feedback_message_yes">はい</string>
+    <string name="label_feedback_message_no">あんまり</string>
+    <string name="label_feedback_message_positive">OK</string>
+    <string name="label_feedback_message_negative">結構です</string>
+
+    <string name="customactivityoncrash_error_activity_error_details_title">エラーの詳細</string>
+    <string name="customactivityoncrash_error_activity_error_details_close">閉じる</string>
+    <string name="permission_bluetooth_info_title">情報</string>
+    <string name="label_next">次</string>
+    <string name="label_auto_backup">自動バックアップ</string>
+    <string name="label_development">開発</string>
+    <string name="label_debug_log">デバッグ記録をファイルに保存する</string>
 </resources>
