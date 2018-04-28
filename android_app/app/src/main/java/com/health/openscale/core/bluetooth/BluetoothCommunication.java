@@ -27,6 +27,7 @@ import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Handler;
 import android.support.v4.content.ContextCompat;
 
@@ -398,7 +399,13 @@ public abstract class BluetoothCommunication {
         btMachineState = BT_MACHINE_STATE.BT_CLEANUP_STATE;
 
         BluetoothDevice device = btAdapter.getRemoteDevice(hwAddress);
-        bluetoothGatt = device.connectGatt(context, false, gattCallback);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            bluetoothGatt = device.connectGatt(
+                    context, false, gattCallback, BluetoothDevice.TRANSPORT_LE);
+        }
+        else {
+            bluetoothGatt = device.connectGatt(context, false, gattCallback);
+        }
     }
 
     /**

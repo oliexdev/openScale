@@ -330,7 +330,7 @@ public class MainActivity extends BaseAppCompatActivity
             try {
                 transaction.add(R.id.fragment_content, (Fragment) fragmentClass.newInstance(), tag);
             } catch (Exception e) {
-                e.printStackTrace();
+                Timber.e(e, "Failed to add fragment %s", tag);
             }
         }
 
@@ -518,7 +518,7 @@ public class MainActivity extends BaseAppCompatActivity
                 case BT_UNEXPECTED_ERROR:
                     setBluetoothStatusIcon(R.drawable.ic_bluetooth_connection_lost);
                     Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_connection_error) + ": " + msg.obj, Toast.LENGTH_SHORT).show();
-                    Timber.e("Bluetooth unexpected error: " + msg.obj);
+                    Timber.e("Bluetooth unexpected error: %s", msg.obj);
                     break;
                 case BT_SCALE_MESSAGE:
                     String toastMessage = String.format(getResources().getString(msg.arg1), msg.obj);
