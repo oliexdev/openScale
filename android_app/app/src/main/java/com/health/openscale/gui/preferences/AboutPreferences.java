@@ -17,6 +17,7 @@ package com.health.openscale.gui.preferences;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
@@ -139,9 +140,10 @@ public class AboutPreferences extends PreferenceFragment {
             Timber.plant(new FileDebugTree(output));
             findPreference(KEY_DEBUG_LOG).setSummary(R.string.info_is_enable);
             OpenScale.DEBUG_MODE = true;
-            Timber.d("Debug log enabled (%s v%s (%d))",
+            Timber.d("Debug log enabled, %s v%s (%d), SDK %d, %s %s",
                     getResources().getString(R.string.app_name),
-                    BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE);
+                    BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE,
+                    Build.VERSION.SDK_INT, Build.MANUFACTURER, Build.MODEL);
         }
         catch (IOException ex) {
             Timber.e(ex, "Failed to open debug log %s", uri.toString());
