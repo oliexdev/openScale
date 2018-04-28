@@ -202,13 +202,13 @@ public class BluetoothCustomOpenScale extends BluetoothCommunication {
 
             switch (btString.charAt(1)) {
                 case 'I':
-                    Timber.i("MCU Information: " + btMsg);
+                    Timber.i("MCU Information: %s", btMsg);
                     break;
                 case 'E':
-                    Timber.e("MCU Error: " + btMsg);
+                    Timber.e("MCU Error: %s", btMsg);
                     break;
                 case 'S':
-                    Timber.i("MCU stored data size: " + btMsg);
+                    Timber.i("MCU stored data size: %s", btMsg);
                     break;
                 case 'D':
                     String[] csvField = btMsg.split(",");

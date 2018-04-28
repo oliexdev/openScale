@@ -141,7 +141,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
 
 
     private boolean sendBtData(String data) {
-        Timber.w("ihealthHS3 - sendBtData"+data);
+        Timber.w("ihealthHS3 - sendBtData %s", data);
         if (btSocket.isConnected()) {
             btConnectThread = new BluetoothConnectedThread();
             btConnectThread.write(data.getBytes());
@@ -214,7 +214,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
                                  Timber.w("seen 0xa009a633 - time packet");
                                  // deal with a time packet, if needed
                                  } else {
-                                 Timber.w("iHealthHS3 - seen byte after control leader "+String.format("%02X",btByte));
+                                 Timber.w("iHealthHS3 - seen byte after control leader %02X", btByte);
                                  }
                                  }
                              }
