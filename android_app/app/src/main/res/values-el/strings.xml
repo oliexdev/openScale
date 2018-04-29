@@ -24,7 +24,7 @@
 
     <string name="label_weight">Βάρος</string>
     <string name="label_bmi">Δείκτης μάζας σώματος (ΔΜΣ)</string>
-    <string name="label_bmr">Βασικός ρυθμός μεταβολισμού (ΒΡΜ)</string>
+    <string name="label_bmr">Βασικός μεταβολικός ρυθμός (ΒΜΡ)</string>
     <string name="label_fat">Λίπος σώματος</string>
     <string name="label_water">Νερό σώματος</string>
     <string name="label_muscle">Μυς</string>
@@ -55,7 +55,7 @@
     <string name="label_scale_unit">Μονάδα ζύγησης</string>
     <string name="label_gender">Φύλο</string>
     <string name="label_male">Αρσενικό</string>
-    <string name="label_female">Θυληκό</string>
+    <string name="label_female">Θηλυκό</string>
     <string name="label_goal_weight">Βάρος στόχος</string>
     <string name="label_goal_date">Ημερομηνία στόχος</string>
 
@@ -77,7 +77,7 @@
     <string name="error_initial_weight_required">Σφάλμα: Αρχικό βάρος απαραίτητο</string>
     <string name="error_goal_weight_required">Σφάλμα: Βάρος στόχος απαραίτητο</string>
 
-    <string name="info_data_deleted">Καταχώρηση διεγράφει</string>
+    <string name="info_data_deleted">Καταχώρηση διεγράφη</string>
     <string name="info_data_all_deleted">Όλες οι καταχωρήσεις διεγράφησαν</string>
     <string name="info_data_exported">Εξήχθη σε</string>
     <string name="info_data_imported">Εισήχθη από</string>
@@ -101,7 +101,7 @@
 
     <string name="info_enter_user_name">Το όνομά σας</string>
     <string name="info_no_selected_user">Δεν υπάρχει χρήστης. Παρακαλώ, δημιουργήστε έναν στις ρυθμίσεις.</string>
-    <string name="info_no_evaluation_available">Η τιμή δεν μπόρεσε να υπολογιστεί</string>
+    <string name="info_no_evaluation_available">Η τιμή δεν μπόρεσε να υπολογισθή</string>
 
     <string name="question_really_delete">Διαγραφή καταχώρησης;</string>
     <string name="question_really_delete_all">Διαγραφή όλων των καταχωρήσεων για όλους τους χρήστες;</string>
@@ -147,4 +147,76 @@
     <string name="label_exportBackup">Εξήγαγε αντίγραφο ασφαλείας</string>
     <string name="label_importBackup">Εισήγαγε αντίγραφο ασφαλείας</string>
     <string name="label_backup">Αντίγραφο ασφαλείας</string>
-    </resources>
+    <string name="label_export_dir">Εξήγαγε κατάλογο</string>
+    <string name="label_not_found">δεν βρέθηκε</string>
+    <string name="label_ignoreOutOfRange">Αγνόησε δεδομένα εκτός εύρους</string>
+    <string name="label_initial_weight">Αρχικό βάρος</string>
+    <string name="label_regression_line">Γραμμή οπισθοδρόμησης βάρους</string>
+    <string name="label_regression_line_degree">Πολυώνυμος βαθμός οπισθοδρόμησης</string>
+    <string name="label_goal_line">Γραμμή στόχου</string>
+    <string name="label_help">Βοήθεια</string>
+
+    <string name="label_feedback_message_enjoying">Απολαμβάνετε το ανοιχτόςΖυγός;</string>
+    <string name="label_feedback_message_rate_app">Τι θα λέγατε να βαθμολογήσετε στο Google Play ή στο GitHub;</string>
+    <string name="label_feedback_message_issue">Θα θέλατε να παράσχετε ανατροφοδότηση;</string>
+    <string name="label_feedback_message_yes">Ναι</string>
+    <string name="label_feedback_message_no">Όχι ακριβώς</string>
+    <string name="label_feedback_message_positive">Εντάξει</string>
+    <string name="label_feedback_message_negative">Όχι, ευχαριστώ</string>
+
+    <string name="error_max_scale_users">Μεγ. αριθμός ταυτόχρονων χρηστών επετεύχθη</string>
+    <string name="info_step_on_scale">Παρακαλώ, πατήστε ξυπόλυτοι επί της ζυγαριάς για μετρήσεις αναφοράς</string>
+    <string name="info_measuring">Μετρούμενο βάρος: %.2f</string>
+
+    <string name="customactivityoncrash_error_activity_error_occurred_explanation">Συνέβη απρόσμενο σφάλμα.
+\n
+\nΠαρακαλώ, δημιουργήστε ένα νέο θέμα περιλαμβάνον τις λεπτομέρειες του σφάλματος στο
+\nhttps://github.com/oliexdev/openScale/issues</string>
+    <string name="customactivityoncrash_error_activity_restart_app">Επανεκκίνησε την εφαρμογή</string>
+    <string name="customactivityoncrash_error_activity_close_app">Κλείσε την εφαρμογή</string>
+    <string name="customactivityoncrash_error_activity_error_details">Λεπτομέρειες σφάλματος</string>
+    <string name="customactivityoncrash_error_activity_error_details_title">Λεπτομέρειες σφάλματος</string>
+    <string name="customactivityoncrash_error_activity_error_details_close">Κλείσε</string>
+    <string name="customactivityoncrash_error_activity_error_details_copy">Αντέγραψε στο πρόχειρο</string>
+    <string name="customactivityoncrash_error_activity_error_details_copied">Αντεγράφη στο πρόχειρο</string>
+    <string name="customactivityoncrash_error_activity_error_details_clipboard_label">Πληροφορίες σφάλματος</string>
+    <string name="toggle_expand">Μετέβαλε επέκταση</string>
+    <string name="edit">Επεξεργάσου</string>
+    <string name="save">Αποθήκευσε</string>
+
+    <string name="label_month_view">Μηνιαία προβολή</string>
+    <string name="label_weeks_view">Εβδομαδιαία προβολή</string>
+
+    <string name="permission_not_granted">Δεν χορηγήθηκε άδεια</string>
+    <string name="permission_bluetooth_info">Άδεια τραχύς τοποθεσίας αναγκαία για την αναζήτηση συσκευών Bluetooth. Μπορεί να ανακληθεί αφού βρεθεί η συσκευή.</string>
+    <string name="permission_bluetooth_info_title">Πληροφορίες</string>
+    <string name="label_next">Επόμενο</string>
+    <string name="label_press_hold_reorder">Πιέστε και κρατήστε για επαναδιάταξη</string>
+    <string name="label_set_default_order">Θέσε προκαθορισμένη διάταξη</string>
+    <string name="label_export_overwrite">Αντικατέστησε προηγούμενη εξαγωγή \"%s\";</string>
+    <string name="label_include_in_overview_graph">Περιέλαβε στο γράφημα επισκόπησης</string>
+    <string name="label_measurement_in_percent">Μέτρηση σε %</string>
+    <string name="label_estimate_measurement">Υπολόγισε την μέτρηση</string>
+    <string name="label_estimation_formula">Τύπος υπολογισμού</string>
+    <string name="language_default">Προκαθορισμένο συστήματος</string>
+    <string name="label_language">Γλώσσα</string>
+    <string name="theme_light">Φωτεινό</string>
+    <string name="theme_dark">Σκοτεινό</string>
+    <string name="label_contribute_translation">Συμβάλλετε στη μετάφραση</string>
+    <string name="label_add_or_fix_translation">Πρόσθεσε νέο ή επισκεύασε υπάρχον</string>
+    <string name="label_overview_graph">Γράφημα επισκόπησης</string>
+    <string name="label_percent">Ποσοστό</string>
+    <string name="label_estimated">Υπολογισμένο</string>
+    <string name="label_estimate_measurement_summary">Με βάση το βάρος, ύψος, ηλικία, φύλο, κλπ.</string>
+    <string name="label_auto_backup">Αυτόματο αντίγραφο αφαλείας</string>
+    <string name="label_auto_backup_schedule">Πρόγραμμα αντιγράφων ασφαλείας</string>
+    <string name="label_overwrite_backup">Αντικατέστησε προηγούμενο αντίγραφο ασφαλείας</string>
+    <string name="label_daily">ημερησίως</string>
+    <string name="label_weekly">εβδομαδιαίως</string>
+    <string name="label_monthly">μηνιαίως</string>
+    <string name="label_scale_not_supported">Δεν υποστηρίζεται η ζυγαριά σας;</string>
+    <string name="label_click_to_help_add_support">Πατήστε εδω για να βοηθήσετε, προσθέσετε υποστήριξη</string>
+    <string name="label_development">Ανάπτυξη</string>
+    <string name="label_debug_log">Αποθήκευσε καταγραφή αποσφαλμάτωσης στο αρχείο</string>
+    <string name="label_your_bluetooth_scale">Η ζυγαριά σας με δυνατότητα Bluetooth</string>
+</resources>
