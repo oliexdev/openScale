@@ -471,15 +471,15 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
         }
 
         if ((data[0] & 0xFF) == startByte && (data[1] & 0xFF) == 0x58) {
-            Timber.d("Active measurement");
             float weight = getKiloGram(data, 3);
             if ((data[2] & 0xFF) != 0x00) {
                 // temporary value;
+                Timber.d("Active measurement, weight: %.2f", weight);
                 sendMessage(R.string.info_measuring, weight);
                 return;
             }
 
-            Timber.i("Got weight: %.2f", weight);
+            Timber.i("Active measurement, stable weight: %.2f", weight);
 
             writeBytes(new byte[]{
                     (byte) startByte, (byte) 0xf1, (byte) (data[1] & 0xFF),
