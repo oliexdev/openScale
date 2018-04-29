@@ -1,2 +1,150 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<?xml version='1.0' encoding='UTF-8'?>
+<resources><string name="title_overview">Επισκόπηση</string>
+    <string name="title_graph">Διάγραμμα</string>
+    <string name="title_table">Πίνακας</string>
+    <string name="title_statistics">Στατιστικά</string>
+    <string name="title_users">Χρήστες</string>
+    <string name="title_measurements">Μετρήσεις</string>
+    <string name="title_about">Σχετικά</string>
+    <string name="title_general">Γενικά</string>
+
+    <string name="action_settings">Ρυθμίσεις</string>
+    <string name="action_bluetooth_status">Κατάσταση Bluetooth</string>
+    <string name="open_drawer">άνοιξε</string>
+    <string name="close_drawer">κλείσε</string>
+
+    <string name="label_cancel">ακύρωσε</string>
+    <string name="label_ok">εντάξει</string>
+    <string name="label_yes">Ναι</string>
+    <string name="label_no">Όχι</string>
+    <string name="label_delete">Διέγραψε</string>
+    <string name="label_add_user">Πρόσθεσε χρήστη</string>
+    <string name="label_share">Μοιράσου</string>
+    <string name="label_share_subject">εξαγωγή δεδομένων CSV (%s)</string>
+
+    <string name="label_weight">Βάρος</string>
+    <string name="label_bmi">Δείκτης μάζας σώματος (ΔΜΣ)</string>
+    <string name="label_bmr">Βασικός ρυθμός μεταβολισμού (ΒΡΜ)</string>
+    <string name="label_fat">Λίπος σώματος</string>
+    <string name="label_water">Νερό σώματος</string>
+    <string name="label_muscle">Μυς</string>
+    <string name="label_lbm">Άπαχη μάζα σώματος</string>
+    <string name="label_waist">Περιφέρεια μέσης</string>
+    <string name="label_hip">Περιφέρεια γοφών</string>
+    <string name="label_comment">Σχόλιο</string>
+    <string name="label_whtr">Αναλογία μέσης προς ύψος</string>
+    <string name="label_whr">Αναλογία μέσης-γοφών</string>
+    <string name="label_bone">Μάζα οστών</string>
+    <string name="label_smartUserAssign">Ανάθεση εργασίας Έξυπνου Χρήστη</string>
+
+    <plurals name="label_days">
+	<item quantity="one">%d ημέρα</item>
+	<item quantity="other">%d ημέρες</item>
+</plurals>
+    <string name="label_last_week">Τελευταίες 7 ημέρες</string>
+    <string name="label_last_month">Τελευταίες 30 ημέρες</string>
+    <string name="label_weight_difference">Διαφορά βάρους</string>
+    <string name="label_goal_date_is">Ημερομηνία στόχου:</string>
+    <string name="label_days_left">Εναπομείνασες ημέρες</string>
+
+    <string name="label_date">Ημερομηνία</string>
+    <string name="label_time">Ώρα</string>
+    <string name="label_birthday">Γενέθλεια</string>
+    <string name="label_user_name">Όνομα</string>
+    <string name="label_height">Ύψος</string>
+    <string name="label_scale_unit">Μονάδα ζύγησης</string>
+    <string name="label_gender">Φύλο</string>
+    <string name="label_male">Αρσενικό</string>
+    <string name="label_female">Θυληκό</string>
+    <string name="label_goal_weight">Βάρος στόχος</string>
+    <string name="label_goal_date">Ημερομηνία στόχος</string>
+
+    <string name="label_title_user">χρήστης</string>
+    <string name="label_title_last_measurement">τελευταία μέτρηση</string>
+    <string name="label_title_goal">στόχος</string>
+
+    <string name="label_import">Εισήγαγε</string>
+    <string name="label_export">Εξήγαγε</string>
+    <string name="label_delete_all">Διέγραψε όλα</string>
+
+    <string name="error_value_required">Τιμή απαραίτητη</string>
+    <string name="error_value_range">Τιμή εκτός εύρους</string>
+    <string name="error_exporting">Σφάλμα κατά την εξαγωγή</string>
+    <string name="error_importing">Σφάλμα κατά την εισαγωγή</string>
+    <string name="error_user_name_required">Σφάλμα: Όνομα απαραίτητο</string>
+    <string name="error_user_name_too_short">Σφάλμα: Το όνομα πρέπει να είναι 3 ή περισσότεροι χαρακτήρες</string>
+    <string name="error_height_required">Σφάλμα: Ύψος απαραίτητο</string>
+    <string name="error_initial_weight_required">Σφάλμα: Αρχικό βάρος απαραίτητο</string>
+    <string name="error_goal_weight_required">Σφάλμα: Βάρος στόχος απαραίτητο</string>
+
+    <string name="info_data_deleted">Καταχώρηση διεγράφει</string>
+    <string name="info_data_all_deleted">Όλες οι καταχωρήσεις διεγράφησαν</string>
+    <string name="info_data_exported">Εξήχθη σε</string>
+    <string name="info_data_imported">Εισήχθη από</string>
+    <string name="info_enter_value_cm">Τιμή σε εκ.</string>
+    <string name="info_enter_comment">Προεραιτικό σχόλιο</string>
+    <string name="info_enter_value_scale_unit">Τιμή σε μονάδα ζύγησης</string>
+    <string name="info_is_visible">είναι ορατό</string>
+    <string name="info_is_not_visible">δεν είναι ορατό</string>
+    <string name="info_is_enable">ενεργοποιημένο</string>
+    <string name="info_is_not_enable">απενεργοποιημένο</string>
+    <string name="info_is_not_available">μη διαθέσιμο</string>
+    <string name="info_bluetooth_try_connection">Σύνδεση σε:</string>
+    <string name="info_bluetooth_connection_lost">Χάθηκε σύνδεση με Bluetooth</string>
+    <string name="info_bluetooth_no_device">Δεν βρέθηκε συσκευή Bluetooth</string>
+    <string name="info_bluetooth_no_device_set">Δεν επιλέχθηκε συσκευή Bluetooth</string>
+    <string name="info_bluetooth_connection_successful">Σύνδεση εδραιώθηκε</string>
+    <string name="info_bluetooth_init">Αρχικοποίησε συσκευή Bluetooth</string>
+    <string name="info_bluetooth_connection_error">Απρόσμενο σφάλμα Bluetooth</string>
+    <string name="info_new_data_added">%1$.2f%2$s [%3$s] σε %4$s προσετέθη</string>
+    <string name="info_new_data_duplicated">υπάρχει ήδη μέτρηση με την ίδια ημερομηνία και ώρα</string>
+
+    <string name="info_enter_user_name">Το όνομά σας</string>
+    <string name="info_no_selected_user">Δεν υπάρχει χρήστης. Παρακαλώ, δημιουργήστε έναν στις ρυθμίσεις.</string>
+    <string name="info_no_evaluation_available">Η τιμή δεν μπόρεσε να υπολογιστεί</string>
+
+    <string name="question_really_delete">Διαγραφή καταχώρησης;</string>
+    <string name="question_really_delete_all">Διαγραφή όλων των καταχωρήσεων για όλους τους χρήστες;</string>
+    <string name="question_really_delete_user">Διαγραφή χρήστη;</string>
+
+    <string name="label_bluetooth_title">Bluetooth</string>
+    <string name="label_bluetooth_enable">Συνέδεσε στη ζυγαριά με το ξεκίνημα</string>
+    <string name="label_mergeWithLastMeasurement">Συγχώνευσε με τελευταία μέτρηση</string>
+    <string name="label_bluetooth_searching">Αναζητώντας για την ζυγαριά σας με Bluetooth ικανότητα</string>
+    <string name="label_bluetooth_searching_finished">Αναζήτηση ολοκληρώθηκε</string>
+
+    <string name="label_enable_labels">Ετικέτα δεδομένων</string>
+    <string name="label_enable_points">Σημείο δεδομένων</string>
+
+    <string name="label_delete_confirmation">Επιβεβαίωση διαγραφής</string>
+
+    <string name="label_category_measurement_database">Βάση δεδομένων μετρήσεων</string>
+
+    <string name="label_maintainer">Συντηρητής</string>
+    <string name="label_website">Ιστοσελίδα</string>
+    <string name="label_license">Άδεια</string>
+
+    <string name="label_automatic">αυτόματο</string>
+
+    <string name="label_theme">Θέμα</string>
+
+    <string name="label_reminder">Υπενθύμιση</string>
+    <string name="label_reminder_weekdays">Ημέρες της εβδομάδας</string>
+    <string name="label_reminder_time">Ώρα</string>
+    <string name="label_reminder_notify_text">Κείμενο ειδοποίησης</string>
+    <string name="default_value_reminder_notify_text">Ώρα για ζύγιση</string>
+
+    <string name="info_on_date">ανοιχτό</string>
+
+    <string name="Monday">Δευτέρα</string>
+    <string name="Tuesday">Τρίτη</string>
+    <string name="Wednesday">Τετάρτη</string>
+    <string name="Thursday">Πέμπτη</string>
+    <string name="Friday">Παρασκευή</string>
+    <string name="Saturday">Σάββατο</string>
+    <string name="Sunday">Κυριακή</string>
+    <string name="label_bt_device_no_support">Η συσκευή δεν υποστηρίζεται</string>
+    <string name="label_exportBackup">Εξήγαγε αντίγραφο ασφαλείας</string>
+    <string name="label_importBackup">Εισήγαγε αντίγραφο ασφαλείας</string>
+    <string name="label_backup">Αντίγραφο ασφαλείας</string>
+    </resources>
