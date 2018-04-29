@@ -272,18 +272,17 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         List<SliceValue> arcValuesLast = new ArrayList<>();
 
         for (MeasurementView view : measurementViews) {
-            if (view instanceof FloatMeasurementView) {
-                FloatMeasurementView measurementView = (FloatMeasurementView) view;
+            if (!view.isVisible()
+                || !(view instanceof FloatMeasurementView)
+                || view instanceof BMRMeasurementView) {
+                continue;
+            }
 
-                if (measurementView instanceof BMRMeasurementView) {
-                    continue;
-                }
+            FloatMeasurementView measurementView = (FloatMeasurementView) view;
+            measurementView.loadFrom(lastScaleMeasurement, null);
 
-                measurementView.loadFrom(lastScaleMeasurement, null);
-
-                if (measurementView.getValue() != 0) {
-                    arcValuesLast.add(new SliceValue(measurementView.getValue(), measurementView.getColor()));
-                }
+            if (measurementView.getValue() != 0) {
+                arcValuesLast.add(new SliceValue(measurementView.getValue(), measurementView.getColor()));
             }
         }
 
