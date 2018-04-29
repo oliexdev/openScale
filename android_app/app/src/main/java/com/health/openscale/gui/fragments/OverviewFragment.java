@@ -317,16 +317,15 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
                 return;
             }
 
-            String date_time = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.SHORT).format(lastScaleMeasurement.getDateTime());
-
             for (MeasurementView view : measurementViews) {
                 if (view instanceof FloatMeasurementView) {
                     FloatMeasurementView measurementView = (FloatMeasurementView) view;
 
-                    measurementView.loadFrom(lastScaleMeasurement, null);
-
                     if (measurementView.getColor() == arcValue.getColor()) {
-                        Toast.makeText(getActivity(), measurementView.getName() + " " + measurementView.getValueAsString() + measurementView.getUnit() + " " + getResources().getString(R.string.info_on_date) + " " + date_time, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(), String.format("%s: %s %s",
+                                measurementView.getName(), measurementView.getValueAsString(),
+                                measurementView.getUnit()), Toast.LENGTH_SHORT).show();
+                        break;
                     }
                 }
             }
