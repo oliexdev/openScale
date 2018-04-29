@@ -111,7 +111,7 @@
     <string name="label_bluetooth_title">Blåtann</string>
     <string name="label_bluetooth_enable">Koble til vekt ved oppstart</string>
     <string name="label_mergeWithLastMeasurement">Flett med foregående måling</string>
-    <string name="label_bluetooth_searching">Søker etter Blåtannsvekt</string>
+    <string name="label_bluetooth_searching">Søker etter dine Blåtannsvekter</string>
     <string name="label_bluetooth_searching_finished">Søk fullført</string>
 
     <string name="label_enable_labels">Dataetikett</string>
@@ -218,4 +218,5 @@
     <string name="label_monthly">månedlig</string>
     <string name="label_development">Utvikling</string>
     <string name="label_debug_log">Lagre feilrettingslogg til fil</string>
+<string name="label_your_bluetooth_scale">Din Blåtannsvekt</string>
 </resources>
