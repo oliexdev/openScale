@@ -62,8 +62,18 @@ public abstract class BluetoothCommunication {
     private int cleanupStepNr;
     private BT_MACHINE_STATE btMachineState;
 
-    private Queue<BluetoothGattDescriptor> descriptorRequestQueue;
-    private Queue<BluetoothGattCharacteristic> characteristicRequestQueue;
+    private class GattObjectValue <GattObject> {
+        public final GattObject gattObject;
+        public final byte[] value;
+
+        public GattObjectValue(GattObject gattObject, byte[] value) {
+            this.gattObject = gattObject;
+            this.value = value;
+        }
+    }
+
+    private Queue<GattObjectValue<BluetoothGattDescriptor>> descriptorRequestQueue;
+    private Queue<GattObjectValue<BluetoothGattCharacteristic>> characteristicRequestQueue;
     private boolean openRequest;
     private final Object lock = new Object();
 
@@ -225,12 +235,11 @@ public abstract class BluetoothCommunication {
      * @param bytes the bytes that should be write
      */
     protected void writeBytes(UUID service, UUID characteristic, byte[] bytes) {
-        BluetoothGattCharacteristic gattCharacteristic = bluetoothGatt.getService(service)
-                .getCharacteristic(characteristic);
-
-        gattCharacteristic.setValue(bytes);
         synchronized (lock) {
-             characteristicRequestQueue.add(gattCharacteristic);
+             characteristicRequestQueue.add(
+                     new GattObjectValue<>(
+                             bluetoothGatt.getService(service).getCharacteristic(characteristic),
+                             bytes));
              handleRequests();
         }
     }
@@ -266,15 +275,15 @@ public abstract class BluetoothCommunication {
     protected void setIndicationOn(UUID service, UUID characteristic, UUID descriptor) {
         Timber.d("Set indication on for %s", characteristic);
 
-        BluetoothGattCharacteristic gattCharacteristic = bluetoothGatt.getService(service)
-                .getCharacteristic(characteristic);
-
+        BluetoothGattCharacteristic gattCharacteristic =
+                bluetoothGatt.getService(service).getCharacteristic(characteristic);
         bluetoothGatt.setCharacteristicNotification(gattCharacteristic, true);
 
-        BluetoothGattDescriptor gattDescriptor = gattCharacteristic.getDescriptor(descriptor);
-        gattDescriptor.setValue(BluetoothGattDescriptor.ENABLE_INDICATION_VALUE);
         synchronized (lock) {
-            descriptorRequestQueue.add(gattDescriptor);
+            descriptorRequestQueue.add(
+                    new GattObjectValue<>(
+                            gattCharacteristic.getDescriptor(descriptor),
+                            BluetoothGattDescriptor.ENABLE_INDICATION_VALUE));
             handleRequests();
         }
     }
@@ -288,15 +297,15 @@ public abstract class BluetoothCommunication {
     protected void setNotificationOn(UUID service, UUID characteristic, UUID descriptor) {
         Timber.d("Set notification on for %s", characteristic);
 
-        BluetoothGattCharacteristic gattCharacteristic = bluetoothGatt.getService(service)
-                .getCharacteristic(characteristic);
-
+        BluetoothGattCharacteristic gattCharacteristic =
+                bluetoothGatt.getService(service).getCharacteristic(characteristic);
         bluetoothGatt.setCharacteristicNotification(gattCharacteristic, true);
 
-        BluetoothGattDescriptor gattDescriptor = gattCharacteristic.getDescriptor(descriptor);
-        gattDescriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
         synchronized (lock) {
-            descriptorRequestQueue.add(gattDescriptor);
+            descriptorRequestQueue.add(
+                    new GattObjectValue<>(
+                            gattCharacteristic.getDescriptor(descriptor),
+                            BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE));
             handleRequests();
         }
     }
@@ -310,15 +319,15 @@ public abstract class BluetoothCommunication {
     protected void setNotificationOff(UUID service, UUID characteristic, UUID descriptor) {
         Timber.d("Set notification off for %s", characteristic);
 
-        BluetoothGattCharacteristic gattCharacteristic = bluetoothGatt.getService(service)
-                .getCharacteristic(characteristic);
-
+        BluetoothGattCharacteristic gattCharacteristic =
+                bluetoothGatt.getService(service).getCharacteristic(characteristic);
         bluetoothGatt.setCharacteristicNotification(gattCharacteristic, false);
 
-        BluetoothGattDescriptor gattDescriptor = gattCharacteristic.getDescriptor(descriptor);
-        gattDescriptor.setValue(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
         synchronized (lock) {
-            descriptorRequestQueue.add(gattDescriptor);
+            descriptorRequestQueue.add(
+                    new GattObjectValue<>(
+                            gattCharacteristic.getDescriptor(descriptor),
+                            BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE));
             handleRequests();
         }
     }
@@ -469,26 +478,30 @@ public abstract class BluetoothCommunication {
             }
 
             // handle descriptor requests first
-            BluetoothGattDescriptor descriptorRequest = descriptorRequestQueue.poll();
-            if (descriptorRequest != null) {
+            GattObjectValue<BluetoothGattDescriptor> descriptor = descriptorRequestQueue.poll();
+            if (descriptor != null) {
+                descriptor.gattObject.setValue(descriptor.value);
+
                 Timber.d("Write descriptor %s: %s",
-                        descriptorRequest.getUuid(), byteInHex(descriptorRequest.getValue()));
-                if (!bluetoothGatt.writeDescriptor(descriptorRequest)) {
+                        descriptor.gattObject.getUuid(), byteInHex(descriptor.gattObject.getValue()));
+                if (!bluetoothGatt.writeDescriptor(descriptor.gattObject)) {
                     Timber.e("Failed to initiate write of descriptor %s",
-                            descriptorRequest.getUuid());
+                            descriptor.gattObject.getUuid());
                 }
                 openRequest = true;
                 return;
             }
 
             // handle characteristics requests second
-            BluetoothGattCharacteristic characteristicRequest = characteristicRequestQueue.poll();
-            if (characteristicRequest != null) {
+            GattObjectValue<BluetoothGattCharacteristic> characteristic = characteristicRequestQueue.poll();
+            if (characteristic != null) {
+                characteristic.gattObject.setValue(characteristic.value);
+
                 Timber.d("Write characteristic %s: %s",
-                        characteristicRequest.getUuid(), byteInHex(characteristicRequest.getValue()));
-                if (!bluetoothGatt.writeCharacteristic(characteristicRequest)) {
+                        characteristic.gattObject.getUuid(), byteInHex(characteristic.gattObject.getValue()));
+                if (!bluetoothGatt.writeCharacteristic(characteristic.gattObject)) {
                     Timber.e("Failed to initiate write of characteristic %s",
-                            characteristicRequest.getUuid());
+                            characteristic.gattObject.getUuid());
                 }
                 openRequest = true;
                 return;
@@ -611,6 +624,5 @@ public abstract class BluetoothCommunication {
                 handleRequests();
             }
         }
-
     }
 }
