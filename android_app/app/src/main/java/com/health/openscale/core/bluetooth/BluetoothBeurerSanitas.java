@@ -177,10 +177,13 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                 setUnitCommand();
                 break;
             case 5:
+                // Wait for "unit" ack from scale
+                break;
+            case 6:
                 // Request general user information
                 writeBytes(new byte[]{(byte) startByte, (byte) 0x33});
                 break;
-            case 6:
+            case 7:
                 // Wait for ack of all users
                 if (seenUsers.size() < countRegisteredScaleUsers || (countRegisteredScaleUsers == -1)) {
                     // Request this state again
@@ -233,7 +236,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                 Timber.d("scaleuserid: %d, registered users: %d, extracted users: %d",
                         currentScaleUserId, countRegisteredScaleUsers, seenUsers.size());
                 break;
-            case 7:
+            case 8:
                 break;
             default:
                 // Finish init if everything is done
@@ -288,11 +291,18 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
     @Override
     public void onBluetoothDataChange(BluetoothGatt bluetoothGatt, BluetoothGattCharacteristic gattCharacteristic) {
         byte[] data = gattCharacteristic.getValue();
-        if (data.length == 0)
+        if (data.length == 0) {
             return;
+        }
 
         if ((data[0] & 0xFF) == getAlternativeStartByte(6) && (data[1] & 0xFF) == 0x00) {
             Timber.d("ACK Scale is ready");
+            nextMachineStateStep();
+            return;
+        }
+
+        if ((data[0] & 0xFF) == startByte && (data[1] & 0xFF) == 0xf0 && data[2] == 0x4d) {
+            Timber.d("ACK Unit set");
             nextMachineStateStep();
             return;
         }
