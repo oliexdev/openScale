@@ -319,7 +319,9 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         floatingActionBar.removeAllViews();
 
-        PolynomialFitter polyFitter = new PolynomialFitter(Integer.parseInt(prefs.getString("regressionLineOrder", "1")));
+        PolynomialFitter polyFitter = new PolynomialFitter(
+                Math.min(Integer.parseInt(prefs.getString("regressionLineOrder", "1")),
+                        100));
 
         for (MeasurementView view : measurementViews) {
             if (view instanceof FloatMeasurementView) {
