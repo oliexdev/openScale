@@ -83,16 +83,13 @@ public class BluetoothExingtechY1 extends BluetoothCommunication {
     public void onBluetoothDataChange(BluetoothGatt bluetoothGatt, BluetoothGattCharacteristic gattCharacteristic) {
         final byte[] data = gattCharacteristic.getValue();
 
-        if (data != null && data.length > 0) {
-            // if data is body scale type
-            if (data[0] == (byte)0x01 && data.length == 20) {
-                parseBytes(data);
-            }
+        if (data != null && data.length == 20) {
+            parseBytes(data);
         }
     }
 
     private void parseBytes(byte[] weightBytes) {
-        int userId = weightBytes[0] & 0x0F;
+        int userId = weightBytes[0] & 0xFF;
         int gender = weightBytes[1] & 0xFF; // 0x00 male; 0x01 female
         int age = weightBytes[2] & 0xFF; // 10 ~ 99
         int height = weightBytes[3] & 0xFF; // 0 ~ 255
