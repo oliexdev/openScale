@@ -15,12 +15,14 @@
 */
 package com.health.openscale.core.bodymetric;
 
+import android.content.Context;
+
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 
 public abstract class EstimatedLBMMetric {
     // Don't change enum names, they are stored persistent in preferences
-    public enum FORMULA { LBW_HUME, LBW_BOER }
+    public enum FORMULA { LBW_HUME, LBW_BOER, LBW_WEIGHT_MINUS_FAT }
 
     public static EstimatedLBMMetric getEstimatedMetric(FORMULA metric) {
         switch (metric) {
@@ -28,11 +30,13 @@ public abstract class EstimatedLBMMetric {
                 return new LBMHume();
             case LBW_BOER:
                 return new LBMBoer();
+            case LBW_WEIGHT_MINUS_FAT:
+                return new LBMWeightMinusFat();
         }
 
         return null;
     }
 
-    public abstract String getName();
+    public abstract String getName(Context context);
     public abstract float getLBM(ScaleUser user, ScaleMeasurement data);
 }
