@@ -75,7 +75,7 @@ public class LBMMeasurementView extends FloatMeasurementView {
 
         int idx = 0;
         for (EstimatedLBMMetric.FORMULA formula : EstimatedLBMMetric.FORMULA.values()) {
-            entries[idx] = EstimatedLBMMetric.getEstimatedMetric(formula).getName();
+            entries[idx] = EstimatedLBMMetric.getEstimatedMetric(formula).getName(getContext());
             values[idx] = formula.name();
             ++idx;
         }

@@ -16,11 +16,15 @@
 
 package com.health.openscale.gui.views;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.database.DataSetObserver;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.CheckBoxPreference;
@@ -490,6 +494,26 @@ public abstract class FloatMeasurementView extends MeasurementView {
     @Override
     public boolean hasExtraPreferences() { return true; }
 
+    private class ListPreferenceWithNeutralButton extends ListPreference {
+        ListPreferenceWithNeutralButton(Context context) {
+            super(context);
+        }
+
+        @Override
+        protected void onPrepareDialogBuilder(AlertDialog.Builder builder) {
+            super.onPrepareDialogBuilder(builder);
+
+            builder.setNeutralButton(R.string.label_help, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    getContext().startActivity(new Intent(
+                            Intent.ACTION_VIEW,
+                            Uri.parse("https://github.com/oliexdev/openScale/wiki/Body-metric-estimations")));
+                }
+            });
+        }
+    }
+
     @Override
     public void prepareExtraPreferencesScreen(PreferenceScreen screen) {
         MeasurementViewSettings settings = getSettings();
@@ -519,7 +543,7 @@ public abstract class FloatMeasurementView extends MeasurementView {
             estimate.setDefaultValue(settings.isEstimationEnabled());
             screen.addPreference(estimate);
 
-            final ListPreference formula = new ListPreference(screen.getContext());
+            final ListPreference formula = new ListPreferenceWithNeutralButton(screen.getContext());
             formula.setKey(settings.getEstimationFormulaKey());
             formula.setTitle(R.string.label_estimation_formula);
             formula.setPersistent(true);

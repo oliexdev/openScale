@@ -286,18 +286,19 @@ public class OpenScale {
             scaleMeasurement.setWater(waterMetric.getWater(getScaleUser(scaleMeasurement.getUserId()), scaleMeasurement));
         }
 
-        settings = new MeasurementViewSettings(prefs, LBMMeasurementView.KEY);
-        if (settings.isEnabled() && settings.isEstimationEnabled()) {
-            EstimatedLBMMetric lbmMetric = EstimatedLBMMetric.getEstimatedMetric(
-                    EstimatedLBMMetric.FORMULA.valueOf(settings.getEstimationFormula()));
-            scaleMeasurement.setLbm(lbmMetric.getLBM(getScaleUser(scaleMeasurement.getUserId()), scaleMeasurement));
-        }
-
         settings = new MeasurementViewSettings(prefs, FatMeasurementView.KEY);
         if (settings.isEnabled() && settings.isEstimationEnabled()) {
             EstimatedFatMetric fatMetric = EstimatedFatMetric.getEstimatedMetric(
                     EstimatedFatMetric.FORMULA.valueOf(settings.getEstimationFormula()));
             scaleMeasurement.setFat(fatMetric.getFat(getScaleUser(scaleMeasurement.getUserId()), scaleMeasurement));
+        }
+
+        // Must be after fat estimation as one formula is based on fat
+        settings = new MeasurementViewSettings(prefs, LBMMeasurementView.KEY);
+        if (settings.isEnabled() && settings.isEstimationEnabled()) {
+            EstimatedLBMMetric lbmMetric = EstimatedLBMMetric.getEstimatedMetric(
+                    EstimatedLBMMetric.FORMULA.valueOf(settings.getEstimationFormula()));
+            scaleMeasurement.setLbm(lbmMetric.getLBM(getScaleUser(scaleMeasurement.getUserId()), scaleMeasurement));
         }
 
         if (measurementDAO.insert(scaleMeasurement) != -1) {

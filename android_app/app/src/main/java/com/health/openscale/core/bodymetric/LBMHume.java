@@ -16,12 +16,14 @@
 
 package com.health.openscale.core.bodymetric;
 
+import android.content.Context;
+
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 
 public class LBMHume extends EstimatedLBMMetric {
     @Override
-    public String getName() {
+    public String getName(Context context) {
         return "Hume (1966)";
     }
 
