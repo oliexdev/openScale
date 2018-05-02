@@ -171,7 +171,7 @@
     <string name="info_step_on_scale">Fare un passo a piedi nudi sulla bilancia per la misura di riferimento</string>
     <string name="info_measuring">Misurazione del peso: %.2f</string>
 
-    <string name="customactivityoncrash_error_activity_error_occurred_explanationan_unexpected_error_occurred_please_c">Si è verificato un errore imprevisto.\n\nSi prega di creare un nuovo problema, inclusi i dettagli dell\'errore su https://github.com/oliexdev/openScale/issues</string>
+    <string name="customactivityoncrash_error_activity_error_occurred_explanation">Si è verificato un errore imprevisto.\n\nSi prega di creare un nuovo problema, inclusi i dettagli dell\'errore su https://github.com/oliexdev/openScale/issues</string>
     <string name="customactivityoncrash_error_activity_restart_app">Riavviare l\'app</string>
     <string name="customactivityoncrash_error_activity_close_app">Chiudi l\'app</string>
     <string name="customactivityoncrash_error_activity_error_details">Dettagli errore</string>
