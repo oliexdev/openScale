@@ -421,27 +421,27 @@ public abstract class BluetoothCommunication {
      * Disconnect from a Bluetooth device
      */
     public void disconnect(boolean doCleanup) {
-        if (bluetoothGatt == null) {
-            return;
-        }
-        if (leScanCallback != null) {
-            btAdapter.stopLeScan(leScanCallback);
-            leScanCallback = null;
-        }
+        synchronized (lock) {
+            if (bluetoothGatt == null) {
+                return;
+            }
+            if (leScanCallback != null) {
+                btAdapter.stopLeScan(leScanCallback);
+                leScanCallback = null;
+            }
 
-        Timber.i("Disconnecting%s", doCleanup ? " (with cleanup)" : "");
+            Timber.i("Disconnecting%s", doCleanup ? " (with cleanup)" : "");
 
-        if (doCleanup) {
-            synchronized (lock) {
+            if (doCleanup) {
                 if (btMachineState != BT_MACHINE_STATE.BT_CLEANUP_STATE) {
                     setBtMachineState(BT_MACHINE_STATE.BT_CLEANUP_STATE);
                     nextMachineStateStep();
                 }
             }
-        }
 
-        bluetoothGatt.close();
-        bluetoothGatt = null;
+            bluetoothGatt.close();
+            bluetoothGatt = null;
+        }
     }
 
     /**
@@ -521,9 +521,11 @@ public abstract class BluetoothCommunication {
             Timber.d("onConnectionStateChange: status=%d, newState=%d", status, newState);
 
             if (newState == BluetoothProfile.STATE_CONNECTED) {
-                if (leScanCallback != null) {
-                    btAdapter.stopLeScan(leScanCallback);
-                    leScanCallback = null;
+                synchronized (lock) {
+                    if (leScanCallback != null) {
+                        btAdapter.stopLeScan(leScanCallback);
+                        leScanCallback = null;
+                    }
                 }
 
                 connectionEstablished = true;
