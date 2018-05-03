@@ -17,6 +17,7 @@
 package com.health.openscale.gui.fragments;
 
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.text.Html;
 import android.view.LayoutInflater;
@@ -33,11 +34,13 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
 import com.health.openscale.core.utils.DateTimeHelpers;
+import com.health.openscale.gui.views.BMIMeasurementView;
 import com.health.openscale.gui.views.BoneMeasurementView;
 import com.health.openscale.gui.views.FatMeasurementView;
 import com.health.openscale.gui.views.HipMeasurementView;
 import com.health.openscale.gui.views.LBMMeasurementView;
 import com.health.openscale.gui.views.MeasurementView;
+import com.health.openscale.gui.views.MeasurementViewSettings;
 import com.health.openscale.gui.views.MuscleMeasurementView;
 import com.health.openscale.gui.views.WaistMeasurementView;
 import com.health.openscale.gui.views.WaterMeasurementView;
@@ -194,37 +197,35 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
         int days = Math.max(0, DateTimeHelpers.daysBetween(Calendar.getInstance(), goalCalendar));
         txtGoalDayLeft.setText(getResources().getQuantityString(R.plurals.label_days, days, days));
 
+        boolean isBmiEnabled = new MeasurementViewSettings(
+                PreferenceManager.getDefaultSharedPreferences(getActivity()), BMIMeasurementView.KEY)
+                .isEnabled();
         final float goalBmi = goalScaleMeasurement.getBMI(currentScaleUser.getBodyHeight());
+
         txtLabelGoalWeight.setText(
-                Html.fromHtml(
-                        getResources().getString(R.string.label_goal_weight) +
-                                " <br> <font color='grey'><small>" +
-                                getResources().getString(R.string.label_bmi) +
-                                ": " +
-                                String.format("%.1f", goalBmi) +
-                                " </small></font>"
-                )
-        );
+                isBmiEnabled
+                        ? Html.fromHtml(String.format(
+                                "%s<br><font color='grey'><small>%s: %.1f</small></font>",
+                                getResources().getString(R.string.label_goal_weight),
+                                getResources().getString(R.string.label_bmi),
+                                goalBmi))
+                        : getResources().getString(R.string.label_goal_weight));
+
         txtLabelGoalDiff.setText(
-                Html.fromHtml(
-                        getResources().getString(R.string.label_weight_difference) +
-                                " <br> <font color='grey'><small>" +
-                                getResources().getString(R.string.label_bmi) +
-                                ": " +
-                                String.format("%.1f", lastScaleMeasurement.getBMI(currentScaleUser.getBodyHeight()) - goalBmi)  +
-                                " </small></font>"
-                )
-        );
+                isBmiEnabled
+                        ? Html.fromHtml(String.format(
+                                "%s<br><font color='grey'><small>%s: %.1f</small></font>",
+                                getResources().getString(R.string.label_weight_difference),
+                                getResources().getString(R.string.label_bmi),
+                                lastScaleMeasurement.getBMI(currentScaleUser.getBodyHeight()) - goalBmi))
+                        : getResources().getString(R.string.label_weight_difference));
+
         txtLabelDayLeft.setText(
-                Html.fromHtml(
-                        getResources().getString(R.string.label_days_left) +
-                                " <br> <font color='grey'><small>" +
-                                getResources().getString(R.string.label_goal_date_is) +
-                                " "
-                                + DateFormat.getDateInstance(DateFormat.LONG).format(currentScaleUser.getGoalDate()) +
-                                " </small></font>"
-                )
-        );
+                Html.fromHtml(String.format(
+                        "%s<br><font color='grey'><small>%s %s</small></font>",
+                        getResources().getString(R.string.label_days_left),
+                        getResources().getString(R.string.label_goal_date_is),
+                        DateFormat.getDateInstance(DateFormat.LONG).format(currentScaleUser.getGoalDate()))));
     }
 
     private void updateStatistics(List<ScaleMeasurement> scaleMeasurementList) {
