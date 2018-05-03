@@ -521,6 +521,11 @@ public abstract class BluetoothCommunication {
             Timber.d("onConnectionStateChange: status=%d, newState=%d", status, newState);
 
             if (newState == BluetoothProfile.STATE_CONNECTED) {
+                if (leScanCallback != null) {
+                    btAdapter.stopLeScan(leScanCallback);
+                    leScanCallback = null;
+                }
+
                 connectionEstablished = true;
                 setBtStatus(BT_STATUS_CODE.BT_CONNECTION_ESTABLISHED);
                 gatt.discoverServices();
@@ -536,11 +541,6 @@ public abstract class BluetoothCommunication {
         @Override
         public void onServicesDiscovered(final BluetoothGatt gatt, int status) {
             Timber.d("onServicesDiscovered: status=%d", status);
-
-            if (leScanCallback != null) {
-                btAdapter.stopLeScan(leScanCallback);
-                leScanCallback = null;
-            }
 
             synchronized (lock) {
                 cmdStepNr = 0;
