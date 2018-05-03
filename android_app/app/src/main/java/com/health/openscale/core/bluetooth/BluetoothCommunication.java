@@ -530,6 +530,13 @@ public abstract class BluetoothCommunication {
 
                 connectionEstablished = true;
                 setBtStatus(BT_STATUS_CODE.BT_CONNECTION_ESTABLISHED);
+
+                try {
+                    Thread.sleep(200);
+                }
+                catch (Exception e) {
+                    // Empty
+                }
                 gatt.discoverServices();
             }
             else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
