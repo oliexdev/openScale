@@ -236,6 +236,7 @@ public class BluetoothPreferences extends PreferenceFragment {
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         public void onReceive(final Context context, Intent intent) {
             String action = intent.getAction();
+            Timber.d("Discovery: %s", action);
 
             if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
                 btScanner.getPreference(0).setTitle(R.string.label_bluetooth_searching);
