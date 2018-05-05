@@ -321,9 +321,9 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
                     FloatMeasurementView measurementView = (FloatMeasurementView) view;
 
                     if (measurementView.getColor() == arcValue.getColor()) {
-                        Toast.makeText(getActivity(), String.format("%s: %s %s",
-                                measurementView.getName(), measurementView.getValueAsString(),
-                                measurementView.getUnit()), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(), String.format("%s: %s",
+                                measurementView.getName(), measurementView.getValueAsString(true)),
+                                Toast.LENGTH_SHORT).show();
                         break;
                     }
                 }

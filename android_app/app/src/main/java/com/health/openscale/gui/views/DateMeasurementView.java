@@ -87,7 +87,7 @@ public class DateMeasurementView extends MeasurementView {
     }
 
     @Override
-    public String getValueAsString() {
+    public String getValueAsString(boolean withUnit) {
         return dateFormat.format(date);
     }
 

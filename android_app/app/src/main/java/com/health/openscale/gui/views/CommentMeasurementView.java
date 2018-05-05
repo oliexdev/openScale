@@ -72,7 +72,7 @@ public class CommentMeasurementView extends MeasurementView {
     }
 
     @Override
-    public String getValueAsString() {
+    public String getValueAsString(boolean withUnit) {
         return comment;
     }
 
@@ -84,7 +84,7 @@ public class CommentMeasurementView extends MeasurementView {
                 | InputType.TYPE_TEXT_FLAG_AUTO_COMPLETE
                 | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
         input.setHint(R.string.info_enter_comment);
-        input.setText(getValueAsString());
+        input.setText(getValueAsString(false));
         input.setSelectAllOnFocus(true);
 
         return input;

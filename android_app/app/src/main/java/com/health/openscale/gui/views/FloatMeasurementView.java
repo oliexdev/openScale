@@ -130,7 +130,7 @@ public abstract class FloatMeasurementView extends MeasurementView {
         return Math.max(0.0f, Math.min(getMaxValue(), value));
     }
 
-    private void setValueInner(float newValue, String suffix, boolean callListener) {
+    private void setValueInner(float newValue, boolean callListener) {
         value = newValue;
         evaluationResult = null;
 
@@ -142,7 +142,7 @@ public abstract class FloatMeasurementView extends MeasurementView {
             setValueView(getContext().getString(R.string.label_automatic), false);
         }
         else {
-            setValueView(formatValue(value) + suffix, callListener);
+            setValueView(formatValue(value, true), callListener);
 
             if (getMeasurementMode() != MeasurementViewMode.ADD) {
                 final float evalValue = maybeConvertValue(value);
@@ -160,7 +160,7 @@ public abstract class FloatMeasurementView extends MeasurementView {
         setEvaluationView(evaluationResult);
     }
 
-    private void setPreviousValueInner(float newPreviousValue, String suffix) {
+    private void setPreviousValueInner(float newPreviousValue) {
         previousValue = newPreviousValue;
 
         if (!getUpdateViews()) {
@@ -190,8 +190,7 @@ public abstract class FloatMeasurementView extends MeasurementView {
 
             start = text.length();
             text.append(' ');
-            text.append(formatValue(diff));
-            text.append(suffix);
+            text.append(formatValue(diff, true));
             text.setSpan(new RelativeSizeSpan(0.8f), start, text.length(),
                     Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
@@ -203,18 +202,15 @@ public abstract class FloatMeasurementView extends MeasurementView {
     }
 
     private void setValue(float newValue, float newPreviousValue, boolean callListener) {
-        final String unit = getUnit();
-        final String suffix = unit.isEmpty() ? "" : " " + unit;
-
         final boolean valueChanged = newValue != value;
         final boolean previousValueChanged = newPreviousValue != previousValue;
 
         if (valueChanged) {
-            setValueInner(newValue, suffix, callListener);
+            setValueInner(newValue, callListener);
         }
 
         if (valueChanged || previousValueChanged) {
-            setPreviousValueInner(newPreviousValue, suffix);
+            setPreviousValueInner(newPreviousValue);
         }
     }
 
@@ -225,8 +221,15 @@ public abstract class FloatMeasurementView extends MeasurementView {
         setValue(clampValue(value - INC_DEC_DELTA), previousValue, true);
     }
 
-    protected String formatValue(float value) {
+    protected String formatValue(float value, boolean withUnit) {
+        if (withUnit && !getUnit().isEmpty()) {
+            return String.format(Locale.getDefault(), "%.2f %s", value, getUnit());
+        }
         return String.format(Locale.getDefault(), "%.2f", value);
+    }
+
+    protected String formatValue(float value) {
+        return formatValue(value, false);
     }
 
     protected abstract float getMeasurementValue(ScaleMeasurement measurement);
@@ -385,11 +388,11 @@ public abstract class FloatMeasurementView extends MeasurementView {
     }
 
     @Override
-    public String getValueAsString() {
+    public String getValueAsString(boolean withUnit) {
         if (useAutoValue()) {
             return getContext().getString(R.string.label_automatic);
         }
-        return formatValue(value);
+        return formatValue(value, withUnit);
     }
 
     public float getValue() {

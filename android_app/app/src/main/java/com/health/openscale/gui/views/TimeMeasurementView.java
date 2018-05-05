@@ -90,7 +90,7 @@ public class TimeMeasurementView extends MeasurementView {
     }
 
     @Override
-    public String getValueAsString() {
+    public String getValueAsString(boolean withUnit) {
         return timeFormat.format(time);
     }
 

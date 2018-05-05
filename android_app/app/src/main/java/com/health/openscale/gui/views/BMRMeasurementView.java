@@ -44,7 +44,10 @@ public class BMRMeasurementView extends FloatMeasurementView {
     }
 
     @Override
-    protected String formatValue(float value) {
+    protected String formatValue(float value, boolean withUnit) {
+        if (withUnit) {
+            return String.format(Locale.getDefault(), "%d %s", Math.round(value), getUnit());
+        }
         return String.format(Locale.getDefault(), "%d", Math.round(value));
     }
 
