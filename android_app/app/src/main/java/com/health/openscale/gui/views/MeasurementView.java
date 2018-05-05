@@ -79,12 +79,12 @@ public abstract class MeasurementView extends TableLayout {
 
     private boolean updateViews = true;
 
-    public MeasurementView(Context context, String text, Drawable icon) {
+    public MeasurementView(Context context, int textId, int iconId) {
         super(context);
         initView(context);
 
-        nameView.setText(text);
-        iconView.setImageDrawable(icon);
+        nameView.setText(textId);
+        iconView.setImageResource(iconId);
     }
 
     public enum DateTimeOrder { FIRST, LAST, NONE }

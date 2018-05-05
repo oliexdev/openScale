@@ -23,7 +23,6 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.database.DataSetObserver;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -74,11 +73,11 @@ public abstract class FloatMeasurementView extends MeasurementView {
     private Button incButton;
     private Button decButton;
 
-    public FloatMeasurementView(Context context, String text, Drawable icon) {
-        super(context, text, icon);
+    public FloatMeasurementView(Context context, int textId, int iconId) {
+        super(context, textId, iconId);
         initView(context);
 
-        nameText = text;
+        nameText = getResources().getString(textId);
     }
 
     private void initView(Context context) {

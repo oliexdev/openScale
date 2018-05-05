@@ -18,7 +18,6 @@ package com.health.openscale.gui.views;
 import android.content.Context;
 import android.graphics.Color;
 import android.preference.ListPreference;
-import android.support.v4.content.ContextCompat;
 
 import com.health.openscale.R;
 import com.health.openscale.core.bodymetric.EstimatedFatMetric;
@@ -31,7 +30,7 @@ public class FatMeasurementView extends FloatMeasurementView {
     public static final String KEY = "fat";
 
     public FatMeasurementView(Context context) {
-        super(context, context.getResources().getString(R.string.label_fat), ContextCompat.getDrawable(context, R.drawable.ic_fat));
+        super(context, R.string.label_fat, R.drawable.ic_fat);
     }
 
     @Override

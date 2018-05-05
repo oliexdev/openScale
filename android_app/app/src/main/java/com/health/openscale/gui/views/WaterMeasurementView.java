@@ -18,7 +18,6 @@ package com.health.openscale.gui.views;
 import android.content.Context;
 import android.graphics.Color;
 import android.preference.ListPreference;
-import android.support.v4.content.ContextCompat;
 
 import com.health.openscale.R;
 import com.health.openscale.core.bodymetric.EstimatedWaterMetric;
@@ -31,7 +30,7 @@ public class WaterMeasurementView extends FloatMeasurementView {
     public static final String KEY = "water";
 
     public WaterMeasurementView(Context context) {
-        super(context, context.getResources().getString(R.string.label_water), ContextCompat.getDrawable(context, R.drawable.ic_water));
+        super(context, R.string.label_water, R.drawable.ic_water);
     }
 
     @Override

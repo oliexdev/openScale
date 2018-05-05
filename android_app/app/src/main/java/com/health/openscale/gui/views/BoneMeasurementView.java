@@ -17,7 +17,6 @@ package com.health.openscale.gui.views;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.support.v4.content.ContextCompat;
 
 import com.health.openscale.R;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
@@ -30,7 +29,7 @@ public class BoneMeasurementView extends FloatMeasurementView {
     public static final String KEY = "bone";
 
     public BoneMeasurementView(Context context) {
-        super(context, context.getResources().getString(R.string.label_bone), ContextCompat.getDrawable(context, R.drawable.ic_bone));
+        super(context, R.string.label_bone, R.drawable.ic_bone);
     }
 
     @Override

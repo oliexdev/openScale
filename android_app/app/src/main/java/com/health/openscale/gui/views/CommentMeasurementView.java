@@ -17,7 +17,6 @@ package com.health.openscale.gui.views;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
 import android.text.InputType;
 import android.view.View;
 import android.widget.EditText;
@@ -32,7 +31,7 @@ public class CommentMeasurementView extends MeasurementView {
     private String comment;
 
     public CommentMeasurementView(Context context) {
-        super(context, context.getResources().getString(R.string.label_comment), ContextCompat.getDrawable(context, R.drawable.ic_comment));
+        super(context, R.string.label_comment, R.drawable.ic_comment);
     }
 
     @Override

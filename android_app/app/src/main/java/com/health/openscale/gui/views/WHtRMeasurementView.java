@@ -17,7 +17,6 @@ package com.health.openscale.gui.views;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.support.v4.content.ContextCompat;
 
 import com.health.openscale.R;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
@@ -29,7 +28,7 @@ public class WHtRMeasurementView extends FloatMeasurementView {
     public static final String KEY = "whtr";
 
     public WHtRMeasurementView(Context context) {
-        super(context, context.getResources().getString(R.string.label_whtr), ContextCompat.getDrawable(context, R.drawable.ic_whtr));
+        super(context, R.string.label_whtr, R.drawable.ic_whtr);
     }
 
     @Override

@@ -17,7 +17,6 @@ package com.health.openscale.gui.views;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.support.v4.content.ContextCompat;
 
 import com.health.openscale.R;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
@@ -31,7 +30,7 @@ public class BMRMeasurementView extends FloatMeasurementView {
     public static final String KEY = "bmr";
 
     public BMRMeasurementView(Context context) {
-        super(context, context.getResources().getString(R.string.label_bmr), ContextCompat.getDrawable(context, R.drawable.ic_bmr));
+        super(context, R.string.label_bmr, R.drawable.ic_bmr);
     }
 
     @Override

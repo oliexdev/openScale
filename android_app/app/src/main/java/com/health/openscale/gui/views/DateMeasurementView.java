@@ -17,7 +17,6 @@ package com.health.openscale.gui.views;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.widget.DatePicker;
 
@@ -36,7 +35,7 @@ public class DateMeasurementView extends MeasurementView {
     private Date date;
 
     public DateMeasurementView(Context context) {
-        super(context, context.getResources().getString(R.string.label_date), ContextCompat.getDrawable(context, R.drawable.ic_lastmonth));
+        super(context, R.string.label_date, R.drawable.ic_lastmonth);
     }
 
     @Override

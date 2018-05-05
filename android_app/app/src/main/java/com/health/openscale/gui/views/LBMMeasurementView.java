@@ -18,7 +18,6 @@ package com.health.openscale.gui.views;
 import android.content.Context;
 import android.graphics.Color;
 import android.preference.ListPreference;
-import android.support.v4.content.ContextCompat;
 
 import com.health.openscale.R;
 import com.health.openscale.core.bodymetric.EstimatedLBMMetric;
@@ -32,7 +31,7 @@ public class LBMMeasurementView extends FloatMeasurementView {
     public static final String KEY = "lbw";
 
     public LBMMeasurementView(Context context) {
-        super(context, context.getResources().getString(R.string.label_lbm), ContextCompat.getDrawable(context, R.drawable.ic_lbm));
+        super(context, R.string.label_lbm, R.drawable.ic_lbm);
     }
 
     @Override

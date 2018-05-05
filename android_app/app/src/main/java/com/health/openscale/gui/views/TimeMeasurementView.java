@@ -17,7 +17,6 @@ package com.health.openscale.gui.views;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.widget.TimePicker;
 
@@ -36,7 +35,7 @@ public class TimeMeasurementView extends MeasurementView {
     private Date time;
 
     public TimeMeasurementView(Context context) {
-        super(context, context.getResources().getString(R.string.label_time), ContextCompat.getDrawable(context, R.drawable.ic_daysleft));
+        super(context, R.string.label_time, R.drawable.ic_daysleft);
         timeFormat = android.text.format.DateFormat.getTimeFormat(context);
     }
 
