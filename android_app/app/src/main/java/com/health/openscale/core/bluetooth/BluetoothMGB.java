@@ -113,7 +113,7 @@ public class BluetoothMGB extends BluetoothCommunication {
                 break;
 
             case 6:
-                writeCfg(0xFE, 6, 1, 0);
+                writeCfg(0xFE, 6, user.getScaleUnit().toInt(), 0);
                 break;
 
             default:
