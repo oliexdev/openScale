@@ -14,7 +14,6 @@
     <string name="error_exporting">Erro ao exportar</string>
     <string name="error_goal_weight_required">Erro: peso desejado é obrigatório</string>
     <string name="error_importing">Erro ao importar</string>
-    <string name="error_initial_weight_required">Erro: falta o peso</string>
     <string name="error_max_scale_users">Número máximo de utilizadores alcançado</string>
     <string name="error_user_name_required">Erro: Nome do utilizador é obrigatório</string>
     <string name="error_value_range">Valor não está no intervalo</string>
@@ -75,7 +74,6 @@
     <string name="label_ignoreOutOfRange">Ignorar dados fora do intervalo</string>
     <string name="label_import">Importar</string>
     <string name="label_importBackup">Importar Backup</string>
-    <string name="label_initial_weight">Peso inicial</string>
     <string name="label_last_month">Últimos 30 dias</string>
     <string name="label_last_week">Últimos 7 dias</string>
     <string name="label_male">Masculino</string>

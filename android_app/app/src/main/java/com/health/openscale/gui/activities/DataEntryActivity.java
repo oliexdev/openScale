@@ -283,7 +283,6 @@ public class DataEntryActivity extends BaseAppCompatActivity {
             if (openScale.getScaleMeasurementList().isEmpty()) {
                 // Show default values
                 scaleMeasurement = new ScaleMeasurement();
-                scaleMeasurement.setWeight(openScale.getSelectedScaleUser().getInitialWeight());
             }
             else {
                 // Show the last scale data as default

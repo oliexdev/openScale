@@ -129,7 +129,6 @@
     <string name="label_theme">Thème</string>
 
     <string name="label_bt_device_no_support">Appareil non pris en charge</string>
-    <string name="label_initial_weight">Poids initial</string>
     <string name="label_feedback_message_yes">Oui</string>
     <string name="label_feedback_message_no">Pas vraiment</string>
     <string name="label_feedback_message_positive">OK</string>
@@ -149,7 +148,6 @@
     <string name="title_about">À propos</string>
     <string name="label_share">Partager</string>
     <string name="error_user_name_too_short">Erreur : Le nom doit contenir au moins 3 caractères</string>
-    <string name="error_initial_weight_required">Erreur : Poids initial requis</string>
     <string name="info_enter_value_scale_unit">Valeur en unité de l\'échelle</string>
     <string name="label_exportBackup">Exporter la sauvegarde</string>
     <string name="label_importBackup">Importer la sauvegarde</string>

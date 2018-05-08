@@ -126,7 +126,6 @@ public class ScreenshotRecorder {
         ScaleUser user = new ScaleUser();
         user.setUserName("Test");
         user.setBodyHeight(180);
-        user.setInitialWeight(80.0f);
         user.setGoalWeight(60.0f);
 
         Calendar birthday = Calendar.getInstance();

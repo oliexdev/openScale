@@ -57,7 +57,6 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
     private EditText txtUserName;
     private EditText txtBodyHeight;
     private EditText txtBirthday;
-    private EditText txtInitialWeight;
     private EditText txtGoalWeight;
     private EditText txtGoalDate;
     private RadioGroup radioScaleUnit;
@@ -84,7 +83,6 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
         txtBodyHeight = findViewById(R.id.txtBodyHeight);
         radioScaleUnit = findViewById(R.id.groupScaleUnit);
         radioGender = findViewById(R.id.groupGender);
-        txtInitialWeight = findViewById(R.id.txtInitialWeight);
         txtGoalWeight = findViewById(R.id.txtGoalWeight);
 
         txtBirthday = findViewById(R.id.txtBirthday);
@@ -208,7 +206,6 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
         txtBodyHeight.setText(Integer.toString(scaleUser.getBodyHeight()));
         txtBirthday.setText(dateFormat.format(birthday));
         txtGoalDate.setText(dateFormat.format(goal_date));
-        txtInitialWeight.setText(Math.round(scaleUser.getConvertedInitialWeight()*100.0f)/100.0f + "");
         txtGoalWeight.setText(scaleUser.getGoalWeight() +"");
 
         switch (scaleUser.getScaleUnit())
@@ -250,11 +247,6 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
 
         if (txtBodyHeight.getText().toString().length() == 0) {
             txtBodyHeight.setError(getResources().getString(R.string.error_height_required));
-            validate = false;
-        }
-
-        if (txtInitialWeight.getText().toString().length() == 0) {
-            txtInitialWeight.setError(getResources().getString(R.string.error_initial_weight_required));
             validate = false;
         }
 
@@ -341,7 +333,6 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
                 int body_height = Integer.valueOf(txtBodyHeight.getText().toString());
                 int checkedRadioButtonId = radioScaleUnit.getCheckedRadioButtonId();
                 int checkedGenderId = radioGender.getCheckedRadioButtonId();
-                float initial_weight = Float.valueOf(txtInitialWeight.getText().toString());
                 float goal_weight = Float.valueOf(txtGoalWeight.getText().toString());
 
                 Converters.WeightUnit scale_unit = Converters.WeightUnit.KG;
@@ -376,7 +367,6 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
                 scaleUser.setBodyHeight(body_height);
                 scaleUser.setScaleUnit(scale_unit);
                 scaleUser.setGender(gender);
-                scaleUser.setConvertedInitialWeight(initial_weight);
                 scaleUser.setGoalWeight(goal_weight);
                 scaleUser.setGoalDate(goal_date);
 

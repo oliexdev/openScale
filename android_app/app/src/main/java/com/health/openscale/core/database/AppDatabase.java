@@ -34,6 +34,7 @@ public abstract class AppDatabase extends RoomDatabase {
 
     // For the next database version:
     // - rename lbw column to lbm
+    // - remove initial weight
 
     public static final Migration MIGRATION_1_2 = new Migration(1, 2) {
         @Override

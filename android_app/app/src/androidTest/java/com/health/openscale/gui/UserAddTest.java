@@ -87,7 +87,6 @@ public class UserAddTest {
 
         assertEquals("test", user.getUserName());
         assertEquals(180, user.getBodyHeight());
-        assertEquals(80, user.getInitialWeight(), DELTA);
         assertEquals(60, user.getGoalWeight(), DELTA);
 
         Calendar birthday = Calendar.getInstance();
@@ -148,24 +147,14 @@ public class UserAddTest {
         onView(withId(android.R.id.button1)).perform(click());
 
         ViewInteraction editText5 = onView(
-                allOf(withId(R.id.txtInitialWeight),
-                        childAtPosition(
-                                allOf(withId(R.id.tableRowInitialWeight),
-                                        childAtPosition(
-                                                withId(R.id.tableUserData),
-                                                5)),
-                                1)));
-        editText5.perform(scrollTo(), replaceText("80"), closeSoftKeyboard());
-
-        ViewInteraction editText6 = onView(
                 allOf(withId(R.id.txtGoalWeight),
                         childAtPosition(
                                 allOf(withId(R.id.rowGoalWeight),
                                         childAtPosition(
                                                 withId(R.id.tableUserData),
-                                                6)),
+                                                5)),
                                 1)));
-        editText6.perform(scrollTo(), replaceText("60"), closeSoftKeyboard());
+        editText5.perform(scrollTo(), replaceText("60"), closeSoftKeyboard());
 
         onView(withId(R.id.txtGoalDate)).perform(click());
         onView(withClassName(Matchers.equalTo(DatePicker.class.getName()))).perform(PickerActions.setDate(2018,  1, 31));

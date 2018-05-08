@@ -141,7 +141,6 @@ public class ScaleUserDatabase extends SQLiteOpenHelper {
             scaleUser.setBirthday(formatDateTime.parse(birthday));
             scaleUser.setGoalDate(formatDateTime.parse(goal_date));
 
-            scaleUser.setInitialWeight(Math.round(initial_weight * 100.0f) / 100.0f);
             scaleUser.setGoalWeight(Math.round(goal_weight * 100.0f) / 100.0f);
         } catch (ParseException ex) {
             Timber.e(ex, "Can't parse the date time string");
