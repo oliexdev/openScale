@@ -47,6 +47,9 @@ public interface ScaleMeasurementDAO {
     @Query("SELECT * FROM scaleMeasurements WHERE datetime >= :startYear AND datetime < :endYear AND userId = :userId AND enabled = 1 ORDER BY datetime DESC")
     List<ScaleMeasurement> getAllInRange(Date startYear, Date endYear, int userId);
 
+    @Query("SELECT * FROM scaleMeasurements WHERE userId = :userId AND enabled = 1 ORDER BY datetime DESC LIMIT 1")
+    ScaleMeasurement getLatest(int userId);
+
     @Insert (onConflict = OnConflictStrategy.IGNORE)
     long insert(ScaleMeasurement measurement);
 

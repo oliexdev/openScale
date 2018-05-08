@@ -219,4 +219,7 @@
     <string name="label_development">Development</string>
     <string name="label_debug_log">Save debug log to file</string>
     <string name="label_your_bluetooth_scale">Your Bluetooth scale</string>
+    <string name="label_select_measurement">Select measurement</string>
+    <string name="label_select_user">Select user</string>
+    <string name="label_configure_widget">Configure widget</string>
 </resources>

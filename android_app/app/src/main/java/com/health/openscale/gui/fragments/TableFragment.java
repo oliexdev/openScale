@@ -284,7 +284,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
                     SpannableStringBuilder string = new SpannableStringBuilder();
                     string.append(visibleMeasurements.get(i).getValueAsString(false));
-                    visibleMeasurements.get(i).appendDiffValue(string);
+                    visibleMeasurements.get(i).appendDiffValue(string, true);
 
                     stringCache[position][i] = string;
                 }

@@ -65,6 +65,7 @@ public abstract class MeasurementView extends TableLayout {
 
     private TableRow measurementRow;
     private ImageView iconView;
+    private int iconId;
     private TextView nameView;
     private TextView valueView;
     private LinearLayout incDecLayout;
@@ -84,6 +85,7 @@ public abstract class MeasurementView extends TableLayout {
         initView(context);
 
         nameView.setText(textId);
+        this.iconId = iconId;
         iconView.setImageResource(iconId);
     }
 
@@ -256,8 +258,9 @@ public abstract class MeasurementView extends TableLayout {
 
     public CharSequence getName() { return nameView.getText(); }
     public abstract String getValueAsString(boolean withUnit);
-    public void appendDiffValue(SpannableStringBuilder builder) { }
+    public void appendDiffValue(SpannableStringBuilder builder, boolean newLine) { }
     public Drawable getIcon() { return iconView.getDrawable(); }
+    public int getIconResource() { return iconId; }
 
     protected boolean isEditable() {
         return true;

@@ -15,6 +15,7 @@ Install [openScale-dev-build.apk](https://github.com/oliexdev/openScale/releases
 # Features
 
 - Logs your body metrics (weight, body fat, body water, muscle percentage, lean body mass, bone mass, BMI, BMR, waist/hip circumference, waist-hip ratio, waist-to-height ratio)
+- Widget that can be added to the home screen showing any of the available metrics
 - Keep track of your diet process
 - Display all your data on a chart and table 
 - Import or export your data from/into a CSV file
