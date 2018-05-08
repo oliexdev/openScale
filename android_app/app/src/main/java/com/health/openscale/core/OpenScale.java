@@ -252,9 +252,14 @@ public class OpenScale {
     {
         ScaleMeasurement[] tupleScaleData = new ScaleMeasurement[3];
 
-        tupleScaleData[0] = measurementDAO.getPrevious(id, getSelectedScaleUser().getId());
+        tupleScaleData[0] = null;
         tupleScaleData[1] = measurementDAO.get(id);
-        tupleScaleData[2] = measurementDAO.getNext(id, getSelectedScaleUser().getId());
+        tupleScaleData[2] = null;
+
+        if (tupleScaleData[1] != null) {
+            tupleScaleData[0] = measurementDAO.getPrevious(id, tupleScaleData[1].getUserId());
+            tupleScaleData[2] = measurementDAO.getNext(id, tupleScaleData[1].getUserId());
+        }
 
         return tupleScaleData;
     }
