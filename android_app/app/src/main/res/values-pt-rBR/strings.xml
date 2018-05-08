@@ -174,7 +174,6 @@
     <string name="permission_bluetooth_info">openScale precisa de permissão para procurar dispositivos Bluetooth</string>
     <string name="permission_bluetooth_info_title">Informação</string>
     <string name="label_next">Próximo</string>
-    <string name="label_press_hold_reorder">Carrega e espera para reordenar</string>
     <string name="label_set_default_order">Define ordem por defeito</string>
     <string name="label_export_overwrite">"Gravar sobre o export \"%s\"  anterior ?"</string>
     <string name="label_include_in_overview_graph">Incluir no gráfico geral</string>

@@ -191,7 +191,6 @@
     <string name="permission_bluetooth_info">L\'autorizzazione di \"geolocalizzazione a basso consumo\" è necessaria per la ricerca dei dispositivi Bluetooth. Può essere revocata dopo che il dispositivo viene rilevato.</string>
     <string name="permission_bluetooth_info_title">Informazioni</string>
     <string name="label_next">Avanti</string>
-    <string name="label_press_hold_reorder">Premere e tenere premuto per riordinare</string>
     <string name="label_set_default_order">Imposta ordine predefinito</string>
     <string name="label_export_overwrite">Sovrascrivere la precedente esportazione \"%s\"?</string>
     <string name="label_include_in_overview_graph">Includere nel grafico di riepilogo</string>

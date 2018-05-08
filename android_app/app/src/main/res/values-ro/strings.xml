@@ -182,7 +182,6 @@
     <string name="permission_bluetooth_info">Permisiunea accesului la localizare e necesară pentru a căuta dispozitive Bluetooth. Permisiunea poate fi revocată o dată ce dispozitivul a fost găsit.</string>
     <string name="permission_bluetooth_info_title">Informație</string>
     <string name="label_next">Următoarea</string>
-    <string name="label_press_hold_reorder">Apăsați și mențineți pentru a reorganiza</string>
     <string name="label_set_default_order">Definire a ordinii de bază</string>
     <string name="label_reminder_weekdays">Zile lucrătoare</string>
     <string name="label_reminder_time">Ora</string>

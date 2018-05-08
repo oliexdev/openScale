@@ -191,7 +191,6 @@
     <string name="permission_bluetooth_info">Άδεια τραχύς τοποθεσίας αναγκαία για την αναζήτηση συσκευών Bluetooth. Μπορεί να ανακληθεί αφού βρεθεί η συσκευή.</string>
     <string name="permission_bluetooth_info_title">Πληροφορίες</string>
     <string name="label_next">Επόμενο</string>
-    <string name="label_press_hold_reorder">Πιέστε και κρατήστε για επαναδιάταξη</string>
     <string name="label_set_default_order">Θέσε προκαθορισμένη διάταξη</string>
     <string name="label_export_overwrite">Αντικατέστησε προηγούμενη εξαγωγή \"%s\";</string>
     <string name="label_include_in_overview_graph">Περιέλαβε στο γράφημα επισκόπησης</string>

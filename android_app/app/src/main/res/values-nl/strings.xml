@@ -198,7 +198,6 @@
     <string name="permission_bluetooth_info">openScale heeft toestemming nodig tot uw locatie om te kunnen zoeken naar Bluetooth apparaten</string>
     <string name="permission_bluetooth_info_title">Informatie</string>
     <string name="label_next">Volgende</string>
-    <string name="label_press_hold_reorder">Indrukken en vasthouden om opnieuw in te delen</string>
     <string name="label_set_default_order">Stel standaard volgorde in</string>
     <string name="label_export_overwrite">Vorige export \"%s\" overschrijven?</string>
 

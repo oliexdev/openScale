@@ -192,7 +192,6 @@
     <string name="permission_bluetooth_info">Omtrentlig tilgang til plassering kreves for å søke etter Blåtannsenheter. Tilgangen kan tilbakekalles etter at enheten er funnet.</string>
     <string name="permission_bluetooth_info_title">Info</string>
     <string name="label_next">Neste</string>
-    <string name="label_press_hold_reorder">Trykk og hold for å endre rekkefølge</string>
     <string name="label_set_default_order">Sett forvalgt rekkefølge</string>
     <string name="label_export_overwrite">Overskriv forrige eksportering \"%s\"?</string>
     <string name="label_include_in_overview_graph">Inkluder i oversiktsgraf</string>

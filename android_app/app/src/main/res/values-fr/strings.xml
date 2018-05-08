@@ -162,7 +162,6 @@
     <string name="label_month_view">Vue mensuelle</string>
     <string name="label_weeks_view">Vue hebdomadaire</string>
 
-    <string name="label_press_hold_reorder">Appuyez et maintenez pour réorganiser</string>
     <string name="label_set_default_order">Définir l\'ordre par défaut</string>
     <string name="label_measurement_in_percent">Mesure en %</string>
     <string name="theme_light">Clair</string>

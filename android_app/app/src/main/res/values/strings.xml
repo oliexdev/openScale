@@ -191,7 +191,8 @@
     <string name="permission_bluetooth_info">Coarse location permission needed to search for Bluetooth devices. It can be revoked after the device is found.</string>
     <string name="permission_bluetooth_info_title">Info</string>
     <string name="label_next">Next</string>
-    <string name="label_press_hold_reorder">Press and hold to reorder</string>
+    <string name="label_long_press_drag_reorder">Long press and drag measurement to reorder</string>
+    <string name="label_click_measurement_configure">Click measurement to configure</string>
     <string name="label_set_default_order">Set default order</string>
     <string name="label_export_overwrite">Overwrite previous export \"%s\"?</string>
     <string name="label_include_in_overview_graph">Include in overview graph</string>

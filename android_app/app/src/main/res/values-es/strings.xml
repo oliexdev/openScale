@@ -203,7 +203,6 @@
     <string name="label_weeks_view">Vista semanal</string>
 
     <string name="label_next">Siguiente</string>
-    <string name="label_press_hold_reorder">Presiona y mantén para reordenar</string>
     <string name="label_set_default_order">Establecer orden por defecto</string>
     <string name="label_export_overwrite">¿Sobreescribir la exportación anterior %s?</string>
     <string name="label_include_in_overview_graph">Incluir en el gráfico general</string>

@@ -192,7 +192,6 @@
     <string name="permission_bluetooth_info">Wymagane zezwolenie na dostęp do lokalizacji w celu znalezienia urządzeń Bluetooth. Po znalezieniu urządzenia zezwolenie można wycofać.</string>
     <string name="permission_bluetooth_info_title">Informacje</string>
     <string name="label_next">Następny</string>
-    <string name="label_press_hold_reorder">Naciśnij i przytrzymaj by zmienić kolejność</string>
     <string name="label_set_default_order">Ustaw domyślną kolejność</string>
     <string name="label_export_overwrite">Nadpisać poprzedni eksport \"%s\"?</string>
 

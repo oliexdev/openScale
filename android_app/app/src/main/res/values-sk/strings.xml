@@ -175,7 +175,6 @@
     <string name="permission_bluetooth_info">openScale vyžaduje povolenie prístupu k približnej polohe na vyhľadávanie bluetooth zariadení. Po nájdení zaradenia môžete toto povolenie zamietnuť.</string>
     <string name="permission_bluetooth_info_title">Informácie</string>
     <string name="label_next">Ďalej</string>
-    <string name="label_press_hold_reorder">Stlačte a podržte pre zmenu radenia</string>
     <string name="label_set_default_order">Nastaviť predvolené radenie</string>
     <string name="label_export_overwrite">Prepísať predchádzajúci export \"%s\"?</string>
 

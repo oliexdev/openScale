@@ -191,7 +191,6 @@
 \n當搜尋完成時， 此權限可以再次關上。</string>
     <string name="permission_bluetooth_info_title">資料</string>
     <string name="label_next">下一項</string>
-    <string name="label_press_hold_reorder">長按下去排序</string>
     <string name="label_set_default_order">設定預設的排序</string>
     <string name="label_export_overwrite">覆寫舊有的滙出資料 \"%s\"?</string>
     <string name="label_include_in_overview_graph">附設在概覽圖表中</string>

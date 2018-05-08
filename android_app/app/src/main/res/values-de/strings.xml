@@ -163,7 +163,6 @@
     <string name="permission_bluetooth_info">Erlaubnis erforderlich um auf den ungefähren Standort zuzugreifen, um nach Bluetooth-Geräten zu suchen. Sobald das Gerät gefunden wurde kann diese widerrufen werden.</string>
     <string name="permission_bluetooth_info_title">Information</string>
     <string name="label_next">Weiter</string>
-    <string name="label_press_hold_reorder">Halten Sie die Taste gedrückt, um die Reihenfolge zu ändern</string>
     <string name="label_set_default_order">Default Reihenfolge wiederherstellen</string>
     <string name="label_share_subject">CSV Datenexport (%s)</string>
     <string name="label_mergeWithLastMeasurement">Zusammenführen mit der letzten Messung</string>

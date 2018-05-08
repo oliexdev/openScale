@@ -170,7 +170,6 @@
     <string name="label_share_subject">CSV dataexport (%s)</string>
 
     <string name="label_next">Nästa</string>
-    <string name="label_press_hold_reorder">Tryck och håll för att ändra ordning</string>
     <string name="label_set_default_order">Ställ in standardordning</string>
 
     <string name="label_weeks_view">Veckovy</string>
