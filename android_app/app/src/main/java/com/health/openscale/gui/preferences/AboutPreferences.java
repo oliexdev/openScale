@@ -122,9 +122,8 @@ public class AboutPreferences extends PreferenceFragment {
                     FileDebugTree tree = getEnabledFileDebugTree();
                     if (tree != null) {
                         Timber.d("Debug log disabled");
-                        tree.close();
                         Timber.uproot(tree);
-                        preference.setSummary(R.string.info_is_not_enable);
+                        tree.close();
                         OpenScale.DEBUG_MODE = false;
                     }
                 }
@@ -138,7 +137,6 @@ public class AboutPreferences extends PreferenceFragment {
         try {
             OutputStream output = getActivity().getContentResolver().openOutputStream(uri);
             Timber.plant(new FileDebugTree(output));
-            findPreference(KEY_DEBUG_LOG).setSummary(R.string.info_is_enable);
             OpenScale.DEBUG_MODE = true;
             Timber.d("Debug log enabled, %s v%s (%d), SDK %d, %s %s",
                     getResources().getString(R.string.app_name),
