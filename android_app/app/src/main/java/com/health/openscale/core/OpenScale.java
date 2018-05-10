@@ -16,10 +16,13 @@
 
 package com.health.openscale.core;
 
+import android.appwidget.AppWidgetManager;
 import android.arch.persistence.db.SupportSQLiteDatabase;
 import android.arch.persistence.room.Room;
 import android.arch.persistence.room.RoomDatabase;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabaseCorruptException;
@@ -52,6 +55,7 @@ import com.health.openscale.gui.views.FatMeasurementView;
 import com.health.openscale.gui.views.LBMMeasurementView;
 import com.health.openscale.gui.views.MeasurementViewSettings;
 import com.health.openscale.gui.views.WaterMeasurementView;
+import com.health.openscale.gui.widget.WidgetProvider;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -166,6 +170,17 @@ public class OpenScale {
         scaleDB.close();
     }
 
+    public void triggerWidgetUpdate() {
+        int[] ids = AppWidgetManager.getInstance(context).getAppWidgetIds(
+                new ComponentName(context, WidgetProvider.class));
+        if (ids.length > 0) {
+            Intent intent = new Intent(context, WidgetProvider.class);
+            intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+            intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
+            context.sendBroadcast(intent);
+        }
+    }
+
     public int addScaleUser(final ScaleUser user) {
         return (int)userDAO.insert(user);
     }
@@ -247,6 +262,9 @@ public class OpenScale {
         return scaleMeasurementList;
     }
 
+    public ScaleMeasurement getLatestScaleMeasurement(int userId) {
+        return measurementDAO.getLatest(userId);
+    }
 
     public ScaleMeasurement[] getTupleScaleData(int id)
     {
@@ -324,6 +342,7 @@ public class OpenScale {
             }
             alarmHandler.entryChanged(context, scaleMeasurement);
             updateScaleData();
+            triggerWidgetUpdate();
         } else {
             if (!silent) {
                 Toast.makeText(context, context.getString(R.string.info_new_data_duplicated), Toast.LENGTH_LONG).show();
@@ -374,6 +393,7 @@ public class OpenScale {
         alarmHandler.entryChanged(context, scaleMeasurement);
 
         updateScaleData();
+        triggerWidgetUpdate();
     }
 
     public void deleteScaleData(int id)
