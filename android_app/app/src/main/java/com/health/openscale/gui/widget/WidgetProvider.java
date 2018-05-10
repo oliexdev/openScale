@@ -87,7 +87,10 @@ public class WidgetProvider extends AppWidgetProvider {
 
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget);
 
-        views.setInt(R.id.indicator_view, "setBackgroundColor", measurementView.getIndicatorColor());
+        // Add some transparency to make the corners appear rounded
+        int indicatorColor = measurementView.getIndicatorColor();
+        indicatorColor = (180 << 24) | (indicatorColor & 0xffffff);
+        views.setInt(R.id.indicator_view, "setBackgroundColor", indicatorColor);
 
         // Show icon in >= two cell mode
         if (minWidth >= twoCellsMinWidth) {
