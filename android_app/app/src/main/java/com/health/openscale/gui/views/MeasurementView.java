@@ -20,6 +20,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -320,6 +321,11 @@ public abstract class MeasurementView extends TableLayout {
 
     public int getForegroundColor() {
         return valueView.getCurrentTextColor();
+    }
+
+    public int getIndicatorColor() {
+        ColorDrawable background = (ColorDrawable)indicatorView.getBackground();
+        return background.getColor();
     }
 
     protected void showEvaluatorRow(boolean show) {

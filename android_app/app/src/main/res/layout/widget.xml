@@ -60,6 +60,12 @@
             android:paddingEnd="8dp"
             android:paddingStart="4dp">
 
+            <ImageView
+                android:id="@+id/widget_icon_vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingBottom="8dp" />
+
             <TextView
                 android:id="@+id/widget_value"
                 android:layout_width="match_parent"
@@ -75,7 +81,14 @@
                 android:gravity="right"
                 android:lines="1"
                 android:textColor="@color/widgetTextColor" />
+
         </LinearLayout>
+
+        <ImageView
+            android:id="@+id/indicator_view"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="0.2" />
 
     </LinearLayout>
 </FrameLayout>

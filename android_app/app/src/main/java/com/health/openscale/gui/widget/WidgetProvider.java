@@ -87,12 +87,17 @@ public class WidgetProvider extends AppWidgetProvider {
 
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget);
 
+        views.setInt(R.id.indicator_view, "setBackgroundColor", measurementView.getIndicatorColor());
+
         // Show icon in >= two cell mode
         if (minWidth >= twoCellsMinWidth) {
             views.setImageViewResource(R.id.widget_icon, measurementView.getIconResource());
             views.setViewVisibility(R.id.widget_icon, View.VISIBLE);
+            views.setViewVisibility(R.id.widget_icon_vertical, View.GONE);
         }
         else {
+            views.setImageViewResource(R.id.widget_icon_vertical, measurementView.getIconResource());
+            views.setViewVisibility(R.id.widget_icon_vertical, View.VISIBLE);
             views.setViewVisibility(R.id.widget_icon, View.GONE);
         }
 
