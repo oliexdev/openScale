@@ -38,7 +38,7 @@
         <item quantity="one">%d día</item>
         <item quantity="other">%d días</item>
     </plurals>
-    <string name="label_last_week">Últimos 7 días</string>
+    <string name="label_last_week">Última semana</string>
     <string name="label_last_month">Último mes</string>
     <string name="label_weight_difference">Diferencia de peso</string>
     <string name="label_goal_date_is">Fecha objetivo:</string>
