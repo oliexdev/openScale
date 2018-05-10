@@ -196,6 +196,7 @@ public class MainActivity extends BaseAppCompatActivity
     public void onSharedPreferenceChanged(SharedPreferences preferences, String key) {
         if (settingsActivityRunning) {
             recreate();
+            OpenScale.getInstance().triggerWidgetUpdate();
         }
     }
 

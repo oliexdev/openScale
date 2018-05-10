@@ -7,4 +7,6 @@
     <color name="primaryColor">#000000</color>
     <color name="primaryLightColor">@android:color/holo_blue_light</color>
     <color name="primaryDarkColor">#000000</color>
+
+    <color name="widgetTextColor">#555</color>
 </resources>

@@ -405,7 +405,7 @@ public abstract class FloatMeasurementView extends MeasurementView {
     }
 
     @Override
-    public void appendDiffValue(SpannableStringBuilder text) {
+    public void appendDiffValue(SpannableStringBuilder text, boolean newLine) {
         if (previousValue < 0.0f) {
             return;
         }
@@ -425,7 +425,9 @@ public abstract class FloatMeasurementView extends MeasurementView {
             color = Color.GRAY;
         }
 
-        text.append('\n');
+        if (newLine) {
+            text.append('\n');
+        }
         int start = text.length();
         text.append(symbol);
         text.setSpan(new ForegroundColorSpan(color), start, text.length(),
