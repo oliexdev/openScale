@@ -63,7 +63,8 @@
             <ImageView
                 android:id="@+id/widget_icon_vertical"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
+                android:layout_height="match_parent"
+                android:paddingStart="4dp" />
 
             <TextView
                 android:id="@+id/widget_value"
