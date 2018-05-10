@@ -4,8 +4,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingBottom="8dp"
-    android:paddingEnd="0dp"
-    android:paddingStart="0dp"
     android:paddingTop="8dp">
 
     <LinearLayout
@@ -21,8 +19,7 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:maxWidth="40dp"
-            android:paddingEnd="8dp"
-            android:paddingStart="8dp" />
+            android:padding="6dp" />
 
         <LinearLayout
             android:id="@+id/widget_name_date_layout"
@@ -41,6 +38,7 @@
                 android:textColor="@color/widgetTextColor"
                 android:textSize="15sp"
                 android:textStyle="bold" />
+
             <TextView
                 android:id="@+id/widget_date"
                 android:layout_width="match_parent"
@@ -57,8 +55,7 @@
             android:layout_weight="2"
             android:minWidth="40dp"
             android:orientation="vertical"
-            android:paddingEnd="8dp"
-            android:paddingStart="4dp">
+            android:padding="1dp">
 
             <ImageView
                 android:id="@+id/widget_icon_vertical"
@@ -82,14 +79,14 @@
                 android:gravity="right"
                 android:lines="1"
                 android:textColor="@color/widgetTextColor" />
-
         </LinearLayout>
 
         <ImageView
             android:id="@+id/indicator_view"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="0.2" />
-
+            android:layout_weight="0.2"
+            android:layout_marginStart="1dp"
+            android:layout_marginEnd="-1px" />
     </LinearLayout>
 </FrameLayout>

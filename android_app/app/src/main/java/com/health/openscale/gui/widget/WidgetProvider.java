@@ -133,8 +133,8 @@ public class WidgetProvider extends AppWidgetProvider {
             views.setTextViewTextSize(R.id.widget_delta, TypedValue.COMPLEX_UNIT_DIP, 15);
         }
         else {
-            views.setTextViewTextSize(R.id.widget_value, TypedValue.COMPLEX_UNIT_DIP, 14);
-            views.setTextViewTextSize(R.id.widget_delta, TypedValue.COMPLEX_UNIT_DIP, 13);
+            views.setTextViewTextSize(R.id.widget_value, TypedValue.COMPLEX_UNIT_DIP, 12);
+            views.setTextViewTextSize(R.id.widget_delta, TypedValue.COMPLEX_UNIT_DIP, 12);
         }
 
         // Start main activity when widget is clicked
