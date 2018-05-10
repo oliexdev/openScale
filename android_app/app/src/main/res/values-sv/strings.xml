@@ -201,4 +201,9 @@
     <string name="label_development">Utveckling</string>
     <string name="label_debug_log">Spara felsökningslogg till fil</string>
     <string name="label_your_bluetooth_scale">Din Bluetooth-våg</string>
+<string name="label_long_press_drag_reorder">Tryck, håll och dra mätvärden för att ordna om</string>
+    <string name="label_click_measurement_configure">Klicka på mätvärde för att konfigurera</string>
+    <string name="label_select_measurement">Välj mätvärde</string>
+    <string name="label_select_user">Välj användare</string>
+    <string name="label_configure_widget">Konfigurera widget</string>
 </resources>
