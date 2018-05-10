@@ -67,7 +67,7 @@ public class BluetoothYunmaiSE_Mini extends BluetoothCommunication {
                         (byte) selectedUser.getAge(), (byte) 0x55, (byte) 0x5a, (byte) 0x00,
                         (byte)0x00, display_unit, (byte) 0x03, (byte) 0x00};
                 user_add_or_query[user_add_or_query.length - 1] =
-                        xorChecksum(user_add_or_query, 0, user_add_or_query.length - 1);
+                        xorChecksum(user_add_or_query, 1, user_add_or_query.length - 1);
                 writeBytes(WEIGHT_CMD_SERVICE, WEIGHT_CMD_CHARACTERISTIC, user_add_or_query);
                 break;
             case 1:
@@ -77,7 +77,7 @@ public class BluetoothYunmaiSE_Mini extends BluetoothCommunication {
                         unixTime[0], unixTime[1], unixTime[2], unixTime[3],
                         (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00};
                 set_time[set_time.length - 1] =
-                        xorChecksum(set_time, 0, set_time.length - 1);
+                        xorChecksum(set_time, 1, set_time.length - 1);
 
                 writeBytes(WEIGHT_CMD_SERVICE, WEIGHT_CMD_CHARACTERISTIC, set_time);
                 break;
