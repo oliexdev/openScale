@@ -71,6 +71,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="right"
+                android:lines="1"
                 android:textColor="@color/widgetTextColor"
                 android:textStyle="bold" />
 

@@ -130,7 +130,7 @@ public class WidgetProvider extends AppWidgetProvider {
             views.setTextViewTextSize(R.id.widget_delta, TypedValue.COMPLEX_UNIT_DIP, 15);
         }
         else {
-            views.setTextViewTextSize(R.id.widget_value, TypedValue.COMPLEX_UNIT_DIP, 15);
+            views.setTextViewTextSize(R.id.widget_value, TypedValue.COMPLEX_UNIT_DIP, 14);
             views.setTextViewTextSize(R.id.widget_delta, TypedValue.COMPLEX_UNIT_DIP, 13);
         }
 
