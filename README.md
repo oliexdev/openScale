@@ -1,4 +1,4 @@
-![](https://github.com/jbeguna04/openScale/blob/f2a999d10863821d510ec1126c6d343f3485797e/LogoDesigns/logotype.png)
+
 
 openScale [![Build Status](https://travis-ci.org/oliexdev/openScale.svg?branch=master)](
 https://travis-ci.org/oliexdev/openScale)
