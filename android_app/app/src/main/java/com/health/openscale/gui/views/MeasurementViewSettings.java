@@ -52,6 +52,7 @@ public class MeasurementViewSettings {
             case WeightMeasurementView.KEY:
                 // Weight can't be disabled
                 return true;
+            case VisceralFatMeasurementView.KEY:
             case LBMMeasurementView.KEY:
             case BoneMeasurementView.KEY:
             case WaistMeasurementView.KEY:

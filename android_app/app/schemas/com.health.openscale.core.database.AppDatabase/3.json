@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 3,
-    "identityHash": "fd4198e9af667e65ae56be8e9838d1ca",
+    "identityHash": "d64c7b69a0b7a1a0f93dd154a24b20f2",
     "entities": [
       {
         "tableName": "scaleMeasurements",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `userId` INTEGER NOT NULL, `enabled` INTEGER NOT NULL, `datetime` INTEGER, `weight` REAL NOT NULL, `fat` REAL NOT NULL, `water` REAL NOT NULL, `muscle` REAL NOT NULL, `lbw` REAL NOT NULL, `waist` REAL NOT NULL, `hip` REAL NOT NULL, `bone` REAL NOT NULL, `chest` REAL NOT NULL, `thigh` REAL NOT NULL, `biceps` REAL NOT NULL, `neck` REAL NOT NULL, `caliper1` REAL NOT NULL, `caliper2` REAL NOT NULL, `caliper3` REAL NOT NULL, `comment` TEXT, FOREIGN KEY(`userId`) REFERENCES `scaleUsers`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `userId` INTEGER NOT NULL, `enabled` INTEGER NOT NULL, `datetime` INTEGER, `weight` REAL NOT NULL, `fat` REAL NOT NULL, `water` REAL NOT NULL, `muscle` REAL NOT NULL, `visceralFat` REAL NOT NULL, `lbw` REAL NOT NULL, `waist` REAL NOT NULL, `hip` REAL NOT NULL, `bone` REAL NOT NULL, `chest` REAL NOT NULL, `thigh` REAL NOT NULL, `biceps` REAL NOT NULL, `neck` REAL NOT NULL, `caliper1` REAL NOT NULL, `caliper2` REAL NOT NULL, `caliper3` REAL NOT NULL, `comment` TEXT, FOREIGN KEY(`userId`) REFERENCES `scaleUsers`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -53,6 +53,12 @@
           {
             "fieldPath": "muscle",
             "columnName": "muscle",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "visceralFat",
+            "columnName": "visceralFat",
             "affinity": "REAL",
             "notNull": true
           },
@@ -231,7 +237,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"fd4198e9af667e65ae56be8e9838d1ca\")"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"d64c7b69a0b7a1a0f93dd154a24b20f2\")"
     ]
   }
 }

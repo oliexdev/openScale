@@ -62,6 +62,9 @@ public class ScaleMeasurement implements Cloneable {
     @ColumnInfo(name = "muscle")
     private float muscle;
     @CsvColumn
+    @ColumnInfo(name = "visceralFat")
+    private float visceralFat;
+    @CsvColumn
     @ColumnInfo(name = "lbw")
     private float lbm;
     @CsvColumn
@@ -258,6 +261,14 @@ public class ScaleMeasurement implements Cloneable {
 
     public void setMuscle(float muscle) {
         this.muscle = muscle;
+    }
+
+    public float getVisceralFat() {
+        return visceralFat;
+    }
+
+    public void setVisceralFat(float visceralFat) {
+        this.visceralFat = visceralFat;
     }
 
     public float getLbm() {

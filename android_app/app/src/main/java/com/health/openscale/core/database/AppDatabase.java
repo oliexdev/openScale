@@ -81,6 +81,7 @@ public abstract class AppDatabase extends RoomDatabase {
         public void migrate(SupportSQLiteDatabase database) {
             database.beginTransaction();
             try {
+                database.execSQL("ALTER TABLE scaleMeasurements ADD COLUMN visceralFat REAL NOT NULL DEFAULT 0");
                 database.execSQL("ALTER TABLE scaleMeasurements ADD COLUMN chest REAL NOT NULL DEFAULT 0");
                 database.execSQL("ALTER TABLE scaleMeasurements ADD COLUMN thigh REAL NOT NULL DEFAULT 0");
                 database.execSQL("ALTER TABLE scaleMeasurements ADD COLUMN biceps REAL NOT NULL DEFAULT 0");
