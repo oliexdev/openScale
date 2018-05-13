@@ -67,7 +67,7 @@ public class VisceralFatMeasurementView extends FloatMeasurementView {
 
     @Override
     public int getColor() {
-        return Color.parseColor("#8d6e63");
+        return Color.parseColor("#00bfa5");
     }
 
     @Override
