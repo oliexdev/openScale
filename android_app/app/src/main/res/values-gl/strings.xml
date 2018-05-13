@@ -1,2 +1,219 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<?xml version='1.0' encoding='UTF-8'?>
+<resources><string name="title_overview">Xeral</string>
+    <string name="title_graph">Gráfico</string>
+    <string name="title_table">Táboa</string>
+    <string name="title_statistics">Estatísticas</string>
+    <string name="title_users">Usuarios</string>
+    <string name="title_measurements">Medidas</string>
+    <string name="action_settings">Configuración</string>
+    <string name="action_bluetooth_status">Estado do Bluetooth</string>
+    <string name="open_drawer">abrir</string>
+    <string name="close_drawer">pechar</string>
+
+    <string name="label_cancel">Cancelar</string>
+    <string name="label_yes">Si</string>
+    <string name="label_no">Non</string>
+    <string name="label_delete">Borrar</string>
+    <string name="label_add_user">Engadir usuario</string>
+    <string name="label_share">Compartir</string>
+    <string name="label_share_subject">Exportar a CSV (%s)</string>
+
+    <string name="label_weight">Peso</string>
+    <string name="label_bmi">Índice de masa corporal (IMC)</string>
+    <string name="label_bmr">Taxa metabólica basal (TMB)</string>
+    <string name="label_fat">Graxa corporal</string>
+    <string name="label_water">Auga corporal</string>
+    <string name="label_muscle">Masa muscular</string>
+    <string name="label_lbm">Masa corporal magra</string>
+    <string name="label_waist">Circunferencia da cintura</string>
+    <string name="label_hip">Circunferencia da cadeira</string>
+    <string name="label_comment">Comentario</string>
+    <string name="label_whtr">Proporción cintura-altura</string>
+    <string name="label_whr">Proporción cintura-cadeira</string>
+    <string name="label_bone">Masa ósea</string>
+    <string name="label_smartUserAssign">Asignación intelixente do usuario</string>
+
+    <plurals name="label_days">
+	<item quantity="one">%d día</item>
+	<item quantity="other">%d días</item>
+</plurals>
+    <string name="label_last_week">Media da última semana</string>
+    <string name="label_last_month">Media do último mes</string>
+    <string name="label_weight_difference">Diferencia de peso</string>
+    <string name="label_goal_date_is">Data obxectivo:</string>
+    <string name="label_days_left">Días restantes</string>
+
+    <string name="label_date">Data</string>
+    <string name="label_time">Hora</string>
+    <string name="label_birthday">D. Nacemento</string>
+    <string name="label_user_name">Nome</string>
+    <string name="label_height">Altura</string>
+    <string name="label_scale_unit">Unidade</string>
+    <string name="label_gender">Xénero</string>
+    <string name="label_male">Home</string>
+    <string name="label_female">Muller</string>
+    <string name="label_goal_weight">Peso obxectivo</string>
+    <string name="label_goal_date">Data obxectivo</string>
+
+    <string name="label_title_user">usuario</string>
+    <string name="label_title_last_measurement">última medida</string>
+    <string name="label_title_goal">Obxectivo</string>
+
+    <string name="label_import">Importar</string>
+    <string name="label_export">Exportar</string>
+    <string name="label_delete_all">Borrar todo</string>
+
+    <string name="error_value_required">Valor obrigatorio</string>
+    <string name="error_value_range">Valor fóra de rango</string>
+    <string name="error_exporting">Erro ao exportar</string>
+    <string name="error_importing">Erro ao importar</string>
+    <string name="error_user_name_required">Erro: O nome é obrigatorio</string>
+    <string name="error_user_name_too_short">Erro: O nome debe ter 3 ou máis caracteres</string>
+    <string name="error_height_required">Erro: A altura é obrigatoria</string>
+    <string name="error_initial_weight_required">Erro: O peso inicial é obrigatorio</string>
+    <string name="error_goal_weight_required">Erro: O peso obxectivo é obrigatorio</string>
+
+    <string name="info_data_deleted">Entrada borrada</string>
+    <string name="info_data_all_deleted">Todas as entradas borradas</string>
+    <string name="info_data_exported">Exportado a</string>
+    <string name="info_data_imported">Importado de</string>
+    <string name="info_enter_value_cm">Valor en cm</string>
+    <string name="info_enter_comment">Comentario opcional</string>
+    <string name="info_is_visible">está visible</string>
+    <string name="info_is_not_visible">non está visible</string>
+    <string name="info_is_enable">activado</string>
+    <string name="info_is_not_enable">desactivado</string>
+    <string name="info_is_not_available">non está dispoñible</string>
+    <string name="info_bluetooth_try_connection">Conectando a:</string>
+    <string name="info_bluetooth_connection_lost">Perdeuse a conexión Bluetooth</string>
+    <string name="info_bluetooth_no_device">Non se atopou un dispositivo Bluetooth</string>
+    <string name="info_bluetooth_no_device_set">Non hai ningún dispositivo Bluetooth seleccionado</string>
+    <string name="info_bluetooth_connection_successful">Conexión establecida</string>
+    <string name="info_bluetooth_init">Iniciar o dispositivo Bluetooth</string>
+    <string name="info_bluetooth_connection_error">Erro de Bluetooth inesperado</string>
+    <string name="info_new_data_added">%1$.2f%2$s [%3$s] engadido a %4$s</string>
+    <string name="info_new_data_duplicated">xa existe unha medida coa mesma data e hora</string>
+
+    <string name="info_enter_user_name">O teu nome</string>
+    <string name="info_no_selected_user">Non existe ningún usuario. Cree un na configuración.</string>
+    <string name="info_no_evaluation_available">Non se pode procesar o valor</string>
+
+    <string name="question_really_delete">Borrar a entrada?</string>
+    <string name="question_really_delete_all">Borrar todas as entradas para todos os usuarios?</string>
+    <string name="question_really_delete_user">Borrar o usuario?</string>
+
+    <string name="label_bluetooth_title">Bluetooth</string>
+    <string name="label_bluetooth_enable">Conectar coa báscula ó arrancar</string>
+    <string name="label_mergeWithLastMeasurement">Mesturar coa última medida</string>
+    <string name="label_bluetooth_searching">Buscando báscula Bluetooth</string>
+    <string name="label_bluetooth_searching_finished">Busca finalizada</string>
+
+    <string name="label_enable_labels">Etiqueta de dadas</string>
+    <string name="label_enable_points">Punto de datos</string>
+
+    <string name="label_delete_confirmation">Confirmación de borrado</string>
+
+    <string name="label_category_measurement_database">Base de datos de medidas</string>
+
+    <string name="label_maintainer">Responsable</string>
+    <string name="label_website">Páxina web</string>
+    <string name="label_license">Licenza</string>
+
+    <string name="label_automatic">automático</string>
+
+    <string name="label_theme">Tema</string>
+
+    <string name="label_reminder">Recordatorio</string>
+    <string name="label_reminder_weekdays">Días da semana</string>
+    <string name="label_reminder_time">Hora</string>
+    <string name="label_reminder_notify_text">Texto da modificación</string>
+    <string name="default_value_reminder_notify_text">É hora de pesarse</string>
+
+    <string name="info_on_date">o</string>
+
+    <string name="Monday">Luns</string>
+    <string name="Tuesday">Martes</string>
+    <string name="Wednesday">Mércores</string>
+    <string name="Thursday">Xoves</string>
+    <string name="Friday">Venres</string>
+    <string name="Saturday">Sábado</string>
+    <string name="Sunday">Domingo</string>
+    <string name="label_bt_device_no_support">Dispositivo non soportado</string>
+    <string name="label_exportBackup">Exportar copia de seguridade</string>
+    <string name="label_importBackup">Importar copia de seguridade</string>
+    <string name="label_backup">Copia de seguridade</string>
+    <string name="label_export_dir">Directorio de exportación</string>
+    <string name="label_not_found">non atopado</string>
+    <string name="label_ignoreOutOfRange">Ignorar datos fóra de rango</string>
+    <string name="label_initial_weight">Peso inicial</string>
+    <string name="label_regression_line">Liña de tendencia de peso</string>
+    <string name="label_regression_line_degree">Grao do polinomio de regresión (tendencia)</string>
+    <string name="label_goal_line">Liña do obxectivo</string>
+    <string name="label_help">Axuda</string>
+
+    <string name="label_feedback_message_enjoying">Gústache openScale?</string>
+    <string name="label_feedback_message_rate_app">Que tal unha avaliación no GooglePlay ou no GitHub?</string>
+    <string name="label_feedback_message_issue">Gustaríache enviarnos algunha suxestión?</string>
+    <string name="label_feedback_message_yes">Si</string>
+    <string name="label_feedback_message_no">Non moito...</string>
+    <string name="label_feedback_message_positive">Aceptar</string>
+    <string name="label_feedback_message_negative">Non, grazas</string>
+
+    <string name="error_max_scale_users">Alcanzouse o número máximo de usuarios</string>
+    <string name="info_step_on_scale">Por favor, suba descalzo á báscula para tomar medidas de referencia</string>
+    <string name="info_measuring">Medindo peso: %.2f</string>
+
+    <string name="customactivityoncrash_error_activity_error_occurred_explanation">Ocorreu un erro inesperado.
+\n
+\nPor favor, cree unha incidencia incluíndo os detalles do erro en
+\nhttps://github.com/oliexdev/openScale/issues</string>
+    <string name="customactivityoncrash_error_activity_restart_app">Reiniciar a aplicación</string>
+    <string name="customactivityoncrash_error_activity_close_app">Pechar a aplicación</string>
+    <string name="customactivityoncrash_error_activity_error_details">Detalles do erro</string>
+    <string name="customactivityoncrash_error_activity_error_details_title">Detalles do erro</string>
+    <string name="customactivityoncrash_error_activity_error_details_close">Pechar</string>
+    <string name="customactivityoncrash_error_activity_error_details_copy">Copiar ao portapapeis</string>
+    <string name="customactivityoncrash_error_activity_error_details_copied">Copiado no portapapeis</string>
+    <string name="customactivityoncrash_error_activity_error_details_clipboard_label">Información sobre o erro</string>
+    <string name="edit">Editar</string>
+    <string name="save">Gardar</string>
+
+    <string name="label_month_view">Vista de mes</string>
+    <string name="label_weeks_view">Vista de semana</string>
+
+    <string name="permission_not_granted">Permiso non concedido</string>
+    <string name="permission_bluetooth_info">Necesítase permiso de localización para para buscar dispositivos Bluetooth. Pódese retirar unha vez atopado o dispositivo.</string>
+    <string name="permission_bluetooth_info_title">Información</string>
+    <string name="label_next">Seguinte</string>
+    <string name="label_long_press_drag_reorder">Manteña pulsada a medida e arrastre para reordenar</string>
+    <string name="label_click_measurement_configure">Prema na medida para configurar</string>
+    <string name="label_set_default_order">Establecer a orde predeterminada</string>
+    <string name="label_export_overwrite">Sobreescribir a exportación anterior %s?</string>
+    <string name="label_include_in_overview_graph">Incluir no gráfico xeral</string>
+    <string name="label_measurement_in_percent">Medidas en %</string>
+    <string name="label_estimate_measurement">Medida estimada</string>
+    <string name="label_estimation_formula">Fórmula de estimación</string>
+    <string name="language_default">Predeterminado do sistema</string>
+    <string name="label_language">Idioma</string>
+    <string name="theme_light">Claro</string>
+    <string name="theme_dark">Escuro</string>
+    <string name="label_contribute_translation">Axuda coa tradución</string>
+    <string name="label_add_or_fix_translation">Engade novo ou arranxar existente</string>
+    <string name="label_overview_graph">Gráfico xeral</string>
+    <string name="label_percent">Porcentaxe</string>
+    <string name="label_estimated">Estimado</string>
+    <string name="label_estimate_measurement_summary">Baseado en peso, altura, idade, xénero, etc.</string>
+    <string name="label_auto_backup">Copia de seguridade automática</string>
+    <string name="label_auto_backup_schedule">Programación da copia de seguridade</string>
+    <string name="label_overwrite_backup">Sobreescribir a copia anterior</string>
+    <string name="label_daily">diaria</string>
+    <string name="label_weekly">semanal</string>
+    <string name="label_monthly">mensual</string>
+    <string name="label_scale_not_supported">A súa báscula non está soportada?</string>
+    <string name="label_click_to_help_add_support">Prema aquí para axudar a engadir soporte para ela</string>
+    <string name="label_development">Desenvolvemento</string>
+    <string name="label_debug_log">Garda o rexistro de depuración no ficheiro</string>
+    <string name="label_your_bluetooth_scale">A súa báscula Bluetooth</string>
+    <string name="label_select_measurement">Seleccione medida</string>
+    <string name="label_select_user">Seleccione usuario</string>
+    </resources>
