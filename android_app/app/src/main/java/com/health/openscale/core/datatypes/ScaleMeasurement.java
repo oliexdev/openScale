@@ -115,6 +115,9 @@ public class ScaleMeasurement implements Cloneable {
         thigh = 0.0f;
         biceps = 0.0f;
         neck = 0.0f;
+        caliper1 = 0.0f;
+        caliper2 = 0.0f;
+        caliper3 = 0.0f;
         comment = "";
     }
 
