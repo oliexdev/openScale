@@ -130,6 +130,11 @@ public abstract class FloatMeasurementView extends MeasurementView {
         return Math.max(0.0f, Math.min(getMaxValue(), value));
     }
 
+    private float roundValue(float value) {
+        final float factor = (float) Math.pow(10, getDecimalPlaces());
+        return Math.round(value * factor) / factor;
+    }
+
     private void setValueInner(float newValue, boolean callListener) {
         value = newValue;
         evaluationResult = null;
@@ -221,11 +226,10 @@ public abstract class FloatMeasurementView extends MeasurementView {
         setValue(clampValue(value - INC_DEC_DELTA), previousValue, true);
     }
 
-    protected String formatValue(float value, boolean withUnit) {
-        if (withUnit && !getUnit().isEmpty()) {
-            return String.format(Locale.getDefault(), "%.2f %s", value, getUnit());
-        }
-        return String.format(Locale.getDefault(), "%.2f", value);
+    private String formatValue(float value, boolean withUnit) {
+        final String format = String.format(Locale.getDefault(), "%%.%df%s",
+                getDecimalPlaces(), withUnit && !getUnit().isEmpty() ? " %s" : "");
+        return String.format(Locale.getDefault(), format, value, getUnit());
     }
 
     protected String formatValue(float value) {
@@ -237,6 +241,9 @@ public abstract class FloatMeasurementView extends MeasurementView {
 
     public abstract String getUnit();
     protected abstract float getMaxValue();
+    protected int getDecimalPlaces() {
+        return 2;
+    }
 
     public abstract int getColor();
 
@@ -335,6 +342,7 @@ public abstract class FloatMeasurementView extends MeasurementView {
             newValue = getMeasurementValue(measurement);
             newValue = maybeConvertValue(newValue);
             newValue = clampValue(newValue);
+            newValue = roundValue(newValue);
 
             if (previousMeasurement != null) {
                 float saveUserConvertedWeight = userConvertedWeight;
@@ -343,6 +351,7 @@ public abstract class FloatMeasurementView extends MeasurementView {
                 newPreviousValue = getMeasurementValue(previousMeasurement);
                 newPreviousValue = maybeConvertValue(newPreviousValue);
                 newPreviousValue = clampValue(newPreviousValue);
+                newPreviousValue = roundValue(newPreviousValue);
 
                 userConvertedWeight = saveUserConvertedWeight;
             }

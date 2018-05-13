@@ -44,14 +44,6 @@ public class BMRMeasurementView extends FloatMeasurementView {
     }
 
     @Override
-    protected String formatValue(float value, boolean withUnit) {
-        if (withUnit) {
-            return String.format(Locale.getDefault(), "%d %s", Math.round(value), getUnit());
-        }
-        return String.format(Locale.getDefault(), "%d", Math.round(value));
-    }
-
-    @Override
     protected float getMeasurementValue(ScaleMeasurement measurement) {
         return measurement.getBMR(getScaleUser());
     }
@@ -69,6 +61,11 @@ public class BMRMeasurementView extends FloatMeasurementView {
     @Override
     protected float getMaxValue() {
         return 5000;
+    }
+
+    @Override
+    protected int getDecimalPlaces() {
+        return 0;
     }
 
     @Override
