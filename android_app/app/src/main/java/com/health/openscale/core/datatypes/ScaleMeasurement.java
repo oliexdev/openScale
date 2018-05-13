@@ -86,6 +86,15 @@ public class ScaleMeasurement implements Cloneable {
     @ColumnInfo(name = "neck")
     private float neck;
     @CsvColumn
+    @ColumnInfo(name = "caliper1")
+    private float caliper1;
+    @CsvColumn
+    @ColumnInfo(name = "caliper2")
+    private float caliper2;
+    @CsvColumn
+    @ColumnInfo(name = "caliper3")
+    private float caliper3;
+    @CsvColumn
     @ColumnInfo(name = "comment")
     private String comment;
 
@@ -308,6 +317,30 @@ public class ScaleMeasurement implements Cloneable {
         this.neck = neck;
     }
 
+    public float getCaliper1() {
+        return caliper1;
+    }
+
+    public void setCaliper1(float caliper1) {
+        this.caliper1 = caliper1;
+    }
+
+    public float getCaliper2() {
+        return caliper2;
+    }
+
+    public void setCaliper2(float caliper2) {
+        this.caliper2 = caliper2;
+    }
+
+    public float getCaliper3() {
+        return caliper3;
+    }
+
+    public void setCaliper3(float caliper3) {
+        this.caliper3 = caliper3;
+    }
+
     public String getComment() {
         return comment;
     }
@@ -345,14 +378,39 @@ public class ScaleMeasurement implements Cloneable {
         return waist / hip;
     }
 
+    public float getFatCaliper(ScaleUser scaleUser) {
+        float fat_caliper;
+
+        float k0, k1, k2, ka;
+
+        float s = caliper1 + caliper2 + caliper3;
+
+        if (scaleUser.getGender().isMale()) {
+            k0 = 1.10938f;
+            k1 = 0.0008267f;
+            k2 = 0.0000016f;
+            ka = 0.0002574f;
+        } else {
+            k0 = 1.0994921f;
+            k1 = 0.0009929f;
+            k2 = 0.0000023f;
+            ka = 0.0001392f;
+        }
+
+        // calipometrie formula by Jackson, Pollock: Generalized equations for predicting body density of women. In: British Journal of Nutrition. Nr.40, Oktober 1978, S.497–504
+        fat_caliper = ((4.95f / (k0 - (k1*s) + (k2 * s*s) - (ka*scaleUser.getAge()))) - 4.5f) * 100.0f;
+
+        return fat_caliper;
+    }
+
     @Override
     public String toString()
     {
         return String.format(
                 "ID: %d, USER_ID: %d, DATE_TIME: %s, WEIGHT: %.2f, FAT: %.2f, WATER: %.2f, " +
                 "MUSCLE: %.2f, LBM: %.2f, WAIST: %.2f, HIP: %.2f, BONE: %.2f, CHEST: %.2f, " +
-                        "THIGH: %.2f, ARM: %.2f, NECK: %.2f, COMMENT: %s",
+                        "THIGH: %.2f, ARM: %.2f, NECK: %.2f, CALIPER1: %2.f, CALIPER2: %2.f, CALIPER3: %2.f, COMMENT: %s",
                 id, userId, dateTime.toString(), weight, fat, water,
-                muscle, lbm, waist, hip, bone, chest, thigh, biceps, neck, comment);
+                muscle, lbm, waist, hip, bone, chest, thigh, biceps, neck, caliper1, caliper2, caliper3, comment);
     }
 }

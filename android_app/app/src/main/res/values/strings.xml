@@ -227,4 +227,11 @@
     <string name="label_thigh">Thigh circumference</string>
     <string name="label_biceps">Biceps circumference</string>
     <string name="label_neck">Neck circumference</string>
+    <string name="label_fat_caliper">Body fat caliper</string>
+    <string name="label_caliper1_male">Chest skinfold</string>
+    <string name="label_caliper2_male">Abdominal skinfold</string>
+    <string name="label_caliper3_male">Thigh skinfold</string>
+    <string name="label_caliper1_female">Triceps skinfold</string>
+    <string name="label_caliper2_female">Abdominal skinfold</string>
+    <string name="label_caliper3_female">Hip skinfold</string>
 </resources>

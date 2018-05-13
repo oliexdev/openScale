@@ -85,6 +85,9 @@ public abstract class AppDatabase extends RoomDatabase {
                 database.execSQL("ALTER TABLE scaleMeasurements ADD COLUMN thigh REAL NOT NULL DEFAULT 0");
                 database.execSQL("ALTER TABLE scaleMeasurements ADD COLUMN biceps REAL NOT NULL DEFAULT 0");
                 database.execSQL("ALTER TABLE scaleMeasurements ADD COLUMN neck REAL NOT NULL DEFAULT 0");
+                database.execSQL("ALTER TABLE scaleMeasurements ADD COLUMN caliper1 REAL NOT NULL DEFAULT 0");
+                database.execSQL("ALTER TABLE scaleMeasurements ADD COLUMN caliper2 REAL NOT NULL DEFAULT 0");
+                database.execSQL("ALTER TABLE scaleMeasurements ADD COLUMN caliper3 REAL NOT NULL DEFAULT 0");
 
                 database.setTransactionSuccessful();
             }
