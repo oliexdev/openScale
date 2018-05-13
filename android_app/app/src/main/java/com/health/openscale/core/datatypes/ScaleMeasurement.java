@@ -61,7 +61,7 @@ public class ScaleMeasurement implements Cloneable {
     @CsvColumn(mustBeSupplied = false)
     @ColumnInfo(name = "muscle")
     private float muscle;
-    @CsvColumn
+    @CsvColumn(mustBeSupplied = false)
     @ColumnInfo(name = "visceralFat")
     private float visceralFat;
     @CsvColumn(mustBeSupplied = false)
@@ -76,25 +76,25 @@ public class ScaleMeasurement implements Cloneable {
     @CsvColumn(mustBeSupplied = false)
     @ColumnInfo(name = "bone")
     private float bone;
-    @CsvColumn
+    @CsvColumn(mustBeSupplied = false)
     @ColumnInfo(name = "chest")
     private float chest;
-    @CsvColumn
+    @CsvColumn(mustBeSupplied = false)
     @ColumnInfo(name = "thigh")
     private float thigh;
-    @CsvColumn
+    @CsvColumn(mustBeSupplied = false)
     @ColumnInfo(name = "biceps")
     private float biceps;
-    @CsvColumn
+    @CsvColumn(mustBeSupplied = false)
     @ColumnInfo(name = "neck")
     private float neck;
-    @CsvColumn
+    @CsvColumn(mustBeSupplied = false)
     @ColumnInfo(name = "caliper1")
     private float caliper1;
-    @CsvColumn
+    @CsvColumn(mustBeSupplied = false)
     @ColumnInfo(name = "caliper2")
     private float caliper2;
-    @CsvColumn
+    @CsvColumn(mustBeSupplied = false)
     @ColumnInfo(name = "caliper3")
     private float caliper3;
     @CsvColumn(mustBeSupplied = false)
