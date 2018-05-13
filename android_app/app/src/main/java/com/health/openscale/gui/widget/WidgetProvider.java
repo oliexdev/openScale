@@ -39,6 +39,8 @@ import com.health.openscale.gui.views.MeasurementView;
 import java.text.DateFormat;
 import java.util.List;
 
+import timber.log.Timber;
+
 public class WidgetProvider extends AppWidgetProvider {
     List<MeasurementView> measurementViews;
 
@@ -55,9 +57,14 @@ public class WidgetProvider extends AppWidgetProvider {
         // Make sure we use the correct language
         context = BaseAppCompatActivity.createBaseContext(context);
 
+        final int minWidth = newOptions.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH);
+
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         int userId = prefs.getInt(getUserIdPreferenceName(appWidgetId), -1);
         String key = prefs.getString(getMeasurementPreferenceName(appWidgetId), "");
+
+        Timber.d("Update widget %d (%s) for user %d, min width %ddp",
+                appWidgetId, key, userId, minWidth);
 
         if (measurementViews == null) {
             measurementViews = MeasurementView.getMeasurementList(
@@ -79,7 +86,6 @@ public class WidgetProvider extends AppWidgetProvider {
             measurementView.loadFrom(latest, previous);
         }
 
-        final int minWidth = newOptions.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH);
         // From https://developer.android.com/guide/practices/ui_guidelines/widget_design
         final int twoCellsMinWidth = 110;
         final int thirdCellsMinWidth = 180;
@@ -118,7 +124,7 @@ public class WidgetProvider extends AppWidgetProvider {
             views.setViewVisibility(R.id.widget_name_date_layout, View.GONE);
         }
 
-        // Always show value, but use smaller font in once cell mode
+        // Always show value and delta, but adjust font size
         views.setTextViewText(R.id.widget_value, measurementView.getValueAsString(true));
         SpannableStringBuilder delta = new SpannableStringBuilder();
         measurementView.appendDiffValue(delta, false);

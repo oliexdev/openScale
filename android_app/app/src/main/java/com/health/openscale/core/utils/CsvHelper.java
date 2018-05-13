@@ -40,36 +40,29 @@ public class CsvHelper {
 
         final String[] fields = sampleLine.split(",", -1);
 
-        // Return an array with header fields so that all the headers that actually are
-        // in the file for a given version comes first, and then the rest comes at the end.
+        // Return an array with header fields that match the guessed version.
         if (fields.length == 10) {
             // From version 1.6 up to 1.7
-            return new String[]{
-                    "dateTime", "weight", "fat", "water", "muscle", "lbm", "bone", "waist", "hip", "comment"};
+            return new String[]{"dateTime", "weight", "fat", "water", "muscle", "lbm",
+                    "bone", "waist", "hip", "comment"};
         }
         else if (fields.length == 9) {
-            // From version 1.5.5 (lbm unused)
-            return new String[]{
-                    "dateTime", "weight", "fat", "water", "muscle", "bone", "waist", "hip", "comment",
-                    "lbm"};
+            // From version 1.5.5
+            return new String[]{"dateTime", "weight", "fat", "water", "muscle", "bone",
+                    "waist", "hip", "comment"};
         }
         else if (fields.length == 8) {
-            // From version 1.3 (lbm and bone unused)
-            return new String[]{
-                    "dateTime", "weight", "fat", "water", "muscle", "waist", "hip", "comment",
-                    "lbm", "bone"};
+            // From version 1.3
+            return new String[]{"dateTime", "weight", "fat", "water", "muscle", "waist",
+                    "hip", "comment"};
         }
         else if (fields.length == 6) {
-            // From version 1.2 (lbm, bone, waist and hip unused)
-            return new String[]{
-                    "dateTime", "weight", "fat", "water", "muscle", "comment",
-                    "lbm", "bone", "waist", "hip"};
+            // From version 1.2
+            return new String[]{"dateTime", "weight", "fat", "water", "muscle", "comment"};
         }
         else if (fields.length == 5) {
-            // From version 1.0 (lbm, bone, waist, hip and muscle unused)
-            return new String[]{
-                    "dateTime", "weight", "fat", "water", "comment",
-                    "lbm", "bone", "waist", "hip", "muscle"};
+            // From version 1.0
+            return new String[]{"dateTime", "weight", "fat", "water", "comment"};
         }
 
         // Unknown input data format
