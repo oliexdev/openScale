@@ -46,34 +46,34 @@ public class ScaleMeasurement implements Cloneable {
     private int userId;
     @ColumnInfo(name = "enabled")
     private boolean enabled;
-    @CsvColumn (format = "dd.MM.yyyy HH:mm")
+    @CsvColumn(format = "dd.MM.yyyy HH:mm", mustNotBeBlank = true)
     @ColumnInfo(name = "datetime")
     private Date dateTime;
-    @CsvColumn
+    @CsvColumn(mustNotBeBlank = true)
     @ColumnInfo(name = "weight")
     private float weight;
-    @CsvColumn
+    @CsvColumn(mustBeSupplied = false)
     @ColumnInfo(name = "fat")
     private float fat;
-    @CsvColumn
+    @CsvColumn(mustBeSupplied = false)
     @ColumnInfo(name = "water")
     private float water;
-    @CsvColumn
+    @CsvColumn(mustBeSupplied = false)
     @ColumnInfo(name = "muscle")
     private float muscle;
-    @CsvColumn
+    @CsvColumn(mustBeSupplied = false)
     @ColumnInfo(name = "lbw")
     private float lbm;
-    @CsvColumn
+    @CsvColumn(mustBeSupplied = false)
     @ColumnInfo(name = "waist")
     private float waist;
-    @CsvColumn
+    @CsvColumn(mustBeSupplied = false)
     @ColumnInfo(name = "hip")
     private float hip;
-    @CsvColumn
+    @CsvColumn(mustBeSupplied = false)
     @ColumnInfo(name = "bone")
     private float bone;
-    @CsvColumn
+    @CsvColumn(mustBeSupplied = false)
     @ColumnInfo(name = "comment")
     private String comment;
 
