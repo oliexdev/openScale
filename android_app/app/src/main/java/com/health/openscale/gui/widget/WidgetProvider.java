@@ -124,24 +124,24 @@ public class WidgetProvider extends AppWidgetProvider {
             views.setViewVisibility(R.id.widget_name_date_layout, View.GONE);
         }
 
-        // Always show value and delta, but adjust font size
+        // Always show value and delta, but adjust font size based on widget width
         views.setTextViewText(R.id.widget_value, measurementView.getValueAsString(true));
         SpannableStringBuilder delta = new SpannableStringBuilder();
         measurementView.appendDiffValue(delta, false);
-        views.setTextViewText(R.id.widget_delta, delta.toString());
+        views.setTextViewText(R.id.widget_delta, delta);
 
+        int textSize;
         if (minWidth >= thirdCellsMinWidth) {
-            views.setTextViewTextSize(R.id.widget_value, TypedValue.COMPLEX_UNIT_DIP, 18);
-            views.setTextViewTextSize(R.id.widget_delta, TypedValue.COMPLEX_UNIT_DIP, 17);
+            textSize = 18;
         }
         else if (minWidth >= twoCellsMinWidth) {
-            views.setTextViewTextSize(R.id.widget_value, TypedValue.COMPLEX_UNIT_DIP, 17);
-            views.setTextViewTextSize(R.id.widget_delta, TypedValue.COMPLEX_UNIT_DIP, 15);
+            textSize = 17;
         }
         else {
-            views.setTextViewTextSize(R.id.widget_value, TypedValue.COMPLEX_UNIT_DIP, 12);
-            views.setTextViewTextSize(R.id.widget_delta, TypedValue.COMPLEX_UNIT_DIP, 12);
+            textSize = 12;
         }
+        views.setTextViewTextSize(R.id.widget_value, TypedValue.COMPLEX_UNIT_DIP, textSize);
+        views.setTextViewTextSize(R.id.widget_delta, TypedValue.COMPLEX_UNIT_DIP, textSize);
 
         // Start main activity when widget is clicked
         Intent intent = new Intent(context, MainActivity.class);
