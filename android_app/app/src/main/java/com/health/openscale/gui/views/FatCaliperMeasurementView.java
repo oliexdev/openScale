@@ -42,6 +42,11 @@ public class FatCaliperMeasurementView extends FloatMeasurementView {
     }
 
     @Override
+    protected boolean supportsPercentageToAbsoluteWeightConversion() {
+        return true;
+    }
+
+    @Override
     protected float getMeasurementValue(ScaleMeasurement measurement) {
         return measurement.getFatCaliper(getScaleUser());
     }
@@ -53,12 +58,16 @@ public class FatCaliperMeasurementView extends FloatMeasurementView {
 
     @Override
     public String getUnit() {
+        if (shouldConvertPercentageToAbsoluteWeight()) {
+            return getScaleUser().getScaleUnit().toString();
+        }
+
         return "%";
     }
 
     @Override
     protected float getMaxValue() {
-        return 80;
+        return maybeConvertPercentageToAbsoluteWeight(80);
     }
 
     @Override
@@ -68,6 +77,6 @@ public class FatCaliperMeasurementView extends FloatMeasurementView {
 
     @Override
     protected EvaluationResult evaluateSheet(EvaluationSheet evalSheet, float value) {
-        return null;
+        return evalSheet.evaluateBodyFat(value);
     }
 }
