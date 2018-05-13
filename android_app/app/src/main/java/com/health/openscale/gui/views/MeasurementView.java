@@ -118,7 +118,7 @@ public abstract class MeasurementView extends TableLayout {
             unsorted.add(new WHRMeasurementView(context));
             unsorted.add(new ChestMeasurementView(context));
             unsorted.add(new ThighMeasurementView(context));
-            unsorted.add(new ArmMeasurementView(context));
+            unsorted.add(new BicepsMeasurementView(context));
             unsorted.add(new NeckMeasurementView(context));
             unsorted.add(new BMRMeasurementView(context));
             unsorted.add(new CommentMeasurementView(context));

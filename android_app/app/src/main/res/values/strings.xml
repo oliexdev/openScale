@@ -225,6 +225,6 @@
     <string name="label_configure_widget">Configure widget</string>
     <string name="label_chest">Chest circumference</string>
     <string name="label_thigh">Thigh circumference</string>
-    <string name="label_arm">Arm circumference</string>
+    <string name="label_biceps">Biceps circumference</string>
     <string name="label_neck">Neck circumference</string>
 </resources>

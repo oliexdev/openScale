@@ -57,7 +57,7 @@ public class MeasurementViewSettings {
             case WaistMeasurementView.KEY:
             case HipMeasurementView.KEY:
             case ChestMeasurementView.KEY:
-            case ArmMeasurementView.KEY:
+            case BicepsMeasurementView.KEY:
             case ThighMeasurementView.KEY:
             case NeckMeasurementView.KEY:
                 defaultValue = false;

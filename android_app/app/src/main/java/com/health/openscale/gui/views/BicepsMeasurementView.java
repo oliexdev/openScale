@@ -23,12 +23,12 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 
-public class ArmMeasurementView extends FloatMeasurementView {
+public class BicepsMeasurementView extends FloatMeasurementView {
     // Don't change key value, it may be stored persistent in preferences
-    public static final String KEY = "arm";
+    public static final String KEY = "biceps";
 
-    public ArmMeasurementView(Context context) {
-        super(context, R.string.label_arm, R.drawable.ic_arm);
+    public BicepsMeasurementView(Context context) {
+        super(context, R.string.label_biceps, R.drawable.ic_biceps);
     }
 
     @Override
@@ -38,12 +38,12 @@ public class ArmMeasurementView extends FloatMeasurementView {
 
     @Override
     protected float getMeasurementValue(ScaleMeasurement measurement) {
-        return measurement.getArm();
+        return measurement.getBiceps();
     }
 
     @Override
     protected void setMeasurementValue(float value, ScaleMeasurement measurement) {
-        measurement.setArm(value);
+        measurement.setBiceps(value);
     }
 
     @Override
