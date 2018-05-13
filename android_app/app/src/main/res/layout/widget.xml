@@ -60,15 +60,15 @@
             <ImageView
                 android:id="@+id/widget_icon_vertical"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:paddingStart="4dp" />
 
             <TextView
                 android:id="@+id/widget_value"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="right"
-                android:lines="1"
+                android:gravity="center_horizontal"
+                android:maxLines="2"
                 android:textColor="@color/widgetTextColor"
                 android:textStyle="bold" />
 
@@ -76,7 +76,7 @@
                 android:id="@+id/widget_delta"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="right"
+                android:gravity="center_horizontal"
                 android:lines="1"
                 android:textColor="@color/widgetTextColor" />
         </LinearLayout>
