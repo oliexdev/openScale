@@ -1,12 +1,12 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 2,
-    "identityHash": "41852b104c8d04f118c09bd1cd32725b",
+    "version": 3,
+    "identityHash": "8f43c71c1f13451e75ad315064990c9a",
     "entities": [
       {
         "tableName": "scaleMeasurements",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `userId` INTEGER NOT NULL, `enabled` INTEGER NOT NULL, `datetime` INTEGER, `weight` REAL NOT NULL, `fat` REAL NOT NULL, `water` REAL NOT NULL, `muscle` REAL NOT NULL, `lbw` REAL NOT NULL, `waist` REAL NOT NULL, `hip` REAL NOT NULL, `bone` REAL NOT NULL, `thigh` REAL NOT NULL, `comment` TEXT, FOREIGN KEY(`userId`) REFERENCES `scaleUsers`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `userId` INTEGER NOT NULL, `enabled` INTEGER NOT NULL, `datetime` INTEGER, `weight` REAL NOT NULL, `fat` REAL NOT NULL, `water` REAL NOT NULL, `muscle` REAL NOT NULL, `lbw` REAL NOT NULL, `waist` REAL NOT NULL, `hip` REAL NOT NULL, `bone` REAL NOT NULL, `chest` REAL NOT NULL, `thigh` REAL NOT NULL, `arm` REAL NOT NULL, `neck` REAL NOT NULL, `comment` TEXT, FOREIGN KEY(`userId`) REFERENCES `scaleUsers`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -81,8 +81,26 @@
             "notNull": true
           },
           {
+            "fieldPath": "chest",
+            "columnName": "chest",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
             "fieldPath": "thigh",
             "columnName": "thigh",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "arm",
+            "columnName": "arm",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "neck",
+            "columnName": "neck",
             "affinity": "REAL",
             "notNull": true
           },
@@ -195,7 +213,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"41852b104c8d04f118c09bd1cd32725b\")"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"8f43c71c1f13451e75ad315064990c9a\")"
     ]
   }
 }

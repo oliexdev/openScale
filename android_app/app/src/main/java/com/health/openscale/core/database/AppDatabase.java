@@ -26,7 +26,7 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
 
-@Database(entities = {ScaleMeasurement.class, ScaleUser.class}, version = 2)
+@Database(entities = {ScaleMeasurement.class, ScaleUser.class}, version = 3)
 @TypeConverters({Converters.class})
 public abstract class AppDatabase extends RoomDatabase {
     public abstract ScaleMeasurementDAO measurementDAO();
@@ -67,6 +67,24 @@ public abstract class AppDatabase extends RoomDatabase {
 
                 // Delete old table
                 database.execSQL("DROP TABLE scaleMeasurementsOld");
+
+                database.setTransactionSuccessful();
+            }
+            finally {
+                database.endTransaction();
+            }
+        }
+    };
+
+    public static final Migration MIGRATION_2_3 = new Migration(2, 3) {
+        @Override
+        public void migrate(SupportSQLiteDatabase database) {
+            database.beginTransaction();
+            try {
+                database.execSQL("ALTER TABLE scaleMeasurements ADD COLUMN chest REAL NOT NULL DEFAULT 0");
+                database.execSQL("ALTER TABLE scaleMeasurements ADD COLUMN thigh REAL NOT NULL DEFAULT 0");
+                database.execSQL("ALTER TABLE scaleMeasurements ADD COLUMN arm REAL NOT NULL DEFAULT 0");
+                database.execSQL("ALTER TABLE scaleMeasurements ADD COLUMN neck REAL NOT NULL DEFAULT 0");
 
                 database.setTransactionSuccessful();
             }

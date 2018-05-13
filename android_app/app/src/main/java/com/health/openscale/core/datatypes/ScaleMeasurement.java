@@ -74,6 +74,18 @@ public class ScaleMeasurement implements Cloneable {
     @ColumnInfo(name = "bone")
     private float bone;
     @CsvColumn
+    @ColumnInfo(name = "chest")
+    private float chest;
+    @CsvColumn
+    @ColumnInfo(name = "thigh")
+    private float thigh;
+    @CsvColumn
+    @ColumnInfo(name = "arm")
+    private float arm;
+    @CsvColumn
+    @ColumnInfo(name = "neck")
+    private float neck;
+    @CsvColumn
     @ColumnInfo(name = "comment")
     private String comment;
 
@@ -90,6 +102,10 @@ public class ScaleMeasurement implements Cloneable {
         bone = 0.0f;
         waist = 0.0f;
         hip = 0.0f;
+        chest = 0.0f;
+        thigh = 0.0f;
+        arm = 0.0f;
+        neck = 0.0f;
         comment = "";
     }
 
@@ -260,6 +276,38 @@ public class ScaleMeasurement implements Cloneable {
 
     public void setBone(float bone) {this.bone = bone; }
 
+    public float getChest() {
+        return chest;
+    }
+
+    public void setChest(float chest) {
+        this.chest = chest;
+    }
+
+    public float getThigh() {
+        return thigh;
+    }
+
+    public void setThigh(float thigh) {
+        this.thigh = thigh;
+    }
+
+    public float getArm() {
+        return arm;
+    }
+
+    public void setArm(float arm) {
+        this.arm = arm;
+    }
+
+    public float getNeck() {
+        return neck;
+    }
+
+    public void setNeck(float neck) {
+        this.neck = neck;
+    }
+
     public String getComment() {
         return comment;
     }
@@ -302,8 +350,9 @@ public class ScaleMeasurement implements Cloneable {
     {
         return String.format(
                 "ID: %d, USER_ID: %d, DATE_TIME: %s, WEIGHT: %.2f, FAT: %.2f, WATER: %.2f, " +
-                "MUSCLE: %.2f, LBM: %.2f, WAIST: %.2f, HIP: %.2f, BONE: %.2f, COMMENT: %s",
+                "MUSCLE: %.2f, LBM: %.2f, WAIST: %.2f, HIP: %.2f, BONE: %.2f, CHEST: %.2f, " +
+                        "THIGH: %.2f, ARM: %.2f, NECK: %.2f, COMMENT: %s",
                 id, userId, dateTime.toString(), weight, fat, water,
-                muscle, lbm, waist, hip, bone, comment);
+                muscle, lbm, waist, hip, bone, chest, thigh, arm, neck, comment);
     }
 }
