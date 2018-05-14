@@ -86,8 +86,8 @@ public class BluetoothDigooDGSO38H extends BluetoothCommunication {
     }
 
     private void parseBytes(byte[] weightBytes) {
-            float weight, fat, water, muscle, boneWeight;
-            //float subcutaneousFat, visceralFat, metabolicBaseRate, biologicalAge,  boneWeight;
+            float weight, fat, water, muscle, boneWeight, visceralFat;
+            //float subcutaneousFat, metabolicBaseRate, biologicalAge,  boneWeight;
 
             final byte ctrlByte = weightBytes[5];
             final boolean allValues = isBitSet(ctrlByte, 1);
@@ -125,19 +125,19 @@ public class BluetoothDigooDGSO38H extends BluetoothCommunication {
                                 "is done, but fat is still zero. Settling for just adding weight.");
                 } else {
                     //subcutaneousFat = (float) (((weightBytes[8] & 0xFF) << 8) | (weightBytes[9] & 0xFF)) / 10.0f;
-                    //visceralFat = (float) (weightBytes[10] & 0xFF) / 10.0f;
+                    visceralFat = (float) (weightBytes[10] & 0xFF) / 10.0f;
                     water = (float) (((weightBytes[11] & 0xFF) << 8) | (weightBytes[12] & 0xFF)) / 10.0f;
                     //metabolicBaseRate = (float) (((weightBytes[13] & 0xFF) << 8) | (weightBytes[14] & 0xFF));
                     //biologicalAge = (float) (weightBytes[15] & 0xFF) + 1;
                     muscle = (float) (((weightBytes[16] & 0xFF) << 8) | (weightBytes[17] & 0xFF)) / 10.0f;
                     boneWeight = (float) (weightBytes[18] & 0xFF) / 10.0f;
 
-                    //TODO: Add extra measurements?
                     scaleBtData.setDateTime(new Date());
                     scaleBtData.setFat(fat);
                     scaleBtData.setMuscle(muscle);
                     scaleBtData.setWater(water);
                     scaleBtData.setBone(boneWeight);
+                    scaleBtData.setVisceralFat(visceralFat);
                 }
                 scaleBtData.setWeight(weight);
                 addScaleData(scaleBtData);

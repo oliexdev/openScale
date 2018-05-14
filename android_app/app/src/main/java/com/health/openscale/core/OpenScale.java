@@ -137,7 +137,7 @@ public class OpenScale {
                         db.setForeignKeyConstraintsEnabled(true);
                     }
                 })
-                .addMigrations(AppDatabase.MIGRATION_1_2)
+                .addMigrations(AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3)
                 .build();
         measurementDAO = appDB.measurementDAO();
         userDAO = appDB.userDAO();

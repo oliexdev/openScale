@@ -68,7 +68,7 @@ public abstract class FloatMeasurementView extends MeasurementView {
     private float userConvertedWeight;
     private EvaluationResult evaluationResult;
 
-    private final String nameText;
+    private String nameText;
 
     private Button incButton;
     private Button decButton;
@@ -472,6 +472,13 @@ public abstract class FloatMeasurementView extends MeasurementView {
             incButton.setVisibility(View.VISIBLE);
             decButton.setVisibility(View.VISIBLE);
         }
+    }
+
+    @Override
+    protected void setNameView(CharSequence text) {
+        super.setNameView(text);
+
+        nameText = text.toString();
     }
 
     @Override

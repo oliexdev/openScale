@@ -52,10 +52,18 @@ public class MeasurementViewSettings {
             case WeightMeasurementView.KEY:
                 // Weight can't be disabled
                 return true;
+            case VisceralFatMeasurementView.KEY:
             case LBMMeasurementView.KEY:
             case BoneMeasurementView.KEY:
             case WaistMeasurementView.KEY:
             case HipMeasurementView.KEY:
+            case ChestMeasurementView.KEY:
+            case BicepsMeasurementView.KEY:
+            case ThighMeasurementView.KEY:
+            case NeckMeasurementView.KEY:
+            case Caliper1MeasurementView.KEY:
+            case Caliper2MeasurementView.KEY:
+            case Caliper3MeasurementView.KEY:
                 defaultValue = false;
                 break;
             default:
@@ -76,6 +84,11 @@ public class MeasurementViewSettings {
 
     public boolean areDependenciesEnabled() {
         switch (key) {
+            case FatCaliperMeasurementView.KEY:
+                return isDependencyEnabled(Caliper1MeasurementView.KEY)
+                        && isDependencyEnabled(Caliper2MeasurementView.KEY)
+                        && isDependencyEnabled(Caliper3MeasurementView.KEY);
+
             case BMIMeasurementView.KEY:
             case BMRMeasurementView.KEY:
                 return isDependencyEnabled(WeightMeasurementView.KEY);
