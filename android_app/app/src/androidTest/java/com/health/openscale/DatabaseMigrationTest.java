@@ -146,6 +146,9 @@ public class DatabaseMigrationTest {
 
         // MigrationTestHelper automatically verifies the schema changes.
 
+        assertEquals(3, db.query("SELECT * FROM scaleUsers WHERE heightUnit = 0").getCount());
+        assertEquals(3, db.query("SELECT * FROM scaleUsers WHERE activityLevel = 0").getCount());
+
         Cursor cursor = db.query("SELECT * FROM scaleMeasurements ORDER BY id, userId");
         assertEquals(2 * 2, cursor.getCount());
 

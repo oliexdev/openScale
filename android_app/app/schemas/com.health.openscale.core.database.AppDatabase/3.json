@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 3,
-    "identityHash": "83d2f44ffc34383c4f1103f001329440",
+    "identityHash": "2c2512af7063099727b54e5560c277e3",
     "entities": [
       {
         "tableName": "scaleMeasurements",
@@ -168,7 +168,7 @@
       },
       {
         "tableName": "scaleUsers",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `username` TEXT, `birthday` INTEGER, `bodyHeight` INTEGER NOT NULL, `scaleUnit` INTEGER NOT NULL, `gender` INTEGER NOT NULL, `initialWeight` REAL NOT NULL, `goalWeight` REAL NOT NULL, `goalDate` INTEGER)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `username` TEXT, `birthday` INTEGER, `bodyHeight` INTEGER NOT NULL, `scaleUnit` INTEGER NOT NULL, `gender` INTEGER NOT NULL, `initialWeight` REAL NOT NULL, `goalWeight` REAL NOT NULL, `goalDate` INTEGER, `heightUnit` INTEGER NOT NULL, `activityLevel` INTEGER NOT NULL)",
         "fields": [
           {
             "fieldPath": "id",
@@ -223,6 +223,18 @@
             "columnName": "goalDate",
             "affinity": "INTEGER",
             "notNull": false
+          },
+          {
+            "fieldPath": "heightUnit",
+            "columnName": "heightUnit",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "activityLevel",
+            "columnName": "activityLevel",
+            "affinity": "INTEGER",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -237,7 +249,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"83d2f44ffc34383c4f1103f001329440\")"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"2c2512af7063099727b54e5560c277e3\")"
     ]
   }
 }

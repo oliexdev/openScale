@@ -78,6 +78,10 @@ public abstract class AppDatabase extends RoomDatabase {
         public void migrate(SupportSQLiteDatabase database) {
             database.beginTransaction();
             try {
+                // Add new columns to scaleUsers
+                database.execSQL("ALTER TABLE scaleUsers ADD COLUMN heightUnit INTEGER NOT NULL DEFAULT 0");
+                database.execSQL("ALTER TABLE scaleUsers ADD COLUMN activityLevel INTEGER NOT NULL DEFAULT 0");
+
                 // Drop old index
                 database.execSQL("DROP INDEX index_scaleMeasurements_userId_datetime");
 

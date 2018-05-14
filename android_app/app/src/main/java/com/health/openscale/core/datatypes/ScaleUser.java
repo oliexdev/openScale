@@ -50,6 +50,10 @@ public class ScaleUser {
     private float goalWeight;
     @ColumnInfo(name = "goalDate")
     private Date goalDate;
+    @ColumnInfo(name = "heightUnit")
+    private int heightUnit;
+    @ColumnInfo(name = "activityLevel")
+    private int activityLevel;
 
     public ScaleUser() {
         userName = "";
@@ -60,6 +64,8 @@ public class ScaleUser {
         initialWeight = -1;
         goalWeight = -1;
         goalDate = new Date();
+        heightUnit = 0;
+        activityLevel = 0;
     }
 
     public int getId() {
@@ -156,6 +162,22 @@ public class ScaleUser {
 
     public float getConvertedInitialWeight() {
         return Converters.fromKilogram(initialWeight, scaleUnit);
+    }
+
+    public void setHeightUnit(int unit) {
+        heightUnit = unit;
+    }
+
+    public int getHeightUnit() {
+        return heightUnit;
+    }
+
+    public void setActivityLevel(int level) {
+        activityLevel = level;
+    }
+
+    public int getActivityLevel() {
+        return activityLevel;
     }
 
     public static String getPreferenceKey(int userId, String key) {
