@@ -31,7 +31,7 @@ public class Caliper3MeasurementView extends FloatMeasurementView {
         super(context, R.string.label_caliper3_female, R.drawable.ic_caliper3);
 
         if (getScaleUser().getGender().isMale()) {
-            setNameView(getResources().getText(R.string.label_caliper3_male));
+            setName(R.string.label_caliper3_male);
         }
     }
 

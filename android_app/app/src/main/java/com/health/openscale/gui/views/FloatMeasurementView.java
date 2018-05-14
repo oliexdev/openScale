@@ -413,6 +413,11 @@ public abstract class FloatMeasurementView extends MeasurementView {
         return nameText;
     }
 
+    protected void setName(int textId) {
+        nameText = getResources().getString(textId);
+        setNameView(nameText);
+    }
+
     @Override
     public void appendDiffValue(SpannableStringBuilder text, boolean newLine) {
         if (previousValue < 0.0f) {
@@ -472,13 +477,6 @@ public abstract class FloatMeasurementView extends MeasurementView {
             incButton.setVisibility(View.VISIBLE);
             decButton.setVisibility(View.VISIBLE);
         }
-    }
-
-    @Override
-    protected void setNameView(CharSequence text) {
-        super.setNameView(text);
-
-        nameText = text.toString();
     }
 
     @Override
