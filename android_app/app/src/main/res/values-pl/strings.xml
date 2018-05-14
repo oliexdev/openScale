@@ -40,8 +40,10 @@
     <string name="label_smartUserAssign">Inteligente przypisywanie użytkowników</string>
 
     <plurals name="label_days">
-        <item quantity="other">%d dni</item>
-    </plurals>
+	<item quantity="one">%d dzień</item>
+	<item quantity="few">%d dni</item>
+	<item quantity="many">%d dni</item>
+</plurals>
     <string name="label_last_week">Ostatnie 7 dni</string>
     <string name="label_last_month">Ostatnie 30 dni</string>
     <string name="label_weight_difference">Różnica wagi</string>
@@ -73,23 +75,23 @@
     <string name="error_value_range">Wartość poza zakresem</string>
     <string name="error_exporting">Błąd eksportu</string>
     <string name="error_importing">Błąd importu</string>
-    <string name="error_user_name_required">Błąd: nazwa użytkownika jest wymagana</string>
+    <string name="error_user_name_required">Błąd: wymagana nazwa użytkownika</string>
     <string name="error_user_name_too_short">Błąd: nazwa użytkownika musi mieć przynajmniej 3 znaki</string>
-    <string name="error_height_required">Błąd: wzrost jest wymagany</string>
-    <string name="error_initial_weight_required">Błąd: waga początkowa jest wymagana</string>
-    <string name="error_goal_weight_required">Błąd: waga docelowa jest wymagana</string>
+    <string name="error_height_required">Błąd: wymagany wzrost</string>
+    <string name="error_initial_weight_required">Błąd: wymagana waga początkowa</string>
+    <string name="error_goal_weight_required">Błąd: wymagana waga docelowa</string>
 
     <string name="info_data_deleted">Wpis usunięty</string>
     <string name="info_data_all_deleted">Wszystkie wpisy usunięte</string>
-    <string name="info_data_exported">Dane wyeksportowane do</string>
-    <string name="info_data_imported">Dane zaimportowane z</string>
+    <string name="info_data_exported">Wyeksportowano do</string>
+    <string name="info_data_imported">Zaimportowano z</string>
     <string name="info_enter_value_cm">Wartość w cm</string>
     <string name="info_enter_comment">Wprowadź opcjonalny komentarz</string>
     <string name="info_is_visible">jest widoczne</string>
     <string name="info_is_not_visible">nie jest widoczne</string>
     <string name="info_is_enable">włączono</string>
     <string name="info_is_not_enable">wyłączono</string>
-    <string name="info_is_not_available">jest niedostępne</string>
+    <string name="info_is_not_available">niedostępne</string>
     <string name="info_bluetooth_try_connection">Łączenie z:</string>
     <string name="info_bluetooth_connection_lost">Utracono połączenie Bluetooth</string>
     <string name="info_bluetooth_no_device">Nie znaleziono urządzeń Bluetooth</string>
@@ -111,7 +113,7 @@
     <string name="label_bluetooth_title">Bluetooth</string>
     <string name="label_bluetooth_enable">Połącz z wagą przy starcie</string>
     <string name="label_mergeWithLastMeasurement">Scal z ostatnim pomiarem</string>
-    <string name="label_bluetooth_searching">Wyszukuje wagi Bluetooth</string>
+    <string name="label_bluetooth_searching">Wyszukuję wagę Bluetooth</string>
     <string name="label_bluetooth_searching_finished">Wyszukiwanie zakończone</string>
 
     <string name="label_enable_labels">Etykiety danych</string>
@@ -159,7 +161,7 @@
     
     <string name="label_feedback_message_enjoying">Podoba Ci się openScale?</string>
     <string name="label_feedback_message_rate_app">Może w takim razie oceniłbyś/oceniłabyś openScale na GooglePlay lub na GitHub?</string>
-    <string name="label_feedback_message_issue">Masz dla nas jakieś sugestie?</string>
+    <string name="label_feedback_message_issue">Masz jakieś sugestie?</string>
     <string name="label_feedback_message_yes">Tak</string>
     <string name="label_feedback_message_no">Nie bardzo</string>
     <string name="label_feedback_message_positive">OK</string>
@@ -216,4 +218,21 @@
     <string name="label_scale_not_supported">Czy twoja waga nie jest obsługiwana?</string>
     <string name="label_click_to_help_add_support">Kliknij tutaj, aby pomóc dodać obsługę</string>
     <string name="label_debug_log">Zapisz log debugowania do pliku</string>
+<string name="label_long_press_drag_reorder">Przytrzymaj dłużej i przeciągnij, aby zmienić kolejność</string>
+    <string name="label_your_bluetooth_scale">Twoja waga Bluetooth</string>
+    <string name="label_select_measurement">Wybierz pomiar</string>
+    <string name="label_select_user">Wybierz użytkownika</string>
+    <string name="label_configure_widget">Konfiguracja widżetu</string>
+    <string name="label_visceral_fat">Tłuszcz trzewny</string>
+    <string name="label_chest">Obwód klatki piersiowej</string>
+    <string name="label_thigh">Obwód uda</string>
+    <string name="label_biceps">Obwód bicepsa</string>
+    <string name="label_neck">Obwód szyi</string>
+    <string name="label_fat_caliper">Fałdomierz</string>
+    <string name="label_caliper1_male">Fałd skórny klatki piersiowej</string>
+    <string name="label_caliper2_male">Fałd skórny brzucha</string>
+    <string name="label_caliper3_male">Fałd skórny uda</string>
+    <string name="label_caliper1_female">Fałd skórny tricepsa</string>
+    <string name="label_caliper2_female">Fałd skórny brzucha</string>
+    <string name="label_caliper3_female">Fałd skórny biodra</string>
 </resources>
