@@ -209,4 +209,6 @@
     <string name="label_caliper1_female">Trizepsfalte</string>
     <string name="label_caliper2_female">Bauchfalte</string>
     <string name="label_caliper3_female">Hüftfalte</string>
-</resources>
+<string name="label_debug_log">Speichere Fehlerbericht</string>
+    <string name="label_your_bluetooth_scale">Ihre Bluetooth Waage</string>
+    </resources>
