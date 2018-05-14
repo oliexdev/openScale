@@ -39,8 +39,8 @@
     <string name="label_goal_date_is">Zieldatum:</string>
     <string name="label_goal_weight">Zielgewicht</string>
     <string name="label_import">Importieren</string>
-    <string name="label_last_month">Letzte 30 Tage</string>
-    <string name="label_last_week">Letzte 7 Tage</string>
+    <string name="label_last_month">Durchschnitt letzter Monat</string>
+    <string name="label_last_week">Durchschnitt letzter Woche</string>
     <string name="label_male">Männlich</string>
     <string name="label_muscle">Muskelmasse</string>
     <string name="label_no">Nein</string>
@@ -128,7 +128,7 @@
     <string name="open_drawer">öffnen</string>
     <string name="close_drawer">schließen</string>
     <string name="info_bluetooth_no_device_set">Kein Bluetooth Gerät ausgewählt</string>
-    <string name="info_new_data_duplicated">Messung mit gleichen Datum und Uhrzeit exisitiert bereits</string>
+    <string name="info_new_data_duplicated">Messung mit gleichen Datum und Uhrzeit existiert bereits</string>
     <string name="label_feedback_message_enjoying">Gefällt Dir openScale?</string>
     <string name="label_feedback_message_rate_app">Wie wäre es dann mit einer Bewertung bei GooglePlay oder bei GitHub?</string>
     <string name="label_feedback_message_yes">Ja</string>
@@ -170,7 +170,7 @@
 
 <string name="info_enter_value_scale_unit">Wert in Skaleneinheit</string>
     <string name="label_include_in_overview_graph">In Übersichtsgrafik aufnehmen</string>
-    <string name="label_measurement_in_percent">Messung in %</string>
+    <string name="label_measurement_in_percent">Messwert in %</string>
     <string name="label_estimate_measurement">Schätzmessung</string>
     <string name="label_estimation_formula">Schätzformel</string>
     <string name="language_default">Systemstandard</string>
@@ -191,4 +191,22 @@
     <string name="label_daily">täglich</string>
     <string name="label_weekly">wöchentlich</string>
     <string name="label_monthly">monatlich</string>
+<string name="label_long_press_drag_reorder">Zum Neuordnen der Messwerte langes drücken und halten</string>
+    <string name="label_click_measurement_configure">Zum Konfigurieren auf Messwert klicken</string>
+    <string name="label_development">Entwicklung</string>
+    <string name="label_select_measurement">Messwert auswählen</string>
+    <string name="label_select_user">Benutzer auswählen</string>
+    <string name="label_configure_widget">Widget konfigurieren</string>
+    <string name="label_visceral_fat">Viszeralfett</string>
+    <string name="label_chest">Brustumfang</string>
+    <string name="label_thigh">Oberschenkelumfang</string>
+    <string name="label_biceps">Bizepsumfang</string>
+    <string name="label_neck">Halsumfang</string>
+    <string name="label_fat_caliper">Körperfett Caliper</string>
+    <string name="label_caliper1_male">Brustfalte</string>
+    <string name="label_caliper2_male">Bauchfalte</string>
+    <string name="label_caliper3_male">Oberschenkelfalte</string>
+    <string name="label_caliper1_female">Trizepsfalte</string>
+    <string name="label_caliper2_female">Bauchfalte</string>
+    <string name="label_caliper3_female">Hüftfalte</string>
 </resources>
