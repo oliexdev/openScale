@@ -72,7 +72,7 @@ public class DatabaseMigrationTest {
                 measurement.put("enabled", j);
                 measurement.put("comment", "a string");
                 for (String type : new String[]{"weight", "fat", "water", "muscle", "lbw", "waist", "hip", "bone"}) {
-                    measurement.put(type, i * j);
+                    measurement.put(type, i * j + type.hashCode());
                 }
 
                 assertNotSame(-1, db.insert("scaleMeasurements", SQLiteDatabase.CONFLICT_ABORT, measurement));
@@ -97,7 +97,77 @@ public class DatabaseMigrationTest {
                 assertEquals(j, cursor.getInt(cursor.getColumnIndex("enabled")));
                 assertEquals("a string", cursor.getString(cursor.getColumnIndex("comment")));
                 for (String type : new String[]{"weight", "fat", "water", "muscle", "lbw", "waist", "hip", "bone"}) {
-                    assertEquals((float) i * j, cursor.getFloat(cursor.getColumnIndex(type)));
+                    assertEquals((float) i * j + type.hashCode(),
+                            cursor.getFloat(cursor.getColumnIndex(type)));
+                }
+
+                cursor.moveToNext();
+            }
+        }
+
+        assertTrue(cursor.isAfterLast());
+    }
+
+    @Test
+    public void migrate2To3() throws Exception {
+        SupportSQLiteDatabase db = helper.createDatabase(TEST_DB, 2);
+
+        ContentValues users = new ContentValues();
+        for (int i = 1; i < 4; ++i) {
+            users.put("id", i);
+            users.put("username", String.format("test%d", i));
+            users.put("bodyHeight", i * 50);
+            users.put("scaleUnit", 0);
+            users.put("gender", 0);
+            users.put("initialWeight", i * 25);
+            users.put("goalWeight", i * 20);
+            assertNotSame(-1, db.insert("scaleUsers", SQLiteDatabase.CONFLICT_ABORT, users));
+        }
+
+        ContentValues measurement = new ContentValues();
+        for (int i = 2; i < 4; ++i) {
+            for (int j = 0; j < 2; ++j) {
+                measurement.put("userId", i);
+                measurement.put("enabled", j);
+                measurement.put("comment", "a string");
+                for (String type : new String[]{"weight", "fat", "water", "muscle", "lbw", "waist", "hip", "bone"}) {
+                    measurement.put(type, i * j + type.hashCode());
+                }
+
+                assertNotSame(-1, db.insert("scaleMeasurements", SQLiteDatabase.CONFLICT_ABORT, measurement));
+            }
+        }
+
+        // Prepare for the next version.
+        db.close();
+
+        // Re-open the database with version 3 and provide MIGRATION_2_3 as the migration process.
+        db = helper.runMigrationsAndValidate(TEST_DB, 3, true, AppDatabase.MIGRATION_2_3);
+
+        // MigrationTestHelper automatically verifies the schema changes.
+
+        Cursor cursor = db.query("SELECT * FROM scaleMeasurements ORDER BY id, userId");
+        assertEquals(2 * 2, cursor.getCount());
+
+        cursor.moveToFirst();
+        for (int i = 2; i < 4; ++i) {
+            for (int j = 0; j < 2; ++j) {
+                assertEquals(i, cursor.getInt(cursor.getColumnIndex("userId")));
+                assertEquals(j, cursor.getInt(cursor.getColumnIndex("enabled")));
+                assertEquals("a string", cursor.getString(cursor.getColumnIndex("comment")));
+                for (String type : new String[]{"weight", "fat", "water", "muscle", "lbm", "waist", "hip", "bone"}) {
+                    float value = i * j;
+                    if (type.equals("lbm")) {
+                        value += "lbw".hashCode();
+                    }
+                    else {
+                        value += type.hashCode();
+                    }
+                    assertEquals(value, cursor.getFloat(cursor.getColumnIndex(type)));
+                }
+                for (String type : new String[]{"visceralFat", "chest", "thigh", "biceps", "neck",
+                        "caliper1", "caliper2", "caliper3"}) {
+                    assertEquals(0.0f, cursor.getFloat(cursor.getColumnIndex(type)));
                 }
 
                 cursor.moveToNext();

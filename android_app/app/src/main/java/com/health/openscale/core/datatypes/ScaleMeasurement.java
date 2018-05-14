@@ -65,7 +65,7 @@ public class ScaleMeasurement implements Cloneable {
     @ColumnInfo(name = "visceralFat")
     private float visceralFat;
     @CsvColumn(mustBeSupplied = false)
-    @ColumnInfo(name = "lbw")
+    @ColumnInfo(name = "lbm")
     private float lbm;
     @CsvColumn(mustBeSupplied = false)
     @ColumnInfo(name = "waist")

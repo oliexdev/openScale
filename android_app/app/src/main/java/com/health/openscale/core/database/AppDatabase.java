@@ -32,9 +32,6 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract ScaleMeasurementDAO measurementDAO();
     public abstract ScaleUserDAO userDAO();
 
-    // For the next database version:
-    // - rename lbw column to lbm
-
     public static final Migration MIGRATION_1_2 = new Migration(1, 2) {
         @Override
         public void migrate(SupportSQLiteDatabase database) {
@@ -81,14 +78,38 @@ public abstract class AppDatabase extends RoomDatabase {
         public void migrate(SupportSQLiteDatabase database) {
             database.beginTransaction();
             try {
-                database.execSQL("ALTER TABLE scaleMeasurements ADD COLUMN visceralFat REAL NOT NULL DEFAULT 0");
-                database.execSQL("ALTER TABLE scaleMeasurements ADD COLUMN chest REAL NOT NULL DEFAULT 0");
-                database.execSQL("ALTER TABLE scaleMeasurements ADD COLUMN thigh REAL NOT NULL DEFAULT 0");
-                database.execSQL("ALTER TABLE scaleMeasurements ADD COLUMN biceps REAL NOT NULL DEFAULT 0");
-                database.execSQL("ALTER TABLE scaleMeasurements ADD COLUMN neck REAL NOT NULL DEFAULT 0");
-                database.execSQL("ALTER TABLE scaleMeasurements ADD COLUMN caliper1 REAL NOT NULL DEFAULT 0");
-                database.execSQL("ALTER TABLE scaleMeasurements ADD COLUMN caliper2 REAL NOT NULL DEFAULT 0");
-                database.execSQL("ALTER TABLE scaleMeasurements ADD COLUMN caliper3 REAL NOT NULL DEFAULT 0");
+                // Drop old index
+                database.execSQL("DROP INDEX index_scaleMeasurements_userId_datetime");
+
+                // Rename old table
+                database.execSQL("ALTER TABLE scaleMeasurements RENAME TO scaleMeasurementsOld");
+
+                // Create new table with foreign key
+                database.execSQL("CREATE TABLE scaleMeasurements"
+                        + " (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"
+                        + " userId INTEGER NOT NULL, enabled INTEGER NOT NULL,"
+                        + " datetime INTEGER, weight REAL NOT NULL, fat REAL NOT NULL,"
+                        + " water REAL NOT NULL, muscle REAL NOT NULL, visceralFat REAL NOT NULL,"
+                        + " lbm REAL NOT NULL, waist REAL NOT NULL, hip REAL NOT NULL,"
+                        + " bone REAL NOT NULL, chest REAL NOT NULL, thigh REAL NOT NULL,"
+                        + " biceps REAL NOT NULL, neck REAL NOT NULL, caliper1 REAL NOT NULL,"
+                        + " caliper2 REAL NOT NULL, caliper3 REAL NOT NULL, comment TEXT,"
+                        + " FOREIGN KEY(userId) REFERENCES scaleUsers(id)"
+                        + " ON UPDATE NO ACTION ON DELETE CASCADE)");
+
+                // Create new index on datetime + userId
+                database.execSQL("CREATE UNIQUE INDEX index_scaleMeasurements_userId_datetime"
+                        + " ON scaleMeasurements (userId, datetime)");
+
+                // Copy data from the old table
+                database.execSQL("INSERT INTO scaleMeasurements"
+                        + " SELECT id, userId, enabled, datetime, weight, fat, water, muscle,"
+                        + " 0 AS visceralFat, lbw AS lbm, waist, hip, bone, 0 AS chest,"
+                        + " 0 as thigh, 0 as biceps, 0 as neck, 0 as caliper1,"
+                        + " 0 as caliper2, 0 as caliper3, comment FROM scaleMeasurementsOld");
+
+                // Delete old table
+                database.execSQL("DROP TABLE scaleMeasurementsOld");
 
                 database.setTransactionSuccessful();
             }
