@@ -223,4 +223,10 @@
     <string name="label_select_measurement">Velg måling</string>
     <string name="label_select_user">Velg bruker</string>
     <string name="label_configure_widget">Sett opp miniprogram</string>
-</resources>
+<string name="label_visceral_fat">Bukfett</string>
+    <string name="label_chest">Brystmål</string>
+    <string name="label_thigh">Låromkrets</string>
+    <string name="label_biceps">Bisepsomkrets</string>
+    <string name="label_neck">Halsomkrets</string>
+    <string name="label_fat_caliper">Fettklype</string>
+    </resources>
