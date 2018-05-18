@@ -42,7 +42,7 @@ public class BluetoothMedisanaBS444 extends BluetoothCommunication {
 
     @Override
     public String driverName() {
-        return "Medisana BS444";
+        return "Medisana BS44x";
     }
 
     @Override
