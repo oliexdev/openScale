@@ -150,12 +150,29 @@ public class Converters {
         return value;
     }
 
+    public static long fromUnsignedInt32Le(byte[] data, int offset) {
+        long value = (long) (data[offset + 3] & 0xFF) << 24;
+        value += (data[offset + 2] & 0xFF) << 16;
+        value += (data[offset + 1] & 0xFF) << 8;
+        value += data[offset] & 0xFF;
+        return value;
+    }
+
     public static long fromUnsignedInt32Be(byte[] data, int offset) {
         long value = (long) (data[offset] & 0xFF) << 24;
         value += (data[offset + 1] & 0xFF) << 16;
         value += (data[offset + 2] & 0xFF) << 8;
         value += data[offset + 3] & 0xFF;
         return value;
+    }
+
+    public static byte[] toUnsignedInt32Le(long value) {
+        byte[] data = new byte[4];
+        data[3] = (byte) ((value >> 24) & 0xFF);
+        data[2] = (byte) ((value >> 16) & 0xFF);
+        data[1] = (byte) ((value >> 8) & 0xFF);
+        data[0] = (byte) (value & 0xFF);
+        return data;
     }
 
     public static byte[] toUnsignedInt32Be(long value) {

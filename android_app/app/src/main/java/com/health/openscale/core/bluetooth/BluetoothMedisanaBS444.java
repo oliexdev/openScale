@@ -20,6 +20,7 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
 
 import com.health.openscale.core.datatypes.ScaleMeasurement;
+import com.health.openscale.core.utils.Converters;
 
 import java.util.Date;
 import java.util.UUID;
@@ -34,6 +35,9 @@ public class BluetoothMedisanaBS444 extends BluetoothCommunication {
     private final UUID WEIGHT_MEASUREMENT_CONFIG = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
 
     private ScaleMeasurement btScaleMeasurement;
+
+    // Scale time is in seconds since 2010-01-01
+    private static final long SCALE_UNIX_TIMESTAMP_OFFSET = 1262304000;
 
     public BluetoothMedisanaBS444(Context context) {
         super(context);
@@ -67,17 +71,11 @@ public class BluetoothMedisanaBS444 extends BluetoothCommunication {
                 break;
             case 3:
                 // send magic number to receive weight data
-                Date date = new Date();
-                int unix_timestamp = (int) ((date.getTime() / 1000) - 1262304000); // -40 years because unix time starts in year 1970
+                long timestamp = new Date().getTime() / 1000;
+                timestamp -= SCALE_UNIX_TIMESTAMP_OFFSET;
+                byte[] date = Converters.toUnsignedInt32Le(timestamp);
 
-                byte[] magicBytes = new byte[] {
-                        (byte)0x02,
-                        (byte)(unix_timestamp),
-                        (byte)(unix_timestamp >>> 8),
-                        (byte)(unix_timestamp >>> 16),
-                        (byte)(unix_timestamp >>> 24)
-                };
-                //byte[] magicBytes = new byte[]{(byte)0x02, (byte)0x7B, (byte)0x7B, (byte)0xF6, (byte)0x0D}; // 02:7b:7b:f6:0d
+                byte[] magicBytes = new byte[] {(byte)0x02, date[0], date[1], date[2], date[3]};
 
                 writeBytes(WEIGHT_MEASUREMENT_SERVICE, CMD_MEASUREMENT_CHARACTERISTIC, magicBytes);
                 break;
@@ -110,26 +108,23 @@ public class BluetoothMedisanaBS444 extends BluetoothCommunication {
     }
 
     private void parseWeightData(byte[] weightData) {
-        float weight = (float)(((weightData[2] & 0xFF) << 8) | (weightData[1] & 0xFF)) / 100.0f;
-        long unix_timestamp = ((weightData[8] & 0xFF) << 24) | ((weightData[7] & 0xFF) << 16) | ((weightData[6] & 0xFF) << 8) | (weightData[5] & 0xFF); // elapsed time in seconds since 2010
+        float weight = Converters.fromUnsignedInt16Le(weightData, 1) / 100.0f;
+        long timestamp = Converters.fromUnsignedInt32Le(weightData, 5);
+        timestamp += SCALE_UNIX_TIMESTAMP_OFFSET;
 
-        Date btDate = new Date();
-        unix_timestamp += 1262304000; // +40 years because unix time starts in year 1970
-        btDate.setTime(unix_timestamp*1000); // multiply with 1000 to get milliseconds
-
-        btScaleMeasurement.setDateTime(btDate);
+        btScaleMeasurement.setDateTime(new Date(timestamp * 1000));
         btScaleMeasurement.setWeight(weight);
     }
 
     private void parseFeatureData(byte[] featureData) {
-        //btScaleData.setKCal(((featureData[7] & 0xFF) << 8) | (featureData[6] & 0xFF));
-        btScaleMeasurement.setFat(decodeFeature(featureData[8], featureData[9]));
-        btScaleMeasurement.setWater(decodeFeature(featureData[10], featureData[11]));
-        btScaleMeasurement.setMuscle(decodeFeature(featureData[12], featureData[13]));
-        btScaleMeasurement.setBone(decodeFeature(featureData[14], featureData[15]));
+        //btScaleData.setKCal(Converters.fromUnsignedInt16Le(featureData, 6));
+        btScaleMeasurement.setFat(decodeFeature(featureData, 8));
+        btScaleMeasurement.setWater(decodeFeature(featureData, 10));
+        btScaleMeasurement.setMuscle(decodeFeature(featureData, 12));
+        btScaleMeasurement.setBone(decodeFeature(featureData, 14));
     }
 
-    private float decodeFeature(byte highByte, byte lowByte) {
-        return (float)(((lowByte& 0x0F) << 8) | (highByte & 0xFF)) / 10.0f;
+    private float decodeFeature(byte[] featureData, int offset) {
+        return (Converters.fromUnsignedInt16Le(featureData, offset) & 0x0FFF) / 10.0f;
     }
 }

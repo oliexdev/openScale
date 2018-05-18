@@ -114,15 +114,27 @@ public class ConvertersTest {
     @Test
     public void unsignedInt32Converters() throws Exception {
         byte[] data = new byte[]{(byte) 0xf1, (byte) 0xf2, (byte) 0xf3, (byte) 0x7f, (byte) 0x7e};
+
+        assertEquals(0x7ff3f2f1, Converters.fromUnsignedInt32Le(data, 0));
+        assertEquals(0x7e7ff3f2, Converters.fromUnsignedInt32Le(data, 1));
+
         assertEquals(0xf1f2f37fL, Converters.fromUnsignedInt32Be(data, 0));
         assertEquals(0xf2f37f7eL, Converters.fromUnsignedInt32Be(data, 1));
 
         data = new byte[]{(byte) 0x80, (byte) 0x00, (byte) 0x01, (byte) 0xff, (byte) 0x00};
+
+        assertEquals(0xff010080L, Converters.fromUnsignedInt32Le(data, 0));
+        assertEquals(0xff0100, Converters.fromUnsignedInt32Le(data, 1));
+
         assertEquals(0x800001ffL, Converters.fromUnsignedInt32Be(data, 0));
         assertEquals(0x1ff00L, Converters.fromUnsignedInt32Be(data, 1));
 
         data = new byte[]{(byte) 0xff, (byte) 0xfe, (byte) 0xfd, (byte) 0xfc};
+        assertArrayEquals(data, Converters.toUnsignedInt32Le(0xfcfdfeffL));
         assertArrayEquals(data, Converters.toUnsignedInt32Be(0xfffefdfcL));
+        assertEquals(0xffffffffL,
+                Converters.fromUnsignedInt32Le(
+                        Converters.toUnsignedInt32Le(0xffffffffL), 0));
         assertEquals(0xffffffffL,
                 Converters.fromUnsignedInt32Be(
                         Converters.toUnsignedInt32Be(0xffffffffL), 0));
