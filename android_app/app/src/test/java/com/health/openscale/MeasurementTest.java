@@ -73,4 +73,9 @@ public class MeasurementTest {
         assertEquals(12.0f, measurementA.getWater(), DELTA);
         assertEquals(5.0f, measurementA.getHip(), DELTA);
     }
+
+    @Test
+    public void printTest() {
+        System.out.println(measurementA.toString());
+    }
 }

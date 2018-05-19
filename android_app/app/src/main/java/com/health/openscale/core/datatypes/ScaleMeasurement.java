@@ -435,7 +435,7 @@ public class ScaleMeasurement implements Cloneable {
         return String.format(
                 "ID: %d, USER_ID: %d, DATE_TIME: %s, WEIGHT: %.2f, FAT: %.2f, WATER: %.2f, " +
                 "MUSCLE: %.2f, LBM: %.2f, WAIST: %.2f, HIP: %.2f, BONE: %.2f, CHEST: %.2f, " +
-                        "THIGH: %.2f, ARM: %.2f, NECK: %.2f, CALIPER1: %2.f, CALIPER2: %2.f, CALIPER3: %2.f, COMMENT: %s",
+                        "THIGH: %.2f, ARM: %.2f, NECK: %.2f, CALIPER1: %.2f, CALIPER2: %.2f, CALIPER3: %.2f, COMMENT: %s",
                 id, userId, dateTime.toString(), weight, fat, water,
                 muscle, lbm, waist, hip, bone, chest, thigh, biceps, neck, caliper1, caliper2, caliper3, comment);
     }
