@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <resources>
 
     <string name="app_name" translatable="false">openScale</string>
@@ -44,8 +44,8 @@
         <item quantity="one">%d giorno</item>
         <item quantity="other">%d giorni</item>
     </plurals>
-    <string name="label_last_week">Ultimi 7 giorni</string>
-    <string name="label_last_month">Ultimi 30 giorni</string>
+    <string name="label_last_week">Media della settimana scorsa</string>
+    <string name="label_last_month">Media dell\'ultimo mese</string>
     <string name="label_weight_difference">Differenza di peso</string>
     <string name="label_goal_date_is">Data dell\'obiettivo:</string>
     <string name="label_days_left">Giorni rimanenti</string>
@@ -218,4 +218,21 @@
     <string name="label_development">Sviluppo</string>
     <string name="label_debug_log">Salva il log di debug in un file</string>
     <string name="label_your_bluetooth_scale">La tua bilancia Bluetooth</string>
+<string name="label_long_press_drag_reorder">Premi a lungo e trascina per riordinare</string>
+    <string name="label_click_measurement_configure">Premi la misurazione per configurare</string>
+    <string name="label_select_measurement">Seleziona misurazione</string>
+    <string name="label_select_user">Seleziona utente</string>
+    <string name="label_configure_widget">Configura widget</string>
+    <string name="label_visceral_fat">Grasso viscerale</string>
+    <string name="label_chest">Circonferenza del petto</string>
+    <string name="label_thigh">Circonferenza della coscia</string>
+    <string name="label_biceps">Circonferenza del bicipite</string>
+    <string name="label_neck">Circonferenza del collo</string>
+    <string name="label_fat_caliper">Calibro del grasso corporeo</string>
+    <string name="label_caliper1_male">Plica cutanea del petto</string>
+    <string name="label_caliper2_male">Plica cutanea addominale</string>
+    <string name="label_caliper3_male">Plica cutanea della coscia</string>
+    <string name="label_caliper1_female">Plica cutanea del tricipite</string>
+    <string name="label_caliper2_female">Plica cutanea addominale</string>
+    <string name="label_caliper3_female">Plica cutanea del fianco</string>
 </resources>
