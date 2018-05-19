@@ -130,7 +130,10 @@ public class BluetoothPreferences extends PreferenceFragment {
 
         // Do classic bluetooth discovery first and BLE scan afterwards
         Timber.d("Start discovery");
-        btAdapter.startDiscovery();
+        if (!btAdapter.startDiscovery()) {
+            Timber.e("Discovery did not start; trying BLE scan");
+            startBleScan();
+        }
     }
 
     private void startBleScan() {
@@ -164,7 +167,14 @@ public class BluetoothPreferences extends PreferenceFragment {
         }, 10 * 1000);
 
         Timber.d("Start LE scan");
-        btAdapter.startLeScan(leScanCallback);
+        if (!btAdapter.startLeScan(leScanCallback)) {
+            Timber.e("LE scan did not start");
+            stopDiscoveryAndLeScan();
+
+            Preference scanning = btScanner.getPreference(0);
+            scanning.setTitle(R.string.label_bluetooth_searching_finished);
+            scanning.setSummary("");
+        }
     }
 
     private void stopDiscoveryAndLeScan() {
