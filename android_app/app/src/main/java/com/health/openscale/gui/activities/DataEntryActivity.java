@@ -86,7 +86,6 @@ public class DataEntryActivity extends BaseAppCompatActivity {
         setSupportActionBar(toolbar);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setTitle("");
 
         context = this;
 
@@ -320,6 +319,8 @@ public class DataEntryActivity extends BaseAppCompatActivity {
 
         switch (viewMode) {
             case VIEW:
+                getSupportActionBar().setTitle("");
+
                 saveButton.setVisible(false);
                 editButton.setVisible(true);
                 expandButton.setVisible(true);
@@ -334,6 +335,8 @@ public class DataEntryActivity extends BaseAppCompatActivity {
                 dateTimeVisibility = View.GONE;
                 break;
             case EDIT:
+                getSupportActionBar().setTitle("");
+
                 saveButton.setVisible(true);
                 editButton.setVisible(false);
                 expandButton.setVisible(true);
@@ -346,6 +349,8 @@ public class DataEntryActivity extends BaseAppCompatActivity {
                 btnRight.setEnabled(false);
                 break;
             case ADD:
+                getSupportActionBar().setTitle(R.string.label_add_measurement);
+
                 saveButton.setVisible(true);
                 editButton.setVisible(false);
                 expandButton.setVisible(false);

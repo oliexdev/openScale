@@ -63,6 +63,7 @@
     <string name="title_overview">Übersicht</string>
     <string name="title_users">Benutzer</string>
     <string name="label_add_user">Benutzer hinzufügen</string>
+    <string name="label_add_measurement">Messung hinzufügen</string>
     <string name="error_goal_weight_required">Fehler: Zielgewicht ist erforderlich</string>
     <string name="info_is_not_enable">ausgeschaltet</string>
     <string name="info_is_enable">eingeschaltet</string>
