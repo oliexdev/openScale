@@ -72,7 +72,7 @@
     <string name="info_data_all_deleted">Všechny položky vymazány z databáze</string>
     <string name="info_data_exported">Data exportována na</string>
     <string name="info_data_imported">Data importována z</string>
-    <string name="info_enter_value_cm">Zadejte hodnotu v cm</string>
+    <string name="info_enter_value_measurement_unit">Zadejte hodnotu v cm</string>
     <string name="info_enter_comment">Zadejte volitelný komentář</string>
     <string name="info_is_visible">je viditelné</string>
     <string name="info_is_not_visible">není viditelné</string>

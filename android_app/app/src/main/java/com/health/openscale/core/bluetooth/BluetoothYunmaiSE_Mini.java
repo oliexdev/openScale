@@ -127,7 +127,7 @@ public class BluetoothYunmaiSE_Mini extends BluetoothCommunication {
         scaleBtData.setDateTime(new Date(timestamp));
 
         float weight = Converters.fromUnsignedInt16Be(weightBytes, 13) / 100.0f;
-        scaleBtData.setConvertedWeight(weight, selectedUser.getScaleUnit());
+        scaleBtData.setWeight(Converters.toKilogram(weight, selectedUser.getScaleUnit()));
 
         if (isMini) {
             float fat = Converters.fromUnsignedInt16Be(weightBytes, 17) / 100.0f;

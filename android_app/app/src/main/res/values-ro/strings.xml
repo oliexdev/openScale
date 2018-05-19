@@ -82,7 +82,7 @@
     <string name="info_data_all_deleted">Toate înregistrările au fost șterse</string>
     <string name="info_data_exported">Exportat spre</string>
     <string name="info_data_imported">Importat din</string>
-    <string name="info_enter_value_cm">Valoare în cm</string>
+    <string name="info_enter_value_measurement_unit">Valoare în cm</string>
     <string name="info_enter_comment">Comentariu opțional</string>
     <string name="info_enter_value_scale_unit">Valoare în unitățile axei</string>
     <string name="info_is_visible">e vizibilă</string>

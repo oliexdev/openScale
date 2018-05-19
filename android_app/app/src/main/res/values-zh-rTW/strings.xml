@@ -80,7 +80,7 @@
     <string name="info_data_all_deleted">所有數據已被刪除</string>
     <string name="info_data_exported">滙出去處</string>
     <string name="info_data_imported">滙入來源</string>
-    <string name="info_enter_value_cm">數值單位為 cm</string>
+    <string name="info_enter_value_measurement_unit">數值單位為 cm</string>
     <string name="info_enter_comment">可加備註</string>
     <string name="info_enter_value_scale_unit">採用量重器上單位</string>
     <string name="info_is_visible">可表示</string>

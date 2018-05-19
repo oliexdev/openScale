@@ -78,15 +78,14 @@ public abstract class AppDatabase extends RoomDatabase {
         public void migrate(SupportSQLiteDatabase database) {
             database.beginTransaction();
             try {
-                // Add new columns to scaleUsers
-                database.execSQL("ALTER TABLE scaleUsers ADD COLUMN heightUnit INTEGER NOT NULL DEFAULT 0");
-                database.execSQL("ALTER TABLE scaleUsers ADD COLUMN activityLevel INTEGER NOT NULL DEFAULT 0");
+
 
                 // Drop old index
                 database.execSQL("DROP INDEX index_scaleMeasurements_userId_datetime");
 
                 // Rename old table
                 database.execSQL("ALTER TABLE scaleMeasurements RENAME TO scaleMeasurementsOld");
+                database.execSQL("ALTER TABLE scaleUsers RENAME TO scaleUsersOld");
 
                 // Create new table with foreign key
                 database.execSQL("CREATE TABLE scaleMeasurements"
@@ -101,6 +100,12 @@ public abstract class AppDatabase extends RoomDatabase {
                         + " FOREIGN KEY(userId) REFERENCES scaleUsers(id)"
                         + " ON UPDATE NO ACTION ON DELETE CASCADE)");
 
+                database.execSQL("CREATE TABLE scaleUsers "
+                        + "(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, "
+                        + "username TEXT NOT NULL, birthday INTEGER NOT NULL, bodyHeight REAL NOT NULL, "
+                        + "scaleUnit INTEGER NOT NULL, gender INTEGER NOT NULL, initialWeight REAL NOT NULL, "
+                        + "goalWeight REAL NOT NULL, goalDate INTEGER, measureUnit INTEGER NOT NULL, activityLevel INTEGER NOT NULL)");
+
                 // Create new index on datetime + userId
                 database.execSQL("CREATE UNIQUE INDEX index_scaleMeasurements_userId_datetime"
                         + " ON scaleMeasurements (userId, datetime)");
@@ -112,8 +117,13 @@ public abstract class AppDatabase extends RoomDatabase {
                         + " 0 as thigh, 0 as biceps, 0 as neck, 0 as caliper1,"
                         + " 0 as caliper2, 0 as caliper3, comment FROM scaleMeasurementsOld");
 
+                database.execSQL("INSERT INTO scaleUsers"
+                        + " SELECT id, username, birthday, bodyHeight, scaleUnit, gender, initialWeight, goalWeight,"
+                        + " goalDate, 0 AS measureUnit, 0 AS activityLevel FROM scaleUsersOld");
+
                 // Delete old table
                 database.execSQL("DROP TABLE scaleMeasurementsOld");
+                database.execSQL("DROP TABLE scaleUsersOld");
 
                 database.setTransactionSuccessful();
             }

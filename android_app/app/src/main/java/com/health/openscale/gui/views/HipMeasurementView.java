@@ -22,6 +22,7 @@ import com.health.openscale.R;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
+import com.health.openscale.core.utils.Converters;
 
 public class HipMeasurementView extends FloatMeasurementView {
     // Don't change key value, it may be stored persistent in preferences
@@ -38,17 +39,17 @@ public class HipMeasurementView extends FloatMeasurementView {
 
     @Override
     protected float getMeasurementValue(ScaleMeasurement measurement) {
-        return measurement.getHip();
+        return Converters.fromCentimeter(measurement.getHip(), getScaleUser().getMeasureUnit());
     }
 
     @Override
     protected void setMeasurementValue(float value, ScaleMeasurement measurement) {
-        measurement.setHip(value);
+        measurement.setHip(Converters.toCentimeter(value, getScaleUser().getMeasureUnit()));
     }
 
     @Override
     public String getUnit() {
-        return "cm";
+        return getScaleUser().getMeasureUnit().toString();
     }
 
     @Override

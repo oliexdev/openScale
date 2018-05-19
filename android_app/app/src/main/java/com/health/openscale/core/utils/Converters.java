@@ -21,6 +21,42 @@ import android.arch.persistence.room.TypeConverter;
 import java.util.Date;
 
 public class Converters {
+    public enum MeasureUnit {
+        CM, INCH;
+
+        public String toString() {
+            switch (this) {
+                case CM:
+                    return "cm";
+                case INCH:
+                    return "in";
+            }
+
+            return "";
+        }
+
+        public static MeasureUnit fromInt(int unit) {
+            switch (unit) {
+                case 0:
+                    return CM;
+                case 1:
+                    return INCH;
+            }
+            return CM;
+        }
+
+        public int toInt() {
+            switch (this) {
+                case CM:
+                    return 0;
+                case INCH:
+                    return 1;
+            }
+
+            return 0;
+        }
+    }
+
     public enum WeightUnit {
         KG, LB, ST;
 
@@ -73,6 +109,7 @@ public class Converters {
 
     private static final float KG_LB = 2.20462f;
     private static final float KG_ST = 0.157473f;
+    private static final float CM_IN = 0.393701f;
 
     @TypeConverter
     public static Date fromTimestamp(Long value) {
@@ -82,6 +119,16 @@ public class Converters {
     @TypeConverter
     public static Long dateToTimestamp(Date date) {
         return date == null ? null : date.getTime();
+    }
+
+    @TypeConverter
+    public static MeasureUnit fromMeasureUnitInt(int unit) {
+        return MeasureUnit.fromInt(unit);
+    }
+
+    @TypeConverter
+    public static int toMeasureUnitInt(MeasureUnit unit) {
+        return unit.toInt();
     }
 
     @TypeConverter
@@ -102,6 +149,22 @@ public class Converters {
     @TypeConverter
     public static int toGenderInt(Gender gender) {
         return gender.toInt();
+    }
+
+    public static float toCentimeter(float value, MeasureUnit unit) {
+        switch (unit) {
+            case INCH:
+                return value / CM_IN;
+        }
+        return value;
+    }
+
+    public static float fromCentimeter(float cm, MeasureUnit unit) {
+        switch (unit) {
+            case INCH:
+                return cm * CM_IN;
+        }
+        return cm;
     }
 
     public static float toKilogram(float value, WeightUnit unit) {

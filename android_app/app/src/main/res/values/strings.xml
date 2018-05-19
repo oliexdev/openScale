@@ -84,7 +84,7 @@
     <string name="info_data_all_deleted">All entries deleted</string>
     <string name="info_data_exported">Exported to</string>
     <string name="info_data_imported">Imported from</string>
-    <string name="info_enter_value_cm">Value in cm</string>
+    <string name="info_enter_value_measurement_unit">Value in measurement unit</string>
     <string name="info_enter_comment">Optional comment</string>
     <string name="info_enter_value_scale_unit">Value in scale unit</string>
     <string name="info_is_visible">is visible</string>
@@ -235,4 +235,5 @@
     <string name="label_caliper1_female">Triceps skinfold</string>
     <string name="label_caliper2_female">Abdominal skinfold</string>
     <string name="label_caliper3_female">Hip skinfold</string>
+    <string name="label_measure_unit">Measurement unit</string>
 </resources>

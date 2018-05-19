@@ -85,7 +85,7 @@
     <string name="info_data_all_deleted">Wszystkie wpisy usunięte</string>
     <string name="info_data_exported">Wyeksportowano do</string>
     <string name="info_data_imported">Zaimportowano z</string>
-    <string name="info_enter_value_cm">Wartość w cm</string>
+    <string name="info_enter_value_measurement_unit">Wartość w cm</string>
     <string name="info_enter_comment">Wprowadź opcjonalny komentarz</string>
     <string name="info_is_visible">jest widoczne</string>
     <string name="info_is_not_visible">nie jest widoczne</string>

@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 3,
-    "identityHash": "2c2512af7063099727b54e5560c277e3",
+    "identityHash": "974ad0a810bf389300cf67b40862bb75",
     "entities": [
       {
         "tableName": "scaleMeasurements",
@@ -168,7 +168,7 @@
       },
       {
         "tableName": "scaleUsers",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `username` TEXT, `birthday` INTEGER, `bodyHeight` INTEGER NOT NULL, `scaleUnit` INTEGER NOT NULL, `gender` INTEGER NOT NULL, `initialWeight` REAL NOT NULL, `goalWeight` REAL NOT NULL, `goalDate` INTEGER, `heightUnit` INTEGER NOT NULL, `activityLevel` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `username` TEXT NOT NULL, `birthday` INTEGER NOT NULL, `bodyHeight` REAL NOT NULL, `scaleUnit` INTEGER NOT NULL, `gender` INTEGER NOT NULL, `initialWeight` REAL NOT NULL, `goalWeight` REAL NOT NULL, `goalDate` INTEGER, `measureUnit` INTEGER NOT NULL, `activityLevel` INTEGER NOT NULL)",
         "fields": [
           {
             "fieldPath": "id",
@@ -180,18 +180,18 @@
             "fieldPath": "userName",
             "columnName": "username",
             "affinity": "TEXT",
-            "notNull": false
+            "notNull": true
           },
           {
             "fieldPath": "birthday",
             "columnName": "birthday",
             "affinity": "INTEGER",
-            "notNull": false
+            "notNull": true
           },
           {
             "fieldPath": "bodyHeight",
             "columnName": "bodyHeight",
-            "affinity": "INTEGER",
+            "affinity": "REAL",
             "notNull": true
           },
           {
@@ -225,8 +225,8 @@
             "notNull": false
           },
           {
-            "fieldPath": "heightUnit",
-            "columnName": "heightUnit",
+            "fieldPath": "measureUnit",
+            "columnName": "measureUnit",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -249,7 +249,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"2c2512af7063099727b54e5560c277e3\")"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"974ad0a810bf389300cf67b40862bb75\")"
     ]
   }
 }

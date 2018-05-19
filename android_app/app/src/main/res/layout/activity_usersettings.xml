@@ -57,27 +57,6 @@
                 </TableRow>
 
                 <TableRow
-                    android:id="@+id/rowBodyHeight"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" >
-
-                    <TextView
-                        android:id="@+id/lblBodyHeight"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/label_height" />
-
-                    <EditText
-                        android:id="@+id/txtBodyHeight"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:ems="10"
-                        android:hint="@string/info_enter_value_cm"
-                        android:inputType="numberSigned" />
-
-                </TableRow>
-
-                <TableRow
                     android:id="@+id/rowGender"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" >
@@ -109,6 +88,41 @@
                             android:text="@string/label_female"
                             android:id="@+id/btnRadioWoman" />
 
+                    </RadioGroup>
+
+                </TableRow>
+
+                <TableRow
+                    android:id="@+id/rowMeasureUnit"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" >
+
+                    <TextView
+                        android:id="@+id/measureUnit"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:text="@string/label_measure_unit" />
+
+                    <RadioGroup
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_column="1"
+                        android:orientation="horizontal"
+                        android:id="@+id/groupMeasureUnit">
+
+                        <RadioButton
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="cm"
+                            android:id="@+id/btnRadioCM"
+                            android:checked="true" />
+
+                        <RadioButton
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="in"
+                            android:id="@+id/btnRadioINCH" />
                     </RadioGroup>
 
                 </TableRow>
@@ -151,6 +165,27 @@
                             android:text="st"
                             android:id="@+id/btnRadioST" />
                     </RadioGroup>
+
+                </TableRow>
+
+                <TableRow
+                    android:id="@+id/rowBodyHeight"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" >
+
+                    <TextView
+                        android:id="@+id/lblBodyHeight"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/label_height" />
+
+                    <EditText
+                        android:id="@+id/txtBodyHeight"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:ems="10"
+                        android:hint="@string/info_enter_value_measurement_unit"
+                        android:inputType="numberDecimal|numberSigned" />
 
                 </TableRow>
 

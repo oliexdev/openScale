@@ -39,12 +39,12 @@ public class WeightMeasurementView extends FloatMeasurementView {
 
     @Override
     protected float getMeasurementValue(ScaleMeasurement measurement) {
-        return measurement.getConvertedWeight(getScaleUser().getScaleUnit());
+        return Converters.fromKilogram(measurement.getWeight(), getScaleUser().getScaleUnit());
     }
 
     @Override
     protected void setMeasurementValue(float value, ScaleMeasurement measurement) {
-        measurement.setConvertedWeight(value, getScaleUser().getScaleUnit());
+        Converters.toKilogram(value, getScaleUser().getScaleUnit());
     }
 
     @Override

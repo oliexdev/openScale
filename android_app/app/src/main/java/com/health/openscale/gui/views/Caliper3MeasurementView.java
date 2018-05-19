@@ -22,6 +22,7 @@ import com.health.openscale.R;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
+import com.health.openscale.core.utils.Converters;
 
 public class Caliper3MeasurementView extends FloatMeasurementView {
     // Don't change key value, it may be stored persistent in preferences
@@ -42,17 +43,17 @@ public class Caliper3MeasurementView extends FloatMeasurementView {
 
     @Override
     protected float getMeasurementValue(ScaleMeasurement measurement) {
-        return measurement.getCaliper3();
+        return Converters.fromCentimeter(measurement.getCaliper3(), getScaleUser().getMeasureUnit());
     }
 
     @Override
     protected void setMeasurementValue(float value, ScaleMeasurement measurement) {
-        measurement.setCaliper3(value);
+        measurement.setCaliper3(Converters.toCentimeter(value, getScaleUser().getMeasureUnit()));
     }
 
     @Override
     public String getUnit() {
-        return "mm";
+        return getScaleUser().getMeasureUnit().toString();
     }
 
     @Override

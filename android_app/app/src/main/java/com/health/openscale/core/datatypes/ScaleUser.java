@@ -32,12 +32,15 @@ public class ScaleUser {
     @PrimaryKey(autoGenerate = true)
     private int id;
 
+    @NonNull
     @ColumnInfo(name = "username")
     private String userName;
+    @NonNull
     @ColumnInfo(name = "birthday")
     private Date birthday;
+    @NonNull
     @ColumnInfo(name = "bodyHeight")
-    private int bodyHeight;
+    private float bodyHeight;
     @ColumnInfo(name = "scaleUnit")
     @NonNull
     private Converters.WeightUnit scaleUnit;
@@ -50,8 +53,9 @@ public class ScaleUser {
     private float goalWeight;
     @ColumnInfo(name = "goalDate")
     private Date goalDate;
-    @ColumnInfo(name = "heightUnit")
-    private int heightUnit;
+    @NonNull
+    @ColumnInfo(name = "measureUnit")
+    private Converters.MeasureUnit measureUnit;
     @ColumnInfo(name = "activityLevel")
     private int activityLevel;
 
@@ -64,7 +68,7 @@ public class ScaleUser {
         initialWeight = -1;
         goalWeight = -1;
         goalDate = new Date();
-        heightUnit = 0;
+        measureUnit = Converters.MeasureUnit.CM;
         activityLevel = 0;
     }
 
@@ -92,11 +96,11 @@ public class ScaleUser {
         this.birthday = birthday;
     }
 
-    public int getBodyHeight() {
+    public float getBodyHeight() {
         return bodyHeight;
     }
 
-    public void setBodyHeight(int bodyHeight) {
+    public void setBodyHeight(float bodyHeight) {
         this.bodyHeight = bodyHeight;
     }
 
@@ -152,24 +156,16 @@ public class ScaleUser {
         this.initialWeight = weight;
     }
 
-    public void setConvertedInitialWeight(float weight) {
-        initialWeight = Converters.toKilogram(weight, scaleUnit);
-    }
-
     public float getInitialWeight() {
         return initialWeight;
     }
 
-    public float getConvertedInitialWeight() {
-        return Converters.fromKilogram(initialWeight, scaleUnit);
+    public void setMeasureUnit(Converters.MeasureUnit unit) {
+        measureUnit = unit;
     }
 
-    public void setHeightUnit(int unit) {
-        heightUnit = unit;
-    }
-
-    public int getHeightUnit() {
-        return heightUnit;
+    public Converters.MeasureUnit getMeasureUnit() {
+        return measureUnit;
     }
 
     public void setActivityLevel(int level) {
@@ -192,7 +188,7 @@ public class ScaleUser {
     public String toString()
     {
         return String.format(
-                "ID: %d, NAME: %s, BIRTHDAY: %s, BODY_HEIGHT: %d, SCALE_UNIT: %s, " +
+                "ID: %d, NAME: %s, BIRTHDAY: %s, BODY_HEIGHT: %.2f, SCALE_UNIT: %s, " +
                 "GENDER: %s, INITIAL_WEIGHT: %.2f, GOAL_WEIGHT: %.2f, GOAL_DATE: %s",
                 id, userName, birthday.toString(), bodyHeight, scaleUnit.toString(),
                 gender.toString().toLowerCase(), initialWeight, goalWeight, goalDate.toString());

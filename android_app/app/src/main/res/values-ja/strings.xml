@@ -60,7 +60,7 @@
     <string name="info_is_not_available">利用不可</string>
     <string name="info_enter_user_name">あなたの名前</string>
     <string name="info_enter_comment">コメント（任意）</string>
-    <string name="info_enter_value_cm">値 (cm)</string>
+    <string name="info_enter_value_measurement_unit">値 (cm)</string>
     <string name="question_really_delete_all">全ユーザーの全記録を削除しますか？</string>
     <string name="question_really_delete_user">ユーザーを削除しますか？</string>
     <string name="error_goal_weight_required">エラー：目標体重が必要です</string>

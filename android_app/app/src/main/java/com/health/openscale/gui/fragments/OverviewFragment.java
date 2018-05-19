@@ -290,7 +290,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         PieChartData pieChartData = new PieChartData(arcValuesLast);
         pieChartData.setHasLabels(false);
         pieChartData.setHasCenterCircle(true);
-        pieChartData.setCenterText1(String.format("%.2f %s", lastScaleMeasurement.getConvertedWeight(unit), unit.toString()));
+        pieChartData.setCenterText1(String.format("%.2f %s", Converters.fromKilogram(lastScaleMeasurement.getWeight(), unit), unit.toString()));
         pieChartData.setCenterText2(DateFormat.getDateInstance(DateFormat.MEDIUM).format(lastScaleMeasurement.getDateTime()));
         pieChartData.setCenterText1Color(txtTitleLastMeasurement.getCurrentTextColor());
         pieChartData.setCenterText2Color(txtTitleLastMeasurement.getCurrentTextColor());

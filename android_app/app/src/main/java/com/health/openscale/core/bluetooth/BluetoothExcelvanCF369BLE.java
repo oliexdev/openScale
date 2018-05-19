@@ -123,7 +123,7 @@ public class BluetoothExcelvanCF369BLE extends BluetoothCommunication {
 
         final ScaleUser selectedUser = OpenScale.getInstance().getSelectedScaleUser();
 
-        scaleBtData.setConvertedWeight(weight, selectedUser.getScaleUnit());
+        scaleBtData.setWeight(Converters.toKilogram(weight, selectedUser.getScaleUnit()));
         scaleBtData.setFat(fat);
         scaleBtData.setMuscle(muscle);
         scaleBtData.setWater(water);

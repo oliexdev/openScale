@@ -335,7 +335,7 @@ public class OpenScale {
 
             if (!silent) {
                 String infoText = String.format(context.getString(R.string.info_new_data_added),
-                        scaleMeasurement.getConvertedWeight(unit), unit.toString(),
+                        Converters.fromKilogram(scaleMeasurement.getWeight(), unit), unit.toString(),
                         dateFormat.format(dateTime) + " " + timeFormat.format(dateTime),
                         scaleUser.getUserName());
                 Toast.makeText(context, infoText, Toast.LENGTH_LONG).show();

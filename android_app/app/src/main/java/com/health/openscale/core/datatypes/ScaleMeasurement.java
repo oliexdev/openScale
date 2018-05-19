@@ -227,16 +227,8 @@ public class ScaleMeasurement implements Cloneable {
         return weight;
     }
 
-    public float getConvertedWeight(Converters.WeightUnit unit) {
-        return Converters.fromKilogram(weight, unit);
-    }
-
     public void setWeight(float weight) {
         this.weight = weight;
-    }
-
-    public void setConvertedWeight(float weight, Converters.WeightUnit unit) {
-        this.weight = Converters.toKilogram(weight, unit);
     }
 
     public float getFat() {
@@ -363,7 +355,7 @@ public class ScaleMeasurement implements Cloneable {
         this.comment = comment;
     }
 
-    public float getBMI(int body_height) {
+    public float getBMI(float body_height) {
         return weight / ((body_height / 100.0f)*(body_height / 100.0f));
     }
 
@@ -380,8 +372,8 @@ public class ScaleMeasurement implements Cloneable {
         return bmr; // kCal / day
     }
 
-    public float getWHtR(int body_height) {
-        return waist / (float)body_height;
+    public float getWHtR(float body_height) {
+        return waist / body_height;
     }
 
     public float getWHR() {
@@ -397,7 +389,7 @@ public class ScaleMeasurement implements Cloneable {
 
         float k0, k1, k2, ka;
 
-        float s = caliper1 + caliper2 + caliper3;
+        float s = (caliper1 + caliper2 + caliper3) * 10.0f; // cm to mm
 
         if (scaleUser.getGender().isMale()) {
             k0 = 1.10938f;

@@ -82,7 +82,7 @@
     <string name="info_data_all_deleted">Alle oppføringer slettet</string>
     <string name="info_data_exported">Eksportert til</string>
     <string name="info_data_imported">Importert fra</string>
-    <string name="info_enter_value_cm">Verdi i cm</string>
+    <string name="info_enter_value_measurement_unit">Verdi i cm</string>
     <string name="info_enter_comment">Valgfri kommentar</string>
     <string name="info_enter_value_scale_unit">Verdi i vektenhet</string>
     <string name="info_is_visible">er synlig</string>

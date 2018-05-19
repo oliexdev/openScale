@@ -150,8 +150,8 @@ public class EvaluationSheet {
         bmiEvaluateSheet_Woman.add(new sheetEntry(55, 64, 23, 28));
         bmiEvaluateSheet_Woman.add(new sheetEntry(65, 90, 24, 29));
 
-        waistEvaluateSheet_Man.add(new sheetEntry(18, 90, -1, 94));
-        waistEvaluateSheet_Woman.add(new sheetEntry(18, 90, -1, 80));
+        waistEvaluateSheet_Man.add(new sheetEntry(18, 90, -1, Converters.fromCentimeter(94, evalUser.getMeasureUnit())));
+        waistEvaluateSheet_Woman.add(new sheetEntry(18, 90, -1, Converters.fromCentimeter(80, evalUser.getMeasureUnit())));
 
         whrtEvaluateSheet.add(new sheetEntry(15, 40, 0.4f, 0.5f));
         whrtEvaluateSheet.add(new sheetEntry(41, 42, 0.4f, 0.51f));

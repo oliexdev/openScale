@@ -23,6 +23,7 @@ import android.content.Context;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
+import com.health.openscale.core.utils.Converters;
 
 import java.util.Date;
 import java.util.UUID;
@@ -97,7 +98,7 @@ public class BluetoothDigooDGSO38H extends BluetoothCommunication {
             if (weightStabilized) {
                 //The weight is stabilized, now we want to measure all available values
                 byte gender = selectedUser.getGender().isMale() ? (byte)0x00: (byte)0x01;
-                byte height = (byte) (selectedUser.getBodyHeight() & 0xFF);
+                byte height = (byte) (((int)selectedUser.getBodyHeight()) & 0xFF);
                 byte age = (byte)(selectedUser.getAge() & 0xff);
                 byte unit = 0x01; // kg
                 switch (selectedUser.getScaleUnit()) {

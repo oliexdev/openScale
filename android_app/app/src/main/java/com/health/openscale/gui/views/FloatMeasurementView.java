@@ -49,6 +49,7 @@ import com.health.openscale.R;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
+import com.health.openscale.core.utils.Converters;
 
 import java.util.Date;
 import java.util.Locale;
@@ -321,7 +322,7 @@ public abstract class FloatMeasurementView extends MeasurementView {
         if (shouldConvert()) {
             // Make sure weight is never 0 to avoid division by 0
             userConvertedWeight = Math.max(1.0f,
-                    measurement.getConvertedWeight(getScaleUser().getScaleUnit()));
+                    Converters.fromKilogram(measurement.getWeight(), getScaleUser().getScaleUnit()));
         }
         else {
             // Only valid when a conversion is enabled

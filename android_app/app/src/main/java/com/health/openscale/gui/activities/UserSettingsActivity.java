@@ -62,6 +62,7 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
     private EditText txtGoalDate;
     private RadioGroup radioScaleUnit;
     private RadioGroup radioGender;
+    private RadioGroup radioMeasurementUnit;
 
     private final DateFormat dateFormat = DateFormat.getDateInstance();
 
@@ -84,6 +85,7 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
         txtBodyHeight = findViewById(R.id.txtBodyHeight);
         radioScaleUnit = findViewById(R.id.groupScaleUnit);
         radioGender = findViewById(R.id.groupGender);
+        radioMeasurementUnit = findViewById(R.id.groupMeasureUnit);
         txtInitialWeight = findViewById(R.id.txtInitialWeight);
         txtGoalWeight = findViewById(R.id.txtGoalWeight);
 
@@ -205,11 +207,20 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
         goal_date = scaleUser.getGoalDate();
 
         txtUserName.setText(scaleUser.getUserName());
-        txtBodyHeight.setText(Integer.toString(scaleUser.getBodyHeight()));
+        txtBodyHeight.setText(Float.toString(Math.round(Converters.fromCentimeter(scaleUser.getBodyHeight(), scaleUser.getMeasureUnit()) * 100.0f) / 100.0f));
         txtBirthday.setText(dateFormat.format(birthday));
         txtGoalDate.setText(dateFormat.format(goal_date));
-        txtInitialWeight.setText(Math.round(scaleUser.getConvertedInitialWeight()*100.0f)/100.0f + "");
-        txtGoalWeight.setText(scaleUser.getGoalWeight() +"");
+        txtInitialWeight.setText(Float.toString(Math.round(Converters.fromKilogram(scaleUser.getInitialWeight(), scaleUser.getScaleUnit())*100.0f)/100.0f));
+        txtGoalWeight.setText(Float.toString(Math.round(Converters.fromKilogram(scaleUser.getGoalWeight(), scaleUser.getScaleUnit())*100.0f)/100.0f));
+
+        switch (scaleUser.getMeasureUnit()) {
+            case CM:
+                radioMeasurementUnit.check(R.id.btnRadioCM);
+                break;
+            case INCH:
+                radioMeasurementUnit.check(R.id.btnRadioINCH);
+                break;
+        }
 
         switch (scaleUser.getScaleUnit())
         {
@@ -338,15 +349,24 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
                 OpenScale openScale = OpenScale.getInstance();
 
                 String name = txtUserName.getText().toString();
-                int body_height = Integer.valueOf(txtBodyHeight.getText().toString());
-                int checkedRadioButtonId = radioScaleUnit.getCheckedRadioButtonId();
-                int checkedGenderId = radioGender.getCheckedRadioButtonId();
+                float body_height = Float.valueOf(txtBodyHeight.getText().toString());
                 float initial_weight = Float.valueOf(txtInitialWeight.getText().toString());
                 float goal_weight = Float.valueOf(txtGoalWeight.getText().toString());
 
+                Converters.MeasureUnit measure_unit = Converters.MeasureUnit.CM;
+
+                switch (radioMeasurementUnit.getCheckedRadioButtonId()) {
+                    case R.id.btnRadioCM:
+                        measure_unit = Converters.MeasureUnit.CM;
+                        break;
+                    case R.id.btnRadioINCH:
+                        measure_unit = Converters.MeasureUnit.INCH;
+                        break;
+                }
+
                 Converters.WeightUnit scale_unit = Converters.WeightUnit.KG;
 
-                switch (checkedRadioButtonId) {
+                switch (radioScaleUnit.getCheckedRadioButtonId()) {
                     case R.id.btnRadioKG:
                         scale_unit = Converters.WeightUnit.KG;
                         break;
@@ -360,7 +380,7 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
 
                 Converters.Gender gender = Converters.Gender.MALE;
 
-                switch (checkedGenderId) {
+                switch (radioGender.getCheckedRadioButtonId()) {
                     case R.id.btnRadioMale:
                         gender = Converters.Gender.MALE;
                         break;
@@ -373,11 +393,12 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
 
                 scaleUser.setUserName(name);
                 scaleUser.setBirthday(birthday);
-                scaleUser.setBodyHeight(body_height);
+                scaleUser.setBodyHeight(Converters.toCentimeter(body_height, measure_unit));
                 scaleUser.setScaleUnit(scale_unit);
+                scaleUser.setMeasureUnit(measure_unit);
                 scaleUser.setGender(gender);
-                scaleUser.setConvertedInitialWeight(initial_weight);
-                scaleUser.setGoalWeight(goal_weight);
+                scaleUser.setInitialWeight(Converters.toKilogram(initial_weight, scale_unit));
+                scaleUser.setGoalWeight(Converters.toKilogram(goal_weight, scale_unit));
                 scaleUser.setGoalDate(goal_date);
 
                 if (getIntent().getExtras().getInt(EXTRA_MODE) == EDIT_USER_REQUEST) {

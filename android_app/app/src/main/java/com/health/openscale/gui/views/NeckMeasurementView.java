@@ -22,6 +22,7 @@ import com.health.openscale.R;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
+import com.health.openscale.core.utils.Converters;
 
 public class NeckMeasurementView extends FloatMeasurementView {
     // Don't change key value, it may be stored persistent in preferences
@@ -38,17 +39,17 @@ public class NeckMeasurementView extends FloatMeasurementView {
 
     @Override
     protected float getMeasurementValue(ScaleMeasurement measurement) {
-        return measurement.getNeck();
+        return Converters.fromCentimeter(measurement.getNeck(), getScaleUser().getMeasureUnit());
     }
 
     @Override
     protected void setMeasurementValue(float value, ScaleMeasurement measurement) {
-        measurement.setNeck(value);
+        measurement.setNeck(Converters.toCentimeter(value, getScaleUser().getMeasureUnit()));
     }
 
     @Override
     public String getUnit() {
-        return "cm";
+        return getScaleUser().getMeasureUnit().toString();
     }
 
     @Override

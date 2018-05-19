@@ -25,6 +25,7 @@ import android.preference.PreferenceManager;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
+import com.health.openscale.core.utils.Converters;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -238,7 +239,7 @@ public class BluetoothMiScale extends BluetoothCommunication {
                     final ScaleUser selectedUser = OpenScale.getInstance().getSelectedScaleUser();
                     ScaleMeasurement scaleBtData = new ScaleMeasurement();
 
-                    scaleBtData.setConvertedWeight(weight, selectedUser.getScaleUnit());
+                    scaleBtData.setWeight(Converters.toKilogram(weight, selectedUser.getScaleUnit()));
                     scaleBtData.setDateTime(date_time);
 
                     addScaleData(scaleBtData);

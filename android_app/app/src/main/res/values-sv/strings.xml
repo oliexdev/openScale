@@ -80,7 +80,7 @@
     <string name="info_data_all_deleted">Alla poster borttagna</string>
     <string name="info_data_exported">Exporterad till</string>
     <string name="info_data_imported">Importerad från</string>
-    <string name="info_enter_value_cm">Värde i cm</string>
+    <string name="info_enter_value_measurement_unit">Värde i cm</string>
     <string name="info_enter_comment">Frivillig kommentar</string>
     <string name="info_enter_value_scale_unit">Värde i viktenhet</string>
     <string name="info_is_visible">är synlig</string>

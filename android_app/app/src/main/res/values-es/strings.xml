@@ -78,7 +78,7 @@
     <string name="info_data_all_deleted">Todas las entradas borradas</string>
     <string name="info_data_exported">Exportado a</string>
     <string name="info_data_imported">Importado de</string>
-    <string name="info_enter_value_cm">Valor en cm</string>
+    <string name="info_enter_value_measurement_unit">Valor en cm</string>
     <string name="info_enter_comment">Comentario opcional</string>
     <string name="info_is_visible">está visible</string>
     <string name="info_is_not_visible">no está visible</string>

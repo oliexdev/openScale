@@ -31,6 +31,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.Date;
+
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotSame;
 import static junit.framework.Assert.assertTrue;
@@ -116,6 +118,7 @@ public class DatabaseMigrationTest {
         for (int i = 1; i < 4; ++i) {
             users.put("id", i);
             users.put("username", String.format("test%d", i));
+            users.put("birthday", i*100);
             users.put("bodyHeight", i * 50);
             users.put("scaleUnit", 0);
             users.put("gender", 0);
@@ -146,10 +149,22 @@ public class DatabaseMigrationTest {
 
         // MigrationTestHelper automatically verifies the schema changes.
 
-        assertEquals(3, db.query("SELECT * FROM scaleUsers WHERE heightUnit = 0").getCount());
+        assertEquals(3, db.query("SELECT * FROM scaleUsers WHERE measureUnit = 0").getCount());
         assertEquals(3, db.query("SELECT * FROM scaleUsers WHERE activityLevel = 0").getCount());
 
-        Cursor cursor = db.query("SELECT * FROM scaleMeasurements ORDER BY id, userId");
+        Cursor cursor = db.query("SELECT * FROM scaleUsers ORDER BY id");
+
+        cursor.moveToFirst();
+        for (int i = 1; i < 4; ++i) {
+            assertEquals(i, cursor.getInt(cursor.getColumnIndex("id")));
+            assertEquals(i*100, cursor.getInt(cursor.getColumnIndex("birthday")));
+            assertEquals(i*50, cursor.getInt(cursor.getColumnIndex("bodyHeight")));
+            assertEquals(i*25, cursor.getInt(cursor.getColumnIndex("initialWeight")));
+            assertEquals(i*20, cursor.getInt(cursor.getColumnIndex("goalWeight")));
+            cursor.moveToNext();
+        }
+
+        cursor = db.query("SELECT * FROM scaleMeasurements ORDER BY id, userId");
         assertEquals(2 * 2, cursor.getCount());
 
         cursor.moveToFirst();
