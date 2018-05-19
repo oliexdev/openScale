@@ -205,4 +205,19 @@
     <string name="label_select_measurement">Välj mätvärde</string>
     <string name="label_select_user">Välj användare</string>
     <string name="label_configure_widget">Konfigurera widget</string>
+<string name="label_add_measurement">Lägg till mätning</string>
+    <string name="label_visceral_fat">Visceralt fett</string>
+    <string name="label_chest">Bröstomkrets</string>
+    <string name="label_thigh">Låromkrets</string>
+    <string name="label_biceps">Bicepsomkrets</string>
+    <string name="label_neck">Halsen omkrets</string>
+    <string name="label_fat_caliper">Kroppsfettkaliper</string>
+    <string name="label_caliper1_male">Bröst hudveck</string>
+    <string name="label_caliper2_male">Buken hudveck</string>
+    <string name="label_caliper3_male">Lår hudveck</string>
+    <string name="label_caliper1_female">Triceps hudveck</string>
+    <string name="label_caliper2_female">Buken hudveck</string>
+    <string name="label_caliper3_female">Höft hudveck</string>
+    <string name="label_measure_unit">Måttenhet</string>
+    <string name="label_activity_level">Aktivitetsnivå</string>
 </resources>
