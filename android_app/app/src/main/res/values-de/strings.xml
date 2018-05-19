@@ -211,4 +211,6 @@
     <string name="label_caliper3_female">Hüftfalte</string>
 <string name="label_debug_log">Speichere Fehlerbericht</string>
     <string name="label_your_bluetooth_scale">Ihre Bluetooth Waage</string>
-    </resources>
+    <string name="label_measure_unit">Maßeinheit</string>
+    <string name="label_activity_level">Aktivitätslevel</string>
+</resources>
