@@ -155,7 +155,7 @@
     <string name="label_feedback_message_rate_app">Que tal unha avaliación no GooglePlay ou no GitHub?</string>
     <string name="label_feedback_message_issue">Gustaríache enviarnos algunha suxestión?</string>
     <string name="label_feedback_message_yes">Si</string>
-    <string name="label_feedback_message_no">Non moito...</string>
+    <string name="label_feedback_message_no">Non moito</string>
     <string name="label_feedback_message_positive">Aceptar</string>
     <string name="label_feedback_message_negative">Non, grazas</string>
 
