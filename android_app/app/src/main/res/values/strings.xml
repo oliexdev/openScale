@@ -236,4 +236,5 @@
     <string name="label_caliper2_female">Abdominal skinfold</string>
     <string name="label_caliper3_female">Hip skinfold</string>
     <string name="label_measure_unit">Measurement unit</string>
+    <string name="label_activity_level">Activity level</string>
 </resources>

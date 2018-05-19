@@ -169,6 +169,59 @@
                 </TableRow>
 
                 <TableRow
+                    android:id="@+id/rowActivityLevel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" >
+
+                    <TextView
+                        android:id="@+id/lblActivityLevel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:text="@string/label_activity_level" />
+
+                    <RadioGroup
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_column="1"
+                        android:orientation="horizontal"
+                        android:id="@+id/groupActivityLevel">
+
+                        <RadioButton
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0"
+                            android:id="@+id/btnRadioSedentary"
+                            android:checked="true" />
+
+                        <RadioButton
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="1"
+                            android:id="@+id/btnRadioMild" />
+
+                        <RadioButton
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="2"
+                            android:id="@+id/btnRadioModerate" />
+
+                        <RadioButton
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="3"
+                            android:id="@+id/btnRadioHeavy" />
+
+                        <RadioButton
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="4"
+                            android:id="@+id/btnRadioExtreme" />
+                    </RadioGroup>
+
+                </TableRow>
+
+                <TableRow
                     android:id="@+id/rowBodyHeight"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" >

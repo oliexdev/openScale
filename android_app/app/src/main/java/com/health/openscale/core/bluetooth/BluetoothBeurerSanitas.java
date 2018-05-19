@@ -210,7 +210,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                     int maxIdx = Math.min(3, selectedUser.getUserName().length());
                     byte[] nick = selectedUser.getUserName().toUpperCase().substring(0, maxIdx).getBytes();
 
-                    byte activity = 2; // activity level: 1 - 5
+                    byte activity = (byte)(selectedUser.getActivityLevel().toInt() + 1); // activity level: 1 - 5
                     Timber.d("Create User: %s", selectedUser.getUserName());
 
                     writeBytes(new byte[]{

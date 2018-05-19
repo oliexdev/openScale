@@ -22,6 +22,7 @@ import android.arch.persistence.room.ForeignKey;
 import android.arch.persistence.room.Index;
 import android.arch.persistence.room.PrimaryKey;
 
+import com.health.openscale.R;
 import com.health.openscale.core.utils.Converters;
 import com.j256.simplecsv.common.CsvColumn;
 
@@ -361,6 +362,25 @@ public class ScaleMeasurement implements Cloneable {
 
     public float getBMR(ScaleUser scaleUser) {
         float bmr;
+        float factor = 1.0f;
+
+        switch (scaleUser.getActivityLevel()) {
+            case SEDENTARY:
+                factor = 1.2f;
+                break;
+            case MILD:
+                factor = 1.3f;
+                break;
+            case MODERATE:
+                factor = 1.5f;
+                break;
+            case HEAVY:
+                factor = 1.7f;
+                break;
+            case EXTREME:
+                factor = 1.9f;
+                break;
+        }
 
         // BMR formula by Mifflin, St Jeor et al: A new predictive equation for resting energy expenditure in healthy individuals
         if (scaleUser.getGender().isMale()) {
@@ -369,7 +389,7 @@ public class ScaleMeasurement implements Cloneable {
             bmr = 10.0f * weight + 6.25f * scaleUser.getBodyHeight() - 5.0f * scaleUser.getAge(dateTime) - 161.0f;
         }
 
-        return bmr; // kCal / day
+        return bmr * factor; // kCal / day
     }
 
     public float getWHtR(float body_height) {

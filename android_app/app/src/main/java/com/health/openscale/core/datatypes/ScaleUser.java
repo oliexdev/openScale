@@ -56,8 +56,9 @@ public class ScaleUser {
     @NonNull
     @ColumnInfo(name = "measureUnit")
     private Converters.MeasureUnit measureUnit;
+    @NonNull
     @ColumnInfo(name = "activityLevel")
-    private int activityLevel;
+    private Converters.ActivityLevel activityLevel;
 
     public ScaleUser() {
         userName = "";
@@ -69,7 +70,7 @@ public class ScaleUser {
         goalWeight = -1;
         goalDate = new Date();
         measureUnit = Converters.MeasureUnit.CM;
-        activityLevel = 0;
+        activityLevel = Converters.ActivityLevel.SEDENTARY;
     }
 
     public int getId() {
@@ -168,11 +169,11 @@ public class ScaleUser {
         return measureUnit;
     }
 
-    public void setActivityLevel(int level) {
+    public void setActivityLevel(Converters.ActivityLevel level) {
         activityLevel = level;
     }
 
-    public int getActivityLevel() {
+    public Converters.ActivityLevel getActivityLevel() {
         return activityLevel;
     }
 

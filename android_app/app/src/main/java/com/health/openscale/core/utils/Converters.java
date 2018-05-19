@@ -107,6 +107,44 @@ public class Converters {
         }
     }
 
+    public enum ActivityLevel {
+        SEDENTARY, MILD, MODERATE, HEAVY, EXTREME;
+
+        public static ActivityLevel fromInt(int unit) {
+            switch (unit) {
+                case 0:
+                    return SEDENTARY;
+                case 1:
+                    return MILD;
+                case 2:
+                    return MODERATE;
+                case 3:
+                    return HEAVY;
+                case 4:
+                    return EXTREME;
+            }
+
+            return SEDENTARY;
+        }
+
+        public int toInt() {
+            switch (this) {
+                case SEDENTARY:
+                    return 0;
+                case MILD:
+                    return 1;
+                case MODERATE:
+                    return 2;
+                case HEAVY:
+                    return 3;
+                case EXTREME:
+                    return 4;
+            }
+
+            return 0;
+        }
+    }
+
     private static final float KG_LB = 2.20462f;
     private static final float KG_ST = 0.157473f;
     private static final float CM_IN = 0.393701f;
@@ -149,6 +187,16 @@ public class Converters {
     @TypeConverter
     public static int toGenderInt(Gender gender) {
         return gender.toInt();
+    }
+
+    @TypeConverter
+    public static ActivityLevel fromActivityLevelInt(int level) {
+        return ActivityLevel.fromInt(level);
+    }
+
+    @TypeConverter
+    public static int toActivityLevelInt(ActivityLevel level) {
+        return level.toInt();
     }
 
     public static float toCentimeter(float value, MeasureUnit unit) {

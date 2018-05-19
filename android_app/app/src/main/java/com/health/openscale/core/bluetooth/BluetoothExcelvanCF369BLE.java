@@ -20,6 +20,7 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
 
+import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
@@ -58,8 +59,24 @@ public class BluetoothExcelvanCF369BLE extends BluetoothCommunication {
 
                 byte userId = (byte) 0x01;
                 byte sex = selectedUser.getGender().isMale() ? (byte) 0x01 : (byte) 0x00;
+
                 // 0x00 = ordinary, 0x01 = amateur, 0x02 = professional
                 byte exerciseLevel = (byte) 0x01;
+
+                switch (selectedUser.getActivityLevel()) {
+                    case SEDENTARY:
+                    case MILD:
+                        exerciseLevel = (byte) 0x00;
+                        break;
+                    case MODERATE:
+                        exerciseLevel = (byte) 0x01;
+                        break;
+                    case HEAVY:
+                    case EXTREME:
+                        exerciseLevel = (byte) 0x02;
+                        break;
+                }
+
                 byte height = (byte) selectedUser.getBodyHeight();
                 byte age = (byte) selectedUser.getAge();
 
