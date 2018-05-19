@@ -94,6 +94,10 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
         txtBirthday = findViewById(R.id.txtBirthday);
         txtGoalDate = findViewById(R.id.txtGoalDate);
 
+        txtBodyHeight.setHint(getResources().getString(R.string.info_enter_value_in) + " " + Converters.MeasureUnit.CM.toString());
+        txtInitialWeight.setHint(getResources().getString(R.string.info_enter_value_in) + " " + Converters.WeightUnit.KG.toString());
+        txtGoalWeight.setHint(getResources().getString(R.string.info_enter_value_in) + " " + Converters.WeightUnit.KG.toString());
+
         Calendar birthdayCal = Calendar.getInstance();
         birthdayCal.setTime(birthday);
         birthdayCal.add(Calendar.YEAR, -20);
