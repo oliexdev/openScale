@@ -84,9 +84,8 @@
     <string name="info_data_all_deleted">All entries deleted</string>
     <string name="info_data_exported">Exported to</string>
     <string name="info_data_imported">Imported from</string>
-    <string name="info_enter_value_measurement_unit">Value in measurement unit</string>
+    <string name="info_enter_value_in">Value in</string>
     <string name="info_enter_comment">Optional comment</string>
-    <string name="info_enter_value_scale_unit">Value in scale unit</string>
     <string name="info_is_visible">is visible</string>
     <string name="info_is_not_visible">is not visible</string>
     <string name="info_is_enable">enabled</string>

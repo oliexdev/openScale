@@ -60,7 +60,7 @@
     <string name="info_is_not_available">利用不可</string>
     <string name="info_enter_user_name">あなたの名前</string>
     <string name="info_enter_comment">コメント（任意）</string>
-    <string name="info_enter_value_measurement_unit">値 (cm)</string>
+    <string name="info_enter_value_in">値</string>
     <string name="question_really_delete_all">全ユーザーの全記録を削除しますか？</string>
     <string name="question_really_delete_user">ユーザーを削除しますか？</string>
     <string name="error_goal_weight_required">エラー：目標体重が必要です</string>
@@ -110,7 +110,6 @@
     <string name="label_lbm">除脂肪体重</string>
     <string name="label_bone">骨密度</string>
     <string name="error_user_name_too_short">エラー：名前は3文字以上でなければいけません</string>
-    <string name="info_enter_value_scale_unit">値（目盛り単位）</string>
     <string name="info_bluetooth_no_device_set">Bluetooth端末が選択されていません</string>
     <string name="info_new_data_duplicated">同じ日時のものがすでに存在している測定</string>
 

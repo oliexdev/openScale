@@ -130,6 +130,46 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
                 datePicker.show();
             }
         });
+
+        radioScaleUnit.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                Converters.WeightUnit scale_unit = Converters.WeightUnit.KG;
+
+                switch (checkedId) {
+                    case R.id.btnRadioKG:
+                        scale_unit = Converters.WeightUnit.KG;
+                        break;
+                    case R.id.btnRadioLB:
+                        scale_unit = Converters.WeightUnit.LB;
+                        break;
+                    case R.id.btnRadioST:
+                        scale_unit = Converters.WeightUnit.ST;
+                        break;
+                }
+
+                txtInitialWeight.setHint(getResources().getString(R.string.info_enter_value_in) + " " + scale_unit.toString());
+                txtGoalWeight.setHint(getResources().getString(R.string.info_enter_value_in) + " " + scale_unit.toString());
+            }
+        });
+
+        radioMeasurementUnit.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                Converters.MeasureUnit measure_unit = Converters.MeasureUnit.CM;
+
+                switch (radioMeasurementUnit.getCheckedRadioButtonId()) {
+                    case R.id.btnRadioCM:
+                        measure_unit = Converters.MeasureUnit.CM;
+                        break;
+                    case R.id.btnRadioINCH:
+                        measure_unit = Converters.MeasureUnit.INCH;
+                        break;
+                }
+
+                txtBodyHeight.setHint(getResources().getString(R.string.info_enter_value_in) + " " + measure_unit.toString());
+            }
+        });
     }
 
     @Override
@@ -210,10 +250,13 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
 
         txtUserName.setText(scaleUser.getUserName());
         txtBodyHeight.setText(Float.toString(Math.round(Converters.fromCentimeter(scaleUser.getBodyHeight(), scaleUser.getMeasureUnit()) * 100.0f) / 100.0f));
+        txtBodyHeight.setHint(getResources().getString(R.string.info_enter_value_in) + " " + scaleUser.getMeasureUnit().toString());
         txtBirthday.setText(dateFormat.format(birthday));
         txtGoalDate.setText(dateFormat.format(goal_date));
         txtInitialWeight.setText(Float.toString(Math.round(Converters.fromKilogram(scaleUser.getInitialWeight(), scaleUser.getScaleUnit())*100.0f)/100.0f));
         txtGoalWeight.setText(Float.toString(Math.round(Converters.fromKilogram(scaleUser.getGoalWeight(), scaleUser.getScaleUnit())*100.0f)/100.0f));
+        txtInitialWeight.setHint(getResources().getString(R.string.info_enter_value_in) + " " + scaleUser.getScaleUnit().toString());
+        txtGoalWeight.setHint(getResources().getString(R.string.info_enter_value_in) + " " + scaleUser.getScaleUnit().toString());
 
         switch (scaleUser.getMeasureUnit()) {
             case CM:

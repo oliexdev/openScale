@@ -80,7 +80,7 @@
     <string name="info_data_all_deleted">Alle database vermeldingen verwijderd</string>
     <string name="info_data_exported">Data geëxporteerd naar</string>
     <string name="info_data_imported">Data geïmporteerd van</string>
-    <string name="info_enter_value_measurement_unit">Geef waarde in cm</string>
+    <string name="info_enter_value_in">Geef waarde in</string>
     <string name="info_enter_comment">Voeg een optionele opmerking toe</string>
     <string name="info_is_visible">is zichtbaar</string>
     <string name="info_is_not_visible">is niet zichtbaar</string>

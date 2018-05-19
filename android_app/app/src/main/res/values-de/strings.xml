@@ -11,7 +11,7 @@
     <string name="info_data_imported">Importiert von</string>
     <string name="info_enter_comment">Gib einen optionalen Kommentar ein</string>
     <string name="info_enter_user_name">Dein Name</string>
-    <string name="info_enter_value_measurement_unit">Wert in cm</string>
+    <string name="info_enter_value_in">Wert in</string>
     <string name="info_is_not_visible">ist nicht sichtbar</string>
     <string name="info_is_visible">ist sichtbar</string>
     <string name="info_is_not_available">nicht verfügbar</string>
@@ -168,7 +168,6 @@
     <string name="label_mergeWithLastMeasurement">Zusammenführen mit der letzten Messung</string>
     <string name="label_export_overwrite">Vorherigen Export überschreiben %s?</string>
 
-<string name="info_enter_value_scale_unit">Wert in Skaleneinheit</string>
     <string name="label_include_in_overview_graph">In Übersichtsgrafik aufnehmen</string>
     <string name="label_measurement_in_percent">Messwert in %</string>
     <string name="label_estimate_measurement">Schätzmessung</string>

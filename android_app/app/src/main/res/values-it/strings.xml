@@ -84,9 +84,8 @@
     <string name="info_data_all_deleted">Tutti le misurazioni sono state cancellate</string>
     <string name="info_data_exported">Esportato su</string>
     <string name="info_data_imported">Importato da</string>
-    <string name="info_enter_value_measurement_unit">Valore in cm</string>
+    <string name="info_enter_value_in">Valore in</string>
     <string name="info_enter_comment">Commento opzionale</string>
-    <string name="info_enter_value_scale_unit">Valore in unità di misura</string>
     <string name="info_is_visible">è visibile</string>
     <string name="info_is_not_visible">non è visibile</string>
     <string name="info_is_enable">abilitato</string>

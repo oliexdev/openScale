@@ -31,7 +31,7 @@
     <string name="info_data_imported">Dados importados de</string>
     <string name="info_enter_comment">Digite um comentário opcional</string>
     <string name="info_enter_user_name">Digite seu nome</string>
-    <string name="info_enter_value_measurement_unit">Digite o valor em centímetros</string>
+    <string name="info_enter_value_in">Digite o valor em</string>
     <string name="info_is_enable">está ativado</string>
     <string name="info_is_not_available">não está disponível</string>
     <string name="info_is_not_enable">está desativado</string>

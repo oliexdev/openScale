@@ -81,9 +81,8 @@
     <string name="info_data_all_deleted">Όλες οι καταχωρήσεις διεγράφησαν</string>
     <string name="info_data_exported">Εξήχθη σε</string>
     <string name="info_data_imported">Εισήχθη από</string>
-    <string name="info_enter_value_measurement_unit">Τιμή σε εκ</string>
+    <string name="info_enter_value_in">Τιμή σε</string>
     <string name="info_enter_comment">Προεραιτικό σχόλιο</string>
-    <string name="info_enter_value_scale_unit">Τιμή σε μονάδα ζύγησης</string>
     <string name="info_is_visible">είναι ορατό</string>
     <string name="info_is_not_visible">δεν είναι ορατό</string>
     <string name="info_is_enable">ενεργοποιημένο</string>

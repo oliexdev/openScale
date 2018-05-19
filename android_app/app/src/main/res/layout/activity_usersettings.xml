@@ -237,7 +237,6 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:ems="10"
-                        android:hint="@string/info_enter_value_measurement_unit"
                         android:inputType="numberDecimal|numberSigned" />
 
                 </TableRow>
@@ -281,7 +280,6 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:ems="10"
-                        android:hint="@string/info_enter_value_scale_unit"
                         android:inputType="numberDecimal|numberSigned" />
                 </TableRow>
 
@@ -301,7 +299,6 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:ems="10"
-                        android:hint="@string/info_enter_value_scale_unit"
                         android:inputType="numberDecimal|numberSigned" />
                 </TableRow>
 
