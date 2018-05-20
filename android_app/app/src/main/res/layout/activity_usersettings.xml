@@ -12,287 +12,259 @@
         android:background="?attr/colorPrimary"
         android:elevation="4dp"
         app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
     <ScrollView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/scrollViewUserData" >
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-        <LinearLayout
+        <TableLayout
+            android:id="@+id/tableUserData"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:padding="5dp" >
+            android:layout_height="wrap_content"
+            android:measureWithLargestChild="true"
+            android:padding="5dp"
+            android:stretchColumns="*">
 
-            <TableLayout
-                android:id="@+id/tableUserData"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="5dp"
-                android:stretchColumns="*" >
+            <TableRow
+                android:id="@+id/rowUserName"
+                android:layout_weight="1"
+                android:gravity="center_vertical">
 
-                <TableRow
-                    android:id="@+id/rowUserName"
+                <TextView
+                    android:id="@+id/lblUserName"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" >
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_user_name" />
 
-                    <TextView
-                        android:id="@+id/lblUserName"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/label_user_name" />
+                <EditText
+                    android:id="@+id/txtUserName"
+                    android:layout_height="wrap_content"
+                    android:ems="10"
+                    android:inputType="text"
+                    android:hint="@string/info_enter_user_name">
 
-                    <EditText
-                        android:id="@+id/txtUserName"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:ems="10"
-                        android:inputType="text"
-                        android:hint="@string/info_enter_user_name">
+                    <requestFocus />
+                </EditText>
+            </TableRow>
 
-                        <requestFocus />
-                    </EditText>
+            <TableRow
+                android:id="@+id/rowBirthday"
+                android:layout_weight="1"
+                android:gravity="center_vertical">
 
-                </TableRow>
-
-                <TableRow
-                    android:id="@+id/rowGender"
+                <TextView
+                    android:id="@+id/lblBirthday"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" >
+                    android:layout_height="wrap_content"
+                    android:labelFor="@id/txtBirthday"
+                    android:text="@string/label_birthday" />
 
-                    <TextView
-                        android:id="@+id/lblGender"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_vertical"
-                        android:text="@string/label_gender" />
-
-                    <RadioGroup
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_column="1"
-                        android:orientation="horizontal"
-                        android:id="@+id/groupGender">
-
-                        <RadioButton
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/label_male"
-                            android:id="@+id/btnRadioMale"
-                            android:checked="true" />
-
-                        <RadioButton
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/label_female"
-                            android:id="@+id/btnRadioWoman" />
-
-                    </RadioGroup>
-
-                </TableRow>
-
-                <TableRow
-                    android:id="@+id/rowMeasureUnit"
+                <EditText
+                    android:id="@+id/txtBirthday"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" >
+                    android:layout_height="wrap_content"
+                    android:ems="10"
+                    android:focusable="false"
+                    android:inputType="date" />
+            </TableRow>
 
-                    <TextView
-                        android:id="@+id/measureUnit"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_vertical"
-                        android:text="@string/label_measure_unit" />
+            <TableRow
+                android:id="@+id/rowActivityLevel"
+                android:layout_weight="1"
+                android:gravity="center_vertical">
 
-                    <RadioGroup
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_column="1"
-                        android:orientation="horizontal"
-                        android:id="@+id/groupMeasureUnit">
-
-                        <RadioButton
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="cm"
-                            android:id="@+id/btnRadioCM"
-                            android:checked="true" />
-
-                        <RadioButton
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="in"
-                            android:id="@+id/btnRadioINCH" />
-                    </RadioGroup>
-
-                </TableRow>
-
-                <TableRow
-                    android:id="@+id/rowUnit"
+                <TextView
+                    android:id="@+id/lblActivityLevel"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" >
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_activity_level" />
 
-                    <TextView
-                        android:id="@+id/lblUnit"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_vertical"
-                        android:text="@string/label_scale_unit" />
-
-                    <RadioGroup
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_column="1"
-                        android:orientation="horizontal"
-                        android:id="@+id/groupScaleUnit">
-
-                        <RadioButton
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="kg"
-                            android:id="@+id/btnRadioKG"
-                            android:checked="true" />
-
-                        <RadioButton
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="lb"
-                            android:id="@+id/btnRadioLB" />
-
-                        <RadioButton
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="st"
-                            android:id="@+id/btnRadioST" />
-                    </RadioGroup>
-
-                </TableRow>
-
-                <TableRow
-                    android:id="@+id/rowActivityLevel"
+                <Spinner
+                    android:id="@+id/spinnerActivityLevel"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" >
+                    android:layout_height="wrap_content"
+                    android:entries="@array/activity_level_entries" />
+            </TableRow>
 
-                    <TextView
-                        android:id="@+id/lblActivityLevel"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_vertical"
-                        android:text="@string/label_activity_level" />
+            <TableRow
+                android:id="@+id/rowGender"
+                android:layout_weight="1"
+                android:gravity="center_vertical">
 
-                    <Spinner
-                        android:id="@+id/spinnerActivityLevel"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:entries="@array/activity_level_entries" />
-                </TableRow>
-
-                <TableRow
-                    android:id="@+id/rowBodyHeight"
+                <TextView
+                    android:id="@+id/lblGender"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" >
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_gender" />
 
-                    <TextView
-                        android:id="@+id/lblBodyHeight"
+                <RadioGroup
+                    android:id="@+id/groupGender"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <RadioButton
+                        android:id="@+id/btnRadioMale"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/label_height" />
+                        android:checked="true"
+                        android:text="@string/label_male" />
 
-                    <EditText
-                        android:id="@+id/txtBodyHeight"
+                    <RadioButton
+                        android:id="@+id/btnRadioWoman"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:ems="10"
-                        android:inputType="numberDecimal|numberSigned" />
+                        android:text="@string/label_female" />
+                </RadioGroup>
+            </TableRow>
 
-                </TableRow>
+            <TableRow
+                android:id="@+id/rowMeasureUnit"
+                android:layout_weight="1"
+                android:gravity="center_vertical">
 
-                <TableRow
-                    android:id="@+id/rowBirthday"
+                <TextView
+                    android:id="@+id/measureUnit"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" >
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_measure_unit" />
 
-                    <TextView
-                        android:id="@+id/lblBirthday"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:labelFor="@id/txtBirthday"
-                        android:text="@string/label_birthday" />
-
-                    <EditText
-                        android:id="@+id/txtBirthday"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="5"
-                        android:ems="10"
-                        android:focusable="false"
-                        android:inputType="date" />
-
-                </TableRow>
-
-                <TableRow
-                    android:id="@+id/tableRowInitialWeight"
+                <RadioGroup
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" >
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:id="@+id/groupMeasureUnit">
 
-                    <TextView
-                        android:id="@+id/lblInitialWeight"
+                    <RadioButton
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/label_initial_weight" />
+                        android:text="cm"
+                        android:id="@+id/btnRadioCM"
+                        android:checked="true" />
 
-                    <EditText
-                        android:id="@+id/txtInitialWeight"
+                    <RadioButton
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:ems="10"
-                        android:inputType="numberDecimal|numberSigned" />
-                </TableRow>
+                        android:text="in"
+                        android:id="@+id/btnRadioINCH" />
+                </RadioGroup>
+            </TableRow>
 
-                <TableRow
-                    android:id="@+id/rowGoalWeight"
+            <TableRow
+                android:id="@+id/rowUnit"
+                android:layout_weight="1"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/lblUnit"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" >
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_scale_unit" />
 
-                    <TextView
-                        android:id="@+id/lblGoalWeight"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/label_goal_weight" />
-
-                    <EditText
-                        android:id="@+id/txtGoalWeight"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:ems="10"
-                        android:inputType="numberDecimal|numberSigned" />
-                </TableRow>
-
-                <TableRow
-                    android:id="@+id/rowGoalDate"
+                <RadioGroup
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" >
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:id="@+id/groupScaleUnit">
 
-                    <TextView
-                        android:id="@+id/lblGoalDate"
+                    <RadioButton
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:labelFor="@id/txtGoalDate"
-                        android:text="@string/label_goal_date" />
+                        android:text="kg"
+                        android:id="@+id/btnRadioKG"
+                        android:checked="true" />
 
-                    <EditText
-                        android:id="@+id/txtGoalDate"
+                    <RadioButton
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="5"
-                        android:ems="10"
-                        android:focusable="false"
-                        android:inputType="date" />
+                        android:text="lb"
+                        android:id="@+id/btnRadioLB" />
 
-                </TableRow>
-            </TableLayout>
-        </LinearLayout>
+                    <RadioButton
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="st"
+                        android:id="@+id/btnRadioST" />
+                </RadioGroup>
+            </TableRow>
+
+            <TableRow
+                android:id="@+id/rowBodyHeight"
+                android:layout_weight="1"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/lblBodyHeight"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_height" />
+
+                <EditText
+                    android:id="@+id/txtBodyHeight"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ems="10"
+                    android:inputType="numberDecimal|numberSigned" />
+            </TableRow>
+
+            <TableRow
+                android:id="@+id/tableRowInitialWeight"
+                android:layout_weight="1"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/lblInitialWeight"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_initial_weight" />
+
+                <EditText
+                    android:id="@+id/txtInitialWeight"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ems="10"
+                    android:inputType="numberDecimal|numberSigned" />
+            </TableRow>
+
+            <TableRow
+                android:id="@+id/rowGoalWeight"
+                android:layout_weight="1"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/lblGoalWeight"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_goal_weight" />
+
+                <EditText
+                    android:id="@+id/txtGoalWeight"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ems="10"
+                    android:inputType="numberDecimal|numberSigned" />
+            </TableRow>
+
+            <TableRow
+                android:id="@+id/rowGoalDate"
+                android:layout_weight="1"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/lblGoalDate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:labelFor="@id/txtGoalDate"
+                    android:text="@string/label_goal_date" />
+
+                <EditText
+                    android:id="@+id/txtGoalDate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ems="10"
+                    android:focusable="false"
+                    android:inputType="date" />
+            </TableRow>
+        </TableLayout>
     </ScrollView>
-
 </LinearLayout>
-

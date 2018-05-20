@@ -139,7 +139,7 @@ public class UserAddTest {
                                 allOf(withId(R.id.rowBodyHeight),
                                         childAtPosition(
                                                 withId(R.id.tableUserData),
-                                                5)),
+                                                6)),
                                 1)));
         editText3.perform(scrollTo(), replaceText("180"), closeSoftKeyboard());
 
