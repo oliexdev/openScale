@@ -86,7 +86,7 @@ public class UserAddTest {
         ScaleUser user = OpenScale.getInstance().getSelectedScaleUser();
 
         assertEquals("test", user.getUserName());
-        assertEquals(180, user.getBodyHeight());
+        assertEquals(180, user.getBodyHeight(), DELTA);
         assertEquals(80, user.getInitialWeight(), DELTA);
         assertEquals(60, user.getGoalWeight(), DELTA);
 
@@ -139,7 +139,7 @@ public class UserAddTest {
                                 allOf(withId(R.id.rowBodyHeight),
                                         childAtPosition(
                                                 withId(R.id.tableUserData),
-                                                1)),
+                                                5)),
                                 1)));
         editText3.perform(scrollTo(), replaceText("180"), closeSoftKeyboard());
 
@@ -153,7 +153,7 @@ public class UserAddTest {
                                 allOf(withId(R.id.tableRowInitialWeight),
                                         childAtPosition(
                                                 withId(R.id.tableUserData),
-                                                5)),
+                                                7)),
                                 1)));
         editText5.perform(scrollTo(), replaceText("80"), closeSoftKeyboard());
 
@@ -163,7 +163,7 @@ public class UserAddTest {
                                 allOf(withId(R.id.rowGoalWeight),
                                         childAtPosition(
                                                 withId(R.id.tableUserData),
-                                                6)),
+                                                8)),
                                 1)));
         editText6.perform(scrollTo(), replaceText("60"), closeSoftKeyboard());
 
