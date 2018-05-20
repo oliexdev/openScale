@@ -32,6 +32,7 @@ import android.view.View;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.RadioGroup;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.health.openscale.R;
@@ -63,7 +64,7 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
     private RadioGroup radioScaleUnit;
     private RadioGroup radioGender;
     private RadioGroup radioMeasurementUnit;
-    private RadioGroup radioActivityLevel;
+    private Spinner spinnerActivityLevel;
 
     private final DateFormat dateFormat = DateFormat.getDateInstance();
 
@@ -87,7 +88,7 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
         radioScaleUnit = findViewById(R.id.groupScaleUnit);
         radioGender = findViewById(R.id.groupGender);
         radioMeasurementUnit = findViewById(R.id.groupMeasureUnit);
-        radioActivityLevel = findViewById(R.id.groupActivityLevel);
+        spinnerActivityLevel = findViewById(R.id.spinnerActivityLevel);
         txtInitialWeight = findViewById(R.id.txtInitialWeight);
         txtGoalWeight = findViewById(R.id.txtGoalWeight);
 
@@ -294,23 +295,7 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
                 break;
         }
 
-        switch (scaleUser.getActivityLevel()) {
-            case SEDENTARY:
-                radioActivityLevel.check(R.id.btnRadioSedentary);
-                break;
-            case MILD:
-                radioActivityLevel.check(R.id.btnRadioMild);
-                break;
-            case MODERATE:
-                radioActivityLevel.check(R.id.btnRadioModerate);
-                break;
-            case HEAVY:
-                radioActivityLevel.check(R.id.btnRadioHeavy);
-                break;
-            case EXTREME:
-                radioActivityLevel.check(R.id.btnRadioExtreme);
-                break;
-        }
+        spinnerActivityLevel.setSelection(scaleUser.getActivityLevel().toInt());
     }
 
     private boolean validateInput()
@@ -456,26 +441,6 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
                         break;
                 }
 
-                Converters.ActivityLevel activity_level = Converters.ActivityLevel.SEDENTARY;
-
-                switch (radioActivityLevel.getCheckedRadioButtonId()) {
-                    case R.id.btnRadioSedentary:
-                        activity_level = Converters.ActivityLevel.SEDENTARY;
-                        break;
-                    case R.id.btnRadioMild:
-                        activity_level = Converters.ActivityLevel.MILD;
-                        break;
-                    case R.id.btnRadioModerate:
-                        activity_level = Converters.ActivityLevel.MODERATE;
-                        break;
-                    case R.id.btnRadioHeavy:
-                        activity_level = Converters.ActivityLevel.HEAVY;
-                        break;
-                    case R.id.btnRadioExtreme:
-                        activity_level = Converters.ActivityLevel.EXTREME;
-                        break;
-                }
-
                 final ScaleUser scaleUser = new ScaleUser();
 
                 scaleUser.setUserName(name);
@@ -483,7 +448,8 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
                 scaleUser.setBodyHeight(Converters.toCentimeter(body_height, measure_unit));
                 scaleUser.setScaleUnit(scale_unit);
                 scaleUser.setMeasureUnit(measure_unit);
-                scaleUser.setActivityLevel(activity_level);
+                scaleUser.setActivityLevel(Converters.fromActivityLevelInt(
+                        spinnerActivityLevel.getSelectedItemPosition()));
                 scaleUser.setGender(gender);
                 scaleUser.setInitialWeight(Converters.toKilogram(initial_weight, scale_unit));
                 scaleUser.setGoalWeight(Converters.toKilogram(goal_weight, scale_unit));

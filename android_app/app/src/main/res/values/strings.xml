@@ -237,4 +237,9 @@
     <string name="label_caliper3_female">Hip skinfold</string>
     <string name="label_measure_unit">Measurement unit</string>
     <string name="label_activity_level">Activity level</string>
+    <string name="activity_level_sedentary">Sedentary</string>
+    <string name="activity_level_mild">Mild</string>
+    <string name="activity_level_moderate">Moderate</string>
+    <string name="activity_level_heavy">Heavy</string>
+    <string name="activity_level_extreme">Extreme</string>
 </resources>
