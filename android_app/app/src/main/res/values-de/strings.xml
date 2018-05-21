@@ -213,4 +213,9 @@
     <string name="label_your_bluetooth_scale">Ihre Bluetooth Waage</string>
     <string name="label_measure_unit">Maßeinheit</string>
     <string name="label_activity_level">Aktivitätslevel</string>
+<string name="activity_level_sedentary">Sitzende Tätigkeit</string>
+    <string name="activity_level_mild">Milde Tätigkeit</string>
+    <string name="activity_level_moderate">Moderate Tätigkeit</string>
+    <string name="activity_level_heavy">Schwere Tätigkeit</string>
+    <string name="activity_level_extreme">Extreme Tätigkeit</string>
 </resources>
