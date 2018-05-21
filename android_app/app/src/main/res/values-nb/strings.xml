@@ -228,4 +228,18 @@
     <string name="label_biceps">Bisepsomkrets</string>
     <string name="label_neck">Halsomkrets</string>
     <string name="label_fat_caliper">Fettklype</string>
-    </resources>
+    <string name="label_add_measurement">Legg til måling</string>
+    <string name="label_caliper1_male">Brysthudfold</string>
+    <string name="label_caliper2_male">Bukhudfold</string>
+    <string name="label_caliper3_male">Lårhudfold</string>
+    <string name="label_caliper1_female">Tricepshudfold</string>
+    <string name="label_caliper2_female">Bukhudfold</string>
+    <string name="label_caliper3_female">Hoftehudfold</string>
+    <string name="label_measure_unit">Måleenhet</string>
+    <string name="label_activity_level">Aktivitetsnivå</string>
+    <string name="activity_level_sedentary">Stillesittende</string>
+    <string name="activity_level_mild">Mild</string>
+    <string name="activity_level_moderate">Moderat</string>
+    <string name="activity_level_heavy">Tung</string>
+    <string name="activity_level_extreme">Ekstrem</string>
+</resources>
