@@ -40,10 +40,10 @@
         <item quantity="one">%d dag</item>
         <item quantity="other">%d dagen</item>
     </plurals>
-    <string name="label_last_week">Laatste 7 dagen</string>
-    <string name="label_last_month">Laatste 30 dagen</string>
+    <string name="label_last_week">Gemiddeld afgelopen week</string>
+    <string name="label_last_month">Gemiddeld afgelopen maand</string>
     <string name="label_weight_difference">Verschil in gewicht</string>
-    <string name="label_goal_date_is">Streefdatum is</string>
+    <string name="label_goal_date_is">Streefdatum:</string>
     <string name="label_days_left">Dagen te gaan</string>
 
     <string name="label_date">Datum</string>
@@ -67,48 +67,48 @@
     <string name="label_export">Exporteren</string>
     <string name="label_delete_all">Alles verwijderen</string>
 
-    <string name="error_value_required">Waarde is vereist</string>
-    <string name="error_value_range">De waarde valt niet binnen het bereik</string>
+    <string name="error_value_required">Waarde vereist</string>
+    <string name="error_value_range">Waarde buiten bereik</string>
     <string name="error_exporting">Fout met exporteren</string>
     <string name="error_importing">Fout met importeren</string>
-    <string name="error_user_name_required">Fout: Gebruikersnaam is vereist</string>
-    <string name="error_height_required">Fout: Lichaamslengte is vereist</string>
-    <string name="error_initial_weight_required">Fout: Startgewicht is vereist</string>
-    <string name="error_goal_weight_required">Fout: Streefgewicht is vereist</string>
+    <string name="error_user_name_required">Fout: Naam vereist</string>
+    <string name="error_height_required">Fout: Lichaamslengte vereist</string>
+    <string name="error_initial_weight_required">Fout: Startgewicht vereist</string>
+    <string name="error_goal_weight_required">Fout: Streefgewicht vereist</string>
 
-    <string name="info_data_deleted">Database vermelding verwijderd</string>
-    <string name="info_data_all_deleted">Alle database vermeldingen verwijderd</string>
-    <string name="info_data_exported">Data geëxporteerd naar</string>
-    <string name="info_data_imported">Data geïmporteerd van</string>
+    <string name="info_data_deleted">Vermelding verwijderd</string>
+    <string name="info_data_all_deleted">Alle vermeldingen verwijderd</string>
+    <string name="info_data_exported">Geëxporteerd naar</string>
+    <string name="info_data_imported">Geïmporteerd van</string>
     <string name="info_enter_value_in">Geef waarde in</string>
-    <string name="info_enter_comment">Voeg een optionele opmerking toe</string>
+    <string name="info_enter_comment">Optionele opmerking</string>
     <string name="info_is_visible">is zichtbaar</string>
     <string name="info_is_not_visible">is niet zichtbaar</string>
-    <string name="info_is_enable">is ingeschakeld</string>
-    <string name="info_is_not_enable">is uitgeschakeld</string>
-    <string name="info_is_not_available">is niet beschikbaar</string>
-    <string name="info_bluetooth_try_connection">Poging om een verbinding te maken met</string>
+    <string name="info_is_enable">Ingeschakeld</string>
+    <string name="info_is_not_enable">Uitgeschakeld</string>
+    <string name="info_is_not_available">Niet beschikbaar</string>
+    <string name="info_bluetooth_try_connection">Verbinden met:</string>
     <string name="info_bluetooth_connection_lost">Bluetooth-verbinding verloren</string>
     <string name="info_bluetooth_no_device">Geen Bluetooth-apparaat gevonden</string>
-    <string name="info_bluetooth_connection_successful">Verbinding succesvol tot stand gekomen</string>
+    <string name="info_bluetooth_connection_successful">Verbinding gemaakt</string>
     <string name="info_bluetooth_init">Initialiseer Bluetooth-apparaat</string>
-    <string name="info_bluetooth_connection_error">Bluetooth ondervond een onverwachte fout</string>
+    <string name="info_bluetooth_connection_error">Onverwachte Bluetooth fout</string>
     <string name="info_new_data_added">%1$.2f%2$s [%3$s] aan %4$s toegevoegd</string>
 
-    <string name="info_enter_user_name">Voer uw naam in</string>
-    <string name="info_no_selected_user">Geen gebruikers beschikbaar. Gelieve een nieuwe gebruiker aan te maken bij de instellingen.</string>
+    <string name="info_enter_user_name">Uw naam</string>
+    <string name="info_no_selected_user">Geen gebruiker beschikbaar. Gelieve een gebruiker aan te maken in instellingen.</string>
     <string name="info_no_evaluation_available">Kan de waarde niet evalueren</string>
 
-    <string name="question_really_delete">Weet u zeker dat u de database vermelding wenst te verwijderen?</string>
-    <string name="question_really_delete_all">Weet u zeker dat u alle database vermeldingen wenst te verwijderen?</string>
-    <string name="question_really_delete_user">Weet u zeker dat u de gebruiker wenst te verwijderen?</string>
+    <string name="question_really_delete">Vermelding verwijderen?</string>
+    <string name="question_really_delete_all">Alle vermeldingen voor alle gebruikers verwijderen?</string>
+    <string name="question_really_delete_user">Gebruiker verwijderen?</string>
 
     <string name="label_bluetooth_title">Bluetooth</string>
-    <string name="label_bluetooth_enable">Zoek naar weegschaal bij opstarten</string>
-    <string name="label_bluetooth_searching">Zoeken naar Bluetooth weegschalen</string>
+    <string name="label_bluetooth_enable">Verbinden met weegschaal bij opstarten</string>
+    <string name="label_bluetooth_searching">Zoeken naar uw Bluetooth weegschaal</string>
 
-    <string name="label_enable_labels">Label op gegevenspunt</string>
-    <string name="label_enable_points">Punt op gegevenspunt</string>
+    <string name="label_enable_labels">Gegevenslabel</string>
+    <string name="label_enable_points">Gegevenspunt</string>
 
     <string name="label_delete_confirmation">Bevestiging verwijderen</string>
 
@@ -141,28 +141,28 @@
     <string name="label_backup">Backup</string>
     <string name="label_export_dir">Export folder</string>
     <string name="label_not_found">niet gevonden</string>
-    <string name="label_ignoreOutOfRange">Negeer gegevens die buiten bereik zijn</string>
+    <string name="label_ignoreOutOfRange">Negeer gegevens buiten bereik</string>
     <string name="label_initial_weight">Startgewicht</string>
     <string name="label_regression_line">Regressie gewichtslijn</string>
     <string name="label_regression_line_degree">Regressie polynoomlijn</string>
     <string name="label_goal_line">Doel lijn</string>
 
 
-    <string name="error_max_scale_users">Maximum aantal gelijktijdige weegschaal gebruikers is bereikt</string>
+    <string name="error_max_scale_users">Max. aantal gelijktijdige weegschaal gebruikers is bereikt</string>
     <string name="info_step_on_scale">Stap alsjeblieft met blote voeten op de weegschaal voor een meting</string>
     <string name="info_measuring">Gewicht meten: %.2f</string>
 
     <string name="title_general">Algemeen</string>
 
     <string name="label_share">Delen</string>
-    <string name="label_share_subject">openScale CSV data exporteren (%s)</string>
+    <string name="label_share_subject">CSV data exporteren (%s)</string>
 
-    <string name="error_user_name_too_short">Fout: Gebruikersnaam dient minimaal 3 karakters lang te zijn</string>
+    <string name="error_user_name_too_short">Fout: Naam dient minimaal 3 karakters lang te zijn</string>
     <string name="info_bluetooth_no_device_set">Geen Bluetooth apparaat geselecteerd</string>
     <string name="info_new_data_duplicated">Meting met een zelfde datum en tijd bestaat al</string>
 
     <string name="label_mergeWithLastMeasurement">Samenvoegen met laatste meting</string>
-    <string name="label_bluetooth_searching_finished">Zoeken naar Bluetooth weegschalen voltooid</string>
+    <string name="label_bluetooth_searching_finished">Zoeken voltooid</string>
     <string name="label_theme">Thema</string>
 
     <string name="label_help">Help</string>
@@ -170,9 +170,9 @@
     <string name="label_feedback_message_enjoying">Positief over openScale?</string>
     <string name="label_feedback_message_rate_app">Zou u misschien ook uw ervaringen willen delen op GooglePlay of op Github?</string>
     <string name="label_feedback_message_issue">Zou u zo vriendelijk willen zijn om ons feedback te geven?</string>
-    <string name="label_feedback_message_yes">Ja!</string>
+    <string name="label_feedback_message_yes">Ja</string>
     <string name="label_feedback_message_no">Liever niet</string>
-    <string name="label_feedback_message_positive">Ok, prima</string>
+    <string name="label_feedback_message_positive">Ok</string>
     <string name="label_feedback_message_negative">Nee, bedankt</string>
 
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">Er heeft zich een onverwachte fout voorgedaan.
@@ -186,7 +186,7 @@
     <string name="customactivityoncrash_error_activity_error_details_close">Sluiten</string>
     <string name="customactivityoncrash_error_activity_error_details_copy">Kopieer naar klembord</string>
     <string name="customactivityoncrash_error_activity_error_details_copied">Gekopieerd naar klembord</string>
-    <string name="customactivityoncrash_error_activity_error_details_clipboard_label">Fout informatie</string>
+    <string name="customactivityoncrash_error_activity_error_details_clipboard_label">Fout info</string>
     <string name="toggle_expand">Uitklappen</string>
     <string name="edit">Wijzigen</string>
     <string name="save">Opslaan</string>
@@ -195,11 +195,47 @@
     <string name="label_weeks_view">Wekelijkse weergave</string>
 
     <string name="permission_not_granted">Geen toestemming verleend</string>
-    <string name="permission_bluetooth_info">openScale heeft toestemming nodig tot uw locatie om te kunnen zoeken naar Bluetooth apparaten</string>
-    <string name="permission_bluetooth_info_title">Informatie</string>
+    <string name="permission_bluetooth_info">"Locatie toestemming is nodig om te kunnen zoeken naar Bluetooth apparaten. Dit kan weer ingetrokken worden zodra  het apparaat is gevonden."</string>
+    <string name="permission_bluetooth_info_title">Info</string>
     <string name="label_next">Volgende</string>
     <string name="label_set_default_order">Stel standaard volgorde in</string>
     <string name="label_export_overwrite">Vorige export \"%s\" overschrijven?</string>
 
 
-</resources>
+<string name="label_add_measurement">Meting toevoegen</string>
+    <string name="label_long_press_drag_reorder">Indrukken en slepen om metingen te herordenen</string>
+    <string name="label_click_measurement_configure">Tik op metingen om aan te passen</string>
+    <string name="label_include_in_overview_graph">Toevoegen aan overzichtsgrafiek</string>
+    <string name="label_measurement_in_percent">Meting in %</string>
+    <string name="label_estimate_measurement">Geschatte meting</string>
+    <string name="label_estimation_formula">Schattingsformule</string>
+    <string name="language_default">Systeemstandaard</string>
+    <string name="label_language">Taal</string>
+    <string name="theme_light">Licht</string>
+    <string name="theme_dark">Donker</string>
+    <string name="label_contribute_translation">Help vertalen</string>
+    <string name="label_add_or_fix_translation">Nieuwe toevoegen of bestaande verbeteren</string>
+    <string name="label_overview_graph">Overzichtsgrafiek</string>
+    <string name="label_percent">Procent</string>
+    <string name="label_estimated">Geschat</string>
+    <string name="label_estimate_measurement_summary">Gebaseerd op gewicht, lengte, leeftijd, geslacht, etc.</string>
+    <string name="label_auto_backup">Automatische back-up</string>
+    <string name="label_auto_backup_schedule">Back-upschema</string>
+    <string name="label_overwrite_backup">Vorige back-up overschrijven</string>
+    <string name="label_daily">dagelijks</string>
+    <string name="label_weekly">wekelijks</string>
+    <string name="label_monthly">maandelijks</string>
+    <string name="label_scale_not_supported">Is uw weegschaal niet ondersteund?</string>
+    <string name="label_click_to_help_add_support">Klik hier om er ondersteuning voor toe te voegen</string>
+    <string name="label_development">Ontwikkeling</string>
+    <string name="label_debug_log">Debug log opslaan</string>
+    <string name="label_your_bluetooth_scale">Uw Bluetooth weegschaal</string>
+    <string name="label_select_measurement">Meting selecteren</string>
+    <string name="label_select_user">Gebruiker selecteren</string>
+    <string name="label_configure_widget">Widget configureren</string>
+    <string name="label_chest">Borstomtrek</string>
+    <string name="label_thigh">Dijbeen omtrek</string>
+    <string name="label_biceps">Biceps omtrek</string>
+    <string name="label_neck">Nek omtrek</string>
+    <string name="label_measure_unit">Meeteenheid</string>
+    </resources>

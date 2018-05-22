@@ -221,8 +221,8 @@
     <string name="label_measure_unit">Måttenhet</string>
     <string name="label_activity_level">Aktivitetsnivå</string>
 <string name="activity_level_sedentary">Stillasittande</string>
-    <string name="activity_level_mild">Ringa</string>
-    <string name="activity_level_moderate">Måttlig</string>
-    <string name="activity_level_heavy">Frekvent</string>
+    <string name="activity_level_mild">Lätt</string>
+    <string name="activity_level_moderate">Medelhård</string>
+    <string name="activity_level_heavy">Hård</string>
     <string name="activity_level_extreme">Extrem</string>
 </resources>
