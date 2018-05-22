@@ -413,7 +413,7 @@ public abstract class MeasurementView extends TableLayout {
         ViewGroup parent = (ViewGroup) getParent();
         for (int i = parent.indexOfChild(this) + 1; i < parent.getChildCount(); ++i) {
             MeasurementView next = (MeasurementView) parent.getChildAt(i);
-            if (next.isEditable()) {
+            if (next.isVisible() && next.isEditable()) {
                 return next;
             }
         }
