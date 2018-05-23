@@ -172,6 +172,7 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
         if (scaleMeasurementList.isEmpty()) {
             lastScaleMeasurement = new ScaleMeasurement();
             lastScaleMeasurement.setUserId(currentScaleUser.getId());
+            lastScaleMeasurement.setWeight(currentScaleUser.getInitialWeight());
         } else {
             lastScaleMeasurement = scaleMeasurementList.get(0);
         }
