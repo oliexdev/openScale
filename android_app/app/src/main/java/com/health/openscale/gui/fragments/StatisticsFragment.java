@@ -186,12 +186,15 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
 
         ScaleMeasurement goalScaleMeasurement = new ScaleMeasurement();
         goalScaleMeasurement.setUserId(currentScaleUser.getId());
-        goalScaleMeasurement.setWeight(Converters.toKilogram(currentScaleUser.getGoalWeight(), unit));
+        goalScaleMeasurement.setWeight(currentScaleUser.getGoalWeight());
 
-        txtGoalWeight.setText(String.format("%.1f %s", Converters.fromKilogram(goalScaleMeasurement.getWeight(), unit), unit.toString()));
+        txtGoalWeight.setText(String.format("%.1f %s",
+                Converters.fromKilogram(goalScaleMeasurement.getWeight(), unit),
+                unit.toString()));
 
-        double weight_diff = Converters.fromKilogram(goalScaleMeasurement.getWeight() - lastScaleMeasurement.getWeight(), unit);
-        txtGoalDiff.setText(String.format("%.1f %s", weight_diff, unit.toString()));
+        txtGoalDiff.setText(String.format("%.1f %s",
+                Converters.fromKilogram(goalScaleMeasurement.getWeight() - lastScaleMeasurement.getWeight(), unit),
+                unit.toString()));
 
         Calendar goalCalendar = Calendar.getInstance();
         goalCalendar.setTime(currentScaleUser.getGoalDate());
