@@ -135,7 +135,7 @@
     <string name="label_reminder_weekdays">Days</string>
     <string name="label_reminder_time">Time</string>
     <string name="label_reminder_notify_text">Notification text</string>
-    <string name="default_value_reminder_notify_text">Time to weight</string>
+    <string name="default_value_reminder_notify_text">Time to weigh</string>
 
     <string name="info_on_date">on</string>
 
