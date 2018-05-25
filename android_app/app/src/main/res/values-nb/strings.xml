@@ -129,7 +129,7 @@
     <string name="label_theme">Drakt</string>
 
     <string name="label_reminder">Påminnelse</string>
-    <string name="label_reminder_weekdays">Ukedager</string>
+    <string name="label_reminder_weekdays">Dager</string>
     <string name="label_reminder_time">Tid</string>
     <string name="label_reminder_notify_text">Merknadstekst</string>
     <string name="default_value_reminder_notify_text">På tide med innveiing</string>
