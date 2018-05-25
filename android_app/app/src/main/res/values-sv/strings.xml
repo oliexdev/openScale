@@ -28,9 +28,9 @@
     <string name="Saturday">Lördag</string>
     <string name="Sunday">Söndag</string>
     <string name="label_backup">Säkerhetskopia</string>
-    <string name="default_value_reminder_notify_text">Dags att väga</string>
+    <string name="default_value_reminder_notify_text">Dags för invägning</string>
     <string name="label_reminder_time">Tid</string>
-    <string name="label_reminder_weekdays">Veckodagar</string>
+    <string name="label_reminder_weekdays">Dagar</string>
     <string name="label_website">Hemsida</string>
     <string name="label_license">Licens</string>
     <string name="error_exporting">Fel vid export</string>
