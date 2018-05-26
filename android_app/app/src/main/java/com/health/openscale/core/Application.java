@@ -22,13 +22,21 @@ import timber.log.Timber;
 
 public class Application extends android.app.Application {
 
+    private class TimberLogAdapter extends Timber.DebugTree {
+        @Override
+        protected boolean isLoggable(String tag, int priority) {
+            if (BuildConfig.DEBUG || OpenScale.DEBUG_MODE) {
+                return super.isLoggable(tag, priority);
+            }
+            return false;
+        }
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
 
-        if (BuildConfig.DEBUG) {
-            Timber.plant(new Timber.DebugTree());
-        }
+        Timber.plant(new TimberLogAdapter());
 
         // Create OpenScale instance
         OpenScale.createInstance(getApplicationContext());
