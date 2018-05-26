@@ -553,7 +553,11 @@ public abstract class BluetoothCommunication {
                 catch (Exception e) {
                     // Empty
                 }
-                gatt.discoverServices();
+                if (!gatt.discoverServices()) {
+                    Timber.e("Could not start service discovery");
+                    setBtStatus(BT_STATUS_CODE.BT_CONNECTION_LOST);
+                    disconnect(false);
+                }
             }
             else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 setBtStatus(connectionEstablished
