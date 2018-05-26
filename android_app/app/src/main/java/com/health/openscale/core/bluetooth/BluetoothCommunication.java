@@ -548,7 +548,7 @@ public abstract class BluetoothCommunication {
                 setBtStatus(BT_STATUS_CODE.BT_CONNECTION_ESTABLISHED);
 
                 try {
-                    Thread.sleep(200);
+                    Thread.sleep(1000);
                 }
                 catch (Exception e) {
                     // Empty
