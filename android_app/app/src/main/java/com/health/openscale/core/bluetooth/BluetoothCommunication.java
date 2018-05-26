@@ -24,6 +24,7 @@ import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
+import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -381,6 +382,21 @@ public abstract class BluetoothCommunication {
      */
     public void connect(String hwAddress) {
         Timber.i("Connecting to [%s] (driver: %s)", hwAddress, driverName());
+
+        Timber.d("BT is%s enabled, state=%d, scan mode=%d, is%s discovering",
+                btAdapter.isEnabled() ? "" : " not", btAdapter.getState(),
+                btAdapter.getScanMode(), btAdapter.isDiscovering() ? "" : " not");
+
+        BluetoothManager manager =
+                (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
+        for (BluetoothDevice device : manager.getConnectedDevices(BluetoothProfile.GATT)) {
+            Timber.d("Connected GATT device: %s [%s]",
+                    device.getName(), device.getAddress());
+        }
+        for (BluetoothDevice device : manager.getConnectedDevices(BluetoothProfile.GATT_SERVER)) {
+            Timber.d("Connected GATT_SERVER device: %s [%s]",
+                    device.getName(), device.getAddress());
+        }
 
         // Some good tips to improve BLE connections:
         // https://android.jlelse.eu/lessons-for-first-time-android-bluetooth-le-developers-i-learned-the-hard-way-fee07646624
