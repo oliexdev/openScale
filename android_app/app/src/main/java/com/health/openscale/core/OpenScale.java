@@ -42,10 +42,8 @@ import com.health.openscale.core.bodymetric.EstimatedFatMetric;
 import com.health.openscale.core.bodymetric.EstimatedLBMMetric;
 import com.health.openscale.core.bodymetric.EstimatedWaterMetric;
 import com.health.openscale.core.database.AppDatabase;
-import com.health.openscale.core.database.ScaleDatabase;
 import com.health.openscale.core.database.ScaleMeasurementDAO;
 import com.health.openscale.core.database.ScaleUserDAO;
-import com.health.openscale.core.database.ScaleUserDatabase;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
@@ -103,7 +101,6 @@ public class OpenScale {
 
         reopenDatabase();
 
-        migrateSQLtoRoom();
         updateScaleData();
     }
 
@@ -141,33 +138,6 @@ public class OpenScale {
                 .build();
         measurementDAO = appDB.measurementDAO();
         userDAO = appDB.userDAO();
-    }
-
-    private void migrateSQLtoRoom() {
-        if (!context.getDatabasePath(ScaleUserDatabase.DATABASE_NAME).exists()
-            || !context.getDatabasePath(ScaleDatabase.DATABASE_NAME).exists()) {
-            return;
-        }
-
-        ScaleDatabase scaleDB = new ScaleDatabase(context);
-        ScaleUserDatabase scaleUserDB = new ScaleUserDatabase(context);
-
-        List<ScaleUser> oldScaleUserList = scaleUserDB.getScaleUserList();
-
-        if (scaleDB.getReadableDatabase().getVersion() == 6 && userDAO.getAll().isEmpty() && !oldScaleUserList.isEmpty()) {
-            Toast.makeText(context, "Migrating old SQL database to new database format...", Toast.LENGTH_LONG).show();
-            userDAO.insertAll(oldScaleUserList);
-
-            for (ScaleUser user : oldScaleUserList) {
-                List<ScaleMeasurement> oldScaleMeasurementList = scaleDB.getScaleDataList(user.getId());
-                measurementDAO.insertAll(oldScaleMeasurementList);
-            }
-
-            Toast.makeText(context, "Finished migrating old SQL database to new database format", Toast.LENGTH_LONG).show();
-        }
-
-        scaleUserDB.close();
-        scaleDB.close();
     }
 
     public void triggerWidgetUpdate() {
