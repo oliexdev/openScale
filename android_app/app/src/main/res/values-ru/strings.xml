@@ -1,2 +1,189 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<?xml version='1.0' encoding='UTF-8'?>
+<resources><string name="title_overview">Обзор</string>
+    <string name="title_graph">График</string>
+    <string name="title_table">Таблица</string>
+    <string name="title_statistics">Статистика</string>
+    <string name="title_users">Пользователи</string>
+    <string name="title_measurements">Измерения</string>
+    <string name="title_about">О программе</string>
+    <string name="title_general">Основное</string>
+
+    <string name="action_settings">Настройки</string>
+    <string name="action_bluetooth_status">Статус Bluetooth</string>
+    <string name="open_drawer">открыть</string>
+    <string name="close_drawer">закрыть</string>
+
+    <string name="label_cancel">Отмена</string>
+    <string name="label_ok">ОК</string>
+    <string name="label_yes">Да</string>
+    <string name="label_no">Нет</string>
+    <string name="label_delete">Удалить</string>
+    <string name="label_add_user">Добавить пользователя</string>
+    <string name="label_add_measurement">Добавить измерение</string>
+    <string name="label_share">Поделиться</string>
+    <string name="label_share_subject">Экспорт данных CSV в (%s)</string>
+
+    <string name="label_weight">Вес</string>
+    <string name="label_bmi">Индекс массы тела (ИМТ)</string>
+    <string name="label_bmr">Основной обмен (ОО)</string>
+    <string name="label_fat">Жир в организме</string>
+    <string name="label_water">Вода в организме</string>
+    <string name="label_muscle">Мышца</string>
+    <string name="label_lbm">Мышечная масса тела</string>
+    <string name="label_waist">Обхват талии</string>
+    <string name="label_hip">Обхват бедра</string>
+    <string name="label_comment">Комментарий</string>
+    <string name="label_whtr">Соотношение обхвата талии к росту</string>
+    <string name="label_whr">Соотношение обхвата талии к бедру</string>
+    <string name="label_bone">Костная масса</string>
+    <string name="label_smartUserAssign">Умное определение Пользователя</string>
+
+    <string name="label_last_week">Среднее за прошлую неделю</string>
+    <string name="label_last_month">Среднее за прошлый месяц</string>
+    <string name="label_weight_difference">Разница в весе</string>
+    <string name="label_goal_date_is">Целевая дата:</string>
+    <string name="label_days_left">Осталось дней</string>
+
+    <string name="label_date">Дата</string>
+    <string name="label_time">Время</string>
+    <string name="label_birthday">День рождения</string>
+    <string name="label_user_name">Имя</string>
+    <string name="label_height">Рост</string>
+    <string name="label_scale_unit">Единица измерения веса</string>
+    <string name="label_gender">Пол</string>
+    <string name="label_male">Мужской</string>
+    <string name="label_female">Женский</string>
+    <string name="label_goal_weight">Цель по весу</string>
+    <string name="label_goal_date">Целевая дата</string>
+
+    <string name="label_title_user">пользователь</string>
+    <string name="label_title_last_measurement">последнее измерение</string>
+    <string name="label_title_goal">Цель</string>
+
+    <string name="label_import">Импорт</string>
+    <string name="label_export">Экспорт</string>
+    <string name="label_delete_all">Удалить все</string>
+
+    <string name="error_value_required">Необходимо значение</string>
+    <string name="error_value_range">Значение вне диапазона</string>
+    <string name="error_exporting">Ошибка при экспортировании</string>
+    <string name="error_importing">Ошибка при импортировании</string>
+    <string name="error_user_name_required">Ошибка: необходимо Имя</string>
+    <string name="error_user_name_too_short">Ошибка: Имя должно быть длиннее 3 символов</string>
+    <string name="error_height_required">Ошибка: требуется указать Рост</string>
+    <string name="error_initial_weight_required">Ошибка: необходимо указать начальный вес</string>
+    <string name="error_goal_weight_required">Ошибка: необходимо указать цель по весу</string>
+
+    <string name="info_data_deleted">Запись удалена</string>
+    <string name="info_data_all_deleted">Все записи удалены</string>
+    <string name="info_data_exported">Экспортировано в</string>
+    <string name="info_data_imported">Импортировано из</string>
+    <string name="info_enter_value_in">Значение в</string>
+    <string name="info_enter_comment">Опциональный комментарий</string>
+    <string name="info_is_visible">отображается</string>
+    <string name="info_is_not_visible">не отображается</string>
+    <string name="info_is_enable">включена</string>
+    <string name="info_is_not_enable">выключена</string>
+    <string name="info_is_not_available">не доступна</string>
+    <string name="info_bluetooth_try_connection">Соединение с:</string>
+    <string name="info_bluetooth_connection_lost">Соединение Bluetooth потеряно</string>
+    <string name="info_bluetooth_no_device">Устройство Bluetooth не найдено</string>
+    <string name="info_bluetooth_no_device_set">Устройство Bluetooth не выбрано</string>
+    <string name="info_bluetooth_connection_successful">Соединение установлено</string>
+    <string name="info_bluetooth_init">Инициализировать Bluetooth устройство</string>
+    <string name="info_bluetooth_connection_error">Неожиданная ошибка Bluetooth</string>
+    <string name="info_new_data_duplicated">измерение с такой датой и временем уже существует</string>
+
+    <string name="info_enter_user_name">Ваше имя</string>
+    <string name="info_no_selected_user">Пользователя не существует. Пожалуйста, создайте пользователя в настройках.</string>
+    <string name="info_no_evaluation_available">Невозможно определить значение</string>
+
+    <string name="question_really_delete">Удалить запись?</string>
+    <string name="question_really_delete_all">Удалить все записи для всех пользователей?</string>
+    <string name="question_really_delete_user">Удалить пользователя?</string>
+
+    <string name="label_bluetooth_title">Bluetooth</string>
+    <string name="label_bluetooth_enable">Подсоединяться к весам при старте приложения</string>
+    <string name="label_mergeWithLastMeasurement">Объединить с последним измерением</string>
+    <string name="label_bluetooth_searching">Поиск Ваших Bluetooth весов</string>
+    <string name="label_bluetooth_searching_finished">Поиск завершен</string>
+
+    <string name="label_enable_points">Точка измерения</string>
+
+    <string name="label_delete_confirmation">Удалить подтверждение</string>
+
+    <string name="label_category_measurement_database">База измерений</string>
+
+    <string name="label_maintainer">Сопровождающий</string>
+    <string name="label_website">Веб-сайт</string>
+    <string name="label_license">Лицензия</string>
+
+    <string name="label_automatic">авто</string>
+
+    <string name="label_theme">Тема</string>
+
+    <string name="label_reminder">Напоминание</string>
+    <string name="label_reminder_weekdays">Дни</string>
+    <string name="label_reminder_time">Время</string>
+    <string name="label_reminder_notify_text">Текст уведомления</string>
+    <string name="Monday">Понедельник</string>
+    <string name="Tuesday">Вторник</string>
+    <string name="Wednesday">Среда</string>
+    <string name="Thursday">Четверг</string>
+    <string name="Friday">Пятница</string>
+    <string name="Saturday">Суббота</string>
+    <string name="Sunday">Воскресенье</string>
+    <string name="label_bt_device_no_support">устройство не поддерживается</string>
+    <string name="label_exportBackup">Экспорт резервного файла</string>
+    <string name="label_importBackup">Импорт резервного файла</string>
+    <string name="label_backup">Резервный файл</string>
+    <string name="label_export_dir">Каталог экспорта</string>
+    <string name="label_not_found">не найден</string>
+    <string name="label_ignoreOutOfRange">Игнорировать данные вне диапазона</string>
+    <string name="label_initial_weight">Начальный вес</string>
+    <string name="label_goal_line">Линия цели</string>
+    <string name="label_help">Помощь</string>
+
+    <string name="label_feedback_message_enjoying">Нравится openScale?</string>
+    <string name="label_feedback_message_issue">Хотите оставить отзыв?</string>
+    <string name="label_feedback_message_yes">Да</string>
+    <string name="label_feedback_message_no">Не очень</string>
+    <string name="label_feedback_message_positive">OK</string>
+    <string name="label_feedback_message_negative">Нет, спасибо</string>
+
+    <string name="error_max_scale_users">Достигнуто максимальное количество пользователей весов</string>
+    <string name="info_step_on_scale">Пожалуйста, встаньте босиком на весы для исходных измерений</string>
+    <string name="info_measuring">Измеренный вес: %.2f</string>
+
+    <string name="customactivityoncrash_error_activity_restart_app">Перезапустить приложение</string>
+    <string name="customactivityoncrash_error_activity_close_app">Закрыть приложение</string>
+    <string name="customactivityoncrash_error_activity_error_details">Детали ошибки</string>
+    <string name="customactivityoncrash_error_activity_error_details_title">Детали ошибки</string>
+    <string name="customactivityoncrash_error_activity_error_details_close">Закрыть</string>
+    <string name="customactivityoncrash_error_activity_error_details_copy">Скопировать в буфер обмена</string>
+    <string name="customactivityoncrash_error_activity_error_details_copied">Скопировано в буфер обмена</string>
+    <string name="edit">Редактировать</string>
+    <string name="save">Сохранить</string>
+
+    <string name="permission_not_granted">Разрешение не получено</string>
+    <string name="permission_bluetooth_info_title">Информация</string>
+    <string name="label_next">Следующий</string>
+    <string name="label_set_default_order">Установить порядок по умолчанию</string>
+    <string name="label_measurement_in_percent">Измерение в %</string>
+    <string name="language_default">Значение по умолчанию</string>
+    <string name="label_language">Язык</string>
+    <string name="theme_light">Светлая</string>
+    <string name="theme_dark">Темная</string>
+    <string name="label_percent">Процент</string>
+    <string name="label_daily">каждый день</string>
+    <string name="label_weekly">каждую неделю</string>
+    <string name="label_monthly">каждый месяц</string>
+    <string name="label_scale_not_supported">Ваши весы не поддерживаются?</string>
+    <string name="label_development">Разработка</string>
+    <string name="label_debug_log">Сохранить отладочный журнал в файл</string>
+    <string name="label_your_bluetooth_scale">Ваши Bluetooth весы</string>
+    <string name="label_select_measurement">Выберите измерение</string>
+    <string name="label_select_user">Выберите пользователя</string>
+    <string name="label_configure_widget">Настройте виджет</string>
+    <string name="label_measure_unit">Единица измерения</string>
+    </resources>
