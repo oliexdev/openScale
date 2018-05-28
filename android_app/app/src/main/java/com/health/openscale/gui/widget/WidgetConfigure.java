@@ -67,16 +67,22 @@ public class WidgetConfigure extends BaseAppCompatActivity {
             users.add(scaleUser.getUserName());
             userIds.add(scaleUser.getId());
         }
-        ArrayAdapter<String> userAdapter = new ArrayAdapter<>(
-                this, android.R.layout.simple_spinner_item, users);
-        userAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        userSpinner.setAdapter(userAdapter);
 
         // Hide user selector when there's only one user
         if (users.size() == 1) {
             TableRow row = (TableRow) userSpinner.getParent();
             row.setVisibility(View.GONE);
         }
+        else if (users.isEmpty()) {
+            users.add(getResources().getString(R.string.info_no_selected_user));
+            userIds.add(-1);
+            findViewById(R.id.widget_save).setEnabled(false);
+        }
+
+        ArrayAdapter<String> userAdapter = new ArrayAdapter<>(
+                this, android.R.layout.simple_spinner_item, users);
+        userAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        userSpinner.setAdapter(userAdapter);
 
         // Set up measurement spinner
         final Spinner measurementSpinner = findViewById(R.id.widget_measurement_spinner);
