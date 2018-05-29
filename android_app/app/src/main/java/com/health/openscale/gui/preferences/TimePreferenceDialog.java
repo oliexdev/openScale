@@ -44,6 +44,7 @@ public class TimePreferenceDialog extends DialogPreference {
 
         setPositiveButtonText(R.string.label_ok);
         setNegativeButtonText(R.string.label_cancel);
+        setDialogTitle(null);
         calendar = Calendar.getInstance();
     }
 
