@@ -151,7 +151,7 @@ public abstract class FloatMeasurementView extends MeasurementView {
             setValueView(formatValue(value, true), callListener);
 
             if (getMeasurementMode() != MeasurementViewMode.ADD) {
-                final float evalValue = maybeConvertValue(value);
+                final float evalValue = maybeConvertToOriginalValue(value);
 
                 EvaluationSheet evalSheet = new EvaluationSheet(getScaleUser(), dateTime);
                 evaluationResult = evaluateSheet(evalSheet, evalValue);
@@ -318,6 +318,17 @@ public abstract class FloatMeasurementView extends MeasurementView {
         return value;
     }
 
+    private float maybeConvertToOriginalValue(float value) {
+        if (shouldConvertAbsoluteWeightToPercentage()){
+            return makeAbsoluteWeight(value);
+        }
+        if (shouldConvertPercentageToAbsoluteWeight()) {
+            return makeRelativeWeight(value);
+        }
+
+        return value;
+    }
+
     private void updateUserConvertedWeight(ScaleMeasurement measurement) {
         if (shouldConvert()) {
             // Make sure weight is never 0 to avoid division by 0
@@ -367,18 +378,10 @@ public abstract class FloatMeasurementView extends MeasurementView {
             if (shouldConvert()) {
                 // Make sure to use the current weight to get a correct value
                 updateUserConvertedWeight(measurement);
+            }
 
-                // Need to convert back to original value before setting
-                if (shouldConvertPercentageToAbsoluteWeight()) {
-                    setMeasurementValue(makeRelativeWeight(value), measurement);
-                }
-                else if (shouldConvertAbsoluteWeightToPercentage()){
-                    setMeasurementValue(makeAbsoluteWeight(value), measurement);
-                }
-            }
-            else {
-                setMeasurementValue(value, measurement);
-            }
+            // May need to convert back to original value before saving
+            setMeasurementValue(maybeConvertToOriginalValue(value), measurement);
         }
     }
 
