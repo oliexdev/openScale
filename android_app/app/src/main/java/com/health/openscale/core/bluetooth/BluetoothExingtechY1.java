@@ -25,6 +25,7 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
 
@@ -98,7 +99,7 @@ public class BluetoothExingtechY1 extends BluetoothCommunication {
         float water = Converters.fromUnsignedInt16Be(weightBytes, 8) / 10.0f; // %
         float bone = Converters.fromUnsignedInt16Be(weightBytes, 10) / 10.0f; // kg
         float muscle = Converters.fromUnsignedInt16Be(weightBytes, 12) / 10.0f; // %
-        float visc_muscle = weightBytes[14] & 0xFF; // %
+        float visc_fat = weightBytes[14] & 0xFF; // %
         float calorie = Converters.fromUnsignedInt16Be(weightBytes, 15);
         float bmi = Converters.fromUnsignedInt16Be(weightBytes, 17) / 10.0f;
 
@@ -111,7 +112,12 @@ public class BluetoothExingtechY1 extends BluetoothCommunication {
         scaleBtData.setMuscle(muscle);
         scaleBtData.setWater(water);
         scaleBtData.setBone(bone);
-        scaleBtData.setDateTime(new Date());
+        scaleBtData.setVisceralFat(visc_fat);
+
+        Calendar dateTime = Calendar.getInstance();
+        dateTime.set(Calendar.MILLISECOND, 0);
+        dateTime.set(Calendar.SECOND, 0);
+        scaleBtData.setDateTime(dateTime.getTime());
 
         addScaleData(scaleBtData);
     }
