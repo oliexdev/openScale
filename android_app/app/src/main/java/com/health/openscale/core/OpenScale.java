@@ -295,15 +295,16 @@ public class OpenScale {
         }
 
         if (measurementDAO.insert(scaleMeasurement) != -1) {
-            ScaleUser scaleUser = getScaleUser(scaleMeasurement.getUserId());
-
-            final java.text.DateFormat dateFormat = DateFormat.getDateFormat(context);
-            final java.text.DateFormat timeFormat = DateFormat.getTimeFormat(context);
-            final Date dateTime = scaleMeasurement.getDateTime();
-
-            final Converters.WeightUnit unit = scaleUser.getScaleUnit();
-
+            Timber.d("Added measurement: %s", scaleMeasurement);
             if (!silent) {
+                ScaleUser scaleUser = getScaleUser(scaleMeasurement.getUserId());
+
+                final java.text.DateFormat dateFormat = DateFormat.getDateFormat(context);
+                final java.text.DateFormat timeFormat = DateFormat.getTimeFormat(context);
+                final Date dateTime = scaleMeasurement.getDateTime();
+
+                final Converters.WeightUnit unit = scaleUser.getScaleUnit();
+
                 String infoText = String.format(context.getString(R.string.info_new_data_added),
                         Converters.fromKilogram(scaleMeasurement.getWeight(), unit), unit.toString(),
                         dateFormat.format(dateTime) + " " + timeFormat.format(dateTime),
@@ -359,6 +360,7 @@ public class OpenScale {
     }
 
     public void updateScaleData(ScaleMeasurement scaleMeasurement) {
+        Timber.d("Update measurement: %s", scaleMeasurement);
         measurementDAO.update(scaleMeasurement);
         alarmHandler.entryChanged(context, scaleMeasurement);
 
