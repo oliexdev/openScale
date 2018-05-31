@@ -84,7 +84,9 @@ public class BluetoothExingtechY1 extends BluetoothCommunication {
     public void onBluetoothDataChange(BluetoothGatt bluetoothGatt, BluetoothGattCharacteristic gattCharacteristic) {
         final byte[] data = gattCharacteristic.getValue();
 
-        if (data != null && data.length == 20) {
+        // The first notification only includes weight and all other fields are
+        // either 0x00 (user info) or 0xff (fat, water, etc.)
+        if (data != null && data.length == 20 && data[6] != 0xff) {
             parseBytes(data);
         }
     }
