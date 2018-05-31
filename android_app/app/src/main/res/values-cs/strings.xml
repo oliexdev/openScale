@@ -23,9 +23,9 @@
     <string name="label_weight">Hmotnost</string>
     <string name="label_bmi">Index tělesné hmotnosti (BMI)</string>
     <string name="label_bmr">Bazální metabolický výdej (BMR)</string>
-    <string name="label_fat">Procento tělesného tuku</string>
-    <string name="label_water">Procento vody</string>
-    <string name="label_muscle">Procento svalů</string>
+    <string name="label_fat">Tělesný tuk</string>
+    <string name="label_water">Tělesná voda</string>
+    <string name="label_muscle">Svaly</string>
     <string name="label_comment">Komentář</string>
     <string name="label_smartUserAssign">Chytré přiřazení uživatele</string>
 
@@ -147,4 +147,5 @@
 
     <string name="permission_bluetooth_info_title">Informace</string>
 
-</resources>
+<string name="label_ok">OK</string>
+    </resources>
