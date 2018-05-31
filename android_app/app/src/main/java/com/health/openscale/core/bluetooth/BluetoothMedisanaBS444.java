@@ -45,6 +45,11 @@ public class BluetoothMedisanaBS444 extends BluetoothCommunication {
     }
 
     @Override
+    protected boolean discoverDeviceBeforeConnecting() {
+        return true;
+    }
+
+    @Override
     public String driverName() {
         return "Medisana BS44x";
     }

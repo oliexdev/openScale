@@ -96,6 +96,10 @@ public abstract class BluetoothCommunication {
         return bluetoothGatt.getServices();
     }
 
+    protected boolean discoverDeviceBeforeConnecting() {
+        return false;
+    }
+
     /**
      * Register a callback Bluetooth handler that notify any BT_STATUS_CODE changes for GUI/CORE.
      *
@@ -380,7 +384,7 @@ public abstract class BluetoothCommunication {
      *
      * @param hwAddress the Bluetooth address to connect to
      */
-    public void connect(String hwAddress) {
+    public void connect(final String hwAddress) {
         Timber.i("Connecting to [%s] (driver: %s)", hwAddress, driverName());
 
         Timber.d("BT is%s enabled, state=%d, scan mode=%d, is%s discovering",
@@ -401,6 +405,8 @@ public abstract class BluetoothCommunication {
         // Some good tips to improve BLE connections:
         // https://android.jlelse.eu/lessons-for-first-time-android-bluetooth-le-developers-i-learned-the-hard-way-fee07646624
 
+        final boolean doDiscoveryFirst = discoverDeviceBeforeConnecting();
+
         // Running an LE scan during connect improves connectivity on some phones
         // (e.g. Sony Xperia Z5 compact, Android 7.1.1).
         btAdapter.cancelDiscovery();
@@ -411,6 +417,13 @@ public abstract class BluetoothCommunication {
                 leScanCallback = new BluetoothAdapter.LeScanCallback() {
                     @Override
                     public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
+                        Timber.d("Found LE device %s [%s]", device.getName(), device.getAddress());
+                        if (!doDiscoveryFirst || !device.getAddress().equals(hwAddress)) {
+                            return;
+                        }
+                        synchronized (lock) {
+                            connectGatt(device);
+                        }
                     }
                 };
                 btAdapter.startLeScan(leScanCallback);
@@ -423,7 +436,12 @@ public abstract class BluetoothCommunication {
         // Don't do any cleanup if disconnected before fully connected
         btMachineState = BT_MACHINE_STATE.BT_CLEANUP_STATE;
 
-        BluetoothDevice device = btAdapter.getRemoteDevice(hwAddress);
+        if (!doDiscoveryFirst || leScanCallback == null) {
+            connectGatt(btAdapter.getRemoteDevice(hwAddress));
+        }
+    }
+
+    private void connectGatt(BluetoothDevice device) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             bluetoothGatt = device.connectGatt(
                     context, false, gattCallback, BluetoothDevice.TRANSPORT_LE);
@@ -438,12 +456,13 @@ public abstract class BluetoothCommunication {
      */
     public void disconnect(boolean doCleanup) {
         synchronized (lock) {
-            if (bluetoothGatt == null) {
-                return;
-            }
             if (leScanCallback != null) {
                 btAdapter.stopLeScan(leScanCallback);
                 leScanCallback = null;
+            }
+
+            if (bluetoothGatt == null) {
+                return;
             }
 
             Timber.i("Disconnecting%s", doCleanup ? " (with cleanup)" : "");
