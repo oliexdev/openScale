@@ -21,7 +21,7 @@
     <string name="label_bmi">IMC</string>
     <string name="label_fat">Graisse corporelle</string>
     <string name="label_water">Pourcentage d\'eau</string>
-    <string name="label_muscle">Pourcentage musculaire</string>
+    <string name="label_muscle">Muscle</string>
     <string name="label_waist">Tour de taille</string>
     <string name="label_hip">Tour de hanches</string>
     <string name="label_comment">Commentaire</string>
@@ -33,8 +33,8 @@
         <item quantity="one">%d jour</item>
         <item quantity="other">%d jours</item>
     </plurals>
-    <string name="label_last_week">7 derniers jours</string>
-    <string name="label_last_month">30 derniers jours</string>
+    <string name="label_last_week">Moyenne sur la dernière semaine</string>
+    <string name="label_last_month">Moyenne sur le mois dernier</string>
     <string name="label_weight_difference">Différence de poids</string>
     <string name="label_goal_date_is">La date de l\'objectif :</string>
     <string name="label_days_left">Jours restants</string>
@@ -54,14 +54,14 @@
 
     <string name="label_title_user">utilisateur</string>
     <string name="label_title_last_measurement">dernière mesure</string>
-    <string name="label_title_goal">objectif</string>
+    <string name="label_title_goal">Objectif</string>
 
     <string name="label_import">Importer</string>
     <string name="label_export">Exporter</string>
     <string name="label_delete_all">Tout supprimer</string>
 
     <string name="error_value_required">Valeur requise</string>
-    <string name="error_value_range">La valeur n\'est pas dans la plage</string>
+    <string name="error_value_range">Valeur hors plage</string>
     <string name="error_exporting">Erreur durant l\'exportation</string>
     <string name="error_importing">Erreur durant l\'importation</string>
     <string name="error_user_name_required">Erreur : Nom d\'utilisateur requis</string>
@@ -70,8 +70,8 @@
 
     <string name="info_data_deleted">L\'entrée a été supprimée</string>
     <string name="info_data_all_deleted">Toutes les entrées ont été supprimées</string>
-    <string name="info_data_exported">Données exportées vers</string>
-    <string name="info_data_imported">Donnéees importées depuis</string>
+    <string name="info_data_exported">Exporté vers</string>
+    <string name="info_data_imported">Importé depuis</string>
     <string name="info_enter_value_in">Valeur en</string>
     <string name="info_enter_comment">Commentaire optionnel</string>
     <string name="info_is_visible">est visible</string>
@@ -103,10 +103,10 @@
     <string name="label_delete_confirmation">Supprimer la confirmation</string>
 
     <string name="label_reminder">Rappel</string>
-    <string name="label_reminder_weekdays">Jours de la semaine</string>
+    <string name="label_reminder_weekdays">Jours</string>
     <string name="label_reminder_time">Heure</string>
     <string name="label_reminder_notify_text">Intitulé de la notification</string>
-    <string name="default_value_reminder_notify_text">C\'est l\'heure de se peser!</string>
+    <string name="default_value_reminder_notify_text">C\'est l\'heure de se peser !</string>
 
     <string name="info_on_date">le</string>
 
@@ -144,7 +144,7 @@
     <string name="save">Sauvegarder</string>
 
     <string name="permission_not_granted">Permission non accordée</string>
-    <string name="permission_bluetooth_info_title">Information</string>
+    <string name="permission_bluetooth_info_title">Info</string>
     <string name="label_next">Suivant</string>
     <string name="title_about">À propos</string>
     <string name="label_share">Partager</string>
@@ -179,7 +179,7 @@
     <string name="info_new_data_duplicated">des mesures à la même date et heure existent déjà</string>
 
     <string name="label_mergeWithLastMeasurement">Fusionner avec la dernière mesure</string>
-    <string name="label_bluetooth_searching">Détection de pèse personne en cours</string>
+    <string name="label_bluetooth_searching">Détection de votre pèse-personne Bluetooth en cours</string>
     <string name="label_bluetooth_searching_finished">Détection finalisé</string>
     <string name="label_category_measurement_database">Base de données de mesures</string>
 
@@ -223,4 +223,12 @@
     <string name="label_click_to_help_add_support">Cliquer ici pour contribuer</string>
     <string name="label_development">Développement</string>
     <string name="label_debug_log">Enregistrez les données de débogage dans un fichier</string>
-</resources>
+<string name="label_add_measurement">Ajouter une mesure</string>
+    <string name="label_long_press_drag_reorder">Effectuez un appui long suivi d\'un déplacement des mesures pour les réorganiser</string>
+    <string name="label_click_measurement_configure">Cliquez sur une mesure pour la configurer</string>
+    <string name="label_your_bluetooth_scale">Votre pèse-personne Bluetooth</string>
+    <string name="label_select_measurement">Sélectionner une mesure</string>
+    <string name="label_select_user">Sélectionner un utilisateur</string>
+    <string name="label_configure_widget">Configurer le widget</string>
+    <string name="label_visceral_fat">Graisse organique</string>
+    </resources>
