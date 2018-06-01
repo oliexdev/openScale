@@ -164,7 +164,7 @@ public class AddMeasurementTest {
         setMeasuremntField(Caliper3MeasurementView.class.getName(), measurement.getCaliper3());
 
         onView(withClassName(Matchers.equalTo(CommentMeasurementView.class.getName()))).perform(scrollTo(), click());
-        onView(withClassName(Matchers.equalTo(EditText.class.getName()))).perform(click(), replaceText(measurement.getComment()), closeSoftKeyboard());
+        onView(withClassName(Matchers.equalTo(EditText.class.getName()))).perform(replaceText(measurement.getComment()));
         onView(withId(android.R.id.button1)).perform(click());
 
         onView(withId(R.id.saveButton)).perform(click());
@@ -172,7 +172,7 @@ public class AddMeasurementTest {
 
     private void setMeasuremntField(String className, float value) {
         onView(withClassName(Matchers.equalTo(className))).perform(scrollTo(), click());
-        onView(withId(R.id.float_input)).perform(replaceText(String.valueOf(value)), closeSoftKeyboard());
+        onView(withId(R.id.float_input)).perform(replaceText(String.valueOf(value)));
         onView(withId(android.R.id.button1)).perform(click());
     }
 }
