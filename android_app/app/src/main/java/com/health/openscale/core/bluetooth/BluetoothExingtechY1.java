@@ -86,7 +86,7 @@ public class BluetoothExingtechY1 extends BluetoothCommunication {
 
         // The first notification only includes weight and all other fields are
         // either 0x00 (user info) or 0xff (fat, water, etc.)
-        if (data != null && data.length == 20 && data[6] != 0xff) {
+        if (data != null && data.length == 20 && data[6] != (byte)0xff) {
             parseBytes(data);
         }
     }
@@ -101,7 +101,7 @@ public class BluetoothExingtechY1 extends BluetoothCommunication {
         float water = Converters.fromUnsignedInt16Be(weightBytes, 8) / 10.0f; // %
         float bone = Converters.fromUnsignedInt16Be(weightBytes, 10) / 10.0f; // kg
         float muscle = Converters.fromUnsignedInt16Be(weightBytes, 12) / 10.0f; // %
-        float visc_fat = weightBytes[14] & 0xFF; // %
+        float visc_fat = weightBytes[14] & 0xFF; // index
         float calorie = Converters.fromUnsignedInt16Be(weightBytes, 15);
         float bmi = Converters.fromUnsignedInt16Be(weightBytes, 17) / 10.0f;
 
@@ -115,11 +115,7 @@ public class BluetoothExingtechY1 extends BluetoothCommunication {
         scaleBtData.setWater(water);
         scaleBtData.setBone(bone);
         scaleBtData.setVisceralFat(visc_fat);
-
-        Calendar dateTime = Calendar.getInstance();
-        dateTime.set(Calendar.MILLISECOND, 0);
-        dateTime.set(Calendar.SECOND, 0);
-        scaleBtData.setDateTime(dateTime.getTime());
+        scaleBtData.setDateTime(new Date());
 
         addScaleData(scaleBtData);
     }

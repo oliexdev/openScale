@@ -37,11 +37,6 @@ public class VisceralFatMeasurementView extends FloatMeasurementView {
     }
 
     @Override
-    protected boolean supportsPercentageToAbsoluteWeightConversion() {
-        return true;
-    }
-
-    @Override
     protected float getMeasurementValue(ScaleMeasurement measurement) {
         return measurement.getVisceralFat();
     }
@@ -53,16 +48,12 @@ public class VisceralFatMeasurementView extends FloatMeasurementView {
 
     @Override
     public String getUnit() {
-        if (shouldConvertPercentageToAbsoluteWeight()) {
-            return getScaleUser().getScaleUnit().toString();
-        }
-
-        return "%";
+        return "";
     }
 
     @Override
     protected float getMaxValue() {
-        return maybeConvertPercentageToAbsoluteWeight(80);
+        return 100;
     }
 
     @Override
@@ -72,6 +63,6 @@ public class VisceralFatMeasurementView extends FloatMeasurementView {
 
     @Override
     protected EvaluationResult evaluateSheet(EvaluationSheet evalSheet, float value) {
-        return null;
+        return evalSheet.evaluateVisceralFat(value);
     }
 }

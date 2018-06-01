@@ -47,6 +47,8 @@ public class EvaluationSheet {
     private List<sheetEntry> whrEvaluateSheet_Man;
     private List<sheetEntry> whrEvaluateSheet_Woman;
 
+    private List<sheetEntry> visceralFatEvaluateSheet;
+
     private class sheetEntry {
         public sheetEntry(int lowAge, int maxAge, float lowLimit, float highLimit)
         {
@@ -86,6 +88,8 @@ public class EvaluationSheet {
 
         whrEvaluateSheet_Man = new ArrayList<>();
         whrEvaluateSheet_Woman = new ArrayList<>();
+
+        visceralFatEvaluateSheet = new ArrayList<>();
 
         initEvaluationSheets();
     }
@@ -163,6 +167,8 @@ public class EvaluationSheet {
 
         whrEvaluateSheet_Man.add(new sheetEntry(18, 90, 0.8f, 0.9f));
         whrEvaluateSheet_Woman.add(new sheetEntry(18, 90, 0.7f, 0.8f));
+
+        visceralFatEvaluateSheet.add(new sheetEntry(18, 90, -1, 12));
     }
 
 
@@ -265,6 +271,10 @@ public class EvaluationSheet {
         }
 
         return evaluateSheet(whr, bodyEvaluateSheet);
+    }
+
+    public EvaluationResult evaluateVisceralFat(float visceralFat) {
+        return evaluateSheet(visceralFat, visceralFatEvaluateSheet);
     }
 
     private EvaluationResult evaluateSheet(float value, List<sheetEntry> sheet) {
