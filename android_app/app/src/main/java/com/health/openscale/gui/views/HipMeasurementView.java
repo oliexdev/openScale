@@ -54,7 +54,7 @@ public class HipMeasurementView extends FloatMeasurementView {
 
     @Override
     protected float getMaxValue() {
-        return 200;
+        return 500;
     }
 
     @Override

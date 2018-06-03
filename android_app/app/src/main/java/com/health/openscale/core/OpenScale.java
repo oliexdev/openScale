@@ -160,7 +160,7 @@ public class OpenScale {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         prefs.edit().putInt("selectedUserId", userId).apply();
 
-        selectedScaleUser = null;
+        selectedScaleUser = getScaleUser(userId);
     }
 
     public int getSelectedScaleUserId() {
@@ -229,6 +229,12 @@ public class OpenScale {
     }
 
     public List<ScaleMeasurement> getScaleMeasurementList() {
+        if (!scaleMeasurementList.isEmpty()) {
+            if (scaleMeasurementList.get(0).getUserId() != getSelectedScaleUserId()) {
+                scaleMeasurementList = measurementDAO.getAll(getSelectedScaleUserId());
+            }
+        }
+
         return scaleMeasurementList;
     }
 

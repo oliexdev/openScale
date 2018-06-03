@@ -31,6 +31,7 @@ import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
+import com.health.openscale.core.utils.Converters;
 import com.health.openscale.gui.activities.BaseAppCompatActivity;
 import com.health.openscale.gui.views.BicepsMeasurementView;
 import com.health.openscale.gui.views.BoneMeasurementView;
@@ -76,8 +77,6 @@ import static org.junit.Assert.assertEquals;
 @LargeTest
 @RunWith(AndroidJUnit4.class)
 public class AddMeasurementTest {
-    private static final double DELTA = 1e-15;
-
     private static Context context;
     private static OpenScale openScale;
 
@@ -101,7 +100,6 @@ public class AddMeasurementTest {
         prefs.edit()
                 .putBoolean("firstStart", false)
                 .putString(BaseAppCompatActivity.PREFERENCE_LANGUAGE, "en")
-                .putInt("selectedUserId", male.getId())
                 .putBoolean(VisceralFatMeasurementView.KEY + "Enable", true)
                 .putBoolean(LBMMeasurementView.KEY + "Enable", true)
                 .putBoolean(BoneMeasurementView.KEY + "Enable", true)
@@ -117,14 +115,6 @@ public class AddMeasurementTest {
                 .commit();
     }
 
-    @After
-    public void addMeasurementVerification() {
-        List<ScaleMeasurement> scaleMeasurementList = openScale.getScaleMeasurementList();
-        assertEquals(1, scaleMeasurementList.size());
-
-        TestData.compareMeasurements(TestData.getMeasurement(1), scaleMeasurementList.get(0));
-    }
-
     @AfterClass
     public static void cleanup() {
         openScale.deleteScaleUser(male.getId());
@@ -132,7 +122,9 @@ public class AddMeasurementTest {
     }
 
     @Test
-    public void addMeasurementTest() {
+    public void addMeasurementMaleTest() {
+        openScale.selectScaleUser(male.getId());
+
         ScaleMeasurement measurement = TestData.getMeasurement(1);
         onView(withId(R.id.action_add_measurement)).perform(click());
 
@@ -168,6 +160,57 @@ public class AddMeasurementTest {
         onView(withId(android.R.id.button1)).perform(click());
 
         onView(withId(R.id.saveButton)).perform(click());
+
+        List<ScaleMeasurement> scaleMeasurementList = openScale.getScaleMeasurementList();
+        assertEquals(1, scaleMeasurementList.size());
+
+        TestData.compareMeasurements(measurement, scaleMeasurementList.get(0));
+    }
+
+    @Test
+    public void addMeasurementFemaleTest() {
+        openScale.selectScaleUser(female.getId());
+
+        ScaleMeasurement measurement = TestData.getMeasurement(2);
+        onView(withId(R.id.action_add_measurement)).perform(click());
+
+        onView(withClassName(Matchers.equalTo(DateMeasurementView.class.getName()))).perform(scrollTo(), click());
+        Calendar date = Calendar.getInstance();
+        date.setTime(measurement.getDateTime());
+        onView(withClassName(Matchers.equalTo(DatePicker.class.getName()))).perform(PickerActions.setDate(date.get(Calendar.YEAR), date.get(Calendar.MONTH)+1, date.get(Calendar.DAY_OF_MONTH)));
+        onView(withId(android.R.id.button1)).perform(click());
+
+        onView(withClassName(Matchers.equalTo(TimeMeasurementView.class.getName()))).perform(scrollTo(), click());
+        onView(withClassName(Matchers.equalTo(TimePicker.class.getName()))).perform(PickerActions.setTime(date.get(Calendar.HOUR_OF_DAY), date.get(Calendar.MINUTE)));
+        onView(withId(android.R.id.button1)).perform(click());
+
+        setMeasuremntField(WeightMeasurementView.class.getName(), Converters.fromKilogram(measurement.getWeight(), Converters.WeightUnit.LB));
+        setMeasuremntField(FatMeasurementView.class.getName(), measurement.getFat());
+        setMeasuremntField(WaterMeasurementView.class.getName(), measurement.getWater());
+        setMeasuremntField(MuscleMeasurementView.class.getName(), measurement.getMuscle());
+        setMeasuremntField(LBMMeasurementView.class.getName(), Converters.fromKilogram(measurement.getLbm(), Converters.WeightUnit.LB));
+        setMeasuremntField(BoneMeasurementView.class.getName(), Converters.fromKilogram(measurement.getBone(), Converters.WeightUnit.LB));
+        setMeasuremntField(WaistMeasurementView.class.getName(), Converters.fromCentimeter(measurement.getWaist(), Converters.MeasureUnit.INCH));
+        setMeasuremntField(HipMeasurementView.class.getName(), Converters.fromCentimeter(measurement.getHip(), Converters.MeasureUnit.INCH));
+        setMeasuremntField(VisceralFatMeasurementView.class.getName(), measurement.getVisceralFat());
+        setMeasuremntField(ChestMeasurementView.class.getName(), Converters.fromCentimeter(measurement.getChest(), Converters.MeasureUnit.INCH));
+        setMeasuremntField(ThighMeasurementView.class.getName(), Converters.fromCentimeter(measurement.getThigh(), Converters.MeasureUnit.INCH));
+        setMeasuremntField(BicepsMeasurementView.class.getName(), Converters.fromCentimeter(measurement.getBiceps(), Converters.MeasureUnit.INCH));
+        setMeasuremntField(NeckMeasurementView.class.getName(), Converters.fromCentimeter(measurement.getNeck(), Converters.MeasureUnit.INCH));
+        setMeasuremntField(Caliper1MeasurementView.class.getName(), Converters.fromCentimeter(measurement.getCaliper1(), Converters.MeasureUnit.INCH));
+        setMeasuremntField(Caliper2MeasurementView.class.getName(), Converters.fromCentimeter(measurement.getCaliper2(), Converters.MeasureUnit.INCH));
+        setMeasuremntField(Caliper3MeasurementView.class.getName(), Converters.fromCentimeter(measurement.getCaliper3(), Converters.MeasureUnit.INCH));
+
+        onView(withClassName(Matchers.equalTo(CommentMeasurementView.class.getName()))).perform(scrollTo(), click());
+        onView(withClassName(Matchers.equalTo(EditText.class.getName()))).perform(replaceText(measurement.getComment()));
+        onView(withId(android.R.id.button1)).perform(click());
+
+        onView(withId(R.id.saveButton)).perform(click());
+
+        List<ScaleMeasurement> scaleMeasurementList = openScale.getScaleMeasurementList();
+        assertEquals(1, scaleMeasurementList.size());
+
+        TestData.compareMeasurements(measurement, scaleMeasurementList.get(0));
     }
 
     private void setMeasuremntField(String className, float value) {

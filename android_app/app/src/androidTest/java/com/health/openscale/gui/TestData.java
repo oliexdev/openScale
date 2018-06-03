@@ -27,7 +27,7 @@ import static org.junit.Assert.assertEquals;
 
 public class TestData {
     private static Random rand = new Random();
-    private static final double DELTA = 1e-15;
+    private static final double DELTA = 1e-4;
 
     public static ScaleUser getMaleUser() {
         ScaleUser male = new ScaleUser();
