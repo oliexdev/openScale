@@ -38,7 +38,7 @@ public class BluetoothFactory {
         if (name.startsWith("BEURER BF710".toLowerCase(Locale.US))) {
             return new BluetoothBeurerSanitas(context, BluetoothBeurerSanitas.DeviceType.BEURER_BF710);
         }
-        if (name.equals("openScale_MCU".toLowerCase(Locale.US))) {
+        if (name.equals("openScale".toLowerCase(Locale.US))) {
             return new BluetoothCustomOpenScale(context);
         }
         if (name.equals("Mengii".toLowerCase(Locale.US))) {

@@ -476,6 +476,8 @@ public abstract class BluetoothCommunication {
 
             bluetoothGatt.close();
             bluetoothGatt = null;
+
+            setBtStatus(BT_STATUS_CODE.BT_CONNECTION_LOST);
         }
     }
 
