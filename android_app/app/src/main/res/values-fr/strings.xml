@@ -231,4 +231,22 @@
     <string name="label_select_user">Sélectionner un utilisateur</string>
     <string name="label_configure_widget">Configurer le widget</string>
     <string name="label_visceral_fat">Graisse organique</string>
-    </resources>
+    <string name="label_chest">Tour de poitrine</string>
+    <string name="label_thigh">Tour de cuisse</string>
+    <string name="label_biceps">Tour des biceps</string>
+    <string name="label_neck">Tour du cou</string>
+    <string name="label_fat_caliper">Pince adipomètre</string>
+    <string name="label_caliper1_male">Pli cutané de la poitrine</string>
+    <string name="label_caliper2_male">Pli cutané abdominal</string>
+    <string name="label_caliper3_male">Pli cutané de la cuisse</string>
+    <string name="label_caliper1_female">Pli cutané du triceps</string>
+    <string name="label_caliper2_female">Pli cutané abdominal</string>
+    <string name="label_caliper3_female">Pli cutané à la hanche</string>
+    <string name="label_measure_unit">Unité de mesure</string>
+    <string name="label_activity_level">Niveau d\'activité</string>
+    <string name="activity_level_sedentary">Sédentaire</string>
+    <string name="activity_level_mild">Faible</string>
+    <string name="activity_level_moderate">Modéré</string>
+    <string name="activity_level_heavy">Important</string>
+    <string name="activity_level_extreme">Extrême</string>
+</resources>
