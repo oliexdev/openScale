@@ -252,7 +252,14 @@ void after_sleep_event()
   } else {
     Serial.println("$I$ Successful sync to RTC clock");
   }
+  
+  print_date_time();
+  
+  Serial.println("$I$ openScale MCU ready!");
+}
 
+void print_date_time()
+{
   Serial.print("$I$ Time: ");
   Serial.print(hour());
   Serial.write(':');
@@ -266,10 +273,7 @@ void after_sleep_event()
   Serial.write('/');
   Serial.print(year());
   Serial.println();
-  
-  Serial.println("$I$ openScale MCU ready!");
 }
-
 
 void check_display_activity()
 {
@@ -392,6 +396,8 @@ void send_scale_data()
       Serial.print('\n');
   }
   
+  Serial.println("$F$ Scale data sent");
+  
 }
 
 void clear_scale_data()
@@ -461,8 +467,12 @@ void loop()
     seg_samples_3.getMedian(seg_value_3);
     seg_samples_4.getMedian(seg_value_4);
    
-     if (seg_value_4 == ' ') {
+     if (seg_value_4 == ' ' || seg_value_4 == '1'  || seg_value_4 == '2') {
        measured_weight = char_to_int(seg_value_1) + char_to_int(seg_value_2)*10 + char_to_int(seg_value_3)*100;
+       
+       if (seg_value_4 == '1'  || seg_value_4 == '2') {
+         measured_weight += char_to_int(seg_value_4)*1000;
+       }
      }
    
      if (seg_value_4 == 'F') {
@@ -494,11 +504,18 @@ void loop()
      switch(command)
      {
        case '0':
-       Serial.println("$I$ openScale MCU Version 1.0");
+       Serial.println("$I$ openScale MCU Version 1.1");
        break;
        case '1':
        Serial.println("$I$ Sending scale data!");
        send_scale_data();
+       break;
+       case '2':
+       set_rtc_time();
+       break;
+       case '3':
+       Serial.println("$I$ Print RTC Time");
+       print_date_time();
        break;
        case '9':
        clear_scale_data();
@@ -506,6 +523,48 @@ void loop()
        break;
      }
    }
+}
+
+void set_rtc_time() {
+    static time_t tLast;
+    time_t t;
+    tmElements_t tm;
+
+    setSyncProvider(RTC.get);
+
+    boolean param_finished = false;
+
+    while (!param_finished) {
+      //check for input to set the RTC, minimum length is 12, i.e. yy,m,d,h,m,s
+      if (Serial.available() >= 12) {
+          //note that the tmElements_t Year member is an offset from 1970,
+          //but the RTC wants the last two digits of the calendar year.
+          //use the convenience macros from Time.h to do the conversions.
+          int y = Serial.parseInt();
+          if (y >= 100 && y < 1000)
+              Serial.println("$E$ Error: Year must be two digits or four digits!");
+          else {
+              if (y >= 1000)
+                  tm.Year = CalendarYrToTm(y);
+              else    //(y < 100)
+                  tm.Year = y2kYearToTm(y);
+              tm.Month = Serial.parseInt();
+              tm.Day = Serial.parseInt();
+              tm.Hour = Serial.parseInt();
+              tm.Minute = Serial.parseInt();
+              tm.Second = Serial.parseInt();
+              t = makeTime(tm);
+              RTC.set(t);        //use the time_t value to ensure correct weekday is set
+              setTime(t);        
+              Serial.println("$I$ RTC set to: ");
+              print_date_time();
+              //dump any extraneous input
+              while (Serial.available() > 0) Serial.read();
+              
+              param_finished = true;
+          }
+      }
+  }
 }
 
 int char_to_int(char c)
