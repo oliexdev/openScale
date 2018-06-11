@@ -353,7 +353,12 @@ public class ScaleMeasurement implements Cloneable {
     }
 
     public void setComment(String comment) {
-        this.comment = comment;
+        if (comment == null) {
+            this.comment = "";
+        }
+        else {
+            this.comment = comment;
+        }
     }
 
     public float getBMI(float body_height) {
