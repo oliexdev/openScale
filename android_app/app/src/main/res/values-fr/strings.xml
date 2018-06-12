@@ -187,7 +187,7 @@
     <string name="label_automatic">auto</string>
 
     <string name="label_export_dir">Dossier pour l\'exportation</string>
-    <string name="label_not_found">non trouvé</string>
+    <string name="label_not_found">pas trouvé</string>
     <string name="label_ignoreOutOfRange">Ignorer les valeurs hors de plage valide</string>
     <string name="label_regression_line">Ligne de régression</string>
     <string name="label_regression_line_degree">Degré du polynôme pour la ligne</string>
