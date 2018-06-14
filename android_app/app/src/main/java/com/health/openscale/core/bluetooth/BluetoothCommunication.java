@@ -409,6 +409,7 @@ public abstract class BluetoothCommunication {
                             return;
                         }
                         synchronized (lock) {
+                            stopLeScan();
                             connectGatt(device);
                         }
                     }
@@ -455,15 +456,20 @@ public abstract class BluetoothCommunication {
         }
     }
 
+    private void stopLeScan() {
+        if (leScanCallback != null) {
+            Timber.d("Stopping LE scan");
+            btAdapter.stopLeScan(leScanCallback);
+            leScanCallback = null;
+        }
+    }
+
     /**
      * Disconnect from a Bluetooth device
      */
     public void disconnect(boolean doCleanup) {
         synchronized (lock) {
-            if (leScanCallback != null) {
-                btAdapter.stopLeScan(leScanCallback);
-                leScanCallback = null;
-            }
+            stopLeScan();
 
             if (bluetoothGatt == null) {
                 return;
@@ -563,10 +569,7 @@ public abstract class BluetoothCommunication {
 
             if (newState == BluetoothProfile.STATE_CONNECTED) {
                 synchronized (lock) {
-                    if (leScanCallback != null) {
-                        btAdapter.stopLeScan(leScanCallback);
-                        leScanCallback = null;
-                    }
+                    stopLeScan();
                 }
 
                 connectionEstablished = true;
