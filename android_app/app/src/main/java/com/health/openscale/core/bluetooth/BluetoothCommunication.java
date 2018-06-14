@@ -387,20 +387,7 @@ public abstract class BluetoothCommunication {
     public void connect(final String hwAddress) {
         Timber.i("Connecting to [%s] (driver: %s)", hwAddress, driverName());
 
-        Timber.d("BT is%s enabled, state=%d, scan mode=%d, is%s discovering",
-                btAdapter.isEnabled() ? "" : " not", btAdapter.getState(),
-                btAdapter.getScanMode(), btAdapter.isDiscovering() ? "" : " not");
-
-        BluetoothManager manager =
-                (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
-        for (BluetoothDevice device : manager.getConnectedDevices(BluetoothProfile.GATT)) {
-            Timber.d("Connected GATT device: %s [%s]",
-                    device.getName(), device.getAddress());
-        }
-        for (BluetoothDevice device : manager.getConnectedDevices(BluetoothProfile.GATT_SERVER)) {
-            Timber.d("Connected GATT_SERVER device: %s [%s]",
-                    device.getName(), device.getAddress());
-        }
+        logBluetoothStatus();
 
         // Some good tips to improve BLE connections:
         // https://android.jlelse.eu/lessons-for-first-time-android-bluetooth-le-developers-i-learned-the-hard-way-fee07646624
@@ -438,6 +425,23 @@ public abstract class BluetoothCommunication {
 
         if (!doDiscoveryFirst || leScanCallback == null) {
             connectGatt(btAdapter.getRemoteDevice(hwAddress));
+        }
+    }
+
+    private void logBluetoothStatus() {
+        Timber.d("BT is%s enabled, state=%d, scan mode=%d, is%s discovering",
+                btAdapter.isEnabled() ? "" : " not", btAdapter.getState(),
+                btAdapter.getScanMode(), btAdapter.isDiscovering() ? "" : " not");
+
+        BluetoothManager manager =
+                (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
+        for (BluetoothDevice device : manager.getConnectedDevices(BluetoothProfile.GATT)) {
+            Timber.d("Connected GATT device: %s [%s]",
+                    device.getName(), device.getAddress());
+        }
+        for (BluetoothDevice device : manager.getConnectedDevices(BluetoothProfile.GATT_SERVER)) {
+            Timber.d("Connected GATT_SERVER device: %s [%s]",
+                    device.getName(), device.getAddress());
         }
     }
 
