@@ -30,6 +30,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.support.v4.content.ContextCompat;
 
 import com.health.openscale.core.datatypes.ScaleMeasurement;
@@ -49,9 +50,12 @@ public abstract class BluetoothCommunication {
 
     public enum BT_MACHINE_STATE {BT_INIT_STATE, BT_CMD_STATE, BT_CLEANUP_STATE}
 
+    private static final long LE_SCAN_TIMEOUT_MS = 10 * 1000;
+
     protected Context context;
 
     private Handler callbackBtHandler;
+    private Handler handler;
     private BluetoothGatt bluetoothGatt;
     private boolean connectionEstablished;
     private BluetoothGattCallback gattCallback;
@@ -81,6 +85,7 @@ public abstract class BluetoothCommunication {
     public BluetoothCommunication(Context context)
     {
         this.context = context;
+        handler = new Handler();
         btAdapter = BluetoothAdapter.getDefaultAdapter();
         gattCallback = new GattCallback();
         bluetoothGatt = null;
@@ -94,10 +99,6 @@ public abstract class BluetoothCommunication {
         }
 
         return bluetoothGatt.getServices();
-    }
-
-    protected boolean discoverDeviceBeforeConnecting() {
-        return false;
     }
 
     /**
@@ -384,48 +385,29 @@ public abstract class BluetoothCommunication {
      *
      * @param hwAddress the Bluetooth address to connect to
      */
-    public void connect(final String hwAddress) {
-        Timber.i("Connecting to [%s] (driver: %s)", hwAddress, driverName());
-
+    public void connect(String hwAddress) {
         logBluetoothStatus();
 
         // Some good tips to improve BLE connections:
         // https://android.jlelse.eu/lessons-for-first-time-android-bluetooth-le-developers-i-learned-the-hard-way-fee07646624
 
-        final boolean doDiscoveryFirst = discoverDeviceBeforeConnecting();
-
-        // Running an LE scan during connect improves connectivity on some phones
-        // (e.g. Sony Xperia Z5 compact, Android 7.1.1).
         btAdapter.cancelDiscovery();
-        if (leScanCallback == null) {
-            if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION)
-                    == PackageManager.PERMISSION_GRANTED) {
-                Timber.d("Starting LE scan");
-                leScanCallback = new BluetoothAdapter.LeScanCallback() {
-                    @Override
-                    public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
-                        Timber.d("Found LE device %s [%s]", device.getName(), device.getAddress());
-                        if (!doDiscoveryFirst || !device.getAddress().equals(hwAddress)) {
-                            return;
-                        }
-                        synchronized (lock) {
-                            stopLeScan();
-                            connectGatt(device);
-                        }
-                    }
-                };
-                btAdapter.startLeScan(leScanCallback);
-            }
-            else {
-                Timber.d("No coarse location permission, skipping LE scan");
-            }
-        }
+        stopLeScan();
 
         // Don't do any cleanup if disconnected before fully connected
         btMachineState = BT_MACHINE_STATE.BT_CLEANUP_STATE;
 
-        if (!doDiscoveryFirst || leScanCallback == null) {
-            connectGatt(btAdapter.getRemoteDevice(hwAddress));
+        // Running an LE scan during connect improves connectivity on some phones
+        // (e.g. Sony Xperia Z5 compact, Android 7.1.1). For some scales (e.g. Medisana BS444)
+        // it seems to be a requirement that the scale is discovered before connecting to it.
+        // Otherwise the connection almost never succeeds.
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+            startLeScanForDevice(hwAddress);
+        }
+        else {
+            Timber.d("No coarse location permission, connecting without LE scan");
+            connectGatt(hwAddress);
         }
     }
 
@@ -447,6 +429,8 @@ public abstract class BluetoothCommunication {
     }
 
     private void connectGatt(BluetoothDevice device) {
+        Timber.i("Connecting to [%s] (driver: %s)", device.getAddress(), driverName());
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             bluetoothGatt = device.connectGatt(
                     context, false, gattCallback, BluetoothDevice.TRANSPORT_LE);
@@ -456,10 +440,45 @@ public abstract class BluetoothCommunication {
         }
     }
 
+    private void connectGatt(String hwAddress) {
+        connectGatt(btAdapter.getRemoteDevice(hwAddress));
+    }
+
+    private void startLeScanForDevice(final String hwAddress) {
+        leScanCallback = new BluetoothAdapter.LeScanCallback() {
+            @Override
+            public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
+                Timber.d("Found LE device %s [%s]", device.getName(), device.getAddress());
+                if (!device.getAddress().equals(hwAddress)) {
+                    return;
+                }
+                synchronized (lock) {
+                    stopLeScan();
+                    connectGatt(device);
+                }
+            }
+        };
+
+        Timber.d("Starting LE scan for device [%s]", hwAddress);
+        btAdapter.startLeScan(leScanCallback);
+
+        handler.postAtTime(new Runnable() {
+            @Override
+            public void run() {
+                Timber.d("Device not found in LE scan, connecting directly");
+                synchronized (lock) {
+                    stopLeScan();
+                    connectGatt(hwAddress);
+                }
+            }
+        }, leScanCallback, SystemClock.uptimeMillis() + LE_SCAN_TIMEOUT_MS);
+    }
+
     private void stopLeScan() {
         if (leScanCallback != null) {
             Timber.d("Stopping LE scan");
             btAdapter.stopLeScan(leScanCallback);
+            handler.removeCallbacksAndMessages(leScanCallback);
             leScanCallback = null;
         }
     }
