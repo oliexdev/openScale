@@ -109,7 +109,7 @@ public class BluetoothExingtechY1 extends BluetoothCommunication {
 
         final ScaleUser selectedUser = OpenScale.getInstance().getSelectedScaleUser();
 
-        scaleBtData.setWeight(Converters.toKilogram(weight, selectedUser.getScaleUnit()));
+        scaleBtData.setWeight(weight);
         scaleBtData.setFat(fat);
         scaleBtData.setMuscle(muscle);
         scaleBtData.setWater(water);
