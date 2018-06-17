@@ -232,6 +232,7 @@ public class BluetoothPreferences extends PreferenceFragment {
                 prefBtDevice.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                     @Override
                     public boolean onPreferenceClick(Preference preference) {
+                        stopDiscoveryAndLeScan();
                         getDebugInfo(device);
                         return false;
                     }
