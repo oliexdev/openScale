@@ -126,7 +126,10 @@ public abstract class BluetoothCommunication {
      * @param infoText the information text that is displayed to the status code.
      */
     protected void setBtStatus(BT_STATUS_CODE statusCode, String infoText) {
-        callbackBtHandler.obtainMessage(statusCode.ordinal(), infoText).sendToTarget();
+        if (callbackBtHandler != null) {
+            callbackBtHandler.obtainMessage(
+                    statusCode.ordinal(), infoText).sendToTarget();
+        }
     }
 
     /**
@@ -135,7 +138,10 @@ public abstract class BluetoothCommunication {
      * @param scaleMeasurement the scale data that should be added to openScale
      */
     protected void addScaleData(ScaleMeasurement scaleMeasurement) {
-        callbackBtHandler.obtainMessage(BT_STATUS_CODE.BT_RETRIEVE_SCALE_DATA.ordinal(), scaleMeasurement).sendToTarget();
+        if (callbackBtHandler != null) {
+            callbackBtHandler.obtainMessage(
+                    BT_STATUS_CODE.BT_RETRIEVE_SCALE_DATA.ordinal(), scaleMeasurement).sendToTarget();
+        }
     }
 
     /**
@@ -145,7 +151,10 @@ public abstract class BluetoothCommunication {
      * @param value the value to be used
      */
     protected void sendMessage(int msg, Object value) {
-        callbackBtHandler.obtainMessage(BT_STATUS_CODE.BT_SCALE_MESSAGE.ordinal(), msg, 0,  value).sendToTarget();
+        if (callbackBtHandler != null) {
+            callbackBtHandler.obtainMessage(
+                    BT_STATUS_CODE.BT_SCALE_MESSAGE.ordinal(), msg, 0, value).sendToTarget();
+        }
     }
 
     /**
@@ -496,17 +505,32 @@ public abstract class BluetoothCommunication {
 
             Timber.i("Disconnecting%s", doCleanup ? " (with cleanup)" : "");
 
+            handler.removeCallbacksAndMessages(null);
+            callbackBtHandler = null;
+
             if (doCleanup) {
                 if (btMachineState != BT_MACHINE_STATE.BT_CLEANUP_STATE) {
                     setBtMachineState(BT_MACHINE_STATE.BT_CLEANUP_STATE);
                     nextMachineStateStep();
                 }
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        synchronized (lock) {
+                            if (openRequest) {
+                                handler.postDelayed(this, 10);
+                            } else {
+                                bluetoothGatt.close();
+                                bluetoothGatt = null;
+                            }
+                        }
+                    }
+                });
             }
-
-            bluetoothGatt.close();
-            bluetoothGatt = null;
-
-            setBtStatus(BT_STATUS_CODE.BT_CONNECTION_LOST);
+            else {
+                bluetoothGatt.close();
+                bluetoothGatt = null;
+            }
         }
     }
 
