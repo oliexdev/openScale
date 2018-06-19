@@ -19,6 +19,7 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.SpannableStringBuilder;
@@ -40,7 +41,6 @@ import com.health.openscale.gui.activities.DataEntryActivity;
 import com.health.openscale.gui.views.MeasurementView;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import static android.util.TypedValue.COMPLEX_UNIT_DIP;
@@ -51,7 +51,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
     private RecyclerView recyclerView;
     private MeasurementsAdapter adapter;
-    private RecyclerView.LayoutManager layoutManager;
+    private LinearLayoutManager layoutManager;
 
     private List<MeasurementView> measurementViews;
 
@@ -70,6 +70,9 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
         layoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(layoutManager);
+
+        recyclerView.addItemDecoration(new DividerItemDecoration(
+                recyclerView.getContext(), layoutManager.getOrientation()));
 
         adapter = new MeasurementsAdapter();
         recyclerView.setAdapter(adapter);
