@@ -23,14 +23,12 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.SpannableStringBuilder;
-import android.text.Spanned;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
@@ -41,6 +39,8 @@ import com.health.openscale.gui.activities.DataEntryActivity;
 import com.health.openscale.gui.views.MeasurementView;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import static android.util.TypedValue.COMPLEX_UNIT_DIP;
@@ -100,21 +100,21 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
     {
         tableHeaderView.removeAllViews();
 
+        final int iconHeight = pxImageDp(20);
         ArrayList<MeasurementView> visibleMeasurements = new ArrayList<>();
+
         for (MeasurementView measurement : measurementViews) {
-
-            if (measurement.isVisible()) {
-                ImageView headerIcon = new ImageView(tableView.getContext());
-                headerIcon.setImageDrawable(measurement.getIcon());
-                headerIcon.setLayoutParams(new TableRow.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableLayout.LayoutParams.MATCH_PARENT, 1));
-                headerIcon.getLayoutParams().width = 0;
-                headerIcon.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-                headerIcon.getLayoutParams().height = pxImageDp(20);
-
-                tableHeaderView.addView(headerIcon);
-
-                visibleMeasurements.add(measurement);
+            if (!measurement.isVisible()) {
+                continue;
             }
+            ImageView headerIcon = new ImageView(tableView.getContext());
+            headerIcon.setImageDrawable(measurement.getIcon());
+            headerIcon.setLayoutParams(new TableRow.LayoutParams(0, iconHeight, 1));
+            headerIcon.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+
+            tableHeaderView.addView(headerIcon);
+
+            visibleMeasurements.add(measurement);
         }
 
         adapter.setMeasurements(visibleMeasurements, scaleMeasurementList);
@@ -125,6 +125,8 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
     }
 
     private class MeasurementsAdapter extends RecyclerView.Adapter<MeasurementsAdapter.ViewHolder> {
+        public static final int VIEW_TYPE_MEASUREMENT = 0;
+        public static final int VIEW_TYPE_YEAR = 1;
 
         public class ViewHolder extends RecyclerView.ViewHolder {
             public LinearLayout measurementView;
@@ -137,14 +139,35 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
         private List<MeasurementView> visibleMeasurements;
         private List<ScaleMeasurement> scaleMeasurements;
 
-        private Spanned[][] stringCache;
-
         public void setMeasurements(List<MeasurementView> visibleMeasurements,
                                     List<ScaleMeasurement> scaleMeasurements) {
             this.visibleMeasurements = visibleMeasurements;
-            this.scaleMeasurements = scaleMeasurements;
+            this.scaleMeasurements = new ArrayList<>(scaleMeasurements.size() + 10);
 
-            stringCache = new Spanned[scaleMeasurements.size()][visibleMeasurements.size()];
+            Calendar calendar = Calendar.getInstance();
+            if (!scaleMeasurements.isEmpty()) {
+                calendar.setTime(scaleMeasurements.get(0).getDateTime());
+            }
+            calendar.set(calendar.get(Calendar.YEAR), 0, 1, 0, 0, 0);
+            calendar.set(calendar.MILLISECOND, 0);
+
+            // Copy all measurements from input parameter to member variable and insert
+            // an extra "null" entry when the year changes.
+            Date yearStart = calendar.getTime();
+            for (int i = 0; i < scaleMeasurements.size(); ++i) {
+                final ScaleMeasurement measurement = scaleMeasurements.get(i);
+
+                if (measurement.getDateTime().before(yearStart)) {
+                    this.scaleMeasurements.add(null);
+
+                    Calendar newCalendar = Calendar.getInstance();
+                    newCalendar.setTime(measurement.getDateTime());
+                    calendar.set(Calendar.YEAR, newCalendar.get(Calendar.YEAR));
+                    yearStart = calendar.getTime();
+                }
+
+                this.scaleMeasurements.add(measurement);
+            }
 
             notifyDataSetChanged();
         }
@@ -152,28 +175,36 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
         @Override
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             LinearLayout row = new LinearLayout(getContext());
-            row.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+            row.setLayoutParams(new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT));
 
-            final int screenSize = getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK;
+            final int screenSize = getResources().getConfiguration()
+                    .screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK;
             final boolean isSmallScreen =
                     screenSize != Configuration.SCREENLAYOUT_SIZE_XLARGE
                             && screenSize != Configuration.SCREENLAYOUT_SIZE_LARGE;
 
-            for (int i = 0; i < visibleMeasurements.size(); ++i) {
+            final int count = viewType == VIEW_TYPE_YEAR ? 1 : visibleMeasurements.size();
+            for (int i = 0; i < count; ++i) {
                 TextView column = new TextView(getContext());
-                LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.WRAP_CONTENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT,
-                        1);
-                layoutParams.width = 0;
-                column.setLayoutParams(layoutParams);
-                column.setMinLines(2);
-                column.setGravity(Gravity.CENTER_HORIZONTAL);
+                column.setLayoutParams(new LinearLayout.LayoutParams(
+                        0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
 
-                if (isSmallScreen) {
-                    column.setTextSize(COMPLEX_UNIT_DIP, 9);
+                if (viewType == VIEW_TYPE_MEASUREMENT) {
+                    column.setMinLines(2);
+                    column.setGravity(Gravity.CENTER_HORIZONTAL);
+
+                    if (isSmallScreen) {
+                        column.setTextSize(COMPLEX_UNIT_DIP, 9);
+                    }
                 }
+                else {
+                    column.setPadding(0, 10, 0, 10);
+                    column.setGravity(Gravity.CENTER);
+                    column.setTextSize(COMPLEX_UNIT_DIP, 16);
+                }
+
                 row.addView(column);
             }
 
@@ -182,31 +213,38 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
 
         @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
+            LinearLayout row = holder.measurementView;
+
             final ScaleMeasurement measurement = scaleMeasurements.get(position);
+            if (measurement == null) {
+                ScaleMeasurement nextMeasurement = scaleMeasurements.get(position + 1);
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(nextMeasurement.getDateTime());
 
-            // Create entries in stringCache if needed
-            if (stringCache[position][0] == null) {
-                ScaleMeasurement prevMeasurement = null;
-                if (position + 1 < scaleMeasurements.size()) {
-                    prevMeasurement = scaleMeasurements.get(position + 1);
-                }
+                TextView column = (TextView) row.getChildAt(0);
+                column.setText(String.format("%d", calendar.get(Calendar.YEAR)));
+                return;
+            }
 
-                for (int i = 0; i < visibleMeasurements.size(); ++i) {
-                    visibleMeasurements.get(i).loadFrom(measurement, prevMeasurement);
-
-                    SpannableStringBuilder string = new SpannableStringBuilder();
-                    string.append(visibleMeasurements.get(i).getValueAsString(false));
-                    visibleMeasurements.get(i).appendDiffValue(string, true);
-
-                    stringCache[position][i] = string;
+            ScaleMeasurement prevMeasurement = null;
+            if (position + 1 < scaleMeasurements.size()) {
+                prevMeasurement = scaleMeasurements.get(position + 1);
+                if (prevMeasurement == null) {
+                    prevMeasurement = scaleMeasurements.get(position + 2);
                 }
             }
 
             // Fill view with data
-            LinearLayout row = holder.measurementView;
             for (int i = 0; i < visibleMeasurements.size(); ++i) {
+                final MeasurementView view = visibleMeasurements.get(i);
+                view.loadFrom(measurement, prevMeasurement);
+
+                SpannableStringBuilder string = new SpannableStringBuilder();
+                string.append(view.getValueAsString(false));
+                view.appendDiffValue(string, true);
+
                 TextView column = (TextView) row.getChildAt(i);
-                column.setText(stringCache[position][i]);
+                column.setText(string);
             }
 
             row.setOnClickListener(new View.OnClickListener() {
@@ -222,6 +260,11 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
         @Override
         public int getItemCount() {
             return scaleMeasurements == null ? 0 : scaleMeasurements.size();
+        }
+
+        @Override
+        public int getItemViewType(int position) {
+            return scaleMeasurements.get(position) != null ? VIEW_TYPE_MEASUREMENT : VIEW_TYPE_YEAR;
         }
     }
 }
