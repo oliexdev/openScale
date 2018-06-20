@@ -1,46 +1,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="5dp"
-        android:gravity="center"
-        android:background="?attr/colorPrimary"
-        android:orientation="horizontal">
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="?attr/colorPrimary"
-            android:gravity="left"
-            android:layout_weight="1"
-            android:orientation="horizontal">
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/subpageView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="?attr/colorPrimary"
-            android:gravity="center"
-            android:layout_weight="0"
-            android:orientation="horizontal">
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="?attr/colorPrimary"
-            android:gravity="right"
-            android:layout_weight="0.9"
-            android:orientation="horizontal">
-        </LinearLayout>
-
-    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/tableHeaderView"
@@ -48,21 +9,16 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:paddingBottom="5dp"
-        android:paddingTop="5dp">
-    </LinearLayout>
+        android:paddingTop="5dp" />
 
-    <LinearLayout
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:background="?android:attr/listDivider" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/tableDataView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="0.9"
-        android:gravity="bottom"
-        android:orientation="horizontal">
-
-        <ListView
-            android:id="@+id/tableDataView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginHorizontal="5dp">
-        </ListView>
-    </LinearLayout>
+        android:scrollbars="vertical" />
 </LinearLayout>
