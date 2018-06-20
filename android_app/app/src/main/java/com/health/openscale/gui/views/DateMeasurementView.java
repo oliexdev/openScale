@@ -31,11 +31,12 @@ public class DateMeasurementView extends MeasurementView {
     // Don't change key value, it may be stored persistent in preferences
     public static final String KEY = "date";
 
-    private static final DateFormat dateFormat = DateFormat.getDateInstance();
+    private final DateFormat dateFormat;
     private Date date;
 
     public DateMeasurementView(Context context) {
         super(context, R.string.label_date, R.drawable.ic_lastmonth);
+        dateFormat = DateFormat.getDateInstance();
     }
 
     @Override
