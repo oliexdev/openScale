@@ -1,2 +1,102 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<?xml version='1.0' encoding='UTF-8'?>
+<resources><string name="title_overview">Pregled</string>
+    <string name="title_graph">Diagram</string>
+    <string name="title_table">Tabela</string>
+    <string name="title_statistics">Statistika</string>
+    <string name="title_users">Uporabniki</string>
+    <string name="title_measurements">Meritve</string>
+    <string name="title_about">Informacije</string>
+    <string name="title_general">Splošno</string>
+
+    <string name="action_settings">Nastavitve</string>
+    <string name="action_bluetooth_status">Bluetooth nastavitve</string>
+    <string name="open_drawer">odpri</string>
+    <string name="close_drawer">zapri</string>
+
+    <string name="label_cancel">Prekliči</string>
+    <string name="label_ok">OK</string>
+    <string name="label_yes">Da</string>
+    <string name="label_no">Ne</string>
+    <string name="label_delete">Izbriši</string>
+    <string name="label_add_user">Dodaj uporabnika</string>
+    <string name="label_add_measurement">Dodaj meritev</string>
+    <string name="label_share">Deli</string>
+    <string name="label_share_subject">CSV izvoz podatkov (%s)</string>
+
+    <string name="label_weight">Teža</string>
+    <string name="label_bmi">Indeks telesne mase (ITM)</string>
+    <string name="label_bmr">Bazalni metabolizem (BM)</string>
+    <string name="label_fat">Telesna maščoba</string>
+    <string name="label_water">Vsebnost vode</string>
+    <string name="label_muscle">Mišice</string>
+    <string name="label_lbm">Čvrsta telesna masa</string>
+    <string name="label_waist">Obseg pasu</string>
+    <string name="label_hip">Obseg bokov</string>
+    <string name="label_comment">Komentar</string>
+    <string name="label_whtr">Razmerje trebuh - višina</string>
+    <string name="label_whr">Razmerje trebuh - boki</string>
+    <string name="label_bone">Masa kosti</string>
+    <string name="label_smartUserAssign">Pametna določitev uporabnika</string>
+
+    <plurals name="label_days">
+	<item quantity="one">%d dan</item>
+	<item quantity="two">%d dneva</item>
+	<item quantity="few">%d dnevi</item>
+	<item quantity="other"></item>
+</plurals>
+    <string name="label_last_week">Povprečje prejšnjega tedna</string>
+    <string name="label_last_month">Povprečje prejšnjega meseca</string>
+    <string name="label_weight_difference">Razlika teže</string>
+    <string name="label_goal_date_is">Datum cilja:</string>
+    <string name="label_days_left">Preostali dnevi</string>
+
+    <string name="label_date">Datum</string>
+    <string name="label_time">Čas</string>
+    <string name="label_birthday">Rojstni dan</string>
+    <string name="label_user_name">Ime</string>
+    <string name="label_height">Višina</string>
+    <string name="label_scale_unit">Enote</string>
+    <string name="label_gender">Spol</string>
+    <string name="label_male">Moški</string>
+    <string name="label_female">Ženski</string>
+    <string name="label_goal_weight">Ciljna teža</string>
+    <string name="label_goal_date">Ciljni datum</string>
+
+    <string name="label_title_user">uporabnik</string>
+    <string name="label_title_last_measurement">zadnja meritev</string>
+    <string name="label_title_goal">Cilj</string>
+
+    <string name="label_import">Uvozi</string>
+    <string name="label_export">Izvozi</string>
+    <string name="label_delete_all">Izbriši vse</string>
+
+    <string name="error_value_required">Zahtevana vrednost</string>
+    <string name="error_value_range">Vrednost je zunaj meje</string>
+    <string name="error_exporting">Napaka pri izvozu</string>
+    <string name="error_importing">Napaka pri uvozu</string>
+    <string name="error_user_name_required">Napaka: zahtevno ime</string>
+    <string name="error_user_name_too_short">Napaka: Ime mora imeti vsaj 3 znake</string>
+    <string name="error_height_required">Napaka: Višina zahtevana</string>
+    <string name="error_initial_weight_required">Napaka: Začetna teža zahtevana</string>
+    <string name="error_goal_weight_required">Napaka: Ciljna teža zahtevana</string>
+
+    <string name="info_data_deleted">Vnos je izbrisan</string>
+    <string name="info_data_all_deleted">Vsi vnosi so izbrisani</string>
+    <string name="info_data_exported">Izvozi v</string>
+    <string name="info_data_imported">Uvozi iz</string>
+    <string name="info_enter_value_in">Vrednost med</string>
+    <string name="info_enter_comment">Komentiraj(ni zahtevano)</string>
+    <string name="info_is_visible">je viden</string>
+    <string name="info_is_not_visible">ni viden</string>
+    <string name="info_is_enable">omogočeno</string>
+    <string name="info_is_not_enable">onemogočeno</string>
+    <string name="info_is_not_available">ni na voljo</string>
+    <string name="info_bluetooth_try_connection">Poveži z:</string>
+    <string name="info_bluetooth_connection_lost">Bluetooth povezava izgubljena</string>
+    <string name="info_bluetooth_no_device">Nobena Bluetooth naprava ni bila najdena</string>
+    <string name="info_bluetooth_no_device_set">Nobena Bluetooth naprava ni izbrana</string>
+    <string name="info_bluetooth_connection_successful">Povezava vzpostavljena</string>
+    <string name="info_bluetooth_init">Zaženi Bluetooth napravo</string>
+    <string name="info_bluetooth_connection_error">Nepričakovana Bluetooth napaka</string>
+    <string name="info_new_data_added">%1$.2f%2$s [%3$s] to %4$s dodan</string>
+    </resources>
