@@ -158,7 +158,7 @@
     <string name="label_help">Pomoć</string>
 
     <string name="label_feedback_message_enjoying">Preporučate openScale?</string>
-    <string name="label_feedback_message_rate_app">Ocjenite nas na Google Play ili GitHub !</string>
+    <string name="label_feedback_message_rate_app">A ocjena na Google Play ili GitHub ?</string>
     <string name="label_feedback_message_issue">Želite li dati svoje mišljenje ?</string>
     <string name="label_feedback_message_yes">Da</string>
     <string name="label_feedback_message_no">Baš i ne</string>
