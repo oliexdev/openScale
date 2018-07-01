@@ -117,8 +117,10 @@ public class BluetoothExcelvanCF369BLE extends BluetoothCommunication {
 
         if (data != null && data.length > 0) {
 
-            // if data is body scale type
-            if (data.length == 16 && data[0] == (byte)0xcf) {
+            // if data is body scale type. At least some variants (e.g. CF366BLE) of this scale
+            // return a 17th byte representing "physiological age". Allow (but ignore) that byte
+            // to support those variants.
+            if ((data.length >= 16 || data.length <= 17) && data[0] == (byte)0xcf) {
                 if (!Arrays.equals(data, receivedData)) { // accepts only one data of the same content
                     receivedData = data;
                     parseBytes(data);
@@ -135,6 +137,7 @@ public class BluetoothExcelvanCF369BLE extends BluetoothCommunication {
         float visceralFat = weightBytes[11] & 0xFF;
         float water = Converters.fromUnsignedInt16Be(weightBytes, 12) / 10.0f;
         float bmr = Converters.fromUnsignedInt16Be(weightBytes, 14);
+        // weightBytes[16] is an (optional, ignored) "physiological age" in some scale variants.
 
         ScaleMeasurement scaleBtData = new ScaleMeasurement();
 
