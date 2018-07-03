@@ -45,7 +45,7 @@ public class BluetoothFactory {
             return new BluetoothDigooDGSO38H(context);
         }
         if (name.equals("Electronic Scale".toLowerCase(Locale.US))) {
-            return new BluetoothExcelvanCF369BLE(context);
+            return new BluetoothExcelvanCF36xBLE(context);
         }
         if (name.equals("VScale".toLowerCase(Locale.US))) {
             return new BluetoothExingtechY1(context);

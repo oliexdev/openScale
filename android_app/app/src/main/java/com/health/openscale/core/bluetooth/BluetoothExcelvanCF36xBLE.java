@@ -29,7 +29,7 @@ import com.health.openscale.core.utils.Converters;
 import java.util.Arrays;
 import java.util.UUID;
 
-public class BluetoothExcelvanCF369BLE extends BluetoothCommunication {
+public class BluetoothExcelvanCF36xBLE extends BluetoothCommunication {
     private final UUID WEIGHT_MEASUREMENT_SERVICE = UUID.fromString("0000FFF0-0000-1000-8000-00805f9b34fb");
     private final UUID WEIGHT_MEASUREMENT_CHARACTERISTIC = UUID.fromString("0000FFF1-0000-1000-8000-00805f9b34fb");
     private final UUID WEIGHT_CUSTOM0_CHARACTERISTIC = UUID.fromString("0000FFF4-0000-1000-8000-00805f9b34fb");
@@ -37,13 +37,13 @@ public class BluetoothExcelvanCF369BLE extends BluetoothCommunication {
 
     private byte[] receivedData = new byte[]{};
 
-    public BluetoothExcelvanCF369BLE(Context context) {
+    public BluetoothExcelvanCF36xBLE(Context context) {
         super(context);
     }
 
     @Override
     public String driverName() {
-        return "Excelvan CF369BLE";
+        return "Excelvan CF36xBLE";
     }
 
     @Override
