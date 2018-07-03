@@ -21,7 +21,7 @@ before_script:
   - sed -i -r
     -e 's/applicationId "[^"]+/\0.dev/'
     -e 's/(versionCode ).*/\1'$(date +%s)'/'
-    -e 's/versionName "[^"]+/\0-dev_'${TRAVIS_COMMIT:0:8}'/'
+    -e 's/versionName "[^"]+/\0-dev_'${TRAVIS_COMMIT:0:8}_$(date +%F)'/'
     android_app/app/build.gradle
   - sed -i -r
     -e 's/(<string name="app_name"[^>]*>[^<]+)/\1 (dev)/'
