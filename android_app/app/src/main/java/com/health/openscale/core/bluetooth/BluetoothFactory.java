@@ -58,7 +58,7 @@ public class BluetoothFactory {
         }
         // BS444 || BS440
         if (deviceName.startsWith("013197") || deviceName.startsWith("0202B6")) {
-            return new BluetoothMedisanaBS444(context);
+            return new BluetoothMedisanaBS44x(context);
         }
         if (deviceName.startsWith("SWAN") || name.equals("icomon".toLowerCase(Locale.US))) {
             return new BluetoothMGB(context);
