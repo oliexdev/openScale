@@ -564,6 +564,8 @@ public abstract class BluetoothCommunication {
         synchronized (lock) {
             // check for pending request
             if (openRequest) {
+                Timber.d("Request pending (queue %d %d)",
+                        descriptorRequestQueue.size(), characteristicRequestQueue.size());
                 return; // yes, do nothing
             }
 
@@ -572,8 +574,9 @@ public abstract class BluetoothCommunication {
             if (descriptor != null) {
                 descriptor.gattObject.setValue(descriptor.value);
 
-                Timber.d("Write descriptor %s: %s",
-                        descriptor.gattObject.getUuid(), byteInHex(descriptor.gattObject.getValue()));
+                Timber.d("Write descriptor %s: %s (queue: %d %d)",
+                        descriptor.gattObject.getUuid(), byteInHex(descriptor.gattObject.getValue()),
+                        descriptorRequestQueue.size(), characteristicRequestQueue.size());
                 if (!bluetoothGatt.writeDescriptor(descriptor.gattObject)) {
                     Timber.e("Failed to initiate write of descriptor %s",
                             descriptor.gattObject.getUuid());
@@ -587,8 +590,9 @@ public abstract class BluetoothCommunication {
             if (characteristic != null) {
                 characteristic.gattObject.setValue(characteristic.value);
 
-                Timber.d("Write characteristic %s: %s",
-                        characteristic.gattObject.getUuid(), byteInHex(characteristic.gattObject.getValue()));
+                Timber.d("Write characteristic %s: %s (queue: %d %d)",
+                        characteristic.gattObject.getUuid(), byteInHex(characteristic.gattObject.getValue()),
+                        descriptorRequestQueue.size(), characteristicRequestQueue.size());
                 if (!bluetoothGatt.writeCharacteristic(characteristic.gattObject)) {
                     Timber.e("Failed to initiate write of characteristic %s",
                             characteristic.gattObject.getUuid());
