@@ -21,6 +21,7 @@ import android.arch.persistence.room.Delete;
 import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Update;
+import android.database.Cursor;
 
 import com.health.openscale.core.datatypes.ScaleUser;
 
@@ -45,4 +46,13 @@ public interface ScaleUserDAO {
 
     @Delete
     void delete(ScaleUser user);
+
+    // selectAll() and select() are equivalent to getall() and get(), but return a Cursor,
+    // for exposing via a ContentProvider.
+    @Query("SELECT * FROM scaleUsers")
+    Cursor selectAll();
+
+    @Query("SELECT * FROM scaleUsers WHERE id = :id")
+    Cursor select(int id);
+
 }

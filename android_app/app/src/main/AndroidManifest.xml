@@ -9,6 +9,15 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 
+    <!-- Permission to allow read of data from the database through a ContentProvider.
+         Marked "dangerous" so that explicit user approval is required to read this data, not
+         just the permission implied from installing the app from the Play Store. -->
+    <permission
+        android:name="com.health.openscale.READ_DATA"
+        android:description="@string/permission_read_data_description"
+        android:label="@string/permission_read_data_label"
+        android:protectionLevel="dangerous" />
+
     <uses-feature android:name="android.hardware.bluetooth_le" android:required="false"/>
 
     <application
@@ -58,6 +67,13 @@
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_provider_paths" />
+        </provider>
+        <provider
+            android:name=".core.export.OpenScaleContentProvider"
+            android:authorities="com.health.openscale.provider"
+            android:enabled="true"
+            android:exported="true"
+            android:readPermission="com.health.openscale.READ_DATA">
         </provider>
     </application>
 
