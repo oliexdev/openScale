@@ -271,6 +271,7 @@ public abstract class BluetoothCommunication {
         BluetoothGattCharacteristic gattCharacteristic = bluetoothGatt.getService(service)
                 .getCharacteristic(characteristic);
 
+        Timber.d("Read characteristic %s", characteristic);
         bluetoothGatt.readCharacteristic(gattCharacteristic);
     }
 
@@ -278,6 +279,7 @@ public abstract class BluetoothCommunication {
         BluetoothGattDescriptor gattDescriptor = bluetoothGatt.getService(service)
                 .getCharacteristic(characteristic).getDescriptor(descriptor);
 
+        Timber.d("Read descriptor %s", descriptor);
         bluetoothGatt.readDescriptor(gattDescriptor);
     }
 
@@ -654,7 +656,8 @@ public abstract class BluetoothCommunication {
 
         @Override
         public void onServicesDiscovered(final BluetoothGatt gatt, int status) {
-            Timber.d("onServicesDiscovered: status=%d", status);
+            Timber.d("onServicesDiscovered: status=%d (%d services)",
+                    status, gatt.getServices().size());
 
             synchronized (lock) {
                 cmdStepNr = 0;
