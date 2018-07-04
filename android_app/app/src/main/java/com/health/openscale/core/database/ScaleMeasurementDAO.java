@@ -21,6 +21,7 @@ import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.OnConflictStrategy;
 import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Update;
+import android.database.Cursor;
 
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 
@@ -64,4 +65,8 @@ public interface ScaleMeasurementDAO {
 
     @Query("DELETE FROM scaleMeasurements WHERE userId = :userId")
     void deleteAll(int userId);
+
+    // selectAll() is equivalent to getAll(), but returns a Cursor, for exposing via a ContentProvider.
+    @Query("SELECT * FROM scaleMeasurements WHERE userId = :userId AND enabled = 1 ORDER BY datetime DESC")
+    Cursor selectAll(int userId);
 }
