@@ -684,24 +684,32 @@ public abstract class BluetoothCommunication {
             setBtMachineState(BT_MACHINE_STATE.BT_INIT_STATE);
         }
 
+        private void postDelayedHandleRequests() {
+            // Wait a short while before starting the next operation as suggested
+            // on the android.jlelse.eu link above.
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    synchronized (lock) {
+                        openRequest = false;
+                        handleRequests();
+                    }
+                }
+            }, 60);
+        }
+
         @Override
         public void onDescriptorWrite(BluetoothGatt gatt,
                                       BluetoothGattDescriptor descriptor,
                                       int status) {
-            synchronized (lock) {
-                openRequest = false;
-                handleRequests();
-            }
+            postDelayedHandleRequests();
         }
 
         @Override
         public void onCharacteristicWrite(BluetoothGatt gatt,
                                           BluetoothGattCharacteristic characteristic,
                                           int status) {
-            synchronized (lock) {
-                openRequest = false;
-                handleRequests();
-            }
+            postDelayedHandleRequests();
         }
 
         @Override
@@ -713,8 +721,7 @@ public abstract class BluetoothCommunication {
 
             synchronized (lock) {
                 onBluetoothDataRead(gatt, characteristic, status);
-                openRequest = false;
-                handleRequests();
+                postDelayedHandleRequests();
             }
         }
 
@@ -736,10 +743,7 @@ public abstract class BluetoothCommunication {
             Timber.d("onDescriptorRead %s (status=%d): %s",
                     descriptor.getUuid(), status, byteInHex(descriptor.getValue()));
 
-            synchronized (lock) {
-                openRequest = false;
-                handleRequests();
-            }
+            postDelayedHandleRequests();
         }
     }
 }
