@@ -290,16 +290,21 @@ public abstract class BluetoothCommunication {
     protected void setIndicationOn(UUID service, UUID characteristic, UUID descriptor) {
         Timber.d("Set indication on for %s", characteristic);
 
-        BluetoothGattCharacteristic gattCharacteristic =
-                bluetoothGatt.getService(service).getCharacteristic(characteristic);
-        bluetoothGatt.setCharacteristicNotification(gattCharacteristic, true);
+        try {
+            BluetoothGattCharacteristic gattCharacteristic =
+                    bluetoothGatt.getService(service).getCharacteristic(characteristic);
+            bluetoothGatt.setCharacteristicNotification(gattCharacteristic, true);
 
-        synchronized (lock) {
-            descriptorRequestQueue.add(
-                    new GattObjectValue<>(
-                            gattCharacteristic.getDescriptor(descriptor),
-                            BluetoothGattDescriptor.ENABLE_INDICATION_VALUE));
-            handleRequests();
+            synchronized (lock) {
+                descriptorRequestQueue.add(
+                        new GattObjectValue<>(
+                                gattCharacteristic.getDescriptor(descriptor),
+                                BluetoothGattDescriptor.ENABLE_INDICATION_VALUE));
+                handleRequests();
+            }
+        }
+        catch (Exception e) {
+            Timber.e(e);
         }
     }
 
@@ -312,16 +317,21 @@ public abstract class BluetoothCommunication {
     protected void setNotificationOn(UUID service, UUID characteristic, UUID descriptor) {
         Timber.d("Set notification on for %s", characteristic);
 
-        BluetoothGattCharacteristic gattCharacteristic =
-                bluetoothGatt.getService(service).getCharacteristic(characteristic);
-        bluetoothGatt.setCharacteristicNotification(gattCharacteristic, true);
+        try {
+            BluetoothGattCharacteristic gattCharacteristic =
+                    bluetoothGatt.getService(service).getCharacteristic(characteristic);
+            bluetoothGatt.setCharacteristicNotification(gattCharacteristic, true);
 
-        synchronized (lock) {
-            descriptorRequestQueue.add(
-                    new GattObjectValue<>(
-                            gattCharacteristic.getDescriptor(descriptor),
-                            BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE));
-            handleRequests();
+            synchronized (lock) {
+                descriptorRequestQueue.add(
+                        new GattObjectValue<>(
+                                gattCharacteristic.getDescriptor(descriptor),
+                                BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE));
+                handleRequests();
+            }
+        }
+        catch (Exception e) {
+            Timber.e(e);
         }
     }
 
