@@ -371,12 +371,16 @@ public abstract class BluetoothCommunication {
             return "";
         }
 
+        if (data.length == 0) {
+            return "";
+        }
+
         final StringBuilder stringBuilder = new StringBuilder(3 * data.length);
         for (byte byteChar : data) {
             stringBuilder.append(String.format("%02X ", byteChar));
         }
 
-        return stringBuilder.toString();
+        return stringBuilder.substring(0, stringBuilder.length() - 1);
     }
 
     protected byte xorChecksum(byte[] data, int offset, int length) {
