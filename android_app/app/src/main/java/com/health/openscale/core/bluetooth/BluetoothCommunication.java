@@ -101,6 +101,10 @@ public abstract class BluetoothCommunication {
         return bluetoothGatt.getServices();
     }
 
+    protected boolean hasBluetoothGattService(UUID service) {
+        return bluetoothGatt != null && bluetoothGatt.getService(service) != null;
+    }
+
     /**
      * Register a callback Bluetooth handler that notify any BT_STATUS_CODE changes for GUI/CORE.
      *
