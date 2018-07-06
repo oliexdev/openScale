@@ -137,7 +137,7 @@ public class BluetoothOneByone extends BluetoothCommunication {
     }
 
     private void parseBytesOld(byte[] weightBytes) {
-        float weight = Converters.fromUnsignedInt16Be(weightBytes, 3) / 100.0f;
+        float weight = Converters.fromUnsignedInt16Le(weightBytes, 3) / 100.0f;
         boolean done = (weightBytes[9] & 0xff) == 0;
 
         Timber.d("weight: %.2f%s", weight, done ? " (done)" : "");
