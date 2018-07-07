@@ -31,9 +31,9 @@ import timber.log.Timber;
 
 public class BluetoothOneByone extends BluetoothCommunication {
     private final UUID WEIGHT_MEASUREMENT_SERVICE_BODY_COMPOSITION = UUID.fromString("0000181B-0000-1000-8000-00805f9b34fb");
-    private final UUID WEIGHT_MEASUREMENT_CHARACTERISTIC_BODY_COMPOSITION = UUID.fromString("00002A9C-0000-1000-8000-00805f9b34fb"); // read, indication
 
-    private final UUID WEIGHT_MEASUREMENT_CHARACTERISTIC_BODY_COMPOSITION_OLD = UUID.fromString("0000fff4-0000-1000-8000-00805f9b34fb"); // notify
+    private final UUID WEIGHT_MEASUREMENT_CHARACTERISTIC_BODY_COMPOSITION = UUID.fromString("00002A9C-0000-1000-8000-00805f9b34fb"); // read, indication
+    private final UUID WEIGHT_MEASUREMENT_CHARACTERISTIC_BODY_COMPOSITION_ALT = UUID.fromString("0000fff4-0000-1000-8000-00805f9b34fb"); // notify
 
     private final UUID WEIGHT_MEASUREMENT_SERVICE = UUID.fromString("0000fff0-0000-1000-8000-00805f9b34fb");
     private final UUID CMD_MEASUREMENT_CHARACTERISTIC = UUID.fromString("0000fff1-0000-1000-8000-00805f9b34fb"); // write only
@@ -63,7 +63,7 @@ public class BluetoothOneByone extends BluetoothCommunication {
                 }
                 else {
                     setNotificationOn(WEIGHT_MEASUREMENT_SERVICE,
-                            WEIGHT_MEASUREMENT_CHARACTERISTIC_BODY_COMPOSITION_OLD,
+                            WEIGHT_MEASUREMENT_CHARACTERISTIC_BODY_COMPOSITION_ALT,
                             WEIGHT_MEASUREMENT_CONFIG);
                 }
                 break;
@@ -110,12 +110,15 @@ public class BluetoothOneByone extends BluetoothCommunication {
             return;
         }
 
+        final UUID uuid = gattCharacteristic.getUuid();
         // if data is valid data
-        if (data.length == 20) {
+        if (data.length == 20
+                && uuid.equals(WEIGHT_MEASUREMENT_CHARACTERISTIC_BODY_COMPOSITION)) {
             parseBytes(data);
         }
-        else if (data.length == 11) {
-            parseBytesOld(data);
+        else if (data.length == 11
+                && uuid.equals(WEIGHT_MEASUREMENT_CHARACTERISTIC_BODY_COMPOSITION_ALT)) {
+            parseBytesAlt(data);
         }
     }
 
@@ -136,7 +139,7 @@ public class BluetoothOneByone extends BluetoothCommunication {
         }
     }
 
-    private void parseBytesOld(byte[] weightBytes) {
+    private void parseBytesAlt(byte[] weightBytes) {
         float weight = Converters.fromUnsignedInt16Le(weightBytes, 3) / 100.0f;
         boolean done = (weightBytes[9] & 0xff) == 0;
 
