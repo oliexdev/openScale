@@ -37,6 +37,7 @@ import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
@@ -321,9 +322,16 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         floatingActionBar.removeAllViews();
 
-        PolynomialFitter polyFitter = new PolynomialFitter(
-                Math.min(Integer.parseInt(prefs.getString("regressionLineOrder", "1")),
-                        100));
+        int regressLineOrder = 1;
+
+        try {
+            regressLineOrder = Integer.parseInt(prefs.getString("regressionLineOrder", "1"));
+        } catch (NumberFormatException e) {
+            Toast.makeText(getContext(), getString(R.string.error_value_required) + ":" + e.getMessage(), Toast.LENGTH_LONG).show();
+            prefs.edit().putString("regressionLineOrder", "1").commit();
+        }
+
+        PolynomialFitter polyFitter = new PolynomialFitter(Math.min(regressLineOrder, 100));
 
         for (MeasurementView view : measurementViews) {
             if (view instanceof FloatMeasurementView) {
