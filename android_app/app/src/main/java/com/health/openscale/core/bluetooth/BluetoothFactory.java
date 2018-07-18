@@ -38,14 +38,14 @@ public class BluetoothFactory {
         if (name.startsWith("BEURER BF710".toLowerCase(Locale.US))) {
             return new BluetoothBeurerSanitas(context, BluetoothBeurerSanitas.DeviceType.BEURER_BF710);
         }
-        if (name.equals("openScale_MCU".toLowerCase(Locale.US))) {
+        if (name.equals("openScale".toLowerCase(Locale.US))) {
             return new BluetoothCustomOpenScale(context);
         }
         if (name.equals("Mengii".toLowerCase(Locale.US))) {
             return new BluetoothDigooDGSO38H(context);
         }
         if (name.equals("Electronic Scale".toLowerCase(Locale.US))) {
-            return new BluetoothExcelvanCF369BLE(context);
+            return new BluetoothExcelvanCF36xBLE(context);
         }
         if (name.equals("VScale".toLowerCase(Locale.US))) {
             return new BluetoothExingtechY1(context);
@@ -58,7 +58,7 @@ public class BluetoothFactory {
         }
         // BS444 || BS440
         if (deviceName.startsWith("013197") || deviceName.startsWith("0202B6")) {
-            return new BluetoothMedisanaBS444(context);
+            return new BluetoothMedisanaBS44x(context);
         }
         if (deviceName.startsWith("SWAN") || name.equals("icomon".toLowerCase(Locale.US))) {
             return new BluetoothMGB(context);

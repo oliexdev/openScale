@@ -21,6 +21,7 @@ import com.health.openscale.BuildConfig;
 import timber.log.Timber;
 
 public class Application extends android.app.Application {
+    OpenScale openScale;
 
     private class TimberLogAdapter extends Timber.DebugTree {
         @Override
@@ -40,5 +41,8 @@ public class Application extends android.app.Application {
 
         // Create OpenScale instance
         OpenScale.createInstance(getApplicationContext());
+
+        // Hold on to the instance for as long as the application exists
+        openScale = OpenScale.getInstance();
     }
 }

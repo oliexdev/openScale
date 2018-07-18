@@ -41,6 +41,8 @@ import android.widget.TextView;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
+import com.health.openscale.core.datatypes.ScaleUser;
+import com.health.openscale.core.utils.Converters;
 import com.health.openscale.core.utils.PolynomialFitter;
 import com.health.openscale.gui.activities.DataEntryActivity;
 import com.health.openscale.gui.views.BMRMeasurementView;
@@ -412,7 +414,8 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         if (prefs.getBoolean("goalLine", true)) {
             Stack<PointValue> valuesGoalLine = new Stack<>();
 
-            float goalWeight = openScale.getSelectedScaleUser().getGoalWeight();
+            final ScaleUser user = openScale.getSelectedScaleUser();
+            float goalWeight = Converters.fromKilogram(user.getGoalWeight(), user.getScaleUnit());
 
             valuesGoalLine.push(new PointValue(0, goalWeight));
             valuesGoalLine.push(new PointValue(maxDays, goalWeight));

@@ -28,8 +28,9 @@ import com.health.openscale.core.OpenScale;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 import timber.log.Timber;
 
@@ -95,7 +96,8 @@ public class AlarmBackupHandler
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
         if (!prefs.getBoolean("overwriteBackup", false)) {
-            databaseName = DateFormat.getDateInstance(DateFormat.SHORT).format(new Date()) + "_" + databaseName;
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+            databaseName = dateFormat.format(new Date()) + "_" + databaseName;
         }
 
         File exportFile = new File(exportDir, databaseName);

@@ -1,0 +1,246 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<resources><string name="title_overview">Pregled</string>
+    <string name="title_graph">Grafikon</string>
+    <string name="title_table">Tablica</string>
+    <string name="title_statistics">Statistika</string>
+    <string name="title_users">Korisnici</string>
+    <string name="title_measurements">Mjerenja</string>
+    <string name="title_about">O programu</string>
+    <string name="title_general">Općenito</string>
+
+    <string name="action_settings">Postavke</string>
+    <string name="action_bluetooth_status">Bluetooth Status</string>
+    <string name="open_drawer">otvori</string>
+    <string name="close_drawer">zatvori</string>
+
+    <string name="label_cancel">Odustani</string>
+    <string name="label_ok">U redu</string>
+    <string name="label_yes">Da</string>
+    <string name="label_no">Ne</string>
+    <string name="label_delete">Izbriši</string>
+    <string name="label_add_user">Dodaj korisnika</string>
+    <string name="label_add_measurement">Dodaj mjerenje</string>
+    <string name="label_share">Podjeli</string>
+    <string name="label_share_subject">CSV izvoz (%s)</string>
+
+    <string name="label_weight">Težina</string>
+    <string name="label_bmi">Indeks tjelesne mase (BMI)</string>
+    <string name="label_bmr">Bazalni metabolizam (BMR)</string>
+    <string name="label_fat">Masnoća</string>
+    <string name="label_water">Voda</string>
+    <string name="label_muscle">Mišići</string>
+    <string name="label_lbm">Težina bez masnoća</string>
+    <string name="label_waist">Opseg struka</string>
+    <string name="label_hip">Opseg kukova</string>
+    <string name="label_comment">Komentar</string>
+    <string name="label_whtr">Omjer struka i visine</string>
+    <string name="label_whr">Omjer struka i kukova</string>
+    <string name="label_bone">Masa kostiju</string>
+    <string name="label_smartUserAssign">Pametna dodjela korisnika</string>
+
+    <plurals name="label_days">
+	<item quantity="one">Jedan</item>
+	<item quantity="few">Nekoliko</item>
+	<item quantity="other">Ostalo</item>
+</plurals>
+    <string name="label_last_week">Prosjek prošlog tjedna</string>
+    <string name="label_last_month">Prosjek prošlog mjeseca</string>
+    <string name="label_weight_difference">Razlika težine</string>
+    <string name="label_goal_date_is">Ciljani datum:</string>
+    <string name="label_days_left">Preostalo dana</string>
+
+    <string name="label_date">Datum</string>
+    <string name="label_time">Vrijeme</string>
+    <string name="label_birthday">Datum rođenja</string>
+    <string name="label_user_name">Ime</string>
+    <string name="label_height">Visina</string>
+    <string name="label_scale_unit">Mjerne jedinice</string>
+    <string name="label_gender">Spol</string>
+    <string name="label_male">Muški</string>
+    <string name="label_female">Ženski</string>
+    <string name="label_goal_weight">Ciljana težina</string>
+    <string name="label_goal_date">Ciljani datum</string>
+
+    <string name="label_title_user">korisnik</string>
+    <string name="label_title_last_measurement">zadnje mjerenje</string>
+    <string name="label_title_goal">Cilj</string>
+
+    <string name="label_import">Uvoz</string>
+    <string name="label_export">Izvoz</string>
+    <string name="label_delete_all">Izbriši sve</string>
+
+    <string name="error_value_required">Potrebna vrijednost</string>
+    <string name="error_value_range">Vrijednost izvan granica</string>
+    <string name="error_exporting">Greška u izvozu</string>
+    <string name="error_importing">Greška u uvozu</string>
+    <string name="error_user_name_required">Greška: Unesite ime</string>
+    <string name="error_user_name_too_short">Greška: Ime mora imati barem 3 znaka</string>
+    <string name="error_height_required">Greška: Unesite težinu</string>
+    <string name="error_initial_weight_required">Greška: Unesite početnu težinu</string>
+    <string name="error_goal_weight_required">Greška: Unesite ciljanu težinu</string>
+
+    <string name="info_data_deleted">Stavka obrisana</string>
+    <string name="info_data_all_deleted">Sve stavke obrisane</string>
+    <string name="info_data_exported">Izvezeno u</string>
+    <string name="info_data_imported">Uvezeno iz</string>
+    <string name="info_enter_value_in">Vrijednost u</string>
+    <string name="info_enter_comment">Komentar (neobavezan)</string>
+    <string name="info_is_visible">je vidljivo</string>
+    <string name="info_is_not_visible">nije vidljivo</string>
+    <string name="info_is_enable">uključeno</string>
+    <string name="info_is_not_enable">isključeno</string>
+    <string name="info_is_not_available">nedostupno</string>
+    <string name="info_bluetooth_try_connection">Spajanje na:</string>
+    <string name="info_bluetooth_connection_lost">Izgubljena Bluetooth veza</string>
+    <string name="info_bluetooth_no_device">Nije pronađen nijedan uređaj</string>
+    <string name="info_bluetooth_no_device_set">Nije odabran nijedan uređaj</string>
+    <string name="info_bluetooth_connection_successful">Veza uspostavljena</string>
+    <string name="info_bluetooth_init">Inicijalizacija Bluetooth uređaja</string>
+    <string name="info_bluetooth_connection_error">Neočekivana Bluetooth greška</string>
+    <string name="info_new_data_added">%1$.2f%2$s [%3$s] do %4$s dodan</string>
+    <string name="info_new_data_duplicated">mjerenje s istim datumom i vremenom već postoji</string>
+
+    <string name="info_enter_user_name">Vaše ime</string>
+    <string name="info_no_selected_user">Ne postoji niti jedan korisnik. Stvorite ga u postavkama.</string>
+    <string name="info_no_evaluation_available">Nije moguće procijeniti vrijednost</string>
+
+    <string name="question_really_delete">Izbrisati stavku?</string>
+    <string name="question_really_delete_all">Izbrisati sve stavke svih korisnika ?</string>
+    <string name="question_really_delete_user">Izbrisati korisnika?</string>
+
+    <string name="label_bluetooth_title">Bluetooth</string>
+    <string name="label_bluetooth_enable">Povezivanje sa vagom kod pokretanja</string>
+    <string name="label_mergeWithLastMeasurement">Spoji sa zadnjim mjerenjem</string>
+    <string name="label_bluetooth_searching">Tražim Vašu Bluetooth vagu</string>
+    <string name="label_bluetooth_searching_finished">Pretraga završena</string>
+
+    <string name="label_enable_labels">Oznake</string>
+    <string name="label_enable_points">Točka</string>
+
+    <string name="label_delete_confirmation">Potvrda brisanja</string>
+
+    <string name="label_category_measurement_database">Baza podataka</string>
+
+    <string name="label_maintainer">Održavatelj</string>
+    <string name="label_website">Web stranica</string>
+    <string name="label_license">Licenca</string>
+
+    <string name="label_automatic">automatski</string>
+
+    <string name="label_theme">Tema</string>
+
+    <string name="label_reminder">Podsjetnik</string>
+    <string name="label_reminder_weekdays">Dani</string>
+    <string name="label_reminder_time">Vrijeme</string>
+    <string name="label_reminder_notify_text">Tekst obavijesti</string>
+    <string name="default_value_reminder_notify_text">Vaganje za</string>
+
+    <string name="info_on_date">u</string>
+
+    <string name="Monday">Ponedjeljak</string>
+    <string name="Tuesday">Utorak</string>
+    <string name="Wednesday">Srijeda</string>
+    <string name="Thursday">Četvrtak</string>
+    <string name="Friday">Petak</string>
+    <string name="Saturday">Subota</string>
+    <string name="Sunday">Nedjelja</string>
+    <string name="label_bt_device_no_support">uređaj nije podržan</string>
+    <string name="label_exportBackup">Izvoz sigurnosne kopije</string>
+    <string name="label_importBackup">Uvoz sigurnosne kopije</string>
+    <string name="label_backup">Sigurnosna kopija</string>
+    <string name="label_export_dir">Mapa za izvoz</string>
+    <string name="label_not_found">nije pronađeno</string>
+    <string name="label_ignoreOutOfRange">Zanemari podatke izvan granica</string>
+    <string name="label_initial_weight">Početna težina</string>
+    <string name="label_regression_line">Linija regresije</string>
+    <string name="label_regression_line_degree">Polinom regresije</string>
+    <string name="label_goal_line">Ciljana linija</string>
+    <string name="label_help">Pomoć</string>
+
+    <string name="label_feedback_message_enjoying">Preporučate openScale?</string>
+    <string name="label_feedback_message_rate_app">A ocjena na Google Play ili GitHub ?</string>
+    <string name="label_feedback_message_issue">Želite li dati svoje mišljenje ?</string>
+    <string name="label_feedback_message_yes">Da</string>
+    <string name="label_feedback_message_no">Baš i ne</string>
+    <string name="label_feedback_message_positive">U redu</string>
+    <string name="label_feedback_message_negative">Ne, hvala</string>
+
+    <string name="error_max_scale_users">Dosegnut maksimalni broj korisnika</string>
+    <string name="info_step_on_scale">Stanite bosi na vagu radi referentnog mjerenja</string>
+    <string name="info_measuring">Mjerenje težine: %.2f</string>
+
+    <string name="customactivityoncrash_error_activity_error_occurred_explanation">Došlo je do neočekivane pogreške
+\n
+\nMolimo da prijavite problem sa podacima o grešci na
+\nhttps://github.com/oliexdev/openScale/issues</string>
+    <string name="customactivityoncrash_error_activity_restart_app">Ponovo pokreni</string>
+    <string name="customactivityoncrash_error_activity_close_app">Zatvori</string>
+    <string name="customactivityoncrash_error_activity_error_details">Detalji o pogrešci</string>
+    <string name="customactivityoncrash_error_activity_error_details_title">Detalji o pogrešci</string>
+    <string name="customactivityoncrash_error_activity_error_details_close">Zatvori</string>
+    <string name="customactivityoncrash_error_activity_error_details_copy">Kopiraj u međuspremnik</string>
+    <string name="customactivityoncrash_error_activity_error_details_copied">Kopirano u međuspremnik</string>
+    <string name="customactivityoncrash_error_activity_error_details_clipboard_label">Informacije o pogrešci</string>
+    <string name="toggle_expand">Proširi</string>
+    <string name="edit">Uredi</string>
+    <string name="save">Spremi</string>
+
+    <string name="label_month_view">Mjesec</string>
+    <string name="label_weeks_view">Tjedan</string>
+
+    <string name="permission_not_granted">Nije dozvoljeno</string>
+    <string name="permission_bluetooth_info">Dozvola pristupu lokaciji je potrebna za traženje Bluetooth uređaja. Može se opet zabraniti pristup nakon pronalaska uređaja.</string>
+    <string name="permission_bluetooth_info_title">Info</string>
+    <string name="label_next">Sljedeći</string>
+    <string name="label_long_press_drag_reorder">Dugo pritisnite i povucite mjerenja za promjenu redoslijeda</string>
+    <string name="label_click_measurement_configure">Odaberite mjerenje za uređivanje</string>
+    <string name="label_set_default_order">Zadan redosljed</string>
+    <string name="label_export_overwrite">Prebriši prijašnji izvoz \"%s\"?</string>
+    <string name="label_include_in_overview_graph">Prikaži na pregledu grafa</string>
+    <string name="label_measurement_in_percent">Mjerenja u %</string>
+    <string name="label_estimate_measurement">Procjenjeno mjerenje</string>
+    <string name="label_estimation_formula">Formula za procjenu</string>
+    <string name="language_default">Zadana postavka</string>
+    <string name="label_language">Jezik</string>
+    <string name="theme_light">Svjetlo</string>
+    <string name="theme_dark">Tamno</string>
+    <string name="label_contribute_translation">Pomognite prevesti</string>
+    <string name="label_add_or_fix_translation">Dodaj novi ili popravi postojeći</string>
+    <string name="label_overview_graph">Pregled grafikona</string>
+    <string name="label_percent">Posto</string>
+    <string name="label_estimated">Procjena</string>
+    <string name="label_estimate_measurement_summary">Temeljeno na težini, visini, dobi, spolu, itd.</string>
+    <string name="label_auto_backup">Automatska sigurnosna kopija</string>
+    <string name="label_auto_backup_schedule">Raspored sigurnosne kopije</string>
+    <string name="label_overwrite_backup">Prebriši prijašnju sigurnosnu kopiju</string>
+    <string name="label_daily">dnevno</string>
+    <string name="label_weekly">tjedno</string>
+    <string name="label_monthly">mjesečno</string>
+    <string name="label_scale_not_supported">Da li je Vaša vaga podržana ?</string>
+    <string name="label_click_to_help_add_support">Pomognite da bi ju podržali</string>
+    <string name="label_development">Razvoj</string>
+    <string name="label_debug_log">Spremi log zapis u datoteku</string>
+    <string name="label_your_bluetooth_scale">Vaša Bluetooth vaga</string>
+    <string name="label_select_measurement">Odaberite mjerenje</string>
+    <string name="label_select_user">Odaberite korisnika</string>
+    <string name="label_configure_widget">Podesiti widget</string>
+    <string name="label_visceral_fat">Visceralne masnoće</string>
+    <string name="label_chest">Opseg prsa</string>
+    <string name="label_thigh">Opseg bedra</string>
+    <string name="label_biceps">Opseg bicepsa</string>
+    <string name="label_neck">Opseg vrata</string>
+    <string name="label_fat_caliper">Kaliper za mjerenje nabora</string>
+    <string name="label_caliper1_male">Nabor na prsima</string>
+    <string name="label_caliper2_male">Nabor na trbuhu</string>
+    <string name="label_caliper3_male">Nabor na bedru</string>
+    <string name="label_caliper1_female">Nabor na tricepsu</string>
+    <string name="label_caliper2_female">Nabor na trbuhu</string>
+    <string name="label_caliper3_female">Nabor na kukovima</string>
+    <string name="label_measure_unit">Mjerna jedinica</string>
+    <string name="label_activity_level">Razina aktivnosti</string>
+    <string name="activity_level_sedentary">Sjedeći</string>
+    <string name="activity_level_mild">Blag</string>
+    <string name="activity_level_moderate">Umjeren</string>
+    <string name="activity_level_heavy">Jak</string>
+    <string name="activity_level_extreme">Ekstreman</string>
+</resources>

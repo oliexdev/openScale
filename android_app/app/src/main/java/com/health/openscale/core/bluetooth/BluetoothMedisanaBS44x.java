@@ -25,7 +25,7 @@ import com.health.openscale.core.utils.Converters;
 import java.util.Date;
 import java.util.UUID;
 
-public class BluetoothMedisanaBS444 extends BluetoothCommunication {
+public class BluetoothMedisanaBS44x extends BluetoothCommunication {
     private final UUID WEIGHT_MEASUREMENT_SERVICE = UUID.fromString("000078b2-0000-1000-8000-00805f9b34fb");
     private final UUID WEIGHT_MEASUREMENT_CHARACTERISTIC = UUID.fromString("00008a21-0000-1000-8000-00805f9b34fb"); // indication, read-only
     private final UUID FEATURE_MEASUREMENT_CHARACTERISTIC = UUID.fromString("00008a22-0000-1000-8000-00805f9b34fb"); // indication, read-only
@@ -39,14 +39,9 @@ public class BluetoothMedisanaBS444 extends BluetoothCommunication {
     // Scale time is in seconds since 2010-01-01
     private static final long SCALE_UNIX_TIMESTAMP_OFFSET = 1262304000;
 
-    public BluetoothMedisanaBS444(Context context) {
+    public BluetoothMedisanaBS44x(Context context) {
         super(context);
         btScaleMeasurement = new ScaleMeasurement();
-    }
-
-    @Override
-    protected boolean discoverDeviceBeforeConnecting() {
-        return true;
     }
 
     @Override

@@ -232,6 +232,7 @@ public class BluetoothPreferences extends PreferenceFragment {
                 prefBtDevice.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                     @Override
                     public boolean onPreferenceClick(Preference preference) {
+                        stopDiscoveryAndLeScan();
                         getDebugInfo(device);
                         return false;
                     }
@@ -306,7 +307,7 @@ public class BluetoothPreferences extends PreferenceFragment {
         super.onStart();
 
         // Restart discovery after e.g. orientation change
-        if (btScanner.getDialog() != null) {
+        if (btScanner.getDialog() != null && btScanner.getDialog().isShowing()) {
             startBluetoothDiscovery();
         }
     }

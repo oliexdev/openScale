@@ -17,24 +17,18 @@ package com.health.openscale.gui.fragments;
 
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.graphics.Color;
-import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.SpannableStringBuilder;
-import android.text.Spanned;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.BaseAdapter;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
@@ -45,45 +39,43 @@ import com.health.openscale.gui.activities.DataEntryActivity;
 import com.health.openscale.gui.views.MeasurementView;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import static android.util.TypedValue.COMPLEX_UNIT_DIP;
 
 public class TableFragment extends Fragment implements FragmentUpdateListener {
     private View tableView;
-    private ListView tableDataView;
     private LinearLayout tableHeaderView;
-    private LinearLayout subpageView;
+
+    private RecyclerView recyclerView;
+    private MeasurementsAdapter adapter;
+    private LinearLayoutManager layoutManager;
 
     private List<MeasurementView> measurementViews;
-
-    private int selectedSubpageNr;
-    private static final String SELECTED_SUBPAGE_NR_KEY = "selectedSubpageNr";
 
     public TableFragment() {
 
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
-    {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         tableView = inflater.inflate(R.layout.fragment_table, container, false);
 
-        subpageView = tableView.findViewById(R.id.subpageView);
-
-        tableDataView = tableView.findViewById(R.id.tableDataView);
         tableHeaderView = tableView.findViewById(R.id.tableHeaderView);
+        recyclerView = tableView.findViewById(R.id.tableDataView);
 
-        tableDataView.setAdapter(new ListViewAdapter());
-        tableDataView.setOnItemClickListener(new onClickListenerRow());
+        recyclerView.setHasFixedSize(true);
 
-        if (savedInstanceState == null) {
-            selectedSubpageNr = 0;
-        }
-        else {
-            selectedSubpageNr = savedInstanceState.getInt(SELECTED_SUBPAGE_NR_KEY);
-        }
+        layoutManager = new LinearLayoutManager(getContext());
+        recyclerView.setLayoutManager(layoutManager);
+
+        recyclerView.addItemDecoration(new DividerItemDecoration(
+                recyclerView.getContext(), layoutManager.getOrientation()));
+
+        adapter = new MeasurementsAdapter();
+        recyclerView.setAdapter(adapter);
 
         measurementViews = MeasurementView.getMeasurementList(
                 getContext(), MeasurementView.DateTimeOrder.FIRST);
@@ -104,235 +96,175 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putInt(SELECTED_SUBPAGE_NR_KEY, selectedSubpageNr);
-    }
-
-    @Override
     public void updateOnView(List<ScaleMeasurement> scaleMeasurementList)
     {
-        final int maxSize = 25;
-
-        final int subpageCount = (int)Math.ceil(scaleMeasurementList.size() / (double)maxSize);
-        if (selectedSubpageNr >= subpageCount) {
-            selectedSubpageNr = Math.max(0, subpageCount - 1);
-        }
-
-        subpageView.removeAllViews();
-
-        Button moveSubpageLeft = new Button(tableView.getContext());
-        moveSubpageLeft.setText("<");
-        moveSubpageLeft.setPadding(0,0,0,0);
-        moveSubpageLeft.setTextColor(Color.WHITE);
-        moveSubpageLeft.setBackground(ContextCompat.getDrawable(tableView.getContext(), R.drawable.flat_selector));
-        moveSubpageLeft.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-        moveSubpageLeft.getLayoutParams().height = pxImageDp(20);
-        moveSubpageLeft.getLayoutParams().width = pxImageDp(50);
-        moveSubpageLeft.setOnClickListener(new onClickListenerMoveSubpageLeft());
-        moveSubpageLeft.setEnabled(selectedSubpageNr > 0);
-        subpageView.addView(moveSubpageLeft);
-
-        for (int i = 0; i < subpageCount; i++) {
-            TextView subpageNrView = new TextView(tableView.getContext());
-            subpageNrView.setOnClickListener(new onClickListenerSubpageSelect());
-            subpageNrView.setText(Integer.toString(i+1));
-            subpageNrView.setTextColor(Color.GRAY);
-            subpageNrView.setPadding(10, 10, 20, 10);
-
-            subpageView.addView(subpageNrView);
-        }
-
-        if (subpageView.getChildCount() > 1) {
-            TextView selectedSubpageNrView = (TextView) subpageView.getChildAt(selectedSubpageNr + 1);
-            if (selectedSubpageNrView != null) {
-                selectedSubpageNrView.setTypeface(null, Typeface.BOLD);
-                selectedSubpageNrView.setTextColor(Color.WHITE);
-            }
-        }
-
-        Button moveSubpageRight = new Button(tableView.getContext());
-        moveSubpageRight.setText(">");
-        moveSubpageRight.setPadding(0,0,0,0);
-        moveSubpageRight.setTextColor(Color.WHITE);
-        moveSubpageRight.setBackground(ContextCompat.getDrawable(tableView.getContext(), R.drawable.flat_selector));
-        moveSubpageRight.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-        moveSubpageRight.getLayoutParams().height = pxImageDp(20);
-        moveSubpageRight.getLayoutParams().width = pxImageDp(50);
-        moveSubpageRight.setOnClickListener(new onClickListenerMoveSubpageRight());
-        moveSubpageRight.setEnabled(selectedSubpageNr + 1 < subpageCount);
-        subpageView.addView(moveSubpageRight);
-
-        subpageView.setVisibility(subpageCount > 1 ? View.VISIBLE : View.GONE);
-
         tableHeaderView.removeAllViews();
 
+        final int iconHeight = pxImageDp(20);
         ArrayList<MeasurementView> visibleMeasurements = new ArrayList<>();
+
         for (MeasurementView measurement : measurementViews) {
-
-            if (measurement.isVisible()) {
-                ImageView headerIcon = new ImageView(tableView.getContext());
-                headerIcon.setImageDrawable(measurement.getIcon());
-                headerIcon.setLayoutParams(new TableRow.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableLayout.LayoutParams.MATCH_PARENT, 1));
-                headerIcon.getLayoutParams().width = 0;
-                headerIcon.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-                headerIcon.getLayoutParams().height = pxImageDp(20);
-
-                tableHeaderView.addView(headerIcon);
-
-                visibleMeasurements.add(measurement);
+            if (!measurement.isVisible()) {
+                continue;
             }
+            ImageView headerIcon = new ImageView(tableView.getContext());
+            headerIcon.setImageDrawable(measurement.getIcon());
+            headerIcon.setLayoutParams(new TableRow.LayoutParams(0, iconHeight, 1));
+            headerIcon.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+
+            tableHeaderView.addView(headerIcon);
+
+            visibleMeasurements.add(measurement);
         }
 
-        ListViewAdapter adapter = (ListViewAdapter) tableDataView.getAdapter();
-
-        final int startOffset = maxSize * selectedSubpageNr;
-        final int endOffset = Math.min(startOffset + maxSize + 1, scaleMeasurementList.size());
-        adapter.setMeasurements(visibleMeasurements, scaleMeasurementList.subList(startOffset, endOffset), maxSize);
+        adapter.setMeasurements(visibleMeasurements, scaleMeasurementList);
     }
 
     private int pxImageDp(float dp) {
         return (int)(dp * getResources().getDisplayMetrics().density + 0.5f);
     }
 
-    private class onClickListenerRow implements AdapterView.OnItemClickListener {
-        @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            Intent intent = new Intent(tableView.getContext(), DataEntryActivity.class);
-            intent.putExtra(DataEntryActivity.EXTRA_ID, (int)id);
-            startActivity(intent);
-        }
-    }
+    private class MeasurementsAdapter extends RecyclerView.Adapter<MeasurementsAdapter.ViewHolder> {
+        public static final int VIEW_TYPE_MEASUREMENT = 0;
+        public static final int VIEW_TYPE_YEAR = 1;
 
-    private class onClickListenerMoveSubpageLeft implements View.OnClickListener {
-        @Override
-        public void onClick(View v) {
-            if (selectedSubpageNr > 0) {
-                selectedSubpageNr--;
-                updateOnView(OpenScale.getInstance().getScaleMeasurementList());
+        public class ViewHolder extends RecyclerView.ViewHolder {
+            public LinearLayout measurementView;
+            public ViewHolder(LinearLayout view) {
+                super(view);
+                measurementView = view;
             }
         }
-    }
-
-    private class onClickListenerMoveSubpageRight implements View.OnClickListener {
-        @Override
-        public void onClick(View v) {
-            if (selectedSubpageNr < (subpageView.getChildCount() - 3)) {
-                selectedSubpageNr++;
-                updateOnView(OpenScale.getInstance().getScaleMeasurementList());
-            }
-        }
-    }
-
-    private class onClickListenerSubpageSelect implements View.OnClickListener {
-        @Override
-        public void onClick(View v) {
-            TextView nrView = (TextView)v;
-
-            selectedSubpageNr = Integer.parseInt(nrView.getText().toString())-1;
-            updateOnView(OpenScale.getInstance().getScaleMeasurementList());
-        }
-    }
-
-    private class ListViewAdapter extends BaseAdapter {
 
         private List<MeasurementView> visibleMeasurements;
         private List<ScaleMeasurement> scaleMeasurements;
-        private int measurementsToShow = 0;
-
-        private Spanned[][] stringCache;
 
         public void setMeasurements(List<MeasurementView> visibleMeasurements,
-                                    List<ScaleMeasurement> scaleMeasurements,
-                                    int maxSize) {
+                                    List<ScaleMeasurement> scaleMeasurements) {
             this.visibleMeasurements = visibleMeasurements;
-            this.scaleMeasurements = scaleMeasurements;
-            measurementsToShow = Math.min(scaleMeasurements.size(), maxSize);
+            this.scaleMeasurements = new ArrayList<>(scaleMeasurements.size() + 10);
 
-            stringCache = new Spanned[measurementsToShow][visibleMeasurements.size()];
+            Calendar calendar = Calendar.getInstance();
+            if (!scaleMeasurements.isEmpty()) {
+                calendar.setTime(scaleMeasurements.get(0).getDateTime());
+            }
+            calendar.set(calendar.get(Calendar.YEAR), 0, 1, 0, 0, 0);
+            calendar.set(calendar.MILLISECOND, 0);
+
+            // Copy all measurements from input parameter to member variable and insert
+            // an extra "null" entry when the year changes.
+            Date yearStart = calendar.getTime();
+            for (int i = 0; i < scaleMeasurements.size(); ++i) {
+                final ScaleMeasurement measurement = scaleMeasurements.get(i);
+
+                if (measurement.getDateTime().before(yearStart)) {
+                    this.scaleMeasurements.add(null);
+
+                    Calendar newCalendar = Calendar.getInstance();
+                    newCalendar.setTime(measurement.getDateTime());
+                    calendar.set(Calendar.YEAR, newCalendar.get(Calendar.YEAR));
+                    yearStart = calendar.getTime();
+                }
+
+                this.scaleMeasurements.add(measurement);
+            }
 
             notifyDataSetChanged();
         }
 
         @Override
-        public int getCount() {
-            return measurementsToShow;
-        }
+        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            LinearLayout row = new LinearLayout(getContext());
+            row.setLayoutParams(new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT));
 
-        @Override
-        public Object getItem(int position) {
-            return scaleMeasurements.get(position);
-        }
+            final int screenSize = getResources().getConfiguration()
+                    .screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK;
+            final boolean isSmallScreen =
+                    screenSize != Configuration.SCREENLAYOUT_SIZE_XLARGE
+                            && screenSize != Configuration.SCREENLAYOUT_SIZE_LARGE;
 
-        @Override
-        public long getItemId(int position) {
-            return scaleMeasurements.get(position).getId();
-        }
+            final int count = viewType == VIEW_TYPE_YEAR ? 1 : visibleMeasurements.size();
+            for (int i = 0; i < count; ++i) {
+                TextView column = new TextView(getContext());
+                column.setLayoutParams(new LinearLayout.LayoutParams(
+                        0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
 
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            // Create entries in stringCache if needed
-            if (stringCache[position][0] == null) {
-                ScaleMeasurement measurement = scaleMeasurements.get(position);
-                ScaleMeasurement prevMeasurement = null;
-                if (position + 1 < scaleMeasurements.size()) {
-                    prevMeasurement = scaleMeasurements.get(position + 1);
-                }
-
-                for (int i = 0; i < visibleMeasurements.size(); ++i) {
-                    visibleMeasurements.get(i).loadFrom(measurement, prevMeasurement);
-
-                    SpannableStringBuilder string = new SpannableStringBuilder();
-                    string.append(visibleMeasurements.get(i).getValueAsString(false));
-                    visibleMeasurements.get(i).appendDiffValue(string, true);
-
-                    stringCache[position][i] = string;
-                }
-            }
-
-            // Create view if needed
-            LinearLayout row;
-            if (convertView == null) {
-                row = new LinearLayout(getContext());
-
-                final int screenSize = getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK;
-                final boolean isSmallScreen =
-                        screenSize != Configuration.SCREENLAYOUT_SIZE_XLARGE
-                        && screenSize != Configuration.SCREENLAYOUT_SIZE_LARGE;
-
-                for (int i = 0; i < visibleMeasurements.size(); ++i) {
-                    TextView column = new TextView(getContext());
-                    LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
-                            LinearLayout.LayoutParams.WRAP_CONTENT,
-                            LinearLayout.LayoutParams.WRAP_CONTENT,
-                            1);
-                    layoutParams.width = 0;
-                    column.setLayoutParams(layoutParams);
+                if (viewType == VIEW_TYPE_MEASUREMENT) {
                     column.setMinLines(2);
                     column.setGravity(Gravity.CENTER_HORIZONTAL);
 
                     if (isSmallScreen) {
                         column.setTextSize(COMPLEX_UNIT_DIP, 9);
                     }
-                    row.addView(column);
                 }
+                else {
+                    column.setPadding(0, 10, 0, 10);
+                    column.setGravity(Gravity.CENTER);
+                    column.setTextSize(COMPLEX_UNIT_DIP, 16);
+                }
+
+                row.addView(column);
             }
-            else {
-                row = (LinearLayout) convertView;
+
+            return new ViewHolder(row);
+        }
+
+        @Override
+        public void onBindViewHolder(ViewHolder holder, int position) {
+            LinearLayout row = holder.measurementView;
+
+            final ScaleMeasurement measurement = scaleMeasurements.get(position);
+            if (measurement == null) {
+                ScaleMeasurement nextMeasurement = scaleMeasurements.get(position + 1);
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(nextMeasurement.getDateTime());
+
+                TextView column = (TextView) row.getChildAt(0);
+                column.setText(String.format("%d", calendar.get(Calendar.YEAR)));
+                return;
+            }
+
+            ScaleMeasurement prevMeasurement = null;
+            if (position + 1 < scaleMeasurements.size()) {
+                prevMeasurement = scaleMeasurements.get(position + 1);
+                if (prevMeasurement == null) {
+                    prevMeasurement = scaleMeasurements.get(position + 2);
+                }
             }
 
             // Fill view with data
             for (int i = 0; i < visibleMeasurements.size(); ++i) {
+                final MeasurementView view = visibleMeasurements.get(i);
+                view.loadFrom(measurement, prevMeasurement);
+
+                SpannableStringBuilder string = new SpannableStringBuilder();
+                string.append(view.getValueAsString(false));
+                view.appendDiffValue(string, true);
+
                 TextView column = (TextView) row.getChildAt(i);
-                column.setText(stringCache[position][i]);
+                column.setText(string);
             }
 
-            return row;
+            row.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(getContext(), DataEntryActivity.class);
+                    intent.putExtra(DataEntryActivity.EXTRA_ID, measurement.getId());
+                    startActivity(intent);
+                }
+            });
         }
 
         @Override
-        public boolean hasStableIds() {
-            return true;
+        public int getItemCount() {
+            return scaleMeasurements == null ? 0 : scaleMeasurements.size();
+        }
+
+        @Override
+        public int getItemViewType(int position) {
+            return scaleMeasurements.get(position) != null ? VIEW_TYPE_MEASUREMENT : VIEW_TYPE_YEAR;
         }
     }
 }
