@@ -242,4 +242,6 @@
     <string name="activity_level_moderate">Moderat</string>
     <string name="activity_level_heavy">Tung</string>
     <string name="activity_level_extreme">Ekstrem</string>
-</resources>
+<string name="permission_read_data_description">les openScale-data, inkludert brukerinfo, og alle lagrede målinger</string>
+    <string name="permission_read_data_label">Les openScale-data</string>
+    </resources>
