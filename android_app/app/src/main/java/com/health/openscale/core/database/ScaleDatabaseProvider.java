@@ -12,17 +12,13 @@
  *
  *    You should have received a copy of the GNU General Public License
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>
- */package com.health.openscale.core.export;
+ */package com.health.openscale.core.database;
 
-import android.content.ContentProvider;
-import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.net.Uri;
-import android.text.TextUtils;
-import android.util.Log;
 
 import com.health.openscale.core.OpenScale;
 
@@ -45,7 +41,7 @@ import com.health.openscale.core.OpenScale;
  *         retrieve all measurements for the supplied user ID.</li>
  * </ul>
  */
-public class OpenScaleContentProvider extends ContentProvider {
+public class ScaleDatabaseProvider extends android.content.ContentProvider {
     private static final UriMatcher uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
     private static final String AUTHORITY = "com.health.openscale.provider";

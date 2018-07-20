@@ -69,7 +69,7 @@
                 android:resource="@xml/file_provider_paths" />
         </provider>
         <provider
-            android:name=".core.export.OpenScaleContentProvider"
+            android:name=".core.database.ScaleDatabaseProvider"
             android:authorities="com.health.openscale.provider"
             android:enabled="true"
             android:exported="true"
