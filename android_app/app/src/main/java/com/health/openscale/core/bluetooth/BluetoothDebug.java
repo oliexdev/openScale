@@ -156,8 +156,8 @@ public class BluetoothDebug extends BluetoothCommunication {
             logService(service, false);
         }
 
-        disconnect(false);
         setBtStatus(BT_STATUS_CODE.BT_CONNECTION_LOST);
+        disconnect(false);
         return false;
     }
 

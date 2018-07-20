@@ -61,7 +61,7 @@ import static org.junit.Assert.assertEquals;
 
 @LargeTest
 @RunWith(AndroidJUnit4.class)
-public class UserAddTest {
+public class AddUserTest {
     private static final double DELTA = 1e-15;
 
     private Context context;
@@ -82,7 +82,7 @@ public class UserAddTest {
     }
 
     @After
-    public void verifyUserAdd() {
+    public void addUserVerification() {
         ScaleUser user = OpenScale.getInstance().getSelectedScaleUser();
 
         assertEquals("test", user.getUserName());
@@ -107,10 +107,12 @@ public class UserAddTest {
         goalDate.set(Calendar.HOUR_OF_DAY, 0);
 
         assertEquals(goalDate.getTime().getTime(), user.getGoalDate().getTime());
+
+        OpenScale.getInstance().deleteScaleUser(user.getId());
     }
 
     @Test
-    public void userAddTest() {
+    public void addUserTest() {
         mActivityTestRule.launchActivity(null);
 
         ViewInteraction editText = onView(
