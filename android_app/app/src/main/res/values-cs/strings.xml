@@ -148,4 +148,60 @@
     <string name="permission_bluetooth_info_title">Informace</string>
 
 <string name="label_ok">OK</string>
-    </resources>
+    <string name="label_add_measurement">Přidat měření</string>
+    <string name="label_share_subject">export dat do CSV souboru (%s)</string>
+
+    <string name="label_scale_unit">Jednotky vahy</string>
+    <string name="info_bluetooth_try_connection">Přípojit se k:</string>
+    <string name="info_bluetooth_connection_error">Neočekavaná chyba Bluetooth</string>
+    <string name="info_new_data_duplicated">měření za stejný den a čas už existuje</string>
+
+    <string name="info_no_selected_user">Žádný uživatel neexistuje. Založte nového uživatele v nastavení</string>
+    <string name="question_really_delete_all">Smazat všechny záznamy všech uživatelů?</string>
+    <string name="label_bluetooth_enable">Připojit se k váze při startu</string>
+    <string name="label_mergeWithLastMeasurement">Pokračovat za posledním měřením</string>
+    <string name="label_bluetooth_searching">Hledání vaše Bluetooth váhy</string>
+    <string name="label_bluetooth_searching_finished">Hledání skončilo</string>
+
+    <string name="label_enable_points">Bod pro data</string>
+
+    <string name="label_category_measurement_database">Databáze měření</string>
+
+    <string name="error_max_scale_users">Nalezen maximální počet uživatelů vah</string>
+    <string name="label_month_view">Měsíční přehled</string>
+    <string name="label_weeks_view">Týdenní přehled</string>
+
+    <string name="permission_not_granted">Oprávnění nebylo nastavené</string>
+    <string name="permission_read_data_label">Číst data openScale</string>
+    <string name="label_next">Další</string>
+    <string name="label_set_default_order">Nastavit implicitní pořadí</string>
+    <string name="language_default">Systémové nastavení</string>
+    <string name="label_language">Jazyk</string>
+    <string name="theme_light">Světlé</string>
+    <string name="theme_dark">Tmavé</string>
+    <string name="label_add_or_fix_translation">Přidat nové nebo přepsat existujíci</string>
+    <string name="label_overview_graph">Graf přehledu</string>
+    <string name="label_percent">Procent</string>
+    <string name="label_estimated">Průměr</string>
+    <string name="label_estimate_measurement_summary">Založen na hmotnosti, výšce, věku, pohlaví atd.</string>
+    <string name="label_auto_backup">Automatické zálohování</string>
+    <string name="label_auto_backup_schedule">Časování zálohování</string>
+    <string name="label_overwrite_backup">Přepsat předchozí zálohu</string>
+    <string name="label_daily">denně</string>
+    <string name="label_weekly">týdně</string>
+    <string name="label_monthly">měsíčně</string>
+    <string name="label_scale_not_supported">Není vaše váha podporovaná?</string>
+    <string name="label_development">Vývoj</string>
+    <string name="label_debug_log">Uložit krokovací log do souboru</string>
+    <string name="label_your_bluetooth_scale">Vaše Bluetooth váha</string>
+    <string name="label_select_measurement">Zvolte měření</string>
+    <string name="label_select_user">Zvolte uživatele</string>
+    <string name="label_configure_widget">Nastavit widget</string>
+    <string name="label_visceral_fat">Viscerální tuk</string>
+    <string name="label_measure_unit">Jednotky měření</string>
+    <string name="activity_level_sedentary">Málo pohyblivý</string>
+    <string name="activity_level_mild">Středně</string>
+    <string name="activity_level_moderate">Pruměrně</string>
+    <string name="activity_level_heavy">Hodně</string>
+    <string name="activity_level_extreme">Extrémně</string>
+</resources>
