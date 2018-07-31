@@ -92,7 +92,7 @@
     <string name="label_scale_unit">Unidade de medida</string>
     <string name="label_smartUserAssign">Identificação inteligente de utilizador</string>
     <string name="label_time">Hora</string>
-    <string name="label_title_goal">objetivo</string>
+    <string name="label_title_goal">Objetivo</string>
     <string name="label_title_last_measurement">última medida</string>
     <string name="label_title_user">utilizador</string>
     <string name="label_user_name">Nome</string>
@@ -190,4 +190,5 @@
     <string name="label_percent">Percentagem</string>
     <string name="label_estimated">Estimada</string>
     <string name="label_estimate_measurement_summary">Baseado no peso, altura, idade, sexo, etc.</string>
-</resources>
+<string name="label_add_measurement">Adicionar medição</string>
+    </resources>
