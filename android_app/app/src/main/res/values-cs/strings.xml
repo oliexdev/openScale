@@ -44,7 +44,7 @@
     <string name="label_time">Čas</string>
     <string name="label_birthday">Narozeniny</string>
     <string name="label_user_name">Jméno</string>
-    <string name="label_height">Tělesná hmotnost</string>
+    <string name="label_height">Výška</string>
     <string name="label_gender">Pohlaví</string>
     <string name="label_male">Muž</string>
     <string name="label_female">Žena</string>
