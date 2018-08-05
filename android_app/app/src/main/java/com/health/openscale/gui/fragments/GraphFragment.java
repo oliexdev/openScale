@@ -333,6 +333,8 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         PolynomialFitter polyFitter = new PolynomialFitter(Math.min(regressLineOrder, 100));
 
+        float maxYValue = 0;
+
         for (MeasurementView view : measurementViews) {
             if (view instanceof FloatMeasurementView) {
                 FloatMeasurementView measurementView = (FloatMeasurementView) view;
@@ -383,6 +385,11 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                     if (avgBin.size() > 1) {
                         avgValue.setLabel(String.format("Ø %.2f", avgValue.getY()));
                     }
+
+                    if (avgValue.getY() > maxYValue) {
+                        maxYValue = avgValue.getY();
+                    }
+
                     valuesStack.push(avgValue);
                     pointIndexScaleMeasurementList.add(indexScaleMeasurement[i]);
                 }
@@ -459,6 +466,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         chartBottom.setLineChartData(lineData);
 
         chartBottom.setCurrentViewport(defaultTopViewport);
+        chartBottom.setMaximumViewport(new Viewport(0, maxYValue + (maxYValue / 100) * 20, calDays.getMaximum(field)+1, 0));
     }
 
     private void generateColumnData()
@@ -485,7 +493,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         for (int i=0; i<12; i++) {
             normNumOfMonth[i] = (numOfMonth[i] - min) / (float)(max - min); // normalize data to [0..1]
 
-            if (normNumOfMonth[i] != 1.0f && normNumOfMonth[i] != 0.0f) {
+            if (normNumOfMonth[i] != 0.0f) {
                 normNumOfMonth[i] += heightOffset;
             }
         }
