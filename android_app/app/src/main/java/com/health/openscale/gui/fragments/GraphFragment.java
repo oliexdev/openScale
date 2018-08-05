@@ -465,6 +465,31 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     {
         int[] numOfMonth = openScale.getCountsOfMonth(calYears.get(Calendar.YEAR));
 
+        float[] normNumOfMonth = new float[12];
+
+        int max = 0;
+        int min = Integer.MAX_VALUE;
+
+        for (int i=0; i<12; i++) {
+            if (numOfMonth[i] > max) {
+                max = numOfMonth[i];
+            }
+
+            if (numOfMonth[i] < min) {
+                min = numOfMonth[i];
+            }
+        }
+
+        final float heightOffset = 0.2f; // increase month selector minimum height
+
+        for (int i=0; i<12; i++) {
+            normNumOfMonth[i] = (numOfMonth[i] - min) / (float)(max - min); // normalize data to [0..1]
+
+            if (normNumOfMonth[i] != 1.0f && normNumOfMonth[i] != 0.0f) {
+                normNumOfMonth[i] += heightOffset;
+            }
+        }
+
         Calendar calMonths = Calendar.getInstance();
         calMonths.set(Calendar.MONTH, Calendar.JANUARY);
 
@@ -478,7 +503,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
             axisValues.add(new AxisValue(i, month_name.toCharArray()));
             List<SubcolumnValue> values = new ArrayList<>();
-            values.add(new SubcolumnValue(numOfMonth[i], ChartUtils.COLORS[i % ChartUtils.COLORS.length]));
+            values.add(new SubcolumnValue(normNumOfMonth[i], ChartUtils.COLORS[i % ChartUtils.COLORS.length]).setLabel(Integer.toString(numOfMonth[i])));
 
             columns.add(new Column(values).setHasLabelsOnlyForSelected(true));
 
