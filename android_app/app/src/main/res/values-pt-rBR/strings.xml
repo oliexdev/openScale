@@ -143,7 +143,7 @@
     <string name="label_theme">Tema</string>
 
     <string name="label_bt_device_no_support">dispositivo não suportado</string>
-    <string name="error_user_name_too_short">Erro: nome de utilizador tem de ter mais de dois caracteres</string>
+    <string name="error_user_name_too_short">Erro: nome de usuário tem que ter 3 ou mais caracteres</string>
     <string name="label_help">Ajuda</string>
 
     <string name="label_feedback_message_enjoying">Gostou do openScale?</string>
