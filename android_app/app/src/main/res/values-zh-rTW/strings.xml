@@ -71,7 +71,7 @@
     <string name="error_exporting">滙出出錯</string>
     <string name="error_importing">滙入出錯</string>
     <string name="error_user_name_required">錯誤: 必須輸入名字</string>
-    <string name="error_user_name_too_short">錯誤: 名字必須三個字塊或以上</string>
+    <string name="error_user_name_too_short">錯誤: 名字必須三個字元或以上</string>
     <string name="error_height_required">錯誤: 必須輸入身高</string>
     <string name="error_initial_weight_required">錯誤: 必須輸入初始體重</string>
     <string name="error_goal_weight_required">錯誤: 必須輸入目標體重</string>
@@ -85,8 +85,8 @@
     <string name="info_is_visible">可表示</string>
     <string name="info_is_not_visible">不表示</string>
     <string name="info_is_enable">已啟用</string>
-    <string name="info_is_not_enable">不啟用</string>
-    <string name="info_is_not_available">不提供</string>
+    <string name="info_is_not_enable">已停用</string>
+    <string name="info_is_not_available">無法提供</string>
     <string name="info_bluetooth_try_connection">連結中：</string>
     <string name="info_bluetooth_connection_lost">藍芽連結中斷</string>
     <string name="info_bluetooth_no_device">找不到藍芽設備</string>
@@ -108,7 +108,7 @@
     <string name="label_bluetooth_title">藍芽</string>
     <string name="label_bluetooth_enable">開始時與量重器連結</string>
     <string name="label_mergeWithLastMeasurement">滙合舊有測量數值</string>
-    <string name="label_bluetooth_searching">藍芽量重器搜尋中</string>
+    <string name="label_bluetooth_searching">正在搜尋您的藍芽量重器</string>
     <string name="label_bluetooth_searching_finished">搜尋完成</string>
 
     <string name="label_enable_labels">數據標記</string>
@@ -127,7 +127,7 @@
     <string name="label_theme">佈景</string>
 
     <string name="label_reminder">提示</string>
-    <string name="label_reminder_weekdays">星期一至五</string>
+    <string name="label_reminder_weekdays">天</string>
     <string name="label_reminder_time">時間</string>
     <string name="label_reminder_notify_text">提示文字</string>
     <string name="default_value_reminder_notify_text">到期量體重了</string>
@@ -147,7 +147,7 @@
     <string name="label_backup">備份</string>
     <string name="label_export_dir">滙出資料夾</string>
     <string name="label_not_found">尋找不到</string>
-    <string name="label_ignoreOutOfRange">超出範圍的數據無效</string>
+    <string name="label_ignoreOutOfRange">忽略超出範圍的資料</string>
     <string name="label_initial_weight">初始體重</string>
     <string name="label_regression_line">體重回歸線</string>
     <string name="label_regression_line_degree">回歸線曲度</string>
