@@ -1,6 +1,7 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <string name="app_name" translatable="false">openScale</string>
     <string name="title_overview">Overzicht</string>
     <string name="title_graph">Grafieken</string>
     <string name="title_table">Tabel</string>
@@ -8,6 +9,7 @@
     <string name="title_users">Gebruikers</string>
     <string name="title_measurements">Metingen</string>
     <string name="title_about">Info</string>
+    <string name="title_general">Algemeen</string>
 
     <string name="action_settings">Instellingen</string>
     <string name="action_bluetooth_status">Bluetooth Status</string>
@@ -20,6 +22,9 @@
     <string name="label_no">Nee</string>
     <string name="label_delete">Verwijderen</string>
     <string name="label_add_user">Gebruiker toevoegen</string>
+    <string name="label_add_measurement">Meeting toevoegen</string>
+    <string name="label_share">Delen</string>
+    <string name="label_share_subject">CSV gegevens exporteren (%s)</string>
 
     <string name="label_weight">Gewicht</string>
     <string name="label_bmi">Body mass index (BMI)</string>
@@ -58,7 +63,6 @@
     <string name="label_goal_weight">Streefgewicht</string>
     <string name="label_goal_date">Streefdatum</string>
 
-
     <string name="label_title_user">Gebruiker</string>
     <string name="label_title_last_measurement">Laatste meting</string>
     <string name="label_title_goal">Doel</string>
@@ -72,6 +76,7 @@
     <string name="error_exporting">Fout met exporteren</string>
     <string name="error_importing">Fout met importeren</string>
     <string name="error_user_name_required">Fout: Naam vereist</string>
+    <string name="error_user_name_too_short">Fout: Naam moet 3 karakters of meer zijn</string>
     <string name="error_height_required">Fout: Lichaamslengte vereist</string>
     <string name="error_initial_weight_required">Fout: Startgewicht vereist</string>
     <string name="error_goal_weight_required">Fout: Streefgewicht vereist</string>
@@ -90,10 +95,12 @@
     <string name="info_bluetooth_try_connection">Verbinden met:</string>
     <string name="info_bluetooth_connection_lost">Bluetooth-verbinding verloren</string>
     <string name="info_bluetooth_no_device">Geen Bluetooth-apparaat gevonden</string>
-    <string name="info_bluetooth_connection_successful">Verbinding gemaakt</string>
+    <string name="info_bluetooth_no_device_set">Geen Bluetooth-apparaat geselecteerd</string>
+    -<string name="info_bluetooth_connection_successful">Verbinding gemaakt</string>
     <string name="info_bluetooth_init">Initialiseer Bluetooth-apparaat</string>
     <string name="info_bluetooth_connection_error">Onverwachte Bluetooth fout</string>
     <string name="info_new_data_added">%1$.2f%2$s [%3$s] aan %4$s toegevoegd</string>
+    <string name="info_new_data_duplicated">meting met dezelfde datum en tijd bestaat al</string>
 
     <string name="info_enter_user_name">Uw naam</string>
     <string name="info_no_selected_user">Geen gebruiker beschikbaar. Gelieve een gebruiker aan te maken in instellingen.</string>
@@ -105,12 +112,14 @@
 
     <string name="label_bluetooth_title">Bluetooth</string>
     <string name="label_bluetooth_enable">Verbinden met weegschaal bij opstarten</string>
+    <string name="label_mergeWithLastMeasurement">Voeg samen met de laaste meting</string>
     <string name="label_bluetooth_searching">Zoeken naar uw Bluetooth weegschaal</string>
-
+    <string name="label_bluetooth_searching_finished">Zoeken voltooid</string>
+   
     <string name="label_enable_labels">Gegevenslabel</string>
     <string name="label_enable_points">Gegevenspunt</string>
 
-    <string name="label_delete_confirmation">Bevestiging verwijderen</string>
+        <string name="label_delete_confirmation">Bevestiging verwijderen</string>
 
     <string name="label_category_measurement_database">Metingen database</string>
 
@@ -118,7 +127,9 @@
     <string name="label_website">Website</string>
     <string name="label_license">Licentie</string>
 
-    <string name="label_automatic">auto</string>
+    <string name="label_automatic">automatisch</string>
+    
+    <string name="label_theme">Thema</string>
 
     <string name="label_reminder">Herinnering</string>
     <string name="label_reminder_weekdays">Werkdagen</string>
@@ -146,26 +157,7 @@
     <string name="label_regression_line">Regressie gewichtslijn</string>
     <string name="label_regression_line_degree">Regressie polynoomlijn</string>
     <string name="label_goal_line">Doel lijn</string>
-
-
-    <string name="error_max_scale_users">Max. aantal gelijktijdige weegschaal gebruikers is bereikt</string>
-    <string name="info_step_on_scale">Stap alsjeblieft met blote voeten op de weegschaal voor een meting</string>
-    <string name="info_measuring">Gewicht meten: %.2f</string>
-
-    <string name="title_general">Algemeen</string>
-
-    <string name="label_share">Delen</string>
-    <string name="label_share_subject">CSV data exporteren (%s)</string>
-
-    <string name="error_user_name_too_short">Fout: Naam dient minimaal 3 karakters lang te zijn</string>
-    <string name="info_bluetooth_no_device_set">Geen Bluetooth apparaat geselecteerd</string>
-    <string name="info_new_data_duplicated">Meting met een zelfde datum en tijd bestaat al</string>
-
-    <string name="label_mergeWithLastMeasurement">Samenvoegen met laatste meting</string>
-    <string name="label_bluetooth_searching_finished">Zoeken voltooid</string>
-    <string name="label_theme">Thema</string>
-
-    <string name="label_help">Help</string>
+    <string name="label_help">Hulp</string>
 
     <string name="label_feedback_message_enjoying">Positief over openScale?</string>
     <string name="label_feedback_message_rate_app">Zou u misschien ook uw ervaringen willen delen op GooglePlay of op Github?</string>
@@ -175,10 +167,11 @@
     <string name="label_feedback_message_positive">Ok</string>
     <string name="label_feedback_message_negative">Nee, bedankt</string>
 
-    <string name="customactivityoncrash_error_activity_error_occurred_explanation">Er heeft zich een onverwachte fout voorgedaan.
-\n
-\nGelieve dit te melden inclusief details op de volgende website:
-\nhttps://github.com/oliexdev/openScale/issues</string>
+    <string name="error_max_scale_users">Max. aantal gelijktijdige weegschaal gebruikers is bereikt</string>
+    <string name="info_step_on_scale">Stap alsjeblieft met blote voeten op de weegschaal voor een meting</string>
+    <string name="info_measuring">Gewicht meten: %.2f</string>
+
+   <string name="customactivityoncrash_error_activity_error_occurred_explanation">Er heeft zich een onverwachte fout voorgedaan.\nGelieve dit te melden inclusief details op de volgende website: \nhttps://github.com/oliexdev/openScale/issues</string>
     <string name="customactivityoncrash_error_activity_restart_app">Herstart app</string>
     <string name="customactivityoncrash_error_activity_close_app">Sluit app</string>
     <string name="customactivityoncrash_error_activity_error_details">Fout details</string>
@@ -194,17 +187,15 @@
     <string name="label_month_view">Maandelijkse weergave</string>
     <string name="label_weeks_view">Wekelijkse weergave</string>
 
-    <string name="permission_not_granted">Geen toestemming verleend</string>
+     <string name="permission_not_granted">Geen toestemming verleend</string>
     <string name="permission_bluetooth_info">"Locatie toestemming is nodig om te kunnen zoeken naar Bluetooth apparaten. Dit kan weer ingetrokken worden zodra  het apparaat is gevonden."</string>
     <string name="permission_bluetooth_info_title">Info</string>
+    <string name="permission_read_data_description">lees openScale gegevens, inclusief gebruikersinformatie en alle bewaarde metingen</string>
+    <string name="permission_read_data_label">Lees openScale Gegevens</string>
     <string name="label_next">Volgende</string>
+    <string name="label_long_press_drag_reorder">Indrukken en slepen om metingen te herordenen</string>    <string name="label_click_measurement_configure">Click measurement to configure</string>
     <string name="label_set_default_order">Stel standaard volgorde in</string>
     <string name="label_export_overwrite">Vorige export \"%s\" overschrijven?</string>
-
-
-<string name="label_add_measurement">Meting toevoegen</string>
-    <string name="label_long_press_drag_reorder">Indrukken en slepen om metingen te herordenen</string>
-    <string name="label_click_measurement_configure">Tik op metingen om aan te passen</string>
     <string name="label_include_in_overview_graph">Toevoegen aan overzichtsgrafiek</string>
     <string name="label_measurement_in_percent">Meting in %</string>
     <string name="label_estimate_measurement">Geschatte meting</string>
@@ -233,9 +224,23 @@
     <string name="label_select_measurement">Meting selecteren</string>
     <string name="label_select_user">Gebruiker selecteren</string>
     <string name="label_configure_widget">Widget configureren</string>
+    <string name="label_visceral_fat">Visceraal vet</string>
     <string name="label_chest">Borstomtrek</string>
     <string name="label_thigh">Dijbeen omtrek</string>
     <string name="label_biceps">Biceps omtrek</string>
     <string name="label_neck">Nek omtrek</string>
+    <string name="label_fat_caliper">Lichaamsvet schuifmaat</string>
+    <string name="label_caliper1_male">Borst huidplooi</string>
+    <string name="label_caliper2_male">Abdominal huidplooi</string>
+    <string name="label_caliper3_male">Dijbeen huidplooi</string>
+    <string name="label_caliper1_female">Triceps huidplooi</string>
+    <string name="label_caliper2_female">Abdominal skinfold</string>
+    <string name="label_caliper3_female">Heup huidplooi</string>
     <string name="label_measure_unit">Meeteenheid</string>
-    </resources>
+    <string name="label_activity_level">Activiteitsniveau</string>
+    <string name="activity_level_sedentary">Zeer laag activiteitsniveau</string>
+    <string name="activity_level_mild"Laag activiteitsniveau</string>
+    <string name="activity_level_moderate">Gemiddelde activiteitsniveau</string>
+    <string name="activity_level_heavy">Hoog activiteitsniveau</string>
+    <string name="activity_level_extreme">Zeer hoog activiteitsniveau</string>
+</resources>
