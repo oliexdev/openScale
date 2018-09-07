@@ -119,7 +119,7 @@
     <string name="label_automatic">automático</string>
 
     <string name="label_reminder">Recordatorio</string>
-    <string name="label_reminder_weekdays">Días de la semana</string>
+    <string name="label_reminder_weekdays">Días</string>
     <string name="label_reminder_time">Hora</string>
     <string name="label_reminder_notify_text">Texto de la notificación</string>
     <string name="default_value_reminder_notify_text">Es hora de pesarse</string>
@@ -231,4 +231,29 @@
 <string name="label_long_press_drag_reorder">Mantén pulsado y arrastra para reordenar</string>
     <string name="label_click_measurement_configure">Pulsa en la medida para configurar</string>
     <string name="label_your_bluetooth_scale">"Báscula Bluetooth "</string>
+<string name="label_add_measurement">"Añadir medición "</string>
+    <string name="permission_read_data_description">"leer los datos de openScale, incluyendo la información de usuarios y todas las mediciones guardadas "</string>
+    <string name="permission_read_data_label">Leer datos de openScale</string>
+    <string name="label_select_measurement">"Elegir medición "</string>
+    <string name="label_select_user">Elegir usuario</string>
+    <string name="label_configure_widget">Configurar widget</string>
+    <string name="label_visceral_fat">Grasa visceral</string>
+    <string name="label_chest">Circunferencia del pecho</string>
+    <string name="label_thigh">Circunferencia del muslo</string>
+    <string name="label_biceps">Circunferencia del bicep</string>
+    <string name="label_neck">Circunferencia del cuello</string>
+    <string name="label_fat_caliper">Calibrador de grasa corporal</string>
+    <string name="label_caliper1_male">Pliegues del pecho</string>
+    <string name="label_caliper2_male">Pliegues abdominales</string>
+    <string name="label_caliper3_male">Pliegues del muslo</string>
+    <string name="label_caliper1_female">Pliegues del triceps</string>
+    <string name="label_caliper2_female">Pliegue abdominal</string>
+    <string name="label_caliper3_female">Pliegue de la cadera</string>
+    <string name="label_measure_unit">Unidad de medida</string>
+    <string name="label_activity_level">"Nivel de actividad "</string>
+    <string name="activity_level_sedentary">Sedentario</string>
+    <string name="activity_level_mild">Leve</string>
+    <string name="activity_level_moderate">Moderado</string>
+    <string name="activity_level_heavy">Intenso</string>
+    <string name="activity_level_extreme">Extremo</string>
 </resources>
