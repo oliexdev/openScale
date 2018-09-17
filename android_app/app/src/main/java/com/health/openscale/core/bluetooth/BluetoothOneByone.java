@@ -30,16 +30,13 @@ import java.util.UUID;
 import timber.log.Timber;
 
 public class BluetoothOneByone extends BluetoothCommunication {
-    private final UUID WEIGHT_MEASUREMENT_SERVICE_BODY_COMPOSITION = UUID.fromString("0000181B-0000-1000-8000-00805f9b34fb");
-
-    private final UUID WEIGHT_MEASUREMENT_CHARACTERISTIC_BODY_COMPOSITION = UUID.fromString("00002A9C-0000-1000-8000-00805f9b34fb"); // read, indication
-    private final UUID WEIGHT_MEASUREMENT_CHARACTERISTIC_BODY_COMPOSITION_ALT = UUID.fromString("0000fff4-0000-1000-8000-00805f9b34fb"); // notify
-
     private final UUID WEIGHT_MEASUREMENT_SERVICE = UUID.fromString("0000fff0-0000-1000-8000-00805f9b34fb");
+
+    private final UUID WEIGHT_MEASUREMENT_CHARACTERISTIC_BODY_COMPOSITION = UUID.fromString("0000fff4-0000-1000-8000-00805f9b34fb"); // notify
+
     private final UUID CMD_MEASUREMENT_CHARACTERISTIC = UUID.fromString("0000fff1-0000-1000-8000-00805f9b34fb"); // write only
     private final UUID WEIGHT_MEASUREMENT_CONFIG = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
 
-    private float lastWeight;
 
     public BluetoothOneByone(Context context) {
         super(context);
@@ -54,18 +51,9 @@ public class BluetoothOneByone extends BluetoothCommunication {
     protected boolean nextInitCmd(int stateNr) {
         switch (stateNr) {
             case 0:
-                lastWeight = 0;
-
-                if (hasBluetoothGattService(WEIGHT_MEASUREMENT_SERVICE_BODY_COMPOSITION)) {
-                    setIndicationOn(WEIGHT_MEASUREMENT_SERVICE_BODY_COMPOSITION,
+                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE,
                             WEIGHT_MEASUREMENT_CHARACTERISTIC_BODY_COMPOSITION,
                             WEIGHT_MEASUREMENT_CONFIG);
-                }
-                else {
-                    setNotificationOn(WEIGHT_MEASUREMENT_SERVICE,
-                            WEIGHT_MEASUREMENT_CHARACTERISTIC_BODY_COMPOSITION_ALT,
-                            WEIGHT_MEASUREMENT_CONFIG);
-                }
                 break;
             case 1:
                 ScaleUser currentUser = OpenScale.getInstance().getSelectedScaleUser();
@@ -110,49 +98,61 @@ public class BluetoothOneByone extends BluetoothCommunication {
             return;
         }
 
-        final UUID uuid = gattCharacteristic.getUuid();
         // if data is valid data
-        if (data.length == 20
-                && uuid.equals(WEIGHT_MEASUREMENT_CHARACTERISTIC_BODY_COMPOSITION)) {
+        if (data.length == 20 && data[0] == 0xcf) {
             parseBytes(data);
-        }
-        else if (data.length == 11
-                && uuid.equals(WEIGHT_MEASUREMENT_CHARACTERISTIC_BODY_COMPOSITION_ALT)) {
-            parseBytesAlt(data);
         }
     }
 
     private void parseBytes(byte[] weightBytes) {
-        float weight = Converters.fromUnsignedInt16Le(weightBytes, 11) / 100.0f;
-        int impedance = Converters.fromUnsignedInt24Le(weightBytes, 15);
-
-        Timber.d("weight: %.2f, impedance: %d", weight, impedance);
-
-        // This check should be a bit more elaborate, but it works for now...
-        if (weight != lastWeight) {
-            lastWeight = weight;
-
-            ScaleMeasurement scaleBtData = new ScaleMeasurement();
-            scaleBtData.setWeight(weight);
-
-            addScaleData(scaleBtData);
-        }
-    }
-
-    private void parseBytesAlt(byte[] weightBytes) {
         float weight = Converters.fromUnsignedInt16Le(weightBytes, 3) / 100.0f;
-        boolean done = (weightBytes[9] & 0xff) == 0;
+        int impedanceCoeff = Converters.fromUnsignedInt24Le(weightBytes, 5);
+        int impedanceValue = weightBytes[5] + weightBytes[6] + weightBytes[7];
 
-        Timber.d("weight: %.2f%s", weight, done ? " (done)" : "");
+        final ScaleUser scaleUser = OpenScale.getInstance().getSelectedScaleUser();
 
-        // This check should be a bit more elaborate, but it works for now...
-        if (done && weight != lastWeight) {
-            lastWeight = weight;
+        Timber.d("received bytes [%s]", byteInHex(weightBytes));
+        Timber.d("received decrypted bytes [weight: %.2f, impedanceCoeff: %d, impedanceValue: %d]", weight, impedanceCoeff, impedanceValue);
+        Timber.d("user [%s]", scaleUser);
 
-            ScaleMeasurement scaleBtData = new ScaleMeasurement();
-            scaleBtData.setWeight(weight);
+        int sex = 0, peopleType = 0;
 
-            addScaleData(scaleBtData);
+        if (scaleUser.getGender() == Converters.Gender.MALE) {
+            sex = 1;
+        } else {
+            sex = 0;
         }
+
+        switch (scaleUser.getActivityLevel()) {
+            case SEDENTARY:
+                peopleType = 0;
+                break;
+            case MILD:
+                peopleType = 0;
+                break;
+            case MODERATE:
+                peopleType = 1;
+                break;
+            case HEAVY:
+                peopleType = 2;
+                break;
+            case EXTREME:
+                peopleType = 2;
+                break;
+        }
+
+        //HoltekLib holtekLib = new HoltekLib(sex, scaleUser.getAge(), (int)scaleUser.getBodyHeight(), peopleType);
+
+        ScaleMeasurement scaleBtData = new ScaleMeasurement();
+        scaleBtData.setWeight(weight);
+        /*scaleBtData.setFat(holtekLib.getBodyFat(weight, impedanceCoeff));
+        scaleBtData.setWater(holtekLib.getWater(scaleBtData.getFat()));
+        scaleBtData.setBone(holtekLib.getBoneMass(weight, impedanceValue));
+        scaleBtData.setVisceralFat(holtekLib.getVisceralFat(weight));
+        scaleBtData.setMuscle(holtekLib.getMuscle(weight, scaleBtData.getFat(), scaleBtData.getBone()));*/
+
+        Timber.d("scale measurement [%s]", scaleBtData);
+
+        addScaleData(scaleBtData);
     }
 }
