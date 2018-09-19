@@ -99,7 +99,7 @@ public class BluetoothOneByone extends BluetoothCommunication {
         }
 
         // if data is valid data
-        if (data.length == 20 && data[0] == 0xcf) {
+        if (data.length == 20 && data[0] == (byte)0xcf) {
             parseBytes(data);
         }
     }
