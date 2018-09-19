@@ -12,7 +12,8 @@
  *
  *    You should have received a copy of the GNU General Public License
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>
- */package com.health.openscale.core.database;
+ */
+package com.health.openscale.core.database;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -20,6 +21,7 @@ import android.content.UriMatcher;
 import android.database.Cursor;
 import android.net.Uri;
 
+import com.health.openscale.BuildConfig;
 import com.health.openscale.core.OpenScale;
 
 /**
@@ -44,7 +46,7 @@ import com.health.openscale.core.OpenScale;
 public class ScaleDatabaseProvider extends android.content.ContentProvider {
     private static final UriMatcher uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
-    private static final String AUTHORITY = "com.health.openscale.provider";
+    private static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".provider";
 
     private static final int MATCH_TYPE_USER_LIST = 1;
     private static final int MATCH_TYPE_USER_ENTRY = 2;
@@ -61,13 +63,13 @@ public class ScaleDatabaseProvider extends android.content.ContentProvider {
     public String getType(Uri uri) {
         switch (uriMatcher.match(uri)) {
             case MATCH_TYPE_USER_LIST:
-                return "vnd.android.cursor.dir/vnd.com.health.openscale.provider.user";
+                return "vnd.android.cursor.dir/vnd." + AUTHORITY + ".user";
 
             case MATCH_TYPE_USER_ENTRY:
-                return "vnd.android.cursor.item/vnd.com.health.openscale.provider.user";
+                return "vnd.android.cursor.item/vnd." + AUTHORITY + ".user";
 
             case MATCH_TYPE_USER_MEASUREMENTS:
-                return "vnd.android.cursor.item/vnd.com.health.openscale.provider.measurement";
+                return "vnd.android.cursor.item/vnd." + AUTHORITY + ".measurement";
 
             default:
                 return null;

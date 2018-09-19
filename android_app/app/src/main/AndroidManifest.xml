@@ -13,7 +13,7 @@
          Marked "dangerous" so that explicit user approval is required to read this data, not
          just the permission implied from installing the app from the Play Store. -->
     <permission
-        android:name="com.health.openscale.READ_DATA"
+        android:name="${applicationId}.READ_DATA"
         android:description="@string/permission_read_data_description"
         android:label="@string/permission_read_data_label"
         android:protectionLevel="dangerous" />
@@ -70,10 +70,10 @@
         </provider>
         <provider
             android:name=".core.database.ScaleDatabaseProvider"
-            android:authorities="com.health.openscale.provider"
+            android:authorities="${applicationId}.provider"
             android:enabled="true"
             android:exported="true"
-            android:readPermission="com.health.openscale.READ_DATA">
+            android:readPermission="${applicationId}.READ_DATA">
         </provider>
     </application>
 
