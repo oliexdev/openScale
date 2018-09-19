@@ -1,5 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<resources><string name="title_overview">Xeral</string>
+<resources>
+    <string name="title_overview">Xeral</string>
     <string name="title_graph">Gráfico</string>
     <string name="title_table">Táboa</string>
     <string name="title_statistics">Estatísticas</string>
@@ -34,9 +35,9 @@
     <string name="label_smartUserAssign">Asignación intelixente do usuario</string>
 
     <plurals name="label_days">
-	<item quantity="one">%d día</item>
-	<item quantity="other">%d días</item>
-</plurals>
+        <item quantity="one">%d día</item>
+        <item quantity="other">%d días</item>
+    </plurals>
     <string name="label_last_week">Media da última semana</string>
     <string name="label_last_month">Media do último mes</string>
     <string name="label_weight_difference">Diferencia de peso</string>
@@ -216,4 +217,4 @@
     <string name="label_your_bluetooth_scale">A súa báscula Bluetooth</string>
     <string name="label_select_measurement">Seleccione medida</string>
     <string name="label_select_user">Seleccione usuario</string>
-    </resources>
+</resources>

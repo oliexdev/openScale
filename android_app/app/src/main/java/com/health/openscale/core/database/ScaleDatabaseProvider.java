@@ -93,11 +93,13 @@ public class ScaleDatabaseProvider extends android.content.ContentProvider {
                 break;
 
             case MATCH_TYPE_USER_ENTRY:
-                cursor = OpenScale.getInstance().getScaleUserCursor(Integer.valueOf(uri.getPathSegments().get(1)));
+                cursor = OpenScale.getInstance().getScaleUserCursor(
+                        Integer.valueOf(uri.getPathSegments().get(1)));
                 break;
 
             case MATCH_TYPE_USER_MEASUREMENTS:
-                cursor = OpenScale.getInstance().getScaleMeasurementListCursor(Integer.valueOf(uri.getPathSegments().get(1)));
+                cursor = OpenScale.getInstance().getScaleMeasurementListCursor(
+                        Integer.valueOf(uri.getPathSegments().get(1)));
                 break;
 
             default:

@@ -200,12 +200,12 @@
     <string name="label_development">Utveckling</string>
     <string name="label_debug_log">Spara felsökningslogg till fil</string>
     <string name="label_your_bluetooth_scale">Din Bluetooth-våg</string>
-<string name="label_long_press_drag_reorder">Tryck, håll och dra mätvärden för att ordna om</string>
+    <string name="label_long_press_drag_reorder">Tryck, håll och dra mätvärden för att ordna om</string>
     <string name="label_click_measurement_configure">Klicka på mätvärde för att konfigurera</string>
     <string name="label_select_measurement">Välj mätvärde</string>
     <string name="label_select_user">Välj användare</string>
     <string name="label_configure_widget">Konfigurera widget</string>
-<string name="label_add_measurement">Lägg till mätning</string>
+    <string name="label_add_measurement">Lägg till mätning</string>
     <string name="label_visceral_fat">Visceralt fett</string>
     <string name="label_chest">Bröstomkrets</string>
     <string name="label_thigh">Låromkrets</string>
@@ -220,11 +220,11 @@
     <string name="label_caliper3_female">Höfthudveck</string>
     <string name="label_measure_unit">Måttenhet</string>
     <string name="label_activity_level">Aktivitetsnivå</string>
-<string name="activity_level_sedentary">Stillasittande</string>
+    <string name="activity_level_sedentary">Stillasittande</string>
     <string name="activity_level_mild">Lätt</string>
     <string name="activity_level_moderate">Medelhård</string>
     <string name="activity_level_heavy">Hård</string>
     <string name="activity_level_extreme">Extrem</string>
-<string name="permission_read_data_description">läs openScale-data, inklusive användarinformation och alla sparade mätningar</string>
+    <string name="permission_read_data_description">läs openScale-data, inklusive användarinformation och alla sparade mätningar</string>
     <string name="permission_read_data_label">Läs openScale-data</string>
-    </resources>
+</resources>

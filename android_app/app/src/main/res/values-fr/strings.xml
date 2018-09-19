@@ -1,6 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <resources>
-
     <string name="title_overview">Vue d\'ensemble</string>
     <string name="title_graph">Diagramme</string>
     <string name="title_table">Tableau</string>
@@ -120,7 +119,7 @@
     <string name="title_statistics">Statistiques</string>
     <string name="label_bone">Masse osseuse</string>
     <string name="label_bmr">Taux métabolique basal (BMR)</string>
-<string name="title_general">Général</string>
+    <string name="title_general">Général</string>
 
     <string name="info_bluetooth_no_device_set">Aucun appareil Bluetooth sélectionné</string>
     <string name="label_website">Site web</string>
@@ -169,7 +168,7 @@
     <string name="label_percent">Pourcent</string>
     <string name="label_estimated">Estimé</string>
     <string name="label_estimate_measurement_summary">Basé sur le poids, la taille, l\'âge, le genre, etc.</string>
-<string name="open_drawer">ouvrir</string>
+    <string name="open_drawer">ouvrir</string>
     <string name="close_drawer">fermer</string>
 
     <string name="label_share_subject">Exporter comme fichier CSV (%s)</string>
@@ -223,7 +222,7 @@
     <string name="label_click_to_help_add_support">Cliquer ici pour contribuer</string>
     <string name="label_development">Développement</string>
     <string name="label_debug_log">Enregistrez les données de débogage dans un fichier</string>
-<string name="label_add_measurement">Ajouter une mesure</string>
+    <string name="label_add_measurement">Ajouter une mesure</string>
     <string name="label_long_press_drag_reorder">Effectuez un appui long suivi d\'un déplacement des mesures pour les réorganiser</string>
     <string name="label_click_measurement_configure">Cliquez sur une mesure pour la configurer</string>
     <string name="label_your_bluetooth_scale">Votre pèse-personne Bluetooth</string>

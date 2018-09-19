@@ -113,7 +113,7 @@
     <string name="label_mergeWithLastMeasurement">Voeg samen met de laaste meting</string>
     <string name="label_bluetooth_searching">Zoeken naar uw Bluetooth weegschaal</string>
     <string name="label_bluetooth_searching_finished">Zoeken voltooid</string>
-   
+
     <string name="label_enable_labels">Gegevenslabel</string>
     <string name="label_enable_points">Gegevenspunt</string>
 
@@ -126,7 +126,7 @@
     <string name="label_license">Licentie</string>
 
     <string name="label_automatic">automatisch</string>
-    
+
     <string name="label_theme">Thema</string>
 
     <string name="label_reminder">Herinnering</string>

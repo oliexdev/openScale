@@ -38,10 +38,10 @@
     <string name="label_smartUserAssign">Atribuire inteligentă la in utilizator</string>
 
     <plurals name="label_days">
-	<item quantity="one">%d zi</item>
-	<item quantity="few">%d zile</item>
-	<item quantity="other">%d zile</item>
-</plurals>
+        <item quantity="one">%d zi</item>
+        <item quantity="few">%d zile</item>
+        <item quantity="other">%d zile</item>
+    </plurals>
     <string name="label_last_week">Ultimele 7 zile</string>
     <string name="label_last_month">Ultimele 30 de zile</string>
     <string name="label_weight_difference">Diferența de greutate</string>

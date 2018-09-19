@@ -78,8 +78,6 @@ public abstract class AppDatabase extends RoomDatabase {
         public void migrate(SupportSQLiteDatabase database) {
             database.beginTransaction();
             try {
-
-
                 // Drop old index
                 database.execSQL("DROP INDEX index_scaleMeasurements_userId_datetime");
 
@@ -133,4 +131,3 @@ public abstract class AppDatabase extends RoomDatabase {
         }
     };
 }
-

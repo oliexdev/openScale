@@ -99,7 +99,7 @@
     <string name="title_statistics">統計</string>
     <string name="error_initial_weight_required">エラー：初期体重が必要です</string>
     <string name="label_initial_weight">初期体重</string>
-<string name="title_about">アプリについて</string>
+    <string name="title_about">アプリについて</string>
     <string name="title_general">一般</string>
 
     <string name="open_drawer">開く</string>
@@ -152,7 +152,7 @@
     <string name="label_estimate_measurement_summary">体重、身長、年齢、性別等に基づきます。</string>
     <string name="label_scale_not_supported">あなたの体重計はサポートされていませんか？</string>
     <string name="label_click_to_help_add_support">サポートの追加に協力するにはここをクリックしてください</string>
-<string name="label_mergeWithLastMeasurement">最新測定との統合</string>
+    <string name="label_mergeWithLastMeasurement">最新測定との統合</string>
     <string name="label_automatic">自動</string>
 
     <string name="label_exportBackup">バックアップをエクスポート</string>

@@ -200,12 +200,12 @@
     <string name="label_development">Udvikling</string>
     <string name="label_debug_log">Gem fejlfindingslog</string>
     <string name="label_your_bluetooth_scale">Din Bluetooth personvægt</string>
-<string name="label_long_press_drag_reorder">Tryk, og træk til den ønskede position</string>
+    <string name="label_long_press_drag_reorder">Tryk, og træk til den ønskede position</string>
     <string name="label_click_measurement_configure">Klik på målinger for at konfigurere</string>
     <string name="label_select_measurement">Vælg målenhed</string>
     <string name="label_select_user">Vælg bruger</string>
     <string name="label_configure_widget">Konfigurér widget</string>
-<string name="label_add_measurement">Tilføj måling</string>
+    <string name="label_add_measurement">Tilføj måling</string>
     <string name="label_visceral_fat">Visceralt fedt omkring indre organer</string>
     <string name="label_chest">Brystomkreds</string>
     <string name="label_thigh">Låromkreds</string>
@@ -220,7 +220,7 @@
     <string name="label_caliper3_female">Hofte hudmåling</string>
     <string name="label_measure_unit">Målenhed</string>
     <string name="label_activity_level">Aktivitetsniveau</string>
-<string name="activity_level_sedentary">Stillesiddende</string>
+    <string name="activity_level_sedentary">Stillesiddende</string>
     <string name="activity_level_mild">let</string>
     <string name="activity_level_moderate">Moderat</string>
     <string name="activity_level_heavy">hård</string>

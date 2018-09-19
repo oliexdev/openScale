@@ -1,5 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<resources><string name="title_overview">Přehled</string>
+<resources>
+    <string name="title_overview">Přehled</string>
     <string name="title_graph">Graf</string>
     <string name="title_table">Tabulka</string>
     <string name="title_statistics">Statistiky</string>
@@ -30,9 +31,9 @@
     <string name="label_smartUserAssign">Chytré přiřazení uživatele</string>
 
     <plurals name="label_days">
-	<item quantity="one">%d den</item>
-	<item quantity="few">%d dny</item>
-	<item quantity="other">%d dnů</item>
+        <item quantity="one">%d den</item>
+        <item quantity="few">%d dny</item>
+        <item quantity="other">%d dnů</item>
     </plurals>
     <string name="label_last_week">Uplynulých 7 dnů</string>
     <string name="label_last_month">Uplynulých 30 dnů</string>
@@ -147,7 +148,7 @@
 
     <string name="permission_bluetooth_info_title">Informace</string>
 
-<string name="label_ok">OK</string>
+    <string name="label_ok">OK</string>
     <string name="label_add_measurement">Přidat měření</string>
     <string name="label_share_subject">export dat do CSV souboru (%s)</string>
 

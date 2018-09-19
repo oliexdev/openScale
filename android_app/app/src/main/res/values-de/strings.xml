@@ -155,7 +155,7 @@
     <string name="label_share">Teilen</string>
     <string name="label_bluetooth_searching_finished">Suche beendet</string>
     <string name="label_help">Hilfe</string>
-<string name="toggle_expand">Umschalten expandieren</string>
+    <string name="toggle_expand">Umschalten expandieren</string>
     <string name="edit">Editieren</string>
     <string name="save">Speichern</string>
     <string name="label_month_view">Monatsansicht</string>
@@ -183,7 +183,7 @@
     <string name="label_percent">Prozent</string>
     <string name="label_estimated">Geschätzt</string>
     <string name="label_estimate_measurement_summary">Basierend auf Gewicht, Größe, Alter, Geschlecht, etc.</string>
-<string name="label_scale_not_supported">Wird deine Waage nicht unterstützt?</string>
+    <string name="label_scale_not_supported">Wird deine Waage nicht unterstützt?</string>
     <string name="label_click_to_help_add_support">Klicke hier, wenn du helfen möchtest</string>
     <string name="label_auto_backup">Automatiches Backup</string>
     <string name="label_auto_backup_schedule">Backup Zeitplan</string>
@@ -191,7 +191,7 @@
     <string name="label_daily">täglich</string>
     <string name="label_weekly">wöchentlich</string>
     <string name="label_monthly">monatlich</string>
-<string name="label_long_press_drag_reorder">Zum Neuordnen der Messwerte langes drücken und halten</string>
+    <string name="label_long_press_drag_reorder">Zum Neuordnen der Messwerte langes drücken und halten</string>
     <string name="label_click_measurement_configure">Zum Konfigurieren auf Messwert klicken</string>
     <string name="label_development">Entwicklung</string>
     <string name="label_select_measurement">Messwert auswählen</string>
@@ -209,11 +209,11 @@
     <string name="label_caliper1_female">Trizepsfalte</string>
     <string name="label_caliper2_female">Bauchfalte</string>
     <string name="label_caliper3_female">Hüftfalte</string>
-<string name="label_debug_log">Speichere Fehlerbericht</string>
+    <string name="label_debug_log">Speichere Fehlerbericht</string>
     <string name="label_your_bluetooth_scale">Ihre Bluetooth Waage</string>
     <string name="label_measure_unit">Maßeinheit</string>
     <string name="label_activity_level">Aktivitätslevel</string>
-<string name="activity_level_sedentary">Sitzende Tätigkeit</string>
+    <string name="activity_level_sedentary">Sitzende Tätigkeit</string>
     <string name="activity_level_mild">Milde Tätigkeit</string>
     <string name="activity_level_moderate">Moderate Tätigkeit</string>
     <string name="activity_level_heavy">Schwere Tätigkeit</string>

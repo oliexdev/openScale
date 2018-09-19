@@ -1,6 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <resources>
-
     <string name="title_overview">Przegląd</string>
     <string name="title_graph">Wykresy</string>
     <string name="title_table">Tabele</string>
@@ -40,10 +39,10 @@
     <string name="label_smartUserAssign">Inteligente przypisywanie użytkowników</string>
 
     <plurals name="label_days">
-	<item quantity="one">%d dzień</item>
-	<item quantity="few">%d dni</item>
-	<item quantity="many">%d dni</item>
-</plurals>
+        <item quantity="one">%d dzień</item>
+        <item quantity="few">%d dni</item>
+        <item quantity="many">%d dni</item>
+    </plurals>
     <string name="label_last_week">Ostatnie 7 dni</string>
     <string name="label_last_month">Ostatnie 30 dni</string>
     <string name="label_weight_difference">Różnica wagi</string>
@@ -61,7 +60,6 @@
     <string name="label_female">Kobieta</string>
     <string name="label_goal_weight">Docelowa waga</string>
     <string name="label_goal_date">Data celu</string>
-
 
     <string name="label_title_user">użytkownik</string>
     <string name="label_title_last_measurement">ostatni pomiar</string>
@@ -128,9 +126,9 @@
     <string name="label_license">Licencja</string>
 
     <string name="label_automatic">auto</string>
-    
+
     <string name="label_theme">Motyw</string>
-    
+
     <string name="label_reminder">Przypomnienie</string>
     <string name="label_reminder_weekdays">Dni tygodnia</string>
     <string name="label_reminder_time">Czas</string>
@@ -158,7 +156,7 @@
     <string name="label_regression_line_degree">Stopień wielomianu aproksymacji</string>
     <string name="label_goal_line">Linia celu</string>
     <string name="label_help">Pomoc</string>
-    
+
     <string name="label_feedback_message_enjoying">Podoba Ci się openScale?</string>
     <string name="label_feedback_message_rate_app">Może w takim razie oceniłbyś/oceniłabyś openScale na GooglePlay lub na GitHub?</string>
     <string name="label_feedback_message_issue">Masz jakieś sugestie?</string>
@@ -166,7 +164,7 @@
     <string name="label_feedback_message_no">Nie bardzo</string>
     <string name="label_feedback_message_positive">OK</string>
     <string name="label_feedback_message_negative">No, dzięki</string>
-    
+
     <string name="error_max_scale_users">Osiągnięto maksymalną ilość użytkowników wagi</string>
     <string name="info_step_on_scale">Proszę stanąć boso na wadze w celu przeprowadzenia pomiaru referencyjnego</string>
     <string name="info_measuring">Mierzona waga: %.2f</string>
@@ -197,7 +195,7 @@
     <string name="label_set_default_order">Ustaw domyślną kolejność</string>
     <string name="label_export_overwrite">Nadpisać poprzedni eksport \"%s\"?</string>
 
-<string name="label_include_in_overview_graph">Umieść na wykresie</string>
+    <string name="label_include_in_overview_graph">Umieść na wykresie</string>
     <string name="label_measurement_in_percent">Pomiar w %</string>
     <string name="label_estimate_measurement">Pomiar szacunkowy</string>
     <string name="label_language">Język</string>
@@ -218,7 +216,7 @@
     <string name="label_scale_not_supported">Czy twoja waga nie jest obsługiwana?</string>
     <string name="label_click_to_help_add_support">Kliknij tutaj, aby pomóc dodać obsługę</string>
     <string name="label_debug_log">Zapisz log debugowania do pliku</string>
-<string name="label_long_press_drag_reorder">Przytrzymaj dłużej i przeciągnij, aby zmienić kolejność</string>
+    <string name="label_long_press_drag_reorder">Przytrzymaj dłużej i przeciągnij, aby zmienić kolejność</string>
     <string name="label_your_bluetooth_scale">Twoja waga Bluetooth</string>
     <string name="label_select_measurement">Wybierz pomiar</string>
     <string name="label_select_user">Wybierz użytkownika</string>

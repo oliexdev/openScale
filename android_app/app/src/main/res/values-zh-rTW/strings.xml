@@ -1,5 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<resources><string name="title_overview">概覽</string>
+<resources>
+    <string name="title_overview">概覽</string>
     <string name="title_graph">圖表</string>
     <string name="title_table">列表</string>
     <string name="title_statistics">統計</string>
@@ -38,8 +39,8 @@
     <string name="label_smartUserAssign">用戶自動配對</string>
 
     <plurals name="label_days">
-	<item quantity="other">日</item>
-</plurals>
+        <item quantity="other">日</item>
+    </plurals>
     <string name="label_last_week">平均過去一週</string>
     <string name="label_last_month">平均過去一個月</string>
     <string name="label_weight_difference">體重差距</string>
@@ -208,7 +209,7 @@
     <string name="label_estimate_measurement_summary">基於體重， 身高，年齡，性別 等。</string>
     <string name="label_scale_not_supported">你的量重器不支援嗎？</string>
     <string name="label_click_to_help_add_support">請點擊此處以協助支援</string>
-<string name="label_auto_backup">自動備份</string>
+    <string name="label_auto_backup">自動備份</string>
     <string name="label_auto_backup_schedule">按時備份</string>
     <string name="label_overwrite_backup">覆寫舊有備份</string>
     <string name="label_daily">每日</string>
@@ -216,5 +217,5 @@
     <string name="label_monthly">每月</string>
     <string name="label_development">開發</string>
     <string name="label_debug_log">除錯記錄存檔</string>
-<string name="label_add_measurement">增加測量</string>
-    </resources>
+    <string name="label_add_measurement">增加測量</string>
+</resources>

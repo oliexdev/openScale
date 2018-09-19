@@ -53,9 +53,9 @@
     <string name="label_comment">Comentário</string>
     <string name="label_date">Data</string>
     <plurals name="label_days">
-	<item quantity="one">%d dia</item>
-	<item quantity="other">%d dias</item>
-</plurals>
+        <item quantity="one">%d dia</item>
+        <item quantity="other">%d dias</item>
+    </plurals>
     <string name="label_days_left">Dias restantes</string>
     <string name="label_delete">Apagar</string>
     <string name="label_delete_all">Apagar tudo</string>
@@ -113,7 +113,7 @@
     <string name="title_statistics">Estatísticas</string>
     <string name="title_table">Tabela</string>
     <string name="title_users">Utilizadores</string>
-<string name="title_about">Versão</string>
+    <string name="title_about">Versão</string>
     <string name="title_general">Menu</string>
 
     <string name="open_drawer">abrir</string>
@@ -190,5 +190,5 @@
     <string name="label_percent">Percentagem</string>
     <string name="label_estimated">Estimada</string>
     <string name="label_estimate_measurement_summary">Baseado no peso, altura, idade, sexo, etc.</string>
-<string name="label_add_measurement">Adicionar medição</string>
-    </resources>
+    <string name="label_add_measurement">Adicionar medição</string>
+</resources>

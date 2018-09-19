@@ -1,5 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<resources><string name="title_overview">Oversikt</string>
+<resources>
+    <string name="title_overview">Oversikt</string>
     <string name="title_graph">Diagram</string>
     <string name="title_table">Tabell</string>
     <string name="title_statistics">Statistikk</string>
@@ -39,8 +40,8 @@
     <string name="label_smartUserAssign">Smart brukertildeling</string>
 
     <plurals name="label_days">
-	    <item quantity="one">%d dag</item>
-	    <item quantity="other">%d dager</item>
+        <item quantity="one">%d dag</item>
+        <item quantity="other">%d dager</item>
     </plurals>
     <string name="label_last_week">Gjennomsnitt siste uke</string>
     <string name="label_last_month">Gjennomsnitt den siste måneden</string>
@@ -208,7 +209,7 @@
     <string name="label_estimated">Estimert</string>
     <string name="label_scale_not_supported">Støttes ikke vekten din?</string>
     <string name="label_click_to_help_add_support">Klikk her for å hjelpe til å legge til støtte for den</string>
-<string name="label_auto_backup">Automatisk sikkerhetskopiering</string>
+    <string name="label_auto_backup">Automatisk sikkerhetskopiering</string>
     <string name="label_auto_backup_schedule">Sikkerhetskopi-intervall</string>
     <string name="label_overwrite_backup">Overskriv tidligere sikkerhetskopi</string>
     <string name="label_daily">daglig</string>
@@ -216,13 +217,13 @@
     <string name="label_monthly">månedlig</string>
     <string name="label_development">Utvikling</string>
     <string name="label_debug_log">Lagre feilrettingslogg til fil</string>
-<string name="label_your_bluetooth_scale">Din Blåtannsvekt</string>
-<string name="label_long_press_drag_reorder">Trykk lenge og dra måling for å omstokkere</string>
+    <string name="label_your_bluetooth_scale">Din Blåtannsvekt</string>
+    <string name="label_long_press_drag_reorder">Trykk lenge og dra måling for å omstokkere</string>
     <string name="label_click_measurement_configure">Klikk måling for å sette opp</string>
     <string name="label_select_measurement">Velg måling</string>
     <string name="label_select_user">Velg bruker</string>
     <string name="label_configure_widget">Sett opp miniprogram</string>
-<string name="label_visceral_fat">Bukfett</string>
+    <string name="label_visceral_fat">Bukfett</string>
     <string name="label_chest">Brystmål</string>
     <string name="label_thigh">Låromkrets</string>
     <string name="label_biceps">Bisepsomkrets</string>
@@ -242,6 +243,6 @@
     <string name="activity_level_moderate">Moderat</string>
     <string name="activity_level_heavy">Tung</string>
     <string name="activity_level_extreme">Ekstrem</string>
-<string name="permission_read_data_description">les openScale-data, inkludert brukerinfo, og alle lagrede målinger</string>
+    <string name="permission_read_data_description">les openScale-data, inkludert brukerinfo, og alle lagrede målinger</string>
     <string name="permission_read_data_label">Les openScale-data</string>
-    </resources>
+</resources>

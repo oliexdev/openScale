@@ -39,11 +39,11 @@
     <string name="label_smartUserAssign">Pametna določitev uporabnika</string>
 
     <plurals name="label_days">
-	<item quantity="one">%d dan</item>
-	<item quantity="two">%d dneva</item>
-	<item quantity="few">%d dnevi</item>
-	<item quantity="other"/>
-</plurals>
+        <item quantity="one">%d dan</item>
+        <item quantity="two">%d dneva</item>
+        <item quantity="few">%d dnevi</item>
+        <item quantity="other"/>
+    </plurals>
     <string name="label_last_week">Povprečje prejšnjega tedna</string>
     <string name="label_last_month">Povprečje prejšnjega meseca</string>
     <string name="label_weight_difference">Razlika teže</string>

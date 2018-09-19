@@ -1,5 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<resources><string name="title_overview">Обзор</string>
+<resources>
+    <string name="title_overview">Обзор</string>
     <string name="title_graph">График</string>
     <string name="title_table">Таблица</string>
     <string name="title_statistics">Статистика</string>
@@ -186,4 +187,4 @@
     <string name="label_select_user">Выберите пользователя</string>
     <string name="label_configure_widget">Настройте виджет</string>
     <string name="label_measure_unit">Единица измерения</string>
-    </resources>
+</resources>

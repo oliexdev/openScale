@@ -1,5 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<resources><string name="title_overview">Pregled</string>
+<resources>
+    <string name="title_overview">Pregled</string>
     <string name="title_graph">Grafikon</string>
     <string name="title_table">Tablica</string>
     <string name="title_statistics">Statistika</string>
@@ -39,10 +40,10 @@
     <string name="label_smartUserAssign">Pametna dodjela korisnika</string>
 
     <plurals name="label_days">
-	<item quantity="one">Jedan</item>
-	<item quantity="few">Nekoliko</item>
-	<item quantity="other">Ostalo</item>
-</plurals>
+        <item quantity="one">Jedan</item>
+        <item quantity="few">Nekoliko</item>
+        <item quantity="other">Ostalo</item>
+    </plurals>
     <string name="label_last_week">Prosjek prošlog tjedna</string>
     <string name="label_last_month">Prosjek prošlog mjeseca</string>
     <string name="label_weight_difference">Razlika težine</string>

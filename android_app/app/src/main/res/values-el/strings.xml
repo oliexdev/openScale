@@ -1,5 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<resources><string name="title_overview">Επισκόπηση</string>
+<resources>
+    <string name="title_overview">Επισκόπηση</string>
     <string name="title_graph">Διάγραμμα</string>
     <string name="title_table">Πίνακας</string>
     <string name="title_statistics">Στατιστικά</string>
@@ -38,9 +39,9 @@
     <string name="label_smartUserAssign">Ανάθεση εργασίας Έξυπνου Χρήστη</string>
 
     <plurals name="label_days">
-	<item quantity="one">%d ημέρα</item>
-	<item quantity="other">%d ημέρες</item>
-</plurals>
+        <item quantity="one">%d ημέρα</item>
+        <item quantity="other">%d ημέρες</item>
+    </plurals>
     <string name="label_last_week">Τελευταίες 7 ημέρες</string>
     <string name="label_last_month">Τελευταίες 30 ημέρες</string>
     <string name="label_weight_difference">Διαφορά βάρους</string>
