@@ -23,6 +23,7 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
 import com.health.openscale.core.OpenScale;
+import com.health.openscale.core.bluetooth.lib.YunmaiLib;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
@@ -30,6 +31,8 @@ import com.health.openscale.core.utils.Converters;
 import java.util.Date;
 import java.util.Random;
 import java.util.UUID;
+
+import timber.log.Timber;
 
 public class BluetoothYunmaiSE_Mini extends BluetoothCommunication {
     private final UUID WEIGHT_MEASUREMENT_SERVICE = UUID.fromString("0000ffe0-0000-1000-8000-00805f9b34fb");
@@ -119,7 +122,7 @@ public class BluetoothYunmaiSE_Mini extends BluetoothCommunication {
     }
 
     private void parseBytes(byte[] weightBytes) {
-        final ScaleUser selectedUser = OpenScale.getInstance().getSelectedScaleUser();
+        final ScaleUser scaleUser = OpenScale.getInstance().getSelectedScaleUser();
 
         ScaleMeasurement scaleBtData = new ScaleMeasurement();
 
@@ -130,8 +133,26 @@ public class BluetoothYunmaiSE_Mini extends BluetoothCommunication {
         scaleBtData.setWeight(weight);
 
         if (isMini) {
-            float fat = Converters.fromUnsignedInt16Be(weightBytes, 17) / 100.0f;
-            scaleBtData.setFat(fat);
+            int sex;
+
+            if (scaleUser.getGender() == Converters.Gender.MALE) {
+                sex = 1;
+            } else {
+                sex = 0;
+            }
+
+            YunmaiLib yunmaiLib = new YunmaiLib(sex, scaleUser.getBodyHeight());
+            float bodyFat = Converters.fromUnsignedInt16Be(weightBytes, 17) / 100.0f;
+            int resistance = Converters.fromUnsignedInt16Be(weightBytes, 15);
+            scaleBtData.setFat(bodyFat);
+            scaleBtData.setMuscle(yunmaiLib.getMuscle(bodyFat));
+            scaleBtData.setWater(yunmaiLib.getWater(bodyFat));
+            scaleBtData.setBone(yunmaiLib.getBoneMass(scaleBtData.getMuscle(), weight));
+
+            Timber.d("received bytes [%s]", byteInHex(weightBytes));
+            Timber.d("received decrypted bytes [weight: %.2f, fat: %.2f, resistance: %d]", weight, bodyFat, resistance);
+            Timber.d("user [%s]", scaleUser);
+            Timber.d("scale measurement [%s]", scaleBtData);
         }
 
         addScaleData(scaleBtData);
