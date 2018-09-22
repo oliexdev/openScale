@@ -612,13 +612,8 @@ public class OpenScale {
         return userDAO.selectAll();
     }
 
-    // As getScaleUser(), but as a Cursor for export via a Content Provider.
-    public Cursor getScaleUserCursor(int userId) {
-        return userDAO.select(userId);
-    }
-
     // As getScaleMeasurementList(), but as a Cursor for export via a Content Provider.
-    public Cursor getScaleMeasurementListCursor(int userId) {
+    public Cursor getScaleMeasurementListCursor(long userId) {
         return measurementDAO.selectAll(userId);
     }
 }
