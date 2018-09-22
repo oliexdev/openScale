@@ -29,9 +29,13 @@ before_script:
     -e 's/(versionCode ).*/\1'$(date +%s)'/'
     -e 's/versionName "[^"]+/\0-'${DEV}'_'${TRAVIS_COMMIT:0:8}_$(date +%F)'/'
     android_app/app/build.gradle
+    android_app/connector/build.gradle
   - sed -i -r
     -e 's/(<string name="app_name"[^>]*>[^<]+)/\1 ('${DEV}${BRANCH}')/'
     android_app/app/src/main/res/values/strings.xml
+    android_app/connector/src/main/res/values/strings.xml
+  - sed -i -r -e 's/\.READ_DATA/.'${DEV}'\0/'
+    android_app/connector/src/main/AndroidManifest.xml
   # Create keystore by running:
   #   keytool -genkey -v -keystore debug.keystore -storepass android \
   #     -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 \
@@ -50,6 +54,7 @@ script: cd android_app && ./gradlew testDebug assembleAndroidTest assembleDebug
 
 before_deploy:
   - ln -s app/build/outputs/apk/debug/app-debug.apk openScale-${DEV}${BRANCH}-build.apk
+  - ln -s connector/build/outputs/apk/debug/connector-debug.apk openScale-connector-${DEV}${BRANCH}-build.apk
   - git tag -f travis-${DEV}${BRANCH}-build
   - git remote add gh
     https://${OWNER}:${GITHUB_API_KEY}@github.com/${TRAVIS_REPO_SLUG}.git
@@ -60,7 +65,9 @@ before_deploy:
 deploy:
   provider: releases
   api-key: $GITHUB_API_KEY
-  file: openScale-${DEV}${BRANCH}-build.apk
+  file:
+    - openScale-${DEV}${BRANCH}-build.apk
+    - openScale-connector-${DEV}${BRANCH}-build.apk
   skip_cleanup: true
   name: openScale development build (${TRAVIS_BRANCH})
   body: Automatic openScale development build of $TRAVIS_BRANCH

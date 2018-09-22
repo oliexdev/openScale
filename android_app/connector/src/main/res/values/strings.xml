@@ -1,3 +1,3 @@
 <resources>
-    <string name="app_name">openScale Connector Test</string>
+    <string name="app_name" translatable="false">openScale Connector Test</string>
 </resources>
