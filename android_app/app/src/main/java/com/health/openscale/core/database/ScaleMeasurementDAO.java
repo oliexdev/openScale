@@ -67,6 +67,6 @@ public interface ScaleMeasurementDAO {
     void deleteAll(int userId);
 
     // selectAll() is equivalent to getAll(), but returns a Cursor, for exposing via a ContentProvider.
-    @Query("SELECT * FROM scaleMeasurements WHERE userId = :userId AND enabled = 1 ORDER BY datetime DESC")
+    @Query("SELECT id as _ID, datetime, weight, fat, water, muscle FROM scaleMeasurements WHERE userId = :userId AND enabled = 1 ORDER BY datetime DESC")
     Cursor selectAll(int userId);
 }
