@@ -1,6 +1,11 @@
 language: android
 jdk: oraclejdk8
 
+env:
+  global:
+    - OWNER=${TRAVIS_REPO_SLUG%/*}
+    - DEV=${OWNER/oliexdev/dev}
+
 android:
   components:
     - platform-tools
@@ -11,7 +16,7 @@ android:
 
 branches:
   except:
-    - travis-dev-build
+    - /^travis-.*-build$/
 
 before_install:
   - yes | sdkmanager "platforms;android-27"
@@ -19,12 +24,12 @@ before_install:
 
 before_script:
   - sed -i -r
-    -e 's/applicationId "[^"]+/\0.dev/'
+    -e 's/applicationId "[^"]+/\0.'${DEV}'/'
     -e 's/(versionCode ).*/\1'$(date +%s)'/'
-    -e 's/versionName "[^"]+/\0-dev_'${TRAVIS_COMMIT:0:8}_$(date +%F)'/'
+    -e 's/versionName "[^"]+/\0-'${DEV}'_'${TRAVIS_COMMIT:0:8}_$(date +%F)'/'
     android_app/app/build.gradle
   - sed -i -r
-    -e 's/(<string name="app_name"[^>]*>[^<]+)/\1 (dev)/'
+    -e 's/(<string name="app_name"[^>]*>[^<]+)/\1 ('${DEV}')/'
     android_app/app/src/main/res/values/strings.xml
   # Create keystore by running:
   #   keytool -genkey -v -keystore debug.keystore -storepass android \
@@ -43,17 +48,17 @@ before_script:
 script: cd android_app && ./gradlew testDebug assembleAndroidTest assembleDebug
 
 before_deploy:
-  - ln -s app/build/outputs/apk/debug/app-debug.apk openScale-dev-build.apk
-  - git tag -f travis-dev-build
+  - ln -s app/build/outputs/apk/debug/app-debug.apk openScale-${DEV}-build.apk
+  - git tag -f travis-${DEV}-build
   - git remote add gh
-    https://${TRAVIS_REPO_SLUG%/*}:${GITHUB_API_KEY}@github.com/${TRAVIS_REPO_SLUG}.git
-  - git push -f gh travis-dev-build
+    https://${OWNER}:${GITHUB_API_KEY}@github.com/${TRAVIS_REPO_SLUG}.git
+  - git push -f gh travis-${DEV}-build
   - git remote remove gh
 
 deploy:
   provider: releases
   api-key: $GITHUB_API_KEY
-  file: openScale-dev-build.apk
+  file: openScale-${DEV}-build.apk
   skip_cleanup: true
   name: openScale development build
   body: Automatic openScale development build of $TRAVIS_BRANCH
