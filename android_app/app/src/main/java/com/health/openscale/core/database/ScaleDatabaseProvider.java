@@ -15,6 +15,7 @@
  */
 package com.health.openscale.core.database;
 
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.UriMatcher;
@@ -37,9 +38,7 @@ import com.health.openscale.core.OpenScale;
  * The following URIs are supported:
  * <ul>
  *     <li><code>content://com.health.openscale.provider/user</code>: list all users.</li>
- *     <li><code>content://com.health.openscale.provider/user/$ID</code>: retrieve single user
- *         by ID.</li>
- *     <li><code>content://com.health.openscale.provider/user/$ID/measurements</code>:
+ *     <li><code>content://com.health.openscale.provider/measurements/$ID</code>:
  *         retrieve all measurements for the supplied user ID.</li>
  * </ul>
  */
@@ -49,14 +48,12 @@ public class ScaleDatabaseProvider extends android.content.ContentProvider {
     private static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".provider";
 
     private static final int MATCH_TYPE_USER_LIST = 1;
-    private static final int MATCH_TYPE_USER_ENTRY = 2;
-    private static final int MATCH_TYPE_USER_MEASUREMENTS = 3;
+    private static final int MATCH_TYPE_MEASUREMENT_LIST = 2;
 
 
     static {
-        uriMatcher.addURI(AUTHORITY, "user", MATCH_TYPE_USER_LIST);
-        uriMatcher.addURI(AUTHORITY, "user/#", MATCH_TYPE_USER_ENTRY);
-        uriMatcher.addURI(AUTHORITY, "user/#/measurements", MATCH_TYPE_USER_MEASUREMENTS);
+        uriMatcher.addURI(AUTHORITY, "users", MATCH_TYPE_USER_LIST);
+        uriMatcher.addURI(AUTHORITY, "measurements/#", MATCH_TYPE_MEASUREMENT_LIST);
     }
 
     @Override
@@ -65,15 +62,10 @@ public class ScaleDatabaseProvider extends android.content.ContentProvider {
             case MATCH_TYPE_USER_LIST:
                 return "vnd.android.cursor.dir/vnd." + AUTHORITY + ".user";
 
-            case MATCH_TYPE_USER_ENTRY:
-                return "vnd.android.cursor.item/vnd." + AUTHORITY + ".user";
-
-            case MATCH_TYPE_USER_MEASUREMENTS:
-                return "vnd.android.cursor.item/vnd." + AUTHORITY + ".measurement";
-
-            default:
-                return null;
+            case MATCH_TYPE_MEASUREMENT_LIST:
+                return "vnd.android.cursor.dir/vnd." + AUTHORITY + ".measurement";
         }
+        return null;
     }
 
     @Override
@@ -92,14 +84,9 @@ public class ScaleDatabaseProvider extends android.content.ContentProvider {
                 cursor = OpenScale.getInstance().getScaleUserListCursor();
                 break;
 
-            case MATCH_TYPE_USER_ENTRY:
-                cursor = OpenScale.getInstance().getScaleUserCursor(
-                        Integer.valueOf(uri.getPathSegments().get(1)));
-                break;
-
-            case MATCH_TYPE_USER_MEASUREMENTS:
+            case MATCH_TYPE_MEASUREMENT_LIST:
                 cursor = OpenScale.getInstance().getScaleMeasurementListCursor(
-                        Integer.valueOf(uri.getPathSegments().get(1)));
+                        ContentUris.parseId(uri));
                 break;
 
             default:

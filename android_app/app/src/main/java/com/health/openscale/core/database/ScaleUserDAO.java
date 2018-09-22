@@ -47,12 +47,7 @@ public interface ScaleUserDAO {
     @Delete
     void delete(ScaleUser user);
 
-    // selectAll() and select() are equivalent to getall() and get(), but return a Cursor,
-    // for exposing via a ContentProvider.
+    // selectAll() is similar to getAll(), but return a Cursor, for exposing via a ContentProvider.
     @Query("SELECT id as _ID, username, birthday, bodyHeight, gender, activityLevel FROM scaleUsers")
     Cursor selectAll();
-
-    @Query("SELECT * FROM scaleUsers WHERE id = :id")
-    Cursor select(int id);
-
 }
