@@ -5,6 +5,7 @@ env:
   global:
     - OWNER=${TRAVIS_REPO_SLUG%/*}
     - DEV=${OWNER/oliexdev/dev}
+    - BRANCH=${TRAVIS_BRANCH/master/}
 
 android:
   components:
@@ -29,7 +30,7 @@ before_script:
     -e 's/versionName "[^"]+/\0-'${DEV}'_'${TRAVIS_COMMIT:0:8}_$(date +%F)'/'
     android_app/app/build.gradle
   - sed -i -r
-    -e 's/(<string name="app_name"[^>]*>[^<]+)/\1 ('${DEV}')/'
+    -e 's/(<string name="app_name"[^>]*>[^<]+)/\1 ('${DEV}${BRANCH}')/'
     android_app/app/src/main/res/values/strings.xml
   # Create keystore by running:
   #   keytool -genkey -v -keystore debug.keystore -storepass android \
@@ -48,19 +49,19 @@ before_script:
 script: cd android_app && ./gradlew testDebug assembleAndroidTest assembleDebug
 
 before_deploy:
-  - ln -s app/build/outputs/apk/debug/app-debug.apk openScale-${DEV}-build.apk
-  - git tag -f travis-${DEV}-build
+  - ln -s app/build/outputs/apk/debug/app-debug.apk openScale-${DEV}${BRANCH}-build.apk
+  - git tag -f travis-${DEV}${BRANCH}-build
   - git remote add gh
     https://${OWNER}:${GITHUB_API_KEY}@github.com/${TRAVIS_REPO_SLUG}.git
-  - git push -f gh travis-${DEV}-build
+  - git push -f gh travis-${DEV}${BRANCH}-build
   - git remote remove gh
 
 deploy:
   provider: releases
   api-key: $GITHUB_API_KEY
-  file: openScale-${DEV}-build.apk
+  file: openScale-${DEV}${BRANCH}-build.apk
   skip_cleanup: true
-  name: openScale development build
+  name: openScale development build (${TRAVIS_BRANCH})
   body: Automatic openScale development build of $TRAVIS_BRANCH
     ($TRAVIS_COMMIT) built by Travis CI on $(date +'%F %T %Z').
   prerelease: true
