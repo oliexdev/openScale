@@ -53,6 +53,7 @@ before_deploy:
   - git tag -f travis-${DEV}${BRANCH}-build
   - git remote add gh
     https://${OWNER}:${GITHUB_API_KEY}@github.com/${TRAVIS_REPO_SLUG}.git
+  - git push gh :travis-${DEV}${BRANCH}-build || true
   - git push -f gh travis-${DEV}${BRANCH}-build
   - git remote remove gh
 
