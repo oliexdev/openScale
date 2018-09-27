@@ -45,13 +45,17 @@ import com.health.openscale.core.OpenScale;
 public class ScaleDatabaseProvider extends android.content.ContentProvider {
     private static final UriMatcher uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
+    private static final int API_VERSION = 1;
+
     private static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".provider";
 
-    private static final int MATCH_TYPE_USER_LIST = 1;
-    private static final int MATCH_TYPE_MEASUREMENT_LIST = 2;
+    private static final int MATCH_TYPE_META = 1;
+    private static final int MATCH_TYPE_USER_LIST = 2;
+    private static final int MATCH_TYPE_MEASUREMENT_LIST = 3;
 
 
     static {
+        uriMatcher.addURI(AUTHORITY, "meta", MATCH_TYPE_META);
         uriMatcher.addURI(AUTHORITY, "users", MATCH_TYPE_USER_LIST);
         uriMatcher.addURI(AUTHORITY, "measurements/#", MATCH_TYPE_MEASUREMENT_LIST);
     }
@@ -59,6 +63,9 @@ public class ScaleDatabaseProvider extends android.content.ContentProvider {
     @Override
     public String getType(Uri uri) {
         switch (uriMatcher.match(uri)) {
+            case MATCH_TYPE_META:
+                return "vnd.android.cursor.item/vnd." + AUTHORITY + ".meta";
+
             case MATCH_TYPE_USER_LIST:
                 return "vnd.android.cursor.dir/vnd." + AUTHORITY + ".user";
 
@@ -80,6 +87,11 @@ public class ScaleDatabaseProvider extends android.content.ContentProvider {
         Cursor cursor;
 
         switch (uriMatcher.match(uri)) {
+            case MATCH_TYPE_META:
+                cursor = OpenScale.getInstance().getMetaCursor(
+                        API_VERSION, BuildConfig.VERSION_CODE);
+                break;
+
             case MATCH_TYPE_USER_LIST:
                 cursor = OpenScale.getInstance().getScaleUserListCursor();
                 break;

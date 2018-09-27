@@ -607,6 +607,11 @@ public class OpenScale {
         }
     }
 
+    public Cursor getMetaCursor(int apiVersion, int versionCode) {
+        return appDB.query("SELECT ? AS apiVersion, ? as versionCode",
+                new Object[]{apiVersion, versionCode});
+    }
+
     // As getScaleUserList(), but as a Cursor for export via a Content Provider.
     public Cursor getScaleUserListCursor() {
         return userDAO.selectAll();
