@@ -328,7 +328,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             regressLineOrder = Integer.parseInt(prefs.getString("regressionLineOrder", "1"));
         } catch (NumberFormatException e) {
             Toast.makeText(getContext(), getString(R.string.error_value_required) + ":" + e.getMessage(), Toast.LENGTH_LONG).show();
-            prefs.edit().putString("regressionLineOrder", "1").commit();
+            prefs.edit().putString("regressionLineOrder", "1").apply();
         }
 
         PolynomialFitter polyFitter = new PolynomialFitter(Math.min(regressLineOrder, 100));

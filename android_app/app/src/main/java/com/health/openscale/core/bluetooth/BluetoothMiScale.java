@@ -244,7 +244,7 @@ public class BluetoothMiScale extends BluetoothCommunication {
 
                     addScaleData(scaleBtData);
                 } else {
-                    Timber.e("Invalid Mi scale weight year " + year);
+                    Timber.e("Invalid Mi scale weight year %d", year);
                 }
             }
         } catch (ParseException e) {

@@ -64,7 +64,7 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
         final byte[] data = gattCharacteristic.getValue();
 
         if (data != null && data.length > 0) {
-            Timber.d("DataChange hex data: "+ byteInHex(data));
+            Timber.d("DataChange hex data: %s", byteInHex(data));
 
             // Stop command from mi scale received
             if (data[0] == 0x03) {
@@ -215,7 +215,7 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
 
                     addScaleData(scaleBtData);
                 } else {
-                    Timber.e("Invalid Mi scale weight year " + year);
+                    Timber.e("Invalid Mi scale weight year %d", year);
                 }
             }
         } catch (ParseException e) {
