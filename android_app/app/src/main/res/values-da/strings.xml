@@ -133,7 +133,7 @@
     <string name="error_user_name_too_short">Fejl: navnet skal være mindst tre tegn langt</string>
     <string name="label_theme">Tema</string>
     <string name="label_feedback_message_enjoying">Er du tilfreds med openScale?</string>
-    <string name="label_feedback_message_rate_app">Vil du rate app'en på Google Play eller GitHub?</string>
+    <string name="label_feedback_message_rate_app">Vil du rate app&quot;en på Google Play eller GitHub?</string>
     <string name="label_feedback_message_issue">Send feedback?</string>
     <string name="label_feedback_message_yes">Ja</string>
     <string name="label_feedback_message_no">Nej</string>
