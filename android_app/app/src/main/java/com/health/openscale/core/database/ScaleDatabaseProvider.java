@@ -111,20 +111,19 @@ public class ScaleDatabaseProvider extends android.content.ContentProvider {
         return cursor;
     }
 
-
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
-        throw new UnsupportedOperationException("Not yet implemented");
+        throw new UnsupportedOperationException("Not supported");
     }
 
     @Override
     public Uri insert(Uri uri, ContentValues values) {
-        throw new UnsupportedOperationException("Not yet implemented");
+        throw new UnsupportedOperationException("Not supported");
     }
 
     @Override
     public int update(Uri uri, ContentValues values, String selection,
                       String[] selectionArgs) {
-        throw new UnsupportedOperationException("Not yet implemented");
+        throw new UnsupportedOperationException("Not supported");
     }
 }
