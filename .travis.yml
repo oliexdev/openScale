@@ -64,8 +64,8 @@ deploy:
   file: openScale-${TAG}-build.apk
   skip_cleanup: true
   name: openScale development build (${TRAVIS_BRANCH})
-  body: Automatic openScale development build of $TRAVIS_BRANCH
-    ($TRAVIS_COMMIT) built by Travis CI on $(date +'%F %T %Z').
+  body: Automatic openScale development build of $TRAVIS_BRANCH branch
+    (commit $TRAVIS_COMMIT) built by Travis CI on $(date +'%F %T %Z').
   prerelease: true
   overwrite: true
   target_commitish: $TRAVIS_COMMIT
