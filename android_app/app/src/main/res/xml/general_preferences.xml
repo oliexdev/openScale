@@ -23,4 +23,10 @@
         android:summaryOff="@string/info_is_not_enable"
         android:summaryOn="@string/info_is_enable"
         android:title="@string/label_delete_confirmation" />
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="dataProviderEnable"
+        android:summaryOff="@string/info_is_not_enable"
+        android:summaryOn="@string/info_is_enable"
+        android:title="@string/label_data_provider_enable" />
 </PreferenceScreen>

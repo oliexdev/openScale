@@ -243,4 +243,5 @@
     <string name="activity_level_moderate">Moderate</string>
     <string name="activity_level_heavy">Heavy</string>
     <string name="activity_level_extreme">Extreme</string>
+    <string name="label_data_provider_enable">Third-party application access</string>
 </resources>
