@@ -20,6 +20,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.UriMatcher;
 import android.database.Cursor;
+import android.database.MatrixCursor;
 import android.net.Uri;
 
 import com.health.openscale.BuildConfig;
@@ -37,7 +38,8 @@ import com.health.openscale.core.OpenScale;
  *
  * The following URIs are supported:
  * <ul>
- *     <li><code>content://com.health.openscale.provider/user</code>: list all users.</li>
+ *     <li><code>content://com.health.openscale.provider/meta</code>: API and openScale version.</li>
+ *     <li><code>content://com.health.openscale.provider/users</code>: list all users.</li>
  *     <li><code>content://com.health.openscale.provider/measurements/$ID</code>:
  *         retrieve all measurements for the supplied user ID.</li>
  * </ul>
@@ -88,8 +90,8 @@ public class ScaleDatabaseProvider extends android.content.ContentProvider {
 
         switch (uriMatcher.match(uri)) {
             case MATCH_TYPE_META:
-                cursor = OpenScale.getInstance().getMetaCursor(
-                        API_VERSION, BuildConfig.VERSION_CODE);
+                cursor = new MatrixCursor(new String[]{"apiVersion", "versionCode"}, 1);
+                ((MatrixCursor) cursor).addRow(new Object[]{API_VERSION, BuildConfig.VERSION_CODE});
                 break;
 
             case MATCH_TYPE_USER_LIST:
