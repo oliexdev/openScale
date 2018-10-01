@@ -245,4 +245,5 @@
     <string name="activity_level_extreme">Ekstrem</string>
     <string name="permission_read_data_description">les openScale-data, inkludert brukerinfo, og alle lagrede målinger</string>
     <string name="permission_read_data_label">Les openScale-data</string>
+<string name="label_data_provider_enable">Tilgang for tredjepartsprogrammer</string>
 </resources>
