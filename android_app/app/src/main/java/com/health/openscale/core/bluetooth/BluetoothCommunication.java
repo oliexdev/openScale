@@ -667,6 +667,12 @@ public abstract class BluetoothCommunication {
             Timber.d("onServicesDiscovered: status=%d (%d services)",
                     status, gatt.getServices().size());
 
+            if (gatt.getServices().isEmpty()) {
+                setBtStatus(BT_STATUS_CODE.BT_UNEXPECTED_ERROR, "No services found");
+                disconnect(false);
+                return;
+            }
+
             synchronized (lock) {
                 cmdStepNr = 0;
                 initStepNr = 0;
