@@ -18,6 +18,8 @@ package com.health.openscale.core.bluetooth;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 
 import com.health.openscale.R;
@@ -73,21 +75,32 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
      */
     private static final int BROADCAST_ID = 0;
 
-    /** Hardware address (i.e., Bluetooth mac) of the connected device. */
-    @Nullable
-    private String hwAddress;
+    /**
+     * Prefix for {@link SharedPreferences} keys that store device passwords.
+     *
+     * @see #loadDevicePassword
+     * @see #saveDevicePassword
+     */
+    private static final String SHARED_PREFERENCES_PASSWORD_KEY_PREFIX =
+            "trisa_body_analyze_password_for_device_";
 
     /**
-     * Device password as a 32-bit integer, or {@code null} if the device password is unknown.
-     *
-     * <p>TODO: store this is in a database.</p>
+     * ASCII string that identifies the connected device (i.e. the hex-encoded Bluetooth MAC
+     * address). Used in shared preference keys to store per-device settings.
      */
+    @Nullable
+    private String deviceId;
+
+    /** Device password as a 32-bit integer, or {@code null} if the device password is unknown. */
     @Nullable
     private static Integer password;
 
     /**
      * Indicates whether we are pairing. If this is {@code true} then we have written the
      * set-broadcast-id command, and should disconnect after the write succeeds.
+     *
+     * @see #onPasswordReceived
+     * @see #nextBluetoothCmd
      */
     private boolean pairing = false;
 
@@ -103,8 +116,9 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
     @Override
     public void connect(String hwAddress) {
         Timber.i("connect(\"%s\")", hwAddress);
-        this.hwAddress = hwAddress;
         super.connect(hwAddress);
+        this.deviceId = hwAddress;
+        this.password = loadDevicePassword(context, hwAddress);
     }
 
     @Override
@@ -205,12 +219,13 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
             Timber.e("Password data too short");
             return;
         }
-        int newPassword = getInt32(data, 1);
-        if (password != null && password != newPassword) {
-            Timber.w("Replacing old password '%08x'", password);
+        password = getInt32(data, 1);
+        if (deviceId == null) {
+            Timber.e("Can't save password: device id not set!");
+        } else {
+            Timber.i("Saving password '%08x' for device id '%s'", password, deviceId);
+            saveDevicePassword(context, deviceId, password);
         }
-        Timber.i("Storing password '%08x'", newPassword);
-        password = newPassword;
 
         sendMessage(R.string.trisa_scale_pairing_succeeded, null);
 
@@ -311,5 +326,28 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
                 ((data[offset + 2] & 0xff) << 16);
         int exponent = data[offset + 3];  // note: byte is signed.
         return mantissa * Math.pow(10, exponent);
+    }
+
+    private static String getDevicePasswordKey(String deviceId) {
+        return SHARED_PREFERENCES_PASSWORD_KEY_PREFIX + deviceId;
+    }
+
+    @Nullable
+    private static Integer loadDevicePassword(Context context, String deviceId) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        String key = getDevicePasswordKey(deviceId);
+        try {
+            // Strictly speaking, there is a race condition between the calls to contains() and
+            // getInt(), but it's not a problem because we never delete passwords.
+            return prefs.contains(key) ? Integer.valueOf(prefs.getInt(key, 0)) : null;
+        } catch (ClassCastException e) {
+            Timber.e(e, "Password preference value is not an integer.");
+            return null;
+        }
+    }
+
+    private static void saveDevicePassword(Context context, String deviceId, int password) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        prefs.edit().putInt(getDevicePasswordKey(deviceId), password).apply();
     }
 }
