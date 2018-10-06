@@ -166,4 +166,86 @@
     <string name="label_feedback_message_positive">סבבה</string>
     <string name="label_feedback_message_negative">לא, תודה</string>
 
+<string name="info_new_data_added">%1$.2f%2$s‏ [%3$s] נוספו אל %4$s</string>
+    <string name="error_max_scale_users">מספר מרבי של משתמשי המשקל המשתמשים בו באותו הזמן הושג</string>
+    <string name="info_step_on_scale">נא לעלות ברגליים יחפות על המשקל לצורך לקיחת מדדי ייחוס</string>
+    <string name="info_measuring">מדידת משקל: %.2f</string>
+
+    <string name="customactivityoncrash_error_activity_error_occurred_explanation">אירעה שגיאה בלתי צפויה.
+\n
+\nנא ליצור דיווח חדש עם פרטי השגיאה תחת
+\nhttps://github.com/oliexdev/openScale/issues</string>
+    <string name="customactivityoncrash_error_activity_restart_app">הפעלת היישומון מחדש</string>
+    <string name="customactivityoncrash_error_activity_close_app">סגירת היישומון</string>
+    <string name="customactivityoncrash_error_activity_error_details">פרטי השגיאה</string>
+    <string name="customactivityoncrash_error_activity_error_details_title">פרטי השגיאה</string>
+    <string name="customactivityoncrash_error_activity_error_details_close">סגירה</string>
+    <string name="customactivityoncrash_error_activity_error_details_copy">העתקה ללוח הגזירים</string>
+    <string name="customactivityoncrash_error_activity_error_details_copied">הועתק ללוח הגזירים</string>
+    <string name="customactivityoncrash_error_activity_error_details_clipboard_label">מידע על שגיאה</string>
+    <string name="toggle_expand">הרחבה/כיווץ</string>
+    <string name="edit">עריכה</string>
+    <string name="save">שמירה</string>
+
+    <string name="label_month_view">תצוגת חודש</string>
+    <string name="label_weeks_view">תצוגת שבוע</string>
+
+    <string name="permission_not_granted">ההרשאה נדחתה</string>
+    <string name="permission_bluetooth_info">נדרשת הרשאה לגשת אל המיקום באופן משוערך כדי לחפש אחר התקני Bluetooth. ניתן לשלול את ההרשאה לאחר איתור המכשיר.</string>
+    <string name="permission_bluetooth_info_title">מידע</string>
+    <string name="permission_read_data_description">קריאת נתונים מ־openScale, לרבות פרטים על המשתמש ואת כל המדידות שנשמרו</string>
+    <string name="permission_read_data_label">קריאת נתוני openScale</string>
+    <string name="label_next">הבא</string>
+    <string name="label_long_press_drag_reorder">ניתן לגעת נגיעה ארוכה במדידה ולגרור כדי לשנות את הסדר</string>
+    <string name="label_click_measurement_configure">יש ללחוץ על מדידה כדי להגדיר מחדש</string>
+    <string name="label_set_default_order">הגדרת סדר בררת מחדל</string>
+    <string name="label_export_overwrite">לשכתב על הייצוא הקודם „%s”\?</string>
+    <string name="label_include_in_overview_graph">לכלול בתרשים סקירה</string>
+    <string name="label_measurement_in_percent">מדידה באחוזים</string>
+    <string name="label_estimate_measurement">הערכת מדידה</string>
+    <string name="label_estimation_formula">נוסחת הערכה</string>
+    <string name="language_default">בררת המחדל של המערכת</string>
+    <string name="label_language">שפה</string>
+    <string name="theme_light">בהירה</string>
+    <string name="theme_dark">כהה</string>
+    <string name="label_contribute_translation">לתרום תרגום</string>
+    <string name="label_add_or_fix_translation">הוספת חדשה או תיקון קיימת</string>
+    <string name="label_overview_graph">תרשים סקירה</string>
+    <string name="label_percent">אחוז</string>
+    <string name="label_estimated">אומדן</string>
+    <string name="label_estimate_measurement_summary">על בסיס משקל, גובה, גיל, מגדר וכו׳</string>
+    <string name="label_auto_backup">גיבוי אוטומטי</string>
+    <string name="label_auto_backup_schedule">תזמון גיבוי</string>
+    <string name="label_overwrite_backup">לשכתב על גיבוי קודם</string>
+    <string name="label_daily">יומי</string>
+    <string name="label_weekly">שבועי</string>
+    <string name="label_monthly">חודשי</string>
+    <string name="label_scale_not_supported">האם המשקל שלך לא נתמך\?</string>
+    <string name="label_click_to_help_add_support">יש ללחוץ כאן כדי לסייע בהוספת תמיכה עבורו</string>
+    <string name="label_development">פיתוח</string>
+    <string name="label_debug_log">שמירת יומן ניפוי שגיאות לקובץ</string>
+    <string name="label_your_bluetooth_scale">משקל ה־Bluetooth שלך</string>
+    <string name="label_select_measurement">בחירת מדידה</string>
+    <string name="label_select_user">בחירת משתמש</string>
+    <string name="label_configure_widget">הגדרת וידג׳ט</string>
+    <string name="label_visceral_fat">שומן בטני</string>
+    <string name="label_chest">היקף חזה</string>
+    <string name="label_thigh">היקף ירך</string>
+    <string name="label_biceps">היקף זרוע</string>
+    <string name="label_neck">היקף צוואר</string>
+    <string name="label_fat_caliper">מד שומן גוף</string>
+    <string name="label_caliper1_male">קפל שומן חזה</string>
+    <string name="label_caliper2_male">קפל שומן בטני</string>
+    <string name="label_caliper3_male">קפל שומן ירך</string>
+    <string name="label_caliper1_female">קפל שומן תלת ראשי</string>
+    <string name="label_caliper2_female">קפל שומן בטני</string>
+    <string name="label_caliper3_female">קפל שומן מפרק הירך</string>
+    <string name="label_measure_unit">יחידת מידה</string>
+    <string name="label_activity_level">רמת פעילות</string>
+    <string name="activity_level_sedentary">בישיבה</string>
+    <string name="activity_level_mild">מתונה</string>
+    <string name="activity_level_moderate">בינונית</string>
+    <string name="activity_level_heavy">גבוהה</string>
+    <string name="activity_level_extreme">קיצונית</string>
+    <string name="label_data_provider_enable">גישה ליישומון צד שלישי</string>
 </resources>
