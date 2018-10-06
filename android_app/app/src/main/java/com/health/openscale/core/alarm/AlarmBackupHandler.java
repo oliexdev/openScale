@@ -89,11 +89,13 @@ public class AlarmBackupHandler
 
         String databaseName = "openScale.db";
 
-        File exportDir = new File(Environment.getExternalStorageDirectory(), PreferenceManager.getDefaultSharedPreferences(context).getString("exportDir", "openScale Backup"));
-        if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED))
-            return;
-
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+
+        File exportDir = new File(Environment.getExternalStorageDirectory(),
+                prefs.getString("exportDir", "openScale Backup"));
+        if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+            return;
+        }
 
         if (!prefs.getBoolean("overwriteBackup", false)) {
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
