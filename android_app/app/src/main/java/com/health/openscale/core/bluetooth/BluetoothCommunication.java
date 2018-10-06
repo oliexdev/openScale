@@ -639,6 +639,10 @@ public abstract class BluetoothCommunication {
                     stopLeScan();
                 }
 
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    gatt.readPhy();
+                }
+
                 connectionEstablished = true;
                 setBtStatus(BT_STATUS_CODE.BT_CONNECTION_ESTABLISHED);
 
@@ -696,6 +700,16 @@ public abstract class BluetoothCommunication {
 
             // Start the state machine
             setBtMachineState(BT_MACHINE_STATE.BT_INIT_STATE);
+        }
+
+        @Override
+        public void onPhyRead(BluetoothGatt gatt, int txPhy, int rxPhy, int status) {
+            Timber.d("Current PHY read: TX=%d, RX=%d, status=%d", txPhy, rxPhy, status);
+        }
+
+        @Override
+        public void onPhyUpdate(BluetoothGatt gatt, int txPhy, int rxPhy, int status) {
+            Timber.d("PHY update: TX=%d, RX=%d, status=%d", txPhy, rxPhy, status);
         }
 
         private void postDelayedHandleRequests() {
