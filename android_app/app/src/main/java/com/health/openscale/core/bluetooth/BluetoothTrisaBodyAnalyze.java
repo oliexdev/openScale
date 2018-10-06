@@ -20,6 +20,7 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
 import android.support.annotation.Nullable;
 
+import com.health.openscale.R;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 
 import java.util.Date;
@@ -48,8 +49,6 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
     // GATT service characteristics.
     private static final UUID MEASUREMENT_CHARACTERISTIC_UUID =
             UUID.fromString("00008a21-0000-1000-8000-00805f9b34fb");
-    private static final UUID APPEND_MEASUREMENT_CHARACTERISTIC_UUID =
-            UUID.fromString("00008a22-0000-1000-8000-00805f9b34fb");
     private static final UUID DOWNLOAD_COMMAND_CHARACTERISTIC_UUID =
             UUID.fromString("00008a81-0000-1000-8000-00805f9b34fb");
     private static final UUID UPLOAD_COMMAND_CHARACTERISTIC_UUID =
@@ -66,10 +65,31 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
     private static final byte DOWNLOAD_INFORMATION_ENABLE_DISCONNECT_COMMAND = 0x22;
 
     // Timestamp of 2010-01-01 00:00:00 UTC (or local time?)
-    private final long TIMESTAMP_OFFSET_SECONDS = 1262304000L;
+    private static final long TIMESTAMP_OFFSET_SECONDS = 1262304000L;
 
-    // TODO: don't hardcode this.
-    //private byte[] PASSWORD = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00};
+    /**
+     * Broadcast id, which the scale will include in its Bluetooth alias. This must be set to some
+     * value to complete the pairing process (though the actual value doesn't seem to matter).
+     */
+    private static final int BROADCAST_ID = 0;
+
+    /** Hardware address (i.e., Bluetooth mac) of the connected device. */
+    @Nullable
+    private String hwAddress;
+
+    /**
+     * Device password as a 32-bit integer, or {@code null} if the device password is unknown.
+     *
+     * <p>TODO: store this is in a database.</p>
+     */
+    @Nullable
+    private static Integer password;
+
+    /**
+     * Indicates whether we are pairing. If this is {@code true} then we have written the
+     * set-broadcast-id command, and should disconnect after the write succeeds.
+     */
+    private boolean pairing = false;
 
     public BluetoothTrisaBodyAnalyze(Context context) {
         super(context);
@@ -83,6 +103,7 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
     @Override
     public void connect(String hwAddress) {
         Timber.i("connect(\"%s\")", hwAddress);
+        this.hwAddress = hwAddress;
         super.connect(hwAddress);
     }
 
@@ -97,27 +118,44 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
         Timber.i("nextInitCmd(%d)", stateNr);
         switch (stateNr) {
             case 0:
+                // Register for notifications of the measurement characteristic.
                 setIndicationOn(
                         WEIGHT_SCALE_SERVICE_UUID,
                         MEASUREMENT_CHARACTERISTIC_UUID,
                         CLIENT_CHARACTERISTIC_CONFIGURATION_DESCRIPTOR_UUID);
-                return true;
+                return true;  // more commands follow
             case 1:
+                // Register for notifications of the command upload characteristic.
+                //
+                // This is the last init command, which causes a switch to the main state machine
+                // immediately after. This is important because we should be in the main state
+                // to handle pairing correctly.
                 setIndicationOn(
                         WEIGHT_SCALE_SERVICE_UUID,
                         UPLOAD_COMMAND_CHARACTERISTIC_UUID,
                         CLIENT_CHARACTERISTIC_CONFIGURATION_DESCRIPTOR_UUID);
-                return true;
-
+                // falls through
             default:
-                return false;
+                return false;  // no more commands
         }
     }
 
     @Override
     protected boolean nextBluetoothCmd(int stateNr) {
         Timber.i("nextBluetoothCmd(%d)", stateNr);
-        return false;
+        switch (stateNr) {
+            case 0:
+            default:
+                return false;  // no more commands
+
+            case 1:
+                // This state is triggered by the write in onPasswordReceived()
+                if (pairing) {
+                    pairing = false;
+                    disconnect(true);
+                }
+                return false;  // no more commands;
+        }
     }
 
     @Override
@@ -125,10 +163,10 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
         Timber.i("nextCleanUpCmd(%d)", stateNr);
         switch (stateNr) {
             case 0:
-                writeCommand(disconnectCommand());
-                return true;
+                writeCommand(DOWNLOAD_INFORMATION_ENABLE_DISCONNECT_COMMAND);
+                // falls through
             default:
-                return false;
+                return false;  // no more commands
         }
     }
 
@@ -137,55 +175,107 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
         UUID characteristicUud = gattCharacteristic.getUuid();
         byte[] value = gattCharacteristic.getValue();
         Timber.i("onBluetoothdataChange() characteristic=%s value=%s", characteristicUud, byteInHex(value));
-        byte commandByte = value.length > 0 ? value[0] : 0;
         if (UPLOAD_COMMAND_CHARACTERISTIC_UUID.equals(characteristicUud)) {
-            switch (commandByte) {
-                case UPLOAD_PASSWORD:
-                    // TODO: support pairing, then store this somewhere.
-                    break;
-                case UPLOAD_CHALLENGE:
-                    if (value.length < 5) {
-                        break;
-                    }
-                    byte[] authCommand = new byte[] {
-                            DOWNLOAD_INFORMATION_RESULT_COMMAND,
-                            (byte)(value[1] ^ PASSWORD[0]),
-                            (byte)(value[2] ^ PASSWORD[1]),
-                            (byte)(value[3] ^ PASSWORD[2]),
-                            (byte)(value[4] ^ PASSWORD[3])};
-                    writeCommand(authCommand);
-                    int timestamp = (int)(System.currentTimeMillis()/1000 - TIMESTAMP_OFFSET_SECONDS);
-                    byte[] setUtcCommand = new byte[]{
-                            DOWNLOAD_INFORMATION_UTC_COMMAND,
-                            (byte)(timestamp >> 0),
-                            (byte)(timestamp >> 8),
-                            (byte)(timestamp >> 16),
-                            (byte)(timestamp >> 24),
-                    };
-                    writeCommand(setUtcCommand);
-                    return;
-            }
-
-        } else if (MEASUREMENT_CHARACTERISTIC_UUID.equals(characteristicUud)) {
-            ScaleMeasurement scaleMeasurement = parseScaleMeasurementData(value);
-            if (scaleMeasurement != null) {
-                addScaleData(scaleMeasurement);
+            if (value.length == 0) {
+                Timber.e("Missing command byte!");
                 return;
             }
+            byte command = value[0];
+            switch (command) {
+                case UPLOAD_PASSWORD:
+                    onPasswordReceived(value);
+                    break;
+                case UPLOAD_CHALLENGE:
+                    onChallengeReceived(value);
+                    break;
+                default:
+                    Timber.e("Unknown command byte received: %d", command);
+            }
+            return;
         }
-        Timber.w("Unhandled data!");
+        if (MEASUREMENT_CHARACTERISTIC_UUID.equals(characteristicUud)) {
+            onScaleMeasurumentReceived(value);
+            return;
+        }
+        Timber.e("Unknown characteristic changed: %s", characteristicUud);
     }
 
-    private byte[] disconnectCommand() {
-        return new byte[]{DOWNLOAD_INFORMATION_ENABLE_DISCONNECT_COMMAND};
+    private void onPasswordReceived(byte[] data) {
+        if (data.length < 5) {
+            Timber.e("Password data too short");
+            return;
+        }
+        int newPassword = getInt32(data, 1);
+        if (password != null && password != newPassword) {
+            Timber.w("Replacing old password '%08x'", password);
+        }
+        Timber.i("Storing password '%08x'", newPassword);
+        password = newPassword;
+
+        sendMessage(R.string.trisa_scale_pairing_succeeded, null);
+
+        // To complete the pairing process, we must set the scale's broadcast id, and then
+        // disconnect. The writeCommand() call below will trigger the next state machine transition,
+        // which will disconnect when `pairing == true`.
+        pairing = true;
+        writeCommand(DOWNLOAD_INFORMATION_BROADCAST_ID_COMMAND, BROADCAST_ID);
     }
 
-    private void writeCommand(byte[] bytes) {
+    private void onChallengeReceived(byte[] data) {
+        if (data.length < 5) {
+            Timber.e("Challenge data too short");
+            return;
+        }
+        if (password == null) {
+            Timber.w("Received challenge, but password is unknown.");
+            sendMessage(R.string.trisa_scale_not_paired, null);
+            disconnect(true);
+            return;
+        }
+        int challenge = getInt32(data, 1);
+        int response = challenge ^ password;
+        writeCommand(DOWNLOAD_INFORMATION_RESULT_COMMAND, response);
+        int timestamp = (int)(System.currentTimeMillis()/1000 - TIMESTAMP_OFFSET_SECONDS);
+        writeCommand(DOWNLOAD_INFORMATION_UTC_COMMAND, timestamp);
+    }
+
+    private void onScaleMeasurumentReceived(byte[] data) {
+        ScaleMeasurement scaleMeasurement = parseScaleMeasurementData(data);
+        if (scaleMeasurement == null) {
+            Timber.e("Failed to parse scale measure measurement data: %s", byteInHex(data));
+            return;
+        }
+        addScaleData(scaleMeasurement);
+    }
+
+    /** Write a single command byte, without any arguments. */
+    private void writeCommand(byte commandByte) {
+        writeCommandBytes(new byte[]{commandByte});
+    }
+
+    /**
+     * Write a command with a 32-bit integer argument.
+     *
+     * <p>The command string consists of the command byte followed by 4 bytes: the argument
+     * encoded in little-endian byte order.</p>
+     */
+    private void writeCommand(byte commandByte, int argument) {
+        writeCommandBytes(new byte[]{
+                commandByte,
+                (byte) (argument >> 0),
+                (byte) (argument >> 8),
+                (byte) (argument >> 16),
+                (byte) (argument >> 24),
+        });
+    }
+
+    private void writeCommandBytes(byte[] bytes) {
+        Timber.d("writeCommand bytes=%s", byteInHex(bytes));
         writeBytes(WEIGHT_SCALE_SERVICE_UUID, DOWNLOAD_COMMAND_CHARACTERISTIC_UUID, bytes);
     }
 
     @Nullable
-    private ScaleMeasurement parseScaleMeasurementData(byte[] data) {
+    private static ScaleMeasurement parseScaleMeasurementData(byte[] data) {
         // Byte 0 contains info.
         // Byte 1-4 contains weight.
         // Byte 5-8 contains timestamp, if bit 0 in info byte is set.
@@ -216,7 +306,7 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
      * <p>The first three little-endian bytes form the 24-bit mantissa. The last byte contains the
      * signed exponent, applied in base 10.
      */
-    private double getBase10Float(byte[] data, int offset) {
+    private static double getBase10Float(byte[] data, int offset) {
         int mantissa = (data[offset] & 0xff) | ((data[offset + 1] & 0xff) << 8) |
                 ((data[offset + 2] & 0xff) << 16);
         int exponent = data[offset + 3];  // note: byte is signed.
