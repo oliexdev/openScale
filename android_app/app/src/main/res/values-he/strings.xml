@@ -1,5 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<resources><string name="title_overview">סקירה</string>
+<resources>
+    <string name="title_overview">סקירה</string>
     <string name="title_graph">תרשים</string>
     <string name="title_table">טבלה</string>
     <string name="title_statistics">סטטיסטיקה</string>
@@ -39,11 +40,11 @@
     <string name="label_smartUserAssign">הקצאת משתמש חכמה</string>
 
     <plurals name="label_days">
-	<item quantity="one">יום אחד</item>
-	<item quantity="two">יומיים</item>
-	<item quantity="many">%d ימים</item>
-	<item quantity="other">%d ימים</item>
-</plurals>
+        <item quantity="one">יום אחד</item>
+        <item quantity="two">יומיים</item>
+        <item quantity="many">%d ימים</item>
+        <item quantity="other">%d ימים</item>
+    </plurals>
     <string name="label_last_week">ממוצע בשבוע הקודם</string>
     <string name="label_last_month">ממוצע בחודש הקודם</string>
     <string name="label_weight_difference">הבדל בגובה</string>
@@ -165,4 +166,4 @@
     <string name="label_feedback_message_positive">סבבה</string>
     <string name="label_feedback_message_negative">לא, תודה</string>
 
-    </resources>
+</resources>
