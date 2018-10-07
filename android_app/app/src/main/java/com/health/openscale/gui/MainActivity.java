@@ -97,7 +97,7 @@ public class MainActivity extends BaseAppCompatActivity
         prefs.registerOnSharedPreferenceChangeListener(this);
 
         CaocConfig.Builder.create()
-                .trackActivities(true)
+                .trackActivities(false)
                 .apply();
 
         setContentView(R.layout.activity_main);
