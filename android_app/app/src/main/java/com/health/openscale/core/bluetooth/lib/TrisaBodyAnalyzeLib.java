@@ -19,11 +19,7 @@ import android.support.annotation.Nullable;
 
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 
-import java.time.Clock;
 import java.util.Date;
-
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.concurrent.TimeUnit.SECONDS;
 
 /**
  * Class with static helper methods. This is a separate class for testing purposes.
