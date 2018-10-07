@@ -476,15 +476,20 @@ public abstract class BluetoothCommunication {
     private void startLeScanForDevice(final String hwAddress) {
         leScanCallback = new BluetoothAdapter.LeScanCallback() {
             @Override
-            public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
+            public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord) {
                 Timber.d("Found LE device %s [%s]", device.getName(), device.getAddress());
                 if (!device.getAddress().equals(hwAddress)) {
                     return;
                 }
-                synchronized (lock) {
-                    stopLeScan();
-                    connectGatt(device);
-                }
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (leScanCallback != null) {
+                            stopLeScan();
+                            connectGatt(device);
+                        }
+                    }
+                });
             }
         };
 
