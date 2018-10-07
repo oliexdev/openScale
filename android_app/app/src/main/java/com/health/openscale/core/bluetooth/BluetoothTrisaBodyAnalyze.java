@@ -25,13 +25,13 @@ import android.support.annotation.Nullable;
 import com.health.openscale.R;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 
-import java.util.Date;
 import java.util.UUID;
 
 import timber.log.Timber;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.concurrent.TimeUnit.SECONDS;
+import static com.health.openscale.core.bluetooth.lib.TrisaBodyAnalyzeLib.convertJavaTimestampToDevice;
+import static com.health.openscale.core.bluetooth.lib.TrisaBodyAnalyzeLib.getInt32;
+import static com.health.openscale.core.bluetooth.lib.TrisaBodyAnalyzeLib.parseScaleMeasurementData;
 
 /**
  * Driver for Trisa Body Analyze 4.0.
@@ -65,9 +65,6 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
     private static final byte DOWNLOAD_INFORMATION_RESULT_COMMAND = 0x20;
     private static final byte DOWNLOAD_INFORMATION_BROADCAST_ID_COMMAND = 0x21;
     private static final byte DOWNLOAD_INFORMATION_ENABLE_DISCONNECT_COMMAND = 0x22;
-
-    // Timestamp of 2010-01-01 00:00:00 UTC (or local time?)
-    private static final long TIMESTAMP_OFFSET_SECONDS = 1262304000L;
 
     /**
      * Broadcast id, which the scale will include in its Bluetooth alias. This must be set to some
@@ -250,8 +247,8 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
         int challenge = getInt32(data, 1);
         int response = challenge ^ password;
         writeCommand(DOWNLOAD_INFORMATION_RESULT_COMMAND, response);
-        int timestamp = (int)(System.currentTimeMillis()/1000 - TIMESTAMP_OFFSET_SECONDS);
-        writeCommand(DOWNLOAD_INFORMATION_UTC_COMMAND, timestamp);
+        int deviceTimestamp = convertJavaTimestampToDevice(System.currentTimeMillis());
+        writeCommand(DOWNLOAD_INFORMATION_UTC_COMMAND, deviceTimestamp);
     }
 
     private void onScaleMeasurumentReceived(byte[] data) {
@@ -287,45 +284,6 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
     private void writeCommandBytes(byte[] bytes) {
         Timber.d("writeCommand bytes=%s", byteInHex(bytes));
         writeBytes(WEIGHT_SCALE_SERVICE_UUID, DOWNLOAD_COMMAND_CHARACTERISTIC_UUID, bytes);
-    }
-
-    @Nullable
-    private static ScaleMeasurement parseScaleMeasurementData(byte[] data) {
-        // Byte 0 contains info.
-        // Byte 1-4 contains weight.
-        // Byte 5-8 contains timestamp, if bit 0 in info byte is set.
-        // Check that we have at least weight & timestamp, which is the minimum information that
-        // ScaleMeasurement needs.
-        if (data.length < 9 || (data[0] & 1) == 0) {
-            return null;
-        }
-
-        double weight = getBase10Float(data, 1);
-        long timestamp_seconds = TIMESTAMP_OFFSET_SECONDS + (long)getInt32(data, 5);
-
-        ScaleMeasurement measurement = new ScaleMeasurement();
-        measurement.setDateTime(new Date(MILLISECONDS.convert(timestamp_seconds, SECONDS)));
-        measurement.setWeight((float)weight);
-        // TODO: calculate body composition (if possible) and set those fields too
-        return measurement;
-    }
-
-    /** Converts 4 little-endian bytes to a 32-bit integer. */
-    private static int getInt32(byte[] data, int offset) {
-        return (data[offset] & 0xff) | ((data[offset + 1] & 0xff) << 8) |
-                ((data[offset + 2] & 0xff) << 16) | ((data[offset + 3] & 0xff) << 24);
-    }
-
-    /** Converts 4 bytes to a floating point number.
-     *
-     * <p>The first three little-endian bytes form the 24-bit mantissa. The last byte contains the
-     * signed exponent, applied in base 10.
-     */
-    private static double getBase10Float(byte[] data, int offset) {
-        int mantissa = (data[offset] & 0xff) | ((data[offset + 1] & 0xff) << 8) |
-                ((data[offset + 2] & 0xff) << 16);
-        int exponent = data[offset + 3];  // note: byte is signed.
-        return mantissa * Math.pow(10, exponent);
     }
 
     private static String getDevicePasswordKey(String deviceId) {
