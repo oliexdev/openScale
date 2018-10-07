@@ -595,7 +595,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     }
 
     private class chartBottomListener implements View.OnTouchListener {
-        final GestureDetector gestureDetector = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
+        final GestureDetector gestureDetector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
             public void onLongPress(MotionEvent e) {
                 chartBottom.setCurrentViewport(defaultTopViewport);
             }

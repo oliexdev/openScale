@@ -124,8 +124,6 @@ public class MainActivity extends BaseAppCompatActivity
             }
         });
 
-        disableShiftMode(navBottomDrawer);
-
         //Create Drawer Toggle
         drawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.open_drawer, R.string.close_drawer){
 
@@ -717,30 +715,6 @@ public class MainActivity extends BaseAppCompatActivity
                     editor.apply();
                 }
                 break;
-        }
-    }
-
-    @SuppressLint("RestrictedApi")
-    private static void disableShiftMode(BottomNavigationView view) {
-        BottomNavigationMenuView menuView = (BottomNavigationMenuView) view.getChildAt(0);
-        try {
-            Field shiftingMode = menuView.getClass().getDeclaredField("mShiftingMode");
-            shiftingMode.setAccessible(true);
-            shiftingMode.setBoolean(menuView, false);
-            shiftingMode.setAccessible(false);
-            for (int i = 0; i < menuView.getChildCount(); i++) {
-                BottomNavigationItemView item = (BottomNavigationItemView) menuView.getChildAt(i);
-                //noinspection RestrictedApi
-                item.setShiftingMode(false);
-                item.setPadding(0, 20, 0, 0);
-                // set once again checked value, so view will be updated
-                //noinspection RestrictedApi
-                item.setChecked(item.getItemData().isChecked());
-            }
-        } catch (NoSuchFieldException e) {
-            Timber.e(e, "Unable to get shift mode field");
-        } catch (IllegalAccessException e) {
-            Timber.e(e, "Unable to change value of shift mode");
         }
     }
 }
