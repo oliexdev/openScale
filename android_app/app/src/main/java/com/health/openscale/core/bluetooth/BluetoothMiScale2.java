@@ -23,9 +23,16 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
 import com.health.openscale.core.OpenScale;
+import com.health.openscale.core.bodymetric.EstimatedFatMetric;
+import com.health.openscale.core.bodymetric.EstimatedLBMMetric;
+import com.health.openscale.core.bodymetric.EstimatedWaterMetric;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
+import com.health.openscale.gui.views.FatMeasurementView;
+import com.health.openscale.gui.views.LBMMeasurementView;
+import com.health.openscale.gui.views.MeasurementViewSettings;
+import com.health.openscale.gui.views.WaterMeasurementView;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -212,6 +219,24 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
 
                     scaleBtData.setWeight(Converters.toKilogram(weight, selectedUser.getScaleUnit()));
                     scaleBtData.setDateTime(date_time);
+
+                    // estimate fat, water and LBM until library is reversed engineered
+                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+
+                    MeasurementViewSettings settings = new MeasurementViewSettings(prefs, WaterMeasurementView.KEY);
+                    EstimatedWaterMetric waterMetric = EstimatedWaterMetric.getEstimatedMetric(
+                            EstimatedWaterMetric.FORMULA.valueOf(settings.getEstimationFormula()));
+                    scaleBtData.setWater(waterMetric.getWater(selectedUser, scaleBtData));
+
+                    settings = new MeasurementViewSettings(prefs, FatMeasurementView.KEY);
+                    EstimatedFatMetric fatMetric = EstimatedFatMetric.getEstimatedMetric(
+                            EstimatedFatMetric.FORMULA.valueOf(settings.getEstimationFormula()));
+                    scaleBtData.setFat(fatMetric.getFat(selectedUser, scaleBtData));
+
+                    settings = new MeasurementViewSettings(prefs, LBMMeasurementView.KEY);
+                    EstimatedLBMMetric lbmMetric = EstimatedLBMMetric.getEstimatedMetric(
+                            EstimatedLBMMetric.FORMULA.valueOf(settings.getEstimationFormula()));
+                    scaleBtData.setLbm(lbmMetric.getLBM(selectedUser, scaleBtData));
 
                     addScaleData(scaleBtData);
                 } else {
