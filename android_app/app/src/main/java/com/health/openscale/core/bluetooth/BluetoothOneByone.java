@@ -21,6 +21,7 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
 
 import com.health.openscale.core.OpenScale;
+import com.health.openscale.core.bluetooth.lib.OneByoneLib;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
@@ -141,15 +142,15 @@ public class BluetoothOneByone extends BluetoothCommunication {
                 break;
         }
 
-        //HoltekLib holtekLib = new HoltekLib(sex, scaleUser.getAge(), (int)scaleUser.getBodyHeight(), peopleType);
+        OneByoneLib oneByoneLib = new OneByoneLib(sex, scaleUser.getAge(), (int)scaleUser.getBodyHeight(), peopleType);
 
         ScaleMeasurement scaleBtData = new ScaleMeasurement();
         scaleBtData.setWeight(weight);
-        /*scaleBtData.setFat(holtekLib.getBodyFat(weight, impedanceCoeff));
-        scaleBtData.setWater(holtekLib.getWater(scaleBtData.getFat()));
-        scaleBtData.setBone(holtekLib.getBoneMass(weight, impedanceValue));
-        scaleBtData.setVisceralFat(holtekLib.getVisceralFat(weight));
-        scaleBtData.setMuscle(holtekLib.getMuscle(weight, scaleBtData.getFat(), scaleBtData.getBone()));*/
+        scaleBtData.setFat(oneByoneLib.getBodyFat(weight, impedanceCoeff));
+        scaleBtData.setWater(oneByoneLib.getWater(scaleBtData.getFat()));
+        scaleBtData.setBone(oneByoneLib.getBoneMass(weight, impedanceValue));
+        scaleBtData.setVisceralFat(oneByoneLib.getVisceralFat(weight));
+        scaleBtData.setMuscle(oneByoneLib.getMuscle(weight, scaleBtData.getFat(), scaleBtData.getBone()));
 
         Timber.d("scale measurement [%s]", scaleBtData);
 
