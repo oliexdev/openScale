@@ -427,7 +427,7 @@ public abstract class BluetoothCommunication {
         }
         else {
             Timber.d("No coarse location permission, connecting without LE scan");
-            connectGatt(hwAddress);
+            connectGatt(btAdapter.getRemoteDevice(hwAddress));
         }
     }
 
@@ -460,8 +460,16 @@ public abstract class BluetoothCommunication {
         }
     }
 
-    private void connectGatt(String hwAddress) {
-        connectGatt(btAdapter.getRemoteDevice(hwAddress));
+    private void stopLeScanAndConnectGatt(final BluetoothDevice device) {
+        stopLeScan();
+
+        // Delay the call to connectGatt to let things settle a bit
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                connectGatt(device);
+            }
+        }, 500);
     }
 
     private void startLeScanForDevice(final String hwAddress) {
@@ -476,27 +484,28 @@ public abstract class BluetoothCommunication {
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
+                        // Check that callback != null in case the same device is found multiple times
+                        // and thus multiple calls to connect to it are queued. Only the first will
+                        // have callback != null.
                         if (leScanCallback != null) {
-                            stopLeScan();
-                            connectGatt(device);
+                            stopLeScanAndConnectGatt(device);
                         }
                     }
                 });
             }
         };
 
-        Timber.d("Starting LE scan for device [%s]", hwAddress);
-        btAdapter.startLeScan(leScanCallback);
-
         // Stop scan and try to connect to the device directly if the device isn't found in time
         handler.postAtTime(new Runnable() {
             @Override
             public void run() {
                 Timber.d("Device not found in LE scan, connecting directly");
-                stopLeScan();
-                connectGatt(hwAddress);
+                stopLeScanAndConnectGatt(btAdapter.getRemoteDevice(hwAddress));
             }
         }, leScanCallback, SystemClock.uptimeMillis() + LE_SCAN_TIMEOUT_MS);
+
+        Timber.d("Starting LE scan for device [%s]", hwAddress);
+        btAdapter.startLeScan(leScanCallback);
     }
 
     private void stopLeScan() {
@@ -515,6 +524,8 @@ public abstract class BluetoothCommunication {
         stopLeScan();
 
         if (bluetoothGatt == null) {
+            // Could be a pending connectGatt waiting
+            handler.removeCallbacksAndMessages(null);
             return;
         }
 
