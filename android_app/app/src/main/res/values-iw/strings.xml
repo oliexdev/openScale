@@ -248,4 +248,11 @@
     <string name="activity_level_heavy">גבוהה</string>
     <string name="activity_level_extreme">קיצונית</string>
     <string name="label_data_provider_enable">גישה ליישומון צד שלישי</string>
-</resources>
+<string name="trisa_scale_not_paired">המשקל טרם עבר צימוד!
+\n
+\nיש להחזיק את הכפתור בתחתית המשקל כדי להפעיל אותו במצב צימוד ואז להתחבר מחדש כדי לקבל את הססמה של המכשיר.</string>
+    <string name="trisa_scale_pairing_succeeded">הצימוד הצליח!
+\n
+\nיש להתחבר מחדש כדי לקבל את נתוני המדידות.</string>
+
+    </resources>
