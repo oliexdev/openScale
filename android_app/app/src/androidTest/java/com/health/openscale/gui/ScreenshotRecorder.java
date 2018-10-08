@@ -25,7 +25,7 @@ import android.support.test.runner.AndroidJUnit4;
 import android.support.test.runner.screenshot.BasicScreenCaptureProcessor;
 import android.support.test.runner.screenshot.ScreenCapture;
 import android.support.test.runner.screenshot.Screenshot;
-import android.test.suitebuilder.annotation.LargeTest;
+import android.support.test.filters.LargeTest;
 import android.view.Gravity;
 
 import com.health.openscale.R;

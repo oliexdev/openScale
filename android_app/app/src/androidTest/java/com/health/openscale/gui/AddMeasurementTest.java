@@ -22,7 +22,7 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.contrib.PickerActions;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
-import android.test.suitebuilder.annotation.LargeTest;
+import android.support.test.filters.LargeTest;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.TimePicker;
