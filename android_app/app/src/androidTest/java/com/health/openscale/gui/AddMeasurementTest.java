@@ -19,35 +19,51 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.espresso.ViewInteraction;
 import android.support.test.espresso.contrib.PickerActions;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.ViewParent;
+import android.support.test.filters.LargeTest;
 import android.widget.DatePicker;
+import android.widget.EditText;
+import android.widget.TimePicker;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
+import com.health.openscale.core.utils.Converters;
 import com.health.openscale.gui.activities.BaseAppCompatActivity;
+import com.health.openscale.gui.views.BicepsMeasurementView;
+import com.health.openscale.gui.views.BoneMeasurementView;
+import com.health.openscale.gui.views.Caliper1MeasurementView;
+import com.health.openscale.gui.views.Caliper2MeasurementView;
+import com.health.openscale.gui.views.Caliper3MeasurementView;
+import com.health.openscale.gui.views.ChestMeasurementView;
+import com.health.openscale.gui.views.CommentMeasurementView;
+import com.health.openscale.gui.views.DateMeasurementView;
+import com.health.openscale.gui.views.FatMeasurementView;
+import com.health.openscale.gui.views.HipMeasurementView;
+import com.health.openscale.gui.views.LBMMeasurementView;
+import com.health.openscale.gui.views.MeasurementView;
+import com.health.openscale.gui.views.MuscleMeasurementView;
+import com.health.openscale.gui.views.NeckMeasurementView;
+import com.health.openscale.gui.views.ThighMeasurementView;
+import com.health.openscale.gui.views.TimeMeasurementView;
+import com.health.openscale.gui.views.VisceralFatMeasurementView;
+import com.health.openscale.gui.views.WaistMeasurementView;
+import com.health.openscale.gui.views.WaterMeasurementView;
+import com.health.openscale.gui.views.WeightMeasurementView;
 
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
-import org.hamcrest.TypeSafeMatcher;
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import android.support.test.filters.LargeTest;
 
 import java.util.Calendar;
+import java.util.List;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
@@ -56,14 +72,11 @@ import static android.support.test.espresso.action.ViewActions.replaceText;
 import static android.support.test.espresso.action.ViewActions.scrollTo;
 import static android.support.test.espresso.matcher.ViewMatchers.withClassName;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
-import static org.hamcrest.Matchers.allOf;
 import static org.junit.Assert.assertEquals;
 
 @LargeTest
 @RunWith(AndroidJUnit4.class)
 public class AddMeasurementTest {
-    private static final double DELTA = 1e-15;
-
     private static Context context;
     private static OpenScale openScale;
 
@@ -79,28 +92,130 @@ public class AddMeasurementTest {
 
         openScale = OpenScale.getInstance();
 
-        openScale.addScaleUser(male);
-        openScale.addScaleUser(female);
+        male.setId(openScale.addScaleUser(male));
+        female.setId(openScale.addScaleUser(female));
 
         // Set first start to true to get the user add dialog
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         prefs.edit()
                 .putBoolean("firstStart", false)
                 .putString(BaseAppCompatActivity.PREFERENCE_LANGUAGE, "en")
-                .putInt("selectedUserId", male.getId())
+                .putBoolean(VisceralFatMeasurementView.KEY + "Enable", true)
+                .putBoolean(LBMMeasurementView.KEY + "Enable", true)
+                .putBoolean(BoneMeasurementView.KEY + "Enable", true)
+                .putBoolean(WaistMeasurementView.KEY + "Enable", true)
+                .putBoolean(HipMeasurementView.KEY + "Enable", true)
+                .putBoolean(ChestMeasurementView.KEY + "Enable", true)
+                .putBoolean(BicepsMeasurementView.KEY + "Enable", true)
+                .putBoolean(ThighMeasurementView.KEY + "Enable", true)
+                .putBoolean(NeckMeasurementView.KEY + "Enable", true)
+                .putBoolean(Caliper1MeasurementView.KEY + "Enable", true)
+                .putBoolean(Caliper2MeasurementView.KEY + "Enable", true)
+                .putBoolean(Caliper3MeasurementView.KEY + "Enable", true)
                 .commit();
     }
 
     @AfterClass
-    public static void addMeasurementVerification() {
+    public static void cleanup() {
         openScale.deleteScaleUser(male.getId());
         openScale.deleteScaleUser(female.getId());
     }
 
     @Test
-    public void addMeasurementTest() {
-        onView(withId(R.id.action_add_measurement)).perform(click());
+    public void addMeasurementMaleTest() {
+        openScale.selectScaleUser(male.getId());
 
         ScaleMeasurement measurement = TestData.getMeasurement(1);
+        onView(withId(R.id.action_add_measurement)).perform(click());
+
+        onView(withClassName(Matchers.equalTo(DateMeasurementView.class.getName()))).perform(scrollTo(), click());
+        Calendar date = Calendar.getInstance();
+        date.setTime(measurement.getDateTime());
+        onView(withClassName(Matchers.equalTo(DatePicker.class.getName()))).perform(PickerActions.setDate(date.get(Calendar.YEAR), date.get(Calendar.MONTH)+1, date.get(Calendar.DAY_OF_MONTH)));
+        onView(withId(android.R.id.button1)).perform(click());
+
+        onView(withClassName(Matchers.equalTo(TimeMeasurementView.class.getName()))).perform(scrollTo(), click());
+        onView(withClassName(Matchers.equalTo(TimePicker.class.getName()))).perform(PickerActions.setTime(date.get(Calendar.HOUR_OF_DAY), date.get(Calendar.MINUTE)));
+        onView(withId(android.R.id.button1)).perform(click());
+
+        setMeasuremntField(WeightMeasurementView.class.getName(), measurement.getWeight());
+        setMeasuremntField(FatMeasurementView.class.getName(), measurement.getFat());
+        setMeasuremntField(WaterMeasurementView.class.getName(), measurement.getWater());
+        setMeasuremntField(MuscleMeasurementView.class.getName(), measurement.getMuscle());
+        setMeasuremntField(LBMMeasurementView.class.getName(), measurement.getLbm());
+        setMeasuremntField(BoneMeasurementView.class.getName(), measurement.getBone());
+        setMeasuremntField(WaistMeasurementView.class.getName(), measurement.getWaist());
+        setMeasuremntField(HipMeasurementView.class.getName(), measurement.getHip());
+        setMeasuremntField(VisceralFatMeasurementView.class.getName(), measurement.getVisceralFat());
+        setMeasuremntField(ChestMeasurementView.class.getName(), measurement.getChest());
+        setMeasuremntField(ThighMeasurementView.class.getName(), measurement.getThigh());
+        setMeasuremntField(BicepsMeasurementView.class.getName(), measurement.getBiceps());
+        setMeasuremntField(NeckMeasurementView.class.getName(), measurement.getNeck());
+        setMeasuremntField(Caliper1MeasurementView.class.getName(), measurement.getCaliper1());
+        setMeasuremntField(Caliper2MeasurementView.class.getName(), measurement.getCaliper2());
+        setMeasuremntField(Caliper3MeasurementView.class.getName(), measurement.getCaliper3());
+
+        onView(withClassName(Matchers.equalTo(CommentMeasurementView.class.getName()))).perform(scrollTo(), click());
+        onView(withClassName(Matchers.equalTo(EditText.class.getName()))).perform(replaceText(measurement.getComment()));
+        onView(withId(android.R.id.button1)).perform(click());
+
+        onView(withId(R.id.saveButton)).perform(click());
+
+        List<ScaleMeasurement> scaleMeasurementList = openScale.getScaleMeasurementList();
+        assertEquals(1, scaleMeasurementList.size());
+
+        TestData.compareMeasurements(measurement, scaleMeasurementList.get(0));
+    }
+
+    @Test
+    public void addMeasurementFemaleTest() {
+        openScale.selectScaleUser(female.getId());
+
+        ScaleMeasurement measurement = TestData.getMeasurement(2);
+        onView(withId(R.id.action_add_measurement)).perform(click());
+
+        onView(withClassName(Matchers.equalTo(DateMeasurementView.class.getName()))).perform(scrollTo(), click());
+        Calendar date = Calendar.getInstance();
+        date.setTime(measurement.getDateTime());
+        onView(withClassName(Matchers.equalTo(DatePicker.class.getName()))).perform(PickerActions.setDate(date.get(Calendar.YEAR), date.get(Calendar.MONTH)+1, date.get(Calendar.DAY_OF_MONTH)));
+        onView(withId(android.R.id.button1)).perform(click());
+
+        onView(withClassName(Matchers.equalTo(TimeMeasurementView.class.getName()))).perform(scrollTo(), click());
+        onView(withClassName(Matchers.equalTo(TimePicker.class.getName()))).perform(PickerActions.setTime(date.get(Calendar.HOUR_OF_DAY), date.get(Calendar.MINUTE)));
+        onView(withId(android.R.id.button1)).perform(click());
+
+        setMeasuremntField(WeightMeasurementView.class.getName(), Converters.fromKilogram(measurement.getWeight(), Converters.WeightUnit.LB));
+        setMeasuremntField(FatMeasurementView.class.getName(), measurement.getFat());
+        setMeasuremntField(WaterMeasurementView.class.getName(), measurement.getWater());
+        setMeasuremntField(MuscleMeasurementView.class.getName(), measurement.getMuscle());
+        setMeasuremntField(LBMMeasurementView.class.getName(), Converters.fromKilogram(measurement.getLbm(), Converters.WeightUnit.LB));
+        setMeasuremntField(BoneMeasurementView.class.getName(), Converters.fromKilogram(measurement.getBone(), Converters.WeightUnit.LB));
+        setMeasuremntField(WaistMeasurementView.class.getName(), Converters.fromCentimeter(measurement.getWaist(), Converters.MeasureUnit.INCH));
+        setMeasuremntField(HipMeasurementView.class.getName(), Converters.fromCentimeter(measurement.getHip(), Converters.MeasureUnit.INCH));
+        setMeasuremntField(VisceralFatMeasurementView.class.getName(), measurement.getVisceralFat());
+        setMeasuremntField(ChestMeasurementView.class.getName(), Converters.fromCentimeter(measurement.getChest(), Converters.MeasureUnit.INCH));
+        setMeasuremntField(ThighMeasurementView.class.getName(), Converters.fromCentimeter(measurement.getThigh(), Converters.MeasureUnit.INCH));
+        setMeasuremntField(BicepsMeasurementView.class.getName(), Converters.fromCentimeter(measurement.getBiceps(), Converters.MeasureUnit.INCH));
+        setMeasuremntField(NeckMeasurementView.class.getName(), Converters.fromCentimeter(measurement.getNeck(), Converters.MeasureUnit.INCH));
+        setMeasuremntField(Caliper1MeasurementView.class.getName(), Converters.fromCentimeter(measurement.getCaliper1(), Converters.MeasureUnit.INCH));
+        setMeasuremntField(Caliper2MeasurementView.class.getName(), Converters.fromCentimeter(measurement.getCaliper2(), Converters.MeasureUnit.INCH));
+        setMeasuremntField(Caliper3MeasurementView.class.getName(), Converters.fromCentimeter(measurement.getCaliper3(), Converters.MeasureUnit.INCH));
+
+        onView(withClassName(Matchers.equalTo(CommentMeasurementView.class.getName()))).perform(scrollTo(), click());
+        onView(withClassName(Matchers.equalTo(EditText.class.getName()))).perform(replaceText(measurement.getComment()));
+        onView(withId(android.R.id.button1)).perform(click());
+
+        onView(withId(R.id.saveButton)).perform(click());
+
+        List<ScaleMeasurement> scaleMeasurementList = openScale.getScaleMeasurementList();
+        assertEquals(1, scaleMeasurementList.size());
+
+        TestData.compareMeasurements(measurement, scaleMeasurementList.get(0));
+    }
+
+    private void setMeasuremntField(String className, float value) {
+        onView(withClassName(Matchers.equalTo(className))).perform(scrollTo(), click());
+        onView(withId(R.id.float_input)).perform(replaceText(String.valueOf(value)));
+        onView(withId(android.R.id.button1)).perform(click());
     }
 }
