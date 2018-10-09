@@ -481,6 +481,12 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                     (byte) (data[2] & 0xFF), (byte) (data[3] & 0xFF),
             });
 
+            if (currentScaleUserId == 0) {
+                Timber.i("Initial weight set; disconnecting...");
+                setBtMachineState(BT_MACHINE_STATE.BT_CLEANUP_STATE);
+                return;
+            }
+
             return;
         }
 
