@@ -1,149 +1,242 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <resources>
-    <string name="title_overview">Genel Bakýþ</string>
+    <string name="title_overview">Genel Bakış</string>
     <string name="title_graph">Çizelge</string>
     <string name="title_table">Tablo</string>
-    <string name="title_statistics">Ýstatistik</string>
-    <string name="title_users">Kullanýcý</string>
+    <string name="title_statistics">İstatistik</string>
+    <string name="title_users">Kullanıcı</string>
     <string name="title_measurements">Ölçüler</string>
-    <string name="title_about">Yaklaþýk</string>
+    <string name="title_about">Hakkında</string>
 
     <string name="action_settings">Ayarlar</string>
-    <string name="action_bluetooth_status">Bluetooth Konumu</string>
+    <string name="action_bluetooth_status">Bluetooth Durumu</string>
 
-    <string name="label_cancel">Ýptal</string>
+    <string name="label_cancel">İptal</string>
     <string name="label_ok">Tamam</string>
     <string name="label_yes">Evet</string>
-    <string name="label_no">Hayýr</string>
+    <string name="label_no">Hayır</string>
     <string name="label_delete">Sil</string>
-    <string name="label_add_user">Kullanýcý ekle</string>
+    <string name="label_add_user">Kullanıcı ekle</string>
 
-    <string name="label_weight">Aðýrlýk</string>
-    <string name="label_bmi">Vucüt Kitle Endeksi (BMI)</string>
-    <string name="label_bmr">Bazal Metabolik Oraný (BMR)</string>
-    <string name="label_fat">Vücüt Yað Yüzdesi</string>
-    <string name="label_water">Su Yüzdesi</string>
-    <string name="label_muscle">Kas Yüzdesi</string>
-    <string name="label_lbm">Yaðsýz vücüt aðýrlýðý</string>
+    <string name="label_weight">Ağırlık</string>
+    <string name="label_bmi">Vücut Kitle Endeksi (BMI)</string>
+    <string name="label_bmr">Bazal Metabolizma Hızı (BMR)</string>
+    <string name="label_fat">Vücut Yağ Yüzdesi</string>
+    <string name="label_water">Vücut su oranı</string>
+    <string name="label_muscle">Kas oranı</string>
+    <string name="label_lbm">Yağsız vücut kütlesi</string>
     <string name="label_waist">Bel çevresi</string>
     <string name="label_hip">Kalça çevresi</string>
     <string name="label_comment">Yorum</string>
-    <string name="label_whtr">Bel-Boy oraný</string>
-    <string name="label_whr">Bel-Kalça oraný</string>
+    <string name="label_whtr">Bel-boy oranı</string>
+    <string name="label_whr">Bel-Kalça oranı</string>
     <string name="label_bone">Kemik kütlesi</string>
-    <string name="label_smartUserAssign">Akýllý kullanýcý atamasý</string>
+    <string name="label_smartUserAssign">Akıllı kullanıcı ataması</string>
 
     <plurals name="label_days">
-        <item quantity="other">%d Günler</item>
-    </plurals>
-    <string name="label_last_week">Son 7 Gün</string>
-    <string name="label_last_month">Son 30 Gün</string>
-    <string name="label_weight_difference">Aðýrlýk farký</string>
-    <string name="label_goal_date_is">Hedef tarihi</string>
-    <string name="label_days_left">Geçen günler</string>
+	<item quantity="one">%d Gün</item>
+	<item quantity="other">%d gün</item>
+</plurals>
+    <string name="label_last_week">Geçen hafta ortalaması</string>
+    <string name="label_last_month">Geçen ay ortalaması</string>
+    <string name="label_weight_difference">Ağırlık farkı</string>
+    <string name="label_goal_date_is">Hedef tarih:</string>
+    <string name="label_days_left">Kalan günler</string>
 
     <string name="label_date">Tarih</string>
     <string name="label_time">Zaman</string>
-    <string name="label_birthday">Doðum Tarihi</string>
-    <string name="label_user_name">Ýsim</string>
-    <string name="label_height">Boy uzunluðu</string>
+    <string name="label_birthday">Doğum günü</string>
+    <string name="label_user_name">Ad</string>
+    <string name="label_height">"Boy "</string>
     <string name="label_scale_unit">Ölçek birimi</string>
     <string name="label_gender">Cinsiyet</string>
     <string name="label_male">Erkek</string>
-    <string name="label_female">Kadýn</string>
-    <string name="label_goal_weight">Hedef Kilo</string>
-    <string name="label_goal_date">Hedef Tarihi</string>
+    <string name="label_female">Kadın</string>
+    <string name="label_goal_weight">Hedef ağırlık</string>
+    <string name="label_goal_date">Hedef Tarih</string>
 
 
-    <string name="label_title_user">Kullanýcý</string>
-    <string name="label_title_last_measurement">Son ölçüm</string>
+    <string name="label_title_user">Kullanıcı</string>
+    <string name="label_title_last_measurement">son ölçüm</string>
     <string name="label_title_goal">Hedef</string>
 
-    <string name="label_import">Import</string>
-    <string name="label_export">Export</string>
+    <string name="label_import">İçe aktar</string>
+    <string name="label_export">Dışa aktar</string>
     <string name="label_delete_all">Hepsini Sil</string>
 
-    <string name="error_value_required">Deðer gerekli</string>
-    <string name="error_value_range">Deðer aralýkta deðil</string>
-    <string name="error_exporting">Hatalý export</string>
-    <string name="error_importing">Hatalý import</string>
-    <string name="error_user_name_required">Hata: kullanýcý adý gerekiyor</string>
-    <string name="error_height_required">Error: Vücut boyu gerekli</string>
-    <string name="error_initial_weight_required">Error: Baþlangýç aðýrlýðý gerekli</string>
-    <string name="error_goal_weight_required">Error: Hedef aðýrlýk gerekli</string>
+    <string name="error_value_required">Değer gerekli</string>
+    <string name="error_value_range">Değer, aralık dışı</string>
+    <string name="error_exporting">Dışa aktarma hatası</string>
+    <string name="error_importing">İçe aktarma hatası</string>
+    <string name="error_user_name_required">Hata: ad gerekli</string>
+    <string name="error_height_required">Error: boy gerekli</string>
+    <string name="error_initial_weight_required">Hata: İlk ağırlık gerekli</string>
+    <string name="error_goal_weight_required">Hata: Hedef ağırlık gerekli</string>
 
-    <string name="info_data_deleted">Database entry deleted</string>
-    <string name="info_data_all_deleted">Veri tabaný giriþi silindi</string>
-    <string name="info_data_exported">Veri dýþarý aktarma</string>
-    <string name="info_data_imported">Veri içeri aktarma</string>
+    <string name="info_data_deleted">Giriş silindi</string>
+    <string name="info_data_all_deleted">Tüm girişler silindi</string>
+    <string name="info_data_exported">Dışa aktrıldı</string>
+    <string name="info_data_imported">Şuradan içeri aktarıldı</string>
     <string name="info_enter_value_in">Deðeri olarak girin</string>
-    <string name="info_enter_comment">Ýsteðebaðlý açýklama girin</string>
+    <string name="info_enter_comment">İsteğe bağlı yorum</string>
     <string name="info_is_visible">görünür</string>
     <string name="info_is_not_visible">görünmez</string>
-    <string name="info_is_enable">etkindir</string>
-    <string name="info_is_not_enable">etkin deðildir</string>
-    <string name="info_is_not_available">Mevcut deðil</string>
-    <string name="info_bluetooth_try_connection">Baðlanmaya çalýþýyorsunuz</string>
-    <string name="info_bluetooth_connection_lost">Bluetooth baðlantýsý koptu</string>
-    <string name="info_bluetooth_no_device">Bluetooth cihazý bulunamadý</string>
-    <string name="info_bluetooth_connection_successful">Baðlantý baþarýyla kuruldu</string>
-    <string name="info_bluetooth_init">Bluetooth cihazý bulunmaya çalýþýlýyor</string>
-    <string name="info_bluetooth_connection_error">Beklenmedik Bluetooth hatasý</string>
+    <string name="info_is_enable">etkin</string>
+    <string name="info_is_not_enable">devre dışı</string>
+    <string name="info_is_not_available">Mevcut değil</string>
+    <string name="info_bluetooth_try_connection">Bağlanıyor:</string>
+    <string name="info_bluetooth_connection_lost">Bluetooth bağlantısı kesildi</string>
+    <string name="info_bluetooth_no_device">Bluetooth cihazı bulunamadı</string>
+    <string name="info_bluetooth_connection_successful">Bağlantı kuruldu</string>
+    <string name="info_bluetooth_init">Bluetooth aygıtını başlat</string>
+    <string name="info_bluetooth_connection_error">Beklenmeyen Bluetooth hatası</string>
     <string name="info_new_data_added">%1$.2f%2$s [%3$s] to %4$s added</string>
 
-    <string name="info_enter_user_name">Ýsminizi girin</string>
-    <string name="info_no_selected_user">Kullanýcý bulunmuyor. Lütfen ayarlardan yeni kullanýcý oluþturun.</string>
-    <string name="info_no_evaluation_available">Can\'t evaluate the value</string>
+    <string name="info_enter_user_name">Adınız</string>
+    <string name="info_no_selected_user">Kullanıcı yok. Lütfen ayarlardan yeni bir kullanıcı oluşturun.</string>
+    <string name="info_no_evaluation_available">Değer değerlendirilemedi</string>
 
-    <string name="question_really_delete">Veri tabanýný gerçekten silmek istiyormusunuz?</string>
-    <string name="question_really_delete_all">Tüm girilen verileri gerçekten silmek istiyormusunuz?</string>
-    <string name="question_really_delete_user">Kullanýcýyý gerçekten silmek istiyormusunuz? </string>
+    <string name="question_really_delete">Giriş silinsin mi\?</string>
+    <string name="question_really_delete_all">Tüm kullanıcılara ait tüm girişler silinsin mi\?</string>
+    <string name="question_really_delete_user">Kullanıcı silinsin mi\?</string>
 
     <string name="label_bluetooth_title">Bluetooth</string>
-    <string name="label_bluetooth_enable">Baskülü aramaya baþlandý</string>
+    <string name="label_bluetooth_enable">Başlangıçda ölçeğe bağlan</string>
     <string name="label_bluetooth_searching">Bluetooth Baskül aranýyor</string>
 
-    <string name="label_enable_labels">Label on data point</string>
-    <string name="label_enable_points">Point on data point</string>
+    <string name="label_enable_labels">Veri etiketi</string>
+    <string name="label_enable_points">Veri noktası</string>
 
-    <string name="label_delete_confirmation">Delete confirmation</string>
+    <string name="label_delete_confirmation">Onayı sil</string>
 
-    <string name="label_category_measurement_database">Ölçüm veritabaný</string>
+    <string name="label_category_measurement_database">Ölçüm veritabanı</string>
 
-    <string name="label_maintainer">Maintainer</string>
-    <string name="label_website">Websitesi</string>
-    <string name="label_license">Lisan</string>
+    <string name="label_maintainer">Bakımcı</string>
+    <string name="label_website">İnternet sitesi</string>
+    <string name="label_license">Lisans</string>
 
-    <string name="label_automatic">otomatik</string>
+    <string name="label_automatic">oto</string>
 
-    <string name="label_reminder">Hatýrlatma</string>
-    <string name="label_reminder_weekdays">Hafta içi</string>
+    <string name="label_reminder">Anımsatıcı</string>
+    <string name="label_reminder_weekdays">Günler</string>
     <string name="label_reminder_time">Zaman</string>
     <string name="label_reminder_notify_text">Bildirim metni</string>
-    <string name="default_value_reminder_notify_text">Aðýrlýk zamaný</string>
+    <string name="default_value_reminder_notify_text">Tartılma zamanı</string>
 
     <string name="info_on_date">Üzerinde</string>
 
     <string name="Monday">Pazartesi</string>
-    <string name="Tuesday">Salý</string>
-    <string name="Wednesday">Çarþamba</string>
-    <string name="Thursday">Perþembe</string>
+    <string name="Tuesday">Salı</string>
+    <string name="Wednesday">Çarşamba</string>
+    <string name="Thursday">Perşembe</string>
     <string name="Friday">Cuma</string>
     <string name="Saturday">Cumartesi</string>
     <string name="Sunday">Pazar</string>
-    <string name="label_bt_device_no_support">Cihazýnýz desteklenmiyor</string>
-    <string name="label_exportBackup">Export yedekleme</string>
-    <string name="label_importBackup">Import yedekleme</string>
+    <string name="label_bt_device_no_support">Aygıt desteklenmiyor</string>
+    <string name="label_exportBackup">Dışa aktarım yedekleme</string>
+    <string name="label_importBackup">İçe aktarım yedekleme</string>
     <string name="label_backup">Yedekleme</string>
-    <string name="label_export_dir">Export rehberi</string>
-    <string name="label_not_found">Bulunamadý</string>
-    <string name="label_ignoreOutOfRange">Mesafenin dýþýndaki verileri yoksay</string>
-    <string name="label_initial_weight">Baþlangýç ??aðýrlýðý</string>
-    <string name="label_regression_line">Regresyon aðýrlýk çizgisi</string>
-    <string name="label_regression_line_degree">Regresyon polinom derecesi</string>
+    <string name="label_export_dir">Dışa aktarım dizini</string>
+    <string name="label_not_found">Bulunamadı</string>
+    <string name="label_ignoreOutOfRange">Aralığın dışındaki verileri yoksay</string>
+    <string name="label_initial_weight">Baþlangıç ağırlığı</string>
+    <string name="label_regression_line">Ağırlık çizgisinde gerileme</string>
+    <string name="label_regression_line_degree">polinom derecesinde gerileme</string>
     <string name="label_goal_line">Hedef çizgisi</string>
 
-    <string name="error_max_scale_users">Maksimum eþzamanlý ölçekli kullanýcý sayýsý ulaþtý</string>
-    <string name="info_step_on_scale">Referans ölçümleri için lütfen ölçekte çýplak ayakla adým atýn</string>
-    <string name="info_measuring">Aðýrlýðý ölçme: %.2f</string>
+    <string name="error_max_scale_users">Ençok eşzamanlı tartı kullanıcı sayısına ulaştı</string>
+    <string name="info_step_on_scale">Referans ölçümleri için lütfen tartıya çıplak ayakla çıkın</string>
+    <string name="info_measuring">Ağırlık ölçme: %.2f</string>
+<string name="title_general">Genel</string>
+
+    <string name="open_drawer">Açık</string>
+    <string name="close_drawer">kapat</string>
+
+    <string name="label_add_measurement">Ölçüm ekle</string>
+    <string name="label_share">Paylaş</string>
+    <string name="error_user_name_too_short">Hata: Ad 3 karakter veya daha fazla olmalı</string>
+    <string name="info_bluetooth_no_device_set">Seçili Bluetooth aygıtı yok</string>
+    <string name="info_new_data_duplicated">Aynı tarih ve saatte ölçüm zaten var</string>
+
+    <string name="label_mergeWithLastMeasurement">Son ölçüm ile birleştir</string>
+    <string name="label_bluetooth_searching_finished">Arama tamamlandı</string>
+
+    <string name="label_theme">Tema</string>
+
+    <string name="label_help">Yardım</string>
+
+    <string name="label_feedback_message_enjoying">openScale\'den hoşlandınız mı\?</string>
+    <string name="label_feedback_message_rate_app">Google Play veya GitHub\'ta bir derecelendirmeye ne dersiniz\?</string>
+    <string name="label_feedback_message_issue">Biraz geri bildirim vermek ister misiniz\?</string>
+    <string name="label_feedback_message_yes">Evet</string>
+    <string name="label_feedback_message_no">Pek sayılmaz</string>
+    <string name="label_feedback_message_positive">Tamam</string>
+    <string name="label_feedback_message_negative">Hayır, teşekkürler</string>
+
+    <string name="trisa_scale_pairing_succeeded">Eşleme başarılı oldu!
+\n
+\nÖlçüm verilerini almak için tekrar bağlanın.
+\n
+\n</string>
+
+    <string name="customactivityoncrash_error_activity_error_occurred_explanation">Beklenmedik bir hata oluştu
+\n
+\nLütfen hata ayrıntılarını içeren yeni bir kayıt oluşturun
+\nhttps://github.com/oliexdev/openScale/issues
+\n</string>
+    <string name="customactivityoncrash_error_activity_restart_app">Uygulamayı yeniden başlat</string>
+    <string name="customactivityoncrash_error_activity_close_app">Uygulamayı kapat</string>
+    <string name="customactivityoncrash_error_activity_error_details">Hata ayrıntıları</string>
+    <string name="customactivityoncrash_error_activity_error_details_title">Hata ayrıntıları</string>
+    <string name="customactivityoncrash_error_activity_error_details_close">Kapat</string>
+    <string name="customactivityoncrash_error_activity_error_details_copy">Panoya kopyala</string>
+    <string name="customactivityoncrash_error_activity_error_details_copied">Panoya kopyalandı</string>
+    <string name="customactivityoncrash_error_activity_error_details_clipboard_label">Hata bilgisi</string>
+    <string name="edit">Düzenle</string>
+    <string name="save">Kaydet</string>
+
+    <string name="label_month_view">Aylık görünüm</string>
+    <string name="label_weeks_view">Hafta görünümü</string>
+
+    <string name="permission_not_granted">İzin verilmedi</string>
+    <string name="permission_bluetooth_info_title">Bilgi</string>
+    <string name="permission_read_data_description">tüm kayıtlı ölçümler ve kullanıcı bilgilerini içeren openScale verisini oku</string>
+    <string name="permission_read_data_label">openScale Verisini Okuyun</string>
+    <string name="label_next">Sonraki</string>
+    <string name="label_click_measurement_configure">Yapılandırmak için ölçümü tıklayın</string>
+    <string name="label_estimate_measurement">Tahmini ölçüm</string>
+    <string name="language_default">Sistem öntanımlısı</string>
+    <string name="label_language">Dil</string>
+    <string name="theme_light">Açık</string>
+    <string name="theme_dark">Koyu</string>
+    <string name="label_contribute_translation">Çeviri katkısı</string>
+    <string name="label_add_or_fix_translation">Yeni ekle veya var olanı düzelt</string>
+    <string name="label_percent">Yüzde</string>
+    <string name="label_estimated">Tahmini</string>
+    <string name="label_auto_backup">Otomatik yedekleme</string>
+    <string name="label_auto_backup_schedule">Yedekleme planı</string>
+    <string name="label_overwrite_backup">Önceki yedeklemenin üzerine yaz</string>
+    <string name="label_daily">günlük</string>
+    <string name="label_weekly">haftalık</string>
+    <string name="label_monthly">aylık</string>
+    <string name="label_scale_not_supported">Tartınız desteklenmiyor mu\?</string>
+    <string name="label_development">Geliştirme</string>
+    <string name="label_debug_log">Hata ayıklama günlüğünü kaydet</string>
+    <string name="label_select_measurement">Ölçüm seçin</string>
+    <string name="label_select_user">Kullanıcı seçin</string>
+    <string name="label_configure_widget">Programcıkları yapılandır</string>
+    <string name="label_visceral_fat">İç organ yağı</string>
+    <string name="label_chest">Göğüs çevresi</string>
+    <string name="label_thigh">Kalça çevresi</string>
+    <string name="label_biceps">Pazı çevresi</string>
+    <string name="label_neck">Boyun çevresi</string>
+    <string name="label_fat_caliper">Vücut yağ kalınlığı ölçer</string>
+    <string name="label_caliper2_male">Karın derisi kıvrımı</string>
+    <string name="label_measure_unit">Ölçü birimi</string>
+    <string name="label_activity_level">Etkinlik düzeyi</string>
+    <string name="activity_level_sedentary">Hareketsiz</string>
+    <string name="activity_level_mild">Hafif</string>
+    <string name="activity_level_heavy">Ağır</string>
+    <string name="activity_level_extreme">Aşırı</string>
+    <string name="label_data_provider_enable">Üçüncü parti uygulama erişimi</string>
 </resources>
