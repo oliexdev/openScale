@@ -23,7 +23,9 @@ import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 
 import com.health.openscale.R;
+import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
+import com.health.openscale.core.datatypes.ScaleUser;
 
 import java.util.UUID;
 
@@ -252,7 +254,8 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
     }
 
     private void onScaleMeasurumentReceived(byte[] data) {
-        ScaleMeasurement scaleMeasurement = parseScaleMeasurementData(data);
+        ScaleUser user = OpenScale.getInstance().getSelectedScaleUser();
+        ScaleMeasurement scaleMeasurement = parseScaleMeasurementData(data, user);
         if (scaleMeasurement == null) {
             Timber.e("Failed to parse scale measure measurement data: %s", byteInHex(data));
             return;
