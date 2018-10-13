@@ -28,6 +28,7 @@
         <item>Spanish (Español)</item>
         <item>Swedish (Svenska)</item>
         <item>Turkish (Türkçe)</item>
+        <item>Vietnamese (Tiếng Việt)</item>
     </string-array>
 
     <string-array name="language_values">
@@ -57,6 +58,7 @@
         <item>es</item>
         <item>sv</item>
         <item>tr</item>
+        <item>vi</item>
     </string-array>
 
     <string-array name="theme_entries">
