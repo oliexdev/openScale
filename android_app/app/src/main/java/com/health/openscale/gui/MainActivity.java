@@ -16,7 +16,6 @@
 
 package com.health.openscale.gui;
 
-import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
@@ -31,8 +30,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
-import android.support.design.internal.BottomNavigationItemView;
-import android.support.design.internal.BottomNavigationMenuView;
 import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
@@ -64,7 +61,6 @@ import com.health.openscale.gui.fragments.TableFragment;
 import com.health.openscale.gui.preferences.BluetoothPreferences;
 
 import java.io.File;
-import java.lang.reflect.Field;
 import java.util.List;
 
 import cat.ereza.customactivityoncrash.config.CaocConfig;

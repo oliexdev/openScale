@@ -20,8 +20,6 @@ import com.health.openscale.core.utils.Converters;
 
 import org.junit.Test;
 
-import javax.sql.ConnectionEvent;
-
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
