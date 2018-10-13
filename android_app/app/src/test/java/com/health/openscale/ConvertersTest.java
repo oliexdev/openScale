@@ -96,10 +96,10 @@ public class ConvertersTest {
         assertEquals(0x107f, Converters.fromUnsignedInt16Be(data, 3));
 
         data = new byte[]{(byte) 0xff, (byte) 0xfe};
-        assertArrayEquals(data, Converters.toUnsignedInt16Be(0xfffe));
+        assertArrayEquals(data, Converters.toInt16Be(0xfffe));
         assertEquals(0xffff,
                 Converters.fromUnsignedInt16Be(
-                        Converters.toUnsignedInt16Be(0xffff), 0));
+                        Converters.toInt16Be(0xffff), 0));
     }
 
     @Test
@@ -130,13 +130,13 @@ public class ConvertersTest {
         assertEquals(0x1ff00L, Converters.fromUnsignedInt32Be(data, 1));
 
         data = new byte[]{(byte) 0xff, (byte) 0xfe, (byte) 0xfd, (byte) 0xfc};
-        assertArrayEquals(data, Converters.toUnsignedInt32Le(0xfcfdfeffL));
-        assertArrayEquals(data, Converters.toUnsignedInt32Be(0xfffefdfcL));
+        assertArrayEquals(data, Converters.toInt32Le(0xfcfdfeffL));
+        assertArrayEquals(data, Converters.toInt32Be(0xfffefdfcL));
         assertEquals(0xffffffffL,
                 Converters.fromUnsignedInt32Le(
-                        Converters.toUnsignedInt32Le(0xffffffffL), 0));
+                        Converters.toInt32Le(0xffffffffL), 0));
         assertEquals(0xffffffffL,
                 Converters.fromUnsignedInt32Be(
-                        Converters.toUnsignedInt32Be(0xffffffffL), 0));
+                        Converters.toInt32Be(0xffffffffL), 0));
     }
 }

@@ -247,7 +247,7 @@ public class Converters {
         return value;
     }
 
-    public static byte[] toUnsignedInt16Be(int value) {
+    public static byte[] toInt16Be(int value) {
         byte[] data = new byte[2];
         data[0] = (byte) ((value >> 8) & 0xFF);
         data[1] = (byte) (value & 0xFF);
@@ -277,7 +277,7 @@ public class Converters {
         return value;
     }
 
-    public static byte[] toUnsignedInt32Le(long value) {
+    public static byte[] toInt32Le(long value) {
         byte[] data = new byte[4];
         data[3] = (byte) ((value >> 24) & 0xFF);
         data[2] = (byte) ((value >> 16) & 0xFF);
@@ -286,7 +286,7 @@ public class Converters {
         return data;
     }
 
-    public static byte[] toUnsignedInt32Be(long value) {
+    public static byte[] toInt32Be(long value) {
         byte[] data = new byte[4];
         data[0] = (byte) ((value >> 24) & 0xFF);
         data[1] = (byte) ((value >> 16) & 0xFF);
