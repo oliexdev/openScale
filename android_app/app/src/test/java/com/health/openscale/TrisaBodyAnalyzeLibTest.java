@@ -1,36 +1,25 @@
 package com.health.openscale;
 
 import com.health.openscale.core.datatypes.ScaleMeasurement;
+import com.health.openscale.core.datatypes.ScaleUser;
+import com.health.openscale.core.utils.Converters;
 
 import junit.framework.Assert;
 
 import org.junit.Test;
 
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 
 import static com.health.openscale.core.bluetooth.lib.TrisaBodyAnalyzeLib.convertDeviceTimestampToJava;
 import static com.health.openscale.core.bluetooth.lib.TrisaBodyAnalyzeLib.convertJavaTimestampToDevice;
 import static com.health.openscale.core.bluetooth.lib.TrisaBodyAnalyzeLib.getBase10Float;
-import static com.health.openscale.core.bluetooth.lib.TrisaBodyAnalyzeLib.getInt32;
 import static com.health.openscale.core.bluetooth.lib.TrisaBodyAnalyzeLib.parseScaleMeasurementData;
 import static junit.framework.Assert.assertEquals;
 
 /** Unit tests for {@link com.health.openscale.core.bluetooth.lib.TrisaBodyAnalyzeLib}.*/
 public class TrisaBodyAnalyzeLibTest {
-
-    @Test
-    public void getInt32Tests() {
-        byte[] data = new byte[]{1, 2, 3, 4, 5, 6};
-        assertEquals(0x04030201, getInt32(data, 0));
-        assertEquals(0x05040302, getInt32(data, 1));
-        assertEquals(0x06050403, getInt32(data, 2));
-
-        assertEquals(0xa7bdd385, getInt32(new byte[]{-123, -45, -67, -89}, 0));
-
-        assertThrows(IndexOutOfBoundsException.class, getInt32Runnable(data, -1));
-        assertThrows(IndexOutOfBoundsException.class, getInt32Runnable(data, 5));
-        assertThrows(IndexOutOfBoundsException.class, getInt32Runnable(new byte[]{1,2,3}, 0));
-    }
 
     @Test
     public void getBase10FloatTests() {
@@ -68,27 +57,49 @@ public class TrisaBodyAnalyzeLibTest {
     }
 
     @Test
-    public void parseScaleMeasurementDataTests() {
+    public void parseScaleMeasurementData_validUserData() {
+        long expected_timestamp_seconds = 1539205852L;  // Wed Oct 10 21:10:52 UTC 2018
+        byte[] bytes = hexToBytes("9f:b0:1d:00:fe:dc:2f:81:10:00:00:00:ff:0a:15:00:ff:00:09:00");
+
+        ScaleUser user = new ScaleUser();
+        user.setGender(Converters.Gender.MALE);
+        user.setBirthday(ageToBirthday(36));
+        user.setBodyHeight(186);
+        user.setMeasureUnit(Converters.MeasureUnit.CM);
+
+        ScaleMeasurement measurement = parseScaleMeasurementData(bytes, user);
+
+        float eps = 1e-3f;
+        assertEquals(76.0f, measurement.getWeight(), eps);
+        assertEquals(new Date(expected_timestamp_seconds * 1000), measurement.getDateTime());
+        assertEquals(14.728368f, measurement.getFat(), eps);
+        assertEquals(64.37914f, measurement.getWater(), eps);
+        assertEquals(43.36414f, measurement.getMuscle(), eps);
+        assertEquals(4.525733f, measurement.getBone());
+    }
+
+    @Test
+    public void parseScaleMeasurementData_missingUserData() {
         long expected_timestamp_seconds = 1538156082L;  // Fri Sep 28 17:34:42 UTC 2018
         byte[] bytes = hexToBytes("9f:ba:1d:00:fe:32:2b:71:10:00:00:00:ff:8d:14:00:ff:00:09:00");
 
-        ScaleMeasurement measurement = parseScaleMeasurementData(bytes);
+        ScaleMeasurement measurement = parseScaleMeasurementData(bytes, null);
 
-        assertEquals(measurement.getWeight(), 76.1f, 1e-6f);
+        assertEquals(76.1f, measurement.getWeight(), 1e-3f);
         assertEquals(new Date(expected_timestamp_seconds * 1000), measurement.getDateTime());
+        assertEquals(0f, measurement.getFat());
     }
 
-    /**
-     * Creates a {@link Runnable} that will call getInt32(). In Java 8, this can be done more
-     * easily with a lambda expression at the call site, but we are using Java 7.
-     */
-    private static Runnable getInt32Runnable(final byte[] data, final int offset) {
-        return new Runnable() {
-            @Override
-            public void run() {
-                getInt32(data, offset);
-            }
-        };
+    @Test
+    public void parseScaleMeasurementData_invalidUserData() {
+        long expected_timestamp_seconds = 1538156082L;  // Fri Sep 28 17:34:42 UTC 2018
+        byte[] bytes = hexToBytes("9f:ba:1d:00:fe:32:2b:71:10:00:00:00:ff:8d:14:00:ff:00:09:00");
+
+        ScaleMeasurement measurement = parseScaleMeasurementData(bytes, new ScaleUser());
+
+        assertEquals(76.1f, measurement.getWeight(), 1e-3f);
+        assertEquals(new Date(expected_timestamp_seconds * 1000), measurement.getDateTime());
+        assertEquals(0f, measurement.getFat());
     }
 
     /**
@@ -124,7 +135,7 @@ public class TrisaBodyAnalyzeLibTest {
     }
 
     /** Parses a colon-separated hex-encoded string like "aa:bb:cc:dd" into an array of bytes. */
-    private byte[] hexToBytes(String s) {
+    private static byte[] hexToBytes(String s) {
         String[] parts = s.split(":");
         byte[] bytes = new byte[parts.length];
         for (int i = 0; i < bytes.length; ++i) {
@@ -134,5 +145,10 @@ public class TrisaBodyAnalyzeLibTest {
             bytes[i] = (byte)Integer.parseInt(parts[i], 16);
         }
         return bytes;
+    }
+
+    private static Date ageToBirthday(int years) {
+        int currentYear = GregorianCalendar.getInstance().get(Calendar.YEAR);
+        return new GregorianCalendar(currentYear - years, Calendar.JANUARY, 1).getTime();
     }
 }

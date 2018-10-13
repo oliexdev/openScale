@@ -23,14 +23,16 @@ import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 
 import com.health.openscale.R;
+import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
+import com.health.openscale.core.datatypes.ScaleUser;
+import com.health.openscale.core.utils.Converters;
 
 import java.util.UUID;
 
 import timber.log.Timber;
 
 import static com.health.openscale.core.bluetooth.lib.TrisaBodyAnalyzeLib.convertJavaTimestampToDevice;
-import static com.health.openscale.core.bluetooth.lib.TrisaBodyAnalyzeLib.getInt32;
 import static com.health.openscale.core.bluetooth.lib.TrisaBodyAnalyzeLib.parseScaleMeasurementData;
 
 /**
@@ -216,7 +218,7 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
             Timber.e("Password data too short");
             return;
         }
-        password = getInt32(data, 1);
+        password = Converters.fromSignedInt32Le(data, 1);
         if (deviceId == null) {
             Timber.e("Can't save password: device id not set!");
         } else {
@@ -244,7 +246,7 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
             disconnect(true);
             return;
         }
-        int challenge = getInt32(data, 1);
+        int challenge = Converters.fromSignedInt32Le(data, 1);
         int response = challenge ^ password;
         writeCommand(DOWNLOAD_INFORMATION_RESULT_COMMAND, response);
         int deviceTimestamp = convertJavaTimestampToDevice(System.currentTimeMillis());
@@ -252,7 +254,8 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
     }
 
     private void onScaleMeasurumentReceived(byte[] data) {
-        ScaleMeasurement scaleMeasurement = parseScaleMeasurementData(data);
+        ScaleUser user = OpenScale.getInstance().getSelectedScaleUser();
+        ScaleMeasurement scaleMeasurement = parseScaleMeasurementData(data, user);
         if (scaleMeasurement == null) {
             Timber.e("Failed to parse scale measure measurement data: %s", byteInHex(data));
             return;
@@ -272,13 +275,10 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
      * encoded in little-endian byte order.</p>
      */
     private void writeCommand(byte commandByte, int argument) {
-        writeCommandBytes(new byte[]{
-                commandByte,
-                (byte) (argument >> 0),
-                (byte) (argument >> 8),
-                (byte) (argument >> 16),
-                (byte) (argument >> 24),
-        });
+        byte[] bytes = new byte[5];
+        bytes[0] = commandByte;
+        Converters.toInt32Le(bytes, 1, argument);
+        writeCommandBytes(bytes);
     }
 
     private void writeCommandBytes(byte[] bytes) {

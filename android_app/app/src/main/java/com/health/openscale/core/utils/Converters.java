@@ -235,63 +235,106 @@ public class Converters {
         return kg;
     }
 
-    public static int fromUnsignedInt16Le(byte[] data, int offset) {
-        int value = (data[offset + 1] & 0xFF) << 8;
+    public static int fromSignedInt16Le(byte[] data, int offset) {
+        int value = data[offset + 1] << 8;
         value += data[offset] & 0xFF;
         return value;
     }
 
-    public static int fromUnsignedInt16Be(byte[] data, int offset) {
-        int value = (data[offset] & 0xFF) << 8;
+    public static int fromSignedInt16Be(byte[] data, int offset) {
+        int value = data[offset] << 8;
         value += data[offset + 1] & 0xFF;
         return value;
     }
 
-    public static byte[] toUnsignedInt16Be(int value) {
+    public static int fromUnsignedInt16Le(byte[] data, int offset) {
+        return fromSignedInt16Le(data, offset) & 0xFFFF;
+    }
+
+    public static int fromUnsignedInt16Be(byte[] data, int offset) {
+        return fromSignedInt16Be(data, offset) & 0xFFFF;
+    }
+
+    public static void toInt16Le(byte[] data, int offset, int value) {
+        data[offset + 0] = (byte) (value & 0xFF);
+        data[offset + 1] = (byte) ((value >> 8) & 0xFF);
+    }
+
+    public static void toInt16Be(byte[] data, int offset, int value) {
+        data[offset + 0] = (byte) ((value >> 8) & 0xFF);
+        data[offset + 1] = (byte) (value & 0xFF);
+    }
+
+    public static byte[] toInt16Le(int value) {
         byte[] data = new byte[2];
-        data[0] = (byte) ((value >> 8) & 0xFF);
-        data[1] = (byte) (value & 0xFF);
+        toInt16Le(data, 0, value);
         return data;
     }
 
-    public static int fromUnsignedInt24Le(byte[] data, int offset) {
-        int value = (data[offset + 2] & 0xFF) << 16;
+    public static byte[] toInt16Be(int value) {
+        byte[] data = new byte[2];
+        toInt16Be(data, 0, value);
+        return data;
+    }
+
+    public static int fromSignedInt24Le(byte[] data, int offset) {
+        int value = data[offset + 2] << 16;
         value += (data[offset + 1] & 0xFF) << 8;
         value += data[offset] & 0xFF;
         return value;
     }
 
-    public static long fromUnsignedInt32Le(byte[] data, int offset) {
-        long value = (long) (data[offset + 3] & 0xFF) << 24;
+    public static int fromUnsignedInt24Le(byte[] data, int offset) {
+        return fromSignedInt24Le(data, offset) & 0xFFFFFF;
+    }
+
+    public static int fromSignedInt32Le(byte[] data, int offset) {
+        int value = data[offset + 3] << 24;
         value += (data[offset + 2] & 0xFF) << 16;
         value += (data[offset + 1] & 0xFF) << 8;
         value += data[offset] & 0xFF;
         return value;
     }
 
-    public static long fromUnsignedInt32Be(byte[] data, int offset) {
-        long value = (long) (data[offset] & 0xFF) << 24;
+    public static int fromSignedInt32Be(byte[] data, int offset) {
+        int value = data[offset] << 24;
         value += (data[offset + 1] & 0xFF) << 16;
         value += (data[offset + 2] & 0xFF) << 8;
         value += data[offset + 3] & 0xFF;
         return value;
     }
 
-    public static byte[] toUnsignedInt32Le(long value) {
+    public static long fromUnsignedInt32Le(byte[] data, int offset) {
+        return (long) fromSignedInt32Le(data, offset) & 0xFFFFFFFFL;
+    }
+
+    public static long fromUnsignedInt32Be(byte[] data, int offset) {
+        return (long) fromSignedInt32Be(data, offset) & 0xFFFFFFFFL;
+    }
+
+    public static void toInt32Le(byte[] data, int offset, long value) {
+        data[offset + 3] = (byte) ((value >> 24) & 0xFF);
+        data[offset + 2] = (byte) ((value >> 16) & 0xFF);
+        data[offset + 1] = (byte) ((value >> 8) & 0xFF);
+        data[offset + 0] = (byte) (value & 0xFF);
+    }
+
+    public static void toInt32Be(byte[] data, int offset, long value) {
+        data[offset + 0] = (byte) ((value >> 24) & 0xFF);
+        data[offset + 1] = (byte) ((value >> 16) & 0xFF);
+        data[offset + 2] = (byte) ((value >> 8) & 0xFF);
+        data[offset + 3] = (byte) (value & 0xFF);
+    }
+
+    public static byte[] toInt32Le(long value) {
         byte[] data = new byte[4];
-        data[3] = (byte) ((value >> 24) & 0xFF);
-        data[2] = (byte) ((value >> 16) & 0xFF);
-        data[1] = (byte) ((value >> 8) & 0xFF);
-        data[0] = (byte) (value & 0xFF);
+        toInt32Le(data, 0, value);
         return data;
     }
 
-    public static byte[] toUnsignedInt32Be(long value) {
+    public static byte[] toInt32Be(long value) {
         byte[] data = new byte[4];
-        data[0] = (byte) ((value >> 24) & 0xFF);
-        data[1] = (byte) ((value >> 16) & 0xFF);
-        data[2] = (byte) ((value >> 8) & 0xFF);
-        data[3] = (byte) (value & 0xFF);
+        toInt32Be(data, 0, value);
         return data;
     }
 }

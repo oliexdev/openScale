@@ -23,7 +23,6 @@ import android.content.Context;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
-import com.health.openscale.core.utils.Converters;
 
 import java.util.Date;
 import java.util.UUID;

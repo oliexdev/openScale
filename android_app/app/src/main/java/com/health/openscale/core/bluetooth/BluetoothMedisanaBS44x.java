@@ -73,7 +73,7 @@ public class BluetoothMedisanaBS44x extends BluetoothCommunication {
                 // send magic number to receive weight data
                 long timestamp = new Date().getTime() / 1000;
                 timestamp -= SCALE_UNIX_TIMESTAMP_OFFSET;
-                byte[] date = Converters.toUnsignedInt32Le(timestamp);
+                byte[] date = Converters.toInt32Le(timestamp);
 
                 byte[] magicBytes = new byte[] {(byte)0x02, date[0], date[1], date[2], date[3]};
 

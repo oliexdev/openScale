@@ -58,7 +58,7 @@ public class BluetoothYunmaiSE_Mini extends BluetoothCommunication {
     protected boolean nextInitCmd(int stateNr) {
         switch (stateNr) {
             case 0:
-                byte[] userId = Converters.toUnsignedInt16Be(getUniqueNumber());
+                byte[] userId = Converters.toInt16Be(getUniqueNumber());
 
                 final ScaleUser selectedUser = OpenScale.getInstance().getSelectedScaleUser();
                 byte sex = selectedUser.getGender().isMale() ? (byte)0x01 : (byte)0x02;
@@ -74,7 +74,7 @@ public class BluetoothYunmaiSE_Mini extends BluetoothCommunication {
                 writeBytes(WEIGHT_CMD_SERVICE, WEIGHT_CMD_CHARACTERISTIC, user_add_or_query);
                 break;
             case 1:
-                byte[] unixTime = Converters.toUnsignedInt32Be(new Date().getTime() / 1000);
+                byte[] unixTime = Converters.toInt32Be(new Date().getTime() / 1000);
 
                 byte[] set_time = new byte[]{(byte)0x0d, (byte) 0x0d, (byte) 0x11,
                         unixTime[0], unixTime[1], unixTime[2], unixTime[3],

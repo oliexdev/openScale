@@ -588,7 +588,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
     private void updateDateTime() {
         // Update date/time of the scale
         long unixTime = System.currentTimeMillis() / 1000L;
-        byte[] unixTimeBytes = Converters.toUnsignedInt32Be(unixTime);
+        byte[] unixTimeBytes = Converters.toInt32Be(unixTime);
         Timber.d("Write new Date/Time: %d (%s)", unixTime, byteInHex(unixTimeBytes));
 
         writeBytes(new byte[]{(byte) getAlternativeStartByte(9),

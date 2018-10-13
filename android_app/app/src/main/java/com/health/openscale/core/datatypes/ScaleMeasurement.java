@@ -22,8 +22,6 @@ import android.arch.persistence.room.ForeignKey;
 import android.arch.persistence.room.Index;
 import android.arch.persistence.room.PrimaryKey;
 
-import com.health.openscale.R;
-import com.health.openscale.core.utils.Converters;
 import com.j256.simplecsv.common.CsvColumn;
 
 import java.lang.reflect.Field;
