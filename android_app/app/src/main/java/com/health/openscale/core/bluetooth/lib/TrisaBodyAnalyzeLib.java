@@ -51,8 +51,7 @@ public class TrisaBodyAnalyzeLib {
      * @throws IndexOutOfBoundsException if {@code offset < 0} or {@code offset + 4> data.length}
      */
     public static double getBase10Float(byte[] data, int offset) {
-        int mantissa = (data[offset] & 0xff) | ((data[offset + 1] & 0xff) << 8) |
-                ((data[offset + 2] & 0xff) << 16);
+        int mantissa = Converters.fromUnsignedInt24Le(data, offset);
         int exponent = data[offset + 3];  // note: byte is signed.
         return mantissa * Math.pow(10, exponent);
     }
