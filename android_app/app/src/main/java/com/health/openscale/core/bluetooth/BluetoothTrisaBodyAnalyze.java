@@ -26,6 +26,7 @@ import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
+import com.health.openscale.core.utils.Converters;
 
 import java.util.UUID;
 
@@ -275,13 +276,10 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
      * encoded in little-endian byte order.</p>
      */
     private void writeCommand(byte commandByte, int argument) {
-        writeCommandBytes(new byte[]{
-                commandByte,
-                (byte) (argument >> 0),
-                (byte) (argument >> 8),
-                (byte) (argument >> 16),
-                (byte) (argument >> 24),
-        });
+        byte[] bytes = new byte[5];
+        bytes[0] = commandByte;
+        Converters.toInt32Le(bytes, 1, argument);
+        writeCommandBytes(bytes);
     }
 
     private void writeCommandBytes(byte[] bytes) {

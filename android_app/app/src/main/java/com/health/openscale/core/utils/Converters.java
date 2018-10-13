@@ -247,17 +247,25 @@ public class Converters {
         return value;
     }
 
+    public static void toInt16Le(byte[] data, int offset, int value) {
+        data[offset + 0] = (byte) (value & 0xFF);
+        data[offset + 1] = (byte) ((value >> 8) & 0xFF);
+    }
+
+    public static void toInt16Be(byte[] data, int offset, int value) {
+        data[offset + 0] = (byte) ((value >> 8) & 0xFF);
+        data[offset + 1] = (byte) (value & 0xFF);
+    }
+
     public static byte[] toInt16Le(int value) {
         byte[] data = new byte[2];
-        data[0] = (byte) (value & 0xFF);
-        data[1] = (byte) ((value >> 8) & 0xFF);
+        toInt16Le(data, 0, value);
         return data;
     }
 
     public static byte[] toInt16Be(int value) {
         byte[] data = new byte[2];
-        data[0] = (byte) ((value >> 8) & 0xFF);
-        data[1] = (byte) (value & 0xFF);
+        toInt16Be(data, 0, value);
         return data;
     }
 
@@ -284,21 +292,29 @@ public class Converters {
         return value;
     }
 
+    public static void toInt32Le(byte[] data, int offset, long value) {
+        data[offset + 3] = (byte) ((value >> 24) & 0xFF);
+        data[offset + 2] = (byte) ((value >> 16) & 0xFF);
+        data[offset + 1] = (byte) ((value >> 8) & 0xFF);
+        data[offset + 0] = (byte) (value & 0xFF);
+    }
+
+    public static void toInt32Be(byte[] data, int offset, long value) {
+        data[offset + 0] = (byte) ((value >> 24) & 0xFF);
+        data[offset + 1] = (byte) ((value >> 16) & 0xFF);
+        data[offset + 2] = (byte) ((value >> 8) & 0xFF);
+        data[offset + 3] = (byte) (value & 0xFF);
+    }
+
     public static byte[] toInt32Le(long value) {
         byte[] data = new byte[4];
-        data[3] = (byte) ((value >> 24) & 0xFF);
-        data[2] = (byte) ((value >> 16) & 0xFF);
-        data[1] = (byte) ((value >> 8) & 0xFF);
-        data[0] = (byte) (value & 0xFF);
+        toInt32Le(data, 0, value);
         return data;
     }
 
     public static byte[] toInt32Be(long value) {
         byte[] data = new byte[4];
-        data[0] = (byte) ((value >> 24) & 0xFF);
-        data[1] = (byte) ((value >> 16) & 0xFF);
-        data[2] = (byte) ((value >> 8) & 0xFF);
-        data[3] = (byte) (value & 0xFF);
+        toInt32Be(data, 0, value);
         return data;
     }
 }

@@ -20,6 +20,8 @@ import com.health.openscale.core.utils.Converters;
 
 import org.junit.Test;
 
+import javax.sql.ConnectionEvent;
+
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
@@ -102,6 +104,12 @@ public class ConvertersTest {
         assertArrayEquals(new byte[]{(byte) 0xff, (byte) 0xfe}, Converters.toInt16Be(0xfffe));
         assertArrayEquals(new byte[]{(byte) 0x34, (byte) 0x12}, Converters.toInt16Le(0x1234));
         assertArrayEquals(new byte[]{(byte) 0xfe, (byte) 0xff}, Converters.toInt16Le(0xfffe));
+
+        byte[] data = new byte[6];
+        Converters.toInt16Be(data, 1, 0x0102);
+        Converters.toInt16Be(data, 3, 0x0304);
+        Converters.toInt16Le(data, 2, 0x0506);
+        assertArrayEquals(new byte[]{ 0, 1, 6, 5, 4, 0}, data);
     }
 
     @Test
@@ -114,7 +122,7 @@ public class ConvertersTest {
     }
 
     @Test
-    public void unsignedInt32Converters() throws Exception {
+    public void fromUnsignedInt32Converters() throws Exception {
         byte[] data = new byte[]{(byte) 0xf1, (byte) 0xf2, (byte) 0xf3, (byte) 0x7f, (byte) 0x7e};
 
         assertEquals(0x7ff3f2f1, Converters.fromUnsignedInt32Le(data, 0));
@@ -130,8 +138,11 @@ public class ConvertersTest {
 
         assertEquals(0x800001ffL, Converters.fromUnsignedInt32Be(data, 0));
         assertEquals(0x1ff00L, Converters.fromUnsignedInt32Be(data, 1));
+    }
 
-        data = new byte[]{(byte) 0xff, (byte) 0xfe, (byte) 0xfd, (byte) 0xfc};
+    @Test
+    public void toInt32Converters() throws Exception {
+        byte[] data = new byte[]{(byte) 0xff, (byte) 0xfe, (byte) 0xfd, (byte) 0xfc};
         assertArrayEquals(data, Converters.toInt32Le(0xfcfdfeffL));
         assertArrayEquals(data, Converters.toInt32Be(0xfffefdfcL));
         assertEquals(0xffffffffL,
@@ -140,5 +151,11 @@ public class ConvertersTest {
         assertEquals(0xffffffffL,
                 Converters.fromUnsignedInt32Be(
                         Converters.toInt32Be(0xffffffffL), 0));
+
+        data = new byte[10];
+        Converters.toInt32Be(data, 1, 0x01020304);
+        Converters.toInt32Be(data, 6, 0x05060708);
+        Converters.toInt32Le(data, 3, 0x090a0b0c);
+        assertArrayEquals(new byte[]{ 0, 1, 2, 12, 11, 10, 9, 6, 7, 8}, data);
     }
 }
