@@ -15,26 +15,11 @@ import java.util.GregorianCalendar;
 import static com.health.openscale.core.bluetooth.lib.TrisaBodyAnalyzeLib.convertDeviceTimestampToJava;
 import static com.health.openscale.core.bluetooth.lib.TrisaBodyAnalyzeLib.convertJavaTimestampToDevice;
 import static com.health.openscale.core.bluetooth.lib.TrisaBodyAnalyzeLib.getBase10Float;
-import static com.health.openscale.core.bluetooth.lib.TrisaBodyAnalyzeLib.getInt32;
 import static com.health.openscale.core.bluetooth.lib.TrisaBodyAnalyzeLib.parseScaleMeasurementData;
 import static junit.framework.Assert.assertEquals;
 
 /** Unit tests for {@link com.health.openscale.core.bluetooth.lib.TrisaBodyAnalyzeLib}.*/
 public class TrisaBodyAnalyzeLibTest {
-
-    @Test
-    public void getInt32Tests() {
-        byte[] data = new byte[]{1, 2, 3, 4, 5, 6};
-        assertEquals(0x04030201, getInt32(data, 0));
-        assertEquals(0x05040302, getInt32(data, 1));
-        assertEquals(0x06050403, getInt32(data, 2));
-
-        assertEquals(0xa7bdd385, getInt32(new byte[]{-123, -45, -67, -89}, 0));
-
-        assertThrows(IndexOutOfBoundsException.class, getInt32Runnable(data, -1));
-        assertThrows(IndexOutOfBoundsException.class, getInt32Runnable(data, 5));
-        assertThrows(IndexOutOfBoundsException.class, getInt32Runnable(new byte[]{1,2,3}, 0));
-    }
 
     @Test
     public void getBase10FloatTests() {
@@ -115,19 +100,6 @@ public class TrisaBodyAnalyzeLibTest {
         assertEquals(76.1f, measurement.getWeight(), 1e-3f);
         assertEquals(new Date(expected_timestamp_seconds * 1000), measurement.getDateTime());
         assertEquals(0f, measurement.getFat());
-    }
-
-    /**
-     * Creates a {@link Runnable} that will call getInt32(). In Java 8, this can be done more
-     * easily with a lambda expression at the call site, but we are using Java 7.
-     */
-    private static Runnable getInt32Runnable(final byte[] data, final int offset) {
-        return new Runnable() {
-            @Override
-            public void run() {
-                getInt32(data, offset);
-            }
-        };
     }
 
     /**

@@ -33,7 +33,6 @@ import java.util.UUID;
 import timber.log.Timber;
 
 import static com.health.openscale.core.bluetooth.lib.TrisaBodyAnalyzeLib.convertJavaTimestampToDevice;
-import static com.health.openscale.core.bluetooth.lib.TrisaBodyAnalyzeLib.getInt32;
 import static com.health.openscale.core.bluetooth.lib.TrisaBodyAnalyzeLib.parseScaleMeasurementData;
 
 /**
@@ -219,7 +218,7 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
             Timber.e("Password data too short");
             return;
         }
-        password = getInt32(data, 1);
+        password = Converters.fromSignedInt32Le(data, 1);
         if (deviceId == null) {
             Timber.e("Can't save password: device id not set!");
         } else {
@@ -247,7 +246,7 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
             disconnect(true);
             return;
         }
-        int challenge = getInt32(data, 1);
+        int challenge = Converters.fromSignedInt32Le(data, 1);
         int response = challenge ^ password;
         writeCommand(DOWNLOAD_INFORMATION_RESULT_COMMAND, response);
         int deviceTimestamp = convertJavaTimestampToDevice(System.currentTimeMillis());

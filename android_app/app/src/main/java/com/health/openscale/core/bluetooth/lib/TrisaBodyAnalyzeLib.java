@@ -33,16 +33,6 @@ public class TrisaBodyAnalyzeLib {
     // Timestamp of 2010-01-01 00:00:00 UTC (or local time?)
     private static final long TIMESTAMP_OFFSET_SECONDS = 1262304000L;
 
-    /**
-     * Converts 4 little-endian bytes to a 32-bit integer, starting from {@code offset}.
-     *
-     * @throws IndexOutOfBoundsException if {@code offset < 0} or {@code offset + 4> data.length}
-     */
-    public static int getInt32(byte[] data, int offset) {
-        return (data[offset] & 0xff) | ((data[offset + 1] & 0xff) << 8) |
-                ((data[offset + 2] & 0xff) << 16) | ((data[offset + 3] & 0xff) << 24);
-    }
-
     /** Converts 4 bytes to a floating point number, starting from  {@code offset}.
      *
      * <p>The first three little-endian bytes form the 24-bit mantissa. The last byte contains the
@@ -92,7 +82,7 @@ public class TrisaBodyAnalyzeLib {
             return null;
         }
         double weightKg = getBase10Float(data, 1);
-        int deviceTimestamp = getInt32(data, 5);
+        int deviceTimestamp = Converters.fromSignedInt32Le(data, 5);
 
         ScaleMeasurement measurement = new ScaleMeasurement();
         measurement.setDateTime(new Date(convertDeviceTimestampToJava(deviceTimestamp)));
