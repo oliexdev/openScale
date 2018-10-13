@@ -82,7 +82,7 @@ public class ConvertersTest {
     }
 
     @Test
-    public void unsignedInt16Converters() throws Exception {
+    public void fromUnsignedInt16Converters() throws Exception {
         byte[] data = new byte[]{(byte) 0xfd, (byte) 0xfe, (byte) 0xfc, (byte) 0x10, (byte) 0x7f};
 
         assertEquals(0xfefd, Converters.fromUnsignedInt16Le(data, 0));
@@ -94,12 +94,14 @@ public class ConvertersTest {
         assertEquals(0xfefc, Converters.fromUnsignedInt16Be(data, 1));
         assertEquals(0xfc10, Converters.fromUnsignedInt16Be(data, 2));
         assertEquals(0x107f, Converters.fromUnsignedInt16Be(data, 3));
+    }
 
-        data = new byte[]{(byte) 0xff, (byte) 0xfe};
-        assertArrayEquals(data, Converters.toInt16Be(0xfffe));
-        assertEquals(0xffff,
-                Converters.fromUnsignedInt16Be(
-                        Converters.toInt16Be(0xffff), 0));
+    @Test
+    public void toInt16Converters() throws Exception {
+        assertArrayEquals(new byte[]{(byte) 0x12, (byte) 0x34}, Converters.toInt16Be(0x1234));
+        assertArrayEquals(new byte[]{(byte) 0xff, (byte) 0xfe}, Converters.toInt16Be(0xfffe));
+        assertArrayEquals(new byte[]{(byte) 0x34, (byte) 0x12}, Converters.toInt16Le(0x1234));
+        assertArrayEquals(new byte[]{(byte) 0xfe, (byte) 0xff}, Converters.toInt16Le(0xfffe));
     }
 
     @Test

@@ -247,6 +247,13 @@ public class Converters {
         return value;
     }
 
+    public static byte[] toInt16Le(int value) {
+        byte[] data = new byte[2];
+        data[0] = (byte) (value & 0xFF);
+        data[1] = (byte) ((value >> 8) & 0xFF);
+        return data;
+    }
+
     public static byte[] toInt16Be(int value) {
         byte[] data = new byte[2];
         data[0] = (byte) ((value >> 8) & 0xFF);
