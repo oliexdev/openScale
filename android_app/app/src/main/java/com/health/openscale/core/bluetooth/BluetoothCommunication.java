@@ -629,10 +629,6 @@ public abstract class BluetoothCommunication {
                     public void run() {
                         stopLeScan();
 
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            gatt.readPhy();
-                        }
-
                         connectionEstablished = true;
                         setBtStatus(BT_STATUS_CODE.BT_CONNECTION_ESTABLISHED);
                     }
