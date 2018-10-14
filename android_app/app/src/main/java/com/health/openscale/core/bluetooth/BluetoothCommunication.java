@@ -660,6 +660,8 @@ public abstract class BluetoothCommunication {
                     public void run() {
                         if (!gatt.discoverServices()) {
                             Timber.e("Could not start service discovery");
+                            setBtStatus(BT_STATUS_CODE.BT_CONNECTION_LOST);
+                            disconnect(false);
                         }
                     }
                 }, 1000);
