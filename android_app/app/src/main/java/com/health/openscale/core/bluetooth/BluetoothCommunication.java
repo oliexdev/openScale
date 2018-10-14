@@ -405,15 +405,13 @@ public abstract class BluetoothCommunication {
      * @param hwAddress the Bluetooth address to connect to
      */
     public void connect(String hwAddress) {
-        disconnect(false);
-
         logBluetoothStatus();
+
+        disconnect(false);
+        btAdapter.cancelDiscovery();
 
         // Some good tips to improve BLE connections:
         // https://android.jlelse.eu/lessons-for-first-time-android-bluetooth-le-developers-i-learned-the-hard-way-fee07646624
-
-        btAdapter.cancelDiscovery();
-        stopLeScan();
 
         // Don't do any cleanup if disconnected before fully connected
         btMachineState = BT_MACHINE_STATE.BT_CLEANUP_STATE;
@@ -462,18 +460,6 @@ public abstract class BluetoothCommunication {
         }
     }
 
-    private void stopLeScanAndConnectGatt(final BluetoothDevice device) {
-        stopLeScan();
-
-        // Delay the call to connectGatt to let things settle a bit
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                connectGatt(device);
-            }
-        }, 500);
-    }
-
     private void startLeScanForDevice(final String hwAddress) {
         leScanCallback = new BluetoothAdapter.LeScanCallback() {
             @Override
@@ -486,23 +472,23 @@ public abstract class BluetoothCommunication {
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        // Check that callback != null in case the same device is found multiple times
+                        // Check that bluetoothGatt == null in case the same device is found multiple times
                         // and thus multiple calls to connect to it are queued. Only the first will
-                        // have callback != null.
-                        if (leScanCallback != null) {
-                            stopLeScanAndConnectGatt(device);
+                        // trigger the connect.
+                        if (bluetoothGatt == null) {
+                            connectGatt(device);
                         }
                     }
                 });
             }
         };
 
-        // Stop scan and try to connect to the device directly if the device isn't found in time
+        // Try to connect to the device directly if the device isn't found in time
         handler.postAtTime(new Runnable() {
             @Override
             public void run() {
                 Timber.d("Device not found in LE scan, connecting directly");
-                stopLeScanAndConnectGatt(btAdapter.getRemoteDevice(hwAddress));
+                connectGatt(btAdapter.getRemoteDevice(hwAddress));
             }
         }, leScanCallback, SystemClock.uptimeMillis() + LE_SCAN_TIMEOUT_MS);
 
@@ -533,6 +519,9 @@ public abstract class BluetoothCommunication {
 
         Timber.i("Disconnecting%s", doCleanup ? " (with cleanup)" : "");
 
+        handler.removeCallbacksAndMessages(null);
+        callbackBtHandler = null;
+
         if (doCleanup) {
             if (btMachineState != BT_MACHINE_STATE.BT_CLEANUP_STATE) {
                 setBtMachineState(BT_MACHINE_STATE.BT_CLEANUP_STATE);
@@ -544,9 +533,7 @@ public abstract class BluetoothCommunication {
                     if (openRequest) {
                         handler.postDelayed(this, 10);
                     } else {
-                        bluetoothGatt.close();
-                        bluetoothGatt = null;
-                        handler.removeCallbacksAndMessages(null);
+                        disconnect(false);
                     }
                 }
             });
@@ -555,9 +542,6 @@ public abstract class BluetoothCommunication {
             bluetoothGatt.close();
             bluetoothGatt = null;
         }
-
-        handler.removeCallbacksAndMessages(null);
-        callbackBtHandler = null;
     }
 
     /**
