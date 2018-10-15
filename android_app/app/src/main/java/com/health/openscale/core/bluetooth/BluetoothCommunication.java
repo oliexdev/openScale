@@ -468,7 +468,8 @@ public abstract class BluetoothCommunication {
                 if (!device.getAddress().equals(hwAddress)) {
                     return;
                 }
-                // Stop scan and connect to the device on the main thread
+                // Stop timeout and connect to the device on the main thread
+                handler.removeCallbacksAndMessages(leScanCallback);
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
