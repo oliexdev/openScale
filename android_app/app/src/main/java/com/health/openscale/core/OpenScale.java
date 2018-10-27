@@ -99,7 +99,7 @@ public class OpenScale {
         btDeviceDriver = null;
         fragmentList = new ArrayList<>();
 
-        reopenDatabase();
+        reopenDatabase(false);
 
         updateScaleData();
     }
@@ -120,13 +120,14 @@ public class OpenScale {
         return instance;
     }
 
-    public void reopenDatabase() throws SQLiteDatabaseCorruptException {
+    public void reopenDatabase(boolean truncate) throws SQLiteDatabaseCorruptException {
         if (appDB != null) {
             appDB.close();
         }
 
         appDB = Room.databaseBuilder(context, AppDatabase.class, DATABASE_NAME)
                 .allowMainThreadQueries()
+                .setJournalMode(truncate == true ? RoomDatabase.JournalMode.TRUNCATE : RoomDatabase.JournalMode.AUTOMATIC) // in truncate mode no sql cache files (-shm, -wal) are generated
                 .addCallback(new RoomDatabase.Callback() {
                     @Override
                     public void onOpen(SupportSQLiteDatabase db) {
@@ -420,7 +421,7 @@ public class OpenScale {
             copyFile(Uri.fromFile(exportFile), Uri.fromFile(tmpExportFile));
             copyFile(importFile, Uri.fromFile(exportFile));
 
-            reopenDatabase();
+            reopenDatabase(false);
 
             if (!getScaleUserList().isEmpty()) {
                 selectScaleUser(getScaleUserList().get(0).getId());
@@ -436,6 +437,7 @@ public class OpenScale {
 
     public void exportDatabase(Uri exportFile) throws IOException {
         File dbFile = context.getApplicationContext().getDatabasePath("openScale.db");
+        reopenDatabase(true); // re-open database without caching sql -shm, -wal files
 
         copyFile(Uri.fromFile(dbFile), exportFile);
     }
