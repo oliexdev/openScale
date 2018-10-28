@@ -1,4 +1,4 @@
-openScale [![Build Status](https://travis-ci.org/oliexdev/openScale.svg?branch=master)](
+&nbsp; ![openScale logo](https://github.com/oliexdev/openScale/blob/master/android_app/app/src/main/res/drawable-mdpi/ic_launcher_openscale.png) &nbsp;openScale [![Build Status](https://travis-ci.org/oliexdev/openScale.svg?branch=master)](
 https://travis-ci.org/oliexdev/openScale)
 [![Translation status](https://hosted.weblate.org/widgets/openscale/-/strings/svg-badge.svg)](https://hosted.weblate.org/engage/openscale/?utm_source=widget)
 =========
