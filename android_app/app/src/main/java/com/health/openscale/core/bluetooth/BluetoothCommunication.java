@@ -56,7 +56,6 @@ public abstract class BluetoothCommunication {
 
     private Handler callbackBtHandler;
     private Handler handler;
-    private static boolean autoConnect = false;
     private BluetoothGatt bluetoothGatt;
     private boolean connectionEstablished;
     private BluetoothGattCallback gattCallback;
@@ -448,15 +447,14 @@ public abstract class BluetoothCommunication {
     }
 
     private void connectGatt(BluetoothDevice device) {
-        Timber.i("Connecting to [%s] (%sdriver: %s)",
-                device.getAddress(), autoConnect ? "auto connect, " : "", driverName());
+        Timber.i("Connecting to [%s] (driver: %s)", device.getAddress(), driverName());
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             bluetoothGatt = device.connectGatt(
-                    context, autoConnect, gattCallback, BluetoothDevice.TRANSPORT_LE);
+                    context, false, gattCallback, BluetoothDevice.TRANSPORT_LE);
         }
         else {
-            bluetoothGatt = device.connectGatt(context, autoConnect, gattCallback);
+            bluetoothGatt = device.connectGatt(context, false, gattCallback);
         }
     }
 
@@ -621,7 +619,7 @@ public abstract class BluetoothCommunication {
      */
     protected class GattCallback extends BluetoothGattCallback {
         @Override
-        public void onConnectionStateChange(final BluetoothGatt gatt, final int status, int newState) {
+        public void onConnectionStateChange(final BluetoothGatt gatt, int status, int newState) {
             Timber.d("onConnectionStateChange: status=%d, newState=%d", status, newState);
 
             if (newState == BluetoothProfile.STATE_CONNECTED) {
@@ -651,9 +649,6 @@ public abstract class BluetoothCommunication {
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        if (connectionEstablished && status != 0) {
-                            autoConnect = !autoConnect;
-                        }
                         setBtStatus(connectionEstablished
                                 ? BT_STATUS_CODE.BT_CONNECTION_LOST
                                 : BT_STATUS_CODE.BT_NO_DEVICE_FOUND);
