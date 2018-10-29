@@ -254,4 +254,12 @@
     <string name="activity_level_moderate">Moderado</string>
     <string name="activity_level_heavy">Intenso</string>
     <string name="activity_level_extreme">Extremo</string>
+<string name="trisa_scale_not_paired">¡La báscula no ha sido emparejada!
+\n
+\nDeje pulsado el botón de emparejamiento de la báscula, y entonces reconecte para obtener la contraseña del dispositivo.</string>
+    <string name="trisa_scale_pairing_succeeded">¡Emparejamiento correcto!
+\n
+\nVuelva a conectar para obtener datos de mediciones.</string>
+
+    <string name="label_data_provider_enable">Accesso de aplicaciones de terceros</string>
 </resources>
