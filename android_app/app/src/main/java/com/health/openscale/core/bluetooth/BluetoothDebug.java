@@ -74,13 +74,28 @@ public class BluetoothDebug extends BluetoothCommunication {
         return names.substring(0, names.length() - 2);
     }
 
+    private String writeTypeToString(int type) {
+        if (type == BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE) {
+            return "no response";
+        }
+        if (type == BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT) {
+            return "default";
+        }
+        if (type == BluetoothGattCharacteristic.WRITE_TYPE_SIGNED) {
+            return "signed";
+        }
+        return String.format("unknown type %d", type);
+    }
+
     private void logService(BluetoothGattService service, boolean included) {
         Timber.d("Service %s%s", service.getUuid(), included ? " (included)" : "");
 
         for (BluetoothGattCharacteristic characteristic : service.getCharacteristics()) {
-            Timber.d("|- characteristic %s (instance %d): %s (permissions=0x%x)",
+            Timber.d("|- characteristic %s (instance %d): %s, write type: %s (permissions=0x%x)",
                     characteristic.getUuid(), characteristic.getInstanceId(),
-                    propertiesToString(characteristic.getProperties()), characteristic.getPermissions());
+                    propertiesToString(characteristic.getProperties()),
+                    writeTypeToString(characteristic.getWriteType()),
+                    characteristic.getPermissions());
             byte[] value = characteristic.getValue();
             if (value != null && value.length > 0) {
                 Timber.d("|--> value: %s (%s)", byteInHex(value),

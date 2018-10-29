@@ -78,10 +78,8 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
     private static final UUID SERVICE_CHANGED =
             UUID.fromString("00002A05-0000-1000-8000-00805F9B34FB");
 
-    private static final UUID CLIENT_CHARACTERISTICS_CONFIGURATION_BEURER =
+    private static final UUID CLIENT_CHARACTERISTICS_CONFIGURATION =
             UUID.fromString("00002902-0000-1000-8000-00805F9B34FB");
-    private static final UUID CLIENT_CHARACTERISTICS_CONFIGURATION_SANITAS =
-            UUID.fromString("00002901-0000-1000-8000-00805F9B34FB");
 
     private static final UUID CUSTOM_SERVICE_1 =
             UUID.fromString("0000FFE0-0000-1000-8000-00805F9B34FB");
@@ -156,10 +154,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                 seenUsers = new TreeSet<>();
 
                 // Setup notification
-                UUID clientCharacteristicsConfiguration = deviceType == DeviceType.SANITAS_SBF70_70
-                        ? CLIENT_CHARACTERISTICS_CONFIGURATION_SANITAS
-                        : CLIENT_CHARACTERISTICS_CONFIGURATION_BEURER;
-                setNotificationOn(CUSTOM_SERVICE_1, CUSTOM_CHARACTERISTIC_WEIGHT, clientCharacteristicsConfiguration);
+                setNotificationOn(CUSTOM_SERVICE_1, CUSTOM_CHARACTERISTIC_WEIGHT, CLIENT_CHARACTERISTICS_CONFIGURATION);
                 break;
             case 1:
                 // Say "Hello" to the scale
@@ -485,6 +480,12 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                     (byte) startByte, (byte) 0xf1, (byte) (data[1] & 0xFF),
                     (byte) (data[2] & 0xFF), (byte) (data[3] & 0xFF),
             });
+
+            if (currentScaleUserId == 0) {
+                Timber.i("Initial weight set; disconnecting...");
+                setBtMachineState(BT_MACHINE_STATE.BT_CLEANUP_STATE);
+                return;
+            }
 
             return;
         }

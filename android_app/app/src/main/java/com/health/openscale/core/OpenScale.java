@@ -196,6 +196,8 @@ public class OpenScale {
                     selectScaleUser(-1);
                     throw new Exception("could not find the selected user");
                 }
+                Timber.d("Selected user is now %s (%d)",
+                        selectedScaleUser.getUserName(), selectedScaleUser.getId());
                 return selectedScaleUser;
             }
         } catch (Exception e) {
