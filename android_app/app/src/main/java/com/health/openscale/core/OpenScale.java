@@ -17,9 +17,9 @@
 package com.health.openscale.core;
 
 import android.appwidget.AppWidgetManager;
-import android.arch.persistence.db.SupportSQLiteDatabase;
-import android.arch.persistence.room.Room;
-import android.arch.persistence.room.RoomDatabase;
+import androidx.sqlite.db.SupportSQLiteDatabase;
+import androidx.room.Room;
+import androidx.room.RoomDatabase;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -30,7 +30,7 @@ import android.net.Uri;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.provider.OpenableColumns;
-import android.support.v4.app.Fragment;
+import androidx.fragment.app.Fragment;
 import android.text.format.DateFormat;
 import android.widget.Toast;
 

@@ -23,7 +23,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.service.notification.StatusBarNotification;
-import android.support.v4.app.NotificationCompat;
+import androidx.core.app.NotificationCompat;
 
 import com.health.openscale.R;
 import com.health.openscale.core.datatypes.ScaleMeasurement;

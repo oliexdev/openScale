@@ -16,7 +16,7 @@
 
 package com.health.openscale.core.utils;
 
-import android.arch.persistence.room.TypeConverter;
+import androidx.room.TypeConverter;
 
 import java.util.Date;
 

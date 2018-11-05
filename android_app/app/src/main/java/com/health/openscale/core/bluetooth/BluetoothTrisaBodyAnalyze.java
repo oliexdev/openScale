@@ -20,7 +20,7 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;

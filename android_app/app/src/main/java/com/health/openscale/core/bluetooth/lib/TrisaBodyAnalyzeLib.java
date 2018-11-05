@@ -15,7 +15,7 @@
  */
 package com.health.openscale.core.bluetooth.lib;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;

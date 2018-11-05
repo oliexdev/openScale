@@ -15,7 +15,7 @@ android {
             annotationProcessorOptions { arguments = ["room.schemaLocation":"$projectDir/schemas".toString()] }
         }
 
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     sourceSets {
@@ -34,15 +34,11 @@ android {
     }
 }
 
-ext {
-    supportLibVersion = '28.0.0'
-}
-
 dependencies {
-    implementation "com.android.support:design:${supportLibVersion}"
-    implementation "com.android.support:support-v4:${supportLibVersion}"
-    implementation "com.android.support:appcompat-v7:${supportLibVersion}"
-    implementation "com.android.support:recyclerview-v7:${supportLibVersion}"
+    implementation 'com.google.android.material:material:1.1.0-alpha01'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'androidx.appcompat:appcompat:1.0.1'
+    implementation 'androidx.recyclerview:recyclerview:1.0.0'
 
     // HelloCharts
     implementation 'com.github.lecho:hellocharts-library:1.5.8@aar'
@@ -54,9 +50,9 @@ dependencies {
     implementation 'cat.ereza:customactivityoncrash:2.2.0'
 
     // Room
-    implementation 'android.arch.persistence.room:runtime:1.1.1'
-    annotationProcessor 'android.arch.persistence.room:compiler:1.1.1'
-    androidTestImplementation 'android.arch.persistence.room:testing:1.1.1'
+    implementation 'androidx.room:room-runtime:2.1.0-alpha02'
+    annotationProcessor 'androidx.room:room-compiler:2.1.0-alpha02'
+    androidTestImplementation 'androidx.room:room-testing:2.1.0-alpha02'
 
     // Timber
     implementation 'com.jakewharton.timber:timber:4.7.0'
@@ -65,11 +61,11 @@ dependencies {
     testImplementation 'junit:junit:4.12'
 
     // Instrumented unit tests
-    androidTestImplementation "com.android.support:support-annotations:${supportLibVersion}"
-    androidTestImplementation 'com.android.support.test:runner:1.0.2'
-    androidTestImplementation 'com.android.support.test:rules:1.0.2'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-contrib:3.0.2'
+    androidTestImplementation 'androidx.annotation:annotation:1.0.0'
+    androidTestImplementation 'androidx.test:runner:1.1.0'
+    androidTestImplementation 'androidx.test:rules:1.1.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-contrib:3.1.0'
 }
 
 tasks.withType(Test) {
