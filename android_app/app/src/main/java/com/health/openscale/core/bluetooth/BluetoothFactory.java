@@ -29,6 +29,7 @@ public class BluetoothFactory {
         final String name = deviceName.toLowerCase(Locale.US);
 
         if (name.startsWith("BEURER BF700".toLowerCase(Locale.US))
+                || name.equals("BF700".toLowerCase(Locale.US))
                 || name.startsWith("BEURER BF800".toLowerCase(Locale.US))
                 || name.startsWith("BF-800".toLowerCase(Locale.US))
                 || name.startsWith("BF-700".toLowerCase(Locale.US))
