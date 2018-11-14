@@ -29,14 +29,14 @@ public class BluetoothFactory {
         final String name = deviceName.toLowerCase(Locale.US);
 
         if (name.startsWith("BEURER BF700".toLowerCase(Locale.US))
-                || name.equals("BF700".toLowerCase(Locale.US))
                 || name.startsWith("BEURER BF800".toLowerCase(Locale.US))
                 || name.startsWith("BF-800".toLowerCase(Locale.US))
                 || name.startsWith("BF-700".toLowerCase(Locale.US))
                 || name.startsWith("RT-Libra-B".toLowerCase(Locale.US))) {
             return new BluetoothBeurerSanitas(context, BluetoothBeurerSanitas.DeviceType.BEURER_BF700_800_RT_LIBRA);
         }
-        if (name.startsWith("BEURER BF710".toLowerCase(Locale.US))) {
+        if (name.startsWith("BEURER BF710".toLowerCase(Locale.US))
+                || name.equals("BF700".toLowerCase(Locale.US))) {
             return new BluetoothBeurerSanitas(context, BluetoothBeurerSanitas.DeviceType.BEURER_BF710);
         }
         if (name.equals("openScale".toLowerCase(Locale.US))) {
