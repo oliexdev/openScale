@@ -187,4 +187,71 @@
     <string name="label_select_user">Выберите пользователя</string>
     <string name="label_configure_widget">Настройте виджет</string>
     <string name="label_measure_unit">Единица измерения</string>
+<plurals name="label_days">
+	<item quantity="one">%d день</item>
+	<item quantity="few">%d дня</item>
+	<item quantity="many">%d дней</item>
+</plurals>
+    <string name="info_new_data_added">%1$.2f%2$s [%3$s] добавлено к %4$s</string>
+    <string name="label_enable_labels">Метка данных</string>
+    <string name="default_value_reminder_notify_text">Пора взвеситься</string>
+
+    <string name="info_on_date">в день</string>
+
+    <string name="label_regression_line">График снижения веса</string>
+    <string name="label_regression_line_degree">Степень полиномиальной регрессии</string>
+    <string name="label_feedback_message_rate_app">Поставить оценку на Google Play или GitHub\?</string>
+    <string name="trisa_scale_not_paired">Эти весы не были подключены!
+\n
+\nУдерживайте кнопку на нижней стороне весов, чтобы переключить их в режим сопряжения, затем повторите подключение для ввода пароля устройства.</string>
+    <string name="trisa_scale_pairing_succeeded">Сопряжение удалось!
+\n
+\nПовторите подключение, чтобы получить данные измерений.</string>
+
+    <string name="customactivityoncrash_error_activity_error_occurred_explanation">Случилась непредвиденная ошибка.
+\n
+\nПожалуйста, создайте новую тему, включая данные об ошибке, на
+\nhttps://github.com/oliexdev/openScale/issues</string>
+    <string name="customactivityoncrash_error_activity_error_details_clipboard_label">Информация об ошибке</string>
+    <string name="toggle_expand">Подробности</string>
+    <string name="label_month_view">Помесячно</string>
+    <string name="label_weeks_view">В неделю</string>
+
+    <string name="permission_bluetooth_info">Для поиска устройства Bluetooth требуется разрешение доступа к местоположению. После обнаружения устройства доступ можно снова заблокировать.</string>
+    <string name="permission_read_data_description">Чтение данных openScale, включая информацию о пользователе и все сохраненные измерения</string>
+    <string name="permission_read_data_label">Чтение данных openScale</string>
+    <string name="label_long_press_drag_reorder">Нажмите, удерживайте и перетащите измерения, чтобы изменить порядок отображения</string>
+    <string name="label_click_measurement_configure">Нажмите, чтобы настроить измерения</string>
+    <string name="label_export_overwrite">Сохранить поверх предыдущего \"%s\"\?</string>
+    <string name="label_include_in_overview_graph">Включить в обзорный график</string>
+    <string name="label_estimate_measurement">Оценочное измерение</string>
+    <string name="label_estimation_formula">Формула для оценочных измерений</string>
+    <string name="label_contribute_translation">Помочь с переводом</string>
+    <string name="label_add_or_fix_translation">Добавить новый или исправить существующий</string>
+    <string name="label_overview_graph">Обзорный график</string>
+    <string name="label_estimated">По оценкам</string>
+    <string name="label_estimate_measurement_summary">Исходя из веса, роста, возраста, пола, etc.</string>
+    <string name="label_auto_backup">Автоматическое резервирование</string>
+    <string name="label_auto_backup_schedule">Расписание резервирования</string>
+    <string name="label_overwrite_backup">Перезаписать поверх старой резервной копии</string>
+    <string name="label_click_to_help_add_support">Нажмите здесь, чтобы помочь нам добавить поддержку</string>
+    <string name="label_visceral_fat">Висцеральный жир</string>
+    <string name="label_chest">Окружность грудной клетки</string>
+    <string name="label_thigh">Окружность бедра</string>
+    <string name="label_biceps">Окружность бицепса</string>
+    <string name="label_neck">Окружность шеи</string>
+    <string name="label_fat_caliper">Измеритель толщины жировой складки</string>
+    <string name="label_caliper1_male">Складка на груди</string>
+    <string name="label_caliper2_male">Складка на животе</string>
+    <string name="label_caliper3_male">Складка на бедре</string>
+    <string name="label_caliper1_female">Складка на трицепсе</string>
+    <string name="label_caliper2_female">Складка на брюшине</string>
+    <string name="label_caliper3_female">Складка на боку</string>
+    <string name="label_activity_level">Уровень активности</string>
+    <string name="activity_level_sedentary">Сидячий</string>
+    <string name="activity_level_mild">Умеренный</string>
+    <string name="activity_level_moderate">Средний</string>
+    <string name="activity_level_heavy">Интенсивный</string>
+    <string name="activity_level_extreme">Экстремальный</string>
+    <string name="label_data_provider_enable">Доступ для сторонних приложений</string>
 </resources>
