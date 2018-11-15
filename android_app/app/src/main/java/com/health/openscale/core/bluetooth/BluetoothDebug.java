@@ -88,14 +88,14 @@ public class BluetoothDebug extends BluetoothCommunication {
     }
 
     private void logService(BluetoothGattService service, boolean included) {
-        Timber.d("Service %s%s", service.getUuid(), included ? " (included)" : "");
+        Timber.d("Service %s%s", BluetoothGattUuid.prettyPrint(service.getUuid()),
+                included ? " (included)" : "");
 
         for (BluetoothGattCharacteristic characteristic : service.getCharacteristics()) {
             Timber.d("|- characteristic %s (instance %d): %s, write type: %s (permissions=0x%x)",
-                    characteristic.getUuid(), characteristic.getInstanceId(),
-                    propertiesToString(characteristic.getProperties()),
-                    writeTypeToString(characteristic.getWriteType()),
-                    characteristic.getPermissions());
+                    BluetoothGattUuid.prettyPrint(characteristic.getUuid()),
+                    characteristic.getInstanceId(), propertiesToString(characteristic.getProperties()),
+                    writeTypeToString(characteristic.getWriteType()), characteristic.getPermissions());
             byte[] value = characteristic.getValue();
             if (value != null && value.length > 0) {
                 Timber.d("|--> value: %s (%s)", byteInHex(value),
@@ -104,7 +104,8 @@ public class BluetoothDebug extends BluetoothCommunication {
 
             for (BluetoothGattDescriptor descriptor : characteristic.getDescriptors()) {
                 Timber.d("|--- descriptor %s (permissions=0x%x)",
-                        descriptor.getUuid(), descriptor.getPermissions());
+                        BluetoothGattUuid.prettyPrint(descriptor.getUuid()),
+                        descriptor.getPermissions());
 
                 value = descriptor.getValue();
                 if (value != null && value.length > 0) {
