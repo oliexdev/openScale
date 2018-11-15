@@ -27,25 +27,28 @@ public class BluetoothGattUuid {
     }
 
     public static final String prettyPrint(UUID uuid) {
-        for (Field field : BluetoothGattUuid.class.getFields()) {
-            try {
-                if (uuid.equals(field.get(null))) {
-                    final String name = field.getName();
-                    return name.substring(name.indexOf('_') + 1);
-                }
-            }
-            catch (IllegalAccessException e) {
-                // Ignore
-            }
-        }
+        String str = uuid.toString();
 
-        final String str = uuid.toString();
         if (str.endsWith(STANDARD_SUFFIX)) {
             String code = str.substring(0, str.length() - STANDARD_SUFFIX.length());
             if (code.startsWith("0000")) {
                 code = code.substring(4);
             }
-            return "0x" + code;
+            str = "0x" + code;
+        }
+
+        for (Field field : BluetoothGattUuid.class.getFields()) {
+            try {
+                if (uuid.equals(field.get(null))) {
+                    String name = field.getName();
+                    name = name.substring(name.indexOf('_') + 1);
+                    str = String.format("%s \"%s\"", str, name.replace('_', ' '));
+                    break;
+                }
+            }
+            catch (IllegalAccessException e) {
+                // Ignore
+            }
         }
 
         return str;

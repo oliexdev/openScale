@@ -28,13 +28,13 @@ public class BluetoothGattUuidTest {
 
     @Test
     public void prettyPrint() throws Exception {
-        assertEquals("GENERIC_ACCESS",
+        assertEquals("0x1800 \"GENERIC ACCESS\"",
                 BluetoothGattUuid.prettyPrint(BluetoothGattUuid.SERVICE_GENERIC_ACCESS));
-        assertEquals("CURRENT_TIME",
+        assertEquals("0x2a2b \"CURRENT TIME\"",
                 BluetoothGattUuid.prettyPrint(BluetoothGattUuid.CHARACTERISTIC_CURRENT_TIME));
-        assertEquals("CLIENT_CHARACTERISTIC_CONFIGURATION",
+        assertEquals("0x2902 \"CLIENT CHARACTERISTIC CONFIGURATION\"",
                 BluetoothGattUuid.prettyPrint(BluetoothGattUuid.DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION));
-        assertEquals("GENERIC_ATTRIBUTE",
+        assertEquals("0x1801 \"GENERIC ATTRIBUTE\"",
                 BluetoothGattUuid.prettyPrint(BluetoothGattUuid.fromShortCode(0x1801)));
         assertEquals("0x0001",
                 BluetoothGattUuid.prettyPrint(BluetoothGattUuid.fromShortCode(0x1)));
