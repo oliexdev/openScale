@@ -87,15 +87,24 @@ public class BluetoothDebug extends BluetoothCommunication {
         return String.format("unknown type %d", type);
     }
 
+    private String permissionsToString(int permissions) {
+        if (permissions == 0) {
+            return "";
+        }
+        return String.format(" (permissions=0x%x)", permissions);
+    }
+
     private void logService(BluetoothGattService service, boolean included) {
         Timber.d("Service %s%s", BluetoothGattUuid.prettyPrint(service.getUuid()),
                 included ? " (included)" : "");
 
         for (BluetoothGattCharacteristic characteristic : service.getCharacteristics()) {
-            Timber.d("|- characteristic %s (instance %d): %s, write type: %s (permissions=0x%x)",
+            Timber.d("|- characteristic %s #%d: %s, write type: %s%s",
                     BluetoothGattUuid.prettyPrint(characteristic.getUuid()),
-                    characteristic.getInstanceId(), propertiesToString(characteristic.getProperties()),
-                    writeTypeToString(characteristic.getWriteType()), characteristic.getPermissions());
+                    characteristic.getInstanceId(),
+                    propertiesToString(characteristic.getProperties()),
+                    writeTypeToString(characteristic.getWriteType()),
+                    permissionsToString(characteristic.getPermissions()));
             byte[] value = characteristic.getValue();
             if (value != null && value.length > 0) {
                 Timber.d("|--> value: %s (%s)", byteInHex(value),
@@ -103,9 +112,9 @@ public class BluetoothDebug extends BluetoothCommunication {
             }
 
             for (BluetoothGattDescriptor descriptor : characteristic.getDescriptors()) {
-                Timber.d("|--- descriptor %s (permissions=0x%x)",
+                Timber.d("|--- descriptor %s%s",
                         BluetoothGattUuid.prettyPrint(descriptor.getUuid()),
-                        descriptor.getPermissions());
+                        permissionsToString(descriptor.getPermissions()));
 
                 value = descriptor.getValue();
                 if (value != null && value.length > 0) {
