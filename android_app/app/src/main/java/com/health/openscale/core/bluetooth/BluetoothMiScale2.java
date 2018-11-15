@@ -50,7 +50,6 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
     private final UUID WEIGHT_MEASUREMENT_SERVICE = UUID.fromString("0000181b-0000-1000-8000-00805f9b34fb");
     private final UUID WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC = UUID.fromString("00002a2f-0000-3512-2118-0009af100700");
     private final UUID WEIGHT_MEASUREMENT_TIME_CHARACTERISTIC = UUID.fromString("00002a2b-0000-1000-8000-00805f9b34fb");
-    private final UUID WEIGHT_MEASUREMENT_CONFIG = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
     private final UUID WEIGHT_MEASUREMENT_BODY_COMPOSITION_FEATURE = UUID.fromString("00002a9b-0000-1000-8000-00805f9b34fb");
     private final UUID WEIGHT_MEASUREMENT_BODY_COMPOSITION_MEASUREMENT = UUID.fromString("00002a9c-0000-1000-8000-00805f9b34fb");
 
@@ -118,7 +117,8 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
                 break;
             case 2:
                 // set notification on for weight measurement history
-                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, WEIGHT_MEASUREMENT_CONFIG);
+                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC,
+                        BluetoothGattUuid.DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION);
                 break;
             default:
                 return false;
@@ -139,11 +139,13 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
                 break;
             case 1:
                 // set notification off for weight measurement history
-                setNotificationOff(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, WEIGHT_MEASUREMENT_CONFIG);
+                setNotificationOff(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC,
+                        BluetoothGattUuid.DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION);
                 break;
             case 2:
                 // set notification on for weight measurement history
-                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, WEIGHT_MEASUREMENT_CONFIG);
+                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC,
+                        BluetoothGattUuid.DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION);
                 break;
             case 3:
                 // invoke receiving history data
@@ -173,7 +175,8 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
                 break;
             case 2:
                 // set notification on for body composition measurement
-                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_BODY_COMPOSITION_MEASUREMENT, WEIGHT_MEASUREMENT_CONFIG);
+                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_BODY_COMPOSITION_MEASUREMENT,
+                        BluetoothGattUuid.DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION);
                 break;
             default:
                 return false;

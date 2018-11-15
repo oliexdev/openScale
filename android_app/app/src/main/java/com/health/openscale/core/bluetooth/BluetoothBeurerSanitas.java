@@ -61,7 +61,6 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
             UUID.fromString("00002A2A-0000-1000-8000-00805F9B34FB");
     private static final UUID PNP_ID =
             UUID.fromString("00002A50-0000-1000-8000-00805F9B34FB");
-
     private static final UUID DEVICE_NAME =
             UUID.fromString("00002A00-0000-1000-8000-00805F9B34FB");
     private static final UUID APPEARANCE =
@@ -77,9 +76,6 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
             UUID.fromString("00001801-0000-1000-8000-00805F9B34FB");
     private static final UUID SERVICE_CHANGED =
             UUID.fromString("00002A05-0000-1000-8000-00805F9B34FB");
-
-    private static final UUID CLIENT_CHARACTERISTICS_CONFIGURATION =
-            UUID.fromString("00002902-0000-1000-8000-00805F9B34FB");
 
     private static final UUID CUSTOM_SERVICE_1 =
             UUID.fromString("0000FFE0-0000-1000-8000-00805F9B34FB");
@@ -154,7 +150,8 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                 seenUsers = new TreeSet<>();
 
                 // Setup notification
-                setNotificationOn(CUSTOM_SERVICE_1, CUSTOM_CHARACTERISTIC_WEIGHT, CLIENT_CHARACTERISTICS_CONFIGURATION);
+                setNotificationOn(CUSTOM_SERVICE_1, CUSTOM_CHARACTERISTIC_WEIGHT,
+                        BluetoothGattUuid.DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION);
                 break;
             case 1:
                 // Say "Hello" to the scale

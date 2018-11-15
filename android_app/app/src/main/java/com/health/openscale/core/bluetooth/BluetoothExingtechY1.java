@@ -32,7 +32,6 @@ public class BluetoothExingtechY1 extends BluetoothCommunication {
     private final UUID WEIGHT_MEASUREMENT_SERVICE = UUID.fromString("f433bd80-75b8-11e2-97d9-0002a5d5c51b");
     private final UUID WEIGHT_MEASUREMENT_CHARACTERISTIC = UUID.fromString("1a2ea400-75b9-11e2-be05-0002a5d5c51b"); // read, notify
     private final UUID CMD_MEASUREMENT_CHARACTERISTIC = UUID.fromString("29f11080-75b9-11e2-8bf6-0002a5d5c51b"); // write only
-    private final UUID WEIGHT_MEASUREMENT_CONFIG = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
 
     public BluetoothExingtechY1(Context context) {
         super(context);
@@ -47,7 +46,8 @@ public class BluetoothExingtechY1 extends BluetoothCommunication {
     protected boolean nextInitCmd(int stateNr) {
         switch (stateNr) {
             case 0:
-                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC, WEIGHT_MEASUREMENT_CONFIG);
+                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC,
+                        BluetoothGattUuid.DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION);
                 break;
             case 1:
                 final ScaleUser selectedUser = OpenScale.getInstance().getSelectedScaleUser();

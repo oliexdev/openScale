@@ -36,7 +36,6 @@ public class BluetoothOneByone extends BluetoothCommunication {
     private final UUID WEIGHT_MEASUREMENT_CHARACTERISTIC_BODY_COMPOSITION = UUID.fromString("0000fff4-0000-1000-8000-00805f9b34fb"); // notify
 
     private final UUID CMD_MEASUREMENT_CHARACTERISTIC = UUID.fromString("0000fff1-0000-1000-8000-00805f9b34fb"); // write only
-    private final UUID WEIGHT_MEASUREMENT_CONFIG = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
 
 
     public BluetoothOneByone(Context context) {
@@ -54,7 +53,7 @@ public class BluetoothOneByone extends BluetoothCommunication {
             case 0:
                 setNotificationOn(WEIGHT_MEASUREMENT_SERVICE,
                             WEIGHT_MEASUREMENT_CHARACTERISTIC_BODY_COMPOSITION,
-                            WEIGHT_MEASUREMENT_CONFIG);
+                            BluetoothGattUuid.DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION);
                 break;
             case 1:
                 ScaleUser currentUser = OpenScale.getInstance().getSelectedScaleUser();

@@ -33,7 +33,7 @@ public class BluetoothDigooDGSO38H extends BluetoothCommunication {
     private final UUID WEIGHT_MEASUREMENT_SERVICE = UUID.fromString("0000fff0-0000-1000-8000-00805f9b34fb");
     private final UUID WEIGHT_MEASUREMENT_CHARACTERISTIC = UUID.fromString("0000fff1-0000-1000-8000-00805f9b34fb");
     private final UUID EXTRA_MEASUREMENT_CHARACTERISTIC = UUID.fromString("0000fff2-0000-1000-8000-00805f9b34fb");
-    private final UUID WEIGHT_MEASUREMENT_DESCRIPTOR = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
+
     public BluetoothDigooDGSO38H(Context context) {
         super(context);
     }
@@ -61,7 +61,8 @@ public class BluetoothDigooDGSO38H extends BluetoothCommunication {
         switch (stateNr) {
             case 0:
                 //Tell device to send us weight measurements
-                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC, WEIGHT_MEASUREMENT_DESCRIPTOR);
+                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC,
+                        BluetoothGattUuid.DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION);
                 return false;
         }
 
