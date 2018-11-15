@@ -72,6 +72,7 @@ public class BluetoothGattUuid {
     public static final UUID CHARACTERISTIC_DEVICE_NAME = fromShortCode(0x2a00);
     public static final UUID CHARACTERISTIC_FIRMWARE_REVISION_STRING = fromShortCode(0x2a26);
     public static final UUID CHARACTERISTIC_HARDWARE_REVISION_STRING = fromShortCode(0x2a27);
+    public static final UUID CHARACTERISTIC_IEEE_11073_20601_REGULATORY_CERTIFICATION_DATA_LIST = fromShortCode(0x2a2a);
     public static final UUID CHARACTERISTIC_MANUFACTURER_NAME_STRING = fromShortCode(0x2a29);
     public static final UUID CHARACTERISTIC_MODEL_NUMBER_STRING = fromShortCode(0x2a24);
     public static final UUID CHARACTERISTIC_PERIPHERAL_PREFERRED_CONNECTION_PARAMETERS = fromShortCode(0x2a04);
