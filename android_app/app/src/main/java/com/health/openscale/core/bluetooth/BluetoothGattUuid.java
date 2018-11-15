@@ -27,6 +27,10 @@ public class BluetoothGattUuid {
     }
 
     public static final String prettyPrint(UUID uuid) {
+        if (uuid == null) {
+            return "null";
+        }
+
         String str = uuid.toString();
 
         if (str.endsWith(STANDARD_SUFFIX)) {
