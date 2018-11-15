@@ -33,9 +33,9 @@ import java.util.UUID;
 
 public class BluetoothMGB extends BluetoothCommunication {
 
-    private static final UUID uuid_service   =  UUID.fromString("0000ffb0-0000-1000-8000-00805f9b34fb");
-    private static final UUID uuid_char_cfg  =  UUID.fromString("0000ffb1-0000-1000-8000-00805f9b34fb");
-    private static final UUID uuid_char_ctrl =  UUID.fromString("0000ffb2-0000-1000-8000-00805f9b34fb");
+    private static final UUID uuid_service   = BluetoothGattUuid.fromShortCode(0xffb0);
+    private static final UUID uuid_char_cfg  = BluetoothGattUuid.fromShortCode(0xffb1);
+    private static final UUID uuid_char_ctrl = BluetoothGattUuid.fromShortCode(0xffb2);
 
 
     private Calendar  now;

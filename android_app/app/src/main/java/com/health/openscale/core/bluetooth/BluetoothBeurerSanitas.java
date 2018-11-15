@@ -43,59 +43,8 @@ import timber.log.Timber;
 public class BluetoothBeurerSanitas extends BluetoothCommunication {
     enum DeviceType { BEURER_BF700_800_RT_LIBRA, BEURER_BF710, SANITAS_SBF70_70 }
 
-    private static final int PRIMARY_SERVICE = 0x180A;
-    private static final UUID SYSTEM_ID = UUID.fromString("00002A23-0000-1000-8000-00805F9B34FB");
-    private static final UUID MODEL_NUMBER_STRING =
-            UUID.fromString("00002A24-0000-1000-8000-00805F9B34FB");
-    private static final UUID SERIAL_NUMBER_STRING =
-            UUID.fromString("00002A25-0000-1000-8000-00805F9B34FB");
-    private static final UUID FIRMWARE_REVISION_STRING =
-            UUID.fromString("00002A26-0000-1000-8000-00805F9B34FB");
-    private static final UUID HARDWARE_REVISION_STRING =
-            UUID.fromString("00002A27-0000-1000-8000-00805F9B34FB");
-    private static final UUID SOFTWARE_REVISION_STRING =
-            UUID.fromString("00002A28-0000-1000-8000-00805F9B34FB");
-    private static final UUID MANUFACTURER_NAME_STRING =
-            UUID.fromString("00002A29-0000-1000-8000-00805F9B34FB");
-    private static final UUID IEEE_11073_20601_REGULATORY_CERTIFICATION_DATA_LIST =
-            UUID.fromString("00002A2A-0000-1000-8000-00805F9B34FB");
-    private static final UUID PNP_ID =
-            UUID.fromString("00002A50-0000-1000-8000-00805F9B34FB");
-    private static final UUID DEVICE_NAME =
-            UUID.fromString("00002A00-0000-1000-8000-00805F9B34FB");
-    private static final UUID APPEARANCE =
-            UUID.fromString("00002A01-0000-1000-8000-00805F9B34FB");
-    private static final UUID PERIPHERICAL_PRIVACY_FLAG =
-            UUID.fromString("00002A02-0000-1000-8000-00805F9B34FB");
-    private static final UUID RECONNECTION_ADDRESS =
-            UUID.fromString("00002A03-0000-1000-8000-00805F9B34FB");
-    private static final UUID PERIPHERICAL_PREFERRED_CONNECTION_PARAMETERS =
-            UUID.fromString("00002A04-0000-1000-8000-00805F9B34FB");
-
-    private static final UUID GENERIC_ATTRIBUTE =
-            UUID.fromString("00001801-0000-1000-8000-00805F9B34FB");
-    private static final UUID SERVICE_CHANGED =
-            UUID.fromString("00002A05-0000-1000-8000-00805F9B34FB");
-
-    private static final UUID CUSTOM_SERVICE_1 =
-            UUID.fromString("0000FFE0-0000-1000-8000-00805F9B34FB");
-    private static final UUID CUSTOM_CHARACTERISTIC_1 = // read-write
-            UUID.fromString("0000FFE4-0000-1000-8000-00805F9B34FB");
-    private static final UUID CUSTOM_CHARACTERISTIC_2 = // read-only
-            UUID.fromString("0000FFE2-0000-1000-8000-00805F9B34FB");
-    private static final UUID CUSTOM_CHARACTERISTIC_3 = // write-only
-            UUID.fromString("0000FFE3-0000-1000-8000-00805F9B34FB");
-    private static final UUID CUSTOM_CHARACTERISTIC_WEIGHT = // write-only, notify ; handle=0x002e
-            UUID.fromString("0000FFE1-0000-1000-8000-00805F9B34FB");
-    private static final UUID CUSTOM_CHARACTERISTIC_5 = // write-only, notify
-            UUID.fromString("0000FFE5-0000-1000-8000-00805F9B34FB");
-
-    private static final UUID CUSTOM_SERVICE_2 =
-            UUID.fromString("F000FFCD-0451-4000-8000-000000000000"); // primary service
-    private static final UUID CUSTOM_CHARACTERISTIC_IMG_IDENTIFY = // write-only, notify
-            UUID.fromString("F000FFC1-0451-4000-8000-000000000000");
-    private static final UUID CUSTOM_CHARACTERISTIC_IMG_BLOCK = // write-only, notify
-            UUID.fromString("F000FFC2-0451-4000-8000-000000000000");
+    private static final UUID CUSTOM_SERVICE_1 = BluetoothGattUuid.fromShortCode(0xffe0);
+    private static final UUID CUSTOM_CHARACTERISTIC_WEIGHT = BluetoothGattUuid.fromShortCode(0xffe1);
 
     private final DeviceType deviceType;
     private int startByte;

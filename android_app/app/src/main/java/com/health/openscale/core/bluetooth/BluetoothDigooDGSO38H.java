@@ -30,9 +30,9 @@ import java.util.UUID;
 import timber.log.Timber;
 
 public class BluetoothDigooDGSO38H extends BluetoothCommunication {
-    private final UUID WEIGHT_MEASUREMENT_SERVICE = UUID.fromString("0000fff0-0000-1000-8000-00805f9b34fb");
-    private final UUID WEIGHT_MEASUREMENT_CHARACTERISTIC = UUID.fromString("0000fff1-0000-1000-8000-00805f9b34fb");
-    private final UUID EXTRA_MEASUREMENT_CHARACTERISTIC = UUID.fromString("0000fff2-0000-1000-8000-00805f9b34fb");
+    private final UUID WEIGHT_MEASUREMENT_SERVICE = BluetoothGattUuid.fromShortCode(0xfff0);
+    private final UUID WEIGHT_MEASUREMENT_CHARACTERISTIC = BluetoothGattUuid.fromShortCode(0xfff1);
+    private final UUID EXTRA_MEASUREMENT_CHARACTERISTIC = BluetoothGattUuid.fromShortCode(0xfff2);
 
     public BluetoothDigooDGSO38H(Context context) {
         super(context);

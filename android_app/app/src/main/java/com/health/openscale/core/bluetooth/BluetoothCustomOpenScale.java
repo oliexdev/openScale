@@ -30,8 +30,8 @@ import java.util.UUID;
 import timber.log.Timber;
 
 public class BluetoothCustomOpenScale extends BluetoothCommunication {
-    private final UUID WEIGHT_MEASUREMENT_SERVICE = UUID.fromString("0000ffe0-0000-1000-8000-00805f9b34fb");
-    private final UUID WEIGHT_MEASUREMENT_CHARACTERISTIC = UUID.fromString("0000ffe1-0000-1000-8000-00805f9b34fb"); // Bluetooth Modul HM-10
+    private final UUID WEIGHT_MEASUREMENT_SERVICE = BluetoothGattUuid.fromShortCode(0xffe0);
+    private final UUID WEIGHT_MEASUREMENT_CHARACTERISTIC = BluetoothGattUuid.fromShortCode(0xffe1); // Bluetooth Modul HM-10
 
     private String string_data = new String();
 

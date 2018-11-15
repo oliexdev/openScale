@@ -50,8 +50,8 @@ public class BluetoothDebug extends BluetoothCommunication {
 
     private boolean isBlacklisted(BluetoothGattService service, BluetoothGattCharacteristic characteristic) {
         // Reading this triggers a pairing request on Beurer BF710
-        if (service.getUuid().equals(UUID.fromString("0000ffe0-0000-1000-8000-00805f9b34fb"))
-            && characteristic.getUuid().equals(UUID.fromString("0000ffe5-0000-1000-8000-00805f9b34fb"))) {
+        if (service.getUuid().equals(BluetoothGattUuid.fromShortCode(0xffe0))
+            && characteristic.getUuid().equals(BluetoothGattUuid.fromShortCode(0xffe5))) {
             return true;
         }
 

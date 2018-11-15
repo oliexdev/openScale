@@ -35,10 +35,10 @@ import java.util.UUID;
 import timber.log.Timber;
 
 public class BluetoothYunmaiSE_Mini extends BluetoothCommunication {
-    private final UUID WEIGHT_MEASUREMENT_SERVICE = UUID.fromString("0000ffe0-0000-1000-8000-00805f9b34fb");
-    private final UUID WEIGHT_MEASUREMENT_CHARACTERISTIC = UUID.fromString("0000ffe4-0000-1000-8000-00805f9b34fb");
-    private final UUID WEIGHT_CMD_SERVICE = UUID.fromString("0000ffe5-0000-1000-8000-00805f9b34fb");
-    private final UUID WEIGHT_CMD_CHARACTERISTIC = UUID.fromString("0000ffe9-0000-1000-8000-00805f9b34fb");
+    private final UUID WEIGHT_MEASUREMENT_SERVICE = BluetoothGattUuid.fromShortCode(0xffe0);
+    private final UUID WEIGHT_MEASUREMENT_CHARACTERISTIC = BluetoothGattUuid.fromShortCode(0xffe4);
+    private final UUID WEIGHT_CMD_SERVICE = BluetoothGattUuid.fromShortCode(0xffe5);
+    private final UUID WEIGHT_CMD_CHARACTERISTIC = BluetoothGattUuid.fromShortCode(0xffe9);
 
     private boolean isMini;
 

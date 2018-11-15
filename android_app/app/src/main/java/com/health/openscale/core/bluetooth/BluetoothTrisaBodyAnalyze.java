@@ -44,15 +44,15 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
 
     // GATT service UUID
     private static final UUID WEIGHT_SCALE_SERVICE_UUID =
-            UUID.fromString("00007802-0000-1000-8000-00805f9b34fb");
+            BluetoothGattUuid.fromShortCode(0x7802);
 
     // GATT service characteristics.
     private static final UUID MEASUREMENT_CHARACTERISTIC_UUID =
-            UUID.fromString("00008a21-0000-1000-8000-00805f9b34fb");
+            BluetoothGattUuid.fromShortCode(0x8a21);
     private static final UUID DOWNLOAD_COMMAND_CHARACTERISTIC_UUID =
-            UUID.fromString("00008a81-0000-1000-8000-00805f9b34fb");
+            BluetoothGattUuid.fromShortCode(0x8a81);
     private static final UUID UPLOAD_COMMAND_CHARACTERISTIC_UUID =
-            UUID.fromString("00008a82-0000-1000-8000-00805f9b34fb");
+            BluetoothGattUuid.fromShortCode(0x8a82);
 
     // Commands sent from device to host.
     private static final byte UPLOAD_PASSWORD = (byte) 0xa0;
