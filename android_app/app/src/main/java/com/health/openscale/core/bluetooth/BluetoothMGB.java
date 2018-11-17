@@ -153,7 +153,7 @@ public class BluetoothMGB extends BluetoothCommunication {
         int hdr_2 = popInt();
         int hdr_3 = popInt();
 
-        if (hdr_1 == 0xAC && hdr_2 == 0x02 && hdr_3 == 0xFF) {
+        if (hdr_1 == 0xAC && (hdr_2 == 0x02 || hdr_2 == 0x03) && hdr_3 == 0xFF) {
             measurement = new ScaleMeasurement();
 
             popInt(); //unknown =00
