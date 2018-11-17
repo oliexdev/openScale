@@ -178,7 +178,8 @@ public class BluetoothMGB extends BluetoothCommunication {
             popInt(); //unknown =00
             popInt(); //unknown =00
 
-        } else if (hdr_1 == 0x01 && hdr_2 == 0x00) {
+        }
+        else if (measurement != null && hdr_1 == 0x01 && hdr_2 == 0x00) {
             measurement.setMuscle(popFloat());
 
             popFloat(); //BMR
