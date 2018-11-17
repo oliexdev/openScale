@@ -33,7 +33,7 @@ import java.util.Arrays;
 import timber.log.Timber;
 
 public class BluetoothIhealthHS3 extends BluetoothCommunication {
-    private final UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb"); // Standard SerialPortService ID
+    private final UUID uuid = BluetoothGattUuid.fromShortCode(0x1101); // Standard SerialPortService ID
 
     private BluetoothSocket btSocket = null;
     private BluetoothDevice btDevice = null;

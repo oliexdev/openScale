@@ -50,8 +50,8 @@ public class BluetoothDebug extends BluetoothCommunication {
 
     private boolean isBlacklisted(BluetoothGattService service, BluetoothGattCharacteristic characteristic) {
         // Reading this triggers a pairing request on Beurer BF710
-        if (service.getUuid().equals(UUID.fromString("0000ffe0-0000-1000-8000-00805f9b34fb"))
-            && characteristic.getUuid().equals(UUID.fromString("0000ffe5-0000-1000-8000-00805f9b34fb"))) {
+        if (service.getUuid().equals(BluetoothGattUuid.fromShortCode(0xffe0))
+            && characteristic.getUuid().equals(BluetoothGattUuid.fromShortCode(0xffe5))) {
             return true;
         }
 
@@ -87,15 +87,24 @@ public class BluetoothDebug extends BluetoothCommunication {
         return String.format("unknown type %d", type);
     }
 
+    private String permissionsToString(int permissions) {
+        if (permissions == 0) {
+            return "";
+        }
+        return String.format(" (permissions=0x%x)", permissions);
+    }
+
     private void logService(BluetoothGattService service, boolean included) {
-        Timber.d("Service %s%s", service.getUuid(), included ? " (included)" : "");
+        Timber.d("Service %s%s", BluetoothGattUuid.prettyPrint(service.getUuid()),
+                included ? " (included)" : "");
 
         for (BluetoothGattCharacteristic characteristic : service.getCharacteristics()) {
-            Timber.d("|- characteristic %s (instance %d): %s, write type: %s (permissions=0x%x)",
-                    characteristic.getUuid(), characteristic.getInstanceId(),
+            Timber.d("|- characteristic %s #%d: %s, write type: %s%s",
+                    BluetoothGattUuid.prettyPrint(characteristic.getUuid()),
+                    characteristic.getInstanceId(),
                     propertiesToString(characteristic.getProperties()),
                     writeTypeToString(characteristic.getWriteType()),
-                    characteristic.getPermissions());
+                    permissionsToString(characteristic.getPermissions()));
             byte[] value = characteristic.getValue();
             if (value != null && value.length > 0) {
                 Timber.d("|--> value: %s (%s)", byteInHex(value),
@@ -103,8 +112,9 @@ public class BluetoothDebug extends BluetoothCommunication {
             }
 
             for (BluetoothGattDescriptor descriptor : characteristic.getDescriptors()) {
-                Timber.d("|--- descriptor %s (permissions=0x%x)",
-                        descriptor.getUuid(), descriptor.getPermissions());
+                Timber.d("|--- descriptor %s%s",
+                        BluetoothGattUuid.prettyPrint(descriptor.getUuid()),
+                        permissionsToString(descriptor.getPermissions()));
 
                 value = descriptor.getValue();
                 if (value != null && value.length > 0) {
