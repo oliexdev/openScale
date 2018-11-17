@@ -214,8 +214,8 @@
 \nhttps://github.com/oliexdev/openScale/issues</string>
     <string name="customactivityoncrash_error_activity_error_details_clipboard_label">Информация об ошибке</string>
     <string name="toggle_expand">Подробности</string>
-    <string name="label_month_view">Помесячно</string>
-    <string name="label_weeks_view">В неделю</string>
+    <string name="label_month_view">За месяц</string>
+    <string name="label_weeks_view">За неделю</string>
 
     <string name="permission_bluetooth_info">Для поиска устройства Bluetooth требуется разрешение доступа к местоположению. После обнаружения устройства доступ можно снова заблокировать.</string>
     <string name="permission_read_data_description">Чтение данных openScale, включая информацию о пользователе и все сохраненные измерения</string>
