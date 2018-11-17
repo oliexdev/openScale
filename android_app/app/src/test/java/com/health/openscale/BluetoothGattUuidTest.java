@@ -41,7 +41,7 @@ public class BluetoothGattUuidTest {
         assertEquals("0x00010000",
                 BluetoothGattUuid.prettyPrint(BluetoothGattUuid.fromShortCode(0x10000)));
 
-        final UUID uuid = UUID.randomUUID();
+        final UUID uuid = UUID.fromString("12345678-1234-5678-9012-123456789012");
         assertEquals(uuid.toString(), BluetoothGattUuid.prettyPrint(uuid));
     }
 }
