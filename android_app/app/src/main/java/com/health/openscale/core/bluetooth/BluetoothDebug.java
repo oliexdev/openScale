@@ -58,11 +58,26 @@ public class BluetoothDebug extends BluetoothCommunication {
         return false;
     }
 
-    private String propertiesToString(int properties) {
+    private boolean isWriteType(int property, int writeType) {
+        switch (property) {
+            case BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE:
+                return writeType == BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE;
+            case BluetoothGattCharacteristic.PROPERTY_WRITE:
+                return writeType == BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT;
+            case BluetoothGattCharacteristic.PROPERTY_SIGNED_WRITE:
+                return writeType == BluetoothGattCharacteristic.WRITE_TYPE_SIGNED;
+        }
+        return false;
+    }
+
+    private String propertiesToString(int properties, int writeType) {
         StringBuilder names = new StringBuilder();
         for (int property : propertyString.keySet()) {
             if ((properties & property) != 0) {
                 names.append(propertyString.get(property));
+                if (isWriteType(property, writeType)) {
+                    names.append('*');
+                }
                 names.append(", ");
             }
         }
@@ -72,19 +87,6 @@ public class BluetoothDebug extends BluetoothCommunication {
         }
 
         return names.substring(0, names.length() - 2);
-    }
-
-    private String writeTypeToString(int type) {
-        if (type == BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE) {
-            return "no response";
-        }
-        if (type == BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT) {
-            return "default";
-        }
-        if (type == BluetoothGattCharacteristic.WRITE_TYPE_SIGNED) {
-            return "signed";
-        }
-        return String.format("unknown type %d", type);
     }
 
     private String permissionsToString(int permissions) {
@@ -99,11 +101,10 @@ public class BluetoothDebug extends BluetoothCommunication {
                 included ? " (included)" : "");
 
         for (BluetoothGattCharacteristic characteristic : service.getCharacteristics()) {
-            Timber.d("|- characteristic %s #%d: %s, write type: %s%s",
+            Timber.d("|- characteristic %s #%d: %s%s",
                     BluetoothGattUuid.prettyPrint(characteristic.getUuid()),
                     characteristic.getInstanceId(),
-                    propertiesToString(characteristic.getProperties()),
-                    writeTypeToString(characteristic.getWriteType()),
+                    propertiesToString(characteristic.getProperties(), characteristic.getWriteType()),
                     permissionsToString(characteristic.getPermissions()));
             byte[] value = characteristic.getValue();
             if (value != null && value.length > 0) {
