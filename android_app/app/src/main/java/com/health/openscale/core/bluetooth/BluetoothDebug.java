@@ -96,6 +96,10 @@ public class BluetoothDebug extends BluetoothCommunication {
         return String.format(" (permissions=0x%x)", permissions);
     }
 
+    private String byteToString(byte[] value) {
+        return new String(value).replaceAll("\\p{Cntrl}", "?");
+    }
+
     private void logService(BluetoothGattService service, boolean included) {
         Timber.d("Service %s%s", BluetoothGattUuid.prettyPrint(service.getUuid()),
                 included ? " (included)" : "");
@@ -108,8 +112,7 @@ public class BluetoothDebug extends BluetoothCommunication {
                     permissionsToString(characteristic.getPermissions()));
             byte[] value = characteristic.getValue();
             if (value != null && value.length > 0) {
-                Timber.d("|--> value: %s (%s)", byteInHex(value),
-                        characteristic.getStringValue(0).replaceAll("\\p{Cntrl}", "?"));
+                Timber.d("|--> value: %s (%s)", byteInHex(value), byteToString(value));
             }
 
             for (BluetoothGattDescriptor descriptor : characteristic.getDescriptors()) {
@@ -119,7 +122,7 @@ public class BluetoothDebug extends BluetoothCommunication {
 
                 value = descriptor.getValue();
                 if (value != null && value.length > 0) {
-                    Timber.d("|-----> value: %s", byteInHex(value));
+                    Timber.d("|-----> value: %s (%s)", byteInHex(value), byteToString(value));
                 }
             }
         }
