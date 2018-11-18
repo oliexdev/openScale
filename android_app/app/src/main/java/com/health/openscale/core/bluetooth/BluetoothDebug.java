@@ -105,7 +105,7 @@ public class BluetoothDebug extends BluetoothCommunication {
                 included ? " (included)" : "");
 
         for (BluetoothGattCharacteristic characteristic : service.getCharacteristics()) {
-            Timber.d("|- characteristic %s #%d: %s%s",
+            Timber.d("|- characteristic %s (#%d): %s%s",
                     BluetoothGattUuid.prettyPrint(characteristic.getUuid()),
                     characteristic.getInstanceId(),
                     propertiesToString(characteristic.getProperties(), characteristic.getWriteType()),

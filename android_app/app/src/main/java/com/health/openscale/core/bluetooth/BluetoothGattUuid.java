@@ -17,6 +17,7 @@
 package com.health.openscale.core.bluetooth;
 
 import java.lang.reflect.Field;
+import java.util.Locale;
 import java.util.UUID;
 
 public class BluetoothGattUuid {
@@ -46,7 +47,8 @@ public class BluetoothGattUuid {
                 if (uuid.equals(field.get(null))) {
                     String name = field.getName();
                     name = name.substring(name.indexOf('_') + 1);
-                    str = String.format("%s \"%s\"", str, name.replace('_', ' '));
+                    str = String.format("%s \"%s\"", str,
+                            name.replace('_', ' ').toLowerCase(Locale.US));
                     break;
                 }
             }
