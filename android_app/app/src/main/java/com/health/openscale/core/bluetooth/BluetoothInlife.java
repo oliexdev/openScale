@@ -20,7 +20,9 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
 
+import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
+import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
 
 import java.util.UUID;
@@ -84,9 +86,34 @@ public class BluetoothInlife extends BluetoothCommunication {
         }
 
         float weight = Converters.fromUnsignedInt16Be(data, 2) / 10.0f;
+        float lbm = Converters.fromUnsignedInt24Be(data, 4) / 1000.0f;
+
+        final ScaleUser selectedUser = OpenScale.getInstance().getSelectedScaleUser();
+        switch (selectedUser.getActivityLevel()) {
+            case SEDENTARY:
+            case MILD:
+                break;
+            case MODERATE:
+                lbm *= 1.0427f;
+                break;
+            case HEAVY:
+            case EXTREME:
+                lbm *= 1.0958f;
+                break;
+        }
+
+        float fatKg = weight - lbm;
+        float fat = (fatKg / weight) * 100.0f;
+        float water = (0.73f * (weight - fatKg) / weight) * 100.0f;
+        float muscle = (0.548f * lbm / weight) * 100.0f;
+        float bone = 0.05158f * lbm;
 
         ScaleMeasurement measurement = new ScaleMeasurement();
         measurement.setWeight(weight);
+        measurement.setFat(fat);
+        measurement.setWater(water);
+        measurement.setMuscle(muscle);
+        measurement.setBone(bone);
 
         addScaleData(measurement);
     }

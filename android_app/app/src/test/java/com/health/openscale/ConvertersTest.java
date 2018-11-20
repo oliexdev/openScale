@@ -133,9 +133,17 @@ public class ConvertersTest {
         assertEquals(0x0010fcfe, Converters.fromSignedInt24Le(data, 1));
         assertEquals(0x007f10fc, Converters.fromSignedInt24Le(data, 2));
 
+        assertEquals(0xfffdfefc, Converters.fromSignedInt24Be(data, 0));
+        assertEquals(0xfffefc10, Converters.fromSignedInt24Be(data, 1));
+        assertEquals(0xfffc107f, Converters.fromSignedInt24Be(data, 2));
+
         assertEquals(0xfcfefd, Converters.fromUnsignedInt24Le(data, 0));
         assertEquals(0x10fcfe, Converters.fromUnsignedInt24Le(data, 1));
         assertEquals(0x7f10fc, Converters.fromUnsignedInt24Le(data, 2));
+
+        assertEquals(0xfdfefc, Converters.fromUnsignedInt24Be(data, 0));
+        assertEquals(0xfefc10, Converters.fromUnsignedInt24Be(data, 1));
+        assertEquals(0xfc107f, Converters.fromUnsignedInt24Be(data, 2));
 
         assertEquals(-1234567,
                 Converters.fromSignedInt24Le(Converters.toInt32Le(-1234567), 0));

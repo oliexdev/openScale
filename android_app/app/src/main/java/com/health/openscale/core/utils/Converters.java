@@ -284,8 +284,19 @@ public class Converters {
         return value;
     }
 
+    public static int fromSignedInt24Be(byte[] data, int offset) {
+        int value = data[offset] << 16;
+        value += (data[offset + 1] & 0xFF) << 8;
+        value += data[offset + 2] & 0xFF;
+        return value;
+    }
+
     public static int fromUnsignedInt24Le(byte[] data, int offset) {
         return fromSignedInt24Le(data, offset) & 0xFFFFFF;
+    }
+
+    public static int fromUnsignedInt24Be(byte[] data, int offset) {
+        return fromSignedInt24Be(data, offset) & 0xFFFFFF;
     }
 
     public static int fromSignedInt32Le(byte[] data, int offset) {
