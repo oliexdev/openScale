@@ -34,6 +34,23 @@ public class BluetoothInlife extends BluetoothCommunication {
     private final UUID WEIGHT_MEASUREMENT_CHARACTERISTIC = BluetoothGattUuid.fromShortCode(0xfff1);
     private final UUID WEIGHT_CMD_CHARACTERISTIC = BluetoothGattUuid.fromShortCode(0xfff2);
 
+    private final byte START_BYTE = 0x02;
+    private final byte END_BYTE = (byte)0xaa;
+
+    private int getActivityLevel(ScaleUser scaleUser) {
+        switch (scaleUser.getActivityLevel()) {
+            case SEDENTARY:
+            case MILD:
+                break;
+            case MODERATE:
+            case HEAVY:
+                return 1;
+            case EXTREME:
+                return 2;
+        }
+        return 0;
+    }
+
     public BluetoothInlife(Context context) {
         super(context);
     }
@@ -51,14 +68,15 @@ public class BluetoothInlife extends BluetoothCommunication {
                         BluetoothGattUuid.DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION);
                 break;
             case 1:
-                byte level = 1;
-                byte sex = 0; // Male, 1 = female
-                byte userId = 0;
-                byte age = 30;
-                byte height = (byte)156;
-                byte[] data = {(byte)0x02, (byte)0xd2, level, sex, userId, age, height,
-                0, 0, 0, 0, 0, 0, (byte)0xaa};
-                data[data.length - 2] = xorChecksum(data, 1, 6);
+                ScaleUser scaleUser = OpenScale.getInstance().getSelectedScaleUser();
+                byte level = (byte)(getActivityLevel(scaleUser) + 1);
+                byte sex = (byte)scaleUser.getGender().toInt();
+                byte userId = (byte)scaleUser.getId();
+                byte age = (byte)scaleUser.getAge();
+                byte height = (byte)scaleUser.getBodyHeight();
+                byte[] data = {START_BYTE, (byte)0xd2, level, sex, userId, age, height,
+                        0, 0, 0, 0, 0, 0, END_BYTE};
+                data[data.length - 2] = xorChecksum(data, 1, data.length - 3);
 
                 writeBytes(WEIGHT_SERVICE, WEIGHT_CMD_CHARACTERISTIC, data);
                 break;
@@ -87,29 +105,38 @@ public class BluetoothInlife extends BluetoothCommunication {
             return;
         }
 
-        if (data[0] != (byte)0x02 || data[data.length - 1] != (byte)0xaa) {
+        if (data[0] != START_BYTE || data[data.length - 1] != END_BYTE) {
             Timber.d("Wrong start or end byte");
             return;
         }
 
-        if (data[1] != (byte)0xdd) {
-            Timber.d("Measurement not done yet");
+        if (xorChecksum(data, 1, data.length - 2) != 0) {
+            Timber.d("Invalid checksum");
             return;
         }
 
         float weight = Converters.fromUnsignedInt16Be(data, 2) / 10.0f;
+
+        if (data[1] == (byte)0xd8) {
+            Timber.d("Current weight %.2f kg", weight);
+            return;
+        }
+
+        if (data[1] != (byte)0xdd) {
+            Timber.d("Unknown command 0x%02x", data[1]);
+            return;
+        }
+
         float lbm = Converters.fromUnsignedInt24Be(data, 4) / 1000.0f;
 
         final ScaleUser selectedUser = OpenScale.getInstance().getSelectedScaleUser();
-        switch (selectedUser.getActivityLevel()) {
-            case SEDENTARY:
-            case MILD:
+        switch (getActivityLevel(selectedUser)) {
+            case 0:
                 break;
-            case MODERATE:
+            case 1:
                 lbm *= 1.0427f;
                 break;
-            case HEAVY:
-            case EXTREME:
+            case 2:
                 lbm *= 1.0958f;
                 break;
         }
@@ -128,5 +155,9 @@ public class BluetoothInlife extends BluetoothCommunication {
         measurement.setBone(bone);
 
         addScaleData(measurement);
+
+        byte[] done = {START_BYTE, (byte)0xd4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, END_BYTE};
+        done[done.length - 2] = xorChecksum(done, 1, done.length - 3);
+        writeBytes(WEIGHT_SERVICE, WEIGHT_CMD_CHARACTERISTIC, done);
     }
 }
