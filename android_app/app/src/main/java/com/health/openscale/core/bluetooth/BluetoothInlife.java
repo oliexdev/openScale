@@ -50,6 +50,18 @@ public class BluetoothInlife extends BluetoothCommunication {
                 setNotificationOn(WEIGHT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC,
                         BluetoothGattUuid.DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION);
                 break;
+            case 1:
+                byte level = 1;
+                byte sex = 0; // Male, 1 = female
+                byte userId = 0;
+                byte age = 30;
+                byte height = (byte)156;
+                byte[] data = {(byte)0x02, (byte)0xd2, level, sex, userId, age, height,
+                0, 0, 0, 0, 0, 0, (byte)0xaa};
+                data[data.length - 2] = xorChecksum(data, 1, 6);
+
+                writeBytes(WEIGHT_SERVICE, WEIGHT_CMD_CHARACTERISTIC, data);
+                break;
             default:
                 return false;
         }
