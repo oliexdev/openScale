@@ -30,7 +30,7 @@ Initialization
 * `<battery>`: battery level
 * `<wthr>`: weight threshold (unit g / 100)
 * `<fthr>`: fat threshold
-* `<unit>`: 1 = kg, 2 = lb, 3 = st
+* `<unit>`: 1 = kg, 2 = lb, 4 = st
 * `<ue>, <urwe>, <ume>`: user (reference weight, measurement) exists
 * `<version>`: scale version
 

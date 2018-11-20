@@ -330,7 +330,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
             int batteryLevel = (data[4] & 0xFF);
             float weightThreshold = (data[5] & 0xFF) / 10f;
             float bodyFatThreshold = (data[6] & 0xFF) / 10f;
-            int unit = data[7]; // 1 kg, 2 lb (pounds), 3 st stone
+            int unit = data[7]; // 1 kg, 2 lb (pounds), 4 st stone
             boolean userExists = (data[8] == 0);
             boolean userReferWeightExists = (data[9] == 0);
             boolean userMeasurementExist = (data[10] == 0);
