@@ -55,12 +55,11 @@ public class BluetoothInlife extends BluetoothCommunication {
         return 0;
     }
 
-    private void sendCommand(int command, byte[] parameters) {
+    private void sendCommand(int command, byte... parameters) {
         byte[] data = {START_BYTE, (byte)command, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, END_BYTE};
-        if (parameters != null) {
-            for (int i = 0; i < parameters.length; ++i) {
-                data[i + 2] = parameters[i];
-            }
+        int i = 2;
+        for (byte parameter : parameters) {
+            data[i++] = parameter;
         }
         data[data.length - 2] = xorChecksum(data, 1, data.length - 3);
         writeBytes(WEIGHT_SERVICE, WEIGHT_CMD_CHARACTERISTIC, data);
@@ -90,7 +89,7 @@ public class BluetoothInlife extends BluetoothCommunication {
                 byte age = (byte)scaleUser.getAge();
                 byte height = (byte)scaleUser.getBodyHeight();
 
-                sendCommand(0xd2, new byte[] {level, sex, userId, age, height});
+                sendCommand(0xd2, level, sex, userId, age, height);
                 break;
             default:
                 return false;
@@ -151,7 +150,7 @@ public class BluetoothInlife extends BluetoothCommunication {
                 }
                 break;
             case (byte) 0xdf:
-                Timber.d("Data received by scale: %s", data[2] == 0 ? "OK" : "error");
+                Timber.d("User data acked by scale: %s", data[2] == 0 ? "OK" : "error");
                 break;
             default:
                 Timber.d("Unknown command 0x%02x", data[1]);
@@ -231,7 +230,7 @@ public class BluetoothInlife extends BluetoothCommunication {
 
         addScaleData(measurement);
 
-        sendCommand(0xd4, null);
+        sendCommand(0xd4);
     }
 
     void processMeasurementDataNewVersion(byte[] data) {
