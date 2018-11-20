@@ -20,6 +20,7 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
 
+import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
@@ -139,9 +140,15 @@ public class BluetoothInlife extends BluetoothCommunication {
             case (byte) 0xd8:
                 float weight = Converters.fromUnsignedInt16Be(data, 2) / 10.0f;
                 Timber.d("Current weight %.2f kg", weight);
+                sendMessage(R.string.info_measuring, weight);
                 break;
             case (byte) 0xdd:
-                processMeasurementData(data);
+                if (data[11] == (byte) 0x80 || data[11] == (byte) 0x81) {
+                    processMeasurementDataNewVersion(data);
+                }
+                else {
+                    processMeasurementData(data);
+                }
                 break;
             case (byte) 0xdf:
                 Timber.d("Data received by scale: %s", data[2] == 0 ? "OK" : "error");
@@ -157,6 +164,11 @@ public class BluetoothInlife extends BluetoothCommunication {
         float lbm = Converters.fromUnsignedInt24Be(data, 4) / 1000.0f;
         float visceralFactor = Converters.fromUnsignedInt16Be(data, 7) / 10.0f;
         float bmr = Converters.fromUnsignedInt16Be(data, 9) / 10.0f;
+
+        if (lbm == 0xffffff / 1000.0f) {
+            Timber.e("Measurement failed; feet not correctly placed on scale?");
+            return;
+        }
 
         Timber.d("weight=%.1f, LBM=%.3f, visceral factor=%.1f, BMR=%.1f",
                 weight, lbm, visceralFactor, bmr);
@@ -220,5 +232,14 @@ public class BluetoothInlife extends BluetoothCommunication {
         addScaleData(measurement);
 
         sendCommand(0xd4, null);
+    }
+
+    void processMeasurementDataNewVersion(byte[] data) {
+        float weight = Converters.fromUnsignedInt16Be(data, 2) / 10.0f;
+        long impedance = Converters.fromUnsignedInt32Be(data, 4);
+        Timber.d("weight=%.2f, impedance=%d", weight, impedance);
+
+        // Uses the same library as 1byone, but we need someone that has the scale to be able to
+        // test if it works the same way.
     }
 }
