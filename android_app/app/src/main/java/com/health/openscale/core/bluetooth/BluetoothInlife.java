@@ -40,16 +40,16 @@ public class BluetoothInlife extends BluetoothCommunication {
 
     private byte[] lastData = null;
 
-    private int getActivityLevel(ScaleUser scaleUser) {
+    private int getAthleteLevel(ScaleUser scaleUser) {
         switch (scaleUser.getActivityLevel()) {
             case SEDENTARY:
             case MILD:
-                break;
+                return 0; // General
             case MODERATE:
-                return 1;
+                return 1; // Amateur
             case HEAVY:
             case EXTREME:
-                return 2;
+                return 2; // Profession
         }
         return 0;
     }
@@ -83,7 +83,7 @@ public class BluetoothInlife extends BluetoothCommunication {
                 break;
             case 1:
                 ScaleUser scaleUser = OpenScale.getInstance().getSelectedScaleUser();
-                byte level = (byte)(getActivityLevel(scaleUser) + 1);
+                byte level = (byte)(getAthleteLevel(scaleUser) + 1);
                 byte sex = (byte)scaleUser.getGender().toInt();
                 byte userId = (byte)scaleUser.getId();
                 byte age = (byte)scaleUser.getAge();
@@ -117,12 +117,12 @@ public class BluetoothInlife extends BluetoothCommunication {
         }
 
         if (data[0] != START_BYTE || data[data.length - 1] != END_BYTE) {
-            Timber.d("Wrong start or end byte");
+            Timber.e("Wrong start or end byte");
             return;
         }
 
         if (xorChecksum(data, 1, data.length - 2) != 0) {
-            Timber.d("Invalid checksum");
+            Timber.e("Invalid checksum");
             return;
         }
 
@@ -162,7 +162,7 @@ public class BluetoothInlife extends BluetoothCommunication {
                 weight, lbm, visceralFactor, bmr);
 
         final ScaleUser selectedUser = OpenScale.getInstance().getSelectedScaleUser();
-        switch (getActivityLevel(selectedUser)) {
+        switch (getAthleteLevel(selectedUser)) {
             case 0:
                 break;
             case 1:
@@ -198,14 +198,14 @@ public class BluetoothInlife extends BluetoothCommunication {
             }
         }
 
-        if (getActivityLevel(selectedUser) != 0) {
+        if (getAthleteLevel(selectedUser) != 0) {
             if (visceral >= 21) {
                 visceral *= 0.85;
             }
             if (visceral >= 10) {
                 visceral *= 0.8;
             }
-            visceral -= getActivityLevel(selectedUser) * 2;
+            visceral -= getAthleteLevel(selectedUser) * 2;
         }
 
         ScaleMeasurement measurement = new ScaleMeasurement();
