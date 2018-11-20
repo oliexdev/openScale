@@ -25,6 +25,7 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
 
+import java.util.Arrays;
 import java.util.UUID;
 
 import timber.log.Timber;
@@ -36,6 +37,8 @@ public class BluetoothInlife extends BluetoothCommunication {
 
     private final byte START_BYTE = 0x02;
     private final byte END_BYTE = (byte)0xaa;
+
+    private byte[] lastData = null;
 
     private int getActivityLevel(ScaleUser scaleUser) {
         switch (scaleUser.getActivityLevel()) {
@@ -49,6 +52,17 @@ public class BluetoothInlife extends BluetoothCommunication {
                 return 2;
         }
         return 0;
+    }
+
+    private void sendCommand(int command, byte[] parameters) {
+        byte[] data = {START_BYTE, (byte)command, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, END_BYTE};
+        if (parameters != null) {
+            for (int i = 0; i < parameters.length; ++i) {
+                data[i + 2] = parameters[i];
+            }
+        }
+        data[data.length - 2] = xorChecksum(data, 1, data.length - 3);
+        writeBytes(WEIGHT_SERVICE, WEIGHT_CMD_CHARACTERISTIC, data);
     }
 
     public BluetoothInlife(Context context) {
@@ -74,11 +88,8 @@ public class BluetoothInlife extends BluetoothCommunication {
                 byte userId = (byte)scaleUser.getId();
                 byte age = (byte)scaleUser.getAge();
                 byte height = (byte)scaleUser.getBodyHeight();
-                byte[] data = {START_BYTE, (byte)0xd2, level, sex, userId, age, height,
-                        0, 0, 0, 0, 0, 0, END_BYTE};
-                data[data.length - 2] = xorChecksum(data, 1, data.length - 3);
 
-                writeBytes(WEIGHT_SERVICE, WEIGHT_CMD_CHARACTERISTIC, data);
+                sendCommand(0xd2, new byte[] {level, sex, userId, age, height});
                 break;
             default:
                 return false;
@@ -115,19 +126,39 @@ public class BluetoothInlife extends BluetoothCommunication {
             return;
         }
 
+        if (Arrays.equals(data, lastData)) {
+            Timber.d("Ignoring duplicate data");
+            return;
+        }
+        lastData = data;
+
+        switch (data[1]) {
+            case (byte) 0x0f:
+                Timber.d("Scale disconnecting");
+                return;
+            case (byte) 0xd8:
+                float weight = Converters.fromUnsignedInt16Be(data, 2) / 10.0f;
+                Timber.d("Current weight %.2f kg", weight);
+                return;
+            case (byte) 0xdd:
+                break;
+            case (byte) 0xdf:
+                Timber.d("Data received by scale: %s", data[2] == 0 ? "OK" : "error");
+                return;
+            default:
+                Timber.d("Unknown command 0x%02x", data[1]);
+                return;
+        }
+
         float weight = Converters.fromUnsignedInt16Be(data, 2) / 10.0f;
-
-        if (data[1] == (byte)0xd8) {
-            Timber.d("Current weight %.2f kg", weight);
-            return;
-        }
-
-        if (data[1] != (byte)0xdd) {
-            Timber.d("Unknown command 0x%02x", data[1]);
-            return;
-        }
-
         float lbm = Converters.fromUnsignedInt24Be(data, 4) / 1000.0f;
+
+        // TODO: convert visceral factor to visceral fat
+        float visceralFactor = Converters.fromUnsignedInt16Be(data, 7) / 10.0f;
+        float bmr = Converters.fromUnsignedInt16Be(data, 9) / 10.0f;
+
+        Timber.d("Weight=%.1f, LBM=%.3f, visceral factor=%.1f, BMR=%.1f",
+                weight, lbm, visceralFactor, bmr);
 
         final ScaleUser selectedUser = OpenScale.getInstance().getSelectedScaleUser();
         switch (getActivityLevel(selectedUser)) {
@@ -153,11 +184,10 @@ public class BluetoothInlife extends BluetoothCommunication {
         measurement.setWater(water);
         measurement.setMuscle(muscle);
         measurement.setBone(bone);
+        measurement.setLbm(lbm);
 
         addScaleData(measurement);
 
-        byte[] done = {START_BYTE, (byte)0xd4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, END_BYTE};
-        done[done.length - 2] = xorChecksum(done, 1, done.length - 3);
-        writeBytes(WEIGHT_SERVICE, WEIGHT_CMD_CHARACTERISTIC, done);
+        sendCommand(0xd4, null);
     }
 }
