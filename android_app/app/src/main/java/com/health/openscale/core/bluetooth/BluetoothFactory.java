@@ -86,6 +86,9 @@ public class BluetoothFactory {
             // Trisa Body Analyze 4.0, aka Transtek GBF-1257-B
             return new BluetoothTrisaBodyAnalyze(context);
         }
+        if (deviceName.equals("000FatScale01")) {
+            return new BluetoothInlife(context);
+        }
         return null;
     }
 }
