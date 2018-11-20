@@ -46,8 +46,8 @@ public class BluetoothInlife extends BluetoothCommunication {
             case MILD:
                 break;
             case MODERATE:
-            case HEAVY:
                 return 1;
+            case HEAVY:
             case EXTREME:
                 return 2;
         }
@@ -135,29 +135,30 @@ public class BluetoothInlife extends BluetoothCommunication {
         switch (data[1]) {
             case (byte) 0x0f:
                 Timber.d("Scale disconnecting");
-                return;
+                break;
             case (byte) 0xd8:
                 float weight = Converters.fromUnsignedInt16Be(data, 2) / 10.0f;
                 Timber.d("Current weight %.2f kg", weight);
-                return;
+                break;
             case (byte) 0xdd:
+                processMeasurementData(data);
                 break;
             case (byte) 0xdf:
                 Timber.d("Data received by scale: %s", data[2] == 0 ? "OK" : "error");
-                return;
+                break;
             default:
                 Timber.d("Unknown command 0x%02x", data[1]);
-                return;
+                break;
         }
+    }
 
+    void processMeasurementData(byte[] data) {
         float weight = Converters.fromUnsignedInt16Be(data, 2) / 10.0f;
         float lbm = Converters.fromUnsignedInt24Be(data, 4) / 1000.0f;
-
-        // TODO: convert visceral factor to visceral fat
         float visceralFactor = Converters.fromUnsignedInt16Be(data, 7) / 10.0f;
         float bmr = Converters.fromUnsignedInt16Be(data, 9) / 10.0f;
 
-        Timber.d("Weight=%.1f, LBM=%.3f, visceral factor=%.1f, BMR=%.1f",
+        Timber.d("weight=%.1f, LBM=%.3f, visceral factor=%.1f, BMR=%.1f",
                 weight, lbm, visceralFactor, bmr);
 
         final ScaleUser selectedUser = OpenScale.getInstance().getSelectedScaleUser();
@@ -178,6 +179,35 @@ public class BluetoothInlife extends BluetoothCommunication {
         float muscle = (0.548f * lbm / weight) * 100.0f;
         float bone = 0.05158f * lbm;
 
+        double visceral;
+        final float height = selectedUser.getBodyHeight();
+        if (selectedUser.getGender().isMale()) {
+            if (height >= 1.6 * weight + 63) {
+                visceral = (0.765 - 0.002 * height) * (weight - 50) + visceralFactor;
+            }
+            else {
+                visceral = 380 * weight / (((0.0826 * height * height) - 0.4 * height) + 48) - 50 + visceralFactor;
+            }
+        }
+        else {
+            if (weight <= height / 2 - 13) {
+                visceral = (0.691 - 0.0024 * height) * (weight - 50) + visceralFactor;
+            }
+            else {
+                visceral = 500 * weight / (((0.1158 * height * height) + 1.45 * height) - 120) - 50 + visceralFactor;
+            }
+        }
+
+        if (getActivityLevel(selectedUser) != 0) {
+            if (visceral >= 21) {
+                visceral *= 0.85;
+            }
+            if (visceral >= 10) {
+                visceral *= 0.8;
+            }
+            visceral -= getActivityLevel(selectedUser) * 2;
+        }
+
         ScaleMeasurement measurement = new ScaleMeasurement();
         measurement.setWeight(weight);
         measurement.setFat(fat);
@@ -185,6 +215,7 @@ public class BluetoothInlife extends BluetoothCommunication {
         measurement.setMuscle(muscle);
         measurement.setBone(bone);
         measurement.setLbm(lbm);
+        measurement.setVisceralFat((float) visceral);
 
         addScaleData(measurement);
 
