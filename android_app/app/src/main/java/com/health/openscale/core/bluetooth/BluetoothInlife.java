@@ -194,7 +194,7 @@ public class BluetoothInlife extends BluetoothCommunication {
         final float height = selectedUser.getBodyHeight();
         if (selectedUser.getGender().isMale()) {
             if (height >= 1.6 * weight + 63) {
-                visceral = (0.765 - 0.002 * height) * (weight - 50) + visceralFactor;
+                visceral = (0.765 - 0.002 * height) * weight - 50 + visceralFactor;
             }
             else {
                 visceral = 380 * weight / (((0.0826 * height * height) - 0.4 * height) + 48) - 50 + visceralFactor;
@@ -202,7 +202,7 @@ public class BluetoothInlife extends BluetoothCommunication {
         }
         else {
             if (weight <= height / 2 - 13) {
-                visceral = (0.691 - 0.0024 * height) * (weight - 50) + visceralFactor;
+                visceral = (0.691 - 0.0024 * height) * weight - 50 + visceralFactor;
             }
             else {
                 visceral = 500 * weight / (((0.1158 * height * height) + 1.45 * height) - 120) - 50 + visceralFactor;
