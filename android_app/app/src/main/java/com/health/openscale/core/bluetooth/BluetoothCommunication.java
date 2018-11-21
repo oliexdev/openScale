@@ -372,6 +372,16 @@ public abstract class BluetoothCommunication {
         return stringBuilder.substring(0, stringBuilder.length() - 1);
     }
 
+    protected float clamp(double value, double min, double max) {
+        if (value < min) {
+            return (float)min;
+        }
+        if (value > max) {
+            return (float)max;
+        }
+        return (float)value;
+    }
+
     protected byte xorChecksum(byte[] data, int offset, int length) {
         byte checksum = 0;
         for (int i = offset; i < offset + length; ++i) {

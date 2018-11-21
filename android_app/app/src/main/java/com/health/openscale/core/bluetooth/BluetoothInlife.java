@@ -221,12 +221,12 @@ public class BluetoothInlife extends BluetoothCommunication {
 
         ScaleMeasurement measurement = new ScaleMeasurement();
         measurement.setWeight(weight);
-        measurement.setFat((float) fat);
-        measurement.setWater((float) water);
-        measurement.setMuscle((float) muscle);
-        measurement.setBone((float) bone);
+        measurement.setFat(clamp(fat, 5, 80));
+        measurement.setWater(clamp(water, 5, 80));
+        measurement.setMuscle(clamp(muscle, 5, 80));
+        measurement.setBone(clamp(bone, 0.5, 8));
         measurement.setLbm(lbm);
-        measurement.setVisceralFat((float) visceral);
+        measurement.setVisceralFat(clamp(visceral, 1, 50));
 
         addScaleData(measurement);
 
