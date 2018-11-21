@@ -185,10 +185,10 @@ public class BluetoothInlife extends BluetoothCommunication {
         }
 
         float fatKg = weight - lbm;
-        float fat = (fatKg / weight) * 100.0f;
-        float water = (0.73f * (weight - fatKg) / weight) * 100.0f;
-        float muscle = (0.548f * lbm / weight) * 100.0f;
-        float bone = 0.05158f * lbm;
+        double fat = (fatKg / weight) * 100.0;
+        double water = (0.73f * (weight - fatKg) / weight) * 100.0;
+        double muscle = (0.548 * lbm / weight) * 100.0;
+        double bone = 0.05158 * lbm;
 
         double visceral;
         final float height = selectedUser.getBodyHeight();
@@ -221,10 +221,10 @@ public class BluetoothInlife extends BluetoothCommunication {
 
         ScaleMeasurement measurement = new ScaleMeasurement();
         measurement.setWeight(weight);
-        measurement.setFat(fat);
-        measurement.setWater(water);
-        measurement.setMuscle(muscle);
-        measurement.setBone(bone);
+        measurement.setFat((float) fat);
+        measurement.setWater((float) water);
+        measurement.setMuscle((float) muscle);
+        measurement.setBone((float) bone);
         measurement.setLbm(lbm);
         measurement.setVisceralFat((float) visceral);
 
