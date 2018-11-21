@@ -184,28 +184,29 @@ public class BluetoothInlife extends BluetoothCommunication {
                 break;
         }
 
-        float fatKg = weight - lbm;
-        double fat = (fatKg / weight) * 100.0;
-        double water = (0.73f * (weight - fatKg) / weight) * 100.0;
-        double muscle = (0.548 * lbm / weight) * 100.0;
-        double bone = 0.05158 * lbm;
+        final float fatKg = weight - lbm;
+        final double fat = (fatKg / weight) * 100.0;
+        final double water = (0.73f * (weight - fatKg) / weight) * 100.0;
+        final double muscle = (0.548 * lbm / weight) * 100.0;
+        final double bone = 0.05158 * lbm;
 
-        double visceral;
         final float height = selectedUser.getBodyHeight();
+
+        double visceral = visceralFactor - 50;
         if (selectedUser.getGender().isMale()) {
             if (height >= 1.6 * weight + 63) {
-                visceral = (0.765 - 0.002 * height) * weight - 50 + visceralFactor;
+                visceral += (0.765 - 0.002 * height) * weight;
             }
             else {
-                visceral = 380 * weight / (((0.0826 * height * height) - 0.4 * height) + 48) - 50 + visceralFactor;
+                visceral += 380 * weight / (((0.0826 * height * height) - 0.4 * height) + 48);
             }
         }
         else {
             if (weight <= height / 2 - 13) {
-                visceral = (0.691 - 0.0024 * height) * weight - 50 + visceralFactor;
+                visceral += (0.691 - 0.0024 * height) * weight;
             }
             else {
-                visceral = 500 * weight / (((0.1158 * height * height) + 1.45 * height) - 120) - 50 + visceralFactor;
+                visceral += 500 * weight / (((0.1158 * height * height) + 1.45 * height) - 120);
             }
         }
 
