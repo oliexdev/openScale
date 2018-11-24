@@ -227,6 +227,10 @@ public abstract class BluetoothCommunication {
      */
     protected void onBluetoothDataChange(BluetoothGatt bluetoothGatt, BluetoothGattCharacteristic gattCharacteristic) {}
 
+    protected boolean doScanWhileConnecting() {
+        return true;
+    }
+
     /**
      * Set the Bluetooth machine state to a specific state.
      *
@@ -454,6 +458,10 @@ public abstract class BluetoothCommunication {
 
     private void connectGatt(BluetoothDevice device) {
         Timber.i("Connecting to [%s] (driver: %s)", device.getAddress(), driverName());
+
+        if (!doScanWhileConnecting()) {
+            stopLeScan();
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             bluetoothGatt = device.connectGatt(

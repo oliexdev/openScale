@@ -48,6 +48,12 @@ public class BluetoothMedisanaBS44x extends BluetoothCommunication {
     }
 
     @Override
+    protected boolean doScanWhileConnecting() {
+        // Medisana seems to have problem connecting if scan is running (see #278 and #353)
+        return false;
+    }
+
+    @Override
     protected boolean nextInitCmd(int stateNr) {
         return false;
     }
