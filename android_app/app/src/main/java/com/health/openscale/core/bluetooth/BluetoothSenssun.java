@@ -35,9 +35,6 @@ public class BluetoothSenssun extends BluetoothCommunication {
     private final UUID WEIGHT_MEASUREMENT_CHARACTERISTIC = BluetoothGattUuid.fromShortCode(0xfff1); // read, notify
     private final UUID CMD_MEASUREMENT_CHARACTERISTIC = BluetoothGattUuid.fromShortCode(0xfff2); // write only
 
-
-    private Date lastWeighted= new Date();
-    private ScaleUser user;
     private int gotData;
     private int FatMus=0;
     private ScaleMeasurement measurement;
