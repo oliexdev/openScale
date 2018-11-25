@@ -73,6 +73,9 @@ public class BluetoothFactory {
         if (name.equals("Health Scale".toLowerCase(Locale.US))) {
             return new BluetoothOneByone(context);
         }
+        if (name.equals("SENSSUN FAT".toLowerCase(Locale.US))) {
+            return new BluetoothSenssun(context);
+        }
         if (name.startsWith("SANITAS SBF70".toLowerCase(Locale.US)) || name.startsWith("sbf75")) {
             return new BluetoothBeurerSanitas(context, BluetoothBeurerSanitas.DeviceType.SANITAS_SBF70_70);
         }
