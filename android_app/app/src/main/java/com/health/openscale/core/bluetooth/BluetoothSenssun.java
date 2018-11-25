@@ -51,11 +51,9 @@ public class BluetoothSenssun extends BluetoothCommunication {
     private void sendUserData(){
         final ScaleUser selectedUser = OpenScale.getInstance().getSelectedScaleUser();
 
-        byte gender = selectedUser.getGender().isMale() ? (byte)0x01 : (byte)0xf1; // 00 - male; 01 - female
-        byte height = (byte)(((int)selectedUser.getBodyHeight()) & 0xff); // cm
-        byte age = (byte)(selectedUser.getAge() & 0xff);
-
-        int userId = selectedUser.getId();
+        byte gender = selectedUser.getGender().isMale() ? (byte)0x01 : (byte)0xf1;
+        byte height = (byte) selectedUser.getBodyHeight(); // cm
+        byte age = (byte) selectedUser.getAge();
 
         Timber.d("Request Saved User Measurements ");
         byte cmdByte[] = {(byte)0xa5, (byte)0x10, gender, age, height, (byte)0, (byte)0x0, (byte)0x0d2, (byte)0x00};
@@ -76,13 +74,13 @@ public class BluetoothSenssun extends BluetoothCommunication {
                 setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC,
                         BluetoothGattUuid.DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION);
                 sendUserData();
-                gotData=0;
+                gotData = 0;
                 break;
             case 1:
-            //wait for answer
-              break;
+                //wait for answer
+                break;
             default:
-              // Finish init if everything is done
+                // Finish init if everything is done
                 return false;
         }
         return true;
@@ -107,7 +105,7 @@ public class BluetoothSenssun extends BluetoothCommunication {
 
     @Override
     protected boolean nextCleanUpCmd(int stateNr) {
-      return false;
+        return false;
     }
 
     @Override
@@ -120,13 +118,13 @@ public class BluetoothSenssun extends BluetoothCommunication {
         if (data != null) {
             parseBytes(data);
             if (measurement != null && measurement.getWeight() != 0.0 && gotData == 0) {
-                Timber.d("meas: %s",measurement.toString());
+                Timber.d("meas: %s", measurement);
                 addScaleData(measurement);
                 gotData = 1;
                 nextMachineStateStep();
             }
             if (measurement != null && measurement.getWeight() != 0.0 && FatMus == 0x03 && gotData != 2) {
-                Timber.d("meas: %s",measurement.toString());
+                Timber.d("meas: %s", measurement);
                 addScaleData(measurement);
                 gotData = 2;
             }
@@ -137,8 +135,8 @@ public class BluetoothSenssun extends BluetoothCommunication {
         if (measurement == null) {
             measurement = new ScaleMeasurement();
         }
-        int type = (int)weightBytes[6] & 0xff;
-        Timber.d("type %02X",type);
+        int type = weightBytes[6] & 0xff;
+        Timber.d("type %02X", type);
         switch (type) {
             case 0xaa:
                 float weight = Converters.fromUnsignedInt16Be(weightBytes, 2) / 10.0f; // kg
@@ -168,7 +166,6 @@ public class BluetoothSenssun extends BluetoothCommunication {
             case 0xe2:
                 //date
                 break;
-            default:
         }
 
         //measurement.setDateTime(lastWeighted);
