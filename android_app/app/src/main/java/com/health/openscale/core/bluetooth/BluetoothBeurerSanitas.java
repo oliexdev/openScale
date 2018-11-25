@@ -29,6 +29,7 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
 
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -112,6 +113,21 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
         Converters.toInt32Be(data, 0, uid >> 32);
         Converters.toInt32Be(data, 4, uid & 0xFFFFFFFF);
         return data;
+    }
+
+    private String decodeString(byte[] data, int offset, int maxLength) {
+        int length = 0;
+        for (; length < maxLength; ++length) {
+            if (data[offset + length] == 0) {
+                break;
+            }
+        }
+        return new String(data, offset, length);
+    }
+
+    private String normalizeString(String input) {
+        String normalized = Normalizer.normalize(input, Normalizer.Form.NFD);
+        return normalized.replaceAll("[^A-Za-z0-9]", "");
     }
 
     public BluetoothBeurerSanitas(Context context, DeviceType deviceType) {
@@ -328,7 +344,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
         final int current = data[3] & 0xFF;
 
         if (remoteUsers.size() == current - 1) {
-            String name = new String(data, 12, 3).toUpperCase();
+            String name = decodeString(data, 12, 3);
             int year = 1900 + (data[15] & 0xFF);
 
             remoteUsers.add(new RemoteUser(decodeUserId(data, 4), name, year));
@@ -344,7 +360,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
         Calendar cal = Calendar.getInstance();
 
         for (ScaleUser scaleUser : OpenScale.getInstance().getScaleUserList()) {
-            final String localName = scaleUser.getUserName().toUpperCase();
+            final String localName = normalizeString(scaleUser.getUserName()).toUpperCase();
             cal.setTime(scaleUser.getBirthday());
             final int year = cal.get(Calendar.YEAR);
 
@@ -562,7 +578,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
 
             case CMD_USER_DETAILS:
                 if (data[3] == 0) {
-                    String name = new String(data, 4, 3);
+                    String name = decodeString(data, 4, 3);
                     int year = 1900 + (data[7] & 0xFF);
                     int month = 1 + (data[8] & 0xFF);
                     int day = data[9] & 0xFF;
@@ -657,7 +673,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
         cal.setTime(scaleUser.getBirthday());
 
         // We can only use up to 3 characters and have to handle them uppercase
-        byte[] nick = Arrays.copyOf(scaleUser.getUserName().toUpperCase().getBytes(), 3);
+        byte[] nick = Arrays.copyOf(normalizeString(scaleUser.getUserName()).toUpperCase().getBytes(), 3);
         byte year = (byte) (cal.get(Calendar.YEAR) - 1900);
         byte month = (byte) cal.get(Calendar.MONTH);
         byte day = (byte) cal.get(Calendar.DAY_OF_MONTH);
