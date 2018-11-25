@@ -31,9 +31,9 @@ import java.util.UUID;
 import timber.log.Timber;
 
 public class BluetoothSenssun extends BluetoothCommunication {
-    private final UUID WEIGHT_MEASUREMENT_SERVICE = UUID.fromString("0000fff0-0000-1000-8000-00805f9b34fb");
-    private final UUID WEIGHT_MEASUREMENT_CHARACTERISTIC = UUID.fromString("0000fff1-0000-1000-8000-00805f9b34fb"); // read, notify
-    private final UUID CMD_MEASUREMENT_CHARACTERISTIC = UUID.fromString("0000fff2-0000-1000-8000-00805f9b34fb"); // write only
+    private final UUID WEIGHT_MEASUREMENT_SERVICE = BluetoothGattUuid.fromShortCode(0xfff0);
+    private final UUID WEIGHT_MEASUREMENT_CHARACTERISTIC = BluetoothGattUuid.fromShortCode(0xfff1); // read, notify
+    private final UUID CMD_MEASUREMENT_CHARACTERISTIC = BluetoothGattUuid.fromShortCode(0xfff2); // write only
 
 
     private Date lastWeighted= new Date();
