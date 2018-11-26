@@ -350,8 +350,9 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
             remoteUsers.add(new RemoteUser(decodeUserId(data, 4), name, year));
 
             Timber.d("Received user %d/%d: %s (%d)", current, count, name, year);
-            sendAck(data);
         }
+
+        sendAck(data);
 
         if (current != count) {
             return;
