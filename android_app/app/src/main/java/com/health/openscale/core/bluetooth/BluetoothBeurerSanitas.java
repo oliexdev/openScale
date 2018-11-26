@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 import java.util.UUID;
 
 import timber.log.Timber;
@@ -128,6 +129,14 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
     private String normalizeString(String input) {
         String normalized = Normalizer.normalize(input, Normalizer.Form.NFD);
         return normalized.replaceAll("[^A-Za-z0-9]", "");
+    }
+
+    private String convertUserNameToScale(ScaleUser user) {
+        String normalized = normalizeString(user.getUserName());
+        if (normalized.isEmpty()) {
+            return String.valueOf(user.getId());
+        }
+        return normalized.toUpperCase(Locale.US);
     }
 
     public BluetoothBeurerSanitas(Context context, DeviceType deviceType) {
@@ -361,7 +370,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
         Calendar cal = Calendar.getInstance();
 
         for (ScaleUser scaleUser : OpenScale.getInstance().getScaleUserList()) {
-            final String localName = normalizeString(scaleUser.getUserName()).toUpperCase();
+            final String localName = convertUserNameToScale(scaleUser);
             cal.setTime(scaleUser.getBirthday());
             final int year = cal.get(Calendar.YEAR);
 
@@ -673,8 +682,8 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
         Calendar cal = Calendar.getInstance();
         cal.setTime(scaleUser.getBirthday());
 
-        // We can only use up to 3 characters and have to handle them uppercase
-        byte[] nick = Arrays.copyOf(normalizeString(scaleUser.getUserName()).toUpperCase().getBytes(), 3);
+        // We can only use up to 3 characters (padding with 0 if needed)
+        byte[] nick = Arrays.copyOf(convertUserNameToScale(scaleUser).getBytes(), 3);
         byte year = (byte) (cal.get(Calendar.YEAR) - 1900);
         byte month = (byte) cal.get(Calendar.MONTH);
         byte day = (byte) cal.get(Calendar.DAY_OF_MONTH);
