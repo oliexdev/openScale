@@ -74,7 +74,6 @@
     <string name="error_exporting">Feil ved eksport</string>
     <string name="error_importing">Feil ved import</string>
     <string name="error_user_name_required">Feil: Brukernavn kreves</string>
-    <string name="error_user_name_too_short">Feil: Brukernavn må være minst tre tegn</string>
     <string name="error_height_required">Feil: Høyde kreves</string>
     <string name="error_initial_weight_required">Feil: Startvekt kreves</string>
     <string name="error_goal_weight_required">Feil: Målvekt kreves</string>

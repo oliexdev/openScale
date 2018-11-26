@@ -302,12 +302,8 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
     {
         boolean validate = true;
 
-        if (txtUserName.getText().toString().length() < 3) {
-            if (txtUserName.getText().toString().length() == 0) {
-                txtUserName.setError(getResources().getString(R.string.error_user_name_required));
-            } else {
-                txtUserName.setError(getResources().getString(R.string.error_user_name_too_short));
-            }
+        if (txtUserName.getText().toString().length() == 0) {
+            txtUserName.setError(getResources().getString(R.string.error_user_name_required));
             validate = false;
         }
 

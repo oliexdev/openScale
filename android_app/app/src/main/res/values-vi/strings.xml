@@ -72,7 +72,6 @@
     <string name="error_exporting">Lỗi khi xuất</string>
     <string name="error_importing">Lỗi khi nhập</string>
     <string name="error_user_name_required">Lỗi: Tên là bắt buộc</string>
-    <string name="error_user_name_too_short">Lỗi: Tên phải ít nhất 3 kí tự</string>
     <string name="error_height_required">Lỗi: Chiều cao là bắt buộc</string>
     <string name="error_initial_weight_required">Lỗi: Trọng lượng ban đầu là bắt buộc</string>
     <string name="error_goal_weight_required">Lỗi: Trọng lượng mục tiêu là bắt buộc</string>

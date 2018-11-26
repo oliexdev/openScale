@@ -155,7 +155,6 @@
 
     <string name="label_share">Compartir</string>
 
-    <string name="error_user_name_too_short">Error: El nombre debe contener 3 o más carácteres</string>
     <string name="info_bluetooth_no_device_set">"No hay dispositivo Bluetooth seleccionado "</string>
     <string name="info_new_data_duplicated">Medición con al misma fecha y hora ya existe</string>
 

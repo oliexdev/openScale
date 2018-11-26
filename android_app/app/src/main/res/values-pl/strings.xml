@@ -74,7 +74,6 @@
     <string name="error_exporting">Błąd eksportu</string>
     <string name="error_importing">Błąd importu</string>
     <string name="error_user_name_required">Błąd: wymagana nazwa użytkownika</string>
-    <string name="error_user_name_too_short">Błąd: nazwa użytkownika musi mieć przynajmniej 3 znaki</string>
     <string name="error_height_required">Błąd: wymagany wzrost</string>
     <string name="error_initial_weight_required">Błąd: wymagana waga początkowa</string>
     <string name="error_goal_weight_required">Błąd: wymagana waga docelowa</string>

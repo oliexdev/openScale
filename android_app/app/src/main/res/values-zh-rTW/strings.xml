@@ -72,7 +72,6 @@
     <string name="error_exporting">滙出出錯</string>
     <string name="error_importing">滙入出錯</string>
     <string name="error_user_name_required">錯誤: 必須輸入名字</string>
-    <string name="error_user_name_too_short">錯誤: 名字必須三個字元或以上</string>
     <string name="error_height_required">錯誤: 必須輸入身高</string>
     <string name="error_initial_weight_required">錯誤: 必須輸入初始體重</string>
     <string name="error_goal_weight_required">錯誤: 必須輸入目標體重</string>

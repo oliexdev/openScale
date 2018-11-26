@@ -73,7 +73,6 @@
     <string name="error_exporting">Errore durante l\'esportazione</string>
     <string name="error_importing">Errore di importazione</string>
     <string name="error_user_name_required">Errore: Nome obbligatorio</string>
-    <string name="error_user_name_too_short">Errore: Il nome deve essere almeno 3 caratteri</string>
     <string name="error_height_required">Errore: Altezza necessaria</string>
     <string name="error_initial_weight_required">Errore: Peso iniziale richiesto</string>
     <string name="error_goal_weight_required">Errore: Obiettivo di peso richiesto</string>

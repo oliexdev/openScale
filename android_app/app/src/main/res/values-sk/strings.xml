@@ -126,7 +126,6 @@
     <string name="label_share">Zdieľať</string>
     <string name="label_share_subject">openScale CSV export údajov (%s)</string>
 
-    <string name="error_user_name_too_short">Chyba: používateľské meno musí obsahovať minimálne 3 znaky</string>
     <string name="info_bluetooth_no_device_set">Nevybrali ste žiadne bluetooth zariadenie</string>
     <string name="info_new_data_duplicated">meranie s rovnakým dátumom a časom už existuje</string>
 

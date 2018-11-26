@@ -75,7 +75,6 @@
     <string name="error_exporting">Greška u izvozu</string>
     <string name="error_importing">Greška u uvozu</string>
     <string name="error_user_name_required">Greška: Unesite ime</string>
-    <string name="error_user_name_too_short">Greška: Ime mora imati barem 3 znaka</string>
     <string name="error_height_required">Greška: Unesite težinu</string>
     <string name="error_initial_weight_required">Greška: Unesite početnu težinu</string>
     <string name="error_goal_weight_required">Greška: Unesite ciljanu težinu</string>

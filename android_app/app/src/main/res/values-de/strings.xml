@@ -137,8 +137,7 @@
     <string name="label_feedback_message_positive">Ja klar</string>
     <string name="label_feedback_message_negative">Nein danke</string>
     <string name="label_feedback_message_issue">Würdest Du uns etwas Feedback geben?</string>
-    <string name="error_user_name_too_short">Fehler: Benutzername muss aus mind. 3 Zeichen bestehen</string>
-    <string name="customactivityoncrash_error_activity_error_occurred_explanation">Ein unerwarteter Fehler ist aufgetreten. 
+    <string name="customactivityoncrash_error_activity_error_occurred_explanation">Ein unerwarteter Fehler ist aufgetreten.
 \n 
 \n Bitte erstellen Sie ein neues Issue mit detailliertem Fehlerbericht auf 
 \nhttps://github.com/oliexdev/openScale/issues</string>
