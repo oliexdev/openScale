@@ -51,7 +51,7 @@ public class BluetoothSenssun extends BluetoothCommunication {
     private void sendUserData(){
         final ScaleUser selectedUser = OpenScale.getInstance().getSelectedScaleUser();
 
-        byte gender = selectedUser.getGender().isMale() ? (byte)0x01 : (byte)0xf1;
+        byte gender = selectedUser.getGender().isMale() ? (byte)0xf1 : (byte)0x01;
         byte height = (byte) selectedUser.getBodyHeight(); // cm
         byte age = (byte) selectedUser.getAge();
 
@@ -76,9 +76,6 @@ public class BluetoothSenssun extends BluetoothCommunication {
                 sendUserData();
                 gotData = 0;
                 break;
-            case 1:
-                //wait for answer
-                break;
             default:
                 // Finish init if everything is done
                 return false;
@@ -88,19 +85,7 @@ public class BluetoothSenssun extends BluetoothCommunication {
 
     @Override
     protected boolean nextBluetoothCmd(int stateNr) {
-        switch (stateNr) {
-            case 0:
-            case 1:
-            case 2:
-            case 3:
-            case 4:
-            case 5:
-                sendUserData();
-                break;
-            default:
-                return false;
-        }
-        return true;
+        return false;
     }
 
     @Override
@@ -121,7 +106,6 @@ public class BluetoothSenssun extends BluetoothCommunication {
                 Timber.d("meas: %s", measurement);
                 addScaleData(measurement);
                 gotData = 1;
-                nextMachineStateStep();
             }
             if (measurement != null && measurement.getWeight() != 0.0 && FatMus == 0x03 && gotData != 2) {
                 Timber.d("meas: %s", measurement);
@@ -138,9 +122,13 @@ public class BluetoothSenssun extends BluetoothCommunication {
         int type = weightBytes[6] & 0xff;
         Timber.d("type %02X", type);
         switch (type) {
+            case 0xa0:
+                sendUserData();
+                break;
             case 0xaa:
                 float weight = Converters.fromUnsignedInt16Be(weightBytes, 2) / 10.0f; // kg
                 measurement.setWeight(weight);
+                sendUserData();
                 break;
             case 0xb0:
                 float fat = Converters.fromUnsignedInt16Be(weightBytes, 2) / 10.0f; // %
