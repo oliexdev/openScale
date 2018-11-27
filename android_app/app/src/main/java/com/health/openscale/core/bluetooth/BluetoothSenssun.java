@@ -35,8 +35,10 @@ public class BluetoothSenssun extends BluetoothCommunication {
     private final UUID WEIGHT_MEASUREMENT_CHARACTERISTIC = BluetoothGattUuid.fromShortCode(0xfff1); // read, notify
     private final UUID CMD_MEASUREMENT_CHARACTERISTIC = BluetoothGattUuid.fromShortCode(0xfff2); // write only
 
-    private int gotData;
-    private int FatMus = 0;
+
+    private boolean scaleGotUserData;
+    long firstFixWeight = -1 ;
+    private byte WeightFatMus = 0;
     private ScaleMeasurement measurement;
 
     public BluetoothSenssun(Context context) {
@@ -48,7 +50,16 @@ public class BluetoothSenssun extends BluetoothCommunication {
         return "Senssun";
     }
 
+    @Override
+    protected boolean doScanWhileConnecting() {
+        // Medisana seems to have problem connecting if scan is running (see #278 and #353)
+        return false;
+    }
+
     private void sendUserData(){
+        if ( scaleGotUserData ){
+          return;
+        }
         final ScaleUser selectedUser = OpenScale.getInstance().getSelectedScaleUser();
 
         byte gender = selectedUser.getGender().isMale() ? (byte)0xf1 : (byte)0x01;
@@ -74,7 +85,9 @@ public class BluetoothSenssun extends BluetoothCommunication {
                 setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC,
                         BluetoothGattUuid.DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION);
                 sendUserData();
-                gotData = 0;
+                firstFixWeight = -1;
+                WeightFatMus = 0;
+                scaleGotUserData = false;
                 break;
             default:
                 // Finish init if everything is done
@@ -100,17 +113,16 @@ public class BluetoothSenssun extends BluetoothCommunication {
         // The first notification only includes weight and all other fields are
         // either 0x00 (user info) or 0xff (fat, water, etc.)
 
-        if (data != null) {
+        if (data != null && !isBitSet(WeightFatMus,3) ) { //only if not saved
             parseBytes(data);
-            if (measurement != null && measurement.getWeight() != 0.0 && gotData == 0) {
-                Timber.d("meas: %s", measurement);
+            Timber.d("WFM %02X %d ", WeightFatMus, ( System.currentTimeMillis()  - firstFixWeight ));
+            if ( isBitSet(WeightFatMus,2) && firstFixWeight > 0 ) {
+              if ( ( ( System.currentTimeMillis()  - firstFixWeight ) > 2500  && WeightFatMus == (1<<2) )//wait 1.5 seconds for Data
+                  || WeightFatMus == 0x07 ) { // got all Data to save
+
                 addScaleData(measurement);
-                gotData = 1;
-            }
-            if (measurement != null && measurement.getWeight() != 0.0 && FatMus == 0x03 && gotData != 2) {
-                Timber.d("meas: %s", measurement);
-                addScaleData(measurement);
-                gotData = 2;
+                WeightFatMus |= 1 <<3;
+              }
             }
         }
     }
@@ -122,12 +134,23 @@ public class BluetoothSenssun extends BluetoothCommunication {
         int type = weightBytes[6] & 0xff;
         Timber.d("type %02X", type);
         switch (type) {
+            case 0x00:
+                if ( weightBytes[2] == (byte)0x10 ){
+                  scaleGotUserData = true;
+                }
+                break;
             case 0xa0:
                 sendUserData();
                 break;
             case 0xaa:
                 float weight = Converters.fromUnsignedInt16Be(weightBytes, 2) / 10.0f; // kg
                 measurement.setWeight(weight);
+
+                if (!isBitSet(WeightFatMus,2)){
+                  WeightFatMus |= 1 << 2 ;
+                  firstFixWeight = System.currentTimeMillis() ;
+                }
+
                 sendUserData();
                 break;
             case 0xb0:
@@ -135,14 +158,14 @@ public class BluetoothSenssun extends BluetoothCommunication {
                 float water = Converters.fromUnsignedInt16Be(weightBytes, 4) / 10.0f; // %
                 measurement.setFat(fat);
                 measurement.setWater(water);
-                FatMus |= 0x2;
+                WeightFatMus |= 1 << 1;
                 break;
             case 0xc0:
                 float bone = Converters.fromUnsignedInt16Le(weightBytes, 4) / 10.0f; // kg
                 float muscle = Converters.fromUnsignedInt16Be(weightBytes, 2) / 10.0f; // %
                 measurement.setMuscle(muscle);
                 measurement.setBone(bone);
-                FatMus |= 0x1;
+                WeightFatMus |= 1;
                 break;
             case 0xd0:
                 float calorie = Converters.fromUnsignedInt16Be(weightBytes, 2);
@@ -155,8 +178,6 @@ public class BluetoothSenssun extends BluetoothCommunication {
                 //date
                 break;
         }
-
-        //measurement.setDateTime(lastWeighted);
         measurement.setDateTime(new Date());
     }
 }
