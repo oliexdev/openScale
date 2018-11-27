@@ -102,7 +102,7 @@
 
     <string name="label_bluetooth_title">Bluetooth</string>
     <string name="label_bluetooth_enable">Başlangıçda ölçeğe bağlan</string>
-    <string name="label_bluetooth_searching">Bluetooth Baskül aranýyor</string>
+    <string name="label_bluetooth_searching">Bluetooth özellikli tartınız aranıyor</string>
 
     <string name="label_enable_labels">Veri etiketi</string>
     <string name="label_enable_points">Veri noktası</string>
@@ -239,4 +239,22 @@
     <string name="activity_level_heavy">Ağır</string>
     <string name="activity_level_extreme">Aşırı</string>
     <string name="label_data_provider_enable">Üçüncü parti uygulama erişimi</string>
-</resources>
+<string name="trisa_scale_not_paired">Bu tartı eşleşmedi
+\n
+\n</string>
+    <string name="permission_bluetooth_info">Bluetooth aygıtlarını aramak için kabaca yer izni gerekli. Aygıt bulunduğunda iptal edilebilir.</string>
+    <string name="label_long_press_drag_reorder">Yeniden sıralamak için uzun basın ve ölçümü sürükleyin</string>
+    <string name="label_set_default_order">Öntanımlı sıralama ayarı</string>
+    <string name="label_export_overwrite">\"%s\" Önceki dışa aktarımın üzerine yazılsın mı\?</string>
+    <string name="label_include_in_overview_graph">Genel bakış çizelgesinin içeriğine ekle</string>
+    <string name="label_estimation_formula">Tahmin formülü</string>
+    <string name="label_overview_graph">Genel bakış çizelgesi</string>
+    <string name="label_estimate_measurement_summary">Ağırlık, boy, yaş, cinsiyet vb. temelli.</string>
+    <string name="label_your_bluetooth_scale">Bluetooth tartınız</string>
+    <string name="label_caliper1_male">Göğüs derisi kıvrım kalınlığı</string>
+    <string name="label_caliper3_male">Uyluk derisi kıvrım kalınlığı</string>
+    <string name="label_caliper1_female">Triceps derisi kıvrım kalınlığı</string>
+    <string name="label_caliper2_female">Karın derisi kıvrım kalınlığı</string>
+    <string name="label_caliper3_female">Kalça derisi kıvrım kalınlığı</string>
+    <string name="activity_level_moderate">Orta derecede</string>
+    </resources>
