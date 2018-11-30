@@ -221,4 +221,11 @@
 <string name="permission_read_data_description">Auslesen der openScale Daten, inkl. Benutzerinformationen und aller gespeicherten Messungen</string>
     <string name="permission_read_data_label">Auslesen der openScale Daten</string>
     <string name="label_data_provider_enable">3rd Party App Zugriff</string>
-</resources>
+<string name="trisa_scale_not_paired">Diese Waage ist nicht gekoppelt!
+\n
+\nHalten Sie die Taste an der Unterseite der Waage gedrückt, um sie in den Kopplungsmodus zu versetzen und verbinden Sie sie dann erneut, um das Gerätepasswort abzurufen.</string>
+    <string name="trisa_scale_pairing_succeeded">Die Kopplung ist erfolgreich!
+\n
+\nWieder verbinden, um Messdaten abzurufen.</string>
+
+    </resources>
