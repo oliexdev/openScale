@@ -29,13 +29,12 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.text.ParseException;
+import java.text.Normalizer;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.Calendar;
 import java.util.Date;
-import java.util.TreeSet;
+import java.util.Locale;
 import java.util.UUID;
 
 import timber.log.Timber;
@@ -47,15 +46,98 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
     private static final UUID CUSTOM_CHARACTERISTIC_WEIGHT = BluetoothGattUuid.fromShortCode(0xffe1);
 
     private final DeviceType deviceType;
-    private int startByte;
-    private int currentScaleUserId;
-    private int countRegisteredScaleUsers;
-    private TreeSet<Integer> seenUsers;
-    private int maxRegisteredScaleUser;
-    private ByteArrayOutputStream receivedScaleData;
+    private byte startByte;
 
-    private int getAlternativeStartByte(int id) {
-        return (startByte & 0xF0) | (id & 0x0F);
+    private class RemoteUser {
+        final public long remoteUserId;
+        final public String name;
+        final public int year;
+
+        public int localUserId = -1;
+        public boolean isNew = false;
+
+        RemoteUser(long uid, String name, int year) {
+            this.remoteUserId = uid;
+            this.name = name;
+            this.year = year;
+        }
+    }
+
+    private ArrayList<RemoteUser> remoteUsers = new ArrayList<>();
+    private RemoteUser currentRemoteUser;
+    private byte[] measurementData;
+
+    private final int ID_START_NIBBLE_INIT = 6;
+    private final int ID_START_NIBBLE_CMD = 7;
+    private final int ID_START_NIBBLE_SET_TIME = 9;
+    private final int ID_START_NIBBLE_DISCONNECT = 10;
+
+    private final byte CMD_SET_UNIT = (byte)0x4d;
+    private final byte CMD_SCALE_STATUS = (byte)0x4f;
+
+    private final byte CMD_USER_ADD = (byte)0x31;
+    private final byte CMD_USER_DELETE = (byte)0x32;
+    private final byte CMD_USER_LIST = (byte)0x33;
+    private final byte CMD_USER_INFO = (byte)0x34;
+    private final byte CMD_USER_UPDATE = (byte)0x35;
+    private final byte CMD_USER_DETAILS = (byte)0x36;
+
+    private final byte CMD_DO_MEASUREMENT = (byte)0x40;
+    private final byte CMD_GET_SAVED_MEASUREMENTS = (byte)0x41;
+    private final byte CMD_SAVED_MEASUREMENT = (byte)0x42;
+    private final byte CMD_DELETE_SAVED_MEASUREMENTS = (byte)0x43;
+
+    private final byte CMD_GET_UNKNOWN_MEASUREMENTS = (byte)0x46;
+    private final byte CMD_UNKNOWN_MEASUREMENT_INFO = (byte)0x47;
+    private final byte CMD_ASSIGN_UNKNOWN_MEASUREMENT = (byte)0x4b;
+    private final byte CMD_UNKNOWN_MEASUREMENT = (byte)0x4c;
+    private final byte CMD_DELETE_UNKNOWN_MEASUREMENT = (byte)0x49;
+
+    private final byte CMD_WEIGHT_MEASUREMENT = (byte)0x58;
+    private final byte CMD_MEASUREMENT = (byte)0x59;
+
+    private final byte CMD_SCALE_ACK = (byte)0xf0;
+    private final byte CMD_APP_ACK = (byte)0xf1;
+
+    private byte getAlternativeStartByte(int startNibble) {
+        return (byte) ((startByte & 0xF0) | startNibble);
+    }
+
+    private long decodeUserId(byte[] data, int offset) {
+        long high = Converters.fromUnsignedInt32Be(data, offset);
+        long low = Converters.fromUnsignedInt32Be(data, offset + 4);
+        return (high << 32) | low;
+    }
+
+    private byte[] encodeUserId(RemoteUser remoteUser) {
+        long uid = remoteUser != null ? remoteUser.remoteUserId : 0;
+        byte[] data = new byte[8];
+        Converters.toInt32Be(data, 0, uid >> 32);
+        Converters.toInt32Be(data, 4, uid & 0xFFFFFFFF);
+        return data;
+    }
+
+    private String decodeString(byte[] data, int offset, int maxLength) {
+        int length = 0;
+        for (; length < maxLength; ++length) {
+            if (data[offset + length] == 0) {
+                break;
+            }
+        }
+        return new String(data, offset, length);
+    }
+
+    private String normalizeString(String input) {
+        String normalized = Normalizer.normalize(input, Normalizer.Form.NFD);
+        return normalized.replaceAll("[^A-Za-z0-9]", "");
+    }
+
+    private String convertUserNameToScale(ScaleUser user) {
+        String normalized = normalizeString(user.getUserName());
+        if (normalized.isEmpty()) {
+            return String.valueOf(user.getId());
+        }
+        return normalized.toUpperCase(Locale.US);
     }
 
     public BluetoothBeurerSanitas(Context context, DeviceType deviceType) {
@@ -64,11 +146,11 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
         this.deviceType = deviceType;
         switch (deviceType) {
             case BEURER_BF700_800_RT_LIBRA:
-                startByte = 0xf7;
+                startByte = (byte) (0xf0 | ID_START_NIBBLE_CMD);
                 break;
             case BEURER_BF710:
             case SANITAS_SBF70_70:
-                startByte = 0xe7;
+                startByte = (byte) (0xe0 | ID_START_NIBBLE_CMD);
                 break;
         }
     }
@@ -92,92 +174,77 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
 
         switch (stateNr) {
             case 0:
-                // Initialize data
-                currentScaleUserId = -1;
-                countRegisteredScaleUsers = -1;
-                maxRegisteredScaleUser = -1;
-                seenUsers = new TreeSet<>();
-
                 // Setup notification
                 setNotificationOn(CUSTOM_SERVICE_1, CUSTOM_CHARACTERISTIC_WEIGHT,
                         BluetoothGattUuid.DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION);
                 break;
             case 1:
-                // Say "Hello" to the scale
-                writeBytes(new byte[]{(byte) getAlternativeStartByte(6), (byte) 0x01});
+                // Say "Hello" to the scale and wait for ack
+                sendAlternativeStartCode(ID_START_NIBBLE_INIT, (byte) 0x01);
+                pauseBtStateMachine();
                 break;
             case 2:
-                // Wait for "Hello" ack from scale
+                // Update time on the scale (no ack)
+                long unixTime = System.currentTimeMillis() / 1000L;
+                sendAlternativeStartCode(ID_START_NIBBLE_SET_TIME, Converters.toInt32Be(unixTime));
                 break;
             case 3:
-                // Update timestamp of the scale
-                updateDateTime();
+                // Request scale status and wait for ack
+                sendCommand(CMD_SCALE_STATUS, encodeUserId(null));
+                pauseBtStateMachine();
                 break;
             case 4:
-                // Set measurement unit
-                setUnitCommand();
+                // Request list of all users and wait until all have been received
+                sendCommand(CMD_USER_LIST);
+                pauseBtStateMachine();
                 break;
             case 5:
-                // Wait for "unit" ack from scale
-                break;
-            case 6:
-                // Request general user information
-                writeBytes(new byte[]{(byte) startByte, (byte) 0x33});
-                break;
-            case 7:
-                // Wait for ack of all users
-                if (seenUsers.size() < countRegisteredScaleUsers || (countRegisteredScaleUsers == -1)) {
-                    // Request this state again
-                    setNextCmd(stateNr);
-                    break;
-                }
+                // If currentRemoteUser is null, indexOf returns -1 and index will be 0
+                int index = remoteUsers.indexOf(currentRemoteUser) + 1;
+                currentRemoteUser = null;
 
-                // Got all user acks
-
-                // Check if not found/unknown
-                if (currentScaleUserId == 0) {
-                    // Unknown user, request creation of new user
-                    if (countRegisteredScaleUsers == maxRegisteredScaleUser) {
-                        setBtMachineState(BT_MACHINE_STATE.BT_CLEANUP_STATE);
-                        Timber.d("Cannot create additional scale user");
-                        sendMessage(R.string.error_max_scale_users, 0);
+                // Find the next remote user that exists locally
+                for (; index < remoteUsers.size(); ++index) {
+                    if (remoteUsers.get(index).localUserId != -1) {
+                        currentRemoteUser = remoteUsers.get(index);
                         break;
                     }
-
-                    // Request creation of user
-                    final ScaleUser selectedUser = OpenScale.getInstance().getSelectedScaleUser();
-
-                    // We can only use up to 3 characters and have to handle them uppercase
-                    int maxIdx = Math.min(3, selectedUser.getUserName().length());
-                    byte[] nick = selectedUser.getUserName().toUpperCase().substring(0, maxIdx).getBytes();
-
-                    byte activity = (byte)(selectedUser.getActivityLevel().toInt() + 1); // activity level: 1 - 5
-                    Timber.d("Create User: %s", selectedUser.getUserName());
-
-                    writeBytes(new byte[]{
-                            (byte) startByte, (byte) 0x31, (byte) 0x0, (byte) 0x0, (byte) 0x0,
-                            (byte) 0x0, (byte) 0x0, (byte) 0x0, (byte) 0x0,
-                            (byte) (seenUsers.size() > 0 ? Collections.max(seenUsers) + 1 : 101),
-                            nick[0], nick[1], nick[2],
-                            (byte) selectedUser.getBirthday().getYear(),
-                            (byte) selectedUser.getBirthday().getMonth(),
-                            (byte) selectedUser.getBirthday().getDate(),
-                            (byte) selectedUser.getBodyHeight(),
-                            (byte) (((selectedUser.getGender().isMale() ? 1 : 0) << 7) | activity)
-                    });
-                } else {
-                    // Get existing user information
-                    Timber.d("Request getUserInfo %d", currentScaleUserId);
-                    writeBytes(new byte[]{
-                            (byte) startByte, (byte) 0x36, (byte) 0x0, (byte) 0x0, (byte) 0x0,
-                            (byte) 0x0, (byte) 0x0, (byte) 0x0, (byte) 0x0, (byte) currentScaleUserId
-                    });
-
                 }
-                Timber.d("scaleuserid: %d, registered users: %d, extracted users: %d",
-                        currentScaleUserId, countRegisteredScaleUsers, seenUsers.size());
+
+                // Fetch saved measurements
+                if (currentRemoteUser != null) {
+                    Timber.d("Request saved measurements for %s", currentRemoteUser.name);
+                    sendCommand(CMD_GET_SAVED_MEASUREMENTS, encodeUserId(currentRemoteUser));
+
+                    // Return to this state until all users have been processed
+                    setNextCmd(stateNr);
+                    pauseBtStateMachine();
+                }
+                else {
+                    postHandleRequest();
+                }
                 break;
-            case 8:
+            case 6:
+                // Create a remote user for selected openScale user if needed
+                currentRemoteUser = null;
+                final ScaleUser selectedUser = OpenScale.getInstance().getSelectedScaleUser();
+                for (RemoteUser remoteUser : remoteUsers) {
+                    if (remoteUser.localUserId == selectedUser.getId()) {
+                        currentRemoteUser = remoteUser;
+                        break;
+                    }
+                }
+                if (currentRemoteUser == null) {
+                    createRemoteUser(selectedUser);
+                    pauseBtStateMachine();
+                }
+                else {
+                    postHandleRequest();
+                }
+                break;
+            case 7:
+                sendCommand(CMD_USER_DETAILS, encodeUserId(currentRemoteUser));
+                pauseBtStateMachine();
                 break;
             default:
                 // Finish init if everything is done
@@ -189,24 +256,17 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
 
     @Override
     protected boolean nextBluetoothCmd(int stateNr) {
-
         switch (stateNr) {
             case 0:
-                // If no specific user selected
-                if (currentScaleUserId == 0)
-                    break;
-
-                Timber.d("Request Saved User Measurements");
-                writeBytes(new byte[]{
-                        (byte) startByte, (byte) 0x41, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, (byte) currentScaleUserId
-                });
-
+                if (!currentRemoteUser.isNew) {
+                    sendCommand(CMD_DO_MEASUREMENT, encodeUserId(currentRemoteUser));
+                    pauseBtStateMachine();
+                }
+                else {
+                    postHandleRequest();
+                }
                 break;
             case 1:
-                // Wait for user measurements to be received
-                setNextCmd(stateNr);
-                break;
-            case 2:
                 setBtMachineState(BT_MACHINE_STATE.BT_CLEANUP_STATE);
                 break;
             default:
@@ -221,7 +281,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
         switch (stateNr) {
             case 0:
                 // Force disconnect
-                writeBytes(new byte[]{(byte) 0xea, (byte) 0x02});
+                sendAlternativeStartCode(ID_START_NIBBLE_DISCONNECT, (byte) 0x02);
                 break;
             default:
                 return false;
@@ -232,264 +292,271 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
     @Override
     public void onBluetoothDataChange(BluetoothGatt bluetoothGatt, BluetoothGattCharacteristic gattCharacteristic) {
         byte[] data = gattCharacteristic.getValue();
-        if (data.length == 0) {
+        if (data == null || data.length == 0) {
             return;
         }
 
-        if ((data[0] & 0xFF) == getAlternativeStartByte(6) && (data[1] & 0xFF) == 0x00) {
-            Timber.d("ACK Scale is ready");
-            nextMachineStateStep();
+        if (data[0] == getAlternativeStartByte(ID_START_NIBBLE_INIT)) {
+            Timber.d("Got init ack from scale; scale is ready");
+            resumeBtStateMachine();
             return;
         }
 
-        if ((data[0] & 0xFF) == startByte && (data[1] & 0xFF) == 0xf0 && data[2] == 0x4d) {
-            Timber.d("ACK Unit set");
-            nextMachineStateStep();
+        if (data[0] != startByte) {
+            Timber.e("Got unknown start byte 0x%02x", data[0]);
             return;
         }
 
-        if ((data[0] & 0xFF) == startByte && (data[1] & 0xFF) == 0xf0 && data[2] == 0x33) {
-            Timber.d("ACK Got general user information");
-
-            int count = (byte) (data[4] & 0xFF);
-            int maxUsers = (byte) (data[5] & 0xFF);
-            Timber.d("Count: %d, maxUsers: %d", count, maxUsers);
-
-            countRegisteredScaleUsers = count;
-            // Check if any scale user is registered
-            if (count == 0) {
-                currentScaleUserId = 0; // Unknown user
+        try {
+            switch (data[1]) {
+                case CMD_USER_INFO:
+                    processUserInfo(data);
+                    break;
+                case CMD_SAVED_MEASUREMENT:
+                    processSavedMeasurement(data);
+                    break;
+                case CMD_WEIGHT_MEASUREMENT:
+                    processWeightMeasurement(data);
+                    break;
+                case CMD_MEASUREMENT:
+                    processMeasurement(data);
+                    break;
+                case CMD_SCALE_ACK:
+                    processScaleAck(data);
+                    break;
+                default:
+                    Timber.d("Unknown command 0x%02x", data[1]);
+                    break;
             }
-            maxRegisteredScaleUser = maxUsers;
-
-            nextMachineStateStep();
-            return;
         }
-
-        if ((data[0] & 0xFF) == startByte && (data[1] & 0xFF) == 0x34) {
-            Timber.d("Ack Get UUIDSs List of Users");
-
-            byte currentUserMax = (byte) (data[2] & 0xFF);
-            byte currentUserID = (byte) (data[3] & 0xFF);
-            byte userUuid = (byte) (data[11] & 0xFF);
-            String name = new String(data, 12, 3);
-            int year = (byte) (data[15] & 0xFF);
-
-            final ScaleUser selectedUser = OpenScale.getInstance().getSelectedScaleUser();
-
-            // Check if we found the currently selected user
-            if (selectedUser.getUserName().toLowerCase().startsWith(name.toLowerCase()) &&
-                    selectedUser.getBirthday().getYear() == year) {
-                // Found user
-                currentScaleUserId = userUuid;
-            }
-
-            // Remember this uuid from the scale
-            if (seenUsers.add((int) userUuid)) {
-                if (currentScaleUserId == -1 && seenUsers.size() == countRegisteredScaleUsers) {
-                    // We have seen all users: user is unknown
-                    currentScaleUserId = 0;
-                }
-                Timber.d("Send ack gotUser");
-                writeBytes(new byte[]{
-                        (byte) startByte, (byte) 0xf1, (byte) 0x34, currentUserMax,
-                        currentUserID
-                });
-            }
-
-            return;
+        catch (IndexOutOfBoundsException|NullPointerException e) {
+            Timber.e(e);
         }
-
-        if ((data[0] & 0xFF) == startByte && (data[1] & 0xFF) == 0xF0 && (data[2] & 0xFF) == 0x36) {
-            Timber.d("Ack Get User Info Initials");
-            String name = new String(data, 4, 3);
-            byte year = (byte) (data[7] & 0xFF);
-            byte month = (byte) (data[8] & 0xFF);
-            byte day = (byte) (data[9] & 0xFF);
-
-            int height = (data[10] & 0xFF);
-            boolean male = (data[11] & 0xF0) != 0;
-            byte activity = (byte) (data[11] & 0x0F);
-
-            Timber.d("Name: %s, YY-MM-DD: %d-%d-%d, Height: %d, Sex: %s, activity: %d",
-                    name, year, month, day, height, male ? "male" : "female", activity);
-
-            // Get scale status for user
-            writeBytes(new byte[]{
-                    (byte) startByte, (byte) 0x4f, (byte) 0x0, (byte) 0x0, (byte) 0x0, (byte) 0x0,
-                    (byte) 0x0, (byte) 0x0, (byte) 0x0, (byte) currentScaleUserId
-            });
-
-            return;
-        }
-
-        if ((data[0] & 0xFF) == startByte && (data[1] & 0xFF) == 0xf0 && (data[2] & 0xFF) == 0x4F) {
-            Timber.d("Ack Get scale status");
-
-            int unknown = data[3];
-            int batteryLevel = (data[4] & 0xFF);
-            float weightThreshold = (data[5] & 0xFF) / 10f;
-            float bodyFatThreshold = (data[6] & 0xFF) / 10f;
-            int unit = data[7]; // 1 kg, 2 lb (pounds), 4 st stone
-            boolean userExists = (data[8] == 0);
-            boolean userReferWeightExists = (data[9] == 0);
-            boolean userMeasurementExist = (data[10] == 0);
-            int scaleVersion = data[11];
-
-            Timber.d("BatteryLevel: %d, weightThreshold: %.2f, BodyFatThreshold: %.2f,"
-                            + " Unit: %d, userExists: %b, UserReference Weight Exists: %b,"
-                            + " UserMeasurementExists: %b, scaleVersion: %d",
-                    batteryLevel, weightThreshold, bodyFatThreshold, unit, userExists,
-                    userReferWeightExists, userMeasurementExist, scaleVersion);
-            return;
-        }
-
-        if ((data[0] & 0xFF) == startByte && (data[1] & 0xFF) == 0xf0 && data[2] == 0x31) {
-            Timber.d("Acknowledge creation of user");
-
-            // Indicate user to step on scale
-            sendMessage(R.string.info_step_on_scale, 0);
-
-            // Request basement measurement
-            writeBytes(new byte[]{
-                    (byte) startByte, 0x40, 0, 0, 0, 0, 0, 0, 0,
-                    (byte) (seenUsers.size() > 0 ? Collections.max(seenUsers) + 1 : 101)
-            });
-
-            return;
-        }
-
-
-        if ((data[0] & 0xFF) == startByte && (data[1] & 0xFF) == 0xf0 && (data[2] & 0xFF) == 0x41) {
-            Timber.d("Will start to receive measurements User Specific");
-
-            byte nr_measurements = data[3];
-
-            Timber.d("New measurements: %d", nr_measurements / 2);
-            return;
-        }
-
-        if ((data[0] & 0xFF) == startByte && (data[1] & 0xFF) == 0x42) {
-            Timber.d("Specific measurement User specific");
-
-            // Measurements are split into two parts
-
-            int max_items = data[2] & 0xFF;
-            int current_item = data[3] & 0xFF;
-
-            // Received even part
-            if (current_item % 2 == 1) {
-                receivedScaleData = new ByteArrayOutputStream();
-            }
-
-            try {
-                receivedScaleData.write(Arrays.copyOfRange(data, 4, data.length));
-            } catch (IOException e) {
-                Timber.e(e, "Failed to copy user specific data");
-            }
-
-            // Send acknowledgement
-            writeBytes(new byte[]{
-                    (byte) startByte, (byte) 0xf1, (byte) 0x42, (byte) (data[2] & 0xFF),
-                    (byte) (data[3] & 0xFF)
-            });
-
-            if (current_item % 2 == 0) {
-                try {
-                    ScaleMeasurement parsedData = parseScaleData(receivedScaleData.toByteArray());
-                    addScaleData(parsedData);
-                } catch (ParseException e) {
-                    Timber.d(e, "Could not parse byte array: %s", byteInHex(receivedScaleData.toByteArray()));
-
-                }
-            }
-
-            if (current_item == max_items) {
-                // finish and delete
-                deleteScaleData();
-            }
-            return;
-        }
-
-        if ((data[0] & 0xFF) == startByte && (data[1] & 0xFF) == 0x58) {
-            float weight = getKiloGram(data, 3);
-            if ((data[2] & 0xFF) != 0x00) {
-                // temporary value;
-                Timber.d("Active measurement, weight: %.2f", weight);
-                sendMessage(R.string.info_measuring, weight);
-                return;
-            }
-
-            Timber.i("Active measurement, stable weight: %.2f", weight);
-
-            writeBytes(new byte[]{
-                    (byte) startByte, (byte) 0xf1, (byte) (data[1] & 0xFF),
-                    (byte) (data[2] & 0xFF), (byte) (data[3] & 0xFF),
-            });
-
-            if (currentScaleUserId == 0) {
-                Timber.i("Initial weight set; disconnecting...");
-                setBtMachineState(BT_MACHINE_STATE.BT_CLEANUP_STATE);
-                return;
-            }
-
-            return;
-        }
-
-        if ((data[0] & 0xFF) == startByte && (data[1] & 0xFF) == 0x59) {
-            // Get stable measurement results
-            Timber.d("Get measurement data %d", (int) data[3]);
-
-            int max_items = (data[2] & 0xFF);
-            int current_item = (data[3] & 0xFF);
-
-            // Received first part
-            if (current_item == 1) {
-                receivedScaleData = new ByteArrayOutputStream();
-            } else {
-                try {
-                    receivedScaleData.write(Arrays.copyOfRange(data, 4, data.length));
-                } catch (IOException e) {
-                    Timber.e(e, "Failed to copy stable measurement array");
-                }
-            }
-
-            // Send ack that we got the data
-            writeBytes(new byte[]{
-                    (byte) startByte, (byte) 0xf1,
-                    (byte) (data[1] & 0xFF), (byte) (data[2] & 0xFF),
-                    (byte) (data[3] & 0xFF),
-            });
-
-            if (current_item == max_items) {
-                // received all parts
-                try {
-                    ScaleMeasurement parsedData = parseScaleData(receivedScaleData.toByteArray());
-                    addScaleData(parsedData);
-                    // Delete data
-                    deleteScaleData();
-                } catch (ParseException e) {
-                    Timber.d(e, "Parse Exception %s", byteInHex(receivedScaleData.toByteArray()));
-                }
-            }
-
-            return;
-        }
-
-        if ((data[0] & 0xFF) == startByte && (data[1] & 0xFF) == 0xf0 && (data[2] & 0xFF) == 0x43) {
-            Timber.d("Acknowledge: Data deleted.");
-            return;
-        }
-
-        Timber.d("DataChanged - not handled: %s", byteInHex(data));
     }
 
-    private void deleteScaleData() {
-        writeBytes(new byte[]{
-                (byte) startByte, (byte) 0x43, (byte) 0x0, (byte) 0x0, (byte) 0x0,
-                (byte) 0x0, (byte) 0x0, (byte) 0x0, (byte) 0x0,
-                (byte) currentScaleUserId
-        });
+    private void processUserInfo(byte[] data) {
+        final int count = data[2] & 0xFF;
+        final int current = data[3] & 0xFF;
+
+        if (remoteUsers.size() == current - 1) {
+            String name = decodeString(data, 12, 3);
+            int year = 1900 + (data[15] & 0xFF);
+
+            remoteUsers.add(new RemoteUser(decodeUserId(data, 4), name, year));
+
+            Timber.d("Received user %d/%d: %s (%d)", current, count, name, year);
+        }
+
+        sendAck(data);
+
+        if (current != count) {
+            return;
+        }
+
+        Calendar cal = Calendar.getInstance();
+
+        for (ScaleUser scaleUser : OpenScale.getInstance().getScaleUserList()) {
+            final String localName = convertUserNameToScale(scaleUser);
+            cal.setTime(scaleUser.getBirthday());
+            final int year = cal.get(Calendar.YEAR);
+
+            for (RemoteUser remoteUser : remoteUsers) {
+                if (localName.startsWith(remoteUser.name) && year == remoteUser.year) {
+                    remoteUser.localUserId = scaleUser.getId();
+                    Timber.d("Remote user %s (0x%x) is local user %s (%d)",
+                            remoteUser.name, remoteUser.remoteUserId,
+                            scaleUser.getUserName(), remoteUser.localUserId);
+                    break;
+                }
+            }
+        }
+
+        // All users received
+        resumeBtStateMachine();
+    }
+
+    private void processMeasurementData(byte[] data, int offset, boolean firstPart) {
+        if (firstPart) {
+            measurementData = Arrays.copyOfRange(data, offset, data.length);
+            return;
+        }
+
+        int oldEnd = measurementData.length;
+        int toCopy = data.length - offset;
+
+        measurementData = Arrays.copyOf(measurementData, oldEnd + toCopy);
+        System.arraycopy(data, offset, measurementData, oldEnd, toCopy);
+
+        addMeasurement(measurementData, currentRemoteUser.localUserId);
+        measurementData = null;
+    }
+
+    private void processSavedMeasurement(byte[] data) {
+        int count = data[2] & 0xFF;
+        int current = data[3] & 0xFF;
+
+        processMeasurementData(data, 4, current % 2 == 1);
+        sendAck(data);
+
+        if (current == count) {
+            sendCommand(CMD_DELETE_SAVED_MEASUREMENTS, encodeUserId(currentRemoteUser));
+        }
+    }
+
+    private void processWeightMeasurement(byte[] data) {
+        boolean stableMeasurement = data[2] == 0;
+        float weight = getKiloGram(data, 3);
+
+        if (!stableMeasurement) {
+            Timber.d("Active measurement, weight: %.2f", weight);
+            sendMessage(R.string.info_measuring, weight);
+            return;
+        }
+
+        Timber.i("Active measurement, stable weight: %.2f", weight);
+    }
+
+    private void processMeasurement(byte[] data) {
+        int count = data[2] & 0xFF;
+        int current = data[3] & 0xFF;
+
+        if (current == 1) {
+            long uid = decodeUserId(data, 5);
+            currentRemoteUser = null;
+            for (RemoteUser remoteUser : remoteUsers) {
+                if (remoteUser.remoteUserId == uid) {
+                    currentRemoteUser = remoteUser;
+                    break;
+                }
+            }
+        }
+        else {
+            processMeasurementData(data, 4, current == 2);
+        }
+
+        sendAck(data);
+
+        if (current == count) {
+            sendCommand(CMD_DELETE_SAVED_MEASUREMENTS, encodeUserId(currentRemoteUser));
+        }
+    }
+
+    private void processScaleAck(byte[] data) {
+        switch (data[2]) {
+            case CMD_SCALE_STATUS:
+                // data[3] != 0 if an invalid user id is given to the command,
+                // but it still provides some useful information (e.g. current unit).
+                final int batteryLevel = data[4] & 0xFF;
+                final float weightThreshold = (data[5] & 0xFF) / 10f;
+                final float bodyFatThreshold = (data[6] & 0xFF) / 10f;
+                final int currentUnit = data[7] & 0xFF;
+                final boolean userExists = data[8] == 0;
+                final boolean userReferWeightExists = data[9] == 0;
+                final boolean userMeasurementExist = data[10] == 0;
+                final int scaleVersion = data[11] & 0xFF;
+
+                Timber.d("Battery level: %d; threshold: weight=%.2f, body fat=%.2f;"
+                                + " unit: %d; requested user: exists=%b, has reference weight=%b,"
+                                + " has measurement=%b; scale version: %d",
+                        batteryLevel, weightThreshold, bodyFatThreshold, currentUnit, userExists,
+                        userReferWeightExists, userMeasurementExist, scaleVersion);
+
+                byte requestedUnit = (byte) currentUnit;
+                ScaleUser user = OpenScale.getInstance().getSelectedScaleUser();
+                switch (user.getScaleUnit()) {
+                    case KG:
+                        requestedUnit = 1;
+                        break;
+                    case LB:
+                        requestedUnit = 2;
+                        break;
+                    case ST:
+                        requestedUnit = 4;
+                        break;
+                }
+                if (requestedUnit != currentUnit) {
+                    Timber.d("Set scale unit to %s (%d)", user.getScaleUnit(), requestedUnit);
+                    sendCommand(CMD_SET_UNIT, requestedUnit);
+                } else {
+                    resumeBtStateMachine();
+                }
+                break;
+
+            case CMD_SET_UNIT:
+                if (data[3] == 0) {
+                    Timber.d("Scale unit successfully set");
+                }
+                resumeBtStateMachine();
+                break;
+
+            case CMD_USER_LIST:
+                int userCount = data[4] & 0xFF;
+                int maxUserCount = data[5] & 0xFF;
+                Timber.d("Have %d users (max is %d)", userCount, maxUserCount);
+                if (userCount == 0) {
+                    resumeBtStateMachine();
+                }
+                // Otherwise wait for CMD_USER_INFO notifications
+                break;
+
+            case CMD_GET_SAVED_MEASUREMENTS:
+                int measurementCount = data[3] & 0xFF;
+                if (measurementCount == 0) {
+                    resumeBtStateMachine();
+                }
+                // Otherwise wait for CMD_SAVED_MEASUREMENT notifications which will,
+                // once all measurements have been received, trigger a call to delete them.
+                // Once the ack for that is received, we resume the state machine (see below).
+                break;
+
+            case CMD_DELETE_SAVED_MEASUREMENTS:
+                if (data[3] == 0) {
+                    Timber.d("Saved measurements successfully deleted");
+                }
+                resumeBtStateMachine();
+                break;
+
+            case CMD_USER_ADD:
+                if (data[3] == 0) {
+                    Timber.d("New user successfully added; time to step on scale");
+                    sendMessage(R.string.info_step_on_scale, 0);
+                    remoteUsers.add(currentRemoteUser);
+                    sendCommand(CMD_DO_MEASUREMENT, encodeUserId(currentRemoteUser));
+                    break;
+                }
+
+                Timber.d("Cannot create additional scale user (error 0x%02x)", data[3]);
+                sendMessage(R.string.error_max_scale_users, 0);
+                setBtMachineState(BT_MACHINE_STATE.BT_CLEANUP_STATE);
+                break;
+
+            case CMD_DO_MEASUREMENT:
+                if (data[3] == 0) {
+                    Timber.d("Measure command successfully received");
+                }
+                break;
+
+            case CMD_USER_DETAILS:
+                if (data[3] == 0) {
+                    String name = decodeString(data, 4, 3);
+                    int year = 1900 + (data[7] & 0xFF);
+                    int month = 1 + (data[8] & 0xFF);
+                    int day = data[9] & 0xFF;
+
+                    int height = data[10] & 0xFF;
+                    boolean male = (data[11] & 0xF0) != 0;
+                    int activity = data[11] & 0x0F;
+
+                    Timber.d("Name: %s, Birthday: %d-%02d-%02d, Height: %d, Sex: %s, activity: %d",
+                            name, year, month, day, height, male ? "male" : "female", activity);
+                }
+                resumeBtStateMachine();
+                break;
+
+            default:
+                Timber.d("Unhandled scale ack for command 0x%02x", data[2]);
+                break;
+        }
     }
 
     private float getKiloGram(byte[] data, int offset) {
@@ -502,11 +569,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
         return Converters.fromUnsignedInt16Be(data, offset) / 10.0f;
     }
 
-    private ScaleMeasurement parseScaleData(byte[] data) throws ParseException {
-        if (data.length != 11 + 11) {
-            throw new ParseException("Parse scala data: unexpected length", 0);
-        }
-
+    private void addMeasurement(byte[] data, int userId) {
         long timestamp = Converters.fromUnsignedInt32Be(data, 0) * 1000;
         float weight = getKiloGram(data, 4);
         int impedance = Converters.fromUnsignedInt16Be(data, 6);
@@ -519,6 +582,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
         float bmi = Converters.fromUnsignedInt16Be(data, 20) / 10.0f;
 
         ScaleMeasurement receivedMeasurement = new ScaleMeasurement();
+        receivedMeasurement.setUserId(userId);
         receivedMeasurement.setDateTime(new Date(timestamp));
         receivedMeasurement.setWeight(weight);
         receivedMeasurement.setFat(fat);
@@ -526,42 +590,69 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
         receivedMeasurement.setMuscle(muscle);
         receivedMeasurement.setBone(bone);
 
-        Timber.i("Measurement: %s, Impedance: %d, BMR: %d, AMR: %d, BMI: %.2f",
-                receivedMeasurement, impedance, bmr, amr, bmi);
-
-        return receivedMeasurement;
-    }
-
-    private void updateDateTime() {
-        // Update date/time of the scale
-        long unixTime = System.currentTimeMillis() / 1000L;
-        byte[] unixTimeBytes = Converters.toInt32Be(unixTime);
-        Timber.d("Write new Date/Time: %d (%s)", unixTime, byteInHex(unixTimeBytes));
-
-        writeBytes(new byte[]{(byte) getAlternativeStartByte(9),
-                unixTimeBytes[0], unixTimeBytes[1], unixTimeBytes[2], unixTimeBytes[3]});
-    }
-
-    private void setUnitCommand() {
-        byte[] command = new byte[] {(byte) startByte, 0x4d, 0x00};
-        final ScaleUser selectedUser = OpenScale.getInstance().getSelectedScaleUser();
-
-        switch (selectedUser.getScaleUnit()) {
-            case KG:
-                command[2] = (byte) 0x01;
-                break;
-            case LB:
-                command[2] = (byte) 0x02;
-                break;
-            case ST:
-                command[2] = (byte) 0x04;
-                break;
-        }
-        Timber.d("Setting unit %s", selectedUser.getScaleUnit());
-        writeBytes(command);
+        addScaleData(receivedMeasurement);
     }
 
     private void writeBytes(byte[] data) {
         writeBytes(CUSTOM_SERVICE_1, CUSTOM_CHARACTERISTIC_WEIGHT, data);
+    }
+
+    private void sendCommand(byte command, byte... parameters) {
+        byte[] data = new byte[parameters.length + 2];
+        data[0] = startByte;
+        data[1] = command;
+
+        int i = 2;
+        for (byte parameter : parameters) {
+            data[i++] = parameter;
+        }
+
+        writeBytes(data);
+    }
+
+    private void sendAck(byte[] data) {
+        sendCommand(CMD_APP_ACK, Arrays.copyOfRange(data, 1, 4));
+    }
+
+    private void sendAlternativeStartCode(int id, byte... parameters) {
+        byte[] data = new byte[parameters.length + 1];
+        data[0] = getAlternativeStartByte(id);
+
+        int i = 1;
+        for (byte parameter : parameters) {
+            data[i++] = parameter;
+        }
+
+        writeBytes(data);
+    }
+
+    private void createRemoteUser(ScaleUser scaleUser) {
+        Timber.d("Create user: %s", scaleUser.getUserName());
+
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(scaleUser.getBirthday());
+
+        // We can only use up to 3 characters (padding with 0 if needed)
+        byte[] nick = Arrays.copyOf(convertUserNameToScale(scaleUser).getBytes(), 3);
+        byte year = (byte) (cal.get(Calendar.YEAR) - 1900);
+        byte month = (byte) cal.get(Calendar.MONTH);
+        byte day = (byte) cal.get(Calendar.DAY_OF_MONTH);
+        byte height = (byte) scaleUser.getBodyHeight();
+        byte sex = scaleUser.getGender().isMale() ? (byte) 0x80 : 0;
+        byte activity = (byte) (scaleUser.getActivityLevel().toInt() + 1); // activity level: 1 - 5
+
+        long maxUserId = remoteUsers.isEmpty() ? 100 : 0;
+        for (RemoteUser remoteUser : remoteUsers) {
+            maxUserId = Math.max(maxUserId, remoteUser.remoteUserId);
+        }
+
+        currentRemoteUser = new RemoteUser(maxUserId + 1, new String(nick), 1900 + year);
+        currentRemoteUser.localUserId = scaleUser.getId();
+        currentRemoteUser.isNew = true;
+
+        byte[] uid = encodeUserId(currentRemoteUser);
+
+        sendCommand(CMD_USER_ADD, uid[0], uid[1], uid[2], uid[3], uid[4], uid[5], uid[6], uid[7],
+                nick[0], nick[1], nick[2], year, month, day, height, (byte) (sex | activity));
     }
 }

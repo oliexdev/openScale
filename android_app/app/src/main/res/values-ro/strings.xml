@@ -73,7 +73,6 @@
     <string name="error_exporting">Eroare la export</string>
     <string name="error_importing">Eroare la import</string>
     <string name="error_user_name_required">Eroare: Nume necesar</string>
-    <string name="error_user_name_too_short">Eroare: Numele trebuie să aibă cel puțin trei caractere</string>
     <string name="error_height_required">Eroare: Înălțime necesară</string>
     <string name="error_initial_weight_required">Eroare: Greutatea inițială trebuie indicată</string>
     <string name="error_goal_weight_required">Eroare: Greutatea dorită trebuie indicată</string>

@@ -147,7 +147,6 @@
     <string name="label_next">Suivant</string>
     <string name="title_about">À propos</string>
     <string name="label_share">Partager</string>
-    <string name="error_user_name_too_short">Erreur : Le nom doit contenir au moins 3 caractères</string>
     <string name="error_initial_weight_required">Erreur : Poids initial requis</string>
     <string name="label_exportBackup">Exporter la sauvegarde</string>
     <string name="label_importBackup">Importer la sauvegarde</string>

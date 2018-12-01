@@ -76,7 +76,6 @@
     <string name="error_exporting">שגיאה בייצוא</string>
     <string name="error_importing">שגיאה בייבוא</string>
     <string name="error_user_name_required">שגיאה: נדרש שם</string>
-    <string name="error_user_name_too_short">שגיאה: שם חייב להיות באורך 3 תווים ומעלה</string>
     <string name="error_height_required">שגיאה: נדרש גובה</string>
     <string name="error_initial_weight_required">שגיאה: נדרש גובה ראשוני</string>
     <string name="error_goal_weight_required">שגיאה: נדרש משקל יעד</string>

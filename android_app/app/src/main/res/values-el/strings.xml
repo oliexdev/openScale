@@ -73,7 +73,6 @@
     <string name="error_exporting">Σφάλμα κατά την εξαγωγή</string>
     <string name="error_importing">Σφάλμα κατά την εισαγωγή</string>
     <string name="error_user_name_required">Σφάλμα: Όνομα απαραίτητο</string>
-    <string name="error_user_name_too_short">Σφάλμα: Το όνομα πρέπει να είναι 3 ή περισσότεροι χαρακτήρες</string>
     <string name="error_height_required">Σφάλμα: Ύψος απαραίτητο</string>
     <string name="error_initial_weight_required">Σφάλμα: Αρχικό βάρος απαραίτητο</string>
     <string name="error_goal_weight_required">Σφάλμα: Βάρος στόχος απαραίτητο</string>

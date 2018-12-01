@@ -69,7 +69,6 @@
     <string name="error_exporting">Erro ao exportar</string>
     <string name="error_importing">Erro ao importar</string>
     <string name="error_user_name_required">Erro: O nome é obrigatorio</string>
-    <string name="error_user_name_too_short">Erro: O nome debe ter 3 ou máis caracteres</string>
     <string name="error_height_required">Erro: A altura é obrigatoria</string>
     <string name="error_initial_weight_required">Erro: O peso inicial é obrigatorio</string>
     <string name="error_goal_weight_required">Erro: O peso obxectivo é obrigatorio</string>

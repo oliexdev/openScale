@@ -75,7 +75,6 @@
     <string name="error_exporting">Napaka pri izvozu</string>
     <string name="error_importing">Napaka pri uvozu</string>
     <string name="error_user_name_required">Napaka: zahtevno ime</string>
-    <string name="error_user_name_too_short">Napaka: Ime mora imeti vsaj 3 znake</string>
     <string name="error_height_required">Napaka: Višina zahtevana</string>
     <string name="error_initial_weight_required">Napaka: Začetna teža zahtevana</string>
     <string name="error_goal_weight_required">Napaka: Ciljna teža zahtevana</string>

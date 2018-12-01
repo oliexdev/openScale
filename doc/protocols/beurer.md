@@ -24,8 +24,11 @@ Initialization
 2. Write: `<alt sb 6> 01`
 3. Notification: `<alt sb 6> 00 20`
 4. Write: `<alt sb 9> <timestamp>`
-5. Write: `<sb> 4f <8 bytes 00>`
+5. Write: `<sb> 4f <uid>`
 6. Notification: `<sb> f0 4f <??> <battery> <wthr> <fthr> <unit> <ue> <urwe> <ume> <version>`
+
+`<uid>` can be given as all 0 (or other invalid user id) to query
+scale status only.
 
 * `<battery>`: battery level
 * `<wthr>`: weight threshold (unit g / 100)
@@ -39,6 +42,11 @@ Initialization
 
 1. Write: `<sb> 4e <wthr> <fthr>`
 2. Notification: `<sb> f0 4e 00`
+
+Thresholds in original app:
+* 0x28 0xdc
+* 0x14 0xdc
+* 0x0a 0x14
 
 
 ### Set unit
@@ -122,7 +130,7 @@ Measurements
 4. Write: `<sb> f1 42 <count> <current>`
 5. Goto 3 if `<count> != <current>`
 
-* All `<data>` from step 3 is joined and parsed as a measurement.
+* All `<data>` from step 3 is joined and parsed as `<count> / 2` measurement(s).
 
 
 ### Delete saved measurements

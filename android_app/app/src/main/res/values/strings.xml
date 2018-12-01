@@ -75,7 +75,6 @@
     <string name="error_exporting">Error exporting</string>
     <string name="error_importing">Error importing</string>
     <string name="error_user_name_required">Error: Name required</string>
-    <string name="error_user_name_too_short">Error: Name must be 3 characters or more</string>
     <string name="error_height_required">Error: Height required</string>
     <string name="error_initial_weight_required">Error: Initial weight required</string>
     <string name="error_goal_weight_required">Error: Goal weight required</string>

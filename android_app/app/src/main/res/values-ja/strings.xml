@@ -109,7 +109,6 @@
     <string name="label_bmr">基礎代謝率 (BMR)</string>
     <string name="label_lbm">除脂肪体重</string>
     <string name="label_bone">骨密度</string>
-    <string name="error_user_name_too_short">エラー：名前は3文字以上でなければいけません</string>
     <string name="info_bluetooth_no_device_set">Bluetooth端末が選択されていません</string>
     <string name="info_new_data_duplicated">同じ日時のものがすでに存在している測定</string>
 

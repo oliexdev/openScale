@@ -70,7 +70,6 @@
     <string name="error_exporting">Ошибка при экспортировании</string>
     <string name="error_importing">Ошибка при импортировании</string>
     <string name="error_user_name_required">Ошибка: необходимо Имя</string>
-    <string name="error_user_name_too_short">Ошибка: Имя должно быть длиннее 3 символов</string>
     <string name="error_height_required">Ошибка: требуется указать Рост</string>
     <string name="error_initial_weight_required">Ошибка: необходимо указать начальный вес</string>
     <string name="error_goal_weight_required">Ошибка: необходимо указать цель по весу</string>

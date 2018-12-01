@@ -154,7 +154,6 @@
 
     <string name="label_add_measurement">Ölçüm ekle</string>
     <string name="label_share">Paylaş</string>
-    <string name="error_user_name_too_short">Hata: Ad 3 karakter veya daha fazla olmalı</string>
     <string name="info_bluetooth_no_device_set">Seçili Bluetooth aygıtı yok</string>
     <string name="info_new_data_duplicated">Aynı tarih ve saatte ölçüm zaten var</string>
 

@@ -74,7 +74,6 @@
     <string name="error_exporting">Fout met exporteren</string>
     <string name="error_importing">Fout met importeren</string>
     <string name="error_user_name_required">Fout: Naam vereist</string>
-    <string name="error_user_name_too_short">Fout: Naam moet 3 karakters of meer zijn</string>
     <string name="error_height_required">Fout: Lichaamslengte vereist</string>
     <string name="error_initial_weight_required">Fout: Startgewicht vereist</string>
     <string name="error_goal_weight_required">Fout: Streefgewicht vereist</string>

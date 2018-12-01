@@ -65,7 +65,6 @@
     <string name="error_exporting">Chyba při exportu</string>
     <string name="error_importing">Chyba při importu</string>
     <string name="error_user_name_required">Chyba: je třeba uživatelské jméno</string>
-    <string name="error_user_name_too_short">Chyba: je třeba, aby uživatelské jméno bylo alespoň 3 znaky dlouhé</string>
     <string name="error_height_required">Chyba: je třeba zadat výšku člověka</string>
     <string name="error_initial_weight_required">Chyba: je třeba zadat počáteční hmotnost</string>
     <string name="error_goal_weight_required">Chyba: je třeba zadat cílovou hmotnost</string>

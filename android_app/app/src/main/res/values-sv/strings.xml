@@ -130,7 +130,6 @@
     <string name="info_bluetooth_no_device_set">Ingen Bluetooth-enhet vald</string>
     <string name="info_new_data_duplicated">mätning med samma datum och tid existerar redan</string>
     <string name="title_general">Allmänt</string>
-    <string name="error_user_name_too_short">Fel: namn måste vara minst 3 tecken</string>
     <string name="label_theme">Tema</string>
     <string name="label_feedback_message_enjoying">Uppskattar du openScale?</string>
     <string name="label_feedback_message_rate_app">Vad sägs om ett betyg på Google Play eller GitHub?</string>
