@@ -17,11 +17,13 @@
 
 package com.health.openscale.core.bluetooth;
 
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 
 import com.health.openscale.core.datatypes.ScaleMeasurement;
+import com.polidea.rxandroidble2.RxBleClient;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,8 +47,8 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
     private final long maxTimeDiff = 60000;   // maximum time interval we will consider two identical
                                              // weight readings to be the same and hence ignored - 60 seconds in milliseconds
 
-    public BluetoothIhealthHS3(Context context) {
-        super(context);
+    public BluetoothIhealthHS3(Context context, RxBleClient bleClient) {
+        super(context, bleClient);
     }
 
     @Override
@@ -75,11 +77,15 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
     @Override
     public void connect(String hwAddress) {
 
+        // TODO ???
+        BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter(); // TODO Test if this works!?
+
         if (btAdapter == null) {
             setBtStatus(BT_STATUS_CODE.BT_NO_DEVICE_FOUND);
             return;
         }
 
+        // TODO ???
         btDevice = btAdapter.getRemoteDevice(hwAddress);
         try {
             // Get a BluetoothSocket to connect with the given BluetoothDevice
@@ -107,7 +113,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
                     }
                 } catch (IOException connectException) {
                     // Unable to connect; close the socket and get out
-                    disconnect(false);
+                    disconnect();
                     setBtStatus(BT_STATUS_CODE.BT_NO_DEVICE_FOUND);
                 }
             }
@@ -117,7 +123,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
     }
 
     @Override
-    public void disconnect(boolean doCleanup) {
+    public void disconnect() {
 
         Timber.w("HS3 - disconnect");
         if (btSocket != null) {

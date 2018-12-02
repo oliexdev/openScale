@@ -16,14 +16,13 @@
 
 package com.health.openscale.core.bluetooth;
 
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
 
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
+import com.polidea.rxandroidble2.RxBleClient;
 
 import java.util.Date;
 import java.util.UUID;
@@ -33,8 +32,8 @@ public class BluetoothExingtechY1 extends BluetoothCommunication {
     private final UUID WEIGHT_MEASUREMENT_CHARACTERISTIC = UUID.fromString("1a2ea400-75b9-11e2-be05-0002a5d5c51b"); // read, notify
     private final UUID CMD_MEASUREMENT_CHARACTERISTIC = UUID.fromString("29f11080-75b9-11e2-8bf6-0002a5d5c51b"); // write only
 
-    public BluetoothExingtechY1(Context context) {
-        super(context);
+    public BluetoothExingtechY1(Context context, RxBleClient bleClient) {
+        super(context, bleClient);
     }
 
     @Override
@@ -46,8 +45,8 @@ public class BluetoothExingtechY1 extends BluetoothCommunication {
     protected boolean nextInitCmd(int stateNr) {
         switch (stateNr) {
             case 0:
-                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC,
-                        BluetoothGattUuid.DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION);
+                setNotificationOn(WEIGHT_MEASUREMENT_CHARACTERISTIC
+                );
                 break;
             case 1:
                 final ScaleUser selectedUser = OpenScale.getInstance().getSelectedScaleUser();
@@ -60,7 +59,7 @@ public class BluetoothExingtechY1 extends BluetoothCommunication {
 
                 byte cmdByte[] = {(byte)0x10, (byte)userId, gender, age, height};
 
-                writeBytes(WEIGHT_MEASUREMENT_SERVICE, CMD_MEASUREMENT_CHARACTERISTIC, cmdByte);
+                writeBytes(CMD_MEASUREMENT_CHARACTERISTIC, cmdByte);
                 break;
             default:
                 return false;
@@ -80,8 +79,8 @@ public class BluetoothExingtechY1 extends BluetoothCommunication {
     }
 
     @Override
-    public void onBluetoothDataChange(BluetoothGatt bluetoothGatt, BluetoothGattCharacteristic gattCharacteristic) {
-        final byte[] data = gattCharacteristic.getValue();
+    public void onBluetoothNotify(UUID characteristic, byte[] value) {
+        final byte[] data = value;
 
         // The first notification only includes weight and all other fields are
         // either 0x00 (user info) or 0xff (fat, water, etc.)

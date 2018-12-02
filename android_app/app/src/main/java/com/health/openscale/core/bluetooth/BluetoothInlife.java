@@ -16,8 +16,6 @@
 
 package com.health.openscale.core.bluetooth;
 
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
 
 import com.health.openscale.R;
@@ -25,6 +23,7 @@ import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
+import com.polidea.rxandroidble2.RxBleClient;
 
 import java.util.Arrays;
 import java.util.UUID;
@@ -62,11 +61,11 @@ public class BluetoothInlife extends BluetoothCommunication {
             data[i++] = parameter;
         }
         data[data.length - 2] = xorChecksum(data, 1, data.length - 3);
-        writeBytes(WEIGHT_SERVICE, WEIGHT_CMD_CHARACTERISTIC, data);
+        writeBytes(WEIGHT_CMD_CHARACTERISTIC, data);
     }
 
-    public BluetoothInlife(Context context) {
-        super(context);
+    public BluetoothInlife(Context context, RxBleClient bleClient) {
+        super(context, bleClient);
     }
 
     @Override
@@ -78,8 +77,8 @@ public class BluetoothInlife extends BluetoothCommunication {
     protected boolean nextInitCmd(int stateNr) {
         switch (stateNr) {
             case 0:
-                setNotificationOn(WEIGHT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC,
-                        BluetoothGattUuid.DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION);
+                setNotificationOn(WEIGHT_MEASUREMENT_CHARACTERISTIC
+                );
                 break;
             case 1:
                 ScaleUser scaleUser = OpenScale.getInstance().getSelectedScaleUser();
@@ -109,8 +108,8 @@ public class BluetoothInlife extends BluetoothCommunication {
     }
 
     @Override
-    public void onBluetoothDataChange(BluetoothGatt bluetoothGatt, BluetoothGattCharacteristic gattCharacteristic) {
-        final byte[] data = gattCharacteristic.getValue();
+    public void onBluetoothNotify(UUID characteristic, byte[] value) {
+        final byte[] data = value;
 
         if (data == null || data.length != 14) {
             return;

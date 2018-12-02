@@ -62,7 +62,7 @@ public class BluetoothPreferences extends PreferenceFragment {
     private Map<String, RxBleDevice> foundDevices = new HashMap<>();
 
     private Handler progressHandler;
-    private RxBleClient rxBleClient;
+    private RxBleClient bleClient;
     private Disposable scanSubscription;
 
     private static final String formatDeviceName(String name, String address) {
@@ -87,7 +87,7 @@ public class BluetoothPreferences extends PreferenceFragment {
         foundDevices.clear();
         btScanner.removeAll();
 
-        scanSubscription = rxBleClient.scanBleDevices(
+        scanSubscription = bleClient.scanBleDevices(
                 new ScanSettings.Builder()
                         .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
                         //.setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES)
@@ -174,7 +174,7 @@ public class BluetoothPreferences extends PreferenceFragment {
         Preference prefBtDevice = new Preference(getActivity());
         prefBtDevice.setTitle(formatDeviceName(bleScanResult.getBleDevice()));
 
-        BluetoothCommunication btDevice = BluetoothFactory.createDeviceDriver(getActivity(), device.getName());
+        BluetoothCommunication btDevice = BluetoothFactory.createDeviceDriver(getActivity(), bleClient, device.getName());
         if (btDevice != null) {
             Timber.d("Found supported device %s (driver: %s)",
                     formatDeviceName(device), btDevice.driverName());
@@ -221,7 +221,7 @@ public class BluetoothPreferences extends PreferenceFragment {
 
         OpenScale openScale = OpenScale.getInstance();
 
-        rxBleClient = openScale.getRxBleClient();
+        bleClient = openScale.getBleClient();
 
         addPreferencesFromResource(R.xml.bluetooth_preferences);
 

@@ -16,13 +16,12 @@
 
 package com.health.openscale.core.bluetooth;
 
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
 
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
+import com.polidea.rxandroidble2.RxBleClient;
 
 import java.util.Date;
 import java.util.UUID;
@@ -34,8 +33,8 @@ public class BluetoothDigooDGSO38H extends BluetoothCommunication {
     private final UUID WEIGHT_MEASUREMENT_CHARACTERISTIC = BluetoothGattUuid.fromShortCode(0xfff1);
     private final UUID EXTRA_MEASUREMENT_CHARACTERISTIC = BluetoothGattUuid.fromShortCode(0xfff2);
 
-    public BluetoothDigooDGSO38H(Context context) {
-        super(context);
+    public BluetoothDigooDGSO38H(Context context, RxBleClient bleClient) {
+        super(context, bleClient);
     }
 
     @Override
@@ -44,8 +43,8 @@ public class BluetoothDigooDGSO38H extends BluetoothCommunication {
     }
 
     @Override
-    public void onBluetoothDataChange(BluetoothGatt bluetoothGatt, BluetoothGattCharacteristic gattCharacteristic) {
-        final byte[] data = gattCharacteristic.getValue();
+    public void onBluetoothNotify(UUID characteristic, byte[] value) {
+        final byte[] data = value;
 
         if (data != null && data.length > 0) {
 
@@ -61,8 +60,8 @@ public class BluetoothDigooDGSO38H extends BluetoothCommunication {
         switch (stateNr) {
             case 0:
                 //Tell device to send us weight measurements
-                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC,
-                        BluetoothGattUuid.DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION);
+                setNotificationOn(WEIGHT_MEASUREMENT_CHARACTERISTIC
+                );
                 return false;
         }
 
@@ -116,7 +115,7 @@ public class BluetoothDigooDGSO38H extends BluetoothCommunication {
                     checksum += configBytes[i];
                 }
                 configBytes[15] = (byte)(checksum & 0xFF);
-                writeBytes(WEIGHT_MEASUREMENT_SERVICE, EXTRA_MEASUREMENT_CHARACTERISTIC, configBytes);
+                writeBytes(EXTRA_MEASUREMENT_CHARACTERISTIC, configBytes);
             } else if (allValues) {
                 ScaleMeasurement scaleBtData = new ScaleMeasurement();
                 weight = (float) (((weightBytes[3] & 0xFF) << 8) | (weightBytes[4] & 0xFF)) / 100.0f;

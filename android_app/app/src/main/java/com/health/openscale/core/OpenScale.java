@@ -89,7 +89,7 @@ public class OpenScale {
     private List<ScaleMeasurement> scaleMeasurementList;
 
     private BluetoothCommunication btDeviceDriver;
-    private RxBleClient rxBleClient;
+    private RxBleClient bleClient;
     private AlarmHandler alarmHandler;
 
     private Context context;
@@ -101,7 +101,7 @@ public class OpenScale {
         alarmHandler = new AlarmHandler();
         btDeviceDriver = null;
         fragmentList = new ArrayList<>();
-        rxBleClient = RxBleClient.create(context);
+        bleClient = RxBleClient.create(context);
 
         RxBleLog.setLogger((level, tag, msg) -> Timber.tag(tag).log(level, msg));
 
@@ -126,8 +126,8 @@ public class OpenScale {
         return instance;
     }
 
-    public RxBleClient getRxBleClient() {
-        return rxBleClient;
+    public RxBleClient getBleClient() {
+        return bleClient;
     }
 
     public void reopenDatabase(boolean truncate) throws SQLiteDatabaseCorruptException {
@@ -566,7 +566,7 @@ public class OpenScale {
 
         disconnectFromBluetoothDevice();
 
-        btDeviceDriver = BluetoothFactory.createDebugDriver(context);
+        btDeviceDriver = BluetoothFactory.createDebugDriver(context, bleClient);
         btDeviceDriver.registerCallbackHandler(callbackBtHandler);
         btDeviceDriver.connect(hwAddress);
     }
@@ -576,7 +576,7 @@ public class OpenScale {
 
         disconnectFromBluetoothDevice();
 
-        btDeviceDriver = BluetoothFactory.createDeviceDriver(context, deviceName);
+        btDeviceDriver = BluetoothFactory.createDeviceDriver(context, bleClient, deviceName);
         if (btDeviceDriver == null) {
             return false;
         }
@@ -593,7 +593,7 @@ public class OpenScale {
         }
 
         Timber.d("Disconnecting from bluetooth device");
-        btDeviceDriver.disconnect(true);
+        btDeviceDriver.disconnect();
         btDeviceDriver = null;
 
         return true;

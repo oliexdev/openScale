@@ -19,8 +19,6 @@
 */
 package com.health.openscale.core.bluetooth;
 
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
 
 import com.health.openscale.R;
@@ -28,6 +26,7 @@ import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
+import com.polidea.rxandroidble2.RxBleClient;
 
 import java.text.Normalizer;
 import java.util.ArrayList;
@@ -140,8 +139,8 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
         return normalized.toUpperCase(Locale.US);
     }
 
-    public BluetoothBeurerSanitas(Context context, DeviceType deviceType) {
-        super(context);
+    public BluetoothBeurerSanitas(Context context, RxBleClient bleClient, DeviceType deviceType) {
+        super(context, bleClient);
 
         this.deviceType = deviceType;
         switch (deviceType) {
@@ -175,8 +174,8 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
         switch (stateNr) {
             case 0:
                 // Setup notification
-                setNotificationOn(CUSTOM_SERVICE_1, CUSTOM_CHARACTERISTIC_WEIGHT,
-                        BluetoothGattUuid.DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION);
+                setNotificationOn(CUSTOM_CHARACTERISTIC_WEIGHT
+                );
                 break;
             case 1:
                 // Say "Hello" to the scale and wait for ack
@@ -221,7 +220,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                     pauseBtStateMachine();
                 }
                 else {
-                    postHandleRequest();
+                    ///postHandleRequest(); // TODO ???
                 }
                 break;
             case 6:
@@ -239,7 +238,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                     pauseBtStateMachine();
                 }
                 else {
-                    postHandleRequest();
+                   /// postHandleRequest(); // TODO ???
                 }
                 break;
             case 7:
@@ -263,7 +262,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                     pauseBtStateMachine();
                 }
                 else {
-                    postHandleRequest();
+                   /// postHandleRequest(); // TODO ???
                 }
                 break;
             case 1:
@@ -290,8 +289,8 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
     }
 
     @Override
-    public void onBluetoothDataChange(BluetoothGatt bluetoothGatt, BluetoothGattCharacteristic gattCharacteristic) {
-        byte[] data = gattCharacteristic.getValue();
+    public void onBluetoothNotify(UUID characteristic, byte[] value) {
+        byte[] data = value;
         if (data == null || data.length == 0) {
             return;
         }
@@ -594,7 +593,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
     }
 
     private void writeBytes(byte[] data) {
-        writeBytes(CUSTOM_SERVICE_1, CUSTOM_CHARACTERISTIC_WEIGHT, data);
+        writeBytes(CUSTOM_CHARACTERISTIC_WEIGHT, data);
     }
 
     private void sendCommand(byte command, byte... parameters) {

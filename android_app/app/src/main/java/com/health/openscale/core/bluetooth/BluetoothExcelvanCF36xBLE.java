@@ -16,14 +16,13 @@
 
 package com.health.openscale.core.bluetooth;
 
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
 
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
+import com.polidea.rxandroidble2.RxBleClient;
 
 import java.util.Arrays;
 import java.util.UUID;
@@ -35,8 +34,8 @@ public class BluetoothExcelvanCF36xBLE extends BluetoothCommunication {
 
     private byte[] receivedData = new byte[]{};
 
-    public BluetoothExcelvanCF36xBLE(Context context) {
-        super(context);
+    public BluetoothExcelvanCF36xBLE(Context context, RxBleClient bleClient) {
+        super(context, bleClient);
     }
 
     @Override
@@ -92,11 +91,11 @@ public class BluetoothExcelvanCF36xBLE extends BluetoothCommunication {
                 configBytes[configBytes.length - 1] =
                         xorChecksum(configBytes, 1, configBytes.length - 2);
 
-                writeBytes(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC, configBytes);
+                writeBytes(WEIGHT_MEASUREMENT_CHARACTERISTIC, configBytes);
                 break;
             case 1:
-                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_CUSTOM0_CHARACTERISTIC,
-                        BluetoothGattUuid.DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION);
+                setNotificationOn(WEIGHT_CUSTOM0_CHARACTERISTIC
+                );
                 break;
             default:
                 return false;
@@ -111,8 +110,8 @@ public class BluetoothExcelvanCF36xBLE extends BluetoothCommunication {
     }
 
     @Override
-    public void onBluetoothDataChange(BluetoothGatt bluetoothGatt, BluetoothGattCharacteristic gattCharacteristic) {
-        final byte[] data = gattCharacteristic.getValue();
+    public void onBluetoothNotify(UUID characteristic, byte[] value) {
+        final byte[] data = value;
 
         if (data != null && data.length > 0) {
 

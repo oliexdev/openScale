@@ -21,16 +21,17 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.content.Context;
 
+import com.polidea.rxandroidble2.RxBleClient;
+
 import java.util.HashMap;
-import java.util.UUID;
 
 import timber.log.Timber;
 
 public class BluetoothDebug extends BluetoothCommunication {
     HashMap<Integer, String> propertyString;
 
-    BluetoothDebug(Context context) {
-        super(context);
+    BluetoothDebug(Context context, RxBleClient bleClient) {
+        super(context, bleClient);
 
         propertyString = new HashMap<>();
         propertyString.put(BluetoothGattCharacteristic.PROPERTY_BROADCAST, "BROADCAST");
@@ -138,7 +139,7 @@ public class BluetoothDebug extends BluetoothCommunication {
                 && !isBlacklisted(service, characteristic)) {
 
                 if (offset == 0) {
-                    readBytes(service.getUuid(), characteristic.getUuid());
+                    readBytes(characteristic.getUuid());
                     return -1;
                 }
 
@@ -147,7 +148,7 @@ public class BluetoothDebug extends BluetoothCommunication {
 
             for (BluetoothGattDescriptor descriptor : characteristic.getDescriptors()) {
                 if (offset == 0) {
-                    readBytes(service.getUuid(), characteristic.getUuid(), descriptor.getUuid());
+                    readBytes(characteristic.getUuid());
                     return -1;
                 }
 
@@ -169,24 +170,26 @@ public class BluetoothDebug extends BluetoothCommunication {
     protected boolean nextInitCmd(int stateNr) {
         int offset = stateNr;
 
-        for (BluetoothGattService service : getBluetoothGattServices()) {
+        // TODO ???
+       /* for (BluetoothGattService service : getBluetoothGattServices()) {
             offset = readServiceCharacteristics(service, offset);
             if (offset == -1) {
                 return true;
             }
-        }
+        }*/
 
         return false;
     }
 
     @Override
     protected boolean nextBluetoothCmd(int stateNr) {
-        for (BluetoothGattService service : getBluetoothGattServices()) {
+        // TODO ???
+        /*for (BluetoothGattService service : getBluetoothGattServices()) {
             logService(service, false);
-        }
+        }*/
 
         setBtStatus(BT_STATUS_CODE.BT_CONNECTION_LOST);
-        disconnect(false);
+        disconnect();
         return false;
     }
 

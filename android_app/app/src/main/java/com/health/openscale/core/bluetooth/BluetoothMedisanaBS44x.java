@@ -15,12 +15,11 @@
 */
 package com.health.openscale.core.bluetooth;
 
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
 
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.utils.Converters;
+import com.polidea.rxandroidble2.RxBleClient;
 
 import java.util.Date;
 import java.util.UUID;
@@ -37,20 +36,14 @@ public class BluetoothMedisanaBS44x extends BluetoothCommunication {
     // Scale time is in seconds since 2010-01-01
     private static final long SCALE_UNIX_TIMESTAMP_OFFSET = 1262304000;
 
-    public BluetoothMedisanaBS44x(Context context) {
-        super(context);
+    public BluetoothMedisanaBS44x(Context context, RxBleClient bleClient) {
+        super(context, bleClient);
         btScaleMeasurement = new ScaleMeasurement();
     }
 
     @Override
     public String driverName() {
         return "Medisana BS44x";
-    }
-
-    @Override
-    protected boolean doScanWhileConnecting() {
-        // Medisana seems to have problem connecting if scan is running (see #278 and #353)
-        return false;
     }
 
     @Override
@@ -63,18 +56,18 @@ public class BluetoothMedisanaBS44x extends BluetoothCommunication {
         switch (stateNr) {
             case 0:
                 // set indication on for feature characteristic
-                setIndicationOn(WEIGHT_MEASUREMENT_SERVICE, FEATURE_MEASUREMENT_CHARACTERISTIC,
-                        BluetoothGattUuid.DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION);
+                setIndicationOn(FEATURE_MEASUREMENT_CHARACTERISTIC
+                );
                 break;
             case 1:
                 // set indication on for weight measurement
-                setIndicationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC,
-                        BluetoothGattUuid.DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION);
+                setIndicationOn(WEIGHT_MEASUREMENT_CHARACTERISTIC
+                );
                 break;
             case 2:
                 // set indication on for custom5 measurement
-                setIndicationOn(WEIGHT_MEASUREMENT_SERVICE, CUSTOM5_MEASUREMENT_CHARACTERISTIC,
-                        BluetoothGattUuid.DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION);
+                setIndicationOn(CUSTOM5_MEASUREMENT_CHARACTERISTIC
+                );
                 break;
             case 3:
                 // send magic number to receive weight data
@@ -84,7 +77,7 @@ public class BluetoothMedisanaBS44x extends BluetoothCommunication {
 
                 byte[] magicBytes = new byte[] {(byte)0x02, date[0], date[1], date[2], date[3]};
 
-                writeBytes(WEIGHT_MEASUREMENT_SERVICE, CMD_MEASUREMENT_CHARACTERISTIC, magicBytes);
+                writeBytes(CMD_MEASUREMENT_CHARACTERISTIC, magicBytes);
                 break;
             default:
                 return false;
@@ -100,14 +93,14 @@ public class BluetoothMedisanaBS44x extends BluetoothCommunication {
 
 
     @Override
-    public void onBluetoothDataChange(BluetoothGatt bluetoothGatt, BluetoothGattCharacteristic gattCharacteristic) {
-        final byte[] data = gattCharacteristic.getValue();
+    public void onBluetoothNotify(UUID characteristic, byte[] value) {
+        final byte[] data = value;
 
-        if (gattCharacteristic.getUuid().equals(WEIGHT_MEASUREMENT_CHARACTERISTIC)) {
+        if (characteristic.equals(WEIGHT_MEASUREMENT_CHARACTERISTIC)) {
             parseWeightData(data);
         }
 
-        if (gattCharacteristic.getUuid().equals(FEATURE_MEASUREMENT_CHARACTERISTIC)) {
+        if (characteristic.equals(FEATURE_MEASUREMENT_CHARACTERISTIC)) {
             parseFeatureData(data);
 
             addScaleData(btScaleMeasurement);

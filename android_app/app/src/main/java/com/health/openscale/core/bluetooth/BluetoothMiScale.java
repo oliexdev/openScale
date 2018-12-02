@@ -16,8 +16,6 @@
 
 package com.health.openscale.core.bluetooth;
 
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
@@ -26,6 +24,7 @@ import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
+import com.polidea.rxandroidble2.RxBleClient;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -42,8 +41,8 @@ import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_STAT
 public class BluetoothMiScale extends BluetoothCommunication {
     private final UUID WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC = UUID.fromString("00002a2f-0000-3512-2118-0009af100700");
 
-    public BluetoothMiScale(Context context) {
-        super(context);
+    public BluetoothMiScale(Context context, RxBleClient bleClient) {
+        super(context, bleClient);
     }
 
     @Override
@@ -52,8 +51,8 @@ public class BluetoothMiScale extends BluetoothCommunication {
     }
 
     @Override
-    public void onBluetoothDataRead(BluetoothGatt bluetoothGatt, BluetoothGattCharacteristic gattCharacteristic, int status) {
-        byte[] data = gattCharacteristic.getValue();
+    public void onBluetoothRead(UUID characteristic, byte[] value) {
+        byte[] data = value;
 
         int currentYear = Calendar.getInstance().get(Calendar.YEAR);
         int currentMonth = Calendar.getInstance().get(Calendar.MONTH)+1;
@@ -70,8 +69,8 @@ public class BluetoothMiScale extends BluetoothCommunication {
     }
 
     @Override
-    public void onBluetoothDataChange(BluetoothGatt bluetoothGatt, BluetoothGattCharacteristic gattCharacteristic) {
-        final byte[] data = gattCharacteristic.getValue();
+    public void onBluetoothNotify(UUID characteristic, byte[] value) {
+        final byte[] data = value;
 
         if (data != null && data.length > 0) {
 
@@ -100,7 +99,7 @@ public class BluetoothMiScale extends BluetoothCommunication {
         switch (stateNr) {
             case 0:
                 // read device time
-                readBytes(BluetoothGattUuid.SERVICE_WEIGHT_SCALE,
+                readBytes(
                         BluetoothGattUuid.CHARACTERISTIC_CURRENT_TIME);
                 break;
             case 1:
@@ -115,20 +114,20 @@ public class BluetoothMiScale extends BluetoothCommunication {
 
                 byte[] dateTimeByte = {(byte)(year), (byte)(year >> 8), month, day, hour, min, sec, 0x03, 0x00, 0x00};
 
-                writeBytes(BluetoothGattUuid.SERVICE_WEIGHT_SCALE,
+                writeBytes(
                         BluetoothGattUuid.CHARACTERISTIC_CURRENT_TIME, dateTimeByte);
                 break;
             case 2:
                 // set notification on for weight measurement history
-                setNotificationOn(BluetoothGattUuid.SERVICE_WEIGHT_SCALE,
-                        WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC,
-                        BluetoothGattUuid.DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION);
+                setNotificationOn(
+                        WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC
+                );
                 break;
             case 3:
                 // Set on history weight measurement
                 byte[] magicBytes = new byte[]{(byte)0x01, (byte)0x96, (byte)0x8a, (byte)0xbd, (byte)0x62};
 
-                writeBytes(BluetoothGattUuid.SERVICE_WEIGHT_SCALE,
+                writeBytes(
                         WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, magicBytes);
                 break;
             default:
@@ -143,39 +142,33 @@ public class BluetoothMiScale extends BluetoothCommunication {
         switch (stateNr) {
             case 0:
                 // set notification on for weight measurement history
-                setNotificationOn(BluetoothGattUuid.SERVICE_WEIGHT_SCALE,
-                        WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC,
-                        BluetoothGattUuid.DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION);
+                setNotificationOn(
+                        WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC
+                );
                 break;
             case 1:
                 // set notification on for weight measurement
-                setNotificationOn(BluetoothGattUuid.SERVICE_WEIGHT_SCALE,
-                        BluetoothGattUuid.CHARACTERISTIC_WEIGHT_MEASUREMENT,
-                        BluetoothGattUuid.DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION);
+                setNotificationOn(
+                        BluetoothGattUuid.CHARACTERISTIC_WEIGHT_MEASUREMENT
+                );
                 break;
             case 2:
                 // configure scale to get only last measurements
                 int uniqueNumber = getUniqueNumber();
 
                 byte[] userIdentifier = new byte[]{(byte)0x01, (byte)0xFF, (byte)0xFF, (byte) ((uniqueNumber & 0xFF00) >> 8), (byte) ((uniqueNumber & 0xFF) >> 0)};
-                writeBytes(BluetoothGattUuid.SERVICE_WEIGHT_SCALE,
+                writeBytes(
                         WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, userIdentifier);
                 break;
             case 3:
-                // set notification off for weight measurement history
-                setNotificationOff(BluetoothGattUuid.SERVICE_WEIGHT_SCALE,
-                        WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC,
-                        BluetoothGattUuid.DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION);
+                // set notification on for weight measurement history
+                setNotificationOn(
+                        WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC
+                );
                 break;
             case 4:
-                // set notification on for weight measurement history
-                setNotificationOn(BluetoothGattUuid.SERVICE_WEIGHT_SCALE,
-                        WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC,
-                        BluetoothGattUuid.DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION);
-                break;
-            case 5:
                 // invoke receiving history data
-                writeBytes(BluetoothGattUuid.SERVICE_WEIGHT_SCALE,
+                writeBytes(
                         WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, new byte[]{0x02});
                 break;
             default:
@@ -191,7 +184,7 @@ public class BluetoothMiScale extends BluetoothCommunication {
         switch (stateNr) {
             case 0:
                 // send stop command to mi scale
-                writeBytes(BluetoothGattUuid.SERVICE_WEIGHT_SCALE,
+                writeBytes(
                         WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, new byte[]{0x03});
                 break;
             case 1:
@@ -199,7 +192,7 @@ public class BluetoothMiScale extends BluetoothCommunication {
                 int uniqueNumber = getUniqueNumber();
 
                 byte[] userIdentifier = new byte[]{(byte)0x04, (byte)0xFF, (byte)0xFF, (byte) ((uniqueNumber & 0xFF00) >> 8), (byte) ((uniqueNumber & 0xFF) >> 0)};
-                writeBytes(BluetoothGattUuid.SERVICE_WEIGHT_SCALE,
+                writeBytes(
                         WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, userIdentifier);
                 break;
             default:

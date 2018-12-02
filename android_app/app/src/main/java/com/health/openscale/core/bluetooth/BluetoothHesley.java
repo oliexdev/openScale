@@ -16,11 +16,10 @@
 
 package com.health.openscale.core.bluetooth;
 
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
 
 import com.health.openscale.core.datatypes.ScaleMeasurement;
+import com.polidea.rxandroidble2.RxBleClient;
 
 import java.util.Date;
 import java.util.UUID;
@@ -30,8 +29,8 @@ public class BluetoothHesley extends BluetoothCommunication {
     private final UUID WEIGHT_MEASUREMENT_CHARACTERISTIC = BluetoothGattUuid.fromShortCode(0xfff4); // read, notify
     private final UUID CMD_MEASUREMENT_CHARACTERISTIC = BluetoothGattUuid.fromShortCode(0xfff1); // write only
 
-    public BluetoothHesley(Context context) {
-        super(context);
+    public BluetoothHesley(Context context, RxBleClient bleClient) {
+        super(context, bleClient);
     }
 
     @Override
@@ -43,12 +42,12 @@ public class BluetoothHesley extends BluetoothCommunication {
     protected boolean nextInitCmd(int stateNr) {
         switch (stateNr) {
             case 0:
-                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC,
-                        BluetoothGattUuid.DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION);
+                setNotificationOn(WEIGHT_MEASUREMENT_CHARACTERISTIC
+                );
                 break;
             case 1:
                 byte[] magicBytes = {(byte)0xa5, (byte)0x01, (byte)0x2c, (byte)0xab, (byte)0x50, (byte)0x5a, (byte)0x29};
-                writeBytes(WEIGHT_MEASUREMENT_SERVICE, CMD_MEASUREMENT_CHARACTERISTIC, magicBytes);
+                writeBytes(CMD_MEASUREMENT_CHARACTERISTIC, magicBytes);
                 break;
             default:
                 return false;
@@ -68,8 +67,8 @@ public class BluetoothHesley extends BluetoothCommunication {
     }
 
     @Override
-    public void onBluetoothDataChange(BluetoothGatt bluetoothGatt, BluetoothGattCharacteristic gattCharacteristic) {
-        final byte[] data = gattCharacteristic.getValue();
+    public void onBluetoothNotify(UUID characteristic, byte[] value) {
+        final byte[] data = value;
 
 
         if (data != null && data.length > 0) {
