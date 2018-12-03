@@ -259,4 +259,5 @@
     <string name="label_share_subject">CSV veri dışa aktarımı (%s)</string>
 
     <string name="label_click_to_help_add_support">Yardım ekleyerek destek olmak için buraya tıklayın</string>
+    <string name="label_measurement_in_percent">% cinsinden ölçüm</string>
     </resources>
