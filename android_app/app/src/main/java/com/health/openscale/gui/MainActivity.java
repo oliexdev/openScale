@@ -503,7 +503,12 @@ public class MainActivity extends BaseAppCompatActivity
                 case BT_NO_DEVICE_FOUND:
                     setBluetoothStatusIcon(R.drawable.ic_bluetooth_connection_lost);
                     Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_no_device), Toast.LENGTH_SHORT).show();
-                    Timber.d("No Bluetooth device found");
+                    Timber.e("No Bluetooth device found");
+                    break;
+                case BT_CONNECTION_RETRYING:
+                    setBluetoothStatusIcon(R.drawable.ic_bluetooth_searching);
+                    Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_no_device) + " retrying...", Toast.LENGTH_SHORT).show();
+                    Timber.e("No Bluetooth device found retrying");
                     break;
                 case BT_CONNECTION_ESTABLISHED:
                     setBluetoothStatusIcon(R.drawable.ic_bluetooth_connection_success);

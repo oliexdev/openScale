@@ -25,23 +25,30 @@ import com.polidea.rxandroidble2.RxBleClient;
 import com.polidea.rxandroidble2.RxBleConnection;
 import com.polidea.rxandroidble2.RxBleDevice;
 
+import java.io.IOException;
+import java.net.SocketException;
 import java.util.UUID;
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.exceptions.UndeliverableException;
+import io.reactivex.plugins.RxJavaPlugins;
 import io.reactivex.subjects.PublishSubject;
 import timber.log.Timber;
 
+import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_STATUS_CODE.BT_CONNECTION_ESTABLISHED;
+import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_STATUS_CODE.BT_NO_DEVICE_FOUND;
+
 public abstract class BluetoothCommunication {
-    public enum BT_STATUS_CODE {BT_RETRIEVE_SCALE_DATA, BT_INIT_PROCESS, BT_CONNECTION_ESTABLISHED,
+    public enum BT_STATUS_CODE {BT_RETRIEVE_SCALE_DATA, BT_INIT_PROCESS, BT_CONNECTION_RETRYING, BT_CONNECTION_ESTABLISHED,
         BT_CONNECTION_LOST, BT_NO_DEVICE_FOUND, BT_UNEXPECTED_ERROR, BT_SCALE_MESSAGE
     }
 
     public enum BT_MACHINE_STATE {BT_INIT_STATE, BT_CMD_STATE, BT_CLEANUP_STATE, BT_PAUSED_STATE}
 
-    private final int BT_RETRY_ON_ERROR = 3;
+    private final int BT_RETRY_TIMES_ON_ERROR = 3;
 
     protected Context context;
 
@@ -63,6 +70,31 @@ public abstract class BluetoothCommunication {
     {
         this.context = context;
         this.bleClient = bleClient;
+
+        RxJavaPlugins.setErrorHandler(e -> {
+            if (e instanceof UndeliverableException) {
+                onError(e);
+            }
+            if ((e instanceof IOException) || (e instanceof SocketException)) {
+                // fine, irrelevant network problem or API that throws on cancellation
+                return;
+            }
+            if (e instanceof InterruptedException) {
+                // fine, some blocking code was interrupted by a dispose call
+                return;
+            }
+            if ((e instanceof NullPointerException) || (e instanceof IllegalArgumentException)) {
+                // that's likely a bug in the application
+                onError(e);
+                return;
+            }
+            if (e instanceof IllegalStateException) {
+                // that's a bug in RxJava or in a custom operator
+                onError(e);
+                return;
+            }
+            onError(e);
+        });
     }
 
     /**
@@ -228,7 +260,7 @@ public abstract class BluetoothCommunication {
             final Disposable disposable = connectionObservable
                     .flatMapSingle(rxBleConnection -> rxBleConnection.writeCharacteristic(characteristic, bytes))
                     .observeOn(AndroidSchedulers.mainThread())
-                    .retry(BT_RETRY_ON_ERROR)
+                    .retry(BT_RETRY_TIMES_ON_ERROR)
                     .subscribe(
                             value -> {
                                 Timber.d("Write characteristic %s: %s",
@@ -255,7 +287,7 @@ public abstract class BluetoothCommunication {
                     .firstOrError()
                     .flatMap(rxBleConnection -> rxBleConnection.readCharacteristic(characteristic))
                     .observeOn(AndroidSchedulers.mainThread())
-                    .retry(BT_RETRY_ON_ERROR)
+                    .retry(BT_RETRY_TIMES_ON_ERROR)
                     .subscribe(bytes -> {
                         Timber.d("Read characteristic %s", BluetoothGattUuid.prettyPrint(characteristic));
                         onBluetoothRead(characteristic, bytes);
@@ -283,7 +315,7 @@ public abstract class BluetoothCommunication {
                     )
                     .flatMap(indicationObservable -> indicationObservable)
                     .observeOn(AndroidSchedulers.mainThread())
-                    .retry(BT_RETRY_ON_ERROR)
+                    .retry(BT_RETRY_TIMES_ON_ERROR)
                     .subscribe(
                             bytes -> {
                                 onBluetoothNotify(characteristic, bytes);
@@ -314,7 +346,7 @@ public abstract class BluetoothCommunication {
                     )
                     .flatMap(notificationObservable -> notificationObservable)
                     .observeOn(AndroidSchedulers.mainThread())
-                    .retry(BT_RETRY_ON_ERROR)
+                    .retry(BT_RETRY_TIMES_ON_ERROR)
                     .subscribe(
                             bytes -> {
                                 onBluetoothNotify(characteristic, bytes);
@@ -398,10 +430,34 @@ public abstract class BluetoothCommunication {
         connectionObservable = bleDevice
                 .establishConnection(false)
                 .takeUntil(disconnectTriggerSubject)
-                .retry(BT_RETRY_ON_ERROR)
+                .doOnError(throwable -> setBtStatus(BT_STATUS_CODE.BT_CONNECTION_RETRYING))
+                .observeOn(AndroidSchedulers.mainThread())
                 .compose(ReplayingShare.instance());
 
+       if (isConnected()) {
+           disconnect();
+       } else {
+            final Disposable connectionDisposable = connectionObservable
+                    .flatMapSingle(RxBleConnection::discoverServices)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .retry(BT_RETRY_TIMES_ON_ERROR)
+                    .subscribe(
+                            characteristic -> {
+                                //setBtMonitoringOn();
+                                setBtStatus(BT_CONNECTION_ESTABLISHED);
+                                setBtMachineState(BT_MACHINE_STATE.BT_INIT_STATE);
+                            },
+                            throwable -> {
+                                setBtStatus(BT_NO_DEVICE_FOUND);
+                                disconnect();
+                            }
+                    );
 
+            compositeDisposable.add(connectionDisposable);
+        }
+    }
+
+    private void setBtMonitoringOn() {
         final Disposable disposableConnectionState = bleDevice.observeConnectionStateChanges()
                 .subscribe(
                         connectionState -> {
@@ -424,27 +480,9 @@ public abstract class BluetoothCommunication {
                 );
 
         compositeDisposable.add(disposableConnectionState);
-
-        if (isConnected()) {
-            disconnect();
-        } else {
-            final Disposable connectionDisposable = connectionObservable
-                    .flatMapSingle(RxBleConnection::discoverServices)
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .retry(BT_RETRY_ON_ERROR)
-                    .subscribe(
-                            characteristic -> {
-                                setBtMachineState(BT_MACHINE_STATE.BT_INIT_STATE);
-                            },
-                            throwable -> onError(throwable)
-                    );
-
-            compositeDisposable.add(connectionDisposable);
-        }
     }
 
     private void onError(Throwable throwable) {
-        Timber.e(throwable);
         setBtStatus(BT_STATUS_CODE.BT_UNEXPECTED_ERROR, throwable.getMessage());
     }
 
