@@ -41,6 +41,8 @@ public abstract class BluetoothCommunication {
 
     public enum BT_MACHINE_STATE {BT_INIT_STATE, BT_CMD_STATE, BT_CLEANUP_STATE, BT_PAUSED_STATE}
 
+    private final int BT_RETRY_ON_ERROR = 3;
+
     protected Context context;
 
     private RxBleClient bleClient;
@@ -198,6 +200,8 @@ public abstract class BluetoothCommunication {
      */
     protected void setBtMachineState(BT_MACHINE_STATE btMachineState) {
         this.btMachineState = btMachineState;
+
+        nextMachineStateStep();
     }
 
     protected void pauseBtStateMachine() {
@@ -224,6 +228,7 @@ public abstract class BluetoothCommunication {
             final Disposable disposable = connectionObservable
                     .flatMapSingle(rxBleConnection -> rxBleConnection.writeCharacteristic(characteristic, bytes))
                     .observeOn(AndroidSchedulers.mainThread())
+                    .retry(BT_RETRY_ON_ERROR)
                     .subscribe(
                             value -> {
                                 Timber.d("Write characteristic %s: %s",
@@ -231,9 +236,7 @@ public abstract class BluetoothCommunication {
                                         byteInHex(value));
                                 nextMachineStateStep();
                             },
-                            throwable -> {
-                                Timber.e(throwable);
-                            }
+                            throwable -> onError(throwable)
                     );
 
             compositeDisposable.add(disposable);
@@ -252,11 +255,13 @@ public abstract class BluetoothCommunication {
                     .firstOrError()
                     .flatMap(rxBleConnection -> rxBleConnection.readCharacteristic(characteristic))
                     .observeOn(AndroidSchedulers.mainThread())
+                    .retry(BT_RETRY_ON_ERROR)
                     .subscribe(bytes -> {
                         Timber.d("Read characteristic %s", BluetoothGattUuid.prettyPrint(characteristic));
                         onBluetoothRead(characteristic, bytes);
                     },
-                            throwable -> Timber.e(throwable));
+                            throwable -> onError(throwable)
+                    );
 
             compositeDisposable.add(disposable);
         }
@@ -278,6 +283,7 @@ public abstract class BluetoothCommunication {
                     )
                     .flatMap(indicationObservable -> indicationObservable)
                     .observeOn(AndroidSchedulers.mainThread())
+                    .retry(BT_RETRY_ON_ERROR)
                     .subscribe(
                             bytes -> {
                                 onBluetoothNotify(characteristic, bytes);
@@ -285,7 +291,7 @@ public abstract class BluetoothCommunication {
                                         BluetoothGattUuid.prettyPrint(characteristic),
                                         byteInHex(bytes));
                             },
-                            throwable -> Timber.e(throwable)
+                            throwable -> onError(throwable)
                     );
 
             compositeDisposable.add(disposable);
@@ -308,6 +314,7 @@ public abstract class BluetoothCommunication {
                     )
                     .flatMap(notificationObservable -> notificationObservable)
                     .observeOn(AndroidSchedulers.mainThread())
+                    .retry(BT_RETRY_ON_ERROR)
                     .subscribe(
                             bytes -> {
                                 onBluetoothNotify(characteristic, bytes);
@@ -315,7 +322,7 @@ public abstract class BluetoothCommunication {
                                         BluetoothGattUuid.prettyPrint(characteristic),
                                         byteInHex(bytes));
                                 },
-                            throwable -> Timber.e(throwable)
+                            throwable -> onError(throwable)
                     );
 
             compositeDisposable.add(disposable);
@@ -391,6 +398,7 @@ public abstract class BluetoothCommunication {
         connectionObservable = bleDevice
                 .establishConnection(false)
                 .takeUntil(disconnectTriggerSubject)
+                .retry(BT_RETRY_ON_ERROR)
                 .compose(ReplayingShare.instance());
 
 
@@ -412,9 +420,7 @@ public abstract class BluetoothCommunication {
                                     break;
                             }
                         },
-                        throwable -> {
-                            Timber.e(throwable);
-                        }
+                        throwable -> onError(throwable)
                 );
 
         compositeDisposable.add(disposableConnectionState);
@@ -425,17 +431,21 @@ public abstract class BluetoothCommunication {
             final Disposable connectionDisposable = connectionObservable
                     .flatMapSingle(RxBleConnection::discoverServices)
                     .observeOn(AndroidSchedulers.mainThread())
+                    .retry(BT_RETRY_ON_ERROR)
                     .subscribe(
                             characteristic -> {
-                                btMachineState = BT_MACHINE_STATE.BT_INIT_STATE;
-
-                                nextMachineStateStep();
+                                setBtMachineState(BT_MACHINE_STATE.BT_INIT_STATE);
                             },
-                            throwable -> Timber.e(throwable)
+                            throwable -> onError(throwable)
                     );
 
             compositeDisposable.add(connectionDisposable);
         }
+    }
+
+    private void onError(Throwable throwable) {
+        Timber.e(throwable);
+        setBtStatus(BT_STATUS_CODE.BT_UNEXPECTED_ERROR, throwable.getMessage());
     }
 
     private boolean isConnected() {
@@ -459,8 +469,7 @@ public abstract class BluetoothCommunication {
             case BT_INIT_STATE:
                 Timber.d("INIT STATE: %d", initStepNr);
                 if (!nextInitCmd(initStepNr)) {
-                    btMachineState = BT_MACHINE_STATE.BT_CMD_STATE;
-                    nextMachineStateStep();
+                    setBtMachineState(BT_MACHINE_STATE.BT_CMD_STATE);
                 }
                 initStepNr++;
                 break;
