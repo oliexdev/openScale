@@ -26,6 +26,7 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
 
+import java.util.Arrays;
 import java.util.UUID;
 
 import timber.log.Timber;
@@ -37,6 +38,7 @@ public class BluetoothOneByone extends BluetoothCommunication {
 
     private final UUID CMD_MEASUREMENT_CHARACTERISTIC = BluetoothGattUuid.fromShortCode(0xfff1); // write only
 
+    private byte[] lastData = null;
 
     public BluetoothOneByone(Context context) {
         super(context);
@@ -102,6 +104,12 @@ public class BluetoothOneByone extends BluetoothCommunication {
             Timber.e("Invalid checksum");
             return;
         }
+
+        if (Arrays.equals(data, lastData)) {
+            Timber.d("Ignoring duplicate data");
+            return;
+        }
+        lastData = data;
 
         // if data is valid data
         if (data.length == 20 && data[0] == (byte)0xcf) {
