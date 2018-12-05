@@ -41,8 +41,8 @@ import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_STAT
 public class BluetoothMiScale extends BluetoothCommunication {
     private final UUID WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC = UUID.fromString("00002a2f-0000-3512-2118-0009af100700");
 
-    public BluetoothMiScale(Context context, RxBleClient bleClient) {
-        super(context, bleClient);
+    public BluetoothMiScale(Context context) {
+        super(context);
     }
 
     @Override

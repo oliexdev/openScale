@@ -72,7 +72,7 @@ public class MainActivity extends BaseAppCompatActivity
     private static boolean firstAppStart = true;
     private static boolean valueOfCountModified = false;
     private static int bluetoothStatusIcon = R.drawable.ic_bluetooth_disabled;
-    private MenuItem bluetoothStatus;
+    private static MenuItem bluetoothStatus;
 
     private static final int IMPORT_DATA_REQUEST = 100;
     private static final int EXPORT_DATA_REQUEST = 101;
@@ -182,7 +182,6 @@ public class MainActivity extends BaseAppCompatActivity
     @Override
     public void onDestroy() {
         prefs.unregisterOnSharedPreferenceChangeListener(this);
-        OpenScale.getInstance().disconnectFromBluetoothDevice();
         super.onDestroy();
     }
 
@@ -507,7 +506,7 @@ public class MainActivity extends BaseAppCompatActivity
                     break;
                 case BT_CONNECTION_RETRYING:
                     setBluetoothStatusIcon(R.drawable.ic_bluetooth_searching);
-                    Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_no_device) + " retrying...", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_no_device_retrying), Toast.LENGTH_SHORT).show();
                     Timber.e("No Bluetooth device found retrying");
                     break;
                 case BT_CONNECTION_ESTABLISHED:

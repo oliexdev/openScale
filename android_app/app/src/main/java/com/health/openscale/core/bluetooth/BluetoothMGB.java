@@ -72,8 +72,8 @@ public class BluetoothMGB extends BluetoothCommunication {
     }
 
 
-    public BluetoothMGB(Context context, RxBleClient bleClient) {
-        super(context, bleClient);
+    public BluetoothMGB(Context context) {
+        super(context);
     }
 
     @Override

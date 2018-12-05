@@ -41,8 +41,8 @@ public class BluetoothYunmaiSE_Mini extends BluetoothCommunication {
 
     private boolean isMini;
 
-    public BluetoothYunmaiSE_Mini(Context context, RxBleClient bleClient, boolean isMini) {
-        super(context, bleClient);
+    public BluetoothYunmaiSE_Mini(Context context, boolean isMini) {
+        super(context);
         this.isMini = isMini;
     }
 

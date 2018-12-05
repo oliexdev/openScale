@@ -37,8 +37,8 @@ public class BluetoothOneByone extends BluetoothCommunication {
     private final UUID CMD_MEASUREMENT_CHARACTERISTIC = BluetoothGattUuid.fromShortCode(0xfff1); // write only
 
 
-    public BluetoothOneByone(Context context, RxBleClient bleClient) {
-        super(context, bleClient);
+    public BluetoothOneByone(Context context) {
+        super(context);
     }
 
     @Override

@@ -16,17 +16,23 @@
 
 package com.health.openscale.core.bluetooth;
 
+import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothGattService;
 import android.content.Context;
 import android.os.Handler;
 
+import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.jakewharton.rx.ReplayingShare;
 import com.polidea.rxandroidble2.RxBleClient;
 import com.polidea.rxandroidble2.RxBleConnection;
 import com.polidea.rxandroidble2.RxBleDevice;
+import com.polidea.rxandroidble2.RxBleDeviceServices;
 
 import java.io.IOException;
 import java.net.SocketException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import io.reactivex.Observable;
@@ -37,9 +43,6 @@ import io.reactivex.exceptions.UndeliverableException;
 import io.reactivex.plugins.RxJavaPlugins;
 import io.reactivex.subjects.PublishSubject;
 import timber.log.Timber;
-
-import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_STATUS_CODE.BT_CONNECTION_ESTABLISHED;
-import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_STATUS_CODE.BT_NO_DEVICE_FOUND;
 
 public abstract class BluetoothCommunication {
     public enum BT_STATUS_CODE {BT_RETRIEVE_SCALE_DATA, BT_INIT_PROCESS, BT_CONNECTION_RETRYING, BT_CONNECTION_ESTABLISHED,
@@ -59,6 +62,7 @@ public abstract class BluetoothCommunication {
     private PublishSubject<Boolean> disconnectTriggerSubject = PublishSubject.create();
 
     private Handler callbackBtHandler;
+    private RxBleDeviceServices rxBleDeviceServices;
 
     private int cmdStepNr;
     private int initStepNr;
@@ -66,10 +70,11 @@ public abstract class BluetoothCommunication {
     private BT_MACHINE_STATE btMachineState;
     private BT_MACHINE_STATE btPausedMachineState;
 
-    public BluetoothCommunication(Context context, RxBleClient bleClient)
+    public BluetoothCommunication(Context context)
     {
         this.context = context;
-        this.bleClient = bleClient;
+        this.bleClient = OpenScale.getInstance().getBleClient();
+        this.rxBleDeviceServices = null;
 
         RxJavaPlugins.setErrorHandler(e -> {
             if (e instanceof UndeliverableException) {
@@ -403,6 +408,14 @@ public abstract class BluetoothCommunication {
         return checksum;
     }
 
+    protected List<BluetoothGattService> getBluetoothGattServices() {
+        if (rxBleDeviceServices == null) {
+            return new ArrayList<>();
+        }
+
+        return rxBleDeviceServices.getBluetoothGattServices();
+    }
+
     /**
      * Test in a byte if a bit is set (1) or not (0)
      *
@@ -442,13 +455,14 @@ public abstract class BluetoothCommunication {
                     .observeOn(AndroidSchedulers.mainThread())
                     .retry(BT_RETRY_TIMES_ON_ERROR)
                     .subscribe(
-                            characteristic -> {
+                            deviceServices -> {
+                                rxBleDeviceServices = deviceServices;
                                 //setBtMonitoringOn();
-                                setBtStatus(BT_CONNECTION_ESTABLISHED);
+                                setBtStatus(BT_STATUS_CODE.BT_CONNECTION_ESTABLISHED);
                                 setBtMachineState(BT_MACHINE_STATE.BT_INIT_STATE);
                             },
                             throwable -> {
-                                setBtStatus(BT_NO_DEVICE_FOUND);
+                                setBtStatus(BT_STATUS_CODE.BT_NO_DEVICE_FOUND);
                                 disconnect();
                             }
                     );

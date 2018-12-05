@@ -30,8 +30,8 @@ import timber.log.Timber;
 public class BluetoothDebug extends BluetoothCommunication {
     HashMap<Integer, String> propertyString;
 
-    BluetoothDebug(Context context, RxBleClient bleClient) {
-        super(context, bleClient);
+    BluetoothDebug(Context context) {
+        super(context);
 
         propertyString = new HashMap<>();
         propertyString.put(BluetoothGattCharacteristic.PROPERTY_BROADCAST, "BROADCAST");
@@ -145,15 +145,6 @@ public class BluetoothDebug extends BluetoothCommunication {
 
                 offset -= 1;
             }
-
-            for (BluetoothGattDescriptor descriptor : characteristic.getDescriptors()) {
-                if (offset == 0) {
-                    readBytes(characteristic.getUuid());
-                    return -1;
-                }
-
-                offset -= 1;
-            }
         }
 
         for (BluetoothGattService included : service.getIncludedServices()) {
@@ -170,26 +161,22 @@ public class BluetoothDebug extends BluetoothCommunication {
     protected boolean nextInitCmd(int stateNr) {
         int offset = stateNr;
 
-        // TODO ???
-       /* for (BluetoothGattService service : getBluetoothGattServices()) {
+        for (BluetoothGattService service : getBluetoothGattServices()) {
             offset = readServiceCharacteristics(service, offset);
-            if (offset == -1) {
-                return true;
-            }
-        }*/
+        }
+
+        for (BluetoothGattService service : getBluetoothGattServices()) {
+            logService(service, false);
+        }
+
+        setBtStatus(BT_STATUS_CODE.BT_CONNECTION_LOST);
+        disconnect();
 
         return false;
     }
 
     @Override
     protected boolean nextBluetoothCmd(int stateNr) {
-        // TODO ???
-        /*for (BluetoothGattService service : getBluetoothGattServices()) {
-            logService(service, false);
-        }*/
-
-        setBtStatus(BT_STATUS_CODE.BT_CONNECTION_LOST);
-        disconnect();
         return false;
     }
 

@@ -64,8 +64,8 @@ public class BluetoothInlife extends BluetoothCommunication {
         writeBytes(WEIGHT_CMD_CHARACTERISTIC, data);
     }
 
-    public BluetoothInlife(Context context, RxBleClient bleClient) {
-        super(context, bleClient);
+    public BluetoothInlife(Context context) {
+        super(context);
     }
 
     @Override

@@ -566,7 +566,7 @@ public class OpenScale {
 
         disconnectFromBluetoothDevice();
 
-        btDeviceDriver = BluetoothFactory.createDebugDriver(context, bleClient);
+        btDeviceDriver = BluetoothFactory.createDebugDriver(context);
         btDeviceDriver.registerCallbackHandler(callbackBtHandler);
         btDeviceDriver.connect(hwAddress);
     }
@@ -576,7 +576,7 @@ public class OpenScale {
 
         disconnectFromBluetoothDevice();
 
-        btDeviceDriver = BluetoothFactory.createDeviceDriver(context, bleClient, deviceName);
+        btDeviceDriver = BluetoothFactory.createDeviceDriver(context, deviceName);
         if (btDeviceDriver == null) {
             return false;
         }

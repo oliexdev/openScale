@@ -39,8 +39,8 @@ public class BluetoothSenssun extends BluetoothCommunication {
     private byte WeightFatMus = 0;
     private ScaleMeasurement measurement;
 
-    public BluetoothSenssun(Context context, RxBleClient bleClient) {
-        super(context, bleClient);
+    public BluetoothSenssun(Context context) {
+        super(context);
     }
 
     @Override

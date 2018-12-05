@@ -98,8 +98,8 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
      */
     private boolean pairing = false;
 
-    public BluetoothTrisaBodyAnalyze(Context context, RxBleClient bleClient) {
-        super(context, bleClient);
+    public BluetoothTrisaBodyAnalyze(Context context) {
+        super(context);
     }
 
     @Override

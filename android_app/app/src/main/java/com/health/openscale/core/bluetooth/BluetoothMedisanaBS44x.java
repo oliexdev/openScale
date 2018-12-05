@@ -36,8 +36,8 @@ public class BluetoothMedisanaBS44x extends BluetoothCommunication {
     // Scale time is in seconds since 2010-01-01
     private static final long SCALE_UNIX_TIMESTAMP_OFFSET = 1262304000;
 
-    public BluetoothMedisanaBS44x(Context context, RxBleClient bleClient) {
-        super(context, bleClient);
+    public BluetoothMedisanaBS44x(Context context) {
+        super(context);
         btScaleMeasurement = new ScaleMeasurement();
     }
 

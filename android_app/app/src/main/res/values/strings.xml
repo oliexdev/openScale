@@ -93,6 +93,7 @@
     <string name="info_bluetooth_try_connection">Connecting to:</string>
     <string name="info_bluetooth_connection_lost">Lost Bluetooth connection</string>
     <string name="info_bluetooth_no_device">No Bluetooth device found</string>
+    <string name="info_bluetooth_no_device_retrying">Can not establish a connection, retrying...</string>
     <string name="info_bluetooth_no_device_set">No Bluetooth device selected</string>
     <string name="info_bluetooth_connection_successful">Connection established</string>
     <string name="info_bluetooth_init">Initialize Bluetooth device</string>

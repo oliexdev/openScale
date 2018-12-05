@@ -174,7 +174,7 @@ public class BluetoothPreferences extends PreferenceFragment {
         Preference prefBtDevice = new Preference(getActivity());
         prefBtDevice.setTitle(formatDeviceName(bleScanResult.getBleDevice()));
 
-        BluetoothCommunication btDevice = BluetoothFactory.createDeviceDriver(getActivity(), bleClient, device.getName());
+        BluetoothCommunication btDevice = BluetoothFactory.createDeviceDriver(getActivity(), device.getName());
         if (btDevice != null) {
             Timber.d("Found supported device %s (driver: %s)",
                     formatDeviceName(device), btDevice.driverName());
@@ -296,8 +296,11 @@ public class BluetoothPreferences extends PreferenceFragment {
         };
 
         dialog.show();
+
+        String macAddress = device.getMacAddress();
+        stopBluetoothDiscovery();
         OpenScale.getInstance().connectToBluetoothDeviceDebugMode(
-                device.getMacAddress(), btHandler);
+                macAddress, btHandler);
     }
 
     private class onClickListenerDeviceSelect implements Preference.OnPreferenceClickListener {

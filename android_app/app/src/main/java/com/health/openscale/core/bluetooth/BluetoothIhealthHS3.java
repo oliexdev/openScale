@@ -47,8 +47,8 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
     private final long maxTimeDiff = 60000;   // maximum time interval we will consider two identical
                                              // weight readings to be the same and hence ignored - 60 seconds in milliseconds
 
-    public BluetoothIhealthHS3(Context context, RxBleClient bleClient) {
-        super(context, bleClient);
+    public BluetoothIhealthHS3(Context context) {
+        super(context);
     }
 
     @Override
@@ -76,16 +76,13 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
 
     @Override
     public void connect(String hwAddress) {
-
-        // TODO ???
-        BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter(); // TODO Test if this works!?
+        BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
 
         if (btAdapter == null) {
             setBtStatus(BT_STATUS_CODE.BT_NO_DEVICE_FOUND);
             return;
         }
 
-        // TODO ???
         btDevice = btAdapter.getRemoteDevice(hwAddress);
         try {
             // Get a BluetoothSocket to connect with the given BluetoothDevice

@@ -34,8 +34,8 @@ public class BluetoothCustomOpenScale extends BluetoothCommunication {
 
     private String string_data = new String();
 
-    public BluetoothCustomOpenScale(Context context, RxBleClient bleClient) {
-        super(context, bleClient);
+    public BluetoothCustomOpenScale(Context context) {
+        super(context);
     }
 
     @Override

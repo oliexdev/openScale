@@ -139,8 +139,8 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
         return normalized.toUpperCase(Locale.US);
     }
 
-    public BluetoothBeurerSanitas(Context context, RxBleClient bleClient, DeviceType deviceType) {
-        super(context, bleClient);
+    public BluetoothBeurerSanitas(Context context, DeviceType deviceType) {
+        super(context);
 
         this.deviceType = deviceType;
         switch (deviceType) {

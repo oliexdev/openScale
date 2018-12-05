@@ -34,8 +34,8 @@ public class BluetoothExcelvanCF36xBLE extends BluetoothCommunication {
 
     private byte[] receivedData = new byte[]{};
 
-    public BluetoothExcelvanCF36xBLE(Context context, RxBleClient bleClient) {
-        super(context, bleClient);
+    public BluetoothExcelvanCF36xBLE(Context context) {
+        super(context);
     }
 
     @Override
