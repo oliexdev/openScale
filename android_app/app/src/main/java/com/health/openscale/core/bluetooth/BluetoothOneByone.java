@@ -98,6 +98,11 @@ public class BluetoothOneByone extends BluetoothCommunication {
             return;
         }
 
+        if (xorChecksum(data, 0, data.length) != 0) {
+            Timber.e("Invalid checksum");
+            return;
+        }
+
         // if data is valid data
         if (data.length == 20 && data[0] == (byte)0xcf) {
             parseBytes(data);
