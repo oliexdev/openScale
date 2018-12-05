@@ -20,6 +20,7 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
 
+import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.bluetooth.lib.OneByoneLib;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
@@ -33,9 +34,7 @@ import timber.log.Timber;
 
 public class BluetoothOneByone extends BluetoothCommunication {
     private final UUID WEIGHT_MEASUREMENT_SERVICE = BluetoothGattUuid.fromShortCode(0xfff0);
-
     private final UUID WEIGHT_MEASUREMENT_CHARACTERISTIC_BODY_COMPOSITION = BluetoothGattUuid.fromShortCode(0xfff4); // notify
-
     private final UUID CMD_MEASUREMENT_CHARACTERISTIC = BluetoothGattUuid.fromShortCode(0xfff1); // write only
 
     private byte[] lastData = null;
@@ -112,19 +111,24 @@ public class BluetoothOneByone extends BluetoothCommunication {
         lastData = data;
 
         // if data is valid data
-        if (data.length == 20 && data[0] == (byte)0xcf) {
+        if (data.length >= 11 && data[0] == (byte)0xcf) {
             parseBytes(data);
         }
     }
 
     private void parseBytes(byte[] weightBytes) {
         float weight = Converters.fromUnsignedInt16Le(weightBytes, 3) / 100.0f;
+        if (weightBytes[9] != 0) {
+            Timber.d("Current weight %.2f kg", weight);
+            sendMessage(R.string.info_measuring, weight);
+            return;
+        }
+
         int impedanceCoeff = Converters.fromUnsignedInt24Le(weightBytes, 5);
         int impedanceValue = weightBytes[5] + weightBytes[6] + weightBytes[7];
 
         final ScaleUser scaleUser = OpenScale.getInstance().getSelectedScaleUser();
 
-        Timber.d("received bytes [%s]", byteInHex(weightBytes));
         Timber.d("received decrypted bytes [weight: %.2f, impedanceCoeff: %d, impedanceValue: %d]", weight, impedanceCoeff, impedanceValue);
         Timber.d("user [%s]", scaleUser);
 
