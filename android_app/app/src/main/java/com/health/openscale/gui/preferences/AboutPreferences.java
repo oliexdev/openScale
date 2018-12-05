@@ -81,7 +81,7 @@ public class AboutPreferences extends PreferenceFragment {
         @Override
         protected synchronized void log(int priority, String tag, String message, Throwable t) {
             final long id = Thread.currentThread().getId();
-            writer.printf("%s %s [%d] %s: %s\n",
+            writer.printf("%s %s [%d] %s: %s\r\n",
                     format.format(new Date()), priorityToString(priority), id, tag, message);
         }
     }
