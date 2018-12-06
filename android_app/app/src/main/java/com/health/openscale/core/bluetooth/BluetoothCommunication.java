@@ -49,7 +49,7 @@ public abstract class BluetoothCommunication {
         BT_CONNECTION_LOST, BT_NO_DEVICE_FOUND, BT_UNEXPECTED_ERROR, BT_SCALE_MESSAGE
     }
 
-    public enum BT_MACHINE_STATE {BT_INIT_STATE, BT_CMD_STATE, BT_CLEANUP_STATE, BT_PAUSED_STATE}
+    public enum BT_MACHINE_STATE {BT_INIT_STATE, BT_CMD_STATE, BT_CLEANUP_STATE}
 
     private final int BT_RETRY_TIMES_ON_ERROR = 3;
 
@@ -68,7 +68,6 @@ public abstract class BluetoothCommunication {
     private int initStepNr;
     private int cleanupStepNr;
     private BT_MACHINE_STATE btMachineState;
-    private BT_MACHINE_STATE btPausedMachineState;
 
     public BluetoothCommunication(Context context)
     {
@@ -239,20 +238,6 @@ public abstract class BluetoothCommunication {
         this.btMachineState = btMachineState;
 
         nextMachineStateStep();
-    }
-
-    protected void pauseBtStateMachine() {
-        if (btMachineState != BT_MACHINE_STATE.BT_CLEANUP_STATE
-            && btMachineState != BT_MACHINE_STATE.BT_PAUSED_STATE) {
-            btPausedMachineState = btMachineState;
-            setBtMachineState(BT_MACHINE_STATE.BT_PAUSED_STATE);
-        }
-    }
-
-    protected void resumeBtStateMachine() {
-        if (this.btMachineState == BT_MACHINE_STATE.BT_PAUSED_STATE) {
-            setBtMachineState(btPausedMachineState);
-        }
     }
 
     /**
@@ -534,9 +519,6 @@ public abstract class BluetoothCommunication {
                 Timber.d("CLEANUP STATE: %d", cleanupStepNr);
                 nextCleanUpCmd(cleanupStepNr);
                 cleanupStepNr++;
-                break;
-            case BT_PAUSED_STATE:
-                Timber.d("PAUSED STATE");
                 break;
         }
     }
