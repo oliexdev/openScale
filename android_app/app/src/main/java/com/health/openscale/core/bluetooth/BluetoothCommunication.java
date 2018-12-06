@@ -16,7 +16,6 @@
 
 package com.health.openscale.core.bluetooth;
 
-import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattService;
 import android.content.Context;
 import android.os.Handler;
@@ -28,6 +27,7 @@ import com.polidea.rxandroidble2.RxBleClient;
 import com.polidea.rxandroidble2.RxBleConnection;
 import com.polidea.rxandroidble2.RxBleDevice;
 import com.polidea.rxandroidble2.RxBleDeviceServices;
+import com.polidea.rxandroidble2.exceptions.BleException;
 
 import java.io.IOException;
 import java.net.SocketException;
@@ -45,11 +45,22 @@ import io.reactivex.subjects.PublishSubject;
 import timber.log.Timber;
 
 public abstract class BluetoothCommunication {
-    public enum BT_STATUS_CODE {BT_RETRIEVE_SCALE_DATA, BT_INIT_PROCESS, BT_CONNECTION_RETRYING, BT_CONNECTION_ESTABLISHED,
-        BT_CONNECTION_LOST, BT_NO_DEVICE_FOUND, BT_UNEXPECTED_ERROR, BT_SCALE_MESSAGE
+    public enum BT_STATUS_CODE {
+        BT_RETRIEVE_SCALE_DATA,
+        BT_INIT_PROCESS,
+        BT_CONNECTION_RETRYING,
+        BT_CONNECTION_ESTABLISHED,
+        BT_CONNECTION_LOST,
+        BT_NO_DEVICE_FOUND,
+        BT_UNEXPECTED_ERROR,
+        BT_SCALE_MESSAGE
     }
 
-    public enum BT_MACHINE_STATE {BT_INIT_STATE, BT_CMD_STATE, BT_CLEANUP_STATE}
+    public enum BT_MACHINE_STATE {
+        BT_INIT_STATE,
+        BT_CMD_STATE,
+        BT_CLEANUP_STATE
+    }
 
     private final int BT_RETRY_TIMES_ON_ERROR = 3;
 
@@ -76,6 +87,9 @@ public abstract class BluetoothCommunication {
         this.rxBleDeviceServices = null;
 
         RxJavaPlugins.setErrorHandler(e -> {
+            if (e instanceof UndeliverableException && e.getCause() instanceof BleException) {
+                return; // ignore BleExceptions as they were surely delivered at least once
+            }
             if (e instanceof UndeliverableException) {
                 onError(e);
             }
