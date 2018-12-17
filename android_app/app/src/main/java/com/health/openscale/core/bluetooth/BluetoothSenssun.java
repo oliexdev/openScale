@@ -36,7 +36,6 @@ public class BluetoothSenssun extends BluetoothCommunication {
     private final UUID CMD_MEASUREMENT_CHARACTERISTIC = BluetoothGattUuid.fromShortCode(0xfff2); // write only
 
     private boolean scaleGotUserData;
-    long firstFixWeight = -1 ;
     private byte WeightFatMus = 0;
     private ScaleMeasurement measurement;
 
@@ -50,13 +49,28 @@ public class BluetoothSenssun extends BluetoothCommunication {
     }
 
     @Override
+    public void disconnect(boolean doCleanup) {
+        Timber.i("disconnect(and save Data - %s)", doCleanup);
+        saveUserData();
+        super.disconnect(doCleanup);
+    }
+
+    @Override
     protected boolean doScanWhileConnecting() {
         // Senssun seems to have problem connecting if scan is running (see ##309)
         return false;
     }
 
-    private void sendUserData() {
-        if (scaleGotUserData) {
+    private void saveUserData(){
+      if ( isBitSet(WeightFatMus,2) ) {
+          addScaleData(measurement);
+          WeightFatMus=0;
+          setBtStatus(BT_STATUS_CODE.BT_CONNECTION_LOST);
+      }
+    }
+
+    private void sendUserData(){
+        if ( scaleGotUserData ){
           return;
         }
         final ScaleUser selectedUser = OpenScale.getInstance().getSelectedScaleUser();
@@ -84,7 +98,6 @@ public class BluetoothSenssun extends BluetoothCommunication {
                 setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC,
                         BluetoothGattUuid.DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION);
                 sendUserData();
-                firstFixWeight = -1;
                 WeightFatMus = 0;
                 scaleGotUserData = false;
                 break;
@@ -114,13 +127,8 @@ public class BluetoothSenssun extends BluetoothCommunication {
 
         if (data != null && !isBitSet(WeightFatMus, 3)) { //only if not saved
             parseBytes(data);
-            Timber.d("WFM %02X %d ", WeightFatMus, (System.currentTimeMillis() - firstFixWeight));
-            if (isBitSet(WeightFatMus, 2) && firstFixWeight > 0) {
-                if (((System.currentTimeMillis() - firstFixWeight) > 2500 && WeightFatMus == (1 << 2)) //wait 1.5 seconds for Data
-                        || WeightFatMus == 0x07) { // got all Data to save
-                    addScaleData(measurement);
-                    WeightFatMus |= 1 << 3;
-                }
+            if (WeightFatMus == 0x07) {
+              disconnect(true);
             }
         }
     }
@@ -144,9 +152,9 @@ public class BluetoothSenssun extends BluetoothCommunication {
                 float weight = Converters.fromUnsignedInt16Be(weightBytes, 2) / 10.0f; // kg
                 measurement.setWeight(weight);
 
-                if (!isBitSet(WeightFatMus, 2)) {
-                    WeightFatMus |= 1 << 2 ;
-                    firstFixWeight = System.currentTimeMillis() ;
+                if (!isBitSet(WeightFatMus,2)){
+                  WeightFatMus |= 1 << 2 ;
+
                 }
 
                 sendUserData();
