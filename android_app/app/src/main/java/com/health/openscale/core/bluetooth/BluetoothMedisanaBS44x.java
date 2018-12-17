@@ -34,12 +34,16 @@ public class BluetoothMedisanaBS44x extends BluetoothCommunication {
 
     private ScaleMeasurement btScaleMeasurement;
 
+    private boolean applyOffset;
+
     // Scale time is in seconds since 2010-01-01
     private static final long SCALE_UNIX_TIMESTAMP_OFFSET = 1262304000;
 
-    public BluetoothMedisanaBS44x(Context context) {
+
+    public BluetoothMedisanaBS44x(Context context, boolean applyOffset) {
         super(context);
         btScaleMeasurement = new ScaleMeasurement();
+        this.applyOffset = applyOffset;
     }
 
     @Override
@@ -79,7 +83,9 @@ public class BluetoothMedisanaBS44x extends BluetoothCommunication {
             case 3:
                 // send magic number to receive weight data
                 long timestamp = new Date().getTime() / 1000;
-                timestamp -= SCALE_UNIX_TIMESTAMP_OFFSET;
+                if(applyOffset){
+                    timestamp -= SCALE_UNIX_TIMESTAMP_OFFSET;
+                }
                 byte[] date = Converters.toInt32Le(timestamp);
 
                 byte[] magicBytes = new byte[] {(byte)0x02, date[0], date[1], date[2], date[3]};
@@ -117,7 +123,9 @@ public class BluetoothMedisanaBS44x extends BluetoothCommunication {
     private void parseWeightData(byte[] weightData) {
         float weight = Converters.fromUnsignedInt16Le(weightData, 1) / 100.0f;
         long timestamp = Converters.fromUnsignedInt32Le(weightData, 5);
-        timestamp += SCALE_UNIX_TIMESTAMP_OFFSET;
+        if (applyOffset) {
+            timestamp += SCALE_UNIX_TIMESTAMP_OFFSET;
+        }
 
         btScaleMeasurement.setDateTime(new Date(timestamp * 1000));
         btScaleMeasurement.setWeight(weight);
