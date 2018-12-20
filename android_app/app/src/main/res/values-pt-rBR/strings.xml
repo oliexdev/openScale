@@ -76,8 +76,8 @@
     <string name="label_import">Importar</string>
     <string name="label_importBackup">Importar Backup</string>
     <string name="label_initial_weight">Peso inicial</string>
-    <string name="label_last_month">Últimos 30 dias</string>
-    <string name="label_last_week">Últimos 7 dias</string>
+    <string name="label_last_month">Média do mês passado</string>
+    <string name="label_last_week">Média da semana passada</string>
     <string name="label_male">Masculino</string>
     <string name="label_muscle">Massa muscular</string>
     <string name="label_no">Não</string>
