@@ -99,6 +99,9 @@ public class BluetoothFactory {
                 || deviceName.equals("042FatScale01")) {
             return new BluetoothInlife(context);
         }
+         if (deviceName.startsWith("QN-Scale")) {
+            return new BluetoothQNScale(context);
+        }
         return null;
     }
 }
