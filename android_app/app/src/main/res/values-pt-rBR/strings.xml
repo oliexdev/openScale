@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="Friday">Sexta</string>
     <string name="Monday">Segunda</string>
@@ -120,7 +120,7 @@
     <string name="close_drawer">fechar</string>
 
     <string name="label_share">Partilhar</string>
-    <string name="label_share_subject">Exportar dados openScale para CSV (%s)</string>
+    <string name="label_share_subject">Exportar dados para CSV (%s)</string>
 
     <string name="label_bmr">Taxa Metabólica Basal (TMB)</string>
     <string name="label_lbm">Massa Magra</string>
