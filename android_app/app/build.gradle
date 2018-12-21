@@ -8,8 +8,8 @@ android {
         testApplicationId "com.health.openscale.test"
         minSdkVersion 19
         targetSdkVersion 28
-        versionCode 32
-        versionName "1.8.4"
+        versionCode 33
+        versionName "1.9-beta"
 
         javaCompileOptions {
             annotationProcessorOptions { arguments = ["room.schemaLocation":"$projectDir/schemas".toString()] }
@@ -53,7 +53,7 @@ dependencies {
 
     // RxAndroidBle
     implementation 'com.polidea.rxandroidble2:rxandroidble:1.7.1'
-    implementation 'io.reactivex.rxjava2:rxjava:2.1.0'
+    implementation 'io.reactivex.rxjava2:rxjava:2.2.2'
     implementation 'io.reactivex.rxjava2:rxandroid:2.1.0'
     implementation 'com.jakewharton.rx2:replaying-share:2.1.0'
 

@@ -87,16 +87,16 @@ public class BluetoothQNScale extends BluetoothCommunication {
         switch (stateNr) {
             case 0:
                 // set notification on for custom characteristic 1 (weight, time, and others)
-                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, CUSTOM1_MEASUREMENT_CHARACTERISTIC, WEIGHT_MEASUREMENT_CONFIG);
+                setNotificationOn(CUSTOM1_MEASUREMENT_CHARACTERISTIC);
                 break;
             case 1:
                 // set indication on for weight measurement
-                setIndicationOn(WEIGHT_MEASUREMENT_SERVICE, CUSTOM2_MEASUREMENT_CHARACTERISTIC, WEIGHT_MEASUREMENT_CONFIG);
+                setIndicationOn(CUSTOM2_MEASUREMENT_CHARACTERISTIC);
                 break;
             case 2:
                 // write magicnumber 0x130915011000000042 to 0xffe3
                 byte[] ffe3magicBytes = new byte[] {(byte)0x13, (byte)0x09, (byte)0x15, (byte)0x01, (byte)0x10, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x42};
-                writeBytes(WEIGHT_MEASUREMENT_SERVICE, CUSTOM3_MEASUREMENT_CHARACTERISTIC, ffe3magicBytes);
+                writeBytes(CUSTOM3_MEASUREMENT_CHARACTERISTIC, ffe3magicBytes);
                 break;
             case 3:
                 // send time magic number to receive weight data
@@ -105,7 +105,7 @@ public class BluetoothQNScale extends BluetoothCommunication {
                 byte[] date = new byte[4];
                 Converters.toInt32Le(date, 0, timestamp);
                 byte[] timeMagicBytes = new byte[] {(byte)0x02, date[0], date[1], date[2], date[3]};
-                writeBytes(WEIGHT_MEASUREMENT_SERVICE, CUSTOM4_MEASUREMENT_CHARACTERISTIC, timeMagicBytes);
+                writeBytes(CUSTOM4_MEASUREMENT_CHARACTERISTIC, timeMagicBytes);
                 break;
             default:
                 return false;
@@ -120,7 +120,7 @@ public class BluetoothQNScale extends BluetoothCommunication {
         switch (stateNr) {
             case 0:
                 // send stop command to scale (0x1f05151049)
-                writeBytes(WEIGHT_MEASUREMENT_SERVICE, CUSTOM3_MEASUREMENT_CHARACTERISTIC, new byte[]{(byte)0x1f, (byte)0x05, (byte)0x15, (byte)0x10, (byte)0x49});
+                writeBytes(CUSTOM3_MEASUREMENT_CHARACTERISTIC, new byte[]{(byte)0x1f, (byte)0x05, (byte)0x15, (byte)0x10, (byte)0x49});
                 break;
             default:
                 return false;
@@ -130,10 +130,10 @@ public class BluetoothQNScale extends BluetoothCommunication {
 
 
     @Override
-    public void onBluetoothDataChange(BluetoothGatt bluetoothGatt, BluetoothGattCharacteristic gattCharacteristic) {
-        final byte[] data = gattCharacteristic.getValue();
+    public void onBluetoothNotify(UUID characteristic, byte[] value) {
+        final byte[] data = value;
 
-        if (gattCharacteristic.getUuid().equals(CUSTOM1_MEASUREMENT_CHARACTERISTIC)) {
+        if (characteristic.equals(CUSTOM1_MEASUREMENT_CHARACTERISTIC)) {
             parseCustom1Data(data);
         }
     }
