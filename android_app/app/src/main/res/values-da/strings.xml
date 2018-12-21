@@ -95,7 +95,7 @@
     <string name="info_bluetooth_connection_error">Uventet Bluetooth fejl</string>
     <string name="info_new_data_added">Tilføjede %1$.2f%2$s [%3$s] til %4$s</string>
     <string name="info_enter_user_name">Dit navn</string>
-    <string name="info_no_selected_user">Vælg en bruger under indstillinger</string>
+    <string name="info_no_selected_user">Vælg en bruger under indstillinger.</string>
     <string name="info_no_evaluation_available">Ingen evaluering til rådighed</string>
     <string name="question_really_delete">Ønsker du at slette data?</string>
     <string name="question_really_delete_all">Ønsker du at slette alle data?</string>
@@ -132,7 +132,7 @@
     <string name="title_general">Generelt</string>
     <string name="label_theme">Tema</string>
     <string name="label_feedback_message_enjoying">Er du tilfreds med openScale?</string>
-    <string name="label_feedback_message_rate_app">Vil du rate app&quot;en på Google Play eller GitHub?</string>
+    <string name="label_feedback_message_rate_app">Vil du rate app"en på Google Play eller GitHub?</string>
     <string name="label_feedback_message_issue">Send feedback?</string>
     <string name="label_feedback_message_yes">Ja</string>
     <string name="label_feedback_message_no">Nej</string>
@@ -162,7 +162,7 @@
     <string name="label_month_view">Månedsvis</string>
 
     <string name="permission_not_granted">Tilladelse er ikke givet</string>
-    <string name="permission_bluetooth_info">Tilladelse til lokalbestemmelse er påkrævet for at søge efter Bluetooth-enheder</string>
+    <string name="permission_bluetooth_info">Tilladelse til lokalbestemmelse er påkrævet for at søge efter Bluetooth-enheder.</string>
     <string name="permission_bluetooth_info_title">Information</string>
 
     <string name="label_share_subject">CSV dataeksport (%s)</string>
