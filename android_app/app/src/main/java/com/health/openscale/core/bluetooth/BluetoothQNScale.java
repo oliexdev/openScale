@@ -53,10 +53,6 @@ public class BluetoothQNScale extends BluetoothCommunication {
     private final UUID CUSTOM5_MEASUREMENT_CHARACTERISTIC = UUID.fromString("0000ffe5-0000-1000-8000-00805f9b34fb"); // write-only
     /////////////
 
-    private List<Float> weightReadings = new ArrayList<Float>();
-
-
-
     /** API
      connectDevice(device, "userId", 170, 1, birthday, new new QNBleCallback(){
      void onConnectStart(QNBleDevice bleDevice);
@@ -68,18 +64,11 @@ public class BluetoothQNScale extends BluetoothCommunication {
      void onLowPower();
      **/
 
-
-
-
-
-    private ScaleMeasurement btScaleMeasurement;
-
     // Scale time is in seconds since 2000-01-01 00:00:00 (utc).
     private static final long SCALE_UNIX_TIMESTAMP_OFFSET = 946702800;
 
     public BluetoothQNScale(Context context) {
         super(context);
-        btScaleMeasurement = new ScaleMeasurement();
     }
 
     // Includes FITINDEX ES-26M
@@ -112,10 +101,9 @@ public class BluetoothQNScale extends BluetoothCommunication {
             case 3:
                 // send time magic number to receive weight data
                 long timestamp = new Date().getTime() / 1000;
-                // TODO: probably shouldn't be doing this here?
-                btScaleMeasurement.setDateTime(new Date(timestamp * 1000));
                 timestamp -= SCALE_UNIX_TIMESTAMP_OFFSET;
-                byte[] date = Converters.toUnsignedInt32Le(timestamp);
+                byte[] date = new byte[4];
+                Converters.toInt32Le(date, 0, timestamp);
                 byte[] timeMagicBytes = new byte[] {(byte)0x02, date[0], date[1], date[2], date[3]};
                 writeBytes(WEIGHT_MEASUREMENT_SERVICE, CUSTOM4_MEASUREMENT_CHARACTERISTIC, timeMagicBytes);
                 break;
@@ -154,33 +142,27 @@ public class BluetoothQNScale extends BluetoothCommunication {
         int firstByte = custom1Data[0] & 0xFF;
         int secondByte = custom1Data[1] & 0xFF;
         int thirdByte = custom1Data[2] & 0xFF;
-        Timber.e("First byte %d", firstByte);
-        Timber.e("Second byte %d", secondByte);
-        Timber.e("Third byte %d", thirdByte);
+        Timber.d("First byte %d", firstByte);
+        Timber.d("Second byte %d", secondByte);
+        Timber.d("Third byte %d", thirdByte);
         //int fourthByte = custom1Data[3] & 0xFF;
         //int fifthByte = custom1Data[4] & 0xFF;
 
         // If this is a weight byte
         if (firstByte == 0x10 && secondByte == 0x0b && thirdByte == 0x15){
+            ScaleMeasurement btScaleMeasurement = new ScaleMeasurement();
             byte[] weightBytes = new byte[]{custom1Data[3], custom1Data[4]};
             int rawWeight = ((weightBytes[0] & 0xff) <<8 | weightBytes[1] & 0xff);
             float weight = rawWeight / 100.0f;
             //float weight = Converters.fromUnsignedInt16Le(weightBytes, 0) / 100.0f;
             int weightByteOne = custom1Data[3] & 0xFF;
             int weightByteTwo = custom1Data[4] & 0xFF;
-            Timber.e("Weight byte 1 %d", weightByteOne);
-            Timber.e("Weight byte 2 %d", weightByteTwo);
-            Timber.e("Raw Weight: %d", rawWeight);
-            weightReadings.add(weight);
+            Timber.d("Weight byte 1 %d", weightByteOne);
+            Timber.d("Weight byte 2 %d", weightByteTwo);
+            Timber.d("Raw Weight: %d", rawWeight);
             btScaleMeasurement.setWeight(weight);
             //setBtMachineState(BT_MACHINE_STATE.BT_CLEANUP_STATE)
             addScaleData(btScaleMeasurement);
         }
     }
-
-    private boolean shouldSetWeight(List<Float> weights){
-
-        return false;
-    }
-
 }
