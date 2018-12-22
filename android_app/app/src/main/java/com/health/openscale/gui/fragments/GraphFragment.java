@@ -20,10 +20,19 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
-import android.graphics.DashPathEffect;
-import android.icu.text.DateFormat;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.view.LayoutInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.PopupMenu;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.LineChart;
@@ -42,21 +51,6 @@ import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import androidx.fragment.app.Fragment;
-import android.view.GestureDetector;
-import android.view.LayoutInflater;
-import android.view.MenuItem;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.PopupMenu;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
-import android.widget.Toast;
-
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
@@ -78,6 +72,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Stack;
+
+import androidx.fragment.app.Fragment;
 
 public class GraphFragment extends Fragment implements FragmentUpdateListener {
     private View graphView;
@@ -145,6 +141,17 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         XAxis charTopxAxis = chartTop.getXAxis();
         charTopxAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         charTopxAxis.setDrawGridLines(false);
+        charTopxAxis.setValueFormatter(new IAxisValueFormatter() {
+
+            private final SimpleDateFormat mFormat = new SimpleDateFormat("MMM", Locale.getDefault());
+
+            @Override
+            public String getFormattedValue(float value, AxisBase axis) {
+                Calendar calendar = Calendar.getInstance();
+                calendar.set(Calendar.MONTH, (int)value);
+                return mFormat.format(calendar.getTime());
+            }
+        });
 
         txtYear = graphView.findViewById(R.id.txtYear);
         txtYear.setText(Integer.toString(calYears.get(Calendar.YEAR)));
