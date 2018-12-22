@@ -32,6 +32,21 @@ import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.github.mikephil.charting.animation.Easing;
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.AxisBase;
+import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.components.MarkerView;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.formatter.DefaultAxisValueFormatter;
+import com.github.mikephil.charting.formatter.IAxisValueFormatter;
+import com.github.mikephil.charting.highlight.Highlight;
+import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
+import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
@@ -43,23 +58,16 @@ import com.health.openscale.gui.views.FloatMeasurementView;
 import com.health.openscale.gui.views.MeasurementView;
 
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
-import java.util.Stack;
+import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
-import lecho.lib.hellocharts.formatter.SimpleLineChartValueFormatter;
-import lecho.lib.hellocharts.listener.LineChartOnValueSelectListener;
-import lecho.lib.hellocharts.listener.PieChartOnValueSelectListener;
-import lecho.lib.hellocharts.model.Axis;
-import lecho.lib.hellocharts.model.AxisValue;
-import lecho.lib.hellocharts.model.Line;
-import lecho.lib.hellocharts.model.LineChartData;
-import lecho.lib.hellocharts.model.PieChartData;
-import lecho.lib.hellocharts.model.PointValue;
-import lecho.lib.hellocharts.model.SliceValue;
-import lecho.lib.hellocharts.view.LineChartView;
-import lecho.lib.hellocharts.view.PieChartView;
+import timber.log.Timber;
 
 public class OverviewFragment extends Fragment implements FragmentUpdateListener {
 
@@ -71,22 +79,15 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
     private List<MeasurementView> measurementViews;
 
-    private PieChartView pieChartLast;
-    private LineChartView lineChartLast;
+    private LineChart rollingChart;
 
     private Spinner spinUser;
-
-    private SharedPreferences prefs;
 
     private ScaleMeasurement lastScaleMeasurement;
     private ScaleMeasurement userSelectedData;
     private ScaleUser currentScaleUser;
 
-    private List<ScaleMeasurement> scaleMeasurementLastDays;
-
     private ArrayAdapter<String> spinUserAdapter;
-
-    private Context context;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -100,20 +101,44 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         overviewView = inflater.inflate(R.layout.fragment_overview, container, false);
         userLineSeparator = overviewView.findViewById(R.id.userLineSeparator);
 
-        context = overviewView.getContext();
-
         txtTitleUser = overviewView.findViewById(R.id.txtTitleUser);
         txtTitleLastMeasurement = overviewView.findViewById(R.id.txtTitleLastMeasurement);
 
-        pieChartLast = overviewView.findViewById(R.id.pieChartLast);
-        lineChartLast = overviewView.findViewById(R.id.lineChartLast);
+        rollingChart = overviewView.findViewById(R.id.rollingChart);
+
+        rollingChart.getDescription().setEnabled(false);
+
+        rollingChart.setTouchEnabled(true);
+        rollingChart.setOnChartValueSelectedListener(new rollingChartSelectionListener());
+
+        rollingChart.setHighlightPerTapEnabled(true);
+
+        Legend legend = rollingChart.getLegend();
+        legend.setWordWrapEnabled(true);
+
+        XAxis xAxis = rollingChart.getXAxis();
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setDrawGridLines(true);
+        xAxis.setGranularity(1f);
+        xAxis.setValueFormatter(new IAxisValueFormatter() {
+
+            private final SimpleDateFormat mFormat = new SimpleDateFormat("dd MMM", Locale.getDefault());
+
+            @Override
+            public String getFormattedValue(float value, AxisBase axis) {
+                long millis = TimeUnit.DAYS.toMillis((long) value);
+                return mFormat.format(new Date(millis));
+            }
+        });
+
+
+        YAxis leftAxis = rollingChart.getAxisLeft();
+        leftAxis.setEnabled(false);
+
+        YAxis rightAxis = rollingChart.getAxisRight();
+        rightAxis.setEnabled(false);
 
         spinUser = overviewView.findViewById(R.id.spinUser);
-
-        lineChartLast.setOnValueTouchListener(new LineChartTouchListener());
-
-        pieChartLast.setOnValueTouchListener(new PieChartLastTouchListener());
-        pieChartLast.setChartRotationEnabled(false);
 
         measurementViews = MeasurementView.getMeasurementList(
                 getContext(), MeasurementView.DateTimeOrder.NONE);
@@ -140,9 +165,9 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         txtTitleUser.setText(getResources().getString(R.string.label_title_user).toUpperCase());
         txtTitleLastMeasurement.setText(getResources().getString(R.string.label_title_last_measurement).toUpperCase());
 
-        prefs = PreferenceManager.getDefaultSharedPreferences(overviewView.getContext());
-
         OpenScale.getInstance().registerFragment(this);
+
+        rollingChart.animateX(1000);
 
         return overviewView;
     }
@@ -167,8 +192,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         ScaleMeasurement prevScaleMeasurement = tupleScaleData[0];
 
         updateUserSelection();
-        updateLastPieChart();
-        updateLastLineChart(scaleMeasurementList);
+        updateRollingChart(scaleMeasurementList);
 
         for (MeasurementView measurement : measurementViews) {
             measurement.loadFrom(lastScaleMeasurement, prevScaleMeasurement);
@@ -203,28 +227,14 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         userLineSeparator.setVisibility(visibility);
     }
 
+    private void updateRollingChart(List<ScaleMeasurement> scaleMeasurementList) {
+        rollingChart.clear();
+        Collections.reverse(scaleMeasurementList);
 
-    private void updateLastLineChart(List<ScaleMeasurement> scaleMeasurementList) {
-        final Calendar now = Calendar.getInstance();
-        Calendar histCalendar = Calendar.getInstance();
-
-        scaleMeasurementLastDays = new ArrayList<>();
-        List<AxisValue> axisValues = new ArrayList<>();
-
-        int max_i = Math.min(7, scaleMeasurementList.size());
-        for (int i = 0; i < max_i; ++i) {
-            ScaleMeasurement measurement = scaleMeasurementList.get(max_i - i - 1);
-            scaleMeasurementLastDays.add(measurement);
-
-            histCalendar.setTime(measurement.getDateTime());
-            int days = DateTimeHelpers.daysBetween(now, histCalendar);
-            String label = getResources().getQuantityString(R.plurals.label_days, Math.abs(days), days);
-            axisValues.add(new AxisValue(i, label.toCharArray()));
-        }
-
-        List<Line> diagramLineList = new ArrayList<>();
+        List<ILineDataSet> dataSets = new ArrayList<>();
 
         for (MeasurementView view : measurementViews) {
+
             if (!view.isVisible()
                     || !view.getSettings().isInOverviewGraph()
                     || !(view instanceof FloatMeasurementView)) {
@@ -232,120 +242,55 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             }
 
             FloatMeasurementView measurementView = (FloatMeasurementView) view;
-            Stack<PointValue> valuesStack = new Stack<>();
 
-            for (int i = 0; i < max_i; ++i) {
-                ScaleMeasurement measurement = scaleMeasurementList.get(max_i - i - 1);
+            List<Entry> entries = new ArrayList<>();
+
+            for (ScaleMeasurement measurement : scaleMeasurementList) {
+
                 measurementView.loadFrom(measurement, null);
 
                 if (measurementView.getValue() != 0.0f) {
-                    valuesStack.push(new PointValue(i, measurementView.getValue()));
+                    Entry entry = new Entry();
+                    entry.setX(TimeUnit.MILLISECONDS.toDays(measurement.getDateTime().getTime()));
+                    entry.setY(measurementView.getValue());
+                    entry.setData(measurement);
+
+                    entries.add(entry);
                 }
             }
 
-            diagramLineList.add(new Line(valuesStack).
-                    setColor(measurementView.getColor()).
-                    setHasLabels(prefs.getBoolean("labelsEnable", true)).
-                    setHasPoints(prefs.getBoolean("pointsEnable", true)).
-                    setFormatter(new SimpleLineChartValueFormatter(1)));
+            LineDataSet dataSet = new LineDataSet(entries, measurementView.getName().toString());
+            dataSet.setColor(measurementView.getColor());
+            dataSet.setCircleColor(measurementView.getColor());
+            dataSet.setAxisDependency(measurementView.getSettings().isOnRightAxis() ? YAxis.AxisDependency.RIGHT : YAxis.AxisDependency.LEFT);
+            dataSet.setHighlightEnabled(true);
+            dataSet.setDrawHighlightIndicators(true);
+            dataSet.setHighLightColor(Color.RED);
+            dataSets.add(dataSet);
         }
 
-        LineChartData lineData = new LineChartData(diagramLineList);
-        lineData.setAxisXBottom(new Axis(axisValues).
-                        setHasLines(true).
-                        setTextColor(txtTitleLastMeasurement.getCurrentTextColor())
-        );
+        LineData data = new LineData(dataSets);
+        rollingChart.setData(data);
 
-        lineData.setAxisYLeft(new Axis().
-                        setHasLines(true).
-                        setMaxLabelChars(5).
-                        setTextColor(txtTitleLastMeasurement.getCurrentTextColor())
-        );
+        //rollingChart.notifyDataSetChanged();
+        Collections.reverse(scaleMeasurementList);
 
-        lineChartLast.setLineChartData(lineData);
-        lineChartLast.setViewportCalculationEnabled(true);
-
-        lineChartLast.setZoomEnabled(false);
+        rollingChart.moveViewToX(TimeUnit.MILLISECONDS.toDays(scaleMeasurementList.get(0).getDateTime().getTime()));
+        rollingChart.setVisibleXRangeMaximum(7);
     }
 
-    private void updateLastPieChart() {
-        List<SliceValue> arcValuesLast = new ArrayList<>();
-
-        for (MeasurementView view : measurementViews) {
-            if (!view.isVisible()
-                || !(view instanceof FloatMeasurementView)
-                || view instanceof BMRMeasurementView) {
-                continue;
-            }
-
-            FloatMeasurementView measurementView = (FloatMeasurementView) view;
-            measurementView.loadFrom(lastScaleMeasurement, null);
-
-            if (measurementView.getValue() != 0) {
-                arcValuesLast.add(new SliceValue(measurementView.getValue(), measurementView.getColor()));
-            }
-        }
-
-        final Converters.WeightUnit unit = currentScaleUser.getScaleUnit();
-        PieChartData pieChartData = new PieChartData(arcValuesLast);
-        pieChartData.setHasLabels(false);
-        pieChartData.setHasCenterCircle(true);
-        pieChartData.setCenterText1(String.format("%.2f %s", Converters.fromKilogram(lastScaleMeasurement.getWeight(), unit), unit.toString()));
-        pieChartData.setCenterText2(DateFormat.getDateInstance(DateFormat.MEDIUM).format(lastScaleMeasurement.getDateTime()));
-        pieChartData.setCenterText1Color(txtTitleLastMeasurement.getCurrentTextColor());
-        pieChartData.setCenterText2Color(txtTitleLastMeasurement.getCurrentTextColor());
-
-        if ((getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == Configuration.SCREENLAYOUT_SIZE_XLARGE ||
-            (getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == Configuration.SCREENLAYOUT_SIZE_LARGE) {
-            pieChartData.setCenterText1FontSize(20);
-            pieChartData.setCenterText2FontSize(14);
-        } else {
-            pieChartData.setCenterText1FontSize(15);
-            pieChartData.setCenterText2FontSize(12);
-            pieChartData.setValueLabelTextSize(12);
-        }
-
-        pieChartLast.setPieChartData(pieChartData);
-    }
-
-    private class PieChartLastTouchListener implements PieChartOnValueSelectListener
-    {
-        @Override
-        public void onValueSelected(int i, SliceValue arcValue) {
-            if (lastScaleMeasurement == null) {
-                return;
-            }
-
-            for (MeasurementView view : measurementViews) {
-                if (view instanceof FloatMeasurementView) {
-                    FloatMeasurementView measurementView = (FloatMeasurementView) view;
-
-                    if (measurementView.getColor() == arcValue.getColor()) {
-                        Toast.makeText(getActivity(), String.format("%s: %s",
-                                measurementView.getName(), measurementView.getValueAsString(true)),
-                                Toast.LENGTH_SHORT).show();
-                        break;
-                    }
-                }
-            }
-        }
+    private class rollingChartSelectionListener implements OnChartValueSelectedListener {
 
         @Override
-        public void onValueDeselected() {
+        public void onValueSelected(Entry e, Highlight h) {
 
-        }
-    }
-
-    private class LineChartTouchListener implements LineChartOnValueSelectListener {
-        @Override
-        public void onValueSelected(int lineIndex, int pointIndex, PointValue pointValue) {
-            userSelectedData = scaleMeasurementLastDays.get(pointIndex);
+            userSelectedData = (ScaleMeasurement) e.getData();
 
             updateOnView(OpenScale.getInstance().getScaleMeasurementList());
         }
 
         @Override
-        public void onValueDeselected() {
+        public void onNothingSelected() {
 
         }
     }

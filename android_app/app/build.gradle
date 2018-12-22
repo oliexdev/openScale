@@ -43,6 +43,9 @@ dependencies {
     // HelloCharts
     implementation 'com.github.lecho:hellocharts-library:1.5.8@aar'
 
+    // MPAndroidChart
+    implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0-alpha'
+
     // Simple CSV
     implementation 'com.j256.simplecsv:simplecsv:2.3'
 

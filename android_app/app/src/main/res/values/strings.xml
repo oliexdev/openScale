@@ -198,6 +198,7 @@
     <string name="label_set_default_order">Set default order</string>
     <string name="label_export_overwrite">Overwrite previous export \"%s\"?</string>
     <string name="label_include_in_overview_graph">Include in overview graph</string>
+    <string name="label_is_on_right_axis">Is on right axis</string>
     <string name="label_measurement_in_percent">Measurement in %</string>
     <string name="label_estimate_measurement">Estimate measurement</string>
     <string name="label_estimation_formula">Estimation formula</string>

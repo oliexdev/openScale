@@ -547,6 +547,13 @@ public abstract class FloatMeasurementView extends MeasurementView {
         overview.setDefaultValue(settings.isInOverviewGraph());
         screen.addPreference(overview);
 
+        CheckBoxPreference rightAxis = new CheckBoxPreference(screen.getContext());
+        rightAxis.setKey(settings.getOnRightAxisKey());
+        rightAxis.setTitle(R.string.label_is_on_right_axis);
+        rightAxis.setPersistent(true);
+        rightAxis.setDefaultValue(settings.isOnRightAxis());
+        screen.addPreference(rightAxis);
+
         if (supportsConversion()) {
             SwitchPreference percentage = new SwitchPreference(screen.getContext());
             percentage.setKey(settings.getPercentageEnabledKey());

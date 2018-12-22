@@ -14,8 +14,8 @@
 
     <ScrollView
         android:id="@+id/scrollView"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_weight="100">
 
         <LinearLayout
@@ -51,19 +51,11 @@
                 android:layout_height="1dp"
                 android:background="@android:color/darker_gray" />
 
-
-            <lecho.lib.hellocharts.view.PieChartView
-                android:id="@+id/pieChartLast"
-                android:layout_width="200dp"
-                android:layout_height="150dp"
-                android:layout_gravity="center" />
-
-            <lecho.lib.hellocharts.view.LineChartView
-                android:id="@+id/lineChartLast"
+            <com.github.mikephil.charting.charts.LineChart
+                android:id="@+id/rollingChart"
                 android:layout_width="match_parent"
-                android:layout_height="150dp"
+                android:layout_height="450dp"
                 android:layout_gravity="center" />
-
 
             <TextView
                 android:id="@+id/txtTitleLastMeasurement"
@@ -81,8 +73,8 @@
 
             <TableLayout
                 android:id="@+id/tableLayoutMeasurements"
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent" />
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
 
         </LinearLayout>
     </ScrollView>
