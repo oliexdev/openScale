@@ -106,7 +106,7 @@
             android:layout_marginTop="10dp"
             android:layout_weight="0.3" />
 
-        <lecho.lib.hellocharts.view.LineChartView
+        <com.github.mikephil.charting.charts.LineChart
             android:id="@+id/chart_bottom"
             android:layout_width="match_parent"
             android:layout_height="0dp"

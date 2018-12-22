@@ -46,11 +46,10 @@ import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.evaluation.EvaluationResult;
+import com.health.openscale.gui.utils.ColorUtil;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import lecho.lib.hellocharts.util.ChartUtils;
 
 import static com.health.openscale.gui.views.MeasurementView.MeasurementViewMode.ADD;
 import static com.health.openscale.gui.views.MeasurementView.MeasurementViewMode.EDIT;
@@ -382,13 +381,13 @@ public abstract class MeasurementView extends TableLayout {
 
         switch (evalResult.eval_state) {
             case LOW:
-                indicatorView.setBackgroundColor(ChartUtils.COLOR_BLUE);
+                indicatorView.setBackgroundColor(ColorUtil.COLOR_BLUE);
                 break;
             case NORMAL:
-                indicatorView.setBackgroundColor(ChartUtils.COLOR_GREEN);
+                indicatorView.setBackgroundColor(ColorUtil.COLOR_GREEN);
                 break;
             case HIGH:
-                indicatorView.setBackgroundColor(ChartUtils.COLOR_RED);
+                indicatorView.setBackgroundColor(ColorUtil.COLOR_RED);
                 break;
             case UNDEFINED:
                 indicatorView.setBackgroundColor(Color.GRAY);

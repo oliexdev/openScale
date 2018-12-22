@@ -21,19 +21,25 @@ import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
+import android.icu.text.DateFormat;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 
 import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
+import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import androidx.fragment.app.Fragment;
@@ -58,6 +64,7 @@ import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
 import com.health.openscale.core.utils.PolynomialFitter;
 import com.health.openscale.gui.activities.DataEntryActivity;
+import com.health.openscale.gui.utils.ColorUtil;
 import com.health.openscale.gui.views.BMRMeasurementView;
 import com.health.openscale.gui.views.FloatMeasurementView;
 import com.health.openscale.gui.views.MeasurementView;
@@ -71,30 +78,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Stack;
-import java.util.concurrent.TimeUnit;
-
-import lecho.lib.hellocharts.formatter.SimpleLineChartValueFormatter;
-import lecho.lib.hellocharts.listener.ColumnChartOnValueSelectListener;
-import lecho.lib.hellocharts.listener.LineChartOnValueSelectListener;
-import lecho.lib.hellocharts.model.Axis;
-import lecho.lib.hellocharts.model.AxisValue;
-import lecho.lib.hellocharts.model.Column;
-import lecho.lib.hellocharts.model.ColumnChartData;
-import lecho.lib.hellocharts.model.Line;
-import lecho.lib.hellocharts.model.LineChartData;
-import lecho.lib.hellocharts.model.PointValue;
-import lecho.lib.hellocharts.model.SelectedValue;
-import lecho.lib.hellocharts.model.SubcolumnValue;
-import lecho.lib.hellocharts.model.Viewport;
-import lecho.lib.hellocharts.util.ChartUtils;
-import lecho.lib.hellocharts.view.ColumnChartView;
-import lecho.lib.hellocharts.view.LineChartView;
 
 public class GraphFragment extends Fragment implements FragmentUpdateListener {
     private View graphView;
-    private LineChartView chartBottom;
+    private LineChart chartBottom;
     private BarChart chartTop;
-    private Viewport defaultTopViewport;
     private TextView txtYear;
     private Button btnLeftYear;
     private Button btnRightYear;
@@ -104,8 +92,6 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
     private List<MeasurementView> measurementViews;
 
-    private int textColor;
-
     private OpenScale openScale;
 
     private final Calendar calYears;
@@ -113,8 +99,6 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
     private static final String CAL_YEARS_KEY = "calYears";
     private static final String CAL_LAST_SELECTED_KEY = "calLastSelected";
-
-    private List<ScaleMeasurement> pointIndexScaleMeasurementList;
 
     public GraphFragment() {
         calYears = Calendar.getInstance();
@@ -141,8 +125,16 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         graphView = inflater.inflate(R.layout.fragment_graph, container, false);
 
         chartBottom = graphView.findViewById(R.id.chart_bottom);
-        chartTop = graphView.findViewById(R.id.chart_top);
+        chartBottom.setOnChartValueSelectedListener(new chartBottomValueTouchListener());
+        chartBottom.getLegend().setWordWrapEnabled(true);
+        chartBottom.getDescription().setEnabled(false);
+        chartBottom.getAxisLeft().setEnabled(false);
+        chartBottom.getAxisRight().setEnabled(false);
 
+        XAxis chartBottomxAxis = chartBottom.getXAxis();
+        chartBottomxAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+
+        chartTop = graphView.findViewById(R.id.chart_top);
         chartTop.setDrawGridBackground(false);
         chartTop.getLegend().setEnabled(false);
         chartTop.getAxisLeft().setEnabled(false);
@@ -150,26 +142,9 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         chartTop.getDescription().setEnabled(false);
         chartTop.setOnChartValueSelectedListener(new chartTopValueTouchListener());
 
-        XAxis xAxis = chartTop.getXAxis();
-        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-        xAxis.setDrawGridLines(false);
-        xAxis.setValueFormatter(new IAxisValueFormatter() {
-
-            private final SimpleDateFormat mFormat = new SimpleDateFormat("MMM", Locale.getDefault());
-
-            @Override
-            public String getFormattedValue(float value, AxisBase axis) {
-                Calendar calendar = Calendar.getInstance();
-                calendar.set(Calendar.MONTH, (int)value);
-                return mFormat.format(calendar.getTime());
-            }
-        });
-
-        chartBottom.setOnTouchListener(new chartBottomListener());
-        chartBottom.setOnValueTouchListener(new chartBottomValueTouchListener());
-
-        // HACK: get default text color from hidden text view to set the correct axis colors
-        textColor = ((TextView)graphView.findViewById(R.id.colorHack)).getCurrentTextColor();
+        XAxis charTopxAxis = chartTop.getXAxis();
+        charTopxAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        charTopxAxis.setDrawGridLines(false);
 
         txtYear = graphView.findViewById(R.id.txtYear);
         txtYear.setText(Integer.toString(calYears.get(Calendar.YEAR)));
@@ -307,6 +282,8 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
     private void generateLineData(int field, List<ScaleMeasurement> scaleMeasurementList)
     {
+        chartBottom.clear();
+
         SimpleDateFormat day_date = new SimpleDateFormat("D", Locale.getDefault());
 
         if (field == Calendar.DAY_OF_MONTH) {
@@ -330,30 +307,30 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             }
         }
 
+        final int finalField = field;
+        final SimpleDateFormat mFormat = day_date;
+
+        chartBottom.getXAxis().setValueFormatter(new IAxisValueFormatter() {
+
+            @Override
+            public String getFormattedValue(float value, AxisBase axis) {
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(new Date(0));
+                calendar.set(finalField, (int)value);
+
+                return mFormat.format(calendar.getTime());
+            }
+        });
+
         Calendar calDays = (Calendar)calLastSelected.clone();
 
         calDays.setMinimalDaysInFirstWeek(7);
         calDays.set(field, calDays.getMinimum(field));
         int maxDays = calDays.getMaximum(field);
 
-        List<AxisValue> axisValues = new ArrayList<>();
-
-        for (int i=0; i<calDays.getMaximum(field)+1; i++) {
-            String day_name = day_date.format(calDays.getTime());
-
-            AxisValue  xAxisValue = new AxisValue(i + calDays.getActualMinimum(field));
-            xAxisValue.setLabel(day_name);
-
-            axisValues.add(xAxisValue);
-
-            calDays.add(field, 1);
-        }
-
-        List<Line> diagramLineList = new ArrayList<>();
+        List<ILineDataSet> dataSets = new ArrayList<>();
 
         Calendar calDB = Calendar.getInstance();
-
-        pointIndexScaleMeasurementList = new ArrayList<>();
 
         floatingActionBar.removeAllViews();
 
@@ -378,7 +355,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                     continue;
                 }
 
-                Stack<PointValue> valuesStack = new Stack<>();
+                List<Entry> entries = new ArrayList<>();
                 ArrayList<Float>[] avgBins = new ArrayList[maxDays+1];
                 ScaleMeasurement[] indexScaleMeasurement = new ScaleMeasurement[maxDays+1];
 
@@ -411,97 +388,81 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                         sum += (float)avgBin.get(j);
                     }
 
-                    PointValue avgValue  = new PointValue(i, sum / avgBin.size());
+                    Entry entry = new Entry(i, sum / avgBin.size());
+                    entry.setData(indexScaleMeasurement[i]);
 
                     if (prefs.getBoolean("regressionLine", false) && measurementView instanceof WeightMeasurementView) {
-                        polyFitter.addPoint((double)avgValue.getX(), (double)avgValue.getY());
+                        polyFitter.addPoint((double)entry.getX(), (double)entry.getY());
                     }
 
+                    /*TODO
                     if (avgBin.size() > 1) {
                         avgValue.setLabel(String.format("Ø %.2f", avgValue.getY()));
+                    }*/
+
+                    if (entry.getY() > maxYValue) {
+                        maxYValue = entry.getY();
                     }
 
-                    if (avgValue.getY() > maxYValue) {
-                        maxYValue = avgValue.getY();
-                    }
-
-                    valuesStack.push(avgValue);
-                    pointIndexScaleMeasurementList.add(indexScaleMeasurement[i]);
+                    entries.add(entry);
                 }
 
-                Line diagramLine = new Line(valuesStack).
-                        setColor(measurementView.getColor()).
-                        setHasLabels(prefs.getBoolean("labelsEnable", true)).
-                        setHasPoints(prefs.getBoolean("pointsEnable", true)).
-                        setFormatter(new SimpleLineChartValueFormatter(1));
+
+                LineDataSet dataSet = new LineDataSet(entries, measurementView.getName().toString());
+                dataSet.setColor(measurementView.getColor());
+                dataSet.setCircleColor(measurementView.getColor());
+                dataSet.setAxisDependency(measurementView.getSettings().isOnRightAxis() ? YAxis.AxisDependency.RIGHT : YAxis.AxisDependency.LEFT);
+                dataSet.setDrawHighlightIndicators(false);
 
                 if (measurementView.isVisible()) {
                     addFloatingActionButton(measurementView);
 
                     if (measurementView.getSettings().isInGraph()) {
-                        diagramLineList.add(diagramLine);
+                        dataSets.add(dataSet);
                     }
                 }
             }
         }
 
-        LineChartData lineData = new LineChartData(diagramLineList);
-        lineData.setAxisXBottom(new Axis(axisValues).
-                setHasLines(true).
-                setTextColor(textColor)
-        );
-
-        lineData.setAxisYLeft(new Axis().
-                setHasLines(true).
-                setMaxLabelChars(5).
-                setTextColor(textColor)
-        );
-
-        chartBottom.setLineChartData(lineData);
-
-        defaultTopViewport = new Viewport(calDays.getActualMinimum(field), chartBottom.getCurrentViewport().top, calDays.getMaximum(field)+1, chartBottom.getCurrentViewport().bottom);
-
         if (prefs.getBoolean("goalLine", true)) {
-            Stack<PointValue> valuesGoalLine = new Stack<>();
+            List<Entry> valuesGoalLine = new Stack<>();
 
             final ScaleUser user = openScale.getSelectedScaleUser();
             float goalWeight = Converters.fromKilogram(user.getGoalWeight(), user.getScaleUnit());
 
-            valuesGoalLine.push(new PointValue(0, goalWeight));
-            valuesGoalLine.push(new PointValue(maxDays, goalWeight));
+            valuesGoalLine.add(new Entry(0, goalWeight));
+            valuesGoalLine.add(new Entry(maxDays, goalWeight));
 
-            Line goalLine = new Line(valuesGoalLine)
-                    .setHasPoints(false);
+            LineDataSet goalLine = new LineDataSet(valuesGoalLine, getString(R.string.label_goal_line));
+            goalLine.setDrawValues(false);
 
-            goalLine.setPathEffect(new DashPathEffect(new float[] {10,30}, 0));
+            // TODO goalLine.setPathEffect(new DashPathEffect(new float[] {10,30}, 0));
 
-            diagramLineList.add(goalLine);
+            dataSets.add(goalLine);
         }
 
         if (prefs.getBoolean("regressionLine", false)) {
             PolynomialFitter.Polynomial polynomial = polyFitter.getBestFit();
 
-            Stack<PointValue> valuesLinearRegression = new Stack<>();
+            List<Entry> valuesLinearRegression = new Stack<>();
 
             for (int i = 0; i < maxDays; i++) {
                     double y_value = polynomial.getY(i);
-                    valuesLinearRegression.push(new PointValue((float) i, (float) y_value));
+                    valuesLinearRegression.add(new Entry((float) i, (float) y_value));
             }
 
-            Line linearRegressionLine = new Line(valuesLinearRegression)
-                    .setColor(ChartUtils.COLOR_VIOLET)
-                    .setHasPoints(false)
-                    .setCubic(true);
+            LineDataSet linearRegressionLine = new LineDataSet(valuesLinearRegression, getString(R.string.label_regression_line));
+            linearRegressionLine.setColor(ColorUtil.COLOR_VIOLET);
+            linearRegressionLine.setDrawValues(false);
 
-            linearRegressionLine.setPathEffect(new DashPathEffect(new float[]{10, 30}, 0));
+           // TODO linearRegressionLine.setPathEffect(new DashPathEffect(new float[]{10, 30}, 0));
 
-            diagramLineList.add(linearRegressionLine);
+            dataSets.add(linearRegressionLine);
         }
 
-        chartBottom.setLineChartData(lineData);
-
-        chartBottom.setCurrentViewport(defaultTopViewport);
-        chartBottom.setMaximumViewport(new Viewport(0, maxYValue + (maxYValue / 100) * 20, calDays.getMaximum(field)+1, 0));
+        LineData data = new LineData(dataSets);
+        chartBottom.setData(data);
+        chartBottom.animateX(500);
     }
 
     private void generateColumnData()
@@ -538,13 +499,6 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         List<IBarDataSet> dataSets = new ArrayList<>();
 
-        final int COLOR_BLUE = Color.parseColor("#33B5E5");
-        final int COLOR_VIOLET = Color.parseColor("#AA66CC");
-        final int COLOR_GREEN = Color.parseColor("#99CC00");
-        final int COLOR_ORANGE = Color.parseColor("#FFBB33");
-        final int COLOR_RED = Color.parseColor("#FF4444");
-        final int[] COLORS = new int[]{COLOR_BLUE, COLOR_VIOLET, COLOR_GREEN, COLOR_ORANGE, COLOR_RED};
-
         for (int i=0; i<12; i++) {
             List<BarEntry> entries = new ArrayList<>();
 
@@ -553,7 +507,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             calMonths.add(Calendar.MONTH, 1);
 
             BarDataSet set = new BarDataSet(entries, "month "+i);
-            set.setColor(COLORS[i % 4]);
+            set.setColor(ColorUtil.COLORS[i % 4]);
             set.setDrawValues(false);
             dataSets.add(set);
         }
@@ -630,23 +584,14 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         }
     }
 
-    private class chartBottomListener implements View.OnTouchListener {
-        final GestureDetector gestureDetector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
-            public void onLongPress(MotionEvent e) {
-                chartBottom.setCurrentViewport(defaultTopViewport);
+    private class chartBottomValueTouchListener implements OnChartValueSelectedListener {
+        @Override
+        public void onValueSelected(Entry e, Highlight h) {
+            ScaleMeasurement scaleMeasurement = (ScaleMeasurement)e.getData();
+
+            if (scaleMeasurement == null) {
+                return;
             }
-        });
-
-        @Override
-        public boolean onTouch (View v, MotionEvent event) {
-            return gestureDetector.onTouchEvent(event);
-        }
-    }
-
-    private class chartBottomValueTouchListener implements LineChartOnValueSelectListener {
-        @Override
-        public void onValueSelected(int lineIndex, int pointIndex, PointValue pointValue) {
-            ScaleMeasurement scaleMeasurement = pointIndexScaleMeasurementList.get(pointIndex);
 
             int id = scaleMeasurement.getId();
 
@@ -656,7 +601,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         }
 
         @Override
-        public void onValueDeselected() {
+        public void onNothingSelected() {
 
         }
     }
