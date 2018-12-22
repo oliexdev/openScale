@@ -23,6 +23,18 @@ import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+
+import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.components.AxisBase;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.formatter.IAxisValueFormatter;
+import com.github.mikephil.charting.highlight.Highlight;
+import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
+import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import androidx.fragment.app.Fragment;
 import android.view.GestureDetector;
@@ -55,9 +67,11 @@ import com.health.openscale.gui.views.WeightMeasurementView;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Stack;
+import java.util.concurrent.TimeUnit;
 
 import lecho.lib.hellocharts.formatter.SimpleLineChartValueFormatter;
 import lecho.lib.hellocharts.listener.ColumnChartOnValueSelectListener;
@@ -79,7 +93,7 @@ import lecho.lib.hellocharts.view.LineChartView;
 public class GraphFragment extends Fragment implements FragmentUpdateListener {
     private View graphView;
     private LineChartView chartBottom;
-    private ColumnChartView chartTop;
+    private BarChart chartTop;
     private Viewport defaultTopViewport;
     private TextView txtYear;
     private Button btnLeftYear;
@@ -129,9 +143,30 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         chartBottom = graphView.findViewById(R.id.chart_bottom);
         chartTop = graphView.findViewById(R.id.chart_top);
 
+        chartTop.setDrawGridBackground(false);
+        chartTop.getLegend().setEnabled(false);
+        chartTop.getAxisLeft().setEnabled(false);
+        chartTop.getAxisRight().setEnabled(false);
+        chartTop.getDescription().setEnabled(false);
+        chartTop.setOnChartValueSelectedListener(new chartTopValueTouchListener());
+
+        XAxis xAxis = chartTop.getXAxis();
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setDrawGridLines(false);
+        xAxis.setValueFormatter(new IAxisValueFormatter() {
+
+            private final SimpleDateFormat mFormat = new SimpleDateFormat("MMM", Locale.getDefault());
+
+            @Override
+            public String getFormattedValue(float value, AxisBase axis) {
+                Calendar calendar = Calendar.getInstance();
+                calendar.set(Calendar.MONTH, (int)value);
+                return mFormat.format(calendar.getTime());
+            }
+        });
+
         chartBottom.setOnTouchListener(new chartBottomListener());
         chartBottom.setOnValueTouchListener(new chartBottomValueTouchListener());
-        chartTop.setOnValueTouchListener(new chartTopValueTouchListener());
 
         // HACK: get default text color from hidden text view to set the correct axis colors
         textColor = ((TextView)graphView.findViewById(R.id.colorHack)).getCurrentTextColor();
@@ -501,31 +536,33 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         Calendar calMonths = Calendar.getInstance();
         calMonths.set(Calendar.MONTH, Calendar.JANUARY);
 
-        SimpleDateFormat month_date = new SimpleDateFormat("MMM", Locale.getDefault());
+        List<IBarDataSet> dataSets = new ArrayList<>();
 
-        List<AxisValue> axisValues = new ArrayList<>();
-        List<Column> columns = new ArrayList<>();
+        final int COLOR_BLUE = Color.parseColor("#33B5E5");
+        final int COLOR_VIOLET = Color.parseColor("#AA66CC");
+        final int COLOR_GREEN = Color.parseColor("#99CC00");
+        final int COLOR_ORANGE = Color.parseColor("#FFBB33");
+        final int COLOR_RED = Color.parseColor("#FF4444");
+        final int[] COLORS = new int[]{COLOR_BLUE, COLOR_VIOLET, COLOR_GREEN, COLOR_ORANGE, COLOR_RED};
 
         for (int i=0; i<12; i++) {
-            String month_name = month_date.format(calMonths.getTime());
+            List<BarEntry> entries = new ArrayList<>();
 
-            axisValues.add(new AxisValue(i, month_name.toCharArray()));
-            List<SubcolumnValue> values = new ArrayList<>();
-            values.add(new SubcolumnValue(normNumOfMonth[i], ChartUtils.COLORS[i % ChartUtils.COLORS.length]).setLabel(Integer.toString(numOfMonth[i])));
-
-            columns.add(new Column(values).setHasLabelsOnlyForSelected(true));
+            entries.add(new BarEntry(calMonths.get(Calendar.MONTH), normNumOfMonth[i]));
 
             calMonths.add(Calendar.MONTH, 1);
+
+            BarDataSet set = new BarDataSet(entries, "month "+i);
+            set.setColor(COLORS[i % 4]);
+            set.setDrawValues(false);
+            dataSets.add(set);
         }
 
-        ColumnChartData columnData = new ColumnChartData(columns);
+        BarData data = new BarData(dataSets);
 
-        columnData.setAxisXBottom(new Axis(axisValues).setHasLines(true).setTextColor(textColor));
-
-        chartTop.setColumnChartData(columnData);
-        chartTop.setValueSelectionEnabled(true);
-        chartTop.setZoomEnabled(false);
-        chartTop.selectValue(new SelectedValue(calLastSelected.get(Calendar.MONTH), 0, SelectedValue.SelectedValueType.COLUMN));
+        chartTop.setData(data);
+        chartTop.setFitBars(true);
+        chartTop.invalidate();
     }
 
     private void generateGraphs() {
@@ -575,12 +612,11 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         }
     }
 
-    private class chartTopValueTouchListener implements ColumnChartOnValueSelectListener {
+    private class chartTopValueTouchListener implements OnChartValueSelectedListener {
         @Override
-        public void onValueSelected(int selectedLine, int selectedValue, SubcolumnValue value) {
+        public void onValueSelected(Entry e, Highlight h) {
             Calendar cal = Calendar.getInstance();
-            cal.set(Calendar.MONTH, Calendar.JANUARY);
-            cal.add(Calendar.MONTH, selectedLine);
+            cal.set(Calendar.MONTH, (int)e.getX());
 
             calLastSelected = cal;
 
@@ -589,7 +625,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         }
 
         @Override
-        public void onValueDeselected() {
+        public void onNothingSelected() {
 
         }
     }

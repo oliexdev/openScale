@@ -83,8 +83,6 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
     private Spinner spinUser;
 
-    private ScaleMeasurement lastScaleMeasurement;
-    private ScaleMeasurement userSelectedData;
     private ScaleUser currentScaleUser;
 
     private ArrayAdapter<String> spinUserAdapter;
@@ -149,8 +147,6 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             tableOverviewLayout.addView(measurement);
         }
 
-        userSelectedData = null;
-
         spinUserAdapter = new ArrayAdapter<>(overviewView.getContext(), R.layout.support_simple_spinner_dropdown_item, new ArrayList<String>());
         spinUser.setAdapter(spinUserAdapter);
 
@@ -180,30 +176,31 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
     @Override
     public void updateOnView(List<ScaleMeasurement> scaleMeasurementList) {
-        if (scaleMeasurementList.isEmpty()) {
-            lastScaleMeasurement = new ScaleMeasurement();
-        } else if (userSelectedData != null) {
-            lastScaleMeasurement = userSelectedData;
-        } else {
-            lastScaleMeasurement = scaleMeasurementList.get(0);
-        }
+        ScaleMeasurement selectedMeasurement;
 
-        ScaleMeasurement[] tupleScaleData = OpenScale.getInstance().getTupleScaleData(lastScaleMeasurement.getId());
-        ScaleMeasurement prevScaleMeasurement = tupleScaleData[0];
+        if (scaleMeasurementList.isEmpty()) {
+            selectedMeasurement = new ScaleMeasurement();
+        } else {
+            selectedMeasurement = scaleMeasurementList.get(0);
+        }
 
         updateUserSelection();
         updateRollingChart(scaleMeasurementList);
+        updateMesurementViews(selectedMeasurement);
+    }
+
+    private void updateMesurementViews(ScaleMeasurement selectedMeasurement) {
+        ScaleMeasurement[] tupleScaleData = OpenScale.getInstance().getTupleScaleData(selectedMeasurement.getId());
+        ScaleMeasurement prevScaleMeasurement = tupleScaleData[0];
 
         for (MeasurementView measurement : measurementViews) {
-            measurement.loadFrom(lastScaleMeasurement, prevScaleMeasurement);
+            measurement.loadFrom(selectedMeasurement, prevScaleMeasurement);
         }
     }
 
     private void updateUserSelection() {
 
         currentScaleUser = OpenScale.getInstance().getSelectedScaleUser();
-
-        userSelectedData = null;
 
         spinUserAdapter.clear();
         List<ScaleUser> scaleUserList = OpenScale.getInstance().getScaleUserList();
@@ -265,6 +262,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             dataSet.setAxisDependency(measurementView.getSettings().isOnRightAxis() ? YAxis.AxisDependency.RIGHT : YAxis.AxisDependency.LEFT);
             dataSet.setHighlightEnabled(true);
             dataSet.setDrawHighlightIndicators(true);
+            dataSet.setDrawHorizontalHighlightIndicator(false);
             dataSet.setHighLightColor(Color.RED);
             dataSets.add(dataSet);
         }
@@ -272,21 +270,19 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         LineData data = new LineData(dataSets);
         rollingChart.setData(data);
 
-        //rollingChart.notifyDataSetChanged();
-        Collections.reverse(scaleMeasurementList);
+        if (!scaleMeasurementList.isEmpty()) {
+            Collections.reverse(scaleMeasurementList);
 
-        rollingChart.moveViewToX(TimeUnit.MILLISECONDS.toDays(scaleMeasurementList.get(0).getDateTime().getTime()));
-        rollingChart.setVisibleXRangeMaximum(7);
+            rollingChart.moveViewToX(TimeUnit.MILLISECONDS.toDays(scaleMeasurementList.get(0).getDateTime().getTime()));
+            rollingChart.setVisibleXRangeMaximum(7);
+        }
     }
 
     private class rollingChartSelectionListener implements OnChartValueSelectedListener {
 
         @Override
         public void onValueSelected(Entry e, Highlight h) {
-
-            userSelectedData = (ScaleMeasurement) e.getData();
-
-            updateOnView(OpenScale.getInstance().getScaleMeasurementList());
+            updateMesurementViews((ScaleMeasurement) e.getData());
         }
 
         @Override
