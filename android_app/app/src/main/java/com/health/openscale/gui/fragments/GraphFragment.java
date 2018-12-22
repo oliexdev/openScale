@@ -37,6 +37,7 @@ import android.widget.Toast;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.AxisBase;
+import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.BarData;
@@ -123,6 +124,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         chartBottom = graphView.findViewById(R.id.chart_bottom);
         chartBottom.setOnChartValueSelectedListener(new chartBottomValueTouchListener());
         chartBottom.getLegend().setWordWrapEnabled(true);
+        chartBottom.getLegend().setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
         chartBottom.getDescription().setEnabled(false);
         chartBottom.getAxisLeft().setEnabled(false);
         chartBottom.getAxisRight().setEnabled(false);
