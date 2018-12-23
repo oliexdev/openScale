@@ -258,6 +258,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
             LineDataSet dataSet = new LineDataSet(entries, measurementView.getName().toString());
             dataSet.setValueTextColor(txtTitleLastMeasurement.getCurrentTextColor());
+            dataSet.setValueTextSize(8.0f);
             dataSet.setColor(measurementView.getColor());
             dataSet.setCircleColor(measurementView.getColor());
             dataSet.setAxisDependency(measurementView.getSettings().isOnRightAxis() ? YAxis.AxisDependency.RIGHT : YAxis.AxisDependency.LEFT);

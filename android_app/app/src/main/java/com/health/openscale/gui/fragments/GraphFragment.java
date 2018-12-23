@@ -431,6 +431,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                 final boolean finalEntryIsAverage = entryIsAverage; // TODO HACK to transfer entryIsAverage to getFormattedValue because entry data is already used for the measurement
 
                 LineDataSet dataSet = new LineDataSet(entries, measurementView.getName().toString());
+                dataSet.setValueTextSize(8.0f);
                 dataSet.setColor(measurementView.getColor());
                 dataSet.setValueTextColor(textColor);
                 dataSet.setCircleColor(measurementView.getColor());

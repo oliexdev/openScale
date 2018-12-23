@@ -8,11 +8,11 @@
     <ScrollView
         android:id="@+id/scrollView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:orientation="vertical">
 
             <TextView
@@ -176,27 +176,10 @@
                 android:layout_height="1dp"
                 android:background="@android:color/darker_gray" />
 
-            <LinearLayout
+            <com.github.mikephil.charting.charts.RadarChart
+                android:id="@+id/radarPastWeek"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginTop="10dp"
-                android:layout_weight="90">
-
-                <TableLayout
-                    android:id="@+id/tableWeekAveragesLayoutColumnA"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="50"
-                    android:stretchColumns="1" />
-
-                <TableLayout
-                    android:id="@+id/tableWeekAveragesLayoutColumnB"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="50"
-                    android:stretchColumns="1" />
-
-            </LinearLayout>
+                android:layout_height="250dp"/>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -210,27 +193,11 @@
                 android:layout_height="1dp"
                 android:background="@android:color/darker_gray" />
 
-            <LinearLayout
+            <com.github.mikephil.charting.charts.RadarChart
+                android:id="@+id/radarPastMonth"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginTop="10dp"
-                android:layout_weight="90">
+                android:layout_height="250dp"/>
 
-                <TableLayout
-                    android:id="@+id/tableMonthAveragesLayoutColumnA"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="50"
-                    android:stretchColumns="1" />
-
-                <TableLayout
-                    android:id="@+id/tableMonthAveragesLayoutColumnB"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="50"
-                    android:stretchColumns="1" />
-
-            </LinearLayout>
         </LinearLayout>
     </ScrollView>
 </LinearLayout>
