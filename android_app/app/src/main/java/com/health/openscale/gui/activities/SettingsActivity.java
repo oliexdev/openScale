@@ -103,7 +103,7 @@ public class SettingsActivity extends PreferenceActivity
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
-        // HACK to call RequestPermissionResult(...) in PreferenceFragment otherwise API level > 23 is required
+        // TODO HACK to call RequestPermissionResult(...) in PreferenceFragment otherwise API level > 23 is required
         switch(requestCode) {
             case PermissionHelper.PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION:
                 BluetoothPreferences bluetoothPreferences = (BluetoothPreferences)currentFragment;

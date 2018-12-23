@@ -47,10 +47,12 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
+import com.github.mikephil.charting.formatter.IValueFormatter;
 import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
+import com.github.mikephil.charting.utils.ViewPortHandler;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
@@ -66,6 +68,7 @@ import com.health.openscale.gui.views.MeasurementView;
 import com.health.openscale.gui.views.MeasurementViewSettings;
 import com.health.openscale.gui.views.WeightMeasurementView;
 
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -90,6 +93,8 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     private List<MeasurementView> measurementViews;
 
     private OpenScale openScale;
+
+    private int textColor;
 
     private final Calendar calYears;
     private Calendar calLastSelected;
@@ -121,16 +126,21 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         graphView = inflater.inflate(R.layout.fragment_graph, container, false);
 
+        // HACK: get default text color from hidden text view to set the correct axis colors
+        textColor = ((TextView)graphView.findViewById(R.id.colorHack)).getCurrentTextColor();
+
         chartBottom = graphView.findViewById(R.id.chart_bottom);
         chartBottom.setOnChartValueSelectedListener(new chartBottomValueTouchListener());
         chartBottom.getLegend().setWordWrapEnabled(true);
         chartBottom.getLegend().setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
+        chartBottom.getLegend().setTextColor(textColor);
         chartBottom.getDescription().setEnabled(false);
         chartBottom.getAxisLeft().setEnabled(false);
         chartBottom.getAxisRight().setEnabled(false);
 
         XAxis chartBottomxAxis = chartBottom.getXAxis();
         chartBottomxAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        chartBottomxAxis.setTextColor(textColor);
 
         chartTop = graphView.findViewById(R.id.chart_top);
         chartTop.setDrawGridBackground(false);
@@ -140,10 +150,11 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         chartTop.getDescription().setEnabled(false);
         chartTop.setOnChartValueSelectedListener(new chartTopValueTouchListener());
 
-        XAxis charTopxAxis = chartTop.getXAxis();
-        charTopxAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-        charTopxAxis.setDrawGridLines(false);
-        charTopxAxis.setValueFormatter(new IAxisValueFormatter() {
+        XAxis chartTopxAxis = chartTop.getXAxis();
+        chartTopxAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        chartTopxAxis.setDrawGridLines(false);
+        chartTopxAxis.setTextColor(textColor);
+        chartTopxAxis.setValueFormatter(new IAxisValueFormatter() {
 
             private final SimpleDateFormat mFormat = new SimpleDateFormat("MMM", Locale.getDefault());
 
@@ -358,14 +369,15 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         for (MeasurementView view : measurementViews) {
             if (view instanceof FloatMeasurementView) {
-                FloatMeasurementView measurementView = (FloatMeasurementView) view;
+                final FloatMeasurementView measurementView = (FloatMeasurementView) view;
 
                 if (measurementView instanceof BMRMeasurementView) {
                     continue;
                 }
 
-                List<Entry> entries = new ArrayList<>();
-                ArrayList<Float>[] avgBins = new ArrayList[maxDays+1];
+                boolean entryIsAverage = false;
+                final List<Entry> entries = new ArrayList<>();
+                final ArrayList<Float>[] avgBins = new ArrayList[maxDays+1];
                 ScaleMeasurement[] indexScaleMeasurement = new ScaleMeasurement[maxDays+1];
 
                 for (ScaleMeasurement measurement : scaleMeasurementList) {
@@ -404,10 +416,9 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                         polyFitter.addPoint((double)entry.getX(), (double)entry.getY());
                     }
 
-                    /*TODO
                     if (avgBin.size() > 1) {
-                        avgValue.setLabel(String.format("Ø %.2f", avgValue.getY()));
-                    }*/
+                        entryIsAverage = true;// entry is a average calculation
+                    }
 
                     if (entry.getY() > maxYValue) {
                         maxYValue = entry.getY();
@@ -416,12 +427,30 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                     entries.add(entry);
                 }
 
+                final boolean finalEntryIsAverage = entryIsAverage; // TODO HACK to transfer entryIsAverage to getFormattedValue because entry data is already used for the measurement
 
                 LineDataSet dataSet = new LineDataSet(entries, measurementView.getName().toString());
                 dataSet.setColor(measurementView.getColor());
+                dataSet.setValueTextColor(textColor);
                 dataSet.setCircleColor(measurementView.getColor());
                 dataSet.setAxisDependency(measurementView.getSettings().isOnRightAxis() ? YAxis.AxisDependency.RIGHT : YAxis.AxisDependency.LEFT);
                 dataSet.setDrawHighlightIndicators(false);
+                dataSet.setDrawCircles(prefs.getBoolean("pointsEnable", true));
+                dataSet.setDrawValues(prefs.getBoolean("labelsEnable", true));
+                dataSet.setValueFormatter(new IValueFormatter() {
+                    DecimalFormat mFormat = new DecimalFormat("###,###,##0.00");
+
+                    @Override
+                    public String getFormattedValue(float value, Entry entry, int dataSetIndex, ViewPortHandler viewPortHandler) {
+                        String prefix = new String();
+
+                        if (finalEntryIsAverage) {
+                            prefix = "Ø ";
+                        }
+
+                        return prefix + mFormat.format(value) + " " + measurementView.getUnit();
+                    }
+                });
 
                 if (measurementView.isVisible()) {
                     addFloatingActionButton(measurementView);
@@ -443,9 +472,10 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             valuesGoalLine.add(new Entry(maxDays, goalWeight));
 
             LineDataSet goalLine = new LineDataSet(valuesGoalLine, getString(R.string.label_goal_line));
+            goalLine.setColor(ColorUtil.COLOR_GREEN);
             goalLine.setDrawValues(false);
-
-            // TODO goalLine.setPathEffect(new DashPathEffect(new float[] {10,30}, 0));
+            goalLine.setDrawCircles(false);
+            goalLine.enableDashedLine(10, 30, 0);
 
             dataSets.add(goalLine);
         }
@@ -463,8 +493,8 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             LineDataSet linearRegressionLine = new LineDataSet(valuesLinearRegression, getString(R.string.label_regression_line));
             linearRegressionLine.setColor(ColorUtil.COLOR_VIOLET);
             linearRegressionLine.setDrawValues(false);
-
-           // TODO linearRegressionLine.setPathEffect(new DashPathEffect(new float[]{10, 30}, 0));
+            linearRegressionLine.setDrawCircles(false);
+            linearRegressionLine.enableDashedLine(10, 30, 0);
 
             dataSets.add(linearRegressionLine);
         }

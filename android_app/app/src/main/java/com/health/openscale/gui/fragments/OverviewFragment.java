@@ -15,8 +15,10 @@
 */
 package com.health.openscale.gui.fragments;
 
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,6 +28,7 @@ import android.widget.Spinner;
 import android.widget.TableLayout;
 import android.widget.TextView;
 
+import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.Legend;
@@ -35,9 +38,11 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
+import com.github.mikephil.charting.formatter.IValueFormatter;
 import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
+import com.github.mikephil.charting.utils.ViewPortHandler;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
@@ -45,6 +50,7 @@ import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.gui.views.FloatMeasurementView;
 import com.health.openscale.gui.views.MeasurementView;
 
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -73,6 +79,8 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
     private ArrayAdapter<String> spinUserAdapter;
 
+    private SharedPreferences prefs;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -97,11 +105,13 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
         rollingChart.setHighlightPerTapEnabled(true);
 
+        rollingChart.getLegend().setTextColor(txtTitleLastMeasurement.getCurrentTextColor());
         rollingChart.getLegend().setWordWrapEnabled(true);
         rollingChart.getLegend().setVerticalAlignment(Legend.LegendVerticalAlignment.TOP);
         rollingChart.getLegend().setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
 
         XAxis xAxis = rollingChart.getXAxis();
+        xAxis.setTextColor(txtTitleLastMeasurement.getCurrentTextColor());
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xAxis.setDrawGridLines(true);
         xAxis.setGranularity(1f);
@@ -148,9 +158,11 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         txtTitleUser.setText(getResources().getString(R.string.label_title_user).toUpperCase());
         txtTitleLastMeasurement.setText(getResources().getString(R.string.label_title_last_measurement).toUpperCase());
 
+        prefs = PreferenceManager.getDefaultSharedPreferences(overviewView.getContext());
+
         OpenScale.getInstance().registerFragment(this);
 
-        rollingChart.animateX(1000);
+        rollingChart.animateX(500);
 
         return overviewView;
     }
@@ -225,7 +237,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
                 continue;
             }
 
-            FloatMeasurementView measurementView = (FloatMeasurementView) view;
+            final FloatMeasurementView measurementView = (FloatMeasurementView) view;
 
             List<Entry> entries = new ArrayList<>();
 
@@ -244,6 +256,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             }
 
             LineDataSet dataSet = new LineDataSet(entries, measurementView.getName().toString());
+            dataSet.setValueTextColor(txtTitleLastMeasurement.getCurrentTextColor());
             dataSet.setColor(measurementView.getColor());
             dataSet.setCircleColor(measurementView.getColor());
             dataSet.setAxisDependency(measurementView.getSettings().isOnRightAxis() ? YAxis.AxisDependency.RIGHT : YAxis.AxisDependency.LEFT);
@@ -251,6 +264,16 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             dataSet.setDrawHighlightIndicators(true);
             dataSet.setDrawHorizontalHighlightIndicator(false);
             dataSet.setHighLightColor(Color.RED);
+            dataSet.setDrawCircles(prefs.getBoolean("pointsEnable", true));
+            dataSet.setDrawValues(prefs.getBoolean("labelsEnable", true));
+            dataSet.setValueFormatter(new IValueFormatter() {
+                DecimalFormat mFormat = new DecimalFormat("###,###,##0.00");
+
+                @Override
+                public String getFormattedValue(float value, Entry entry, int dataSetIndex, ViewPortHandler viewPortHandler) {
+                    return mFormat.format(value) + " " + measurementView.getUnit();
+                }
+            });
             dataSets.add(dataSet);
         }
 
