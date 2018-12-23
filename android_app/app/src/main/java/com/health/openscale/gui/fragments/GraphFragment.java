@@ -126,11 +126,14 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         graphView = inflater.inflate(R.layout.fragment_graph, container, false);
 
+        prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+
         // HACK: get default text color from hidden text view to set the correct axis colors
         textColor = ((TextView)graphView.findViewById(R.id.colorHack)).getCurrentTextColor();
 
         chartBottom = graphView.findViewById(R.id.chart_bottom);
         chartBottom.setOnChartValueSelectedListener(new chartBottomValueTouchListener());
+        chartBottom.getLegend().setEnabled(prefs.getBoolean("legendEnable", true));
         chartBottom.getLegend().setWordWrapEnabled(true);
         chartBottom.getLegend().setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
         chartBottom.getLegend().setTextColor(textColor);
@@ -246,8 +249,6 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             }
         });
         popup.getMenuInflater().inflate(R.menu.graph_menu, popup.getMenu());
-
-        prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
 
         MenuItem enableMonth = popup.getMenu().findItem(R.id.enableMonth);
         enableMonth.setChecked(prefs.getBoolean("showMonth", true));
@@ -502,6 +503,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         LineData data = new LineData(dataSets);
         chartBottom.setData(data);
         chartBottom.animateX(500);
+        chartBottom.invalidate();
     }
 
     private void generateColumnData()

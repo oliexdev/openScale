@@ -2,6 +2,12 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <CheckBoxPreference
         android:defaultValue="true"
+        android:key="legendEnable"
+        android:summaryOff="@string/info_is_not_visible"
+        android:summaryOn="@string/info_is_visible"
+        android:title="@string/label_enable_legend" />
+    <CheckBoxPreference
+        android:defaultValue="true"
         android:key="labelsEnable"
         android:summaryOff="@string/info_is_not_visible"
         android:summaryOn="@string/info_is_visible"

@@ -93,6 +93,8 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         overviewView = inflater.inflate(R.layout.fragment_overview, container, false);
         userLineSeparator = overviewView.findViewById(R.id.userLineSeparator);
 
+        prefs = PreferenceManager.getDefaultSharedPreferences(overviewView.getContext());
+
         txtTitleUser = overviewView.findViewById(R.id.txtTitleUser);
         txtTitleLastMeasurement = overviewView.findViewById(R.id.txtTitleLastMeasurement);
 
@@ -105,6 +107,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
         rollingChart.setHighlightPerTapEnabled(true);
 
+        rollingChart.getLegend().setEnabled(prefs.getBoolean("legendEnable", true));
         rollingChart.getLegend().setTextColor(txtTitleLastMeasurement.getCurrentTextColor());
         rollingChart.getLegend().setWordWrapEnabled(true);
         rollingChart.getLegend().setVerticalAlignment(Legend.LegendVerticalAlignment.TOP);
@@ -157,8 +160,6 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
         txtTitleUser.setText(getResources().getString(R.string.label_title_user).toUpperCase());
         txtTitleLastMeasurement.setText(getResources().getString(R.string.label_title_last_measurement).toUpperCase());
-
-        prefs = PreferenceManager.getDefaultSharedPreferences(overviewView.getContext());
 
         OpenScale.getInstance().registerFragment(this);
 
@@ -286,6 +287,8 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             rollingChart.moveViewToX(TimeUnit.MILLISECONDS.toDays(scaleMeasurementList.get(0).getDateTime().getTime()));
             rollingChart.setVisibleXRangeMaximum(7);
         }
+
+        rollingChart.invalidate();
     }
 
     private class rollingChartSelectionListener implements OnChartValueSelectedListener {
