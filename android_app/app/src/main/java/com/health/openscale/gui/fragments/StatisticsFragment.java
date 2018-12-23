@@ -16,7 +16,8 @@
 
 package com.health.openscale.gui.fragments;
 
-import android.graphics.Color;
+import android.annotation.SuppressLint;
+import android.content.Context;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import androidx.fragment.app.Fragment;
@@ -37,7 +38,9 @@ import com.github.mikephil.charting.data.RadarData;
 import com.github.mikephil.charting.data.RadarDataSet;
 import com.github.mikephil.charting.data.RadarEntry;
 import com.github.mikephil.charting.formatter.IValueFormatter;
+import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.interfaces.datasets.IRadarDataSet;
+import com.github.mikephil.charting.utils.MPPointF;
 import com.github.mikephil.charting.utils.ViewPortHandler;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
@@ -48,6 +51,7 @@ import com.health.openscale.core.utils.DateTimeHelpers;
 import com.health.openscale.gui.utils.ColorUtil;
 import com.health.openscale.gui.views.BMIMeasurementView;
 import com.health.openscale.gui.views.BoneMeasurementView;
+import com.health.openscale.gui.views.ChartMarkerView;
 import com.health.openscale.gui.views.FatMeasurementView;
 import com.health.openscale.gui.views.FloatMeasurementView;
 import com.health.openscale.gui.views.HipMeasurementView;
@@ -60,6 +64,7 @@ import com.health.openscale.gui.views.WaterMeasurementView;
 import com.health.openscale.gui.views.WeightMeasurementView;
 
 import java.text.DateFormat;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -123,21 +128,29 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
             legendEntriesWeek.add(legendEntry);
         }
 
+        MarkerView mv = new ChartMarkerView(statisticsView.getContext(), R.layout.chart_markerview);
+
         radarChartWeek = statisticsView.findViewById(R.id.radarPastWeek);
         radarChartWeek.getDescription().setEnabled(false);
         radarChartWeek.getYAxis().setEnabled(false);
+        radarChartWeek.setExtraTopOffset(10);
         Legend weekLegend = radarChartWeek.getLegend();
         weekLegend.setWordWrapEnabled(true);
         weekLegend.setExtra(legendEntriesWeek);
         weekLegend.setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
+        mv.setChartView(radarChartWeek);
+        radarChartWeek.setMarker(mv);
 
         radarChartMonth = statisticsView.findViewById(R.id.radarPastMonth);
         radarChartMonth.getDescription().setEnabled(false);
         radarChartMonth.getYAxis().setEnabled(false);
+        radarChartMonth.setExtraTopOffset(10);
         Legend monthLegend = radarChartMonth.getLegend();
         monthLegend.setWordWrapEnabled(true);
         monthLegend.setExtra(legendEntriesWeek);
         monthLegend.setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
+        mv.setChartView(radarChartMonth);
+        radarChartMonth.setMarker(mv);
 
         OpenScale.getInstance().registerFragment(this);
 
@@ -218,6 +231,8 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
     }
 
     private void updateStatistics(List<ScaleMeasurement> scaleMeasurementList) {
+        radarChartWeek.clear();
+        radarChartMonth.clear();
 
         Calendar histDate = Calendar.getInstance();
         Calendar weekPastDate = Calendar.getInstance();
@@ -310,7 +325,7 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
 
         RadarData dataAvgWeek = new RadarData(setsAvgWeek);
         dataAvgWeek.setValueTextSize(8f);
-        dataAvgWeek.setDrawValues(true); // TODO set to false use marker instead
+        dataAvgWeek.setDrawValues(false);
         dataAvgWeek.setValueFormatter(new IValueFormatter() {
             @Override
             public String getFormattedValue(float value, Entry entry, int dataSetIndex, ViewPortHandler viewPortHandler) {
@@ -322,7 +337,7 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
 
         RadarData dataAvgMonth = new RadarData(setsAvgMonth);
         dataAvgMonth.setValueTextSize(8f);
-        dataAvgMonth.setDrawValues(true); // TODO set to false use marker instead
+        dataAvgMonth.setDrawValues(false);
         dataAvgMonth.setValueFormatter(new IValueFormatter() {
             @Override
             public String getFormattedValue(float value, Entry entry, int dataSetIndex, ViewPortHandler viewPortHandler) {
