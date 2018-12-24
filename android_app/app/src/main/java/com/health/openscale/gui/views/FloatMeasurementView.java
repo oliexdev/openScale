@@ -82,6 +82,8 @@ public abstract class FloatMeasurementView extends MeasurementView {
     }
 
     private void initView(Context context) {
+        setBackgroundIconColor(getColor());
+
         incButton = new Button(context);
         decButton = new Button(context);
 

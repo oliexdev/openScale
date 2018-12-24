@@ -27,6 +27,7 @@ public class ColorUtil {
     public static final int COLOR_GREEN = Color.parseColor("#99CC00");
     public static final int COLOR_ORANGE = Color.parseColor("#FFBB33");
     public static final int COLOR_RED = Color.parseColor("#FF4444");
+    public static final int COLOR_GRAY = Color.parseColor("#d3d3d3");
     public static final int[] COLORS = new int[]{COLOR_BLUE, COLOR_VIOLET, COLOR_GREEN, COLOR_ORANGE, COLOR_RED};
 
     public static int getTextColor(Context context) {

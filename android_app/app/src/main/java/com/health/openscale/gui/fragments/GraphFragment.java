@@ -290,7 +290,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         actionButton.setOnClickListener(new onClickListenerDiagramLines());
 
         int color = measurementView.getSettings().isInGraph()
-                ? measurementView.getColor() : Color.parseColor("#d3d3d3");
+                ? measurementView.getColor() : ColorUtil.COLOR_GRAY;
         actionButton.setBackgroundTintList(ColorStateList.valueOf(color));
 
         floatingActionBar.addView(actionButton);
