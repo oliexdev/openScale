@@ -328,7 +328,7 @@ public abstract class MeasurementView extends TableLayout {
     }
 
     public int getForegroundColor() {
-        return valueView.getCurrentTextColor();
+        return ColorUtil.getTextColor(getContext());
     }
 
     public int getIndicatorColor() {

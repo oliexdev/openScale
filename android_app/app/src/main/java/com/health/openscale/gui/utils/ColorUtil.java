@@ -16,7 +16,10 @@
 
 package com.health.openscale.gui.utils;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.preference.PreferenceManager;
 
 public class ColorUtil {
     public static final int COLOR_BLUE = Color.parseColor("#33B5E5");
@@ -25,4 +28,14 @@ public class ColorUtil {
     public static final int COLOR_ORANGE = Color.parseColor("#FFBB33");
     public static final int COLOR_RED = Color.parseColor("#FF4444");
     public static final int[] COLORS = new int[]{COLOR_BLUE, COLOR_VIOLET, COLOR_GREEN, COLOR_ORANGE, COLOR_RED};
+
+    public static int getTextColor(Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+
+        if (prefs.getString("app_theme", "").equals("Dark")) {
+            return Color.parseColor("#b3ffffff");
+        }
+
+        return Color.parseColor("#de000000");
+    }
 }

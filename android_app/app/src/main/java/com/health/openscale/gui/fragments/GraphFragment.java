@@ -94,8 +94,6 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
     private OpenScale openScale;
 
-    private int textColor;
-
     private final Calendar calYears;
     private Calendar calLastSelected;
 
@@ -128,22 +126,19 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
 
-        // HACK: get default text color from hidden text view to set the correct axis colors
-        textColor = ((TextView)graphView.findViewById(R.id.colorHack)).getCurrentTextColor();
-
         chartBottom = graphView.findViewById(R.id.chart_bottom);
         chartBottom.setOnChartValueSelectedListener(new chartBottomValueTouchListener());
         chartBottom.getLegend().setEnabled(prefs.getBoolean("legendEnable", true));
         chartBottom.getLegend().setWordWrapEnabled(true);
         chartBottom.getLegend().setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
-        chartBottom.getLegend().setTextColor(textColor);
+        chartBottom.getLegend().setTextColor(ColorUtil.getTextColor(graphView.getContext()));
         chartBottom.getDescription().setEnabled(false);
         chartBottom.getAxisLeft().setEnabled(false);
         chartBottom.getAxisRight().setEnabled(false);
 
         XAxis chartBottomxAxis = chartBottom.getXAxis();
         chartBottomxAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-        chartBottomxAxis.setTextColor(textColor);
+        chartBottomxAxis.setTextColor(ColorUtil.getTextColor(graphView.getContext()));
 
         chartTop = graphView.findViewById(R.id.chart_top);
         chartTop.setDrawGridBackground(false);
@@ -156,7 +151,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         XAxis chartTopxAxis = chartTop.getXAxis();
         chartTopxAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         chartTopxAxis.setDrawGridLines(false);
-        chartTopxAxis.setTextColor(textColor);
+        chartTopxAxis.setTextColor(ColorUtil.getTextColor(graphView.getContext()));
         chartTopxAxis.setValueFormatter(new IAxisValueFormatter() {
 
             private final SimpleDateFormat mFormat = new SimpleDateFormat("MMM", Locale.getDefault());
@@ -433,7 +428,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                 LineDataSet dataSet = new LineDataSet(entries, measurementView.getName().toString());
                 dataSet.setValueTextSize(8.0f);
                 dataSet.setColor(measurementView.getColor());
-                dataSet.setValueTextColor(textColor);
+                dataSet.setValueTextColor(ColorUtil.getTextColor(graphView.getContext()));
                 dataSet.setCircleColor(measurementView.getColor());
                 dataSet.setAxisDependency(measurementView.getSettings().isOnRightAxis() ? YAxis.AxisDependency.RIGHT : YAxis.AxisDependency.LEFT);
                 dataSet.setDrawHighlightIndicators(false);

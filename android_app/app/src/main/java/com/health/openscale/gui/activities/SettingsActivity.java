@@ -28,6 +28,7 @@ import android.widget.EditText;
 import com.health.openscale.R;
 import com.health.openscale.gui.preferences.BackupPreferences;
 import com.health.openscale.gui.preferences.BluetoothPreferences;
+import com.health.openscale.gui.utils.ColorUtil;
 import com.health.openscale.gui.utils.PermissionHelper;
 
 import java.util.ArrayList;
@@ -79,7 +80,7 @@ public class SettingsActivity extends PreferenceActivity
     public void onBuildHeaders(List<Header> target) {
         loadHeadersFromResource(R.xml.header_preferences, target);
 
-        int tintColor = new EditText(this).getCurrentTextColor();
+        int tintColor = ColorUtil.getTextColor(this);
 
         fragments.clear();
         for (Header header : target) {

@@ -47,6 +47,7 @@ import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
+import com.health.openscale.gui.utils.ColorUtil;
 import com.health.openscale.gui.views.FloatMeasurementView;
 import com.health.openscale.gui.views.MeasurementView;
 
@@ -108,13 +109,13 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         rollingChart.setHighlightPerTapEnabled(true);
 
         rollingChart.getLegend().setEnabled(prefs.getBoolean("legendEnable", true));
-        rollingChart.getLegend().setTextColor(txtTitleLastMeasurement.getCurrentTextColor());
+        rollingChart.getLegend().setTextColor(ColorUtil.getTextColor(overviewView.getContext()));
         rollingChart.getLegend().setWordWrapEnabled(true);
         rollingChart.getLegend().setVerticalAlignment(Legend.LegendVerticalAlignment.TOP);
         rollingChart.getLegend().setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
 
         XAxis xAxis = rollingChart.getXAxis();
-        xAxis.setTextColor(txtTitleLastMeasurement.getCurrentTextColor());
+        xAxis.setTextColor(ColorUtil.getTextColor(overviewView.getContext()));
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xAxis.setDrawGridLines(true);
         xAxis.setGranularity(1f);
@@ -257,7 +258,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             }
 
             LineDataSet dataSet = new LineDataSet(entries, measurementView.getName().toString());
-            dataSet.setValueTextColor(txtTitleLastMeasurement.getCurrentTextColor());
+            dataSet.setValueTextColor(ColorUtil.getTextColor(overviewView.getContext()));
             dataSet.setValueTextSize(8.0f);
             dataSet.setColor(measurementView.getColor());
             dataSet.setCircleColor(measurementView.getColor());

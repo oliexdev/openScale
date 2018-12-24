@@ -93,21 +93,24 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         statisticsView = inflater.inflate(R.layout.fragment_statistics, container, false);
 
-        // Set android:tint="?attr/editTextColor" programmatically as setting it in xml layout
-        // throws an exception on API 19.
-        int color = new EditText(getContext()).getCurrentTextColor();
         for (int id : new int[]{R.id.imageGoalWeight, R.id.imageGoalDiff, R.id.imageDayLeft}) {
             ImageView image = statisticsView.findViewById(id);
-            image.setColorFilter(color);
+            image.setColorFilter(ColorUtil.getTextColor(statisticsView.getContext()));
         }
 
         txtGoalWeight = statisticsView.findViewById(R.id.txtGoalWeight);
+        txtGoalWeight.setTextColor(ColorUtil.getTextColor(statisticsView.getContext()));
         txtGoalDiff = statisticsView.findViewById(R.id.txtGoalDiff);
+        txtGoalDiff.setTextColor(ColorUtil.getTextColor(statisticsView.getContext()));
         txtGoalDayLeft = statisticsView.findViewById(R.id.txtGoalDayLeft);
+        txtGoalDayLeft.setTextColor(ColorUtil.getTextColor(statisticsView.getContext()));
 
         txtLabelGoalWeight = statisticsView.findViewById(R.id.txtLabelGoalWeight);
+        txtLabelGoalWeight.setTextColor(ColorUtil.getTextColor(statisticsView.getContext()));
         txtLabelGoalDiff = statisticsView.findViewById(R.id.txtLabelGoalDiff);
+        txtLabelGoalDiff.setTextColor(ColorUtil.getTextColor(statisticsView.getContext()));
         txtLabelDayLeft = statisticsView.findViewById(R.id.txtLabelDayLeft);
+        txtLabelDayLeft.setTextColor(ColorUtil.getTextColor(statisticsView.getContext()));
 
         viewMeasurementsStatistics = new ArrayList<>();
 
@@ -131,10 +134,13 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
         MarkerView mv = new ChartMarkerView(statisticsView.getContext(), R.layout.chart_markerview);
 
         radarChartWeek = statisticsView.findViewById(R.id.radarPastWeek);
+        radarChartWeek.getXAxis().setTextColor(ColorUtil.getTextColor(statisticsView.getContext()));
         radarChartWeek.getDescription().setEnabled(false);
         radarChartWeek.getYAxis().setEnabled(false);
         radarChartWeek.setExtraTopOffset(10);
+        radarChartWeek.setRotationEnabled(false);
         Legend weekLegend = radarChartWeek.getLegend();
+        weekLegend.setTextColor(ColorUtil.getTextColor(statisticsView.getContext()));
         weekLegend.setWordWrapEnabled(true);
         weekLegend.setExtra(legendEntriesWeek);
         weekLegend.setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
@@ -142,10 +148,13 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
         radarChartWeek.setMarker(mv);
 
         radarChartMonth = statisticsView.findViewById(R.id.radarPastMonth);
+        radarChartMonth.getXAxis().setTextColor(ColorUtil.getTextColor(statisticsView.getContext()));
         radarChartMonth.getDescription().setEnabled(false);
         radarChartMonth.getYAxis().setEnabled(false);
         radarChartMonth.setExtraTopOffset(10);
+        radarChartMonth.setRotationEnabled(false);
         Legend monthLegend = radarChartMonth.getLegend();
+        monthLegend.setTextColor(ColorUtil.getTextColor(statisticsView.getContext()));
         monthLegend.setWordWrapEnabled(true);
         monthLegend.setExtra(legendEntriesWeek);
         monthLegend.setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
