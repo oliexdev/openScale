@@ -426,6 +426,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                 final boolean finalEntryIsAverage = entryIsAverage; // TODO HACK to transfer entryIsAverage to getFormattedValue because entry data is already used for the measurement
 
                 LineDataSet dataSet = new LineDataSet(entries, measurementView.getName().toString());
+                dataSet.setLineWidth(1.5f);
                 dataSet.setValueTextSize(8.0f);
                 dataSet.setColor(measurementView.getColor());
                 dataSet.setValueTextColor(ColorUtil.getTextColor(graphView.getContext()));
@@ -469,6 +470,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             valuesGoalLine.add(new Entry(maxDays, goalWeight));
 
             LineDataSet goalLine = new LineDataSet(valuesGoalLine, getString(R.string.label_goal_line));
+            goalLine.setLineWidth(1.5f);
             goalLine.setColor(ColorUtil.COLOR_GREEN);
             goalLine.setDrawValues(false);
             goalLine.setDrawCircles(false);
@@ -488,6 +490,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             }
 
             LineDataSet linearRegressionLine = new LineDataSet(valuesLinearRegression, getString(R.string.label_regression_line));
+            linearRegressionLine.setLineWidth(1.5f);
             linearRegressionLine.setColor(ColorUtil.COLOR_VIOLET);
             linearRegressionLine.setDrawValues(false);
             linearRegressionLine.setDrawCircles(false);

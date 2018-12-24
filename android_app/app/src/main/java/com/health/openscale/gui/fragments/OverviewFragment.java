@@ -28,7 +28,6 @@ import android.widget.Spinner;
 import android.widget.TableLayout;
 import android.widget.TextView;
 
-import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.Legend;
@@ -258,6 +257,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             }
 
             LineDataSet dataSet = new LineDataSet(entries, measurementView.getName().toString());
+            dataSet.setLineWidth(1.5f);
             dataSet.setValueTextColor(ColorUtil.getTextColor(overviewView.getContext()));
             dataSet.setValueTextSize(8.0f);
             dataSet.setColor(measurementView.getColor());
