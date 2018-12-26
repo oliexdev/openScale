@@ -31,6 +31,7 @@ import android.widget.TextView;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.components.MarkerView;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
@@ -47,6 +48,7 @@ import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.gui.utils.ColorUtil;
+import com.health.openscale.gui.views.ChartMarkerView;
 import com.health.openscale.gui.views.FloatMeasurementView;
 import com.health.openscale.gui.views.MeasurementView;
 
@@ -81,6 +83,8 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
     private SharedPreferences prefs;
 
+    private ScaleMeasurement markedMeasurement;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -102,6 +106,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
         rollingChart.getDescription().setEnabled(false);
 
+        rollingChart.setDoubleTapToZoomEnabled(false);
         rollingChart.setTouchEnabled(true);
         rollingChart.setOnChartValueSelectedListener(new rollingChartSelectionListener());
 
@@ -112,6 +117,9 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         rollingChart.getLegend().setWordWrapEnabled(true);
         rollingChart.getLegend().setVerticalAlignment(Legend.LegendVerticalAlignment.TOP);
         rollingChart.getLegend().setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
+
+        MarkerView mv = new ChartMarkerView(rollingChart.getContext(), R.layout.chart_markerview);
+        rollingChart.setMarker(mv);
 
         XAxis xAxis = rollingChart.getXAxis();
         xAxis.setTextColor(ColorUtil.getTextColor(overviewView.getContext()));
@@ -163,7 +171,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
         OpenScale.getInstance().registerFragment(this);
 
-        rollingChart.animateX(500);
+        rollingChart.animateY(700);
 
         return overviewView;
     }
@@ -176,17 +184,15 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
     @Override
     public void updateOnView(List<ScaleMeasurement> scaleMeasurementList) {
-        ScaleMeasurement selectedMeasurement;
-
         if (scaleMeasurementList.isEmpty()) {
-            selectedMeasurement = new ScaleMeasurement();
+            markedMeasurement = new ScaleMeasurement();
         } else {
-            selectedMeasurement = scaleMeasurementList.get(0);
+            markedMeasurement = scaleMeasurementList.get(0);
         }
 
         updateUserSelection();
         updateRollingChart(scaleMeasurementList);
-        updateMesurementViews(selectedMeasurement);
+        updateMesurementViews(markedMeasurement);
     }
 
     private void updateMesurementViews(ScaleMeasurement selectedMeasurement) {
@@ -250,7 +256,10 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
                     Entry entry = new Entry();
                     entry.setX(TimeUnit.MILLISECONDS.toDays(measurement.getDateTime().getTime()));
                     entry.setY(measurementView.getValue());
-                    entry.setData(measurement);
+                    Object[] extraData = new Object[2];
+                    extraData[0] = measurement;
+                    extraData[1] = measurementView;
+                    entry.setData(extraData);
 
                     entries.add(entry);
                 }
@@ -265,6 +274,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             dataSet.setAxisDependency(measurementView.getSettings().isOnRightAxis() ? YAxis.AxisDependency.RIGHT : YAxis.AxisDependency.LEFT);
             dataSet.setHighlightEnabled(true);
             dataSet.setDrawHighlightIndicators(true);
+            dataSet.setHighlightLineWidth(1.5f);
             dataSet.setDrawHorizontalHighlightIndicator(false);
             dataSet.setHighLightColor(Color.RED);
             dataSet.setDrawCircles(prefs.getBoolean("pointsEnable", true));
@@ -287,7 +297,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             Collections.reverse(scaleMeasurementList);
 
             rollingChart.moveViewToX(TimeUnit.MILLISECONDS.toDays(scaleMeasurementList.get(0).getDateTime().getTime()));
-            rollingChart.setVisibleXRangeMaximum(7);
+            rollingChart.setVisibleXRangeMaximum(14);
         }
 
         rollingChart.invalidate();
@@ -297,7 +307,12 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
         @Override
         public void onValueSelected(Entry e, Highlight h) {
-            updateMesurementViews((ScaleMeasurement) e.getData());
+            Object[] extraData = (Object[])e.getData();
+
+            markedMeasurement = (ScaleMeasurement)extraData[0];
+            //MeasurementView measurementView = (MeasurementView)extraData[1];
+
+            updateMesurementViews(markedMeasurement);
         }
 
         @Override

@@ -23,8 +23,6 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import androidx.core.graphics.drawable.DrawableCompat;
-import androidx.appcompat.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -48,9 +46,17 @@ import java.text.DateFormat;
 import java.util.Date;
 import java.util.List;
 
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.graphics.drawable.DrawableCompat;
+
 public class DataEntryActivity extends BaseAppCompatActivity {
     public static final String EXTRA_ID = "id";
+    public static final String EXTRA_MODE = "mode";
     private static final String PREF_EXPAND = "expandEvaluator";
+
+    public static final int ADD_MEASUREMENT_REQUEST = 0;
+    public static final int EDIT_MEASUREMENT_REQUEST = 1;
+    public static final int VIEW_MEASUREMENT_REQUEST = 2;
 
     private MeasurementView.MeasurementViewMode measurementViewMode;
 
@@ -71,10 +77,6 @@ public class DataEntryActivity extends BaseAppCompatActivity {
     private boolean isDirty;
 
     private Context context;
-
-    private boolean isAddActivity() {
-        return !getIntent().hasExtra(EXTRA_ID);
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,18 +116,25 @@ public class DataEntryActivity extends BaseAppCompatActivity {
             }
         });
 
-        final MeasurementView.MeasurementViewMode mode = isAddActivity()
-                ? MeasurementView.MeasurementViewMode.ADD
-                : MeasurementView.MeasurementViewMode.VIEW;
+        int mode = getIntent().getExtras().getInt(EXTRA_MODE);
+        MeasurementView.MeasurementViewMode measurementMode = MeasurementView.MeasurementViewMode.ADD;
+
+        if (mode == ADD_MEASUREMENT_REQUEST) {
+            measurementMode = MeasurementView.MeasurementViewMode.ADD;
+        }
+        else if (mode == VIEW_MEASUREMENT_REQUEST){
+            measurementMode = MeasurementView.MeasurementViewMode.VIEW;
+        }
+
         for (MeasurementView measurement : dataEntryMeasurements) {
-            measurement.setEditMode(mode);
+            measurement.setEditMode(measurementMode);
         }
 
         updateOnView();
 
         onMeasurementViewUpdateListener updateListener = new onMeasurementViewUpdateListener();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        final boolean expand = isAddActivity()
+        final boolean expand = mode == ADD_MEASUREMENT_REQUEST
                 ? false : prefs.getBoolean(PREF_EXPAND, false);
 
         for (MeasurementView measurement : dataEntryMeasurements) {
@@ -186,12 +195,15 @@ public class DataEntryActivity extends BaseAppCompatActivity {
         expandButton = menu.findItem(R.id.expandButton);
         deleteButton = menu.findItem(R.id.deleteButton);
 
+        int mode = getIntent().getExtras().getInt(EXTRA_MODE);
         // Hide/show icons as appropriate for the view mode
-        if (isAddActivity()) {
+        if (mode == ADD_MEASUREMENT_REQUEST) {
             setViewMode(MeasurementView.MeasurementViewMode.ADD);
         }
-        else {
+        else if (mode == VIEW_MEASUREMENT_REQUEST){
             setViewMode(MeasurementView.MeasurementViewMode.VIEW);
+        } else if (mode == EDIT_MEASUREMENT_REQUEST) {
+            setViewMode(MeasurementView.MeasurementViewMode.EDIT);
         }
 
         return super.onCreateOptionsMenu(menu);

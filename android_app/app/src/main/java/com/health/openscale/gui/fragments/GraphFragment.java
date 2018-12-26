@@ -16,6 +16,8 @@
 
 package com.health.openscale.gui.fragments;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
@@ -38,6 +40,7 @@ import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.components.MarkerView;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.BarData;
@@ -63,6 +66,7 @@ import com.health.openscale.core.utils.PolynomialFitter;
 import com.health.openscale.gui.activities.DataEntryActivity;
 import com.health.openscale.gui.utils.ColorUtil;
 import com.health.openscale.gui.views.BMRMeasurementView;
+import com.health.openscale.gui.views.ChartMarkerView;
 import com.health.openscale.gui.views.FloatMeasurementView;
 import com.health.openscale.gui.views.MeasurementView;
 import com.health.openscale.gui.views.MeasurementViewSettings;
@@ -88,6 +92,9 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     private Button btnRightYear;
     private LinearLayout floatingActionBar;
     private PopupMenu popup;
+    private FloatingActionButton showMenu;
+    private FloatingActionButton editMenu;
+    private FloatingActionButton deleteMenu;
     private SharedPreferences prefs;
 
     private List<MeasurementView> measurementViews;
@@ -96,6 +103,8 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
     private final Calendar calYears;
     private Calendar calLastSelected;
+
+    private ScaleMeasurement markedMeasurement;
 
     private static final String CAL_YEARS_KEY = "calYears";
     private static final String CAL_LAST_SELECTED_KEY = "calLastSelected";
@@ -135,12 +144,18 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         chartBottom.getDescription().setEnabled(false);
         chartBottom.getAxisLeft().setEnabled(false);
         chartBottom.getAxisRight().setEnabled(false);
+        chartBottom.setDoubleTapToZoomEnabled(false);
+        chartBottom.setHighlightPerTapEnabled(true);
+
+        MarkerView mv = new ChartMarkerView(chartBottom.getContext(), R.layout.chart_markerview);
+        chartBottom.setMarker(mv);
 
         XAxis chartBottomxAxis = chartBottom.getXAxis();
         chartBottomxAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         chartBottomxAxis.setTextColor(ColorUtil.getTextColor(graphView.getContext()));
 
         chartTop = graphView.findViewById(R.id.chart_top);
+        chartTop.setDoubleTapToZoomEnabled(false);
         chartTop.setDrawGridBackground(false);
         chartTop.getLegend().setEnabled(false);
         chartTop.getAxisLeft().setEnabled(false);
@@ -250,6 +265,39 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         MenuItem enableWeek = popup.getMenu().findItem(R.id.enableWeek);
         enableWeek.setChecked(prefs.getBoolean("showWeek", false));
+
+        showMenu = graphView.findViewById(R.id.showMenu);
+        showMenu.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int id = markedMeasurement.getId();
+
+                Intent intent = new Intent(graphView.getContext(), DataEntryActivity.class);
+                intent.putExtra(DataEntryActivity.EXTRA_ID, id);
+                intent.putExtra(DataEntryActivity.EXTRA_MODE, DataEntryActivity.VIEW_MEASUREMENT_REQUEST);
+                startActivity(intent);
+            }
+        });
+
+        editMenu = graphView.findViewById(R.id.editMenu);
+        editMenu.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int id = markedMeasurement.getId();
+
+                Intent intent = new Intent(graphView.getContext(), DataEntryActivity.class);
+                intent.putExtra(DataEntryActivity.EXTRA_ID, id);
+                intent.putExtra(DataEntryActivity.EXTRA_MODE, DataEntryActivity.EDIT_MEASUREMENT_REQUEST);
+                startActivity(intent);
+            }
+        });
+        deleteMenu = graphView.findViewById(R.id.deleteMenu);
+        deleteMenu.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                deleteMeasurement();
+            }
+        });
 
         openScale.registerFragment(this);
 
@@ -406,7 +454,10 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                     }
 
                     Entry entry = new Entry(i, sum / avgBin.size());
-                    entry.setData(indexScaleMeasurement[i]);
+                    Object[] extraData = new Object[2];
+                    extraData[0] = indexScaleMeasurement[i];
+                    extraData[1] = measurementView;
+                    entry.setData(extraData);
 
                     if (prefs.getBoolean("regressionLine", false) && measurementView instanceof WeightMeasurementView) {
                         polyFitter.addPoint((double)entry.getX(), (double)entry.getY());
@@ -432,7 +483,11 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                 dataSet.setValueTextColor(ColorUtil.getTextColor(graphView.getContext()));
                 dataSet.setCircleColor(measurementView.getColor());
                 dataSet.setAxisDependency(measurementView.getSettings().isOnRightAxis() ? YAxis.AxisDependency.RIGHT : YAxis.AxisDependency.LEFT);
-                dataSet.setDrawHighlightIndicators(false);
+                dataSet.setHighlightEnabled(true);
+                dataSet.setDrawHighlightIndicators(true);
+                dataSet.setHighlightLineWidth(1.5f);
+                dataSet.setDrawHorizontalHighlightIndicator(false);
+                dataSet.setHighLightColor(Color.RED);
                 dataSet.setDrawCircles(prefs.getBoolean("pointsEnable", true));
                 dataSet.setDrawValues(prefs.getBoolean("labelsEnable", true));
                 dataSet.setValueFormatter(new IValueFormatter() {
@@ -474,6 +529,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             goalLine.setColor(ColorUtil.COLOR_GREEN);
             goalLine.setDrawValues(false);
             goalLine.setDrawCircles(false);
+            goalLine.setHighlightEnabled(false);
             goalLine.enableDashedLine(10, 30, 0);
 
             dataSets.add(goalLine);
@@ -494,6 +550,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             linearRegressionLine.setColor(ColorUtil.COLOR_VIOLET);
             linearRegressionLine.setDrawValues(false);
             linearRegressionLine.setDrawCircles(false);
+            linearRegressionLine.setHighlightEnabled(false);
             linearRegressionLine.enableDashedLine(10, 30, 0);
 
             dataSets.add(linearRegressionLine);
@@ -501,7 +558,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         LineData data = new LineData(dataSets);
         chartBottom.setData(data);
-        chartBottom.animateX(500);
+        chartBottom.animateY(700);
         chartBottom.invalidate();
     }
 
@@ -616,6 +673,10 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
             List<ScaleMeasurement> scaleMeasurementList = openScale.getScaleDataOfMonth(calYears.get(Calendar.YEAR), calLastSelected.get(Calendar.MONTH));
             generateLineData(Calendar.DAY_OF_MONTH, scaleMeasurementList);
+
+            showMenu.setVisibility(View.GONE);
+            editMenu.setVisibility(View.GONE);
+            deleteMenu.setVisibility(View.GONE);
         }
 
         @Override
@@ -627,22 +688,25 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     private class chartBottomValueTouchListener implements OnChartValueSelectedListener {
         @Override
         public void onValueSelected(Entry e, Highlight h) {
-            ScaleMeasurement scaleMeasurement = (ScaleMeasurement)e.getData();
+            Object[] extraData = (Object[])e.getData();
 
-            if (scaleMeasurement == null) {
+            if (extraData == null) {
                 return;
             }
 
-            int id = scaleMeasurement.getId();
+            markedMeasurement = (ScaleMeasurement)extraData[0];
+            //MeasurementView measurementView = (MeasurementView)extraData[1];
 
-            Intent intent = new Intent(graphView.getContext(), DataEntryActivity.class);
-            intent.putExtra(DataEntryActivity.EXTRA_ID, id);
-            startActivity(intent);
+            showMenu.setVisibility(View.VISIBLE);
+            editMenu.setVisibility(View.VISIBLE);
+            deleteMenu.setVisibility(View.VISIBLE);
         }
 
         @Override
         public void onNothingSelected() {
-
+            showMenu.setVisibility(View.GONE);
+            editMenu.setVisibility(View.GONE);
+            deleteMenu.setVisibility(View.GONE);
         }
     }
 
@@ -659,5 +723,44 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
             generateGraphs();
         }
+    }
+
+    private void deleteMeasurement() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(graphView.getContext());
+        boolean deleteConfirmationEnable = prefs.getBoolean("deleteConfirmationEnable", true);
+
+        if (deleteConfirmationEnable) {
+            AlertDialog.Builder deleteAllDialog = new AlertDialog.Builder(graphView.getContext());
+            deleteAllDialog.setMessage(getResources().getString(R.string.question_really_delete));
+
+            deleteAllDialog.setPositiveButton(getResources().getString(R.string.label_yes), new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    doDeleteMeasurement();
+                }
+            });
+
+            deleteAllDialog.setNegativeButton(getResources().getString(R.string.label_no), new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    dialog.dismiss();
+                }
+            });
+
+            deleteAllDialog.show();
+        }
+        else {
+            doDeleteMeasurement();
+        }
+    }
+
+    private void doDeleteMeasurement() {
+        OpenScale.getInstance().deleteScaleData(markedMeasurement.getId());
+        Toast.makeText(graphView.getContext(), getResources().getString(R.string.info_data_deleted), Toast.LENGTH_SHORT).show();
+
+        showMenu.setVisibility(View.GONE);
+        editMenu.setVisibility(View.GONE);
+        deleteMenu.setVisibility(View.GONE);
+
+        chartTop.invalidate();
+        chartBottom.invalidate();
     }
 }

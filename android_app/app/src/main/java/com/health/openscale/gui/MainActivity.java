@@ -29,21 +29,12 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
-import androidx.annotation.NonNull;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.navigation.NavigationView;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.core.content.FileProvider;
-import androidx.core.view.GravityCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationView;
 import com.health.openscale.BuildConfig;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
@@ -63,6 +54,15 @@ import com.health.openscale.gui.preferences.BluetoothPreferences;
 import java.io.File;
 import java.util.List;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.FileProvider;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import cat.ereza.customactivityoncrash.config.CaocConfig;
 import timber.log.Timber;
 
@@ -367,6 +367,7 @@ public class MainActivity extends BaseAppCompatActivity
                 }
 
                 Intent intent = new Intent(getApplicationContext(), DataEntryActivity.class);
+                intent.putExtra(DataEntryActivity.EXTRA_MODE, DataEntryActivity.ADD_MEASUREMENT_REQUEST);
                 startActivity(intent);
                 return true;
             case R.id.action_bluetooth_status:

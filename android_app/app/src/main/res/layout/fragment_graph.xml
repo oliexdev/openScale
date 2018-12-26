@@ -1,111 +1,164 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?attr/colorPrimary"
-        android:gravity="center"
-        android:orientation="horizontal"
-        android:padding="5dp">
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="?attr/colorPrimary"
-            android:gravity="left"
-            android:layout_weight="1"
-            android:orientation="horizontal">
-        </LinearLayout>
-
-        <Button
-            android:id="@+id/btnLeftYear"
-            style="?android:attr/buttonStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="20dp"
-            android:background="@drawable/flat_selector"
-            android:text="&lt;"
-            android:textColor="@android:color/white" />
-
-        <TextView
-            android:id="@+id/txtYear"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="30dp"
-            android:layout_marginRight="30dp"
-            android:layout_weight="0"
-            android:gravity="center"
-            android:text="year"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textColor="@android:color/white"
-            android:textStyle="bold" />
-
-        <Button
-            android:id="@+id/btnRightYear"
-            style="?android:attr/buttonStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="20dp"
-            android:layout_weight="0"
-            android:background="@drawable/flat_selector"
-            android:text=">"
-            android:textColor="@android:color/white" />
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="?attr/colorPrimary"
-            android:gravity="right"
-            android:layout_weight="0.9"
-            android:orientation="horizontal">
-            <ImageView
-                android:id="@+id/optionMenu"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:scaleType="centerInside"
-                android:tint="@android:color/white"
-                app:srcCompat="@drawable/ic_options" />
-        </LinearLayout>
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/linearLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <HorizontalScrollView
+        <LinearLayout
+            android:id="@+id/yearSelect"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="?attr/colorPrimary"
-            android:fillViewport="true">
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:padding="5dp">
 
             <LinearLayout
-                android:id="@+id/floatingActionBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?attr/colorPrimary"
+                android:gravity="left"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btnLeftYear"
+                style="?android:attr/buttonStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="20dp"
+                android:background="@drawable/flat_selector"
+                android:text="&lt;"
+                android:textColor="@android:color/white" />
+
+            <TextView
+                android:id="@+id/txtYear"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="30dp"
+                android:layout_marginRight="30dp"
+                android:layout_weight="0"
+                android:gravity="center"
+                android:text="year"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="@android:color/white"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btnRightYear"
+                style="?android:attr/buttonStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="20dp"
+                android:layout_weight="0"
+                android:background="@drawable/flat_selector"
+                android:text=">"
+                android:textColor="@android:color/white" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?attr/colorPrimary"
+                android:gravity="right"
+                android:layout_weight="0.9"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/optionMenu"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerInside"
+                    android:tint="@android:color/white"
+                    app:srcCompat="@drawable/ic_options" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/linearLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_anchor="@id/yearSelect"
+            app:layout_anchorGravity="bottom"
+            android:layout_gravity="bottom|end"
+            android:orientation="vertical">
+
+            <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="?attr/colorPrimary"
-                android:gravity="center"
-                android:orientation="horizontal"
-                android:padding="5dp">
-            </LinearLayout>
-        </HorizontalScrollView>
+                android:fillViewport="true">
 
-        <com.github.mikephil.charting.charts.BarChart
-            android:id="@+id/chart_top"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_marginTop="10dp"
-            android:layout_weight="0.3" />
+                <LinearLayout
+                    android:id="@+id/floatingActionBar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?attr/colorPrimary"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:padding="5dp">
+                </LinearLayout>
+            </HorizontalScrollView>
 
-        <com.github.mikephil.charting.charts.LineChart
-            android:id="@+id/chart_bottom"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="0.7" />
+            <com.github.mikephil.charting.charts.BarChart
+                android:id="@+id/chart_top"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="0.25" />
 
+            <com.github.mikephil.charting.charts.LineChart
+                android:id="@+id/chart_bottom"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="0.75" />
+        </LinearLayout>
     </LinearLayout>
 
-</LinearLayout>
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/showMenu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:scaleType="centerInside"
+        app:fabSize="mini"
+        app:srcCompat="@drawable/ic_show"
+        android:layout_below="@id/deleteMenu"
+        app:layout_anchor="@id/editMenu"
+        android:clickable="true"
+        android:visibility="gone"
+        app:layout_anchorGravity="top"
+        android:layout_gravity="top|end"
+        app:pressedTranslationZ="12dp" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/editMenu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:fabSize="mini"
+        android:scaleType="centerInside"
+        app:srcCompat="@drawable/ic_editable"
+        android:layout_above="@id/deleteMenu"
+        android:backgroundTint="#99CC00"
+        android:clickable="true"
+        android:visibility="gone"
+        app:layout_anchor="@id/chart_bottom"
+        app:layout_anchorGravity="right|center_vertical"
+        app:pressedTranslationZ="12dp"/>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/deleteMenu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:fabSize="mini"
+        android:scaleType="centerInside"
+        android:clickable="true"
+        android:visibility="gone"
+        app:srcCompat="@drawable/ic_delete"
+        android:backgroundTint="#FF4444"
+        app:layout_anchor="@id/editMenu"
+        app:layout_anchorGravity="bottom"
+        android:layout_gravity="bottom|end"
+        app:pressedTranslationZ="12dp"/>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

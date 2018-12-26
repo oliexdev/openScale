@@ -16,16 +16,12 @@
 
 package com.health.openscale.gui.fragments;
 
-import android.annotation.SuppressLint;
-import android.content.Context;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import androidx.fragment.app.Fragment;
 import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -38,9 +34,7 @@ import com.github.mikephil.charting.data.RadarData;
 import com.github.mikephil.charting.data.RadarDataSet;
 import com.github.mikephil.charting.data.RadarEntry;
 import com.github.mikephil.charting.formatter.IValueFormatter;
-import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.interfaces.datasets.IRadarDataSet;
-import com.github.mikephil.charting.utils.MPPointF;
 import com.github.mikephil.charting.utils.ViewPortHandler;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
@@ -64,10 +58,11 @@ import com.health.openscale.gui.views.WaterMeasurementView;
 import com.health.openscale.gui.views.WeightMeasurementView;
 
 import java.text.DateFormat;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+
+import androidx.fragment.app.Fragment;
 
 public class StatisticsFragment extends Fragment implements FragmentUpdateListener {
 
@@ -287,14 +282,18 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
         for (MeasurementView view : viewMeasurementsStatistics) {
             final FloatMeasurementView measurementView = (FloatMeasurementView) view;
 
+            Object[] extraData = new Object[2];
+            extraData[0] = null; // not needed
+            extraData[1] = measurementView;
+
             measurementView.loadFrom(averageMonth, null);
-            entriesAvgMonth.add(new RadarEntry(measurementView.getValue(), measurementView));
+            entriesAvgMonth.add(new RadarEntry(measurementView.getValue(), extraData));
 
             measurementView.loadFrom(averageWeek, null);
-            entriesAvgWeek.add(new RadarEntry(measurementView.getValue(), measurementView));
+            entriesAvgWeek.add(new RadarEntry(measurementView.getValue(), extraData));
 
             measurementView.loadFrom(lastScaleMeasurement, null);
-            entriesLastMeasurement.add(new RadarEntry(measurementView.getValue(), measurementView));
+            entriesLastMeasurement.add(new RadarEntry(measurementView.getValue(), extraData));
         }
 
         RadarDataSet setLastMeasurement = new RadarDataSet(entriesLastMeasurement, getString(R.string.label_title_last_measurement));
