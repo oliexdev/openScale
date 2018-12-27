@@ -48,12 +48,9 @@ import com.health.openscale.gui.views.BoneMeasurementView;
 import com.health.openscale.gui.views.ChartMarkerView;
 import com.health.openscale.gui.views.FatMeasurementView;
 import com.health.openscale.gui.views.FloatMeasurementView;
-import com.health.openscale.gui.views.HipMeasurementView;
-import com.health.openscale.gui.views.LBMMeasurementView;
 import com.health.openscale.gui.views.MeasurementView;
 import com.health.openscale.gui.views.MeasurementViewSettings;
 import com.health.openscale.gui.views.MuscleMeasurementView;
-import com.health.openscale.gui.views.WaistMeasurementView;
 import com.health.openscale.gui.views.WaterMeasurementView;
 import com.health.openscale.gui.views.WeightMeasurementView;
 
@@ -112,11 +109,9 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
         viewMeasurementsStatistics.add(new WeightMeasurementView(statisticsView.getContext()));
         viewMeasurementsStatistics.add(new WaterMeasurementView(statisticsView.getContext()));
         viewMeasurementsStatistics.add(new MuscleMeasurementView(statisticsView.getContext()));
-        viewMeasurementsStatistics.add(new LBMMeasurementView(statisticsView.getContext()));
         viewMeasurementsStatistics.add(new FatMeasurementView(statisticsView.getContext()));
         viewMeasurementsStatistics.add(new BoneMeasurementView(statisticsView.getContext()));
-        viewMeasurementsStatistics.add(new WaistMeasurementView(statisticsView.getContext()));
-        viewMeasurementsStatistics.add(new HipMeasurementView(statisticsView.getContext()));
+        viewMeasurementsStatistics.add(new BMIMeasurementView(statisticsView.getContext()));
 
         ArrayList<LegendEntry> legendEntriesWeek = new ArrayList<>();
 
@@ -297,8 +292,8 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
         }
 
         RadarDataSet setLastMeasurement = new RadarDataSet(entriesLastMeasurement, getString(R.string.label_title_last_measurement));
-        setLastMeasurement.setColor(ColorUtil.COLOR_GREEN);
-        setLastMeasurement.setFillColor(ColorUtil.COLOR_GREEN);
+        setLastMeasurement.setColor(ColorUtil.COLOR_BLUE);
+        setLastMeasurement.setFillColor(ColorUtil.COLOR_BLUE);
         setLastMeasurement.setDrawFilled(true);
         setLastMeasurement.setFillAlpha(180);
         setLastMeasurement.setLineWidth(2f);
@@ -306,8 +301,8 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
         setLastMeasurement.setDrawHighlightIndicators(false);
 
         RadarDataSet setAvgWeek = new RadarDataSet(entriesAvgWeek, getString(R.string.label_last_week));
-        setAvgWeek.setColor(ColorUtil.COLOR_BLUE);
-        setAvgWeek.setFillColor(ColorUtil.COLOR_BLUE);
+        setAvgWeek.setColor(ColorUtil.COLOR_GREEN);
+        setAvgWeek.setFillColor(ColorUtil.COLOR_GREEN);
         setAvgWeek.setDrawFilled(true);
         setAvgWeek.setFillAlpha(180);
         setAvgWeek.setLineWidth(2f);
@@ -315,8 +310,8 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
         setAvgWeek.setDrawHighlightIndicators(false);
 
         RadarDataSet setAvgMonth = new RadarDataSet(entriesAvgMonth, getString(R.string.label_last_month));
-        setAvgMonth.setColor(ColorUtil.COLOR_BLUE);
-        setAvgMonth.setFillColor(ColorUtil.COLOR_BLUE);
+        setAvgMonth.setColor(ColorUtil.COLOR_GREEN);
+        setAvgMonth.setFillColor(ColorUtil.COLOR_GREEN);
         setAvgMonth.setDrawFilled(true);
         setAvgMonth.setFillAlpha(180);
         setAvgMonth.setLineWidth(2f);

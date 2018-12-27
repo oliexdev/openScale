@@ -122,6 +122,9 @@ public class MeasurementViewSettings {
         boolean defaultValue;
         switch (key) {
             case WeightMeasurementView.KEY:
+            case WaterMeasurementView.KEY:
+            case MuscleMeasurementView.KEY:
+            case FatMeasurementView.KEY:
                 defaultValue = true;
                 break;
             default:
