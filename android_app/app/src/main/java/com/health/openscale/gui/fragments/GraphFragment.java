@@ -540,7 +540,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
             List<Entry> valuesLinearRegression = new Stack<>();
 
-            for (int i = 0; i < maxDays; i++) {
+            for (int i = 0; i < maxDays+1; i++) {
                     double y_value = polynomial.getY(i);
                     valuesLinearRegression.add(new Entry((float) i, (float) y_value));
             }
