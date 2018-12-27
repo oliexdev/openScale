@@ -388,9 +388,11 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         Calendar calDays = (Calendar)calLastSelected.clone();
 
-        calDays.setMinimalDaysInFirstWeek(7);
-        calDays.set(field, calDays.getMinimum(field));
+        int minDays = calDays.getMinimum(field);
         int maxDays = calDays.getMaximum(field);
+
+        calDays.setMinimalDaysInFirstWeek(7);
+        calDays.set(field, minDays);
 
         List<ILineDataSet> dataSets = new ArrayList<>();
 
@@ -558,6 +560,8 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         LineData data = new LineData(dataSets);
         chartBottom.setData(data);
+        chartBottom.getXAxis().setAxisMinimum(minDays);
+        chartBottom.getXAxis().setAxisMaximum(maxDays);
         chartBottom.animateY(700);
         chartBottom.invalidate();
     }
