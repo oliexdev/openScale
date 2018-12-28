@@ -17,9 +17,6 @@
 package com.health.openscale.core;
 
 import android.appwidget.AppWidgetManager;
-import androidx.sqlite.db.SupportSQLiteDatabase;
-import androidx.room.Room;
-import androidx.room.RoomDatabase;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -30,7 +27,6 @@ import android.net.Uri;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.provider.OpenableColumns;
-import androidx.fragment.app.Fragment;
 import android.text.format.DateFormat;
 import android.widget.Toast;
 
@@ -70,6 +66,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import androidx.fragment.app.Fragment;
+import androidx.room.Room;
+import androidx.room.RoomDatabase;
+import androidx.sqlite.db.SupportSQLiteDatabase;
 import timber.log.Timber;
 
 public class OpenScale {
@@ -106,7 +106,7 @@ public class OpenScale {
 
     public static void createInstance(Context context) {
         if (instance != null) {
-            throw new RuntimeException("OpenScale instance already created");
+            return;
         }
 
         instance = new OpenScale(context);

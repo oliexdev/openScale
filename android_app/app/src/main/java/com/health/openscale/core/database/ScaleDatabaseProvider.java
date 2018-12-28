@@ -80,6 +80,8 @@ public class ScaleDatabaseProvider extends android.content.ContentProvider {
 
     @Override
     public boolean onCreate() {
+        // need to create openScale instance for the provider if openScale app is closed
+        OpenScale.createInstance(getContext());
         return true;
     }
 
