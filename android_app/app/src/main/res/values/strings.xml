@@ -115,6 +115,7 @@
     <string name="label_bluetooth_searching_finished">Search finished</string>
 
     <string name="label_enable_legend">Graph legend</string>
+    <string name="label_enable_yaxis">Y-axis</string>
     <string name="label_enable_labels">Data label</string>
     <string name="label_enable_points">Data point</string>
 

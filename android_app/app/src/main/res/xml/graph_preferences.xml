@@ -7,6 +7,12 @@
         android:summaryOn="@string/info_is_visible"
         android:title="@string/label_enable_legend" />
     <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="yaxisEnable"
+        android:summaryOff="@string/info_is_not_visible"
+        android:summaryOn="@string/info_is_visible"
+        android:title="@string/label_enable_yaxis" />
+    <CheckBoxPreference
         android:defaultValue="true"
         android:key="labelsEnable"
         android:summaryOff="@string/info_is_not_visible"

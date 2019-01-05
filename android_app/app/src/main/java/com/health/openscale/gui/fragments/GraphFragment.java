@@ -142,8 +142,8 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         chartBottom.getLegend().setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
         chartBottom.getLegend().setTextColor(ColorUtil.getTextColor(graphView.getContext()));
         chartBottom.getDescription().setEnabled(false);
-        chartBottom.getAxisLeft().setEnabled(false);
-        chartBottom.getAxisRight().setEnabled(false);
+        chartBottom.getAxisLeft().setEnabled(prefs.getBoolean("yaxisEnable", false));
+        chartBottom.getAxisRight().setEnabled(prefs.getBoolean("yaxisEnable", false));
         chartBottom.setDoubleTapToZoomEnabled(false);
         chartBottom.setHighlightPerTapEnabled(true);
 

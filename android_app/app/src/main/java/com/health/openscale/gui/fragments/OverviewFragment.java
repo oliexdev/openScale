@@ -112,6 +112,9 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
         rollingChart.setHighlightPerTapEnabled(true);
 
+        rollingChart.getAxisLeft().setEnabled(prefs.getBoolean("yaxisEnable", false));
+        rollingChart.getAxisRight().setEnabled(prefs.getBoolean("yaxisEnable", false));
+
         rollingChart.getLegend().setEnabled(prefs.getBoolean("legendEnable", true));
         rollingChart.getLegend().setTextColor(ColorUtil.getTextColor(overviewView.getContext()));
         rollingChart.getLegend().setWordWrapEnabled(true);
@@ -136,13 +139,6 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
                 return mFormat.format(new Date(millis));
             }
         });
-
-
-        YAxis leftAxis = rollingChart.getAxisLeft();
-        leftAxis.setEnabled(false);
-
-        YAxis rightAxis = rollingChart.getAxisRight();
-        rightAxis.setEnabled(false);
 
         spinUser = overviewView.findViewById(R.id.spinUser);
 
