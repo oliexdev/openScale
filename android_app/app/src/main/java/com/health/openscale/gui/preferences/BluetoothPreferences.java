@@ -214,7 +214,7 @@ public class BluetoothPreferences extends PreferenceFragment {
                     formatDeviceName(device), btDevice.driverName(), device.getType());
             prefBtDevice.setOnPreferenceClickListener(new onClickListenerDeviceSelect());
             prefBtDevice.setKey(device.getAddress());
-            prefBtDevice.setIcon(R.drawable.ic_bluetooth_connection_lost);
+            prefBtDevice.setIcon(R.drawable.ic_bluetooth_device_supported);
             prefBtDevice.setSummary(btDevice.driverName());
 
             int tintColor = new EditText(getActivity()).getCurrentTextColor();
@@ -223,7 +223,7 @@ public class BluetoothPreferences extends PreferenceFragment {
         else {
             Timber.d("Found unsupported device %s (type: %d)",
                     formatDeviceName(device), device.getType());
-            prefBtDevice.setIcon(R.drawable.ic_bluetooth_disabled);
+            prefBtDevice.setIcon(R.drawable.ic_bluetooth_device_not_supported);
             prefBtDevice.setSummary(R.string.label_bt_device_no_support);
             prefBtDevice.setEnabled(false);
 
