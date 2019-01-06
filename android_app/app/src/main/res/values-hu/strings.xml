@@ -28,7 +28,7 @@
     <string name="label_waist">Derék kerülete</string>
     <string name="label_hip">Csípő kerület</string>
     <string name="label_comment">Megjegyzés</string>
-    <string name="label_whtr">Derék- magasság arány</string>
+    <string name="label_whtr">Derék-magasság arány</string>
     <string name="label_whr">Derék-csipő arány</string>
     <string name="label_bone">Csont tömeg</string>
     <string name="label_smartUserAssign">Okos felhasználó összerendelés</string>
@@ -72,18 +72,18 @@
     <string name="info_data_imported">"Importálva innen "</string>
     <string name="info_enter_comment">Opcionális megjegyzés</string>
     <string name="info_is_visible">látható</string>
-    <string name="info_is_enable">Engedélyezve</string>
-    <string name="info_is_not_enable">Letiltva</string>
-    <string name="info_is_not_available">Nem elérhető</string>
+    <string name="info_is_enable">engedélyezve</string>
+    <string name="info_is_not_enable">letiltva</string>
+    <string name="info_is_not_available">nem elérhető</string>
     <string name="info_bluetooth_try_connection">Kapcsolódás:</string>
     <string name="info_bluetooth_connection_lost">Bluetooth kapcsolat megszakadt</string>
     <string name="info_bluetooth_no_device">Nem találtam Bluetooth eszközt</string>
     <string name="info_bluetooth_no_device_set">Nincs Bluetooth eszköz kiválasztva</string>
     <string name="info_bluetooth_connection_successful">Kapcsolat létrejött</string>
-    <string name="info_bluetooth_init">Bluetooth eszköz inicializálás</string>
+    <string name="info_bluetooth_init">Bluetooth eszköz inicializálása</string>
     <string name="info_bluetooth_connection_error">Váratlan Bluetooth hiba</string>
     <string name="info_new_data_added">%1$.2f%2$s [%3$s] ide %4$s hozzáadva</string>
-    <string name="info_new_data_duplicated">Mérés azonos dátummal és idővel már létezik</string>
+    <string name="info_new_data_duplicated">mérés azonos dátummal és idővel már létezik</string>
     <string name="info_enter_user_name">Az Ön neve</string>
     <string name="info_no_selected_user">Nincs felhasználó. Kérem, hozzon létre egyet a beállításokban.</string>
     <string name="info_no_evaluation_available">Érték nem értékelhető ki</string>
@@ -129,7 +129,7 @@
     <string name="label_goal_line">Cél vonal</string>
     <string name="label_help">Segítség</string>
     <string name="label_feedback_message_enjoying">Élvezi az openScale-t\?</string>
-    <string name="label_feedback_message_rate_app">Mit gondol a Google Play vagy GitHub értékelésről\?</string>
+    <string name="label_feedback_message_rate_app">Mit gondol a Google Play-en vagy GitHub-on az értékelésről\?</string>
     <string name="label_feedback_message_issue">Szeretne adni valamilyen visszajelzést\?</string>
     <string name="label_feedback_message_yes">Igen</string>
     <string name="label_feedback_message_no">Nem egészen</string>
@@ -170,4 +170,59 @@
     <string name="label_daily">napi</string>
     <string name="label_weekly">heti</string>
     <string name="label_monthly">havi</string>
+    <string name="label_bmr">Bazális metabolikus sebesség (BMR)</string>
+    <string name="label_lbm">Zsírmentes testtömeg</string>
+    <string name="info_enter_value_in">Értéket beír</string>
+    <string name="info_is_not_visible">nem látható</string>
+    <string name="default_value_reminder_notify_text">Idő mérlegeléshez</string>
+    <string name="error_max_scale_users">Mérleg konkurens felhasználóinak max. számát elértük</string>
+    <string name="trisa_scale_not_paired">Ez a mérleg még nincs párosítva!
+\n
+\nTartsa nyomva a gombot a mérleg alján a párosítási módba kapcsoláshoz, és kapcsolódjon az eszköz jelszó megkapásához.</string>
+    <string name="trisa_scale_pairing_succeeded">Párosítás sikeres!
+\n
+\nÚjrakapcsolódás a mérési adatok fogadásához.</string>
+    <string name="customactivityoncrash_error_activity_error_occurred_explanation">Váratlan hiba történt.
+\n
+\nKérem, hozzon létre egy új issue-t ami tartalmazva a hiba részleteit a 
+\nhttps://github.com/oliexdev/openScale/issues-on</string>
+    <string name="toggle_expand">Kattintson a megnyitáshoz</string>
+    <string name="permission_bluetooth_info">A Bluetooth-eszközök kereséséhez szükséges a durva tartózkodási hely hozzáférése. A készülék megtalálása után visszavonható.</string>
+    <string name="permission_read_write_data_description">"openScale adatok olvasása/írása, beleértve a felhasználói infót és minden mentett mérési eredményt "</string>
+    <string name="permission_read_write_data_label">Olvasás/Írás openScale adatokat</string>
+    <string name="label_long_press_drag_reorder">Hosszan nyomva a mérési eredményt átrendezheti</string>
+    <string name="label_include_in_overview_graph">Rajta legyen az áttekintő grafikonon</string>
+    <string name="label_measurement_in_percent">Mérés %-ban</string>
+    <string name="label_estimate_measurement">Mérés becslése</string>
+    <string name="label_add_or_fix_translation">Új hozzáadása vagy meglévő javítása</string>
+    <string name="label_overview_graph">Áttekintő grafikon</string>
+    <string name="label_estimate_measurement_summary">Súlyon, magasságon, koron, nemen alapulva, stb.</string>
+    <string name="label_scale_not_supported">Nincs a mérlege támogatva\?</string>
+    <string name="label_click_to_help_add_support">Kattintson ide, segíteni a támogatás hozzáadáshoz</string>
+    <string name="label_development">Fejlesztés</string>
+    <string name="label_debug_log">Debug-napló fájlba mentése</string>
+    <string name="label_your_bluetooth_scale">Az Ön Bluetooth mérlege</string>
+    <string name="label_select_measurement">Válasszon mérést</string>
+    <string name="label_select_user">Válasszon felhasználót</string>
+    <string name="label_configure_widget">Widget beállítása</string>
+    <string name="label_visceral_fat">Belső zsír</string>
+    <string name="label_chest">Mellkas kerület</string>
+    <string name="label_thigh">Comb kerület</string>
+    <string name="label_biceps">Bicepsz kerület</string>
+    <string name="label_neck">Nyak kerület</string>
+    <string name="label_fat_caliper">Testzsír mérő</string>
+    <string name="label_caliper1_male">Mellkasi bőrredő</string>
+    <string name="label_caliper2_male">Hasi bőrredő</string>
+    <string name="label_caliper3_male">Comb bőredő</string>
+    <string name="label_caliper1_female">Tricepsz bőrredő</string>
+    <string name="label_caliper2_female">Hasi bőrredő</string>
+    <string name="label_caliper3_female">Csípő bőrredő</string>
+    <string name="label_measure_unit">Mérés egysége</string>
+    <string name="label_activity_level">Aktivitás szintje</string>
+    <string name="activity_level_sedentary">Ülő</string>
+    <string name="activity_level_mild">Enyhe</string>
+    <string name="activity_level_moderate">Mérsékelt</string>
+    <string name="activity_level_heavy">Élénk</string>
+    <string name="activity_level_extreme">Extrém</string>
+    <string name="label_data_provider_enable">Harmadik fél app hozzáférése</string>
 </resources>
