@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="title_overview">Oversikt</string>
     <string name="title_graph">Diagram</string>
@@ -251,5 +251,6 @@
     <string name="trisa_scale_pairing_succeeded">Paring utført.
 \n
 \nKoble til igjen for å hente målingsdata.</string>
-
-    </resources>
+    <string name="label_tdee">Totalt daglig effektforbruk (TDEE)</string>
+    <string name="label_calories">Kalorier</string>
+</resources>
