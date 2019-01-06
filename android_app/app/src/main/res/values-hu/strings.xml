@@ -161,7 +161,7 @@
     <string name="label_language">Nyelv</string>
     <string name="theme_light">Világos</string>
     <string name="theme_dark">Sötét</string>
-    <string name="label_contribute_translation">Hozzájárulás fordításhoz</string>
+    <string name="label_contribute_translation">Közreműködés honosításhoz</string>
     <string name="label_percent">Százalék</string>
     <string name="label_estimated">Becsült</string>
     <string name="label_auto_backup">Auto backup</string>
@@ -182,14 +182,14 @@
     <string name="trisa_scale_pairing_succeeded">Párosítás sikeres!
 \n
 \nÚjrakapcsolódás a mérési adatok fogadásához.</string>
-    <string name="customactivityoncrash_error_activity_error_occurred_explanation">Váratlan hiba történt.
-\n
-\nKérem, hozzon létre egy új issue-t ami tartalmazva a hiba részleteit a 
+    <string name="customactivityoncrash_error_activity_error_occurred_explanation">Váratlan hiba történt. 
+\n 
+\nKérem, hozzon létre egy új issue-t ami tartalmazza a hiba részleteit a 
 \nhttps://github.com/oliexdev/openScale/issues-on</string>
     <string name="toggle_expand">Kattintson a megnyitáshoz</string>
     <string name="permission_bluetooth_info">A Bluetooth-eszközök kereséséhez szükséges a durva tartózkodási hely hozzáférése. A készülék megtalálása után visszavonható.</string>
     <string name="permission_read_write_data_description">"openScale adatok olvasása/írása, beleértve a felhasználói infót és minden mentett mérési eredményt "</string>
-    <string name="permission_read_write_data_label">Olvasás/Írás openScale adatokat</string>
+    <string name="permission_read_write_data_label">"OpenScale adatokat olvasása/írása "</string>
     <string name="label_long_press_drag_reorder">Hosszan nyomva a mérési eredményt átrendezheti</string>
     <string name="label_include_in_overview_graph">Rajta legyen az áttekintő grafikonon</string>
     <string name="label_measurement_in_percent">Mérés %-ban</string>
@@ -225,4 +225,6 @@
     <string name="activity_level_heavy">Élénk</string>
     <string name="activity_level_extreme">Extrém</string>
     <string name="label_data_provider_enable">Harmadik fél app hozzáférése</string>
+    <string name="label_tdee">Összes napi energia kiadás (TDEE)</string>
+    <string name="label_calories">Kalória</string>
 </resources>
