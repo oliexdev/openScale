@@ -152,11 +152,9 @@ public class ScaleDatabaseProvider extends android.content.ContentProvider {
 
         if (!measurementList.isEmpty()) {
             ScaleMeasurement measurement = measurementList.get(0);
-            Timber.d("measurement found " + measurement.getDateTime());
 
-            // TODO update new values
-            //float calories = (float)values.get("calories");
-            //measurement.setCalories(calories);
+            float calories = (float)values.get("calories");
+            measurement.setCalories(calories);
 
             OpenScale.getInstance().updateScaleData(measurement);
             return 1;
