@@ -226,5 +226,7 @@
     <string name="trisa_scale_pairing_succeeded">Die Kopplung ist erfolgreich!
 \n
 \nWieder verbinden, um Messdaten abzurufen.</string>
+    <string name="label_tdee">Gesamtenergieumsatz (TDEE)</string>
+    <string name="label_calories">Kalorien</string>
 
-    </resources>
+</resources>

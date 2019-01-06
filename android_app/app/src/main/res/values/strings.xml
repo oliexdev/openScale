@@ -28,6 +28,7 @@
     <string name="label_weight">Weight</string>
     <string name="label_bmi">Body mass index (BMI)</string>
     <string name="label_bmr">Basal metabolic rate (BMR)</string>
+    <string name="label_tdee">Total Daily Energy Expenditure (TDEE)</string>
     <string name="label_fat">Body fat</string>
     <string name="label_water">Body water</string>
     <string name="label_muscle">Muscle</string>
@@ -230,6 +231,7 @@
     <string name="label_thigh">Thigh circumference</string>
     <string name="label_biceps">Biceps circumference</string>
     <string name="label_neck">Neck circumference</string>
+    <string name="label_calories">Calories</string>
     <string name="label_fat_caliper">Body fat caliper</string>
     <string name="label_caliper1_male">Chest skinfold</string>
     <string name="label_caliper2_male">Abdominal skinfold</string>
