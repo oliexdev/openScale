@@ -224,7 +224,7 @@
     <string name="activity_level_moderate">Medelhård</string>
     <string name="activity_level_heavy">Hård</string>
     <string name="activity_level_extreme">Extrem</string>
-    <string name="permission_read_data_description">läs openScale-data, inklusive användarinformation och alla sparade mätningar</string>
-    <string name="permission_read_data_label">Läs openScale-data</string>
+    <string name="permission_read_write_data_description">läs openScale-data, inklusive användarinformation och alla sparade mätningar</string>
+    <string name="permission_read_write_data_label">Läs openScale-data</string>
 <string name="label_data_provider_enable">Tillgång för tredjeparts-app</string>
 </resources>

@@ -224,8 +224,8 @@
     <string name="trisa_scale_pairing_succeeded">Το ζευγάρωμα ήταν επιτυχημένο!
 \n
 \nΕπανασυνδεθείτε για να ανακτήσετε τα δεδομένα μετρήσεων.</string>
-    <string name="permission_read_data_description">ανάγνωση δεδομένων openScale, συμπεριλαμβάνονται οι πληροφορίες χρήστη και όλες οι αποθηκευμένες μετρήσεις</string>
-    <string name="permission_read_data_label">Ανάγνωση δεδομένων openScale</string>
+    <string name="permission_read_write_data_description">ανάγνωση δεδομένων openScale, συμπεριλαμβάνονται οι πληροφορίες χρήστη και όλες οι αποθηκευμένες μετρήσεις</string>
+    <string name="permission_read_write_data_label">Ανάγνωση δεδομένων openScale</string>
     <string name="label_long_press_drag_reorder">Μακρύ πάτημα και σύρσιμο της μέτρησης για αναδιάταξη</string>
     <string name="label_click_measurement_configure">Κλικ στην μέτρηση για ρύθμιση</string>
     <string name="label_select_measurement">Επιλογή μέτρησης</string>

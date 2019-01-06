@@ -242,8 +242,8 @@
     <string name="activity_level_moderate">Moderat</string>
     <string name="activity_level_heavy">Tung</string>
     <string name="activity_level_extreme">Ekstrem</string>
-    <string name="permission_read_data_description">les openScale-data, inkludert brukerinfo, og alle lagrede målinger</string>
-    <string name="permission_read_data_label">Les openScale-data</string>
+    <string name="permission_read_write_data_description">les openScale-data, inkludert brukerinfo, og alle lagrede målinger</string>
+    <string name="permission_read_write_data_label">Les openScale-data</string>
 <string name="label_data_provider_enable">Tilgang for tredjepartsprogrammer</string>
 <string name="trisa_scale_not_paired">Denne vekten har ikke blitt parret.
 \n

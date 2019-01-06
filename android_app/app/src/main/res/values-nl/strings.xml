@@ -190,8 +190,8 @@
     <string name="permission_not_granted">Geen toestemming verleend</string>
     <string name="permission_bluetooth_info">"Locatie toestemming is nodig om te kunnen zoeken naar Bluetooth apparaten. Dit kan weer ingetrokken worden zodra  het apparaat is gevonden."</string>
     <string name="permission_bluetooth_info_title">Info</string>
-    <string name="permission_read_data_description">lees openScale gegevens, inclusief gebruikersinformatie en alle bewaarde metingen</string>
-    <string name="permission_read_data_label">Lees openScale Gegevens</string>
+    <string name="permission_read_write_data_description">lees openScale gegevens, inclusief gebruikersinformatie en alle bewaarde metingen</string>
+    <string name="permission_read_write_data_label">Lees openScale Gegevens</string>
     <string name="label_next">Volgende</string>
     <string name="label_long_press_drag_reorder">Indrukken en slepen om metingen te herordenen</string>
     <string name="label_click_measurement_configure">Klik meting om te configureren</string>

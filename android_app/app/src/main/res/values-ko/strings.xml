@@ -167,8 +167,8 @@
     <string name="permission_not_granted">권한이 주어지지 않음</string>
     <string name="permission_bluetooth_info">블루투스 장치를 검색하기 위해서 대략적인 위치 권한이 필요합니다. 장치를 찾은 후 권한을 다시 비활성화 할 수 있습니다.</string>
     <string name="permission_bluetooth_info_title">정보</string>
-    <string name="permission_read_data_description">사용자 정보와 모든 저장된 측정치를 포함한 openScale 데이터를 읽습니다</string>
-    <string name="permission_read_data_label">openScale 데이터 읽기</string>
+    <string name="permission_read_write_data_description">사용자 정보와 모든 저장된 측정치를 포함한 openScale 데이터를 읽습니다</string>
+    <string name="permission_read_write_data_label">openScale 데이터 읽기</string>
     <string name="label_next">다음</string>
     <string name="label_long_press_drag_reorder">측정치를 길게 누르고 드래그 하여 순서를 바꿀 수 있습니다</string>
     <string name="label_click_measurement_configure">측정치를 눌러 설정</string>

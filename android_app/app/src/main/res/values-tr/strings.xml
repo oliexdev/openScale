@@ -199,8 +199,8 @@
 
     <string name="permission_not_granted">İzin verilmedi</string>
     <string name="permission_bluetooth_info_title">Bilgi</string>
-    <string name="permission_read_data_description">tüm kayıtlı ölçümler ve kullanıcı bilgilerini içeren openScale verisini oku</string>
-    <string name="permission_read_data_label">openScale Verisini Okuyun</string>
+    <string name="permission_read_write_data_description">tüm kayıtlı ölçümler ve kullanıcı bilgilerini içeren openScale verisini oku</string>
+    <string name="permission_read_write_data_label">openScale Verisini Okuyun</string>
     <string name="label_next">Sonraki</string>
     <string name="label_click_measurement_configure">Yapılandırmak için ölçümü tıklayın</string>
     <string name="label_estimate_measurement">Tahmini ölçüm</string>
