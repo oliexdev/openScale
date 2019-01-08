@@ -55,7 +55,7 @@ dependencies {
     androidTestImplementation 'androidx.room:room-testing:2.1.0-alpha03'
 
     // Timber
-    implementation 'com.jakewharton.timber:timber:4.7.0'
+    implementation 'com.jakewharton.timber:timber:4.7.1'
 
     // Local unit tests
     testImplementation 'junit:junit:4.12'
