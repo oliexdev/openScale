@@ -251,4 +251,6 @@
     <string name="activity_level_heavy">Έντονο</string>
     <string name="activity_level_extreme">Ακραίο</string>
     <string name="label_data_provider_enable">Πρόσβαση εφαρμογής τρίτων</string>
+    <string name="label_tdee">Συνολική ημερήσια κατανάλωση ενέργειας (ΣΗΚΕ)</string>
+    <string name="label_calories">Θερμίδες</string>
 </resources>
