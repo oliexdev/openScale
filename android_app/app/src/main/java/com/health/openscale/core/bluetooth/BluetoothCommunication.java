@@ -50,6 +50,7 @@ public abstract class BluetoothCommunication {
         BT_INIT_PROCESS,
         BT_CONNECTION_RETRYING,
         BT_CONNECTION_ESTABLISHED,
+        BT_CONNECTION_DISCONNECT,
         BT_CONNECTION_LOST,
         BT_NO_DEVICE_FOUND,
         BT_UNEXPECTED_ERROR,
@@ -80,11 +81,14 @@ public abstract class BluetoothCommunication {
     private int cleanupStepNr;
     private BT_MACHINE_STATE btMachineState;
 
+    private Handler disconnectHandler;
+
     public BluetoothCommunication(Context context)
     {
         this.context = context;
         this.bleClient = OpenScale.getInstance().getBleClient();
         this.rxBleDeviceServices = null;
+        this.disconnectHandler = new Handler();
 
         RxJavaPlugins.setErrorHandler(e -> {
             if (e instanceof UndeliverableException && e.getCause() instanceof BleException) {
@@ -326,6 +330,7 @@ public abstract class BluetoothCommunication {
                                 Timber.d("onCharacteristicChanged %s: %s",
                                         BluetoothGattUuid.prettyPrint(characteristic),
                                         byteInHex(bytes));
+                                resetDisconnectTimer();
                             },
                             throwable -> onError(throwable)
                     );
@@ -344,8 +349,8 @@ public abstract class BluetoothCommunication {
             final Disposable disposable = connectionObservable
                     .flatMap(rxBleConnection -> rxBleConnection.setupNotification(characteristic))
                     .doOnNext(notificationObservable -> {
-                            Timber.d("Successful set notification on for %s", BluetoothGattUuid.prettyPrint(characteristic));
-                            nextMachineStateStep();
+                                Timber.d("Successful set notification on for %s", BluetoothGattUuid.prettyPrint(characteristic));
+                                nextMachineStateStep();
                             }
                     )
                     .flatMap(notificationObservable -> notificationObservable)
@@ -357,7 +362,8 @@ public abstract class BluetoothCommunication {
                                 Timber.d("onCharacteristicChanged %s: %s",
                                         BluetoothGattUuid.prettyPrint(characteristic),
                                         byteInHex(bytes));
-                                },
+                                resetDisconnectTimer();
+                            },
                             throwable -> onError(throwable)
                     );
 
@@ -440,7 +446,7 @@ public abstract class BluetoothCommunication {
         bleDevice = bleClient.getBleDevice(macAddress);
 
         connectionObservable = bleDevice
-                .establishConnection(false)
+                .establishConnection(true)
                 .takeUntil(disconnectTriggerSubject)
                 .doOnError(throwable -> setBtStatus(BT_STATUS_CODE.BT_CONNECTION_RETRYING))
                 .observeOn(AndroidSchedulers.mainThread())
@@ -457,6 +463,11 @@ public abstract class BluetoothCommunication {
                             deviceServices -> {
                                 rxBleDeviceServices = deviceServices;
                                 //setBtMonitoringOn();
+
+                                initStepNr = -1;
+                                cmdStepNr = -1;
+                                cleanupStepNr = -1;
+
                                 setBtStatus(BT_STATUS_CODE.BT_CONNECTION_ESTABLISHED);
                                 setBtMachineState(BT_MACHINE_STATE.BT_INIT_STATE);
                             },
@@ -503,13 +514,25 @@ public abstract class BluetoothCommunication {
         return bleDevice.getConnectionState() == RxBleConnection.RxBleConnectionState.CONNECTED;
     }
 
+    public void resetDisconnectTimer() {
+        disconnectHandler.removeCallbacksAndMessages(null);
+        disconnect();
+    }
+
     /**
      * Disconnect from a Bluetooth device
      */
     public void disconnect() {
-        callbackBtHandler = null;
-        disconnectTriggerSubject.onNext(true);
-        compositeDisposable.clear();
+        disconnectHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                setBtStatus(BT_STATUS_CODE.BT_CONNECTION_DISCONNECT);
+                callbackBtHandler = null;
+                disconnectTriggerSubject.onNext(true);
+                compositeDisposable.clear();
+            }
+        }, 5000);
+
     }
 
     /**
@@ -518,21 +541,25 @@ public abstract class BluetoothCommunication {
     protected void nextMachineStateStep() {
         switch (btMachineState) {
             case BT_INIT_STATE:
+                initStepNr++;
                 Timber.d("INIT STATE: %d", initStepNr);
                 if (!nextInitCmd(initStepNr)) {
                     setBtMachineState(BT_MACHINE_STATE.BT_CMD_STATE);
                 }
-                initStepNr++;
                 break;
             case BT_CMD_STATE:
-                Timber.d("CMD STATE: %d", cmdStepNr);
-                nextBluetoothCmd(cmdStepNr);
                 cmdStepNr++;
+                Timber.d("CMD STATE: %d", cmdStepNr);
+                if (!nextBluetoothCmd(cmdStepNr)) {
+                    disconnect();
+                }
                 break;
             case BT_CLEANUP_STATE:
-                Timber.d("CLEANUP STATE: %d", cleanupStepNr);
-                nextCleanUpCmd(cleanupStepNr);
                 cleanupStepNr++;
+                Timber.d("CLEANUP STATE: %d", cleanupStepNr);
+                if (!nextCleanUpCmd(cleanupStepNr)) {
+                    disconnect();
+                }
                 break;
         }
     }
