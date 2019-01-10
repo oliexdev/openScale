@@ -516,23 +516,26 @@ public abstract class BluetoothCommunication {
 
     public void resetDisconnectTimer() {
         disconnectHandler.removeCallbacksAndMessages(null);
-        disconnect();
+        disconnectWithDelay();
+    }
+
+    public void disconnectWithDelay() {
+        disconnectHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                disconnect();
+            }
+        }, 3000);
     }
 
     /**
      * Disconnect from a Bluetooth device
      */
     public void disconnect() {
-        disconnectHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                setBtStatus(BT_STATUS_CODE.BT_CONNECTION_DISCONNECT);
-                callbackBtHandler = null;
-                disconnectTriggerSubject.onNext(true);
-                compositeDisposable.clear();
-            }
-        }, 5000);
-
+        setBtStatus(BT_STATUS_CODE.BT_CONNECTION_DISCONNECT);
+        callbackBtHandler = null;
+        disconnectTriggerSubject.onNext(true);
+        compositeDisposable.clear();
     }
 
     /**
@@ -551,14 +554,14 @@ public abstract class BluetoothCommunication {
                 cmdStepNr++;
                 Timber.d("CMD STATE: %d", cmdStepNr);
                 if (!nextBluetoothCmd(cmdStepNr)) {
-                    disconnect();
+                    disconnectWithDelay();
                 }
                 break;
             case BT_CLEANUP_STATE:
                 cleanupStepNr++;
                 Timber.d("CLEANUP STATE: %d", cleanupStepNr);
                 if (!nextCleanUpCmd(cleanupStepNr)) {
-                    disconnect();
+                    disconnectWithDelay();
                 }
                 break;
         }
