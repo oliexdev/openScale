@@ -18,10 +18,10 @@ package com.health.openscale.core.bluetooth;
 
 import android.content.Context;
 
+import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
-import com.polidea.rxandroidble2.RxBleClient;
 
 import java.util.Date;
 import java.util.UUID;
@@ -60,9 +60,11 @@ public class BluetoothDigooDGSO38H extends BluetoothCommunication {
         switch (stateNr) {
             case 0:
                 //Tell device to send us weight measurements
-                setNotificationOn(WEIGHT_MEASUREMENT_CHARACTERISTIC
-                );
-                return false;
+                setNotificationOn(WEIGHT_MEASUREMENT_CHARACTERISTIC);
+                break;
+            case 1:
+                sendMessage(R.string.info_step_on_scale, 0);
+                break;
         }
 
         return false;
@@ -70,19 +72,12 @@ public class BluetoothDigooDGSO38H extends BluetoothCommunication {
 
     @Override
     protected boolean nextBluetoothCmd(int stateNr) {
-        switch (stateNr) {
-            default:
-                return false;
-        }
+        return false;
     }
 
     @Override
     protected boolean nextCleanUpCmd(int stateNr) {
-
-        switch (stateNr) {
-            default:
-                return false;
-        }
+        return false;
     }
 
     private void parseBytes(byte[] weightBytes) {

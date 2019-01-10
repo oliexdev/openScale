@@ -166,7 +166,7 @@
     <string name="label_feedback_message_negative">Ne, hvala</string>
 
     <string name="error_max_scale_users">Doseženo je bilo maksimalno število sočasnih uporabnikov tehtnice</string>
-    <string name="info_step_on_scale">Prosim, stopite bosi na tehtnico za referenčno meritev</string>
+    <string name="info_step_on_scale_for_reference">Prosim, stopite bosi na tehtnico za referenčno meritev</string>
     <string name="info_measuring">Izmerjena teža: %.2f</string>
 
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">Zgodila se je nepričakovana napaka.

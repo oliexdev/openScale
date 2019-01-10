@@ -166,7 +166,7 @@
     <string name="label_feedback_message_negative">Ne, hvala</string>
 
     <string name="error_max_scale_users">Dosegnut maksimalni broj korisnika</string>
-    <string name="info_step_on_scale">Stanite bosi na vagu radi referentnog mjerenja</string>
+    <string name="info_step_on_scale_for_reference">Stanite bosi na vagu radi referentnog mjerenja</string>
     <string name="info_measuring">Mjerenje težine: %.2f</string>
 
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">Došlo je do neočekivane pogreške

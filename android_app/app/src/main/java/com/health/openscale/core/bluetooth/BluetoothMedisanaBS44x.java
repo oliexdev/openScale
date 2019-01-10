@@ -17,9 +17,9 @@ package com.health.openscale.core.bluetooth;
 
 import android.content.Context;
 
+import com.health.openscale.R;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.utils.Converters;
-import com.polidea.rxandroidble2.RxBleClient;
 
 import java.util.Date;
 import java.util.UUID;
@@ -84,6 +84,9 @@ public class BluetoothMedisanaBS44x extends BluetoothCommunication {
                 byte[] magicBytes = new byte[] {(byte)0x02, date[0], date[1], date[2], date[3]};
 
                 writeBytes(CMD_MEASUREMENT_CHARACTERISTIC, magicBytes);
+                break;
+            case 4:
+                sendMessage(R.string.info_step_on_scale, 0);
                 break;
             default:
                 return false;

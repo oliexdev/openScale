@@ -165,7 +165,7 @@
     <string name="label_feedback_message_negative">Nei takk</string>
 
     <string name="error_max_scale_users">Maks antall samtidige vektbrukere nådd</string>
-    <string name="info_step_on_scale">Stig på vekten barføtt for referansemåling</string>
+    <string name="info_step_on_scale_for_reference">Stig på vekten barføtt for referansemåling</string>
     <string name="info_measuring">Måler vekt: %.2f</string>
 
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">En uventet feil inntraff.

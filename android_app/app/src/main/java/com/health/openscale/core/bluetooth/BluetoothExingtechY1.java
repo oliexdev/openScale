@@ -18,11 +18,11 @@ package com.health.openscale.core.bluetooth;
 
 import android.content.Context;
 
+import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
-import com.polidea.rxandroidble2.RxBleClient;
 
 import java.util.Date;
 import java.util.UUID;
@@ -60,6 +60,9 @@ public class BluetoothExingtechY1 extends BluetoothCommunication {
                 byte cmdByte[] = {(byte)0x10, (byte)userId, gender, age, height};
 
                 writeBytes(CMD_MEASUREMENT_CHARACTERISTIC, cmdByte);
+                break;
+            case 2:
+                sendMessage(R.string.info_step_on_scale, 0);
                 break;
             default:
                 return false;

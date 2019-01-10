@@ -20,12 +20,12 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.bluetooth.lib.YunmaiLib;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
-import com.polidea.rxandroidble2.RxBleClient;
 
 import java.util.Date;
 import java.util.Random;
@@ -88,6 +88,7 @@ public class BluetoothYunmaiSE_Mini extends BluetoothCommunication {
             case 3:
                 byte[] magic_bytes = new byte[]{(byte)0x0d, (byte)0x05, (byte)0x13, (byte)0x00, (byte)0x16};
                 writeBytes(WEIGHT_CMD_CHARACTERISTIC, magic_bytes);
+                sendMessage(R.string.info_step_on_scale, 0);
                 break;
             default:
                 return false;

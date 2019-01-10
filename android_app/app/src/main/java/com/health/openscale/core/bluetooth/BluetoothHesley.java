@@ -18,8 +18,8 @@ package com.health.openscale.core.bluetooth;
 
 import android.content.Context;
 
+import com.health.openscale.R;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
-import com.polidea.rxandroidble2.RxBleClient;
 
 import java.util.Date;
 import java.util.UUID;
@@ -42,12 +42,14 @@ public class BluetoothHesley extends BluetoothCommunication {
     protected boolean nextInitCmd(int stateNr) {
         switch (stateNr) {
             case 0:
-                setNotificationOn(WEIGHT_MEASUREMENT_CHARACTERISTIC
-                );
+                setNotificationOn(WEIGHT_MEASUREMENT_CHARACTERISTIC);
                 break;
             case 1:
                 byte[] magicBytes = {(byte)0xa5, (byte)0x01, (byte)0x2c, (byte)0xab, (byte)0x50, (byte)0x5a, (byte)0x29};
                 writeBytes(CMD_MEASUREMENT_CHARACTERISTIC, magicBytes);
+                break;
+            case 2:
+                sendMessage(R.string.info_step_on_scale, 0);
                 break;
             default:
                 return false;

@@ -165,7 +165,7 @@
     <string name="label_feedback_message_negative">No, dzięki</string>
 
     <string name="error_max_scale_users">Osiągnięto maksymalną ilość użytkowników wagi</string>
-    <string name="info_step_on_scale">Proszę stanąć boso na wadze w celu przeprowadzenia pomiaru referencyjnego</string>
+    <string name="info_step_on_scale_for_reference">Proszę stanąć boso na wadze w celu przeprowadzenia pomiaru referencyjnego</string>
     <string name="info_measuring">Mierzona waga: %.2f</string>
 
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">Wystąpił nieoczekiwany błąd.

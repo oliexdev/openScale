@@ -16,16 +16,13 @@
 
 package com.health.openscale.core.bluetooth;
 
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
 
+import com.health.openscale.R;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.utils.Converters;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 
 import timber.log.Timber;
@@ -106,6 +103,9 @@ public class BluetoothQNScale extends BluetoothCommunication {
                 Converters.toInt32Le(date, 0, timestamp);
                 byte[] timeMagicBytes = new byte[] {(byte)0x02, date[0], date[1], date[2], date[3]};
                 writeBytes(CUSTOM4_MEASUREMENT_CHARACTERISTIC, timeMagicBytes);
+                break;
+            case 4:
+                sendMessage(R.string.info_step_on_scale, 0);
                 break;
             default:
                 return false;

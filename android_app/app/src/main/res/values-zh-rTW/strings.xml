@@ -163,7 +163,7 @@
     <string name="label_feedback_message_negative">不用了，謝謝</string>
 
     <string name="error_max_scale_users">用戶數量已達上限</string>
-    <string name="info_step_on_scale">請赤腳站到量重器上， 以測量其他相關數據</string>
+    <string name="info_step_on_scale_for_reference">請赤腳站到量重器上， 以測量其他相關數據</string>
     <string name="info_measuring">測得體重: %.2f</string>
 
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">運行出錯。 

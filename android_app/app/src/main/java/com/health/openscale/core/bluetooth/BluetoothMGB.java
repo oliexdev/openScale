@@ -19,10 +19,10 @@ package com.health.openscale.core.bluetooth;
 
 import android.content.Context;
 
+import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
-import com.polidea.rxandroidble2.RxBleClient;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -113,6 +113,10 @@ public class BluetoothMGB extends BluetoothCommunication {
 
             case 6:
                 writeCfg(0xFE, 6, user.getScaleUnit().toInt(), 0);
+                break;
+
+            case 7:
+                sendMessage(R.string.info_step_on_scale, 0);
                 break;
 
             default:

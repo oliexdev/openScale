@@ -152,7 +152,7 @@
     <string name="label_feedback_message_negative">Нет, спасибо</string>
 
     <string name="error_max_scale_users">Достигнуто максимальное количество пользователей весов</string>
-    <string name="info_step_on_scale">Пожалуйста, встаньте босиком на весы для исходных измерений</string>
+    <string name="info_step_on_scale_for_reference">Пожалуйста, встаньте босиком на весы для исходных измерений</string>
     <string name="info_measuring">Измеренный вес: %.2f</string>
 
     <string name="customactivityoncrash_error_activity_restart_app">Перезапустить приложение</string>

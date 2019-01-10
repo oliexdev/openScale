@@ -18,17 +18,16 @@ package com.health.openscale.core.bluetooth;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import androidx.annotation.Nullable;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
-import com.polidea.rxandroidble2.RxBleClient;
 
 import java.util.UUID;
 
+import androidx.annotation.Nullable;
 import timber.log.Timber;
 
 import static com.health.openscale.core.bluetooth.lib.TrisaBodyAnalyzeLib.convertJavaTimestampToDevice;
@@ -121,9 +120,7 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
         switch (stateNr) {
             case 0:
                 // Register for notifications of the measurement characteristic.
-                setIndicationOn(
-                        MEASUREMENT_CHARACTERISTIC_UUID
-                );
+                setIndicationOn(MEASUREMENT_CHARACTERISTIC_UUID);
                 return true;  // more commands follow
             case 1:
                 // Register for notifications of the command upload characteristic.
@@ -131,9 +128,7 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
                 // This is the last init command, which causes a switch to the main state machine
                 // immediately after. This is important because we should be in the main state
                 // to handle pairing correctly.
-                setIndicationOn(
-                        UPLOAD_COMMAND_CHARACTERISTIC_UUID
-                );
+                setIndicationOn(UPLOAD_COMMAND_CHARACTERISTIC_UUID);
                 // falls through
             default:
                 return false;  // no more commands

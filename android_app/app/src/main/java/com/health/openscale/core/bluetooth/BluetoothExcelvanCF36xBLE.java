@@ -18,11 +18,11 @@ package com.health.openscale.core.bluetooth;
 
 import android.content.Context;
 
+import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
-import com.polidea.rxandroidble2.RxBleClient;
 
 import java.util.Arrays;
 import java.util.UUID;
@@ -94,8 +94,10 @@ public class BluetoothExcelvanCF36xBLE extends BluetoothCommunication {
                 writeBytes(WEIGHT_MEASUREMENT_CHARACTERISTIC, configBytes);
                 break;
             case 1:
-                setNotificationOn(WEIGHT_CUSTOM0_CHARACTERISTIC
-                );
+                setNotificationOn(WEIGHT_CUSTOM0_CHARACTERISTIC);
+                break;
+            case 2:
+                sendMessage(R.string.info_step_on_scale, 0);
                 break;
             default:
                 return false;

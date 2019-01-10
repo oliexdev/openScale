@@ -26,7 +26,6 @@ import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
-import com.polidea.rxandroidble2.RxBleClient;
 
 import java.text.Normalizer;
 import java.util.ArrayList;
@@ -487,7 +486,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
             case CMD_USER_ADD:
                 if (data[3] == 0) {
                     Timber.d("New user successfully added; time to step on scale");
-                    sendMessage(R.string.info_step_on_scale, 0);
+                    sendMessage(R.string.info_step_on_scale_for_reference, 0);
                     remoteUsers.add(currentRemoteUser);
                     sendCommand(CMD_DO_MEASUREMENT, encodeUserId(currentRemoteUser));
                     break;

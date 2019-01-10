@@ -18,12 +18,12 @@ package com.health.openscale.core.bluetooth;
 
 import android.content.Context;
 
+import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.bluetooth.lib.OneByoneLib;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
-import com.polidea.rxandroidble2.RxBleClient;
 
 import java.util.UUID;
 
@@ -72,6 +72,9 @@ public class BluetoothOneByone extends BluetoothCommunication {
                 magicBytes[magicBytes.length - 1] =
                         xorChecksum(magicBytes, 0, magicBytes.length - 1);
                 writeBytes(CMD_MEASUREMENT_CHARACTERISTIC, magicBytes);
+                break;
+            case 2:
+                sendMessage(R.string.info_step_on_scale, 0);
                 break;
             default:
                 return false;

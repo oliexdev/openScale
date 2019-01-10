@@ -525,7 +525,7 @@ public abstract class BluetoothCommunication {
             public void run() {
                 disconnect();
             }
-        }, 3000);
+        }, 45000);
     }
 
     /**
@@ -561,7 +561,7 @@ public abstract class BluetoothCommunication {
                 cleanupStepNr++;
                 Timber.d("CLEANUP STATE: %d", cleanupStepNr);
                 if (!nextCleanUpCmd(cleanupStepNr)) {
-                    disconnectWithDelay();
+                    disconnect();
                 }
                 break;
         }

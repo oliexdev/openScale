@@ -23,7 +23,6 @@ import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
-import com.polidea.rxandroidble2.RxBleClient;
 
 import java.util.Arrays;
 import java.util.UUID;
@@ -77,8 +76,7 @@ public class BluetoothInlife extends BluetoothCommunication {
     protected boolean nextInitCmd(int stateNr) {
         switch (stateNr) {
             case 0:
-                setNotificationOn(WEIGHT_MEASUREMENT_CHARACTERISTIC
-                );
+                setNotificationOn(WEIGHT_MEASUREMENT_CHARACTERISTIC);
                 break;
             case 1:
                 ScaleUser scaleUser = OpenScale.getInstance().getSelectedScaleUser();
@@ -89,6 +87,9 @@ public class BluetoothInlife extends BluetoothCommunication {
                 byte height = (byte)scaleUser.getBodyHeight();
 
                 sendCommand(0xd2, level, sex, userId, age, height);
+                break;
+            case 2:
+                sendMessage(R.string.info_step_on_scale, 0);
                 break;
             default:
                 return false;

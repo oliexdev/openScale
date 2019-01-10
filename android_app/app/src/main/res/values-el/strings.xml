@@ -164,7 +164,7 @@
     <string name="label_feedback_message_negative">Όχι, ευχαριστώ</string>
 
     <string name="error_max_scale_users">Μεγ. αριθμός ταυτόχρονων χρηστών επετεύχθη</string>
-    <string name="info_step_on_scale">Παρακαλώ, πατήστε ξυπόλυτοι επί της ζυγαριάς για μετρήσεις αναφοράς</string>
+    <string name="info_step_on_scale_for_reference">Παρακαλώ, πατήστε ξυπόλυτοι επί της ζυγαριάς για μετρήσεις αναφοράς</string>
     <string name="info_measuring">Μετρούμενο βάρος: %.2f</string>
 
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">Συνέβη απρόσμενο σφάλμα.
