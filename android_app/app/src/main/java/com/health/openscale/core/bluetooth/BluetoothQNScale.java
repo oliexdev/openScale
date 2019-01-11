@@ -20,7 +20,10 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
 
+import com.health.openscale.core.OpenScale;
+import com.health.openscale.core.bluetooth.lib.QNScaleLib;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
+import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
 
 import java.util.ArrayList;
@@ -76,6 +79,15 @@ public class BluetoothQNScale extends BluetoothCommunication {
 
     // Scale time is in seconds since 2000-01-01 00:00:00 (utc).
     private static final long SCALE_UNIX_TIMESTAMP_OFFSET = 946702800;
+
+    private static long MILLIS_2000_YEAR = 949334400000L;
+    private boolean       hasReceiveStoreData;
+    private boolean       hasReceived;
+    volatile boolean hasWork;
+    private int          protocolType;
+
+    private float        weightScale=100.0f;
+
 
     public BluetoothQNScale(Context context) {
         super(context);
@@ -264,10 +276,10 @@ public class BluetoothQNScale extends BluetoothCommunication {
                     }
                     Date date = new Date(MILLIS_2000_YEAR + (1000 * differTime));
 
-                  //   if ((System.currentTimeMillis() - date.getTime()) / a.h > 365) {
-                  //     date = new Date();
-                  // }
-                  // QNData qnData = buildMeasuredData(user, weight, resistance,  resistance500, date, data);
+                    //   if ((System.currentTimeMillis() - date.getTime()) / a.h > 365) {
+                    //     date = new Date();
+                    // }
+                    // QNData qnData = buildMeasuredData(user, weight, resistance,  resistance500, date, data);
 
                     if (data[3] == data[4]) {
                         //  this.callback.onReceivedStoreData(this.qnBleDevice, this.storageData);
@@ -289,14 +301,6 @@ public class BluetoothQNScale extends BluetoothCommunication {
 
     public static int decodeIntegerValue(byte a, byte b) {
         return ((a & 255) << 8) + (b & 255);
-    }
-
-
-}
-
-    private boolean shouldSetWeight(List<Float> weights){
-
-        return false;
     }
 
 }
