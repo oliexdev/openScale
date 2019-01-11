@@ -20,14 +20,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.preference.PreferenceManager;
-import androidx.test.InstrumentationRegistry;
-import androidx.test.ext.junit.runners.AndroidJUnit4;
-import androidx.test.rule.ActivityTestRule;
-import androidx.test.rule.GrantPermissionRule;
-import androidx.test.runner.screenshot.BasicScreenCaptureProcessor;
-import androidx.test.runner.screenshot.ScreenCapture;
-import androidx.test.runner.screenshot.Screenshot;
-import androidx.test.filters.LargeTest;
 import android.view.Gravity;
 
 import com.health.openscale.R;
@@ -52,6 +44,14 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.filters.LargeTest;
+import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.rule.ActivityTestRule;
+import androidx.test.rule.GrantPermissionRule;
+import androidx.test.runner.screenshot.BasicScreenCaptureProcessor;
+import androidx.test.runner.screenshot.ScreenCapture;
+import androidx.test.runner.screenshot.Screenshot;
 import timber.log.Timber;
 
 import static android.os.Environment.DIRECTORY_PICTURES;
@@ -81,7 +81,7 @@ public class ScreenshotRecorder {
 
     @Before
     public void initRecorder() {
-        context = InstrumentationRegistry.getTargetContext();
+        context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         openScale = OpenScale.getInstance();
 
         // Set first start to true to get the user add dialog

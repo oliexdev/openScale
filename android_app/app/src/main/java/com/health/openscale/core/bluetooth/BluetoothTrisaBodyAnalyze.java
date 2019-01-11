@@ -255,7 +255,17 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
 
     private void onScaleMeasurumentReceived(byte[] data) {
         ScaleUser user = OpenScale.getInstance().getSelectedScaleUser();
+        ScaleMeasurement measurement = parseScaleMeasurementData(data, user);
 
+        if (measurement == null) {
+            Timber.e("Failed to parse scale measure measurement data: %s", byteInHex(data));
+            return;
+        }
+
+        addScaleData(measurement);
+    }
+
+    public ScaleMeasurement parseScaleMeasurementData(byte[] data, ScaleUser user) {
         // data contains:
         //
         //   1 byte: info about presence of other fields:
@@ -272,15 +282,14 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
         // Check that we have at least weight & timestamp, which is the minimum information that
         // ScaleMeasurement needs.
         if (data.length < 9) {
-            return;  // data is too short
+            return null;  // data is too short
         }
         byte infoByte = data[0];
         boolean hasTimestamp = (infoByte & 1) == 1;
         boolean hasResistance1 = (infoByte & 2) == 2;
         boolean hasResistance2 = (infoByte & 4) == 4;
         if (!hasTimestamp) {
-            Timber.e("Failed to parse scale measure measurement data: %s", byteInHex(data));
-            return;
+            return null;
         }
         float weightKg = getBase10Float(data, 1);
         int deviceTimestamp = Converters.fromSignedInt32Le(data, 5);
@@ -307,7 +316,7 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
             measurement.setBone(trisaBodyAnalyzeLib.getBone(weightKg, impedance));
         }
 
-        addScaleData(measurement);
+        return measurement;
     }
 
     /** Write a single command byte, without any arguments. */
@@ -363,17 +372,17 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
      *
      * @throws IndexOutOfBoundsException if {@code offset < 0} or {@code offset + 4> data.length}
      */
-    private float getBase10Float(byte[] data, int offset) {
+    public float getBase10Float(byte[] data, int offset) {
         int mantissa = Converters.fromUnsignedInt24Le(data, offset);
         int exponent = data[offset + 3];  // note: byte is signed.
-        return mantissa * (float)Math.pow(10, exponent);
+        return (float)(mantissa * Math.pow(10, exponent));
     }
 
-    private int convertJavaTimestampToDevice(long javaTimestampMillis) {
+    public int convertJavaTimestampToDevice(long javaTimestampMillis) {
         return (int)((javaTimestampMillis + 500)/1000 - TIMESTAMP_OFFSET_SECONDS);
     }
 
-    private long convertDeviceTimestampToJava(int deviceTimestampSeconds) {
+    public long convertDeviceTimestampToJava(int deviceTimestampSeconds) {
         return 1000 * (TIMESTAMP_OFFSET_SECONDS + (long)deviceTimestampSeconds);
     }
 

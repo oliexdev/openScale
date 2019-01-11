@@ -1,39 +1,65 @@
 package com.health.openscale;
 
+import com.health.openscale.core.bluetooth.BluetoothTrisaBodyAnalyze;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
+import com.health.openscale.gui.MainActivity;
 
 import junit.framework.Assert;
 
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-import static com.health.openscale.core.bluetooth.lib.TrisaBodyAnalyzeLib.convertDeviceTimestampToJava;
-import static com.health.openscale.core.bluetooth.lib.TrisaBodyAnalyzeLib.convertJavaTimestampToDevice;
-import static com.health.openscale.core.bluetooth.lib.TrisaBodyAnalyzeLib.getBase10Float;
-import static com.health.openscale.core.bluetooth.lib.TrisaBodyAnalyzeLib.parseScaleMeasurementData;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.rule.ActivityTestRule;
+
 import static junit.framework.Assert.assertEquals;
 
 /** Unit tests for {@link com.health.openscale.core.bluetooth.lib.TrisaBodyAnalyzeLib}.*/
+@RunWith(AndroidJUnit4.class)
 public class TrisaBodyAnalyzeLibTest {
+
+    @Rule
+    public ActivityTestRule<MainActivity> mActivityTestRule = new ActivityTestRule<>(MainActivity.class, false, false);
+
+
+    public BluetoothTrisaBodyAnalyze trisaBodyAnalyze;
+
+    @Before
+    public void initTest() {
+        try {
+            mActivityTestRule.runOnUiThread(new Runnable() {
+                public void run() {
+                    trisaBodyAnalyze =new BluetoothTrisaBodyAnalyze(InstrumentationRegistry.getInstrumentation().getTargetContext());
+                }
+            });
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+    }
 
     @Test
     public void getBase10FloatTests() {
         double eps = 1e-9;  // margin of error for inexact floating point comparisons
-        assertEquals(0.0, getBase10Float(new byte[]{0, 0, 0, 0}, 0));
-        assertEquals(0.0, getBase10Float(new byte[]{0, 0, 0, -1}, 0));
-        assertEquals(76.1, getBase10Float(new byte[]{-70, 29, 0, -2}, 0), eps);
-        assertEquals(1234.5678, getBase10Float(new byte[]{78, 97, -68, -4}, 0), eps);
-        assertEquals(12345678e127, getBase10Float(new byte[]{78, 97, -68, 127}, 0));
-        assertEquals(12345678e-128, getBase10Float(new byte[]{78, 97, -68, -128}, 0), eps);
+
+        assertEquals(0.0f, trisaBodyAnalyze.getBase10Float(new byte[]{0, 0, 0, 0}, 0));
+        assertEquals(0.0f, trisaBodyAnalyze.getBase10Float(new byte[]{0, 0, 0, -1}, 0));
+        assertEquals(76.1f, trisaBodyAnalyze.getBase10Float(new byte[]{-70, 29, 0, -2}, 0), eps);
+        assertEquals(1234.5678f, trisaBodyAnalyze.getBase10Float(new byte[]{78, 97, -68, -4}, 0), eps);
+        assertEquals(12345678e20f, trisaBodyAnalyze.getBase10Float(new byte[]{78, 97, -68, 20}, 0));
+        assertEquals(12345678e-20f, trisaBodyAnalyze.getBase10Float(new byte[]{78, 97, -68, -20}, 0), eps);
 
         byte[] data = new byte[]{1,2,3,4,5};
-        assertEquals(0x030201*1e4, getBase10Float(data, 0));
-        assertEquals(0x040302*1e5, getBase10Float(data, 1));
+        assertEquals(0x030201*1e4f, trisaBodyAnalyze.getBase10Float(data, 0));
+        assertEquals(0x040302*1e5f, trisaBodyAnalyze.getBase10Float(data, 1));
 
         assertThrows(IndexOutOfBoundsException.class, getBase10FloatRunnable(data, -1));
         assertThrows(IndexOutOfBoundsException.class, getBase10FloatRunnable(data, 5));
@@ -42,18 +68,18 @@ public class TrisaBodyAnalyzeLibTest {
 
     @Test
     public void convertJavaTimestampToDeviceTests() {
-        assertEquals(275852082, convertJavaTimestampToDevice(1538156082000L));
+        assertEquals(275852082, trisaBodyAnalyze.convertJavaTimestampToDevice(1538156082000L));
 
         // Rounds down.
-        assertEquals(275852082, convertJavaTimestampToDevice(1538156082499L));
+        assertEquals(275852082, trisaBodyAnalyze.convertJavaTimestampToDevice(1538156082499L));
 
         // Rounds up.
-        assertEquals(275852083, convertJavaTimestampToDevice(1538156082500L));
+        assertEquals(275852083, trisaBodyAnalyze.convertJavaTimestampToDevice(1538156082500L));
     }
 
     @Test
     public void convertDeviceTimestampToJavaTests() {
-        assertEquals(1538156082000L, convertDeviceTimestampToJava(275852082));
+        assertEquals(1538156082000L, trisaBodyAnalyze.convertDeviceTimestampToJava(275852082));
     }
 
     @Test
@@ -67,7 +93,7 @@ public class TrisaBodyAnalyzeLibTest {
         user.setBodyHeight(186);
         user.setMeasureUnit(Converters.MeasureUnit.CM);
 
-        ScaleMeasurement measurement = parseScaleMeasurementData(bytes, user);
+        ScaleMeasurement measurement = trisaBodyAnalyze.parseScaleMeasurementData(bytes, user);
 
         float eps = 1e-3f;
         assertEquals(76.0f, measurement.getWeight(), eps);
@@ -83,7 +109,7 @@ public class TrisaBodyAnalyzeLibTest {
         long expected_timestamp_seconds = 1538156082L;  // Fri Sep 28 17:34:42 UTC 2018
         byte[] bytes = hexToBytes("9f:ba:1d:00:fe:32:2b:71:10:00:00:00:ff:8d:14:00:ff:00:09:00");
 
-        ScaleMeasurement measurement = parseScaleMeasurementData(bytes, null);
+        ScaleMeasurement measurement = trisaBodyAnalyze.parseScaleMeasurementData(bytes, null);
 
         assertEquals(76.1f, measurement.getWeight(), 1e-3f);
         assertEquals(new Date(expected_timestamp_seconds * 1000), measurement.getDateTime());
@@ -95,7 +121,7 @@ public class TrisaBodyAnalyzeLibTest {
         long expected_timestamp_seconds = 1538156082L;  // Fri Sep 28 17:34:42 UTC 2018
         byte[] bytes = hexToBytes("9f:ba:1d:00:fe:32:2b:71:10:00:00:00:ff:8d:14:00:ff:00:09:00");
 
-        ScaleMeasurement measurement = parseScaleMeasurementData(bytes, new ScaleUser());
+        ScaleMeasurement measurement = trisaBodyAnalyze.parseScaleMeasurementData(bytes, new ScaleUser());
 
         assertEquals(76.1f, measurement.getWeight(), 1e-3f);
         assertEquals(new Date(expected_timestamp_seconds * 1000), measurement.getDateTime());
@@ -106,11 +132,11 @@ public class TrisaBodyAnalyzeLibTest {
      * Creates a {@link Runnable} that will call getBase10Float(). In Java 8, this can be done more
      * easily with a lambda expression at the call site, but we are using Java 7.
      */
-    private static Runnable getBase10FloatRunnable(final byte[] data, final int offset) {
+    private Runnable getBase10FloatRunnable(final byte[] data, final int offset) {
         return new Runnable() {
             @Override
             public void run() {
-                getBase10Float(data, offset);
+                trisaBodyAnalyze.getBase10Float(data, offset);
             }
         };
     }
