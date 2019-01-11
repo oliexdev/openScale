@@ -20,20 +20,19 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import androidx.annotation.Nullable;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
+import com.health.openscale.core.bluetooth.lib.TrisaBodyAnalyzeLib;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
 
+import java.util.Date;
 import java.util.UUID;
 
+import androidx.annotation.Nullable;
 import timber.log.Timber;
-
-import static com.health.openscale.core.bluetooth.lib.TrisaBodyAnalyzeLib.convertJavaTimestampToDevice;
-import static com.health.openscale.core.bluetooth.lib.TrisaBodyAnalyzeLib.parseScaleMeasurementData;
 
 /**
  * Driver for Trisa Body Analyze 4.0.
@@ -98,6 +97,11 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
      * @see #nextBluetoothCmd
      */
     private boolean pairing = false;
+
+    /**
+     *  Timestamp of 2010-01-01 00:00:00 UTC (or local time?)
+     */
+    private static final long TIMESTAMP_OFFSET_SECONDS = 1262304000L;
 
     public BluetoothTrisaBodyAnalyze(Context context) {
         super(context);
@@ -251,12 +255,59 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
 
     private void onScaleMeasurumentReceived(byte[] data) {
         ScaleUser user = OpenScale.getInstance().getSelectedScaleUser();
-        ScaleMeasurement scaleMeasurement = parseScaleMeasurementData(data, user);
-        if (scaleMeasurement == null) {
+
+        // data contains:
+        //
+        //   1 byte: info about presence of other fields:
+        //           bit 0: timestamp
+        //           bit 1: resistance1
+        //           bit 2: resistance2
+        //           (other bits aren't used here)
+        //   4 bytes: weight
+        //   4 bytes: timestamp (if info bit 0 is set)
+        //   4 bytes: resistance1 (if info bit 1 is set)
+        //   4 bytes: resistance2 (if info bit 2 is set)
+        //   (following fields aren't used here)
+
+        // Check that we have at least weight & timestamp, which is the minimum information that
+        // ScaleMeasurement needs.
+        if (data.length < 9) {
+            return;  // data is too short
+        }
+        byte infoByte = data[0];
+        boolean hasTimestamp = (infoByte & 1) == 1;
+        boolean hasResistance1 = (infoByte & 2) == 2;
+        boolean hasResistance2 = (infoByte & 4) == 4;
+        if (!hasTimestamp) {
             Timber.e("Failed to parse scale measure measurement data: %s", byteInHex(data));
             return;
         }
-        addScaleData(scaleMeasurement);
+        float weightKg = getBase10Float(data, 1);
+        int deviceTimestamp = Converters.fromSignedInt32Le(data, 5);
+
+        ScaleMeasurement measurement = new ScaleMeasurement();
+        measurement.setDateTime(new Date(convertDeviceTimestampToJava(deviceTimestamp)));
+        measurement.setWeight((float) weightKg);
+
+        // Only resistance 2 is used; resistance 1 is 0, even if it is present.
+        int resistance2Offset = 9 + (hasResistance1 ? 4 : 0);
+        if (hasResistance2 && resistance2Offset + 4 <= data.length && isValidUser(user)) {
+            // Calculate body composition statistics from measured weight & resistance, combined
+            // with age, height and sex from the user profile. The accuracy of the resulting figures
+            // is questionable, but it's better than nothing. Even if the absolute numbers aren't
+            // very meaningful, it might still be useful to track changes over time.
+            float resistance2 = getBase10Float(data, resistance2Offset);
+            float impedance = resistance2 < 410f ? 3.0f : 0.3f * (resistance2 - 400f);
+
+            TrisaBodyAnalyzeLib trisaBodyAnalyzeLib = new TrisaBodyAnalyzeLib(user.getGender().isMale() ? 1 : 0, user.getAge(), user.getBodyHeight());
+
+            measurement.setFat(trisaBodyAnalyzeLib.getFat(weightKg, impedance));
+            measurement.setWater(trisaBodyAnalyzeLib.getWater(weightKg, impedance));
+            measurement.setMuscle(trisaBodyAnalyzeLib.getMuscle(weightKg, impedance));
+            measurement.setBone(trisaBodyAnalyzeLib.getBone(weightKg, impedance));
+        }
+
+        addScaleData(measurement);
     }
 
     /** Write a single command byte, without any arguments. */
@@ -303,5 +354,30 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
     private static void saveDevicePassword(Context context, String deviceId, int password) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         prefs.edit().putInt(getDevicePasswordKey(deviceId), password).apply();
+    }
+
+    /** Converts 4 bytes to a floating point number, starting from  {@code offset}.
+     *
+     * <p>The first three little-endian bytes form the 24-bit mantissa. The last byte contains the
+     * signed exponent, applied in base 10.
+     *
+     * @throws IndexOutOfBoundsException if {@code offset < 0} or {@code offset + 4> data.length}
+     */
+    private float getBase10Float(byte[] data, int offset) {
+        int mantissa = Converters.fromUnsignedInt24Le(data, offset);
+        int exponent = data[offset + 3];  // note: byte is signed.
+        return mantissa * (float)Math.pow(10, exponent);
+    }
+
+    private int convertJavaTimestampToDevice(long javaTimestampMillis) {
+        return (int)((javaTimestampMillis + 500)/1000 - TIMESTAMP_OFFSET_SECONDS);
+    }
+
+    private long convertDeviceTimestampToJava(int deviceTimestampSeconds) {
+        return 1000 * (TIMESTAMP_OFFSET_SECONDS + (long)deviceTimestampSeconds);
+    }
+
+    private boolean isValidUser(@Nullable ScaleUser user) {
+        return user != null && user.getAge() > 0 && user.getBodyHeight() > 0;
     }
 }
