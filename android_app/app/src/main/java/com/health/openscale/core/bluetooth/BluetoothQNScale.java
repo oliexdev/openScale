@@ -199,14 +199,12 @@ public class BluetoothQNScale extends BluetoothCommunication {
                                 sex = 0;
                             }
 
-
-
                             //TrisaBodyAnalyzeLib gives almost simillar values for QNScale body fat calcualtion
                             TrisaBodyAnalyzeLib qnscalelib = new TrisaBodyAnalyzeLib(sex, scaleUser.getAge(), (int)scaleUser.getBodyHeight());
 
-                            //Now much difference between resistence1 and resistence 2.
-                            //Will use resisstence 1 for now
-                            float impedance = resistance2 < 410f ? 3.0f : 0.3f * (resistance1 - 400f);
+                            //Now much difference between resistance1 and resistance2.
+                            //Will use resistance 1 for now
+                            float impedance = resistance1 < 410f ? 3.0f : 0.3f * (resistance1 - 400f);
                             btScaleMeasurement.setFat(qnscalelib.getFat(weightKg, impedance));
                             btScaleMeasurement.setWater(qnscalelib.getWater(weightKg, impedance));
                             btScaleMeasurement.setMuscle(qnscalelib.getMuscle(weightKg, impedance));
@@ -233,6 +231,7 @@ public class BluetoothQNScale extends BluetoothCommunication {
                 return;
             }
             case (byte) 33:
+                //  TODO
                 //writeBleData(CmdBuilder.buildCmd(34, this.protocolType, new int[0]));
                 return;
             case (byte) 35: {
@@ -246,13 +245,13 @@ public class BluetoothQNScale extends BluetoothCommunication {
                     }
                     Date date = new Date(MILLIS_2000_YEAR + (1000 * differTime));
 
+                    //  TODO
                     // QNData qnData = buildMeasuredData(user, weight, resistance,
                     //                                resistance500, date, data);
 
 
                     if (data[3] == data[4]) {
-                        //  this.callback.onReceivedStoreData(this.qnBleDevice, this.storageData);
-                        //  this.apiCallback.onReceiveStoreData(this.storageData);
+                        //  TODO
                         
                         return;
                     }
