@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="title_overview">Vue d\'ensemble</string>
     <string name="title_graph">Diagramme</string>
@@ -247,4 +247,15 @@
     <string name="activity_level_moderate">Modéré</string>
     <string name="activity_level_heavy">Important</string>
     <string name="activity_level_extreme">Extrême</string>
+    <string name="label_tdee">Dépense journalière totale d\'énergie</string>
+    <string name="trisa_scale_not_paired">Cette balance n\'a pas été associée !
+\n
+\nAppuyer longuement sur le bouton en bas de la balance pour la mettre en recherche d\'association, puis reconnecter pour obtenir le mot de passe de l\'appareil.</string>
+    <string name="trisa_scale_pairing_succeeded">Association réussie !
+\n
+\nReconnecter pour obtenir les mesures.</string>
+    <string name="permission_read_write_data_description">lire ou écrire les données openScale, y compris les informations d\'utilisateur et toutes les mesures enregistrées</string>
+    <string name="permission_read_write_data_label">Lire ou écrire les données openScale</string>
+    <string name="label_calories">Calories</string>
+    <string name="label_data_provider_enable">Accès d\'applis tierces</string>
 </resources>

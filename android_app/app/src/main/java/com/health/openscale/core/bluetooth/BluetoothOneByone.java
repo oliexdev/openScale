@@ -141,7 +141,7 @@ public class BluetoothOneByone extends BluetoothCommunication {
                 break;
         }
 
-        OneByoneLib oneByoneLib = new OneByoneLib(sex, scaleUser.getAge(), (int)scaleUser.getBodyHeight(), peopleType);
+        OneByoneLib oneByoneLib = new OneByoneLib(sex, scaleUser.getAge(), scaleUser.getBodyHeight(), peopleType);
 
         ScaleMeasurement scaleBtData = new ScaleMeasurement();
         scaleBtData.setWeight(weight);

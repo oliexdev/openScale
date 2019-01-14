@@ -17,9 +17,6 @@
 package com.health.openscale.core;
 
 import android.appwidget.AppWidgetManager;
-import androidx.sqlite.db.SupportSQLiteDatabase;
-import androidx.room.Room;
-import androidx.room.RoomDatabase;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -30,7 +27,6 @@ import android.net.Uri;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.provider.OpenableColumns;
-import androidx.fragment.app.Fragment;
 import android.text.format.DateFormat;
 import android.widget.Toast;
 
@@ -70,6 +66,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import androidx.fragment.app.Fragment;
+import androidx.room.Room;
+import androidx.room.RoomDatabase;
+import androidx.sqlite.db.SupportSQLiteDatabase;
 import timber.log.Timber;
 
 public class OpenScale {
@@ -106,7 +106,7 @@ public class OpenScale {
 
     public static void createInstance(Context context) {
         if (instance != null) {
-            throw new RuntimeException("OpenScale instance already created");
+            return;
         }
 
         instance = new OpenScale(context);
@@ -135,7 +135,7 @@ public class OpenScale {
                         db.setForeignKeyConstraintsEnabled(true);
                     }
                 })
-                .addMigrations(AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3)
+                .addMigrations(AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3, AppDatabase.MIGRATION_3_4)
                 .build();
         measurementDAO = appDB.measurementDAO();
         userDAO = appDB.userDAO();
@@ -524,6 +524,19 @@ public class OpenScale {
         }
 
         return numOfMonth;
+    }
+
+    public List<ScaleMeasurement> getScaleDataOfDay(int year, int month, int day) {
+        int selectedUserId = getSelectedScaleUserId();
+
+        Calendar startCalender = Calendar.getInstance();
+        Calendar endCalender = Calendar.getInstance();
+
+        startCalender.set(year, month, day, 0, 0, 0);
+        endCalender.set(year, month, day, 0, 0, 0);
+        endCalender.add(Calendar.DAY_OF_MONTH, 1);
+
+        return measurementDAO.getAllInRange(startCalender.getTime(), endCalender.getTime(), selectedUserId);
     }
 
     public List<ScaleMeasurement> getScaleDataOfMonth(int year, int month) {

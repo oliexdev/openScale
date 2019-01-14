@@ -18,11 +18,6 @@ package com.health.openscale.gui;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import androidx.test.InstrumentationRegistry;
-import androidx.test.espresso.contrib.PickerActions;
-import androidx.test.rule.ActivityTestRule;
-import androidx.test.runner.AndroidJUnit4;
-import androidx.test.filters.LargeTest;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.TimePicker;
@@ -63,6 +58,12 @@ import org.junit.runner.RunWith;
 import java.util.Calendar;
 import java.util.List;
 
+import androidx.test.espresso.contrib.PickerActions;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.filters.LargeTest;
+import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.rule.ActivityTestRule;
+
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.replaceText;
@@ -85,7 +86,7 @@ public class AddMeasurementTest {
 
     @BeforeClass
     public static void initTest() {
-        context = InstrumentationRegistry.getTargetContext();
+        context = InstrumentationRegistry.getInstrumentation().getTargetContext();
 
         openScale = OpenScale.getInstance();
 
