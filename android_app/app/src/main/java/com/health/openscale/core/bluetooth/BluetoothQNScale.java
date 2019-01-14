@@ -191,16 +191,8 @@ public class BluetoothQNScale extends BluetoothCommunication {
 
                             final ScaleUser scaleUser = OpenScale.getInstance().getSelectedScaleUser();
                             ScaleMeasurement btScaleMeasurement = new ScaleMeasurement();
-                            int sex = 0;
-
-                            if (scaleUser.getGender() == Converters.Gender.MALE) {
-                                sex = 1;
-                            } else {
-                                sex = 0;
-                            }
-
                             //TrisaBodyAnalyzeLib gives almost simillar values for QNScale body fat calcualtion
-                            TrisaBodyAnalyzeLib qnscalelib = new TrisaBodyAnalyzeLib(sex, scaleUser.getAge(), (int)scaleUser.getBodyHeight());
+                            TrisaBodyAnalyzeLib qnscalelib = new TrisaBodyAnalyzeLib(scaleUser.getGender().isMale() ? 1 : 0, scaleUser.getAge(), (int)scaleUser.getBodyHeight());
 
                             //Now much difference between resistance1 and resistance2.
                             //Will use resistance 1 for now
