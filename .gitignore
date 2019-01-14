@@ -30,3 +30,9 @@ proguard/
 *.iml
 /.idea/workspace.xml
 /.idea/libraries
+build.gradle
+gradle/wrapper/gradle-wrapper.properties
+gradle/wrapper/gradle-wrapper.jar
+gradlew
+gradlew.bat
+*.un~
