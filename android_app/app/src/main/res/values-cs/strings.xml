@@ -172,7 +172,7 @@
     <string name="label_weeks_view">Týdenní přehled</string>
 
     <string name="permission_not_granted">Oprávnění nebylo nastavené</string>
-    <string name="permission_read_data_label">Číst data openScale</string>
+    <string name="permission_read_write_data_label">Číst data openScale</string>
     <string name="label_next">Další</string>
     <string name="label_set_default_order">Nastavit implicitní pořadí</string>
     <string name="language_default">Systémové nastavení</string>

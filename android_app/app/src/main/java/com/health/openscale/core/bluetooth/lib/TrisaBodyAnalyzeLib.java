@@ -1,4 +1,5 @@
 /*  Copyright (C) 2018  Maks Verver <maks@verver.ch>
+ *                2019 olie.xdev <olie.xdev@googlemail.com>
  *
  *    This program is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -15,14 +16,6 @@
  */
 package com.health.openscale.core.bluetooth.lib;
 
-import androidx.annotation.Nullable;
-
-import com.health.openscale.core.datatypes.ScaleMeasurement;
-import com.health.openscale.core.datatypes.ScaleUser;
-import com.health.openscale.core.utils.Converters;
-
-import java.util.Date;
-
 /**
  * Class with static helper methods. This is a separate class for testing purposes.
  *
@@ -30,100 +23,57 @@ import java.util.Date;
  */
 public class TrisaBodyAnalyzeLib {
 
-    // Timestamp of 2010-01-01 00:00:00 UTC (or local time?)
-    private static final long TIMESTAMP_OFFSET_SECONDS = 1262304000L;
+    private boolean isMale;
+    private int ageYears;
+    private float heightCm;
 
-    /** Converts 4 bytes to a floating point number, starting from  {@code offset}.
-     *
-     * <p>The first three little-endian bytes form the 24-bit mantissa. The last byte contains the
-     * signed exponent, applied in base 10.
-     *
-     * @throws IndexOutOfBoundsException if {@code offset < 0} or {@code offset + 4> data.length}
-     */
-    public static double getBase10Float(byte[] data, int offset) {
-        int mantissa = Converters.fromUnsignedInt24Le(data, offset);
-        int exponent = data[offset + 3];  // note: byte is signed.
-        return mantissa * Math.pow(10, exponent);
+    public TrisaBodyAnalyzeLib(int sex, int age, float height) {
+        isMale = sex == 1 ? true : false; // male = 1; female = 0
+        ageYears = age;
+        heightCm = height;
     }
 
-    public static int convertJavaTimestampToDevice(long javaTimestampMillis) {
-        return (int)((javaTimestampMillis + 500)/1000 - TIMESTAMP_OFFSET_SECONDS);
+    public float getBMI(float weightKg) {
+        return weightKg * 1e4f / (heightCm * heightCm);
     }
 
-    public static long convertDeviceTimestampToJava(int deviceTimestampSeconds) {
-        return 1000 * (TIMESTAMP_OFFSET_SECONDS + (long)deviceTimestampSeconds);
+    public float getWater(float weightKg, float impedance) {
+        float bmi = getBMI(weightKg);
+
+        float water = isMale
+                ? 87.51f + (-1.162f * bmi - 0.00813f * impedance + 0.07594f * ageYears)
+                : 77.721f + (-1.148f * bmi - 0.00573f * impedance + 0.06448f * ageYears);
+
+        return water;
     }
 
-    @Nullable
-    public static ScaleMeasurement parseScaleMeasurementData(byte[] data, @Nullable ScaleUser user) {
-        // data contains:
-        //
-        //   1 byte: info about presence of other fields:
-        //           bit 0: timestamp
-        //           bit 1: resistance1
-        //           bit 2: resistance2
-        //           (other bits aren't used here)
-        //   4 bytes: weight
-        //   4 bytes: timestamp (if info bit 0 is set)
-        //   4 bytes: resistance1 (if info bit 1 is set)
-        //   4 bytes: resistance2 (if info bit 2 is set)
-        //   (following fields aren't used here)
+    public float getFat(float weightKg, float impedance) {
+        float bmi = getBMI(weightKg);
 
-        // Check that we have at least weight & timestamp, which is the minimum information that
-        // ScaleMeasurement needs.
-        if (data.length < 9) {
-            return null;  // data is too short
-        }
-        byte infoByte = data[0];
-        boolean hasTimestamp = (infoByte & 1) == 1;
-        boolean hasResistance1 = (infoByte & 2) == 2;
-        boolean hasResistance2 = (infoByte & 4) == 4;
-        if (!hasTimestamp) {
-            return null;
-        }
-        double weightKg = getBase10Float(data, 1);
-        int deviceTimestamp = Converters.fromSignedInt32Le(data, 5);
+        float fat = isMale
+                ? bmi * (1.479f + 4.4e-4f * impedance) + 0.1f * ageYears - 21.764f
+                : bmi * (1.506f + 3.908e-4f * impedance) + 0.1f * ageYears - 12.834f;
 
-        ScaleMeasurement measurement = new ScaleMeasurement();
-        measurement.setDateTime(new Date(convertDeviceTimestampToJava(deviceTimestamp)));
-        measurement.setWeight((float) weightKg);
-
-        // Only resistance 2 is used; resistance 1 is 0, even if it is present.
-        int resistance2Offset = 9 + (hasResistance1 ? 4 : 0);
-        if (hasResistance2 && resistance2Offset + 4 <= data.length && isValidUser(user)) {
-            // Calculate body composition statistics from measured weight & resistance, combined
-            // with age, height and sex from the user profile. The accuracy of the resulting figures
-            // is questionable, but it's better than nothing. Even if the absolute numbers aren't
-            // very meaningful, it might still be useful to track changes over time.
-            double resistance2 = getBase10Float(data, resistance2Offset);
-            int ageYears = user.getAge();
-            double heightCm = Converters.toCentimeter(user.getBodyHeight(), user.getMeasureUnit());
-            boolean isMale = user.getGender().isMale();
-            double impedance = resistance2 < 410 ? 3.0 : 0.3 * (resistance2 - 400);
-            double bmi = weightKg * 1e4 / (heightCm * heightCm);
-            double fat = isMale
-                    ? bmi * (1.479 + 4.4e-4 * impedance) + 0.1 * ageYears - 21.764
-                    : bmi * (1.506 + 3.908e-4 * impedance) + 0.1 * ageYears - 12.834;
-            double water = isMale
-                    ? 87.51 + (-1.162 * bmi - 0.00813 * impedance + 0.07594 * ageYears)
-                    : 77.721 + (-1.148 * bmi - 0.00573 * impedance + 0.06448 * ageYears);
-            double muscle = isMale
-                    ? 74.627 + (-0.811 * bmi - 0.00565 * impedance - 0.367 * ageYears)
-                    : 57.0 + (-0.694 * bmi - 0.00344 * impedance - 0.255 * ageYears);
-            double bone = isMale
-                    ? 7.829 + (-0.0855 * bmi - 5.92e-4 * impedance - 0.0389 * ageYears)
-                    : 7.98 + (-0.0973 * bmi - 4.84e-4 * impedance - 0.036 * ageYears);
-            measurement.setFat((float) fat);
-            measurement.setWater((float) water);
-            measurement.setMuscle((float) muscle);
-            measurement.setBone((float) bone);
-        }
-        return measurement;
+        return fat;
     }
 
-    private static boolean isValidUser(@Nullable ScaleUser user) {
-        return user != null && user.getAge() > 0 && user.getBodyHeight() > 0;
+    public float getMuscle(float weightKg, float impedance) {
+        float bmi = getBMI(weightKg);
+
+        float muscle = isMale
+                ? 74.627f + (-0.811f * bmi - 0.00565f * impedance - 0.367f * ageYears)
+                : 57.0f + (-0.694f * bmi - 0.00344f * impedance - 0.255f * ageYears);
+
+        return muscle;
     }
 
-    private TrisaBodyAnalyzeLib() {}
+    public float getBone(float weightKg, float impedance) {
+        float bmi = getBMI(weightKg);
+
+        float bone = isMale
+                ? 7.829f + (-0.0855f * bmi - 5.92e-4f * impedance - 0.0389f * ageYears)
+                : 7.98f + (-0.0973f * bmi - 4.84e-4f * impedance - 0.036f * ageYears);
+
+        return bone;
+    }
 }

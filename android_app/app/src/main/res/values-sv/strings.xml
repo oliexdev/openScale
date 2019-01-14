@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="title_overview">Översikt</string>
     <string name="title_graph">Graf</string>
@@ -224,7 +224,15 @@
     <string name="activity_level_moderate">Medelhård</string>
     <string name="activity_level_heavy">Hård</string>
     <string name="activity_level_extreme">Extrem</string>
-    <string name="permission_read_data_description">läs openScale-data, inklusive användarinformation och alla sparade mätningar</string>
-    <string name="permission_read_data_label">Läs openScale-data</string>
+    <string name="permission_read_write_data_description">läs openScale-data, inklusive användarinformation och alla sparade mätningar</string>
+    <string name="permission_read_write_data_label">Läs openScale-data</string>
 <string name="label_data_provider_enable">Tillgång för tredjeparts-app</string>
+    <string name="label_tdee">Totala dagliga energiförbrukningen (TDEE)</string>
+    <string name="trisa_scale_not_paired">Vågen har inte parats!
+\n
+\nHåll in knappen under vågen för att växla till parningsläge, och anslut sedan igen för att hämta enhetens lösenord.</string>
+    <string name="trisa_scale_pairing_succeeded">Parningen lyckades!
+\n
+\nAnslut igen för att hämta mätdata.</string>
+    <string name="label_calories">Kalorier</string>
 </resources>

@@ -25,7 +25,6 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
-import androidx.core.content.ContextCompat;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.util.TypedValue;
@@ -50,6 +49,7 @@ import com.health.openscale.core.evaluation.EvaluationResult;
 import java.util.ArrayList;
 import java.util.List;
 
+import androidx.core.content.ContextCompat;
 import lecho.lib.hellocharts.util.ChartUtils;
 
 import static com.health.openscale.gui.views.MeasurementView.MeasurementViewMode.ADD;
@@ -126,6 +126,8 @@ public abstract class MeasurementView extends TableLayout {
             unsorted.add(new Caliper2MeasurementView(context));
             unsorted.add(new Caliper3MeasurementView(context));
             unsorted.add(new BMRMeasurementView(context));
+            unsorted.add(new TDEEMeasurementView(context));
+            unsorted.add(new CaloriesMeasurementView(context));
             unsorted.add(new CommentMeasurementView(context));
 
             // Get sort order

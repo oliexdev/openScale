@@ -15,10 +15,7 @@
 */
 package com.health.openscale;
 
-import androidx.room.Room;
 import android.content.Context;
-import androidx.test.InstrumentationRegistry;
-import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.health.openscale.core.database.AppDatabase;
 import com.health.openscale.core.database.ScaleMeasurementDAO;
@@ -36,6 +33,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import androidx.room.Room;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -51,7 +52,7 @@ public class DatabaseTest {
 
     @Before
     public void initDatabase() {
-        Context context = InstrumentationRegistry.getTargetContext();
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         appDB = Room.inMemoryDatabaseBuilder(context, AppDatabase.class).build();
         userDao = appDB.userDAO();
         measurementDAO = appDB.measurementDAO();
