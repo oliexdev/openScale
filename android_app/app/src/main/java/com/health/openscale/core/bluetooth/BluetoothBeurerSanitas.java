@@ -178,6 +178,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
             case 1:
                 // Say "Hello" to the scale and wait for ack
                 sendAlternativeStartCode(ID_START_NIBBLE_INIT, (byte) 0x01);
+                stopMachineState();
                 break;
             case 2:
                 // Update time on the scale (no ack)
@@ -187,10 +188,11 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
             case 3:
                 // Request scale status and wait for ack
                 sendCommand(CMD_SCALE_STATUS, encodeUserId(null));
-                break;
+                stopMachineState();
             case 4:
                 // Request list of all users and wait until all have been received
                 sendCommand(CMD_USER_LIST);
+                stopMachineState();
                 break;
             case 5:
                 // If currentRemoteUser is null, indexOf returns -1 and index will be 0
@@ -211,8 +213,8 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                     sendCommand(CMD_GET_SAVED_MEASUREMENTS, encodeUserId(currentRemoteUser));
 
                     // Return to this state until all users have been processed
-                    repeatMachineStateStep();
                     stopMachineState();
+                    repeatMachineStateStep();
                 }
                 break;
             case 6:
