@@ -60,7 +60,8 @@ public abstract class BluetoothCommunication {
     public enum BT_MACHINE_STATE {
         BT_INIT_STATE,
         BT_CMD_STATE,
-        BT_CLEANUP_STATE
+        BT_CLEANUP_STATE,
+        BT_STOPPED_STATE
     }
 
     private final int BT_RETRY_TIMES_ON_ERROR = 3;
@@ -80,6 +81,7 @@ public abstract class BluetoothCommunication {
     private int initStepNr;
     private int cleanupStepNr;
     private BT_MACHINE_STATE btMachineState;
+    private BT_MACHINE_STATE btStopppedMachineState;
 
     private Handler disconnectHandler;
 
@@ -201,22 +203,41 @@ public abstract class BluetoothCommunication {
     abstract protected boolean nextBluetoothCmd(int stateNr);
 
     /**
-     * Set the next command number of the current state.
-     *
-     * @param nextCommand next command to select
+     * Repeat the current machine state step
      */
-    protected void setNextCmd(int nextCommand) {
+    protected void repeatMachineStateStep() {
         switch (btMachineState) {
             case BT_INIT_STATE:
-                initStepNr = nextCommand - 1;
+                initStepNr = initStepNr - 1;
                 break;
             case BT_CMD_STATE:
-                cmdStepNr = nextCommand - 1;
+                cmdStepNr = cmdStepNr - 1;
                 break;
             case BT_CLEANUP_STATE:
-                cleanupStepNr = nextCommand - 1;
+                cleanupStepNr = cleanupStepNr - 1;
                 break;
         }
+
+        nextMachineStateStep();
+    }
+
+    /**
+     * Stopped the current machine state
+     */
+    protected void stopMachineState() {
+        Timber.d("Machine state stopped");
+        btStopppedMachineState = btMachineState;
+        btMachineState = BT_MACHINE_STATE.BT_STOPPED_STATE;
+    }
+
+    /**
+     * Resumed the current machine state
+     */
+    protected void resumeMachineState() {
+        Timber.d("Machine state resumed");
+        btMachineState = btStopppedMachineState;
+
+        nextMachineStateStep();
     }
 
     /**

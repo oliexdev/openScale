@@ -211,7 +211,8 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                     sendCommand(CMD_GET_SAVED_MEASUREMENTS, encodeUserId(currentRemoteUser));
 
                     // Return to this state until all users have been processed
-                    setNextCmd(stateNr);
+                    repeatMachineStateStep();
+                    stopMachineState();
                 }
                 break;
             case 6:
@@ -226,10 +227,12 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                 }
                 if (currentRemoteUser == null) {
                     createRemoteUser(selectedUser);
+                    stopMachineState();
                 }
                 break;
             case 7:
                 sendCommand(CMD_USER_DETAILS, encodeUserId(currentRemoteUser));
+                stopMachineState();
                 break;
             default:
                 // Finish init if everything is done
@@ -245,6 +248,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
             case 0:
                 if (!currentRemoteUser.isNew) {
                     sendCommand(CMD_DO_MEASUREMENT, encodeUserId(currentRemoteUser));
+                    stopMachineState();
                 }
                 break;
             case 1:
@@ -279,6 +283,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
 
         if (data[0] == getAlternativeStartByte(ID_START_NIBBLE_INIT)) {
             Timber.d("Got init ack from scale; scale is ready");
+            resumeMachineState();
             return;
         }
 
@@ -350,6 +355,9 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                 }
             }
         }
+
+        // All users received
+        resumeMachineState();
     }
 
     private void processMeasurementData(byte[] data, int offset, boolean firstPart) {
@@ -454,6 +462,8 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                 if (requestedUnit != currentUnit) {
                     Timber.d("Set scale unit to %s (%d)", user.getScaleUnit(), requestedUnit);
                     sendCommand(CMD_SET_UNIT, requestedUnit);
+                } else {
+                    resumeMachineState();
                 }
                 break;
 
@@ -461,17 +471,24 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                 if (data[3] == 0) {
                     Timber.d("Scale unit successfully set");
                 }
+                resumeMachineState();
                 break;
 
             case CMD_USER_LIST:
                 int userCount = data[4] & 0xFF;
                 int maxUserCount = data[5] & 0xFF;
                 Timber.d("Have %d users (max is %d)", userCount, maxUserCount);
+                if (userCount == 0) {
+                    resumeMachineState();
+                }
                 // Otherwise wait for CMD_USER_INFO notifications
                 break;
 
             case CMD_GET_SAVED_MEASUREMENTS:
                 int measurementCount = data[3] & 0xFF;
+                if (measurementCount == 0) {
+                    resumeMachineState();
+                }
                 // Otherwise wait for CMD_SAVED_MEASUREMENT notifications which will,
                 // once all measurements have been received, trigger a call to delete them.
                 // Once the ack for that is received, we resume the state machine (see below).
@@ -481,6 +498,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                 if (data[3] == 0) {
                     Timber.d("Saved measurements successfully deleted");
                 }
+                resumeMachineState();
                 break;
 
             case CMD_USER_ADD:
@@ -517,6 +535,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                     Timber.d("Name: %s, Birthday: %d-%02d-%02d, Height: %d, Sex: %s, activity: %d",
                             name, year, month, day, height, male ? "male" : "female", activity);
                 }
+                resumeMachineState();
                 break;
 
             default:
