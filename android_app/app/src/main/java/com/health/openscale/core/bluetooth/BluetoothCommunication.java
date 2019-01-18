@@ -203,7 +203,7 @@ public abstract class BluetoothCommunication {
     abstract protected boolean nextBluetoothCmd(int stateNr);
 
     /**
-     * Repeat the current machine state step
+     * Step the current machine state one step back. Needs to be called before a command
      */
     protected void repeatMachineStateStep() {
         switch (btMachineState) {
@@ -217,8 +217,6 @@ public abstract class BluetoothCommunication {
                 cleanupStepNr = cleanupStepNr - 1;
                 break;
         }
-
-        nextMachineStateStep();
     }
 
     /**
@@ -467,7 +465,7 @@ public abstract class BluetoothCommunication {
         bleDevice = bleClient.getBleDevice(macAddress);
 
         connectionObservable = bleDevice
-                .establishConnection(true)
+                .establishConnection(false)
                 .takeUntil(disconnectTriggerSubject)
                 .doOnError(throwable -> setBtStatus(BT_STATUS_CODE.BT_CONNECTION_RETRYING))
                 .observeOn(AndroidSchedulers.mainThread())
@@ -544,9 +542,10 @@ public abstract class BluetoothCommunication {
         disconnectHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
+                Timber.d("Timeout disconnect");
                 disconnect();
             }
-        }, 45000);
+        }, 60000); // 60s timeout
     }
 
     /**
@@ -555,6 +554,7 @@ public abstract class BluetoothCommunication {
     public void disconnect() {
         setBtStatus(BT_STATUS_CODE.BT_CONNECTION_DISCONNECT);
         callbackBtHandler = null;
+        disconnectHandler.removeCallbacksAndMessages(null);
         disconnectTriggerSubject.onNext(true);
         compositeDisposable.clear();
     }
