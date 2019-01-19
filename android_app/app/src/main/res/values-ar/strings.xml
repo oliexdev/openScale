@@ -1,2 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources><string name="title_overview">نظرة عامة</string>
+    <string name="title_graph">جدولة</string>
+    <string name="title_table">لائحة</string>
+    <string name="title_statistics">إحصائيات</string>
+    <string name="title_users">مستعملون</string>
+    <string name="title_measurements">قياسات</string>
+    <string name="title_about">عنا</string>
+    <string name="title_general">عامة</string>
+    <string name="action_settings">إعدادات</string>
+    <string name="action_bluetooth_status">حالة البلوتوث</string>
+    <string name="open_drawer">إفتح</string>
+    <string name="close_drawer">إغلاق</string>
+    <string name="label_cancel">إلغاء</string>
+    <string name="label_ok">تم</string>
+    <string name="label_yes">نعم</string>
+    <string name="label_no">لا</string>
+    <string name="label_delete">حذف</string>
+    <string name="label_add_user">إضافة مستعمل</string>
+    <string name="label_add_measurement">اضافة قياس</string>
+    <string name="label_share">مشاركة</string>
+    <string name="label_share_subject">"تصدرير بيانات CSV "</string>
+    <string name="label_weight">وزن</string>
+    <string name="label_bmi">"مؤشر كتلة الجسم (BMI) "</string>
+    <string name="label_bmr">معدل الأيض الأساسي (BMR)</string>
+    <string name="label_tdee">مجموع نفقات الطاقة اليومية (TDEE)</string>
+    <string name="label_fat">دهون الجسم</string>
+    <string name="label_water">ماء الجسم</string>
+    <string name="label_muscle">العضلات</string>
+    <string name="label_lbm">كتلة بدون دهنيات</string>
+    <string name="label_waist">محيط الخصر
+\n</string>
+    <string name="label_hip">محيط الورك</string>
+    <string name="label_comment">علق</string>
+    <string name="label_whtr">نسبة الخصر إلى الطول</string>
+    <string name="label_whr">نسبة الخصر إلى الورك</string>
+    <string name="label_bone">كتلة عضمية</string>
+    <string name="label_smartUserAssign">"التعيين الذكي للمستخدم "</string>
+    <plurals name="label_days">
+    <item quantity="zero">صفر</item>
+    <item quantity="one">واحد</item>
+    <item quantity="two">اثنان</item>
+    <item quantity="few">بعض</item>
+    <item quantity="many">كثيرة</item>
+    <item quantity="other">اخرى</item>
+</plurals>
+    <string name="label_last_week">الأسبوع الماضي</string>
+    <string name="label_last_month">الشهر الماضي</string>
+    <string name="label_weight_difference">فرق الوزن</string>
+    <string name="label_goal_date_is">تاريخ الهدف:</string>
+    <string name="label_days_left">ايام متبقية</string>
+    <string name="label_date">تاريخ</string>
+    <string name="label_time">وقت</string>
+    <string name="label_birthday">ميلاد</string>
+    <string name="label_user_name">اسم</string>
+    <string name="label_height">طول</string>
+    <string name="label_scale_unit">وحدة القياس</string>
+    <string name="label_gender">جنس</string>
+    <string name="label_male">ذكر</string>
+    <string name="label_female">انثى</string>
+</resources>
