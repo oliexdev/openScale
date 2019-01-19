@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="title_overview">סקירה</string>
     <string name="title_graph">תרשים</string>
@@ -253,5 +253,9 @@
     <string name="trisa_scale_pairing_succeeded">הצימוד הצליח!
 \n
 \nיש להתחבר מחדש כדי לקבל את נתוני המדידות.</string>
-
-    </resources>
+    <string name="label_tdee">הוצאה קלורית יומית (TDEE)</string>
+    <string name="info_bluetooth_no_device_retrying">לא ניתן להתחבר, מתבצע ניסיון חוזר…</string>
+    <string name="info_bluetooth_connection_disconnected">חיבור ה־Bluetooth נסגר</string>
+    <string name="info_step_on_scale">נא לעלות על המשקל ברגליים יחפות</string>
+    <string name="label_calories">קלוריות</string>
+</resources>
