@@ -253,4 +253,7 @@
 \nKoble til igjen for å hente målingsdata.</string>
     <string name="label_tdee">Totalt daglig effektforbruk (TDEE)</string>
     <string name="label_calories">Kalorier</string>
+    <string name="info_bluetooth_no_device_retrying">Kan ikke etablere forbindelse, prøver igjen…</string>
+    <string name="info_bluetooth_connection_disconnected">Blåtannstilkobling lukket</string>
+    <string name="info_step_on_scale">Tre opp på vekta barfot</string>
 </resources>
