@@ -23,8 +23,6 @@ import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import androidx.fragment.app.Fragment;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -39,6 +37,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
@@ -50,6 +49,7 @@ import com.health.openscale.gui.views.BMRMeasurementView;
 import com.health.openscale.gui.views.FloatMeasurementView;
 import com.health.openscale.gui.views.MeasurementView;
 import com.health.openscale.gui.views.MeasurementViewSettings;
+import com.health.openscale.gui.views.TDEEMeasurementView;
 import com.health.openscale.gui.views.WeightMeasurementView;
 
 import java.text.SimpleDateFormat;
@@ -59,6 +59,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Stack;
 
+import androidx.fragment.app.Fragment;
 import lecho.lib.hellocharts.formatter.SimpleLineChartValueFormatter;
 import lecho.lib.hellocharts.listener.ColumnChartOnValueSelectListener;
 import lecho.lib.hellocharts.listener.LineChartOnValueSelectListener;
@@ -339,7 +340,8 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             if (view instanceof FloatMeasurementView) {
                 FloatMeasurementView measurementView = (FloatMeasurementView) view;
 
-                if (measurementView instanceof BMRMeasurementView) {
+                if (measurementView instanceof BMRMeasurementView
+                        || measurementView instanceof TDEEMeasurementView) {
                     continue;
                 }
 

@@ -21,7 +21,6 @@ import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,6 +40,7 @@ import com.health.openscale.core.utils.DateTimeHelpers;
 import com.health.openscale.gui.views.BMRMeasurementView;
 import com.health.openscale.gui.views.FloatMeasurementView;
 import com.health.openscale.gui.views.MeasurementView;
+import com.health.openscale.gui.views.TDEEMeasurementView;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -48,6 +48,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Stack;
 
+import androidx.fragment.app.Fragment;
 import lecho.lib.hellocharts.formatter.SimpleLineChartValueFormatter;
 import lecho.lib.hellocharts.listener.LineChartOnValueSelectListener;
 import lecho.lib.hellocharts.listener.PieChartOnValueSelectListener;
@@ -274,7 +275,8 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         for (MeasurementView view : measurementViews) {
             if (!view.isVisible()
                 || !(view instanceof FloatMeasurementView)
-                || view instanceof BMRMeasurementView) {
+                || view instanceof BMRMeasurementView
+                || view instanceof TDEEMeasurementView) {
                 continue;
             }
 
