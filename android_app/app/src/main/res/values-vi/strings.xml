@@ -163,7 +163,7 @@
     <string name="label_feedback_message_negative">Không, cảm ơn</string>
 
     <string name="error_max_scale_users">Đã đạt đến số người sử đụng cùng lúc tối đa</string>
-    <string name="info_step_on_scale">Vui lòng bước chân trần lên cân để lấy số đo tham chiếu</string>
+    <string name="info_step_on_scale_for_reference">Vui lòng bước chân trần lên cân để lấy số đo tham chiếu</string>
     <string name="info_measuring">Đang đo trọng lượng: %.2f</string>
     <string name="trisa_scale_not_paired">Cân này chưa được ghép đôi!
 \n

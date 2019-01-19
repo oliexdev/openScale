@@ -193,7 +193,7 @@
     <string name="label_feedback_message_enjoying">Êtes-vous satisfait d\'openScale ?</string>
     <string name="label_feedback_message_rate_app">Laisser une évaluation sur Google Play ou GitHub ?</string>
     <string name="error_max_scale_users">Le nombre maximum d\'utilisateurs de la balance atteint</string>
-    <string name="info_step_on_scale">Montez svp sur la balance, pieds nus, pour les mesures de référence</string>
+    <string name="info_step_on_scale_for_reference">Montez svp sur la balance, pieds nus, pour les mesures de référence</string>
     <string name="info_measuring">En train de mesurer le poids : %.2f</string>
 
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">Une erreur est apparue.

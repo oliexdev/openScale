@@ -50,6 +50,8 @@ import com.health.openscale.gui.views.LBMMeasurementView;
 import com.health.openscale.gui.views.MeasurementViewSettings;
 import com.health.openscale.gui.views.WaterMeasurementView;
 import com.health.openscale.gui.widget.WidgetProvider;
+import com.polidea.rxandroidble2.RxBleClient;
+import com.polidea.rxandroidble2.internal.RxBleLog;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -87,6 +89,7 @@ public class OpenScale {
     private List<ScaleMeasurement> scaleMeasurementList;
 
     private BluetoothCommunication btDeviceDriver;
+    private RxBleClient bleClient;
     private AlarmHandler alarmHandler;
 
     private Context context;
@@ -98,6 +101,9 @@ public class OpenScale {
         alarmHandler = new AlarmHandler();
         btDeviceDriver = null;
         fragmentList = new ArrayList<>();
+        bleClient = RxBleClient.create(context);
+
+        RxBleLog.setLogger((level, tag, msg) -> Timber.tag(tag).log(level, msg));
 
         reopenDatabase(false);
 
@@ -118,6 +124,10 @@ public class OpenScale {
         }
 
         return instance;
+    }
+
+    public RxBleClient getBleClient() {
+        return bleClient;
     }
 
     public void reopenDatabase(boolean truncate) throws SQLiteDatabaseCorruptException {
@@ -596,7 +606,7 @@ public class OpenScale {
         }
 
         Timber.d("Disconnecting from bluetooth device");
-        btDeviceDriver.disconnect(true);
+        btDeviceDriver.disconnect();
         btDeviceDriver = null;
 
         return true;

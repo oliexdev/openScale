@@ -19,8 +19,6 @@
 */
 package com.health.openscale.core.bluetooth;
 
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
 
 import com.health.openscale.R;
@@ -175,13 +173,12 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
         switch (stateNr) {
             case 0:
                 // Setup notification
-                setNotificationOn(CUSTOM_SERVICE_1, CUSTOM_CHARACTERISTIC_WEIGHT,
-                        BluetoothGattUuid.DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION);
+                setNotificationOn(CUSTOM_CHARACTERISTIC_WEIGHT);
                 break;
             case 1:
+                stopMachineState();
                 // Say "Hello" to the scale and wait for ack
                 sendAlternativeStartCode(ID_START_NIBBLE_INIT, (byte) 0x01);
-                pauseBtStateMachine();
                 break;
             case 2:
                 // Update time on the scale (no ack)
@@ -189,14 +186,14 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                 sendAlternativeStartCode(ID_START_NIBBLE_SET_TIME, Converters.toInt32Be(unixTime));
                 break;
             case 3:
+                stopMachineState();
                 // Request scale status and wait for ack
                 sendCommand(CMD_SCALE_STATUS, encodeUserId(null));
-                pauseBtStateMachine();
                 break;
             case 4:
+                stopMachineState();
                 // Request list of all users and wait until all have been received
                 sendCommand(CMD_USER_LIST);
-                pauseBtStateMachine();
                 break;
             case 5:
                 // If currentRemoteUser is null, indexOf returns -1 and index will be 0
@@ -213,15 +210,14 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
 
                 // Fetch saved measurements
                 if (currentRemoteUser != null) {
+                    // Return to this state until all users have been processed
+                    repeatMachineStateStep();
+                    stopMachineState();
+
                     Timber.d("Request saved measurements for %s", currentRemoteUser.name);
                     sendCommand(CMD_GET_SAVED_MEASUREMENTS, encodeUserId(currentRemoteUser));
-
-                    // Return to this state until all users have been processed
-                    setNextCmd(stateNr);
-                    pauseBtStateMachine();
-                }
-                else {
-                    postHandleRequest();
+                    } else {
+                    nextMachineStateStep();
                 }
                 break;
             case 6:
@@ -236,15 +232,14 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                 }
                 if (currentRemoteUser == null) {
                     createRemoteUser(selectedUser);
-                    pauseBtStateMachine();
-                }
-                else {
-                    postHandleRequest();
+                    stopMachineState();
+                } else {
+                    nextMachineStateStep();
                 }
                 break;
             case 7:
                 sendCommand(CMD_USER_DETAILS, encodeUserId(currentRemoteUser));
-                pauseBtStateMachine();
+                stopMachineState();
                 break;
             default:
                 // Finish init if everything is done
@@ -260,10 +255,9 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
             case 0:
                 if (!currentRemoteUser.isNew) {
                     sendCommand(CMD_DO_MEASUREMENT, encodeUserId(currentRemoteUser));
-                    pauseBtStateMachine();
-                }
-                else {
-                    postHandleRequest();
+                    stopMachineState();
+                } else {
+                    nextMachineStateStep();
                 }
                 break;
             case 1:
@@ -290,15 +284,15 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
     }
 
     @Override
-    public void onBluetoothDataChange(BluetoothGatt bluetoothGatt, BluetoothGattCharacteristic gattCharacteristic) {
-        byte[] data = gattCharacteristic.getValue();
+    public void onBluetoothNotify(UUID characteristic, byte[] value) {
+        byte[] data = value;
         if (data == null || data.length == 0) {
             return;
         }
 
         if (data[0] == getAlternativeStartByte(ID_START_NIBBLE_INIT)) {
             Timber.d("Got init ack from scale; scale is ready");
-            resumeBtStateMachine();
+            resumeMachineState();
             return;
         }
 
@@ -372,7 +366,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
         }
 
         // All users received
-        resumeBtStateMachine();
+        resumeMachineState();
     }
 
     private void processMeasurementData(byte[] data, int offset, boolean firstPart) {
@@ -478,7 +472,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                     Timber.d("Set scale unit to %s (%d)", user.getScaleUnit(), requestedUnit);
                     sendCommand(CMD_SET_UNIT, requestedUnit);
                 } else {
-                    resumeBtStateMachine();
+                    resumeMachineState();
                 }
                 break;
 
@@ -486,7 +480,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                 if (data[3] == 0) {
                     Timber.d("Scale unit successfully set");
                 }
-                resumeBtStateMachine();
+                resumeMachineState();
                 break;
 
             case CMD_USER_LIST:
@@ -494,7 +488,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                 int maxUserCount = data[5] & 0xFF;
                 Timber.d("Have %d users (max is %d)", userCount, maxUserCount);
                 if (userCount == 0) {
-                    resumeBtStateMachine();
+                    resumeMachineState();
                 }
                 // Otherwise wait for CMD_USER_INFO notifications
                 break;
@@ -502,7 +496,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
             case CMD_GET_SAVED_MEASUREMENTS:
                 int measurementCount = data[3] & 0xFF;
                 if (measurementCount == 0) {
-                    resumeBtStateMachine();
+                    resumeMachineState();
                 }
                 // Otherwise wait for CMD_SAVED_MEASUREMENT notifications which will,
                 // once all measurements have been received, trigger a call to delete them.
@@ -513,13 +507,13 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                 if (data[3] == 0) {
                     Timber.d("Saved measurements successfully deleted");
                 }
-                resumeBtStateMachine();
+                resumeMachineState();
                 break;
 
             case CMD_USER_ADD:
                 if (data[3] == 0) {
                     Timber.d("New user successfully added; time to step on scale");
-                    sendMessage(R.string.info_step_on_scale, 0);
+                    sendMessage(R.string.info_step_on_scale_for_reference, 0);
                     remoteUsers.add(currentRemoteUser);
                     sendCommand(CMD_DO_MEASUREMENT, encodeUserId(currentRemoteUser));
                     break;
@@ -550,7 +544,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                     Timber.d("Name: %s, Birthday: %d-%02d-%02d, Height: %d, Sex: %s, activity: %d",
                             name, year, month, day, height, male ? "male" : "female", activity);
                 }
-                resumeBtStateMachine();
+                resumeMachineState();
                 break;
 
             default:
@@ -594,7 +588,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
     }
 
     private void writeBytes(byte[] data) {
-        writeBytes(CUSTOM_SERVICE_1, CUSTOM_CHARACTERISTIC_WEIGHT, data);
+        writeBytes(CUSTOM_CHARACTERISTIC_WEIGHT, data);
     }
 
     private void sendCommand(byte command, byte... parameters) {

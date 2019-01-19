@@ -18,6 +18,8 @@ package com.health.openscale.core.bluetooth;
 
 import android.content.Context;
 
+import com.polidea.rxandroidble2.RxBleClient;
+
 import java.util.Locale;
 
 public class BluetoothFactory {

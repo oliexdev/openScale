@@ -167,7 +167,7 @@
 
 <string name="info_new_data_added">%1$.2f%2$s‏ [%3$s] נוספו אל %4$s</string>
     <string name="error_max_scale_users">מספר מרבי של משתמשי המשקל המשתמשים בו באותו הזמן הושג</string>
-    <string name="info_step_on_scale">נא לעלות ברגליים יחפות על המשקל לצורך לקיחת מדדי ייחוס</string>
+    <string name="info_step_on_scale_for_reference">נא לעלות ברגליים יחפות על המשקל לצורך לקיחת מדדי ייחוס</string>
     <string name="info_measuring">מדידת משקל: %.2f</string>
 
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">אירעה שגיאה בלתי צפויה.

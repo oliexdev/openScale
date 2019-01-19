@@ -16,8 +16,6 @@
 
 package com.health.openscale.core.bluetooth;
 
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
 
 import com.health.openscale.R;
@@ -62,7 +60,7 @@ public class BluetoothInlife extends BluetoothCommunication {
             data[i++] = parameter;
         }
         data[data.length - 2] = xorChecksum(data, 1, data.length - 3);
-        writeBytes(WEIGHT_SERVICE, WEIGHT_CMD_CHARACTERISTIC, data);
+        writeBytes(WEIGHT_CMD_CHARACTERISTIC, data);
     }
 
     public BluetoothInlife(Context context) {
@@ -78,8 +76,7 @@ public class BluetoothInlife extends BluetoothCommunication {
     protected boolean nextInitCmd(int stateNr) {
         switch (stateNr) {
             case 0:
-                setNotificationOn(WEIGHT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC,
-                        BluetoothGattUuid.DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION);
+                setNotificationOn(WEIGHT_MEASUREMENT_CHARACTERISTIC);
                 break;
             case 1:
                 ScaleUser scaleUser = OpenScale.getInstance().getSelectedScaleUser();
@@ -90,6 +87,9 @@ public class BluetoothInlife extends BluetoothCommunication {
                 byte height = (byte)scaleUser.getBodyHeight();
 
                 sendCommand(0xd2, level, sex, userId, age, height);
+                break;
+            case 2:
+                sendMessage(R.string.info_step_on_scale, 0);
                 break;
             default:
                 return false;
@@ -109,8 +109,8 @@ public class BluetoothInlife extends BluetoothCommunication {
     }
 
     @Override
-    public void onBluetoothDataChange(BluetoothGatt bluetoothGatt, BluetoothGattCharacteristic gattCharacteristic) {
-        final byte[] data = gattCharacteristic.getValue();
+    public void onBluetoothNotify(UUID characteristic, byte[] value) {
+        final byte[] data = value;
 
         if (data == null || data.length != 14) {
             return;

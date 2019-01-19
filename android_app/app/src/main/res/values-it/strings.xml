@@ -164,7 +164,7 @@
     <string name="label_feedback_message_negative">No, grazie</string>
 
     <string name="error_max_scale_users">È stato raggiunto il numero massimo di utenti simultanei per la bilancia</string>
-    <string name="info_step_on_scale">Fare un passo a piedi nudi sulla bilancia per la misura di riferimento</string>
+    <string name="info_step_on_scale_for_reference">Fare un passo a piedi nudi sulla bilancia per la misura di riferimento</string>
     <string name="info_measuring">Misurazione del peso: %.2f</string>
 
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">Si è verificato un errore imprevisto.\n\nSi prega di creare un nuovo problema, inclusi i dettagli dell\'errore su https://github.com/oliexdev/openScale/issues</string>

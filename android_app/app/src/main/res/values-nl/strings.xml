@@ -165,7 +165,7 @@
     <string name="label_feedback_message_negative">Nee, bedankt</string>
 
     <string name="error_max_scale_users">Max. aantal gelijktijdige weegschaal gebruikers is bereikt</string>
-    <string name="info_step_on_scale">Stap alsjeblieft met blote voeten op de weegschaal voor een meting</string>
+    <string name="info_step_on_scale_for_reference">Stap alsjeblieft met blote voeten op de weegschaal voor een meting</string>
     <string name="info_measuring">Gewicht meten: %.2f</string>
 
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">Er heeft zich een onverwachte fout voorgedaan.

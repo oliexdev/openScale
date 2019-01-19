@@ -16,12 +16,11 @@
 
 package com.health.openscale.core.bluetooth;
 
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.bluetooth.lib.YunmaiLib;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
@@ -69,7 +68,7 @@ public class BluetoothYunmaiSE_Mini extends BluetoothCommunication {
                         (byte)0x00, display_unit, (byte) 0x03, (byte) 0x00};
                 user_add_or_query[user_add_or_query.length - 1] =
                         xorChecksum(user_add_or_query, 1, user_add_or_query.length - 1);
-                writeBytes(WEIGHT_CMD_SERVICE, WEIGHT_CMD_CHARACTERISTIC, user_add_or_query);
+                writeBytes(WEIGHT_CMD_CHARACTERISTIC, user_add_or_query);
                 break;
             case 1:
                 byte[] unixTime = Converters.toInt32Be(new Date().getTime() / 1000);
@@ -80,15 +79,16 @@ public class BluetoothYunmaiSE_Mini extends BluetoothCommunication {
                 set_time[set_time.length - 1] =
                         xorChecksum(set_time, 1, set_time.length - 1);
 
-                writeBytes(WEIGHT_CMD_SERVICE, WEIGHT_CMD_CHARACTERISTIC, set_time);
+                writeBytes(WEIGHT_CMD_CHARACTERISTIC, set_time);
                 break;
             case 2:
-                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC,
-                        BluetoothGattUuid.DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION);
+                setNotificationOn(WEIGHT_MEASUREMENT_CHARACTERISTIC
+                );
                 break;
             case 3:
                 byte[] magic_bytes = new byte[]{(byte)0x0d, (byte)0x05, (byte)0x13, (byte)0x00, (byte)0x16};
-                writeBytes(WEIGHT_CMD_SERVICE, WEIGHT_CMD_CHARACTERISTIC, magic_bytes);
+                writeBytes(WEIGHT_CMD_CHARACTERISTIC, magic_bytes);
+                sendMessage(R.string.info_step_on_scale, 0);
                 break;
             default:
                 return false;
@@ -108,8 +108,8 @@ public class BluetoothYunmaiSE_Mini extends BluetoothCommunication {
     }
 
     @Override
-    public void onBluetoothDataChange(BluetoothGatt bluetoothGatt, BluetoothGattCharacteristic gattCharacteristic) {
-        final byte[] data = gattCharacteristic.getValue();
+    public void onBluetoothNotify(UUID characteristic, byte[] value) {
+        final byte[] data = value;
 
         if (data != null && data.length > 0) {
 
