@@ -67,7 +67,7 @@ public class DatabaseMigrationTest {
         }
 
         ContentValues measurement = new ContentValues();
-        for (int i = 2; i < 5; ++i) {
+        for (int i = 2; i < 4; ++i) {
             for (int j = 0; j < 2; ++j) {
                 measurement.put("userId", i);
                 measurement.put("enabled", j);
@@ -184,6 +184,74 @@ public class DatabaseMigrationTest {
                 }
                 for (String type : new String[]{"visceralFat", "chest", "thigh", "biceps", "neck",
                         "caliper1", "caliper2", "caliper3"}) {
+                    assertEquals(0.0f, cursor.getFloat(cursor.getColumnIndex(type)));
+                }
+
+                cursor.moveToNext();
+            }
+        }
+
+        assertTrue(cursor.isAfterLast());
+    }
+
+    @Test
+    public void migrate3To4() throws Exception {
+        SupportSQLiteDatabase db = helper.createDatabase(TEST_DB, 3);
+
+        ContentValues users = new ContentValues();
+        for (int i = 1; i < 4; ++i) {
+            users.put("id", i);
+            users.put("username", String.format("test%d", i));
+            users.put("birthday", i*100);
+            users.put("bodyHeight", i * 50);
+            users.put("scaleUnit", 0);
+            users.put("gender", 0);
+            users.put("initialWeight", i * 25);
+            users.put("goalWeight", i * 20);
+            users.put("measureUnit", 0);
+            users.put("activityLevel", 0);
+            assertNotSame(-1, db.insert("scaleUsers", SQLiteDatabase.CONFLICT_ABORT, users));
+        }
+
+        ContentValues measurement = new ContentValues();
+        for (int i = 2; i < 4; ++i) {
+            for (int j = 0; j < 2; ++j) {
+                measurement.put("userId", i);
+                measurement.put("enabled", j);
+                measurement.put("comment", "a string");
+                for (String type : new String[]{"weight", "fat", "water", "muscle", "lbm", "waist", "hip", "bone",
+                        "visceralFat", "chest", "thigh", "biceps", "neck", "caliper1", "caliper2", "caliper3"}) {
+                    measurement.put(type, (float) i * j + type.hashCode());
+                }
+
+                assertNotSame(-1, db.insert("scaleMeasurements", SQLiteDatabase.CONFLICT_ABORT, measurement));
+            }
+        }
+
+        // Prepare for the next version.
+        db.close();
+
+        // Re-open the database with version 4 and provide MIGRATION_3_4 as the migration process.
+        db = helper.runMigrationsAndValidate(TEST_DB, 4, true, AppDatabase.MIGRATION_3_4);
+
+        // MigrationTestHelper automatically verifies the schema changes.
+
+        Cursor cursor = db.query("SELECT * FROM scaleMeasurements ORDER BY id, userId");
+        assertEquals(2 * 2, cursor.getCount());
+
+        cursor.moveToFirst();
+        for (int i = 2; i < 4; ++i) {
+            for (int j = 0; j < 2; ++j) {
+                assertEquals(i, cursor.getInt(cursor.getColumnIndex("userId")));
+                assertEquals(j, cursor.getInt(cursor.getColumnIndex("enabled")));
+                assertEquals("a string", cursor.getString(cursor.getColumnIndex("comment")));
+                for (String type : new String[]{"weight", "fat", "water", "muscle", "lbm", "waist", "hip", "bone",
+                        "visceralFat", "chest", "thigh", "biceps", "neck", "caliper1", "caliper2", "caliper3"}) {
+                    assertEquals((float) i * j + type.hashCode(),
+                            cursor.getFloat(cursor.getColumnIndex(type)));
+                }
+
+                for (String type : new String[]{"calories"}) {
                     assertEquals(0.0f, cursor.getFloat(cursor.getColumnIndex(type)));
                 }
 
