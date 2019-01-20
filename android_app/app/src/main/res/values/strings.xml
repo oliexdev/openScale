@@ -42,9 +42,9 @@
     <string name="label_smartUserAssign">Smart User assignment</string>
 
     <plurals name="label_days">
-        <item quantity="one">%d day</item>
-        <item quantity="other">%d days</item>
-    </plurals>
+    <item quantity="one">day %d</item>
+    <item quantity="other">days %d</item>
+</plurals>
     <string name="label_last_week">Average past week</string>
     <string name="label_last_month">Average past month</string>
     <string name="label_weight_difference">Weight difference</string>
