@@ -15,25 +15,22 @@
  */
 package com.health.openscale.core.bluetooth;
 
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import androidx.annotation.Nullable;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
+import com.health.openscale.core.bluetooth.lib.TrisaBodyAnalyzeLib;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
 
+import java.util.Date;
 import java.util.UUID;
 
+import androidx.annotation.Nullable;
 import timber.log.Timber;
-
-import static com.health.openscale.core.bluetooth.lib.TrisaBodyAnalyzeLib.convertJavaTimestampToDevice;
-import static com.health.openscale.core.bluetooth.lib.TrisaBodyAnalyzeLib.parseScaleMeasurementData;
 
 /**
  * Driver for Trisa Body Analyze 4.0.
@@ -99,6 +96,11 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
      */
     private boolean pairing = false;
 
+    /**
+     *  Timestamp of 2010-01-01 00:00:00 UTC (or local time?)
+     */
+    private static final long TIMESTAMP_OFFSET_SECONDS = 1262304000L;
+
     public BluetoothTrisaBodyAnalyze(Context context) {
         super(context);
     }
@@ -117,21 +119,12 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
     }
 
     @Override
-    public void disconnect(boolean doCleanup) {
-        Timber.i("disconnect(/*doCleanup=*/%s)", doCleanup);
-        super.disconnect(doCleanup);
-    }
-
-    @Override
     protected boolean nextInitCmd(int stateNr) {
         Timber.i("nextInitCmd(%d)", stateNr);
         switch (stateNr) {
             case 0:
                 // Register for notifications of the measurement characteristic.
-                setIndicationOn(
-                        WEIGHT_SCALE_SERVICE_UUID,
-                        MEASUREMENT_CHARACTERISTIC_UUID,
-                        BluetoothGattUuid.DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION);
+                setIndicationOn(MEASUREMENT_CHARACTERISTIC_UUID);
                 return true;  // more commands follow
             case 1:
                 // Register for notifications of the command upload characteristic.
@@ -139,10 +132,7 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
                 // This is the last init command, which causes a switch to the main state machine
                 // immediately after. This is important because we should be in the main state
                 // to handle pairing correctly.
-                setIndicationOn(
-                        WEIGHT_SCALE_SERVICE_UUID,
-                        UPLOAD_COMMAND_CHARACTERISTIC_UUID,
-                        BluetoothGattUuid.DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION);
+                setIndicationOn(UPLOAD_COMMAND_CHARACTERISTIC_UUID);
                 // falls through
             default:
                 return false;  // no more commands
@@ -161,7 +151,7 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
                 // This state is triggered by the write in onPasswordReceived()
                 if (pairing) {
                     pairing = false;
-                    disconnect(true);
+                    disconnect();
                 }
                 return false;  // no more commands;
         }
@@ -180,11 +170,10 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
     }
 
     @Override
-    protected void onBluetoothDataChange(BluetoothGatt bluetoothGatt, BluetoothGattCharacteristic gattCharacteristic) {
-        UUID characteristicUud = gattCharacteristic.getUuid();
-        byte[] value = gattCharacteristic.getValue();
-        Timber.i("onBluetoothdataChange() characteristic=%s value=%s", characteristicUud, byteInHex(value));
-        if (UPLOAD_COMMAND_CHARACTERISTIC_UUID.equals(characteristicUud)) {
+    protected void onBluetoothNotify(UUID characteristic, byte[] value) {
+
+        Timber.i("onBluetoothdataChange() characteristic=%s value=%s", characteristic, byteInHex(value));
+        if (UPLOAD_COMMAND_CHARACTERISTIC_UUID.equals(characteristic)) {
             if (value.length == 0) {
                 Timber.e("Missing command byte!");
                 return;
@@ -202,11 +191,11 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
             }
             return;
         }
-        if (MEASUREMENT_CHARACTERISTIC_UUID.equals(characteristicUud)) {
+        if (MEASUREMENT_CHARACTERISTIC_UUID.equals(characteristic)) {
             onScaleMeasurumentReceived(value);
             return;
         }
-        Timber.e("Unknown characteristic changed: %s", characteristicUud);
+        Timber.e("Unknown characteristic changed: %s", characteristic);
     }
 
     private void onPasswordReceived(byte[] data) {
@@ -239,7 +228,7 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
         if (password == null) {
             Timber.w("Received challenge, but password is unknown.");
             sendMessage(R.string.trisa_scale_not_paired, null);
-            disconnect(true);
+            disconnect();
             return;
         }
         int challenge = Converters.fromSignedInt32Le(data, 1);
@@ -251,12 +240,68 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
 
     private void onScaleMeasurumentReceived(byte[] data) {
         ScaleUser user = OpenScale.getInstance().getSelectedScaleUser();
-        ScaleMeasurement scaleMeasurement = parseScaleMeasurementData(data, user);
-        if (scaleMeasurement == null) {
+        ScaleMeasurement measurement = parseScaleMeasurementData(data, user);
+
+        if (measurement == null) {
             Timber.e("Failed to parse scale measure measurement data: %s", byteInHex(data));
             return;
         }
-        addScaleData(scaleMeasurement);
+
+        addScaleData(measurement);
+    }
+
+    public ScaleMeasurement parseScaleMeasurementData(byte[] data, ScaleUser user) {
+        // data contains:
+        //
+        //   1 byte: info about presence of other fields:
+        //           bit 0: timestamp
+        //           bit 1: resistance1
+        //           bit 2: resistance2
+        //           (other bits aren't used here)
+        //   4 bytes: weight
+        //   4 bytes: timestamp (if info bit 0 is set)
+        //   4 bytes: resistance1 (if info bit 1 is set)
+        //   4 bytes: resistance2 (if info bit 2 is set)
+        //   (following fields aren't used here)
+
+        // Check that we have at least weight & timestamp, which is the minimum information that
+        // ScaleMeasurement needs.
+        if (data.length < 9) {
+            return null;  // data is too short
+        }
+        byte infoByte = data[0];
+        boolean hasTimestamp = (infoByte & 1) == 1;
+        boolean hasResistance1 = (infoByte & 2) == 2;
+        boolean hasResistance2 = (infoByte & 4) == 4;
+        if (!hasTimestamp) {
+            return null;
+        }
+        float weightKg = getBase10Float(data, 1);
+        int deviceTimestamp = Converters.fromSignedInt32Le(data, 5);
+
+        ScaleMeasurement measurement = new ScaleMeasurement();
+        measurement.setDateTime(new Date(convertDeviceTimestampToJava(deviceTimestamp)));
+        measurement.setWeight((float) weightKg);
+
+        // Only resistance 2 is used; resistance 1 is 0, even if it is present.
+        int resistance2Offset = 9 + (hasResistance1 ? 4 : 0);
+        if (hasResistance2 && resistance2Offset + 4 <= data.length && isValidUser(user)) {
+            // Calculate body composition statistics from measured weight & resistance, combined
+            // with age, height and sex from the user profile. The accuracy of the resulting figures
+            // is questionable, but it's better than nothing. Even if the absolute numbers aren't
+            // very meaningful, it might still be useful to track changes over time.
+            float resistance2 = getBase10Float(data, resistance2Offset);
+            float impedance = resistance2 < 410f ? 3.0f : 0.3f * (resistance2 - 400f);
+
+            TrisaBodyAnalyzeLib trisaBodyAnalyzeLib = new TrisaBodyAnalyzeLib(user.getGender().isMale() ? 1 : 0, user.getAge(), user.getBodyHeight());
+
+            measurement.setFat(trisaBodyAnalyzeLib.getFat(weightKg, impedance));
+            measurement.setWater(trisaBodyAnalyzeLib.getWater(weightKg, impedance));
+            measurement.setMuscle(trisaBodyAnalyzeLib.getMuscle(weightKg, impedance));
+            measurement.setBone(trisaBodyAnalyzeLib.getBone(weightKg, impedance));
+        }
+
+        return measurement;
     }
 
     /** Write a single command byte, without any arguments. */
@@ -279,7 +324,7 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
 
     private void writeCommandBytes(byte[] bytes) {
         Timber.d("writeCommand bytes=%s", byteInHex(bytes));
-        writeBytes(WEIGHT_SCALE_SERVICE_UUID, DOWNLOAD_COMMAND_CHARACTERISTIC_UUID, bytes);
+        writeBytes(DOWNLOAD_COMMAND_CHARACTERISTIC_UUID, bytes);
     }
 
     private static String getDevicePasswordKey(String deviceId) {
@@ -303,5 +348,30 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
     private static void saveDevicePassword(Context context, String deviceId, int password) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         prefs.edit().putInt(getDevicePasswordKey(deviceId), password).apply();
+    }
+
+    /** Converts 4 bytes to a floating point number, starting from  {@code offset}.
+     *
+     * <p>The first three little-endian bytes form the 24-bit mantissa. The last byte contains the
+     * signed exponent, applied in base 10.
+     *
+     * @throws IndexOutOfBoundsException if {@code offset < 0} or {@code offset + 4> data.length}
+     */
+    public float getBase10Float(byte[] data, int offset) {
+        int mantissa = Converters.fromUnsignedInt24Le(data, offset);
+        int exponent = data[offset + 3];  // note: byte is signed.
+        return (float)(mantissa * Math.pow(10, exponent));
+    }
+
+    public int convertJavaTimestampToDevice(long javaTimestampMillis) {
+        return (int)((javaTimestampMillis + 500)/1000 - TIMESTAMP_OFFSET_SECONDS);
+    }
+
+    public long convertDeviceTimestampToJava(int deviceTimestampSeconds) {
+        return 1000 * (TIMESTAMP_OFFSET_SECONDS + (long)deviceTimestampSeconds);
+    }
+
+    private boolean isValidUser(@Nullable ScaleUser user) {
+        return user != null && user.getAge() > 0 && user.getBodyHeight() > 0;
     }
 }

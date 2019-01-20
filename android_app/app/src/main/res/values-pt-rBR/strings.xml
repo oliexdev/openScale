@@ -41,7 +41,7 @@
     <string name="info_no_evaluation_available">Valor não pode ser processado</string>
     <string name="info_on_date">na/o</string>
     <string name="info_no_selected_user">Nenhum utilizador existe. Por favor, crie um novo utilizador em Configurações.</string>
-    <string name="info_step_on_scale">Por favor, suba para a balança para obter medidas de referência</string>
+    <string name="info_step_on_scale_for_reference">Por favor, suba para a balança para obter medidas de referência</string>
     <string name="label_add_user">Adicionar utilizador</string>
     <string name="label_backup">Backup</string>
     <string name="label_birthday">Data de nascimento</string>

@@ -145,7 +145,7 @@
     <string name="label_goal_line">Línea del objetivo</string>
 
     <string name="error_max_scale_users">Máximo número de usuarios concurrentes alcanzado</string>
-    <string name="info_step_on_scale">Por favor, póngase descalzo en la báscula para tomar medidas de referencia</string>
+    <string name="info_step_on_scale_for_reference">Por favor, póngase descalzo en la báscula para tomar medidas de referencia</string>
     <string name="info_measuring">Medición de peso: %.2f</string>
 
     <string name="title_general">General</string>
@@ -229,8 +229,8 @@
     <string name="label_click_measurement_configure">Pulsa en la medida para configurar</string>
     <string name="label_your_bluetooth_scale">"Báscula Bluetooth "</string>
     <string name="label_add_measurement">"Añadir medición "</string>
-    <string name="permission_read_data_description">"leer los datos de openScale, incluyendo la información de usuarios y todas las mediciones guardadas "</string>
-    <string name="permission_read_data_label">Leer datos de openScale</string>
+    <string name="permission_read_write_data_description">"leer los datos de openScale, incluyendo la información de usuarios y todas las mediciones guardadas "</string>
+    <string name="permission_read_write_data_label">Leer datos de openScale</string>
     <string name="label_select_measurement">"Elegir medición "</string>
     <string name="label_select_user">Elegir usuario</string>
     <string name="label_configure_widget">Configurar widget</string>

@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="title_overview">Genel Bakış</string>
     <string name="title_graph">Çizelge</string>
@@ -90,7 +90,7 @@
     <string name="info_bluetooth_connection_successful">Bağlantı kuruldu</string>
     <string name="info_bluetooth_init">Bluetooth aygıtını başlat</string>
     <string name="info_bluetooth_connection_error">Beklenmeyen Bluetooth hatası</string>
-    <string name="info_new_data_added">%1$.2f%2$s [%3$s] to %4$s added</string>
+    <string name="info_new_data_added">%1$.2f%2$s [%3$s] den %4$s\'e eklendi</string>
 
     <string name="info_enter_user_name">Adınız</string>
     <string name="info_no_selected_user">Kullanıcı yok. Lütfen ayarlardan yeni bir kullanıcı oluşturun.</string>
@@ -145,7 +145,7 @@
     <string name="label_goal_line">Hedef çizgisi</string>
 
     <string name="error_max_scale_users">Ençok eşzamanlı tartı kullanıcı sayısına ulaştı</string>
-    <string name="info_step_on_scale">Referans ölçümleri için lütfen tartıya çıplak ayakla çıkın</string>
+    <string name="info_step_on_scale_for_reference">Referans ölçümleri için lütfen tartıya çıplak ayakla çıkın</string>
     <string name="info_measuring">Ağırlık ölçme: %.2f</string>
 <string name="title_general">Genel</string>
 
@@ -199,8 +199,8 @@
 
     <string name="permission_not_granted">İzin verilmedi</string>
     <string name="permission_bluetooth_info_title">Bilgi</string>
-    <string name="permission_read_data_description">tüm kayıtlı ölçümler ve kullanıcı bilgilerini içeren openScale verisini oku</string>
-    <string name="permission_read_data_label">openScale Verisini Okuyun</string>
+    <string name="permission_read_write_data_description">tüm kayıtlı ölçümler ve kullanıcı bilgilerini içeren openScale verisini oku</string>
+    <string name="permission_read_write_data_label">openScale Verisini Okuyun</string>
     <string name="label_next">Sonraki</string>
     <string name="label_click_measurement_configure">Yapılandırmak için ölçümü tıklayın</string>
     <string name="label_estimate_measurement">Tahmini ölçüm</string>
@@ -238,8 +238,13 @@
     <string name="activity_level_heavy">Ağır</string>
     <string name="activity_level_extreme">Aşırı</string>
     <string name="label_data_provider_enable">Üçüncü parti uygulama erişimi</string>
-<string name="trisa_scale_not_paired">Bu tartı eşleşmedi
+<string name="trisa_scale_not_paired">Bu tartı eşleşmedi!
 \n
+\nEşleştirme moduna geçmek için, terazinin altındaki düğmeyi basılı tutun ve ardından cihaz parolasını geri almak için tekrar bağlanın.
+\n
+\n
+\n
+\n 
 \n</string>
     <string name="permission_bluetooth_info">Bluetooth aygıtlarını aramak için kabaca yer izni gerekli. Aygıt bulunduğunda iptal edilebilir.</string>
     <string name="label_long_press_drag_reorder">Yeniden sıralamak için uzun basın ve ölçümü sürükleyin</string>
@@ -260,4 +265,5 @@
 
     <string name="label_click_to_help_add_support">Yardım ekleyerek destek olmak için buraya tıklayın</string>
     <string name="label_measurement_in_percent">% cinsinden ölçüm</string>
-    </resources>
+    <string name="toggle_expand">Geçiş genişlemesi</string>
+</resources>

@@ -16,8 +16,6 @@
 
 package com.health.openscale.core.bluetooth;
 
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
 
 import com.health.openscale.core.OpenScale;
@@ -49,16 +47,10 @@ public class BluetoothSenssun extends BluetoothCommunication {
     }
 
     @Override
-    public void disconnect(boolean doCleanup) {
-        Timber.i("disconnect(and save Data - %s)", doCleanup);
+    public void disconnect() {
+        Timber.i("disconnect(and save Data)");
         saveUserData();
-        super.disconnect(doCleanup);
-    }
-
-    @Override
-    protected boolean doScanWhileConnecting() {
-        // Senssun seems to have problem connecting if scan is running (see ##309)
-        return false;
+        super.disconnect();
     }
 
     private void saveUserData(){
@@ -87,7 +79,7 @@ public class BluetoothSenssun extends BluetoothCommunication {
             verify = (byte) (verify + cmdByte[i]);
         }
         cmdByte[cmdByte.length - 2] = verify;
-        writeBytes(WEIGHT_MEASUREMENT_SERVICE, CMD_MEASUREMENT_CHARACTERISTIC, cmdByte);
+        writeBytes(CMD_MEASUREMENT_CHARACTERISTIC, cmdByte);
     }
 
     @Override
@@ -95,8 +87,7 @@ public class BluetoothSenssun extends BluetoothCommunication {
         Timber.d("Cmd Clean %d",stateNr);
         switch (stateNr) {
             case 0:
-                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC,
-                        BluetoothGattUuid.DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION);
+                setNotificationOn(WEIGHT_MEASUREMENT_CHARACTERISTIC);
                 sendUserData();
                 WeightFatMus = 0;
                 scaleGotUserData = false;
@@ -119,8 +110,8 @@ public class BluetoothSenssun extends BluetoothCommunication {
     }
 
     @Override
-    public void onBluetoothDataChange(BluetoothGatt bluetoothGatt, BluetoothGattCharacteristic gattCharacteristic) {
-        final byte[] data = gattCharacteristic.getValue();
+    public void onBluetoothNotify(UUID characteristic, byte[] value) {
+        final byte[] data = value;
 
         // The first notification only includes weight and all other fields are
         // either 0x00 (user info) or 0xff (fat, water, etc.)
@@ -128,7 +119,7 @@ public class BluetoothSenssun extends BluetoothCommunication {
         if (data != null && !isBitSet(WeightFatMus, 3)) { //only if not saved
             parseBytes(data);
             if (WeightFatMus == 0x07) {
-              disconnect(true);
+              disconnect();
             }
         }
     }
@@ -154,7 +145,6 @@ public class BluetoothSenssun extends BluetoothCommunication {
 
                 if (!isBitSet(WeightFatMus,2)){
                   WeightFatMus |= 1 << 2 ;
-
                 }
 
                 sendUserData();

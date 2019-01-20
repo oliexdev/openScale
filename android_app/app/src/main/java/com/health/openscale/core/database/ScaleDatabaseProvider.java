@@ -26,6 +26,13 @@ import android.preference.PreferenceManager;
 
 import com.health.openscale.BuildConfig;
 import com.health.openscale.core.OpenScale;
+import com.health.openscale.core.datatypes.ScaleMeasurement;
+
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+
+import timber.log.Timber;
 
 /**
  * Exposes the user and measurement data from openScale via
@@ -34,7 +41,7 @@ import com.health.openscale.core.OpenScale;
  * (e.g. syncing to third-party services like Google Fit, Fitbit API, etc) without openScale itself
  * needing to do so or request additional permissions. <br />
  *
- * This access is gated by the com.health.openscale.READ_DATA permission, which is defined in the
+ * This access is gated by the com.health.openscale.READ_WRITE_DATA permission, which is defined in the
  * manifest; it is not accessible to any other app without user confirmation.<br />
  *
  * The following URIs are supported:
@@ -80,6 +87,8 @@ public class ScaleDatabaseProvider extends android.content.ContentProvider {
 
     @Override
     public boolean onCreate() {
+        // need to create openScale instance for the provider if openScale app is closed
+        OpenScale.createInstance(getContext());
         return true;
     }
 
@@ -131,6 +140,28 @@ public class ScaleDatabaseProvider extends android.content.ContentProvider {
     @Override
     public int update(Uri uri, ContentValues values, String selection,
                       String[] selectionArgs) {
-        throw new UnsupportedOperationException("Not supported");
+        if (!PreferenceManager.getDefaultSharedPreferences(getContext())
+                .getBoolean("dataProviderEnable", false)) {
+            throw new UnsupportedOperationException("Provider access not enabled");
+        }
+
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(new Date((long)values.get("datetime")));
+
+        List<ScaleMeasurement> measurementList = OpenScale.getInstance().getScaleDataOfDay(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
+
+        if (!measurementList.isEmpty()) {
+            ScaleMeasurement measurement = measurementList.get(0);
+
+            float calories = (float)values.get("calories");
+            measurement.setCalories(calories);
+
+            OpenScale.getInstance().updateScaleData(measurement);
+            return 1;
+        } else {
+            Timber.e("no measurement for an update found");
+        }
+
+        return 0;
     }
 }

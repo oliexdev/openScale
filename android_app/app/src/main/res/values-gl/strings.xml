@@ -160,7 +160,7 @@
     <string name="label_feedback_message_negative">Non, grazas</string>
 
     <string name="error_max_scale_users">Alcanzouse o número máximo de usuarios</string>
-    <string name="info_step_on_scale">Por favor, suba descalzo á báscula para tomar medidas de referencia</string>
+    <string name="info_step_on_scale_for_reference">Por favor, suba descalzo á báscula para tomar medidas de referencia</string>
     <string name="info_measuring">Medindo peso: %.2f</string>
 
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">Ocorreu un erro inesperado.

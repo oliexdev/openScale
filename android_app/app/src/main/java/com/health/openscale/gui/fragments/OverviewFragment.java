@@ -51,6 +51,7 @@ import com.health.openscale.gui.utils.ColorUtil;
 import com.health.openscale.gui.views.ChartMarkerView;
 import com.health.openscale.gui.views.FloatMeasurementView;
 import com.health.openscale.gui.views.MeasurementView;
+import com.health.openscale.gui.views.TDEEMeasurementView;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;

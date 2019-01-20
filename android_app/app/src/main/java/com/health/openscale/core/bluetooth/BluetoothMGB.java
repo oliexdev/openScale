@@ -17,10 +17,9 @@
 
 package com.health.openscale.core.bluetooth;
 
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
 
+import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
@@ -69,7 +68,7 @@ public class BluetoothMGB extends BluetoothCommunication {
         buf[6] = (byte)0xCC;
         buf[7] = (byte)((buf[2] + buf[3] + buf[4] + buf[5] + buf[6]) & 0xFF);
 
-        writeBytes(uuid_service, uuid_char_cfg, buf);
+        writeBytes(uuid_char_cfg, buf);
     }
 
 
@@ -86,8 +85,8 @@ public class BluetoothMGB extends BluetoothCommunication {
     protected boolean nextInitCmd(int stateNr) {
         switch (stateNr) {
             case 0:
-                setNotificationOn(uuid_service, uuid_char_ctrl,
-                        BluetoothGattUuid.DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION);
+                setNotificationOn(uuid_char_ctrl
+                );
                 now  = Calendar.getInstance();
                 user = OpenScale.getInstance().getSelectedScaleUser();
                 break;
@@ -116,6 +115,10 @@ public class BluetoothMGB extends BluetoothCommunication {
                 writeCfg(0xFE, 6, user.getScaleUnit().toInt(), 0);
                 break;
 
+            case 7:
+                sendMessage(R.string.info_step_on_scale, 0);
+                break;
+
             default:
                 return false;
         }
@@ -137,8 +140,8 @@ public class BluetoothMGB extends BluetoothCommunication {
 
 
     @Override
-    public void onBluetoothDataChange(BluetoothGatt bluetoothGatt, BluetoothGattCharacteristic gattCharacteristic) {
-        packet_buf = gattCharacteristic.getValue();
+    public void onBluetoothNotify(UUID characteristic, byte[] value) {
+        packet_buf = value;
         packet_pos = 0;
 
         if (packet_buf == null || packet_buf.length <= 0) {

@@ -17,11 +17,13 @@
 
 package com.health.openscale.core.bluetooth;
 
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 
 import com.health.openscale.core.datatypes.ScaleMeasurement;
+import com.polidea.rxandroidble2.RxBleClient;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -74,6 +76,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
 
     @Override
     public void connect(String hwAddress) {
+        BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
 
         if (btAdapter == null) {
             setBtStatus(BT_STATUS_CODE.BT_NO_DEVICE_FOUND);
@@ -107,7 +110,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
                     }
                 } catch (IOException connectException) {
                     // Unable to connect; close the socket and get out
-                    disconnect(false);
+                    disconnect();
                     setBtStatus(BT_STATUS_CODE.BT_NO_DEVICE_FOUND);
                 }
             }
@@ -117,7 +120,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
     }
 
     @Override
-    public void disconnect(boolean doCleanup) {
+    public void disconnect() {
 
         Timber.w("HS3 - disconnect");
         if (btSocket != null) {

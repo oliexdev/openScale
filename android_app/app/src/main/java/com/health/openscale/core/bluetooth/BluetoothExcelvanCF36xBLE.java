@@ -16,10 +16,9 @@
 
 package com.health.openscale.core.bluetooth;
 
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
 
+import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
@@ -92,11 +91,13 @@ public class BluetoothExcelvanCF36xBLE extends BluetoothCommunication {
                 configBytes[configBytes.length - 1] =
                         xorChecksum(configBytes, 1, configBytes.length - 2);
 
-                writeBytes(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC, configBytes);
+                writeBytes(WEIGHT_MEASUREMENT_CHARACTERISTIC, configBytes);
                 break;
             case 1:
-                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_CUSTOM0_CHARACTERISTIC,
-                        BluetoothGattUuid.DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION);
+                setNotificationOn(WEIGHT_CUSTOM0_CHARACTERISTIC);
+                break;
+            case 2:
+                sendMessage(R.string.info_step_on_scale, 0);
                 break;
             default:
                 return false;
@@ -111,8 +112,8 @@ public class BluetoothExcelvanCF36xBLE extends BluetoothCommunication {
     }
 
     @Override
-    public void onBluetoothDataChange(BluetoothGatt bluetoothGatt, BluetoothGattCharacteristic gattCharacteristic) {
-        final byte[] data = gattCharacteristic.getValue();
+    public void onBluetoothNotify(UUID characteristic, byte[] value) {
+        final byte[] data = value;
 
         if (data != null && data.length > 0) {
 

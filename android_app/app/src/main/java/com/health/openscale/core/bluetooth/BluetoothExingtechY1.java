@@ -16,10 +16,9 @@
 
 package com.health.openscale.core.bluetooth;
 
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
 
+import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
@@ -46,8 +45,8 @@ public class BluetoothExingtechY1 extends BluetoothCommunication {
     protected boolean nextInitCmd(int stateNr) {
         switch (stateNr) {
             case 0:
-                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC,
-                        BluetoothGattUuid.DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION);
+                setNotificationOn(WEIGHT_MEASUREMENT_CHARACTERISTIC
+                );
                 break;
             case 1:
                 final ScaleUser selectedUser = OpenScale.getInstance().getSelectedScaleUser();
@@ -60,7 +59,10 @@ public class BluetoothExingtechY1 extends BluetoothCommunication {
 
                 byte cmdByte[] = {(byte)0x10, (byte)userId, gender, age, height};
 
-                writeBytes(WEIGHT_MEASUREMENT_SERVICE, CMD_MEASUREMENT_CHARACTERISTIC, cmdByte);
+                writeBytes(CMD_MEASUREMENT_CHARACTERISTIC, cmdByte);
+                break;
+            case 2:
+                sendMessage(R.string.info_step_on_scale, 0);
                 break;
             default:
                 return false;
@@ -80,8 +82,8 @@ public class BluetoothExingtechY1 extends BluetoothCommunication {
     }
 
     @Override
-    public void onBluetoothDataChange(BluetoothGatt bluetoothGatt, BluetoothGattCharacteristic gattCharacteristic) {
-        final byte[] data = gattCharacteristic.getValue();
+    public void onBluetoothNotify(UUID characteristic, byte[] value) {
+        final byte[] data = value;
 
         // The first notification only includes weight and all other fields are
         // either 0x00 (user info) or 0xff (fat, water, etc.)

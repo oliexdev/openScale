@@ -15,11 +15,10 @@
 */
 package com.health.openscale.core.bluetooth;
 
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
 
 import com.health.openscale.core.datatypes.ScaleMeasurement;
+import com.polidea.rxandroidble2.RxBleClient;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -48,8 +47,8 @@ public class BluetoothCustomOpenScale extends BluetoothCommunication {
     protected boolean nextInitCmd(int stateNr) {
         switch (stateNr) {
             case 0:
-                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC,
-                        BluetoothGattUuid.DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION);
+                setNotificationOn(WEIGHT_MEASUREMENT_CHARACTERISTIC
+                );
                 break;
             case 1:
                 Calendar cal = Calendar.getInstance();
@@ -62,7 +61,7 @@ public class BluetoothCustomOpenScale extends BluetoothCommunication {
                         cal.get(Calendar.MINUTE),
                         cal.get(Calendar.SECOND));
 
-                writeBytes(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC, date_time.getBytes());
+                writeBytes(WEIGHT_MEASUREMENT_CHARACTERISTIC, date_time.getBytes());
                 break;
             default:
                 return false;
@@ -84,12 +83,12 @@ public class BluetoothCustomOpenScale extends BluetoothCommunication {
     public void clearEEPROM()
     {
         byte[] cmd = {(byte)'9'};
-        writeBytes(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC, cmd);
+        writeBytes(WEIGHT_MEASUREMENT_CHARACTERISTIC, cmd);
     }
 
     @Override
-    public void onBluetoothDataChange(BluetoothGatt bluetoothGatt, BluetoothGattCharacteristic gattCharacteristic) {
-        final byte[] data = gattCharacteristic.getValue();
+    public void onBluetoothNotify(UUID characteristic, byte[] value) {
+        final byte[] data = value;
 
         if (data != null) {
             for (byte character : data) {
@@ -125,7 +124,7 @@ public class BluetoothCustomOpenScale extends BluetoothCommunication {
             case 'F':
                 Timber.d("All data sent");
                 clearEEPROM();
-                disconnect(false);
+                disconnect();
                 break;
             case 'D':
                 String[] csvField = btMsg.split(",");

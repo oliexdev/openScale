@@ -21,8 +21,9 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.content.Context;
 
+import com.polidea.rxandroidble2.RxBleClient;
+
 import java.util.HashMap;
-import java.util.UUID;
 
 import timber.log.Timber;
 
@@ -138,16 +139,7 @@ public class BluetoothDebug extends BluetoothCommunication {
                 && !isBlacklisted(service, characteristic)) {
 
                 if (offset == 0) {
-                    readBytes(service.getUuid(), characteristic.getUuid());
-                    return -1;
-                }
-
-                offset -= 1;
-            }
-
-            for (BluetoothGattDescriptor descriptor : characteristic.getDescriptors()) {
-                if (offset == 0) {
-                    readBytes(service.getUuid(), characteristic.getUuid(), descriptor.getUuid());
+                    readBytes(characteristic.getUuid());
                     return -1;
                 }
 
@@ -171,22 +163,20 @@ public class BluetoothDebug extends BluetoothCommunication {
 
         for (BluetoothGattService service : getBluetoothGattServices()) {
             offset = readServiceCharacteristics(service, offset);
-            if (offset == -1) {
-                return true;
-            }
         }
+
+        for (BluetoothGattService service : getBluetoothGattServices()) {
+            logService(service, false);
+        }
+
+        setBtStatus(BT_STATUS_CODE.BT_CONNECTION_LOST);
+        disconnect();
 
         return false;
     }
 
     @Override
     protected boolean nextBluetoothCmd(int stateNr) {
-        for (BluetoothGattService service : getBluetoothGattServices()) {
-            logService(service, false);
-        }
-
-        setBtStatus(BT_STATUS_CODE.BT_CONNECTION_LOST);
-        disconnect(false);
         return false;
     }
 

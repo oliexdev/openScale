@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="title_overview">סקירה</string>
     <string name="title_graph">תרשים</string>
@@ -167,7 +167,7 @@
 
 <string name="info_new_data_added">%1$.2f%2$s‏ [%3$s] נוספו אל %4$s</string>
     <string name="error_max_scale_users">מספר מרבי של משתמשי המשקל המשתמשים בו באותו הזמן הושג</string>
-    <string name="info_step_on_scale">נא לעלות ברגליים יחפות על המשקל לצורך לקיחת מדדי ייחוס</string>
+    <string name="info_step_on_scale_for_reference">נא לעלות ברגליים יחפות על המשקל לצורך לקיחת מדדי ייחוס</string>
     <string name="info_measuring">מדידת משקל: %.2f</string>
 
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">אירעה שגיאה בלתי צפויה.
@@ -192,8 +192,8 @@
     <string name="permission_not_granted">ההרשאה נדחתה</string>
     <string name="permission_bluetooth_info">נדרשת הרשאה לגשת אל המיקום באופן משוערך כדי לחפש אחר התקני Bluetooth. ניתן לשלול את ההרשאה לאחר איתור המכשיר.</string>
     <string name="permission_bluetooth_info_title">מידע</string>
-    <string name="permission_read_data_description">קריאת נתונים מ־openScale, לרבות פרטים על המשתמש ואת כל המדידות שנשמרו</string>
-    <string name="permission_read_data_label">קריאת נתוני openScale</string>
+    <string name="permission_read_write_data_description">קריאת נתונים מ־openScale, לרבות פרטים על המשתמש ואת כל המדידות שנשמרו</string>
+    <string name="permission_read_write_data_label">קריאת נתוני openScale</string>
     <string name="label_next">הבא</string>
     <string name="label_long_press_drag_reorder">ניתן לגעת נגיעה ארוכה במדידה ולגרור כדי לשנות את הסדר</string>
     <string name="label_click_measurement_configure">יש ללחוץ על מדידה כדי להגדיר מחדש</string>
@@ -253,5 +253,9 @@
     <string name="trisa_scale_pairing_succeeded">הצימוד הצליח!
 \n
 \nיש להתחבר מחדש כדי לקבל את נתוני המדידות.</string>
-
-    </resources>
+    <string name="label_tdee">הוצאה קלורית יומית (TDEE)</string>
+    <string name="info_bluetooth_no_device_retrying">לא ניתן להתחבר, מתבצע ניסיון חוזר…</string>
+    <string name="info_bluetooth_connection_disconnected">חיבור ה־Bluetooth נסגר</string>
+    <string name="info_step_on_scale">נא לעלות על המשקל ברגליים יחפות</string>
+    <string name="label_calories">קלוריות</string>
+</resources>

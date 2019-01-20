@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="title_overview">Oversigt</string>
     <string name="title_graph">Diagram</string>
@@ -69,7 +69,7 @@
     <string name="label_import">Import</string>
     <string name="label_export">Eksport</string>
     <string name="label_delete_all">Slet alle</string>
-    <string name="error_value_required">Obligatorisk</string>
+    <string name="error_value_required">Værdi obligatorisk</string>
     <string name="error_value_range">Værdien er uden for intervallet</string>
     <string name="error_importing">Fejl ved import</string>
     <string name="error_user_name_required">Fejl: navn er påkrævet</string>
@@ -78,8 +78,8 @@
     <string name="error_goal_weight_required">Fejl: målvægt er påkrævet</string>
     <string name="info_data_deleted">Data er slettet</string>
     <string name="info_data_all_deleted">Alle data er blevet slettet</string>
-    <string name="info_data_exported">Eksportér til</string>
-    <string name="info_data_imported">Importér fra</string>
+    <string name="info_data_exported">Eksportéres til</string>
+    <string name="info_data_imported">Importéres fra</string>
     <string name="info_enter_value_in">Værdien i</string>
     <string name="info_enter_comment">Kommentar</string>
     <string name="info_is_visible">er synlig</string>
@@ -93,7 +93,7 @@
     <string name="info_bluetooth_connection_successful">Forbindelse etableret</string>
     <string name="info_bluetooth_init">Initierer Bluetooth enhed</string>
     <string name="info_bluetooth_connection_error">Uventet Bluetooth fejl</string>
-    <string name="info_new_data_added">Tilføjede %1$.2f%2$s [%3$s] til %4$s</string>
+    <string name="info_new_data_added">%1$.2f%2$s [%3$s] til %4$s tilsat</string>
     <string name="info_enter_user_name">Dit navn</string>
     <string name="info_no_selected_user">Vælg en bruger under indstillinger.</string>
     <string name="info_no_evaluation_available">Ingen evaluering til rådighed</string>
@@ -101,8 +101,8 @@
     <string name="question_really_delete_all">Ønsker du at slette alle data?</string>
     <string name="question_really_delete_user">Ønsker du at slette brugeren?</string>
     <string name="label_bluetooth_title">Bluetooth</string>
-    <string name="label_bluetooth_enable">Aktivér Bluetoth</string>
-    <string name="label_bluetooth_searching">Etablerer Bluetooth forbindelse</string>
+    <string name="label_bluetooth_enable">Tilslut til personvægt ved opstart</string>
+    <string name="label_bluetooth_searching">Søger efter din Bluetooth personvægt</string>
     <string name="label_enable_labels">Data labels</string>
     <string name="label_enable_points">Datapunkter</string>
     <string name="label_delete_confirmation">Bekræft sletning</string>
@@ -123,7 +123,7 @@
     <string name="label_regression_line_degree">Grad af tilbagegang</string>
     <string name="label_goal_line">Mållinje</string>
     <string name="error_max_scale_users">Det maksimale antal brugere er nået</string>
-    <string name="info_step_on_scale">Træd op på vægten med bare fødder for at foretagen en referencemåling</string>
+    <string name="info_step_on_scale_for_reference">Træd op på vægten med bare fødder for at foretagen en referencemåling</string>
     <string name="info_measuring">Måler vægt: %.2f</string>
     <string name="open_drawer">Åben</string>
     <string name="close_drawer">Luk</string>
@@ -154,7 +154,7 @@
 
     <string name="label_share">Del</string>
 
-    <string name="label_bluetooth_searching_finished">Søgning af sluttet</string>
+    <string name="label_bluetooth_searching_finished">Søgning afsluttet</string>
     <string name="label_help">Hjælp</string>
 
     <string name="toggle_expand">Fold ud</string>
@@ -171,7 +171,7 @@
     <string name="label_set_default_order">Indstil standardsortéring</string>
 
     <string name="label_weeks_view">ugentlig</string>
-    <string name="label_mergeWithLastMeasurement">Flet med tidligere måling</string>
+    <string name="label_mergeWithLastMeasurement">Forene med tidligere måling</string>
     <string name="label_export_overwrite">Overskriv tidligere eksport \"%s\"?</string>
     <string name="label_include_in_overview_graph">Vis i oversigtsdiagram</string>
     <string name="label_measurement_in_percent">Målt i %</string>
@@ -188,7 +188,7 @@
     <string name="label_percent">Procent</string>
     <string name="label_estimated">Skønsmæssigt</string>
     <string name="label_estimate_measurement_summary">Baseret på vægt, højde, alder, køn mv.</string>
-    <string name="label_scale_not_supported">Denne personvægt er ikke understøttet</string>
+    <string name="label_scale_not_supported">Er denne personvægt understøttet\?</string>
     <string name="label_click_to_help_add_support">Klik for at hjælpe med at tilføje understøttelse af personvægten</string>
     <string name="label_auto_backup">Automatisk sikkerhedskopiering</string>
     <string name="label_auto_backup_schedule">Planlæg sikkerhedskopiering</string>
@@ -222,6 +222,17 @@
     <string name="activity_level_sedentary">Stillesiddende</string>
     <string name="activity_level_mild">let</string>
     <string name="activity_level_moderate">Moderat</string>
-    <string name="activity_level_heavy">hård</string>
+    <string name="activity_level_heavy">Hård</string>
     <string name="activity_level_extreme">Ekstrem</string>
+    <string name="label_tdee">Samlet Daglig Energiforbrug (TDEE)</string>
+    <string name="trisa_scale_not_paired">Denne personvægt er ikke blevet parret!
+\n
+\nHold knappen nede i personvægten for at skifte den til parringstilstand, og tilslut derefter for at hente enhedens adgangskode.</string>
+    <string name="trisa_scale_pairing_succeeded">Parring lykkedes!
+\n
+\nForbind igen for at hente måling data.</string>
+    <string name="permission_read_write_data_description">Læs/Skriv openScale data, herunder brugerinformation og alle gemte målinger</string>
+    <string name="permission_read_write_data_label">Læs/Skriv openScale data</string>
+    <string name="label_calories">Kalorier</string>
+    <string name="label_data_provider_enable">Tredjeparts appadgang</string>
 </resources>

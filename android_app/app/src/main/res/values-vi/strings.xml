@@ -163,7 +163,7 @@
     <string name="label_feedback_message_negative">Không, cảm ơn</string>
 
     <string name="error_max_scale_users">Đã đạt đến số người sử đụng cùng lúc tối đa</string>
-    <string name="info_step_on_scale">Vui lòng bước chân trần lên cân để lấy số đo tham chiếu</string>
+    <string name="info_step_on_scale_for_reference">Vui lòng bước chân trần lên cân để lấy số đo tham chiếu</string>
     <string name="info_measuring">Đang đo trọng lượng: %.2f</string>
     <string name="trisa_scale_not_paired">Cân này chưa được ghép đôi!
 \n
@@ -195,8 +195,8 @@
     <string name="permission_not_granted">Quyền không được cấp</string>
     <string name="permission_bluetooth_info">Cần quyền truy cập vị trí thô để tìm kiếm các thiết bị Bluetooth. Nó có thể được thu hồi sau khi thiết bị được tìm thấy.</string>
     <string name="permission_bluetooth_info_title">Thông tin</string>
-    <string name="permission_read_data_description">đọc dữ liệu của openScale, bao gồm thông tin người dùng và tất cả các số đo được lưu</string>
-    <string name="permission_read_data_label">Đọc dữ liệu openScale</string>
+    <string name="permission_read_write_data_description">đọc dữ liệu của openScale, bao gồm thông tin người dùng và tất cả các số đo được lưu</string>
+    <string name="permission_read_write_data_label">Đọc dữ liệu openScale</string>
     <string name="label_next">Tiếp</string>
     <string name="label_long_press_drag_reorder">Giữ lâu và kéo số đo để sắp xếp lại</string>
     <string name="label_click_measurement_configure">Ấn vào số đo để cấu hình</string>

@@ -16,8 +16,10 @@
         <item>German (Deutsch)</item>
         <item>Greek (ελληνικά)</item>
         <item>Hebrew (עברית)</item>
+        <item>Hungarian (magyar)</item>
         <item>Italian (Italiano)</item>
         <item>Japanese (日本語)</item>
+        <item>Korean (한국어)</item>
         <item>Norwegian Bokmål (Norsk)</item>
         <item>Polish (język polski)</item>
         <item>Portuguese (Brazil; Português)</item>
@@ -46,8 +48,10 @@
         <item>de</item>
         <item>el</item>
         <item>iw</item>
+        <item>hu</item>
         <item>it</item>
         <item>ja</item>
+        <item>ko</item>
         <item>nb</item>
         <item>pl</item>
         <item>pt-BR</item>

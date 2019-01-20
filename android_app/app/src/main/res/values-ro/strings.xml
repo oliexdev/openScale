@@ -154,7 +154,7 @@
     <string name="label_feedback_message_negative">Nu, mulțumesc</string>
 
     <string name="error_max_scale_users">Numărul maxim de utilizatori al unui același aparat depășit</string>
-    <string name="info_step_on_scale">Urcați vă rog pe cântar desculț pentru măsurătorile de referință</string>
+    <string name="info_step_on_scale_for_reference">Urcați vă rog pe cântar desculț pentru măsurătorile de referință</string>
     <string name="info_measuring">Măsurare a greutății în curs: %.2f</string>
 
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">O eroare a apărut.

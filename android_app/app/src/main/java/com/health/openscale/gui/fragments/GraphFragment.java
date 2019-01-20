@@ -70,6 +70,7 @@ import com.health.openscale.gui.views.ChartMarkerView;
 import com.health.openscale.gui.views.FloatMeasurementView;
 import com.health.openscale.gui.views.MeasurementView;
 import com.health.openscale.gui.views.MeasurementViewSettings;
+import com.health.openscale.gui.views.TDEEMeasurementView;
 import com.health.openscale.gui.views.WeightMeasurementView;
 
 import java.text.DecimalFormat;
@@ -417,7 +418,8 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             if (view instanceof FloatMeasurementView) {
                 final FloatMeasurementView measurementView = (FloatMeasurementView) view;
 
-                if (measurementView instanceof BMRMeasurementView) {
+                if (measurementView instanceof BMRMeasurementView
+                        || measurementView instanceof TDEEMeasurementView) {
                     continue;
                 }
 

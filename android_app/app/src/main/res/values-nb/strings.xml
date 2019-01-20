@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="title_overview">Oversikt</string>
     <string name="title_graph">Diagram</string>
@@ -165,7 +165,7 @@
     <string name="label_feedback_message_negative">Nei takk</string>
 
     <string name="error_max_scale_users">Maks antall samtidige vektbrukere nådd</string>
-    <string name="info_step_on_scale">Stig på vekten barføtt for referansemåling</string>
+    <string name="info_step_on_scale_for_reference">Stig på vekten barføtt for referansemåling</string>
     <string name="info_measuring">Måler vekt: %.2f</string>
 
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">En uventet feil inntraff.
@@ -242,8 +242,8 @@
     <string name="activity_level_moderate">Moderat</string>
     <string name="activity_level_heavy">Tung</string>
     <string name="activity_level_extreme">Ekstrem</string>
-    <string name="permission_read_data_description">les openScale-data, inkludert brukerinfo, og alle lagrede målinger</string>
-    <string name="permission_read_data_label">Les openScale-data</string>
+    <string name="permission_read_write_data_description">les openScale-data, inkludert brukerinfo, og alle lagrede målinger</string>
+    <string name="permission_read_write_data_label">Les openScale-data</string>
 <string name="label_data_provider_enable">Tilgang for tredjepartsprogrammer</string>
 <string name="trisa_scale_not_paired">Denne vekten har ikke blitt parret.
 \n
@@ -251,5 +251,9 @@
     <string name="trisa_scale_pairing_succeeded">Paring utført.
 \n
 \nKoble til igjen for å hente målingsdata.</string>
-
-    </resources>
+    <string name="label_tdee">Totalt daglig effektforbruk (TDEE)</string>
+    <string name="label_calories">Kalorier</string>
+    <string name="info_bluetooth_no_device_retrying">Kan ikke etablere forbindelse, prøver igjen…</string>
+    <string name="info_bluetooth_connection_disconnected">Blåtannstilkobling lukket</string>
+    <string name="info_step_on_scale">Tre opp på vekta barfot</string>
+</resources>

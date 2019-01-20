@@ -16,16 +16,16 @@
 
 package com.health.openscale.core.bluetooth;
 
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
 
+import com.health.openscale.R;
+import com.health.openscale.core.OpenScale;
+import com.health.openscale.core.bluetooth.lib.TrisaBodyAnalyzeLib;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
+import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 
 import timber.log.Timber;
@@ -67,6 +67,12 @@ public class BluetoothQNScale extends BluetoothCommunication {
     // Scale time is in seconds since 2000-01-01 00:00:00 (utc).
     private static final long SCALE_UNIX_TIMESTAMP_OFFSET = 946702800;
 
+
+    private static long MILLIS_2000_YEAR = 949334400000L;
+    private boolean hasReceived;
+    private float weightScale=100.0f;
+
+
     public BluetoothQNScale(Context context) {
         super(context);
     }
@@ -87,16 +93,16 @@ public class BluetoothQNScale extends BluetoothCommunication {
         switch (stateNr) {
             case 0:
                 // set notification on for custom characteristic 1 (weight, time, and others)
-                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, CUSTOM1_MEASUREMENT_CHARACTERISTIC, WEIGHT_MEASUREMENT_CONFIG);
+                setNotificationOn(CUSTOM1_MEASUREMENT_CHARACTERISTIC);
                 break;
             case 1:
                 // set indication on for weight measurement
-                setIndicationOn(WEIGHT_MEASUREMENT_SERVICE, CUSTOM2_MEASUREMENT_CHARACTERISTIC, WEIGHT_MEASUREMENT_CONFIG);
+                setIndicationOn(CUSTOM2_MEASUREMENT_CHARACTERISTIC);
                 break;
             case 2:
                 // write magicnumber 0x130915011000000042 to 0xffe3
                 byte[] ffe3magicBytes = new byte[] {(byte)0x13, (byte)0x09, (byte)0x15, (byte)0x01, (byte)0x10, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x42};
-                writeBytes(WEIGHT_MEASUREMENT_SERVICE, CUSTOM3_MEASUREMENT_CHARACTERISTIC, ffe3magicBytes);
+                writeBytes(CUSTOM3_MEASUREMENT_CHARACTERISTIC, ffe3magicBytes);
                 break;
             case 3:
                 // send time magic number to receive weight data
@@ -105,7 +111,10 @@ public class BluetoothQNScale extends BluetoothCommunication {
                 byte[] date = new byte[4];
                 Converters.toInt32Le(date, 0, timestamp);
                 byte[] timeMagicBytes = new byte[] {(byte)0x02, date[0], date[1], date[2], date[3]};
-                writeBytes(WEIGHT_MEASUREMENT_SERVICE, CUSTOM4_MEASUREMENT_CHARACTERISTIC, timeMagicBytes);
+                writeBytes(CUSTOM4_MEASUREMENT_CHARACTERISTIC, timeMagicBytes);
+                break;
+            case 4:
+                sendMessage(R.string.info_step_on_scale, 0);
                 break;
             default:
                 return false;
@@ -120,7 +129,7 @@ public class BluetoothQNScale extends BluetoothCommunication {
         switch (stateNr) {
             case 0:
                 // send stop command to scale (0x1f05151049)
-                writeBytes(WEIGHT_MEASUREMENT_SERVICE, CUSTOM3_MEASUREMENT_CHARACTERISTIC, new byte[]{(byte)0x1f, (byte)0x05, (byte)0x15, (byte)0x10, (byte)0x49});
+                writeBytes(CUSTOM3_MEASUREMENT_CHARACTERISTIC, new byte[]{(byte)0x1f, (byte)0x05, (byte)0x15, (byte)0x10, (byte)0x49});
                 break;
             default:
                 return false;
@@ -130,39 +139,113 @@ public class BluetoothQNScale extends BluetoothCommunication {
 
 
     @Override
-    public void onBluetoothDataChange(BluetoothGatt bluetoothGatt, BluetoothGattCharacteristic gattCharacteristic) {
-        final byte[] data = gattCharacteristic.getValue();
+    public void onBluetoothNotify(UUID characteristic, byte[] value) {
+        final byte[] data = value;
 
-        if (gattCharacteristic.getUuid().equals(CUSTOM1_MEASUREMENT_CHARACTERISTIC)) {
+        if (characteristic.equals(CUSTOM1_MEASUREMENT_CHARACTERISTIC)) {
             parseCustom1Data(data);
         }
     }
 
-    private void parseCustom1Data(byte[] custom1Data){
-        int firstByte = custom1Data[0] & 0xFF;
-        int secondByte = custom1Data[1] & 0xFF;
-        int thirdByte = custom1Data[2] & 0xFF;
-        Timber.d("First byte %d", firstByte);
-        Timber.d("Second byte %d", secondByte);
-        Timber.d("Third byte %d", thirdByte);
-        //int fourthByte = custom1Data[3] & 0xFF;
-        //int fifthByte = custom1Data[4] & 0xFF;
+    private void parseCustom1Data(byte[] data){
+        StringBuilder sb = new StringBuilder();
 
-        // If this is a weight byte
-        if (firstByte == 0x10 && secondByte == 0x0b && thirdByte == 0x15){
-            ScaleMeasurement btScaleMeasurement = new ScaleMeasurement();
-            byte[] weightBytes = new byte[]{custom1Data[3], custom1Data[4]};
-            int rawWeight = ((weightBytes[0] & 0xff) <<8 | weightBytes[1] & 0xff);
-            float weight = rawWeight / 100.0f;
-            //float weight = Converters.fromUnsignedInt16Le(weightBytes, 0) / 100.0f;
-            int weightByteOne = custom1Data[3] & 0xFF;
-            int weightByteTwo = custom1Data[4] & 0xFF;
-            Timber.d("Weight byte 1 %d", weightByteOne);
-            Timber.d("Weight byte 2 %d", weightByteTwo);
-            Timber.d("Raw Weight: %d", rawWeight);
-            btScaleMeasurement.setWeight(weight);
-            //setBtMachineState(BT_MACHINE_STATE.BT_CLEANUP_STATE)
-            addScaleData(btScaleMeasurement);
+        int len = data.length;
+        for (int i = 0; i < len; i++) {
+            sb.append(String.format("%02X ", new Object[]{Byte.valueOf(data[i])}));
+
+        }
+        Timber.d(sb.toString());
+        float weightKg=0;
+        switch (data[0]) {
+            case (byte) 16:
+                if (data[5] == (byte) 0) {
+                    this.hasReceived = false;
+                    //this.callback.onUnsteadyWeight(this.qnBleDevice, decodeWeight(data[3],  data[4]));
+                } else if (data[5] == (byte) 1) {
+                    //        writeData(CmdBuilder.buildOverCmd(this.protocolType, 16));
+                    if (!this.hasReceived) {
+                        this.hasReceived = true;
+                        weightKg = decodeWeight(data[3], data[4]);
+                        int weightByteOne = data[3] & 0xFF;
+                        int weightByteTwo = data[4] & 0xFF;
+
+                        Timber.d("Weight byte 1 %d", weightByteOne);
+                        Timber.d("Weight byte 2 %d", weightByteTwo);
+                        Timber.d("Raw Weight: %f", weightKg);
+
+                        if (weightKg > 0.0f) {
+                            //QNData md = buildMeasuredData(this.qnUser, weight, decodeIntegerValue
+                            // (data[6], data[7]), decodeIntegerValue(data[8], data[9]),
+                            // new  Date(), data);
+
+                            int resistance1 = decodeIntegerValue   (data[6], data[7]);
+                            int resistance2 = decodeIntegerValue(data[8], data[9]);
+                            Timber.d("resistance1: %d", resistance1);
+                            Timber.d("resistance2: %d", resistance2);
+
+                            final ScaleUser scaleUser = OpenScale.getInstance().getSelectedScaleUser();
+                            Timber.d("scale user " + scaleUser);
+                            ScaleMeasurement btScaleMeasurement = new ScaleMeasurement();
+                            //TrisaBodyAnalyzeLib gives almost simillar values for QNScale body fat calcualtion
+                            TrisaBodyAnalyzeLib qnscalelib = new TrisaBodyAnalyzeLib(scaleUser.getGender().isMale() ? 1 : 0, scaleUser.getAge(), (int)scaleUser.getBodyHeight());
+
+                            //Now much difference between resistance1 and resistance2.
+                            //Will use resistance 1 for now
+                            float impedance = resistance1 < 410f ? 3.0f : 0.3f * (resistance1 - 400f);
+                            btScaleMeasurement.setFat(qnscalelib.getFat(weightKg, impedance));
+                            btScaleMeasurement.setWater(qnscalelib.getWater(weightKg, impedance));
+                            btScaleMeasurement.setMuscle(qnscalelib.getMuscle(weightKg, impedance));
+                            btScaleMeasurement.setBone(qnscalelib.getBone(weightKg, impedance));
+                            btScaleMeasurement.setWeight(weightKg);
+                            addScaleData(btScaleMeasurement);
+                        }
+                    }
+                }
+            break;
+            case (byte) 18:
+                byte protocolType = data[2];
+                this.weightScale = data[10] == (byte) 1 ? 100.0f : 10.0f;
+                int[] iArr = new int[5];
+                //TODO
+                //writeData(CmdBuilder.buildCmd(19, this.protocolType, 1, 16, 0, 0, 0));
+                break;
+            case (byte) 33:
+                //  TODO
+                //writeBleData(CmdBuilder.buildCmd(34, this.protocolType, new int[0]));
+                break;
+            case (byte) 35:
+                weightKg = decodeWeight(data[9], data[10]);
+                if (weightKg > 0.0f) {
+                    int resistance = decodeIntegerValue(data[11], data[12]);
+                    int resistance500 = decodeIntegerValue(data[13], data[14]);
+                    long differTime = 0;
+                    for (int i = 0; i < 4; i++) {
+                        differTime |= (((long) data[i + 5]) & 255) << (i * 8);
+                    }
+                    Date date = new Date(MILLIS_2000_YEAR + (1000 * differTime));
+
+                    //  TODO
+                    // QNData qnData = buildMeasuredData(user, weight, resistance,
+                    //                                resistance500, date, data);
+
+
+                    if (data[3] == data[4]) {
+                        //  TODO
+                    }
+                }
+                break;
         }
     }
+
+    private float decodeWeight(byte a, byte b) {
+        return ((float) (((a & 255) << 8) + (b & 255))) / this.weightScale;
+    }
+
+    private int decodeIntegerValue(byte a, byte b) {
+        return ((a & 255) << 8) + (b & 255);
+    }
+
+
+
 }

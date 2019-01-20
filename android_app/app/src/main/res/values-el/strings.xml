@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="title_overview">Επισκόπηση</string>
     <string name="title_graph">Διάγραμμα</string>
@@ -33,7 +33,7 @@
     <string name="label_waist">Περιφέρεια μέσης</string>
     <string name="label_hip">Περιφέρεια γοφών</string>
     <string name="label_comment">Σχόλιο</string>
-    <string name="label_whtr">Αναλογία μέσης προς ύψος</string>
+    <string name="label_whtr">Αναλογία μέσης-ύψους</string>
     <string name="label_whr">Αναλογία μέσης-γοφών</string>
     <string name="label_bone">Μάζα οστών</string>
     <string name="label_smartUserAssign">Ανάθεση εργασίας Έξυπνου Χρήστη</string>
@@ -42,27 +42,27 @@
         <item quantity="one">%d ημέρα</item>
         <item quantity="other">%d ημέρες</item>
     </plurals>
-    <string name="label_last_week">Τελευταίες 7 ημέρες</string>
-    <string name="label_last_month">Τελευταίες 30 ημέρες</string>
+    <string name="label_last_week">Μέσος όρος εβδομάδας</string>
+    <string name="label_last_month">Μέσος όρος μήνα</string>
     <string name="label_weight_difference">Διαφορά βάρους</string>
-    <string name="label_goal_date_is">Ημερομηνία στόχος:</string>
+    <string name="label_goal_date_is">Στόχος ημερομηνίας:</string>
     <string name="label_days_left">Εναπομείνασες ημέρες</string>
 
     <string name="label_date">Ημερομηνία</string>
     <string name="label_time">Ώρα</string>
-    <string name="label_birthday">Γενέθλεια</string>
+    <string name="label_birthday">Γενέθλια</string>
     <string name="label_user_name">Όνομα</string>
     <string name="label_height">Ύψος</string>
-    <string name="label_scale_unit">Μονάδα ζύγησης</string>
+    <string name="label_scale_unit">Μονάδα ζύγισης</string>
     <string name="label_gender">Φύλο</string>
     <string name="label_male">Αρσενικό</string>
     <string name="label_female">Θηλυκό</string>
-    <string name="label_goal_weight">Βάρος στόχος</string>
-    <string name="label_goal_date">Ημερομηνία στόχος</string>
+    <string name="label_goal_weight">Στόχος βάρους</string>
+    <string name="label_goal_date">Στόχος ημερομηνίας</string>
 
     <string name="label_title_user">χρήστης</string>
     <string name="label_title_last_measurement">τελευταία μέτρηση</string>
-    <string name="label_title_goal">στόχος</string>
+    <string name="label_title_goal">Στόχος</string>
 
     <string name="label_import">Εισήγαγε</string>
     <string name="label_export">Εξήγαγε</string>
@@ -75,7 +75,7 @@
     <string name="error_user_name_required">Σφάλμα: Όνομα απαραίτητο</string>
     <string name="error_height_required">Σφάλμα: Ύψος απαραίτητο</string>
     <string name="error_initial_weight_required">Σφάλμα: Αρχικό βάρος απαραίτητο</string>
-    <string name="error_goal_weight_required">Σφάλμα: Βάρος στόχος απαραίτητο</string>
+    <string name="error_goal_weight_required">Σφάλμα: Στόχος βάρους απαραίτητο</string>
 
     <string name="info_data_deleted">Καταχώρηση διεγράφη</string>
     <string name="info_data_all_deleted">Όλες οι καταχωρήσεις διεγράφησαν</string>
@@ -128,10 +128,10 @@
     <string name="label_theme">Θέμα</string>
 
     <string name="label_reminder">Υπενθύμιση</string>
-    <string name="label_reminder_weekdays">Ημέρες της εβδομάδας</string>
+    <string name="label_reminder_weekdays">Ημέρες</string>
     <string name="label_reminder_time">Ώρα</string>
     <string name="label_reminder_notify_text">Κείμενο ειδοποίησης</string>
-    <string name="default_value_reminder_notify_text">Ώρα για ζύγιση</string>
+    <string name="default_value_reminder_notify_text">Ώρα για ζύγισμα</string>
 
     <string name="info_on_date">ανοιχτό</string>
 
@@ -164,7 +164,7 @@
     <string name="label_feedback_message_negative">Όχι, ευχαριστώ</string>
 
     <string name="error_max_scale_users">Μεγ. αριθμός ταυτόχρονων χρηστών επετεύχθη</string>
-    <string name="info_step_on_scale">Παρακαλώ, πατήστε ξυπόλυτοι επί της ζυγαριάς για μετρήσεις αναφοράς</string>
+    <string name="info_step_on_scale_for_reference">Παρακαλώ, πατήστε ξυπόλυτοι επί της ζυγαριάς για μετρήσεις αναφοράς</string>
     <string name="info_measuring">Μετρούμενο βάρος: %.2f</string>
 
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">Συνέβη απρόσμενο σφάλμα.
@@ -217,4 +217,40 @@
     <string name="label_development">Ανάπτυξη</string>
     <string name="label_debug_log">Αποθήκευσε καταγραφή αποσφαλμάτωσης στο αρχείο</string>
     <string name="label_your_bluetooth_scale">Η ζυγαριά σας με δυνατότητα Bluetooth</string>
+    <string name="label_add_measurement">Προσθήκη μέτρησης</string>
+    <string name="trisa_scale_not_paired">Αυτή η ζυγαριά δεν έχει ζευγαρωθεί!
+\n
+\nΚρατήστε το κουμπί στο κάτω μέρος της ζυγαριάς για να μεταβείτε σε κατάσταση ζευγαρώματος και μετά επανασυνδεθείτε για να ανακτήσετε το συνθηματικό της συσκευής.</string>
+    <string name="trisa_scale_pairing_succeeded">Το ζευγάρωμα ήταν επιτυχημένο!
+\n
+\nΕπανασυνδεθείτε για να ανακτήσετε τα δεδομένα μετρήσεων.</string>
+    <string name="permission_read_write_data_description">ανάγνωση δεδομένων openScale, συμπεριλαμβάνονται οι πληροφορίες χρήστη και όλες οι αποθηκευμένες μετρήσεις</string>
+    <string name="permission_read_write_data_label">Ανάγνωση δεδομένων openScale</string>
+    <string name="label_long_press_drag_reorder">Μακρύ πάτημα και σύρσιμο της μέτρησης για αναδιάταξη</string>
+    <string name="label_click_measurement_configure">Κλικ στην μέτρηση για ρύθμιση</string>
+    <string name="label_select_measurement">Επιλογή μέτρησης</string>
+    <string name="label_select_user">Επιλογή χρήστη</string>
+    <string name="label_configure_widget">Ρύθμιση widget</string>
+    <string name="label_visceral_fat">Λίπος σπλάχνων</string>
+    <string name="label_chest">Περιφέρεια στήθους</string>
+    <string name="label_thigh">Περιφέρεια μηρού</string>
+    <string name="label_biceps">Περιφέρεια δικεφάλου</string>
+    <string name="label_neck">Περίμετρος λαιμού</string>
+    <string name="label_fat_caliper">Παχύμετρο λίπους σώματος</string>
+    <string name="label_caliper1_male">Δερματοπτυχή στήθους</string>
+    <string name="label_caliper2_male">Δερματοπτυχή κοιλιακών</string>
+    <string name="label_caliper3_male">Δερματοπτυχή μηρού</string>
+    <string name="label_caliper1_female">Δερματοπτυχή τρικέφαλου</string>
+    <string name="label_caliper2_female">Δερματοπτυχή κοιλιακών</string>
+    <string name="label_caliper3_female">Δερματοπτυχή γοφού</string>
+    <string name="label_measure_unit">Μονάδα μέτρησης</string>
+    <string name="label_activity_level">Επίπεδο δραστηριότητας</string>
+    <string name="activity_level_sedentary">Καθιστικό</string>
+    <string name="activity_level_mild">Ήπιο</string>
+    <string name="activity_level_moderate">Μέτριο</string>
+    <string name="activity_level_heavy">Έντονο</string>
+    <string name="activity_level_extreme">Ακραίο</string>
+    <string name="label_data_provider_enable">Πρόσβαση εφαρμογής τρίτων</string>
+    <string name="label_tdee">Συνολική ημερήσια κατανάλωση ενέργειας (ΣΗΚΕ)</string>
+    <string name="label_calories">Θερμίδες</string>
 </resources>

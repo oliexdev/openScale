@@ -13,9 +13,9 @@
          Marked "dangerous" so that explicit user approval is required to read this data, not
          just the permission implied from installing the app from the Play Store. -->
     <permission
-        android:name="${applicationId}.READ_DATA"
-        android:description="@string/permission_read_data_description"
-        android:label="@string/permission_read_data_label"
+        android:name="${applicationId}.READ_WRITE_DATA"
+        android:description="@string/permission_read_write_data_description"
+        android:label="@string/permission_read_write_data_label"
         android:protectionLevel="dangerous" />
 
     <uses-feature android:name="android.hardware.bluetooth_le" android:required="false"/>
@@ -73,7 +73,7 @@
             android:authorities="${applicationId}.provider"
             android:enabled="true"
             android:exported="true"
-            android:readPermission="${applicationId}.READ_DATA">
+            android:permission="${applicationId}.READ_WRITE_DATA">
         </provider>
     </application>
 
