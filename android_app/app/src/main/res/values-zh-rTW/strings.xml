@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="title_overview">概覽</string>
     <string name="title_graph">圖表</string>
@@ -39,8 +39,8 @@
     <string name="label_smartUserAssign">用戶自動配對</string>
 
     <plurals name="label_days">
-        <item quantity="other">日</item>
-    </plurals>
+    <item quantity="other">日 %d</item>
+</plurals>
     <string name="label_last_week">平均過去一週</string>
     <string name="label_last_month">平均過去一個月</string>
     <string name="label_weight_difference">體重差距</string>
@@ -217,4 +217,7 @@
     <string name="label_development">開發</string>
     <string name="label_debug_log">除錯記錄存檔</string>
     <string name="label_add_measurement">增加測量</string>
+    <string name="label_tdee">每日能源支出總額 (TDEE)</string>
+    <string name="info_bluetooth_no_device_retrying">無法建立連接，重試中…</string>
+    <string name="info_bluetooth_connection_disconnected">藍牙連接已關閉</string>
 </resources>
