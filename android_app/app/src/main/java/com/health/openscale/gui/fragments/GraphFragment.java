@@ -65,12 +65,10 @@ import com.health.openscale.core.utils.Converters;
 import com.health.openscale.core.utils.PolynomialFitter;
 import com.health.openscale.gui.activities.DataEntryActivity;
 import com.health.openscale.gui.utils.ColorUtil;
-import com.health.openscale.gui.views.BMRMeasurementView;
 import com.health.openscale.gui.views.ChartMarkerView;
 import com.health.openscale.gui.views.FloatMeasurementView;
 import com.health.openscale.gui.views.MeasurementView;
 import com.health.openscale.gui.views.MeasurementViewSettings;
-import com.health.openscale.gui.views.TDEEMeasurementView;
 import com.health.openscale.gui.views.WeightMeasurementView;
 
 import java.text.DecimalFormat;
@@ -417,11 +415,6 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         for (MeasurementView view : measurementViews) {
             if (view instanceof FloatMeasurementView) {
                 final FloatMeasurementView measurementView = (FloatMeasurementView) view;
-
-                if (measurementView instanceof BMRMeasurementView
-                        || measurementView instanceof TDEEMeasurementView) {
-                    continue;
-                }
 
                 boolean entryIsAverage = false;
                 final List<Entry> entries = new ArrayList<>();

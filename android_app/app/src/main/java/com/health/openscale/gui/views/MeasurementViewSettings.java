@@ -144,6 +144,8 @@ public class MeasurementViewSettings {
         switch (key) {
             case WeightMeasurementView.KEY:
             case BMRMeasurementView.KEY:
+            case TDEEMeasurementView.KEY:
+            case CaloriesMeasurementView.KEY:
                 defaultValue = true;
                 break;
             default:
