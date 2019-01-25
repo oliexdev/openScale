@@ -411,10 +411,15 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         PolynomialFitter polyFitter = new PolynomialFitter(Math.min(regressLineOrder, 100));
 
         float maxYValue = 0;
+        boolean isWeightOnRightAxis = false;
 
         for (MeasurementView view : measurementViews) {
             if (view instanceof FloatMeasurementView) {
                 final FloatMeasurementView measurementView = (FloatMeasurementView) view;
+
+                if (measurementView instanceof WeightMeasurementView) {
+                    isWeightOnRightAxis = measurementView.getSettings().isOnRightAxis();
+                }
 
                 boolean entryIsAverage = false;
                 final List<Entry> entries = new ArrayList<>();
@@ -524,6 +529,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             LineDataSet goalLine = new LineDataSet(valuesGoalLine, getString(R.string.label_goal_line));
             goalLine.setLineWidth(1.5f);
             goalLine.setColor(ColorUtil.COLOR_GREEN);
+            goalLine.setAxisDependency(isWeightOnRightAxis ? YAxis.AxisDependency.RIGHT : YAxis.AxisDependency.LEFT);
             goalLine.setDrawValues(false);
             goalLine.setDrawCircles(false);
             goalLine.setHighlightEnabled(false);
@@ -545,6 +551,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             LineDataSet linearRegressionLine = new LineDataSet(valuesLinearRegression, getString(R.string.label_regression_line));
             linearRegressionLine.setLineWidth(1.5f);
             linearRegressionLine.setColor(ColorUtil.COLOR_VIOLET);
+            linearRegressionLine.setAxisDependency(isWeightOnRightAxis ? YAxis.AxisDependency.RIGHT : YAxis.AxisDependency.LEFT);
             linearRegressionLine.setDrawValues(false);
             linearRegressionLine.setDrawCircles(false);
             linearRegressionLine.setHighlightEnabled(false);
