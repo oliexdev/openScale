@@ -349,24 +349,37 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         SimpleDateFormat day_date = new SimpleDateFormat("D", Locale.getDefault());
 
+        Calendar calDays = (Calendar)calLastSelected.clone();
+
+        int minDays = 0;
+        int maxDays = 0;
+
         if (field == Calendar.DAY_OF_MONTH) {
             day_date = new SimpleDateFormat("dd", Locale.getDefault());
+
+            minDays = calDays.getActualMinimum(Calendar.DAY_OF_MONTH);
+            maxDays = calDays.getActualMaximum(Calendar.DAY_OF_MONTH);
 
             if (prefs.getBoolean("showWeek", false)) {
                 field = Calendar.WEEK_OF_MONTH;
                 day_date = new SimpleDateFormat("w", Locale.getDefault());
+                maxDays = calDays.getActualMaximum(Calendar.WEEK_OF_MONTH);
             }
         } else if (field == Calendar.DAY_OF_YEAR) {
             day_date = new SimpleDateFormat("D", Locale.getDefault());
+            maxDays = calDays.getActualMaximum(Calendar.DAY_OF_YEAR);
 
             if (prefs.getBoolean("averageData", true)) {
                 field = Calendar.MONTH;
                 day_date = new SimpleDateFormat("MMM", Locale.getDefault());
+                maxDays = calDays.getMaximum(Calendar.MONTH);
             }
 
             if (prefs.getBoolean("showWeek", false)) {
                 field = Calendar.WEEK_OF_YEAR;
                 day_date = new SimpleDateFormat("w", Locale.getDefault());
+                minDays = calDays.getActualMinimum(Calendar.WEEK_OF_YEAR);
+                maxDays = calDays.getActualMaximum(Calendar.WEEK_OF_YEAR);
             }
         }
 
@@ -384,14 +397,6 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                 return mFormat.format(calendar.getTime());
             }
         });
-
-        Calendar calDays = (Calendar)calLastSelected.clone();
-
-        int minDays = calDays.getMinimum(field);
-        int maxDays = calDays.getMaximum(field);
-
-        calDays.setMinimalDaysInFirstWeek(7);
-        calDays.set(field, minDays);
 
         List<ILineDataSet> dataSets = new ArrayList<>();
 
@@ -423,14 +428,13 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
                 boolean entryIsAverage = false;
                 final List<Entry> entries = new ArrayList<>();
-                final ArrayList<Float>[] avgBins = new ArrayList[maxDays+1];
-                ScaleMeasurement[] indexScaleMeasurement = new ScaleMeasurement[maxDays+1];
+                final ArrayList<Float>[] avgBins = new ArrayList[minDays + maxDays + 1];
+                ScaleMeasurement[] indexScaleMeasurement = new ScaleMeasurement[minDays + maxDays + 1];
 
                 for (ScaleMeasurement measurement : scaleMeasurementList) {
                     measurementView.loadFrom(measurement, null);
 
                     calDB.setTime(measurement.getDateTime());
-                    calDB.setMinimalDaysInFirstWeek(7);
 
                     if (avgBins[calDB.get(field)] == null) {
                         avgBins[calDB.get(field)] = new ArrayList<>();
@@ -442,7 +446,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                     }
                 }
 
-                for (int i=0; i<maxDays+1; i++) {
+                for (int i=0; i<avgBins.length; i++) {
                     ArrayList avgBin = avgBins[i];
 
                     if (avgBin == null) {
@@ -543,7 +547,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
             List<Entry> valuesLinearRegression = new Stack<>();
 
-            for (int i = 0; i < maxDays+1; i++) {
+            for (int i = 0; i < maxDays; i++) {
                     double y_value = polynomial.getY(i);
                     valuesLinearRegression.add(new Entry((float) i, (float) y_value));
             }
@@ -572,31 +576,6 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
     {
         int[] numOfMonth = openScale.getCountsOfMonth(calYears.get(Calendar.YEAR));
 
-        float[] normNumOfMonth = new float[12];
-
-        int max = 0;
-        int min = Integer.MAX_VALUE;
-
-        for (int i=0; i<12; i++) {
-            if (numOfMonth[i] > max) {
-                max = numOfMonth[i];
-            }
-
-            if (numOfMonth[i] < min) {
-                min = numOfMonth[i];
-            }
-        }
-
-        final float heightOffset = 0.2f; // increase month selector minimum height
-
-        for (int i=0; i<12; i++) {
-            normNumOfMonth[i] = (numOfMonth[i] - min) / (float)(max - min); // normalize data to [0..1]
-
-            if (normNumOfMonth[i] != 0.0f) {
-                normNumOfMonth[i] += heightOffset;
-            }
-        }
-
         Calendar calMonths = Calendar.getInstance();
         calMonths.set(Calendar.MONTH, Calendar.JANUARY);
 
@@ -605,13 +584,13 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         for (int i=0; i<12; i++) {
             List<BarEntry> entries = new ArrayList<>();
 
-            entries.add(new BarEntry(calMonths.get(Calendar.MONTH), normNumOfMonth[i]));
+            entries.add(new BarEntry(calMonths.get(Calendar.MONTH), numOfMonth[i]));
 
             calMonths.add(Calendar.MONTH, 1);
 
             BarDataSet set = new BarDataSet(entries, "month "+i);
             set.setColor(ColorUtil.COLORS[i % 4]);
-            set.setDrawValues(false);
+            set.setDrawValues(true);
             dataSets.add(set);
         }
 
