@@ -42,7 +42,7 @@ Weight, BMI (body mass index), body water, muscle, LBM (lean body mass), body fa
 - Import or export your data from/into a CSV (comma separated value) file
 - Supports body fat, body water and lean body mass estimations based on scientific publications. Useful if your scale doesn't support those measurements.
 - Support for multiple users
-- Partially or fully translated into more than 25 languages, see [weblate project site](https://hosted.weblate.org/projects/openscale/#languages) for the full list
+- Partially or fully translated into more than 27 languages, see [weblate project site](https://hosted.weblate.org/projects/openscale/#languages) for the full list
 - Optional dark theme selectable
 
 # Supported Bluetooth scales
