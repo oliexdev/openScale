@@ -462,7 +462,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                     Entry entry = new Entry(i, sum / avgBin.size());
                     Object[] extraData = new Object[2];
                     extraData[0] = indexScaleMeasurement[i];
-                    extraData[1] = measurementView;
+                    extraData[1] = measurementView; // TODO Current average value isn't shown in the marker view because always the last measurement is shown
                     entry.setData(extraData);
 
                     if (prefs.getBoolean("regressionLine", false) && measurementView instanceof WeightMeasurementView) {

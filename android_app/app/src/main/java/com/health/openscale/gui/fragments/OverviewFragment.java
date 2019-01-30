@@ -51,7 +51,6 @@ import com.health.openscale.gui.utils.ColorUtil;
 import com.health.openscale.gui.views.ChartMarkerView;
 import com.health.openscale.gui.views.FloatMeasurementView;
 import com.health.openscale.gui.views.MeasurementView;
-import com.health.openscale.gui.views.TDEEMeasurementView;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -245,9 +244,10 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
             List<Entry> entries = new ArrayList<>();
 
-            for (ScaleMeasurement measurement : scaleMeasurementList) {
+            for (int i = 0; i < scaleMeasurementList.size(); i++) {
+                ScaleMeasurement measurement = scaleMeasurementList.get(i);
 
-                measurementView.loadFrom(measurement, null);
+                measurementView.loadFrom(measurement, i == 0 ? null : scaleMeasurementList.get(i-1));
 
                 if (measurementView.getValue() != 0.0f) {
                     Entry entry = new Entry();

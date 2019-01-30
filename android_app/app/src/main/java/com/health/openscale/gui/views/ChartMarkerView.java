@@ -17,6 +17,12 @@ package com.health.openscale.gui.views;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.text.Layout;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
+import android.text.style.AlignmentSpan;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.RelativeSizeSpan;
 import android.widget.TextView;
 
 import com.github.mikephil.charting.components.MarkerView;
@@ -24,14 +30,13 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.utils.MPPointF;
 import com.health.openscale.R;
+import com.health.openscale.core.datatypes.ScaleMeasurement;
 
-import java.text.DecimalFormat;
+import java.text.DateFormat;
 
 @SuppressLint("ViewConstructor")
 public class ChartMarkerView extends MarkerView {
     private final TextView markerTextField;
-
-    DecimalFormat mFormat = new DecimalFormat("###,###,##0.00");
 
     public ChartMarkerView(Context context, int layoutResource) {
         super(context, layoutResource);
@@ -42,10 +47,29 @@ public class ChartMarkerView extends MarkerView {
     @Override
     public void refreshContent(Entry e, Highlight highlight) {
         Object[] extraData = (Object[])e.getData();
-        //ScaleMeasurement measurement = (ScaleMeasurement)extraData[0];
+        ScaleMeasurement measurement = (ScaleMeasurement)extraData[0];
         FloatMeasurementView measurementView = (FloatMeasurementView)extraData[1];
 
-        markerTextField.setText(String.format("%s %s", mFormat.format(e.getY()), measurementView.getUnit()));
+        SpannableStringBuilder markerText = new SpannableStringBuilder();
+
+        if (measurement != null) {
+            DateFormat dateFormat = DateFormat.getDateInstance();
+            markerText.append(dateFormat.format(measurement.getDateTime()));
+            markerText.setSpan(new RelativeSizeSpan(0.8f), 0, markerText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            markerText.append("\n");
+        }
+
+        markerText.append(measurementView.getValueAsString(true) + "\n");
+        int textPosAfterSymbol = markerText.length() + 1;
+        measurementView.appendDiffValue(markerText, false);
+
+        // set color diff value to text color
+        if (markerText.length() > textPosAfterSymbol) {
+            markerText.setSpan(new ForegroundColorSpan(markerTextField.getCurrentTextColor()), textPosAfterSymbol, markerText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+
+        markerText.setSpan(new AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER),0, markerText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        markerTextField.setText(markerText);
 
         super.refreshContent(e, highlight);
     }
