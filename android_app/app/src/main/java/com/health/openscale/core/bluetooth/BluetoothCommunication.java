@@ -305,7 +305,7 @@ public abstract class BluetoothCommunication {
     /**
      * Read bytes from a Bluetooth device.
      *
-     * @note onBluetoothRead() will be triggered if read command was successful.
+     * @note onBluetoothRead() will be triggered if read command was successful. nextMachineStep() needs to manually called!
      *@param characteristic the Bluetooth UUID characteristic
      */
     protected void readBytes(UUID characteristic) {

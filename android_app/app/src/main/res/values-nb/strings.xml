@@ -40,9 +40,9 @@
     <string name="label_smartUserAssign">Smart brukertildeling</string>
 
     <plurals name="label_days">
-        <item quantity="one">%d dag</item>
-        <item quantity="other">%d dager</item>
-    </plurals>
+    <item quantity="one">dag %d</item>
+    <item quantity="other">dager %d</item>
+</plurals>
     <string name="label_last_week">Gjennomsnitt siste uke</string>
     <string name="label_last_month">Gjennomsnitt den siste måneden</string>
     <string name="label_weight_difference">Vektforskjell</string>
@@ -251,7 +251,7 @@
     <string name="trisa_scale_pairing_succeeded">Paring utført.
 \n
 \nKoble til igjen for å hente målingsdata.</string>
-    <string name="label_tdee">Totalt daglig effektforbruk (TDEE)</string>
+    <string name="label_tdee">Totalt daglig energibehov (TDEE)</string>
     <string name="label_calories">Kalorier</string>
     <string name="info_bluetooth_no_device_retrying">Kan ikke etablere forbindelse, prøver igjen…</string>
     <string name="info_bluetooth_connection_disconnected">Blåtannstilkobling lukket</string>

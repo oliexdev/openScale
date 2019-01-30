@@ -4,6 +4,7 @@
         <item>@string/language_default</item>
         <!-- Keep the list below alphabetically sorted -->
         <!-- Native names from https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes -->
+        <item>Arabic (العربية)</item>
         <item>Catalan (català)</item>
         <item>Chinese (traditional; 中文 (繁體))</item>
         <item>Croatian (hrvatski jezik)</item>
@@ -36,6 +37,7 @@
     <string-array name="language_values">
         <item>default</item>
         <!-- The order below should match the language order above -->
+        <item>ar</item>
         <item>ca</item>
         <item>zh-TW</item>
         <item>hr</item>

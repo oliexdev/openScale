@@ -40,9 +40,9 @@
     <string name="label_smartUserAssign">Slimme gebruiker herkenning</string>
 
     <plurals name="label_days">
-        <item quantity="one">%d dag</item>
-        <item quantity="other">%d dagen</item>
-    </plurals>
+    <item quantity="one">dag %d</item>
+    <item quantity="other">dagen %d</item>
+</plurals>
     <string name="label_last_week">Gemiddeld afgelopen week</string>
     <string name="label_last_month">Gemiddeld afgelopen maand</string>
     <string name="label_weight_difference">Verschil in gewicht</string>
@@ -254,4 +254,7 @@
     <string name="label_data_provider_enable">Toegang andere apps</string>
     <string name="label_tdee">Totaal Dagelijks Energie Gebruik</string>
     <string name="label_calories">Calorieën</string>
+    <string name="info_bluetooth_no_device_retrying">Kan geen verbinding maken, opnieuw proberen…</string>
+    <string name="info_bluetooth_connection_disconnected">Bluetooth verbinding verbroken</string>
+    <string name="info_step_on_scale">Stap alsjeblieft met blote voeten op de weegschaal</string>
 </resources>
