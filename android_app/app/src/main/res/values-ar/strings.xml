@@ -176,4 +176,61 @@
     <string name="label_include_in_overview_graph">تضمين في الرسم البياني العام</string>
     <string name="label_measurement_in_percent">القياس ب ٪</string>
     <string name="label_estimate_measurement">تقدير القياس</string>
+    <string name="info_new_data_added">%1$.2f%2$s [%3$s] ل %4 $s اضيف</string>
+    <string name="info_measuring">%.2f قياس الوزن : هو</string>
+    <string name="trisa_scale_not_paired">لم يتم إقران مع هذا الميزان!
+\n
+\nاضغط على الزر الموجود أسفل الميزان لتحويله إلى وضع الإقران ، ثم أعد توصيله لاسترداد كلمة مرور الجهاز.</string>
+    <string name="trisa_scale_pairing_succeeded">نجح الاقتران!
+\nأعد الاتصال لاسترداد بيانات القياس.</string>
+    <string name="customactivityoncrash_error_activity_error_occurred_explanation">حدث خطأ غير متوقع.
+\n
+\nالرجاء التبليغ بما في ذلك تفاصيل الخطأ على
+\nhttps://github.com/oliexdev/openScale/issues</string>
+    <string name="label_estimation_formula">معادلة التقدير</string>
+    <string name="language_default">النظام الافتراضي</string>
+    <string name="label_language">لغة</string>
+    <string name="theme_light">إضاءة</string>
+    <string name="theme_dark">داكن</string>
+    <string name="label_contribute_translation">المساهمة في الترجمة</string>
+    <string name="label_add_or_fix_translation">إضافة جديد أو تعديل موجود</string>
+    <string name="label_overview_graph">نظرة عامة على الرسم البياني</string>
+    <string name="label_percent">نسبه مئويه</string>
+    <string name="label_estimated">المقدرة</string>
+    <string name="label_estimate_measurement_summary">إعتمادا على الوزن والطول والعمر والجنس وما إلى ذلك.</string>
+    <string name="label_auto_backup">نسخ إحتياطي آلي</string>
+    <string name="label_auto_backup_schedule">جدولة النسخ الاحتياطي</string>
+    <string name="label_overwrite_backup">تحديث فوق النسخ الاحتياطي السابق</string>
+    <string name="label_daily">يوميا</string>
+    <string name="label_weekly">أسبوعي</string>
+    <string name="label_monthly">شهريا</string>
+    <string name="label_scale_not_supported">هل ميزانك غير مدعوم؟</string>
+    <string name="label_click_to_help_add_support">انقر هنا للمساعدة في إضافة دعم له</string>
+    <string name="label_development">تطوير</string>
+    <string name="label_debug_log">احفظ سجل التصحيح للملف</string>
+    <string name="label_your_bluetooth_scale">ميزان بلوتوث الخاص بك</string>
+    <string name="label_select_measurement">اختيار القياس</string>
+    <string name="label_select_user">اختر المستخدم</string>
+    <string name="label_configure_widget">نعديل الوزن</string>
+    <string name="label_visceral_fat">الدهون الحشوية</string>
+    <string name="label_chest">محيط الصدر</string>
+    <string name="label_thigh">محيط الفخذ</string>
+    <string name="label_biceps">محيط عضلة الدراع</string>
+    <string name="label_neck">محيط العنق</string>
+    <string name="label_calories">سعرات حراريه</string>
+    <string name="label_fat_caliper">المقياس الفكي للدهون</string>
+    <string name="label_caliper1_male">تجعدات جلد الصدر</string>
+    <string name="label_caliper2_male">تجعدات جلد الكرش</string>
+    <string name="label_caliper3_male">تجعدات جلد الفخذ</string>
+    <string name="label_caliper1_female">تجعدات جلد العضلة الخلفية للدراع</string>
+    <string name="label_caliper2_female">تجعدات جلد الكرش</string>
+    <string name="label_caliper3_female">تجعدات جلد الورك</string>
+    <string name="label_measure_unit">وحدة قياس</string>
+    <string name="label_activity_level">مستوى النشاط</string>
+    <string name="activity_level_sedentary">كثير الجلوس</string>
+    <string name="activity_level_mild">معتدل</string>
+    <string name="activity_level_moderate">معتدل</string>
+    <string name="activity_level_heavy">كثيف</string>
+    <string name="activity_level_extreme">شديد</string>
+    <string name="label_data_provider_enable">"وصول جهات اخرى إلى تطبيق  "</string>
 </resources>
