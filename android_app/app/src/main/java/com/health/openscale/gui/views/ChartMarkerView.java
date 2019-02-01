@@ -48,24 +48,36 @@ public class ChartMarkerView extends MarkerView {
     public void refreshContent(Entry e, Highlight highlight) {
         Object[] extraData = (Object[])e.getData();
         ScaleMeasurement measurement = (ScaleMeasurement)extraData[0];
-        FloatMeasurementView measurementView = (FloatMeasurementView)extraData[1];
+        ScaleMeasurement prevMeasurement = (ScaleMeasurement)extraData[1];
+        FloatMeasurementView measurementView = (FloatMeasurementView)extraData[2];
+        boolean isAverageValue = (boolean)extraData[3];
 
         SpannableStringBuilder markerText = new SpannableStringBuilder();
 
         if (measurement != null) {
+            measurementView.loadFrom(measurement, prevMeasurement);
             DateFormat dateFormat = DateFormat.getDateInstance();
             markerText.append(dateFormat.format(measurement.getDateTime()));
             markerText.setSpan(new RelativeSizeSpan(0.8f), 0, markerText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             markerText.append("\n");
         }
 
-        markerText.append(measurementView.getValueAsString(true) + "\n");
-        int textPosAfterSymbol = markerText.length() + 1;
-        measurementView.appendDiffValue(markerText, false);
+        if (isAverageValue) {
+            markerText.append("Ø ");
+        }
 
-        // set color diff value to text color
-        if (markerText.length() > textPosAfterSymbol) {
-            markerText.setSpan(new ForegroundColorSpan(markerTextField.getCurrentTextColor()), textPosAfterSymbol, markerText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        markerText.append(measurementView.getValueAsString(true));
+
+        if (prevMeasurement != null) {
+            markerText.append("\n");
+            int textPosAfterSymbol = markerText.length() + 1;
+
+            measurementView.appendDiffValue(markerText, false);
+
+            // set color diff value to text color
+            if (markerText.length() > textPosAfterSymbol) {
+                markerText.setSpan(new ForegroundColorSpan(markerTextField.getCurrentTextColor()), textPosAfterSymbol, markerText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
         }
 
         markerText.setSpan(new AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER),0, markerText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -76,6 +88,6 @@ public class ChartMarkerView extends MarkerView {
 
     @Override
     public MPPointF getOffset() {
-        return new MPPointF(-(getWidth() / 2), -getHeight() - 5);
+        return new MPPointF(-(getWidth() / 2f), -getHeight() - 5f);
     }
 }

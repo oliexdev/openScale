@@ -277,9 +277,11 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
         for (MeasurementView view : viewMeasurementsStatistics) {
             final FloatMeasurementView measurementView = (FloatMeasurementView) view;
 
-            Object[] extraData = new Object[2];
+            Object[] extraData = new Object[4];
             extraData[0] = null; // not needed
-            extraData[1] = measurementView;
+            extraData[1] = null; // not needed
+            extraData[2] = measurementView;
+            extraData[3] = false;
 
             measurementView.loadFrom(averageMonth, null);
             entriesAvgMonth.add(new RadarEntry(measurementView.getValue(), extraData));

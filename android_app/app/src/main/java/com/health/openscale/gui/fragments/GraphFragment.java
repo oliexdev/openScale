@@ -71,7 +71,6 @@ import com.health.openscale.gui.views.MeasurementView;
 import com.health.openscale.gui.views.MeasurementViewSettings;
 import com.health.openscale.gui.views.WeightMeasurementView;
 
-import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -418,6 +417,30 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         float maxYValue = 0;
         boolean isWeightOnRightAxis = false;
 
+        final ScaleMeasurement[] avgMeasurementList = new ScaleMeasurement[minDays + maxDays + 1];
+        final int[] avgMeasurementListSize = new int[minDays + maxDays + 1];
+
+        for (ScaleMeasurement measurement : scaleMeasurementList) {
+            calDB.setTime(measurement.getDateTime());
+
+            if (avgMeasurementList[calDB.get(field)] == null) {
+                avgMeasurementList[calDB.get(field)] = measurement.clone();
+            } else {
+                avgMeasurementList[calDB.get(field)].add(measurement);
+            }
+
+            avgMeasurementListSize[calDB.get(field)]++;
+        }
+
+        for (ScaleMeasurement avgMeasurement : avgMeasurementList) {
+            if (avgMeasurement == null) {
+                continue;
+            }
+
+            calDB.setTime(avgMeasurement.getDateTime());
+            avgMeasurement.divide(avgMeasurementListSize[calDB.get(field)]);
+        }
+
         for (MeasurementView view : measurementViews) {
             if (view instanceof FloatMeasurementView) {
                 final FloatMeasurementView measurementView = (FloatMeasurementView) view;
@@ -426,61 +449,46 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                     isWeightOnRightAxis = measurementView.getSettings().isOnRightAxis();
                 }
 
-                boolean entryIsAverage = false;
                 final List<Entry> entries = new ArrayList<>();
-                final ArrayList<Float>[] avgBins = new ArrayList[minDays + maxDays + 1];
-                ScaleMeasurement[] indexScaleMeasurement = new ScaleMeasurement[minDays + maxDays + 1];
 
-                for (ScaleMeasurement measurement : scaleMeasurementList) {
-                    measurementView.loadFrom(measurement, null);
-
-                    calDB.setTime(measurement.getDateTime());
-
-                    if (avgBins[calDB.get(field)] == null) {
-                        avgBins[calDB.get(field)] = new ArrayList<>();
-                    }
-
-                    if (measurementView.getValue() != 0.0f){
-                        avgBins[calDB.get(field)].add(measurementView.getValue());
-                        indexScaleMeasurement[calDB.get(field)] = measurement;
-                    }
-                }
-
-                for (int i=0; i<avgBins.length; i++) {
-                    ArrayList avgBin = avgBins[i];
-
-                    if (avgBin == null) {
+                for (ScaleMeasurement avgMeasurement : avgMeasurementList) {
+                    if (avgMeasurement == null) {
                         continue;
                     }
 
-                    float sum = 0.0f;
+                    calDB.setTime(avgMeasurement.getDateTime());
 
-                    for (int j=0; j<avgBin.size(); j++) {
-                        sum += (float)avgBin.get(j);
+                    ScaleMeasurement prevMeasuremnt = null;
+
+                    for (int i=calDB.get(field)-1; i>0; i--) {
+                        if (avgMeasurementList[i] != null) {
+                            prevMeasuremnt = avgMeasurementList[i];
+                            break;
+                        }
                     }
 
-                    Entry entry = new Entry(i, sum / avgBin.size());
-                    Object[] extraData = new Object[2];
-                    extraData[0] = indexScaleMeasurement[i];
-                    extraData[1] = measurementView; // TODO Current average value isn't shown in the marker view because always the last measurement is shown
+                    measurementView.loadFrom(avgMeasurement, prevMeasuremnt);
+
+                    Entry entry = new Entry();
+                    entry.setX(calDB.get(field));
+                    entry.setY(measurementView.getValue());
+                    Object[] extraData = new Object[4];
+                    extraData[0] = avgMeasurement;
+                    extraData[1] = prevMeasuremnt;
+                    extraData[2] = measurementView;
+                    extraData[3] = (avgMeasurementListSize[calDB.get(field)] > 1); // is entry is average
                     entry.setData(extraData);
+
+                    entries.add(entry);
 
                     if (prefs.getBoolean("regressionLine", false) && measurementView instanceof WeightMeasurementView) {
                         polyFitter.addPoint((double)entry.getX(), (double)entry.getY());
                     }
 
-                    if (avgBin.size() > 1) {
-                        entryIsAverage = true;// entry is a average calculation
-                    }
-
                     if (entry.getY() > maxYValue) {
                         maxYValue = entry.getY();
                     }
-
-                    entries.add(entry);
                 }
-
-                final boolean finalEntryIsAverage = entryIsAverage; // TODO HACK to transfer entryIsAverage to getFormattedValue because entry data is already used for the measurement
 
                 LineDataSet dataSet = new LineDataSet(entries, measurementView.getName().toString());
                 dataSet.setLineWidth(1.5f);
@@ -497,17 +505,23 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                 dataSet.setDrawCircles(prefs.getBoolean("pointsEnable", true));
                 dataSet.setDrawValues(prefs.getBoolean("labelsEnable", true));
                 dataSet.setValueFormatter(new IValueFormatter() {
-                    DecimalFormat mFormat = new DecimalFormat("###,###,##0.00");
-
                     @Override
                     public String getFormattedValue(float value, Entry entry, int dataSetIndex, ViewPortHandler viewPortHandler) {
                         String prefix = new String();
 
-                        if (finalEntryIsAverage) {
+                        Object[] extraData = (Object[])entry.getData();
+                        ScaleMeasurement measurement = (ScaleMeasurement)extraData[0];
+                        ScaleMeasurement prevMeasurement = (ScaleMeasurement)extraData[1];
+                        FloatMeasurementView measurementView = (FloatMeasurementView)extraData[2];
+                        boolean isAverageValue = (boolean)extraData[3];
+
+                        measurementView.loadFrom(measurement, prevMeasurement);
+
+                        if (isAverageValue) {
                             prefix = "Ø ";
                         }
 
-                        return prefix + mFormat.format(value) + " " + measurementView.getUnit();
+                        return prefix + measurementView.getValueAsString(true);
                     }
                 });
 

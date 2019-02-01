@@ -246,16 +246,19 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
             for (int i = 0; i < scaleMeasurementList.size(); i++) {
                 ScaleMeasurement measurement = scaleMeasurementList.get(i);
+                ScaleMeasurement prevMeasurement = i == 0 ? null : scaleMeasurementList.get(i-1);
 
-                measurementView.loadFrom(measurement, i == 0 ? null : scaleMeasurementList.get(i-1));
+                measurementView.loadFrom(measurement, prevMeasurement);
 
                 if (measurementView.getValue() != 0.0f) {
                     Entry entry = new Entry();
                     entry.setX(TimeUnit.MILLISECONDS.toDays(measurement.getDateTime().getTime()));
                     entry.setY(measurementView.getValue());
-                    Object[] extraData = new Object[2];
+                    Object[] extraData = new Object[4];
                     extraData[0] = measurement;
-                    extraData[1] = measurementView;
+                    extraData[1] = prevMeasurement;
+                    extraData[2] = measurementView;
+                    extraData[3] = false;
                     entry.setData(extraData);
 
                     entries.add(entry);
@@ -281,7 +284,21 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
                 @Override
                 public String getFormattedValue(float value, Entry entry, int dataSetIndex, ViewPortHandler viewPortHandler) {
-                    return mFormat.format(value) + " " + measurementView.getUnit();
+                    String prefix = new String();
+
+                    Object[] extraData = (Object[])entry.getData();
+                    ScaleMeasurement measurement = (ScaleMeasurement)extraData[0];
+                    ScaleMeasurement prevMeasurement = (ScaleMeasurement)extraData[1];
+                    FloatMeasurementView measurementView = (FloatMeasurementView)extraData[2];
+                    boolean isAverageValue = (boolean)extraData[3];
+
+                    measurementView.loadFrom(measurement, prevMeasurement);
+
+                    if (isAverageValue) {
+                        prefix = "Ø ";
+                    }
+
+                    return prefix + measurementView.getValueAsString(true);
                 }
             });
             dataSets.add(dataSet);

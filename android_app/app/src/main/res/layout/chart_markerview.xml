@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:background="@drawable/chart_marker"
+    android:orientation="vertical"
     tools:ignore="Overdraw">
 
     <TextView
         android:id="@+id/markerTextField"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:layout_marginLeft="0dp"
-        android:layout_marginRight="0dp"
-        android:layout_marginBottom="2dp"
-        android:paddingBottom="15dp"
-        android:layout_centerHorizontal="true"
-        android:textAlignment="center"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
         android:text=""
         android:textSize="10sp"
         android:textColor="@android:color/white"
         android:ellipsize="end"
+        android:background="#33b5e5"
         android:textAppearance="?android:attr/textAppearanceSmall" />
-</RelativeLayout>
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/chart_marker"/>
+</LinearLayout>
