@@ -414,7 +414,6 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         PolynomialFitter polyFitter = new PolynomialFitter(Math.min(regressLineOrder, 100));
 
-        float maxYValue = 0;
         boolean isWeightOnRightAxis = false;
 
         final ScaleMeasurement[] avgMeasurementList = new ScaleMeasurement[minDays + maxDays + 1];
@@ -483,10 +482,6 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
                     if (prefs.getBoolean("regressionLine", false) && measurementView instanceof WeightMeasurementView) {
                         polyFitter.addPoint((double)entry.getX(), (double)entry.getY());
-                    }
-
-                    if (entry.getY() > maxYValue) {
-                        maxYValue = entry.getY();
                     }
                 }
 
