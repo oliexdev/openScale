@@ -34,6 +34,7 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -65,6 +66,7 @@ public abstract class BluetoothCommunication {
     }
 
     private final int BT_RETRY_TIMES_ON_ERROR = 3;
+    private final int BT_DELAY = 50; // MS
 
     protected Context context;
 
@@ -285,6 +287,7 @@ public abstract class BluetoothCommunication {
     protected void writeBytes(UUID characteristic, byte[] bytes) {
         if (isConnected()) {
             final Disposable disposable = connectionObservable
+                    .delay(BT_DELAY, TimeUnit.MILLISECONDS)
                     .flatMapSingle(rxBleConnection -> rxBleConnection.writeCharacteristic(characteristic, bytes))
                     .observeOn(AndroidSchedulers.mainThread())
                     .retry(BT_RETRY_TIMES_ON_ERROR)
@@ -311,6 +314,7 @@ public abstract class BluetoothCommunication {
     protected void readBytes(UUID characteristic) {
         if (isConnected()) {
             final Disposable disposable = connectionObservable
+                    .delay(BT_DELAY, TimeUnit.MILLISECONDS)
                     .firstOrError()
                     .flatMap(rxBleConnection -> rxBleConnection.readCharacteristic(characteristic))
                     .observeOn(AndroidSchedulers.mainThread())
@@ -334,6 +338,7 @@ public abstract class BluetoothCommunication {
     protected void setIndicationOn(UUID characteristic) {
         if (isConnected()) {
             final Disposable disposable = connectionObservable
+                    .delay(BT_DELAY, TimeUnit.MILLISECONDS)
                     .flatMap(rxBleConnection -> rxBleConnection.setupIndication(characteristic))
                     .doOnNext(notificationObservable -> {
                                 Timber.d("Successful set indication on for %s", BluetoothGattUuid.prettyPrint(characteristic));
@@ -366,6 +371,7 @@ public abstract class BluetoothCommunication {
     protected void setNotificationOn(UUID characteristic) {
         if (isConnected()) {
             final Disposable disposable = connectionObservable
+                    .delay(BT_DELAY, TimeUnit.MILLISECONDS)
                     .flatMap(rxBleConnection -> rxBleConnection.setupNotification(characteristic))
                     .doOnNext(notificationObservable -> {
                                 Timber.d("Successful set notification on for %s", BluetoothGattUuid.prettyPrint(characteristic));
@@ -466,6 +472,7 @@ public abstract class BluetoothCommunication {
 
         connectionObservable = bleDevice
                 .establishConnection(false)
+                .delay(BT_DELAY, TimeUnit.MILLISECONDS)
                 .takeUntil(disconnectTriggerSubject)
                 .doOnError(throwable -> setBtStatus(BT_STATUS_CODE.BT_CONNECTION_RETRYING))
                 .observeOn(AndroidSchedulers.mainThread())
@@ -475,6 +482,7 @@ public abstract class BluetoothCommunication {
            disconnect();
        } else {
             final Disposable connectionDisposable = connectionObservable
+                    .delay(BT_DELAY, TimeUnit.MILLISECONDS)
                     .flatMapSingle(RxBleConnection::discoverServices)
                     .observeOn(AndroidSchedulers.mainThread())
                     .retry(BT_RETRY_TIMES_ON_ERROR)
