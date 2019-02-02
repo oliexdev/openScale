@@ -16,8 +16,10 @@
 
 package com.health.openscale.core.bluetooth;
 
+import android.Manifest;
 import android.bluetooth.BluetoothGattService;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.Handler;
 
 import com.health.openscale.core.OpenScale;
@@ -28,6 +30,7 @@ import com.polidea.rxandroidble2.RxBleConnection;
 import com.polidea.rxandroidble2.RxBleDevice;
 import com.polidea.rxandroidble2.RxBleDeviceServices;
 import com.polidea.rxandroidble2.exceptions.BleException;
+import com.polidea.rxandroidble2.scan.ScanSettings;
 
 import java.io.IOException;
 import java.net.SocketException;
@@ -36,6 +39,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import androidx.core.content.ContextCompat;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
@@ -74,6 +78,7 @@ public abstract class BluetoothCommunication {
     private RxBleDevice bleDevice;
     private Observable<RxBleConnection> connectionObservable;
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
+    private Disposable scanSubscription;
     private PublishSubject<Boolean> disconnectTriggerSubject = PublishSubject.create();
 
     private Handler callbackBtHandler;
@@ -92,6 +97,7 @@ public abstract class BluetoothCommunication {
         this.context = context;
         this.bleClient = OpenScale.getInstance().getBleClient();
         this.rxBleDeviceServices = null;
+        this.scanSubscription = null;
         this.disconnectHandler = new Handler();
 
         RxJavaPlugins.setErrorHandler(e -> {
@@ -466,9 +472,40 @@ public abstract class BluetoothCommunication {
      * @param macAddress the Bluetooth address to connect to
      */
     public void connect(String macAddress) {
+        bleDevice = bleClient.getBleDevice(macAddress);
+
+        // Running an LE scan during connect improves connectivity on some phones
+        // (e.g. Sony Xperia Z5 compact, Android 7.1.1). For some scales (e.g. Medisana BS444)
+        // it seems to be a requirement that the scale is discovered before connecting to it.
+        // Otherwise the connection almost never succeeds.
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+            Timber.d("Do LE scan before connecting to device");
+            scanSubscription = bleClient.scanBleDevices(
+                    new ScanSettings.Builder()
+                            .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+                            //.setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES)
+                            .build()
+            )
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(bleScanResult -> {
+                        if (bleScanResult.getBleDevice().getMacAddress().equals(macAddress)) {
+                            connectToDevice(macAddress);
+                    }});
+        }
+        else {
+            Timber.d("No coarse location permission, connecting without LE scan");
+            connectToDevice(macAddress);
+        }
+    }
+
+    private void connectToDevice(String macAddress) {
         Timber.d("Try to connect to BLE device " + macAddress);
 
-        bleDevice = bleClient.getBleDevice(macAddress);
+        // stop LE scan before connecting to device
+        if (scanSubscription != null) {
+            scanSubscription.dispose();
+        }
 
         connectionObservable = bleDevice
                 .establishConnection(false)
@@ -478,9 +515,9 @@ public abstract class BluetoothCommunication {
                 .observeOn(AndroidSchedulers.mainThread())
                 .compose(ReplayingShare.instance());
 
-       if (isConnected()) {
-           disconnect();
-       } else {
+        if (isConnected()) {
+            disconnect();
+        } else {
             final Disposable connectionDisposable = connectionObservable
                     .delay(BT_DELAY, TimeUnit.MILLISECONDS)
                     .flatMapSingle(RxBleConnection::discoverServices)
@@ -550,7 +587,7 @@ public abstract class BluetoothCommunication {
         disconnectHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                Timber.d("Timeout disconnect");
+                Timber.d("Timeout Bluetooth disconnect");
                 disconnect();
             }
         }, 60000); // 60s timeout
@@ -565,6 +602,9 @@ public abstract class BluetoothCommunication {
         disconnectHandler.removeCallbacksAndMessages(null);
         disconnectTriggerSubject.onNext(true);
         compositeDisposable.clear();
+        if (scanSubscription != null) {
+            scanSubscription.dispose();
+        }
     }
 
     /**
@@ -590,6 +630,7 @@ public abstract class BluetoothCommunication {
                 cleanupStepNr++;
                 Timber.d("CLEANUP STATE: %d", cleanupStepNr);
                 if (!nextCleanUpCmd(cleanupStepNr)) {
+                    Timber.d("Cleanup Bluetooth disconnect");
                     disconnect();
                 }
                 break;
