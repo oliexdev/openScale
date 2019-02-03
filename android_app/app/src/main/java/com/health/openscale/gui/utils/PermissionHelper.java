@@ -87,7 +87,7 @@ public class PermissionHelper {
 
     public static boolean requestLocationServicePermission(final Activity activity) {
         LocationManager locationManager = (LocationManager) activity.getSystemService(LOCATION_SERVICE);
-        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+        if (!(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))) {
 
             AlertDialog.Builder builder = new AlertDialog.Builder(activity);
             builder.setTitle(R.string.permission_bluetooth_info_title);

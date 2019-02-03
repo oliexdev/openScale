@@ -484,7 +484,8 @@ public abstract class BluetoothCommunication {
         LocationManager locationManager = (LocationManager)context.getSystemService(LOCATION_SERVICE);
 
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED && locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+                == PackageManager.PERMISSION_GRANTED && (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+                || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
         ) {
             Timber.d("Do LE scan before connecting to device");
             scanSubscription = bleClient.scanBleDevices(
