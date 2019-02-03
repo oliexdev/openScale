@@ -193,7 +193,7 @@
 
     <string name="permission_not_granted">Permission not granted</string>
     <string name="permission_bluetooth_info">Coarse location permission needed to search for Bluetooth devices. It can be revoked after the device is found.</string>
-    <string name="permission_location_service_info">Location service (GPS) needed to search for Bluetooth devices. Please enable it under the Android settings. It can be revoked after the device is found.</string>
+    <string name="permission_location_service_info">Location service needed to search for Bluetooth devices. Please enable it under the Android settings. It can be revoked after the device is found.</string>
     <string name="permission_bluetooth_info_title">Info</string>
     <string name="permission_read_write_data_description">read/write openScale data, including user information and all saved measurements</string>
     <string name="permission_read_write_data_label">Read/Write openScale Data</string>
