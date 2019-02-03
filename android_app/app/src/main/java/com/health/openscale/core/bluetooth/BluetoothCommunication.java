@@ -491,7 +491,7 @@ public abstract class BluetoothCommunication {
                     .subscribe(bleScanResult -> {
                         if (bleScanResult.getBleDevice().getMacAddress().equals(macAddress)) {
                             connectToDevice(macAddress);
-                    }});
+                    }}, throwable -> onError(throwable));
         }
         else {
             Timber.d("No coarse location permission, connecting without LE scan");

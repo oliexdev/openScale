@@ -61,7 +61,7 @@ public abstract class FloatMeasurementView extends MeasurementView {
 
     private static final float NO_VALUE = -1.0f;
     private static final float AUTO_VALUE = -2.0f;
-    private static final float INC_DEC_DELTA = 0.1f;
+    private static float INC_DEC_DELTA = 0.1f;
 
     private Date dateTime;
     private float value = NO_VALUE;
@@ -633,6 +633,12 @@ public abstract class FloatMeasurementView extends MeasurementView {
 
         final TextView unit = view.findViewById(R.id.float_input_unit);
         unit.setText(getUnit());
+
+        if (getDecimalPlaces() == 0) {
+            INC_DEC_DELTA = 10.0f;
+        } else {
+            INC_DEC_DELTA = 0.1f;
+        }
 
         View.OnClickListener onClickListener = new View.OnClickListener() {
             @Override
