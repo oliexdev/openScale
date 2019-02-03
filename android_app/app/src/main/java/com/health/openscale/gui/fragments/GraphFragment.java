@@ -51,6 +51,7 @@ import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 import com.github.mikephil.charting.formatter.IValueFormatter;
+import com.github.mikephil.charting.formatter.StackedValueFormatter;
 import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
@@ -600,6 +601,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             BarDataSet set = new BarDataSet(entries, "month "+i);
             set.setColor(ColorUtil.COLORS[i % 4]);
             set.setDrawValues(true);
+            set.setValueFormatter(new StackedValueFormatter(true, "", 0));
             dataSets.add(set);
         }
 

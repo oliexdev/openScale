@@ -72,6 +72,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
     private TextView txtTitleLastMeasurement;
 
     private List<MeasurementView> measurementViews;
+    private List<MeasurementView> lastMeasurementViews;
 
     private LineChart rollingChart;
 
@@ -145,9 +146,12 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         measurementViews = MeasurementView.getMeasurementList(
                 getContext(), MeasurementView.DateTimeOrder.NONE);
 
+        lastMeasurementViews = MeasurementView.getMeasurementList(
+                getContext(), MeasurementView.DateTimeOrder.NONE);
+
         TableLayout tableOverviewLayout = overviewView.findViewById(R.id.tableLayoutMeasurements);
 
-        for (MeasurementView measurement : measurementViews) {
+        for (MeasurementView measurement : lastMeasurementViews) {
             tableOverviewLayout.addView(measurement);
         }
 
@@ -195,7 +199,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         ScaleMeasurement[] tupleScaleData = OpenScale.getInstance().getTupleScaleData(selectedMeasurement.getId());
         ScaleMeasurement prevScaleMeasurement = tupleScaleData[0];
 
-        for (MeasurementView measurement : measurementViews) {
+        for (MeasurementView measurement : lastMeasurementViews) {
             measurement.loadFrom(selectedMeasurement, prevScaleMeasurement);
         }
     }
