@@ -20,6 +20,7 @@ import android.Manifest;
 import android.bluetooth.BluetoothGattService;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.location.LocationManager;
 import android.os.Handler;
 
 import com.health.openscale.core.OpenScale;
@@ -48,6 +49,8 @@ import io.reactivex.exceptions.UndeliverableException;
 import io.reactivex.plugins.RxJavaPlugins;
 import io.reactivex.subjects.PublishSubject;
 import timber.log.Timber;
+
+import static android.content.Context.LOCATION_SERVICE;
 
 public abstract class BluetoothCommunication {
     public enum BT_STATUS_CODE {
@@ -478,8 +481,11 @@ public abstract class BluetoothCommunication {
         // (e.g. Sony Xperia Z5 compact, Android 7.1.1). For some scales (e.g. Medisana BS444)
         // it seems to be a requirement that the scale is discovered before connecting to it.
         // Otherwise the connection almost never succeeds.
+        LocationManager locationManager = (LocationManager)context.getSystemService(LOCATION_SERVICE);
+
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
+                == PackageManager.PERMISSION_GRANTED && locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+        ) {
             Timber.d("Do LE scan before connecting to device");
             scanSubscription = bleClient.scanBleDevices(
                     new ScanSettings.Builder()
