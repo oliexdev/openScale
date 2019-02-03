@@ -232,7 +232,9 @@ public class BluetoothPreferences extends PreferenceFragment {
             @Override
             public boolean onPreferenceClick(Preference preference) {
                 if (PermissionHelper.requestBluetoothPermission(getActivity(), fragment)) {
-                    startBluetoothDiscovery();
+                    if (PermissionHelper.requestLocationServicePermission(getActivity())) {
+                        startBluetoothDiscovery();
+                    }
                 }
                 return true;
             }
