@@ -66,6 +66,7 @@
     <string name="label_title_user">user</string>
     <string name="label_title_last_measurement">last measurement</string>
     <string name="label_title_goal">Goal</string>
+    <string name="label_title_range">Range</string>
 
     <string name="label_import">Import</string>
     <string name="label_export">Export</string>
@@ -253,4 +254,8 @@
     <string name="activity_level_heavy">Heavy</string>
     <string name="activity_level_extreme">Extreme</string>
     <string name="label_data_provider_enable">Third-party app access</string>
+    <string name="range_week">Week</string>
+    <string name="range_month">Month</string>
+    <string name="range_year">Year</string>
+    <string name="range_all">All</string>
 </resources>

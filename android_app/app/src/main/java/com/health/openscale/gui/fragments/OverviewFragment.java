@@ -47,6 +47,7 @@ import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
+import com.health.openscale.core.utils.DateTimeHelpers;
 import com.health.openscale.gui.utils.ColorUtil;
 import com.health.openscale.gui.views.ChartMarkerView;
 import com.health.openscale.gui.views.FloatMeasurementView;
@@ -55,6 +56,7 @@ import com.health.openscale.gui.views.MeasurementView;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -77,6 +79,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
     private LineChart rollingChart;
 
     private Spinner spinUser;
+    private Spinner spinRange;
 
     private ScaleUser currentScaleUser;
 
@@ -119,7 +122,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         rollingChart.getLegend().setEnabled(prefs.getBoolean("legendEnable", true));
         rollingChart.getLegend().setTextColor(ColorUtil.getTextColor(overviewView.getContext()));
         rollingChart.getLegend().setWordWrapEnabled(true);
-        rollingChart.getLegend().setVerticalAlignment(Legend.LegendVerticalAlignment.TOP);
+        rollingChart.getLegend().setVerticalAlignment(Legend.LegendVerticalAlignment.BOTTOM);
         rollingChart.getLegend().setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
 
         MarkerView mv = new ChartMarkerView(rollingChart.getContext(), R.layout.chart_markerview);
@@ -142,6 +145,30 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         });
 
         spinUser = overviewView.findViewById(R.id.spinUser);
+        spinRange = overviewView.findViewById(R.id.spinRange);
+
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getContext(),
+                R.array.range_entries, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinRange.setAdapter(adapter);
+        spinRange.setSelection(prefs.getInt("selectRange", 0));
+        spinUser.post(new Runnable() {
+            public void run() {
+                spinRange.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                        prefs.edit().putInt("selectRange", position).commit();
+                        updateRollingChart(OpenScale.getInstance().getScaleMeasurementList());
+                        getActivity().recreate(); // TODO HACK to refresh graph; graph.invalidate and notfiydatachange is not enough!?
+                    }
+
+                    @Override
+                    public void onNothingSelected(AdapterView<?> parent) {
+
+                    }
+                });
+            }
+        });
 
         measurementViews = MeasurementView.getMeasurementList(
                 getContext(), MeasurementView.DateTimeOrder.NONE);
@@ -310,15 +337,37 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
         LineData data = new LineData(dataSets);
         rollingChart.setData(data);
+        rollingChart.notifyDataSetChanged();
+        rollingChart.invalidate();
 
         if (!scaleMeasurementList.isEmpty()) {
             Collections.reverse(scaleMeasurementList);
 
-            rollingChart.moveViewToX(TimeUnit.MILLISECONDS.toDays(scaleMeasurementList.get(0).getDateTime().getTime()));
-            rollingChart.setVisibleXRangeMaximum(14);
-        }
+            int xRange = 7;
 
-        rollingChart.invalidate();
+            switch (prefs.getInt("selectRange", 0)) {
+                case 0: // Week
+                    xRange = 7;
+                    break;
+                case 1: // Month
+                    xRange = 31;
+                    break;
+                case 2: // Year
+                    xRange = 366;
+                    break;
+                case 3: // All
+                    Calendar firstMeasurement = Calendar.getInstance();
+                    firstMeasurement.setTime(scaleMeasurementList.get(scaleMeasurementList.size()-1).getDateTime());
+                    Calendar lastMeasurement = Calendar.getInstance();
+                    lastMeasurement.setTime(scaleMeasurementList.get(0).getDateTime());
+
+                    xRange = DateTimeHelpers.daysBetween(firstMeasurement, lastMeasurement);
+                    break;
+            }
+
+            rollingChart.setVisibleXRangeMaximum(xRange);
+            rollingChart.moveViewToX(TimeUnit.MILLISECONDS.toDays(scaleMeasurementList.get(0).getDateTime().getTime()));
+        }
     }
 
     private class rollingChartSelectionListener implements OnChartValueSelectedListener {
