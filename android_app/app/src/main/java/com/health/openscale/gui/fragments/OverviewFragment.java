@@ -50,11 +50,13 @@ import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
+import com.health.openscale.core.utils.Converters;
 import com.health.openscale.core.utils.DateTimeHelpers;
 import com.health.openscale.gui.utils.ColorUtil;
 import com.health.openscale.gui.views.ChartMarkerView;
 import com.health.openscale.gui.views.FloatMeasurementView;
 import com.health.openscale.gui.views.MeasurementView;
+import com.health.openscale.gui.views.WeightMeasurementView;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -64,6 +66,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Stack;
 import java.util.concurrent.TimeUnit;
 
 import androidx.fragment.app.Fragment;
@@ -287,9 +290,17 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
     private void updateRollingChart(List<ScaleMeasurement> scaleMeasurementList) {
         rollingChart.clear();
+
+        Calendar firstMeasurement = Calendar.getInstance();
+        firstMeasurement.setTime(scaleMeasurementList.get(scaleMeasurementList.size()-1).getDateTime());
+        Calendar lastMeasurement = Calendar.getInstance();
+        lastMeasurement.setTime(scaleMeasurementList.get(0).getDateTime());
+
         Collections.reverse(scaleMeasurementList);
 
         List<ILineDataSet> dataSets = new ArrayList<>();
+
+        boolean isWeightOnRightAxis= false;
 
         for (MeasurementView view : measurementViews) {
 
@@ -300,6 +311,10 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             }
 
             final FloatMeasurementView measurementView = (FloatMeasurementView) view;
+
+            if (measurementView instanceof WeightMeasurementView) {
+                isWeightOnRightAxis = measurementView.getSettings().isOnRightAxis();
+            }
 
             List<Entry> entries = new ArrayList<>();
 
@@ -363,6 +378,27 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             dataSets.add(dataSet);
         }
 
+        if (prefs.getBoolean("goalLine", true)) {
+            List<Entry> valuesGoalLine = new Stack<>();
+
+            final ScaleUser user = OpenScale.getInstance().getSelectedScaleUser();
+            float goalWeight = Converters.fromKilogram(user.getGoalWeight(), user.getScaleUnit());
+
+            valuesGoalLine.add(new Entry(TimeUnit.MILLISECONDS.toDays(firstMeasurement.getTimeInMillis()), goalWeight));
+            valuesGoalLine.add(new Entry(TimeUnit.MILLISECONDS.toDays(lastMeasurement.getTimeInMillis()), goalWeight));
+
+            LineDataSet goalLine = new LineDataSet(valuesGoalLine, getString(R.string.label_goal_line));
+            goalLine.setLineWidth(1.5f);
+            goalLine.setColor(ColorUtil.COLOR_GREEN);
+            goalLine.setAxisDependency(isWeightOnRightAxis ? YAxis.AxisDependency.RIGHT : YAxis.AxisDependency.LEFT);
+            goalLine.setDrawValues(false);
+            goalLine.setDrawCircles(false);
+            goalLine.setHighlightEnabled(false);
+            goalLine.enableDashedLine(10, 30, 0);
+
+            dataSets.add(goalLine);
+        }
+
         LineData data = new LineData(dataSets);
         rollingChart.setData(data);
         rollingChart.notifyDataSetChanged();
@@ -387,17 +423,12 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
                     xRange = 366;
                     break;
                 case RANGE_ALL:
-                    Calendar firstMeasurement = Calendar.getInstance();
-                    firstMeasurement.setTime(scaleMeasurementList.get(scaleMeasurementList.size()-1).getDateTime());
-                    Calendar lastMeasurement = Calendar.getInstance();
-                    lastMeasurement.setTime(scaleMeasurementList.get(0).getDateTime());
-
                     xRange = DateTimeHelpers.daysBetween(firstMeasurement, lastMeasurement);
                     break;
             }
 
             rollingChart.setVisibleXRangeMaximum(xRange);
-            rollingChart.moveViewToX(TimeUnit.MILLISECONDS.toDays(scaleMeasurementList.get(0).getDateTime().getTime()));
+            rollingChart.moveViewToX(TimeUnit.MILLISECONDS.toDays(lastMeasurement.getTimeInMillis()));
         }
     }
 
