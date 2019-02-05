@@ -192,6 +192,8 @@
 
     <string name="label_month_view">Month view</string>
     <string name="label_weeks_view">Week view</string>
+    <string name="label_year_view">Year view</string>
+    <string name="label_all_view">All view</string>
 
     <string name="permission_not_granted">Permission not granted</string>
     <string name="permission_bluetooth_info">Coarse location permission needed to search for Bluetooth devices. It can be revoked after the device is found.</string>
@@ -253,8 +255,4 @@
     <string name="activity_level_heavy">Heavy</string>
     <string name="activity_level_extreme">Extreme</string>
     <string name="label_data_provider_enable">Third-party app access</string>
-    <string name="range_week">Week</string>
-    <string name="range_month">Month</string>
-    <string name="range_year">Year</string>
-    <string name="range_all">All</string>
 </resources>

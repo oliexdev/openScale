@@ -5,13 +5,13 @@
     <group android:id="@+id/group"
         android:checkableBehavior="single">
         <item android:id="@+id/menu_range_week"
-            android:title="@string/range_week"
+            android:title="@string/label_weeks_view"
             android:checked="true"/>
         <item android:id="@+id/menu_range_month"
-            android:title="@string/range_month"/>
+            android:title="@string/label_month_view"/>
         <item android:id="@+id/menu_range_year"
-            android:title="@string/range_year"/>
+            android:title="@string/label_year_view"/>
         <item android:id="@+id/menu_range_all"
-            android:title="@string/range_all"/>
+            android:title="@string/label_all_view"/>
     </group>
 </menu>
