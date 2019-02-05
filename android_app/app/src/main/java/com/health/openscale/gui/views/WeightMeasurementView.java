@@ -17,9 +17,14 @@ package com.health.openscale.gui.views;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.RelativeSizeSpan;
 
 import com.health.openscale.R;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
+import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 import com.health.openscale.core.utils.Converters;
@@ -65,5 +70,55 @@ public class WeightMeasurementView extends FloatMeasurementView {
     @Override
     protected EvaluationResult evaluateSheet(EvaluationSheet evalSheet, float value) {
         return evalSheet.evaluateWeight(value);
+    }
+
+    @Override
+    public void appendDiffValue(SpannableStringBuilder text, boolean newLine) {
+        float value = getValue();
+        float previousValue = getPreviousValue();
+
+        if (previousValue < 0.0f) {
+            return;
+        }
+
+        char symbol = SYMBOL_NEUTRAL;
+        int color = Color.GRAY;
+
+        final float diff = value - previousValue;
+        if (diff > 0.0f) {
+            symbol = SYMBOL_UP;
+        } else if (diff < 0.0f) {
+            symbol = SYMBOL_DOWN;
+        }
+
+        ScaleUser user = getScaleUser();
+        if(user != null) {
+            float goalWeight = user.getGoalWeight();
+            if(goalWeight > 0) {
+
+                if (value - previousValue > 0) {
+                    color = (value > goalWeight) ? Color.RED : Color.GREEN;
+                } else if (value - previousValue < 0) {
+                    color = (value < goalWeight) ? Color.RED : Color.GREEN;
+                }
+            }
+        }
+
+        if (newLine) {
+            text.append('\n');
+        }
+        int start = text.length();
+        text.append(symbol);
+        text.setSpan(new ForegroundColorSpan(color), start, text.length(),
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+        text.append(' ');
+
+        start = text.length();
+        text.append(formatValue(diff));
+        text.setSpan(new ForegroundColorSpan(Color.GRAY), start, text.length(),
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        text.setSpan(new RelativeSizeSpan(0.8f), start, text.length(),
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
     }
 }

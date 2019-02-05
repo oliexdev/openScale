@@ -55,9 +55,9 @@ import java.util.Date;
 import java.util.Locale;
 
 public abstract class FloatMeasurementView extends MeasurementView {
-    private static final char SYMBOL_UP = '\u279a';
-    private static final char SYMBOL_NEUTRAL = '\u2799';
-    private static final char SYMBOL_DOWN = '\u2798';
+    protected static final char SYMBOL_UP = '\u279a';
+    protected static final char SYMBOL_NEUTRAL = '\u2799';
+    protected static final char SYMBOL_DOWN = '\u2798';
 
     private static final float NO_VALUE = -1.0f;
     private static final float AUTO_VALUE = -2.0f;
@@ -410,6 +410,10 @@ public abstract class FloatMeasurementView extends MeasurementView {
 
     public float getValue() {
         return value;
+    }
+
+    protected float getPreviousValue() {
+        return previousValue;
     }
 
     @Override
