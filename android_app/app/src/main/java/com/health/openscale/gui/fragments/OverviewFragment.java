@@ -15,6 +15,9 @@
 */
 package com.health.openscale.gui.fragments;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -30,6 +33,7 @@ import android.widget.PopupMenu;
 import android.widget.Spinner;
 import android.widget.TableLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.AxisBase;
@@ -52,6 +56,7 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
 import com.health.openscale.core.utils.DateTimeHelpers;
+import com.health.openscale.gui.activities.DataEntryActivity;
 import com.health.openscale.gui.utils.ColorUtil;
 import com.health.openscale.gui.views.ChartMarkerView;
 import com.health.openscale.gui.views.FloatMeasurementView;
@@ -76,7 +81,6 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
     private enum RANGE_GRAPH {RANGE_WEEK, RANGE_MONTH, RANGE_YEAR, RANGE_ALL}
 
     private View overviewView;
-    private View userLineSeparator;
 
     private TextView txtTitleUser;
     private TextView txtTitleLastMeasurement;
@@ -89,6 +93,10 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
     private Spinner spinUser;
 
     private PopupMenu rangePopupMenu;
+
+    private ImageView showEntry;
+    private ImageView editEntry;
+    private ImageView deleteEntry;
 
     private ScaleUser currentScaleUser;
 
@@ -108,7 +116,6 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         overviewView = inflater.inflate(R.layout.fragment_overview, container, false);
-        userLineSeparator = overviewView.findViewById(R.id.userLineSeparator);
 
         prefs = PreferenceManager.getDefaultSharedPreferences(overviewView.getContext());
 
@@ -213,7 +220,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             tableOverviewLayout.addView(measurement);
         }
 
-        spinUserAdapter = new ArrayAdapter<>(overviewView.getContext(), R.layout.support_simple_spinner_dropdown_item, new ArrayList<String>());
+        spinUserAdapter = new ArrayAdapter<>(overviewView.getContext(), R.layout.spinner_item, new ArrayList<String>());
         spinUser.setAdapter(spinUserAdapter);
 
         // Set item select listener after spinner is created because otherwise item listener fires a lot!?!?
@@ -224,7 +231,43 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             }
         });
 
-        txtTitleUser.setText(getResources().getString(R.string.label_title_user).toUpperCase());
+        showEntry = overviewView.findViewById(R.id.showEntry);
+        showEntry.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int id = markedMeasurement.getId();
+
+                Intent intent = new Intent(overviewView.getContext(), DataEntryActivity.class);
+                intent.putExtra(DataEntryActivity.EXTRA_ID, id);
+                intent.putExtra(DataEntryActivity.EXTRA_MODE, DataEntryActivity.VIEW_MEASUREMENT_REQUEST);
+                startActivity(intent);
+            }
+        });
+
+        editEntry = overviewView.findViewById(R.id.editEntry);
+        editEntry.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int id = markedMeasurement.getId();
+
+                Intent intent = new Intent(overviewView.getContext(), DataEntryActivity.class);
+                intent.putExtra(DataEntryActivity.EXTRA_ID, id);
+                intent.putExtra(DataEntryActivity.EXTRA_MODE, DataEntryActivity.EDIT_MEASUREMENT_REQUEST);
+                startActivity(intent);
+            }
+        });
+        deleteEntry = overviewView.findViewById(R.id.deleteEntry);
+        deleteEntry.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                deleteMeasurement();
+            }
+        });
+
+        showEntry.setEnabled(false);
+        editEntry.setEnabled(false);
+        deleteEntry.setEnabled(false);
+
         txtTitleLastMeasurement.setText(getResources().getString(R.string.label_title_last_measurement).toUpperCase());
 
         OpenScale.getInstance().registerFragment(this);
@@ -285,16 +328,18 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         int visibility = spinUserAdapter.getCount() < 2 ? View.GONE : View.VISIBLE;
         txtTitleUser.setVisibility(visibility);
         spinUser.setVisibility(visibility);
-        userLineSeparator.setVisibility(visibility);
     }
 
     private void updateRollingChart(List<ScaleMeasurement> scaleMeasurementList) {
         rollingChart.clear();
 
         Calendar firstMeasurement = Calendar.getInstance();
-        firstMeasurement.setTime(scaleMeasurementList.get(scaleMeasurementList.size()-1).getDateTime());
         Calendar lastMeasurement = Calendar.getInstance();
-        lastMeasurement.setTime(scaleMeasurementList.get(0).getDateTime());
+
+        if (!scaleMeasurementList.isEmpty()) {
+            firstMeasurement.setTime(scaleMeasurementList.get(scaleMeasurementList.size() - 1).getDateTime());
+            lastMeasurement.setTime(scaleMeasurementList.get(0).getDateTime());
+        }
 
         Collections.reverse(scaleMeasurementList);
 
@@ -441,12 +486,26 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             markedMeasurement = (ScaleMeasurement)extraData[0];
             //MeasurementView measurementView = (MeasurementView)extraData[1];
 
+            showEntry.setEnabled(true);
+            editEntry.setEnabled(true);
+            deleteEntry.setEnabled(true);
+
+            showEntry.setColorFilter(ColorUtil.COLOR_BLUE);
+            editEntry.setColorFilter(ColorUtil.COLOR_GREEN);
+            deleteEntry.setColorFilter(ColorUtil.COLOR_RED);
+
             updateMesurementViews(markedMeasurement);
         }
 
         @Override
         public void onNothingSelected() {
+            showEntry.setEnabled(false);
+            editEntry.setEnabled(false);
+            deleteEntry.setEnabled(false);
 
+            showEntry.setColorFilter(ColorUtil.COLOR_GRAY);
+            editEntry.setColorFilter(ColorUtil.COLOR_GRAY);
+            deleteEntry.setColorFilter(ColorUtil.COLOR_GRAY);
         }
     }
 
@@ -473,4 +532,41 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         }
     }
 
+    private void deleteMeasurement() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(overviewView.getContext());
+        boolean deleteConfirmationEnable = prefs.getBoolean("deleteConfirmationEnable", true);
+
+        if (deleteConfirmationEnable) {
+            AlertDialog.Builder deleteAllDialog = new AlertDialog.Builder(overviewView.getContext());
+            deleteAllDialog.setMessage(getResources().getString(R.string.question_really_delete));
+
+            deleteAllDialog.setPositiveButton(getResources().getString(R.string.label_yes), new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    doDeleteMeasurement();
+                }
+            });
+
+            deleteAllDialog.setNegativeButton(getResources().getString(R.string.label_no), new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    dialog.dismiss();
+                }
+            });
+
+            deleteAllDialog.show();
+        }
+        else {
+            doDeleteMeasurement();
+        }
+    }
+
+    private void doDeleteMeasurement() {
+        OpenScale.getInstance().deleteScaleData(markedMeasurement.getId());
+        Toast.makeText(overviewView.getContext(), getResources().getString(R.string.info_data_deleted), Toast.LENGTH_SHORT).show();
+
+        deleteEntry.setVisibility(View.GONE);
+        editEntry.setVisibility(View.GONE);
+        deleteEntry.setVisibility(View.GONE);
+
+        updateOnView(OpenScale.getInstance().getScaleMeasurementList());
+    }
 }
