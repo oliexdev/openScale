@@ -84,13 +84,4 @@
         <item>@string/activity_level_heavy</item>
         <item>@string/activity_level_extreme</item>
     </string-array>
-
-    <!-- Don't change the order of this entries -->
-    <string-array name="range_entries">
-        <item>@string/range_week</item>
-        <item>@string/range_month</item>
-        <item>@string/range_year</item>
-        <item>@string/range_all</item>
-    </string-array>
-
 </resources>

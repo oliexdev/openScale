@@ -66,7 +66,6 @@
     <string name="label_title_user">user</string>
     <string name="label_title_last_measurement">last measurement</string>
     <string name="label_title_goal">Goal</string>
-    <string name="label_title_range">Range</string>
 
     <string name="label_import">Import</string>
     <string name="label_export">Export</string>

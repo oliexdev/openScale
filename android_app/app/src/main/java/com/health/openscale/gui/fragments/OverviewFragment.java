@@ -20,10 +20,13 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.Spinner;
 import android.widget.TableLayout;
 import android.widget.TextView;
@@ -67,6 +70,8 @@ import androidx.fragment.app.Fragment;
 
 public class OverviewFragment extends Fragment implements FragmentUpdateListener {
 
+    private enum RANGE_GRAPH {RANGE_WEEK, RANGE_MONTH, RANGE_YEAR, RANGE_ALL}
+
     private View overviewView;
     private View userLineSeparator;
 
@@ -79,7 +84,8 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
     private LineChart rollingChart;
 
     private Spinner spinUser;
-    private Spinner spinRange;
+
+    private PopupMenu rangePopupMenu;
 
     private ScaleUser currentScaleUser;
 
@@ -145,30 +151,52 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         });
 
         spinUser = overviewView.findViewById(R.id.spinUser);
-        spinRange = overviewView.findViewById(R.id.spinRange);
 
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getContext(),
-                R.array.range_entries, android.R.layout.simple_spinner_item);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinRange.setAdapter(adapter);
-        spinRange.setSelection(prefs.getInt("selectRange", 0));
-        spinUser.post(new Runnable() {
-            public void run() {
-                spinRange.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                    @Override
-                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                        prefs.edit().putInt("selectRange", position).commit();
-                        updateRollingChart(OpenScale.getInstance().getScaleMeasurementList());
-                        getActivity().recreate(); // TODO HACK to refresh graph; graph.invalidate and notfiydatachange is not enough!?
-                    }
-
-                    @Override
-                    public void onNothingSelected(AdapterView<?> parent) {
-
-                    }
-                });
+        ImageView optionMenu = overviewView.findViewById(R.id.rangeOptionMenu);
+        optionMenu.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                rangePopupMenu.show();
             }
         });
+
+
+        rangePopupMenu = new PopupMenu(getContext(), optionMenu);
+        rangePopupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+
+                item.setChecked(true);
+
+                RANGE_GRAPH selectRange = RANGE_GRAPH.RANGE_WEEK;
+
+                switch (item.getItemId()) {
+                    case R.id.menu_range_week:
+                        selectRange = RANGE_GRAPH.RANGE_WEEK;
+                        break;
+                    case R.id.menu_range_month:
+                        selectRange = RANGE_GRAPH.RANGE_MONTH;
+                        break;
+                    case R.id.menu_range_year:
+                        selectRange = RANGE_GRAPH.RANGE_YEAR;
+                        break;
+                    case R.id.menu_range_all:
+                        selectRange = RANGE_GRAPH.RANGE_ALL;
+                        break;
+                }
+
+                prefs.edit().putString("selectRange", selectRange.name()).commit();
+                updateRollingChart(OpenScale.getInstance().getScaleMeasurementList());
+                getActivity().recreate(); // TODO HACK to refresh graph; graph.invalidate and notfiydatachange is not enough!?
+
+                return true;
+            }
+        });
+        rangePopupMenu.getMenuInflater().inflate(R.menu.overview_menu, rangePopupMenu.getMenu());
+
+        RANGE_GRAPH selectRange = RANGE_GRAPH.RANGE_WEEK;
+        selectRange = selectRange.valueOf(prefs.getString("selectRange", RANGE_GRAPH.RANGE_WEEK.name()));
+        rangePopupMenu.getMenu().getItem(selectRange.ordinal()).setChecked(true);
 
         measurementViews = MeasurementView.getMeasurementList(
                 getContext(), MeasurementView.DateTimeOrder.NONE);
@@ -345,17 +373,20 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
             int xRange = 7;
 
-            switch (prefs.getInt("selectRange", 0)) {
-                case 0: // Week
+            RANGE_GRAPH selectRange = RANGE_GRAPH.RANGE_WEEK;
+            selectRange = selectRange.valueOf(prefs.getString("selectRange", RANGE_GRAPH.RANGE_WEEK.name()));
+
+            switch (selectRange) {
+                case RANGE_WEEK:
                     xRange = 7;
                     break;
-                case 1: // Month
+                case RANGE_MONTH:
                     xRange = 31;
                     break;
-                case 2: // Year
+                case RANGE_YEAR:
                     xRange = 366;
                     break;
-                case 3: // All
+                case RANGE_ALL:
                     Calendar firstMeasurement = Calendar.getInstance();
                     firstMeasurement.setTime(scaleMeasurementList.get(scaleMeasurementList.size()-1).getDateTime());
                     Calendar lastMeasurement = Calendar.getInstance();
