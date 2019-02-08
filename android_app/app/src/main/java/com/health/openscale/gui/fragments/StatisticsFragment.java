@@ -243,9 +243,6 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
         monthPastDate.setTime(lastScaleMeasurement.getDateTime());
         monthPastDate.add(Calendar.DATE, -30);
 
-        int weekSize = 0;
-        int monthSize = 0;
-
         ScaleMeasurement averageWeek = new ScaleMeasurement();
         ScaleMeasurement averageMonth = new ScaleMeasurement();
 
@@ -258,30 +255,23 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
 
             if (weekPastDate.before(histDate)) {
                 averageWeek.add(measurement);
-                weekSize++;
             }
 
             if (monthPastDate.before(histDate)) {
                 averageMonth.add(measurement);
-                monthSize++;
             }
         }
 
-        if (weekSize > 0) {
-            averageWeek.divide(weekSize);
-        }
-        if (monthSize > 0) {
-            averageMonth.divide(monthSize);
-        }
+        averageWeek.divide(averageWeek.count());
+        averageMonth.divide(averageMonth.count());
 
         for (MeasurementView view : viewMeasurementsStatistics) {
             final FloatMeasurementView measurementView = (FloatMeasurementView) view;
 
-            Object[] extraData = new Object[4];
+            Object[] extraData = new Object[3];
             extraData[0] = null; // not needed
             extraData[1] = null; // not needed
             extraData[2] = measurementView;
-            extraData[3] = false;
 
             measurementView.loadFrom(averageMonth, null);
             entriesAvgMonth.add(new RadarEntry(measurementView.getValue(), extraData));

@@ -24,6 +24,7 @@ import java.util.Date;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
+import androidx.room.Ignore;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 import timber.log.Timber;
@@ -101,6 +102,8 @@ public class ScaleMeasurement implements Cloneable {
     @CsvColumn(mustBeSupplied = false)
     @ColumnInfo(name = "comment")
     private String comment;
+    @Ignore
+    private int count;
 
     public ScaleMeasurement()
     {
@@ -123,6 +126,7 @@ public class ScaleMeasurement implements Cloneable {
         caliper2 = 0.0f;
         caliper3 = 0.0f;
         comment = "";
+        count = 1;
     }
 
     @Override
@@ -151,6 +155,8 @@ public class ScaleMeasurement implements Cloneable {
                 }
                 field.setAccessible(false);
             }
+
+            count++;
         } catch (IllegalAccessException e) {
             Timber.e(e);
         }
@@ -191,6 +197,10 @@ public class ScaleMeasurement implements Cloneable {
             Timber.e(e);
         }
     }
+
+    public int count() { return count; }
+
+    public boolean isAverageValue() { return (count > 1); }
 
     public int getId() {
         return id;

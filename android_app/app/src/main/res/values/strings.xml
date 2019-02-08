@@ -190,10 +190,11 @@
     <string name="edit">Edit</string>
     <string name="save">Save</string>
 
+    <string name="label_day_view">Day view</string>
     <string name="label_month_view">Month view</string>
     <string name="label_weeks_view">Week view</string>
     <string name="label_year_view">Year view</string>
-    <string name="label_all_view">All view</string>
+    <string name="label_rolling_chart">Rolling chart</string>
 
     <string name="permission_not_granted">Permission not granted</string>
     <string name="permission_bluetooth_info">Coarse location permission needed to search for Bluetooth devices. It can be revoked after the device is found.</string>

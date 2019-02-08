@@ -50,7 +50,6 @@ public class ChartMarkerView extends MarkerView {
         ScaleMeasurement measurement = (ScaleMeasurement)extraData[0];
         ScaleMeasurement prevMeasurement = (ScaleMeasurement)extraData[1];
         FloatMeasurementView measurementView = (FloatMeasurementView)extraData[2];
-        boolean isAverageValue = (boolean)extraData[3];
 
         SpannableStringBuilder markerText = new SpannableStringBuilder();
 
@@ -60,10 +59,10 @@ public class ChartMarkerView extends MarkerView {
             markerText.append(dateFormat.format(measurement.getDateTime()));
             markerText.setSpan(new RelativeSizeSpan(0.8f), 0, markerText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             markerText.append("\n");
-        }
 
-        if (isAverageValue) {
-            markerText.append("Ø ");
+            if (measurement.isAverageValue()) {
+                markerText.append("Ø ");
+            }
         }
 
         markerText.append(measurementView.getValueAsString(true));

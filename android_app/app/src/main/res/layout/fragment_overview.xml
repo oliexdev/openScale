@@ -83,8 +83,8 @@
                     app:srcCompat="@drawable/ic_options" />
             </LinearLayout>
 
-            <com.github.mikephil.charting.charts.LineChart
-                android:id="@+id/rollingChart"
+            <com.health.openscale.gui.views.ChartMeasurementView
+                android:id="@+id/chartView"
                 android:layout_width="match_parent"
                 android:layout_height="250dp"
                 android:layout_gravity="center" />

@@ -37,54 +37,39 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.BarChart;
-import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.AxisBase;
-import com.github.mikephil.charting.components.Legend;
-import com.github.mikephil.charting.components.MarkerView;
 import com.github.mikephil.charting.components.XAxis;
-import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.Entry;
-import com.github.mikephil.charting.data.LineData;
-import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
-import com.github.mikephil.charting.formatter.IValueFormatter;
 import com.github.mikephil.charting.formatter.StackedValueFormatter;
 import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
-import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
-import com.github.mikephil.charting.utils.ViewPortHandler;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
-import com.health.openscale.core.datatypes.ScaleUser;
-import com.health.openscale.core.utils.Converters;
-import com.health.openscale.core.utils.PolynomialFitter;
 import com.health.openscale.gui.activities.DataEntryActivity;
 import com.health.openscale.gui.utils.ColorUtil;
-import com.health.openscale.gui.views.ChartMarkerView;
+import com.health.openscale.gui.views.ChartMeasurementView;
 import com.health.openscale.gui.views.FloatMeasurementView;
 import com.health.openscale.gui.views.MeasurementView;
 import com.health.openscale.gui.views.MeasurementViewSettings;
-import com.health.openscale.gui.views.WeightMeasurementView;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.Stack;
 
 import androidx.fragment.app.Fragment;
 
 public class GraphFragment extends Fragment implements FragmentUpdateListener {
     private View graphView;
-    private LineChart chartBottom;
+    private ChartMeasurementView chartView;
     private BarChart chartTop;
     private TextView txtYear;
     private Button btnLeftYear;
@@ -134,24 +119,8 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
 
-        chartBottom = graphView.findViewById(R.id.chart_bottom);
-        chartBottom.setOnChartValueSelectedListener(new chartBottomValueTouchListener());
-        chartBottom.getLegend().setEnabled(prefs.getBoolean("legendEnable", true));
-        chartBottom.getLegend().setWordWrapEnabled(true);
-        chartBottom.getLegend().setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
-        chartBottom.getLegend().setTextColor(ColorUtil.getTextColor(graphView.getContext()));
-        chartBottom.getDescription().setEnabled(false);
-        chartBottom.getAxisLeft().setEnabled(prefs.getBoolean("yaxisEnable", false));
-        chartBottom.getAxisRight().setEnabled(prefs.getBoolean("yaxisEnable", false));
-        chartBottom.setDoubleTapToZoomEnabled(false);
-        chartBottom.setHighlightPerTapEnabled(true);
-
-        MarkerView mv = new ChartMarkerView(chartBottom.getContext(), R.layout.chart_markerview);
-        chartBottom.setMarker(mv);
-
-        XAxis chartBottomxAxis = chartBottom.getXAxis();
-        chartBottomxAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-        chartBottomxAxis.setTextColor(ColorUtil.getTextColor(graphView.getContext()));
+        chartView = graphView.findViewById(R.id.chartView);
+        chartView.setOnChartValueSelectedListener(new onChartValueSelectedListener());
 
         chartTop = graphView.findViewById(R.id.chart_top);
         chartTop.setDoubleTapToZoomEnabled(false);
@@ -343,245 +312,19 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         floatingActionBar.addView(actionButton);
     }
 
-    private void generateLineData(int field, List<ScaleMeasurement> scaleMeasurementList)
-    {
-        chartBottom.clear();
-
-        SimpleDateFormat day_date = new SimpleDateFormat("D", Locale.getDefault());
-
-        Calendar calDays = (Calendar)calLastSelected.clone();
-
-        int minDays = 0;
-        int maxDays = 0;
-
-        if (field == Calendar.DAY_OF_MONTH) {
-            day_date = new SimpleDateFormat("dd", Locale.getDefault());
-
-            minDays = calDays.getActualMinimum(Calendar.DAY_OF_MONTH);
-            maxDays = calDays.getActualMaximum(Calendar.DAY_OF_MONTH);
-
-            if (prefs.getBoolean("showWeek", false)) {
-                field = Calendar.WEEK_OF_MONTH;
-                day_date = new SimpleDateFormat("w", Locale.getDefault());
-                maxDays = calDays.getActualMaximum(Calendar.WEEK_OF_MONTH);
-            }
-        } else if (field == Calendar.DAY_OF_YEAR) {
-            day_date = new SimpleDateFormat("D", Locale.getDefault());
-            maxDays = calDays.getActualMaximum(Calendar.DAY_OF_YEAR);
-
-            if (prefs.getBoolean("averageData", true)) {
-                field = Calendar.MONTH;
-                day_date = new SimpleDateFormat("MMM", Locale.getDefault());
-                maxDays = calDays.getMaximum(Calendar.MONTH);
-            }
-
-            if (prefs.getBoolean("showWeek", false)) {
-                field = Calendar.WEEK_OF_YEAR;
-                day_date = new SimpleDateFormat("w", Locale.getDefault());
-                minDays = calDays.getActualMinimum(Calendar.WEEK_OF_YEAR);
-                maxDays = calDays.getActualMaximum(Calendar.WEEK_OF_YEAR);
-            }
-        }
-
-        final int finalField = field;
-        final SimpleDateFormat mFormat = day_date;
-
-        chartBottom.getXAxis().setValueFormatter(new IAxisValueFormatter() {
-
-            @Override
-            public String getFormattedValue(float value, AxisBase axis) {
-                Calendar calendar = Calendar.getInstance();
-                calendar.setTime(new Date(0));
-                calendar.set(finalField, (int)value);
-
-                return mFormat.format(calendar.getTime());
-            }
-        });
-
-        List<ILineDataSet> dataSets = new ArrayList<>();
-
-        Calendar calDB = Calendar.getInstance();
-
+    private void refreshFloatingActionsButtons() {
         floatingActionBar.removeAllViews();
-
-        int regressLineOrder = 1;
-
-        try {
-            regressLineOrder = Integer.parseInt(prefs.getString("regressionLineOrder", "1"));
-        } catch (NumberFormatException e) {
-            Toast.makeText(getContext(), getString(R.string.error_value_required) + ":" + e.getMessage(), Toast.LENGTH_LONG).show();
-            prefs.edit().putString("regressionLineOrder", "1").apply();
-        }
-
-        PolynomialFitter polyFitter = new PolynomialFitter(Math.min(regressLineOrder, 100));
-
-        boolean isWeightOnRightAxis = false;
-
-        final ScaleMeasurement[] avgMeasurementList = new ScaleMeasurement[minDays + maxDays + 1];
-        final int[] avgMeasurementListSize = new int[minDays + maxDays + 1];
-
-        for (ScaleMeasurement measurement : scaleMeasurementList) {
-            calDB.setTime(measurement.getDateTime());
-
-            if (avgMeasurementList[calDB.get(field)] == null) {
-                avgMeasurementList[calDB.get(field)] = measurement.clone();
-            } else {
-                avgMeasurementList[calDB.get(field)].add(measurement);
-            }
-
-            avgMeasurementListSize[calDB.get(field)]++;
-        }
-
-        for (ScaleMeasurement avgMeasurement : avgMeasurementList) {
-            if (avgMeasurement == null) {
-                continue;
-            }
-
-            calDB.setTime(avgMeasurement.getDateTime());
-            avgMeasurement.divide(avgMeasurementListSize[calDB.get(field)]);
-        }
 
         for (MeasurementView view : measurementViews) {
             if (view instanceof FloatMeasurementView) {
                 final FloatMeasurementView measurementView = (FloatMeasurementView) view;
 
-                if (measurementView instanceof WeightMeasurementView) {
-                    isWeightOnRightAxis = measurementView.getSettings().isOnRightAxis();
-                }
-
-                final List<Entry> entries = new ArrayList<>();
-
-                for (ScaleMeasurement avgMeasurement : avgMeasurementList) {
-                    if (avgMeasurement == null) {
-                        continue;
-                    }
-
-                    calDB.setTime(avgMeasurement.getDateTime());
-
-                    ScaleMeasurement prevMeasuremnt = null;
-
-                    for (int i=calDB.get(field)-1; i>0; i--) {
-                        if (avgMeasurementList[i] != null) {
-                            prevMeasuremnt = avgMeasurementList[i];
-                            break;
-                        }
-                    }
-
-                    measurementView.loadFrom(avgMeasurement, prevMeasuremnt);
-
-                    Entry entry = new Entry();
-                    entry.setX(calDB.get(field));
-                    entry.setY(measurementView.getValue());
-                    Object[] extraData = new Object[4];
-                    extraData[0] = avgMeasurement;
-                    extraData[1] = prevMeasuremnt;
-                    extraData[2] = measurementView;
-                    extraData[3] = (avgMeasurementListSize[calDB.get(field)] > 1); // is entry is average
-                    entry.setData(extraData);
-
-                    entries.add(entry);
-
-                    if (prefs.getBoolean("regressionLine", false) && measurementView instanceof WeightMeasurementView) {
-                        polyFitter.addPoint((double)entry.getX(), (double)entry.getY());
-                    }
-                }
-
-                LineDataSet dataSet = new LineDataSet(entries, measurementView.getName().toString());
-                dataSet.setLineWidth(1.5f);
-                dataSet.setValueTextSize(8.0f);
-                dataSet.setColor(measurementView.getColor());
-                dataSet.setValueTextColor(ColorUtil.getTextColor(graphView.getContext()));
-                dataSet.setCircleColor(measurementView.getColor());
-                dataSet.setAxisDependency(measurementView.getSettings().isOnRightAxis() ? YAxis.AxisDependency.RIGHT : YAxis.AxisDependency.LEFT);
-                dataSet.setHighlightEnabled(true);
-                dataSet.setDrawHighlightIndicators(true);
-                dataSet.setHighlightLineWidth(1.5f);
-                dataSet.setDrawHorizontalHighlightIndicator(false);
-                dataSet.setHighLightColor(Color.RED);
-                dataSet.setDrawCircles(prefs.getBoolean("pointsEnable", true));
-                dataSet.setDrawValues(prefs.getBoolean("labelsEnable", true));
-                dataSet.setValueFormatter(new IValueFormatter() {
-                    @Override
-                    public String getFormattedValue(float value, Entry entry, int dataSetIndex, ViewPortHandler viewPortHandler) {
-                        String prefix = new String();
-
-                        Object[] extraData = (Object[])entry.getData();
-                        ScaleMeasurement measurement = (ScaleMeasurement)extraData[0];
-                        ScaleMeasurement prevMeasurement = (ScaleMeasurement)extraData[1];
-                        FloatMeasurementView measurementView = (FloatMeasurementView)extraData[2];
-                        boolean isAverageValue = (boolean)extraData[3];
-
-                        measurementView.loadFrom(measurement, prevMeasurement);
-
-                        if (isAverageValue) {
-                            prefix = "Ø ";
-                        }
-
-                        return prefix + measurementView.getValueAsString(true);
-                    }
-                });
-
                 if (measurementView.isVisible()) {
                     addFloatingActionButton(measurementView);
-
-                    if (measurementView.getSettings().isInGraph()) {
-                        dataSets.add(dataSet);
-                    }
                 }
             }
         }
-
-        if (prefs.getBoolean("goalLine", true)) {
-            List<Entry> valuesGoalLine = new Stack<>();
-
-            final ScaleUser user = openScale.getSelectedScaleUser();
-            float goalWeight = Converters.fromKilogram(user.getGoalWeight(), user.getScaleUnit());
-
-            valuesGoalLine.add(new Entry(0, goalWeight));
-            valuesGoalLine.add(new Entry(maxDays, goalWeight));
-
-            LineDataSet goalLine = new LineDataSet(valuesGoalLine, getString(R.string.label_goal_line));
-            goalLine.setLineWidth(1.5f);
-            goalLine.setColor(ColorUtil.COLOR_GREEN);
-            goalLine.setAxisDependency(isWeightOnRightAxis ? YAxis.AxisDependency.RIGHT : YAxis.AxisDependency.LEFT);
-            goalLine.setDrawValues(false);
-            goalLine.setDrawCircles(false);
-            goalLine.setHighlightEnabled(false);
-            goalLine.enableDashedLine(10, 30, 0);
-
-            dataSets.add(goalLine);
-        }
-
-        if (prefs.getBoolean("regressionLine", false)) {
-            PolynomialFitter.Polynomial polynomial = polyFitter.getBestFit();
-
-            List<Entry> valuesLinearRegression = new Stack<>();
-
-            for (int i = 0; i < maxDays; i++) {
-                    double y_value = polynomial.getY(i);
-                    valuesLinearRegression.add(new Entry((float) i, (float) y_value));
-            }
-
-            LineDataSet linearRegressionLine = new LineDataSet(valuesLinearRegression, getString(R.string.label_regression_line));
-            linearRegressionLine.setLineWidth(1.5f);
-            linearRegressionLine.setColor(ColorUtil.COLOR_VIOLET);
-            linearRegressionLine.setAxisDependency(isWeightOnRightAxis ? YAxis.AxisDependency.RIGHT : YAxis.AxisDependency.LEFT);
-            linearRegressionLine.setDrawValues(false);
-            linearRegressionLine.setDrawCircles(false);
-            linearRegressionLine.setHighlightEnabled(false);
-            linearRegressionLine.enableDashedLine(10, 30, 0);
-
-            dataSets.add(linearRegressionLine);
-        }
-
-        LineData data = new LineData(dataSets);
-        chartBottom.setData(data);
-        chartBottom.getXAxis().setAxisMinimum(minDays);
-        chartBottom.getXAxis().setAxisMaximum(maxDays);
-        chartBottom.animateY(700);
-        chartBottom.invalidate();
     }
-
     private void generateColumnData()
     {
         int[] numOfMonth = openScale.getCountsOfMonth(calYears.get(Calendar.YEAR));
@@ -642,21 +385,27 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         // show monthly diagram
         if (prefs.getBoolean("showMonth", true)) {
             chartTop.setVisibility(View.VISIBLE);
-            chartBottom.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 0.7f));
+            chartView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 0.7f));
 
             generateColumnData();
-            scaleMeasurementList = openScale.getScaleDataOfMonth(selectedYear, calLastSelected.get(Calendar.MONTH));
 
-            generateLineData(Calendar.DAY_OF_MONTH, scaleMeasurementList);
-        // show only yearly diagram and hide monthly diagram
-        } else {
+           if (prefs.getBoolean("showWeek", false)) {
+                chartView.setViewRange(selectedYear, calLastSelected.get(Calendar.MONTH), ChartMeasurementView.ViewMode.WEEK_OF_MONTH);
+            } else {
+                chartView.setViewRange(selectedYear, calLastSelected.get(Calendar.MONTH), ChartMeasurementView.ViewMode.DAY_OF_MONTH);
+            }
+        } else { // show only yearly diagram and hide monthly diagram
             chartTop.setVisibility(View.GONE);
-            chartBottom.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 0.9f));
+            chartView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 0.9f));
 
-            scaleMeasurementList = openScale.getScaleDataOfYear(selectedYear);
-
-            generateLineData(Calendar.DAY_OF_YEAR, scaleMeasurementList);
+            if (prefs.getBoolean("showWeek", false)) {
+                chartView.setViewRange(selectedYear, ChartMeasurementView.ViewMode.WEEK_OF_YEAR);
+            } else {
+                chartView.setViewRange(selectedYear, ChartMeasurementView.ViewMode.MONTH_OF_YEAR);
+            }
         }
+
+        refreshFloatingActionsButtons();
     }
 
     private class chartTopValueTouchListener implements OnChartValueSelectedListener {
@@ -667,8 +416,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
             calLastSelected = cal;
 
-            List<ScaleMeasurement> scaleMeasurementList = openScale.getScaleDataOfMonth(calYears.get(Calendar.YEAR), calLastSelected.get(Calendar.MONTH));
-            generateLineData(Calendar.DAY_OF_MONTH, scaleMeasurementList);
+            generateGraphs();
 
             showMenu.setVisibility(View.GONE);
             editMenu.setVisibility(View.GONE);
@@ -681,7 +429,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         }
     }
 
-    private class chartBottomValueTouchListener implements OnChartValueSelectedListener {
+    private class onChartValueSelectedListener implements OnChartValueSelectedListener {
         @Override
         public void onValueSelected(Entry e, Highlight h) {
             Object[] extraData = (Object[])e.getData();
@@ -757,6 +505,6 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         deleteMenu.setVisibility(View.GONE);
 
         chartTop.invalidate();
-        chartBottom.invalidate();
+        chartView.invalidate();
     }
 }

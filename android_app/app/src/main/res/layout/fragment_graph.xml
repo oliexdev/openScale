@@ -108,11 +108,12 @@
                 android:layout_height="0dp"
                 android:layout_weight="0.25" />
 
-            <com.github.mikephil.charting.charts.LineChart
-                android:id="@+id/chart_bottom"
+            <com.health.openscale.gui.views.ChartMeasurementView
+                android:id="@+id/chartView"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="0.75" />
+                android:layout_weight="0.75"
+            />
         </LinearLayout>
     </LinearLayout>
 
@@ -142,7 +143,7 @@
         android:backgroundTint="#99CC00"
         android:clickable="true"
         android:visibility="gone"
-        app:layout_anchor="@id/chart_bottom"
+        app:layout_anchor="@id/chartView"
         app:layout_anchorGravity="right|center_vertical"
         app:pressedTranslationZ="12dp"/>
 
