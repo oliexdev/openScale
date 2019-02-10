@@ -21,14 +21,15 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.content.Context;
 
-import com.polidea.rxandroidble2.RxBleClient;
+import com.polidea.rxandroidble2.RxBleDeviceServices;
 
 import java.util.HashMap;
 
 import timber.log.Timber;
 
 public class BluetoothDebug extends BluetoothCommunication {
-    HashMap<Integer, String> propertyString;
+    private HashMap<Integer, String> propertyString;
+    private RxBleDeviceServices rxBleDeviceServices;
 
     BluetoothDebug(Context context) {
         super(context);
@@ -158,21 +159,38 @@ public class BluetoothDebug extends BluetoothCommunication {
     }
 
     @Override
+    public void onBluetoothDiscovery(RxBleDeviceServices rxBleDeviceServices) {
+        this.rxBleDeviceServices = rxBleDeviceServices;
+    }
+
+    @Override
     protected boolean nextInitCmd(int stateNr) {
-        int offset = stateNr;
+        switch (stateNr)
+        {
+            case 0:
+                doBluetoothDiscoverServices();
+                break;
+            case 1:
+                int offset = stateNr;
 
-        for (BluetoothGattService service : getBluetoothGattServices()) {
-            offset = readServiceCharacteristics(service, offset);
+                for (BluetoothGattService service : rxBleDeviceServices.getBluetoothGattServices()) {
+                    offset = readServiceCharacteristics(service, offset);
+                }
+
+                for (BluetoothGattService service : rxBleDeviceServices.getBluetoothGattServices()) {
+                    logService(service, false);
+                }
+
+                setBtStatus(BT_STATUS_CODE.BT_CONNECTION_LOST);
+                break;
+            case 2:
+                disconnect();
+                break;
+            default:
+                return false;
         }
 
-        for (BluetoothGattService service : getBluetoothGattServices()) {
-            logService(service, false);
-        }
-
-        setBtStatus(BT_STATUS_CODE.BT_CONNECTION_LOST);
-        disconnect();
-
-        return false;
+        return true;
     }
 
     @Override
