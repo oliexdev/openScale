@@ -8,8 +8,8 @@ android {
         testApplicationId "com.health.openscale.test"
         minSdkVersion 19
         targetSdkVersion 28
-        versionCode 38
-        versionName "1.9.1"
+        versionCode 40
+        versionName "1.9.3"
 
         javaCompileOptions {
             annotationProcessorOptions { arguments = ["room.schemaLocation":"$projectDir/schemas".toString()] }

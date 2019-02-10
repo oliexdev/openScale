@@ -16,8 +16,11 @@
 
 package com.health.openscale.core.bluetooth;
 
+import android.Manifest;
 import android.bluetooth.BluetoothGattService;
 import android.content.Context;
+import android.content.pm.PackageManager;
+import android.location.LocationManager;
 import android.os.Handler;
 
 import com.health.openscale.core.OpenScale;
@@ -28,13 +31,16 @@ import com.polidea.rxandroidble2.RxBleConnection;
 import com.polidea.rxandroidble2.RxBleDevice;
 import com.polidea.rxandroidble2.RxBleDeviceServices;
 import com.polidea.rxandroidble2.exceptions.BleException;
+import com.polidea.rxandroidble2.scan.ScanSettings;
 
 import java.io.IOException;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
+import androidx.core.content.ContextCompat;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
@@ -43,6 +49,8 @@ import io.reactivex.exceptions.UndeliverableException;
 import io.reactivex.plugins.RxJavaPlugins;
 import io.reactivex.subjects.PublishSubject;
 import timber.log.Timber;
+
+import static android.content.Context.LOCATION_SERVICE;
 
 public abstract class BluetoothCommunication {
     public enum BT_STATUS_CODE {
@@ -65,6 +73,7 @@ public abstract class BluetoothCommunication {
     }
 
     private final int BT_RETRY_TIMES_ON_ERROR = 3;
+    private final int BT_DELAY = 50; // MS
 
     protected Context context;
 
@@ -72,6 +81,7 @@ public abstract class BluetoothCommunication {
     private RxBleDevice bleDevice;
     private Observable<RxBleConnection> connectionObservable;
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
+    private Disposable scanSubscription;
     private PublishSubject<Boolean> disconnectTriggerSubject = PublishSubject.create();
 
     private Handler callbackBtHandler;
@@ -90,6 +100,7 @@ public abstract class BluetoothCommunication {
         this.context = context;
         this.bleClient = OpenScale.getInstance().getBleClient();
         this.rxBleDeviceServices = null;
+        this.scanSubscription = null;
         this.disconnectHandler = new Handler();
 
         RxJavaPlugins.setErrorHandler(e -> {
@@ -285,6 +296,7 @@ public abstract class BluetoothCommunication {
     protected void writeBytes(UUID characteristic, byte[] bytes) {
         if (isConnected()) {
             final Disposable disposable = connectionObservable
+                    .delay(BT_DELAY, TimeUnit.MILLISECONDS)
                     .flatMapSingle(rxBleConnection -> rxBleConnection.writeCharacteristic(characteristic, bytes))
                     .observeOn(AndroidSchedulers.mainThread())
                     .retry(BT_RETRY_TIMES_ON_ERROR)
@@ -311,6 +323,7 @@ public abstract class BluetoothCommunication {
     protected void readBytes(UUID characteristic) {
         if (isConnected()) {
             final Disposable disposable = connectionObservable
+                    .delay(BT_DELAY, TimeUnit.MILLISECONDS)
                     .firstOrError()
                     .flatMap(rxBleConnection -> rxBleConnection.readCharacteristic(characteristic))
                     .observeOn(AndroidSchedulers.mainThread())
@@ -334,6 +347,7 @@ public abstract class BluetoothCommunication {
     protected void setIndicationOn(UUID characteristic) {
         if (isConnected()) {
             final Disposable disposable = connectionObservable
+                    .delay(BT_DELAY, TimeUnit.MILLISECONDS)
                     .flatMap(rxBleConnection -> rxBleConnection.setupIndication(characteristic))
                     .doOnNext(notificationObservable -> {
                                 Timber.d("Successful set indication on for %s", BluetoothGattUuid.prettyPrint(characteristic));
@@ -366,6 +380,7 @@ public abstract class BluetoothCommunication {
     protected void setNotificationOn(UUID characteristic) {
         if (isConnected()) {
             final Disposable disposable = connectionObservable
+                    .delay(BT_DELAY, TimeUnit.MILLISECONDS)
                     .flatMap(rxBleConnection -> rxBleConnection.setupNotification(characteristic))
                     .doOnNext(notificationObservable -> {
                                 Timber.d("Successful set notification on for %s", BluetoothGattUuid.prettyPrint(characteristic));
@@ -460,21 +475,58 @@ public abstract class BluetoothCommunication {
      * @param macAddress the Bluetooth address to connect to
      */
     public void connect(String macAddress) {
+        bleDevice = bleClient.getBleDevice(macAddress);
+
+        // Running an LE scan during connect improves connectivity on some phones
+        // (e.g. Sony Xperia Z5 compact, Android 7.1.1). For some scales (e.g. Medisana BS444)
+        // it seems to be a requirement that the scale is discovered before connecting to it.
+        // Otherwise the connection almost never succeeds.
+        LocationManager locationManager = (LocationManager)context.getSystemService(LOCATION_SERVICE);
+
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED && (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+                || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
+        ) {
+            Timber.d("Do LE scan before connecting to device");
+            scanSubscription = bleClient.scanBleDevices(
+                    new ScanSettings.Builder()
+                            .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+                            //.setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES)
+                            .build()
+            )
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(bleScanResult -> {
+                        if (bleScanResult.getBleDevice().getMacAddress().equals(macAddress)) {
+                            connectToDevice(macAddress);
+                    }}, throwable -> onError(throwable));
+        }
+        else {
+            Timber.d("No coarse location permission, connecting without LE scan");
+            connectToDevice(macAddress);
+        }
+    }
+
+    private void connectToDevice(String macAddress) {
         Timber.d("Try to connect to BLE device " + macAddress);
 
-        bleDevice = bleClient.getBleDevice(macAddress);
+        // stop LE scan before connecting to device
+        if (scanSubscription != null) {
+            scanSubscription.dispose();
+        }
 
         connectionObservable = bleDevice
                 .establishConnection(false)
+                .delay(BT_DELAY, TimeUnit.MILLISECONDS)
                 .takeUntil(disconnectTriggerSubject)
                 .doOnError(throwable -> setBtStatus(BT_STATUS_CODE.BT_CONNECTION_RETRYING))
                 .observeOn(AndroidSchedulers.mainThread())
                 .compose(ReplayingShare.instance());
 
-       if (isConnected()) {
-           disconnect();
-       } else {
+        if (isConnected()) {
+            disconnect();
+        } else {
             final Disposable connectionDisposable = connectionObservable
+                    .delay(BT_DELAY, TimeUnit.MILLISECONDS)
                     .flatMapSingle(RxBleConnection::discoverServices)
                     .observeOn(AndroidSchedulers.mainThread())
                     .retry(BT_RETRY_TIMES_ON_ERROR)
@@ -542,7 +594,7 @@ public abstract class BluetoothCommunication {
         disconnectHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                Timber.d("Timeout disconnect");
+                Timber.d("Timeout Bluetooth disconnect");
                 disconnect();
             }
         }, 60000); // 60s timeout
@@ -557,6 +609,9 @@ public abstract class BluetoothCommunication {
         disconnectHandler.removeCallbacksAndMessages(null);
         disconnectTriggerSubject.onNext(true);
         compositeDisposable.clear();
+        if (scanSubscription != null) {
+            scanSubscription.dispose();
+        }
     }
 
     /**
@@ -582,6 +637,7 @@ public abstract class BluetoothCommunication {
                 cleanupStepNr++;
                 Timber.d("CLEANUP STATE: %d", cleanupStepNr);
                 if (!nextCleanUpCmd(cleanupStepNr)) {
+                    Timber.d("Cleanup Bluetooth disconnect");
                     disconnect();
                 }
                 break;

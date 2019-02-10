@@ -254,4 +254,5 @@
     <string name="info_bluetooth_no_device_retrying">Kan ikke etablere forbindelse, prøver igjen…</string>
     <string name="info_bluetooth_connection_disconnected">Blåtannstilkobling lukket</string>
     <string name="info_step_on_scale">Tre opp på vekta barfot</string>
+    <string name="permission_location_service_info">Innvilg posisjonstilgang for å søke etter Blåtannsenheter. Du kan skru den av etterpå.</string>
 </resources>

@@ -60,18 +60,15 @@ public class BluetoothMedisanaBS44x extends BluetoothCommunication {
         switch (stateNr) {
             case 0:
                 // set indication on for feature characteristic
-                setIndicationOn(FEATURE_MEASUREMENT_CHARACTERISTIC
-                );
+                setIndicationOn(FEATURE_MEASUREMENT_CHARACTERISTIC);
                 break;
             case 1:
                 // set indication on for weight measurement
-                setIndicationOn(WEIGHT_MEASUREMENT_CHARACTERISTIC
-                );
+                setIndicationOn(WEIGHT_MEASUREMENT_CHARACTERISTIC);
                 break;
             case 2:
                 // set indication on for custom5 measurement
-                setIndicationOn(CUSTOM5_MEASUREMENT_CHARACTERISTIC
-                );
+                setIndicationOn(CUSTOM5_MEASUREMENT_CHARACTERISTIC);
                 break;
             case 3:
                 // send magic number to receive weight data
