@@ -517,28 +517,35 @@ public abstract class BluetoothCommunication {
             Timber.d("Stop Le san");
             scanSubscription.dispose();
             scanSubscription = null;
+
         }
 
-        Timber.d("Try to connect to BLE device " + macAddress);
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                Timber.d("Try to connect to BLE device " + macAddress);
 
-        connectionObservable = bleDevice
-                .establishConnection(false)
-                .delay(BT_DELAY, TimeUnit.MILLISECONDS)
-                .takeUntil(disconnectTriggerSubject)
-                .doOnError(throwable -> setBtStatus(BT_STATUS_CODE.BT_CONNECTION_RETRYING))
-                .observeOn(AndroidSchedulers.mainThread())
-                .compose(ReplayingShare.instance());
+                connectionObservable = bleDevice
+                        .establishConnection(false)
+                        .delay(BT_DELAY, TimeUnit.MILLISECONDS)
+                        .takeUntil(disconnectTriggerSubject)
+                        .doOnError(throwable -> setBtStatus(BT_STATUS_CODE.BT_CONNECTION_RETRYING))
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .compose(ReplayingShare.instance());
 
-        if (isConnected()) {
-            disconnect();
-        } else {
-            initStepNr = -1;
-            cmdStepNr = -1;
-            cleanupStepNr = -1;
+                if (isConnected()) {
+                    disconnect();
+                } else {
+                    initStepNr = -1;
+                    cmdStepNr = -1;
+                    cleanupStepNr = -1;
 
-            setBtMonitoringOn();
-            setBtMachineState(BT_MACHINE_STATE.BT_INIT_STATE);
-        }
+                    setBtMonitoringOn();
+                    setBtMachineState(BT_MACHINE_STATE.BT_INIT_STATE);
+                }
+            }
+        }, 500);
     }
 
     private void setBtMonitoringOn() {
