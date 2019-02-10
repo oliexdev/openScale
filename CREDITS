@@ -1,11 +1,11 @@
 openScale uses open source components. You can find the source code of their open source projects along with license information below.
 I acknowledge and I am grateful to these developers for their contributions to open source.
 
-Project: HelloCharts
-Copyright 2014 Leszek Wach
+Project: MPAndroidChart
+Copyright 2018 Philipp Jahoda
 Apache License, Version 2.0
 License: https://www.apache.org/licenses/LICENSE-2.0
-Website: https://github.com/lecho/hellocharts-android
+Website: https://github.com/PhilJay/MPAndroidChart
 
 Project: SimpleCSV
 Copyright 2017 Gray Watson
