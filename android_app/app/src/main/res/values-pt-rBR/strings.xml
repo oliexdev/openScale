@@ -175,7 +175,6 @@
     <string name="label_next">Próximo</string>
     <string name="label_set_default_order">Define ordem por defeito</string>
     <string name="label_export_overwrite">"Gravar sobre o export \"%s\"  anterior ?"</string>
-    <string name="label_include_in_overview_graph">Incluir no gráfico geral</string>
     <string name="label_measurement_in_percent">Medida em %</string>
     <string name="label_estimate_measurement">Medida estimada</string>
     <string name="label_estimation_formula">Formula de estimativa</string>
@@ -185,7 +184,6 @@
     <string name="theme_dark">Escuro</string>
     <string name="label_contribute_translation">Tradução efetuada</string>
     <string name="label_add_or_fix_translation">adicionar nova ou alterar existente</string>
-    <string name="label_overview_graph">Gráfico geral</string>
     <string name="label_percent">Percentagem</string>
     <string name="label_estimated">Estimada</string>
     <string name="label_estimate_measurement_summary">Baseado no peso, altura, idade, sexo, etc.</string>

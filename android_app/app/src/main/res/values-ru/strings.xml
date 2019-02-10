@@ -222,12 +222,10 @@
     <string name="label_long_press_drag_reorder">Нажмите, удерживайте и перетащите измерения, чтобы изменить порядок отображения</string>
     <string name="label_click_measurement_configure">Нажмите, чтобы настроить измерения</string>
     <string name="label_export_overwrite">Сохранить поверх предыдущего \"%s\"\?</string>
-    <string name="label_include_in_overview_graph">Включить в обзорный график</string>
     <string name="label_estimate_measurement">Оценочное измерение</string>
     <string name="label_estimation_formula">Формула для оценочных измерений</string>
     <string name="label_contribute_translation">Помочь с переводом</string>
     <string name="label_add_or_fix_translation">Добавить новый или исправить существующий</string>
-    <string name="label_overview_graph">Обзорный график</string>
     <string name="label_estimated">По оценкам</string>
     <string name="label_estimate_measurement_summary">Исходя из веса, роста, возраста, пола, etc.</string>
     <string name="label_auto_backup">Автоматическое резервирование</string>

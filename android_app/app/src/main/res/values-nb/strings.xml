@@ -193,7 +193,6 @@
     <string name="label_next">Neste</string>
     <string name="label_set_default_order">Sett forvalgt rekkefølge</string>
     <string name="label_export_overwrite">Overskriv forrige eksportering \"%s\"?</string>
-    <string name="label_include_in_overview_graph">Inkluder i oversiktsgraf</string>
     <string name="label_measurement_in_percent">Måling i %</string>
     <string name="label_estimate_measurement">Estimatsmåling</string>
     <string name="label_estimation_formula">Estimatsformel</string>
@@ -203,7 +202,6 @@
     <string name="theme_dark">Mørk</string>
     <string name="label_contribute_translation">Bidra til oversettelsen</string>
     <string name="label_add_or_fix_translation">Legg til ny eller fiks eksisterende</string>
-    <string name="label_overview_graph">Oversiktsgraf</string>
     <string name="label_percent">Prosent</string>
     <string name="label_estimated">Estimert</string>
     <string name="label_scale_not_supported">Støttes ikke vekten din?</string>

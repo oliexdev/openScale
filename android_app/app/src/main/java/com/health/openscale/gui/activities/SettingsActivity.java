@@ -28,6 +28,7 @@ import android.widget.EditText;
 import com.health.openscale.R;
 import com.health.openscale.gui.preferences.BackupPreferences;
 import com.health.openscale.gui.preferences.BluetoothPreferences;
+import com.health.openscale.gui.utils.ColorUtil;
 import com.health.openscale.gui.utils.PermissionHelper;
 
 import java.util.ArrayList;
@@ -79,7 +80,7 @@ public class SettingsActivity extends PreferenceActivity
     public void onBuildHeaders(List<Header> target) {
         loadHeadersFromResource(R.xml.header_preferences, target);
 
-        int tintColor = new EditText(this).getCurrentTextColor();
+        int tintColor = ColorUtil.getTextColor(this);
 
         fragments.clear();
         for (Header header : target) {
@@ -103,7 +104,7 @@ public class SettingsActivity extends PreferenceActivity
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
-        // HACK to call RequestPermissionResult(...) in PreferenceFragment otherwise API level > 23 is required
+        // TODO HACK to call RequestPermissionResult(...) in PreferenceFragment otherwise API level > 23 is required
         switch(requestCode) {
             case PermissionHelper.PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION:
                 BluetoothPreferences bluetoothPreferences = (BluetoothPreferences)currentFragment;

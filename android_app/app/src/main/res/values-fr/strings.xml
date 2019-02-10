@@ -204,13 +204,11 @@
     <string name="toggle_expand">Basculer en mode étendu</string>
     <string name="permission_bluetooth_info">Des permissions d\'accès à la location sont nécessaires pour chercher des dispositifs Bluetooth. Ces permissions peuvent être enlevées par la suite.</string>
     <string name="label_export_overwrite">Écraser les données exportés précédemment \"%s\" ?</string>
-    <string name="label_include_in_overview_graph">Inclure dans la diagramme générale</string>
     <string name="label_estimate_measurement">Mesure estimée</string>
     <string name="label_estimation_formula">Formule pour les mesures estimées</string>
     <string name="language_default">Langue du système</string>
     <string name="label_language">Langue</string>
     <string name="label_add_or_fix_translation">Ajouter nouvelle ou modifier existante</string>
-    <string name="label_overview_graph">Diagramme générale</string>
     <string name="label_auto_backup">Sauvegarde automatique</string>
     <string name="label_auto_backup_schedule">Programmation de sauvegardes</string>
     <string name="label_overwrite_backup">Écraser la sauvegarde précédente</string>

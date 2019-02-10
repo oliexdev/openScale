@@ -15,119 +15,172 @@
 */
 package com.health.openscale.gui.fragments;
 
-import android.content.Context;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.Spinner;
 import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.highlight.Highlight;
+import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
-import com.health.openscale.core.utils.Converters;
-import com.health.openscale.core.utils.DateTimeHelpers;
-import com.health.openscale.gui.views.BMRMeasurementView;
-import com.health.openscale.gui.views.FloatMeasurementView;
+import com.health.openscale.gui.activities.DataEntryActivity;
+import com.health.openscale.gui.utils.ColorUtil;
+import com.health.openscale.gui.views.ChartActionBarView;
+import com.health.openscale.gui.views.ChartMeasurementView;
 import com.health.openscale.gui.views.MeasurementView;
-import com.health.openscale.gui.views.TDEEMeasurementView;
 
-import java.text.DateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
-import java.util.Stack;
 
 import androidx.fragment.app.Fragment;
-import lecho.lib.hellocharts.formatter.SimpleLineChartValueFormatter;
-import lecho.lib.hellocharts.listener.LineChartOnValueSelectListener;
-import lecho.lib.hellocharts.listener.PieChartOnValueSelectListener;
-import lecho.lib.hellocharts.model.Axis;
-import lecho.lib.hellocharts.model.AxisValue;
-import lecho.lib.hellocharts.model.Line;
-import lecho.lib.hellocharts.model.LineChartData;
-import lecho.lib.hellocharts.model.PieChartData;
-import lecho.lib.hellocharts.model.PointValue;
-import lecho.lib.hellocharts.model.SliceValue;
-import lecho.lib.hellocharts.view.LineChartView;
-import lecho.lib.hellocharts.view.PieChartView;
 
 public class OverviewFragment extends Fragment implements FragmentUpdateListener {
-
     private View overviewView;
-    private View userLineSeparator;
 
     private TextView txtTitleUser;
     private TextView txtTitleLastMeasurement;
 
-    private List<MeasurementView> measurementViews;
+    private List<MeasurementView> lastMeasurementViews;
 
-    private PieChartView pieChartLast;
-    private LineChartView lineChartLast;
+    private ChartMeasurementView chartView;
+    private ChartActionBarView chartActionBarView;
 
     private Spinner spinUser;
 
-    private SharedPreferences prefs;
+    private PopupMenu rangePopupMenu;
 
-    private ScaleMeasurement lastScaleMeasurement;
-    private ScaleMeasurement userSelectedData;
+    private ImageView showEntry;
+    private ImageView editEntry;
+    private ImageView deleteEntry;
+
     private ScaleUser currentScaleUser;
-
-    private List<ScaleMeasurement> scaleMeasurementLastDays;
 
     private ArrayAdapter<String> spinUserAdapter;
 
-    private Context context;
+    private SharedPreferences prefs;
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        // retain this fragment otherwise the app crashed in landscape mode for small devices (see "Handling Runtime Changes")
-        setRetainInstance(true);
-    }
+    private ScaleMeasurement markedMeasurement;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         overviewView = inflater.inflate(R.layout.fragment_overview, container, false);
-        userLineSeparator = overviewView.findViewById(R.id.userLineSeparator);
 
-        context = overviewView.getContext();
+        prefs = PreferenceManager.getDefaultSharedPreferences(overviewView.getContext());
 
         txtTitleUser = overviewView.findViewById(R.id.txtTitleUser);
         txtTitleLastMeasurement = overviewView.findViewById(R.id.txtTitleLastMeasurement);
 
-        pieChartLast = overviewView.findViewById(R.id.pieChartLast);
-        lineChartLast = overviewView.findViewById(R.id.lineChartLast);
+        chartView = overviewView.findViewById(R.id.chartView);
+        chartView.setOnChartValueSelectedListener(new onChartSelectedListener());
+        chartView.setAnimationOn(false);
+        chartView.setIsInGraphKey(false);
+
+        chartActionBarView = overviewView.findViewById(R.id.chartActionBar);
+        chartActionBarView.setIsInGraphKey(false);
+        chartActionBarView.setOnActionClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                updateChartView();
+            }
+        });
 
         spinUser = overviewView.findViewById(R.id.spinUser);
 
-        lineChartLast.setOnValueTouchListener(new LineChartTouchListener());
+        ImageView optionMenu = overviewView.findViewById(R.id.rangeOptionMenu);
+        optionMenu.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                rangePopupMenu.show();
+            }
+        });
 
-        pieChartLast.setOnValueTouchListener(new PieChartLastTouchListener());
-        pieChartLast.setChartRotationEnabled(false);
+        rangePopupMenu = new PopupMenu(getContext(), optionMenu);
+        rangePopupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
 
-        measurementViews = MeasurementView.getMeasurementList(
+                switch (item.getItemId()) {
+                    case R.id.enableChartActionBar:
+                        if (item.isChecked()) {
+                            item.setChecked(false);
+                            prefs.edit().putBoolean("enableOverviewChartActionBar", false).apply();
+                            chartActionBarView.setVisibility(View.GONE);
+                        } else {
+                            item.setChecked(true);
+                            prefs.edit().putBoolean("enableOverviewChartActionBar", true).apply();
+                            chartActionBarView.setVisibility(View.VISIBLE);
+                        }
+                        return true;
+                    case R.id.enableRollingChart:
+                        if (item.isChecked()) {
+                            item.setChecked(false);
+                            prefs.edit().putBoolean("enableRollingChart", false).apply();
+                        } else {
+                            item.setChecked(true);
+                            prefs.edit().putBoolean("enableRollingChart", true).apply();
+                        }
+
+                        getActivity().recreate(); // TODO HACK to refresh graph; graph.invalidate and notfiydatachange is not enough!?
+
+                        return true;
+                }
+
+
+                item.setChecked(true);
+
+                prefs.edit().putInt("selectRange", item.getItemId()).commit();
+
+                if (prefs.getBoolean("enableRollingChart", true)) {
+                    getActivity().recreate(); // TODO HACK to refresh graph; if rolling chart is enabled then graph.invalidate and notfiydatachange is not enough!?
+                } else {
+                    updateChartView();
+                }
+
+                return true;
+            }
+        });
+        rangePopupMenu.getMenuInflater().inflate(R.menu.overview_menu, rangePopupMenu.getMenu());
+        rangePopupMenu.getMenu().findItem(prefs.getInt("selectRange", R.id.menu_range_day)).setChecked(true);
+        rangePopupMenu.getMenu().findItem(R.id.enableRollingChart).setChecked(prefs.getBoolean("enableRollingChart", true));
+
+        MenuItem enableMeasurementBar = rangePopupMenu.getMenu().findItem(R.id.enableChartActionBar);
+        enableMeasurementBar.setChecked(prefs.getBoolean("enableOverviewChartActionBar", false));
+
+        if (enableMeasurementBar.isChecked()) {
+            chartActionBarView.setVisibility(View.VISIBLE);
+        } else {
+            chartActionBarView.setVisibility(View.GONE);
+        }
+
+        lastMeasurementViews = MeasurementView.getMeasurementList(
                 getContext(), MeasurementView.DateTimeOrder.NONE);
 
         TableLayout tableOverviewLayout = overviewView.findViewById(R.id.tableLayoutMeasurements);
 
-        for (MeasurementView measurement : measurementViews) {
+        for (MeasurementView measurement : lastMeasurementViews) {
             tableOverviewLayout.addView(measurement);
         }
 
-        userSelectedData = null;
-
-        spinUserAdapter = new ArrayAdapter<>(overviewView.getContext(), R.layout.support_simple_spinner_dropdown_item, new ArrayList<String>());
+        spinUserAdapter = new ArrayAdapter<>(overviewView.getContext(), R.layout.spinner_item, new ArrayList<String>());
         spinUser.setAdapter(spinUserAdapter);
 
         // Set item select listener after spinner is created because otherwise item listener fires a lot!?!?
@@ -138,12 +191,48 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             }
         });
 
-        txtTitleUser.setText(getResources().getString(R.string.label_title_user).toUpperCase());
+        showEntry = overviewView.findViewById(R.id.showEntry);
+        showEntry.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int id = markedMeasurement.getId();
+
+                Intent intent = new Intent(overviewView.getContext(), DataEntryActivity.class);
+                intent.putExtra(DataEntryActivity.EXTRA_ID, id);
+                intent.putExtra(DataEntryActivity.EXTRA_MODE, DataEntryActivity.VIEW_MEASUREMENT_REQUEST);
+                startActivity(intent);
+            }
+        });
+
+        editEntry = overviewView.findViewById(R.id.editEntry);
+        editEntry.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int id = markedMeasurement.getId();
+
+                Intent intent = new Intent(overviewView.getContext(), DataEntryActivity.class);
+                intent.putExtra(DataEntryActivity.EXTRA_ID, id);
+                intent.putExtra(DataEntryActivity.EXTRA_MODE, DataEntryActivity.EDIT_MEASUREMENT_REQUEST);
+                startActivity(intent);
+            }
+        });
+        deleteEntry = overviewView.findViewById(R.id.deleteEntry);
+        deleteEntry.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                deleteMeasurement();
+            }
+        });
+
+        showEntry.setEnabled(false);
+        editEntry.setEnabled(false);
+        deleteEntry.setEnabled(false);
+
         txtTitleLastMeasurement.setText(getResources().getString(R.string.label_title_last_measurement).toUpperCase());
 
-        prefs = PreferenceManager.getDefaultSharedPreferences(overviewView.getContext());
-
         OpenScale.getInstance().registerFragment(this);
+
+        chartView.animateY(700);
 
         return overviewView;
     }
@@ -157,30 +246,47 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
     @Override
     public void updateOnView(List<ScaleMeasurement> scaleMeasurementList) {
         if (scaleMeasurementList.isEmpty()) {
-            lastScaleMeasurement = new ScaleMeasurement();
-        } else if (userSelectedData != null) {
-            lastScaleMeasurement = userSelectedData;
+            markedMeasurement = new ScaleMeasurement();
         } else {
-            lastScaleMeasurement = scaleMeasurementList.get(0);
+            markedMeasurement = scaleMeasurementList.get(0);
         }
 
-        ScaleMeasurement[] tupleScaleData = OpenScale.getInstance().getTupleScaleData(lastScaleMeasurement.getId());
+        updateUserSelection();
+        updateMesurementViews(markedMeasurement);
+        updateChartView();
+    }
+
+    private void updateChartView() {
+        boolean enableRollingChart = prefs.getBoolean("enableRollingChart", true);
+
+        switch (prefs.getInt("selectRange", R.id.menu_range_day)) {
+            case R.id.menu_range_day:
+                chartView.setViewRange(ChartMeasurementView.ViewMode.DAY_OF_ALL, enableRollingChart);
+                break;
+            case R.id.menu_range_week:
+                chartView.setViewRange(ChartMeasurementView.ViewMode.WEEK_OF_ALL, enableRollingChart);
+                break;
+            case R.id.menu_range_month:
+                chartView.setViewRange(ChartMeasurementView.ViewMode.MONTH_OF_ALL, enableRollingChart);
+                break;
+            case R.id.menu_range_year:
+                chartView.setViewRange(ChartMeasurementView.ViewMode.YEAR_OF_ALL, enableRollingChart);
+                break;
+        }
+    }
+
+    private void updateMesurementViews(ScaleMeasurement selectedMeasurement) {
+        ScaleMeasurement[] tupleScaleData = OpenScale.getInstance().getTupleScaleData(selectedMeasurement.getId());
         ScaleMeasurement prevScaleMeasurement = tupleScaleData[0];
 
-        updateUserSelection();
-        updateLastPieChart();
-        updateLastLineChart(scaleMeasurementList);
-
-        for (MeasurementView measurement : measurementViews) {
-            measurement.loadFrom(lastScaleMeasurement, prevScaleMeasurement);
+        for (MeasurementView measurement : lastMeasurementViews) {
+            measurement.loadFrom(selectedMeasurement, prevScaleMeasurement);
         }
     }
 
     private void updateUserSelection() {
 
         currentScaleUser = OpenScale.getInstance().getSelectedScaleUser();
-
-        userSelectedData = null;
 
         spinUserAdapter.clear();
         List<ScaleUser> scaleUserList = OpenScale.getInstance().getScaleUserList();
@@ -201,154 +307,37 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         int visibility = spinUserAdapter.getCount() < 2 ? View.GONE : View.VISIBLE;
         txtTitleUser.setVisibility(visibility);
         spinUser.setVisibility(visibility);
-        userLineSeparator.setVisibility(visibility);
     }
 
+    private class onChartSelectedListener implements OnChartValueSelectedListener {
 
-    private void updateLastLineChart(List<ScaleMeasurement> scaleMeasurementList) {
-        final Calendar now = Calendar.getInstance();
-        Calendar histCalendar = Calendar.getInstance();
-
-        scaleMeasurementLastDays = new ArrayList<>();
-        List<AxisValue> axisValues = new ArrayList<>();
-
-        int max_i = Math.min(7, scaleMeasurementList.size());
-        for (int i = 0; i < max_i; ++i) {
-            ScaleMeasurement measurement = scaleMeasurementList.get(max_i - i - 1);
-            scaleMeasurementLastDays.add(measurement);
-
-            histCalendar.setTime(measurement.getDateTime());
-            int days = DateTimeHelpers.daysBetween(now, histCalendar);
-            String label = getResources().getQuantityString(R.plurals.label_days, Math.abs(days), days);
-            axisValues.add(new AxisValue(i, label.toCharArray()));
-        }
-
-        List<Line> diagramLineList = new ArrayList<>();
-
-        for (MeasurementView view : measurementViews) {
-            if (!view.isVisible()
-                    || !view.getSettings().isInOverviewGraph()
-                    || !(view instanceof FloatMeasurementView)) {
-                continue;
-            }
-
-            FloatMeasurementView measurementView = (FloatMeasurementView) view;
-            Stack<PointValue> valuesStack = new Stack<>();
-
-            for (int i = 0; i < max_i; ++i) {
-                ScaleMeasurement measurement = scaleMeasurementList.get(max_i - i - 1);
-                measurementView.loadFrom(measurement, null);
-
-                if (measurementView.getValue() != 0.0f) {
-                    valuesStack.push(new PointValue(i, measurementView.getValue()));
-                }
-            }
-
-            diagramLineList.add(new Line(valuesStack).
-                    setColor(measurementView.getColor()).
-                    setHasLabels(prefs.getBoolean("labelsEnable", true)).
-                    setHasPoints(prefs.getBoolean("pointsEnable", true)).
-                    setFormatter(new SimpleLineChartValueFormatter(1)));
-        }
-
-        LineChartData lineData = new LineChartData(diagramLineList);
-        lineData.setAxisXBottom(new Axis(axisValues).
-                        setHasLines(true).
-                        setTextColor(txtTitleLastMeasurement.getCurrentTextColor())
-        );
-
-        lineData.setAxisYLeft(new Axis().
-                        setHasLines(true).
-                        setMaxLabelChars(5).
-                        setTextColor(txtTitleLastMeasurement.getCurrentTextColor())
-        );
-
-        lineChartLast.setLineChartData(lineData);
-        lineChartLast.setViewportCalculationEnabled(true);
-
-        lineChartLast.setZoomEnabled(false);
-    }
-
-    private void updateLastPieChart() {
-        List<SliceValue> arcValuesLast = new ArrayList<>();
-
-        for (MeasurementView view : measurementViews) {
-            if (!view.isVisible()
-                || !(view instanceof FloatMeasurementView)
-                || view instanceof BMRMeasurementView
-                || view instanceof TDEEMeasurementView) {
-                continue;
-            }
-
-            FloatMeasurementView measurementView = (FloatMeasurementView) view;
-            measurementView.loadFrom(lastScaleMeasurement, null);
-
-            if (measurementView.getValue() != 0) {
-                arcValuesLast.add(new SliceValue(measurementView.getValue(), measurementView.getColor()));
-            }
-        }
-
-        final Converters.WeightUnit unit = currentScaleUser.getScaleUnit();
-        PieChartData pieChartData = new PieChartData(arcValuesLast);
-        pieChartData.setHasLabels(false);
-        pieChartData.setHasCenterCircle(true);
-        pieChartData.setCenterText1(String.format("%.2f %s", Converters.fromKilogram(lastScaleMeasurement.getWeight(), unit), unit.toString()));
-        pieChartData.setCenterText2(DateFormat.getDateInstance(DateFormat.MEDIUM).format(lastScaleMeasurement.getDateTime()));
-        pieChartData.setCenterText1Color(txtTitleLastMeasurement.getCurrentTextColor());
-        pieChartData.setCenterText2Color(txtTitleLastMeasurement.getCurrentTextColor());
-
-        if ((getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == Configuration.SCREENLAYOUT_SIZE_XLARGE ||
-            (getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) == Configuration.SCREENLAYOUT_SIZE_LARGE) {
-            pieChartData.setCenterText1FontSize(20);
-            pieChartData.setCenterText2FontSize(14);
-        } else {
-            pieChartData.setCenterText1FontSize(15);
-            pieChartData.setCenterText2FontSize(12);
-            pieChartData.setValueLabelTextSize(12);
-        }
-
-        pieChartLast.setPieChartData(pieChartData);
-    }
-
-    private class PieChartLastTouchListener implements PieChartOnValueSelectListener
-    {
         @Override
-        public void onValueSelected(int i, SliceValue arcValue) {
-            if (lastScaleMeasurement == null) {
-                return;
-            }
+        public void onValueSelected(Entry e, Highlight h) {
+            Object[] extraData = (Object[])e.getData();
 
-            for (MeasurementView view : measurementViews) {
-                if (view instanceof FloatMeasurementView) {
-                    FloatMeasurementView measurementView = (FloatMeasurementView) view;
+            markedMeasurement = (ScaleMeasurement)extraData[0];
+            //MeasurementView measurementView = (MeasurementView)extraData[1];
 
-                    if (measurementView.getColor() == arcValue.getColor()) {
-                        Toast.makeText(getActivity(), String.format("%s: %s",
-                                measurementView.getName(), measurementView.getValueAsString(true)),
-                                Toast.LENGTH_SHORT).show();
-                        break;
-                    }
-                }
-            }
+            showEntry.setEnabled(true);
+            editEntry.setEnabled(true);
+            deleteEntry.setEnabled(true);
+
+            showEntry.setColorFilter(ColorUtil.COLOR_BLUE);
+            editEntry.setColorFilter(ColorUtil.COLOR_GREEN);
+            deleteEntry.setColorFilter(ColorUtil.COLOR_RED);
+
+            updateMesurementViews(markedMeasurement);
         }
 
         @Override
-        public void onValueDeselected() {
+        public void onNothingSelected() {
+            showEntry.setEnabled(false);
+            editEntry.setEnabled(false);
+            deleteEntry.setEnabled(false);
 
-        }
-    }
-
-    private class LineChartTouchListener implements LineChartOnValueSelectListener {
-        @Override
-        public void onValueSelected(int lineIndex, int pointIndex, PointValue pointValue) {
-            userSelectedData = scaleMeasurementLastDays.get(pointIndex);
-
-            updateOnView(OpenScale.getInstance().getScaleMeasurementList());
-        }
-
-        @Override
-        public void onValueDeselected() {
-
+            showEntry.setColorFilter(ColorUtil.COLOR_GRAY);
+            editEntry.setColorFilter(ColorUtil.COLOR_GRAY);
+            deleteEntry.setColorFilter(ColorUtil.COLOR_GRAY);
         }
     }
 
@@ -375,4 +364,41 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         }
     }
 
+    private void deleteMeasurement() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(overviewView.getContext());
+        boolean deleteConfirmationEnable = prefs.getBoolean("deleteConfirmationEnable", true);
+
+        if (deleteConfirmationEnable) {
+            AlertDialog.Builder deleteAllDialog = new AlertDialog.Builder(overviewView.getContext());
+            deleteAllDialog.setMessage(getResources().getString(R.string.question_really_delete));
+
+            deleteAllDialog.setPositiveButton(getResources().getString(R.string.label_yes), new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    doDeleteMeasurement();
+                }
+            });
+
+            deleteAllDialog.setNegativeButton(getResources().getString(R.string.label_no), new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    dialog.dismiss();
+                }
+            });
+
+            deleteAllDialog.show();
+        }
+        else {
+            doDeleteMeasurement();
+        }
+    }
+
+    private void doDeleteMeasurement() {
+        OpenScale.getInstance().deleteScaleData(markedMeasurement.getId());
+        Toast.makeText(overviewView.getContext(), getResources().getString(R.string.info_data_deleted), Toast.LENGTH_SHORT).show();
+
+        deleteEntry.setVisibility(View.GONE);
+        editEntry.setVisibility(View.GONE);
+        deleteEntry.setVisibility(View.GONE);
+
+        updateOnView(OpenScale.getInstance().getScaleMeasurementList());
+    }
 }

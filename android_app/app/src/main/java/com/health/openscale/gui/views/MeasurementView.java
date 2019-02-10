@@ -19,6 +19,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -40,17 +41,18 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.evaluation.EvaluationResult;
+import com.health.openscale.gui.utils.ColorUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import androidx.core.content.ContextCompat;
-import lecho.lib.hellocharts.util.ChartUtils;
 
 import static com.health.openscale.gui.views.MeasurementView.MeasurementViewMode.ADD;
 import static com.health.openscale.gui.views.MeasurementView.MeasurementViewMode.EDIT;
@@ -65,7 +67,7 @@ public abstract class MeasurementView extends TableLayout {
     private MeasurementViewSettings settings;
 
     private TableRow measurementRow;
-    private ImageView iconView;
+    private FloatingActionButton iconView;
     private int iconId;
     private TextView nameView;
     private TextView valueView;
@@ -88,6 +90,9 @@ public abstract class MeasurementView extends TableLayout {
         nameView.setText(textId);
         this.iconId = iconId;
         iconView.setImageResource(iconId);
+        iconView.setClickable(false);
+        iconView.setSize(FloatingActionButton.SIZE_MINI);
+        iconView.setBackgroundTintList(ColorStateList.valueOf(ColorUtil.COLOR_GRAY));
     }
 
     public enum DateTimeOrder { FIRST, LAST, NONE }
@@ -174,7 +179,7 @@ public abstract class MeasurementView extends TableLayout {
     private void initView(Context context) {
         measurementRow = new TableRow(context);
 
-        iconView = new ImageView(context);
+        iconView = new FloatingActionButton(context);
         nameView = new TextView(context);
         valueView = new TextView(context);
         editModeView = new ImageView(context);
@@ -273,6 +278,9 @@ public abstract class MeasurementView extends TableLayout {
     public void appendDiffValue(SpannableStringBuilder builder, boolean newLine) { }
     public Drawable getIcon() { return iconView.getDrawable(); }
     public int getIconResource() { return iconId; }
+    public void setBackgroundIconColor(int color) {
+        iconView.setBackgroundTintList(ColorStateList.valueOf(color));
+    }
 
     protected boolean isEditable() {
         return true;
@@ -331,7 +339,7 @@ public abstract class MeasurementView extends TableLayout {
     }
 
     public int getForegroundColor() {
-        return valueView.getCurrentTextColor();
+        return ColorUtil.getTextColor(getContext());
     }
 
     public int getIndicatorColor() {
@@ -384,13 +392,13 @@ public abstract class MeasurementView extends TableLayout {
 
         switch (evalResult.eval_state) {
             case LOW:
-                indicatorView.setBackgroundColor(ChartUtils.COLOR_BLUE);
+                indicatorView.setBackgroundColor(ColorUtil.COLOR_BLUE);
                 break;
             case NORMAL:
-                indicatorView.setBackgroundColor(ChartUtils.COLOR_GREEN);
+                indicatorView.setBackgroundColor(ColorUtil.COLOR_GREEN);
                 break;
             case HIGH:
-                indicatorView.setBackgroundColor(ChartUtils.COLOR_RED);
+                indicatorView.setBackgroundColor(ColorUtil.COLOR_RED);
                 break;
             case UNDEFINED:
                 indicatorView.setBackgroundColor(Color.GRAY);

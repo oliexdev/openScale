@@ -1,75 +1,105 @@
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_alignParentBottom="true"
     android:layout_alignParentLeft="true"
     android:layout_alignParentStart="true"
     android:orientation="vertical"
-    android:padding="5dp"
     android:weightSum="100">
 
 
     <ScrollView
         android:id="@+id/scrollView"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_weight="100">
 
         <LinearLayout
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical">
 
             <LinearLayout
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/colorPrimary"
                 android:orientation="horizontal">
 
                 <TextView
                     android:id="@+id/txtTitleUser"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="0"
-                    android:text="@string/label_title_user"
-                    android:textSize="20dp" />
+                    android:textColor="@android:color/white"
+                    android:text="@string/label_title_user"/>
 
                 <Spinner
                     android:id="@+id/spinUser"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:textSize="20dp" />
-
-
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
             </LinearLayout>
 
-            <View
-                android:id="@+id/userLineSeparator"
-                android:layout_width="fill_parent"
-                android:layout_height="1dp"
-                android:background="@android:color/darker_gray" />
-
-
-            <lecho.lib.hellocharts.view.PieChartView
-                android:id="@+id/pieChartLast"
-                android:layout_width="200dp"
-                android:layout_height="150dp"
-                android:layout_gravity="center" />
-
-            <lecho.lib.hellocharts.view.LineChartView
-                android:id="@+id/lineChartLast"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="150dp"
-                android:layout_gravity="center" />
+                android:layout_height="wrap_content"
+                android:gravity="right"
+                android:padding="10dp"
+                android:background="?attr/colorPrimary"
+                android:orientation="horizontal">
 
+                <ImageView
+                    android:id="@+id/showEntry"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="10dp"
+                    android:scaleType="centerInside"
+                    android:tint="#d3d3d3"
+                    app:srcCompat="@drawable/ic_show" />
+
+                <ImageView
+                    android:id="@+id/editEntry"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="10dp"
+                    android:scaleType="centerInside"
+                    android:tint="#d3d3d3"
+                    app:srcCompat="@drawable/ic_editable" />
+
+                <ImageView
+                    android:id="@+id/deleteEntry"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="20dp"
+                    android:scaleType="centerInside"
+                    android:tint="#d3d3d3"
+                    app:srcCompat="@drawable/ic_delete" />
+
+                <ImageView
+                    android:id="@+id/rangeOptionMenu"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:scaleType="centerInside"
+                    android:tint="@android:color/white"
+                    app:srcCompat="@drawable/ic_options" />
+            </LinearLayout>
+
+            <com.health.openscale.gui.views.ChartActionBarView
+                android:id="@+id/chartActionBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/colorPrimary"
+                android:fillViewport="true"/>
+
+            <com.health.openscale.gui.views.ChartMeasurementView
+                android:id="@+id/chartView"
+                android:layout_width="match_parent"
+                android:layout_height="250dp"
+                android:layout_gravity="center" />
 
             <TextView
                 android:id="@+id/txtTitleLastMeasurement"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:autoText="false"
                 android:text="@string/label_title_last_measurement"
                 android:textSize="20dp"
                 android:typeface="monospace" />
@@ -81,9 +111,8 @@
 
             <TableLayout
                 android:id="@+id/tableLayoutMeasurements"
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent" />
-
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
         </LinearLayout>
     </ScrollView>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

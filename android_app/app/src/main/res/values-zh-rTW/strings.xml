@@ -192,7 +192,6 @@
     <string name="label_next">下一項</string>
     <string name="label_set_default_order">設定預設的排序</string>
     <string name="label_export_overwrite">覆寫舊有的滙出資料 \"%s\"?</string>
-    <string name="label_include_in_overview_graph">附設在概覽圖表中</string>
     <string name="label_measurement_in_percent">測量單位為 %</string>
     <string name="label_estimate_measurement">估算的數值</string>
     <string name="label_estimation_formula">估算用的的科學算法</string>
@@ -202,7 +201,6 @@
     <string name="theme_dark">暗淡</string>
     <string name="label_contribute_translation">協助翻譯</string>
     <string name="label_add_or_fix_translation">新增或改正</string>
-    <string name="label_overview_graph">概覽圖表</string>
     <string name="label_percent">百分比</string>
     <string name="label_estimated">估算</string>
     <string name="label_estimate_measurement_summary">基於體重， 身高，年齡，性別 等。</string>

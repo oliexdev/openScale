@@ -20,6 +20,8 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.database.DataSetObserver;
 import android.graphics.Color;
 import android.graphics.Point;
@@ -50,7 +52,7 @@ import com.health.openscale.gui.views.WeightMeasurementView;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MeasurementPreferences extends PreferenceFragment {
+public class MeasurementPreferences extends PreferenceFragment implements OnSharedPreferenceChangeListener {
     private static final String PREFERENCE_KEY_DELETE_ALL = "deleteAll";
     private static final String PREFERENCE_KEY_RESET_ORDER = "resetOrder";
     private static final String PREFERENCE_KEY_MEASUREMENTS = "measurements";
@@ -107,6 +109,23 @@ public class MeasurementPreferences extends PreferenceFragment {
         }
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        OpenScale.getInstance().updateScaleData();
+    }
+
     private class onClickListenerDeleteAll implements Preference.OnPreferenceClickListener {
         @Override
         public boolean onPreferenceClick(Preference preference) {
@@ -159,6 +178,7 @@ public class MeasurementPreferences extends PreferenceFragment {
             setWidgetLayoutResource(R.layout.measurement_preferences_widget_layout);
         }
 
+        @Override
         public PreferenceGroup getParent() {
             return parentGroup;
         }

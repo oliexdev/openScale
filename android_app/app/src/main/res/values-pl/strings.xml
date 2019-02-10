@@ -194,7 +194,6 @@
     <string name="label_set_default_order">Ustaw domyślną kolejność</string>
     <string name="label_export_overwrite">Nadpisać poprzedni eksport \"%s\"?</string>
 
-    <string name="label_include_in_overview_graph">Umieść na wykresie</string>
     <string name="label_measurement_in_percent">Pomiar w %</string>
     <string name="label_estimate_measurement">Pomiar szacunkowy</string>
     <string name="label_language">Język</string>
@@ -202,7 +201,6 @@
     <string name="theme_dark">Ciemny</string>
     <string name="label_estimation_formula">Formuła szacowania</string>
     <string name="language_default">Domyślne ustawienie systemowe</string>
-    <string name="label_overview_graph">Wykres przeglądowy</string>
     <string name="label_percent">Procent</string>
     <string name="label_estimated">Szacowany</string>
     <string name="label_estimate_measurement_summary">Na podstawie wagi, wzrostu, wieku, płci, itd.</string>

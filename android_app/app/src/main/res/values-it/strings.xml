@@ -189,7 +189,6 @@
     <string name="label_next">Avanti</string>
     <string name="label_set_default_order">Imposta ordine predefinito</string>
     <string name="label_export_overwrite">Sovrascrivere la precedente esportazione \"%s\"?</string>
-    <string name="label_include_in_overview_graph">Includere nel grafico di riepilogo</string>
     <string name="label_measurement_in_percent">Misurazioni in %</string>
     <string name="label_estimate_measurement">Stimare la misurazione</string>
     <string name="label_estimation_formula">Formula della stima</string>
@@ -199,7 +198,6 @@
     <string name="theme_dark">Scuro</string>
     <string name="label_contribute_translation">Contribuire alla traduzione</string>
     <string name="label_add_or_fix_translation">Aggiungi nuova o modifica esistente</string>
-    <string name="label_overview_graph">Grafico di riepilogo</string>
     <string name="label_percent">Percentuale</string>
     <string name="label_estimated">Stimato</string>
     <string name="label_estimate_measurement_summary">Basato su peso, altezza, età, genere, ecc.</string>

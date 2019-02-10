@@ -366,6 +366,7 @@ public class MainActivity extends BaseAppCompatActivity
                 }
 
                 Intent intent = new Intent(getApplicationContext(), DataEntryActivity.class);
+                intent.putExtra(DataEntryActivity.EXTRA_MODE, DataEntryActivity.ADD_MEASUREMENT_REQUEST);
                 startActivity(intent);
                 return true;
             case R.id.action_bluetooth_status:

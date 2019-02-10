@@ -173,7 +173,6 @@
     <string name="label_click_measurement_configure">انقر قياس للتثبيت</string>
     <string name="label_set_default_order">ضبط الطلب الافتراضي</string>
     <string name="label_export_overwrite">هل تريد استبدال التصدير السابق\"%s\"؟</string>
-    <string name="label_include_in_overview_graph">تضمين في الرسم البياني العام</string>
     <string name="label_measurement_in_percent">القياس ب ٪</string>
     <string name="label_estimate_measurement">تقدير القياس</string>
     <string name="info_new_data_added">%1$.2f%2$s [%3$s] ل %4 $s اضيف</string>

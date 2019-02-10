@@ -38,6 +38,7 @@ import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.bluetooth.BluetoothCommunication;
 import com.health.openscale.core.bluetooth.BluetoothFactory;
+import com.health.openscale.gui.utils.ColorUtil;
 import com.health.openscale.gui.utils.PermissionHelper;
 import com.polidea.rxandroidble2.RxBleClient;
 import com.polidea.rxandroidble2.RxBleDevice;
@@ -183,7 +184,7 @@ public class BluetoothPreferences extends PreferenceFragment {
             prefBtDevice.setIcon(R.drawable.ic_bluetooth_device_supported);
             prefBtDevice.setSummary(btDevice.driverName());
 
-            int tintColor = new EditText(getActivity()).getCurrentTextColor();
+            int tintColor = ColorUtil.getTextColor(getActivity().getApplicationContext());
             prefBtDevice.getIcon().setColorFilter(tintColor, PorterDuff.Mode.SRC_IN);
         }
         else {

@@ -168,7 +168,6 @@
     <string name="label_mergeWithLastMeasurement">Zusammenführen mit der letzten Messung</string>
     <string name="label_export_overwrite">Vorherigen Export überschreiben %s?</string>
 
-    <string name="label_include_in_overview_graph">"In Übersichtsgraph einbeziehen "</string>
     <string name="label_measurement_in_percent">Messwert in %</string>
     <string name="label_estimate_measurement">Geschätzte Messung</string>
     <string name="label_estimation_formula">Schätzformel</string>
@@ -178,7 +177,6 @@
     <string name="theme_dark">Dunkel</string>
     <string name="label_contribute_translation">Übersetzung beitragen</string>
     <string name="label_add_or_fix_translation">Neue hinzufügen oder bestehende korrigieren</string>
-    <string name="label_overview_graph">Übersichtsgrafik</string>
     <string name="label_percent">Prozent</string>
     <string name="label_estimated">Geschätzt</string>
     <string name="label_estimate_measurement_summary">Basierend auf Gewicht, Größe, Alter, Geschlecht, etc.</string>

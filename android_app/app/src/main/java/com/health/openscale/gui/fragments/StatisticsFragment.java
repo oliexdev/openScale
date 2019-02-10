@@ -18,31 +18,39 @@ package com.health.openscale.gui.fragments;
 
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import androidx.fragment.app.Fragment;
 import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.TableLayout;
 import android.widget.TextView;
 
+import com.github.mikephil.charting.charts.RadarChart;
+import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.components.LegendEntry;
+import com.github.mikephil.charting.components.MarkerView;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.RadarData;
+import com.github.mikephil.charting.data.RadarDataSet;
+import com.github.mikephil.charting.data.RadarEntry;
+import com.github.mikephil.charting.formatter.IValueFormatter;
+import com.github.mikephil.charting.interfaces.datasets.IRadarDataSet;
+import com.github.mikephil.charting.utils.ViewPortHandler;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
 import com.health.openscale.core.utils.DateTimeHelpers;
+import com.health.openscale.gui.utils.ColorUtil;
 import com.health.openscale.gui.views.BMIMeasurementView;
 import com.health.openscale.gui.views.BoneMeasurementView;
+import com.health.openscale.gui.views.ChartMarkerView;
 import com.health.openscale.gui.views.FatMeasurementView;
-import com.health.openscale.gui.views.HipMeasurementView;
-import com.health.openscale.gui.views.LBMMeasurementView;
+import com.health.openscale.gui.views.FloatMeasurementView;
 import com.health.openscale.gui.views.MeasurementView;
 import com.health.openscale.gui.views.MeasurementViewSettings;
 import com.health.openscale.gui.views.MuscleMeasurementView;
-import com.health.openscale.gui.views.WaistMeasurementView;
 import com.health.openscale.gui.views.WaterMeasurementView;
 import com.health.openscale.gui.views.WeightMeasurementView;
 
@@ -51,7 +59,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-import static com.health.openscale.gui.views.MeasurementView.MeasurementViewMode.STATISTIC;
+import androidx.fragment.app.Fragment;
 
 public class StatisticsFragment extends Fragment implements FragmentUpdateListener {
 
@@ -65,94 +73,83 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
     private TextView txtLabelGoalDiff;
     private TextView txtLabelDayLeft;
 
+    private RadarChart radarChartWeek;
+    private RadarChart radarChartMonth;
+
     private ScaleUser currentScaleUser;
     private ScaleMeasurement lastScaleMeasurement;
 
-    private ArrayList <MeasurementView> viewMeasurementsListWeek;
-    private ArrayList <MeasurementView> viewMeasurementsListMonth;
-    
+    private ArrayList <MeasurementView> viewMeasurementsStatistics;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         statisticsView = inflater.inflate(R.layout.fragment_statistics, container, false);
 
-        // Set android:tint="?attr/editTextColor" programmatically as setting it in xml layout
-        // throws an exception on API 19.
-        int color = new EditText(getContext()).getCurrentTextColor();
         for (int id : new int[]{R.id.imageGoalWeight, R.id.imageGoalDiff, R.id.imageDayLeft}) {
             ImageView image = statisticsView.findViewById(id);
-            image.setColorFilter(color);
+            image.setColorFilter(ColorUtil.getTextColor(statisticsView.getContext()));
         }
 
         txtGoalWeight = statisticsView.findViewById(R.id.txtGoalWeight);
+        txtGoalWeight.setTextColor(ColorUtil.getTextColor(statisticsView.getContext()));
         txtGoalDiff = statisticsView.findViewById(R.id.txtGoalDiff);
+        txtGoalDiff.setTextColor(ColorUtil.getTextColor(statisticsView.getContext()));
         txtGoalDayLeft = statisticsView.findViewById(R.id.txtGoalDayLeft);
+        txtGoalDayLeft.setTextColor(ColorUtil.getTextColor(statisticsView.getContext()));
 
         txtLabelGoalWeight = statisticsView.findViewById(R.id.txtLabelGoalWeight);
+        txtLabelGoalWeight.setTextColor(ColorUtil.getTextColor(statisticsView.getContext()));
         txtLabelGoalDiff = statisticsView.findViewById(R.id.txtLabelGoalDiff);
+        txtLabelGoalDiff.setTextColor(ColorUtil.getTextColor(statisticsView.getContext()));
         txtLabelDayLeft = statisticsView.findViewById(R.id.txtLabelDayLeft);
+        txtLabelDayLeft.setTextColor(ColorUtil.getTextColor(statisticsView.getContext()));
 
-        TableLayout tableWeekAveragesLayoutColumnA = statisticsView.findViewById(R.id.tableWeekAveragesLayoutColumnA);
-        TableLayout tableWeekAveragesLayoutColumnB = statisticsView.findViewById(R.id.tableWeekAveragesLayoutColumnB);
-        TableLayout tableMonthAveragesLayoutColumnA = statisticsView.findViewById(R.id.tableMonthAveragesLayoutColumnA);
-        TableLayout tableMonthAveragesLayoutColumnB = statisticsView.findViewById(R.id.tableMonthAveragesLayoutColumnB);
+        viewMeasurementsStatistics = new ArrayList<>();
 
-        viewMeasurementsListWeek = new ArrayList<>();
+        viewMeasurementsStatistics.add(new WeightMeasurementView(statisticsView.getContext()));
+        viewMeasurementsStatistics.add(new WaterMeasurementView(statisticsView.getContext()));
+        viewMeasurementsStatistics.add(new MuscleMeasurementView(statisticsView.getContext()));
+        viewMeasurementsStatistics.add(new FatMeasurementView(statisticsView.getContext()));
+        viewMeasurementsStatistics.add(new BoneMeasurementView(statisticsView.getContext()));
+        viewMeasurementsStatistics.add(new BMIMeasurementView(statisticsView.getContext()));
 
-        viewMeasurementsListWeek.add(new WeightMeasurementView(statisticsView.getContext()));
-        viewMeasurementsListWeek.add(new WaterMeasurementView(statisticsView.getContext()));
-        viewMeasurementsListWeek.add(new MuscleMeasurementView(statisticsView.getContext()));
-        viewMeasurementsListWeek.add(new LBMMeasurementView(statisticsView.getContext()));
-        viewMeasurementsListWeek.add(new FatMeasurementView(statisticsView.getContext()));
-        viewMeasurementsListWeek.add(new BoneMeasurementView(statisticsView.getContext()));
-        viewMeasurementsListWeek.add(new WaistMeasurementView(statisticsView.getContext()));
-        viewMeasurementsListWeek.add(new HipMeasurementView(statisticsView.getContext()));
+        ArrayList<LegendEntry> legendEntriesWeek = new ArrayList<>();
 
-        final int paddingBottom = 10;
-
-        int i=0;
-
-        for (MeasurementView measurement : viewMeasurementsListWeek) {
-            measurement.setEditMode(STATISTIC);
-
-            if (measurement.getSettings().isEnabled()) {
-                measurement.setVisible(true);
-                measurement.setPadding(-1, -1, -1, paddingBottom);
-                if ((i % 2) == 0) {
-                    tableWeekAveragesLayoutColumnA.addView(measurement);
-                } else {
-                    tableWeekAveragesLayoutColumnB.addView(measurement);
-                }
-                i++;
-            }
+        for (int i = 0; i< viewMeasurementsStatistics.size(); i++) {
+            LegendEntry legendEntry = new LegendEntry();
+            legendEntry.label = i + " - " + viewMeasurementsStatistics.get(i).getName().toString();
+            legendEntriesWeek.add(legendEntry);
         }
 
-        viewMeasurementsListMonth = new ArrayList<>();
+        MarkerView mv = new ChartMarkerView(statisticsView.getContext(), R.layout.chart_markerview);
 
-        viewMeasurementsListMonth.add(new WeightMeasurementView(statisticsView.getContext()));
-        viewMeasurementsListMonth.add(new WaterMeasurementView(statisticsView.getContext()));
-        viewMeasurementsListMonth.add(new MuscleMeasurementView(statisticsView.getContext()));
-        viewMeasurementsListMonth.add(new LBMMeasurementView(statisticsView.getContext()));
-        viewMeasurementsListMonth.add(new FatMeasurementView(statisticsView.getContext()));
-        viewMeasurementsListMonth.add(new BoneMeasurementView(statisticsView.getContext()));
-        viewMeasurementsListMonth.add(new WaistMeasurementView(statisticsView.getContext()));
-        viewMeasurementsListMonth.add(new HipMeasurementView(statisticsView.getContext()));
+        radarChartWeek = statisticsView.findViewById(R.id.radarPastWeek);
+        radarChartWeek.getXAxis().setTextColor(ColorUtil.getTextColor(statisticsView.getContext()));
+        radarChartWeek.getDescription().setEnabled(false);
+        radarChartWeek.getYAxis().setEnabled(false);
+        radarChartWeek.setExtraTopOffset(10);
+        radarChartWeek.setRotationEnabled(false);
+        Legend weekLegend = radarChartWeek.getLegend();
+        weekLegend.setTextColor(ColorUtil.getTextColor(statisticsView.getContext()));
+        weekLegend.setWordWrapEnabled(true);
+        weekLegend.setExtra(legendEntriesWeek);
+        weekLegend.setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
+        mv.setChartView(radarChartWeek);
+        radarChartWeek.setMarker(mv);
 
-        i=0;
-
-        for (MeasurementView measurement : viewMeasurementsListMonth) {
-            measurement.setEditMode(STATISTIC);
-
-            if (measurement.getSettings().isEnabled()) {
-                measurement.setVisible(true);
-                measurement.setPadding(-1, -1, -1, paddingBottom);
-                if ((i % 2) == 0) {
-                    tableMonthAveragesLayoutColumnA.addView(measurement);
-                } else {
-                    tableMonthAveragesLayoutColumnB.addView(measurement);
-                }
-                i++;
-            }
-        }
+        radarChartMonth = statisticsView.findViewById(R.id.radarPastMonth);
+        radarChartMonth.getXAxis().setTextColor(ColorUtil.getTextColor(statisticsView.getContext()));
+        radarChartMonth.getDescription().setEnabled(false);
+        radarChartMonth.getYAxis().setEnabled(false);
+        radarChartMonth.setExtraTopOffset(10);
+        radarChartMonth.setRotationEnabled(false);
+        Legend monthLegend = radarChartMonth.getLegend();
+        monthLegend.setTextColor(ColorUtil.getTextColor(statisticsView.getContext()));
+        monthLegend.setWordWrapEnabled(true);
+        monthLegend.setExtra(legendEntriesWeek);
+        monthLegend.setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
+        mv.setChartView(radarChartMonth);
+        radarChartMonth.setMarker(mv);
 
         OpenScale.getInstance().registerFragment(this);
 
@@ -233,6 +230,8 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
     }
 
     private void updateStatistics(List<ScaleMeasurement> scaleMeasurementList) {
+        radarChartWeek.clear();
+        radarChartMonth.clear();
 
         Calendar histDate = Calendar.getInstance();
         Calendar weekPastDate = Calendar.getInstance();
@@ -244,39 +243,112 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
         monthPastDate.setTime(lastScaleMeasurement.getDateTime());
         monthPastDate.add(Calendar.DATE, -30);
 
-        int weekSize = 0;
-        int monthSize = 0;
-
         ScaleMeasurement averageWeek = new ScaleMeasurement();
         ScaleMeasurement averageMonth = new ScaleMeasurement();
+
+        ArrayList<RadarEntry> entriesLastMeasurement = new ArrayList<>();
+        ArrayList<RadarEntry> entriesAvgWeek = new ArrayList<>();
+        ArrayList<RadarEntry> entriesAvgMonth = new ArrayList<>();
 
         for (ScaleMeasurement measurement : scaleMeasurementList) {
             histDate.setTime(measurement.getDateTime());
 
             if (weekPastDate.before(histDate)) {
                 averageWeek.add(measurement);
-                weekSize++;
             }
 
             if (monthPastDate.before(histDate)) {
                 averageMonth.add(measurement);
-                monthSize++;
             }
         }
 
-        if (weekSize > 0) {
-            averageWeek.divide(weekSize);
-        }
-        if (monthSize > 0) {
-            averageMonth.divide(monthSize);
+        averageWeek.divide(averageWeek.count());
+        averageMonth.divide(averageMonth.count());
+
+        for (MeasurementView view : viewMeasurementsStatistics) {
+            final FloatMeasurementView measurementView = (FloatMeasurementView) view;
+
+            Object[] extraData = new Object[3];
+            extraData[0] = null; // not needed
+            extraData[1] = null; // not needed
+            extraData[2] = measurementView;
+
+            measurementView.loadFrom(averageMonth, null);
+            entriesAvgMonth.add(new RadarEntry(measurementView.getValue(), extraData));
+
+            measurementView.loadFrom(averageWeek, null);
+            entriesAvgWeek.add(new RadarEntry(measurementView.getValue(), extraData));
+
+            measurementView.loadFrom(lastScaleMeasurement, null);
+            entriesLastMeasurement.add(new RadarEntry(measurementView.getValue(), extraData));
         }
 
-        for (MeasurementView measurement : viewMeasurementsListWeek) {
-            measurement.loadFrom(averageWeek, null);
-        }
+        RadarDataSet setLastMeasurement = new RadarDataSet(entriesLastMeasurement, getString(R.string.label_title_last_measurement));
+        setLastMeasurement.setColor(ColorUtil.COLOR_BLUE);
+        setLastMeasurement.setFillColor(ColorUtil.COLOR_BLUE);
+        setLastMeasurement.setDrawFilled(true);
+        setLastMeasurement.setFillAlpha(180);
+        setLastMeasurement.setLineWidth(2f);
+        setLastMeasurement.setDrawHighlightCircleEnabled(true);
+        setLastMeasurement.setDrawHighlightIndicators(false);
 
-        for (MeasurementView measurement : viewMeasurementsListMonth) {
-            measurement.loadFrom(averageMonth, null);
-        }
+        RadarDataSet setAvgWeek = new RadarDataSet(entriesAvgWeek, getString(R.string.label_last_week));
+        setAvgWeek.setColor(ColorUtil.COLOR_GREEN);
+        setAvgWeek.setFillColor(ColorUtil.COLOR_GREEN);
+        setAvgWeek.setDrawFilled(true);
+        setAvgWeek.setFillAlpha(180);
+        setAvgWeek.setLineWidth(2f);
+        setAvgWeek.setDrawHighlightCircleEnabled(true);
+        setAvgWeek.setDrawHighlightIndicators(false);
+
+        RadarDataSet setAvgMonth = new RadarDataSet(entriesAvgMonth, getString(R.string.label_last_month));
+        setAvgMonth.setColor(ColorUtil.COLOR_GREEN);
+        setAvgMonth.setFillColor(ColorUtil.COLOR_GREEN);
+        setAvgMonth.setDrawFilled(true);
+        setAvgMonth.setFillAlpha(180);
+        setAvgMonth.setLineWidth(2f);
+        setAvgMonth.setDrawHighlightCircleEnabled(true);
+        setAvgMonth.setDrawHighlightIndicators(false);
+
+        ArrayList<IRadarDataSet> setsAvgWeek = new ArrayList<>();
+        setsAvgWeek.add(setAvgWeek);
+        setsAvgWeek.add(setLastMeasurement);
+
+        ArrayList<IRadarDataSet> setsAvgMonth = new ArrayList<>();
+        setsAvgMonth.add(setAvgMonth);
+        setsAvgMonth.add(setLastMeasurement);
+
+        RadarData dataAvgWeek = new RadarData(setsAvgWeek);
+        dataAvgWeek.setValueTextSize(8f);
+        dataAvgWeek.setDrawValues(false);
+        dataAvgWeek.setValueFormatter(new IValueFormatter() {
+            @Override
+            public String getFormattedValue(float value, Entry entry, int dataSetIndex, ViewPortHandler viewPortHandler) {
+                FloatMeasurementView measurementView = (FloatMeasurementView) entry.getData();
+
+                return measurementView.getValueAsString(true);
+            }
+        });
+
+        RadarData dataAvgMonth = new RadarData(setsAvgMonth);
+        dataAvgMonth.setValueTextSize(8f);
+        dataAvgMonth.setDrawValues(false);
+        dataAvgMonth.setValueFormatter(new IValueFormatter() {
+            @Override
+            public String getFormattedValue(float value, Entry entry, int dataSetIndex, ViewPortHandler viewPortHandler) {
+                FloatMeasurementView measurementView = (FloatMeasurementView) entry.getData();
+
+                return measurementView.getValueAsString(true);
+            }
+        });
+
+        radarChartWeek.setData(dataAvgWeek);
+        radarChartMonth.setData(dataAvgMonth);
+
+        radarChartWeek.animateXY(1000, 1000);
+        radarChartMonth.animateXY(1000, 1000);
+
+        radarChartWeek.invalidate();
+        radarChartMonth.invalidate();
     }
 }

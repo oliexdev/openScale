@@ -82,6 +82,8 @@ public abstract class FloatMeasurementView extends MeasurementView {
     }
 
     private void initView(Context context) {
+        setBackgroundIconColor(getColor());
+
         incButton = new Button(context);
         decButton = new Button(context);
 
@@ -496,9 +498,6 @@ public abstract class FloatMeasurementView extends MeasurementView {
 
         final String separator = ", ";
         String summary = "";
-        if (settings.isInOverviewGraph()) {
-            summary += res.getString(R.string.label_overview_graph) + separator;
-        }
         if (supportsConversion() && settings.isPercentageEnabled()) {
             summary += res.getString(R.string.label_percent) + separator;
         }
@@ -540,12 +539,12 @@ public abstract class FloatMeasurementView extends MeasurementView {
     public void prepareExtraPreferencesScreen(PreferenceScreen screen) {
         MeasurementViewSettings settings = getSettings();
 
-        CheckBoxPreference overview = new CheckBoxPreference(screen.getContext());
-        overview.setKey(settings.getInOverviewGraphKey());
-        overview.setTitle(R.string.label_include_in_overview_graph);
-        overview.setPersistent(true);
-        overview.setDefaultValue(settings.isInOverviewGraph());
-        screen.addPreference(overview);
+        CheckBoxPreference rightAxis = new CheckBoxPreference(screen.getContext());
+        rightAxis.setKey(settings.getOnRightAxisKey());
+        rightAxis.setTitle(R.string.label_is_on_right_axis);
+        rightAxis.setPersistent(true);
+        rightAxis.setDefaultValue(settings.isOnRightAxis());
+        screen.addPreference(rightAxis);
 
         if (supportsConversion()) {
             SwitchPreference percentage = new SwitchPreference(screen.getContext());

@@ -191,11 +191,9 @@
     <string name="permission_read_write_data_description">"openScale adatok olvasása/írása, beleértve a felhasználói infót és minden mentett mérési eredményt "</string>
     <string name="permission_read_write_data_label">"OpenScale adatokat olvasása/írása "</string>
     <string name="label_long_press_drag_reorder">Hosszan nyomva a mérési eredményt átrendezheti</string>
-    <string name="label_include_in_overview_graph">Rajta legyen az áttekintő grafikonon</string>
     <string name="label_measurement_in_percent">Mérés %-ban</string>
     <string name="label_estimate_measurement">Mérés becslése</string>
     <string name="label_add_or_fix_translation">Új hozzáadása vagy meglévő javítása</string>
-    <string name="label_overview_graph">Áttekintő grafikon</string>
     <string name="label_estimate_measurement_summary">Súlyon, magasságon, koron, nemen alapulva, stb.</string>
     <string name="label_scale_not_supported">Nincs a mérlege támogatva\?</string>
     <string name="label_click_to_help_add_support">Kattintson ide, segíteni a támogatás hozzáadáshoz</string>

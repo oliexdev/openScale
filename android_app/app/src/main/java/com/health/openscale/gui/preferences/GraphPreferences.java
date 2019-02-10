@@ -15,6 +15,8 @@
 */
 package com.health.openscale.gui.preferences;
 
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.preference.EditTextPreference;
 import android.preference.Preference;
@@ -22,8 +24,9 @@ import android.preference.PreferenceFragment;
 import android.text.method.DigitsKeyListener;
 
 import com.health.openscale.R;
+import com.health.openscale.core.OpenScale;
 
-public class GraphPreferences extends PreferenceFragment {
+public class GraphPreferences extends PreferenceFragment implements OnSharedPreferenceChangeListener {
 
     private static final String PREFERENCE_KEY_REGRESSION_LINE_ORDER = "regressionLineOrder";
 
@@ -45,5 +48,22 @@ public class GraphPreferences extends PreferenceFragment {
                 return true;
             }
         });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        OpenScale.getInstance().updateScaleData();
     }
 }

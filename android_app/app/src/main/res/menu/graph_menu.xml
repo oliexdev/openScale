@@ -3,6 +3,12 @@
     tools:context="com.example.openscale.MainActivity">
 
     <item
+        android:id="@+id/enableChartActionBar"
+        android:title="@string/label_measurement_bar"
+        android:checkable="true"
+        android:checked="true"/>
+
+    <item
         android:id="@+id/enableMonth"
         android:title="@string/label_month_view"
         android:checkable="true"/>

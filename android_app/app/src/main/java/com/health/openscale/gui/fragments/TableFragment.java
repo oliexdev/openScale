@@ -18,10 +18,6 @@ package com.health.openscale.gui.fragments;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.text.SpannableStringBuilder;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -42,6 +38,11 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import static android.util.TypedValue.COMPLEX_UNIT_DIP;
 
@@ -252,6 +253,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
                 public void onClick(View v) {
                     Intent intent = new Intent(getContext(), DataEntryActivity.class);
                     intent.putExtra(DataEntryActivity.EXTRA_ID, measurement.getId());
+                    intent.putExtra(DataEntryActivity.EXTRA_MODE, DataEntryActivity.VIEW_MEASUREMENT_REQUEST);
                     startActivity(intent);
                 }
             });
