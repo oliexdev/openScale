@@ -40,11 +40,11 @@
     <string name="label_smartUserAssign">הקצאת משתמש חכמה</string>
 
     <plurals name="label_days">
-        <item quantity="one">יום אחד</item>
-        <item quantity="two">יומיים</item>
-        <item quantity="many">%d ימים</item>
-        <item quantity="other">%d ימים</item>
-    </plurals>
+    <item quantity="one">יום</item>
+    <item quantity="two">יומיים</item>
+    <item quantity="many">%d ימים</item>
+    <item quantity="other">%d ימים</item>
+</plurals>
     <string name="label_last_week">ממוצע בשבוע הקודם</string>
     <string name="label_last_month">ממוצע בחודש הקודם</string>
     <string name="label_weight_difference">הבדל בגובה</string>
@@ -258,4 +258,5 @@
     <string name="info_bluetooth_connection_disconnected">חיבור ה־Bluetooth נסגר</string>
     <string name="info_step_on_scale">נא לעלות על המשקל ברגליים יחפות</string>
     <string name="label_calories">קלוריות</string>
+    <string name="permission_location_service_info">יש להעניק גישה למיקום בהגדרות Android כדי לחפש התקני Bluetooth. אפשר לכבות את ההרשאה הזאת לאחר החיפוש.</string>
 </resources>
