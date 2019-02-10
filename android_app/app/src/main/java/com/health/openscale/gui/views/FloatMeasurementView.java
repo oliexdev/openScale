@@ -445,6 +445,15 @@ public abstract class FloatMeasurementView extends MeasurementView {
             color = Color.GRAY;
         }
 
+        // change color depending on if you are going towards or away from your weight goal
+        if (this instanceof WeightMeasurementView) {
+            if (diff> 0.0f) {
+                color = (value > getScaleUser().getGoalWeight()) ? Color.RED : Color.GREEN;
+            } else if (diff < 0.0f) {
+                color = (value < getScaleUser().getGoalWeight()) ? Color.RED : Color.GREEN;
+            }
+        }
+
         if (newLine) {
             text.append('\n');
         }
