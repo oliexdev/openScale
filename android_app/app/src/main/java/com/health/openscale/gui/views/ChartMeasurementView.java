@@ -43,6 +43,7 @@ import com.health.openscale.core.utils.Converters;
 import com.health.openscale.core.utils.PolynomialFitter;
 import com.health.openscale.gui.utils.ColorUtil;
 
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -308,12 +309,12 @@ public class ChartMeasurementView extends LineChart {
                         xValueFormat.applyLocalizedPattern("dd");
                         break;
                     case WEEK_OF_MONTH:
-                        calendar.set(Calendar.DAY_OF_MONTH, (int)value);
-                        xValueFormat.applyLocalizedPattern("W");
+                        calendar.set(Calendar.WEEK_OF_MONTH, (int)value);
+                        xValueFormat.applyLocalizedPattern("'W'W");
                         break;
                     case WEEK_OF_YEAR:
                         calendar.set(Calendar.WEEK_OF_YEAR, (int)value);
-                        xValueFormat.applyLocalizedPattern("w");
+                        xValueFormat.applyLocalizedPattern("'W'w");
                         break;
                     case MONTH_OF_YEAR:
                         calendar.set(Calendar.MONTH, (int)value);
@@ -325,15 +326,14 @@ public class ChartMeasurementView extends LineChart {
                         break;
                     case DAY_OF_ALL:
                         calendar.setTime(convertShortInDate((int)value));
-                        xValueFormat.applyLocalizedPattern("dd/MM/yy");
-                        return xValueFormat.format(calendar.getTime());
+                        return DateFormat.getDateInstance(DateFormat.SHORT).format(calendar.getTime());
                     case WEEK_OF_ALL:
                         calendar.setTime(convertShortInDate((int)value));
-                        xValueFormat.applyLocalizedPattern("w/yy");
+                        xValueFormat.applyLocalizedPattern("'W'w yyyy");
                         return xValueFormat.format(calendar.getTime());
                     case MONTH_OF_ALL:
                         calendar.setTime(convertShortInDate((int)value));
-                        xValueFormat.applyLocalizedPattern("MM/yy");
+                        xValueFormat.applyLocalizedPattern("MMM yyyy");
                         return xValueFormat.format(calendar.getTime());
                     case YEAR_OF_ALL:
                         calendar.setTime(convertShortInDate((int)value));
