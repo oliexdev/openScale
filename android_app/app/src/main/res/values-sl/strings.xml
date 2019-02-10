@@ -196,7 +196,6 @@
     <string name="label_click_measurement_configure">Kliknite meritve za rekonfiguracijo</string>
     <string name="label_set_default_order">Nastavi privzet vrstni red</string>
     <string name="label_export_overwrite">Zamenjaj prejšnji izvoz \"%s\"?</string>
-    <string name="label_include_in_overview_graph">Vključi v pregledni graf</string>
     <string name="label_measurement_in_percent">Meritev v %</string>
     <string name="label_estimate_measurement">Ocena meritve</string>
     <string name="label_estimation_formula">Ocenjevalna formula</string>
@@ -206,7 +205,6 @@
     <string name="theme_dark">Temno</string>
     <string name="label_contribute_translation">Prispevaj prevod</string>
     <string name="label_add_or_fix_translation">Dodaj ali popravi obstoječega</string>
-    <string name="label_overview_graph">Pregledni graf</string>
     <string name="label_percent">Procent</string>
     <string name="label_estimated">Ocenjeno</string>
     <string name="label_estimate_measurement_summary">Bazirano na teži, višini, starosti, spolu, ...</string>

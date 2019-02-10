@@ -31,6 +31,7 @@ import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.utils.MPPointF;
 import com.health.openscale.R;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
+import com.health.openscale.gui.utils.ColorUtil;
 
 import java.text.DateFormat;
 
@@ -75,7 +76,7 @@ public class ChartMarkerView extends MarkerView {
 
             // set color diff value to text color
             if (markerText.length() > textPosAfterSymbol) {
-                markerText.setSpan(new ForegroundColorSpan(markerTextField.getCurrentTextColor()), textPosAfterSymbol, markerText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                markerText.setSpan(new ForegroundColorSpan(ColorUtil.COLOR_WHITE), textPosAfterSymbol, markerText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
         }
 

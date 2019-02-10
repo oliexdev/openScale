@@ -192,7 +192,6 @@
     <string name="Tuesday">Marți</string>
     <string name="Wednesday">Miercuri</string>
     <string name="label_export_overwrite">Scriere peste exportul precedent \"%s\"?</string>
-    <string name="label_include_in_overview_graph">Includere în diagrama generală</string>
     <string name="label_measurement_in_percent">Măsurătoare în %</string>
     <string name="label_estimate_measurement">Estimare a măsurătorii</string>
     <string name="label_estimation_formula">Formulă pentru estimări</string>
@@ -202,7 +201,6 @@
     <string name="theme_dark">Întunecată</string>
     <string name="label_contribute_translation">Contribuiți la traducere</string>
     <string name="label_add_or_fix_translation">Adăugați sau modificați</string>
-    <string name="label_overview_graph">Diagrama generală</string>
     <string name="label_percent">Procent</string>
     <string name="label_estimated">Estimată</string>
     <string name="label_estimate_measurement_summary">Bazată pe greutate, înălțime, vârstă, sex, etc.</string>

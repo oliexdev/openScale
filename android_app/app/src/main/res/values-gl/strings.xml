@@ -189,7 +189,6 @@
     <string name="label_click_measurement_configure">Prema na medida para configurar</string>
     <string name="label_set_default_order">Establecer a orde predeterminada</string>
     <string name="label_export_overwrite">Sobreescribir a exportación anterior %s?</string>
-    <string name="label_include_in_overview_graph">Incluir no gráfico xeral</string>
     <string name="label_measurement_in_percent">Medidas en %</string>
     <string name="label_estimate_measurement">Medida estimada</string>
     <string name="label_estimation_formula">Fórmula de estimación</string>
@@ -199,7 +198,6 @@
     <string name="theme_dark">Escuro</string>
     <string name="label_contribute_translation">Axuda coa tradución</string>
     <string name="label_add_or_fix_translation">Engade novo ou arranxar existente</string>
-    <string name="label_overview_graph">Gráfico xeral</string>
     <string name="label_percent">Porcentaxe</string>
     <string name="label_estimated">Estimado</string>
     <string name="label_estimate_measurement_summary">Baseado en peso, altura, idade, xénero, etc.</string>

@@ -199,7 +199,6 @@
     <string name="label_click_measurement_configure">יש ללחוץ על מדידה כדי להגדיר מחדש</string>
     <string name="label_set_default_order">הגדרת סדר בררת מחדל</string>
     <string name="label_export_overwrite">לשכתב על הייצוא הקודם „%s”\?</string>
-    <string name="label_include_in_overview_graph">לכלול בתרשים סקירה</string>
     <string name="label_measurement_in_percent">מדידה באחוזים</string>
     <string name="label_estimate_measurement">הערכת מדידה</string>
     <string name="label_estimation_formula">נוסחת הערכה</string>
@@ -209,7 +208,6 @@
     <string name="theme_dark">כהה</string>
     <string name="label_contribute_translation">לתרום תרגום</string>
     <string name="label_add_or_fix_translation">הוספת חדשה או תיקון קיימת</string>
-    <string name="label_overview_graph">תרשים סקירה</string>
     <string name="label_percent">אחוז</string>
     <string name="label_estimated">אומדן</string>
     <string name="label_estimate_measurement_summary">על בסיס משקל, גובה, גיל, מגדר וכו׳</string>

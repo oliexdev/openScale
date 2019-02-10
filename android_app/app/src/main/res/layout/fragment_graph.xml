@@ -85,22 +85,13 @@
             android:layout_gravity="bottom|end"
             android:orientation="vertical">
 
-            <HorizontalScrollView
+            <com.health.openscale.gui.views.ChartActionBarView
+                android:id="@+id/chartActionBar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="?attr/colorPrimary"
                 android:fillViewport="true">
-
-                <LinearLayout
-                    android:id="@+id/floatingActionBar"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="?attr/colorPrimary"
-                    android:gravity="center"
-                    android:orientation="horizontal"
-                    android:padding="5dp">
-                </LinearLayout>
-            </HorizontalScrollView>
+            </com.health.openscale.gui.views.ChartActionBarView>
 
             <com.github.mikephil.charting.charts.BarChart
                 android:id="@+id/chart_top"

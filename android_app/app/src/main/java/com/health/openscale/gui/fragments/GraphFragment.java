@@ -20,8 +20,6 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.ColorStateList;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
@@ -32,7 +30,6 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -54,10 +51,8 @@ import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.gui.activities.DataEntryActivity;
 import com.health.openscale.gui.utils.ColorUtil;
+import com.health.openscale.gui.views.ChartActionBarView;
 import com.health.openscale.gui.views.ChartMeasurementView;
-import com.health.openscale.gui.views.FloatMeasurementView;
-import com.health.openscale.gui.views.MeasurementView;
-import com.health.openscale.gui.views.MeasurementViewSettings;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -70,18 +65,16 @@ import androidx.fragment.app.Fragment;
 public class GraphFragment extends Fragment implements FragmentUpdateListener {
     private View graphView;
     private ChartMeasurementView chartView;
+    private ChartActionBarView chartActionBarView;
     private BarChart chartTop;
     private TextView txtYear;
     private Button btnLeftYear;
     private Button btnRightYear;
-    private LinearLayout floatingActionBar;
     private PopupMenu popup;
     private FloatingActionButton showMenu;
     private FloatingActionButton editMenu;
     private FloatingActionButton deleteMenu;
     private SharedPreferences prefs;
-
-    private List<MeasurementView> measurementViews;
 
     private OpenScale openScale;
 
@@ -150,7 +143,13 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         txtYear = graphView.findViewById(R.id.txtYear);
         txtYear.setText(Integer.toString(calYears.get(Calendar.YEAR)));
 
-        floatingActionBar = graphView.findViewById(R.id.floatingActionBar);
+        chartActionBarView = graphView.findViewById(R.id.chartActionBar);
+        chartActionBarView.setOnActionClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                generateGraphs();
+            }
+        });
 
         ImageView optionMenu = graphView.findViewById(R.id.optionMenu);
         optionMenu.setOnClickListener(new View.OnClickListener() {
@@ -190,15 +189,23 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             }
         });
 
-        measurementViews = MeasurementView.getMeasurementList(
-                getContext(), MeasurementView.DateTimeOrder.NONE);
-
         popup = new PopupMenu(getContext(), optionMenu);
         popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
 
                 switch (item.getItemId()) {
+                    case R.id.enableChartActionBar:
+                        if (item.isChecked()) {
+                            item.setChecked(false);
+                            prefs.edit().putBoolean("enableGraphChartActionBar", false).apply();
+                            chartActionBarView.setVisibility(View.GONE);
+                        } else {
+                            item.setChecked(true);
+                            prefs.edit().putBoolean("enableGraphChartActionBar", true).apply();
+                            chartActionBarView.setVisibility(View.VISIBLE);
+                        }
+                        return true;
                     case R.id.enableMonth:
                         if (item.isChecked()) {
                             item.setChecked(false);
@@ -233,6 +240,15 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         MenuItem enableWeek = popup.getMenu().findItem(R.id.enableWeek);
         enableWeek.setChecked(prefs.getBoolean("showWeek", false));
+
+        MenuItem enableMeasurementBar = popup.getMenu().findItem(R.id.enableChartActionBar);
+        enableMeasurementBar.setChecked(prefs.getBoolean("enableGraphChartActionBar", true));
+
+        if (enableMeasurementBar.isChecked()) {
+            chartActionBarView.setVisibility(View.VISIBLE);
+        } else {
+            chartActionBarView.setVisibility(View.GONE);
+        }
 
         showMenu = graphView.findViewById(R.id.showMenu);
         showMenu.setOnClickListener(new View.OnClickListener() {
@@ -292,39 +308,6 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         generateGraphs();
     }
 
-    private void addFloatingActionButton(FloatMeasurementView measurementView) {
-        FloatingActionButton actionButton = new FloatingActionButton(getContext());
-
-        actionButton.setTag(measurementView.getKey());
-        actionButton.setColorFilter(Color.parseColor("#000000"));
-        actionButton.setImageDrawable(measurementView.getIcon());
-        actionButton.setClickable(true);
-        actionButton.setSize(FloatingActionButton.SIZE_MINI);
-        RelativeLayout.LayoutParams lay = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        lay.setMargins(0,5,20,10);
-        actionButton.setLayoutParams(lay);
-        actionButton.setOnClickListener(new onClickListenerDiagramLines());
-
-        int color = measurementView.getSettings().isInGraph()
-                ? measurementView.getColor() : ColorUtil.COLOR_GRAY;
-        actionButton.setBackgroundTintList(ColorStateList.valueOf(color));
-
-        floatingActionBar.addView(actionButton);
-    }
-
-    private void refreshFloatingActionsButtons() {
-        floatingActionBar.removeAllViews();
-
-        for (MeasurementView view : measurementViews) {
-            if (view instanceof FloatMeasurementView) {
-                final FloatMeasurementView measurementView = (FloatMeasurementView) view;
-
-                if (measurementView.isVisible()) {
-                    addFloatingActionButton(measurementView);
-                }
-            }
-        }
-    }
     private void generateColumnData()
     {
         int[] numOfMonth = openScale.getCountsOfMonth(calYears.get(Calendar.YEAR));
@@ -343,7 +326,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
             BarDataSet set = new BarDataSet(entries, "month "+i);
             set.setColor(ColorUtil.COLORS[i % 4]);
-            set.setDrawValues(true);
+            set.setDrawValues(false);
             set.setValueFormatter(new StackedValueFormatter(true, "", 0));
             dataSets.add(set);
         }
@@ -404,8 +387,6 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
                 chartView.setViewRange(selectedYear, ChartMeasurementView.ViewMode.MONTH_OF_YEAR);
             }
         }
-
-        refreshFloatingActionsButtons();
     }
 
     private class chartTopValueTouchListener implements OnChartValueSelectedListener {
@@ -451,21 +432,6 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             showMenu.setVisibility(View.GONE);
             editMenu.setVisibility(View.GONE);
             deleteMenu.setVisibility(View.GONE);
-        }
-    }
-
-    private class onClickListenerDiagramLines implements View.OnClickListener {
-        @Override
-        public void onClick(View v) {
-            FloatingActionButton actionButton = (FloatingActionButton) v;
-
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
-
-            String key = String.valueOf(actionButton.getTag());
-            MeasurementViewSettings settings = new MeasurementViewSettings(prefs, key);
-            prefs.edit().putBoolean(settings.getInGraphKey(), !settings.isInGraph()).apply();
-
-            generateGraphs();
         }
     }
 

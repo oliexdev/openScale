@@ -250,9 +250,7 @@
     <string name="label_long_press_drag_reorder">Yeniden sıralamak için uzun basın ve ölçümü sürükleyin</string>
     <string name="label_set_default_order">Öntanımlı sıralama ayarı</string>
     <string name="label_export_overwrite">\"%s\" Önceki dışa aktarımın üzerine yazılsın mı\?</string>
-    <string name="label_include_in_overview_graph">Genel bakış çizelgesinin içeriğine ekle</string>
     <string name="label_estimation_formula">Tahmin formülü</string>
-    <string name="label_overview_graph">Genel bakış çizelgesi</string>
     <string name="label_estimate_measurement_summary">Ağırlık, boy, yaş, cinsiyet vb. temelli.</string>
     <string name="label_your_bluetooth_scale">Bluetooth tartınız</string>
     <string name="label_caliper1_male">Göğüs derisi kıvrım kalınlığı</string>

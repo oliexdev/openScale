@@ -202,7 +202,6 @@
     <string name="label_click_measurement_configure">Ấn vào số đo để cấu hình</string>
     <string name="label_set_default_order">Đặt thứ tự mặc định</string>
     <string name="label_export_overwrite">Ghi đè lên bản xuất \"%s\"\?</string>
-    <string name="label_include_in_overview_graph">Bao gồm trong biểu đồ tổng quan</string>
     <string name="label_measurement_in_percent">Đo trong %</string>
     <string name="label_estimate_measurement">Số đo ước lượng</string>
     <string name="label_estimation_formula">Công thức ước lượng</string>
@@ -212,7 +211,6 @@
     <string name="theme_dark">Tối</string>
     <string name="label_contribute_translation">Đóng góp dịch thuật</string>
     <string name="label_add_or_fix_translation">Thêm mới hoặc sửa có sẵn</string>
-    <string name="label_overview_graph">Biểu đồ tổng quan</string>
     <string name="label_percent">Phần trăm</string>
     <string name="label_estimated">Ước lượng</string>
     <string name="label_estimate_measurement_summary">Dựa trên trọng lượng, chiều cao, tuổi tác, giới tính, v.v...</string>

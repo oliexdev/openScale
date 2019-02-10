@@ -192,7 +192,6 @@
     <string name="label_next">Επόμενο</string>
     <string name="label_set_default_order">Θέσε προκαθορισμένη διάταξη</string>
     <string name="label_export_overwrite">Αντικατέστησε προηγούμενη εξαγωγή \"%s\";</string>
-    <string name="label_include_in_overview_graph">Περιέλαβε στο γράφημα επισκόπησης</string>
     <string name="label_measurement_in_percent">Μέτρηση σε %</string>
     <string name="label_estimate_measurement">Υπολόγισε την μέτρηση</string>
     <string name="label_estimation_formula">Τύπος υπολογισμού</string>
@@ -202,7 +201,6 @@
     <string name="theme_dark">Σκοτεινό</string>
     <string name="label_contribute_translation">Συμβάλλετε στη μετάφραση</string>
     <string name="label_add_or_fix_translation">Πρόσθεσε νέο ή επισκεύασε υπάρχον</string>
-    <string name="label_overview_graph">Γράφημα επισκόπησης</string>
     <string name="label_percent">Ποσοστό</string>
     <string name="label_estimated">Υπολογισμένο</string>
     <string name="label_estimate_measurement_summary">Με βάση το βάρος, ύψος, ηλικία, φύλο, κλπ.</string>

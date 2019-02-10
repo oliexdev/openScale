@@ -195,6 +195,7 @@
     <string name="label_weeks_view">Week view</string>
     <string name="label_year_view">Year view</string>
     <string name="label_rolling_chart">Rolling chart</string>
+    <string name="label_measurement_bar">Measurement bar</string>
 
     <string name="permission_not_granted">Permission not granted</string>
     <string name="permission_bluetooth_info">Coarse location permission needed to search for Bluetooth devices. It can be revoked after the device is found.</string>
@@ -206,7 +207,6 @@
     <string name="label_click_measurement_configure">Click measurement to configure</string>
     <string name="label_set_default_order">Set default order</string>
     <string name="label_export_overwrite">Overwrite previous export \"%s\"?</string>
-    <string name="label_include_in_overview_graph">Include in overview graph</string>
     <string name="label_is_on_right_axis">Is on right axis</string>
     <string name="label_measurement_in_percent">Measurement in %</string>
     <string name="label_estimate_measurement">Estimate measurement</string>
@@ -217,7 +217,6 @@
     <string name="theme_dark">Dark</string>
     <string name="label_contribute_translation">Contribute translation</string>
     <string name="label_add_or_fix_translation">Add new or fix existing</string>
-    <string name="label_overview_graph">Overview graph</string>
     <string name="label_percent">Percent</string>
     <string name="label_estimated">Estimated</string>
     <string name="label_estimate_measurement_summary">Based on weight, height, age, gender, etc.</string>

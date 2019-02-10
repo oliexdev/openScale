@@ -44,6 +44,7 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.gui.activities.DataEntryActivity;
 import com.health.openscale.gui.utils.ColorUtil;
+import com.health.openscale.gui.views.ChartActionBarView;
 import com.health.openscale.gui.views.ChartMeasurementView;
 import com.health.openscale.gui.views.MeasurementView;
 
@@ -61,6 +62,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
     private List<MeasurementView> lastMeasurementViews;
 
     private ChartMeasurementView chartView;
+    private ChartActionBarView chartActionBarView;
 
     private Spinner spinUser;
 
@@ -79,13 +81,6 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
     private ScaleMeasurement markedMeasurement;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        // retain this fragment otherwise the app crashed in landscape mode for small devices (see "Handling Runtime Changes")
-        setRetainInstance(true);
-    }
-
-    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         overviewView = inflater.inflate(R.layout.fragment_overview, container, false);
 
@@ -96,6 +91,17 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
         chartView = overviewView.findViewById(R.id.chartView);
         chartView.setOnChartValueSelectedListener(new onChartSelectedListener());
+        chartView.setAnimationOn(false);
+        chartView.setIsInGraphKey(false);
+
+        chartActionBarView = overviewView.findViewById(R.id.chartActionBar);
+        chartActionBarView.setIsInGraphKey(false);
+        chartActionBarView.setOnActionClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                updateChartView();
+            }
+        });
 
         spinUser = overviewView.findViewById(R.id.spinUser);
 
@@ -107,27 +113,23 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             }
         });
 
-
         rangePopupMenu = new PopupMenu(getContext(), optionMenu);
         rangePopupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
 
-                int rangeSelectId = 1;
-
                 switch (item.getItemId()) {
-                    case R.id.menu_range_day:
-                        rangeSelectId = 1;
-                        break;
-                    case R.id.menu_range_week:
-                        rangeSelectId = 2;
-                        break;
-                    case R.id.menu_range_month:
-                        rangeSelectId = 3;
-                        break;
-                    case R.id.menu_range_year:
-                        rangeSelectId = 4;
-                        break;
+                    case R.id.enableChartActionBar:
+                        if (item.isChecked()) {
+                            item.setChecked(false);
+                            prefs.edit().putBoolean("enableOverviewChartActionBar", false).apply();
+                            chartActionBarView.setVisibility(View.GONE);
+                        } else {
+                            item.setChecked(true);
+                            prefs.edit().putBoolean("enableOverviewChartActionBar", true).apply();
+                            chartActionBarView.setVisibility(View.VISIBLE);
+                        }
+                        return true;
                     case R.id.enableRollingChart:
                         if (item.isChecked()) {
                             item.setChecked(false);
@@ -142,18 +144,32 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
                         return true;
                 }
 
+
                 item.setChecked(true);
 
-                prefs.edit().putInt("selectRange", rangeSelectId).commit();
+                prefs.edit().putInt("selectRange", item.getItemId()).commit();
 
-                getActivity().recreate(); // TODO HACK to refresh graph; graph.invalidate and notfiydatachange is not enough!?
+                if (prefs.getBoolean("enableRollingChart", true)) {
+                    getActivity().recreate(); // TODO HACK to refresh graph; if rolling chart is enabled then graph.invalidate and notfiydatachange is not enough!?
+                } else {
+                    updateChartView();
+                }
 
                 return true;
             }
         });
         rangePopupMenu.getMenuInflater().inflate(R.menu.overview_menu, rangePopupMenu.getMenu());
-        rangePopupMenu.getMenu().getItem(prefs.getInt("selectRange", 1)).setChecked(true);
-        rangePopupMenu.getMenu().getItem(0).setChecked(prefs.getBoolean("enableRollingChart", false));
+        rangePopupMenu.getMenu().findItem(prefs.getInt("selectRange", R.id.menu_range_day)).setChecked(true);
+        rangePopupMenu.getMenu().findItem(R.id.enableRollingChart).setChecked(prefs.getBoolean("enableRollingChart", true));
+
+        MenuItem enableMeasurementBar = rangePopupMenu.getMenu().findItem(R.id.enableChartActionBar);
+        enableMeasurementBar.setChecked(prefs.getBoolean("enableOverviewChartActionBar", false));
+
+        if (enableMeasurementBar.isChecked()) {
+            chartActionBarView.setVisibility(View.VISIBLE);
+        } else {
+            chartActionBarView.setVisibility(View.GONE);
+        }
 
         lastMeasurementViews = MeasurementView.getMeasurementList(
                 getContext(), MeasurementView.DateTimeOrder.NONE);
@@ -216,6 +232,8 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
         OpenScale.getInstance().registerFragment(this);
 
+        chartView.animateY(700);
+
         return overviewView;
     }
 
@@ -239,19 +257,19 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
     }
 
     private void updateChartView() {
-        boolean enableRollingChart = prefs.getBoolean("enableRollingChart", false);
+        boolean enableRollingChart = prefs.getBoolean("enableRollingChart", true);
 
-        switch (prefs.getInt("selectRange", 0)) {
-            case 1:
+        switch (prefs.getInt("selectRange", R.id.menu_range_day)) {
+            case R.id.menu_range_day:
                 chartView.setViewRange(ChartMeasurementView.ViewMode.DAY_OF_ALL, enableRollingChart);
                 break;
-            case 2:
+            case R.id.menu_range_week:
                 chartView.setViewRange(ChartMeasurementView.ViewMode.WEEK_OF_ALL, enableRollingChart);
                 break;
-            case 3:
+            case R.id.menu_range_month:
                 chartView.setViewRange(ChartMeasurementView.ViewMode.MONTH_OF_ALL, enableRollingChart);
                 break;
-            case 4:
+            case R.id.menu_range_year:
                 chartView.setViewRange(ChartMeasurementView.ViewMode.YEAR_OF_ALL, enableRollingChart);
                 break;
         }

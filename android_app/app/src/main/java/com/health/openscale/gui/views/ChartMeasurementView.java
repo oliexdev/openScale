@@ -52,7 +52,18 @@ import java.util.List;
 import java.util.Stack;
 
 public class ChartMeasurementView extends LineChart {
-    public enum ViewMode {DAY_OF_MONTH, WEEK_OF_MONTH, WEEK_OF_YEAR, MONTH_OF_YEAR, DAY_OF_YEAR, DAY_OF_ALL, WEEK_OF_ALL, MONTH_OF_ALL, YEAR_OF_ALL}
+    public enum ViewMode {
+        DAY_OF_MONTH,
+        WEEK_OF_MONTH,
+        WEEK_OF_YEAR,
+        MONTH_OF_YEAR,
+        DAY_OF_YEAR,
+        DAY_OF_ALL,
+        WEEK_OF_ALL,
+        MONTH_OF_ALL,
+        YEAR_OF_ALL
+    }
+
     private OpenScale openScale;
     private SharedPreferences prefs;
     private ScaleUser user;
@@ -63,6 +74,8 @@ public class ChartMeasurementView extends LineChart {
     private int maxXValue;
     private int minXValue;
     private ViewMode viewMode;
+    private boolean isAnimationOn;
+    private boolean isInGraphKey;
 
     public ChartMeasurementView(Context context) {
         super(context);
@@ -104,6 +117,14 @@ public class ChartMeasurementView extends LineChart {
         refresh();
     }
 
+    public void setAnimationOn(boolean status) {
+        isAnimationOn = status;
+    }
+
+    public void setIsInGraphKey(boolean status) {
+        isInGraphKey = status;
+    }
+
     private void initChart() {
         prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
         openScale = OpenScale.getInstance();
@@ -114,6 +135,8 @@ public class ChartMeasurementView extends LineChart {
         lastMeasurement = new ScaleMeasurement();
         maxXValue = 0;
         minXValue = 0;
+        isAnimationOn = true;
+        isInGraphKey = true;
 
         setMarker(new ChartMarkerView(getContext(), R.layout.chart_markerview));
         setDoubleTapToZoomEnabled(false);
@@ -225,36 +248,46 @@ public class ChartMeasurementView extends LineChart {
 
             Calendar deltaCalendar = Calendar.getInstance();
 
+            int range = 0;
+            int granularity = 0;
+
             switch (mode) {
                 case DAY_OF_ALL:
                     zeroCalendar.set(Calendar.DAY_OF_MONTH, lastCalendar.get(Calendar.DAY_OF_MONTH));
                     zeroCalendar.set(Calendar.MONTH, lastCalendar.get(Calendar.MONTH));
                     zeroCalendar.set(Calendar.YEAR, lastCalendar.get(Calendar.YEAR));
                     deltaCalendar.setTime(zeroCalendar.getTime());
-                    deltaCalendar.add(Calendar.DAY_OF_MONTH, -14);
+                    deltaCalendar.add(Calendar.DAY_OF_MONTH, -1);
+                    granularity = convertDateInShort(zeroCalendar.getTime()) - convertDateInShort(deltaCalendar.getTime());
+                    range = granularity * 14;
                     break;
                 case WEEK_OF_ALL:
                     zeroCalendar.set(Calendar.WEEK_OF_YEAR, lastCalendar.get(Calendar.WEEK_OF_YEAR));
                     zeroCalendar.set(Calendar.YEAR, lastCalendar.get(Calendar.YEAR));
                     deltaCalendar.setTime(zeroCalendar.getTime());
-                    deltaCalendar.add(Calendar.WEEK_OF_YEAR, -4);
+                    deltaCalendar.add(Calendar.WEEK_OF_YEAR, -1);
+                    granularity = convertDateInShort(zeroCalendar.getTime()) - convertDateInShort(deltaCalendar.getTime());
+                    range = granularity * 4;
                     break;
                 case MONTH_OF_ALL:
                     zeroCalendar.set(Calendar.MONTH, lastCalendar.get(Calendar.MONTH));
                     zeroCalendar.set(Calendar.YEAR, lastCalendar.get(Calendar.YEAR));
                     deltaCalendar.setTime(zeroCalendar.getTime());
-                    deltaCalendar.add(Calendar.MONTH, -4);
+                    deltaCalendar.add(Calendar.MONTH, -1);
+                    granularity = convertDateInShort(zeroCalendar.getTime()) - convertDateInShort(deltaCalendar.getTime());
+                    range = granularity * 4;
                     break;
                 case YEAR_OF_ALL:
                     zeroCalendar.set(Calendar.YEAR, lastCalendar.get(Calendar.YEAR));
-                    deltaCalendar.add(Calendar.YEAR, -3);
+                    deltaCalendar.add(Calendar.YEAR, -1);
+                    granularity = convertDateInShort(zeroCalendar.getTime()) - convertDateInShort(deltaCalendar.getTime());
+                    range = granularity * 3;
                     break;
                 default:
                     throw new IllegalArgumentException("view mode not implemented");
             }
 
-            int range = convertDateInShort(zeroCalendar.getTime()) - convertDateInShort(deltaCalendar.getTime());
-
+            getXAxis().setGranularity(granularity);
             setVisibleXRangeMaximum(range);
             moveViewToX(getBinNr(lastMeasurement));
         }
@@ -430,7 +463,10 @@ public class ChartMeasurementView extends LineChart {
 
         getXAxis().setAxisMinimum(minXValue);
         getXAxis().setAxisMaximum(maxXValue);
-        animateY(700);
+        if (isAnimationOn) {
+            animateY(700);
+        }
+        notifyDataSetChanged();
         invalidate();
     }
 
@@ -470,8 +506,14 @@ public class ChartMeasurementView extends LineChart {
         });
 
         if (measurementView.isVisible()) {
-            if (measurementView.getSettings().isInGraph()) {
-                lineDataSets.add(measurementLine);
+            if (isInGraphKey) {
+                if (measurementView.getSettings().isInGraph()) {
+                    lineDataSets.add(measurementLine);
+                }
+            } else {
+                if (measurementView.getSettings().isInOverviewGraph()) {
+                    lineDataSets.add(measurementLine);
+                }
             }
         }
     }

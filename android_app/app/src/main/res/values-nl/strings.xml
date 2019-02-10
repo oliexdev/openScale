@@ -197,7 +197,6 @@
     <string name="label_click_measurement_configure">Klik meting om te configureren</string>
     <string name="label_set_default_order">Stel standaard volgorde in</string>
     <string name="label_export_overwrite">Vorige export \"%s\" overschrijven?</string>
-    <string name="label_include_in_overview_graph">Toevoegen aan overzichtsgrafiek</string>
     <string name="label_measurement_in_percent">Meting in %</string>
     <string name="label_estimate_measurement">Geschatte meting</string>
     <string name="label_estimation_formula">Schattingsformule</string>
@@ -207,7 +206,6 @@
     <string name="theme_dark">Donker</string>
     <string name="label_contribute_translation">Help vertalen</string>
     <string name="label_add_or_fix_translation">Nieuwe toevoegen of bestaande verbeteren</string>
-    <string name="label_overview_graph">Overzichtsgrafiek</string>
     <string name="label_percent">Procent</string>
     <string name="label_estimated">Geschat</string>
     <string name="label_estimate_measurement_summary">Gebaseerd op gewicht, lengte, leeftijd, geslacht, etc.</string>

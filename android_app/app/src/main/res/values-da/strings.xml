@@ -173,7 +173,6 @@
     <string name="label_weeks_view">ugentlig</string>
     <string name="label_mergeWithLastMeasurement">Forene med tidligere måling</string>
     <string name="label_export_overwrite">Overskriv tidligere eksport \"%s\"?</string>
-    <string name="label_include_in_overview_graph">Vis i oversigtsdiagram</string>
     <string name="label_measurement_in_percent">Målt i %</string>
     <string name="label_estimate_measurement">Estimatmåling</string>
     <string name="label_estimation_formula">Estimeringsformel</string>
@@ -184,7 +183,6 @@
     <string name="theme_dark">Mørkt</string>
     <string name="label_contribute_translation">Bidrag med oversættelse</string>
     <string name="label_add_or_fix_translation">Tilføj eller ret oversættelse</string>
-    <string name="label_overview_graph">Oversigtsdiagram</string>
     <string name="label_percent">Procent</string>
     <string name="label_estimated">Skønsmæssigt</string>
     <string name="label_estimate_measurement_summary">Baseret på vægt, højde, alder, køn mv.</string>

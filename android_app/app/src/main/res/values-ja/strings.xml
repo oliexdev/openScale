@@ -146,7 +146,6 @@
     <string name="theme_dark">ダーク</string>
     <string name="label_contribute_translation">翻訳に貢献する</string>
     <string name="label_add_or_fix_translation">新しい翻訳の追加、もしくは既存の翻訳の修正</string>
-    <string name="label_overview_graph">概要グラフ</string>
     <string name="label_percent">百分率</string>
     <string name="label_estimate_measurement_summary">体重、身長、年齢、性別等に基づきます。</string>
     <string name="label_scale_not_supported">あなたの体重計はサポートされていませんか？</string>
