@@ -46,21 +46,6 @@ public class BluetoothSenssun extends BluetoothCommunication {
         return "Senssun";
     }
 
-    @Override
-    public void disconnect() {
-        Timber.i("disconnect(and save Data)");
-        saveUserData();
-        super.disconnect();
-    }
-
-    private void saveUserData(){
-      if ( isBitSet(WeightFatMus,2) ) {
-          addScaleData(measurement);
-          WeightFatMus=0;
-          setBtStatus(BT_STATUS_CODE.BT_CONNECTION_LOST);
-      }
-    }
-
     private void sendUserData(){
         if ( scaleGotUserData ){
           return;
@@ -84,10 +69,11 @@ public class BluetoothSenssun extends BluetoothCommunication {
 
     @Override
     protected boolean nextInitCmd(int stateNr) {
-        Timber.d("Cmd Clean %d",stateNr);
         switch (stateNr) {
             case 0:
                 setNotificationOn(WEIGHT_MEASUREMENT_CHARACTERISTIC);
+                break;
+            case 1:
                 sendUserData();
                 WeightFatMus = 0;
                 scaleGotUserData = false;
@@ -118,9 +104,10 @@ public class BluetoothSenssun extends BluetoothCommunication {
 
         if (data != null && !isBitSet(WeightFatMus, 3)) { //only if not saved
             parseBytes(data);
-            if (WeightFatMus == 0x07) {
-              disconnect();
-            }
+        }
+
+        if (isBitSet(WeightFatMus,2) ) {
+            addScaleData(measurement);
         }
     }
 
