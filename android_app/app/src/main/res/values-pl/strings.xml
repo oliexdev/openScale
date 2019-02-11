@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="title_overview">Przegląd</string>
     <string name="title_graph">Wykresy</string>
@@ -232,4 +232,8 @@
     <string name="label_caliper1_female">Fałd skórny tricepsa</string>
     <string name="label_caliper2_female">Fałd skórny brzucha</string>
     <string name="label_caliper3_female">Fałd skórny biodra</string>
+    <string name="label_add_measurement">Dodaj pomiar</string>
+    <string name="label_tdee">Całkowity dzienny wydatek energii (TDEE)</string>
+    <string name="info_step_on_scale">Proszę stanąć boso na wadze</string>
+    <string name="label_click_measurement_configure">Kliknij pomiar aby skonfigurować</string>
 </resources>
