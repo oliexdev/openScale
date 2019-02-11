@@ -53,9 +53,9 @@
     <string name="label_comment">Comentário</string>
     <string name="label_date">Data</string>
     <plurals name="label_days">
-        <item quantity="one">%d dia</item>
-        <item quantity="other">%d dias</item>
-    </plurals>
+    <item quantity="one">"dia %d "</item>
+    <item quantity="other">"dias %d "</item>
+</plurals>
     <string name="label_days_left">Dias restantes</string>
     <string name="label_delete">Apagar</string>
     <string name="label_delete_all">Apagar tudo</string>
@@ -190,4 +190,8 @@
     <string name="label_estimated">Estimada</string>
     <string name="label_estimate_measurement_summary">Baseado no peso, altura, idade, sexo, etc.</string>
     <string name="label_add_measurement">Adicionar medição</string>
+    <string name="label_tdee">Energia Diária Consumida Total</string>
+    <string name="info_bluetooth_no_device_retrying">Não é possível estabelecer ligação, tentando novamente…</string>
+    <string name="info_bluetooth_connection_disconnected">Conexão Bluetooth terminada</string>
+    <string name="info_step_on_scale">Por favor suba descalço para a balança</string>
 </resources>
