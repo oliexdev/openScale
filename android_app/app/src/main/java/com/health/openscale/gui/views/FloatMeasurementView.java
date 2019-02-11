@@ -466,8 +466,6 @@ public abstract class FloatMeasurementView extends MeasurementView {
 
         start = text.length();
         text.append(formatValue(diff));
-        text.setSpan(new ForegroundColorSpan(Color.GRAY), start, text.length(),
-                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         text.setSpan(new RelativeSizeSpan(0.8f), start, text.length(),
                 Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
     }
