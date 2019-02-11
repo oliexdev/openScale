@@ -485,6 +485,7 @@ public abstract class BluetoothCommunication {
                 || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
         ) {
             Timber.d("Do LE scan before connecting to device");
+            disconnectWithDelay();
             scanSubscription = bleClient.scanBleDevices(
                     new ScanSettings.Builder()
                             .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
@@ -495,7 +496,7 @@ public abstract class BluetoothCommunication {
                     .subscribe(bleScanResult -> {
                         if (bleScanResult.getBleDevice().getMacAddress().equals(macAddress)) {
                             connectToDevice(macAddress);
-                    }}, throwable -> onError(throwable));
+                    }}, throwable -> setBtStatus(BT_STATUS_CODE.BT_NO_DEVICE_FOUND));
         }
         else {
             Timber.d("No coarse location permission, connecting without LE scan");
@@ -535,6 +536,7 @@ public abstract class BluetoothCommunication {
 
                     setBtMonitoringOn();
                     setBtMachineState(BT_MACHINE_STATE.BT_INIT_STATE);
+                    resetDisconnectTimer();
                 }
             }
         }, 500);

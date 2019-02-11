@@ -168,7 +168,6 @@ public class OpenScale {
     }
 
     public void selectScaleUser(int userId) {
-        Timber.d("Select user %d", userId);
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         prefs.edit().putInt("selectedUserId", userId).apply();
 
@@ -207,8 +206,7 @@ public class OpenScale {
                     selectScaleUser(-1);
                     throw new Exception("could not find the selected user");
                 }
-                Timber.d("Selected user is now %s (%d)",
-                        selectedScaleUser.getUserName(), selectedScaleUser.getId());
+
                 return selectedScaleUser;
             }
         } catch (Exception e) {
@@ -220,7 +218,7 @@ public class OpenScale {
     }
 
     public void deleteScaleUser(int id) {
-        Timber.d("Delete user %d", id);
+        Timber.d("Delete user " + getScaleUser(id));
         userDAO.delete(userDAO.get(id));
         selectedScaleUser = null;
 
@@ -288,6 +286,7 @@ public class OpenScale {
 
             // don't add scale data if no user is selected
             if (scaleMeasurement.getUserId() == -1) {
+                Timber.e("to be added measurement are thrown away because no user is selected");
                 return -1;
             }
         }
@@ -335,6 +334,7 @@ public class OpenScale {
             updateScaleData();
             triggerWidgetUpdate();
         } else {
+            Timber.d("to be added measurement is thrown away because measurement with the same date and time already exist");
             if (!silent) {
                 Toast.makeText(context, context.getString(R.string.info_new_data_duplicated), Toast.LENGTH_LONG).show();
             }
@@ -365,17 +365,21 @@ public class OpenScale {
 
         if (inRangeWeights.size() > 0) {
             // return the user id which is nearest to the weight (first element of the tree map)
-            return inRangeWeights.entrySet().iterator().next().getValue();
+            int userId = inRangeWeights.entrySet().iterator().next().getValue();
+            Timber.d("assign measurement to the nearest measurement with the user " + getScaleUser(userId).getUserName() + " (smartUserAssignment=on)");
+            return userId;
         }
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
         // if ignore out of range preference is true don't add this data
         if (prefs.getBoolean("ignoreOutOfRange", false)) {
+            Timber.d("to be added measurement is thrown away because measurement is out of range (smartUserAssignment=on;ignoreOutOfRange=on)");
             return -1;
         }
 
         // return selected scale user id if not out of range preference is checked and weight is out of range of any user
+        Timber.d("assign measurement to the selected user (smartUserAssignment=on;ignoreOutOfRange=off)");
         return getSelectedScaleUser().getId();
     }
 

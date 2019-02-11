@@ -16,16 +16,16 @@
 
 package com.health.openscale.core.datatypes;
 
-import androidx.room.ColumnInfo;
-import androidx.room.Entity;
-import androidx.room.PrimaryKey;
-import androidx.annotation.NonNull;
-
 import com.health.openscale.core.utils.Converters;
 import com.health.openscale.core.utils.DateTimeHelpers;
 
 import java.util.Calendar;
 import java.util.Date;
+
+import androidx.annotation.NonNull;
+import androidx.room.ColumnInfo;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
 
 @Entity(tableName = "scaleUsers")
 public class ScaleUser {
@@ -189,9 +189,11 @@ public class ScaleUser {
     public String toString()
     {
         return String.format(
-                "ID: %d, NAME: %s, BIRTHDAY: %s, BODY_HEIGHT: %.2f, SCALE_UNIT: %s, " +
-                "GENDER: %s, INITIAL_WEIGHT: %.2f, GOAL_WEIGHT: %.2f, GOAL_DATE: %s",
-                id, userName, birthday.toString(), bodyHeight, scaleUnit.toString(),
-                gender.toString().toLowerCase(), initialWeight, goalWeight, goalDate.toString());
+                "id(%d) name(%s) birthday(%s) age(%d) body height(%.2f) scale unit(%s) " +
+                "gender(%s) initial weight(%.2f) goal weight(%.2f) goal date(%s) " +
+                "measure unt(%s) activity level(%d)",
+                id, userName, birthday.toString(), getAge(), bodyHeight, scaleUnit.toString(),
+                gender.toString().toLowerCase(), initialWeight, goalWeight, goalDate.toString(),
+                measureUnit.toString(), activityLevel.toInt());
     }
 }
