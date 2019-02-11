@@ -207,18 +207,20 @@ public abstract class BluetoothCommunication {
     abstract protected boolean nextBluetoothCmd(int stateNr);
 
     /**
-     * Step the current machine state one step back. Needs to be called before a command
+     * Step the current machine state backwards. Needs to be called before a command.
+     *
+     * @param steps Number of steps to back the machine.
      */
-    protected void repeatMachineStateStep() {
+    protected void repeatMachineStateSteps(int steps) {
         switch (btMachineState) {
             case BT_INIT_STATE:
-                initStepNr = initStepNr - 1;
+                initStepNr = initStepNr - steps;
                 break;
             case BT_CMD_STATE:
-                cmdStepNr = cmdStepNr - 1;
+                cmdStepNr = cmdStepNr - steps;
                 break;
             case BT_CLEANUP_STATE:
-                cleanupStepNr = cleanupStepNr - 1;
+                cleanupStepNr = cleanupStepNr - steps;
                 break;
         }
     }
@@ -235,11 +237,13 @@ public abstract class BluetoothCommunication {
     /**
      * Resumed the current machine state
      */
-    protected void resumeMachineState() {
+    protected void resumeMachineState(boolean doNextStep) {
         Timber.d("Machine state resumed");
         btMachineState = btStopppedMachineState;
 
-        nextMachineStateStep();
+        if (doNextStep) {
+            nextMachineStateStep();
+        }
     }
 
     /**
