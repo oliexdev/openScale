@@ -255,4 +255,11 @@
     <string name="info_bluetooth_connection_disconnected">Blåtannstilkobling lukket</string>
     <string name="info_step_on_scale">Tre opp på vekta barfot</string>
     <string name="permission_location_service_info">Innvilg posisjonstilgang for å søke etter Blåtannsenheter. Du kan skru den av etterpå.</string>
+    <string name="label_enable_legend">Graf-forklaring</string>
+    <string name="label_enable_yaxis">Y-akse</string>
+    <string name="label_day_view">Dagsvisning</string>
+    <string name="label_year_view">Årsvisning</string>
+    <string name="label_rolling_chart">Rullende diagram</string>
+    <string name="label_measurement_bar">Målingsstolpe</string>
+    <string name="label_is_on_right_axis">Er på høyre akse</string>
 </resources>
