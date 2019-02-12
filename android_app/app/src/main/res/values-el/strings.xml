@@ -18,7 +18,7 @@
     <string name="label_ok">εντάξει</string>
     <string name="label_yes">Ναι</string>
     <string name="label_no">Όχι</string>
-    <string name="label_delete">Διέγραψε</string>
+    <string name="label_delete">Διάγραψε</string>
     <string name="label_add_user">Πρόσθεσε χρήστη</string>
     <string name="label_share">Μοιράσου</string>
     <string name="label_share_subject">εξαγωγή δεδομένων CSV (%s)</string>
@@ -251,4 +251,15 @@
     <string name="label_data_provider_enable">Πρόσβαση εφαρμογής τρίτων</string>
     <string name="label_tdee">Συνολική ημερήσια κατανάλωση ενέργειας (ΣΗΚΕ)</string>
     <string name="label_calories">Θερμίδες</string>
+    <string name="info_bluetooth_no_device_retrying">Δεν μπορεί να γίνει σύνδεση, ξαναδοκιμάζω…</string>
+    <string name="info_bluetooth_connection_disconnected">Η σύνδεση bluetooth έκλεισε</string>
+    <string name="label_enable_legend">Υπόμνημα γραφήματος</string>
+    <string name="label_enable_yaxis">Άξονας Υ</string>
+    <string name="info_step_on_scale">Παρακαλώ πατήστε ξυπόλυτοι στην ζυγαριά</string>
+    <string name="label_day_view">Προβολή ημέρας</string>
+    <string name="label_year_view">Προβολή έτους</string>
+    <string name="label_rolling_chart">Κυλιόμενο διάγραμμα</string>
+    <string name="label_measurement_bar">Μπάρα μέτρησης</string>
+    <string name="permission_location_service_info">Χορηγήστε πρόσβαση τοποθεσίας στις ρυθμίσεις του Android για να ψάχνει συσκευές Bluetooth. Προαιρετικά ανακαλέστε το μεταγενέστερα.</string>
+    <string name="label_is_on_right_axis">Είναι στον δεξιό άξονα</string>
 </resources>
