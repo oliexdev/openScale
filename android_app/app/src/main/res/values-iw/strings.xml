@@ -257,4 +257,11 @@
     <string name="info_step_on_scale">נא לעלות על המשקל ברגליים יחפות</string>
     <string name="label_calories">קלוריות</string>
     <string name="permission_location_service_info">יש להעניק גישה למיקום בהגדרות Android כדי לחפש התקני Bluetooth. אפשר לכבות את ההרשאה הזאת לאחר החיפוש.</string>
+    <string name="label_enable_legend">מקרא תרשים</string>
+    <string name="label_enable_yaxis">ציר Y</string>
+    <string name="label_day_view">תצוגה יומית</string>
+    <string name="label_year_view">תצוגה שנתית</string>
+    <string name="label_rolling_chart">תרשים מתגלגל</string>
+    <string name="label_measurement_bar">סרגל מדידה</string>
+    <string name="label_is_on_right_axis">בציר הימני</string>
 </resources>
