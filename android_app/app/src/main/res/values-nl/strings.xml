@@ -184,11 +184,11 @@
     <string name="edit">Wijzigen</string>
     <string name="save">Opslaan</string>
 
-    <string name="label_month_view">Maandelijkse weergave</string>
-    <string name="label_weeks_view">Wekelijkse weergave</string>
+    <string name="label_month_view">Maand weergave</string>
+    <string name="label_weeks_view">Week weergave</string>
 
     <string name="permission_not_granted">Geen toestemming verleend</string>
-    <string name="permission_bluetooth_info">"Locatie toestemming is nodig om te kunnen zoeken naar Bluetooth apparaten. Dit kan weer ingetrokken worden zodra  het apparaat is gevonden."</string>
+    <string name="permission_bluetooth_info">Locatie toestemming is nodig om te kunnen zoeken naar Bluetooth apparaten. Dit kan weer ingetrokken worden zodra het apparaat is gevonden.</string>
     <string name="permission_bluetooth_info_title">Info</string>
     <string name="permission_read_write_data_description">lees openScale gegevens, inclusief gebruikersinformatie en alle bewaarde metingen</string>
     <string name="permission_read_write_data_label">Lees openScale Gegevens</string>
@@ -255,4 +255,12 @@
     <string name="info_bluetooth_no_device_retrying">Kan geen verbinding maken, opnieuw proberen…</string>
     <string name="info_bluetooth_connection_disconnected">Bluetooth verbinding verbroken</string>
     <string name="info_step_on_scale">Stap alsjeblieft met blote voeten op de weegschaal</string>
+    <string name="label_enable_legend">Grafiek legenda</string>
+    <string name="label_enable_yaxis">Y-as</string>
+    <string name="label_day_view">Dag weergave</string>
+    <string name="label_year_view">Jaar weergave</string>
+    <string name="label_rolling_chart">Voortschrijdende grafiek</string>
+    <string name="label_measurement_bar">Meetlat</string>
+    <string name="permission_location_service_info">Verleen locatie toegang in Android instellingen om te zoeken naar Bluetooth apparaten. Eventueel daarna te herroepen.</string>
+    <string name="label_is_on_right_axis">Staat op rechter as</string>
 </resources>
