@@ -148,8 +148,8 @@ public class MainActivity extends BaseAppCompatActivity
             if(prefs.edit().putInt("launchCount", ++launchCount).commit()){
                 valueOfCountModified = true;
 
-                // ask the user once for feedback on the 30th app launch
-                if(launchCount == 30){
+                // ask the user once for feedback on the 15th app launch
+                if(launchCount == 15){
                     AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
                     builder.setMessage(R.string.label_feedback_message_enjoying)

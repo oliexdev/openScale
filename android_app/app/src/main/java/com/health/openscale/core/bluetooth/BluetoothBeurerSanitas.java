@@ -242,6 +242,8 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                 if (!currentRemoteUser.isNew) {
                     sendCommand(CMD_DO_MEASUREMENT, encodeUserId(currentRemoteUser));
                     stopMachineState();
+                } else {
+                    return false;
                 }
                 break;
             default:

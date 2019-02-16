@@ -276,6 +276,7 @@ public abstract class BluetoothCommunication {
     protected void disconnect() {
         BluetoothObject btObject = new BluetoothObject();
         btObject.action = BT_ACTIONS.DISCONNECT;
+        btObject.nr = stepNr;
 
         btQueue.add(btObject);
     }
@@ -283,6 +284,7 @@ public abstract class BluetoothCommunication {
     protected void stopMachineState() {
         BluetoothObject btObject = new BluetoothObject();
         btObject.action = BT_ACTIONS.STOP;
+        btObject.nr = stepNr;
 
         btQueue.add(btObject);
     }
@@ -290,6 +292,7 @@ public abstract class BluetoothCommunication {
     protected void resumeMachineState() {
         BluetoothObject btObject = new BluetoothObject();
         btObject.action = BT_ACTIONS.RESUME;
+        btObject.nr = stepNr;
 
         btQueue.addFirst(btObject);
         processBtQueue();
@@ -407,7 +410,6 @@ public abstract class BluetoothCommunication {
                             Timber.d("onCharacteristicChanged %s: %s",
                                     BluetoothGattUuid.prettyPrint(characteristic),
                                     byteInHex(bytes));
-                            processBtQueue();
                             resetDisconnectTimer();
                         },
                         throwable -> onError(throwable)
@@ -628,7 +630,7 @@ public abstract class BluetoothCommunication {
     }
 
     private synchronized void nextMachineStep() {
-        if (btQueue.isEmpty()) {
+        if (btQueue.isEmpty() && !stopped) {
             if (onNextStep(stepNr)) {
                 Timber.d("Step Nr " + stepNr);
                 processBtQueue();
@@ -651,19 +653,19 @@ public abstract class BluetoothCommunication {
 
             switch(lastbtObject.action) {
                 case NOTIFICATION:
-                    Timber.d("Call bt object notify");
+                    Timber.d("Call bt object notify for UUID " + BluetoothGattUuid.prettyPrint(lastbtObject.characteristic));
                     doSetNotificationOn(lastbtObject.characteristic);
                     break;
                 case INDICATION:
-                    Timber.d("Call bt object indication");
+                    Timber.d("Call bt object indication for UUID " + BluetoothGattUuid.prettyPrint(lastbtObject.characteristic));
                     doSetIndicationOn(lastbtObject.characteristic);
                     break;
                 case READ:
-                    Timber.d("Call bt object read");
+                    Timber.d("Call bt object read on UUID " + BluetoothGattUuid.prettyPrint(lastbtObject.characteristic));
                     doReadBytes(lastbtObject.characteristic);
                     break;
                 case WRITE:
-                    Timber.d("Call bt object write");
+                    Timber.d("Call bt object write " + byteInHex(lastbtObject.bytes) + " on UUID " + BluetoothGattUuid.prettyPrint(lastbtObject.characteristic));
                     doWriteBytes(lastbtObject.characteristic, lastbtObject.bytes);
                     break;
                 case DISCOVER:
@@ -671,16 +673,16 @@ public abstract class BluetoothCommunication {
                     doBluetoothDiscoverServices();
                     break;
                 case DISCONNECT:
-                    Timber.d("Call bt object disconnect");
+                    Timber.d("Call bt object disconnect on step nr " + lastbtObject.nr);
                     doDisconnect();
                     break;
                 case STOP:
-                    Timber.d("Call bt object stop");
+                    Timber.d("Call bt object stop on step nr " + lastbtObject.nr);
                     stopped = true;
                     break;
                 case RESUME:
                     if (stopped) {
-                        Timber.d("Call bt object resume");
+                        Timber.d("Call bt object resume on step nr " + (lastbtObject.nr-1));
                         stopped = false;
                         processBtQueue();
                     } else {
