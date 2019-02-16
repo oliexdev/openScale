@@ -39,8 +39,8 @@ public class BluetoothHesley extends BluetoothCommunication {
     }
 
     @Override
-    protected boolean nextInitCmd(int stateNr) {
-        switch (stateNr) {
+    protected boolean onNextStep(int stepNr) {
+        switch (stepNr) {
             case 0:
                 setNotificationOn(WEIGHT_MEASUREMENT_CHARACTERISTIC);
                 break;
@@ -56,16 +56,6 @@ public class BluetoothHesley extends BluetoothCommunication {
         }
 
         return true;
-    }
-
-    @Override
-    protected boolean nextBluetoothCmd(int stateNr) {
-        return false;
-    }
-
-    @Override
-    protected boolean nextCleanUpCmd(int stateNr) {
-        return false;
     }
 
     @Override
@@ -101,6 +91,6 @@ public class BluetoothHesley extends BluetoothCommunication {
         scaleBtData.setBone(bone);
         scaleBtData.setDateTime(new Date());
 
-        addScaleData(scaleBtData);
+        addScaleMeasurement(scaleBtData);
     }
 }

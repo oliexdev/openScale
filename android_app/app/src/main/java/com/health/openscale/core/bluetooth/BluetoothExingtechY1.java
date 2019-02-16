@@ -42,11 +42,10 @@ public class BluetoothExingtechY1 extends BluetoothCommunication {
     }
 
     @Override
-    protected boolean nextInitCmd(int stateNr) {
-        switch (stateNr) {
+    protected boolean onNextStep(int stepNr) {
+        switch (stepNr) {
             case 0:
-                setNotificationOn(WEIGHT_MEASUREMENT_CHARACTERISTIC
-                );
+                setNotificationOn(WEIGHT_MEASUREMENT_CHARACTERISTIC);
                 break;
             case 1:
                 final ScaleUser selectedUser = OpenScale.getInstance().getSelectedScaleUser();
@@ -69,16 +68,6 @@ public class BluetoothExingtechY1 extends BluetoothCommunication {
         }
 
         return true;
-    }
-
-    @Override
-    protected boolean nextBluetoothCmd(int stateNr) {
-        return false;
-    }
-
-    @Override
-    protected boolean nextCleanUpCmd(int stateNr) {
-        return false;
     }
 
     @Override
@@ -118,6 +107,6 @@ public class BluetoothExingtechY1 extends BluetoothCommunication {
         scaleBtData.setVisceralFat(visc_fat);
         scaleBtData.setDateTime(new Date());
 
-        addScaleData(scaleBtData);
+        addScaleMeasurement(scaleBtData);
     }
 }

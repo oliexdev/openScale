@@ -51,13 +51,8 @@ public class BluetoothMedisanaBS44x extends BluetoothCommunication {
     }
 
     @Override
-    protected boolean nextInitCmd(int stateNr) {
-        return false;
-    }
-
-    @Override
-    protected boolean nextBluetoothCmd(int stateNr) {
-        switch (stateNr) {
+    protected boolean onNextStep(int stepNr) {
+        switch (stepNr) {
             case 0:
                 // set indication on for feature characteristic
                 setIndicationOn(FEATURE_MEASUREMENT_CHARACTERISTIC);
@@ -93,12 +88,6 @@ public class BluetoothMedisanaBS44x extends BluetoothCommunication {
     }
 
     @Override
-    protected boolean nextCleanUpCmd(int stateNr) {
-        return false;
-    }
-
-
-    @Override
     public void onBluetoothNotify(UUID characteristic, byte[] value) {
         final byte[] data = value;
 
@@ -109,7 +98,7 @@ public class BluetoothMedisanaBS44x extends BluetoothCommunication {
         if (characteristic.equals(FEATURE_MEASUREMENT_CHARACTERISTIC)) {
             parseFeatureData(data);
 
-            addScaleData(btScaleMeasurement);
+            addScaleMeasurement(btScaleMeasurement);
         }
     }
 

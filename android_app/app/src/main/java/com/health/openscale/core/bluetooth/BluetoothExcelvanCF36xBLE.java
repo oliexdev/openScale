@@ -44,13 +44,8 @@ public class BluetoothExcelvanCF36xBLE extends BluetoothCommunication {
     }
 
     @Override
-    protected boolean nextInitCmd(int stateNr) {
-        return false;
-    }
-
-    @Override
-    protected boolean nextBluetoothCmd(int stateNr) {
-        switch (stateNr) {
+    protected boolean onNextStep(int stepNr) {
+        switch (stepNr) {
             case 0:
                 final ScaleUser selectedUser = OpenScale.getInstance().getSelectedScaleUser();
 
@@ -103,12 +98,7 @@ public class BluetoothExcelvanCF36xBLE extends BluetoothCommunication {
                 return false;
         }
 
-        return false;
-    }
-
-    @Override
-    protected boolean nextCleanUpCmd(int stateNr) {
-        return false;
+        return true;
     }
 
     @Override
@@ -150,6 +140,6 @@ public class BluetoothExcelvanCF36xBLE extends BluetoothCommunication {
         scaleBtData.setBone(bone);
         scaleBtData.setVisceralFat(visceralFat);
 
-        addScaleData(scaleBtData);
+        addScaleMeasurement(scaleBtData);
     }
 }

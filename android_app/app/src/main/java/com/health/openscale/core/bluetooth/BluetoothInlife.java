@@ -73,8 +73,8 @@ public class BluetoothInlife extends BluetoothCommunication {
     }
 
     @Override
-    protected boolean nextInitCmd(int stateNr) {
-        switch (stateNr) {
+    protected boolean onNextStep(int stepNr) {
+        switch (stepNr) {
             case 0:
                 setNotificationOn(WEIGHT_MEASUREMENT_CHARACTERISTIC);
                 break;
@@ -96,16 +96,6 @@ public class BluetoothInlife extends BluetoothCommunication {
         }
 
         return true;
-    }
-
-    @Override
-    protected boolean nextBluetoothCmd(int stateNr) {
-        return false;
-    }
-
-    @Override
-    protected boolean nextCleanUpCmd(int stateNr) {
-        return false;
     }
 
     @Override
@@ -229,7 +219,7 @@ public class BluetoothInlife extends BluetoothCommunication {
         measurement.setLbm(lbm);
         measurement.setVisceralFat(clamp(visceral, 1, 50));
 
-        addScaleData(measurement);
+        addScaleMeasurement(measurement);
 
         sendCommand(0xd4);
     }

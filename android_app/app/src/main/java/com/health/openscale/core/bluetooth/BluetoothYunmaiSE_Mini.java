@@ -52,8 +52,8 @@ public class BluetoothYunmaiSE_Mini extends BluetoothCommunication {
     }
 
     @Override
-    protected boolean nextInitCmd(int stateNr) {
-        switch (stateNr) {
+    protected boolean onNextStep(int stepNr) {
+        switch (stepNr) {
             case 0:
                 byte[] userId = Converters.toInt16Be(getUniqueNumber());
 
@@ -82,8 +82,7 @@ public class BluetoothYunmaiSE_Mini extends BluetoothCommunication {
                 writeBytes(WEIGHT_CMD_CHARACTERISTIC, set_time);
                 break;
             case 2:
-                setNotificationOn(WEIGHT_MEASUREMENT_CHARACTERISTIC
-                );
+                setNotificationOn(WEIGHT_MEASUREMENT_CHARACTERISTIC);
                 break;
             case 3:
                 byte[] magic_bytes = new byte[]{(byte)0x0d, (byte)0x05, (byte)0x13, (byte)0x00, (byte)0x16};
@@ -95,16 +94,6 @@ public class BluetoothYunmaiSE_Mini extends BluetoothCommunication {
         }
 
         return true;
-    }
-
-    @Override
-    protected boolean nextBluetoothCmd(int stateNr) {
-        return false;
-    }
-
-    @Override
-    protected boolean nextCleanUpCmd(int stateNr) {
-        return false;
     }
 
     @Override
@@ -154,7 +143,7 @@ public class BluetoothYunmaiSE_Mini extends BluetoothCommunication {
             Timber.d("scale measurement [%s]", scaleBtData);
         }
 
-        addScaleData(scaleBtData);
+        addScaleMeasurement(scaleBtData);
     }
 
     private int getUniqueNumber() {

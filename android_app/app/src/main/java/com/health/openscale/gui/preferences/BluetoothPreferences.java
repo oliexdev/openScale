@@ -31,7 +31,6 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
 import android.widget.BaseAdapter;
-import android.widget.EditText;
 import android.widget.Toast;
 
 import com.health.openscale.R;
@@ -289,8 +288,8 @@ public class BluetoothPreferences extends PreferenceFragment {
         Handler btHandler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
-                switch (BluetoothCommunication.BT_STATUS_CODE.values()[msg.what]) {
-                    case BT_CONNECTION_LOST:
+                switch (BluetoothCommunication.BT_STATUS.values()[msg.what]) {
+                    case CONNECTION_LOST:
                         OpenScale.getInstance().disconnectFromBluetoothDevice();
                         dialog.dismiss();
                         break;

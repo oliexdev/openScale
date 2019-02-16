@@ -56,8 +56,8 @@ public class BluetoothDigooDGSO38H extends BluetoothCommunication {
 
 
     @Override
-    protected boolean nextInitCmd(int stateNr) {
-        switch (stateNr) {
+    protected boolean onNextStep(int stepNr) {
+        switch (stepNr) {
             case 0:
                 //Tell device to send us weight measurements
                 setNotificationOn(WEIGHT_MEASUREMENT_CHARACTERISTIC);
@@ -65,19 +65,11 @@ public class BluetoothDigooDGSO38H extends BluetoothCommunication {
             case 1:
                 sendMessage(R.string.info_step_on_scale, 0);
                 break;
+            default:
+                return false;
         }
 
-        return false;
-    }
-
-    @Override
-    protected boolean nextBluetoothCmd(int stateNr) {
-        return false;
-    }
-
-    @Override
-    protected boolean nextCleanUpCmd(int stateNr) {
-        return false;
+        return true;
     }
 
     private void parseBytes(byte[] weightBytes) {
@@ -135,7 +127,7 @@ public class BluetoothDigooDGSO38H extends BluetoothCommunication {
                     scaleBtData.setVisceralFat(visceralFat);
                 }
                 scaleBtData.setWeight(weight);
-                addScaleData(scaleBtData);
+                addScaleMeasurement(scaleBtData);
             }
     }
 }

@@ -611,7 +611,7 @@ public class OpenScale {
         }
 
         Timber.d("Disconnecting from bluetooth device");
-        btDeviceDriver.disconnect();
+        btDeviceDriver.doDisconnect();
         btDeviceDriver = null;
 
         return true;

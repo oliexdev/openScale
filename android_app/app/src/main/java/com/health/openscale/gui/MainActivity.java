@@ -470,10 +470,10 @@ public class MainActivity extends BaseAppCompatActivity
         @Override
         public void handleMessage(Message msg) {
 
-            BluetoothCommunication.BT_STATUS_CODE btStatusCode = BluetoothCommunication.BT_STATUS_CODE.values()[msg.what];
+            BluetoothCommunication.BT_STATUS btStatus = BluetoothCommunication.BT_STATUS.values()[msg.what];
 
-            switch (btStatusCode) {
-                case BT_RETRIEVE_SCALE_DATA:
+            switch (btStatus) {
+                case RETRIEVE_SCALE_DATA:
                     setBluetoothStatusIcon(R.drawable.ic_bluetooth_connection_success);
                     ScaleMeasurement scaleBtData = (ScaleMeasurement) msg.obj;
 
@@ -490,42 +490,42 @@ public class MainActivity extends BaseAppCompatActivity
 
                     openScale.addScaleData(scaleBtData, true);
                     break;
-                case BT_INIT_PROCESS:
+                case INIT_PROCESS:
                     setBluetoothStatusIcon(R.drawable.ic_bluetooth_connection_success);
                     Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_init), Toast.LENGTH_SHORT).show();
                     Timber.d("Bluetooth initializing");
                     break;
-                case BT_CONNECTION_LOST:
+                case CONNECTION_LOST:
                     setBluetoothStatusIcon(R.drawable.ic_bluetooth_connection_lost);
                     Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_connection_lost), Toast.LENGTH_SHORT).show();
                     Timber.d("Bluetooth connection lost");
                     break;
-                case BT_NO_DEVICE_FOUND:
+                case NO_DEVICE_FOUND:
                     setBluetoothStatusIcon(R.drawable.ic_bluetooth_connection_lost);
                     Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_no_device), Toast.LENGTH_SHORT).show();
                     Timber.e("No Bluetooth device found");
                     break;
-                case BT_CONNECTION_RETRYING:
+                case CONNECTION_RETRYING:
                     setBluetoothStatusIcon(R.drawable.ic_bluetooth_searching);
                     Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_no_device_retrying), Toast.LENGTH_SHORT).show();
                     Timber.e("No Bluetooth device found retrying");
                     break;
-                case BT_CONNECTION_ESTABLISHED:
+                case CONNECTION_ESTABLISHED:
                     setBluetoothStatusIcon(R.drawable.ic_bluetooth_connection_success);
                     Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_connection_successful), Toast.LENGTH_SHORT).show();
                     Timber.d("Bluetooth connection successful established");
                     break;
-                case BT_CONNECTION_DISCONNECT:
+                case CONNECTION_DISCONNECT:
                     setBluetoothStatusIcon(R.drawable.ic_bluetooth_connection_lost);
                     Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_connection_disconnected), Toast.LENGTH_SHORT).show();
                     Timber.d("Bluetooth connection successful disconnected");
                     break;
-                case BT_UNEXPECTED_ERROR:
+                case UNEXPECTED_ERROR:
                     setBluetoothStatusIcon(R.drawable.ic_bluetooth_connection_lost);
                     Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_connection_error) + ": " + msg.obj, Toast.LENGTH_SHORT).show();
                     Timber.e("Bluetooth unexpected error: %s", msg.obj);
                     break;
-                case BT_SCALE_MESSAGE:
+                case SCALE_MESSAGE:
                     String toastMessage = String.format(getResources().getString(msg.arg1), msg.obj);
                     Toast.makeText(getApplicationContext(), toastMessage, Toast.LENGTH_LONG).show();
                     break;

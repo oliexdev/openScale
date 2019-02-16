@@ -164,14 +164,14 @@ public class BluetoothDebug extends BluetoothCommunication {
     }
 
     @Override
-    protected boolean nextInitCmd(int stateNr) {
-        switch (stateNr)
+    protected boolean onNextStep(int stepNr) {
+        switch (stepNr)
         {
             case 0:
-                doBluetoothDiscoverServices();
+                discoverBluetoothServices();
                 break;
             case 1:
-                int offset = stateNr;
+                int offset = stepNr;
 
                 for (BluetoothGattService service : rxBleDeviceServices.getBluetoothGattServices()) {
                     offset = readServiceCharacteristics(service, offset);
@@ -181,7 +181,7 @@ public class BluetoothDebug extends BluetoothCommunication {
                     logService(service, false);
                 }
 
-                setBtStatus(BT_STATUS_CODE.BT_CONNECTION_LOST);
+                setBluetoothStatus(BT_STATUS.CONNECTION_LOST);
                 break;
             case 2:
                 disconnect();
@@ -191,15 +191,5 @@ public class BluetoothDebug extends BluetoothCommunication {
         }
 
         return true;
-    }
-
-    @Override
-    protected boolean nextBluetoothCmd(int stateNr) {
-        return false;
-    }
-
-    @Override
-    protected boolean nextCleanUpCmd(int stateNr) {
-        return false;
     }
 }
