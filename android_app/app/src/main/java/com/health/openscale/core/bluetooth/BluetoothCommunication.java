@@ -72,7 +72,34 @@ public abstract class BluetoothCommunication {
         STOP,
         RESUME,
         JUMP,
-        FINISH
+        FINISH;
+
+        public String toString() {
+            switch (this) {
+                case WRITE:
+                    return "WRITE";
+                case READ:
+                    return "READ";
+                case NOTIFICATION:
+                    return "NOTIFICATION";
+                case INDICATION:
+                    return "INDICATION";
+                case DISCOVER:
+                    return "DISCOVER";
+                case DISCONNECT:
+                    return "DISCONNECT";
+                case STOP:
+                    return "STOP";
+                case RESUME:
+                    return "RESUME";
+                case JUMP:
+                    return "JUMP";
+                case FINISH:
+                    return "FINISH";
+            }
+
+            return "";
+        }
     }
 
     private class BluetoothObject {
@@ -308,6 +335,7 @@ public abstract class BluetoothCommunication {
     protected void jumpToStepNr(int nr) {
         BluetoothObject btObject = new BluetoothObject();
         btObject.action = BT_ACTIONS.JUMP;
+        btObject.nr = nr;
 
         btQueue.add(btObject);
     }
@@ -376,10 +404,10 @@ public abstract class BluetoothCommunication {
                 .retry(BT_RETRY_TIMES_ON_ERROR)
                 .subscribe(
                         bytes -> {
-                            onBluetoothNotify(characteristic, bytes);
                             Timber.d("onCharacteristicChanged %s: %s",
                                     BluetoothGattUuid.prettyPrint(characteristic),
                                     byteInHex(bytes));
+                            onBluetoothNotify(characteristic, bytes);
                             resetDisconnectTimer();
                         },
                         throwable -> onError(throwable)
@@ -406,10 +434,10 @@ public abstract class BluetoothCommunication {
                 .retry(BT_RETRY_TIMES_ON_ERROR)
                 .subscribe(
                         bytes -> {
-                            onBluetoothNotify(characteristic, bytes);
                             Timber.d("onCharacteristicChanged %s: %s",
                                     BluetoothGattUuid.prettyPrint(characteristic),
                                     byteInHex(bytes));
+                            onBluetoothNotify(characteristic, bytes);
                             resetDisconnectTimer();
                         },
                         throwable -> onError(throwable)
@@ -606,6 +634,21 @@ public abstract class BluetoothCommunication {
         compositeDisposable.add(disposableConnectionState);
     }
 
+    private String getQueueListAsString() {
+        String str = new String();
+        str += "[";
+        for (BluetoothObject btObject : btQueue) {
+            str += btObject.action;
+
+            if (btObject != btQueue.getLast()) {
+                str += ", ";
+            }
+        }
+        str += "]";
+
+        return str;
+    }
+
     private void onError(Throwable throwable) {
         setBluetoothStatus(BT_STATUS.UNEXPECTED_ERROR, throwable.getMessage());
     }
@@ -633,6 +676,7 @@ public abstract class BluetoothCommunication {
         if (btQueue.isEmpty() && !stopped) {
             if (onNextStep(stepNr)) {
                 Timber.d("Step Nr " + stepNr);
+                Timber.d("Bt queue list " + getQueueListAsString());
                 processBtQueue();
                 stepNr++;
             } else {
@@ -648,6 +692,8 @@ public abstract class BluetoothCommunication {
             if (stopped && btQueue.getFirst().action != BT_ACTIONS.RESUME) {
                 return;
             }
+
+            Timber.d("Process bt object " + btQueue.getFirst().action + " from list " + getQueueListAsString());
 
             BluetoothObject lastbtObject = btQueue.pop();
 
@@ -692,7 +738,6 @@ public abstract class BluetoothCommunication {
                 case JUMP:
                     Timber.d("Call bt object jump to step nr " + lastbtObject.nr);
                     stepNr = lastbtObject.nr;
-                    processBtQueue();
                     break;
                 case FINISH:
                     Timber.d("Call bt object finish");

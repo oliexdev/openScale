@@ -212,11 +212,6 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                 if (currentRemoteUser != null) {
                     Timber.d("Request saved measurements for %s", currentRemoteUser.name);
                     sendCommand(CMD_GET_SAVED_MEASUREMENTS, encodeUserId(currentRemoteUser));
-
-                    Timber.d("Deleting saved measurements for %s", currentRemoteUser.name);
-                    sendCommand(CMD_DELETE_SAVED_MEASUREMENTS, encodeUserId(currentRemoteUser));
-
-                    // Wait for all measurements to be received
                     stopMachineState();
                 } else {
                     // Create a remote user for selected openScale user if needed
@@ -346,6 +341,8 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
             return;
         }
 
+        Timber.d("process measurements data ");
+
         int oldEnd = measurementData.length;
         int toCopy = data.length - offset;
 
@@ -361,11 +358,17 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
         int current = data[3] & 0xFF;
 
         processMeasurementData(data, 4, current % 2 == 1);
-        if (current == count) {
-            // Resume but don't do next step until ACK has been sent
-            resumeMachineState();
-        }
+        Timber.d("send ack for saved measurement");
         sendAck(data);
+        resumeMachineState();
+
+        if (current == count) {
+            Timber.d("Deleting saved measurements for %s", currentRemoteUser.name);
+            sendCommand(CMD_DELETE_SAVED_MEASUREMENTS, encodeUserId(currentRemoteUser));
+            jumpToStepNr(6);
+        }
+
+        jumpToStepNr(5);
     }
 
     private void processWeightMeasurement(byte[] data) {
