@@ -93,6 +93,8 @@ public class BluetoothMiScale extends BluetoothCommunication {
 
                 byte[] userIdentifier = new byte[]{(byte)0x04, (byte)0xFF, (byte)0xFF, (byte) ((uniqueNumber & 0xFF00) >> 8), (byte) ((uniqueNumber & 0xFF) >> 0)};
                 writeBytes(WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, userIdentifier);
+
+                resumeMachineState();
             }
 
             if (data.length == 20) {
@@ -141,6 +143,7 @@ public class BluetoothMiScale extends BluetoothCommunication {
             case 5:
                 // invoke receiving history data
                 writeBytes(WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, new byte[]{0x02});
+                stopMachineState();
                 break;
             default:
                 return false;

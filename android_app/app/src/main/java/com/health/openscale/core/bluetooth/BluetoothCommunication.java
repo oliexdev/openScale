@@ -680,7 +680,7 @@ public abstract class BluetoothCommunication {
                     Timber.d("Bt queue list " + getQueueListAsString());
                     processBtQueue();
                 } else {
-                    Timber.d("No actions in list for step nr " + stepNr);
+                    Timber.d("Empty bt queue list for step nr " + stepNr);
                 }
                 stepNr++;
             } else {
@@ -748,6 +748,10 @@ public abstract class BluetoothCommunication {
                 case FINISH:
                     Timber.d("Call bt object finish");
                     disconnectWithDelay();
+
+                    if (!btQueue.isEmpty()) {
+                        processBtQueue();
+                    }
                     break;
                 default:
                     Timber.e("No valid Bluetooth action called");
