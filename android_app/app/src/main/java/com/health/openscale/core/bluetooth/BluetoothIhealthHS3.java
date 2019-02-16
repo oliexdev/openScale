@@ -97,7 +97,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
                     }
                 } catch (IOException connectException) {
                     // Unable to connect; close the socket and get out
-                    disconnect();
+                    doDisconnect();
                     setBluetoothStatus(BT_STATUS.NO_DEVICE_FOUND);
                 }
             }
@@ -107,7 +107,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
     }
 
     @Override
-    public void disconnect() {
+    public void doDisconnect() {
 
         Timber.w("HS3 - disconnect");
         if (btSocket != null) {
