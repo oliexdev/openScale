@@ -675,9 +675,13 @@ public abstract class BluetoothCommunication {
     private synchronized void nextMachineStep() {
         if (btQueue.isEmpty() && !stopped) {
             if (onNextStep(stepNr)) {
-                Timber.d("Step Nr " + stepNr);
-                Timber.d("Bt queue list " + getQueueListAsString());
-                processBtQueue();
+                if (!btQueue.isEmpty()) {
+                    Timber.d("Step Nr " + stepNr);
+                    Timber.d("Bt queue list " + getQueueListAsString());
+                    processBtQueue();
+                } else {
+                    Timber.d("No actions in list for step nr " + stepNr);
+                }
                 stepNr++;
             } else {
                 finishMachineState();
@@ -733,11 +737,13 @@ public abstract class BluetoothCommunication {
                         processBtQueue();
                     } else {
                         Timber.w("warning resume called without stopping the machine state");
+                        processBtQueue();
                     }
                     break;
                 case JUMP:
                     Timber.d("Call bt object jump to step nr " + lastbtObject.nr);
                     stepNr = lastbtObject.nr;
+                    processBtQueue();
                     break;
                 case FINISH:
                     Timber.d("Call bt object finish");
