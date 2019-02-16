@@ -142,6 +142,12 @@ public class MainActivity extends BaseAppCompatActivity
             prefs.edit().putBoolean("firstStart", false).apply();
         }
 
+        if (prefs.getBoolean("resetLaunchCountForVersion2.0", true)) {
+            prefs.edit().putInt("launchCount", 0).commit();
+
+            prefs.edit().putBoolean("resetLaunchCountForVersion2.0", false).apply();
+        }
+
         if(!valueOfCountModified){
             int launchCount = prefs.getInt("launchCount", 0);
 
