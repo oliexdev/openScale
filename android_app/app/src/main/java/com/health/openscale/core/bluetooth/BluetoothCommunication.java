@@ -103,10 +103,32 @@ public abstract class BluetoothCommunication {
     }
 
     private class BluetoothObject {
-        public BT_ACTIONS action;
-        public UUID characteristic;
-        public byte[] bytes;
-        public int nr;
+        public BT_ACTIONS action = null;
+        public UUID characteristic = null;
+        public byte[] bytes = null;
+        public int nr = -1;
+
+        @Override
+        public String toString() {
+            String str = new String();
+            str += action + " ";
+
+            if (characteristic != null) {
+                str += "[UUID " + BluetoothGattUuid.prettyPrint(characteristic) + "]";
+            }
+            if (bytes != null) {
+                str += "[bytes " + byteInHex(bytes) + "]";
+            }
+            if (nr != -1) {
+                if (action == BT_ACTIONS.RESUME) {
+                    str += "[step nr " + (nr - 1) + "]";
+                } else {
+                    str += "[step nr " + nr + "]";
+                }
+            }
+
+            return str;
+        }
     }
 
     private LinkedList<BluetoothObject> btQueue;
@@ -677,12 +699,14 @@ public abstract class BluetoothCommunication {
             if (onNextStep(stepNr)) {
                 if (!btQueue.isEmpty()) {
                     Timber.d("Step Nr " + stepNr);
-                    Timber.d("Bt queue list " + getQueueListAsString());
+                    Timber.d("Queue list for step nr " + stepNr + " " + getQueueListAsString());
                     processBtQueue();
+                    stepNr++;
                 } else {
-                    Timber.d("Empty bt queue list for step nr " + stepNr);
+                    Timber.w("Empty queue list for step nr " + stepNr);
+                    stepNr++;
+                    nextMachineStep();
                 }
-                stepNr++;
             } else {
                 finishMachineState();
             }
@@ -697,56 +721,48 @@ public abstract class BluetoothCommunication {
                 return;
             }
 
-            Timber.d("Process bt object " + btQueue.getFirst().action + " from list " + getQueueListAsString());
+            Timber.d("Process " + btQueue.getFirst().action + " from list " + getQueueListAsString());
 
             BluetoothObject lastbtObject = btQueue.pop();
 
+            Timber.d("Call " + lastbtObject);
+
             switch(lastbtObject.action) {
                 case NOTIFICATION:
-                    Timber.d("Call bt object notify for UUID " + BluetoothGattUuid.prettyPrint(lastbtObject.characteristic));
                     doSetNotificationOn(lastbtObject.characteristic);
                     break;
                 case INDICATION:
-                    Timber.d("Call bt object indication for UUID " + BluetoothGattUuid.prettyPrint(lastbtObject.characteristic));
                     doSetIndicationOn(lastbtObject.characteristic);
                     break;
                 case READ:
-                    Timber.d("Call bt object read on UUID " + BluetoothGattUuid.prettyPrint(lastbtObject.characteristic));
                     doReadBytes(lastbtObject.characteristic);
                     break;
                 case WRITE:
-                    Timber.d("Call bt object write " + byteInHex(lastbtObject.bytes) + " on UUID " + BluetoothGattUuid.prettyPrint(lastbtObject.characteristic));
                     doWriteBytes(lastbtObject.characteristic, lastbtObject.bytes);
                     break;
                 case DISCOVER:
-                    Timber.d("Call bt object discover bluetooth services");
                     doBluetoothDiscoverServices();
                     break;
                 case DISCONNECT:
-                    Timber.d("Call bt object disconnect on step nr " + lastbtObject.nr);
                     doDisconnect();
                     break;
                 case STOP:
-                    Timber.d("Call bt object stop on step nr " + lastbtObject.nr);
                     stopped = true;
                     break;
                 case RESUME:
                     if (stopped) {
-                        Timber.d("Call bt object resume on step nr " + (lastbtObject.nr-1));
                         stopped = false;
                         processBtQueue();
                     } else {
-                        Timber.w("warning resume called without stopping the machine state");
+                        Timber.w("Resume called without stopping the machine state");
                         processBtQueue();
                     }
                     break;
                 case JUMP:
-                    Timber.d("Call bt object jump to step nr " + lastbtObject.nr);
                     stepNr = lastbtObject.nr;
                     processBtQueue();
                     break;
                 case FINISH:
-                    Timber.d("Call bt object finish");
                     disconnectWithDelay();
 
                     if (!btQueue.isEmpty()) {

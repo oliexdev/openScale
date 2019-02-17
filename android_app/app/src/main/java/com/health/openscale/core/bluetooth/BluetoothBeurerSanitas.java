@@ -213,27 +213,28 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                     Timber.d("Request saved measurements for %s", currentRemoteUser.name);
                     sendCommand(CMD_GET_SAVED_MEASUREMENTS, encodeUserId(currentRemoteUser));
                     stopMachineState();
-                } else {
-                    // Create a remote user for selected openScale user if needed
-                    currentRemoteUser = null;
-                    final ScaleUser selectedUser = OpenScale.getInstance().getSelectedScaleUser();
-                    for (RemoteUser remoteUser : remoteUsers) {
-                        if (remoteUser.localUserId == selectedUser.getId()) {
-                            currentRemoteUser = remoteUser;
-                            break;
-                        }
-                    }
-                    if (currentRemoteUser == null) {
-                        createRemoteUser(selectedUser);
-                        stopMachineState();
-                    }
                 }
                 break;
             case 6:
+                // Create a remote user for selected openScale user if needed
+                currentRemoteUser = null;
+                final ScaleUser selectedUser = OpenScale.getInstance().getSelectedScaleUser();
+                for (RemoteUser remoteUser : remoteUsers) {
+                    if (remoteUser.localUserId == selectedUser.getId()) {
+                        currentRemoteUser = remoteUser;
+                        break;
+                    }
+                }
+                if (currentRemoteUser == null) {
+                    createRemoteUser(selectedUser);
+                    stopMachineState();
+                }
+                break;
+            case 7:
                 sendCommand(CMD_USER_DETAILS, encodeUserId(currentRemoteUser));
                 stopMachineState();
                 break;
-            case 7:
+            case 8:
                 if (!currentRemoteUser.isNew) {
                     sendCommand(CMD_DO_MEASUREMENT, encodeUserId(currentRemoteUser));
                     stopMachineState();
@@ -310,6 +311,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
         sendAck(data);
 
         if (current != count) {
+            resumeMachineState();
             return;
         }
 
@@ -497,7 +499,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                 sendMessage(R.string.error_max_scale_users, 0);
                 // Force disconnect
                 Timber.d("Send disconnect command to scale");
-                sendAlternativeStartCode(ID_START_NIBBLE_DISCONNECT, (byte) 0x02);
+                jumpToStepNr(8);
                 break;
 
             case CMD_DO_MEASUREMENT:
