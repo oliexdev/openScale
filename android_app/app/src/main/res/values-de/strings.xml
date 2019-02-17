@@ -167,7 +167,6 @@
     <string name="label_share_subject">CSV Datenexport (%s)</string>
     <string name="label_mergeWithLastMeasurement">Zusammenführen mit der letzten Messung</string>
     <string name="label_export_overwrite">Vorherigen Export überschreiben %s?</string>
-
     <string name="label_measurement_in_percent">Messwert in %</string>
     <string name="label_estimate_measurement">Geschätzte Messung</string>
     <string name="label_estimation_formula">Schätzformel</string>
@@ -215,10 +214,10 @@
     <string name="activity_level_moderate">Moderate Tätigkeit</string>
     <string name="activity_level_heavy">Schwere Tätigkeit</string>
     <string name="activity_level_extreme">Extreme Tätigkeit</string>
-<string name="permission_read_write_data_description">Auslesen der openScale Daten, inkl. Benutzerinformationen und aller gespeicherten Messungen</string>
+    <string name="permission_read_write_data_description">Auslesen der openScale Daten, inkl. Benutzerinformationen und aller gespeicherten Messungen</string>
     <string name="permission_read_write_data_label">Auslesen der openScale Daten</string>
     <string name="label_data_provider_enable">3rd Party App Zugriff</string>
-<string name="trisa_scale_not_paired">Diese Waage ist nicht gekoppelt!
+    <string name="trisa_scale_not_paired">Diese Waage ist nicht gekoppelt!
 \n
 \nHalten Sie die Taste an der Unterseite der Waage gedrückt, um sie in den Kopplungsmodus zu versetzen und verbinden Sie sie dann erneut, um das Gerätepasswort abzurufen.</string>
     <string name="trisa_scale_pairing_succeeded">Die Kopplung ist erfolgreich!
@@ -227,6 +226,14 @@
     <string name="info_bluetooth_no_device_retrying">Kann keine Verbindnung herstellen, versuche erneut…</string>
     <string name="label_tdee">Gesamtenergieumsatz (TDEE)</string>
     <string name="label_calories">Kalorien</string>
-    <string name="info_bluetooth_connection_disconnected">Bluetooth Verbindung unterbrochen</string>
+    <string name="info_bluetooth_connection_disconnected">Bluetooth Verbindung getrennt</string>
     <string name="info_step_on_scale">Bitte Barfuß auf die Wage stellen</string>
+    <string name="label_enable_legend">Diagrammlegende</string>
+    <string name="label_enable_yaxis">Y-Achse</string>
+    <string name="label_day_view">Tagesansicht</string>
+    <string name="label_year_view">Jahresansicht</string>
+    <string name="label_rolling_chart">Rollendes Diagramm</string>
+    <string name="label_measurement_bar">Messwerteanzeige</string>
+    <string name="permission_location_service_info">Gewährleisten Sie den Standortzugriff in den Android-Einstellungen, um nach Bluetooth-Geräten zu suchen. Sie können es anschließend wieder widerrufen.</string>
+    <string name="label_is_on_right_axis">Auf der rechten Achse</string>
 </resources>
