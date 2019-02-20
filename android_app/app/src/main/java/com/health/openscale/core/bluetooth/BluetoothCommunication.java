@@ -212,21 +212,20 @@ public abstract class BluetoothCommunication {
      */
     protected void onBluetoothDiscovery(RxBleDeviceServices rxBleDeviceServices) { }
 
-    protected void stopMachineState() {
+    protected synchronized void stopMachineState() {
         Timber.d("Stop machine state");
         stopped = true;
     }
 
-    protected void resumeMachineState() {
+    protected synchronized void resumeMachineState() {
         Timber.d("Resume machine state");
         stopped = false;
         nextMachineStep();
     }
 
-    protected void jumpToStepNr(int nr) {
-        Timber.d("Jump to step nr " + nr);
+    protected synchronized void jumpNextToStepNr(int nr) {
+        Timber.d("Jump next to step nr " + nr);
         stepNr = nr;
-        nextMachineStep();
     }
 
     /**
@@ -238,7 +237,7 @@ public abstract class BluetoothCommunication {
         Timber.d("Invoke write bytes [" + byteInHex(bytes) + "] on " + BluetoothGattUuid.prettyPrint(characteristic));
         Observable<byte[]> observable = connectionObservable
                 .flatMapSingle(rxBleConnection -> rxBleConnection.writeCharacteristic(characteristic, bytes))
-                .subscribeOn(Schedulers.io())
+                .subscribeOn(Schedulers.trampoline())
                 .observeOn(AndroidSchedulers.mainThread())
                 .retry(BT_RETRY_TIMES_ON_ERROR);
 
@@ -266,7 +265,7 @@ public abstract class BluetoothCommunication {
         Single<byte[]> observable = connectionObservable
                 .firstOrError()
                 .flatMap(rxBleConnection -> rxBleConnection.readCharacteristic(characteristic))
-                .subscribeOn(Schedulers.io())
+                .subscribeOn(Schedulers.trampoline())
                 .observeOn(AndroidSchedulers.mainThread())
                 .retry(BT_RETRY_TIMES_ON_ERROR);
 
@@ -296,7 +295,7 @@ public abstract class BluetoothCommunication {
                         }
                 )
                 .flatMap(indicationObservable -> indicationObservable)
-                .subscribeOn(Schedulers.io())
+                .subscribeOn(Schedulers.trampoline())
                 .observeOn(AndroidSchedulers.mainThread())
                 .retry(BT_RETRY_TIMES_ON_ERROR);
 
@@ -332,7 +331,7 @@ public abstract class BluetoothCommunication {
                         }
                 )
                 .flatMap(notificationObservable -> notificationObservable)
-                .subscribeOn(Schedulers.io())
+                .subscribeOn(Schedulers.trampoline())
                 .observeOn(AndroidSchedulers.mainThread())
                 .retry(BT_RETRY_TIMES_ON_ERROR);
 
@@ -354,7 +353,7 @@ public abstract class BluetoothCommunication {
         Timber.d("Invoke discover Bluetooth services");
         final Observable<RxBleDeviceServices> observable = connectionObservable
                 .flatMapSingle(RxBleConnection::discoverServices)
-                .subscribeOn(Schedulers.io())
+                .subscribeOn(Schedulers.trampoline())
                 .observeOn(AndroidSchedulers.mainThread())
                 .retry(BT_RETRY_TIMES_ON_ERROR);
 
@@ -467,7 +466,7 @@ public abstract class BluetoothCommunication {
                             //.setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES)
                             .build()
             )
-                    .subscribeOn(Schedulers.io())
+                    .subscribeOn(Schedulers.trampoline())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(bleScanResult -> {
                         if (bleScanResult.getBleDevice().getMacAddress().equals(macAddress)) {
@@ -500,7 +499,7 @@ public abstract class BluetoothCommunication {
                         .establishConnection(false)
                         .takeUntil(disconnectTriggerSubject)
                         .doOnError(throwable -> setBluetoothStatus(BT_STATUS.CONNECTION_RETRYING))
-                        .subscribeOn(Schedulers.io())
+                        .subscribeOn(Schedulers.trampoline())
                         .observeOn(AndroidSchedulers.mainThread())
                         .compose(ReplayingShare.instance());
 

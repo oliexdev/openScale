@@ -362,7 +362,11 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
         if (current == count) {
             Timber.d("Deleting saved measurements for %s", currentRemoteUser.name);
             sendCommand(CMD_DELETE_SAVED_MEASUREMENTS, encodeUserId(currentRemoteUser));
-            jumpToStepNr(5);
+
+            if (currentRemoteUser.remoteUserId != remoteUsers.get(remoteUsers.size() - 1).remoteUserId) {
+                jumpNextToStepNr(5);
+                resumeMachineState();
+            }
         }
     }
 
@@ -466,6 +470,8 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                 int measurementCount = data[3] & 0xFF;
                 if (measurementCount == 0) {
                     // Skip delete all measurements step (since there are no measurements to delete)
+                    Timber.d("No saved measurements found for user " + currentRemoteUser.name);
+                    jumpNextToStepNr(5);
                     resumeMachineState();
                 }
                 // Otherwise wait for CMD_SAVED_MEASUREMENT notifications which will,
@@ -474,7 +480,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
 
             case CMD_DELETE_SAVED_MEASUREMENTS:
                 if (data[3] == 0) {
-                    Timber.d("Saved measurements successfully deleted");
+                    Timber.d("Saved measurements successfully deleted for user " + currentRemoteUser.name);
                 }
                 resumeMachineState();
                 break;
@@ -492,7 +498,8 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                 sendMessage(R.string.error_max_scale_users, 0);
                 // Force disconnect
                 Timber.d("Send disconnect command to scale");
-                jumpToStepNr(8);
+                jumpNextToStepNr(8);
+                resumeMachineState();
                 break;
 
             case CMD_DO_MEASUREMENT:
