@@ -169,7 +169,6 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
 
     @Override
     protected boolean onNextStep(int stepNr) {
-
         switch (stepNr) {
             case 0:
                 // Setup notification
@@ -311,7 +310,6 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
         sendAck(data);
 
         if (current != count) {
-            resumeMachineState();
             return;
         }
 
@@ -343,8 +341,6 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
             return;
         }
 
-        Timber.d("process measurements data ");
-
         int oldEnd = measurementData.length;
         int toCopy = data.length - offset;
 
@@ -360,17 +356,14 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
         int current = data[3] & 0xFF;
 
         processMeasurementData(data, 4, current % 2 == 1);
-        Timber.d("send ack for saved measurement");
+
         sendAck(data);
-        resumeMachineState();
 
         if (current == count) {
             Timber.d("Deleting saved measurements for %s", currentRemoteUser.name);
             sendCommand(CMD_DELETE_SAVED_MEASUREMENTS, encodeUserId(currentRemoteUser));
-            jumpToStepNr(6);
+            jumpToStepNr(5);
         }
-
-        jumpToStepNr(5);
     }
 
     private void processWeightMeasurement(byte[] data) {
