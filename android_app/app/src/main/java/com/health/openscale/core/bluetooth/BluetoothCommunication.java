@@ -261,7 +261,7 @@ public abstract class BluetoothCommunication {
      *@param characteristic the Bluetooth UUID characteristic
      */
     protected Single<byte[]> readBytes(UUID characteristic) {
-        Timber.d("Invoke read bytes on for " + BluetoothGattUuid.prettyPrint(characteristic));
+        Timber.d("Invoke read bytes on " + BluetoothGattUuid.prettyPrint(characteristic));
         Single<byte[]> observable = connectionObservable
                 .firstOrError()
                 .flatMap(rxBleConnection -> rxBleConnection.readCharacteristic(characteristic))
@@ -287,7 +287,7 @@ public abstract class BluetoothCommunication {
      * @param characteristic the Bluetooth UUID characteristic
      */
     protected Observable<byte[]> setIndicationOn(UUID characteristic) {
-        Timber.d("Invoke set indication on for " + BluetoothGattUuid.prettyPrint(characteristic));
+        Timber.d("Invoke set indication on " + BluetoothGattUuid.prettyPrint(characteristic));
         Observable<byte[]> observable = connectionObservable
                 .flatMap(rxBleConnection -> rxBleConnection.setupIndication(characteristic))
                 .doOnNext(notificationObservable -> {
@@ -320,7 +320,7 @@ public abstract class BluetoothCommunication {
      * @param characteristic the Bluetooth UUID characteristic
      */
     protected Observable<byte[]> setNotificationOn(UUID characteristic) {
-        Timber.d("Invoke set notification on for " + BluetoothGattUuid.prettyPrint(characteristic));
+        Timber.d("Invoke set notification on " + BluetoothGattUuid.prettyPrint(characteristic));
         stopped = true;
         Observable<byte[]> observable = connectionObservable
                 .flatMap(rxBleConnection -> rxBleConnection.setupNotification(characteristic))
@@ -486,7 +486,6 @@ public abstract class BluetoothCommunication {
             Timber.d("Stop Le san");
             scanSubscription.dispose();
             scanSubscription = null;
-
         }
 
         Handler handler = new Handler();
