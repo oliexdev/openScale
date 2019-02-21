@@ -395,9 +395,13 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         OpenScale.getInstance().deleteScaleData(markedMeasurement.getId());
         Toast.makeText(overviewView.getContext(), getResources().getString(R.string.info_data_deleted), Toast.LENGTH_SHORT).show();
 
-        deleteEntry.setVisibility(View.GONE);
-        editEntry.setVisibility(View.GONE);
-        deleteEntry.setVisibility(View.GONE);
+        showEntry.setEnabled(false);
+        editEntry.setEnabled(false);
+        deleteEntry.setEnabled(false);
+
+        showEntry.setColorFilter(ColorUtil.COLOR_GRAY);
+        editEntry.setColorFilter(ColorUtil.COLOR_GRAY);
+        deleteEntry.setColorFilter(ColorUtil.COLOR_GRAY);
 
         updateOnView(OpenScale.getInstance().getScaleMeasurementList());
     }
