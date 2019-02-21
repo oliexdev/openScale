@@ -47,12 +47,10 @@ public class BluetoothOneByone extends BluetoothCommunication {
     }
 
     @Override
-    protected boolean nextInitCmd(int stateNr) {
-        switch (stateNr) {
+    protected boolean onNextStep(int stepNr) {
+        switch (stepNr) {
             case 0:
-                setNotificationOn(
-                        WEIGHT_MEASUREMENT_CHARACTERISTIC_BODY_COMPOSITION
-                );
+                setNotificationOn(WEIGHT_MEASUREMENT_CHARACTERISTIC_BODY_COMPOSITION);
                 break;
             case 1:
                 ScaleUser currentUser = OpenScale.getInstance().getSelectedScaleUser();
@@ -81,16 +79,6 @@ public class BluetoothOneByone extends BluetoothCommunication {
         }
 
         return true;
-    }
-
-    @Override
-    protected boolean nextBluetoothCmd(int stateNr) {
-        return false;
-    }
-
-    @Override
-    protected boolean nextCleanUpCmd(int stateNr) {
-        return false;
     }
 
     @Override
@@ -155,6 +143,6 @@ public class BluetoothOneByone extends BluetoothCommunication {
 
         Timber.d("scale measurement [%s]", scaleBtData);
 
-        addScaleData(scaleBtData);
+        addScaleMeasurement(scaleBtData);
     }
 }

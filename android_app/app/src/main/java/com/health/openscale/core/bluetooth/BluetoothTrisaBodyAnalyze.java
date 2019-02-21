@@ -92,7 +92,7 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
      * set-broadcast-id command, and should disconnect after the write succeeds.
      *
      * @see #onPasswordReceived
-     * @see #nextBluetoothCmd
+     * @see #onNextStep
      */
     private boolean pairing = false;
 
@@ -119,13 +119,13 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
     }
 
     @Override
-    protected boolean nextInitCmd(int stateNr) {
-        Timber.i("nextInitCmd(%d)", stateNr);
-        switch (stateNr) {
+    protected boolean onNextStep(int stepNr) {
+        Timber.i("onNextStep(%d)", stepNr);
+        switch (stepNr) {
             case 0:
                 // Register for notifications of the measurement characteristic.
                 setIndicationOn(MEASUREMENT_CHARACTERISTIC_UUID);
-                return true;  // more commands follow
+                break;  // more commands follow
             case 1:
                 // Register for notifications of the command upload characteristic.
                 //
@@ -133,40 +133,22 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
                 // immediately after. This is important because we should be in the main state
                 // to handle pairing correctly.
                 setIndicationOn(UPLOAD_COMMAND_CHARACTERISTIC_UUID);
-                // falls through
-            default:
-                return false;  // no more commands
-        }
-    }
-
-    @Override
-    protected boolean nextBluetoothCmd(int stateNr) {
-        Timber.i("nextBluetoothCmd(%d)", stateNr);
-        switch (stateNr) {
-            case 0:
-            default:
-                return false;  // no more commands
-
-            case 1:
+                break;
+            case 2:
                 // This state is triggered by the write in onPasswordReceived()
                 if (pairing) {
                     pairing = false;
                     disconnect();
                 }
-                return false;  // no more commands;
-        }
-    }
-
-    @Override
-    protected boolean nextCleanUpCmd(int stateNr) {
-        Timber.i("nextCleanUpCmd(%d)", stateNr);
-        switch (stateNr) {
-            case 0:
+                break;
+            case 3:
                 writeCommand(DOWNLOAD_INFORMATION_ENABLE_DISCONNECT_COMMAND);
-                // falls through
+                break;
             default:
                 return false;  // no more commands
         }
+
+        return true;
     }
 
     @Override
@@ -247,7 +229,7 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
             return;
         }
 
-        addScaleData(measurement);
+        addScaleMeasurement(measurement);
     }
 
     public ScaleMeasurement parseScaleMeasurementData(byte[] data, ScaleUser user) {

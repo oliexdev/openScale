@@ -82,8 +82,8 @@ public class BluetoothMGB extends BluetoothCommunication {
     }
 
     @Override
-    protected boolean nextInitCmd(int stateNr) {
-        switch (stateNr) {
+    protected boolean onNextStep(int stepNr) {
+        switch (stepNr) {
             case 0:
                 setNotificationOn(uuid_char_ctrl
                 );
@@ -125,19 +125,6 @@ public class BluetoothMGB extends BluetoothCommunication {
 
         return true;
     }
-
-
-    @Override
-    protected boolean nextBluetoothCmd(int stateNr) {
-        return false;
-    }
-
-
-    @Override
-    protected boolean nextCleanUpCmd(int stateNr) {
-        return false;
-    }
-
 
     @Override
     public void onBluetoothNotify(UUID characteristic, byte[] value) {
@@ -202,7 +189,7 @@ public class BluetoothMGB extends BluetoothCommunication {
             popInt(); // unknown =02
             popInt(); // unknown =47;48;4e;4b;42
 
-            addScaleData(measurement);
+            addScaleMeasurement(measurement);
 
             //    Visceral fat?
             //    Standard weight?

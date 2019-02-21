@@ -230,8 +230,9 @@ public class ChartMeasurementView extends LineChart {
     }
 
     private void setMeasurementList(List<ScaleMeasurement> measurementList) {
+        scaleMeasurementList = measurementList;
+
         if (!measurementList.isEmpty()) {
-            scaleMeasurementList = measurementList;
             lastMeasurement = measurementList.get(0);
             Collections.reverse(measurementList);
             firstMeasurement = measurementList.get(0);
@@ -409,11 +410,11 @@ public class ChartMeasurementView extends LineChart {
     }
 
     private void refresh() {
+        clear();
+
         if (scaleMeasurementList.isEmpty()) {
             return;
         }
-
-        clear();
 
         List<ILineDataSet> lineDataSets = new ArrayList<>();
 

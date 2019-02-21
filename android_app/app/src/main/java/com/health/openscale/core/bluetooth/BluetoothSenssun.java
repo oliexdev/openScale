@@ -68,8 +68,8 @@ public class BluetoothSenssun extends BluetoothCommunication {
     }
 
     @Override
-    protected boolean nextInitCmd(int stateNr) {
-        switch (stateNr) {
+    protected boolean onNextStep(int stepNr) {
+        switch (stepNr) {
             case 0:
                 setNotificationOn(WEIGHT_MEASUREMENT_CHARACTERISTIC);
                 break;
@@ -86,16 +86,6 @@ public class BluetoothSenssun extends BluetoothCommunication {
     }
 
     @Override
-    protected boolean nextBluetoothCmd(int stateNr) {
-        return false;
-    }
-
-    @Override
-    protected boolean nextCleanUpCmd(int stateNr) {
-        return false;
-    }
-
-    @Override
     public void onBluetoothNotify(UUID characteristic, byte[] value) {
         final byte[] data = value;
 
@@ -107,7 +97,7 @@ public class BluetoothSenssun extends BluetoothCommunication {
         }
 
         if (isBitSet(WeightFatMus,2) ) {
-            addScaleData(measurement);
+            addScaleMeasurement(measurement);
         }
     }
 

@@ -23,14 +23,13 @@ import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 
 import com.health.openscale.core.datatypes.ScaleMeasurement;
-import com.polidea.rxandroidble2.RxBleClient;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.UUID;
-import java.util.Date;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.UUID;
 
 import timber.log.Timber;
 
@@ -57,20 +56,8 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
     }
 
     @Override
-    protected boolean nextInitCmd(int stateNr) {
-        Timber.w("ihealthHS3 - nextInitCmd - returning false");
-        return false;
-    }
-
-    @Override
-    protected boolean nextBluetoothCmd(int stateNr) {
-        Timber.w("ihealthHS3 - nextBluetoothCmd - returning false");
-        return false;
-    }
-
-    @Override
-    protected boolean nextCleanUpCmd(int stateNr) {
-        Timber.w("ihealthHS3 - nextCleanUpCmd - returning false");
+    protected boolean onNextStep(int stepNr) {
+        Timber.w("ihealthHS3 - onNextStep - returning false");
         return false;
     }
 
@@ -79,7 +66,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
         BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
 
         if (btAdapter == null) {
-            setBtStatus(BT_STATUS_CODE.BT_NO_DEVICE_FOUND);
+            setBluetoothStatus(BT_STATUS.NO_DEVICE_FOUND);
             return;
         }
 
@@ -88,7 +75,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
             // Get a BluetoothSocket to connect with the given BluetoothDevice
             btSocket = btDevice.createRfcommSocketToServiceRecord(uuid);
         } catch (IOException e) {
-            setBtStatus(BT_STATUS_CODE.BT_UNEXPECTED_ERROR, "Can't get a bluetooth socket");
+            setBluetoothStatus(BT_STATUS.UNEXPECTED_ERROR, "Can't get a bluetooth socket");
             btDevice = null;
             return;
         }
@@ -103,7 +90,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
                         btSocket.connect();
 
                         // Bluetooth connection was successful
-                        setBtStatus(BT_STATUS_CODE.BT_CONNECTION_ESTABLISHED);
+                        setBluetoothStatus(BT_STATUS.CONNECTION_ESTABLISHED);
 
                         btConnectThread = new BluetoothConnectedThread();
                         btConnectThread.start();
@@ -111,7 +98,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
                 } catch (IOException connectException) {
                     // Unable to connect; close the socket and get out
                     disconnect();
-                    setBtStatus(BT_STATUS_CODE.BT_NO_DEVICE_FOUND);
+                    setBluetoothStatus(BT_STATUS.NO_DEVICE_FOUND);
                 }
             }
         };
@@ -129,7 +116,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
                     btSocket.close();
                     btSocket = null;
                 } catch (IOException closeException) {
-                    setBtStatus(BT_STATUS_CODE.BT_UNEXPECTED_ERROR, "Can't close bluetooth socket");
+                    setBluetoothStatus(BT_STATUS.UNEXPECTED_ERROR, "Can't close bluetooth socket");
                 }
             }
         }
@@ -171,7 +158,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
                 btInStream = btSocket.getInputStream();
                 btOutStream = btSocket.getOutputStream();
             } catch (IOException e) {
-                setBtStatus(BT_STATUS_CODE.BT_UNEXPECTED_ERROR, "Can't get bluetooth input or output stream " + e.getMessage());
+                setBluetoothStatus(BT_STATUS.UNEXPECTED_ERROR, "Can't get bluetooth input or output stream " + e.getMessage());
             }
         }
 
@@ -209,7 +196,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
                                  ScaleMeasurement scaleMeasurement = parseWeightArray(weightBytes);
 
                                  if (scaleMeasurement != null) {
-                                       addScaleData(scaleMeasurement);
+                                       addScaleMeasurement(scaleMeasurement);
                                 }
                                  
                               }
@@ -227,7 +214,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
 
                 } catch (IOException e) {
                     cancel();
-                    setBtStatus(BT_STATUS_CODE.BT_CONNECTION_LOST);
+                    setBluetoothStatus(BT_STATUS.CONNECTION_LOST);
                 }
             }
         }
@@ -266,7 +253,7 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
             try {
                 btOutStream.write(bytes);
             } catch (IOException e) {
-                setBtStatus(BT_STATUS_CODE.BT_UNEXPECTED_ERROR, "Error while writing to bluetooth socket " + e.getMessage());
+                setBluetoothStatus(BT_STATUS.UNEXPECTED_ERROR, "Error while writing to bluetooth socket " + e.getMessage());
             }
         }
 

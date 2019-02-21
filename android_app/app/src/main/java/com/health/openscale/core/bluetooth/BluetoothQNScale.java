@@ -84,13 +84,8 @@ public class BluetoothQNScale extends BluetoothCommunication {
     }
 
     @Override
-    protected boolean nextInitCmd(int stateNr) {
-        return false;
-    }
-
-    @Override
-    protected boolean nextBluetoothCmd(int stateNr) {
-        switch (stateNr) {
+    protected boolean onNextStep(int stepNr) {
+        switch (stepNr) {
             case 0:
                 // set notification on for custom characteristic 1 (weight, time, and others)
                 setNotificationOn(CUSTOM1_MEASUREMENT_CHARACTERISTIC);
@@ -101,7 +96,7 @@ public class BluetoothQNScale extends BluetoothCommunication {
                 break;
             case 2:
                 // write magicnumber 0x130915011000000042 to 0xffe3
-                byte[] ffe3magicBytes = new byte[] {(byte)0x13, (byte)0x09, (byte)0x15, (byte)0x01, (byte)0x10, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x42};
+                byte[] ffe3magicBytes = new byte[]{(byte) 0x13, (byte) 0x09, (byte) 0x15, (byte) 0x01, (byte) 0x10, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x42};
                 writeBytes(CUSTOM3_MEASUREMENT_CHARACTERISTIC, ffe3magicBytes);
                 break;
             case 3:
@@ -110,33 +105,22 @@ public class BluetoothQNScale extends BluetoothCommunication {
                 timestamp -= SCALE_UNIX_TIMESTAMP_OFFSET;
                 byte[] date = new byte[4];
                 Converters.toInt32Le(date, 0, timestamp);
-                byte[] timeMagicBytes = new byte[] {(byte)0x02, date[0], date[1], date[2], date[3]};
+                byte[] timeMagicBytes = new byte[]{(byte) 0x02, date[0], date[1], date[2], date[3]};
                 writeBytes(CUSTOM4_MEASUREMENT_CHARACTERISTIC, timeMagicBytes);
                 break;
             case 4:
                 sendMessage(R.string.info_step_on_scale, 0);
                 break;
-            default:
-                return false;
-        }
-
-        return true;
-    }
-
-    @Override
-    protected boolean nextCleanUpCmd(int stateNr) {
-
-        switch (stateNr) {
-            case 0:
+            /*case 5:
                 // send stop command to scale (0x1f05151049)
                 writeBytes(CUSTOM3_MEASUREMENT_CHARACTERISTIC, new byte[]{(byte)0x1f, (byte)0x05, (byte)0x15, (byte)0x10, (byte)0x49});
-                break;
+                break;*/
             default:
                 return false;
         }
+
         return true;
     }
-
 
     @Override
     public void onBluetoothNotify(UUID characteristic, byte[] value) {
@@ -198,7 +182,7 @@ public class BluetoothQNScale extends BluetoothCommunication {
                             btScaleMeasurement.setMuscle(qnscalelib.getMuscle(weightKg, impedance));
                             btScaleMeasurement.setBone(qnscalelib.getBone(weightKg, impedance));
                             btScaleMeasurement.setWeight(weightKg);
-                            addScaleData(btScaleMeasurement);
+                            addScaleMeasurement(btScaleMeasurement);
                         }
                     }
                 }

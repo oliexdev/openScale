@@ -31,7 +31,6 @@ import com.health.openscale.gui.views.FatMeasurementView;
 import com.health.openscale.gui.views.LBMMeasurementView;
 import com.health.openscale.gui.views.MeasurementViewSettings;
 import com.health.openscale.gui.views.WaterMeasurementView;
-import com.polidea.rxandroidble2.RxBleClient;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -43,7 +42,7 @@ import java.util.UUID;
 
 import timber.log.Timber;
 
-import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_STATUS_CODE.BT_UNEXPECTED_ERROR;
+import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_STATUS.UNEXPECTED_ERROR;
 
 public class BluetoothMiScale2 extends BluetoothCommunication {
     private final UUID WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC = UUID.fromString("00002a2f-0000-3512-2118-0009af100700");
@@ -69,7 +68,18 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
 
             // Stop command from mi scale received
             if (data[0] == 0x03) {
-                setBtMachineState(BT_MACHINE_STATE.BT_CLEANUP_STATE);
+                Timber.d("Scale stop byte received");
+                // send stop command to mi scale
+                writeBytes(WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, new byte[]{0x03});
+                // acknowledge that you received the last history data
+                int uniqueNumber = getUniqueNumber();
+
+                byte[] userIdentifier = new byte[]{(byte)0x04, (byte)0xFF, (byte)0xFF, (byte) ((uniqueNumber & 0xFF00) >> 8), (byte) ((uniqueNumber & 0xFF) >> 0)};
+                writeBytes(WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, userIdentifier);
+
+                disconnect();
+
+                resumeMachineState();
             }
 
             if (data.length == 26) {
@@ -88,8 +98,8 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
 
 
     @Override
-    protected boolean nextInitCmd(int stateNr) {
-        switch (stateNr) {
+    protected boolean onNextStep(int stepNr) {
+        switch (stepNr) {
             case 0:
                 // set scale units
                 final ScaleUser selectedUser = OpenScale.getInstance().getSelectedScaleUser();
@@ -108,73 +118,23 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
 
                 byte[] dateTimeByte = {(byte)(year), (byte)(year >> 8), month, day, hour, min, sec, 0x03, 0x00, 0x00};
 
-                writeBytes(
-                        BluetoothGattUuid.CHARACTERISTIC_CURRENT_TIME, dateTimeByte);
+                writeBytes(BluetoothGattUuid.CHARACTERISTIC_CURRENT_TIME, dateTimeByte);
                 break;
             case 2:
                 // set notification on for weight measurement history
-                setNotificationOn(
-                        WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC
-                );
+                setNotificationOn(WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC);
                 break;
-            default:
-                return false;
-        }
-
-        return true;
-    }
-
-    @Override
-    protected boolean nextBluetoothCmd(int stateNr) {
-        switch (stateNr) {
-            case 0:
+            case 3:
                 // configure scale to get only last measurements
                 int uniqueNumber = getUniqueNumber();
 
                 byte[] userIdentifier = new byte[]{(byte)0x01, (byte)0xFF, (byte)0xFF, (byte) ((uniqueNumber & 0xFF00) >> 8), (byte) ((uniqueNumber & 0xFF) >> 0)};
-                writeBytes(
-                        WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, userIdentifier);
+                writeBytes(WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, userIdentifier);
                 break;
-            case 1:
-                // set notification on for weight measurement history
-                setNotificationOn(
-                        WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC
-                );
-                break;
-            case 2:
+            case 4:
                 // invoke receiving history data
-                writeBytes(
-                        WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, new byte[]{0x02});
-                break;
-            default:
-                return false;
-        }
-
-        return true;
-    }
-
-    @Override
-    protected boolean nextCleanUpCmd(int stateNr) {
-
-        switch (stateNr) {
-            case 0:
-                // send stop command to mi scale
-                writeBytes(
-                        WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, new byte[]{0x03});
-                break;
-            case 1:
-                // acknowledge that you received the last history data
-                int uniqueNumber = getUniqueNumber();
-
-                byte[] userIdentifier = new byte[]{(byte)0x04, (byte)0xFF, (byte)0xFF, (byte) ((uniqueNumber & 0xFF00) >> 8), (byte) ((uniqueNumber & 0xFF) >> 0)};
-                writeBytes(
-                        WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, userIdentifier);
-                break;
-            case 2:
-                // set notification on for body composition measurement
-                setNotificationOn(
-                        BluetoothGattUuid.CHARACTERISTIC_BODY_COMPOSITION_MEASUREMENT
-                );
+                writeBytes(WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, new byte[]{0x02});
+                stopMachineState();
                 break;
             default:
                 return false;
@@ -239,13 +199,13 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
                             EstimatedLBMMetric.FORMULA.valueOf(settings.getEstimationFormula()));
                     scaleBtData.setLbm(lbmMetric.getLBM(selectedUser, scaleBtData));
 
-                    addScaleData(scaleBtData);
+                    addScaleMeasurement(scaleBtData);
                 } else {
                     Timber.e("Invalid Mi scale weight year %d", year);
                 }
             }
         } catch (ParseException e) {
-            setBtStatus(BT_UNEXPECTED_ERROR, "Error while decoding bluetooth date string (" + e.getMessage() + ")");
+            setBluetoothStatus(UNEXPECTED_ERROR, "Error while decoding bluetooth date string (" + e.getMessage() + ")");
         }
     }
 
