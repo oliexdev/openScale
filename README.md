@@ -29,7 +29,7 @@ For scales without Bluetooth, or Bluetooth scales not (yet) supported by openSca
 This app has no ads and requests no unnecessary permissions. The location permission is only needed to find a Bluetooth scale. Once found the permission can be revoked (or never granted if Bluetooth isn't used).
 
 # Supported metrics
-Weight, BMI (body mass index), body water, muscle, LBM (lean body mass), body fat, bone mass, waist circumference, waist-to-height ratio, hip circumference, waist-hip ratio, visceral fat, chest circumference, thigh circumference, biceps circumference, neck circumference, body fat caliper and BMR (basal metabolic rate). Each entry can also have an optional comment.
+Weight, BMI (body mass index), body water, muscle, LBM (lean body mass), body fat, bone mass, waist circumference, waist-to-height ratio, hip circumference, waist-hip ratio, visceral fat, chest circumference, thigh circumference, biceps circumference, neck circumference, body fat caliper, BMR (basal metabolic rate), TDEE (Total Daily Energy Expenditure) and Calories. Each entry can also have an optional comment.
 
 <b>Note:</b> don't worry if you think the list is too long: metrics you don't use can be disabled and hidden.
 
@@ -82,38 +82,40 @@ If you want to help to translate the app in your language please see [here](http
 <table>
   <tr>
     <th>
-        <a href="doc/screens/screen_overview.png" target="_blank">
-        <img src='doc/screens/screen_overview.png' width='250px' alt='image missing' /> </a> <br>
-        <sub><b>overview page</b></sub>
+        <a href="doc/screens/1_overview.png" target="_blank">
+        <img src='doc/screens/1_overview.png' width='200px' alt='image missing' /> </a>
     </th>
     <th>
-        <a href="doc/screens/screen_graph.png" target="_blank">
-        <img src='doc/screens/screen_graph.png' width='250px' alt='image missing' /> </a> <br>
-        <sub><b>graph page</b></sub>
+        <a href="doc/screens/2_chart.png" target="_blank">
+        <img src='doc/screens/2_chart.png' width='200px' alt='image missing' /> </a>
+    </th>
+    <th>
+        <a href="doc/screens/3_bluetooth.png" target="_blank">
+        <img src='doc/screens/3_bluetooth.png' width='200px' alt='image missing' /> </a>
+    </th>
+    <th>
+        <a href="doc/screens/4_table.png" target="_blank">
+        <img src='doc/screens/4_table.png' width='200px' alt='image missing' /> </a>
     </th>
   </tr>
   
   <tr>
-    <td>
-        <a href="doc/screens/screen_table.png" target="_blank">
-        <img src='doc/screens/screen_table.png' width='250px' alt='image missing' /> </a> <br>
-        <sub><b>table page</b></sub>
-    </td>
-    <td>
-        <a href="doc/screens/screen_statistics.png" target="_blank">
-        <img src='doc/screens/screen_statistics.png' width='250px' alt='image missing' /> </a> <br>
-        <sub><b>statistics page</b></sub>
-    </td>
-  </tr>
-  <tr>
-    <td>
-        <a href="doc/screens/screen_dataentry.png" target="_blank">
-        <img src='doc/screens/screen_dataentry.png' width='250px' alt='image missing' /> </a> <br>
-        <sub><b>data entry page</b></sub>
-    </td>
-    <td>
-    <!-- empty cell -->
-    </td>
+    <th>
+        <a href="doc/screens/5_statistics.png" target="_blank">
+        <img src='doc/screens/5_statistics.png' width='200px' alt='image missing' /> </a>
+    </th>
+    <th>
+        <a href="doc/screens/6_body_metrics.png" target="_blank">
+        <img src='doc/screens/6_body_metrics.png' width='200px' alt='image missing' /> </a>
+    </th>
+    <th>
+        <a href="doc/screens/7_translations.png" target="_blank">
+        <img src='doc/screens/7_translations.png' width='200px' alt='image missing' /> </a>
+    </th>
+    <th>
+        <a href="doc/screens/8_themes.png" target="_blank">
+        <img src='doc/screens/8_themes.png' width='200px' alt='image missing' /> </a>
+    </th>
   </tr>
 </table>
 
