@@ -23,7 +23,6 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
-import android.widget.EditText;
 
 import com.health.openscale.R;
 import com.health.openscale.gui.preferences.BackupPreferences;
@@ -106,7 +105,7 @@ public class SettingsActivity extends PreferenceActivity
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         // TODO HACK to call RequestPermissionResult(...) in PreferenceFragment otherwise API level > 23 is required
         switch(requestCode) {
-            case PermissionHelper.PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION:
+            case PermissionHelper.PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION:
                 BluetoothPreferences bluetoothPreferences = (BluetoothPreferences)currentFragment;
                 bluetoothPreferences.onMyOwnRequestPermissionsResult(requestCode, permissions, grantResults);
                 break;

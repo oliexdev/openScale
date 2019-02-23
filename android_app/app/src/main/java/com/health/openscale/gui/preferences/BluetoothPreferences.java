@@ -325,7 +325,7 @@ public class BluetoothPreferences extends PreferenceFragment {
 
     public void onMyOwnRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         switch (requestCode) {
-            case PermissionHelper.PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION: {
+            case PermissionHelper.PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     if (PermissionHelper.requestLocationServicePermission(getActivity())) {
                         startBluetoothDiscovery();

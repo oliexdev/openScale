@@ -454,7 +454,7 @@ public abstract class BluetoothCommunication {
         // Otherwise the connection almost never succeeds.
         LocationManager locationManager = (LocationManager)context.getSystemService(LOCATION_SERVICE);
 
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION)
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED && (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
                 || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
         ) {
@@ -474,7 +474,7 @@ public abstract class BluetoothCommunication {
                     }}, throwable -> setBluetoothStatus(BT_STATUS.NO_DEVICE_FOUND));
         }
         else {
-            Timber.d("No coarse location permission, connecting without LE scan");
+            Timber.d("No location permission, connecting without LE scan");
             connectToDevice(macAddress);
         }
     }

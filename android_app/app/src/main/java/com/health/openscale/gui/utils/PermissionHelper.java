@@ -37,7 +37,7 @@ import androidx.core.app.ActivityCompat;
 import static android.content.Context.LOCATION_SERVICE;
 
 public class PermissionHelper {
-    public final static int PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 1;
+    public final static int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     public final static int PERMISSIONS_REQUEST_ACCESS_READ_STORAGE = 2;
     public final static int PERMISSIONS_REQUEST_ACCESS_WRITE_STORAGE = 3;
 
@@ -63,7 +63,7 @@ public class PermissionHelper {
             return false;
          }
 
-        if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             AlertDialog.Builder builder = new AlertDialog.Builder(activity);
 
             builder.setMessage(R.string.permission_bluetooth_info)
@@ -72,7 +72,7 @@ public class PermissionHelper {
                     .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             dialog.dismiss();
-                            ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION);
+                            ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
                         }
                     });
 
