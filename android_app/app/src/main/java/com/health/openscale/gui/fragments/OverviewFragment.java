@@ -57,7 +57,6 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
     private View overviewView;
 
     private TextView txtTitleUser;
-    private TextView txtTitleLastMeasurement;
 
     private List<MeasurementView> lastMeasurementViews;
 
@@ -87,7 +86,6 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         prefs = PreferenceManager.getDefaultSharedPreferences(overviewView.getContext());
 
         txtTitleUser = overviewView.findViewById(R.id.txtTitleUser);
-        txtTitleLastMeasurement = overviewView.findViewById(R.id.txtTitleLastMeasurement);
 
         chartView = overviewView.findViewById(R.id.chartView);
         chartView.setOnChartValueSelectedListener(new onChartSelectedListener());
@@ -172,7 +170,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         }
 
         lastMeasurementViews = MeasurementView.getMeasurementList(
-                getContext(), MeasurementView.DateTimeOrder.NONE);
+                getContext(), MeasurementView.DateTimeOrder.LAST);
 
         TableLayout tableOverviewLayout = overviewView.findViewById(R.id.tableLayoutMeasurements);
 
@@ -227,8 +225,6 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         showEntry.setEnabled(false);
         editEntry.setEnabled(false);
         deleteEntry.setEnabled(false);
-
-        txtTitleLastMeasurement.setText(getResources().getString(R.string.label_title_last_measurement).toUpperCase());
 
         OpenScale.getInstance().registerFragment(this);
 
