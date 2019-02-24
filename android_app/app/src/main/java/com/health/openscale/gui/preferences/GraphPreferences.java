@@ -18,10 +18,7 @@ package com.health.openscale.gui.preferences;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
-import android.preference.EditTextPreference;
-import android.preference.Preference;
 import android.preference.PreferenceFragment;
-import android.text.method.DigitsKeyListener;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
@@ -36,7 +33,8 @@ public class GraphPreferences extends PreferenceFragment implements OnSharedPref
 
         addPreferencesFromResource(R.xml.graph_preferences);
 
-        EditTextPreference regressionLineOrder =
+        // TODO replaced it with sliding average
+        /*EditTextPreference regressionLineOrder =
                 (EditTextPreference) findPreference(PREFERENCE_KEY_REGRESSION_LINE_ORDER);
         regressionLineOrder.getEditText().setKeyListener(new DigitsKeyListener());
         regressionLineOrder.getEditText().setSelectAllOnFocus(true);
@@ -47,7 +45,7 @@ public class GraphPreferences extends PreferenceFragment implements OnSharedPref
                 preference.setSummary((String) newValue);
                 return true;
             }
-        });
+        });*/
     }
 
     @Override

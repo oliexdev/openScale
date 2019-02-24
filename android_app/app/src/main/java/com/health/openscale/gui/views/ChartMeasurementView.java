@@ -457,7 +457,7 @@ public class ChartMeasurementView extends LineChart {
         }
 
         addGoalLine(lineDataSets);
-        addRegressionLine(lineDataSets);
+        // addRegressionLine(lineDataSets); TODO replaced it with an sliding average
 
         LineData data = new LineData(lineDataSets);
         setData(data);
