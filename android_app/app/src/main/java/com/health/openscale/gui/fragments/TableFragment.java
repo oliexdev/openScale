@@ -32,6 +32,7 @@ import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.gui.activities.DataEntryActivity;
+import com.health.openscale.gui.utils.ColorUtil;
 import com.health.openscale.gui.views.MeasurementView;
 
 import java.util.ArrayList;
@@ -108,8 +109,10 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
             if (!measurement.isVisible()) {
                 continue;
             }
+
             ImageView headerIcon = new ImageView(tableView.getContext());
             headerIcon.setImageDrawable(measurement.getIcon());
+            headerIcon.setColorFilter(ColorUtil.getTextColor(tableView.getContext()));
             headerIcon.setLayoutParams(new TableRow.LayoutParams(0, iconHeight, 1));
             headerIcon.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
 

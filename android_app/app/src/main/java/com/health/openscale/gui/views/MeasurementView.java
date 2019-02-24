@@ -208,7 +208,7 @@ public abstract class MeasurementView extends TableLayout {
         iconView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
         iconView.setPadding(25,25,25,25);
 
-        iconView.setColorFilter(getForegroundColor());
+        iconView.setColorFilter(ColorUtil.COLOR_BLACK);
         iconView.setBackground(iconViewBackground);
 
         nameView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);

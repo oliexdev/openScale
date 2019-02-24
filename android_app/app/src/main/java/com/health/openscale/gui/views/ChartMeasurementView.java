@@ -149,6 +149,8 @@ public class ChartMeasurementView extends LineChart {
         getDescription().setEnabled(false);
         getAxisLeft().setEnabled(prefs.getBoolean("yaxisEnable", false));
         getAxisRight().setEnabled(prefs.getBoolean("yaxisEnable", false));
+        getAxisLeft().setTextColor(ColorUtil.getTextColor(getContext()));
+        getAxisRight().setTextColor(ColorUtil.getTextColor(getContext()));
         getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM);
         getXAxis().setTextColor(ColorUtil.getTextColor(getContext()));
     }
