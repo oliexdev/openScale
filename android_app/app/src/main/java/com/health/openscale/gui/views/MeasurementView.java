@@ -211,6 +211,10 @@ public abstract class MeasurementView extends TableLayout {
         iconView.setColorFilter(ColorUtil.COLOR_BLACK);
         iconView.setBackground(iconViewBackground);
 
+        TableRow.LayoutParams iconLayout = new TableRow.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        iconLayout.setMargins(10, 5, 10, 5);
+        iconView.setLayoutParams(iconLayout);
+
         nameView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
         nameView.setLines(2);
         nameView.setLayoutParams(new TableRow.LayoutParams(0, LayoutParams.WRAP_CONTENT, 0.55f));
