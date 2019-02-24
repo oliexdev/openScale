@@ -161,6 +161,7 @@ public class BluetoothDebug extends BluetoothCommunication {
     @Override
     public void onBluetoothDiscovery(RxBleDeviceServices rxBleDeviceServices) {
         this.rxBleDeviceServices = rxBleDeviceServices;
+        resumeMachineState();
     }
 
     @Override
@@ -169,6 +170,7 @@ public class BluetoothDebug extends BluetoothCommunication {
         {
             case 0:
                 discoverBluetoothServices();
+                stopMachineState();
                 break;
             case 1:
                 int offset = stepNr;
