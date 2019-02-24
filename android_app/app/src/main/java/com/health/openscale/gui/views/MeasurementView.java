@@ -19,10 +19,10 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
-import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
@@ -41,7 +41,6 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
@@ -67,7 +66,8 @@ public abstract class MeasurementView extends TableLayout {
     private MeasurementViewSettings settings;
 
     private TableRow measurementRow;
-    private FloatingActionButton iconView;
+    private ImageView iconView;
+    private GradientDrawable iconViewBackground;
     private int iconId;
     private TextView nameView;
     private TextView valueView;
@@ -85,14 +85,11 @@ public abstract class MeasurementView extends TableLayout {
 
     public MeasurementView(Context context, int textId, int iconId) {
         super(context);
+        this.iconId = iconId;
+
         initView(context);
 
         nameView.setText(textId);
-        this.iconId = iconId;
-        iconView.setImageResource(iconId);
-        iconView.setClickable(false);
-        iconView.setSize(FloatingActionButton.SIZE_MINI);
-        iconView.setBackgroundTintList(ColorStateList.valueOf(ColorUtil.COLOR_GRAY));
     }
 
     public enum DateTimeOrder { FIRST, LAST, NONE }
@@ -179,7 +176,8 @@ public abstract class MeasurementView extends TableLayout {
     private void initView(Context context) {
         measurementRow = new TableRow(context);
 
-        iconView = new FloatingActionButton(context);
+        iconView = new ImageView(context);
+        iconViewBackground = new GradientDrawable();
         nameView = new TextView(context);
         valueView = new TextView(context);
         editModeView = new ImageView(context);
@@ -202,9 +200,16 @@ public abstract class MeasurementView extends TableLayout {
         addView(measurementRow);
         addView(evaluatorRow);
 
+        iconViewBackground.setColor(ColorUtil.COLOR_GRAY);
+        iconViewBackground.setShape(GradientDrawable.OVAL);
+        iconViewBackground.setGradientRadius(iconView.getWidth());
+
+        iconView.setImageResource(iconId);
         iconView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-        iconView.setPadding(20,0,20,0);
+        iconView.setPadding(25,25,25,25);
+
         iconView.setColorFilter(getForegroundColor());
+        iconView.setBackground(iconViewBackground);
 
         nameView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
         nameView.setLines(2);
@@ -279,7 +284,7 @@ public abstract class MeasurementView extends TableLayout {
     public Drawable getIcon() { return iconView.getDrawable(); }
     public int getIconResource() { return iconId; }
     public void setBackgroundIconColor(int color) {
-        iconView.setBackgroundTintList(ColorStateList.valueOf(color));
+        iconViewBackground.setColor(color);
     }
 
     protected boolean isEditable() {
