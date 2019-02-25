@@ -62,12 +62,11 @@ public class ChartActionBarView extends HorizontalScrollView {
         measurementViews = MeasurementView.getMeasurementList(
                 getContext(), MeasurementView.DateTimeOrder.NONE);
 
-        refreshFloatingActionsButtons();
-
-        onActionClickListener = null;
         isInGraphKey = true;
+        onActionClickListener = null;
 
         addView(actionBarView);
+        refreshFloatingActionsButtons();
     }
 
     public void setOnActionClickListener(View.OnClickListener listener) {
@@ -76,6 +75,7 @@ public class ChartActionBarView extends HorizontalScrollView {
 
     public void setIsInGraphKey(boolean status) {
         isInGraphKey = status;
+        refreshFloatingActionsButtons();
     }
 
     private void refreshFloatingActionsButtons() {
