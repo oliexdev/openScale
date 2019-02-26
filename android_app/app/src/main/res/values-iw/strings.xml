@@ -8,12 +8,10 @@
     <string name="title_measurements">מדדים</string>
     <string name="title_about">על אודות</string>
     <string name="title_general">כללי</string>
-
     <string name="action_settings">הגדרות</string>
     <string name="action_bluetooth_status">סטטיסטיקת Bluetooth</string>
     <string name="open_drawer">פתיחה</string>
     <string name="close_drawer">סגירה</string>
-
     <string name="label_cancel">ביטול</string>
     <string name="label_ok">אישור</string>
     <string name="label_yes">כן</string>
@@ -23,7 +21,6 @@
     <string name="label_add_measurement">הוספת מדד</string>
     <string name="label_share">שיתוף</string>
     <string name="label_share_subject">ייצוא נתונים ב־CSV ‏(%s)</string>
-
     <string name="label_weight">משקל</string>
     <string name="label_bmi">מדד מסת גוף (BMI)</string>
     <string name="label_bmr">קצב מטבולי בסיסי (BMR)</string>
@@ -38,19 +35,17 @@
     <string name="label_whr">יחס מותניים לאגן</string>
     <string name="label_bone">מסת עצמות</string>
     <string name="label_smartUserAssign">הקצאת משתמש חכמה</string>
-
     <plurals name="label_days">
-    <item quantity="one">יום</item>
-    <item quantity="two">יומיים</item>
-    <item quantity="many">%d ימים</item>
-    <item quantity="other">%d ימים</item>
-</plurals>
+        <item quantity="one">יום</item>
+        <item quantity="two">יומיים</item>
+        <item quantity="many">%d ימים</item>
+        <item quantity="other">%d ימים</item>
+    </plurals>
     <string name="label_last_week">ממוצע בשבוע הקודם</string>
     <string name="label_last_month">ממוצע בחודש הקודם</string>
     <string name="label_weight_difference">הבדל בגובה</string>
     <string name="label_goal_date_is">תאריך היעד:</string>
     <string name="label_days_left">ימים שנותרו</string>
-
     <string name="label_date">תאריך</string>
     <string name="label_time">שעה</string>
     <string name="label_birthday">יום הולדת</string>
@@ -62,15 +57,12 @@
     <string name="label_female">נקבה</string>
     <string name="label_goal_weight">משקל יעד</string>
     <string name="label_goal_date">תאריך יעד</string>
-
     <string name="label_title_user">משתמש</string>
     <string name="label_title_last_measurement">מדידה אחרונה</string>
     <string name="label_title_goal">יעד</string>
-
     <string name="label_import">ייבוא</string>
     <string name="label_export">ייצוא</string>
     <string name="label_delete_all">מחיקת הכול</string>
-
     <string name="error_value_required">נדרש ערך</string>
     <string name="error_value_range">הערך מחוץ לטווח</string>
     <string name="error_exporting">שגיאה בייצוא</string>
@@ -79,7 +71,6 @@
     <string name="error_height_required">שגיאה: נדרש גובה</string>
     <string name="error_initial_weight_required">שגיאה: נדרש גובה ראשוני</string>
     <string name="error_goal_weight_required">שגיאה: נדרש משקל יעד</string>
-
     <string name="info_data_deleted">הרשומה נמחקה</string>
     <string name="info_data_all_deleted">כל הרשומות נמחקו</string>
     <string name="info_data_exported">יוצאו אל</string>
@@ -99,44 +90,32 @@
     <string name="info_bluetooth_init">הפעלת התקן Bluetooth</string>
     <string name="info_bluetooth_connection_error">שגיאת Bluetooth בלתי צפויה</string>
     <string name="info_new_data_duplicated">כבר קיימת מדידה באותה השעה ובאותו התאריך</string>
-
     <string name="info_enter_user_name">השם שלך</string>
     <string name="info_no_selected_user">לא קיים משתמש. נא ליצור אחד בהגדרות.</string>
     <string name="info_no_evaluation_available">לא ניתן להעריך את הערך</string>
-
     <string name="question_really_delete">למחוק רשומה\?</string>
     <string name="question_really_delete_all">למחוק את כל הרשומות לכל המשתמשים\?</string>
     <string name="question_really_delete_user">למחוק משתמש\?</string>
-
     <string name="label_bluetooth_title">Bluetooth</string>
     <string name="label_bluetooth_enable">התחברות למשקל בהתחלה</string>
     <string name="label_mergeWithLastMeasurement">מיזוג עם המדידה האחרונה</string>
     <string name="label_bluetooth_searching">מתבצע חיפוש אחר משקל ה־Bluetooth שלך</string>
     <string name="label_bluetooth_searching_finished">החיפוש הסתיים</string>
-
     <string name="label_enable_labels">תווית נתונים</string>
     <string name="label_enable_points">נקודת נתונים</string>
-
     <string name="label_delete_confirmation">מחיקת אישור</string>
-
     <string name="label_category_measurement_database">מסד נתוני מדידות</string>
-
     <string name="label_maintainer">מתחזק</string>
     <string name="label_website">אתר</string>
     <string name="label_license">רישיון</string>
-
     <string name="label_automatic">אוטומטי</string>
-
     <string name="label_theme">ערכת עיצוב</string>
-
     <string name="label_reminder">תזכורת</string>
     <string name="label_reminder_weekdays">ימים</string>
     <string name="label_reminder_time">שעה</string>
     <string name="label_reminder_notify_text">טקסט התראה</string>
     <string name="default_value_reminder_notify_text">הגיע הזמן לשקילה</string>
-
     <string name="info_on_date">ב</string>
-
     <string name="Monday">יום שני</string>
     <string name="Tuesday">יום שלישי</string>
     <string name="Wednesday">יום רביעי</string>
@@ -156,7 +135,6 @@
     <string name="label_regression_line_degree">רמה פולינומית של נסיגה</string>
     <string name="label_goal_line">קו יעד</string>
     <string name="label_help">עזרה</string>
-
     <string name="label_feedback_message_enjoying">השימוש ב־openScale מטיב עמך\?</string>
     <string name="label_feedback_message_rate_app">מה בנוגע לדירוג ב־Google Play או ב־GitHub\?</string>
     <string name="label_feedback_message_issue">אולי נוכל לקבל ממך משוב\?</string>
@@ -164,12 +142,10 @@
     <string name="label_feedback_message_no">לא ממש</string>
     <string name="label_feedback_message_positive">סבבה</string>
     <string name="label_feedback_message_negative">לא, תודה</string>
-
-<string name="info_new_data_added">%1$.2f%2$s‏ [%3$s] נוספו אל %4$s</string>
+    <string name="info_new_data_added">%1$.2f%2$s‏ [%3$s] נוספו אל %4$s</string>
     <string name="error_max_scale_users">מספר מרבי של משתמשי המשקל המשתמשים בו באותו הזמן הושג</string>
     <string name="info_step_on_scale_for_reference">נא לעלות ברגליים יחפות על המשקל לצורך לקיחת מדדי ייחוס</string>
     <string name="info_measuring">מדידת משקל: %.2f</string>
-
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">אירעה שגיאה בלתי צפויה.
 \n
 \nנא ליצור דיווח חדש עם פרטי השגיאה תחת
@@ -185,12 +161,10 @@
     <string name="toggle_expand">הרחבה/כיווץ</string>
     <string name="edit">עריכה</string>
     <string name="save">שמירה</string>
-
     <string name="label_month_view">תצוגת חודש</string>
     <string name="label_weeks_view">תצוגת שבוע</string>
-
     <string name="permission_not_granted">ההרשאה נדחתה</string>
-    <string name="permission_bluetooth_info">נדרשת הרשאה לגשת אל המיקום באופן משוערך כדי לחפש אחר התקני Bluetooth. ניתן לשלול את ההרשאה לאחר איתור המכשיר.</string>
+    <string name="permission_bluetooth_info">נדרשת הרשאה לגשת אל המיקום כדי לחפש אחר התקני Bluetooth. ניתן לשלול את ההרשאה לאחר איתור המכשיר.</string>
     <string name="permission_bluetooth_info_title">מידע</string>
     <string name="permission_read_write_data_description">קריאת נתונים מ־openScale, לרבות פרטים על המשתמש ואת כל המדידות שנשמרו</string>
     <string name="permission_read_write_data_label">קריאת נתוני openScale</string>
@@ -245,7 +219,7 @@
     <string name="activity_level_heavy">גבוהה</string>
     <string name="activity_level_extreme">קיצונית</string>
     <string name="label_data_provider_enable">גישה ליישומון צד שלישי</string>
-<string name="trisa_scale_not_paired">המשקל טרם עבר צימוד!
+    <string name="trisa_scale_not_paired">המשקל טרם עבר צימוד!
 \n
 \nיש להחזיק את הכפתור בתחתית המשקל כדי להפעיל אותו במצב צימוד ואז להתחבר מחדש כדי לקבל את הססמה של המכשיר.</string>
     <string name="trisa_scale_pairing_succeeded">הצימוד הצליח!
