@@ -352,10 +352,10 @@ public class ChartMeasurementView extends LineChart {
     }
 
     private ScaleMeasurement[] averageScaleMeasurementList(List<ScaleMeasurement> measurementList) {
-        final ScaleMeasurement[] avgMeasurementList = new ScaleMeasurement[minXValue + maxXValue + 1];
+        final ScaleMeasurement[] avgMeasurementList = new ScaleMeasurement[ maxXValue - minXValue + 1];
 
         for (ScaleMeasurement measurement : measurementList) {
-            int binNr = getBinNr(measurement);
+            int binNr = getBinNr(measurement) - minXValue;
 
             if (avgMeasurementList[binNr] == null) {
                 avgMeasurementList[binNr] = measurement.clone();
@@ -369,7 +369,7 @@ public class ChartMeasurementView extends LineChart {
                 continue;
             }
 
-            int binNr = getBinNr(avgMeasurement);
+            int binNr = getBinNr(avgMeasurement) - minXValue;
             avgMeasurement.divide(avgMeasurementList[binNr].count());
         }
 
@@ -377,7 +377,7 @@ public class ChartMeasurementView extends LineChart {
     }
 
     private ScaleMeasurement getPreviousMeasurment(ScaleMeasurement[] masurementList, int binNr) {
-        for (int i=binNr-1; i > 0; i--) {
+        for (int i=binNr-minXValue-1; i >= 0; i--) {
             if (masurementList[i] != null) {
                 return masurementList[i];
             }
