@@ -8,12 +8,10 @@
     <string name="title_measurements">Målinger</string>
     <string name="title_about">Om</string>
     <string name="title_general">Allment</string>
-
     <string name="action_settings">Innstillinger</string>
     <string name="action_bluetooth_status">Blåtannsstatus</string>
     <string name="open_drawer">åpne</string>
     <string name="close_drawer">lukk</string>
-
     <string name="label_cancel">Avbryt</string>
     <string name="label_ok">OK</string>
     <string name="label_yes">Ja</string>
@@ -22,7 +20,6 @@
     <string name="label_add_user">Legg til bruker</string>
     <string name="label_share">Del</string>
     <string name="label_share_subject">CVS-dataeksport (%s)</string>
-
     <string name="label_weight">Vekt</string>
     <string name="label_bmi">Kroppsmasseindeks (BMI)</string>
     <string name="label_bmr">Hvilestoffskifte (BMR)</string>
@@ -38,17 +35,15 @@
     <string name="label_whtr">Midje-til-høyde -forhold</string>
     <string name="label_whr">Midje-til-hofte -forhold</string>
     <string name="label_smartUserAssign">Smart brukertildeling</string>
-
     <plurals name="label_days">
-    <item quantity="one">dag %d</item>
-    <item quantity="other">dager %d</item>
-</plurals>
+        <item quantity="one">dag %d</item>
+        <item quantity="other">dager %d</item>
+    </plurals>
     <string name="label_last_week">Gjennomsnitt siste uke</string>
     <string name="label_last_month">Gjennomsnitt den siste måneden</string>
     <string name="label_weight_difference">Vektforskjell</string>
     <string name="label_goal_date_is">Måldato:</string>
     <string name="label_days_left">Dager igjen</string>
-
     <string name="label_date">Dato</string>
     <string name="label_time">Tid</string>
     <string name="label_birthday">Geburtsdag</string>
@@ -60,15 +55,12 @@
     <string name="label_female">Kvinnelig</string>
     <string name="label_goal_weight">Målvekt</string>
     <string name="label_goal_date">Måldato</string>
-
     <string name="label_title_user">bruker</string>
     <string name="label_title_last_measurement">siste måling</string>
     <string name="label_title_goal">Mål</string>
-
     <string name="label_import">Import</string>
     <string name="label_export">Eksport</string>
     <string name="label_delete_all">Slett alle</string>
-
     <string name="error_value_required">Verdi kreves</string>
     <string name="error_value_range">Verdien utenfor tillatt rekkevidde</string>
     <string name="error_exporting">Feil ved eksport</string>
@@ -77,7 +69,6 @@
     <string name="error_height_required">Feil: Høyde kreves</string>
     <string name="error_initial_weight_required">Feil: Startvekt kreves</string>
     <string name="error_goal_weight_required">Feil: Målvekt kreves</string>
-
     <string name="info_data_deleted">Oppføring slettet</string>
     <string name="info_data_all_deleted">Alle oppføringer slettet</string>
     <string name="info_data_exported">Eksportert til</string>
@@ -98,44 +89,32 @@
     <string name="info_bluetooth_connection_error">Uventet Blåtannsfeil</string>
     <string name="info_new_data_added">%1$.2f%2$s [%3$s] til %4$s lagt til</string>
     <string name="info_new_data_duplicated">måling med samme dato og tid finnes allerede</string>
-
     <string name="info_enter_user_name">Ditt navn</string>
     <string name="info_no_selected_user">Ingen bruker finnes. Opprett en i innstillingene.</string>
     <string name="info_no_evaluation_available">Kan ikke vurdere verdien</string>
-
     <string name="question_really_delete">Slett oppføring?</string>
     <string name="question_really_delete_all">Slett alle oppføringer for alle brukere?</string>
     <string name="question_really_delete_user">Slett bruker?</string>
-
     <string name="label_bluetooth_title">Blåtann</string>
     <string name="label_bluetooth_enable">Koble til vekt ved oppstart</string>
     <string name="label_mergeWithLastMeasurement">Flett med foregående måling</string>
     <string name="label_bluetooth_searching">Søker etter dine Blåtannsvekter</string>
     <string name="label_bluetooth_searching_finished">Søk fullført</string>
-
     <string name="label_enable_labels">Dataetikett</string>
     <string name="label_enable_points">Datapunkt</string>
-
     <string name="label_delete_confirmation">Slett bekreftelse</string>
-
     <string name="label_category_measurement_database">Målingsdatabase</string>
-
     <string name="label_maintainer">Vedlikeholder</string>
     <string name="label_website">Nettside</string>
     <string name="label_license">Lisens</string>
-
     <string name="label_automatic">automatisk</string>
-
     <string name="label_theme">Drakt</string>
-
     <string name="label_reminder">Påminnelse</string>
     <string name="label_reminder_weekdays">Dager</string>
     <string name="label_reminder_time">Tid</string>
     <string name="label_reminder_notify_text">Merknadstekst</string>
     <string name="default_value_reminder_notify_text">På tide med innveiing</string>
-
     <string name="info_on_date">på</string>
-
     <string name="Monday">Mandag</string>
     <string name="Tuesday">Tirsdag</string>
     <string name="Wednesday">Onsdag</string>
@@ -155,7 +134,6 @@
     <string name="label_regression_line_degree">Regresjonspolynom-grunntall</string>
     <string name="label_goal_line">Mållinje</string>
     <string name="label_help">Hjelp</string>
-
     <string name="label_feedback_message_enjoying">Setter du pris på openScale?</string>
     <string name="label_feedback_message_rate_app">Hva med en vurdering på Google Play eller GitHub?</string>
     <string name="label_feedback_message_issue">Ønsker du å gi tilbakemelding?</string>
@@ -163,11 +141,9 @@
     <string name="label_feedback_message_no">Ikke egentlig</string>
     <string name="label_feedback_message_positive">OK</string>
     <string name="label_feedback_message_negative">Nei takk</string>
-
     <string name="error_max_scale_users">Maks antall samtidige vektbrukere nådd</string>
     <string name="info_step_on_scale_for_reference">Stig på vekten barføtt for referansemåling</string>
     <string name="info_measuring">Måler vekt: %.2f</string>
-
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">En uventet feil inntraff.
 \n
 \nOpprett ny detaljert problembeskrivelse på
@@ -183,12 +159,10 @@
     <string name="toggle_expand">Veksle utvidning</string>
     <string name="edit">Rediger</string>
     <string name="save">Lagre</string>
-
     <string name="label_month_view">Månedsvisning</string>
     <string name="label_weeks_view">Ukesvisning</string>
-
     <string name="permission_not_granted">Tilgang ikke innvilget</string>
-    <string name="permission_bluetooth_info">Omtrentlig tilgang til plassering kreves for å søke etter Blåtannsenheter. Tilgangen kan tilbakekalles etter at enheten er funnet.</string>
+    <string name="permission_bluetooth_info">Plasseringstilgang kreves for å søke etter Blåtannsenheter. Tilgangen kan tilbakekalles etter at enheten er funnet.</string>
     <string name="permission_bluetooth_info_title">Info</string>
     <string name="label_next">Neste</string>
     <string name="label_set_default_order">Sett forvalgt rekkefølge</string>
@@ -242,8 +216,8 @@
     <string name="activity_level_extreme">Ekstrem</string>
     <string name="permission_read_write_data_description">les openScale-data, inkludert brukerinfo, og alle lagrede målinger</string>
     <string name="permission_read_write_data_label">Les openScale-data</string>
-<string name="label_data_provider_enable">Tilgang for tredjepartsprogrammer</string>
-<string name="trisa_scale_not_paired">Denne vekten har ikke blitt parret.
+    <string name="label_data_provider_enable">Tilgang for tredjepartsprogrammer</string>
+    <string name="trisa_scale_not_paired">Denne vekten har ikke blitt parret.
 \n
 \nHold knappen på bunnen av vekten for å sette den i paringsmodus, koble deretter til den igjen for å hente enhetens passord.</string>
     <string name="trisa_scale_pairing_succeeded">Paring utført.
