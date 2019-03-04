@@ -21,16 +21,10 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
 import com.health.openscale.core.OpenScale;
-import com.health.openscale.core.bodymetric.EstimatedFatMetric;
-import com.health.openscale.core.bodymetric.EstimatedLBMMetric;
-import com.health.openscale.core.bodymetric.EstimatedWaterMetric;
+import com.health.openscale.core.bluetooth.lib.MiScaleLib;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
-import com.health.openscale.gui.views.FatMeasurementView;
-import com.health.openscale.gui.views.LBMMeasurementView;
-import com.health.openscale.gui.views.MeasurementViewSettings;
-import com.health.openscale.gui.views.WaterMeasurementView;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -143,31 +137,39 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
         return true;
     }
 
-    private void parseBytes(byte[] weightBytes) {
+    private void parseBytes(byte[] data) {
         try {
-            final byte ctrlByte0 = weightBytes[0];
-            final byte ctrlByte1 = weightBytes[1];
+            final byte ctrlByte0 = data[0];
+            final byte ctrlByte1 = data[1];
 
             final boolean isWeightRemoved = isBitSet(ctrlByte1, 7);
             final boolean isDateInvalid = isBitSet(ctrlByte1, 6);
             final boolean isStabilized = isBitSet(ctrlByte1, 5);
             final boolean isLBSUnit = isBitSet(ctrlByte0, 0);
             final boolean isCattyUnit = isBitSet(ctrlByte1, 6);
+            final boolean isImpedance = isBitSet(ctrlByte1, 1);
 
             if (isStabilized && !isWeightRemoved && !isDateInvalid) {
 
-                final int year = ((weightBytes[3] & 0xFF) << 8) | (weightBytes[2] & 0xFF);
-                final int month = (int) weightBytes[4];
-                final int day = (int) weightBytes[5];
-                final int hours = (int) weightBytes[6];
-                final int min = (int) weightBytes[7];
-                final int sec = (int) weightBytes[8];
+                final int year = ((data[3] & 0xFF) << 8) | (data[2] & 0xFF);
+                final int month = (int) data[4];
+                final int day = (int) data[5];
+                final int hours = (int) data[6];
+                final int min = (int) data[7];
+                final int sec = (int) data[8];
 
                 float weight;
+                float impedance = 0.0f;
+
                 if (isLBSUnit || isCattyUnit) {
-                    weight = (float) (((weightBytes[12] & 0xFF) << 8) | (weightBytes[11] & 0xFF)) / 100.0f;
+                    weight = (float) (((data[12] & 0xFF) << 8) | (data[11] & 0xFF)) / 100.0f;
                 } else {
-                    weight = (float) (((weightBytes[12] & 0xFF) << 8) | (weightBytes[11] & 0xFF)) / 200.0f;
+                    weight = (float) (((data[12] & 0xFF) << 8) | (data[11] & 0xFF)) / 200.0f;
+                }
+
+                if (isImpedance) {
+                    impedance = ((data[10] & 0xFF) << 8) | (data[9] & 0xFF);
+                    Timber.d("impedance value is " + impedance);
                 }
 
                 String date_string = year + "/" + month + "/" + day + "/" + hours + "/" + min;
@@ -175,29 +177,31 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
 
                 // Is the year plausible? Check if the year is in the range of 20 years...
                 if (validateDate(date_time, 20)) {
-                    final ScaleUser selectedUser = OpenScale.getInstance().getSelectedScaleUser();
+                    final ScaleUser scaleUser = OpenScale.getInstance().getSelectedScaleUser();
                     ScaleMeasurement scaleBtData = new ScaleMeasurement();
 
-                    scaleBtData.setWeight(Converters.toKilogram(weight, selectedUser.getScaleUnit()));
+                    scaleBtData.setWeight(Converters.toKilogram(weight, scaleUser.getScaleUnit()));
                     scaleBtData.setDateTime(date_time);
 
-                    // estimate fat, water and LBM until library is reversed engineered
-                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+                    int sex;
 
-                    MeasurementViewSettings settings = new MeasurementViewSettings(prefs, WaterMeasurementView.KEY);
-                    EstimatedWaterMetric waterMetric = EstimatedWaterMetric.getEstimatedMetric(
-                            EstimatedWaterMetric.FORMULA.valueOf(settings.getEstimationFormula()));
-                    scaleBtData.setWater(waterMetric.getWater(selectedUser, scaleBtData));
+                    if (scaleUser.getGender() == Converters.Gender.MALE) {
+                        sex = 1;
+                    } else {
+                        sex = 0;
+                    }
 
-                    settings = new MeasurementViewSettings(prefs, FatMeasurementView.KEY);
-                    EstimatedFatMetric fatMetric = EstimatedFatMetric.getEstimatedMetric(
-                            EstimatedFatMetric.FORMULA.valueOf(settings.getEstimationFormula()));
-                    scaleBtData.setFat(fatMetric.getFat(selectedUser, scaleBtData));
+                    if (impedance != 0.0f) {
+                        MiScaleLib miScaleLib = new MiScaleLib(sex, scaleUser.getAge(), scaleUser.getBodyHeight());
 
-                    settings = new MeasurementViewSettings(prefs, LBMMeasurementView.KEY);
-                    EstimatedLBMMetric lbmMetric = EstimatedLBMMetric.getEstimatedMetric(
-                            EstimatedLBMMetric.FORMULA.valueOf(settings.getEstimationFormula()));
-                    scaleBtData.setLbm(lbmMetric.getLBM(selectedUser, scaleBtData));
+                        scaleBtData.setWater(miScaleLib.getWater(weight, impedance));
+                        scaleBtData.setVisceralFat(miScaleLib.getVisceralFat(weight));
+                        scaleBtData.setFat(miScaleLib.getBodyFat(weight, impedance));
+                        scaleBtData.setMuscle(miScaleLib.getMuscle(weight, impedance));
+                        scaleBtData.setBone(miScaleLib.getBoneMass(weight, impedance));
+                    } else {
+                        Timber.d("Impedance value is zero");
+                    }
 
                     addScaleMeasurement(scaleBtData);
                 } else {
