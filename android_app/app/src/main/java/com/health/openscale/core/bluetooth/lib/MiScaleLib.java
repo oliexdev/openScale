@@ -133,26 +133,31 @@ public class MiScaleLib {
 
         if (sex == 0 && age <= 49) {
             lbmSub = 9.25f;
-        } else if (sex == 1 && age > 49) {
+        } else if (sex == 0 && age > 49) {
             lbmSub = 7.25f;
         }
 
         float lbmCoeff = getLBMCoefficient(weight, impedance);
+        float coeff = 1.0f;
 
-        if (sex == 1 && weight < 61) {
-            bodyFat = (1.0f - (((lbmCoeff - lbmSub) * 0.98f) / weight)) * 100.0f;
+        if (sex == 1 && weight < 61.0f) {
+            coeff = 0.98f;
         }
-        else if (sex == 0 && weight < 50) {
-            bodyFat = (1.0f - (((lbmCoeff - lbmSub) * 1.02f) / weight)) * 100.0f;
+        else if (sex == 0 && weight > 60.0f) {
+            coeff = 0.96f;
+
+            if (height > 160.0f) {
+                coeff *= 1.03f;
+            }
+        } else if (sex == 0 && weight < 50.0f) {
+            coeff = 1.02f;
+
+            if (height > 160.0f) {
+                coeff *= 1.03f;
+            }
         }
-        else if (sex == 0 && weight < 60) {
-            bodyFat = (1.0f - (((lbmCoeff - lbmSub) * 0.96f) / weight)) * 100.0f;
-        }
-        else if (sex == 0 && height < 160) {
-            bodyFat = (1.0f - (((lbmCoeff - lbmSub) * 1.03f) / weight)) * 100.0f;
-        } else {
-            bodyFat = (1.0f - ((lbmCoeff - lbmSub) / weight)) * 100.0f;
-        }
+
+        bodyFat = (1.0f - (((lbmCoeff - lbmSub) * coeff) / weight)) * 100.0f;
 
         if (bodyFat > 63.0f) {
             bodyFat = 75.0f;
