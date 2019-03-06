@@ -85,6 +85,13 @@ public class BluetoothQNScale extends BluetoothCommunication {
 
     @Override
     protected boolean onNextStep(int stepNr) {
+    final ScaleUser scaleUser = OpenScale.getInstance().getSelectedScaleUser();
+    final Converters.WeightUnit scaleUserWeightUnit = scaleUser.getScaleUnit();
+    // Default weight unit KG. 0x01 weight byte = KG. 0x02 weight byte = LB.
+    byte weightUnitByte = (byte) 0x01;
+    if (scaleUserWeightUnit == Converters.WeightUnit.LB){
+        weightUnitByte = (byte) 0x02;
+    }
         switch (stepNr) {
             case 0:
                 // set notification on for custom characteristic 1 (weight, time, and others)
@@ -95,8 +102,9 @@ public class BluetoothQNScale extends BluetoothCommunication {
                 setIndicationOn(CUSTOM2_MEASUREMENT_CHARACTERISTIC);
                 break;
             case 2:
-                // write magicnumber 0x130915011000000042 to 0xffe3
-                byte[] ffe3magicBytes = new byte[]{(byte) 0x13, (byte) 0x09, (byte) 0x15, (byte) 0x01, (byte) 0x10, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x42};
+                // write magicnumber 0x130915[WEIGHT_BYTE]1000000042 to 0xffe3
+                // 0x01 weight byte = KG. 0x02 weight byte = LB.
+                byte[] ffe3magicBytes = new byte[]{(byte) 0x13, (byte) 0x09, (byte) 0x15, weightUnitByte, (byte) 0x10, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x42};
                 writeBytes(CUSTOM3_MEASUREMENT_CHARACTERISTIC, ffe3magicBytes);
                 break;
             case 3:
