@@ -87,10 +87,14 @@ public class BluetoothQNScale extends BluetoothCommunication {
     protected boolean onNextStep(int stepNr) {
     final ScaleUser scaleUser = OpenScale.getInstance().getSelectedScaleUser();
     final Converters.WeightUnit scaleUserWeightUnit = scaleUser.getScaleUnit();
-    // Default weight unit KG. 0x01 weight byte = KG. 0x02 weight byte = LB.
+    // Value of 0x01 = KG. 0x02 = LB. Requests with stones unit are sent as LB, with post-processing in vendor app.
     byte weightUnitByte = (byte) 0x01;
+    // Checksum at end of message. For now, simply switching based on weight unit only
+    byte weightRequestChecksum = (byte) 0x42;
+    Timber.e("Weight byte 1 %d", weightUnitByte);
     if (scaleUserWeightUnit == Converters.WeightUnit.LB){
         weightUnitByte = (byte) 0x02;
+        weightRequestChecksum = (byte) 0x43;
     }
         switch (stepNr) {
             case 0:
@@ -104,7 +108,7 @@ public class BluetoothQNScale extends BluetoothCommunication {
             case 2:
                 // write magicnumber 0x130915[WEIGHT_BYTE]1000000042 to 0xffe3
                 // 0x01 weight byte = KG. 0x02 weight byte = LB.
-                byte[] ffe3magicBytes = new byte[]{(byte) 0x13, (byte) 0x09, (byte) 0x15, weightUnitByte, (byte) 0x10, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x42};
+                byte[] ffe3magicBytes = new byte[]{(byte) 0x13, (byte) 0x09, (byte) 0x15, weightUnitByte, (byte) 0x10, (byte) 0x00, (byte) 0x00, (byte) 0x00, weightRequestChecksum};
                 writeBytes(CUSTOM3_MEASUREMENT_CHARACTERISTIC, ffe3magicBytes);
                 break;
             case 3:
