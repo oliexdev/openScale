@@ -16,26 +16,36 @@
 
 package com.health.openscale.core.bluetooth;
 
+import android.bluetooth.BluetoothGattService;
 import android.content.Context;
 
+import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
-import com.health.openscale.core.utils.Converters;
+import com.polidea.rxandroidble2.RxBleDeviceServices;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
 
 import timber.log.Timber;
 
 public class BluetoothSenssun extends BluetoothCommunication {
-    private final UUID WEIGHT_MEASUREMENT_SERVICE = BluetoothGattUuid.fromShortCode(0xfff0);
-    private final UUID WEIGHT_MEASUREMENT_CHARACTERISTIC = BluetoothGattUuid.fromShortCode(0xfff1); // read, notify
-    private final UUID CMD_MEASUREMENT_CHARACTERISTIC = BluetoothGattUuid.fromShortCode(0xfff2); // write only
+    private final UUID MODEL_A_MEASUREMENT_SERVICE = UUID.fromString("0000fff0-0000-1000-8000-00805f9b34fb");
+    private final UUID MODEL_A_NOTIFICATION_CHARACTERISTIC = UUID.fromString("0000fff1-0000-1000-8000-00805f9b34fb");
+    private final UUID MODEL_A_WRITE_CHARACTERISTIC = UUID.fromString("0000fff2-0000-1000-8000-00805f9b34fb");
 
-    private boolean scaleGotUserData;
-    private byte WeightFatMus = 0;
-    private ScaleMeasurement measurement;
+    private final UUID MODEL_B_MEASUREMENT_SERVICE = UUID.fromString("0000ffb0-0000-1000-8000-00805f9b34fb");
+    private final UUID MODEL_B_NOTIFICATION_CHARACTERISTIC = UUID.fromString("0000ffb2-0000-1000-8000-00805f9b34fb");
+    private final UUID MODEL_B_WRITE_CHARACTERISTIC = UUID.fromString("0000ffb2-0000-1000-8000-00805f9b34fb");
+
+    private UUID writeCharacteristic;
+
+    private int lastWeight, lastFat, lastHydration, lastMuscle, lastBone, lastKcal;
+    private boolean weightStabilized, stepMessageDisplayed;
+
+    private int values;
 
     public BluetoothSenssun(Context context) {
         super(context);
@@ -43,114 +53,192 @@ public class BluetoothSenssun extends BluetoothCommunication {
 
     @Override
     public String driverName() {
-        return "Senssun";
+        return "Senssun Fat";
     }
 
-    private void sendUserData(){
-        if ( scaleGotUserData ){
-          return;
+    @Override
+    protected void onBluetoothDiscovery(RxBleDeviceServices rxBleDeviceServices) {
+        for (BluetoothGattService gattService : rxBleDeviceServices.getBluetoothGattServices()) {
+            if (gattService.getUuid().equals(MODEL_A_MEASUREMENT_SERVICE)) {
+                writeCharacteristic = MODEL_A_WRITE_CHARACTERISTIC;
+                setNotificationOn(MODEL_A_NOTIFICATION_CHARACTERISTIC);
+                Timber.d("Found a Model A");
+                break;
+            }
+            if (gattService.getUuid().equals(MODEL_B_MEASUREMENT_SERVICE)) {
+                writeCharacteristic = MODEL_B_WRITE_CHARACTERISTIC;
+                setNotificationOn(MODEL_B_NOTIFICATION_CHARACTERISTIC);
+                Timber.d("Found a Model B");
+                break;
+            }
         }
-        final ScaleUser selectedUser = OpenScale.getInstance().getSelectedScaleUser();
 
-        byte gender = selectedUser.getGender().isMale() ? (byte)0xf1 : (byte)0x01;
-        byte height = (byte) selectedUser.getBodyHeight(); // cm
-        byte age = (byte) selectedUser.getAge();
-
-        Timber.d("Request Saved User Measurements ");
-        byte cmdByte[] = {(byte)0xa5, (byte)0x10, gender, age, height, (byte)0, (byte)0x0, (byte)0x0d2, (byte)0x00};
-
-        byte verify = 0;
-        for (int i = 1; i < cmdByte.length - 2; i++) {
-            verify = (byte) (verify + cmdByte[i]);
-        }
-        cmdByte[cmdByte.length - 2] = verify;
-        writeBytes(CMD_MEASUREMENT_CHARACTERISTIC, cmdByte);
+        resumeMachineState();
     }
 
     @Override
     protected boolean onNextStep(int stepNr) {
         switch (stepNr) {
             case 0:
-                setNotificationOn(WEIGHT_MEASUREMENT_CHARACTERISTIC);
+                weightStabilized = false;
+                stepMessageDisplayed = false;
+                values = 0;
+                discoverBluetoothServices();
+                stopMachineState();
                 break;
             case 1:
-                sendUserData();
-                WeightFatMus = 0;
-                scaleGotUserData = false;
+                Timber.d("Sync Date");
+                synchroniseDate();
+                break;
+            case 2:
+                Timber.d("Sync Time");
+                synchroniseTime();
                 break;
             default:
-                // Finish init if everything is done
                 return false;
         }
+
         return true;
     }
 
     @Override
     public void onBluetoothNotify(UUID characteristic, byte[] value) {
-        final byte[] data = value;
-
-        // The first notification only includes weight and all other fields are
-        // either 0x00 (user info) or 0xff (fat, water, etc.)
-
-        if (data != null && !isBitSet(WeightFatMus, 3)) { //only if not saved
-            parseBytes(data);
+        if (value == null || value[0] != (byte)0xFF) {
+            return;
         }
 
-        if (isBitSet(WeightFatMus,2) ) {
-            addScaleMeasurement(measurement);
+        System.arraycopy(value, 1, value, 0, value.length - 1);
+
+        switch (value[0]) {
+            case (byte)0xA5:
+                parseMeasurement(value);
+                break;
+        }
+
+    }
+
+    private void parseMeasurement(byte[] data) {
+        switch(data[5]) {
+            case (byte)0xAA:
+            case (byte)0xA0:
+                if (weightStabilized) {
+                    return;
+                }
+                if (!stepMessageDisplayed) {
+                    sendMessage(R.string.info_step_on_scale, 0);
+                    stepMessageDisplayed = true;
+                }
+
+                weightStabilized = data[5] == (byte)0xAA;
+                Timber.d("the byte is %d stable is %s", (data[5] & 0xff), weightStabilized ? "true": "false");
+                lastWeight = ((data[1] & 0xff) << 8) | (data[2] & 0xff);
+
+                if (lastWeight > 0) {
+                    sendMessage(R.string.info_measuring, lastWeight / 10.0f);
+
+                }
+
+                if (weightStabilized) {
+                    values |= 1;
+                    synchroniseUser();
+                }
+                break;
+            case (byte)0xBE:
+                setBluetoothStatus(BT_STATUS.UNEXPECTED_ERROR, "Fat Test Error");
+                disconnect();
+                break;
+
+            case (byte)0xB0:
+                lastFat = ((data[1] & 0xff) << 8) | (data[2] & 0xff);
+                lastHydration = ((data[3] & 0xff) << 8) | (data[4] & 0xff);
+                values |= 2;
+                Timber.d("got fat %d", values);
+
+                break;
+
+            case (byte)0xC0:
+                lastMuscle = ((data[1] & 0xff) << 8) | (data[2] & 0xff);
+                lastBone = ((data[4] & 0xff) << 8) | (data[3] & 0xff);
+                values |= 4;
+                Timber.d("got muscle %d", values);
+
+                break;
+
+            case (byte)0xD0:
+                lastKcal = ((data[1] & 0xff) << 8) | (data[2] & 0xff);
+                int unknown = ((data[3] & 0xff) << 8) | (data[4] & 0xff);
+                values |= 8;
+                Timber.d("got kal %d", values);
+
+                break;
+        }
+
+        if (values == 15) {
+            ScaleMeasurement scaleBtData = new ScaleMeasurement();
+            scaleBtData.setWeight((float)lastWeight / 10.0f);
+            scaleBtData.setFat((float)lastFat / 10.0f);
+            scaleBtData.setWater((float)lastHydration / 10.0f);
+            scaleBtData.setBone((float)lastBone / 10.0f);
+            scaleBtData.setMuscle((float)lastMuscle / 10.0f);
+            scaleBtData.setDateTime(new Date());
+            addScaleMeasurement(scaleBtData);
+            disconnect();
         }
     }
 
-    private void parseBytes(byte[] weightBytes) {
-        if (measurement == null) {
-            measurement = new ScaleMeasurement();
-        }
-        int type = weightBytes[6] & 0xff;
-        Timber.d("type %02X", type);
-        switch (type) {
-            case 0x00:
-                if (weightBytes[2] == (byte)0x10) {
-                    scaleGotUserData = true;
-                }
-                break;
-            case 0xa0:
-                sendUserData();
-                break;
-            case 0xaa:
-                float weight = Converters.fromUnsignedInt16Be(weightBytes, 2) / 10.0f; // kg
-                measurement.setWeight(weight);
+    private void synchroniseDate() {
+        Calendar cal = Calendar.getInstance();
 
-                if (!isBitSet(WeightFatMus,2)){
-                  WeightFatMus |= 1 << 2 ;
-                }
+        byte message[] = new byte[]{(byte)0xA5, (byte)0x30, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00};
+        message[2] = (byte)Integer.parseInt(Long.toHexString(Integer.valueOf(String.valueOf(cal.get(Calendar.YEAR)).substring(2))), 16);
 
-                sendUserData();
-                break;
-            case 0xb0:
-                float fat = Converters.fromUnsignedInt16Be(weightBytes, 2) / 10.0f; // %
-                float water = Converters.fromUnsignedInt16Be(weightBytes, 4) / 10.0f; // %
-                measurement.setFat(fat);
-                measurement.setWater(water);
-                WeightFatMus |= 1 << 1;
-                break;
-            case 0xc0:
-                float bone = Converters.fromUnsignedInt16Le(weightBytes, 4) / 10.0f; // kg
-                float muscle = Converters.fromUnsignedInt16Be(weightBytes, 2) / 10.0f; // %
-                measurement.setMuscle(muscle);
-                measurement.setBone(bone);
-                WeightFatMus |= 1;
-                break;
-            case 0xd0:
-                float calorie = Converters.fromUnsignedInt16Be(weightBytes, 2);
-                break;
-            case 0xe0:
-                break;
-            case 0xe1:
-                break;
-            case 0xe2:
-                //date
-                break;
+        String DayLength=Long.toHexString(cal.get(Calendar.DAY_OF_YEAR));
+        DayLength=DayLength.length()==1?"000"+DayLength:
+                DayLength.length()==2?"00"+DayLength:
+                        DayLength.length()==3?"0"+DayLength:DayLength;
+
+        message[3]=(byte)Integer.parseInt(DayLength.substring(0,2), 16);
+        message[4]=(byte)Integer.parseInt(DayLength.substring(2,4), 16);
+
+        addChecksum(message);
+
+        writeBytes(writeCharacteristic, message);
+    }
+
+    private void synchroniseTime() {
+        Calendar cal = Calendar.getInstance();
+
+        byte message[] = new byte[]{(byte)0xA5, (byte)0x31, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00};
+
+        message[2]=(byte)Integer.parseInt(Long.toHexString(cal.get(Calendar.HOUR_OF_DAY)), 16);
+        message[3]=(byte)Integer.parseInt(Long.toHexString(cal.get(Calendar.MINUTE)), 16);
+        message[4]=(byte)Integer.parseInt(Long.toHexString(cal.get(Calendar.SECOND)), 16);
+
+        addChecksum(message);
+
+        writeBytes(writeCharacteristic, message);
+    }
+
+    private void addChecksum(byte[] message) {
+        byte verify = 0;
+        for(int i=1;i<message.length-2;i++){
+            verify=(byte) (verify+message[i] & 0xff);
         }
-        measurement.setDateTime(new Date());
+        message[message.length-2]=verify;
+    }
+
+
+    private void synchroniseUser() {
+        final ScaleUser selectedUser = OpenScale.getInstance().getSelectedScaleUser();
+
+        byte message[] = new byte[]{(byte)0xA5, (byte)0x10, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00};
+        //message[2] = (byte)((selectedUser.getGender().isMale() ? (byte)0x80: (byte)0x00) + 1+selectedUser.getId());
+        message[2] = (byte) ((byte)(selectedUser.getGender().isMale()?(byte)0:(byte)8)*(byte)16 + (byte)selectedUser.getId());
+        message[3] = (byte)selectedUser.getAge();
+        message[4] = (byte)selectedUser.getBodyHeight();
+
+        addChecksum(message);
+
+        writeBytes(writeCharacteristic, message);
     }
 }
