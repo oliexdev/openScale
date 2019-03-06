@@ -91,7 +91,6 @@ public class BluetoothQNScale extends BluetoothCommunication {
     byte weightUnitByte = (byte) 0x01;
     // Checksum at end of message. For now, simply switching based on weight unit only
     byte weightRequestChecksum = (byte) 0x42;
-    Timber.e("Weight byte 1 %d", weightUnitByte);
     if (scaleUserWeightUnit == Converters.WeightUnit.LB){
         weightUnitByte = (byte) 0x02;
         weightRequestChecksum = (byte) 0x43;
