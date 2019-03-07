@@ -85,16 +85,6 @@ public class BluetoothQNScale extends BluetoothCommunication {
 
     @Override
     protected boolean onNextStep(int stepNr) {
-    final ScaleUser scaleUser = OpenScale.getInstance().getSelectedScaleUser();
-    final Converters.WeightUnit scaleUserWeightUnit = scaleUser.getScaleUnit();
-    // Value of 0x01 = KG. 0x02 = LB. Requests with stones unit are sent as LB, with post-processing in vendor app.
-    byte weightUnitByte = (byte) 0x01;
-    // Checksum at end of message. For now, simply switching based on weight unit only
-    byte weightRequestChecksum = (byte) 0x42;
-    if (scaleUserWeightUnit == Converters.WeightUnit.LB){
-        weightUnitByte = (byte) 0x02;
-        weightRequestChecksum = (byte) 0x43;
-    }
         switch (stepNr) {
             case 0:
                 // set notification on for custom characteristic 1 (weight, time, and others)
@@ -105,9 +95,19 @@ public class BluetoothQNScale extends BluetoothCommunication {
                 setIndicationOn(CUSTOM2_MEASUREMENT_CHARACTERISTIC);
                 break;
             case 2:
-                // write magicnumber 0x130915[WEIGHT_BYTE]1000000042 to 0xffe3
+                final ScaleUser scaleUser = OpenScale.getInstance().getSelectedScaleUser();
+                final Converters.WeightUnit scaleUserWeightUnit = scaleUser.getScaleUnit();
+                // Value of 0x01 = KG. 0x02 = LB. Requests with stones unit are sent as LB, with post-processing in vendor app.
+                byte weightUnitByte = (byte) 0x01;
+                // Checksum at end of message. For now, simply switching based on weight unit only
+                if (scaleUserWeightUnit == Converters.WeightUnit.LB){
+                    weightUnitByte = (byte) 0x02;
+                }
+                // write magicnumber 0x130915[WEIGHT_BYTE]10000000[CHECK_SUM] to 0xffe3
                 // 0x01 weight byte = KG. 0x02 weight byte = LB.
-                byte[] ffe3magicBytes = new byte[]{(byte) 0x13, (byte) 0x09, (byte) 0x15, weightUnitByte, (byte) 0x10, (byte) 0x00, (byte) 0x00, (byte) 0x00, weightRequestChecksum};
+                byte[] ffe3magicBytes = new byte[]{(byte) 0x13, (byte) 0x09, (byte) 0x15, weightUnitByte, (byte) 0x10, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00};
+                // Set last byte to be checksum
+                ffe3magicBytes[ffe3magicBytes.length -1] = sumChecksum(ffe3magicBytes, 0, ffe3magicBytes.length - 1);
                 writeBytes(CUSTOM3_MEASUREMENT_CHARACTERISTIC, ffe3magicBytes);
                 break;
             case 3:
