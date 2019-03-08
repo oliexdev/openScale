@@ -99,8 +99,8 @@ public class BluetoothQNScale extends BluetoothCommunication {
                 final Converters.WeightUnit scaleUserWeightUnit = scaleUser.getScaleUnit();
                 // Value of 0x01 = KG. 0x02 = LB. Requests with stones unit are sent as LB, with post-processing in vendor app.
                 byte weightUnitByte = (byte) 0x01;
-                // Checksum at end of message. For now, simply switching based on weight unit only
-                if (scaleUserWeightUnit == Converters.WeightUnit.LB){
+                // Default weight unit KG. If user config set to LB or ST, scale will show LB units, consistent with vendor app
+                if (scaleUserWeightUnit == Converters.WeightUnit.LB || scaleUserWeightUnit == Converters.WeightUnit.ST){
                     weightUnitByte = (byte) 0x02;
                 }
                 // write magicnumber 0x130915[WEIGHT_BYTE]10000000[CHECK_SUM] to 0xffe3
