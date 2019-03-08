@@ -95,8 +95,19 @@ public class BluetoothQNScale extends BluetoothCommunication {
                 setIndicationOn(CUSTOM2_MEASUREMENT_CHARACTERISTIC);
                 break;
             case 2:
-                // write magicnumber 0x130915011000000042 to 0xffe3
-                byte[] ffe3magicBytes = new byte[]{(byte) 0x13, (byte) 0x09, (byte) 0x15, (byte) 0x01, (byte) 0x10, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x42};
+                final ScaleUser scaleUser = OpenScale.getInstance().getSelectedScaleUser();
+                final Converters.WeightUnit scaleUserWeightUnit = scaleUser.getScaleUnit();
+                // Value of 0x01 = KG. 0x02 = LB. Requests with stones unit are sent as LB, with post-processing in vendor app.
+                byte weightUnitByte = (byte) 0x01;
+                // Default weight unit KG. If user config set to LB or ST, scale will show LB units, consistent with vendor app
+                if (scaleUserWeightUnit == Converters.WeightUnit.LB || scaleUserWeightUnit == Converters.WeightUnit.ST){
+                    weightUnitByte = (byte) 0x02;
+                }
+                // write magicnumber 0x130915[WEIGHT_BYTE]10000000[CHECK_SUM] to 0xffe3
+                // 0x01 weight byte = KG. 0x02 weight byte = LB.
+                byte[] ffe3magicBytes = new byte[]{(byte) 0x13, (byte) 0x09, (byte) 0x15, weightUnitByte, (byte) 0x10, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00};
+                // Set last byte to be checksum
+                ffe3magicBytes[ffe3magicBytes.length -1] = sumChecksum(ffe3magicBytes, 0, ffe3magicBytes.length - 1);
                 writeBytes(CUSTOM3_MEASUREMENT_CHARACTERISTIC, ffe3magicBytes);
                 break;
             case 3:
