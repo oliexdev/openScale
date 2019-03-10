@@ -25,6 +25,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabaseCorruptException;
 import android.net.Uri;
 import android.os.Handler;
+import android.os.Looper;
 import android.preference.PreferenceManager;
 import android.provider.OpenableColumns;
 import android.text.format.DateFormat;
@@ -211,7 +212,7 @@ public class OpenScale {
             }
         } catch (Exception e) {
             Timber.e(e);
-            Toast.makeText(context, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            runUiToastMsg("Error: " + e.getMessage());
         }
 
         return new ScaleUser();
@@ -328,15 +329,16 @@ public class OpenScale {
                         Converters.fromKilogram(scaleMeasurement.getWeight(), unit), unit.toString(),
                         dateFormat.format(dateTime) + " " + timeFormat.format(dateTime),
                         scaleUser.getUserName());
-                Toast.makeText(context, infoText, Toast.LENGTH_LONG).show();
+                runUiToastMsg(infoText);
             }
+
             alarmHandler.entryChanged(context, scaleMeasurement);
             updateScaleData();
             triggerWidgetUpdate();
         } else {
             Timber.d("to be added measurement is thrown away because measurement with the same date and time already exist");
             if (!silent) {
-                Toast.makeText(context, context.getString(R.string.info_new_data_duplicated), Toast.LENGTH_LONG).show();
+                runUiToastMsg(context.getString(R.string.info_new_data_duplicated));
             }
         }
 
@@ -496,9 +498,9 @@ public class OpenScale {
 
             measurementDAO.insertAll(csvScaleMeasurementList);
             updateScaleData();
-            Toast.makeText(context, context.getString(R.string.info_data_imported) + " " + filename, Toast.LENGTH_SHORT).show();
+            runUiToastMsg(context.getString(R.string.info_data_imported) + " " + filename);
         } catch (IOException | ParseException e) {
-            Toast.makeText(context, context.getString(R.string.error_importing) + ": " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            runUiToastMsg(context.getString(R.string.error_importing) + ": " + e.getMessage());
         }
     }
 
@@ -508,7 +510,7 @@ public class OpenScale {
             CsvHelper.exportTo(new OutputStreamWriter(output), scaleMeasurementList);
             return true;
         } catch (IOException e) {
-            Toast.makeText(context, context.getResources().getString(R.string.error_exporting) + " " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            runUiToastMsg(context.getResources().getString(R.string.error_exporting) + " " + e.getMessage());
         }
 
         return false;
@@ -653,5 +655,15 @@ public class OpenScale {
     // As getScaleMeasurementList(), but as a Cursor for export via a Content Provider.
     public Cursor getScaleMeasurementListCursor(long userId) {
         return measurementDAO.selectAll(userId);
+    }
+
+    private void runUiToastMsg(String text) {
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(context, text, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }
