@@ -500,24 +500,30 @@ public abstract class BluetoothCommunication {
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                Timber.d("Try to connect to BLE device " + macAddress);
+                if (scanSubscription.isDisposed()) {
 
-                connectionObservable = bleDevice
-                        .establishConnection(false)
-                        .takeUntil(disconnectTriggerSubject)
-                        .doOnError(throwable -> setBluetoothStatus(BT_STATUS.CONNECTION_RETRYING))
-                        .subscribeOn(Schedulers.trampoline())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .compose(ReplayingShare.instance());
+                    Timber.d("Try to connect to BLE device " + macAddress);
 
-                if (isConnected()) {
-                    disconnect();
+                    connectionObservable = bleDevice
+                            .establishConnection(false)
+                            .takeUntil(disconnectTriggerSubject)
+                            .doOnError(throwable -> setBluetoothStatus(BT_STATUS.CONNECTION_RETRYING))
+                            .subscribeOn(Schedulers.trampoline())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .compose(ReplayingShare.instance());
+
+                    if (isConnected()) {
+                        disconnect();
+                    } else {
+                        stepNr = 0;
+
+                        setBtMonitoringOn();
+                        nextMachineStep();
+                        resetDisconnectTimer();
+                    }
                 } else {
-                    stepNr = 0;
-
-                    setBtMonitoringOn();
-                    nextMachineStep();
-                    resetDisconnectTimer();
+                    Timber.d("Wait until LE scan is disposed");
+                    connectToDevice(macAddress);
                 }
             }
         }, 500);
