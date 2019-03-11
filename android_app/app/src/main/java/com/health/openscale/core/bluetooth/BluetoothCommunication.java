@@ -467,7 +467,6 @@ public abstract class BluetoothCommunication {
                 || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
         ) {
             Timber.d("Do LE scan before connecting to device");
-            disconnectWithDelay();
             scanSubscription = bleClient.scanBleDevices(
                     new ScanSettings.Builder()
                             .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
@@ -483,6 +482,7 @@ public abstract class BluetoothCommunication {
         }
         else {
             Timber.d("No location permission, connecting without LE scan");
+            scanSubscription = null;
             connectToDevice(macAddress);
         }
     }
@@ -493,14 +493,19 @@ public abstract class BluetoothCommunication {
         if (scanSubscription != null) {
             Timber.d("Stop Le san");
             scanSubscription.dispose();
-            scanSubscription = null;
         }
 
         Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                if (scanSubscription.isDisposed()) {
+                    if (scanSubscription != null) {
+                        if (!scanSubscription.isDisposed()) {
+                            Timber.d("Wait until LE scan is disposed");
+                            connectToDevice(macAddress);
+                            return;
+                        }
+                    }
 
                     Timber.d("Try to connect to BLE device " + macAddress);
 
@@ -521,10 +526,6 @@ public abstract class BluetoothCommunication {
                         nextMachineStep();
                         resetDisconnectTimer();
                     }
-                } else {
-                    Timber.d("Wait until LE scan is disposed");
-                    connectToDevice(macAddress);
-                }
             }
         }, 500);
     }
