@@ -35,6 +35,7 @@ import com.polidea.rxandroidble2.scan.ScanSettings;
 import java.io.IOException;
 import java.net.SocketException;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import androidx.core.content.ContextCompat;
 import io.reactivex.Observable;
@@ -69,6 +70,7 @@ public abstract class BluetoothCommunication {
     protected Context context;
 
     private final int BT_RETRY_TIMES_ON_ERROR = 3;
+    private final int BT_DELAY_MS = 500;
 
     private RxBleClient bleClient;
     private RxBleDevice bleDevice;
@@ -239,6 +241,7 @@ public abstract class BluetoothCommunication {
                 .flatMapSingle(rxBleConnection -> rxBleConnection.writeCharacteristic(characteristic, bytes))
                 .subscribeOn(Schedulers.trampoline())
                 .observeOn(AndroidSchedulers.mainThread())
+                .delay(BT_DELAY_MS, TimeUnit.MILLISECONDS)
                 .retry(BT_RETRY_TIMES_ON_ERROR);
 
         compositeDisposable.add(observable.subscribe(
@@ -267,6 +270,7 @@ public abstract class BluetoothCommunication {
                 .flatMap(rxBleConnection -> rxBleConnection.readCharacteristic(characteristic))
                 .subscribeOn(Schedulers.trampoline())
                 .observeOn(AndroidSchedulers.mainThread())
+                .delay(BT_DELAY_MS, TimeUnit.MILLISECONDS)
                 .retry(BT_RETRY_TIMES_ON_ERROR);
 
         compositeDisposable.add(observable
@@ -297,6 +301,7 @@ public abstract class BluetoothCommunication {
                 .flatMap(indicationObservable -> indicationObservable)
                 .subscribeOn(Schedulers.trampoline())
                 .observeOn(AndroidSchedulers.mainThread())
+                .delay(BT_DELAY_MS, TimeUnit.MILLISECONDS)
                 .retry(BT_RETRY_TIMES_ON_ERROR);
 
         compositeDisposable.add(observable.subscribe(
@@ -333,6 +338,7 @@ public abstract class BluetoothCommunication {
                 .flatMap(notificationObservable -> notificationObservable)
                 .subscribeOn(Schedulers.trampoline())
                 .observeOn(AndroidSchedulers.mainThread())
+                .delay(BT_DELAY_MS, TimeUnit.MILLISECONDS)
                 .retry(BT_RETRY_TIMES_ON_ERROR);
 
         compositeDisposable.add(observable.subscribe(
@@ -355,6 +361,7 @@ public abstract class BluetoothCommunication {
                 .flatMapSingle(RxBleConnection::discoverServices)
                 .subscribeOn(Schedulers.trampoline())
                 .observeOn(AndroidSchedulers.mainThread())
+                .delay(BT_DELAY_MS, TimeUnit.MILLISECONDS)
                 .retry(BT_RETRY_TIMES_ON_ERROR);
 
         compositeDisposable.add(observable.subscribe(
@@ -467,6 +474,7 @@ public abstract class BluetoothCommunication {
                 || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
         ) {
             Timber.d("Do LE scan before connecting to device");
+            disconnectWithDelay();
             scanSubscription = bleClient.scanBleDevices(
                     new ScanSettings.Builder()
                             .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
@@ -482,7 +490,6 @@ public abstract class BluetoothCommunication {
         }
         else {
             Timber.d("No location permission, connecting without LE scan");
-            scanSubscription = null;
             connectToDevice(macAddress);
         }
     }
@@ -493,39 +500,32 @@ public abstract class BluetoothCommunication {
         if (scanSubscription != null) {
             Timber.d("Stop Le san");
             scanSubscription.dispose();
+            scanSubscription = null;
         }
 
         Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                    if (scanSubscription != null) {
-                        if (!scanSubscription.isDisposed()) {
-                            Timber.d("Wait until LE scan is disposed");
-                            connectToDevice(macAddress);
-                            return;
-                        }
-                    }
+                Timber.d("Try to connect to BLE device " + macAddress);
 
-                    Timber.d("Try to connect to BLE device " + macAddress);
+                connectionObservable = bleDevice
+                        .establishConnection(false)
+                        .takeUntil(disconnectTriggerSubject)
+                        .doOnError(throwable -> setBluetoothStatus(BT_STATUS.CONNECTION_RETRYING))
+                        .subscribeOn(Schedulers.trampoline())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .compose(ReplayingShare.instance());
 
-                    connectionObservable = bleDevice
-                            .establishConnection(false)
-                            .takeUntil(disconnectTriggerSubject)
-                            .doOnError(throwable -> setBluetoothStatus(BT_STATUS.CONNECTION_RETRYING))
-                            .subscribeOn(Schedulers.trampoline())
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .compose(ReplayingShare.instance());
+                if (isConnected()) {
+                    disconnect();
+                } else {
+                    stepNr = 0;
 
-                    if (isConnected()) {
-                        disconnect();
-                    } else {
-                        stepNr = 0;
-
-                        setBtMonitoringOn();
-                        nextMachineStep();
-                        resetDisconnectTimer();
-                    }
+                    setBtMonitoringOn();
+                    nextMachineStep();
+                    resetDisconnectTimer();
+                }
             }
         }, 500);
     }
