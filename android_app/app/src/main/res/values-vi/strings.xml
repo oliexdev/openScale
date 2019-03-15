@@ -247,5 +247,4 @@
     <string name="activity_level_moderate">Vận động trung bình</string>
     <string name="activity_level_heavy">Vận động nặng</string>
     <string name="activity_level_extreme">Vận động cực nặng</string>
-    <string name="label_data_provider_enable">Quyền truy cập ứng dụng bên thứ ba</string>
 </resources>

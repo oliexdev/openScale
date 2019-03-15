@@ -250,7 +250,6 @@
     <string name="activity_level_moderate">Средний</string>
     <string name="activity_level_heavy">Интенсивный</string>
     <string name="activity_level_extreme">Экстремальный</string>
-    <string name="label_data_provider_enable">Доступ для сторонних приложений</string>
     <string name="label_tdee">Общий ежедневный расход энергии (TDEE)</string>
     <string name="label_calories">Калории</string>
 </resources>

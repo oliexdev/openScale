@@ -69,6 +69,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
@@ -332,6 +333,7 @@ public class OpenScale {
                 runUiToastMsg(infoText);
             }
 
+            syncInsertMeasurement(scaleMeasurement);
             alarmHandler.entryChanged(context, scaleMeasurement);
             updateScaleData();
             triggerWidgetUpdate();
@@ -389,6 +391,7 @@ public class OpenScale {
         Timber.d("Update measurement: %s", scaleMeasurement);
         measurementDAO.update(scaleMeasurement);
         alarmHandler.entryChanged(context, scaleMeasurement);
+        syncUpdateMeasurement(scaleMeasurement);
 
         updateScaleData();
         triggerWidgetUpdate();
@@ -396,6 +399,7 @@ public class OpenScale {
 
     public void deleteScaleData(int id)
     {
+        syncDeleteMeasurement(measurementDAO.get(id).getDateTime());
         measurementDAO.delete(id);
 
         updateScaleData();
@@ -665,5 +669,33 @@ public class OpenScale {
                 Toast.makeText(context, text, Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void syncInsertMeasurement(ScaleMeasurement scaleMeasurement) {
+        Intent intent = new Intent();
+        intent.setComponent(new ComponentName("com.health.openscale.sync", "com.health.openscale.sync.core.service.SyncService"));
+        intent.putExtra("mode", "insert");
+        intent.putExtra("userId", scaleMeasurement.getUserId());
+        intent.putExtra("weight", scaleMeasurement.getWeight());
+        intent.putExtra("date", scaleMeasurement.getDateTime().getTime());
+        ContextCompat.startForegroundService(context, intent);
+    }
+
+    private void syncUpdateMeasurement(ScaleMeasurement scaleMeasurement) {
+        Intent intent = new Intent();
+        intent.setComponent(new ComponentName("com.health.openscale.sync", "com.health.openscale.sync.core.service.SyncService"));
+        intent.putExtra("mode", "update");
+        intent.putExtra("userId", scaleMeasurement.getUserId());
+        intent.putExtra("weight", scaleMeasurement.getWeight());
+        intent.putExtra("date", scaleMeasurement.getDateTime().getTime());
+        ContextCompat.startForegroundService(context, intent);
+    }
+
+    private void syncDeleteMeasurement(Date date) {
+        Intent intent = new Intent();
+        intent.setComponent(new ComponentName("com.health.openscale.sync", "com.health.openscale.sync.core.service.SyncService"));
+        intent.putExtra("mode", "delete");
+        intent.putExtra("date", date);
+        ContextCompat.startForegroundService(context, intent);
     }
 }

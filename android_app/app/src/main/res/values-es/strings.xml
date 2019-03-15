@@ -222,7 +222,6 @@
     <string name="trisa_scale_pairing_succeeded">¡Emparejamiento exitoso! 
 \n 
 \nVuelva a conectar para obtener datos de mediciones.</string>
-    <string name="label_data_provider_enable">Acceso de aplicaciones de terceros</string>
     <string name="label_tdee">Gasto Calórico Total Diario</string>
     <string name="info_bluetooth_no_device_retrying">No se puede establecer la conexión, reintentando…</string>
     <string name="info_bluetooth_connection_disconnected">Conexión de Bluetooth cerrada</string>

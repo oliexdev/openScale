@@ -219,5 +219,4 @@
     <string name="activity_level_moderate">중간 수준의 운동</string>
     <string name="activity_level_heavy">많은 운동</string>
     <string name="activity_level_extreme">과도한 운동</string>
-    <string name="label_data_provider_enable">제 3자 앱 액세스</string>
 </resources>

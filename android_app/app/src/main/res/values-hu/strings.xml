@@ -222,7 +222,6 @@
     <string name="activity_level_moderate">Mérsékelt</string>
     <string name="activity_level_heavy">Élénk</string>
     <string name="activity_level_extreme">Extrém</string>
-    <string name="label_data_provider_enable">Harmadik fél app hozzáférése</string>
     <string name="label_tdee">Összes napi energia kiadás (TDEE)</string>
     <string name="label_calories">Kalória</string>
 </resources>

@@ -22,7 +22,6 @@ import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.net.Uri;
-import android.preference.PreferenceManager;
 
 import com.health.openscale.BuildConfig;
 import com.health.openscale.core.OpenScale;
@@ -97,11 +96,6 @@ public class ScaleDatabaseProvider extends android.content.ContentProvider {
                         String[] selectionArgs, String sortOrder) {
         final Context context = getContext();
 
-        if (!PreferenceManager.getDefaultSharedPreferences(context)
-                .getBoolean("dataProviderEnable", false)) {
-            throw new UnsupportedOperationException("Provider access not enabled");
-        }
-
         Cursor cursor;
 
         switch (uriMatcher.match(uri)) {
@@ -140,10 +134,6 @@ public class ScaleDatabaseProvider extends android.content.ContentProvider {
     @Override
     public int update(Uri uri, ContentValues values, String selection,
                       String[] selectionArgs) {
-        if (!PreferenceManager.getDefaultSharedPreferences(getContext())
-                .getBoolean("dataProviderEnable", false)) {
-            throw new UnsupportedOperationException("Provider access not enabled");
-        }
 
         Calendar cal = Calendar.getInstance();
         cal.setTime(new Date((long)values.get("datetime")));

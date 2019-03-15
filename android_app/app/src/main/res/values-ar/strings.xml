@@ -231,5 +231,4 @@
     <string name="activity_level_moderate">معتدل</string>
     <string name="activity_level_heavy">كثيف</string>
     <string name="activity_level_extreme">شديد</string>
-    <string name="label_data_provider_enable">"وصول جهات اخرى إلى تطبيق  "</string>
 </resources>

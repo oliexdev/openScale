@@ -237,8 +237,7 @@
     <string name="activity_level_mild">Hafif</string>
     <string name="activity_level_heavy">Ağır</string>
     <string name="activity_level_extreme">Aşırı</string>
-    <string name="label_data_provider_enable">Üçüncü parti uygulama erişimi</string>
-<string name="trisa_scale_not_paired">Bu tartı eşleşmedi!
+    <string name="trisa_scale_not_paired">Bu tartı eşleşmedi!
 \n
 \nEşleştirme moduna geçmek için, terazinin altındaki düğmeyi basılı tutun ve ardından cihaz parolasını geri almak için tekrar bağlanın.
 \n

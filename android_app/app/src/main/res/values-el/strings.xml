@@ -222,7 +222,6 @@
     <string name="activity_level_moderate">Μέτριο</string>
     <string name="activity_level_heavy">Έντονο</string>
     <string name="activity_level_extreme">Ακραίο</string>
-    <string name="label_data_provider_enable">Πρόσβαση εφαρμογής τρίτων</string>
     <string name="label_tdee">Συνολική ημερήσια κατανάλωση ενέργειας (ΣΗΚΕ)</string>
     <string name="label_calories">Θερμίδες</string>
     <string name="info_bluetooth_no_device_retrying">Δεν μπορεί να γίνει σύνδεση, ξαναδοκιμάζω…</string>

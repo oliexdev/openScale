@@ -249,7 +249,6 @@
 \n
 \nVerbind opnieuw om metingen op te halen.</string>
 
-    <string name="label_data_provider_enable">Toegang andere apps</string>
     <string name="label_tdee">Totaal Dagelijks Energie Gebruik</string>
     <string name="label_calories">Calorieën</string>
     <string name="info_bluetooth_no_device_retrying">Kan geen verbinding maken, opnieuw proberen…</string>

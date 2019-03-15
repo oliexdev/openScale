@@ -232,5 +232,4 @@
     <string name="permission_read_write_data_description">Læs/Skriv openScale data, herunder brugerinformation og alle gemte målinger</string>
     <string name="permission_read_write_data_label">Læs/Skriv openScale data</string>
     <string name="label_calories">Kalorier</string>
-    <string name="label_data_provider_enable">Tredjeparts appadgang</string>
 </resources>
