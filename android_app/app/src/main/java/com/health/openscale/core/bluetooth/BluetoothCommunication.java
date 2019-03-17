@@ -527,7 +527,7 @@ public abstract class BluetoothCommunication {
                     resetDisconnectTimer();
                 }
             }
-        }, 1000);
+        }, 2000);
     }
 
     private void setBtMonitoringOn() {
