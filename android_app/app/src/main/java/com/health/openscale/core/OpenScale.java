@@ -103,7 +103,7 @@ public class OpenScale {
         fragmentList = new ArrayList<>();
         bleClient = RxBleClient.create(context);
 
-        RxBleClient.setLogLevel(RxBleLog.DEBUG);
+        RxBleClient.setLogLevel(RxBleLog.VERBOSE);
         RxBleLog.setLogger((level, tag, msg) -> Timber.tag(tag).log(level, msg));
 
         reopenDatabase(false);

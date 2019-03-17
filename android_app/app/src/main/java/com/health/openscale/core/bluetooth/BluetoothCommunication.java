@@ -70,7 +70,7 @@ public abstract class BluetoothCommunication {
     protected Context context;
 
     private final int BT_RETRY_TIMES_ON_ERROR = 3;
-    private final int BT_DELAY_MS = 500;
+    private final int BT_DELAY_MS = 10;
 
     private RxBleClient bleClient;
     private RxBleDevice bleDevice;
@@ -527,7 +527,7 @@ public abstract class BluetoothCommunication {
                     resetDisconnectTimer();
                 }
             }
-        }, 500);
+        }, 1000);
     }
 
     private void setBtMonitoringOn() {
