@@ -714,14 +714,4 @@ public class OpenScale {
     public ScaleUserDAO getScaleUserDAO() {
         return userDAO;
     }
-
-    private void runUiToastMsg(String text) {
-        Handler handler = new Handler(Looper.getMainLooper());
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                Toast.makeText(context, text, Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
 }
