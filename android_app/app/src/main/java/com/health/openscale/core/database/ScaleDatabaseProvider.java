@@ -27,9 +27,7 @@ import com.health.openscale.BuildConfig;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 
-import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 
 import timber.log.Timber;
 
@@ -128,25 +126,48 @@ public class ScaleDatabaseProvider extends android.content.ContentProvider {
 
     @Override
     public Uri insert(Uri uri, ContentValues values) {
-        throw new UnsupportedOperationException("Not supported");
-    }
+        Date date = new Date(values.getAsLong("datetime"));
+        float weight = values.getAsFloat("weight");
+        int userId = values.getAsInteger("userId");
+
+        ScaleMeasurement scaleMeasurement = new ScaleMeasurement();
+
+        scaleMeasurement.setUserId(userId);
+        scaleMeasurement.setWeight(weight);
+        scaleMeasurement.setDateTime(date);
+
+        ScaleMeasurementDAO measurementDAO = OpenScale.getInstance().getScaleMeasurementDAO();
+
+        if (measurementDAO.insert(scaleMeasurement) == -1) {
+            update(uri, values, "", new String[]{});
+        }
+
+        return null;
+    };
 
     @Override
     public int update(Uri uri, ContentValues values, String selection,
                       String[] selectionArgs) {
 
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(new Date((long)values.get("datetime")));
+        Date date  = new Date(values.getAsLong("datetime"));
+        float weight = values.getAsFloat("weight");
+        int userId = values.getAsInteger("userId");
 
-        List<ScaleMeasurement> measurementList = OpenScale.getInstance().getScaleDataOfDay(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
+        ScaleMeasurement scaleMeasurement = new ScaleMeasurement();
 
-        if (!measurementList.isEmpty()) {
-            ScaleMeasurement measurement = measurementList.get(0);
+        scaleMeasurement.setWeight(weight);
+        scaleMeasurement.setDateTime(date);
 
-            float calories = (float)values.get("calories");
-            measurement.setCalories(calories);
+        ScaleMeasurementDAO measurementDAO = OpenScale.getInstance().getScaleMeasurementDAO();
 
-            OpenScale.getInstance().updateScaleData(measurement);
+        ScaleMeasurement databaseMeasurement = measurementDAO.get(date, userId);
+
+        if (databaseMeasurement != null) {
+            databaseMeasurement.merge(scaleMeasurement);
+            databaseMeasurement.setEnabled(true);
+
+            measurementDAO.update(databaseMeasurement);
+
             return 1;
         } else {
             Timber.e("no measurement for an update found");

@@ -695,7 +695,15 @@ public class OpenScale {
         Intent intent = new Intent();
         intent.setComponent(new ComponentName("com.health.openscale.sync", "com.health.openscale.sync.core.service.SyncService"));
         intent.putExtra("mode", "delete");
-        intent.putExtra("date", date);
+        intent.putExtra("date", date.getTime());
         ContextCompat.startForegroundService(context, intent);
+    }
+
+    public ScaleMeasurementDAO getScaleMeasurementDAO() {
+        return measurementDAO;
+    }
+
+    public ScaleUserDAO getScaleUserDAO() {
+        return userDAO;
     }
 }

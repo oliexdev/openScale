@@ -16,11 +16,6 @@
 
 package com.health.openscale.core.database;
 
-import androidx.room.Dao;
-import androidx.room.Insert;
-import androidx.room.OnConflictStrategy;
-import androidx.room.Query;
-import androidx.room.Update;
 import android.database.Cursor;
 
 import com.health.openscale.core.datatypes.ScaleMeasurement;
@@ -28,12 +23,18 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 import java.util.Date;
 import java.util.List;
 
+import androidx.room.Dao;
+import androidx.room.Insert;
+import androidx.room.OnConflictStrategy;
+import androidx.room.Query;
+import androidx.room.Update;
+
 @Dao
 public interface ScaleMeasurementDAO {
-    @Query("SELECT * FROM scaleMeasurements WHERE datetime = :datetime AND userId = :userId AND enabled = 1")
+    @Query("SELECT * FROM scaleMeasurements WHERE datetime = :datetime AND userId = :userId")
     ScaleMeasurement get(Date datetime, int userId);
 
-    @Query("SELECT * FROM scaleMeasurements WHERE id = :id AND enabled = 1")
+    @Query("SELECT * FROM scaleMeasurements WHERE id = :id")
     ScaleMeasurement get(int id);
 
     @Query("SELECT * FROM scaleMeasurements WHERE datetime < (SELECT datetime FROM scaleMeasurements WHERE id = :id) AND userId = :userId AND enabled = 1 ORDER BY datetime DESC LIMIT 0,1")
