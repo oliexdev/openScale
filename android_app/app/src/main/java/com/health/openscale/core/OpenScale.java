@@ -523,6 +523,7 @@ public class OpenScale {
     public void clearScaleData(int userId) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         prefs.edit().putInt("uniqueNumber", 0x00).apply();
+        syncClearMeasurements();
         measurementDAO.deleteAll(userId);
 
         updateScaleData();
@@ -699,11 +700,28 @@ public class OpenScale {
         ContextCompat.startForegroundService(context, intent);
     }
 
+    private void syncClearMeasurements() {
+        Intent intent = new Intent();
+        intent.setComponent(new ComponentName("com.health.openscale.sync", "com.health.openscale.sync.core.service.SyncService"));
+        intent.putExtra("mode", "clear");
+        ContextCompat.startForegroundService(context, intent);
+    }
+
     public ScaleMeasurementDAO getScaleMeasurementDAO() {
         return measurementDAO;
     }
 
     public ScaleUserDAO getScaleUserDAO() {
         return userDAO;
+    }
+
+    private void runUiToastMsg(String text) {
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(context, text, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }
