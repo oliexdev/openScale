@@ -2,37 +2,46 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 28
-
     defaultConfig {
         applicationId "com.health.openscale"
         testApplicationId "com.health.openscale.test"
         minSdkVersion 19
         targetSdkVersion 28
-        versionCode 42
-        versionName "2.0.1"
+        versionCode 43
+        versionName "2.0.2"
 
         javaCompileOptions {
-            annotationProcessorOptions { arguments = ["room.schemaLocation":"$projectDir/schemas".toString()] }
+            annotationProcessorOptions {
+                arguments = ["room.schemaLocation": "$projectDir/schemas".toString()]
+            }
         }
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
-
     sourceSets {
         androidTest.assets.srcDirs += files("$projectDir/schemas".toString())
     }
-
     lintOptions {
         abortOnError false
     }
-
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
+        light {
+            applicationIdSuffix ".light"
+            versionNameSuffix "-light"
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+        }
+        pro {
+            applicationIdSuffix ".pro"
+            versionNameSuffix "-pro"
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+        }
     }
-
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -44,33 +53,25 @@ dependencies {
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.appcompat:appcompat:1.0.2'
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
-
     // MPAndroidChart
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0-alpha'
-
     // Simple CSV
     implementation 'com.j256.simplecsv:simplecsv:2.3'
-
     // RxAndroidBle
     implementation 'com.polidea.rxandroidble2:rxandroidble:1.8.2'
     implementation 'io.reactivex.rxjava2:rxjava:2.2.7'
     implementation 'io.reactivex.rxjava2:rxandroid:2.1.0'
     implementation 'com.jakewharton.rx2:replaying-share:2.1.0'
-
     // CustomActivityOnCrash
     implementation 'cat.ereza:customactivityoncrash:2.2.0'
-
     // Room
     implementation 'androidx.room:room-runtime:2.1.0-alpha04'
     annotationProcessor 'androidx.room:room-compiler:2.1.0-alpha04'
     androidTestImplementation 'androidx.room:room-testing:2.1.0-alpha04'
-
     // Timber
     implementation 'com.jakewharton.timber:timber:4.7.1'
-
     // Local unit tests
     testImplementation 'junit:junit:4.12'
-
     // Instrumented unit tests
     androidTestImplementation 'androidx.annotation:annotation:1.0.0'
     androidTestImplementation 'androidx.test.ext:junit:1.1.0'

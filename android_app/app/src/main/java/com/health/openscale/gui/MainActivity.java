@@ -29,8 +29,11 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.text.Html;
+import android.text.method.LinkMovementMethod;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -437,6 +440,21 @@ public class MainActivity extends BaseAppCompatActivity
     }
 
     private void invokeConnectToBluetoothDevice() {
+        if (BuildConfig.BUILD_TYPE == "light") {
+            AlertDialog infoDialog = new AlertDialog.Builder(this)
+                .setMessage(Html.fromHtml("Please upgrade to the <a href=\"https://play.google.com/store/apps/details?id=com.health.openscale.pro\">openScale pro version</a> to enable Bluetooth support"))
+                .setPositiveButton(getResources().getString(R.string.label_ok), null)
+                .setIcon(R.drawable.ic_launcher_openscale)
+                .setTitle("openScale " + BuildConfig.VERSION_NAME)
+                .create();
+
+            infoDialog.show();
+
+            ((TextView)infoDialog.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
+
+            return;
+        }
+
         final OpenScale openScale = OpenScale.getInstance();
 
         if (openScale.getSelectedScaleUserId() == -1) {
