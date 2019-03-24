@@ -22,7 +22,7 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@drawable/ic_launcher_openscale"
+        android:icon="${appIcon}"
         android:label="@string/app_name"
         android:name=".core.Application"
         android:theme="@style/AppTheme_Light" >

@@ -255,4 +255,5 @@
     <string name="activity_level_moderate">Moderate</string>
     <string name="activity_level_heavy">Heavy</string>
     <string name="activity_level_extreme">Extreme</string>
+    <string name="label_upgrade_to_openScale_pro">Please upgrade to the openScale pro version to enable Bluetooth support</string>
 </resources>

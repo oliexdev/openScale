@@ -33,6 +33,7 @@ import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -136,6 +137,14 @@ public class MainActivity extends BaseAppCompatActivity
         selectDrawerItem(prefs.getInt("lastFragmentId", R.id.nav_overview));
 
         navBottomDrawer.setSelectedItemId(prefs.getInt("lastFragmentId", R.id.nav_overview));
+
+        if (BuildConfig.BUILD_TYPE == "light") {
+            ImageView launcherIcon = navDrawer.getHeaderView(0).findViewById(R.id.profileImageView);
+            launcherIcon.setImageResource(R.drawable.ic_launcher_openscale_light);
+        } else if (BuildConfig.BUILD_TYPE == "pro") {
+            ImageView launcherIcon = navDrawer.getHeaderView(0).findViewById(R.id.profileImageView);
+            launcherIcon.setImageResource(R.drawable.ic_launcher_openscale_pro);
+        }
 
         if (prefs.getBoolean("firstStart", true)) {
             Intent intent = new Intent(this, UserSettingsActivity.class);
@@ -442,9 +451,9 @@ public class MainActivity extends BaseAppCompatActivity
     private void invokeConnectToBluetoothDevice() {
         if (BuildConfig.BUILD_TYPE == "light") {
             AlertDialog infoDialog = new AlertDialog.Builder(this)
-                .setMessage(Html.fromHtml("Please upgrade to the <a href=\"https://play.google.com/store/apps/details?id=com.health.openscale.pro\">openScale pro version</a> to enable Bluetooth support"))
+                .setMessage(Html.fromHtml(getResources().getString(R.string.label_upgrade_to_openScale_pro) + "<br><br> <a href=\"https://play.google.com/store/apps/details?id=com.health.openscale.pro\">Install openScale pro version</a>"))
                 .setPositiveButton(getResources().getString(R.string.label_ok), null)
-                .setIcon(R.drawable.ic_launcher_openscale)
+                .setIcon(R.drawable.ic_launcher_openscale_light)
                 .setTitle("openScale " + BuildConfig.VERSION_NAME)
                 .create();
 

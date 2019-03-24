@@ -10,6 +10,10 @@ android {
         versionCode 43
         versionName "2.0.2"
 
+        manifestPlaceholders = [
+                appIcon: "@drawable/ic_launcher_openscale"
+        ]
+
         javaCompileOptions {
             annotationProcessorOptions {
                 arguments = ["room.schemaLocation": "$projectDir/schemas".toString()]
@@ -30,12 +34,18 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
         light {
+            manifestPlaceholders = [
+                    appIcon: "@drawable/ic_launcher_openscale_light"
+            ]
             applicationIdSuffix ".light"
             versionNameSuffix "-light"
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
         pro {
+            manifestPlaceholders = [
+                    appIcon: "@drawable/ic_launcher_openscale_pro"
+            ]
             applicationIdSuffix ".pro"
             versionNameSuffix "-pro"
             minifyEnabled false
