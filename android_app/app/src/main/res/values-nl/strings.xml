@@ -8,12 +8,10 @@
     <string name="title_measurements">Metingen</string>
     <string name="title_about">Info</string>
     <string name="title_general">Algemeen</string>
-
     <string name="action_settings">Instellingen</string>
     <string name="action_bluetooth_status">Bluetooth Status</string>
     <string name="open_drawer">openen</string>
     <string name="close_drawer">sluiten</string>
-
     <string name="label_cancel">Annuleren</string>
     <string name="label_ok">OK</string>
     <string name="label_yes">Ja</string>
@@ -23,7 +21,6 @@
     <string name="label_add_measurement">Meeting toevoegen</string>
     <string name="label_share">Delen</string>
     <string name="label_share_subject">CSV gegevens exporteren (%s)</string>
-
     <string name="label_weight">Gewicht</string>
     <string name="label_bmi">Body mass index (BMI)</string>
     <string name="label_bmr">Basaal Metabolisme (BMR)</string>
@@ -38,17 +35,15 @@
     <string name="label_whr">Taille-heup ratio</string>
     <string name="label_bone">Botmassa</string>
     <string name="label_smartUserAssign">Slimme gebruiker herkenning</string>
-
     <plurals name="label_days">
-    <item quantity="one">dag %d</item>
-    <item quantity="other">dagen %d</item>
-</plurals>
+        <item quantity="one">dag %d</item>
+        <item quantity="other">dagen %d</item>
+    </plurals>
     <string name="label_last_week">Gemiddeld afgelopen week</string>
     <string name="label_last_month">Gemiddeld afgelopen maand</string>
     <string name="label_weight_difference">Verschil in gewicht</string>
     <string name="label_goal_date_is">Streefdatum:</string>
     <string name="label_days_left">Dagen te gaan</string>
-
     <string name="label_date">Datum</string>
     <string name="label_time">Tijd</string>
     <string name="label_birthday">Geboortedatum</string>
@@ -60,15 +55,12 @@
     <string name="label_female">Vrouw</string>
     <string name="label_goal_weight">Streefgewicht</string>
     <string name="label_goal_date">Streefdatum</string>
-
     <string name="label_title_user">gebruiker</string>
     <string name="label_title_last_measurement">laatste meting</string>
     <string name="label_title_goal">Doel</string>
-
     <string name="label_import">Importeren</string>
     <string name="label_export">Exporteren</string>
     <string name="label_delete_all">Alles verwijderen</string>
-
     <string name="error_value_required">Waarde vereist</string>
     <string name="error_value_range">Waarde buiten bereik</string>
     <string name="error_exporting">Fout met exporteren</string>
@@ -77,7 +69,6 @@
     <string name="error_height_required">Fout: Lichaamslengte vereist</string>
     <string name="error_initial_weight_required">Fout: Startgewicht vereist</string>
     <string name="error_goal_weight_required">Fout: Streefgewicht vereist</string>
-
     <string name="info_data_deleted">Vermelding verwijderd</string>
     <string name="info_data_all_deleted">Alle vermeldingen verwijderd</string>
     <string name="info_data_exported">Geëxporteerd naar</string>
@@ -98,44 +89,32 @@
     <string name="info_bluetooth_connection_error">Onverwachte Bluetooth fout</string>
     <string name="info_new_data_added">%1$.2f%2$s [%3$s] aan %4$s toegevoegd</string>
     <string name="info_new_data_duplicated">meting met dezelfde datum en tijd bestaat al</string>
-
     <string name="info_enter_user_name">Uw naam</string>
     <string name="info_no_selected_user">Geen gebruiker beschikbaar. Gelieve een gebruiker aan te maken in instellingen.</string>
     <string name="info_no_evaluation_available">Kan de waarde niet evalueren</string>
-
     <string name="question_really_delete">Vermelding verwijderen?</string>
     <string name="question_really_delete_all">Alle vermeldingen voor alle gebruikers verwijderen?</string>
     <string name="question_really_delete_user">Gebruiker verwijderen?</string>
-
     <string name="label_bluetooth_title">Bluetooth</string>
     <string name="label_bluetooth_enable">Verbinden met weegschaal bij opstarten</string>
     <string name="label_mergeWithLastMeasurement">Voeg samen met de laaste meting</string>
     <string name="label_bluetooth_searching">Zoeken naar uw Bluetooth weegschaal</string>
     <string name="label_bluetooth_searching_finished">Zoeken voltooid</string>
-
     <string name="label_enable_labels">Gegevenslabel</string>
     <string name="label_enable_points">Gegevenspunt</string>
-
     <string name="label_delete_confirmation">Bevestiging verwijderen</string>
-
     <string name="label_category_measurement_database">Metingen database</string>
-
     <string name="label_maintainer">Beheerder</string>
     <string name="label_website">Website</string>
     <string name="label_license">Licentie</string>
-
     <string name="label_automatic">automatisch</string>
-
     <string name="label_theme">Thema</string>
-
     <string name="label_reminder">Herinnering</string>
     <string name="label_reminder_weekdays">Dagen</string>
     <string name="label_reminder_time">Tijd</string>
     <string name="label_reminder_notify_text">Notificatie tekst</string>
     <string name="default_value_reminder_notify_text">Tijd om te wegen</string>
-
     <string name="info_on_date">op</string>
-
     <string name="Monday">Maandag</string>
     <string name="Tuesday">Dinsdag</string>
     <string name="Wednesday">Woensdag</string>
@@ -155,7 +134,6 @@
     <string name="label_regression_line_degree">Regressie polynoom graad</string>
     <string name="label_goal_line">Doel lijn</string>
     <string name="label_help">Hulp</string>
-
     <string name="label_feedback_message_enjoying">Positief over openScale?</string>
     <string name="label_feedback_message_rate_app">Zou u misschien ook uw ervaringen willen delen op GooglePlay of op Github?</string>
     <string name="label_feedback_message_issue">Zou u zo vriendelijk willen zijn om ons feedback te geven?</string>
@@ -163,11 +141,9 @@
     <string name="label_feedback_message_no">Liever niet</string>
     <string name="label_feedback_message_positive">Ok</string>
     <string name="label_feedback_message_negative">Nee, bedankt</string>
-
     <string name="error_max_scale_users">Max. aantal gelijktijdige weegschaal gebruikers is bereikt</string>
     <string name="info_step_on_scale_for_reference">Stap alsjeblieft met blote voeten op de weegschaal voor een meting</string>
     <string name="info_measuring">Gewicht meten: %.2f</string>
-
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">Er heeft zich een onverwachte fout voorgedaan.
 \n
 \nGelieve dit te melden inclusief details op de volgende website: 
@@ -183,10 +159,8 @@
     <string name="toggle_expand">Uitklappen</string>
     <string name="edit">Wijzigen</string>
     <string name="save">Opslaan</string>
-
     <string name="label_month_view">Maand weergave</string>
     <string name="label_weeks_view">Week weergave</string>
-
     <string name="permission_not_granted">Geen toestemming verleend</string>
     <string name="permission_bluetooth_info">Locatie toestemming is nodig om te kunnen zoeken naar Bluetooth apparaten. Dit kan weer ingetrokken worden zodra het apparaat is gevonden.</string>
     <string name="permission_bluetooth_info_title">Info</string>
@@ -242,13 +216,12 @@
     <string name="activity_level_moderate">Gemiddelde activiteitsniveau</string>
     <string name="activity_level_heavy">Hoog activiteitsniveau</string>
     <string name="activity_level_extreme">Zeer hoog activiteitsniveau</string>
-<string name="trisa_scale_not_paired">Deze weegschaal is nog niet gekoppeld!
+    <string name="trisa_scale_not_paired">Deze weegschaal is nog niet gekoppeld!
 \n
 \nHoud de knop op de onderzijde ingedrukt om deze in koppelstand te zetten. Verbind opnieuw om het apparaat wachtwoord op te halen.</string>
     <string name="trisa_scale_pairing_succeeded">Succesvol gekoppeld!
 \n
 \nVerbind opnieuw om metingen op te halen.</string>
-
     <string name="label_tdee">Totaal Dagelijks Energie Gebruik</string>
     <string name="label_calories">Calorieën</string>
     <string name="info_bluetooth_no_device_retrying">Kan geen verbinding maken, opnieuw proberen…</string>
@@ -262,4 +235,5 @@
     <string name="label_measurement_bar">Meetlat</string>
     <string name="permission_location_service_info">Verleen locatie toegang in Android instellingen om te zoeken naar Bluetooth apparaten. Eventueel daarna te herroepen.</string>
     <string name="label_is_on_right_axis">Staat op rechter as</string>
+    <string name="label_upgrade_to_openScale_pro">Upgrade naar de pro versie voor ondersteuning van Bluetooth</string>
 </resources>
