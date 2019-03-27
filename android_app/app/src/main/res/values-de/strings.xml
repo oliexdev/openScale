@@ -160,7 +160,7 @@
     <string name="label_month_view">Monatsansicht</string>
     <string name="label_weeks_view">Wochenansicht</string>
     <string name="permission_not_granted">Zugriff verweigert</string>
-    <string name="permission_bluetooth_info">Erlaubnis erforderlich um auf den ungefähren Standort zuzugreifen, um nach Bluetooth-Geräten zu suchen. Sobald das Gerät gefunden wurde kann diese widerrufen werden.</string>
+    <string name="permission_bluetooth_info">Erlaubnis erforderlich um auf den Standort zuzugreifen, um nach Bluetooth-Geräten zu suchen. Sobald das Gerät gefunden wurde kann diese widerrufen werden.</string>
     <string name="permission_bluetooth_info_title">Information</string>
     <string name="label_next">Weiter</string>
     <string name="label_set_default_order">Default Reihenfolge wiederherstellen</string>
@@ -235,4 +235,5 @@
     <string name="label_measurement_bar">Messwerteanzeige</string>
     <string name="permission_location_service_info">Gewährleisten Sie den Standortzugriff in den Android-Einstellungen, um nach Bluetooth-Geräten zu suchen. Sie können es anschließend wieder widerrufen.</string>
     <string name="label_is_on_right_axis">Auf der rechten Achse</string>
+    <string name="label_upgrade_to_openScale_pro">Bitte upgrade zur openScale pro version, um die Bluetooth Unterstützung zu aktivieren</string>
 </resources>
