@@ -140,12 +140,21 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
                         getActivity().recreate(); // TODO HACK to refresh graph; graph.invalidate and notfiydatachange is not enough!?
 
                         return true;
+                    case R.id.menu_range_day:
+                        prefs.edit().putInt("selectRangeMode", ChartMeasurementView.ViewMode.DAY_OF_ALL.ordinal()).commit();
+                        break;
+                    case R.id.menu_range_week:
+                        prefs.edit().putInt("selectRangeMode", ChartMeasurementView.ViewMode.WEEK_OF_ALL.ordinal()).commit();
+                        break;
+                    case R.id.menu_range_month:
+                        prefs.edit().putInt("selectRangeMode", ChartMeasurementView.ViewMode.MONTH_OF_ALL.ordinal()).commit();
+                        break;
+                    case R.id.menu_range_year:
+                        prefs.edit().putInt("selectRangeMode", ChartMeasurementView.ViewMode.YEAR_OF_ALL.ordinal()).commit();
                 }
 
 
                 item.setChecked(true);
-
-                prefs.edit().putInt("selectRange", item.getItemId()).commit();
 
                 if (prefs.getBoolean("enableRollingChart", true)) {
                     getActivity().recreate(); // TODO HACK to refresh graph; if rolling chart is enabled then graph.invalidate and notfiydatachange is not enough!?
@@ -157,7 +166,23 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
             }
         });
         rangePopupMenu.getMenuInflater().inflate(R.menu.overview_menu, rangePopupMenu.getMenu());
-        rangePopupMenu.getMenu().findItem(prefs.getInt("selectRange", R.id.menu_range_day)).setChecked(true);
+        ChartMeasurementView.ViewMode selectedRangePos = ChartMeasurementView.ViewMode.values()[prefs.getInt("selectRangeMode", ChartMeasurementView.ViewMode.DAY_OF_ALL.ordinal())];
+
+        switch (selectedRangePos) {
+            case DAY_OF_ALL:
+                rangePopupMenu.getMenu().findItem(R.id.menu_range_day).setChecked(true);
+                break;
+            case WEEK_OF_ALL:
+                rangePopupMenu.getMenu().findItem(R.id.menu_range_week).setChecked(true);
+                break;
+            case MONTH_OF_ALL:
+                rangePopupMenu.getMenu().findItem(R.id.menu_range_month).setChecked(true);
+                break;
+            case YEAR_OF_ALL:
+                rangePopupMenu.getMenu().findItem(R.id.menu_range_year).setChecked(true);
+                break;
+        }
+
         rangePopupMenu.getMenu().findItem(R.id.enableRollingChart).setChecked(prefs.getBoolean("enableRollingChart", true));
 
         MenuItem enableMeasurementBar = rangePopupMenu.getMenu().findItem(R.id.enableChartActionBar);
@@ -255,20 +280,8 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
     private void updateChartView() {
         boolean enableRollingChart = prefs.getBoolean("enableRollingChart", true);
 
-        switch (prefs.getInt("selectRange", R.id.menu_range_day)) {
-            case R.id.menu_range_day:
-                chartView.setViewRange(ChartMeasurementView.ViewMode.DAY_OF_ALL, enableRollingChart);
-                break;
-            case R.id.menu_range_week:
-                chartView.setViewRange(ChartMeasurementView.ViewMode.WEEK_OF_ALL, enableRollingChart);
-                break;
-            case R.id.menu_range_month:
-                chartView.setViewRange(ChartMeasurementView.ViewMode.MONTH_OF_ALL, enableRollingChart);
-                break;
-            case R.id.menu_range_year:
-                chartView.setViewRange(ChartMeasurementView.ViewMode.YEAR_OF_ALL, enableRollingChart);
-                break;
-        }
+        ChartMeasurementView.ViewMode selectedRangeMode = ChartMeasurementView.ViewMode.values()[prefs.getInt("selectRangeMode", ChartMeasurementView.ViewMode.DAY_OF_ALL.ordinal())];
+        chartView.setViewRange(selectedRangeMode, enableRollingChart);
     }
 
     private void updateMesurementViews(ScaleMeasurement selectedMeasurement) {
