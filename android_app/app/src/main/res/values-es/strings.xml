@@ -235,4 +235,5 @@
     <string name="permission_location_service_info">Otorgue permiso para acceso a la ubicación, en la configuración de Android, para buscar dispositivos Bluetooth. Podrá revocarlo después.</string>
     <string name="label_is_on_right_axis">Está en el eje de la derecha</string>
     <string name="label_calories">Calorías</string>
+    <string name="label_upgrade_to_openScale_pro">Por favor actualice a la versión PRO de openScale para activar el soporte Bluetooth</string>
 </resources>
