@@ -8,12 +8,10 @@
     <string name="title_measurements">測量數據</string>
     <string name="title_about">關於</string>
     <string name="title_general">總覽</string>
-
     <string name="action_settings">設定</string>
     <string name="action_bluetooth_status">藍芽狀況</string>
     <string name="open_drawer">開啟</string>
     <string name="close_drawer">關閉</string>
-
     <string name="label_cancel">取消</string>
     <string name="label_ok">決定</string>
     <string name="label_yes">是</string>
@@ -22,7 +20,6 @@
     <string name="label_add_user">增加用戶</string>
     <string name="label_share">分享</string>
     <string name="label_share_subject">CSV 數據滙出 (%s)</string>
-
     <string name="label_weight">體重</string>
     <string name="label_bmi">體重質量指數 (BMI)</string>
     <string name="label_bmr">基本代謝率 (BMR)</string>
@@ -37,16 +34,14 @@
     <string name="label_whr">腰臀比例</string>
     <string name="label_bone">骨量</string>
     <string name="label_smartUserAssign">用戶自動配對</string>
-
     <plurals name="label_days">
-    <item quantity="other">日 %d</item>
-</plurals>
+        <item quantity="other">日 %d</item>
+    </plurals>
     <string name="label_last_week">平均過去一週</string>
     <string name="label_last_month">平均過去一個月</string>
     <string name="label_weight_difference">體重差距</string>
     <string name="label_goal_date_is">目標日期：</string>
     <string name="label_days_left">剩餘日數</string>
-
     <string name="label_date">日期</string>
     <string name="label_time">時間</string>
     <string name="label_birthday">出生日期</string>
@@ -58,15 +53,12 @@
     <string name="label_female">女</string>
     <string name="label_goal_weight">目標體重</string>
     <string name="label_goal_date">目標日期</string>
-
     <string name="label_title_user">用戶</string>
     <string name="label_title_last_measurement">最新的量度數值</string>
     <string name="label_title_goal">目標</string>
-
     <string name="label_import">滙入</string>
     <string name="label_export">滙出</string>
     <string name="label_delete_all">全取消</string>
-
     <string name="error_value_required">須要輸入數值</string>
     <string name="error_value_range">數值超出範圍</string>
     <string name="error_exporting">滙出出錯</string>
@@ -75,7 +67,6 @@
     <string name="error_height_required">錯誤: 必須輸入身高</string>
     <string name="error_initial_weight_required">錯誤: 必須輸入初始體重</string>
     <string name="error_goal_weight_required">錯誤: 必須輸入目標體重</string>
-
     <string name="info_data_deleted">數據已被刪除</string>
     <string name="info_data_all_deleted">所有數據已被刪除</string>
     <string name="info_data_exported">滙出去處</string>
@@ -96,44 +87,32 @@
     <string name="info_bluetooth_connection_error">藍芽出現錯誤</string>
     <string name="info_new_data_added">"%1$.2f%2$s [%3$s] 加入至 %4$s "</string>
     <string name="info_new_data_duplicated">相同日期及時間的測量數值已經存在</string>
-
     <string name="info_enter_user_name">你的名字</string>
     <string name="info_no_selected_user">沒有此用戶。 請在設定中加入新用戶。</string>
     <string name="info_no_evaluation_available">不能運算數值</string>
-
     <string name="question_really_delete">要刪除此數據嗎？</string>
     <string name="question_really_delete_all">要刪除所有數據嗎？</string>
     <string name="question_really_delete_user">要刪除此用戶嗎？</string>
-
     <string name="label_bluetooth_title">藍芽</string>
     <string name="label_bluetooth_enable">開始時與量重器連結</string>
     <string name="label_mergeWithLastMeasurement">滙合舊有測量數值</string>
     <string name="label_bluetooth_searching">正在搜尋您的藍芽量重器</string>
     <string name="label_bluetooth_searching_finished">搜尋完成</string>
-
     <string name="label_enable_labels">數據標記</string>
     <string name="label_enable_points">數據點</string>
-
     <string name="label_delete_confirmation">確認刪除</string>
-
     <string name="label_category_measurement_database">量度數據庫</string>
-
     <string name="label_maintainer">管理員</string>
     <string name="label_website">網站</string>
     <string name="label_license">認証</string>
-
     <string name="label_automatic">自動</string>
-
     <string name="label_theme">佈景</string>
-
     <string name="label_reminder">提示</string>
     <string name="label_reminder_weekdays">天</string>
     <string name="label_reminder_time">時間</string>
     <string name="label_reminder_notify_text">提示文字</string>
     <string name="default_value_reminder_notify_text">到期量體重了</string>
-
     <string name="info_on_date">在</string>
-
     <string name="Monday">星期一</string>
     <string name="Tuesday">星期二</string>
     <string name="Wednesday">星期三</string>
@@ -153,7 +132,6 @@
     <string name="label_regression_line_degree">回歸線曲度</string>
     <string name="label_goal_line">目標線</string>
     <string name="label_help">協助</string>
-
     <string name="label_feedback_message_enjoying">openScale 使用愉快嗎?</string>
     <string name="label_feedback_message_rate_app">想要在 GooglePlay 或 GitHub 上評分嗎 ?</string>
     <string name="label_feedback_message_issue">可以給我們一點回應嗎？</string>
@@ -161,11 +139,9 @@
     <string name="label_feedback_message_no">暫時不想</string>
     <string name="label_feedback_message_positive">可以</string>
     <string name="label_feedback_message_negative">不用了，謝謝</string>
-
     <string name="error_max_scale_users">用戶數量已達上限</string>
     <string name="info_step_on_scale_for_reference">請赤腳站到量重器上， 以測量其他相關數據</string>
     <string name="info_measuring">測得體重: %.2f</string>
-
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">運行出錯。 
 \n 
 \n請在以下網站登錄事件，並附上運行出錯的資料。 
@@ -181,10 +157,8 @@
     <string name="toggle_expand">收展切換</string>
     <string name="edit">編輯</string>
     <string name="save">存檔</string>
-
     <string name="label_month_view">按月顯示</string>
     <string name="label_weeks_view">按周顯示</string>
-
     <string name="permission_not_granted">未有開放權限</string>
     <string name="permission_bluetooth_info">搜尋藍芽器材時， 需要開放大概位置的權限。 
 \n當搜尋完成時， 此權限可以再次關上。</string>
@@ -218,4 +192,32 @@
     <string name="label_tdee">每日能源支出總額 (TDEE)</string>
     <string name="info_bluetooth_no_device_retrying">無法建立連接，重試中…</string>
     <string name="info_bluetooth_connection_disconnected">藍牙連接已關閉</string>
+    <string name="label_enable_legend">圖例</string>
+    <string name="label_enable_yaxis">Y軸</string>
+    <string name="info_step_on_scale">請赤腳踏上體重計</string>
+    <string name="trisa_scale_not_paired">這個體重計還未配對！
+\n
+\n請按體重計下方的按鈕將其切換為配對模式，然後重新連接裝置以恢復裝置的密碼。</string>
+    <string name="trisa_scale_pairing_succeeded">配對成功！
+\n
+\n請重新連接以取得測量資料。</string>
+    <string name="label_day_view">按日顯示</string>
+    <string name="label_year_view">按年顯示</string>
+    <string name="permission_location_service_info">請在Android系統中授權位置訪問的權限以使搜尋藍牙設備。您之後可以取消位置訪問的權限。</string>
+    <string name="permission_read_write_data_description">讀/寫 openScale 的資料，包括使用者的信息及所有已經儲存的測量資料</string>
+    <string name="permission_read_write_data_label">讀/寫 openScale 的資料</string>
+    <string name="label_long_press_drag_reorder">可以長按及移動測量的資料以重新排列</string>
+    <string name="label_click_measurement_configure">選擇測量的資料以修改</string>
+    <string name="label_is_on_right_axis">在右軸上</string>
+    <string name="label_your_bluetooth_scale">您的藍牙體重計</string>
+    <string name="label_select_measurement">選擇單位</string>
+    <string name="label_select_user">選擇使用者</string>
+    <string name="label_configure_widget">設定體重</string>
+    <string name="label_visceral_fat">內臟脂肪</string>
+    <string name="label_chest">胸圍</string>
+    <string name="label_thigh">大腿圍</string>
+    <string name="label_biceps">二頭肌周長</string>
+    <string name="label_neck">頸圍</string>
+    <string name="label_calories">卡路里</string>
+    <string name="label_fat_caliper">體脂夾</string>
 </resources>
