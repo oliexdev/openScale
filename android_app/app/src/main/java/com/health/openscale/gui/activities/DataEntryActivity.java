@@ -16,6 +16,7 @@
 package com.health.openscale.gui.activities;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
@@ -25,6 +26,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.appcompat.widget.Toolbar;
+
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -38,6 +40,7 @@ import android.widget.Toast;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
+import com.health.openscale.core.garminsync.ExportToGarminBackgroundTask;
 import com.health.openscale.gui.views.DateMeasurementView;
 import com.health.openscale.gui.views.MeasurementView;
 import com.health.openscale.gui.views.MeasurementViewUpdateListener;
@@ -48,7 +51,7 @@ import java.text.DateFormat;
 import java.util.Date;
 import java.util.List;
 
-public class DataEntryActivity extends BaseAppCompatActivity {
+public class DataEntryActivity extends BaseAppCompatActivity implements ExportToGarminBackgroundTask.TaskListener {
     public static final String EXTRA_ID = "id";
     private static final String PREF_EXPAND = "expandEvaluator";
 
@@ -64,6 +67,10 @@ public class DataEntryActivity extends BaseAppCompatActivity {
     private MenuItem editButton;
     private MenuItem expandButton;
     private MenuItem deleteButton;
+    private MenuItem exportToGarminButton;
+
+    private ProgressDialog exportIndicator;
+    private ExportToGarminBackgroundTask exportTask;
 
     private ScaleMeasurement scaleMeasurement;
     private ScaleMeasurement previousMeasurement;
@@ -72,6 +79,8 @@ public class DataEntryActivity extends BaseAppCompatActivity {
 
     private Context context;
 
+    private DataEntryActivity that;
+
     private boolean isAddActivity() {
         return !getIntent().hasExtra(EXTRA_ID);
     }
@@ -79,6 +88,7 @@ public class DataEntryActivity extends BaseAppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        that = this;
 
         setContentView(R.layout.activity_dataentry);
 
@@ -185,6 +195,7 @@ public class DataEntryActivity extends BaseAppCompatActivity {
         editButton = menu.findItem(R.id.editButton);
         expandButton = menu.findItem(R.id.expandButton);
         deleteButton = menu.findItem(R.id.deleteButton);
+        exportToGarminButton = menu.findItem(R.id.exportToGarminConnectButton);
 
         // Hide/show icons as appropriate for the view mode
         if (isAddActivity()) {
@@ -229,6 +240,10 @@ public class DataEntryActivity extends BaseAppCompatActivity {
                 deleteMeasurement();
                 return true;
 
+            case R.id.exportToGarminConnectButton:
+                showExportToGarminConnectQuestion();
+                return true;
+
             // Override the default behaviour in order to return to the correct fragment
             // (e.g. the table view) and not always go to the overview.
             case android.R.id.home:
@@ -236,6 +251,53 @@ public class DataEntryActivity extends BaseAppCompatActivity {
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void showExportToGarminConnectQuestion() {
+        final AlertDialog.Builder exportDialog = new AlertDialog.Builder(this);
+        exportDialog.setTitle("Export to Garmin Connect");
+        exportDialog.setMessage("Do you want to export this measurement to Garmin Connect?");
+
+        exportDialog.setPositiveButton(R.string.label_yes, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                exportIndicator = new ProgressDialog(context);
+                exportIndicator.setTitle("Exporting");
+                exportIndicator.setMessage("Please wait...");
+                exportIndicator.setCancelable(false);
+                exportIndicator.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        exportTask.cancel(true);
+                        dialog.dismiss();
+                    }
+                });
+                exportIndicator.show();
+
+                exportTask = new ExportToGarminBackgroundTask(context, scaleMeasurement, that);
+                exportTask.execute();
+            }
+        });
+
+        exportDialog.setNegativeButton(R.string.label_no, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+            }
+        });
+
+        exportDialog.show();
+    }
+
+    @Override
+    public void onExportToGarminTaskFinished(Boolean result) {
+        exportIndicator.dismiss();
+
+        if (result) {
+            Toast.makeText(context, "Export to Garmin Connect succeed.", Toast.LENGTH_LONG).show();
+        } else {
+            Toast.makeText(context, "Export to Garmin Connect failed.", Toast.LENGTH_LONG).show();
+        }
     }
 
     @Override
@@ -359,6 +421,8 @@ public class DataEntryActivity extends BaseAppCompatActivity {
                 ((LinearLayout)txtDataNr.getParent()).setVisibility(View.GONE);
                 break;
         }
+
+        exportToGarminButton.setVisible(true);
 
         for (MeasurementView measurement : dataEntryMeasurements) {
             if (measurement instanceof DateMeasurementView || measurement instanceof TimeMeasurementView) {

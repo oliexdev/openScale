@@ -59,6 +59,13 @@ public class ScaleUser {
     @NonNull
     @ColumnInfo(name = "activityLevel")
     private Converters.ActivityLevel activityLevel;
+    @NonNull
+    @ColumnInfo(name = "garminLogin")
+    private String garminLogin;
+    @NonNull
+    @ColumnInfo(name = "garminPassword")
+    private String garminPassword;
+
 
     public ScaleUser() {
         userName = "";
@@ -71,6 +78,8 @@ public class ScaleUser {
         goalDate = new Date();
         measureUnit = Converters.MeasureUnit.CM;
         activityLevel = Converters.ActivityLevel.SEDENTARY;
+        garminLogin = "";
+        garminPassword = "";
     }
 
     public int getId() {
@@ -193,5 +202,21 @@ public class ScaleUser {
                 "GENDER: %s, INITIAL_WEIGHT: %.2f, GOAL_WEIGHT: %.2f, GOAL_DATE: %s",
                 id, userName, birthday.toString(), bodyHeight, scaleUnit.toString(),
                 gender.toString().toLowerCase(), initialWeight, goalWeight, goalDate.toString());
+    }
+
+    public String getGarminLogin() {
+        return garminLogin;
+    }
+
+    public void setGarminLogin(String garminLogin) {
+        this.garminLogin = garminLogin;
+    }
+
+    public String getGarminPassword() {
+        return garminPassword;
+    }
+
+    public void setGarminPassword(String garminPassword) {
+        this.garminPassword = garminPassword;
     }
 }

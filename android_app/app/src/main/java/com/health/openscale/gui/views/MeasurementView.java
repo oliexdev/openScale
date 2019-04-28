@@ -200,7 +200,6 @@ public abstract class MeasurementView extends TableLayout {
         iconView.setColorFilter(getForegroundColor());
 
         nameView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
-        nameView.setLines(2);
         nameView.setLayoutParams(new TableRow.LayoutParams(0, LayoutParams.WRAP_CONTENT, 0.55f));
 
         valueView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);

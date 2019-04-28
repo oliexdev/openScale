@@ -61,6 +61,8 @@
     <string name="label_female">Female</string>
     <string name="label_goal_weight">Goal weight</string>
     <string name="label_goal_date">Goal date</string>
+    <string name="label_garminUsername">Garmin username</string>
+    <string name="label_garminPassword">Garmin password</string>
 
     <string name="label_title_user">user</string>
     <string name="label_title_last_measurement">last measurement</string>
@@ -182,6 +184,7 @@
     <string name="customactivityoncrash_error_activity_error_details_clipboard_label">Error info</string>
     <string name="toggle_expand">Toggle expand</string>
     <string name="edit">Edit</string>
+    <string name="export_to_garmin">Export to Garmin Conenct</string>
     <string name="save">Save</string>
 
     <string name="label_month_view">Month view</string>

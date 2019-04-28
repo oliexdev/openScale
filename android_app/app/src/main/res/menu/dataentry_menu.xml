@@ -3,6 +3,19 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
+        android:id="@+id/exportToGarminConnectButton"
+        android:title="@string/export_to_garmin"
+        android:icon="@drawable/ic_garmin_connect"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/editButton"
+        android:title="@string/edit"
+        android:icon="@drawable/ic_editable"
+        android:iconTint="#99CC00"
+        app:showAsAction="ifRoom" />
+
+    <item
         android:id="@+id/deleteButton"
         android:title="@string/label_delete"
         android:icon="@drawable/ic_delete"
@@ -22,11 +35,5 @@
         android:icon="@drawable/ic_save"
         android:iconTint="#FFFFFF"
         app:showAsAction="always" />
-    <item
-        android:id="@+id/editButton"
-        android:title="@string/edit"
-        android:icon="@drawable/ic_editable"
-        android:iconTint="#99CC00"
-        app:showAsAction="ifRoom" />
 
 </menu>

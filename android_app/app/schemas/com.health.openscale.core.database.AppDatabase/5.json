@@ -1,12 +1,12 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 3,
-    "identityHash": "44a00c2e5c1cfe4e95dbd706de77d280",
+    "version": 5,
+    "identityHash": "1d14108a87aa3435131e7703bc37c8a2",
     "entities": [
       {
         "tableName": "scaleMeasurements",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `userId` INTEGER NOT NULL, `enabled` INTEGER NOT NULL, `datetime` INTEGER, `weight` REAL NOT NULL, `fat` REAL NOT NULL, `water` REAL NOT NULL, `muscle` REAL NOT NULL, `visceralFat` REAL NOT NULL, `lbm` REAL NOT NULL, `waist` REAL NOT NULL, `hip` REAL NOT NULL, `bone` REAL NOT NULL, `chest` REAL NOT NULL, `thigh` REAL NOT NULL, `biceps` REAL NOT NULL, `neck` REAL NOT NULL, `caliper1` REAL NOT NULL, `caliper2` REAL NOT NULL, `caliper3` REAL NOT NULL, `comment` TEXT, `isSyncedWithGarmin` INTEGER NOT NULL, FOREIGN KEY(`userId`) REFERENCES `scaleUsers`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `userId` INTEGER NOT NULL, `enabled` INTEGER NOT NULL, `datetime` INTEGER, `weight` REAL NOT NULL, `fat` REAL NOT NULL, `water` REAL NOT NULL, `muscle` REAL NOT NULL, `visceralFat` REAL NOT NULL, `lbm` REAL NOT NULL, `waist` REAL NOT NULL, `hip` REAL NOT NULL, `bone` REAL NOT NULL, `chest` REAL NOT NULL, `thigh` REAL NOT NULL, `biceps` REAL NOT NULL, `neck` REAL NOT NULL, `caliper1` REAL NOT NULL, `caliper2` REAL NOT NULL, `caliper3` REAL NOT NULL, `comment` TEXT, FOREIGN KEY(`userId`) REFERENCES `scaleUsers`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -133,12 +133,6 @@
             "columnName": "comment",
             "affinity": "TEXT",
             "notNull": false
-          },
-          {
-            "fieldPath": "isSyncedWithGarmin",
-            "columnName": "isSyncedWithGarmin",
-            "affinity": "INTEGER",
-            "notNull": true
           }
         ],
         "primaryKey": {
@@ -174,7 +168,7 @@
       },
       {
         "tableName": "scaleUsers",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `username` TEXT NOT NULL, `birthday` INTEGER NOT NULL, `bodyHeight` REAL NOT NULL, `scaleUnit` INTEGER NOT NULL, `gender` INTEGER NOT NULL, `initialWeight` REAL NOT NULL, `goalWeight` REAL NOT NULL, `goalDate` INTEGER, `measureUnit` INTEGER NOT NULL, `activityLevel` INTEGER NOT NULL, `garminLogin` TEXT, `garminPassword` TEXT)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `username` TEXT NOT NULL, `birthday` INTEGER NOT NULL, `bodyHeight` REAL NOT NULL, `scaleUnit` INTEGER NOT NULL, `gender` INTEGER NOT NULL, `initialWeight` REAL NOT NULL, `goalWeight` REAL NOT NULL, `goalDate` INTEGER, `measureUnit` INTEGER NOT NULL, `activityLevel` INTEGER NOT NULL, `garminLogin` TEXT NOT NULL, `garminPassword` TEXT NOT NULL)",
         "fields": [
           {
             "fieldPath": "id",
@@ -246,13 +240,13 @@
             "fieldPath": "garminLogin",
             "columnName": "garminLogin",
             "affinity": "TEXT",
-            "notNull": false
+            "notNull": true
           },
           {
             "fieldPath": "garminPassword",
             "columnName": "garminPassword",
             "affinity": "TEXT",
-            "notNull": false
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -268,7 +262,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"44a00c2e5c1cfe4e95dbd706de77d280\")"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"1d14108a87aa3435131e7703bc37c8a2\")"
     ]
   }
 }

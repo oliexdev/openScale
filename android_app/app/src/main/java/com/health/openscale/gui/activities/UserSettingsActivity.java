@@ -61,6 +61,8 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
     private EditText txtInitialWeight;
     private EditText txtGoalWeight;
     private EditText txtGoalDate;
+    private EditText txtGarminUsername;
+    private EditText txtGarminPassword;
     private RadioGroup radioScaleUnit;
     private RadioGroup radioGender;
     private RadioGroup radioMeasurementUnit;
@@ -91,6 +93,8 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
         spinnerActivityLevel = findViewById(R.id.spinnerActivityLevel);
         txtInitialWeight = findViewById(R.id.txtInitialWeight);
         txtGoalWeight = findViewById(R.id.txtGoalWeight);
+        txtGarminUsername = findViewById(R.id.txtGarminUserName);
+        txtGarminPassword = findViewById(R.id.txtGarminUserPassword);
 
         txtBirthday = findViewById(R.id.txtBirthday);
         txtGoalDate = findViewById(R.id.txtGoalDate);
@@ -262,6 +266,8 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
         txtGoalWeight.setText(Float.toString(Math.round(Converters.fromKilogram(scaleUser.getGoalWeight(), scaleUser.getScaleUnit())*100.0f)/100.0f));
         txtInitialWeight.setHint(getResources().getString(R.string.info_enter_value_in) + " " + scaleUser.getScaleUnit().toString());
         txtGoalWeight.setHint(getResources().getString(R.string.info_enter_value_in) + " " + scaleUser.getScaleUnit().toString());
+        txtGarminUsername.setText(scaleUser.getGarminLogin());
+        txtGarminPassword.setText(scaleUser.getGarminPassword());
 
         switch (scaleUser.getMeasureUnit()) {
             case CM:
@@ -400,6 +406,8 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
                 float body_height = Float.valueOf(txtBodyHeight.getText().toString());
                 float initial_weight = Float.valueOf(txtInitialWeight.getText().toString());
                 float goal_weight = Float.valueOf(txtGoalWeight.getText().toString());
+                String garminUsername = txtGarminUsername.getText().toString();
+                String garminPassword = txtGarminPassword.getText().toString();
 
                 Converters.MeasureUnit measure_unit = Converters.MeasureUnit.CM;
 
@@ -450,6 +458,8 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
                 scaleUser.setInitialWeight(Converters.toKilogram(initial_weight, scale_unit));
                 scaleUser.setGoalWeight(Converters.toKilogram(goal_weight, scale_unit));
                 scaleUser.setGoalDate(goal_date);
+                scaleUser.setGarminLogin(garminUsername);
+                scaleUser.setGarminPassword(garminPassword);
 
                 if (getIntent().getExtras().getInt(EXTRA_MODE) == EDIT_USER_REQUEST) {
                     int id = getIntent().getExtras().getInt(EXTRA_ID);
