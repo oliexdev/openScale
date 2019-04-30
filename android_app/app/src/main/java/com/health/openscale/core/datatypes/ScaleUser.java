@@ -19,7 +19,6 @@ package com.health.openscale.core.datatypes;
 import com.health.openscale.core.utils.Converters;
 import com.health.openscale.core.utils.DateTimeHelpers;
 
-import java.util.Calendar;
 import java.util.Date;
 
 import androidx.annotation.NonNull;
@@ -138,15 +137,7 @@ public class ScaleUser {
     }
 
     public int getAge(Date todayDate) {
-        Calendar calToday = Calendar.getInstance();
-        if (todayDate != null) {
-            calToday.setTime(todayDate);
-        }
-
-        Calendar calBirthday = Calendar.getInstance();
-        calBirthday.setTime(birthday);
-
-        return DateTimeHelpers.yearsBetween(calBirthday, calToday);
+        return DateTimeHelpers.yearsBetween(birthday, todayDate != null? todayDate: new Date());
     }
 
     public int getAge() {

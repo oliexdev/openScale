@@ -17,6 +17,7 @@
 package com.health.openscale.core.utils;
 
 import java.util.Calendar;
+import java.util.Date;
 
 public final class DateTimeHelpers {
     static public int daysBetween(Calendar start, Calendar end) {
@@ -52,4 +53,10 @@ public final class DateTimeHelpers {
         }
         return years;
     }
+
+    static public int yearsBetween(Date start, Date end) {
+        int seconds = (int) ((end.getTime() - start.getTime()) / 1000);
+        return (int) ((seconds + (60 * 60 * 6)) / 31556952L);
+    }
+
 }

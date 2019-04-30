@@ -51,8 +51,11 @@ import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 import com.health.openscale.core.utils.Converters;
 
+import java.awt.font.NumericShaper;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.Collections;
 import java.util.Date;
-import java.util.Locale;
 
 public abstract class FloatMeasurementView extends MeasurementView {
     private static final char SYMBOL_UP = '\u279a';
@@ -229,10 +232,18 @@ public abstract class FloatMeasurementView extends MeasurementView {
         setValue(clampValue(value - INC_DEC_DELTA), previousValue, true);
     }
 
+    private DecimalFormat numberFormatForDecimalPlaces(int places) {
+        StringBuilder stringBuilder = new StringBuilder("#.");
+        for(int i = 0; i < places; i++) {
+            stringBuilder.append("#");
+        }
+        return new DecimalFormat(stringBuilder.toString());
+    }
+
+    private final NumberFormat numberFormat = numberFormatForDecimalPlaces(getDecimalPlaces());
+
     private String formatValue(float value, boolean withUnit) {
-        final String format = String.format(Locale.getDefault(), "%%.%df%s",
-                getDecimalPlaces(), withUnit && !getUnit().isEmpty() ? " %s" : "");
-        return String.format(Locale.getDefault(), format, value, getUnit());
+        return numberFormat.format(value) + (withUnit && !getUnit().isEmpty() ? " " + getUnit() : "");
     }
 
     protected String formatValue(float value) {

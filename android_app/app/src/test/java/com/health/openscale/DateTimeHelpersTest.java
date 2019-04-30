@@ -106,4 +106,33 @@ public class DateTimeHelpersTest {
                         getDate(2000, 3, 1),
                         getDate(2001, 3, 2)));
     }
+
+    @Test
+    public void yearsBetweenDate() throws Exception {
+        assertEquals(19,
+                DateTimeHelpers.yearsBetween(
+                        getDate(1980, 3, 26).getTime(),
+                        getDate(2000, 3, 25).getTime()));
+        assertEquals(20,
+                DateTimeHelpers.yearsBetween(
+                        getDate(1980, 3, 26).getTime(),
+                        getDate(2000, 3, 26).getTime()));
+        assertEquals(20,
+                DateTimeHelpers.yearsBetween(
+                        getDate(1980, 3, 26).getTime(),
+                        getDate(2000, 3, 27).getTime()));
+
+        assertEquals(0,
+                DateTimeHelpers.yearsBetween(
+                        getDate(2000, 3, 1).getTime(),
+                        getDate(2001, 2, 28).getTime()));
+        assertEquals(1,
+                DateTimeHelpers.yearsBetween(
+                        getDate(2000, 3, 1).getTime(),
+                        getDate(2001, 3, 1).getTime()));
+        assertEquals(1,
+                DateTimeHelpers.yearsBetween(
+                        getDate(2000, 3, 1).getTime(),
+                        getDate(2001, 3, 2).getTime()));
+    }
 }
