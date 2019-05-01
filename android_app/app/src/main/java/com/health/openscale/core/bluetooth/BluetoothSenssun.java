@@ -233,7 +233,7 @@ public class BluetoothSenssun extends BluetoothCommunication {
 
         byte message[] = new byte[]{(byte)0xA5, (byte)0x10, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00};
         //message[2] = (byte)((selectedUser.getGender().isMale() ? (byte)0x80: (byte)0x00) + 1+selectedUser.getId());
-        message[2] = (byte) ((byte)(selectedUser.getGender().isMale()?(byte)0:(byte)8)*(byte)16 + (byte)selectedUser.getId());
+        message[2] = (byte) ((selectedUser.getGender().isMale() ? 15 : 0) * 16 + selectedUser.getId());
         message[3] = (byte)selectedUser.getAge();
         message[4] = (byte)selectedUser.getBodyHeight();
 
