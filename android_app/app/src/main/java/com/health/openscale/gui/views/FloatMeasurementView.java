@@ -233,9 +233,9 @@ public abstract class FloatMeasurementView extends MeasurementView {
     }
 
     private DecimalFormat numberFormatForDecimalPlaces(int places) {
-        StringBuilder stringBuilder = new StringBuilder("#.");
+        StringBuilder stringBuilder = new StringBuilder("0.");
         for(int i = 0; i < places; i++) {
-            stringBuilder.append("#");
+            stringBuilder.append("0");
         }
         return new DecimalFormat(stringBuilder.toString());
     }
