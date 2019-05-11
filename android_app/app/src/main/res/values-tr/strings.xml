@@ -88,7 +88,7 @@
     <string name="question_really_delete_all">Tüm kullanıcılara ait tüm girişler silinsin mi\?</string>
     <string name="question_really_delete_user">Kullanıcı silinsin mi\?</string>
     <string name="label_bluetooth_title">Bluetooth</string>
-    <string name="label_bluetooth_enable">Başlangıçda ölçeğe bağlan</string>
+    <string name="label_bluetooth_enable">Başlangıçda tartıya bağlan</string>
     <string name="label_bluetooth_searching">Bluetooth özellikli tartınız aranıyor</string>
     <string name="label_enable_labels">Veri etiketi</string>
     <string name="label_enable_points">Veri noktası</string>
@@ -164,7 +164,7 @@
     <string name="edit">Düzenle</string>
     <string name="save">Kaydet</string>
     <string name="label_month_view">Aylık görünüm</string>
-    <string name="label_weeks_view">Hafta görünümü</string>
+    <string name="label_weeks_view">Haftalık görünüm</string>
     <string name="permission_not_granted">İzin verilmedi</string>
     <string name="permission_bluetooth_info_title">Bilgi</string>
     <string name="permission_read_write_data_description">tüm kayıtlı ölçümler ve kullanıcı bilgilerini içeren openScale verisini oku</string>
@@ -236,9 +236,9 @@
     <string name="label_enable_legend">Grafik efsanesi</string>
     <string name="label_enable_yaxis">Y-eksen</string>
     <string name="info_step_on_scale">Lütfen tartıya yalınayak çıkın</string>
-    <string name="label_day_view">Gün görünümü</string>
-    <string name="label_year_view">Yıl görünümü</string>
-    <string name="label_rolling_chart">Yuvarlanan çizelge</string>
+    <string name="label_day_view">Günlük görünüm</string>
+    <string name="label_year_view">Yıllık görünüm</string>
+    <string name="label_rolling_chart">Grafik şema</string>
     <string name="label_measurement_bar">Ölçü çubuğu</string>
     <string name="permission_location_service_info">Bluetooth aygıtlarını aramak için Android ayarlarından konum erişim izni verin. İsteğe bağlı olarak daha sonra iptal edebilirsiniz.</string>
     <string name="label_is_on_right_axis">Sağ eksende</string>
