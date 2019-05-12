@@ -64,7 +64,7 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.0.2'
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
     // MPAndroidChart
-    implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0-alpha'
+    implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
     // Simple CSV
     implementation 'com.j256.simplecsv:simplecsv:2.3'
     // RxAndroidBle

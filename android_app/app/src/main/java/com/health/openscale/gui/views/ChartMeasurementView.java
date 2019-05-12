@@ -19,6 +19,7 @@ package com.health.openscale.gui.views;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.graphics.RectF;
 import android.preference.PreferenceManager;
 import android.util.AttributeSet;
 import android.widget.Toast;
@@ -31,10 +32,9 @@ import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
-import com.github.mikephil.charting.formatter.IAxisValueFormatter;
-import com.github.mikephil.charting.formatter.IValueFormatter;
+import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
-import com.github.mikephil.charting.utils.ViewPortHandler;
+import com.github.mikephil.charting.utils.Utils;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
@@ -227,6 +227,62 @@ public class ChartMeasurementView extends LineChart {
         return (int)(shortDate.getTime().getTime() / 1000000L);
     }
 
+    private void setCustomViewPortOffsets() {
+        float offsetLeft = 0f, offsetRight = 0f, offsetTop = 0f, offsetBottom = 0f;
+
+        RectF mOffsetsBuffer = new RectF();
+        calculateLegendOffsets(mOffsetsBuffer);
+
+        offsetLeft += mOffsetsBuffer.left;
+        offsetTop += mOffsetsBuffer.top;
+        offsetRight += mOffsetsBuffer.right;
+        offsetBottom += Math.max(70f, mOffsetsBuffer.bottom);
+
+        // offsets for y-labels
+        if (mAxisLeft.needsOffset()) {
+            offsetLeft += mAxisLeft.getRequiredWidthSpace(mAxisRendererLeft
+                    .getPaintAxisLabels());
+        }
+
+        if (mAxisRight.needsOffset()) {
+            offsetRight += mAxisRight.getRequiredWidthSpace(mAxisRendererRight
+                    .getPaintAxisLabels());
+        }
+
+        if (mXAxis.isEnabled() && mXAxis.isDrawLabelsEnabled()) {
+
+            float xLabelHeight = mXAxis.mLabelRotatedHeight + mXAxis.getYOffset();
+
+            // offsets for x-labels
+            if (mXAxis.getPosition() == XAxis.XAxisPosition.BOTTOM) {
+
+                offsetBottom += xLabelHeight;
+
+            } else if (mXAxis.getPosition() == XAxis.XAxisPosition.TOP) {
+
+                offsetTop += xLabelHeight;
+
+            } else if (mXAxis.getPosition() == XAxis.XAxisPosition.BOTH_SIDED) {
+
+                offsetBottom += xLabelHeight;
+                offsetTop += xLabelHeight;
+            }
+        }
+
+        offsetTop += getExtraTopOffset();
+        offsetRight += getExtraRightOffset();
+        offsetBottom += getExtraBottomOffset();
+        offsetLeft += getExtraLeftOffset();
+
+        float minOffset = Utils.convertDpToPixel(mMinOffset);
+
+        setViewPortOffsets(
+                Math.max(minOffset, offsetLeft),
+                Math.max(minOffset, offsetTop),
+                Math.max(minOffset, offsetRight),
+                Math.max(minOffset, offsetBottom));
+    }
+
     private Date convertShortInDate(int shortDate) {
         return new Date(shortDate * 1000000L);
     }
@@ -291,19 +347,23 @@ public class ChartMeasurementView extends LineChart {
                     throw new IllegalArgumentException("view mode not implemented");
             }
 
+            setAutoScaleMinMaxEnabled(true);
+            setCustomViewPortOffsets(); // set custom viewPortOffsets to avoid jitter on translating while auto scale is on
+
             getXAxis().setGranularity(granularity);
             setVisibleXRangeMaximum(range);
+
             moveViewToX(getBinNr(lastMeasurement));
         }
     }
 
     private void setXValueFormat(final ViewMode mode) {
-        getXAxis().setValueFormatter(new IAxisValueFormatter() {
+        getXAxis().setValueFormatter(new ValueFormatter() {
             private final SimpleDateFormat xValueFormat = new SimpleDateFormat();
             private final Calendar calendar = Calendar.getInstance();
 
             @Override
-            public String getFormattedValue(float value, AxisBase axis) {
+            public String getAxisLabel(float value, AxisBase axis) {
                 calendar.setTime(new Date(0));
 
                 switch (mode) {
@@ -476,7 +536,7 @@ public class ChartMeasurementView extends LineChart {
     private void addMeasurementLine(List<ILineDataSet> lineDataSets, List<Entry> lineEntries, FloatMeasurementView measurementView) {
         LineDataSet measurementLine = new LineDataSet(lineEntries, measurementView.getName().toString());
         measurementLine.setLineWidth(1.5f);
-        measurementLine.setValueTextSize(8.0f);
+        measurementLine.setValueTextSize(10.0f);
         measurementLine.setColor(measurementView.getColor());
         measurementLine.setValueTextColor(ColorUtil.getTextColor(getContext()));
         measurementLine.setCircleColor(measurementView.getColor());
@@ -488,9 +548,9 @@ public class ChartMeasurementView extends LineChart {
         measurementLine.setHighLightColor(Color.RED);
         measurementLine.setDrawCircles(prefs.getBoolean("pointsEnable", true));
         measurementLine.setDrawValues(prefs.getBoolean("labelsEnable", true));
-        measurementLine.setValueFormatter(new IValueFormatter() {
+        measurementLine.setValueFormatter(new ValueFormatter() {
             @Override
-            public String getFormattedValue(float value, Entry entry, int dataSetIndex, ViewPortHandler viewPortHandler) {
+            public String getPointLabel(Entry entry) {
                 String prefix = new String();
 
                 Object[] extraData = (Object[])entry.getData();

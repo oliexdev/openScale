@@ -33,6 +33,8 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.fragment.app.Fragment;
+
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.XAxis;
@@ -40,8 +42,8 @@ import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.Entry;
-import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 import com.github.mikephil.charting.formatter.StackedValueFormatter;
+import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
@@ -59,8 +61,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
-
-import androidx.fragment.app.Fragment;
 
 public class GraphFragment extends Fragment implements FragmentUpdateListener {
     private View graphView;
@@ -128,12 +128,12 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         chartTopxAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         chartTopxAxis.setDrawGridLines(false);
         chartTopxAxis.setTextColor(ColorUtil.getTextColor(graphView.getContext()));
-        chartTopxAxis.setValueFormatter(new IAxisValueFormatter() {
+        chartTopxAxis.setValueFormatter(new ValueFormatter() {
 
             private final SimpleDateFormat mFormat = new SimpleDateFormat("MMM", Locale.getDefault());
 
             @Override
-            public String getFormattedValue(float value, AxisBase axis) {
+            public String getAxisLabel(float value, AxisBase axis) {
                 Calendar calendar = Calendar.getInstance();
                 calendar.set(Calendar.MONTH, (int)value);
                 return mFormat.format(calendar.getTime());

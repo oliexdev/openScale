@@ -25,17 +25,17 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.fragment.app.Fragment;
+
 import com.github.mikephil.charting.charts.RadarChart;
 import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.LegendEntry;
 import com.github.mikephil.charting.components.MarkerView;
-import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.RadarData;
 import com.github.mikephil.charting.data.RadarDataSet;
 import com.github.mikephil.charting.data.RadarEntry;
-import com.github.mikephil.charting.formatter.IValueFormatter;
+import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.interfaces.datasets.IRadarDataSet;
-import com.github.mikephil.charting.utils.ViewPortHandler;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
@@ -58,8 +58,6 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-
-import androidx.fragment.app.Fragment;
 
 public class StatisticsFragment extends Fragment implements FragmentUpdateListener {
 
@@ -321,10 +319,10 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
         RadarData dataAvgWeek = new RadarData(setsAvgWeek);
         dataAvgWeek.setValueTextSize(8f);
         dataAvgWeek.setDrawValues(false);
-        dataAvgWeek.setValueFormatter(new IValueFormatter() {
+        dataAvgWeek.setValueFormatter(new ValueFormatter() {
             @Override
-            public String getFormattedValue(float value, Entry entry, int dataSetIndex, ViewPortHandler viewPortHandler) {
-                FloatMeasurementView measurementView = (FloatMeasurementView) entry.getData();
+            public String getRadarLabel(RadarEntry radarEntry) {
+                FloatMeasurementView measurementView = (FloatMeasurementView) radarEntry.getData();
 
                 return measurementView.getValueAsString(true);
             }
@@ -333,10 +331,10 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
         RadarData dataAvgMonth = new RadarData(setsAvgMonth);
         dataAvgMonth.setValueTextSize(8f);
         dataAvgMonth.setDrawValues(false);
-        dataAvgMonth.setValueFormatter(new IValueFormatter() {
+        dataAvgMonth.setValueFormatter(new ValueFormatter() {
             @Override
-            public String getFormattedValue(float value, Entry entry, int dataSetIndex, ViewPortHandler viewPortHandler) {
-                FloatMeasurementView measurementView = (FloatMeasurementView) entry.getData();
+            public String getRadarLabel(RadarEntry radarEntry) {
+                FloatMeasurementView measurementView = (FloatMeasurementView) radarEntry.getData();
 
                 return measurementView.getValueAsString(true);
             }
