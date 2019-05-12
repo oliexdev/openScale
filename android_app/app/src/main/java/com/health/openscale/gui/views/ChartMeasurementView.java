@@ -147,8 +147,8 @@ public class ChartMeasurementView extends LineChart {
         getLegend().setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
         getLegend().setTextColor(ColorUtil.getTextColor(getContext()));
         getDescription().setEnabled(false);
-        getAxisLeft().setEnabled(prefs.getBoolean("yaxisEnable", false));
-        getAxisRight().setEnabled(prefs.getBoolean("yaxisEnable", false));
+        getAxisLeft().setEnabled(true);
+        getAxisRight().setEnabled(true);
         getAxisLeft().setTextColor(ColorUtil.getTextColor(getContext()));
         getAxisRight().setTextColor(ColorUtil.getTextColor(getContext()));
         getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM);
