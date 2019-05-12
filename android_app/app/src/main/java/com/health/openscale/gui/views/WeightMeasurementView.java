@@ -64,6 +64,6 @@ public class WeightMeasurementView extends FloatMeasurementView {
 
     @Override
     protected EvaluationResult evaluateSheet(EvaluationSheet evalSheet, float value) {
-        return evalSheet.evaluateWeight(value);
+        return evalSheet.evaluateWeight(Converters.toKilogram(value, getScaleUser().getScaleUnit()));
     }
 }
