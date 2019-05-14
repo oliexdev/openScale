@@ -4,7 +4,7 @@
     <string name="title_graph">Çizelge</string>
     <string name="title_table">Tablo</string>
     <string name="title_statistics">İstatistik</string>
-    <string name="title_users">Kullanıcı</string>
+    <string name="title_users">Kullanıcılar</string>
     <string name="title_measurements">Ölçüler</string>
     <string name="title_about">Hakkında</string>
     <string name="action_settings">Ayarlar</string>
@@ -118,7 +118,7 @@
     <string name="label_export_dir">Dışa aktarım dizini</string>
     <string name="label_not_found">Bulunamadı</string>
     <string name="label_ignoreOutOfRange">Aralığın dışındaki verileri yoksay</string>
-    <string name="label_initial_weight">Baþlangıç ağırlığı</string>
+    <string name="label_initial_weight">Başlangıç ağırlığı</string>
     <string name="label_regression_line">Ağırlık çizgisinde gerileme</string>
     <string name="label_regression_line_degree">polinom derecesinde gerileme</string>
     <string name="label_goal_line">Hedef çizgisi</string>
@@ -143,11 +143,9 @@
     <string name="label_feedback_message_no">Pek sayılmaz</string>
     <string name="label_feedback_message_positive">Tamam</string>
     <string name="label_feedback_message_negative">Hayır, teşekkürler</string>
-    <string name="trisa_scale_pairing_succeeded">Eşleme başarılı oldu!
-\n
-\nÖlçüm verilerini almak için tekrar bağlanın.
-\n
-\n</string>
+    <string name="trisa_scale_pairing_succeeded">Eşleşme başarılı oldu! 
+\n 
+\nÖlçüm verilerini almak için tekrar bağlanın.</string>
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">Beklenmedik bir hata oluştu
 \n
 \nLütfen hata ayrıntılarını içeren yeni bir kayıt oluşturun
@@ -163,8 +161,8 @@
     <string name="customactivityoncrash_error_activity_error_details_clipboard_label">Hata bilgisi</string>
     <string name="edit">Düzenle</string>
     <string name="save">Kaydet</string>
-    <string name="label_month_view">Aylık görünüm</string>
-    <string name="label_weeks_view">Haftalık görünüm</string>
+    <string name="label_month_view">Ay görünümü</string>
+    <string name="label_weeks_view">Hafta görünümü</string>
     <string name="permission_not_granted">İzin verilmedi</string>
     <string name="permission_bluetooth_info_title">Bilgi</string>
     <string name="permission_read_write_data_description">tüm kayıtlı ölçümler ve kullanıcı bilgilerini içeren openScale verisini oku</string>
@@ -236,8 +234,8 @@
     <string name="label_enable_legend">Grafik efsanesi</string>
     <string name="label_enable_yaxis">Y-eksen</string>
     <string name="info_step_on_scale">Lütfen tartıya yalınayak çıkın</string>
-    <string name="label_day_view">Günlük görünüm</string>
-    <string name="label_year_view">Yıllık görünüm</string>
+    <string name="label_day_view">Gün görünümü</string>
+    <string name="label_year_view">Yıl görünümü</string>
     <string name="label_rolling_chart">Grafik şema</string>
     <string name="label_measurement_bar">Ölçü çubuğu</string>
     <string name="permission_location_service_info">Bluetooth aygıtlarını aramak için Android ayarlarından konum erişim izni verin. İsteğe bağlı olarak daha sonra iptal edebilirsiniz.</string>
