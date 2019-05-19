@@ -498,6 +498,10 @@ public class ChartMeasurementView extends LineChart {
                     ScaleMeasurement prevMeasuremnt = getPreviousMeasurment(avgMeasurementList, binNr);
                     measurementView.loadFrom(avgMeasurement, prevMeasuremnt);
 
+                    if (measurementView.getValue() == 0.0f) {
+                        continue;
+                    }
+
                     Entry entry = new Entry();
                     entry.setX(binNr);
                     entry.setY(measurementView.getValue());
