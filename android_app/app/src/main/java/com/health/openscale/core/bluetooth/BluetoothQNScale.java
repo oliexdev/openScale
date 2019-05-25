@@ -88,11 +88,11 @@ public class BluetoothQNScale extends BluetoothCommunication {
         switch (stepNr) {
             case 0:
                 // set notification on for custom characteristic 1 (weight, time, and others)
-                setNotificationOn(CUSTOM1_MEASUREMENT_CHARACTERISTIC);
+                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, CUSTOM1_MEASUREMENT_CHARACTERISTIC);
                 break;
             case 1:
                 // set indication on for weight measurement
-                setIndicationOn(CUSTOM2_MEASUREMENT_CHARACTERISTIC);
+                setIndicationOn(WEIGHT_MEASUREMENT_SERVICE, CUSTOM2_MEASUREMENT_CHARACTERISTIC);
                 break;
             case 2:
                 final ScaleUser scaleUser = OpenScale.getInstance().getSelectedScaleUser();
@@ -108,7 +108,7 @@ public class BluetoothQNScale extends BluetoothCommunication {
                 byte[] ffe3magicBytes = new byte[]{(byte) 0x13, (byte) 0x09, (byte) 0x15, weightUnitByte, (byte) 0x10, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00};
                 // Set last byte to be checksum
                 ffe3magicBytes[ffe3magicBytes.length -1] = sumChecksum(ffe3magicBytes, 0, ffe3magicBytes.length - 1);
-                writeBytes(CUSTOM3_MEASUREMENT_CHARACTERISTIC, ffe3magicBytes);
+                writeBytes(WEIGHT_MEASUREMENT_SERVICE, CUSTOM3_MEASUREMENT_CHARACTERISTIC, ffe3magicBytes);
                 break;
             case 3:
                 // send time magic number to receive weight data
@@ -117,7 +117,7 @@ public class BluetoothQNScale extends BluetoothCommunication {
                 byte[] date = new byte[4];
                 Converters.toInt32Le(date, 0, timestamp);
                 byte[] timeMagicBytes = new byte[]{(byte) 0x02, date[0], date[1], date[2], date[3]};
-                writeBytes(CUSTOM4_MEASUREMENT_CHARACTERISTIC, timeMagicBytes);
+                writeBytes(WEIGHT_MEASUREMENT_SERVICE, CUSTOM4_MEASUREMENT_CHARACTERISTIC, timeMagicBytes);
                 break;
             case 4:
                 sendMessage(R.string.info_step_on_scale, 0);

@@ -68,7 +68,7 @@ public class BluetoothMGB extends BluetoothCommunication {
         buf[6] = (byte)0xCC;
         buf[7] = (byte)((buf[2] + buf[3] + buf[4] + buf[5] + buf[6]) & 0xFF);
 
-        writeBytes(uuid_char_cfg, buf);
+        writeBytes(uuid_service, uuid_char_cfg, buf);
     }
 
 
@@ -85,8 +85,7 @@ public class BluetoothMGB extends BluetoothCommunication {
     protected boolean onNextStep(int stepNr) {
         switch (stepNr) {
             case 0:
-                setNotificationOn(uuid_char_ctrl
-                );
+                setNotificationOn(uuid_service, uuid_char_ctrl);
                 now  = Calendar.getInstance();
                 user = OpenScale.getInstance().getSelectedScaleUser();
                 break;

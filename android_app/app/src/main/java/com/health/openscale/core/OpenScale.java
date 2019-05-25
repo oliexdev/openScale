@@ -31,6 +31,12 @@ import android.provider.OpenableColumns;
 import android.text.format.DateFormat;
 import android.widget.Toast;
 
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.room.Room;
+import androidx.room.RoomDatabase;
+import androidx.sqlite.db.SupportSQLiteDatabase;
+
 import com.health.openscale.R;
 import com.health.openscale.core.alarm.AlarmHandler;
 import com.health.openscale.core.bluetooth.BluetoothCommunication;
@@ -51,8 +57,6 @@ import com.health.openscale.gui.views.LBMMeasurementView;
 import com.health.openscale.gui.views.MeasurementViewSettings;
 import com.health.openscale.gui.views.WaterMeasurementView;
 import com.health.openscale.gui.widget.WidgetProvider;
-import com.polidea.rxandroidble2.RxBleClient;
-import com.polidea.rxandroidble2.internal.RxBleLog;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -69,11 +73,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
-import androidx.room.Room;
-import androidx.room.RoomDatabase;
-import androidx.sqlite.db.SupportSQLiteDatabase;
 import timber.log.Timber;
 
 public class OpenScale {
@@ -91,7 +90,6 @@ public class OpenScale {
     private List<ScaleMeasurement> scaleMeasurementList;
 
     private BluetoothCommunication btDeviceDriver;
-    private RxBleClient bleClient;
     private AlarmHandler alarmHandler;
 
     private Context context;
@@ -103,10 +101,6 @@ public class OpenScale {
         alarmHandler = new AlarmHandler();
         btDeviceDriver = null;
         fragmentList = new ArrayList<>();
-        bleClient = RxBleClient.create(context);
-
-        RxBleClient.setLogLevel(RxBleLog.VERBOSE);
-        RxBleLog.setLogger((level, tag, msg) -> Timber.tag(tag).log(level, msg));
 
         reopenDatabase(false);
 
@@ -127,10 +121,6 @@ public class OpenScale {
         }
 
         return instance;
-    }
-
-    public RxBleClient getBleClient() {
-        return bleClient;
     }
 
     public void reopenDatabase(boolean truncate) throws SQLiteDatabaseCorruptException {

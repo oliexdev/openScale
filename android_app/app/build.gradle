@@ -5,7 +5,7 @@ android {
     defaultConfig {
         applicationId "com.health.openscale"
         testApplicationId "com.health.openscale.test"
-        minSdkVersion 19
+        minSdkVersion 24
         targetSdkVersion 28
         versionCode 44
         versionName "2.0.3"
@@ -59,7 +59,7 @@ android {
 }
 
 dependencies {
-    implementation 'com.google.android.material:material:1.1.0-alpha04'
+    implementation 'com.google.android.material:material:1.1.0-alpha06'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.appcompat:appcompat:1.0.2'
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
@@ -67,23 +67,20 @@ dependencies {
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
     // Simple CSV
     implementation 'com.j256.simplecsv:simplecsv:2.3'
-    // RxAndroidBle
-    implementation 'com.polidea.rxandroidble2:rxandroidble:1.8.2'
-    implementation 'io.reactivex.rxjava2:rxjava:2.2.7'
-    implementation 'io.reactivex.rxjava2:rxandroid:2.1.0'
-    implementation 'com.jakewharton.rx2:replaying-share:2.1.0'
+    // Blessed Android
+    implementation 'com.github.weliem:blessed-android:0.5'
     // CustomActivityOnCrash
     implementation 'cat.ereza:customactivityoncrash:2.2.0'
     // Room
-    implementation 'androidx.room:room-runtime:2.1.0-alpha04'
-    annotationProcessor 'androidx.room:room-compiler:2.1.0-alpha04'
-    androidTestImplementation 'androidx.room:room-testing:2.1.0-alpha04'
+    implementation 'androidx.room:room-runtime:2.1.0-beta01'
+    annotationProcessor 'androidx.room:room-compiler:2.1.0-beta01'
+    androidTestImplementation 'androidx.room:room-testing:2.1.0-beta01'
     // Timber
     implementation 'com.jakewharton.timber:timber:4.7.1'
     // Local unit tests
     testImplementation 'junit:junit:4.12'
     // Instrumented unit tests
-    androidTestImplementation 'androidx.annotation:annotation:1.0.0'
+    androidTestImplementation 'androidx.annotation:annotation:1.0.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.0'
     androidTestImplementation 'androidx.test:rules:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'

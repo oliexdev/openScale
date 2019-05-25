@@ -46,8 +46,7 @@ public class BluetoothCustomOpenScale extends BluetoothCommunication {
     protected boolean onNextStep(int stepNr) {
         switch (stepNr) {
             case 0:
-                setNotificationOn(WEIGHT_MEASUREMENT_CHARACTERISTIC
-                );
+                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC);
                 break;
             case 1:
                 Calendar cal = Calendar.getInstance();
@@ -60,7 +59,7 @@ public class BluetoothCustomOpenScale extends BluetoothCommunication {
                         cal.get(Calendar.MINUTE),
                         cal.get(Calendar.SECOND));
 
-                writeBytes(WEIGHT_MEASUREMENT_CHARACTERISTIC, date_time.getBytes());
+                writeBytes(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC, date_time.getBytes());
                 break;
             default:
                 return false;
@@ -72,7 +71,7 @@ public class BluetoothCustomOpenScale extends BluetoothCommunication {
     public void clearEEPROM()
     {
         byte[] cmd = {(byte)'9'};
-        writeBytes(WEIGHT_MEASUREMENT_CHARACTERISTIC, cmd);
+        writeBytes(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC, cmd);
     }
 
     @Override

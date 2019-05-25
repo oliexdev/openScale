@@ -45,7 +45,7 @@ public class BluetoothExingtechY1 extends BluetoothCommunication {
     protected boolean onNextStep(int stepNr) {
         switch (stepNr) {
             case 0:
-                setNotificationOn(WEIGHT_MEASUREMENT_CHARACTERISTIC);
+                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC);
                 break;
             case 1:
                 final ScaleUser selectedUser = OpenScale.getInstance().getSelectedScaleUser();
@@ -58,7 +58,7 @@ public class BluetoothExingtechY1 extends BluetoothCommunication {
 
                 byte cmdByte[] = {(byte)0x10, (byte)userId, gender, age, height};
 
-                writeBytes(CMD_MEASUREMENT_CHARACTERISTIC, cmdByte);
+                writeBytes(WEIGHT_MEASUREMENT_SERVICE, CMD_MEASUREMENT_CHARACTERISTIC, cmdByte);
                 break;
             case 2:
                 sendMessage(R.string.info_step_on_scale, 0);

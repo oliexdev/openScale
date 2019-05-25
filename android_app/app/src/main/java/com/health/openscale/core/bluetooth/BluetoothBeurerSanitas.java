@@ -172,7 +172,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
         switch (stepNr) {
             case 0:
                 // Setup notification
-                setNotificationOn(CUSTOM_CHARACTERISTIC_WEIGHT);
+                setNotificationOn(CUSTOM_SERVICE_1, CUSTOM_CHARACTERISTIC_WEIGHT);
                 break;
             case 1:
                 // Say "Hello" to the scale and wait for ack
@@ -566,7 +566,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
     }
 
     private void writeBytes(byte[] data) {
-        writeBytes(CUSTOM_CHARACTERISTIC_WEIGHT, data);
+        writeBytes(CUSTOM_SERVICE_1, CUSTOM_CHARACTERISTIC_WEIGHT, data);
     }
 
     private void sendCommand(byte command, byte... parameters) {

@@ -19,6 +19,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+import androidx.annotation.Nullable;
+
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.bluetooth.lib.TrisaBodyAnalyzeLib;
@@ -29,7 +31,6 @@ import com.health.openscale.core.utils.Converters;
 import java.util.Date;
 import java.util.UUID;
 
-import androidx.annotation.Nullable;
 import timber.log.Timber;
 
 /**
@@ -124,7 +125,7 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
         switch (stepNr) {
             case 0:
                 // Register for notifications of the measurement characteristic.
-                setIndicationOn(MEASUREMENT_CHARACTERISTIC_UUID);
+                setIndicationOn(WEIGHT_SCALE_SERVICE_UUID, MEASUREMENT_CHARACTERISTIC_UUID);
                 break;  // more commands follow
             case 1:
                 // Register for notifications of the command upload characteristic.
@@ -132,7 +133,7 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
                 // This is the last init command, which causes a switch to the main state machine
                 // immediately after. This is important because we should be in the main state
                 // to handle pairing correctly.
-                setIndicationOn(UPLOAD_COMMAND_CHARACTERISTIC_UUID);
+                setIndicationOn(WEIGHT_SCALE_SERVICE_UUID, UPLOAD_COMMAND_CHARACTERISTIC_UUID);
                 break;
             case 2:
                 // This state is triggered by the write in onPasswordReceived()
@@ -306,7 +307,7 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
 
     private void writeCommandBytes(byte[] bytes) {
         Timber.d("writeCommand bytes=%s", byteInHex(bytes));
-        writeBytes(DOWNLOAD_COMMAND_CHARACTERISTIC_UUID, bytes);
+        writeBytes(WEIGHT_SCALE_SERVICE_UUID, DOWNLOAD_COMMAND_CHARACTERISTIC_UUID, bytes);
     }
 
     private static String getDevicePasswordKey(String deviceId) {
