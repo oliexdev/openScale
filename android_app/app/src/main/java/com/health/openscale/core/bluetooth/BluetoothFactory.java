@@ -86,12 +86,12 @@ public class BluetoothFactory {
         if (name.startsWith("SANITAS SBF70".toLowerCase(Locale.US)) || name.startsWith("sbf75")) {
             return new BluetoothBeurerSanitas(context, BluetoothBeurerSanitas.DeviceType.SANITAS_SBF70_70);
         }
-        /*if (deviceName.startsWith("YUNMAI-SIGNAL-") || deviceName.startsWith("YUNMAI-ISM2")) {
+        if (deviceName.startsWith("YUNMAI-SIGNAL-") || deviceName.startsWith("YUNMAI-ISM2")) {
             return new BluetoothYunmaiSE_Mini(context, true);
         }
         if (deviceName.startsWith("YUNMAI-ISSE")) {
             return new BluetoothYunmaiSE_Mini(context, false);
-        }*/
+        }
         if (deviceName.startsWith("01257B") || deviceName.startsWith("11257B")) {
             // Trisa Body Analyze 4.0, aka Transtek GBF-1257-B
             return new BluetoothTrisaBodyAnalyze(context);
