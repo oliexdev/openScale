@@ -66,6 +66,9 @@ public class BluetoothGattUuid {
     public static final UUID SERVICE_GENERIC_ACCESS = fromShortCode(0x1800);
     public static final UUID SERVICE_GENERIC_ATTRIBUTE = fromShortCode(0x1801);
     public static final UUID SERVICE_WEIGHT_SCALE = fromShortCode(0x181d);
+    public static final UUID SERVICE_CURRENT_TIME = fromShortCode(0x1805);
+    public static final UUID SERVICE_USER_DATA = fromShortCode(0x181C);
+    public static final UUID SERVICE_BATTERY_LEVEL = fromShortCode(0x180F);
 
     // https://www.bluetooth.com/specifications/gatt/characteristics
     public static final UUID CHARACTERISTIC_APPEARANCE = fromShortCode(0x2a01);
@@ -86,6 +89,9 @@ public class BluetoothGattUuid {
     public static final UUID CHARACTERISTIC_SOFTWARE_REVISION_STRING = fromShortCode(0x2a28);
     public static final UUID CHARACTERISTIC_SYSTEM_ID = fromShortCode(0x2a23);
     public static final UUID CHARACTERISTIC_WEIGHT_MEASUREMENT = fromShortCode(0x2a9d);
+    public static final UUID CHARACTERISTIC_BATTERY_LEVEL = fromShortCode(0x2A19);
+    public static final UUID CHARACTERISTIC_CHANGE_INCREMENT = fromShortCode(0x2a99);
+    public static final UUID CHARACTERISTIC_USER_CONTROL_POINT = fromShortCode(0x2A9F);
 
     // https://www.bluetooth.com/specifications/gatt/descriptors
     public static final UUID DESCRIPTOR_CLIENT_CHARACTERISTIC_CONFIGURATION = fromShortCode(0x2902);
