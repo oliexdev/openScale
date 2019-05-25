@@ -18,32 +18,33 @@ package com.health.openscale.gui.preferences;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
-import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.content.BroadcastReceiver;
-import android.content.Context;
+import android.bluetooth.le.ScanResult;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
 import android.widget.BaseAdapter;
-import android.widget.EditText;
 import android.widget.Toast;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.bluetooth.BluetoothCommunication;
 import com.health.openscale.core.bluetooth.BluetoothFactory;
+import com.health.openscale.gui.utils.ColorUtil;
 import com.health.openscale.gui.utils.PermissionHelper;
+import com.welie.blessed.BluetoothCentral;
+import com.welie.blessed.BluetoothCentralCallback;
+import com.welie.blessed.BluetoothPeripheral;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -58,10 +59,10 @@ public class BluetoothPreferences extends PreferenceFragment {
     public static final String PREFERENCE_KEY_BLUETOOTH_HW_ADDRESS = "btHwAddress";
 
     private PreferenceScreen btScanner;
-    private BluetoothAdapter btAdapter = null;
-    private BluetoothAdapter.LeScanCallback leScanCallback = null;
-    private Handler handler = null;
     private Map<String, BluetoothDevice> foundDevices = new HashMap<>();
+
+    private Handler progressHandler;
+    private BluetoothCentral central;
 
     private static final String formatDeviceName(String name, String address) {
         if (name.isEmpty() || address.isEmpty()) {
@@ -81,20 +82,32 @@ public class BluetoothPreferences extends PreferenceFragment {
                 prefs.getString(PREFERENCE_KEY_BLUETOOTH_HW_ADDRESS, ""));
     }
 
+    private final BluetoothCentralCallback bluetoothCentralCallback = new BluetoothCentralCallback() {
+        @Override
+        public void onDiscoveredPeripheral(BluetoothPeripheral peripheral, ScanResult scanResult) {
+            onDeviceFound(scanResult);
+        }
+    };
+
     private void startBluetoothDiscovery() {
         foundDevices.clear();
         btScanner.removeAll();
-        handler = new Handler();
+
+        central = new BluetoothCentral(getActivity().getApplicationContext(), bluetoothCentralCallback, new Handler(Looper.getMainLooper()));
+        central.scanForPeripheralsWithServices(null);
 
         final Preference scanning = new Preference(getActivity());
         scanning.setEnabled(false);
         btScanner.addPreference(scanning);
+        btScanner.getPreference(0).setTitle(R.string.label_bluetooth_searching);
+
+        progressHandler = new Handler();
 
         // Draw a simple progressbar during the discovery/scanning
         final int progressUpdatePeriod = 150;
         final String[] blocks = {"▏","▎","▍","▌","▋","▊","▉","█"};
         scanning.setSummary(blocks[0]);
-        handler.postDelayed(new Runnable() {
+        progressHandler.postDelayed(new Runnable() {
             int index = 1;
             @Override
             public void run() {
@@ -106,49 +119,15 @@ public class BluetoothPreferences extends PreferenceFragment {
                 }
                 summary += blocks[index++];
                 scanning.setSummary(summary);
-                handler.postDelayed(this, progressUpdatePeriod);
+                progressHandler.postDelayed(this, progressUpdatePeriod);
             }
         }, progressUpdatePeriod);
 
-        // Abort discovery and scan if back is pressed or a scale is selected
-        btScanner.getDialog().setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialog) {
-                stopDiscoveryAndLeScan();
-            }
-        });
-
-        // Close any existing connection during the scan
-        OpenScale.getInstance().disconnectFromBluetoothDevice();
-
-        // Intent filter for the scanning process
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(BluetoothDevice.ACTION_FOUND);
-        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
-        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-        getActivity().registerReceiver(mReceiver, filter);
-
-        // Do classic bluetooth discovery first and BLE scan afterwards
-        Timber.d("Start discovery");
-        if (!btAdapter.startDiscovery()) {
-            Timber.e("Discovery did not start; trying BLE scan");
-            startBleScan();
-        }
-    }
-
-    private void startBleScan() {
-        leScanCallback = new BluetoothAdapter.LeScanCallback() {
-            @Override
-            public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
-                onDeviceFound(device);
-            }
-        };
-
-        // Don't let the BLE scan run forever
-        handler.postDelayed(new Runnable() {
+        // Don't let the BLE discovery run forever
+        progressHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                stopDiscoveryAndLeScan();
+                stopBluetoothDiscovery();
 
                 Preference scanning = btScanner.getPreference(0);
                 scanning.setTitle(R.string.label_bluetooth_searching_finished);
@@ -164,75 +143,59 @@ public class BluetoothPreferences extends PreferenceFragment {
                 notSupported.setIntent(notSupportedIntent);
                 btScanner.addPreference(notSupported);
             }
-        }, 10 * 1000);
+        }, 20 * 1000);
 
-        Timber.d("Start LE scan");
-        if (!btAdapter.startLeScan(leScanCallback)) {
-            Timber.e("LE scan did not start");
-            stopDiscoveryAndLeScan();
-
-            Preference scanning = btScanner.getPreference(0);
-            scanning.setTitle(R.string.label_bluetooth_searching_finished);
-            scanning.setSummary("");
-        }
+        // Abort discovery and scan if back is pressed or a scale is selected
+        btScanner.getDialog().setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                stopBluetoothDiscovery();
+            }
+        });
     }
 
-    private void stopDiscoveryAndLeScan() {
-        if (handler != null) {
-            Timber.d("Stop discovery");
-
-            handler.removeCallbacksAndMessages(null);
-            handler = null;
-
-            getActivity().unregisterReceiver(mReceiver);
-            btAdapter.cancelDiscovery();
+    private void stopBluetoothDiscovery() {
+        if (progressHandler != null) {
+            progressHandler.removeCallbacksAndMessages(null);
+            progressHandler = null;
         }
 
-        if (leScanCallback != null) {
-            Timber.d("Stop LE scan");
-
-            btAdapter.stopLeScan(leScanCallback);
-            leScanCallback = null;
-        }
-
-        if (btScanner.getDialog() != null) {
-            btScanner.getDialog().setOnDismissListener(null);
-        }
     }
 
-    private void onDeviceFound(final BluetoothDevice device) {
+    private void onDeviceFound(final ScanResult bleScanResult) {
+        BluetoothDevice device = bleScanResult.getDevice();
+
         if (device.getName() == null || foundDevices.containsKey(device.getAddress())) {
             return;
         }
 
         Preference prefBtDevice = new Preference(getActivity());
-        prefBtDevice.setTitle(formatDeviceName(device));
+        prefBtDevice.setTitle(formatDeviceName(bleScanResult.getDevice()));
 
         BluetoothCommunication btDevice = BluetoothFactory.createDeviceDriver(getActivity(), device.getName());
         if (btDevice != null) {
-            Timber.d("Found supported device %s (driver: %s, type: %d)",
-                    formatDeviceName(device), btDevice.driverName(), device.getType());
+            Timber.d("Found supported device %s (driver: %s)",
+                    formatDeviceName(device), btDevice.driverName());
             prefBtDevice.setOnPreferenceClickListener(new onClickListenerDeviceSelect());
             prefBtDevice.setKey(device.getAddress());
             prefBtDevice.setIcon(R.drawable.ic_bluetooth_device_supported);
             prefBtDevice.setSummary(btDevice.driverName());
 
-            int tintColor = new EditText(getActivity()).getCurrentTextColor();
+            int tintColor = ColorUtil.getTextColor(getActivity().getApplicationContext());
             prefBtDevice.getIcon().setColorFilter(tintColor, PorterDuff.Mode.SRC_IN);
         }
         else {
-            Timber.d("Found unsupported device %s (type: %d)",
-                    formatDeviceName(device), device.getType());
+            Timber.d("Found unsupported device %s",
+                    formatDeviceName(device));
             prefBtDevice.setIcon(R.drawable.ic_bluetooth_device_not_supported);
             prefBtDevice.setSummary(R.string.label_bt_device_no_support);
             prefBtDevice.setEnabled(false);
 
-            if (OpenScale.DEBUG_MODE && device.getType() == BluetoothDevice.DEVICE_TYPE_LE) {
+            if (OpenScale.DEBUG_MODE) {
                 prefBtDevice.setEnabled(true);
                 prefBtDevice.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                     @Override
                     public boolean onPreferenceClick(Preference preference) {
-                        stopDiscoveryAndLeScan();
                         getDebugInfo(device);
                         return false;
                     }
@@ -244,24 +207,6 @@ public class BluetoothPreferences extends PreferenceFragment {
         btScanner.addPreference(prefBtDevice);
     }
 
-    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
-        public void onReceive(final Context context, Intent intent) {
-            String action = intent.getAction();
-            Timber.d("Discovery: %s", action);
-
-            if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
-                btScanner.getPreference(0).setTitle(R.string.label_bluetooth_searching);
-            }
-            else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
-                startBleScan();
-            }
-            else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                onDeviceFound(device);
-            }
-        }
-    };
-
     private void updateBtScannerSummary() {
         // Set summary text and trigger data set changed to make UI update
         btScanner.setSummary(getCurrentDeviceName());
@@ -272,34 +217,28 @@ public class BluetoothPreferences extends PreferenceFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        btAdapter = BluetoothAdapter.getDefaultAdapter();
-
         addPreferencesFromResource(R.xml.bluetooth_preferences);
 
         btScanner = (PreferenceScreen) findPreference(PREFERENCE_KEY_BLUETOOTH_SCANNER);
-        if (btAdapter == null) {
-            btScanner.setEnabled(false);
-            btScanner.setSummary("Bluetooth " + getResources().getString(R.string.info_is_not_available));
-        } else {
-            // Might have been started by another app
-            btAdapter.cancelDiscovery();
 
-            final Fragment fragment = this;
-            btScanner.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    if (PermissionHelper.requestBluetoothPermission(getActivity(), fragment)) {
+        final Fragment fragment = this;
+        btScanner.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                if (PermissionHelper.requestBluetoothPermission(getActivity(), fragment)) {
+                    if (PermissionHelper.requestLocationServicePermission(getActivity())) {
                         startBluetoothDiscovery();
                     }
-                    return true;
                 }
-            });
+                return true;
+            }
+        });
 
-            updateBtScannerSummary();
+        updateBtScannerSummary();
 
-            // Dummy preference to make screen open
-            btScanner.addPreference(new Preference(getActivity()));
-        }
+        // Dummy preference to make screen open
+        btScanner.addPreference(new Preference(getActivity()));
+
     }
 
     @Override
@@ -310,15 +249,6 @@ public class BluetoothPreferences extends PreferenceFragment {
         if (btScanner.getDialog() != null && btScanner.getDialog().isShowing()) {
             startBluetoothDiscovery();
         }
-    }
-
-    @Override
-    public void onStop() {
-        if (btScanner.getDialog() != null) {
-            stopDiscoveryAndLeScan();
-        }
-
-        super.onStop();
     }
 
     @Override
@@ -362,8 +292,11 @@ public class BluetoothPreferences extends PreferenceFragment {
         };
 
         dialog.show();
+
+        String macAddress = device.getAddress();
+        stopBluetoothDiscovery();
         OpenScale.getInstance().connectToBluetoothDeviceDebugMode(
-                device.getAddress(), btHandler);
+                macAddress, btHandler);
     }
 
     private class onClickListenerDeviceSelect implements Preference.OnPreferenceClickListener {
@@ -378,22 +311,8 @@ public class BluetoothPreferences extends PreferenceFragment {
 
             updateBtScannerSummary();
 
-            stopDiscoveryAndLeScan();
             btScanner.getDialog().dismiss();
 
-            // Perform an explicit bonding with classic devices
-            switch (device.getType()) {
-                case BluetoothDevice.DEVICE_TYPE_CLASSIC:
-                    if (device.getBondState() == BluetoothDevice.BOND_NONE) {
-                        device.createBond();
-                    }
-                    break;
-                case BluetoothDevice.DEVICE_TYPE_LE:
-                    if (OpenScale.DEBUG_MODE) {
-                        getDebugInfo(device);
-                    }
-                    break;
-            }
             return true;
         }
     }
@@ -402,7 +321,9 @@ public class BluetoothPreferences extends PreferenceFragment {
         switch (requestCode) {
             case PermissionHelper.PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    startBluetoothDiscovery();
+                    if (PermissionHelper.requestLocationServicePermission(getActivity())) {
+                        startBluetoothDiscovery();
+                    }
                 } else {
                     Toast.makeText(getActivity(), R.string.permission_not_granted, Toast.LENGTH_SHORT).show();
                     btScanner.getDialog().dismiss();
