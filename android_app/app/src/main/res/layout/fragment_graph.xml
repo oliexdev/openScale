@@ -153,4 +153,11 @@
         android:layout_gravity="bottom|end"
         app:pressedTranslationZ="12dp"/>
 
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_anchor="@id/chartView"
+        app:layout_anchorGravity="center"
+        />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

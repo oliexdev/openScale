@@ -35,6 +35,8 @@ import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.fragment.app.Fragment;
+
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
@@ -50,8 +52,6 @@ import com.health.openscale.gui.views.MeasurementView;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import androidx.fragment.app.Fragment;
 
 public class OverviewFragment extends Fragment implements FragmentUpdateListener {
     private View overviewView;
@@ -89,6 +89,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
 
         chartView = overviewView.findViewById(R.id.chartView);
         chartView.setOnChartValueSelectedListener(new onChartSelectedListener());
+        chartView.setProgressBar(overviewView.findViewById(R.id.progressBar));
         chartView.setAnimationOn(false);
         chartView.setIsInGraphKey(false);
 

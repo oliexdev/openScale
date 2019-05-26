@@ -31,6 +31,12 @@ import android.provider.OpenableColumns;
 import android.text.format.DateFormat;
 import android.widget.Toast;
 
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.room.Room;
+import androidx.room.RoomDatabase;
+import androidx.sqlite.db.SupportSQLiteDatabase;
+
 import com.health.openscale.R;
 import com.health.openscale.core.alarm.AlarmHandler;
 import com.health.openscale.core.bluetooth.BluetoothCommunication;
@@ -69,11 +75,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
-import androidx.room.Room;
-import androidx.room.RoomDatabase;
-import androidx.sqlite.db.SupportSQLiteDatabase;
 import timber.log.Timber;
 
 public class OpenScale {
@@ -546,6 +547,17 @@ public class OpenScale {
         }
 
         return numOfMonth;
+    }
+
+    public List<ScaleMeasurement> getScaleDataOfStartDate(int year, int month, int day) {
+        int selectedUserId = getSelectedScaleUserId();
+
+        Calendar startCalender = Calendar.getInstance();
+        Calendar endCalender = Calendar.getInstance();
+
+        startCalender.set(year, month, day, 0, 0, 0);
+
+        return measurementDAO.getAllInRange(startCalender.getTime(), endCalender.getTime(), selectedUserId);
     }
 
     public List<ScaleMeasurement> getScaleDataOfDay(int year, int month, int day) {

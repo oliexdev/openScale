@@ -18,10 +18,13 @@ package com.health.openscale.gui.views;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.RectF;
 import android.preference.PreferenceManager;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.LineChart;
@@ -34,6 +37,8 @@ import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
+import com.github.mikephil.charting.listener.ChartTouchListener;
+import com.github.mikephil.charting.listener.OnChartGestureListener;
 import com.github.mikephil.charting.utils.Utils;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
@@ -77,6 +82,9 @@ public class ChartMeasurementView extends LineChart {
     private ViewMode viewMode;
     private boolean isAnimationOn;
     private boolean isInGraphKey;
+    private int scrollHistoryCount;
+    private ProgressBar progressBar;
+    private boolean isRollingChart;
 
     public ChartMeasurementView(Context context) {
         super(context);
@@ -94,17 +102,49 @@ public class ChartMeasurementView extends LineChart {
     }
 
     public void setViewRange(final ViewMode mode, boolean rollingChart) {
-        setMeasurementList(openScale.getScaleMeasurementList());
+        progressBar.setVisibility(VISIBLE);
+        isRollingChart = rollingChart;
+
+        if (isRollingChart) {
+            ScaleMeasurement lastMeasurement = openScale.getLatestScaleMeasurement(openScale.getSelectedScaleUserId());
+
+            if (lastMeasurement != null) {
+                Calendar lastMeasurementCalender = Calendar.getInstance();
+                lastMeasurementCalender.setTime(lastMeasurement.getDateTime());
+
+                switch (mode) {
+                    case DAY_OF_ALL:
+                        lastMeasurementCalender.add(Calendar.DAY_OF_MONTH, -28 * scrollHistoryCount);
+                        break;
+                    case WEEK_OF_ALL:
+                        lastMeasurementCalender.add(Calendar.WEEK_OF_YEAR, -4 * scrollHistoryCount);
+                        break;
+                    case MONTH_OF_ALL:
+                        lastMeasurementCalender.add(Calendar.MONTH, -4 * scrollHistoryCount);
+                        break;
+                    case YEAR_OF_ALL:
+                        lastMeasurementCalender.add(Calendar.YEAR, -4 * scrollHistoryCount);
+                        break;
+                    default:
+                        throw new IllegalArgumentException("view mode not implemented");
+                }
+
+                setMeasurementList(openScale.getScaleDataOfStartDate(lastMeasurementCalender.get(Calendar.YEAR), lastMeasurementCalender.get(Calendar.MONTH), lastMeasurementCalender.get(Calendar.DAY_OF_MONTH)));
+            }
+        } else {
+            setMeasurementList(openScale.getScaleMeasurementList());
+        }
         setViewMode(mode);
 
         refresh();
 
-        if (rollingChart) {
+        if (isRollingChart) {
             setRollingChartOn(mode);
         }
     }
 
     public void setViewRange(int year, final ViewMode mode) {
+        progressBar.setVisibility(VISIBLE);
         setMeasurementList(openScale.getScaleDataOfYear(year));
         setViewMode(mode);
 
@@ -112,6 +152,7 @@ public class ChartMeasurementView extends LineChart {
     }
 
     public void setViewRange(int year, int month, final ViewMode mode) {
+        progressBar.setVisibility(VISIBLE);
         setMeasurementList(openScale.getScaleDataOfMonth(year, month));
         setViewMode(mode);
 
@@ -126,6 +167,10 @@ public class ChartMeasurementView extends LineChart {
         isInGraphKey = status;
     }
 
+    public void setProgressBar(ProgressBar bar) {
+        progressBar = bar;
+    }
+
     private void initChart() {
         prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
         openScale = OpenScale.getInstance();
@@ -138,6 +183,8 @@ public class ChartMeasurementView extends LineChart {
         minXValue = 0;
         isAnimationOn = true;
         isInGraphKey = true;
+        scrollHistoryCount = 1;
+        progressBar = null;
 
         setHardwareAccelerationEnabled(true);
         setMarker(new ChartMarkerView(getContext(), R.layout.chart_markerview));
@@ -154,6 +201,62 @@ public class ChartMeasurementView extends LineChart {
         getAxisRight().setTextColor(ColorUtil.getTextColor(getContext()));
         getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM);
         getXAxis().setTextColor(ColorUtil.getTextColor(getContext()));
+
+        setOnChartGestureListener(new OnChartGestureListener() {
+            @Override
+            public void onChartGestureStart(MotionEvent me, ChartTouchListener.ChartGesture lastPerformedGesture) {
+
+            }
+
+            @Override
+            public void onChartGestureEnd(MotionEvent me, ChartTouchListener.ChartGesture lastPerformedGesture) {
+                if (isRollingChart) {
+                    if (progressBar.getVisibility() == GONE) {
+                        if (Math.round(getLowestVisibleX()) == Math.round(getXChartMin())) {
+                            scrollHistoryCount++;
+                            setViewRange(viewMode, isRollingChart);
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onChartLongPressed(MotionEvent me) {
+
+            }
+
+            @Override
+            public void onChartDoubleTapped(MotionEvent me) {
+
+            }
+
+            @Override
+            public void onChartSingleTapped(MotionEvent me) {
+
+            }
+
+            @Override
+            public void onChartFling(MotionEvent me1, MotionEvent me2, float velocityX, float velocityY) {
+
+            }
+
+            @Override
+            public void onChartScale(MotionEvent me, float scaleX, float scaleY) {
+
+            }
+
+            @Override
+            public void onChartTranslate(MotionEvent me, float dX, float dY) {
+
+            }
+        });
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+
+        progressBar.setVisibility(GONE);
     }
 
     private void setViewMode(final ViewMode mode) {

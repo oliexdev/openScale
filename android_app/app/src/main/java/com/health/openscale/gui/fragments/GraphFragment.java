@@ -114,6 +114,7 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         chartView = graphView.findViewById(R.id.chartView);
         chartView.setOnChartValueSelectedListener(new onChartValueSelectedListener());
+        chartView.setProgressBar(graphView.findViewById(R.id.progressBar));
 
         chartTop = graphView.findViewById(R.id.chart_top);
         chartTop.setDoubleTapToZoomEnabled(false);
