@@ -28,22 +28,23 @@ import android.widget.LinearLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.gui.activities.DataEntryActivity;
 import com.health.openscale.gui.utils.ColorUtil;
 import com.health.openscale.gui.views.MeasurementView;
+import com.health.openscale.gui.views.UserMeasurementView;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import static android.util.TypedValue.COMPLEX_UNIT_DIP;
 
@@ -106,7 +107,7 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
         ArrayList<MeasurementView> visibleMeasurements = new ArrayList<>();
 
         for (MeasurementView measurement : measurementViews) {
-            if (!measurement.isVisible()) {
+            if (!measurement.isVisible() || measurement instanceof UserMeasurementView) {
                 continue;
             }
 
