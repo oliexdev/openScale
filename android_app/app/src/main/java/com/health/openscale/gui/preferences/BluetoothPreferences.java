@@ -160,6 +160,7 @@ public class BluetoothPreferences extends PreferenceFragment {
             progressHandler = null;
         }
 
+        central.stopScan();
     }
 
     private void onDeviceFound(final ScanResult bleScanResult) {
