@@ -632,7 +632,7 @@ public class ChartMeasurementView extends LineChart {
 
                 List<Entry> valuesLinearRegression = new Stack<>();
 
-                for (int i = minXValue; i < maxXValue; i++) {
+                for (int i = minXValue; i < maxXValue + minXValue + 1; i++) {
                     double y_value = polynomial.getY(i);
                     valuesLinearRegression.add(new Entry((float) i, (float) y_value));
                 }
