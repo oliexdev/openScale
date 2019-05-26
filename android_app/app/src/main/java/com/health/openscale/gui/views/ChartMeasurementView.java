@@ -139,6 +139,7 @@ public class ChartMeasurementView extends LineChart {
         isAnimationOn = true;
         isInGraphKey = true;
 
+        setHardwareAccelerationEnabled(true);
         setMarker(new ChartMarkerView(getContext(), R.layout.chart_markerview));
         setDoubleTapToZoomEnabled(false);
         setHighlightPerTapEnabled(true);
@@ -512,10 +513,6 @@ public class ChartMeasurementView extends LineChart {
                     entry.setData(extraData);
 
                     lineEntries.add(entry);
-
-                    /*if (prefs.getBoolean("regressionLine", false) && measurementView instanceof WeightMeasurementView) {
-                        polyFitter.addPoint((double)entry.getX(), (double)entry.getY());
-                    }*/
                 }
 
                 addMeasurementLine(lineDataSets, lineEntries, measurementView);
@@ -523,7 +520,10 @@ public class ChartMeasurementView extends LineChart {
         }
 
         addGoalLine(lineDataSets);
-        // addRegressionLine(lineDataSets); TODO replaced it with an sliding average
+
+        if (isInGraphKey) {
+            addRegressionLine(lineDataSets);
+        }
 
         LineData data = new LineData(lineDataSets);
         setData(data);
@@ -607,7 +607,6 @@ public class ChartMeasurementView extends LineChart {
         }
     }
 
-    // TODO replace with sliding average
     private void addRegressionLine(List<ILineDataSet> lineDataSets) {
         if (prefs.getBoolean("regressionLine", false)) {
             int regressLineOrder = 1;
@@ -619,27 +618,40 @@ public class ChartMeasurementView extends LineChart {
                 prefs.edit().putString("regressionLineOrder", "1").apply();
             }
 
-            PolynomialFitter polyFitter = new PolynomialFitter(Math.min(regressLineOrder, 100));
+            List<ILineDataSet> regressionLineDataSets = new ArrayList<>();
 
-            PolynomialFitter.Polynomial polynomial = polyFitter.getBestFit();
+            for (ILineDataSet dataSet : lineDataSets) {
+                PolynomialFitter polyFitter = new PolynomialFitter(Math.min(regressLineOrder, 100));
 
-            List<Entry> valuesLinearRegression = new Stack<>();
+                for (int i=0; i<dataSet.getEntryCount(); i++) {
+                    Entry entry = dataSet.getEntryForIndex(i);
+                    polyFitter.addPoint((double) entry.getX(), (double) entry.getY());
+                }
 
-            for (int i = minXValue; i < maxXValue; i++) {
-                double y_value = polynomial.getY(i);
-                valuesLinearRegression.add(new Entry((float) i, (float) y_value));
+                PolynomialFitter.Polynomial polynomial = polyFitter.getBestFit();
+
+                List<Entry> valuesLinearRegression = new Stack<>();
+
+                for (int i = minXValue; i < maxXValue; i++) {
+                    double y_value = polynomial.getY(i);
+                    valuesLinearRegression.add(new Entry((float) i, (float) y_value));
+                }
+
+                LineDataSet linearRegressionLine = new LineDataSet(valuesLinearRegression, dataSet.getLabel() + "-" + getContext().getString(R.string.label_regression_line));
+                linearRegressionLine.setLineWidth(1.5f);
+                linearRegressionLine.setColor(dataSet.getColor());
+                linearRegressionLine.setAxisDependency(dataSet.getAxisDependency());
+                linearRegressionLine.setDrawValues(false);
+                linearRegressionLine.setDrawCircles(false);
+                linearRegressionLine.setHighlightEnabled(false);
+                linearRegressionLine.enableDashedLine(10, 30, 0);
+
+                regressionLineDataSets.add(linearRegressionLine);
             }
 
-            LineDataSet linearRegressionLine = new LineDataSet(valuesLinearRegression, getContext().getString(R.string.label_regression_line));
-            linearRegressionLine.setLineWidth(1.5f);
-            linearRegressionLine.setColor(ColorUtil.COLOR_VIOLET);
-            linearRegressionLine.setAxisDependency(prefs.getBoolean("weightOnRightAxis", true) ? YAxis.AxisDependency.RIGHT : YAxis.AxisDependency.LEFT);
-            linearRegressionLine.setDrawValues(false);
-            linearRegressionLine.setDrawCircles(false);
-            linearRegressionLine.setHighlightEnabled(false);
-            linearRegressionLine.enableDashedLine(10, 30, 0);
-
-            lineDataSets.add(linearRegressionLine);
+            for (ILineDataSet dataSet : regressionLineDataSets) {
+                lineDataSets.add(dataSet);
+            }
         }
     }
 }
