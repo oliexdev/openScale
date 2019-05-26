@@ -41,6 +41,8 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+import androidx.core.content.ContextCompat;
+
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
@@ -50,8 +52,6 @@ import com.health.openscale.gui.utils.ColorUtil;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import androidx.core.content.ContextCompat;
 
 import static com.health.openscale.gui.views.MeasurementView.MeasurementViewMode.ADD;
 import static com.health.openscale.gui.views.MeasurementView.MeasurementViewMode.EDIT;
@@ -131,6 +131,7 @@ public abstract class MeasurementView extends TableLayout {
             unsorted.add(new TDEEMeasurementView(context));
             unsorted.add(new CaloriesMeasurementView(context));
             unsorted.add(new CommentMeasurementView(context));
+            unsorted.add(new UserMeasurementView(context));
 
             // Get sort order
             final String[] sortOrder = TextUtils.split(

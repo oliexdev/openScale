@@ -33,6 +33,9 @@ import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.graphics.drawable.DrawableCompat;
+
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
@@ -40,14 +43,12 @@ import com.health.openscale.gui.views.DateMeasurementView;
 import com.health.openscale.gui.views.MeasurementView;
 import com.health.openscale.gui.views.MeasurementViewUpdateListener;
 import com.health.openscale.gui.views.TimeMeasurementView;
+import com.health.openscale.gui.views.UserMeasurementView;
 import com.health.openscale.gui.views.WeightMeasurementView;
 
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.List;
-
-import androidx.appcompat.widget.Toolbar;
-import androidx.core.graphics.drawable.DrawableCompat;
 
 public class DataEntryActivity extends BaseAppCompatActivity {
     public static final String EXTRA_ID = "id";
@@ -373,7 +374,7 @@ public class DataEntryActivity extends BaseAppCompatActivity {
         }
 
         for (MeasurementView measurement : dataEntryMeasurements) {
-            if (measurement instanceof DateMeasurementView || measurement instanceof TimeMeasurementView) {
+            if (measurement instanceof DateMeasurementView || measurement instanceof TimeMeasurementView || measurement instanceof UserMeasurementView) {
                 measurement.setVisibility(dateTimeVisibility);
             }
             measurement.setEditMode(viewMode);
