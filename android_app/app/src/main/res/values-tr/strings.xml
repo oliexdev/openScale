@@ -241,5 +241,5 @@
     <string name="permission_location_service_info">Bluetooth aygıtlarını aramak için Android ayarlarından konum erişim izni verin. İsteğe bağlı olarak daha sonra iptal edebilirsiniz.</string>
     <string name="label_is_on_right_axis">Sağ eksende</string>
     <string name="label_calories">Kaloriler</string>
-    <string name="label_upgrade_to_openScale_pro">"Bluetooth özelliğini etkinleştirmek için openScale paralı sürüme yükseltin "</string>
+    <string name="label_upgrade_to_openScale_pro">Bluetooth özelliğini etkinleştirmek için openScale paralı sürüme yükseltin</string>
 </resources>
