@@ -37,6 +37,16 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.FileProvider;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.health.openscale.BuildConfig;
@@ -58,15 +68,6 @@ import com.health.openscale.gui.preferences.BluetoothPreferences;
 import java.io.File;
 import java.util.List;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.widget.Toolbar;
-import androidx.core.content.FileProvider;
-import androidx.core.view.GravityCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import cat.ereza.customactivityoncrash.config.CaocConfig;
 import timber.log.Timber;
 
@@ -141,9 +142,11 @@ public class MainActivity extends BaseAppCompatActivity
         if (BuildConfig.BUILD_TYPE == "light") {
             ImageView launcherIcon = navDrawer.getHeaderView(0).findViewById(R.id.profileImageView);
             launcherIcon.setImageResource(R.drawable.ic_launcher_openscale_light);
+            navDrawer.getMenu().findItem(R.id.nav_donation).setVisible(false);
         } else if (BuildConfig.BUILD_TYPE == "pro") {
             ImageView launcherIcon = navDrawer.getHeaderView(0).findViewById(R.id.profileImageView);
             launcherIcon.setImageResource(R.drawable.ic_launcher_openscale_pro);
+            navDrawer.getMenu().findItem(R.id.nav_donation).setVisible(false);
         }
 
         if (prefs.getBoolean("firstStart", true)) {
@@ -305,6 +308,10 @@ public class MainActivity extends BaseAppCompatActivity
                 Intent settingsIntent = new Intent(this, SettingsActivity.class);
                 settingsActivityRunning = true;
                 startActivity(settingsIntent);
+                return;
+            case R.id.nav_donation:
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=H5KSTQA6TKTE4&source=url")));
+                drawerLayout.closeDrawers();
                 return;
             case R.id.nav_help:
                 startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/oliexdev/openScale/wiki")));
