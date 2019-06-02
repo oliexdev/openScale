@@ -60,7 +60,7 @@ public class BluetoothInlife extends BluetoothCommunication {
             data[i++] = parameter;
         }
         data[data.length - 2] = xorChecksum(data, 1, data.length - 3);
-        writeBytes(WEIGHT_CMD_CHARACTERISTIC, data);
+        writeBytes(WEIGHT_SERVICE, WEIGHT_CMD_CHARACTERISTIC, data);
     }
 
     public BluetoothInlife(Context context) {
@@ -76,7 +76,7 @@ public class BluetoothInlife extends BluetoothCommunication {
     protected boolean onNextStep(int stepNr) {
         switch (stepNr) {
             case 0:
-                setNotificationOn(WEIGHT_MEASUREMENT_CHARACTERISTIC);
+                setNotificationOn(WEIGHT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC);
                 break;
             case 1:
                 ScaleUser scaleUser = OpenScale.getInstance().getSelectedScaleUser();

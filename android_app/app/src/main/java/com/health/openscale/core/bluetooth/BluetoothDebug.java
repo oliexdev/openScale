@@ -21,15 +21,14 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.content.Context;
 
-import com.polidea.rxandroidble2.RxBleDeviceServices;
+import com.welie.blessed.BluetoothPeripheral;
 
 import java.util.HashMap;
 
 import timber.log.Timber;
 
 public class BluetoothDebug extends BluetoothCommunication {
-    private HashMap<Integer, String> propertyString;
-    private RxBleDeviceServices rxBleDeviceServices;
+    HashMap<Integer, String> propertyString;
 
     BluetoothDebug(Context context) {
         super(context);
@@ -53,7 +52,7 @@ public class BluetoothDebug extends BluetoothCommunication {
     private boolean isBlacklisted(BluetoothGattService service, BluetoothGattCharacteristic characteristic) {
         // Reading this triggers a pairing request on Beurer BF710
         if (service.getUuid().equals(BluetoothGattUuid.fromShortCode(0xffe0))
-            && characteristic.getUuid().equals(BluetoothGattUuid.fromShortCode(0xffe5))) {
+                && characteristic.getUuid().equals(BluetoothGattUuid.fromShortCode(0xffe5))) {
             return true;
         }
 
@@ -137,10 +136,19 @@ public class BluetoothDebug extends BluetoothCommunication {
     private int readServiceCharacteristics(BluetoothGattService service, int offset) {
         for (BluetoothGattCharacteristic characteristic : service.getCharacteristics()) {
             if ((characteristic.getProperties() & BluetoothGattCharacteristic.PROPERTY_READ) != 0
-                && !isBlacklisted(service, characteristic)) {
+                    && !isBlacklisted(service, characteristic)) {
 
                 if (offset == 0) {
-                    readBytes(characteristic.getUuid());
+                    readBytes(service.getUuid(), characteristic.getUuid());
+                    return -1;
+                }
+
+                offset -= 1;
+            }
+
+            for (BluetoothGattDescriptor descriptor : characteristic.getDescriptors()) {
+                if (offset == 0) {
+                    readBytes(service.getUuid(), characteristic.getUuid());
                     return -1;
                 }
 
@@ -159,39 +167,25 @@ public class BluetoothDebug extends BluetoothCommunication {
     }
 
     @Override
-    public void onBluetoothDiscovery(RxBleDeviceServices rxBleDeviceServices) {
-        this.rxBleDeviceServices = rxBleDeviceServices;
-        resumeMachineState();
-    }
+    protected void onBluetoothDiscovery(BluetoothPeripheral peripheral) {
+        int offset = 0;
 
-    @Override
-    protected boolean onNextStep(int stepNr) {
-        switch (stepNr)
-        {
-            case 0:
-                discoverBluetoothServices();
-                stopMachineState();
-                break;
-            case 1:
-                int offset = stepNr;
-
-                for (BluetoothGattService service : rxBleDeviceServices.getBluetoothGattServices()) {
-                    offset = readServiceCharacteristics(service, offset);
-                }
-
-                for (BluetoothGattService service : rxBleDeviceServices.getBluetoothGattServices()) {
-                    logService(service, false);
-                }
-
-                setBluetoothStatus(BT_STATUS.CONNECTION_LOST);
-                break;
-            case 2:
-                disconnect();
-                break;
-            default:
-                return false;
+        for (BluetoothGattService service : peripheral.getServices()) {
+            offset = readServiceCharacteristics(service, offset);
         }
 
-        return true;
+        for (BluetoothGattService service : peripheral.getServices()) {
+            logService(service, false);
+        }
+
+        setBluetoothStatus(BT_STATUS.CONNECTION_LOST);
+        disconnect();
     }
+
+
+    @Override
+    protected boolean onNextStep(int stateNr) {
+        return false;
+    }
+
 }

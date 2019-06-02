@@ -17,39 +17,29 @@
 package com.health.openscale.core.bluetooth;
 
 import android.Manifest;
+import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.le.ScanResult;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.os.Handler;
-
-import com.health.openscale.core.OpenScale;
-import com.health.openscale.core.datatypes.ScaleMeasurement;
-import com.jakewharton.rx.ReplayingShare;
-import com.polidea.rxandroidble2.RxBleClient;
-import com.polidea.rxandroidble2.RxBleConnection;
-import com.polidea.rxandroidble2.RxBleDevice;
-import com.polidea.rxandroidble2.RxBleDeviceServices;
-import com.polidea.rxandroidble2.exceptions.BleException;
-import com.polidea.rxandroidble2.scan.ScanSettings;
-
-import java.io.IOException;
-import java.net.SocketException;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
+import android.os.Looper;
 
 import androidx.core.content.ContextCompat;
-import io.reactivex.Observable;
-import io.reactivex.Single;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.exceptions.UndeliverableException;
-import io.reactivex.plugins.RxJavaPlugins;
-import io.reactivex.schedulers.Schedulers;
-import io.reactivex.subjects.PublishSubject;
+
+import com.health.openscale.core.datatypes.ScaleMeasurement;
+import com.welie.blessed.BluetoothCentral;
+import com.welie.blessed.BluetoothCentralCallback;
+import com.welie.blessed.BluetoothPeripheral;
+import com.welie.blessed.BluetoothPeripheralCallback;
+
+import java.util.UUID;
+
 import timber.log.Timber;
 
+import static android.bluetooth.BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT;
 import static android.content.Context.LOCATION_SERVICE;
+import static com.welie.blessed.BluetoothPeripheral.GATT_SUCCESS;
 
 public abstract class BluetoothCommunication {
     public enum BT_STATUS {
@@ -69,55 +59,19 @@ public abstract class BluetoothCommunication {
 
     protected Context context;
 
-    private final int BT_RETRY_TIMES_ON_ERROR = 3;
-    private final int BT_DELAY_MS = 10;
-
-    private RxBleClient bleClient;
-    private RxBleDevice bleDevice;
-    private Observable<RxBleConnection> connectionObservable;
-    private final CompositeDisposable compositeDisposable = new CompositeDisposable();
-    private Disposable scanSubscription;
-    private PublishSubject<Boolean> disconnectTriggerSubject = PublishSubject.create();
-
     private Handler callbackBtHandler;
     private Handler disconnectHandler;
+
+    private BluetoothCentral central;
+    private BluetoothPeripheral btPeripheral;
 
     public BluetoothCommunication(Context context)
     {
         this.context = context;
-        this.bleClient = OpenScale.getInstance().getBleClient();
-        this.scanSubscription = null;
         this.disconnectHandler = new Handler();
         this.stepNr = 0;
         this.stopped = false;
-
-        RxJavaPlugins.setErrorHandler(e -> {
-            if (e instanceof UndeliverableException && e.getCause() instanceof BleException) {
-                return; // ignore BleExceptions as they were surely delivered at least once
-            }
-            if (e instanceof UndeliverableException) {
-                onError(e);
-            }
-            if ((e instanceof IOException) || (e instanceof SocketException)) {
-                // fine, irrelevant network problem or API that throws on cancellation
-                return;
-            }
-            if (e instanceof InterruptedException) {
-                // fine, some blocking code was interrupted by a dispose call
-                return;
-            }
-            if ((e instanceof NullPointerException) || (e instanceof IllegalArgumentException)) {
-                // that's likely a bug in the application
-                onError(e);
-                return;
-            }
-            if (e instanceof IllegalStateException) {
-                // that's a bug in RxJava or in a custom operator
-                onError(e);
-                return;
-            }
-            onError(e);
-        });
+        this.central = new BluetoothCentral(context, bluetoothCentralCallback, new Handler(Looper.getMainLooper()));
     }
 
     /**
@@ -192,14 +146,6 @@ public abstract class BluetoothCommunication {
     abstract protected boolean onNextStep(int stepNr);
 
     /**
-     * Method is triggered if a Bluetooth data is read from a device.
-     *
-     * @param characteristic
-     * @param value
-     */
-    protected void onBluetoothRead(UUID characteristic, byte[] value) {}
-
-    /**
      * Method is triggered if a Bluetooth data from a device is notified or indicated.
      *
      * @param characteristic
@@ -210,9 +156,9 @@ public abstract class BluetoothCommunication {
     /**
      * Method is triggered if a Bluetooth services from a device is discovered.
      *
-     * @param rxBleDeviceServices
+     * @param peripheral
      */
-    protected void onBluetoothDiscovery(RxBleDeviceServices rxBleDeviceServices) { }
+    protected void onBluetoothDiscovery(BluetoothPeripheral peripheral) { }
 
     protected synchronized void stopMachineState() {
         Timber.d("Stop machine state");
@@ -235,26 +181,9 @@ public abstract class BluetoothCommunication {
      *  @param characteristic the Bluetooth UUID characteristic
      * @param bytes the bytes that should be write
      */
-    protected Observable<byte[]> writeBytes(UUID characteristic, byte[] bytes) {
+    protected void writeBytes(UUID service, UUID characteristic, byte[] bytes) {
         Timber.d("Invoke write bytes [" + byteInHex(bytes) + "] on " + BluetoothGattUuid.prettyPrint(characteristic));
-        Observable<byte[]> observable = connectionObservable
-                .flatMapSingle(rxBleConnection -> rxBleConnection.writeCharacteristic(characteristic, bytes))
-                .subscribeOn(Schedulers.trampoline())
-                .observeOn(AndroidSchedulers.mainThread())
-                .delay(BT_DELAY_MS, TimeUnit.MILLISECONDS)
-                .retry(BT_RETRY_TIMES_ON_ERROR);
-
-        compositeDisposable.add(observable.subscribe(
-                        value -> {
-                            Timber.d("Write characteristic %s: %s",
-                                    BluetoothGattUuid.prettyPrint(characteristic),
-                                    byteInHex(value));
-                        },
-                        throwable -> onError(throwable)
-                )
-        );
-
-        return observable;
+        btPeripheral.writeCharacteristic(btPeripheral.getCharacteristic(service, characteristic), bytes, WRITE_TYPE_DEFAULT);
     }
 
     /**
@@ -263,26 +192,10 @@ public abstract class BluetoothCommunication {
      * @note onBluetoothRead() will be triggered if read command was successful. nextMachineStep() needs to manually called!
      *@param characteristic the Bluetooth UUID characteristic
      */
-    protected Single<byte[]> readBytes(UUID characteristic) {
+    void readBytes(UUID service, UUID characteristic) {
         Timber.d("Invoke read bytes on " + BluetoothGattUuid.prettyPrint(characteristic));
-        Single<byte[]> observable = connectionObservable
-                .firstOrError()
-                .flatMap(rxBleConnection -> rxBleConnection.readCharacteristic(characteristic))
-                .subscribeOn(Schedulers.trampoline())
-                .observeOn(AndroidSchedulers.mainThread())
-                .delay(BT_DELAY_MS, TimeUnit.MILLISECONDS)
-                .retry(BT_RETRY_TIMES_ON_ERROR);
 
-        compositeDisposable.add(observable
-                .subscribe(bytes -> {
-                            Timber.d("Read characteristic %s", BluetoothGattUuid.prettyPrint(characteristic));
-                            onBluetoothRead(characteristic, bytes);
-                        },
-                        throwable -> onError(throwable)
-                )
-        );
-
-        return observable;
+        btPeripheral.readCharacteristic(btPeripheral.getCharacteristic(service, characteristic));
     }
 
     /**
@@ -290,33 +203,13 @@ public abstract class BluetoothCommunication {
      *
      * @param characteristic the Bluetooth UUID characteristic
      */
-    protected Observable<byte[]> setIndicationOn(UUID characteristic) {
+    protected void setIndicationOn(UUID service, UUID characteristic) {
         Timber.d("Invoke set indication on " + BluetoothGattUuid.prettyPrint(characteristic));
-        Observable<byte[]> observable = connectionObservable
-                .flatMap(rxBleConnection -> rxBleConnection.setupIndication(characteristic))
-                .doOnNext(notificationObservable -> {
-                            Timber.d("Successful set indication on for %s", BluetoothGattUuid.prettyPrint(characteristic));
-                        }
-                )
-                .flatMap(indicationObservable -> indicationObservable)
-                .subscribeOn(Schedulers.trampoline())
-                .observeOn(AndroidSchedulers.mainThread())
-                .delay(BT_DELAY_MS, TimeUnit.MILLISECONDS)
-                .retry(BT_RETRY_TIMES_ON_ERROR);
-
-        compositeDisposable.add(observable.subscribe(
-                bytes -> {
-                    Timber.d("onCharacteristicChanged %s: %s",
-                            BluetoothGattUuid.prettyPrint(characteristic),
-                            byteInHex(bytes));
-                    onBluetoothNotify(characteristic, bytes);
-                    resetDisconnectTimer();
-                },
-                throwable -> onError(throwable)
-            )
-        );
-
-        return observable;
+        if(btPeripheral.getService(service) != null) {
+            stopMachineState();
+            BluetoothGattCharacteristic currentTimeCharacteristic = btPeripheral.getCharacteristic(service, characteristic);
+            btPeripheral.setNotify(currentTimeCharacteristic, true);
+        }
     }
 
     /**
@@ -324,56 +217,13 @@ public abstract class BluetoothCommunication {
      *
      * @param characteristic the Bluetooth UUID characteristic
      */
-    protected Observable<byte[]> setNotificationOn(UUID characteristic) {
+    protected void setNotificationOn(UUID service, UUID characteristic) {
         Timber.d("Invoke set notification on " + BluetoothGattUuid.prettyPrint(characteristic));
-        stopped = true;
-        Observable<byte[]> observable = connectionObservable
-                .flatMap(rxBleConnection -> rxBleConnection.setupNotification(characteristic))
-                .doOnNext(notificationObservable -> {
-                            Timber.d("Successful set notification on for %s", BluetoothGattUuid.prettyPrint(characteristic));
-                            stopped = false;
-                            nextMachineStep();
-                        }
-                )
-                .flatMap(notificationObservable -> notificationObservable)
-                .subscribeOn(Schedulers.trampoline())
-                .observeOn(AndroidSchedulers.mainThread())
-                .delay(BT_DELAY_MS, TimeUnit.MILLISECONDS)
-                .retry(BT_RETRY_TIMES_ON_ERROR);
-
-        compositeDisposable.add(observable.subscribe(
-                bytes -> {
-                    Timber.d("onCharacteristicChanged %s: %s",
-                            BluetoothGattUuid.prettyPrint(characteristic),
-                            byteInHex(bytes));
-                    onBluetoothNotify(characteristic, bytes);
-                    resetDisconnectTimer();
-                },
-                throwable -> onError(throwable)
-        ));
-
-        return observable;
-    }
-
-    protected Observable<RxBleDeviceServices> discoverBluetoothServices() {
-        Timber.d("Invoke discover Bluetooth services");
-        final Observable<RxBleDeviceServices> observable = connectionObservable
-                .flatMapSingle(RxBleConnection::discoverServices)
-                .subscribeOn(Schedulers.trampoline())
-                .observeOn(AndroidSchedulers.mainThread())
-                .delay(BT_DELAY_MS, TimeUnit.MILLISECONDS)
-                .retry(BT_RETRY_TIMES_ON_ERROR);
-
-        compositeDisposable.add(observable.subscribe(
-                deviceServices -> {
-                    Timber.d("Successful Bluetooth services discovered");
-                    onBluetoothDiscovery(deviceServices);
-                },
-                throwable -> onError(throwable)
-            )
-        );
-
-        return observable;
+        if(btPeripheral.getService(service) != null) {
+            stopMachineState();
+            BluetoothGattCharacteristic currentTimeCharacteristic = btPeripheral.getCharacteristic(service, characteristic);
+            btPeripheral.setNotify(currentTimeCharacteristic, true);
+        }
     }
 
     /**
@@ -382,13 +232,12 @@ public abstract class BluetoothCommunication {
     public void disconnect() {
         Timber.d("Bluetooth disconnect");
         setBluetoothStatus(BT_STATUS.CONNECTION_DISCONNECT);
-        if (scanSubscription != null) {
-            scanSubscription.dispose();
+        central.stopScan();
+        if (btPeripheral != null) {
+            central.cancelConnection(btPeripheral);
         }
         callbackBtHandler = null;
         disconnectHandler.removeCallbacksAndMessages(null);
-        disconnectTriggerSubject.onNext(true);
-        compositeDisposable.clear();
     }
 
     /**
@@ -452,6 +301,74 @@ public abstract class BluetoothCommunication {
         return (value & (1 << bit)) != 0;
     }
 
+    private final BluetoothPeripheralCallback peripheralCallback = new BluetoothPeripheralCallback() {
+        @Override
+        public void onServicesDiscovered(BluetoothPeripheral peripheral) {
+            Timber.d("Successful Bluetooth services discovered");
+            onBluetoothDiscovery(peripheral);
+        }
+
+        @Override
+        public void onNotificationStateUpdate(BluetoothPeripheral peripheral, BluetoothGattCharacteristic characteristic, int status) {
+            if( status == GATT_SUCCESS) {
+                if(peripheral.isNotifying(characteristic)) {
+                    Timber.d(String.format("SUCCESS: Notify set for %s", characteristic.getUuid()));
+                    resumeMachineState();
+                }
+            } else {
+                Timber.e(String.format("ERROR: Changing notification state failed for %s", characteristic.getUuid()));
+            }
+        }
+
+        @Override
+        public void onCharacteristicWrite(BluetoothPeripheral peripheral, byte[] value, BluetoothGattCharacteristic characteristic, int status) {
+            if( status == GATT_SUCCESS) {
+                Timber.d(String.format("SUCCESS: Writing <%s> to <%s>", byteInHex(value), characteristic.getUuid().toString()));
+                nextMachineStep();
+
+            } else {
+                Timber.e(String.format("ERROR: Failed writing <%s> to <%s>", byteInHex(value), characteristic.getUuid().toString()));
+            }
+        }
+
+        @Override
+        public void onCharacteristicUpdate(BluetoothPeripheral peripheral, byte[] value, BluetoothGattCharacteristic characteristic) {
+            resetDisconnectTimer();
+            onBluetoothNotify(characteristic.getUuid(), value);
+        }
+    };
+
+    // Callback for central
+    private final BluetoothCentralCallback bluetoothCentralCallback = new BluetoothCentralCallback() {
+
+        @Override
+        public void onConnectedPeripheral(BluetoothPeripheral peripheral) {
+            Timber.d(String.format("connected to '%s'", peripheral.getName()));
+            setBluetoothStatus(BT_STATUS.CONNECTION_ESTABLISHED);
+            btPeripheral = peripheral;
+            nextMachineStep();
+            resetDisconnectTimer();
+        }
+
+        @Override
+        public void onConnectionFailed(BluetoothPeripheral peripheral, final int status) {
+            Timber.e(String.format("connection '%s' failed with status %d", peripheral.getName(), status ));
+            setBluetoothStatus(BT_STATUS.CONNECTION_LOST);
+        }
+
+        @Override
+        public void onDisconnectedPeripheral(final BluetoothPeripheral peripheral, final int status) {
+            Timber.d(String.format("disconnected '%s' with status %d", peripheral.getName(), status));
+        }
+
+        @Override
+        public void onDiscoveredPeripheral(BluetoothPeripheral peripheral, ScanResult scanResult) {
+            Timber.d(String.format("Found peripheral '%s'", peripheral.getName()));
+            central.stopScan();
+            connectToDevice(peripheral);
+        }
+    };
+
     /**
      * Connect to a Bluetooth device.
      *
@@ -461,8 +378,6 @@ public abstract class BluetoothCommunication {
      * @param macAddress the Bluetooth address to connect to
      */
     public void connect(String macAddress) {
-        bleDevice = bleClient.getBleDevice(macAddress);
-
         // Running an LE scan during connect improves connectivity on some phones
         // (e.g. Sony Xperia Z5 compact, Android 7.1.1). For some scales (e.g. Medisana BS444)
         // it seems to be a requirement that the scale is discovered before connecting to it.
@@ -474,93 +389,28 @@ public abstract class BluetoothCommunication {
                 || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
         ) {
             Timber.d("Do LE scan before connecting to device");
-            disconnectWithDelay();
-            scanSubscription = bleClient.scanBleDevices(
-                    new ScanSettings.Builder()
-                            .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
-                            //.setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES)
-                            .build()
-            )
-                    .subscribeOn(Schedulers.trampoline())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(bleScanResult -> {
-                        if (bleScanResult.getBleDevice().getMacAddress().equals(macAddress)) {
-                            connectToDevice(macAddress);
-                    }}, throwable -> setBluetoothStatus(BT_STATUS.NO_DEVICE_FOUND));
+            central.scanForPeripheralsWithAddresses(new String[]{macAddress});
         }
         else {
             Timber.d("No location permission, connecting without LE scan");
-            connectToDevice(macAddress);
+            BluetoothPeripheral peripheral = central.getPeripheral(macAddress);
+            connectToDevice(peripheral);
         }
     }
 
-    private void connectToDevice(String macAddress) {
-
-        // stop LE scan before connecting to device
-        if (scanSubscription != null) {
-            Timber.d("Stop Le san");
-            scanSubscription.dispose();
-            scanSubscription = null;
-        }
+    private void connectToDevice(BluetoothPeripheral peripheral) {
 
         Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                Timber.d("Try to connect to BLE device " + macAddress);
+                Timber.d("Try to connect to BLE device " + peripheral.getAddress());
 
-                connectionObservable = bleDevice
-                        .establishConnection(false)
-                        .takeUntil(disconnectTriggerSubject)
-                        .doOnError(throwable -> setBluetoothStatus(BT_STATUS.CONNECTION_RETRYING))
-                        .subscribeOn(Schedulers.trampoline())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .compose(ReplayingShare.instance());
+                stepNr = 0;
 
-                if (isConnected()) {
-                    disconnect();
-                } else {
-                    stepNr = 0;
-
-                    setBtMonitoringOn();
-                    nextMachineStep();
-                    resetDisconnectTimer();
-                }
+                central.connectPeripheral(peripheral, peripheralCallback);
             }
         }, 1000);
-    }
-
-    private void setBtMonitoringOn() {
-        final Disposable disposableConnectionState = bleDevice.observeConnectionStateChanges()
-                .subscribe(
-                        connectionState -> {
-                            switch (connectionState) {
-                                case CONNECTED:
-                                    setBluetoothStatus(BT_STATUS.CONNECTION_ESTABLISHED);
-                                    break;
-                                case CONNECTING:
-                                    // empty
-                                    break;
-                                case DISCONNECTING:
-                                    // empty
-                                    break;
-                                case DISCONNECTED:
-                                    // setBluetoothStatus(BT_STATUS.CONNECTION_LOST);
-                                    break;
-                            }
-                        },
-                        throwable -> onError(throwable)
-                );
-
-        compositeDisposable.add(disposableConnectionState);
-    }
-
-    protected void onError(Throwable throwable) {
-        setBluetoothStatus(BT_STATUS.UNEXPECTED_ERROR, throwable.getMessage());
-    }
-
-    private boolean isConnected() {
-        return bleDevice.getConnectionState() == RxBleConnection.RxBleConnectionState.CONNECTED;
     }
 
     private void resetDisconnectTimer() {

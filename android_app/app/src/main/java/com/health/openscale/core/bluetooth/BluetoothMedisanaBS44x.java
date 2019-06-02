@@ -55,15 +55,15 @@ public class BluetoothMedisanaBS44x extends BluetoothCommunication {
         switch (stepNr) {
             case 0:
                 // set indication on for feature characteristic
-                setIndicationOn(FEATURE_MEASUREMENT_CHARACTERISTIC);
+                setIndicationOn(WEIGHT_MEASUREMENT_SERVICE, FEATURE_MEASUREMENT_CHARACTERISTIC);
                 break;
             case 1:
                 // set indication on for weight measurement
-                setIndicationOn(WEIGHT_MEASUREMENT_CHARACTERISTIC);
+                setIndicationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC);
                 break;
             case 2:
                 // set indication on for custom5 measurement
-                setIndicationOn(CUSTOM5_MEASUREMENT_CHARACTERISTIC);
+                setIndicationOn(WEIGHT_MEASUREMENT_SERVICE, CUSTOM5_MEASUREMENT_CHARACTERISTIC);
                 break;
             case 3:
                 // send magic number to receive weight data
@@ -75,7 +75,7 @@ public class BluetoothMedisanaBS44x extends BluetoothCommunication {
 
                 byte[] magicBytes = new byte[] {(byte)0x02, date[0], date[1], date[2], date[3]};
 
-                writeBytes(CMD_MEASUREMENT_CHARACTERISTIC, magicBytes);
+                writeBytes(WEIGHT_MEASUREMENT_SERVICE, CMD_MEASUREMENT_CHARACTERISTIC, magicBytes);
                 break;
             case 4:
                 sendMessage(R.string.info_step_on_scale, 0);

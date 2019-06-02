@@ -86,10 +86,10 @@ public class BluetoothExcelvanCF36xBLE extends BluetoothCommunication {
                 configBytes[configBytes.length - 1] =
                         xorChecksum(configBytes, 1, configBytes.length - 2);
 
-                writeBytes(WEIGHT_MEASUREMENT_CHARACTERISTIC, configBytes);
+                writeBytes(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC, configBytes);
                 break;
             case 1:
-                setNotificationOn(WEIGHT_CUSTOM0_CHARACTERISTIC);
+                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_CUSTOM0_CHARACTERISTIC);
                 break;
             case 2:
                 sendMessage(R.string.info_step_on_scale, 0);

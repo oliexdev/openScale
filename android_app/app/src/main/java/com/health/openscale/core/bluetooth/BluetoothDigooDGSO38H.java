@@ -60,7 +60,7 @@ public class BluetoothDigooDGSO38H extends BluetoothCommunication {
         switch (stepNr) {
             case 0:
                 //Tell device to send us weight measurements
-                setNotificationOn(WEIGHT_MEASUREMENT_CHARACTERISTIC);
+                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC);
                 break;
             case 1:
                 sendMessage(R.string.info_step_on_scale, 0);
@@ -102,7 +102,7 @@ public class BluetoothDigooDGSO38H extends BluetoothCommunication {
                     checksum += configBytes[i];
                 }
                 configBytes[15] = (byte)(checksum & 0xFF);
-                writeBytes(EXTRA_MEASUREMENT_CHARACTERISTIC, configBytes);
+                writeBytes(WEIGHT_MEASUREMENT_SERVICE, EXTRA_MEASUREMENT_CHARACTERISTIC, configBytes);
             } else if (allValues) {
                 ScaleMeasurement scaleBtData = new ScaleMeasurement();
                 weight = (float) (((weightBytes[3] & 0xFF) << 8) | (weightBytes[4] & 0xFF)) / 100.0f;

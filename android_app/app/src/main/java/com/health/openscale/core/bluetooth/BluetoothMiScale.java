@@ -38,6 +38,7 @@ import timber.log.Timber;
 import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_STATUS.UNEXPECTED_ERROR;
 
 public class BluetoothMiScale extends BluetoothCommunication {
+    private final UUID WEIGHT_MEASUREMENT_SERVICE = UUID.fromString("0000181d-0000-1000-8000-00805f9b34fb");
     private final UUID WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC = UUID.fromString("00002a2f-0000-3512-2118-0009af100700");
 
     public BluetoothMiScale(Context context) {
@@ -49,65 +50,66 @@ public class BluetoothMiScale extends BluetoothCommunication {
         return "Xiaomi Mi Scale v1";
     }
 
-    @Override
-    public void onBluetoothRead(UUID characteristic, byte[] value) {
-        byte[] data = value;
-
-        int currentYear = Calendar.getInstance().get(Calendar.YEAR);
-        int currentMonth = Calendar.getInstance().get(Calendar.MONTH)+1;
-        int currentDay = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
-        int scaleYear = ((data[1] & 0xFF) << 8) | (data[0] & 0xFF);
-        int scaleMonth = (int) data[2];
-        int scaleDay = (int) data[3];
-
-        if (!(currentYear == scaleYear && currentMonth == scaleMonth && currentDay == scaleDay)) {
-            Timber.d("Current year and scale year is different");
-
-            // set current time
-            Calendar currentDateTime = Calendar.getInstance();
-            int year = currentDateTime.get(Calendar.YEAR);
-            byte month = (byte)(currentDateTime.get(Calendar.MONTH)+1);
-            byte day = (byte)currentDateTime.get(Calendar.DAY_OF_MONTH);
-            byte hour = (byte)currentDateTime.get(Calendar.HOUR_OF_DAY);
-            byte min = (byte)currentDateTime.get(Calendar.MINUTE);
-            byte sec = (byte)currentDateTime.get(Calendar.SECOND);
-
-            byte[] dateTimeByte = {(byte)(year), (byte)(year >> 8), month, day, hour, min, sec, 0x03, 0x00, 0x00};
-
-            writeBytes(BluetoothGattUuid.CHARACTERISTIC_CURRENT_TIME, dateTimeByte);
-        }
-    }
 
     @Override
     public void onBluetoothNotify(UUID characteristic, byte[] value) {
-        final byte[] data = value;
 
-        if (data != null && data.length > 0) {
+        if (characteristic.equals(BluetoothGattUuid.CHARACTERISTIC_CURRENT_TIME)) {
+            byte[] data = value;
 
-            // Stop command from mi scale received
-            if (data[0] == 0x03) {
-                // send stop command to mi scale
-                writeBytes(WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, new byte[]{0x03});
-                // acknowledge that you received the last history data
-                int uniqueNumber = getUniqueNumber();
+            int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+            int currentMonth = Calendar.getInstance().get(Calendar.MONTH) + 1;
+            int currentDay = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
+            int scaleYear = ((data[1] & 0xFF) << 8) | (data[0] & 0xFF);
+            int scaleMonth = (int) data[2];
+            int scaleDay = (int) data[3];
 
-                byte[] userIdentifier = new byte[]{(byte)0x04, (byte)0xFF, (byte)0xFF, (byte) ((uniqueNumber & 0xFF00) >> 8), (byte) ((uniqueNumber & 0xFF) >> 0)};
-                writeBytes(WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, userIdentifier);
+            if (!(currentYear == scaleYear && currentMonth == scaleMonth && currentDay == scaleDay)) {
+                Timber.d("Current year and scale year is different");
 
-                resumeMachineState();
+                // set current time
+                Calendar currentDateTime = Calendar.getInstance();
+                int year = currentDateTime.get(Calendar.YEAR);
+                byte month = (byte) (currentDateTime.get(Calendar.MONTH) + 1);
+                byte day = (byte) currentDateTime.get(Calendar.DAY_OF_MONTH);
+                byte hour = (byte) currentDateTime.get(Calendar.HOUR_OF_DAY);
+                byte min = (byte) currentDateTime.get(Calendar.MINUTE);
+                byte sec = (byte) currentDateTime.get(Calendar.SECOND);
+
+                byte[] dateTimeByte = {(byte) (year), (byte) (year >> 8), month, day, hour, min, sec, 0x03, 0x00, 0x00};
+
+                writeBytes(WEIGHT_MEASUREMENT_SERVICE, BluetoothGattUuid.CHARACTERISTIC_CURRENT_TIME, dateTimeByte);
             }
+        } else {
+            final byte[] data = value;
 
-            if (data.length == 20) {
-                final byte[] firstWeight = Arrays.copyOfRange(data, 0, 10);
-                final byte[] secondWeight = Arrays.copyOfRange(data, 10, 20);
-                parseBytes(firstWeight);
-                parseBytes(secondWeight);
+            if (data != null && data.length > 0) {
+
+                // Stop command from mi scale received
+                if (data[0] == 0x03) {
+                    // send stop command to mi scale
+                    writeBytes(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, new byte[]{0x03});
+                    // acknowledge that you received the last history data
+                    int uniqueNumber = getUniqueNumber();
+
+                    byte[] userIdentifier = new byte[]{(byte) 0x04, (byte) 0xFF, (byte) 0xFF, (byte) ((uniqueNumber & 0xFF00) >> 8), (byte) ((uniqueNumber & 0xFF) >> 0)};
+                    writeBytes(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, userIdentifier);
+
+                    resumeMachineState();
+                }
+
+                if (data.length == 20) {
+                    final byte[] firstWeight = Arrays.copyOfRange(data, 0, 10);
+                    final byte[] secondWeight = Arrays.copyOfRange(data, 10, 20);
+                    parseBytes(firstWeight);
+                    parseBytes(secondWeight);
+                }
+
+                if (data.length == 10) {
+                    parseBytes(data);
+                }
+
             }
-
-            if (data.length == 10) {
-                parseBytes(data);
-            }
-
         }
     }
 
@@ -117,32 +119,32 @@ public class BluetoothMiScale extends BluetoothCommunication {
         switch (stepNr) {
             case 0:
                 // read device time
-                readBytes(BluetoothGattUuid.CHARACTERISTIC_CURRENT_TIME);
+                readBytes(WEIGHT_MEASUREMENT_SERVICE, BluetoothGattUuid.CHARACTERISTIC_CURRENT_TIME);
                 break;
             case 1:
                 // Set on history weight measurement
                 byte[] magicBytes = new byte[]{(byte)0x01, (byte)0x96, (byte)0x8a, (byte)0xbd, (byte)0x62};
 
-                writeBytes(WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, magicBytes);
+                writeBytes(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, magicBytes);
                 break;
             case 2:
                 // set notification on for weight measurement history
-                setNotificationOn(WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC);
+                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC);
                 break;
             case 3:
                 // set notification on for weight measurement
-                setNotificationOn(BluetoothGattUuid.CHARACTERISTIC_WEIGHT_MEASUREMENT);
+                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, BluetoothGattUuid.CHARACTERISTIC_WEIGHT_MEASUREMENT);
                 break;
             case 4:
                 // configure scale to get only last measurements
                 int uniqueNumber = getUniqueNumber();
 
                 byte[] userIdentifier = new byte[]{(byte)0x01, (byte)0xFF, (byte)0xFF, (byte) ((uniqueNumber & 0xFF00) >> 8), (byte) ((uniqueNumber & 0xFF) >> 0)};
-                writeBytes(WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, userIdentifier);
+                writeBytes(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, userIdentifier);
                 break;
             case 5:
                 // invoke receiving history data
-                writeBytes(WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, new byte[]{0x02});
+                writeBytes(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, new byte[]{0x02});
                 stopMachineState();
                 break;
             default:

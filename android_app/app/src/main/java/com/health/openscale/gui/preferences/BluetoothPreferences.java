@@ -1,23 +1,25 @@
 /* Copyright (C) 2014  olie.xdev <olie.xdev@googlemail.com>
-*
-*    This program is free software: you can redistribute it and/or modify
-*    it under the terms of the GNU General Public License as published by
-*    the Free Software Foundation, either version 3 of the License, or
-*    (at your option) any later version.
-*
-*    This program is distributed in the hope that it will be useful,
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*    GNU General Public License for more details.
-*
-*    You should have received a copy of the GNU General Public License
-*    along with this program.  If not, see <http://www.gnu.org/licenses/>
-*/
+ *
+ *    This program is free software: you can redistribute it and/or modify
+ *    it under the terms of the GNU General Public License as published by
+ *    the Free Software Foundation, either version 3 of the License, or
+ *    (at your option) any later version.
+ *
+ *    This program is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU General Public License for more details.
+ *
+ *    You should have received a copy of the GNU General Public License
+ *    along with this program.  If not, see <http://www.gnu.org/licenses/>
+ */
 package com.health.openscale.gui.preferences;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.le.ScanResult;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -26,6 +28,7 @@ import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
@@ -39,16 +42,13 @@ import com.health.openscale.core.bluetooth.BluetoothCommunication;
 import com.health.openscale.core.bluetooth.BluetoothFactory;
 import com.health.openscale.gui.utils.ColorUtil;
 import com.health.openscale.gui.utils.PermissionHelper;
-import com.polidea.rxandroidble2.RxBleClient;
-import com.polidea.rxandroidble2.RxBleDevice;
-import com.polidea.rxandroidble2.scan.ScanResult;
-import com.polidea.rxandroidble2.scan.ScanSettings;
+import com.welie.blessed.BluetoothCentral;
+import com.welie.blessed.BluetoothCentralCallback;
+import com.welie.blessed.BluetoothPeripheral;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
 import timber.log.Timber;
 
 
@@ -59,11 +59,10 @@ public class BluetoothPreferences extends PreferenceFragment {
     public static final String PREFERENCE_KEY_BLUETOOTH_HW_ADDRESS = "btHwAddress";
 
     private PreferenceScreen btScanner;
-    private Map<String, RxBleDevice> foundDevices = new HashMap<>();
+    private Map<String, BluetoothDevice> foundDevices = new HashMap<>();
 
     private Handler progressHandler;
-    private RxBleClient bleClient;
-    private Disposable scanSubscription;
+    private BluetoothCentral central;
 
     private static final String formatDeviceName(String name, String address) {
         if (name.isEmpty() || address.isEmpty()) {
@@ -72,8 +71,8 @@ public class BluetoothPreferences extends PreferenceFragment {
         return String.format("%s [%s]", name, address);
     }
 
-    private static final String formatDeviceName(RxBleDevice device) {
-        return formatDeviceName(device.getName(), device.getMacAddress());
+    private static final String formatDeviceName(BluetoothDevice device) {
+        return formatDeviceName(device.getName(), device.getAddress());
     }
 
     private String getCurrentDeviceName() {
@@ -83,19 +82,19 @@ public class BluetoothPreferences extends PreferenceFragment {
                 prefs.getString(PREFERENCE_KEY_BLUETOOTH_HW_ADDRESS, ""));
     }
 
+    private final BluetoothCentralCallback bluetoothCentralCallback = new BluetoothCentralCallback() {
+        @Override
+        public void onDiscoveredPeripheral(BluetoothPeripheral peripheral, ScanResult scanResult) {
+            onDeviceFound(scanResult);
+        }
+    };
+
     private void startBluetoothDiscovery() {
         foundDevices.clear();
         btScanner.removeAll();
 
-        scanSubscription = bleClient.scanBleDevices(
-                new ScanSettings.Builder()
-                        .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
-                        //.setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES)
-                        .build()
-        )
-        .observeOn(AndroidSchedulers.mainThread())
-        .doFinally(this::stopBluetoothDiscovery)
-        .subscribe(this::onDeviceFound, throwable -> Toast.makeText(getActivity(), throwable.getMessage(), Toast.LENGTH_LONG).show());
+        central = new BluetoothCentral(getActivity().getApplicationContext(), bluetoothCentralCallback, new Handler(Looper.getMainLooper()));
+        central.scanForPeripherals();
 
         final Preference scanning = new Preference(getActivity());
         scanning.setEnabled(false);
@@ -161,25 +160,25 @@ public class BluetoothPreferences extends PreferenceFragment {
             progressHandler = null;
         }
 
-        scanSubscription.dispose();
+        central.stopScan();
     }
 
     private void onDeviceFound(final ScanResult bleScanResult) {
-        RxBleDevice device = bleScanResult.getBleDevice();
+        BluetoothDevice device = bleScanResult.getDevice();
 
-        if (device.getName() == null || foundDevices.containsKey(device.getMacAddress())) {
+        if (device.getName() == null || foundDevices.containsKey(device.getAddress())) {
             return;
         }
 
         Preference prefBtDevice = new Preference(getActivity());
-        prefBtDevice.setTitle(formatDeviceName(bleScanResult.getBleDevice()));
+        prefBtDevice.setTitle(formatDeviceName(bleScanResult.getDevice()));
 
         BluetoothCommunication btDevice = BluetoothFactory.createDeviceDriver(getActivity(), device.getName());
         if (btDevice != null) {
             Timber.d("Found supported device %s (driver: %s)",
                     formatDeviceName(device), btDevice.driverName());
             prefBtDevice.setOnPreferenceClickListener(new onClickListenerDeviceSelect());
-            prefBtDevice.setKey(device.getMacAddress());
+            prefBtDevice.setKey(device.getAddress());
             prefBtDevice.setIcon(R.drawable.ic_bluetooth_device_supported);
             prefBtDevice.setSummary(btDevice.driverName());
 
@@ -205,7 +204,7 @@ public class BluetoothPreferences extends PreferenceFragment {
             }
         }
 
-        foundDevices.put(device.getMacAddress(), btDevice != null ? device : null);
+        foundDevices.put(device.getAddress(), btDevice != null ? device : null);
         btScanner.addPreference(prefBtDevice);
     }
 
@@ -218,10 +217,6 @@ public class BluetoothPreferences extends PreferenceFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        OpenScale openScale = OpenScale.getInstance();
-
-        bleClient = openScale.getBleClient();
 
         addPreferencesFromResource(R.xml.bluetooth_preferences);
 
@@ -271,7 +266,7 @@ public class BluetoothPreferences extends PreferenceFragment {
         }
     }
 
-    private void getDebugInfo(final RxBleDevice device) {
+    private void getDebugInfo(final BluetoothDevice device) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle("Fetching info")
                 .setMessage("Please wait while we fetch extended info from your scale...")
@@ -299,7 +294,7 @@ public class BluetoothPreferences extends PreferenceFragment {
 
         dialog.show();
 
-        String macAddress = device.getMacAddress();
+        String macAddress = device.getAddress();
         stopBluetoothDiscovery();
         OpenScale.getInstance().connectToBluetoothDeviceDebugMode(
                 macAddress, btHandler);
@@ -308,10 +303,10 @@ public class BluetoothPreferences extends PreferenceFragment {
     private class onClickListenerDeviceSelect implements Preference.OnPreferenceClickListener {
         @Override
         public boolean onPreferenceClick(final Preference preference) {
-            RxBleDevice device = foundDevices.get(preference.getKey());
+            BluetoothDevice device = foundDevices.get(preference.getKey());
 
             preference.getSharedPreferences().edit()
-                    .putString(PREFERENCE_KEY_BLUETOOTH_HW_ADDRESS, device.getMacAddress())
+                    .putString(PREFERENCE_KEY_BLUETOOTH_HW_ADDRESS, device.getAddress())
                     .putString(PREFERENCE_KEY_BLUETOOTH_DEVICE_NAME, device.getName())
                     .apply();
 

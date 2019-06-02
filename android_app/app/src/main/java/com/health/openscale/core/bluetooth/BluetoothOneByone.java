@@ -50,7 +50,7 @@ public class BluetoothOneByone extends BluetoothCommunication {
     protected boolean onNextStep(int stepNr) {
         switch (stepNr) {
             case 0:
-                setNotificationOn(WEIGHT_MEASUREMENT_CHARACTERISTIC_BODY_COMPOSITION);
+                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC_BODY_COMPOSITION);
                 break;
             case 1:
                 ScaleUser currentUser = OpenScale.getInstance().getSelectedScaleUser();
@@ -69,7 +69,7 @@ public class BluetoothOneByone extends BluetoothCommunication {
                         (byte)0x00, (byte)0x00, (byte)0x00};
                 magicBytes[magicBytes.length - 1] =
                         xorChecksum(magicBytes, 0, magicBytes.length - 1);
-                writeBytes(CMD_MEASUREMENT_CHARACTERISTIC, magicBytes);
+                writeBytes(WEIGHT_MEASUREMENT_SERVICE, CMD_MEASUREMENT_CHARACTERISTIC, magicBytes);
                 break;
             case 2:
                 sendMessage(R.string.info_step_on_scale, 0);

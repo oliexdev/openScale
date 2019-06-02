@@ -18,8 +18,6 @@ package com.health.openscale.core.bluetooth;
 
 import android.content.Context;
 
-import com.polidea.rxandroidble2.RxBleClient;
-
 import java.util.Locale;
 
 public class BluetoothFactory {
@@ -41,6 +39,14 @@ public class BluetoothFactory {
         if (name.startsWith("BEURER BF710".toLowerCase(Locale.US))
                 || name.equals("BF700".toLowerCase(Locale.US))) {
             return new BluetoothBeurerSanitas(context, BluetoothBeurerSanitas.DeviceType.BEURER_BF710);
+        }
+        if (name.startsWith("BEURER BF600".toLowerCase(Locale.US))
+                || name.startsWith("BEURER BF850".toLowerCase(Locale.US))
+                || name.startsWith("BF600".toLowerCase(Locale.US))
+                || name.startsWith("BF850".toLowerCase(Locale.US))
+                || name.startsWith("BF-600".toLowerCase(Locale.US))
+                || name.startsWith("BF-850".toLowerCase(Locale.US))) {
+            return new BluetoothStandardWeightProfile(context);
         }
         if (name.equals("openScale".toLowerCase(Locale.US))) {
             return new BluetoothCustomOpenScale(context);
