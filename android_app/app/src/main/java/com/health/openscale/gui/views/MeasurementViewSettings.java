@@ -66,6 +66,7 @@ public class MeasurementViewSettings {
             case Caliper2MeasurementView.KEY:
             case Caliper3MeasurementView.KEY:
             case CaloriesMeasurementView.KEY:
+            case UserMeasurementView.KEY:
                 defaultValue = false;
                 break;
             default:
