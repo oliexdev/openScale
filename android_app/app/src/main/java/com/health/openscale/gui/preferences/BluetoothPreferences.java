@@ -94,7 +94,7 @@ public class BluetoothPreferences extends PreferenceFragment {
         btScanner.removeAll();
 
         central = new BluetoothCentral(getActivity().getApplicationContext(), bluetoothCentralCallback, new Handler(Looper.getMainLooper()));
-        central.scanForPeripheralsWithServices(null);
+        central.scanForPeripherals();
 
         final Preference scanning = new Preference(getActivity());
         scanning.setEnabled(false);

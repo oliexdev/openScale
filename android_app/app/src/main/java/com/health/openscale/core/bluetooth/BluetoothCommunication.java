@@ -39,7 +39,6 @@ import timber.log.Timber;
 
 import static android.bluetooth.BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT;
 import static android.content.Context.LOCATION_SERVICE;
-import static com.welie.blessed.BluetoothBytesParser.bytes2String;
 import static com.welie.blessed.BluetoothPeripheral.GATT_SUCCESS;
 
 public abstract class BluetoothCommunication {
@@ -207,6 +206,7 @@ public abstract class BluetoothCommunication {
     protected void setIndicationOn(UUID service, UUID characteristic) {
         Timber.d("Invoke set indication on " + BluetoothGattUuid.prettyPrint(characteristic));
         if(btPeripheral.getService(service) != null) {
+            stopMachineState();
             BluetoothGattCharacteristic currentTimeCharacteristic = btPeripheral.getCharacteristic(service, characteristic);
             btPeripheral.setNotify(currentTimeCharacteristic, true);
         }
@@ -220,6 +220,7 @@ public abstract class BluetoothCommunication {
     protected void setNotificationOn(UUID service, UUID characteristic) {
         Timber.d("Invoke set notification on " + BluetoothGattUuid.prettyPrint(characteristic));
         if(btPeripheral.getService(service) != null) {
+            stopMachineState();
             BluetoothGattCharacteristic currentTimeCharacteristic = btPeripheral.getCharacteristic(service, characteristic);
             btPeripheral.setNotify(currentTimeCharacteristic, true);
         }
@@ -312,7 +313,7 @@ public abstract class BluetoothCommunication {
             if( status == GATT_SUCCESS) {
                 if(peripheral.isNotifying(characteristic)) {
                     Timber.d(String.format("SUCCESS: Notify set for %s", characteristic.getUuid()));
-                    nextMachineStep();
+                    resumeMachineState();
                 }
             } else {
                 Timber.e(String.format("ERROR: Changing notification state failed for %s", characteristic.getUuid()));
@@ -322,11 +323,11 @@ public abstract class BluetoothCommunication {
         @Override
         public void onCharacteristicWrite(BluetoothPeripheral peripheral, byte[] value, BluetoothGattCharacteristic characteristic, int status) {
             if( status == GATT_SUCCESS) {
-                Timber.d(String.format("SUCCESS: Writing <%s> to <%s>", bytes2String(value), characteristic.getUuid().toString()));
+                Timber.d(String.format("SUCCESS: Writing <%s> to <%s>", byteInHex(value), characteristic.getUuid().toString()));
                 nextMachineStep();
 
             } else {
-                Timber.e(String.format("ERROR: Failed writing <%s> to <%s>", bytes2String(value), characteristic.getUuid().toString()));
+                Timber.e(String.format("ERROR: Failed writing <%s> to <%s>", byteInHex(value), characteristic.getUuid().toString()));
             }
         }
 
