@@ -111,6 +111,9 @@ public class BluetoothFactory {
         if (deviceName.startsWith("QN-Scale")) {
             return new BluetoothQNScale(context);
         }
+        if (deviceName.equals("9088 WH3R")) {
+            return new BluetoothSalter(context);
+        }
         return null;
     }
 }
