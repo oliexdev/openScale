@@ -119,7 +119,7 @@
     <string name="label_not_found">no s\'ha trobat</string>
     <string name="label_ignoreOutOfRange">Ignora les dades fora del rang</string>
     <string name="label_initial_weight">Pes inicial</string>
-    <string name="label_regression_line">Línia de regressió del pes</string>
+    <string name="label_regression_line">Línia de regressió</string>
     <string name="label_regression_line_degree">Grau del polinomi de regressió</string>
     <string name="label_goal_line">Línia de l\'objectiu</string>
     <string name="error_max_scale_users">S\'ha assolit el nombre màxim d\'usuaris simultanis de la bàscula</string>
