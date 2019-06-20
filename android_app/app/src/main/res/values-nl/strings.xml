@@ -235,5 +235,6 @@
     <string name="label_measurement_bar">Meetlat</string>
     <string name="permission_location_service_info">Verleen locatie toegang in Android instellingen om te zoeken naar Bluetooth apparaten. Eventueel daarna te herroepen.</string>
     <string name="label_is_on_right_axis">Staat op rechter as</string>
-    <string name="label_upgrade_to_openScale_pro">Upgrade naar de pro versie voor ondersteuning van Bluetooth</string>
+    <string name="label_upgrade_to_openScale_pro">Upgrade naar openScale pro voor Bluetooth ondersteuning</string>
+    <string name="action_donation">Donatie</string>
 </resources>
