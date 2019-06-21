@@ -236,4 +236,5 @@
     <string name="label_measurement_bar">Målingsstolpe</string>
     <string name="label_is_on_right_axis">Er på høyre akse</string>
     <string name="label_upgrade_to_openScale_pro">Oppgrader til openScare pro for Blåtannsstøtte</string>
+    <string name="action_donation">Donasjon</string>
 </resources>
