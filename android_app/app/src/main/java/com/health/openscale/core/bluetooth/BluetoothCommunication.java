@@ -306,6 +306,7 @@ public abstract class BluetoothCommunication {
         public void onServicesDiscovered(BluetoothPeripheral peripheral) {
             Timber.d("Successful Bluetooth services discovered");
             onBluetoothDiscovery(peripheral);
+            resumeMachineState();
         }
 
         @Override
@@ -390,6 +391,7 @@ public abstract class BluetoothCommunication {
         ) {
             Timber.d("Do LE scan before connecting to device");
             central.scanForPeripheralsWithAddresses(new String[]{macAddress});
+            stopMachineState();
         }
         else {
             Timber.d("No location permission, connecting without LE scan");
