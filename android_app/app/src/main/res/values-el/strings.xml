@@ -174,7 +174,7 @@
     <string name="theme_light">Φωτεινό</string>
     <string name="theme_dark">Σκοτεινό</string>
     <string name="label_contribute_translation">Συμβάλλετε στη μετάφραση</string>
-    <string name="label_add_or_fix_translation">Πρόσθεσε νέο ή επισκεύασε υπάρχον</string>
+    <string name="label_add_or_fix_translation">Πρόσθεσε νέο ή διόρθωσε υπάρχον</string>
     <string name="label_percent">Ποσοστό</string>
     <string name="label_estimated">Υπολογισμένο</string>
     <string name="label_estimate_measurement_summary">Με βάση το βάρος, ύψος, ηλικία, φύλο, κλπ.</string>
@@ -185,7 +185,7 @@
     <string name="label_weekly">εβδομαδιαίως</string>
     <string name="label_monthly">μηνιαίως</string>
     <string name="label_scale_not_supported">Δεν υποστηρίζεται η ζυγαριά σας;</string>
-    <string name="label_click_to_help_add_support">Πατήστε εδω για να βοηθήσετε, προσθέσετε υποστήριξη</string>
+    <string name="label_click_to_help_add_support">Πατήστε εδώ για να βοηθήσετε, προσθέσετε υποστήριξη</string>
     <string name="label_development">Ανάπτυξη</string>
     <string name="label_debug_log">Αποθήκευσε καταγραφή αποσφαλμάτωσης στο αρχείο</string>
     <string name="label_your_bluetooth_scale">Η ζυγαριά σας με δυνατότητα Bluetooth</string>
