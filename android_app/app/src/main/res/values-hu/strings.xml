@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources><string name="title_overview">Áttekintés</string>
+<resources>
+    <string name="title_overview">Áttekintés</string>
     <string name="title_graph">Diagram</string>
     <string name="title_table">Táblázat</string>
     <string name="title_statistics">Statisztika</string>
@@ -33,9 +34,9 @@
     <string name="label_bone">Csont tömeg</string>
     <string name="label_smartUserAssign">Okos felhasználó összerendelés</string>
     <plurals name="label_days">
-    <item quantity="one">%d nap</item>
-    <item quantity="other">%d napok</item>
-</plurals>
+        <item quantity="one">%d nap</item>
+        <item quantity="other">%d napok</item>
+    </plurals>
     <string name="label_last_week">Múlt hét átlaga</string>
     <string name="label_last_month">Múlt hónap átlaga</string>
     <string name="label_weight_difference">Súly különbség</string>
@@ -124,7 +125,7 @@
     <string name="info_on_date">be</string>
     <string name="label_ignoreOutOfRange">Tartományon kívüli adat elhagyása</string>
     <string name="label_initial_weight">Kezdő súly</string>
-    <string name="label_regression_line">Regressziós súly vonal</string>
+    <string name="label_regression_line">Regressziós egyenes</string>
     <string name="label_regression_line_degree">Polinom regresszió foka</string>
     <string name="label_goal_line">Cél vonal</string>
     <string name="label_help">Segítség</string>
@@ -135,7 +136,7 @@
     <string name="label_feedback_message_no">Nem egészen</string>
     <string name="label_feedback_message_positive">OK</string>
     <string name="label_feedback_message_negative">Köszönöm, nem</string>
-    <string name="info_step_on_scale">Kérem csupasz lábbal lépjen a mérlegre az összehasonlítás kedvéért</string>
+    <string name="info_step_on_scale">Kérem csupasz lábbal lépjen a mérlegre</string>
     <string name="info_measuring">Súly mérése: %.2f</string>
     <string name="customactivityoncrash_error_activity_restart_app">App újraindítása</string>
     <string name="customactivityoncrash_error_activity_close_app">App bezárása</string>
@@ -187,7 +188,7 @@
 \nKérem, hozzon létre egy új issue-t ami tartalmazza a hiba részleteit a 
 \nhttps://github.com/oliexdev/openScale/issues-on</string>
     <string name="toggle_expand">Kattintson a megnyitáshoz</string>
-    <string name="permission_bluetooth_info">A Bluetooth-eszközök kereséséhez szükséges a durva tartózkodási hely hozzáférése. A készülék megtalálása után visszavonható.</string>
+    <string name="permission_bluetooth_info">A Bluetooth-eszközök kereséséhez szükséges a tartózkodási hely hozzáférése. A készülék megtalálása után visszavonható.</string>
     <string name="permission_read_write_data_description">"openScale adatok olvasása/írása, beleértve a felhasználói infót és minden mentett mérési eredményt "</string>
     <string name="permission_read_write_data_label">"OpenScale adatokat olvasása/írása "</string>
     <string name="label_long_press_drag_reorder">Hosszan nyomva a mérési eredményt átrendezheti</string>
@@ -224,4 +225,17 @@
     <string name="activity_level_extreme">Extrém</string>
     <string name="label_tdee">Összes napi energia kiadás (TDEE)</string>
     <string name="label_calories">Kalória</string>
+    <string name="info_bluetooth_no_device_retrying">Kapcsolat nem hozható létre, újra…</string>
+    <string name="info_bluetooth_connection_disconnected">Bluetooth kapcsolat lezárva</string>
+    <string name="info_step_on_scale_for_reference">Kérem mindig csupasz lábbal álljon a mérlegre az ismételhetőség végett</string>
+    <string name="permission_location_service_info">Adja meg a tartózkodási hely hozzáférést az Android beállításokban a Bluetooth eszközök kereséséhez. Később visszavonhatja.</string>
+    <string name="label_enable_legend">Jelmagyarázat</string>
+    <string name="label_enable_yaxis">Y tengely</string>
+    <string name="label_day_view">Napi nézet</string>
+    <string name="label_year_view">Éves nézet</string>
+    <string name="label_rolling_chart">Mozgó diagram</string>
+    <string name="label_measurement_bar">Mérési sáv</string>
+    <string name="label_is_on_right_axis">a jobb oldali tengelyen</string>
+    <string name="label_upgrade_to_openScale_pro">Kérem frissítsen az openScale Pro-ra a Bluetooth támogatáshoz</string>
+    <string name="action_donation">Támogatás</string>
 </resources>
