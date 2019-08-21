@@ -132,10 +132,15 @@ public class BluetoothYunmaiSE_Mini extends BluetoothCommunication {
             YunmaiLib yunmaiLib = new YunmaiLib(sex, scaleUser.getBodyHeight());
             float bodyFat = Converters.fromUnsignedInt16Be(weightBytes, 17) / 100.0f;
             int resistance = Converters.fromUnsignedInt16Be(weightBytes, 15);
-            scaleBtData.setFat(bodyFat);
-            scaleBtData.setMuscle(yunmaiLib.getMuscle(bodyFat));
-            scaleBtData.setWater(yunmaiLib.getWater(bodyFat));
-            scaleBtData.setBone(yunmaiLib.getBoneMass(scaleBtData.getMuscle(), weight));
+
+            if (bodyFat != 0) {
+                scaleBtData.setFat(bodyFat);
+                scaleBtData.setMuscle(yunmaiLib.getMuscle(bodyFat));
+                scaleBtData.setWater(yunmaiLib.getWater(bodyFat));
+                scaleBtData.setBone(yunmaiLib.getBoneMass(scaleBtData.getMuscle(), weight));
+            } else {
+                Timber.e("body fat is zero");
+            }
 
             Timber.d("received bytes [%s]", byteInHex(weightBytes));
             Timber.d("received decrypted bytes [weight: %.2f, fat: %.2f, resistance: %d]", weight, bodyFat, resistance);
