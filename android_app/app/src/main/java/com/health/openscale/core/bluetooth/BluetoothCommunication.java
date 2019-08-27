@@ -333,7 +333,7 @@ public abstract class BluetoothCommunication {
         }
 
         @Override
-        public void onCharacteristicUpdate(BluetoothPeripheral peripheral, byte[] value, BluetoothGattCharacteristic characteristic) {
+        public void onCharacteristicUpdate(final BluetoothPeripheral peripheral, byte[] value, final BluetoothGattCharacteristic characteristic, final int status) {
             resetDisconnectTimer();
             onBluetoothNotify(characteristic.getUuid(), value);
         }
