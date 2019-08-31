@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="title_users">ユーザー</string>
     <string name="title_table">早見表</string>
@@ -51,7 +51,7 @@
     <string name="info_data_deleted">記録が削除されました</string>
     <string name="info_data_exported">エクスポート先</string>
     <string name="info_data_imported">インポート元</string>
-    <string name="info_on_date"></string>
+    <string name="info_on_date"/>
     <string name="info_no_selected_user">ユーザーが存在しません。設定で作成してください。</string>
     <string name="label_add_user">ユーザーの追加</string>
     <string name="label_enable_labels">データラベル</string>
@@ -101,30 +101,24 @@
     <string name="label_initial_weight">初期体重</string>
     <string name="title_about">アプリについて</string>
     <string name="title_general">一般</string>
-
     <string name="open_drawer">開く</string>
     <string name="close_drawer">閉じる</string>
-
     <string name="label_share">共有</string>
     <string name="label_bmr">基礎代謝率 (BMR)</string>
     <string name="label_lbm">除脂肪体重</string>
     <string name="label_bone">骨密度</string>
     <string name="info_bluetooth_no_device_set">Bluetooth端末が選択されていません</string>
     <string name="info_new_data_duplicated">同じ日時のものがすでに存在している測定</string>
-
     <string name="label_bluetooth_searching">Bluetooth対応体重計を検索中</string>
     <string name="label_bluetooth_searching_finished">検索終了</string>
     <string name="label_maintainer">メンテナー</string>
     <string name="label_website">ウェブサイト</string>
     <string name="label_license">ライセンス</string>
-
     <string name="label_theme">テーマ</string>
-
     <string name="label_bt_device_no_support">端末はサポートされていません</string>
     <string name="label_backup">バックアップ</string>
     <string name="label_ignoreOutOfRange">範囲外のデータを無視する</string>
     <string name="label_help">ヘルプ</string>
-
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">予期せぬエラーが生じました。
 \n
 \nエラーの詳細を含む新しいIssueを作成してください。
@@ -137,7 +131,6 @@
     <string name="customactivityoncrash_error_activity_error_details_clipboard_label">エラー情報</string>
     <string name="edit">編集</string>
     <string name="save">保存</string>
-
     <string name="permission_not_granted">権限が付与されていません</string>
     <string name="permission_bluetooth_info">Bluetoothデバイスの検索にはおおよその位置情報の権限が必要です。デバイスが見つかった後は取り消すことができます。</string>
     <string name="language_default">システム標準</string>
@@ -152,7 +145,6 @@
     <string name="label_click_to_help_add_support">サポートの追加に協力するにはここをクリックしてください</string>
     <string name="label_mergeWithLastMeasurement">最新測定との統合</string>
     <string name="label_automatic">自動</string>
-
     <string name="label_exportBackup">バックアップをエクスポート</string>
     <string name="label_importBackup">パックアップをインポート</string>
     <string name="label_feedback_message_enjoying">openScaleに満足していただけましたか？</string>
@@ -162,7 +154,6 @@
     <string name="label_feedback_message_no">あんまり</string>
     <string name="label_feedback_message_positive">OK</string>
     <string name="label_feedback_message_negative">結構です</string>
-
     <string name="customactivityoncrash_error_activity_error_details_title">エラーの詳細</string>
     <string name="customactivityoncrash_error_activity_error_details_close">閉じる</string>
     <string name="permission_bluetooth_info_title">情報</string>
@@ -170,4 +161,6 @@
     <string name="label_auto_backup">自動バックアップ</string>
     <string name="label_development">開発</string>
     <string name="label_debug_log">デバッグ記録をファイルに保存する</string>
+    <string name="label_add_measurement">測定結果の追加</string>
+    <string name="action_donation">寄付</string>
 </resources>
