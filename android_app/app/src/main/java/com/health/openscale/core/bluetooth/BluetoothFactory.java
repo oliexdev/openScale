@@ -84,7 +84,7 @@ public class BluetoothFactory {
         if (name.equals("MI_SCALE".toLowerCase(Locale.US)) || name.equals("MI SCALE2".toLowerCase(Locale.US))) {
             return new BluetoothMiScale(context);
         }
-        if (name.equals("MIBCS".toLowerCase(Locale.US))) {
+        if (name.equals("MIBCS".toLowerCase(Locale.US)) || name.equals("MIBFS".toLowerCase(Locale.US))) {
             return new BluetoothMiScale2(context);
         }
         if (name.equals("Health Scale".toLowerCase(Locale.US))) {
