@@ -112,7 +112,7 @@ public class BluetoothFactory {
         if (deviceName.startsWith("QN-Scale")) {
             return new BluetoothQNScale(context);
         }
-        if (deviceName.startsWith("Shape200")) {
+        if (deviceName.startsWith("Shape200") || deviceName.startsWith("Shape100") || deviceName.startsWith("Shape50") || deviceName.startsWith("Style100")) {
             return new BluetoothSoehnle(context);
         }
         return null;
