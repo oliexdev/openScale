@@ -93,7 +93,7 @@ public class BluetoothSoehnle extends BluetoothCommunication {
                 break;
             case 7:
                 // set height
-                writeBytes(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_USER_HEIGHT, Converters.toInt16Be((int)OpenScale.getInstance().getSelectedScaleUser().getBodyHeight()));
+                writeBytes(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_USER_HEIGHT, Converters.toInt16Le((int)OpenScale.getInstance().getSelectedScaleUser().getBodyHeight()));
                 break;
             default:
                 return false;
