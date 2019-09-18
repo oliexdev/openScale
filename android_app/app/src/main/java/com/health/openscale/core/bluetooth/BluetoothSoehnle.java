@@ -36,6 +36,11 @@ import java.util.UUID;
 import timber.log.Timber;
 
 public class BluetoothSoehnle extends BluetoothCommunication {
+    private final UUID WEIGHT_CUSTOM_SERVICE = UUID.fromString("352e3000-28e9-40b8-a361-6db4cca4147c");
+    private final UUID WEIGHT_CUSTOM_A_CHARACTERISTIC = UUID.fromString("352e3001-28e9-40b8-a361-6db4cca4147c"); // notify, read
+    private final UUID WEIGHT_CUSTOM_B_CHARACTERISTIC = UUID.fromString("352e3004-28e9-40b8-a361-6db4cca4147c"); // notify, read
+    private final UUID WEIGHT_CUSTOM_CMD_CHARACTERISTIC = UUID.fromString("352e3002-28e9-40b8-a361-6db4cca4147c"); // write
+
     public BluetoothSoehnle(Context context) {
         super(context);
     }
@@ -95,6 +100,12 @@ public class BluetoothSoehnle extends BluetoothCommunication {
                 // set height
                 writeBytes(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_USER_HEIGHT, Converters.toInt16Le((int)OpenScale.getInstance().getSelectedScaleUser().getBodyHeight()));
                 break;
+            case 8:
+                setNotificationOn(WEIGHT_CUSTOM_SERVICE, WEIGHT_CUSTOM_A_CHARACTERISTIC);
+                setNotificationOn(WEIGHT_CUSTOM_SERVICE, WEIGHT_CUSTOM_B_CHARACTERISTIC);
+                break;
+            case 9:
+                writeBytes(WEIGHT_CUSTOM_SERVICE, WEIGHT_CUSTOM_CMD_CHARACTERISTIC, new byte[] {(byte)0x0c, (byte)0xff});
             default:
                 return false;
         }
