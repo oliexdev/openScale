@@ -59,9 +59,9 @@ android {
 }
 
 dependencies {
-    implementation 'com.google.android.material:material:1.1.0-alpha09'
+    implementation 'com.google.android.material:material:1.1.0-alpha10'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'androidx.appcompat:appcompat:1.0.2'
+    implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
     // MPAndroidChart
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
@@ -72,9 +72,9 @@ dependencies {
     // CustomActivityOnCrash
     implementation 'cat.ereza:customactivityoncrash:2.2.0'
     // Room
-    implementation 'androidx.room:room-runtime:2.2.0-alpha02'
-    annotationProcessor 'androidx.room:room-compiler:2.2.0-alpha02'
-    androidTestImplementation 'androidx.room:room-testing:2.2.0-alpha02'
+    implementation 'androidx.room:room-runtime:2.2.0-rc01'
+    annotationProcessor 'androidx.room:room-compiler:2.2.0-rc01'
+    androidTestImplementation 'androidx.room:room-testing:2.2.0-rc01'
     // Timber
     implementation 'com.jakewharton.timber:timber:4.7.1'
     // Local unit tests
