@@ -69,7 +69,7 @@ public class BluetoothFactory {
             return new BluetoothIhealthHS3(context);
         }
         // BS444 || BS440
-        if (deviceName.startsWith("013197") || deviceName.startsWith("0202B6")) {
+        if (deviceName.startsWith("013197") || deviceName.startsWith("013198") || deviceName.startsWith("0202B6")) {
             return new BluetoothMedisanaBS44x(context, true);
         }
 
