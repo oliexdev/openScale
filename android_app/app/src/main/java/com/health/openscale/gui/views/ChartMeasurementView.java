@@ -72,7 +72,6 @@ public class ChartMeasurementView extends LineChart {
 
     private OpenScale openScale;
     private SharedPreferences prefs;
-    private ScaleUser user;
     private List<ScaleMeasurement> scaleMeasurementList;
     private List<MeasurementView> measurementViews;
     private ScaleMeasurement firstMeasurement;
@@ -174,7 +173,6 @@ public class ChartMeasurementView extends LineChart {
     private void initChart() {
         prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
         openScale = OpenScale.getInstance();
-        user = openScale.getSelectedScaleUser();
         scaleMeasurementList = new ArrayList<>();
         measurementViews = MeasurementView.getMeasurementList(getContext(), MeasurementView.DateTimeOrder.NONE);
         firstMeasurement = new ScaleMeasurement();
@@ -692,6 +690,7 @@ public class ChartMeasurementView extends LineChart {
         if (prefs.getBoolean("goalLine", true)) {
             List<Entry> valuesGoalLine = new Stack<>();
 
+            ScaleUser user = OpenScale.getInstance().getSelectedScaleUser();
             float goalWeight = Converters.fromKilogram(user.getGoalWeight(), user.getScaleUnit());
 
             valuesGoalLine.add(new Entry(minXValue, goalWeight));
