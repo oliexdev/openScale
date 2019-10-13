@@ -232,7 +232,12 @@ public abstract class BluetoothCommunication {
     public void disconnect() {
         Timber.d("Bluetooth disconnect");
         setBluetoothStatus(BT_STATUS.CONNECTION_DISCONNECT);
-        central.stopScan();
+        try {
+            central.stopScan();
+        } catch (Exception ex) {
+            Timber.e("Error on Bluetooth disconnecting " + ex.getMessage());
+        }
+
         if (btPeripheral != null) {
             central.cancelConnection(btPeripheral);
         }
