@@ -59,7 +59,7 @@ android {
 }
 
 dependencies {
-    implementation 'com.google.android.material:material:1.1.0-alpha10'
+    implementation 'com.google.android.material:material:1.1.0-beta01'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
@@ -68,13 +68,13 @@ dependencies {
     // Simple CSV
     implementation 'com.j256.simplecsv:simplecsv:2.3'
     // Blessed Android
-    implementation 'com.github.weliem:blessed-android:0.8'
+    implementation 'com.github.weliem:blessed-android:0.10'
     // CustomActivityOnCrash
     implementation 'cat.ereza:customactivityoncrash:2.2.0'
     // Room
-    implementation 'androidx.room:room-runtime:2.2.0-rc01'
-    annotationProcessor 'androidx.room:room-compiler:2.2.0-rc01'
-    androidTestImplementation 'androidx.room:room-testing:2.2.0-rc01'
+    implementation 'androidx.room:room-runtime:2.2.0'
+    annotationProcessor 'androidx.room:room-compiler:2.2.0'
+    androidTestImplementation 'androidx.room:room-testing:2.2.0'
     // Timber
     implementation 'com.jakewharton.timber:timber:4.7.1'
     // Local unit tests
