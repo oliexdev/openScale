@@ -9,6 +9,7 @@ android {
         targetSdkVersion 29
         versionCode 47
         versionName "2.1.2"
+        archivesBaseName = "openScale-$versionName"
 
         manifestPlaceholders = [
                 appIcon: "@drawable/ic_launcher_openscale"
