@@ -88,39 +88,39 @@ If you want to help to translate the app in your language please see [here](http
 <table>
   <tr>
     <th>
-        <a href="doc/screens/1_overview.png" target="_blank">
-        <img src='doc/screens/1_overview.png' width='200px' alt='image missing' /> </a>
+        <a href="docs/screens/1_overview.png" target="_blank">
+        <img src='docs/screens/1_overview.png' width='200px' alt='image missing' /> </a>
     </th>
     <th>
-        <a href="doc/screens/2_chart.png" target="_blank">
-        <img src='doc/screens/2_chart.png' width='200px' alt='image missing' /> </a>
+        <a href="docs/screens/2_chart.png" target="_blank">
+        <img src='docs/screens/2_chart.png' width='200px' alt='image missing' /> </a>
     </th>
     <th>
-        <a href="doc/screens/3_bluetooth.png" target="_blank">
-        <img src='doc/screens/3_bluetooth.png' width='200px' alt='image missing' /> </a>
+        <a href="docs/screens/3_bluetooth.png" target="_blank">
+        <img src='docs/screens/3_bluetooth.png' width='200px' alt='image missing' /> </a>
     </th>
     <th>
-        <a href="doc/screens/4_table.png" target="_blank">
-        <img src='doc/screens/4_table.png' width='200px' alt='image missing' /> </a>
+        <a href="docs/screens/4_table.png" target="_blank">
+        <img src='docs/screens/4_table.png' width='200px' alt='image missing' /> </a>
     </th>
   </tr>
   
   <tr>
     <th>
-        <a href="doc/screens/5_statistics.png" target="_blank">
-        <img src='doc/screens/5_statistics.png' width='200px' alt='image missing' /> </a>
+        <a href="docs/screens/5_statistics.png" target="_blank">
+        <img src='docs/screens/5_statistics.png' width='200px' alt='image missing' /> </a>
     </th>
     <th>
-        <a href="doc/screens/6_body_metrics.png" target="_blank">
-        <img src='doc/screens/6_body_metrics.png' width='200px' alt='image missing' /> </a>
+        <a href="docs/screens/6_body_metrics.png" target="_blank">
+        <img src='docs/screens/6_body_metrics.png' width='200px' alt='image missing' /> </a>
     </th>
     <th>
-        <a href="doc/screens/7_translations.png" target="_blank">
-        <img src='doc/screens/7_translations.png' width='200px' alt='image missing' /> </a>
+        <a href="docs/screens/7_translations.png" target="_blank">
+        <img src='docs/screens/7_translations.png' width='200px' alt='image missing' /> </a>
     </th>
     <th>
-        <a href="doc/screens/8_themes.png" target="_blank">
-        <img src='doc/screens/8_themes.png' width='200px' alt='image missing' /> </a>
+        <a href="docs/screens/8_themes.png" target="_blank">
+        <img src='docs/screens/8_themes.png' width='200px' alt='image missing' /> </a>
     </th>
   </tr>
 </table>
