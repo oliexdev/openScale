@@ -64,7 +64,9 @@ Weight, BMI (body mass index), body water, muscle, LBM (lean body mass), body fa
 
 # Privacy :lock:
 This app has no ads and requests no unnecessary permissions. The location permission is only needed to find a Bluetooth scale. Once found the permission can be revoked (or never granted if Bluetooth isn't used).
+
 openScale doesn't send any data to a cloud and not having permission to access the internet is a strong guarantee of that.
+
 If you want to synchronise your weight to GoogleFit and/or MQTT 3.1, you can install [openScale sync](https://github.com/oliexdev/openScale/wiki/openScale-sync) from [GooglePlay](https://play.google.com/store/apps/details?id=com.health.openscale.sync).
 
 # Questions & Issues :thinking:
