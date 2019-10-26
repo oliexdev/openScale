@@ -24,8 +24,6 @@ Monitor and track your weight, BMI, body fat, body water, muscle and other body 
 # Supported Bluetooth scales :rocket:
 openScale has built-in support for a number of Bluetooth (BLE or "smart") scales from  many manufacturers, e.g. Beurer, Sanitas, Yunmai, Xiaomi, etc. (see model list below). Together with our users we constantly improve and extend the set of supported scales and in many cases pick up where the original app falls short.
 
-For scales without Bluetooth, or Bluetooth scales not (yet) supported by openScale, measurements can be manually entered in a quick and easy way.
-
 - Custom made Bluetooth scale
 - Beurer BF700, BF710 and BF800
 - Digoo DG-S038H
@@ -44,6 +42,8 @@ For scales without Bluetooth, or Bluetooth scales not (yet) supported by openSca
 - and many more
 
 Please see [openScale wikipage](https://github.com/oliexdev/openScale/wiki/Supported-scales-in-openScale) for the full list and the level of support for each scale.
+
+For scales without Bluetooth, or Bluetooth scales not (yet) supported by openScale, measurements can be manually entered in a quick and easy way.
 
 # Supported metrics :chart_with_upwards_trend:
 Weight, BMI (body mass index), body water, muscle, LBM (lean body mass), body fat, bone mass, waist circumference, waist-to-height ratio, hip circumference, waist-hip ratio, visceral fat, chest circumference, thigh circumference, biceps circumference, neck circumference, body fat caliper, BMR (basal metabolic rate), TDEE (Total Daily Energy Expenditure) and Calories. Each entry can also have an optional comment.
