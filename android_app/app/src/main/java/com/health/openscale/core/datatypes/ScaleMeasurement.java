@@ -16,6 +16,7 @@
 
 package com.health.openscale.core.datatypes;
 
+import com.health.openscale.core.utils.CsvHelper;
 import com.j256.simplecsv.common.CsvColumn;
 
 import java.lang.reflect.Field;
@@ -45,8 +46,7 @@ public class ScaleMeasurement implements Cloneable {
     private int userId;
     @ColumnInfo(name = "enabled")
     private boolean enabled;
-    @CsvColumn(format = "dd.MM.yyyy HH:mm", mustNotBeBlank = true)
-    @ColumnInfo(name = "datetime")
+    @CsvColumn(converterClass = CsvHelper.DateTimeConverter.class, format ="yyyy-MM-dd HH:mm", mustNotBeBlank = true)    @ColumnInfo(name = "datetime")
     private Date dateTime;
     @CsvColumn(mustNotBeBlank = true)
     @ColumnInfo(name = "weight")

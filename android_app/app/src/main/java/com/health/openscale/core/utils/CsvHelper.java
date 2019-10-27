@@ -17,13 +17,18 @@
 package com.health.openscale.core.utils;
 
 import com.health.openscale.core.datatypes.ScaleMeasurement;
+import com.j256.simplecsv.converter.DateConverter;
+import com.j256.simplecsv.processor.ColumnInfo;
 import com.j256.simplecsv.processor.ColumnNameMatcher;
 import com.j256.simplecsv.processor.CsvProcessor;
+import com.j256.simplecsv.processor.ParseError;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Writer;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 public class CsvHelper {
@@ -107,5 +112,23 @@ public class CsvHelper {
         }
 
         return csvProcessor.readRows(reader, null);
+    }
+
+    // backward compatible for openScale version >= 2.1.2 to support old date format dd.MM.yyyy, see issue #506
+    public static class DateTimeConverter extends DateConverter {
+        private static final SimpleDateFormat srcDateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm");
+        private static final SimpleDateFormat dstDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+
+        @Override
+        public Date stringToJava(String line, int lineNumber, int linePos, ColumnInfo<Date> columnInfo, String value, ParseError parseError) throws ParseException{
+            try {
+                Date srcDate = srcDateFormat.parse(value);
+                value = dstDateFormat.format(srcDate);
+            } catch (ParseException ex) {
+                // ignore
+            }
+
+            return super.stringToJava(line, lineNumber, linePos, columnInfo, value, parseError);
+        }
     }
 }
