@@ -119,7 +119,7 @@
     <string name="label_not_found">hittades inte</string>
     <string name="label_ignoreOutOfRange">Ignorera data utanför intervall</string>
     <string name="label_initial_weight">Startvikt</string>
-    <string name="label_regression_line">Vikt regressionslinje</string>
+    <string name="label_regression_line">Regressionslinje</string>
     <string name="label_regression_line_degree">Regressions-polynom-gradtal</string>
     <string name="label_goal_line">Mållinje</string>
     <string name="error_max_scale_users">Max antal samtidiga våganvändare nått</string>
@@ -151,32 +151,24 @@
     <string name="customactivityoncrash_error_activity_error_details_copied">Kopierat till urklipp</string>
     <string name="customactivityoncrash_error_activity_error_details_clipboard_label">Felinfo</string>
     <string name="save">Spara</string>
-
     <string name="label_share">Dela</string>
-
     <string name="label_bluetooth_searching_finished">Sökning klar</string>
     <string name="label_help">Hjälp</string>
-
     <string name="toggle_expand">Växla expandera</string>
     <string name="edit">Ändra</string>
     <string name="label_month_view">Månadsvy</string>
-
     <string name="permission_not_granted">Tillstånd beviljas inte</string>
-    <string name="permission_bluetooth_info">Tillstånd till grov platsbestämning krävs för att söka efter Bluetooth-enheter. Det kan återtas när enheten har hittats.</string>
+    <string name="permission_bluetooth_info">Platsbehörighet krävs för att söka efter Bluetooth-enheter. Det kan återkallas när enheten har hittats.</string>
     <string name="permission_bluetooth_info_title">Info</string>
-
     <string name="label_share_subject">CSV dataexport (%s)</string>
-
     <string name="label_next">Nästa</string>
     <string name="label_set_default_order">Ställ in standardordning</string>
-
     <string name="label_weeks_view">Veckovy</string>
     <string name="label_mergeWithLastMeasurement">Sammanfläta med föregående mätning</string>
     <string name="label_export_overwrite">Skriv över föregående export \"%s\"?</string>
     <string name="label_measurement_in_percent">Mätvärde i %</string>
     <string name="label_estimate_measurement">Estimera mätvärde</string>
     <string name="label_estimation_formula">Estimeringsformel</string>
-
     <string name="language_default">Systemstandard</string>
     <string name="label_language">Språk</string>
     <string name="theme_light">Ljust</string>
