@@ -20,6 +20,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.bluetooth.lib.SoehnleLib;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
@@ -31,6 +32,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 import timber.log.Timber;
@@ -41,8 +43,11 @@ public class BluetoothSoehnle extends BluetoothCommunication {
     private final UUID WEIGHT_CUSTOM_B_CHARACTERISTIC = UUID.fromString("352e3004-28e9-40b8-a361-6db4cca4147c"); // notify, read
     private final UUID WEIGHT_CUSTOM_CMD_CHARACTERISTIC = UUID.fromString("352e3002-28e9-40b8-a361-6db4cca4147c"); // write
 
+    SharedPreferences prefs;
+
     public BluetoothSoehnle(Context context) {
         super(context);
+        prefs = PreferenceManager.getDefaultSharedPreferences(context);
     }
 
     @Override
@@ -54,58 +59,69 @@ public class BluetoothSoehnle extends BluetoothCommunication {
     protected boolean onNextStep(int stepNr) {
         switch (stepNr) {
             case 0:
-                // Turn on notification for Weight Service
-                setNotificationOn(BluetoothGattUuid.SERVICE_WEIGHT_SCALE, BluetoothGattUuid.CHARACTERISTIC_WEIGHT_MEASUREMENT);
+                List<ScaleUser> openScaleUserList = OpenScale.getInstance().getScaleUserList();
+
+                int index = -1;
+
+                // check if an openScale user is stored as a Soehnle user otherwise do a factory reset
+                for (ScaleUser openScaleUser : openScaleUserList) {
+                    index = getSoehnleUserIndex(openScaleUser.getId());
+                    if (index != -1) {
+                        break;
+                    }
+                }
+
+                if (index == -1) {
+                    invokeScaleFactoryReset();
+                }
                 break;
             case 1:
-                // Turn on notification for Body Composition Service
-                setNotificationOn(BluetoothGattUuid.SERVICE_BODY_COMPOSITION, BluetoothGattUuid.CHARACTERISTIC_BODY_COMPOSITION_MEASUREMENT);
-                break;
-            case 2:
                 // Write the current time
                 BluetoothBytesParser parser = new BluetoothBytesParser();
                 parser.setCurrentTime(Calendar.getInstance());
                 writeBytes(BluetoothGattUuid.SERVICE_CURRENT_TIME, BluetoothGattUuid.CHARACTERISTIC_CURRENT_TIME, parser.getValue());
                 break;
-            case 3:
+            case 2:
                 // Turn on notification for User Data Service
-                setNotificationOn(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_CHANGE_INCREMENT);
                 setNotificationOn(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_USER_CONTROL_POINT);
                 break;
-            case 4:
-                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+            case 3:
+                int openScaleUserId = OpenScale.getInstance().getSelectedScaleUserId();
+                int soehnleUserIndex = getSoehnleUserIndex(openScaleUserId);
 
-                int userId = OpenScale.getInstance().getSelectedScaleUserId();
-                int userScaleIndex = prefs.getInt("userScaleIndex"+userId, -1);
-
-                if (userScaleIndex == -1) {
+                if (soehnleUserIndex == -1) {
                     // create new user
-                    Timber.d("create new scale user");
+                    Timber.d("create new Soehnle scale user");
                     writeBytes(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_USER_CONTROL_POINT, new byte[]{(byte)0x01, (byte)0x00, (byte)0x00});
                 } else {
                     // select user
-                    Timber.d("select scale user with index " + userScaleIndex);
-                    writeBytes(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_USER_CONTROL_POINT, new byte[]{(byte) 0x02, (byte) userScaleIndex, (byte) 0x00, (byte) 0x00});
+                    Timber.d("select Soehnle scale user with index " + soehnleUserIndex);
+                    writeBytes(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_USER_CONTROL_POINT, new byte[]{(byte) 0x02, (byte) soehnleUserIndex, (byte) 0x00, (byte) 0x00});
                 }
                 break;
-            case 5:
+            case 4:
                 // set age
                 writeBytes(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_USER_AGE, new byte[]{(byte)OpenScale.getInstance().getSelectedScaleUser().getAge()});
                 break;
-            case 6:
+            case 5:
                 // set gender
                 writeBytes(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_USER_GENDER, new byte[]{OpenScale.getInstance().getSelectedScaleUser().getGender().isMale() ? (byte)0x00 : (byte)0x01});
                 break;
-            case 7:
+            case 6:
                 // set height
                 writeBytes(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_USER_HEIGHT, Converters.toInt16Le((int)OpenScale.getInstance().getSelectedScaleUser().getBodyHeight()));
                 break;
-            case 8:
+            case 7:
                 setNotificationOn(WEIGHT_CUSTOM_SERVICE, WEIGHT_CUSTOM_A_CHARACTERISTIC);
                 setNotificationOn(WEIGHT_CUSTOM_SERVICE, WEIGHT_CUSTOM_B_CHARACTERISTIC);
+                //writeBytes(WEIGHT_CUSTOM_SERVICE, WEIGHT_CUSTOM_CMD_CHARACTERISTIC, new byte[] {(byte)0x0c, (byte)0xff});
                 break;
-            case 9:
-                writeBytes(WEIGHT_CUSTOM_SERVICE, WEIGHT_CUSTOM_CMD_CHARACTERISTIC, new byte[] {(byte)0x0c, (byte)0xff});
+            case 8:
+                for (int i=1; i<8; i++) {
+                    // get history data for soehnle user index i
+                    writeBytes(WEIGHT_CUSTOM_SERVICE, WEIGHT_CUSTOM_CMD_CHARACTERISTIC, new byte[]{(byte) 0x09, (byte) i});
+                }
+                break;
             default:
                 return false;
         }
@@ -117,7 +133,7 @@ public class BluetoothSoehnle extends BluetoothCommunication {
     public void onBluetoothNotify(UUID characteristic, byte[] value) {
         Timber.d("on bluetooth notify change " + byteInHex(value) + " on " + characteristic.toString());
 
-        if (value != null && value.length == 14 ) {
+        if (value != null && value.length == 15 ) {
             if (value[0] == (byte)0x09) {
                 handleWeightMeasurement(value);
             }
@@ -129,17 +145,61 @@ public class BluetoothSoehnle extends BluetoothCommunication {
     }
 
     private void handleUserControlPoint(byte[] value) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        int userId = OpenScale.getInstance().getSelectedScaleUserId();
-        int index = value[0];
+        if (value[0] == (byte)0x20) {
+            int cmd = value[1];
 
-        Timber.d("User control point index is "+ index + " for user id " + userId);
+            if (cmd == (byte)0x01) { // user create
+                int userId = OpenScale.getInstance().getSelectedScaleUserId();
+                int success = value[2];
+                int soehnleUserIndex = value[3];
 
-        prefs.edit().putInt("userScaleIndex"+userId, index).apply();
+                if (success == (byte)0x01) {
+                    Timber.d("User control point index is " + soehnleUserIndex + " for user id " + userId);
+
+                    prefs.edit().putInt("userScaleIndex" + soehnleUserIndex, userId).apply();
+                    sendMessage(R.string.info_step_on_scale_for_reference, 0);
+                } else {
+                    Timber.e("Error creating new Sohnle user");
+                }
+            }
+            else if (cmd == (byte)0x02) { // user select
+                int success = value[2];
+
+                if (success != (byte)0x01) {
+                    Timber.e("Error selecting Soehnle user");
+
+                    invokeScaleFactoryReset();
+                    jumpNextToStepNr(0);
+                }
+            }
+        }
+    }
+
+    private int getSoehnleUserIndex(int openScaleUserId) {
+        for (int i= 1; i<8; i++) {
+            int prefOpenScaleUserId = prefs.getInt("userScaleIndex"+i, -1);
+
+            if (openScaleUserId == prefOpenScaleUserId) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    private void invokeScaleFactoryReset() {
+        Timber.d("Do a factory reset on Soehnle scale to swipe old users");
+        // factory reset
+        writeBytes(WEIGHT_CUSTOM_SERVICE, WEIGHT_CUSTOM_CMD_CHARACTERISTIC, new byte[]{(byte) 0x0b, (byte) 0xff});
+
+        for (int i= 1; i<8; i++) {
+            prefs.edit().putInt("userScaleIndex" + i, -1).apply();
+        }
     }
 
     private void handleWeightMeasurement(byte[] value) {
         float weight = Converters.fromUnsignedInt16Be(value, 9) / 10.0f; // kg
+        int soehnleUserIndex = (int) value[1];
         final int year = Converters.fromUnsignedInt16Le(value, 2);
         final int month = (int) value[4];
         final int day = (int) value[5];
@@ -147,8 +207,8 @@ public class BluetoothSoehnle extends BluetoothCommunication {
         final int min = (int) value[7];
         final int sec = (int) value[8];
 
-        final int imp5 = Converters.fromUnsignedInt16Le(value, 11);
-        final int imp50 = Converters.fromUnsignedInt16Le(value, 13);
+        final int imp5 = Converters.fromUnsignedInt16Be(value, 11);
+        final int imp50 = Converters.fromUnsignedInt16Be(value, 13);
 
         String date_string = year + "/" + month + "/" + day + "/" + hours + "/" + min;
         Date date_time = new Date();
@@ -180,16 +240,23 @@ public class BluetoothSoehnle extends BluetoothCommunication {
                 break;
         }
 
-        SoehnleLib soehnleLib = new SoehnleLib(scaleUser.getGender().isMale(), scaleUser.getAge(), scaleUser.getBodyHeight(), activityLevel);
+        int openScaleUserId = prefs.getInt("userScaleIndex"+soehnleUserIndex, -1);
 
-        ScaleMeasurement scaleMeasurement = new ScaleMeasurement();
+        if (openScaleUserId == -1) {
+            Timber.e("Unknown Soehnle user index " + soehnleUserIndex);
+        } else {
+            SoehnleLib soehnleLib = new SoehnleLib(scaleUser.getGender().isMale(), scaleUser.getAge(), scaleUser.getBodyHeight(), activityLevel);
 
-        scaleMeasurement.setWeight(weight);
-        scaleMeasurement.setDateTime(date_time);
-        scaleMeasurement.setWater(soehnleLib.getWater(weight, imp50));
-        scaleMeasurement.setFat(soehnleLib.getFat(weight, imp50));
-        scaleMeasurement.setMuscle(soehnleLib.getMuscle(weight, imp50, imp5));
+            ScaleMeasurement scaleMeasurement = new ScaleMeasurement();
 
-        addScaleMeasurement(scaleMeasurement);
+            scaleMeasurement.setUserId(openScaleUserId);
+            scaleMeasurement.setWeight(weight);
+            scaleMeasurement.setDateTime(date_time);
+            scaleMeasurement.setWater(soehnleLib.getWater(weight, imp50));
+            scaleMeasurement.setFat(soehnleLib.getFat(weight, imp50));
+            scaleMeasurement.setMuscle(soehnleLib.getMuscle(weight, imp50, imp5));
+
+            addScaleMeasurement(scaleMeasurement);
+        }
     }
 }
