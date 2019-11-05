@@ -76,16 +76,20 @@ public class BluetoothSoehnle extends BluetoothCommunication {
                 }
                 break;
             case 1:
+                setNotificationOn(BluetoothGattUuid.SERVICE_BATTERY_LEVEL, BluetoothGattUuid.CHARACTERISTIC_BATTERY_LEVEL);
+                readBytes(BluetoothGattUuid.SERVICE_BATTERY_LEVEL, BluetoothGattUuid.CHARACTERISTIC_BATTERY_LEVEL);
+                break;
+            case 2:
                 // Write the current time
                 BluetoothBytesParser parser = new BluetoothBytesParser();
                 parser.setCurrentTime(Calendar.getInstance());
                 writeBytes(BluetoothGattUuid.SERVICE_CURRENT_TIME, BluetoothGattUuid.CHARACTERISTIC_CURRENT_TIME, parser.getValue());
                 break;
-            case 2:
+            case 3:
                 // Turn on notification for User Data Service
                 setNotificationOn(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_USER_CONTROL_POINT);
                 break;
-            case 3:
+            case 4:
                 int openScaleUserId = OpenScale.getInstance().getSelectedScaleUserId();
                 int soehnleUserIndex = getSoehnleUserIndex(openScaleUserId);
 
@@ -99,24 +103,24 @@ public class BluetoothSoehnle extends BluetoothCommunication {
                     writeBytes(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_USER_CONTROL_POINT, new byte[]{(byte) 0x02, (byte) soehnleUserIndex, (byte) 0x00, (byte) 0x00});
                 }
                 break;
-            case 4:
+            case 5:
                 // set age
                 writeBytes(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_USER_AGE, new byte[]{(byte)OpenScale.getInstance().getSelectedScaleUser().getAge()});
                 break;
-            case 5:
+            case 6:
                 // set gender
                 writeBytes(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_USER_GENDER, new byte[]{OpenScale.getInstance().getSelectedScaleUser().getGender().isMale() ? (byte)0x00 : (byte)0x01});
                 break;
-            case 6:
+            case 7:
                 // set height
                 writeBytes(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_USER_HEIGHT, Converters.toInt16Le((int)OpenScale.getInstance().getSelectedScaleUser().getBodyHeight()));
                 break;
-            case 7:
+            case 8:
                 setNotificationOn(WEIGHT_CUSTOM_SERVICE, WEIGHT_CUSTOM_A_CHARACTERISTIC);
                 setNotificationOn(WEIGHT_CUSTOM_SERVICE, WEIGHT_CUSTOM_B_CHARACTERISTIC);
                 //writeBytes(WEIGHT_CUSTOM_SERVICE, WEIGHT_CUSTOM_CMD_CHARACTERISTIC, new byte[] {(byte)0x0c, (byte)0xff});
                 break;
-            case 8:
+            case 9:
                 for (int i=1; i<8; i++) {
                     // get history data for soehnle user index i
                     writeBytes(WEIGHT_CUSTOM_SERVICE, WEIGHT_CUSTOM_CMD_CHARACTERISTIC, new byte[]{(byte) 0x09, (byte) i});
@@ -133,14 +137,23 @@ public class BluetoothSoehnle extends BluetoothCommunication {
     public void onBluetoothNotify(UUID characteristic, byte[] value) {
         Timber.d("on bluetooth notify change " + byteInHex(value) + " on " + characteristic.toString());
 
-        if (value != null && value.length == 15 ) {
-            if (value[0] == (byte)0x09) {
-                handleWeightMeasurement(value);
-            }
+        if (value == null) {
+            return;
         }
 
-        if (value != null && characteristic.equals(BluetoothGattUuid.CHARACTERISTIC_USER_CONTROL_POINT)) {
+        if (characteristic.equals(WEIGHT_CUSTOM_A_CHARACTERISTIC) && value.length == 15) {
+            if (value[0] == (byte) 0x09) {
+                handleWeightMeasurement(value);
+            }
+        } else if (characteristic.equals(BluetoothGattUuid.CHARACTERISTIC_USER_CONTROL_POINT)) {
             handleUserControlPoint(value);
+        } else if (characteristic.equals(BluetoothGattUuid.CHARACTERISTIC_BATTERY_LEVEL)) {
+            int batteryLevel = value[0];
+
+            Timber.d("Soehnle scale battery level is " + batteryLevel);
+            if (batteryLevel <= 10) {
+                sendMessage(R.string.info_scale_low_battery, batteryLevel);
+            }
         }
     }
 
