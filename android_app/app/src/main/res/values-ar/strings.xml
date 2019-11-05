@@ -193,7 +193,6 @@
     <string name="theme_dark">داكن</string>
     <string name="label_contribute_translation">المساهمة في الترجمة</string>
     <string name="label_add_or_fix_translation">إضافة جديد أو تعديل موجود</string>
-    <string name="label_overview_graph">نظرة عامة على الرسم البياني</string>
     <string name="label_percent">نسبه مئويه</string>
     <string name="label_estimated">المقدرة</string>
     <string name="label_estimate_measurement_summary">إعتمادا على الوزن والطول والعمر والجنس وما إلى ذلك.</string>

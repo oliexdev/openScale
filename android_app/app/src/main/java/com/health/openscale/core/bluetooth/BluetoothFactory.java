@@ -33,6 +33,7 @@ public class BluetoothFactory {
                 || name.startsWith("BF-800".toLowerCase(Locale.US))
                 || name.startsWith("BF-700".toLowerCase(Locale.US))
                 || name.startsWith("RT-Libra-B".toLowerCase(Locale.US))
+                || name.startsWith("RT-Libra-W".toLowerCase(Locale.US))
                 || name.startsWith("Libra-B".toLowerCase(Locale.US))
                 || name.startsWith("Libra-W".toLowerCase(Locale.US))) {
             return new BluetoothBeurerSanitas(context, BluetoothBeurerSanitas.DeviceType.BEURER_BF700_800_RT_LIBRA);
@@ -68,7 +69,7 @@ public class BluetoothFactory {
             return new BluetoothIhealthHS3(context);
         }
         // BS444 || BS440
-        if (deviceName.startsWith("013197") || deviceName.startsWith("0202B6")) {
+        if (deviceName.startsWith("013197") || deviceName.startsWith("013198") || deviceName.startsWith("0202B6")) {
             return new BluetoothMedisanaBS44x(context, true);
         }
 
@@ -83,7 +84,7 @@ public class BluetoothFactory {
         if (name.equals("MI_SCALE".toLowerCase(Locale.US)) || name.equals("MI SCALE2".toLowerCase(Locale.US))) {
             return new BluetoothMiScale(context);
         }
-        if (name.equals("MIBCS".toLowerCase(Locale.US))) {
+        if (name.equals("MIBCS".toLowerCase(Locale.US)) || name.equals("MIBFS".toLowerCase(Locale.US))) {
             return new BluetoothMiScale2(context);
         }
         if (name.equals("Health Scale".toLowerCase(Locale.US))) {

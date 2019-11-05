@@ -233,7 +233,12 @@ public abstract class BluetoothCommunication {
     public void disconnect() {
         Timber.d("Bluetooth disconnect");
         setBluetoothStatus(BT_STATUS.CONNECTION_DISCONNECT);
-        central.stopScan();
+        try {
+            central.stopScan();
+        } catch (Exception ex) {
+            Timber.e("Error on Bluetooth disconnecting " + ex.getMessage());
+        }
+
         if (btPeripheral != null) {
             central.cancelConnection(btPeripheral);
         }
@@ -334,7 +339,7 @@ public abstract class BluetoothCommunication {
         }
 
         @Override
-        public void onCharacteristicUpdate(BluetoothPeripheral peripheral, byte[] value, BluetoothGattCharacteristic characteristic) {
+        public void onCharacteristicUpdate(final BluetoothPeripheral peripheral, byte[] value, final BluetoothGattCharacteristic characteristic, final int status) {
             resetDisconnectTimer();
             onBluetoothNotify(characteristic.getUuid(), value);
         }

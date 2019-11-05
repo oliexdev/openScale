@@ -8,12 +8,10 @@
     <string name="title_measurements">Измерения</string>
     <string name="title_about">О программе</string>
     <string name="title_general">Основное</string>
-
     <string name="action_settings">Настройки</string>
     <string name="action_bluetooth_status">Статус Bluetooth</string>
     <string name="open_drawer">открыть</string>
     <string name="close_drawer">закрыть</string>
-
     <string name="label_cancel">Отмена</string>
     <string name="label_ok">ОК</string>
     <string name="label_yes">Да</string>
@@ -23,7 +21,6 @@
     <string name="label_add_measurement">Добавить измерение</string>
     <string name="label_share">Поделиться</string>
     <string name="label_share_subject">Экспорт данных CSV в (%s)</string>
-
     <string name="label_weight">Вес</string>
     <string name="label_bmi">Индекс массы тела (ИМТ)</string>
     <string name="label_bmr">Основной обмен (ОО)</string>
@@ -38,13 +35,11 @@
     <string name="label_whr">Соотношение обхвата талии к бедру</string>
     <string name="label_bone">Костная масса</string>
     <string name="label_smartUserAssign">Умное определение Пользователя</string>
-
     <string name="label_last_week">Среднее за прошлую неделю</string>
     <string name="label_last_month">Среднее за прошлый месяц</string>
     <string name="label_weight_difference">Разница в весе</string>
     <string name="label_goal_date_is">Целевая дата:</string>
     <string name="label_days_left">Осталось дней</string>
-
     <string name="label_date">Дата</string>
     <string name="label_time">Время</string>
     <string name="label_birthday">День рождения</string>
@@ -56,15 +51,12 @@
     <string name="label_female">Женский</string>
     <string name="label_goal_weight">Цель по весу</string>
     <string name="label_goal_date">Целевая дата</string>
-
     <string name="label_title_user">пользователь</string>
     <string name="label_title_last_measurement">последнее измерение</string>
     <string name="label_title_goal">Цель</string>
-
     <string name="label_import">Импорт</string>
     <string name="label_export">Экспорт</string>
     <string name="label_delete_all">Удалить все</string>
-
     <string name="error_value_required">Необходимо значение</string>
     <string name="error_value_range">Значение вне диапазона</string>
     <string name="error_exporting">Ошибка при экспортировании</string>
@@ -73,7 +65,6 @@
     <string name="error_height_required">Ошибка: требуется указать Рост</string>
     <string name="error_initial_weight_required">Ошибка: необходимо указать начальный вес</string>
     <string name="error_goal_weight_required">Ошибка: необходимо указать цель по весу</string>
-
     <string name="info_data_deleted">Запись удалена</string>
     <string name="info_data_all_deleted">Все записи удалены</string>
     <string name="info_data_exported">Экспортировано в</string>
@@ -93,35 +84,25 @@
     <string name="info_bluetooth_init">Инициализировать Bluetooth устройство</string>
     <string name="info_bluetooth_connection_error">Неожиданная ошибка Bluetooth</string>
     <string name="info_new_data_duplicated">измерение с такой датой и временем уже существует</string>
-
     <string name="info_enter_user_name">Ваше имя</string>
     <string name="info_no_selected_user">Пользователя не существует. Пожалуйста, создайте пользователя в настройках.</string>
     <string name="info_no_evaluation_available">Невозможно определить значение</string>
-
     <string name="question_really_delete">Удалить запись?</string>
     <string name="question_really_delete_all">Удалить все записи для всех пользователей?</string>
     <string name="question_really_delete_user">Удалить пользователя?</string>
-
     <string name="label_bluetooth_title">Bluetooth</string>
     <string name="label_bluetooth_enable">Подсоединяться к весам при старте приложения</string>
     <string name="label_mergeWithLastMeasurement">Объединить с последним измерением</string>
     <string name="label_bluetooth_searching">Поиск Ваших Bluetooth весов</string>
     <string name="label_bluetooth_searching_finished">Поиск завершен</string>
-
     <string name="label_enable_points">Точка измерения</string>
-
     <string name="label_delete_confirmation">Удалить подтверждение</string>
-
     <string name="label_category_measurement_database">База измерений</string>
-
     <string name="label_maintainer">Сопровождающий</string>
     <string name="label_website">Веб-сайт</string>
     <string name="label_license">Лицензия</string>
-
     <string name="label_automatic">авто</string>
-
     <string name="label_theme">Тема</string>
-
     <string name="label_reminder">Напоминание</string>
     <string name="label_reminder_weekdays">Дни</string>
     <string name="label_reminder_time">Время</string>
@@ -143,18 +124,15 @@
     <string name="label_initial_weight">Начальный вес</string>
     <string name="label_goal_line">Линия цели</string>
     <string name="label_help">Помощь</string>
-
     <string name="label_feedback_message_enjoying">Нравится openScale?</string>
     <string name="label_feedback_message_issue">Хотите оставить отзыв?</string>
     <string name="label_feedback_message_yes">Да</string>
     <string name="label_feedback_message_no">Не очень</string>
     <string name="label_feedback_message_positive">OK</string>
     <string name="label_feedback_message_negative">Нет, спасибо</string>
-
     <string name="error_max_scale_users">Достигнуто максимальное количество пользователей весов</string>
     <string name="info_step_on_scale_for_reference">Пожалуйста, встаньте босиком на весы для исходных измерений</string>
     <string name="info_measuring">Измеренный вес: %.2f</string>
-
     <string name="customactivityoncrash_error_activity_restart_app">Перезапустить приложение</string>
     <string name="customactivityoncrash_error_activity_close_app">Закрыть приложение</string>
     <string name="customactivityoncrash_error_activity_error_details">Детали ошибки</string>
@@ -164,7 +142,6 @@
     <string name="customactivityoncrash_error_activity_error_details_copied">Скопировано в буфер обмена</string>
     <string name="edit">Редактировать</string>
     <string name="save">Сохранить</string>
-
     <string name="permission_not_granted">Разрешение не получено</string>
     <string name="permission_bluetooth_info_title">Информация</string>
     <string name="label_next">Следующий</string>
@@ -186,17 +163,15 @@
     <string name="label_select_user">Выберите пользователя</string>
     <string name="label_configure_widget">Настройте виджет</string>
     <string name="label_measure_unit">Единица измерения</string>
-<plurals name="label_days">
-	<item quantity="one">%d день</item>
-	<item quantity="few">%d дня</item>
-	<item quantity="many">%d дней</item>
-</plurals>
+    <plurals name="label_days">
+        <item quantity="one">%d день</item>
+        <item quantity="few">%d дня</item>
+        <item quantity="many">%d дней</item>
+    </plurals>
     <string name="info_new_data_added">%1$.2f%2$s [%3$s] добавлено к %4$s</string>
     <string name="label_enable_labels">Метка данных</string>
     <string name="default_value_reminder_notify_text">Пора взвеситься</string>
-
     <string name="info_on_date">в день</string>
-
     <string name="label_regression_line">График снижения веса</string>
     <string name="label_regression_line_degree">Степень полиномиальной регрессии</string>
     <string name="label_feedback_message_rate_app">Поставить оценку на Google Play или GitHub\?</string>
@@ -206,7 +181,6 @@
     <string name="trisa_scale_pairing_succeeded">Сопряжение удалось!
 \n
 \nПовторите подключение, чтобы получить данные измерений.</string>
-
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">Случилась непредвиденная ошибка.
 \n
 \nПожалуйста, создайте новую тему, включая данные об ошибке, на
@@ -215,7 +189,6 @@
     <string name="toggle_expand">Подробности</string>
     <string name="label_month_view">За месяц</string>
     <string name="label_weeks_view">За неделю</string>
-
     <string name="permission_bluetooth_info">Для поиска устройства Bluetooth требуется разрешение доступа к местоположению. После обнаружения устройства доступ можно снова заблокировать.</string>
     <string name="permission_read_write_data_description">Чтение данных openScale, включая информацию о пользователе и все сохраненные измерения</string>
     <string name="permission_read_write_data_label">Чтение данных openScale</string>
@@ -252,4 +225,17 @@
     <string name="activity_level_extreme">Экстремальный</string>
     <string name="label_tdee">Общий ежедневный расход энергии (TDEE)</string>
     <string name="label_calories">Калории</string>
+    <string name="info_step_on_scale">Пожалуйста, встаньте голыми ступнями на весы</string>
+    <string name="info_bluetooth_no_device_retrying">Невозможно установить соединение, переподключение…</string>
+    <string name="info_bluetooth_connection_disconnected">Bluetooth соединение закрыто</string>
+    <string name="permission_location_service_info">Предоставьте доступ к местоположению в настройках Android для нахождения устройств Bluetooth. После соединения доступ может быть отозван.</string>
+    <string name="label_enable_legend">Легенда графика</string>
+    <string name="label_enable_yaxis">ось Y</string>
+    <string name="label_day_view">За день</string>
+    <string name="label_year_view">За год</string>
+    <string name="label_rolling_chart">Относительный масштаб</string>
+    <string name="label_measurement_bar">Отображение измерений</string>
+    <string name="label_is_on_right_axis">на правой оси</string>
+    <string name="label_upgrade_to_openScale_pro">Пожалуйста, обновите до openScale Pro для подддержки Bluetooth</string>
+    <string name="action_donation">Пожертвование</string>
 </resources>

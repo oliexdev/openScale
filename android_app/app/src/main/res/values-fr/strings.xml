@@ -222,8 +222,7 @@
     <string name="permission_read_write_data_description">lire ou écrire les données openScale, y compris les informations d\'utilisateur et toutes les mesures enregistrées</string>
     <string name="permission_read_write_data_label">Lire ou écrire les données openScale</string>
     <string name="label_calories">Calories</string>
-    <string name="label_data_provider_enable">Accès aux applications tierces</string>
-    <string name="info_bluetooth_no_device_retrying">Impossible d\'établir une connexion, 
+    <string name="info_bluetooth_no_device_retrying">Impossible d\'établir une connexion,
 \nréessayez…</string>
     <string name="info_bluetooth_connection_disconnected">Connexion Bluetooth fermée</string>
     <string name="info_step_on_scale">Veuillez marcher pieds nus sur la balance</string>
@@ -235,4 +234,6 @@
     <string name="label_measurement_bar">Barre des mesures</string>
     <string name="permission_location_service_info">Autoriser l\'accès à la location pour chercher des dispositifs Bluetooth. Cette permissions peut être révoqué par la suite.</string>
     <string name="label_is_on_right_axis">Est sur le bon axe</string>
+    <string name="label_upgrade_to_openScale_pro">Veuillez mettre à niveau vers openScale pro pour la prise en charge du Bluetooth</string>
+    <string name="action_donation">Don</string>
 </resources>
