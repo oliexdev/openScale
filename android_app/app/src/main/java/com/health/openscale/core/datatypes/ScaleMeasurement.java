@@ -46,7 +46,8 @@ public class ScaleMeasurement implements Cloneable {
     private int userId;
     @ColumnInfo(name = "enabled")
     private boolean enabled;
-    @CsvColumn(converterClass = CsvHelper.DateTimeConverter.class, format ="yyyy-MM-dd HH:mm", mustNotBeBlank = true)    @ColumnInfo(name = "datetime")
+    @CsvColumn(converterClass = CsvHelper.DateTimeConverter.class, format ="yyyy-MM-dd HH:mm", mustNotBeBlank = true)
+    @ColumnInfo(name = "datetime")
     private Date dateTime;
     @CsvColumn(mustNotBeBlank = true)
     @ColumnInfo(name = "weight")
