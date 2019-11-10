@@ -60,7 +60,7 @@ android {
 }
 
 dependencies {
-    implementation 'com.google.android.material:material:1.1.0-beta01'
+    implementation 'com.google.android.material:material:1.2.0-alpha01'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
@@ -72,10 +72,12 @@ dependencies {
     implementation 'com.github.weliem:blessed-android:0.10'
     // CustomActivityOnCrash
     implementation 'cat.ereza:customactivityoncrash:2.2.0'
+    // AppIntro
+    implementation 'com.github.AppIntro:AppIntro:5.1.0'
     // Room
-    implementation 'androidx.room:room-runtime:2.2.0'
-    annotationProcessor 'androidx.room:room-compiler:2.2.0'
-    androidTestImplementation 'androidx.room:room-testing:2.2.0'
+    implementation 'androidx.room:room-runtime:2.2.1'
+    annotationProcessor 'androidx.room:room-compiler:2.2.1'
+    androidTestImplementation 'androidx.room:room-testing:2.2.1'
     // Timber
     implementation 'com.jakewharton.timber:timber:4.7.1'
     // Local unit tests

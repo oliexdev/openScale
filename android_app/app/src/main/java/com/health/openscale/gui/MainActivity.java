@@ -55,6 +55,7 @@ import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.bluetooth.BluetoothCommunication;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
+import com.health.openscale.gui.activities.AppIntroActivity;
 import com.health.openscale.gui.activities.BaseAppCompatActivity;
 import com.health.openscale.gui.activities.DataEntryActivity;
 import com.health.openscale.gui.activities.SettingsActivity;
@@ -148,6 +149,9 @@ public class MainActivity extends BaseAppCompatActivity
             launcherIcon.setImageResource(R.drawable.ic_launcher_openscale_pro);
             navDrawer.getMenu().findItem(R.id.nav_donation).setVisible(false);
         }
+
+        Intent appIntroIntent = new Intent(this, AppIntroActivity.class);
+        startActivity(appIntroIntent);
 
         if (prefs.getBoolean("firstStart", true)) {
             Intent intent = new Intent(this, UserSettingsActivity.class);

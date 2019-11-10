@@ -38,6 +38,7 @@
         <activity android:name=".gui.activities.SettingsActivity"/>
         <activity android:name=".gui.activities.DataEntryActivity"/>
         <activity android:name=".gui.activities.UserSettingsActivity"/>
+        <activity android:name=".gui.activities.AppIntroActivity" />
 
         <receiver android:name=".core.alarm.ReminderBootReceiver" android:enabled="false">
             <intent-filter>
