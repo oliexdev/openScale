@@ -112,8 +112,8 @@
     <string name="title_overview">Visão geral</string>
     <string name="title_statistics">Estatísticas</string>
     <string name="title_table">Tabela</string>
-    <string name="title_users">Utilizadores</string>
-    <string name="title_about">Versão</string>
+    <string name="title_users">Usuários</string>
+    <string name="title_about">Sobre</string>
     <string name="title_general">Menu</string>
     <string name="open_drawer">abrir</string>
     <string name="close_drawer">fechar</string>
@@ -160,7 +160,7 @@
     <string name="label_weeks_view">Visão semanal</string>
     <string name="permission_not_granted">Não permitido</string>
     <string name="permission_bluetooth_info">openScale precisa de permissão para procurar dispositivos Bluetooth</string>
-    <string name="permission_bluetooth_info_title">Informação</string>
+    <string name="permission_bluetooth_info_title">Infos</string>
     <string name="label_next">Próximo</string>
     <string name="label_set_default_order">Define ordem por defeito</string>
     <string name="label_export_overwrite">"Gravar sobre o export \"%s\"  anterior ?"</string>
@@ -189,4 +189,9 @@
 \nReconecte para recuperar os dados das medições.</string>
     <string name="label_day_view">Visualização diária</string>
     <string name="label_year_view">Visualização anual</string>
+    <string name="label_long_press_drag_reorder">Toque firmemente e arraste a medição para reorganiza-la</string>
+    <string name="permission_read_write_data_description">leia/escreva dados no openScale, incluindo informações dos usuários e todas as medidas salvas.</string>
+    <string name="label_rolling_chart">Gráfico</string>
+    <string name="label_measurement_bar">Barra de medidas</string>
+    <string name="action_donation">Doação</string>
 </resources>
