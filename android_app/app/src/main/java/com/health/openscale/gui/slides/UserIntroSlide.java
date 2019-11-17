@@ -17,11 +17,14 @@ package com.health.openscale.gui.slides;
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -29,6 +32,7 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.github.paolorotolo.appintro.ISlideBackgroundColorHolder;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleUser;
@@ -39,7 +43,7 @@ import java.util.jar.Attributes;
 
 import timber.log.Timber;
 
-public class UserIntroSlide extends Fragment {
+public class UserIntroSlide extends Fragment{
 
     private static final String ARG_LAYOUT_RES_ID = "layoutResId";
     private int layoutResId;
@@ -104,25 +108,51 @@ public class UserIntroSlide extends Fragment {
 
         List<ScaleUser> scaleUserList = OpenScale.getInstance().getScaleUserList();
 
-        for (ScaleUser scaleUser : scaleUserList) {
-            TableRow row =  new TableRow(getContext());
+        if (!scaleUserList.isEmpty()) {
+            TableRow row = new TableRow(getContext());
 
-            TextView txtUsername = new TextView(getContext());
-            txtUsername.setText(scaleUser.getUserName());
-            txtUsername.setTextColor(Color.WHITE);
-            row.addView(txtUsername);
+            TextView headerUsername = new TextView(getContext());
+            headerUsername.setText(R.string.label_user_name);
+            headerUsername.setGravity(Gravity.CENTER_HORIZONTAL);
+            headerUsername.setTypeface(null, Typeface.BOLD);
+            row.addView(headerUsername);
 
-            TextView txtAge = new TextView(getContext());
-            txtAge.setText(Integer.toString(scaleUser.getAge()));
-            txtAge.setTextColor(Color.WHITE);
-            row.addView(txtAge);
+            TextView headAge = new TextView(getContext());
+            headAge.setText(R.string.label_age);
+            headAge.setGravity(Gravity.CENTER_HORIZONTAL);
+            headAge.setTypeface(null, Typeface.BOLD);
+            row.addView(headAge);
 
-            TextView txtGender = new TextView(getContext());
-            txtGender.setText((scaleUser.getGender().isMale()) ? getString(R.string.label_male) : getString(R.string.label_female));
-            txtGender.setTextColor(Color.WHITE);
-            row.addView(txtGender);
+            TextView headerGender = new TextView(getContext());
+            headerGender.setText(R.string.label_gender);
+            headerGender.setGravity(Gravity.CENTER_HORIZONTAL);
+            headerGender.setTypeface(null, Typeface.BOLD);
+            row.addView(headerGender);
 
             tblUsers.addView(row);
+
+            for (ScaleUser scaleUser : scaleUserList) {
+                row = new TableRow(getContext());
+
+                TextView txtUsername = new TextView(getContext());
+                txtUsername.setText(scaleUser.getUserName());
+                txtUsername.setGravity(Gravity.CENTER_HORIZONTAL);
+                row.addView(txtUsername);
+
+                TextView txtAge = new TextView(getContext());
+                txtAge.setText(Integer.toString(scaleUser.getAge()));
+                txtAge.setGravity(Gravity.CENTER_HORIZONTAL);
+                row.addView(txtAge);
+
+                TextView txtGender = new TextView(getContext());
+                txtGender.setText((scaleUser.getGender().isMale()) ? getString(R.string.label_male) : getString(R.string.label_female));
+                txtGender.setGravity(Gravity.CENTER_HORIZONTAL);
+                row.addView(txtGender);
+
+                row.setGravity(Gravity.CENTER_HORIZONTAL);
+
+                tblUsers.addView(row);
+            }
         }
     }
 }

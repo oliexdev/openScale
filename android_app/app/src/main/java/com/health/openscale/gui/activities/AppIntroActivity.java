@@ -33,6 +33,10 @@ public class AppIntroActivity extends AppIntro {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        setBarColor(getResources().getColor(R.color.blue_normal));
+        setWizardMode(true);
+        setBackButtonVisibilityWithDone(true);
+
         addSlide(WelcomeIntroSlide.newInstance(R.layout.slide_welcome));
         addSlide(UserIntroSlide.newInstance(R.layout.slide_user));
 
@@ -41,19 +45,16 @@ public class AppIntroActivity extends AppIntro {
     @Override
     public void onSkipPressed(Fragment currentFragment) {
         super.onSkipPressed(currentFragment);
-        // Do something when users tap on Skip button.
     }
 
     @Override
     public void onDonePressed(Fragment currentFragment) {
         super.onDonePressed(currentFragment);
-        // Do something when users tap on Done button.
         finish();
     }
 
     @Override
     public void onSlideChanged(@Nullable Fragment oldFragment, @Nullable Fragment newFragment) {
         super.onSlideChanged(oldFragment, newFragment);
-        // Do something when the slide changes.
     }
 }

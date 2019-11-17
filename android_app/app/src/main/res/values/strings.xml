@@ -37,6 +37,7 @@
     <string name="label_whtr">Waist-to-height ratio</string>
     <string name="label_whr">Waist-hip ratio</string>
     <string name="label_bone">Bone mass</string>
+    <string name="label_age">Age</string>
     <string name="label_smartUserAssign">Smart User assignment</string>
     <plurals name="label_days">
         <item quantity="one">day %d</item>
