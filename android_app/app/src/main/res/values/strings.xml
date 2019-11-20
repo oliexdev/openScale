@@ -83,6 +83,7 @@
     <string name="info_is_enable">enabled</string>
     <string name="info_is_not_enable">disabled</string>
     <string name="info_is_not_available">not available</string>
+    <string name="info_scale_low_battery">Low battery level (%d\%%), please change the scale batteries</string>
     <string name="info_bluetooth_try_connection">Connecting to:</string>
     <string name="info_bluetooth_connection_lost">Lost Bluetooth connection</string>
     <string name="info_bluetooth_no_device">No Bluetooth device found</string>
@@ -91,6 +92,7 @@
     <string name="info_bluetooth_connection_successful">Connection established</string>
     <string name="info_bluetooth_init">Initialize Bluetooth device</string>
     <string name="info_bluetooth_connection_error">Unexpected Bluetooth error</string>
+    <string name="info_bluetooth_connection_error_scale_offline">Cannot connect to scale, please make sure that the scale is turned on</string>
     <string name="info_bluetooth_connection_disconnected">Bluetooth connection closed</string>
     <string name="info_new_data_added">%1$.2f%2$s [%3$s] to %4$s added</string>
     <string name="info_new_data_duplicated">measurement with the same date and time already exist</string>

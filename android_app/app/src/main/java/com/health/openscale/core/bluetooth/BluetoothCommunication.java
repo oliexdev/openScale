@@ -27,6 +27,7 @@ import android.os.Looper;
 
 import androidx.core.content.ContextCompat;
 
+import com.health.openscale.R;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.welie.blessed.BluetoothCentral;
 import com.welie.blessed.BluetoothCentralCallback;
@@ -360,6 +361,10 @@ public abstract class BluetoothCommunication {
         public void onConnectionFailed(BluetoothPeripheral peripheral, final int status) {
             Timber.e(String.format("connection '%s' failed with status %d", peripheral.getName(), status ));
             setBluetoothStatus(BT_STATUS.CONNECTION_LOST);
+
+            if (status == 8) {
+                sendMessage(R.string.info_bluetooth_connection_error_scale_offline, 0);
+            }
         }
 
         @Override

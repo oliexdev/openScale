@@ -428,6 +428,10 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                         batteryLevel, weightThreshold, bodyFatThreshold, currentUnit, userExists,
                         userReferWeightExists, userMeasurementExist, scaleVersion);
 
+                if (batteryLevel <= 10) {
+                    sendMessage(R.string.info_scale_low_battery, batteryLevel);
+                }
+
                 byte requestedUnit = (byte) currentUnit;
                 ScaleUser user = OpenScale.getInstance().getSelectedScaleUser();
                 switch (user.getScaleUnit()) {
