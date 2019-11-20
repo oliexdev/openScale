@@ -213,7 +213,7 @@ public class BluetoothSoehnle extends BluetoothCommunication {
     private void handleWeightMeasurement(byte[] value) {
         float weight = Converters.fromUnsignedInt16Be(value, 9) / 10.0f; // kg
         int soehnleUserIndex = (int) value[1];
-        final int year = Converters.fromUnsignedInt16Le(value, 2);
+        final int year = Converters.fromUnsignedInt16Be(value, 2);
         final int month = (int) value[4];
         final int day = (int) value[5];
         final int hours = (int) value[6];
