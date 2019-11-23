@@ -35,6 +35,7 @@ openScale has built-in support for a number of Bluetooth (BLE or "smart") scales
 - Runtastic Libra
 - Sanitas SBF70
 - Silvercrest SBF75
+- Vigorun
 - Xiaomi Mi scale v1 and v2
 - Yunmai Mini and SE
 - iHealth HS3
