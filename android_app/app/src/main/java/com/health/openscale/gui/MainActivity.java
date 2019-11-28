@@ -57,6 +57,7 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.gui.activities.AppIntroActivity;
 import com.health.openscale.gui.activities.BaseAppCompatActivity;
+import com.health.openscale.gui.activities.BluetoothSettingsActivity;
 import com.health.openscale.gui.activities.DataEntryActivity;
 import com.health.openscale.gui.activities.SettingsActivity;
 import com.health.openscale.gui.activities.UserSettingsActivity;
@@ -483,9 +484,9 @@ public class MainActivity extends BaseAppCompatActivity
         }
 
         String deviceName = prefs.getString(
-                BluetoothPreferences.PREFERENCE_KEY_BLUETOOTH_DEVICE_NAME, "");
+                BluetoothSettingsActivity.PREFERENCE_KEY_BLUETOOTH_DEVICE_NAME, "");
         String hwAddress = prefs.getString(
-                BluetoothPreferences.PREFERENCE_KEY_BLUETOOTH_HW_ADDRESS, "");
+                BluetoothSettingsActivity.PREFERENCE_KEY_BLUETOOTH_HW_ADDRESS, "");
 
         if (!BluetoothAdapter.checkBluetoothAddress(hwAddress)) {
             setBluetoothStatusIcon(R.drawable.ic_bluetooth_connection_lost);

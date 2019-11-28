@@ -25,6 +25,7 @@ import com.github.paolorotolo.appintro.AppIntro;
 import com.github.paolorotolo.appintro.AppIntroFragment;
 import com.github.paolorotolo.appintro.model.SliderPage;
 import com.health.openscale.R;
+import com.health.openscale.gui.slides.BluetoothIntroSlide;
 import com.health.openscale.gui.slides.UserIntroSlide;
 import com.health.openscale.gui.slides.WelcomeIntroSlide;
 
@@ -39,7 +40,7 @@ public class AppIntroActivity extends AppIntro {
 
         addSlide(WelcomeIntroSlide.newInstance(R.layout.slide_welcome));
         addSlide(UserIntroSlide.newInstance(R.layout.slide_user));
-
+        addSlide(BluetoothIntroSlide.newInstance(R.layout.slide_bluetooth));
     }
 
     @Override

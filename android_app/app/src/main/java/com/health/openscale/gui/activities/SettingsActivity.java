@@ -105,10 +105,6 @@ public class SettingsActivity extends PreferenceActivity
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         // TODO HACK to call RequestPermissionResult(...) in PreferenceFragment otherwise API level > 23 is required
         switch(requestCode) {
-            case PermissionHelper.PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION:
-                BluetoothPreferences bluetoothPreferences = (BluetoothPreferences)currentFragment;
-                bluetoothPreferences.onMyOwnRequestPermissionsResult(requestCode, permissions, grantResults);
-                break;
             case PermissionHelper.PERMISSIONS_REQUEST_ACCESS_READ_STORAGE:
             case PermissionHelper.PERMISSIONS_REQUEST_ACCESS_WRITE_STORAGE:
                 BackupPreferences backupPreferences = (BackupPreferences)currentFragment;

@@ -43,7 +43,7 @@ public class PermissionHelper {
 
     public final static int ENABLE_BLUETOOTH_REQUEST = 5;
 
-    public static boolean requestBluetoothPermission(final Activity activity, Fragment fragment) {
+    public static boolean requestBluetoothPermission(final Activity activity) {
         final BluetoothManager bluetoothManager = (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
         BluetoothAdapter btAdapter = bluetoothManager.getAdapter();
 
@@ -52,7 +52,7 @@ public class PermissionHelper {
 
             if (btAdapter != null) {
                 Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                fragment.startActivityForResult(enableBtIntent, ENABLE_BLUETOOTH_REQUEST);
+                activity.startActivityForResult(enableBtIntent, ENABLE_BLUETOOTH_REQUEST);
             }
             return false;
         }

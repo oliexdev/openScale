@@ -15,17 +15,31 @@
  */
 package com.health.openscale.gui.slides;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.health.openscale.R;
+import com.health.openscale.gui.activities.BluetoothSettingsActivity;
+import com.health.openscale.gui.activities.UserSettingsActivity;
+
+import static android.app.Activity.RESULT_OK;
+
 public class BluetoothIntroSlide extends Fragment {
     private static final String ARG_LAYOUT_RES_ID = "layoutResId";
     private int layoutResId;
+
+    private Button btnSearchScale;
+    private TextView txtFoundDevice;
 
     public static BluetoothIntroSlide newInstance(int layoutResId) {
         BluetoothIntroSlide sampleSlide = new BluetoothIntroSlide();
@@ -50,6 +64,44 @@ public class BluetoothIntroSlide extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(layoutResId, container, false);
+        View view = inflater.inflate(layoutResId, container, false);
+
+        txtFoundDevice = view.findViewById(R.id.txtFoundDevice);
+        txtFoundDevice.setText(getCurrentDeviceName());
+
+        btnSearchScale = view.findViewById(R.id.btnSearchScale);
+        btnSearchScale.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getContext(), BluetoothSettingsActivity.class);
+                startActivityForResult(intent, BluetoothSettingsActivity.GET_SCALE_REQUEST);
+            }
+        });
+
+        return view;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode != RESULT_OK) {
+            return;
+        }
+        if (requestCode == BluetoothSettingsActivity.GET_SCALE_REQUEST) {
+            txtFoundDevice.setText(getCurrentDeviceName());
+        }
+    }
+
+    private static final String formatDeviceName(String name, String address) {
+        if (name.isEmpty() || address.isEmpty()) {
+            return "-";
+        }
+        return String.format("%s [%s]", name, address);
+    }
+
+    private String getCurrentDeviceName() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+        return formatDeviceName(
+                prefs.getString(BluetoothSettingsActivity.PREFERENCE_KEY_BLUETOOTH_DEVICE_NAME, ""),
+                prefs.getString(BluetoothSettingsActivity.PREFERENCE_KEY_BLUETOOTH_HW_ADDRESS, ""));
     }
 }
