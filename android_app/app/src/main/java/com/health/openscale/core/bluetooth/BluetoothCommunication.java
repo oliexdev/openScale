@@ -39,6 +39,7 @@ import java.util.UUID;
 import timber.log.Timber;
 
 import static android.bluetooth.BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT;
+import static android.bluetooth.BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE;
 import static android.content.Context.LOCATION_SERVICE;
 import static com.welie.blessed.BluetoothPeripheral.GATT_SUCCESS;
 
@@ -179,12 +180,25 @@ public abstract class BluetoothCommunication {
 
     /**
      * Write a byte array to a Bluetooth device.
-     *  @param characteristic the Bluetooth UUID characteristic
-     * @param bytes the bytes that should be write
+     *
+     * @param characteristic the Bluetooth UUID characteristic
+     * @param bytes          the bytes that should be write
      */
     protected void writeBytes(UUID service, UUID characteristic, byte[] bytes) {
+        writeBytes(service, characteristic, bytes, false);
+    }
+
+    /**
+     * Write a byte array to a Bluetooth device.
+     *
+     * @param characteristic the Bluetooth UUID characteristic
+     * @param bytes          the bytes that should be write
+     * @param noResponse     true if no response is required
+     */
+    protected void writeBytes(UUID service, UUID characteristic, byte[] bytes, boolean noResponse) {
         Timber.d("Invoke write bytes [" + byteInHex(bytes) + "] on " + BluetoothGattUuid.prettyPrint(characteristic));
-        btPeripheral.writeCharacteristic(btPeripheral.getCharacteristic(service, characteristic), bytes, WRITE_TYPE_DEFAULT);
+        btPeripheral.writeCharacteristic(btPeripheral.getCharacteristic(service, characteristic), bytes,
+                noResponse ? WRITE_TYPE_NO_RESPONSE : WRITE_TYPE_DEFAULT);
     }
 
     /**

@@ -68,7 +68,7 @@ public class BluetoothMGB extends BluetoothCommunication {
         buf[6] = (byte)0xCC;
         buf[7] = (byte)((buf[2] + buf[3] + buf[4] + buf[5] + buf[6]) & 0xFF);
 
-        writeBytes(uuid_service, uuid_char_cfg, buf);
+        writeBytes(uuid_service, uuid_char_cfg, buf, true);
     }
 
 
