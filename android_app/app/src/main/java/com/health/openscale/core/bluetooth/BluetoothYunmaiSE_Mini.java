@@ -132,7 +132,7 @@ public class BluetoothYunmaiSE_Mini extends BluetoothCommunication {
             YunmaiLib yunmaiLib = new YunmaiLib(sex, scaleUser.getBodyHeight());
             float bodyFat;
             int resistance = Converters.fromUnsignedInt16Be(weightBytes, 15);
-            if (weightBytes[1] >= 0x1E) {
+            if (weightBytes[1] >= (byte)0x1E) {
                 bodyFat = Converters.fromUnsignedInt16Be(weightBytes, 17) / 100.0f;
             } else {
                 bodyFat = yunmaiLib.getFat(scaleUser.getAge(), weight, resistance);
