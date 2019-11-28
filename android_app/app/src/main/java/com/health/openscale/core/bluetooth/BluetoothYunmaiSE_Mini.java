@@ -133,8 +133,10 @@ public class BluetoothYunmaiSE_Mini extends BluetoothCommunication {
             float bodyFat;
             int resistance = Converters.fromUnsignedInt16Be(weightBytes, 15);
             if (weightBytes[1] >= (byte)0x1E) {
+                Timber.d("Extract the fat value from received bytes");
                 bodyFat = Converters.fromUnsignedInt16Be(weightBytes, 17) / 100.0f;
             } else {
+                Timber.d("Calculate the fat value using the Yunmai lib");
                 bodyFat = yunmaiLib.getFat(scaleUser.getAge(), weight, resistance);
             }
 
