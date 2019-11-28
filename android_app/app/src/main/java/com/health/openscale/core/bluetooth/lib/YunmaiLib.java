@@ -29,6 +29,24 @@ public class YunmaiLib {
         return ((100.0f - bodyFat) * 0.726f * 100.0f + 0.5f) / 100.0f;
     }
 
+    public float getFat(int age, float weight, int resistance) {
+        // for < 0x1e version devices
+        float fat;
+
+        float r = (resistance - 100.0f) / 100.0f;
+        float h = height / 100.0f;
+
+        if (this.sex == 1) {
+            fat = (weight * 1.5f / h / h) + (age * 0.08f) - 10.8f;
+        } else {
+            fat = (weight * 1.5f / h / h) + (age * 0.08f);
+        }
+
+        fat = (fat - 7.4f) + r;
+
+        return fat;
+    }
+
     public float getMuscle(float bodyFat) {
         float muscle;
         muscle = (100.0f - bodyFat) * 0.67f;
