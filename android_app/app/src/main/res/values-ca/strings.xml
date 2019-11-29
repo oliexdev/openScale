@@ -237,4 +237,6 @@
     <string name="activity_level_extreme">Extrem</string>
     <string name="label_upgrade_to_openScale_pro">Actualitzeu a openScale pro per a obtenir suport de Bluetooth</string>
     <string name="action_donation">Donació</string>
+    <string name="info_scale_low_battery">Nivell de bateria baix (%d%), si us plau canvia les piles de la bàscula</string>
+    <string name="info_bluetooth_connection_error_scale_offline">No es pot connectar a la bàscula, si us plau assegura\'t que està engegada</string>
 </resources>
