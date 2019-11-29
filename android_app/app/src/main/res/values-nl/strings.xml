@@ -237,4 +237,6 @@
     <string name="label_is_on_right_axis">Staat op rechter as</string>
     <string name="label_upgrade_to_openScale_pro">Upgrade naar openScale pro voor Bluetooth ondersteuning</string>
     <string name="action_donation">Donatie</string>
+    <string name="info_scale_low_battery">Batterijnniveau laag(%d%), wissel batterijen alstublieft</string>
+    <string name="info_bluetooth_connection_error_scale_offline">Kan niet verbinden met de weegschaal, controleer of deze is ingeschakeld</string>
 </resources>
