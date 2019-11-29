@@ -239,4 +239,6 @@
     <string name="label_is_on_right_axis">בציר הימני</string>
     <string name="label_upgrade_to_openScale_pro">נא לשדרג לגרסה המקצועית של openScale לתמיכה ב־Bluetooth</string>
     <string name="action_donation">תרומה</string>
+    <string name="info_scale_low_battery">עצמת הסוללה נמוכה (%d%), נא להחליף את הסוללות של המשקל</string>
+    <string name="info_bluetooth_connection_error_scale_offline">לא ניתן להתחבר למשקל, נא לוודא שהמשקל זמין</string>
 </resources>
