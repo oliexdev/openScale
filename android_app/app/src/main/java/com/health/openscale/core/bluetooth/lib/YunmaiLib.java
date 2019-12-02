@@ -82,4 +82,41 @@ public class YunmaiLib {
         }
         return weight * (100.0f - bodyFat) / 100.0f;
     }
+
+    public float getVisceralFat(float bodyFat, int age) {
+        float f = (bodyFat < 5.0f || bodyFat > 75.0f) ? 0.0f : bodyFat;
+        int a = (age < 18 || age > 120) ? 18 : age;
+
+        if (sex == 1) {
+            if (a < 40) {
+                f -= 21.0f;
+            } else if (a < 60) {
+                f -= 22.0f;
+            } else {
+                f -= 24.0f;
+            }
+        } else {
+            if (a < 40) {
+                f -= 34.0f;
+            } else if (a < 60) {
+                f -= 35.0f;
+            } else {
+                f -= 36.0f;
+            }
+        }
+
+        float d = sex == 1 ? 1.4f : 1.8f;
+        if (f > 0.0f) {
+            d = 1.1f;
+        }
+
+        float vf = (f / d) + 9.5f;
+        if (vf < 1.0f) {
+            return 1.0f;
+        }
+        if (vf > 30.0f) {
+            return 30.0f;
+        }
+        return vf;
+    }
 }
