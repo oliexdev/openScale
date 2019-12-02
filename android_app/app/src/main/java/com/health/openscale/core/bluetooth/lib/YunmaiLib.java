@@ -51,10 +51,6 @@ public class YunmaiLib {
         float muscle;
         muscle = (100.0f - bodyFat) * 0.67f;
 
-        if (sex == 1) {
-            muscle = (100.0f - bodyFat) * 0.7f;
-        }
-
         muscle = ((muscle * 100.0f) + 0.5f) / 100.0f;
 
         return muscle;
