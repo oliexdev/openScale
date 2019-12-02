@@ -145,6 +145,7 @@ public class BluetoothYunmaiSE_Mini extends BluetoothCommunication {
                 scaleBtData.setMuscle(yunmaiLib.getMuscle(bodyFat));
                 scaleBtData.setWater(yunmaiLib.getWater(bodyFat));
                 scaleBtData.setBone(yunmaiLib.getBoneMass(scaleBtData.getMuscle(), weight));
+                scaleBtData.setLbm(yunmaiLib.getLeanBodyMass(weight, bodyFat));
             } else {
                 Timber.e("body fat is zero");
             }

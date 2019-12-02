@@ -75,4 +75,11 @@ public class YunmaiLib {
 
         return boneMass;
     }
+
+    public float getLeanBodyMass(float weight, float bodyFat) {
+        if (bodyFat < 5.0f || bodyFat > 75.0f) {
+            return 0.0f;
+        }
+        return weight * (100.0f - bodyFat) / 100.0f;
+    }
 }
