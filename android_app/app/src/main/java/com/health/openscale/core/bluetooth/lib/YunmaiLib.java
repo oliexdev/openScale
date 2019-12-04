@@ -36,6 +36,10 @@ public class YunmaiLib {
         float r = (resistance - 100.0f) / 100.0f;
         float h = height / 100.0f;
 
+        if (r >= 1) {
+            r = (float)Math.sqrt(r);
+        }
+
         if (this.sex == 1) {
             fat = (weight * 1.5f / h / h) + (age * 0.08f) - 10.8f;
         } else {
