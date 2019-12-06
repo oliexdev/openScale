@@ -89,7 +89,7 @@ public class YunmaiLib {
             muscle = (100.0f - bodyFat) * 0.6f;
         }
 
-        muscle = (muscle * 100.0f) + 0.5f / 100.0f;
+        muscle = ((muscle * 100.0f) + 0.5f) / 100.0f;
 
         return muscle;
     }
