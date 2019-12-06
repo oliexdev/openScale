@@ -19,7 +19,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="40dp"
-        android:text="Welcome to\nopenScale"
+        android:text="@string/label_slide_welcome_top_text"
         android:gravity="center"
         android:textSize="28sp"
         android:textStyle="bold" />
@@ -33,7 +33,7 @@
         android:layout_marginRight="10dp"
         android:layout_marginBottom="20dp"
         android:gravity="center"
-        android:text="Monitor and track your weight, BMI, body fat, body water, muscle and other body metrics in an open source app"
+        android:text="@string/label_slide_welcome_main_text"
         android:textSize="16sp" />
 
 </LinearLayout>

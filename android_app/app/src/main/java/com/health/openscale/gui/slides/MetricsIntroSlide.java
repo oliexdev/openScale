@@ -27,15 +27,15 @@ import androidx.fragment.app.Fragment;
 
 import com.health.openscale.R;
 
-public class SupportIntroSlide extends Fragment {
+public class MetricsIntroSlide extends Fragment {
 
     private static final String ARG_LAYOUT_RES_ID = "layoutResId";
     private int layoutResId;
 
     private TextView slideMainText;
 
-    public static SupportIntroSlide newInstance(int layoutResId) {
-        SupportIntroSlide sampleSlide = new SupportIntroSlide();
+    public static MetricsIntroSlide newInstance(int layoutResId) {
+        MetricsIntroSlide sampleSlide = new MetricsIntroSlide();
 
         Bundle args = new Bundle();
         args.putInt(ARG_LAYOUT_RES_ID, layoutResId);

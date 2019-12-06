@@ -11,8 +11,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_marginTop="60dp"
-        android:layout_marginBottom="30dp"
+        android:layout_marginTop="40dp"
+        android:layout_marginBottom="40dp"
         android:orientation="horizontal">
 
         <ImageView
@@ -30,46 +30,69 @@
             android:textSize="20sp" />
     </LinearLayout>
 
-    <TextView
+    <ScrollView
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="40dp"
-        android:text="Supports various Bluetooth devices"
-        android:textSize="18sp"
-        android:textStyle="bold" />
+        android:layout_height="wrap_content">
 
-    <ImageView
-        android:id="@+id/imgSlide"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:layout_marginBottom="40dp"
-        app:srcCompat="@drawable/ic_bluetooth_device_supported" />
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
-        android:layout_marginBottom="20dp"
-        android:gravity="center"
-        android:text="If you have a Bluetooth scale, please add "
-        android:textSize="16sp" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="40dp"
+                android:gravity="center"
+                android:text="@string/label_slide_bluetooth_top_text"
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
-    <TextView
-        android:id="@+id/txtFoundDevice"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="40dp"
-        android:text="-"
-        android:textSize="18sp"
-        android:textStyle="bold" />
+            <ImageView
+                android:id="@+id/imgSlide"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_marginBottom="40dp"
+                app:srcCompat="@drawable/ic_bluetooth_device_supported"
+                android:tint="@color/widgetTextColor"/>
 
-    <Button
-        android:id="@+id/btnSearchScale"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@drawable/flat_selector"
-        android:text="Add Bluetooth scale"
-        android:textColor="@android:color/white" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_marginBottom="20dp"
+                android:gravity="center"
+                android:text="@string/label_slide_bluetooth_main_text"
+                android:textSize="16sp" />
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:text="@string/label_your_bluetooth_scale"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txtFoundDevice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                android:text="-"
+                android:textSize="18sp" />
+
+            <Button
+                android:id="@+id/btnSearchScale"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="100dp"
+                android:background="@drawable/flat_selector"
+                android:text="Add Bluetooth scale"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:textColor="@android:color/white" />
+        </LinearLayout>
+    </ScrollView>
 </LinearLayout>

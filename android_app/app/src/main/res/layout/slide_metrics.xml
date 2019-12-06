@@ -35,7 +35,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="40dp"
         android:gravity="center"
-        android:text="@string/label_slide_user_top_text"
+        android:text="@string/label_slide_metrics_top_text"
         android:textSize="18sp"
         android:textStyle="bold" />
 
@@ -44,44 +44,18 @@
         android:layout_width="60dp"
         android:layout_height="60dp"
         android:layout_marginBottom="40dp"
-        app:srcCompat="@drawable/ic_slide_group"
+        app:srcCompat="@drawable/ic_preferences_graph"
         android:tint="@color/widgetTextColor" />
 
     <TextView
+        android:id="@+id/slideMainText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
         android:layout_marginBottom="20dp"
         android:gravity="center"
-        android:text="@string/label_slide_user_main_text"
+        android:text="@string/label_slide_metrics_main_text"
         android:textSize="16sp" />
-
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="100dp">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <TableLayout
-                android:id="@+id/tblUsers"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="20dp" />
-        </LinearLayout>
-    </ScrollView>
-
-    <Button
-        android:id="@+id/btnAddUser"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@drawable/flat_selector"
-        android:text="@string/label_add_user"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp"
-        android:textColor="@android:color/white" />
 
 </LinearLayout>

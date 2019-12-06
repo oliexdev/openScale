@@ -15,17 +15,18 @@
  */
 package com.health.openscale.gui.activities;
 
-import android.graphics.Color;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.github.paolorotolo.appintro.AppIntro;
-import com.github.paolorotolo.appintro.AppIntroFragment;
-import com.github.paolorotolo.appintro.model.SliderPage;
 import com.health.openscale.R;
 import com.health.openscale.gui.slides.BluetoothIntroSlide;
+import com.health.openscale.gui.slides.MetricsIntroSlide;
+import com.health.openscale.gui.slides.OpenSourceIntroSlide;
+import com.health.openscale.gui.slides.PrivacyIntroSlide;
+import com.health.openscale.gui.slides.SupportIntroSlide;
 import com.health.openscale.gui.slides.UserIntroSlide;
 import com.health.openscale.gui.slides.WelcomeIntroSlide;
 
@@ -39,8 +40,12 @@ public class AppIntroActivity extends AppIntro {
         setBackButtonVisibilityWithDone(true);
 
         addSlide(WelcomeIntroSlide.newInstance(R.layout.slide_welcome));
+        addSlide(PrivacyIntroSlide.newInstance(R.layout.slide_privacy));
         addSlide(UserIntroSlide.newInstance(R.layout.slide_user));
+        addSlide(OpenSourceIntroSlide.newInstance(R.layout.slide_opensource));
         addSlide(BluetoothIntroSlide.newInstance(R.layout.slide_bluetooth));
+        addSlide(MetricsIntroSlide.newInstance(R.layout.slide_metrics));
+        addSlide(SupportIntroSlide.newInstance(R.layout.slide_support));
     }
 
     @Override
