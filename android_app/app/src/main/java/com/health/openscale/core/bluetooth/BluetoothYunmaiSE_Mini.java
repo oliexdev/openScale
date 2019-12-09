@@ -60,12 +60,13 @@ public class BluetoothYunmaiSE_Mini extends BluetoothCommunication {
                 final ScaleUser selectedUser = OpenScale.getInstance().getSelectedScaleUser();
                 byte sex = selectedUser.getGender().isMale() ? (byte)0x01 : (byte)0x02;
                 byte display_unit = selectedUser.getScaleUnit() == Converters.WeightUnit.KG ? (byte) 0x01 : (byte) 0x02;
+                byte body_type = (byte) YunmaiLib.toYunmaiActivityLevel(selectedUser.getActivityLevel());
 
                 byte[] user_add_or_query = new byte[]{
                         (byte) 0x0d, (byte) 0x12, (byte) 0x10, (byte) 0x01, (byte) 0x00, (byte) 0x00,
                         userId[0], userId[1], (byte) selectedUser.getBodyHeight(), sex,
                         (byte) selectedUser.getAge(), (byte) 0x55, (byte) 0x5a, (byte) 0x00,
-                        (byte)0x00, display_unit, (byte) 0x03, (byte) 0x00};
+                        (byte)0x00, display_unit, body_type, (byte) 0x00};
                 user_add_or_query[user_add_or_query.length - 1] =
                         xorChecksum(user_add_or_query, 1, user_add_or_query.length - 1);
                 writeBytes(WEIGHT_CMD_SERVICE, WEIGHT_CMD_CHARACTERISTIC, user_add_or_query);
@@ -129,7 +130,7 @@ public class BluetoothYunmaiSE_Mini extends BluetoothCommunication {
                 sex = 0;
             }
 
-            YunmaiLib yunmaiLib = new YunmaiLib(sex, scaleUser.getBodyHeight());
+            YunmaiLib yunmaiLib = new YunmaiLib(sex, scaleUser.getBodyHeight(), scaleUser.getActivityLevel());
             float bodyFat;
             int resistance = Converters.fromUnsignedInt16Be(weightBytes, 15);
             if (weightBytes[1] >= (byte)0x1E) {
