@@ -241,4 +241,43 @@
     <string name="action_donation">תרומה</string>
     <string name="info_scale_low_battery">עצמת הסוללה נמוכה (%d%), נא להחליף את הסוללות של המשקל</string>
     <string name="info_bluetooth_connection_error_scale_offline">לא ניתן להתחבר למשקל, נא לוודא שהמשקל זמין</string>
+    <string name="label_empty">ריק</string>
+    <string name="label_age">גיל</string>
+    <string name="label_slide_welcome_top_text">ברוך בואך
+\nל־openScale</string>
+    <string name="label_slide_welcome_main_text">עוקב מדדי משקל וגוף הקוד פתוח עם תמיכה במשקלי אדם עם Bluetooth.</string>
+    <string name="label_slide_privacy_top_text">הגנה על נתוני הבריאות הפרטיים שלכם.</string>
+    <string name="label_slide_privacy_main_text">לא נשלח מידע על ידי openScale לענן והעובדה שאין הרשאה לגשת לאינטרנט מהווה התחייבות מוחלטת לכך.
+\n
+\nאם מעניין אותך לסנכרן את המשקל שלך עם GoogleFit או עם MQTT ניתן להתקין את <a href="https://play.google.com/store/apps/details?id=com.health.openscale.sync">openScale sync</a>.</string>
+    <string name="label_slide_user_top_text">יש תמיכה בריבוי משתמשים.</string>
+    <string name="label_slide_user_main_text">אין צורך ליצור חשבון מקוון לצורך השימוש ב־openScale.
+\n
+\nאנו זקוקים לפרטים שלך רק כדי לחשב את מדדי הגוף.</string>
+    <string name="label_slide_opensource_top_text">זאת תכנית בקוד פתוח עם דרגת שקיפות גבוהה.</string>
+    <string name="label_slide_opensource_main_text">הרישיון של openScale הוא <a href="https://github.com/oliexdev/openScale/blob/master/LICENSE">GPLv3</a>.
+\n
+\nכל חישובי הגוף הם שקופים ואין פונקציות נסתרות להעברת נתונים או זהות המשתמש.
+\n
+\nניתן למצוא את קוד המקור המלא ב־<a href="https://github.com/oliexdev/openScale">GitHub</a>. אפשר להתרשם גם דרך סקירת קוד המקור של openScale.</string>
+    <string name="label_slide_bluetooth_top_text">ישנה תמיכה במגוון משקלי אדם עם Bluetooth שנוצרו על ידי יצרנים שונים.</string>
+    <string name="label_slide_bluetooth_main_text">ל־openScale יש תמיכה מובנית במגוון משקלי אדם עם Bluetooth ממספר יצרנים שונים.
+\n
+\nאנו פועלים באופן עקבי לשפר ולהרחיב את היצע המשקלים הנתמכים. ניתן למצוא את הרשימה המלאה ואת רמת התמיכה בכל משקל אדם ב־<a href="https://github.com/oliexdev/openScale/wiki/Supported-scales-in-openScale">GitHub</a>.</string>
+    <string name="label_slide_metrics_top_text">מעקב וניתוח של מדדי הגוף שלך.</string>
+    <string name="label_slide_metrics_main_text">ב־openScale קיימת תמיכה בלמעלה מ־22 מדדי גוף.
+\n
+\nניתן להגדיר לפי משתמש כדי להציג אך ורק את המדדים שמעניינים אותך.
+\n
+\nאם המשקל שלך לא תומך בשומן גוף, מים בגוף ובמדד ללא שומן, ניתן להעריך את המדדים האלה לפי <a href="https://github.com/oliexdev/openScale/wiki/Body-metric-estimations">מאמרים מדעיים</a>.</string>
+    <string name="label_slide_support_top_text">נשמע לקבל את עזרתך בשיפור openScale.</string>
+    <string name="label_slide_support_main_text">אנו ב־openScale זקוקים לך! אם מצאת תקלה, יש לך רעיון או שאלה או שברצונך לקבל עזרה להוספת תמיכה למשקל ה־Bluetooth שלך, נא ליצור <a href="https://github.com/oliexdev/openScale/issues">בקשה חדשה</a>.
+\n
+\nאם מעניין אותך לתמרץ את המפתח של המיזם הזה להמשיך בפיתוח ולספק תחזוקה שוטפת, אפשר להוסיף ביקורת חיובית ב־<a href="http://play.google.com/store/apps/details?id=com.health.openscale.pro">GooglePlay</a> או כוכב ב־<a href="https://github.com/oliexdev/openScale">GitHub</a>.
+\n
+\nהתמיכה והמשוב שלך חשובים לנו מאוד. תודה רבה לך!</string>
+    <string name="app_intro_skip_button">דילוג</string>
+    <string name="app_intro_next_button">הבא</string>
+    <string name="app_intro_back_button">חזרה</string>
+    <string name="app_intro_done_button">סיום</string>
 </resources>
