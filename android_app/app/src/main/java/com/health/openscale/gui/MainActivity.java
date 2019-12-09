@@ -60,12 +60,10 @@ import com.health.openscale.gui.activities.BaseAppCompatActivity;
 import com.health.openscale.gui.activities.BluetoothSettingsActivity;
 import com.health.openscale.gui.activities.DataEntryActivity;
 import com.health.openscale.gui.activities.SettingsActivity;
-import com.health.openscale.gui.activities.UserSettingsActivity;
 import com.health.openscale.gui.fragments.GraphFragment;
 import com.health.openscale.gui.fragments.OverviewFragment;
 import com.health.openscale.gui.fragments.StatisticsFragment;
 import com.health.openscale.gui.fragments.TableFragment;
-import com.health.openscale.gui.preferences.BluetoothPreferences;
 
 import java.io.File;
 import java.util.List;
@@ -151,13 +149,9 @@ public class MainActivity extends BaseAppCompatActivity
             navDrawer.getMenu().findItem(R.id.nav_donation).setVisible(false);
         }
 
-        Intent appIntroIntent = new Intent(this, AppIntroActivity.class);
-        startActivity(appIntroIntent);
-
         if (prefs.getBoolean("firstStart", true)) {
-            Intent intent = new Intent(this, UserSettingsActivity.class);
-            intent.putExtra(UserSettingsActivity.EXTRA_MODE, UserSettingsActivity.ADD_USER_REQUEST);
-            startActivity(intent);
+            Intent appIntroIntent = new Intent(this, AppIntroActivity.class);
+            startActivity(appIntroIntent);
 
             prefs.edit().putBoolean("firstStart", false).apply();
         }

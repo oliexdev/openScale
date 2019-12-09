@@ -30,7 +30,6 @@ import androidx.fragment.app.Fragment;
 
 import com.health.openscale.R;
 import com.health.openscale.gui.activities.BluetoothSettingsActivity;
-import com.health.openscale.gui.activities.UserSettingsActivity;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -91,9 +90,9 @@ public class BluetoothIntroSlide extends Fragment {
         }
     }
 
-    private static final String formatDeviceName(String name, String address) {
+    private final String formatDeviceName(String name, String address) {
         if (name.isEmpty() || address.isEmpty()) {
-            return "-";
+            return "[" + getContext().getString(R.string.label_empty) + "]";
         }
         return String.format("%s [%s]", name, address);
     }

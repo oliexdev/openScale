@@ -16,7 +16,6 @@
 package com.health.openscale.gui.slides;
 
 import android.content.Intent;
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -24,7 +23,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -32,16 +30,12 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.github.paolorotolo.appintro.ISlideBackgroundColorHolder;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.gui.activities.UserSettingsActivity;
 
 import java.util.List;
-import java.util.jar.Attributes;
-
-import timber.log.Timber;
 
 public class UserIntroSlide extends Fragment{
 
@@ -108,28 +102,30 @@ public class UserIntroSlide extends Fragment{
 
         List<ScaleUser> scaleUserList = OpenScale.getInstance().getScaleUserList();
 
+        TableRow header = new TableRow(getContext());
+
+        TextView headerUsername = new TextView(getContext());
+        headerUsername.setText(R.string.label_user_name);
+        headerUsername.setGravity(Gravity.CENTER_HORIZONTAL);
+        headerUsername.setTypeface(null, Typeface.BOLD);
+        header.addView(headerUsername);
+
+        TextView headAge = new TextView(getContext());
+        headAge.setText(R.string.label_age);
+        headAge.setGravity(Gravity.CENTER_HORIZONTAL);
+        headAge.setTypeface(null, Typeface.BOLD);
+        header.addView(headAge);
+
+        TextView headerGender = new TextView(getContext());
+        headerGender.setText(R.string.label_gender);
+        headerGender.setGravity(Gravity.CENTER_HORIZONTAL);
+        headerGender.setTypeface(null, Typeface.BOLD);
+        header.addView(headerGender);
+
+        tblUsers.addView(header);
+
         if (!scaleUserList.isEmpty()) {
             TableRow row = new TableRow(getContext());
-
-            TextView headerUsername = new TextView(getContext());
-            headerUsername.setText(R.string.label_user_name);
-            headerUsername.setGravity(Gravity.CENTER_HORIZONTAL);
-            headerUsername.setTypeface(null, Typeface.BOLD);
-            row.addView(headerUsername);
-
-            TextView headAge = new TextView(getContext());
-            headAge.setText(R.string.label_age);
-            headAge.setGravity(Gravity.CENTER_HORIZONTAL);
-            headAge.setTypeface(null, Typeface.BOLD);
-            row.addView(headAge);
-
-            TextView headerGender = new TextView(getContext());
-            headerGender.setText(R.string.label_gender);
-            headerGender.setGravity(Gravity.CENTER_HORIZONTAL);
-            headerGender.setTypeface(null, Typeface.BOLD);
-            row.addView(headerGender);
-
-            tblUsers.addView(row);
 
             for (ScaleUser scaleUser : scaleUserList) {
                 row = new TableRow(getContext());
@@ -153,6 +149,17 @@ public class UserIntroSlide extends Fragment{
 
                 tblUsers.addView(row);
             }
+        } else {
+            TableRow row = new TableRow(getContext());
+
+            TextView txtEmpty = new TextView(getContext());
+            txtEmpty.setText("[" + getContext().getString(R.string.label_empty) + "]");
+            txtEmpty.setGravity(Gravity.CENTER_HORIZONTAL);
+            row.addView(txtEmpty);
+
+            row.setGravity(Gravity.CENTER_HORIZONTAL);
+
+            tblUsers.addView(row);
         }
     }
 }

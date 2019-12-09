@@ -15,6 +15,7 @@
  */
 package com.health.openscale.gui.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
@@ -22,6 +23,7 @@ import androidx.fragment.app.Fragment;
 
 import com.github.paolorotolo.appintro.AppIntro;
 import com.health.openscale.R;
+import com.health.openscale.core.OpenScale;
 import com.health.openscale.gui.slides.BluetoothIntroSlide;
 import com.health.openscale.gui.slides.MetricsIntroSlide;
 import com.health.openscale.gui.slides.OpenSourceIntroSlide;
@@ -39,6 +41,8 @@ public class AppIntroActivity extends AppIntro {
         setWizardMode(true);
         setBackButtonVisibilityWithDone(true);
 
+        showSkipButton(true);
+
         addSlide(WelcomeIntroSlide.newInstance(R.layout.slide_welcome));
         addSlide(PrivacyIntroSlide.newInstance(R.layout.slide_privacy));
         addSlide(UserIntroSlide.newInstance(R.layout.slide_user));
@@ -51,16 +55,33 @@ public class AppIntroActivity extends AppIntro {
     @Override
     public void onSkipPressed(Fragment currentFragment) {
         super.onSkipPressed(currentFragment);
+        finish();
+        checkUserCreation();
     }
 
     @Override
     public void onDonePressed(Fragment currentFragment) {
         super.onDonePressed(currentFragment);
         finish();
+        checkUserCreation();
     }
 
     @Override
     public void onSlideChanged(@Nullable Fragment oldFragment, @Nullable Fragment newFragment) {
         super.onSlideChanged(oldFragment, newFragment);
+
+        if (newFragment instanceof WelcomeIntroSlide) {
+            showSkipButton(true);
+        } else {
+            showSkipButton(false);
+        }
+    }
+
+    private void checkUserCreation() {
+        if (OpenScale.getInstance().getSelectedScaleUserId() == -1) {
+            Intent intent = new Intent(this, UserSettingsActivity.class);
+            intent.putExtra(UserSettingsActivity.EXTRA_MODE, UserSettingsActivity.ADD_USER_REQUEST);
+            startActivity(intent);
+        }
     }
 }
