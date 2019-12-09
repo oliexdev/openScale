@@ -29,6 +29,28 @@ public class YunmaiLib {
         return ((100.0f - bodyFat) * 0.726f * 100.0f + 0.5f) / 100.0f;
     }
 
+    public float getFat(int age, float weight, int resistance) {
+        // for < 0x1e version devices
+        float fat;
+
+        float r = (resistance - 100.0f) / 100.0f;
+        float h = height / 100.0f;
+
+        if (r >= 1) {
+            r = (float)Math.sqrt(r);
+        }
+
+        if (this.sex == 1) {
+            fat = (weight * 1.5f / h / h) + (age * 0.08f) - 10.8f;
+        } else {
+            fat = (weight * 1.5f / h / h) + (age * 0.08f);
+        }
+
+        fat = (fat - 7.4f) + r;
+
+        return fat;
+    }
+
     public float getMuscle(float bodyFat) {
         float muscle;
         muscle = (100.0f - bodyFat) * 0.67f;
@@ -56,5 +78,49 @@ public class YunmaiLib {
         boneMass = ((boneMass * 10.0f) + 0.5f) / 10.0f;
 
         return boneMass;
+    }
+
+    public float getLeanBodyMass(float weight, float bodyFat) {
+        if (bodyFat < 5.0f || bodyFat > 75.0f) {
+            return 0.0f;
+        }
+        return weight * (100.0f - bodyFat) / 100.0f;
+    }
+
+    public float getVisceralFat(float bodyFat, int age) {
+        float f = (bodyFat < 5.0f || bodyFat > 75.0f) ? 0.0f : bodyFat;
+        int a = (age < 18 || age > 120) ? 18 : age;
+
+        if (sex == 1) {
+            if (a < 40) {
+                f -= 21.0f;
+            } else if (a < 60) {
+                f -= 22.0f;
+            } else {
+                f -= 24.0f;
+            }
+        } else {
+            if (a < 40) {
+                f -= 34.0f;
+            } else if (a < 60) {
+                f -= 35.0f;
+            } else {
+                f -= 36.0f;
+            }
+        }
+
+        float d = sex == 1 ? 1.4f : 1.8f;
+        if (f > 0.0f) {
+            d = 1.1f;
+        }
+
+        float vf = (f / d) + 9.5f;
+        if (vf < 1.0f) {
+            return 1.0f;
+        }
+        if (vf > 30.0f) {
+            return 30.0f;
+        }
+        return vf;
     }
 }

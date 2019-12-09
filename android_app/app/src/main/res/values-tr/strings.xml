@@ -243,4 +243,6 @@
     <string name="label_calories">Kaloriler</string>
     <string name="label_upgrade_to_openScale_pro">Bluetooth özelliğini etkinleştirmek için openScale paralı sürüme yükseltin</string>
     <string name="action_donation">Bağış</string>
+    <string name="info_scale_low_battery">Düşük pil düzeyi (%d%), lütfen tartının pilini değiştirin</string>
+    <string name="info_bluetooth_connection_error_scale_offline">Tartı ile bağlantı kurulamıyor, lütfen tartının açık olduğundan emin olun</string>
 </resources>
