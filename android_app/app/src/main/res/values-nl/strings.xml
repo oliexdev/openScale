@@ -239,4 +239,20 @@
     <string name="action_donation">Donatie</string>
     <string name="info_scale_low_battery">Batterijnniveau laag(%d%), wissel batterijen alstublieft</string>
     <string name="info_bluetooth_connection_error_scale_offline">Kan niet verbinden met de weegschaal, controleer of deze is ingeschakeld</string>
+    <string name="label_empty">leeg</string>
+    <string name="label_age">Leeftijd</string>
+    <string name="label_slide_welcome_top_text">Welkom bij
+\nopenScale</string>
+    <string name="label_slide_welcome_main_text">Open-source gewicht en lichaamskenmerken logboek, met ondersteuning voor Bluetooth weegschalen.</string>
+    <string name="label_slide_privacy_top_text">Bescherm je persoonlijke gezondheidsgegevens.</string>
+    <string name="label_slide_privacy_main_text">openScale verstuurt geen gegevens naar de cloud en het ontbreken van toestemming voor internet toegang is daar het beste bewijs van.
+\n
+\nAls u uw gewicht wilt synchroniseren met GoogleFit of met MQTT, kunt u <a href="https://play.google.com/store/apps/details?id=com.health.openscale.sync">openScale sync</a> installeren.</string>
+    <string name="label_slide_user_top_text">Meerdere gebruikers worden ondersteund.</string>
+    <string name="label_slide_user_main_text">openScale vereist geen online account.
+\n
+\nWe hebben slechts gebruikersgegevens nodig om lichaamskenmerken te berekenen.</string>
+    <string name="label_slide_opensource_top_text">Het is open-source software met een hoge mate van transparantie.</string>
+    <string name="label_slide_bluetooth_top_text">Verscheidene Bluetooth weegschalen van verschillen fabrikanten worden ondersteund.</string>
+    <string name="label_slide_metrics_top_text">Verzamel en analyseer uw lichaamsstatistieken.</string>
 </resources>
