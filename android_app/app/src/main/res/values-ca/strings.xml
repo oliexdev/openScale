@@ -239,4 +239,43 @@
     <string name="action_donation">Donació</string>
     <string name="info_scale_low_battery">Nivell de bateria baix (%d%), canvieu les piles de la bàscula</string>
     <string name="info_bluetooth_connection_error_scale_offline">No es pot connectar amb la bàscula, assegureu-vos que està engegada</string>
+    <string name="label_empty">buit</string>
+    <string name="label_age">Edat</string>
+    <string name="label_slide_welcome_top_text">Benvinguts a
+\nl\'openScale</string>
+    <string name="label_slide_welcome_main_text">Un seguidor de mètriques del pes i del cos de codi obert, amb suport per a bàscules Bluetooth.</string>
+    <string name="label_slide_privacy_top_text">Protegiu les vostres dades personals de salut.</string>
+    <string name="label_slide_privacy_main_text">L\'openScale no envia cap dada al núvol i que no tingui permís per a accedir a Internet n\'és una forta garantia.
+\n
+\nSi realment voleu sincronitzar el vostre pes amb el Google Fit o amb MQTT, podeu instal·lar l\'<a href="https://play.google.com/store/apps/details?id=com.health.openscale.sync">openScale sync</a>.</string>
+    <string name="label_slide_user_top_text">Suporta múltiples usuaris.</string>
+    <string name="label_slide_user_main_text">L\'openScale no us obliga a crear cap compte en línia.
+\n
+\nNomés ens cal la vostra informació d\'usuari per a calcular algunes mètriques corporals.</string>
+    <string name="label_slide_opensource_top_text">És programari de codi obert amb un alt grau de transparència.</string>
+    <string name="label_slide_opensource_main_text">L\'openScale es llicencia sota la <a href="https://github.com/oliexdev/openScale/blob/master/LICENSE">GPLv3</a>.
+\n
+\nTots els càlculs corporals són transparents i no s\'empra cap funció oculta de transferència de dades o d\'identificació de l\'usuari.
+\n
+\nPodeu trobar-ne el codi font complet al <a href="https://github.com/oliexdev/openScale">GitHub</a>. Convenceu-vos vós mateix provant l\'openScale.</string>
+    <string name="label_slide_bluetooth_top_text">Suport per a diverses bàscules Bluetooth de diferents fabricants.</string>
+    <string name="label_slide_bluetooth_main_text">L\'openScale té integrat suport per a diverses bàscules Bluetooth de diferents fabricants.
+\n
+\nMillorem i ampliem constantment el conjunt de bàscules suportades. Podeu trobar-ne la llista sencera i el nivell de suport de cadascuna al <a href="https://github.com/oliexdev/openScale/wiki/Supported-scales-in-openScale">GitHub</a>.</string>
+    <string name="label_slide_metrics_top_text">Feu un seguiment i analitzeu les vostres mètriques corporals.</string>
+    <string name="label_slide_metrics_main_text">L\'openScale suporta més de 22 mètriques corporals.
+\n
+\nEs pot configurar individualment perquè només mostri les mètriques que us importen.
+\n
+\nSi la vostra bàscula no suporta el greix corporal, l\'aigua corporal o la massa corporal magra, podeu estimar-ne les mesures basant-vos en <a href="https://github.com/oliexdev/openScale/wiki/Body-metric-estimations">publicacions científiques</a>.</string>
+    <string name="label_slide_support_top_text">Ajudeu-nos a millorar l\'openScale.</string>
+    <string name="label_slide_support_main_text">L\'openScale us necessita! Si trobeu un error, teniu una idea o un dubte o voleu suport per a la vostra bàscula Bluetooth, creeu una <a href="https://github.com/oliexdev/openScale/issues">incidència nova</a>.
+\n
+\nSi voleu motivar el creador d\'aquest projecte perquè desenvolupi més i ofereixi manteniment continu, podeu fer una valoració positiva a l\'openScale al <a href="http://play.google.com/store/apps/details?id=com.health.openscale.pro">Google Play</a> o posar-li una estrella al <a href="https://github.com/oliexdev/openScale">GitHub</a>.
+\n
+\nApreciem el vostre suport i les crítiques constructives. Gràcies!</string>
+    <string name="app_intro_skip_button">OMET</string>
+    <string name="app_intro_next_button">SEGÜENT</string>
+    <string name="app_intro_back_button">ENDARRERE</string>
+    <string name="app_intro_done_button">FET</string>
 </resources>
