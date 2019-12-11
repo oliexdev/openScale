@@ -84,7 +84,7 @@
     <string name="info_no_selected_user">Žiadny používateľ. Prosím, vytvorte jedného v nastaveniach.</string>
     <string name="info_no_evaluation_available">Nebolo možné vypočítať hodnotu</string>
     <string name="question_really_delete">Vymazať položku\?</string>
-    <string name="question_really_delete_all">Naozaj chcete vymazať všetky položky z databázy?</string>
+    <string name="question_really_delete_all">Naozaj chcete vymazať všetky položky všetkých používateľov\?</string>
     <string name="question_really_delete_user">Vymazať používateľa\?</string>
     <string name="label_bluetooth_title">Bluetooth</string>
     <string name="label_bluetooth_enable">Pripojiť sa k váhe po spustení</string>
@@ -145,8 +145,7 @@
     <string name="label_feedback_message_negative">Nie, ďakujem</string>
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">Vyskytla sa neočakávaná chyba.
 \n
-\nProsím, oznámte nám problém vrátane podrobných informácií o chybe na
-\nhttps://github.com/oliexdev/openScale/issues</string>
+\nVytvorte nové hlásenie o chybách na https://github.com/oliexdev/openScale/issues , kde uvediete aj podrobnosti o chybe.</string>
     <string name="customactivityoncrash_error_activity_restart_app">Reštartovať aplikáciu</string>
     <string name="customactivityoncrash_error_activity_close_app">Zavrieť aplikáciu</string>
     <string name="customactivityoncrash_error_activity_error_details">Podrobnosti chyby</string>
@@ -208,4 +207,13 @@
     <string name="label_day_view">Denný prehľad</string>
     <string name="label_year_view">Ročný prehľad</string>
     <string name="action_donation">Príspevok</string>
+    <string name="info_step_on_scale">Prosím, postavte sa na váhu naboso</string>
+    <string name="trisa_scale_pairing_succeeded">Spárovanie úspešné!
+\n
+\nPripojte sa znovu pre prijatie údajov meraní.</string>
+    <string name="label_rolling_chart">Pohyblivý diagram</string>
+    <string name="label_measurement_bar">Lišta merania</string>
+    <string name="info_scale_low_battery">Nízka úroveň batérie (% d%), vymeňte prosím batérie vo váhe</string>
+    <string name="info_bluetooth_connection_error_scale_offline">Nepodarilo sa pripojiť k váhe. Skontrolujte prosím, či je váha zapnutá</string>
+    <string name="label_empty">prázdny</string>
 </resources>
