@@ -195,4 +195,25 @@
     <string name="info_step_on_scale_for_reference">Stoupněte na váhu naboso pro referenční měření</string>
     <string name="info_step_on_scale">Stoupněte na váhu naboso</string>
     <string name="info_measuring">Měřím hmotnost: %.2f</string>
+    <string name="customactivityoncrash_error_activity_error_occurred_explanation">Nastala neočekávaná chyba
+\n
+\nProsím nahlašte chybu a připojte veškeré detaily
+\nhttps://github.com/oliexdev/openScale/issues</string>
+    <string name="toggle_expand">Přepnout roztažení</string>
+    <string name="permission_bluetooth_info">Oprávnění pro získání polohy je potřeba pro hledání Bluetooth zařízení. Oprávnění je možné odebrat poté, co bude zařízení nalezeno.</string>
+    <string name="trisa_scale_not_paired">Tato váha není spárovaná.
+\n
+\nPodržte tlačítko na spodku váhy pro přepnutí do párovacího režimu a poté se znovu připojte pro získání hesla zařízení.</string>
+    <string name="trisa_scale_pairing_succeeded">Párování bylo úspěšné.
+\n
+\nZnovu se připojte pro získání dat z měření.</string>
+    <string name="permission_location_service_info">Pro hledání Bluetooth zařízení prosím udělte oprávnění k přístupu k poloze v nastavení Androidu. Poté ho můžete zase odebrat.</string>
+    <string name="label_day_view">Denní pohled</string>
+    <string name="label_year_view">Roční pohled</string>
+    <string name="label_measurement_bar">Panel měření</string>
+    <string name="action_donation">Darovat</string>
+    <string name="info_scale_low_battery">Baterie ve váze je téměř vybitá (%d%), prosím nabijte váhu</string>
+    <string name="info_bluetooth_connection_error_scale_offline">Nemohu se připojit k váze. Ujistěte se prosím, že je zapnutá.</string>
+    <string name="label_empty">prázdný</string>
+    <string name="label_age">Věk</string>
 </resources>
