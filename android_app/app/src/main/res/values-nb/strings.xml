@@ -237,4 +237,10 @@
     <string name="label_is_on_right_axis">Er på høyre akse</string>
     <string name="label_upgrade_to_openScale_pro">Oppgrader til openScare pro for Blåtannsstøtte</string>
     <string name="action_donation">Donasjon</string>
+    <string name="label_empty">tom</string>
+    <string name="label_age">Alder</string>
+    <string name="label_slide_welcome_top_text">Velkommen til
+\nopenScale</string>
+    <string name="label_slide_privacy_top_text">Beskytt din personlige helsedata.</string>
+    <string name="label_slide_support_top_text">Hjelp til å forbedre openScale.</string>
 </resources>
