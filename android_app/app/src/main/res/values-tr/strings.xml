@@ -245,4 +245,25 @@
     <string name="action_donation">Bağış</string>
     <string name="info_scale_low_battery">Düşük pil düzeyi (%d%), lütfen tartının pilini değiştirin</string>
     <string name="info_bluetooth_connection_error_scale_offline">Tartı ile bağlantı kurulamıyor, lütfen tartının açık olduğundan emin olun</string>
+    <string name="label_empty">boş</string>
+    <string name="label_age">Yaş</string>
+    <string name="label_slide_welcome_main_text">Bluetooth tartıları destekleyen, açık kaynaklı ağırlık ve vücut ölçüleri izleyicisi.</string>
+    <string name="label_slide_privacy_top_text">Kişisel sağlık verilerinizi koruyun.</string>
+    <string name="label_slide_user_top_text">Birden fazla kullanıcı desteklenmektedir.</string>
+    <string name="label_slide_user_main_text">openScale için çevrimiçi hesap oluşturmanız gerekmez.
+\n
+\nBazı vücut ölçülerini hesaplamak için yalnızca kullanıcı bilgilerinize ihtiyacımız var.</string>
+    <string name="label_slide_opensource_top_text">Yüksek derecede saydamlığa sahip açık kaynaklı bir yazılımdır.</string>
+    <string name="label_slide_opensource_main_text">openScale <a href="https://github.com/oliexdev/openScale/blob/master/LICENSE">GPLv3</a> ile lisanslıdır.
+\n
+\nTüm hesaplamalar saydamdır ve hiçbir gizli veri aktarılmaz veya kullanıcı kimliği üstlenilmez.
+\n
+\nKaynak kodunun tamamını <a href="https://github.com/oliexdev/openScale">GitHub</a>\'da bulabilirsiniz. Onu inceleyerek kendinizi openScale kullanmaya ikna edin.</string>
+    <string name="label_slide_bluetooth_top_text">Farklı üreticilerin çeşitli Bluetooth ölçekleri desteklenir.</string>
+    <string name="label_slide_metrics_top_text">Vücut ölçülerinizi izleyin ve çözümleyin.</string>
+    <string name="label_slide_support_top_text">OpenScale\'i geliştirmemize yardımcı olun.</string>
+    <string name="app_intro_skip_button">ATLA</string>
+    <string name="app_intro_next_button">SONRAKİ</string>
+    <string name="app_intro_back_button">GERİ</string>
+    <string name="app_intro_done_button">TAMAM</string>
 </resources>
