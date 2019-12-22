@@ -15,6 +15,7 @@
 */
 package com.health.openscale.gui.views;
 
+import android.app.DatePickerDialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.View;
@@ -94,15 +95,17 @@ public class DateMeasurementView extends MeasurementView {
 
     @Override
     protected View getInputView() {
-        DatePicker datePicker = new DatePicker(getContext());
-        datePicker.setPadding(0, 15, 0, 0);
-
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
-        datePicker.updateDate(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH),
+
+        DatePickerDialog datePickerDialog = new DatePickerDialog(
+                getContext(),
+                null,
+                cal.get(Calendar.YEAR),
+                cal.get(Calendar.MONTH),
                 cal.get(Calendar.DAY_OF_MONTH));
 
-        return datePicker;
+        return datePickerDialog.getDatePicker();
     }
 
     @Override
