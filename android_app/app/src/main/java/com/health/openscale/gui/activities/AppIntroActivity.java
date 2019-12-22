@@ -38,10 +38,8 @@ public class AppIntroActivity extends AppIntro {
         super.onCreate(savedInstanceState);
 
         setBarColor(getResources().getColor(R.color.blue_normal));
-        setWizardMode(true);
-        setBackButtonVisibilityWithDone(true);
 
-        showSkipButton(true);
+        setSkipButtonEnabled(true);
 
         addSlide(WelcomeIntroSlide.newInstance(R.layout.slide_welcome));
         addSlide(PrivacyIntroSlide.newInstance(R.layout.slide_privacy));
@@ -71,9 +69,11 @@ public class AppIntroActivity extends AppIntro {
         super.onSlideChanged(oldFragment, newFragment);
 
         if (newFragment instanceof WelcomeIntroSlide) {
-            showSkipButton(true);
+            setSkipButtonEnabled(true);
+            setWizardMode(false);
         } else {
-            showSkipButton(false);
+            setSkipButtonEnabled(false);
+            setWizardMode(true);
         }
     }
 
