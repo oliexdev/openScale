@@ -73,7 +73,7 @@ dependencies {
     // CustomActivityOnCrash
     implementation 'cat.ereza:customactivityoncrash:2.2.0'
     // AppIntro
-    implementation 'com.github.AppIntro:AppIntro:5.1.0'
+    implementation 'com.github.AppIntro:AppIntro:6.0.0-alpha3'
     // Room
     implementation 'androidx.room:room-runtime:2.2.3'
     annotationProcessor 'androidx.room:room-compiler:2.2.3'
