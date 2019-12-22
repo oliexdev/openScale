@@ -31,8 +31,6 @@ import androidx.fragment.app.Fragment;
 import com.health.openscale.R;
 import com.health.openscale.gui.activities.BluetoothSettingsActivity;
 
-import static android.app.Activity.RESULT_OK;
-
 public class BluetoothIntroSlide extends Fragment {
     private static final String ARG_LAYOUT_RES_ID = "layoutResId";
     private int layoutResId;
@@ -82,9 +80,6 @@ public class BluetoothIntroSlide extends Fragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode != RESULT_OK) {
-            return;
-        }
         if (requestCode == BluetoothSettingsActivity.GET_SCALE_REQUEST) {
             txtFoundDevice.setText(getCurrentDeviceName());
         }

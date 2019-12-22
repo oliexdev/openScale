@@ -15,51 +15,21 @@
  */
 package com.health.openscale.gui.preferences;
 
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Fragment;
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.le.ScanResult;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.graphics.PorterDuff;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
-import android.preference.PreferenceScreen;
 import android.widget.BaseAdapter;
-import android.widget.Toast;
 
 import com.health.openscale.R;
-import com.health.openscale.core.OpenScale;
-import com.health.openscale.core.bluetooth.BluetoothCommunication;
-import com.health.openscale.core.bluetooth.BluetoothFactory;
 import com.health.openscale.gui.activities.BluetoothSettingsActivity;
-import com.health.openscale.gui.activities.UserSettingsActivity;
-import com.health.openscale.gui.utils.ColorUtil;
-import com.health.openscale.gui.utils.PermissionHelper;
-import com.welie.blessed.BluetoothCentral;
-import com.welie.blessed.BluetoothCentralCallback;
-import com.welie.blessed.BluetoothPeripheral;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import timber.log.Timber;
-
-import static android.app.Activity.RESULT_OK;
 
 
 public class BluetoothPreferences extends PreferenceFragment {
     private static final String PREFERENCE_KEY_BLUETOOTH_SCANNER = "btScanner";
 
-    private PreferenceScreen btScanner;
+    private Preference btScanner;
 
     private static final String formatDeviceName(String name, String address) {
         if (name.isEmpty() || address.isEmpty()) {
@@ -87,7 +57,7 @@ public class BluetoothPreferences extends PreferenceFragment {
 
         addPreferencesFromResource(R.xml.bluetooth_preferences);
 
-        btScanner = (PreferenceScreen) findPreference(PREFERENCE_KEY_BLUETOOTH_SCANNER);
+        btScanner = (Preference) findPreference(PREFERENCE_KEY_BLUETOOTH_SCANNER);
 
         btScanner.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
@@ -99,16 +69,12 @@ public class BluetoothPreferences extends PreferenceFragment {
         });
 
         updateBtScannerSummary();
-
-        // Dummy preference to make screen open
-        btScanner.addPreference(new Preference(getActivity()));
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode != RESULT_OK) {
-            return;
-        }
+        super.onActivityResult(requestCode, resultCode, data);
+
         if (requestCode == BluetoothSettingsActivity.GET_SCALE_REQUEST) {
             updateBtScannerSummary();
         }

@@ -17,7 +17,6 @@ package com.health.openscale.gui.activities;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.DatePickerDialog;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.le.ScanResult;
 import android.content.Context;
@@ -27,54 +26,38 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.preference.Preference;
 import android.preference.PreferenceManager;
-import android.preference.PreferenceScreen;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.RelativeSizeSpan;
-import android.view.Menu;
-import android.view.MenuInflater;
+import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.DatePicker;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.widget.RadioGroup;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.graphics.drawable.DrawableCompat;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.bluetooth.BluetoothCommunication;
 import com.health.openscale.core.bluetooth.BluetoothFactory;
-import com.health.openscale.core.datatypes.ScaleUser;
-import com.health.openscale.core.utils.Converters;
-import com.health.openscale.gui.preferences.BluetoothPreferences;
 import com.health.openscale.gui.utils.ColorUtil;
 import com.health.openscale.gui.utils.PermissionHelper;
 import com.welie.blessed.BluetoothCentral;
 import com.welie.blessed.BluetoothCentralCallback;
 import com.welie.blessed.BluetoothPeripheral;
 
-import java.text.DateFormat;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import timber.log.Timber;
@@ -215,7 +198,6 @@ public class BluetoothSettingsActivity extends BaseAppCompatActivity {
         if (btDevice != null) {
             Timber.d("Found supported device %s (driver: %s)",
                     formatDeviceName(device), btDevice.driverName());
-            deviceView.setOnClickListener(new onClickListenerDeviceSelect());
             deviceView.setDeviceAddress(device.getAddress());
             deviceView.setIcon(R.drawable.ic_bluetooth_device_supported);
             deviceView.setSummaryText(btDevice.driverName());
@@ -240,24 +222,6 @@ public class BluetoothSettingsActivity extends BaseAppCompatActivity {
 
         foundDevices.put(device.getAddress(), btDevice != null ? device : null);
         deviceListView.addView(deviceView);
-    }
-
-    private class onClickListenerDeviceSelect implements View.OnClickListener {
-        @Override
-        public void onClick(View view) {
-            BluetoothDeviceView deviceView = (BluetoothDeviceView)view;
-
-            BluetoothDevice device = foundDevices.get(deviceView.getDeviceAddress());
-
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-
-            prefs.edit()
-                    .putString(PREFERENCE_KEY_BLUETOOTH_HW_ADDRESS, device.getAddress())
-                    .putString(PREFERENCE_KEY_BLUETOOTH_DEVICE_NAME, device.getName())
-                    .apply();
-
-            finishActivity(GET_SCALE_REQUEST);
-        }
     }
 
     private void getDebugInfo(final BluetoothDevice device) {
@@ -293,7 +257,7 @@ public class BluetoothSettingsActivity extends BaseAppCompatActivity {
         OpenScale.getInstance().connectToBluetoothDeviceDebugMode(macAddress, btHandler);
     }
 
-    private class BluetoothDeviceView extends LinearLayout {
+    private class BluetoothDeviceView extends LinearLayout implements View.OnClickListener {
 
         private TextView deviceName;
         private ImageView deviceIcon;
@@ -302,9 +266,26 @@ public class BluetoothSettingsActivity extends BaseAppCompatActivity {
         public BluetoothDeviceView(Context context) {
             super(context);
 
+            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+
+            layoutParams.setMargins(0, 20, 0, 20);
+            setLayoutParams(layoutParams);
+
             deviceName = new TextView(context);
             deviceName.setLines(2);
-            deviceIcon = new ImageView(context);
+            deviceIcon = new ImageView(context);;
+
+            LinearLayout.LayoutParams centerLayoutParams = new LinearLayout.LayoutParams(
+                    LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.MATCH_PARENT);
+            layoutParams.gravity= Gravity.CENTER;
+
+            deviceIcon.setLayoutParams(centerLayoutParams);
+            deviceName.setLayoutParams(centerLayoutParams);
+
+            deviceName.setOnClickListener(this);
+            deviceIcon.setOnClickListener(this);
+            setOnClickListener(this);
 
             addView(deviceIcon);
             addView(deviceName);
@@ -358,6 +339,24 @@ public class BluetoothSettingsActivity extends BaseAppCompatActivity {
             super.setEnabled(status);
             deviceName.setEnabled(status);
             deviceIcon.setEnabled(status);
+        }
+
+        @Override
+        public void onClick(View view) {
+            BluetoothDevice device = foundDevices.get(getDeviceAddress());
+
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+
+            prefs.edit()
+                    .putString(PREFERENCE_KEY_BLUETOOTH_HW_ADDRESS, device.getAddress())
+                    .putString(PREFERENCE_KEY_BLUETOOTH_DEVICE_NAME, device.getName())
+                    .apply();
+
+            Timber.d("Saved Bluetooth device " + device.getName() + " with address " + device.getAddress());
+
+            stopBluetoothDiscovery();
+            setResult(GET_SCALE_REQUEST);
+            finish();
         }
     }
 
