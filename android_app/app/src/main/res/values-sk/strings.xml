@@ -216,4 +216,24 @@
     <string name="info_scale_low_battery">Nízka úroveň batérie (% d%), vymeňte prosím batérie vo váhe</string>
     <string name="info_bluetooth_connection_error_scale_offline">Nepodarilo sa pripojiť k váhe. Skontrolujte prosím, či je váha zapnutá</string>
     <string name="label_empty">prázdny</string>
+    <string name="label_add_or_fix_translation">Pridať nové alebo upraviť existujúce</string>
+    <string name="label_debug_log">Uložiť denník ladenia do súboru</string>
+    <string name="label_click_measurement_configure">Pre nastavenie kliknite na meranie</string>
+    <string name="label_configure_widget">Nastaviť miniaplikáciu</string>
+    <string name="label_visceral_fat">Viscerálny tuk</string>
+    <string name="label_chest">Obvod hrudníka</string>
+    <string name="trisa_scale_not_paired">Váhu sa nepodarilo spárovať!
+\n
+\nPodržte tlačidlo na spodnej časti váhy pre prepnutie do režimu párovania, a pripojte sa znovu pre získanie hesla zariadenia.</string>
+    <string name="label_is_on_right_axis">Je na pravej osi</string>
+    <string name="label_upgrade_to_openScale_pro">Pre podporu Bluetooth inovujte na openScale pro</string>
+    <string name="label_age">Vek</string>
+    <string name="label_slide_welcome_top_text">Vitajte v
+\nopenScale</string>
+    <string name="label_slide_privacy_top_text">Chráňte svoje osobné údaje o zdraví.</string>
+    <string name="label_slide_support_top_text">Pomôžte nám vylepšiť openScale.</string>
+    <string name="app_intro_skip_button">PRESKOČIŤ</string>
+    <string name="app_intro_next_button">ĎALEJ</string>
+    <string name="app_intro_back_button">SPÄŤ</string>
+    <string name="app_intro_done_button">HOTOVO</string>
 </resources>

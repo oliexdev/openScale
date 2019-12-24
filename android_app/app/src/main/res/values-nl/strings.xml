@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="title_overview">Overzicht</string>
-    <string name="title_graph">Grafieken</string>
+    <string name="title_graph">Grafiek</string>
     <string name="title_table">Tabel</string>
     <string name="title_statistics">Statistieken</string>
     <string name="title_users">Gebruikers</string>
@@ -255,4 +255,17 @@
     <string name="label_slide_opensource_top_text">Het is open-source software met een hoge mate van transparantie.</string>
     <string name="label_slide_bluetooth_top_text">Verscheidene Bluetooth weegschalen van verschillen fabrikanten worden ondersteund.</string>
     <string name="label_slide_metrics_top_text">Verzamel en analyseer uw lichaamsstatistieken.</string>
+    <string name="label_slide_opensource_main_text">openScale gebruikt de <a href="https://github.com/oliexdev/openScale/blob/master/LICENSE"> GPLv3 </a> licentie.
+\n
+\nAlle lichaamsberekeningen zijn transparant en er wordt geen verborgen gegevensoverdracht of gebruikersidentificatie uitgevoerd.
+\n
+\nU kunt de volledige broncode vinden op <a href="https://github.com/oliexdev/openScale"> GitHub </a>. Overtuig uzelf van openScale door het uit te proberen.</string>
+    <string name="label_slide_bluetooth_main_text">openScale heeft ingebouwde ondersteuning voor een aantal Bluetooth weegschalen van verschillende leveranciers.
+\n
+\nDoorlopend wordt de ondersteuning voor huidige en nieuwe weegschalen verbeterd. De volledige lijst met weegschalen en hun ondersteuningsniveaus vindt u op <a href="https://github.com/oliexdev/openScale/wiki/Supported-scales-in-openScale">GitHub</a>.</string>
+    <string name="label_slide_support_top_text">Help ons openScale verbeteren.</string>
+    <string name="app_intro_skip_button">OVERSLAAN</string>
+    <string name="app_intro_next_button">VOLGENDE</string>
+    <string name="app_intro_back_button">TERUG</string>
+    <string name="app_intro_done_button">KLAAR</string>
 </resources>
