@@ -243,4 +243,8 @@
 \nopenScale</string>
     <string name="label_slide_privacy_top_text">Beskytt din personlige helsedata.</string>
     <string name="label_slide_support_top_text">Hjelp til å forbedre openScale.</string>
+    <string name="app_intro_skip_button">HOPP OVER</string>
+    <string name="app_intro_next_button">NESTE</string>
+    <string name="app_intro_back_button">TILBAKE</string>
+    <string name="app_intro_done_button">FERDIG</string>
 </resources>
