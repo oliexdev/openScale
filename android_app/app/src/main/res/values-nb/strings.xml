@@ -269,4 +269,13 @@
 \nHvis du ønsker å motivere skaperen av prosjektet i videre utvikling og vedvarende vedlikehold kan du gi openScale en god vurdering på <a href="http://play.google.com/store/apps/details?id=com.health.openscale.pro">GooglePlay</a> eller stjernemerke det på <a href="https://github.com/oliexdev/openScale">GitHub</a>.
 \n
 \nDin støtte og positive tilbakemelding tas varmt imot. Takk.</string>
+    <string name="label_slide_privacy_main_text">openScale doesn\'t send any data to a cloud and not having permission to access the internet is a strong guarantee of that.
+\n
+\nIf you really want to synchronise your weight to GoogleFit or with MQTT, you can install <a href="https://play.google.com/store/apps/details?id=com.health.openscale.sync">openScale sync</a>.</string>
+    <string name="label_slide_opensource_top_text">Transparent copylefted libre software.</string>
+    <string name="label_slide_opensource_main_text">Lisensiert <a href="https://github.com/oliexdev/openScale/blob/master/LICENSE">GPLv3+</a>.
+\n
+\nAlle kroppsutregninger er gjennomsiktig anlagt, og ingen skjulte dataoverføringer eller brukeridentifikasjon finner sted.
+\n
+\nDu kan finne hele kildekoden på <a href="https://github.com/oliexdev/openScale">GitHub</a>. Overbevis deg selv ved å gjennomse den.</string>
 </resources>
