@@ -236,15 +236,21 @@
     <string name="activity_level_extreme">Extreme</string>
     <string name="label_upgrade_to_openScale_pro">Please upgrade to openScale pro for Bluetooth support</string>
     <string name="label_slide_welcome_top_text">Welcome to\nopenScale</string>
-    <string name="label_slide_welcome_main_text">Open-source weight and body metrics tracker, with support for Bluetooth scales.</string>
+    <string name="label_slide_welcome_main_text">Libre software weight and body metrics tracker, with Bluetooth scale support.</string>
     <string name="label_slide_privacy_top_text">Protect your personal health data.</string>
-    <string name="label_slide_privacy_main_text">openScale doesn\'t send any data to a cloud and not having permission to access the internet is a strong guarantee of that.\n\nIf you really want to synchronise your weight to GoogleFit or with MQTT, you can install <a href="https://play.google.com/store/apps/details?id=com.health.openscale.sync">openScale sync</a>.</string>
+    <string name="label_slide_privacy_main_text">No data is sent into the cloud, something a lack of Internet permission is a strong guarantee of.
+\n
+\nIf you really want to synchronise your weight to GoogleFit or with MQTT, you can install <a href="https://play.google.com/store/apps/details?id=com.health.openscale.sync">openScale sync</a>.</string>
     <string name="label_slide_user_top_text">Multiple users are supported.</string>
     <string name="label_slide_user_main_text">No online account required.
 \n
 \nBody metrics are calculated from measurements.</string>
     <string name="label_slide_opensource_top_text">It\'s an open-source software with a high degree of transparency.</string>
-    <string name="label_slide_opensource_main_text">openScale is licensed under the <a href="https://github.com/oliexdev/openScale/blob/master/LICENSE">GPLv3</a>.\n\nAll body calculations are transparent and no hidden data transfer function or user identification are undertaken.\n\nYou can find the full source-code on <a href="https://github.com/oliexdev/openScale">GitHub</a>. Convince yourself of openScale by reviewing it.</string>
+    <string name="label_slide_opensource_main_text">Licensed <a href="https://github.com/oliexdev/openScale/blob/master/LICENSE">GPLv3+</a>.
+\n
+\nAll body calculations are transparent and no hidden data transfer function or user identification are undertaken.
+\n
+\nYou can find the full source-code on <a href="https://github.com/oliexdev/openScale">GitHub</a>. Convince yourself of openScale by reviewing it.</string>
     <string name="label_slide_bluetooth_top_text">Various Bluetooth scales from different manufacturers are supported.</string>
     <string name="label_slide_bluetooth_main_text">openScale has a built-in support for a number of Bluetooth scales from different manufacturers.\n\nWe constantly improve and extend the set of supported scales. You can find the full list and the level of support for each scale on <a href="https://github.com/oliexdev/openScale/wiki/Supported-scales-in-openScale">GitHub</a>.</string>
     <string name="label_slide_metrics_top_text">Track and analyse your body metrics.</string>
