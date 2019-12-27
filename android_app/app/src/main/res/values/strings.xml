@@ -27,9 +27,9 @@
     <string name="label_weight">Weight</string>
     <string name="label_bmi">Body mass index (BMI)</string>
     <string name="label_bmr">Basal metabolic rate (BMR)</string>
-    <string name="label_tdee">Total Daily Energy Expenditure (TDEE)</string>
+    <string name="label_tdee">Total daily energy expenditure (TDEE)</string>
     <string name="label_fat">Body fat</string>
-    <string name="label_water">Body water</string>
+    <string name="label_water">Total body water</string>
     <string name="label_muscle">Muscle</string>
     <string name="label_lbm">Lean body mass</string>
     <string name="label_waist">Waist circumference</string>
@@ -68,12 +68,12 @@
     <string name="label_delete_all">Delete all</string>
     <string name="error_value_required">Value required</string>
     <string name="error_value_range">Value out of range</string>
-    <string name="error_exporting">Error exporting</string>
-    <string name="error_importing">Error importing</string>
-    <string name="error_user_name_required">Error: Name required</string>
-    <string name="error_height_required">Error: Height required</string>
-    <string name="error_initial_weight_required">Error: Initial weight required</string>
-    <string name="error_goal_weight_required">Error: Goal weight required</string>
+    <string name="error_exporting">Could not export</string>
+    <string name="error_importing">Could not import</string>
+    <string name="error_user_name_required">Name required</string>
+    <string name="error_height_required">Height required</string>
+    <string name="error_initial_weight_required">Initial weight required</string>
+    <string name="error_goal_weight_required">Goal weight required</string>
     <string name="info_data_deleted">Entry deleted</string>
     <string name="info_data_all_deleted">All entries deleted</string>
     <string name="info_data_exported">Exported to</string>
@@ -82,19 +82,19 @@
     <string name="info_enter_comment">Optional comment</string>
     <string name="info_is_visible">is visible</string>
     <string name="info_is_not_visible">is not visible</string>
-    <string name="info_is_enable">enabled</string>
-    <string name="info_is_not_enable">disabled</string>
+    <string name="info_is_enable">turned on</string>
+    <string name="info_is_not_enable">turned off</string>
     <string name="info_is_not_available">not available</string>
-    <string name="info_scale_low_battery">Low battery level (%d\%%), please change the scale batteries</string>
+    <string name="info_scale_low_battery">Low battery level (%d%), please recharge or replace scale batteries</string>
     <string name="info_bluetooth_try_connection">Connecting to:</string>
-    <string name="info_bluetooth_connection_lost">Lost Bluetooth connection</string>
+    <string name="info_bluetooth_connection_lost">Bluetooth connection lost</string>
     <string name="info_bluetooth_no_device">No Bluetooth device found</string>
-    <string name="info_bluetooth_no_device_retrying">Can not establish a connection, retrying…</string>
-    <string name="info_bluetooth_no_device_set">No Bluetooth device selected</string>
-    <string name="info_bluetooth_connection_successful">Connection established</string>
+    <string name="info_bluetooth_no_device_retrying">Could not establish connection, retrying…</string>
+    <string name="info_bluetooth_no_device_set">Select a Bluetooth device</string>
+    <string name="info_bluetooth_connection_successful">Connected</string>
     <string name="info_bluetooth_init">Initialize Bluetooth device</string>
     <string name="info_bluetooth_connection_error">Unexpected Bluetooth error</string>
-    <string name="info_bluetooth_connection_error_scale_offline">Cannot connect to scale, please make sure that the scale is turned on</string>
+    <string name="info_bluetooth_connection_error_scale_offline">Could not connect to scale, please ensure it is on.</string>
     <string name="info_bluetooth_connection_disconnected">Bluetooth connection closed</string>
     <string name="info_new_data_added">%1$.2f%2$s [%3$s] to %4$s added</string>
     <string name="info_new_data_duplicated">measurement with the same date and time already exist</string>
@@ -235,24 +235,32 @@
     <string name="activity_level_heavy">Heavy</string>
     <string name="activity_level_extreme">Extreme</string>
     <string name="label_upgrade_to_openScale_pro">Please upgrade to openScale pro for Bluetooth support</string>
-
     <string name="label_slide_welcome_top_text">Welcome to\nopenScale</string>
     <string name="label_slide_welcome_main_text">Open-source weight and body metrics tracker, with support for Bluetooth scales.</string>
     <string name="label_slide_privacy_top_text">Protect your personal health data.</string>
     <string name="label_slide_privacy_main_text">openScale doesn\'t send any data to a cloud and not having permission to access the internet is a strong guarantee of that.\n\nIf you really want to synchronise your weight to GoogleFit or with MQTT, you can install <a href="https://play.google.com/store/apps/details?id=com.health.openscale.sync">openScale sync</a>.</string>
     <string name="label_slide_user_top_text">Multiple users are supported.</string>
-    <string name="label_slide_user_main_text">openScale doesn\'t require you to create an online account.\n\nWe only need your user information to calculate some body metrics.</string>
+    <string name="label_slide_user_main_text">No online account required.
+\n
+\nBody metrics are calculated from measurements.</string>
     <string name="label_slide_opensource_top_text">It\'s an open-source software with a high degree of transparency.</string>
     <string name="label_slide_opensource_main_text">openScale is licensed under the <a href="https://github.com/oliexdev/openScale/blob/master/LICENSE">GPLv3</a>.\n\nAll body calculations are transparent and no hidden data transfer function or user identification are undertaken.\n\nYou can find the full source-code on <a href="https://github.com/oliexdev/openScale">GitHub</a>. Convince yourself of openScale by reviewing it.</string>
     <string name="label_slide_bluetooth_top_text">Various Bluetooth scales from different manufacturers are supported.</string>
     <string name="label_slide_bluetooth_main_text">openScale has a built-in support for a number of Bluetooth scales from different manufacturers.\n\nWe constantly improve and extend the set of supported scales. You can find the full list and the level of support for each scale on <a href="https://github.com/oliexdev/openScale/wiki/Supported-scales-in-openScale">GitHub</a>.</string>
     <string name="label_slide_metrics_top_text">Track and analyse your body metrics.</string>
-    <string name="label_slide_metrics_main_text">openScale supports over 22 body metrics.\n\nIt can be individual configured to only show the metrics you care about.\n\nIf your scale doesn\'t support body fat, body water and lean body mass, you can even estimate those measurements based on <a href="https://github.com/oliexdev/openScale/wiki/Body-metric-estimations">scientific publications</a>.</string>
-    <string name="label_slide_support_top_text">Help us to improve openScale.</string>
-    <string name="label_slide_support_main_text">openScale needs you! If you found a bug, have an idea or a question or want to help to support your Bluetooth scale, please create a <a href="https://github.com/oliexdev/openScale/issues">new issue</a>.\n\nIf you would like to motivate the creator of this project in further development and continuous maintenance, feel free to give openScale a positive rating on <a href="http://play.google.com/store/apps/details?id=com.health.openscale.pro">GooglePlay</a> or a star on <a href="https://github.com/oliexdev/openScale">GitHub</a>.\n\nYour support and positive feedback is highly appreciated. Thank you!</string>
-
-    <string name="app_intro_skip_button">SKIP</string>
-    <string name="app_intro_next_button">NEXT</string>
-    <string name="app_intro_back_button">BACK</string>
-    <string name="app_intro_done_button">DONE</string>
+    <string name="label_slide_metrics_main_text">openScale supports over 22 body metrics.
+\n
+\nConfigure it to show the ones you care about.
+\n
+\n If body fat, body water and lean body mass is missing, it can be estimated based on <a href="https://github.com/oliexdev/openScale/wiki/Body-metric-estimations">scientific publications</a>.</string>
+    <string name="label_slide_support_top_text">Help improve openScale.</string>
+    <string name="label_slide_support_main_text">openScale needs you. Create a <a href="https://github.com/oliexdev/openScale/issues">new issue</a> if you found a bug, have an idea, question, or want to help support your Bluetooth scale.
+\n
+\nMotivate the creator of this project in further development and continuous maintenance by giving openScale a positive rating on <a href="http://play.google.com/store/apps/details?id=com.health.openscale.pro">GooglePlay</a> or a star it on <a href="https://github.com/oliexdev/openScale">GitHub</a>.
+\n
+\nYour support and positive feedback is highly appreciated. Thank you.</string>
+    <string name="app_intro_skip_button">Skip</string>
+    <string name="app_intro_next_button">Next</string>
+    <string name="app_intro_back_button">Back</string>
+    <string name="app_intro_done_button">Done</string>
 </resources>
