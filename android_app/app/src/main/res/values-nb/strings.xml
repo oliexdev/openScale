@@ -247,4 +247,26 @@
     <string name="app_intro_next_button">NESTE</string>
     <string name="app_intro_back_button">TILBAKE</string>
     <string name="app_intro_done_button">FERDIG</string>
+    <string name="info_scale_low_battery">Lavt batterinivå (%d%), bytt vektbatteriene</string>
+    <string name="info_bluetooth_connection_error_scale_offline">Kan ikke koble til vekt, forsikre deg om at den er påskrudd.</string>
+    <string name="label_slide_user_top_text">Flerbrukerstøtte.</string>
+    <string name="label_slide_user_main_text">openScale krever ingen nettbasert konto.
+\n
+\nKun din brukerinfo kreves for å regne ut noen mål.</string>
+    <string name="label_slide_bluetooth_top_text">Forskjellige Blåtannsvekter fra forskjellige produsenter støttes.</string>
+    <string name="label_slide_bluetooth_main_text">Innebgyd støtte for mange Blåtannsvekter av forskjellige fabrikat.
+\n
+\nStøtten forbedres statig. Fullstendig liste for hver av dem er å finne på <a href="https://github.com/oliexdev/openScale/wiki/Supported-scales-in-openScale">GitHub</a>
+    </string>
+    <string name="label_slide_metrics_top_text">Spor og analyser dine kroppsmål.</string>
+    <string name="label_slide_metrics_main_text">openScale støtter over 22 kroppsmål.
+\n
+\nDu kan vise kun de målene du bryr deg om.
+\n
+\nHvis vekten din ikke støtter kroppsfett, kroppsvann og fettfri kroppsvekt, kan du anslå disse målene basert på <a href="https://github.com/oliexdev/openScale/wiki/Body-metric-estimations">publisert forskning</a>.</string>
+    <string name="label_slide_support_main_text">openScale trenger deg. Hvis du har funnet en feil, har en idé eller spørsmål og ønske rå støtte din Blåtannsvekt, opprett en ny <a href="https://github.com/oliexdev/openScale/issues">problempost</a>.
+\n
+\nHvis du ønsker å motivere skaperen av prosjektet i videre utvikling og vedvarende vedlikehold kan du gi openScale en god vurdering på <a href="http://play.google.com/store/apps/details?id=com.health.openscale.pro">GooglePlay</a> eller stjernemerke det på <a href="https://github.com/oliexdev/openScale">GitHub</a>.
+\n
+\nDin støtte og positive tilbakemelding tas varmt imot. Takk.</string>
 </resources>
