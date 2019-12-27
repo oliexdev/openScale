@@ -10,7 +10,7 @@
     <string name="action_settings">Indstillinger</string>
     <string name="action_bluetooth_status">Bluetooth-status</string>
     <string name="label_cancel">Afslut</string>
-    <string name="label_ok">Ok</string>
+    <string name="label_ok">OK</string>
     <string name="label_yes">Ja</string>
     <string name="label_no">Nej</string>
     <string name="label_delete">Slet</string>
@@ -151,32 +151,24 @@
     <string name="customactivityoncrash_error_activity_error_details_copied">Kopieret til udklipsholder</string>
     <string name="customactivityoncrash_error_activity_error_details_clipboard_label">Fejlinformation</string>
     <string name="save">Gem</string>
-
     <string name="label_share">Del</string>
-
     <string name="label_bluetooth_searching_finished">Søgning afsluttet</string>
     <string name="label_help">Hjælp</string>
-
     <string name="toggle_expand">Fold ud</string>
     <string name="edit">Redigér</string>
     <string name="label_month_view">Månedsvis</string>
-
     <string name="permission_not_granted">Tilladelse er ikke givet</string>
     <string name="permission_bluetooth_info">Tilladelse til lokalbestemmelse er påkrævet for at søge efter Bluetooth-enheder.</string>
     <string name="permission_bluetooth_info_title">Information</string>
-
     <string name="label_share_subject">CSV dataeksport (%s)</string>
-
     <string name="label_next">Næste</string>
     <string name="label_set_default_order">Indstil standardsortéring</string>
-
     <string name="label_weeks_view">ugentlig</string>
     <string name="label_mergeWithLastMeasurement">Forene med tidligere måling</string>
     <string name="label_export_overwrite">Overskriv tidligere eksport \"%s\"?</string>
     <string name="label_measurement_in_percent">Målt i %</string>
     <string name="label_estimate_measurement">Estimatmåling</string>
     <string name="label_estimation_formula">Estimeringsformel</string>
-
     <string name="language_default">Systemstandard</string>
     <string name="label_language">Sprog</string>
     <string name="theme_light">Lyst</string>
