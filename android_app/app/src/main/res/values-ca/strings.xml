@@ -56,7 +56,7 @@
     <string name="label_export">Exporta</string>
     <string name="label_delete_all">Suprimeix-ho tot</string>
     <string name="error_value_required">Cal un valor</string>
-    <string name="error_value_range">Valor fora del rang</string>
+    <string name="error_value_range">Valor fora dels límits</string>
     <string name="error_exporting">No s\'ha pogut exportar</string>
     <string name="error_importing">No s\'ha pogut importar</string>
     <string name="error_user_name_required">Cal un nom</string>
