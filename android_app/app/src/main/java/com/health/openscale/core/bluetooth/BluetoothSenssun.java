@@ -115,7 +115,7 @@ public class BluetoothSenssun extends BluetoothCommunication {
         switch(data[5]) {
             case (byte)0xAA:
             case (byte)0xA0:
-                if (weightStabilized) {
+                if (values > 1) {
                     return;
                 }
                 if (!stepMessageDisplayed) {
