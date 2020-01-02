@@ -82,10 +82,10 @@
     <string name="info_enter_comment">Optional comment</string>
     <string name="info_is_visible">is visible</string>
     <string name="info_is_not_visible">is not visible</string>
-    <string name="info_is_enable">turned on</string>
-    <string name="info_is_not_enable">turned off</string>
+    <string name="info_is_enable">enabled</string>
+    <string name="info_is_not_enable">disabled</string>
     <string name="info_is_not_available">not available</string>
-    <string name="info_scale_low_battery">Low battery level (%d%), please recharge or replace scale batteries</string>
+    <string name="info_scale_low_battery">Low battery level (%d\\%%), please recharge or replace scale batteries</string>
     <string name="info_bluetooth_try_connection">Connecting to:</string>
     <string name="info_bluetooth_connection_lost">Bluetooth connection lost</string>
     <string name="info_bluetooth_no_device">No Bluetooth device found</string>
@@ -236,17 +236,17 @@
     <string name="activity_level_extreme">Extreme</string>
     <string name="label_upgrade_to_openScale_pro">Please upgrade to openScale pro for Bluetooth support</string>
     <string name="label_slide_welcome_top_text">Welcome to\nopenScale</string>
-    <string name="label_slide_welcome_main_text">Libre software weight and body metrics tracker, with Bluetooth scale support.</string>
+    <string name="label_slide_welcome_main_text">Open-source software weight and body metrics tracker, with Bluetooth scale support.</string>
     <string name="label_slide_privacy_top_text">Protect your personal health data.</string>
-    <string name="label_slide_privacy_main_text">No data is sent into the cloud, something a lack of Internet permission is a strong guarantee of.
+    <string name="label_slide_privacy_main_text">openScale doesn\'t send any data to a cloud and not having permission to access the internet is a strong guarantee of that.
 \n
 \nIf you really want to synchronise your weight to GoogleFit or with MQTT, you can install <a href="https://play.google.com/store/apps/details?id=com.health.openscale.sync">openScale sync</a>.</string>
     <string name="label_slide_user_top_text">Multiple users are supported.</string>
-    <string name="label_slide_user_main_text">No online account required.
+    <string name="label_slide_user_main_text">openScale doesn\'t require you to create an online account.
 \n
 \nBody metrics are calculated from measurements.</string>
     <string name="label_slide_opensource_top_text">It\'s an open-source software with a high degree of transparency.</string>
-    <string name="label_slide_opensource_main_text">Licensed <a href="https://github.com/oliexdev/openScale/blob/master/LICENSE">GPLv3+</a>.
+    <string name="label_slide_opensource_main_text">openScale is licensed under the <a href="https://github.com/oliexdev/openScale/blob/master/LICENSE">GPLv3</a>.
 \n
 \nAll body calculations are transparent and no hidden data transfer function or user identification are undertaken.
 \n
