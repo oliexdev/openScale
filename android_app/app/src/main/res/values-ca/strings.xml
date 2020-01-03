@@ -237,23 +237,23 @@
     <string name="activity_level_extreme">Extrem</string>
     <string name="label_upgrade_to_openScale_pro">Actualitzeu a openScale pro per a obtenir suport de Bluetooth</string>
     <string name="action_donation">Donació</string>
-    <string name="info_scale_low_battery">Nivell de bateria baix (%d%), carregueu la bateria o canvieu les piles de la bàscula</string>
+    <string name="info_scale_low_battery">Nivell de bateria baix (%d\\%%), carregueu la bateria o canvieu les piles de la bàscula</string>
     <string name="info_bluetooth_connection_error_scale_offline">No s\'ha pogut connectar amb la bàscula, assegureu-vos que està engegada.</string>
     <string name="label_empty">buit</string>
     <string name="label_age">Edat</string>
     <string name="label_slide_welcome_top_text">Benvinguts a
 \nl\'openScale</string>
-    <string name="label_slide_welcome_main_text">Un seguidor de mètriques del pes i del cos de codi lliure, amb suport per a bàscules Bluetooth.</string>
+    <string name="label_slide_welcome_main_text">Un seguidor de mètriques del pes i del cos de codi obert, amb suport per a bàscules Bluetooth.</string>
     <string name="label_slide_privacy_top_text">Protegiu les vostres dades personals de salut.</string>
-    <string name="label_slide_privacy_main_text">No s\'envia cap dada al núvol, i que l\'aplicació no tingui permís per a accedir a Internet n\'és una forta garantia.
+    <string name="label_slide_privacy_main_text">L\'openScale no envia cap dada al núvol, i que no tingui permís per a accedir a Internet n\'és una forta garantia.
 \n
 \nSi realment voleu sincronitzar el vostre pes amb el Google Fit o amb MQTT, podeu instal·lar l\'<a href="https://play.google.com/store/apps/details?id=com.health.openscale.sync">openScale sync</a>.</string>
     <string name="label_slide_user_top_text">Suporta múltiples usuaris.</string>
-    <string name="label_slide_user_main_text">No cal cap compte en línia.
+    <string name="label_slide_user_main_text">L\'openScale no us obliga a crear cap compte en línia.
 \n
 \nLes mètriques corporals es calculen a partir de les mesures.</string>
     <string name="label_slide_opensource_top_text">És programari de codi obert amb un alt grau de transparència.</string>
-    <string name="label_slide_opensource_main_text">Llicenciat amb la <a href="https://github.com/oliexdev/openScale/blob/master/LICENSE">GPLv3+</a>.
+    <string name="label_slide_opensource_main_text">L\'openScale està llicenciat amb la <a href="https://github.com/oliexdev/openScale/blob/master/LICENSE">GPLv3</a>.
 \n
 \nTots els càlculs corporals són transparents i no s\'empra cap funció oculta de transferència de dades o d\'identificació de l\'usuari.
 \n
