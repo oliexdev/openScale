@@ -19,7 +19,7 @@
     <string name="label_bmi">Vücut Kitle Endeksi (BMI)</string>
     <string name="label_bmr">Bazal Metabolizma Hızı (BMR)</string>
     <string name="label_fat">Vücut Yağ Yüzdesi</string>
-    <string name="label_water">Vücut su oranı</string>
+    <string name="label_water">Toplam vücut suyu</string>
     <string name="label_muscle">Kas oranı</string>
     <string name="label_lbm">Yağsız vücut kütlesi</string>
     <string name="label_waist">Bel çevresi</string>
@@ -57,12 +57,12 @@
     <string name="label_delete_all">Hepsini Sil</string>
     <string name="error_value_required">Değer gerekli</string>
     <string name="error_value_range">Değer, aralık dışı</string>
-    <string name="error_exporting">Dışa aktarma hatası</string>
-    <string name="error_importing">İçe aktarma hatası</string>
-    <string name="error_user_name_required">Hata: ad gerekli</string>
-    <string name="error_height_required">Error: boy gerekli</string>
-    <string name="error_initial_weight_required">Hata: İlk ağırlık gerekli</string>
-    <string name="error_goal_weight_required">Hata: Hedef ağırlık gerekli</string>
+    <string name="error_exporting">Dışa aktarılamadı</string>
+    <string name="error_importing">İçe aktarılamadı</string>
+    <string name="error_user_name_required">Ad gerekli</string>
+    <string name="error_height_required">Boy gerekli</string>
+    <string name="error_initial_weight_required">İlk ağırlık gerekli</string>
+    <string name="error_goal_weight_required">Hedef ağırlık gerekli</string>
     <string name="info_data_deleted">Giriş silindi</string>
     <string name="info_data_all_deleted">Tüm girişler silindi</string>
     <string name="info_data_exported">Dışa aktrıldı</string>
@@ -77,7 +77,7 @@
     <string name="info_bluetooth_try_connection">Bağlanıyor:</string>
     <string name="info_bluetooth_connection_lost">Bluetooth bağlantısı kesildi</string>
     <string name="info_bluetooth_no_device">Bluetooth cihazı bulunamadı</string>
-    <string name="info_bluetooth_connection_successful">Bağlantı kuruldu</string>
+    <string name="info_bluetooth_connection_successful">Bağlı</string>
     <string name="info_bluetooth_init">Bluetooth aygıtını başlat</string>
     <string name="info_bluetooth_connection_error">Beklenmeyen Bluetooth hatası</string>
     <string name="info_new_data_added">%1$.2f%2$s [%3$s] den %4$s\'e eklendi</string>
@@ -130,7 +130,7 @@
     <string name="close_drawer">kapat</string>
     <string name="label_add_measurement">Ölçüm ekle</string>
     <string name="label_share">Paylaş</string>
-    <string name="info_bluetooth_no_device_set">Seçili Bluetooth aygıtı yok</string>
+    <string name="info_bluetooth_no_device_set">Bluetooth aygıtı seçin</string>
     <string name="info_new_data_duplicated">Aynı tarih ve saatte ölçüm zaten var</string>
     <string name="label_mergeWithLastMeasurement">Son ölçüm ile birleştir</string>
     <string name="label_bluetooth_searching_finished">Arama tamamlandı</string>
@@ -229,7 +229,7 @@
     <string name="label_measurement_in_percent">% cinsinden ölçüm</string>
     <string name="toggle_expand">Geçiş genişlemesi</string>
     <string name="label_tdee">Toplam Günlük Enerji Harcaması (TDEE)</string>
-    <string name="info_bluetooth_no_device_retrying">Bağlantı kurulamıyor, yeniden deneyin…</string>
+    <string name="info_bluetooth_no_device_retrying">Bağlantı kurulamadı, yeniden deneniyor…</string>
     <string name="info_bluetooth_connection_disconnected">Bluetooth bağlantısı kapalı</string>
     <string name="label_enable_legend">Grafik efsanesi</string>
     <string name="label_enable_yaxis">Y-eksen</string>
@@ -243,8 +243,8 @@
     <string name="label_calories">Kaloriler</string>
     <string name="label_upgrade_to_openScale_pro">Bluetooth özelliğini etkinleştirmek için openScale paralı sürüme yükseltin</string>
     <string name="action_donation">Bağış</string>
-    <string name="info_scale_low_battery">Düşük pil düzeyi (%d%), lütfen tartının pilini değiştirin</string>
-    <string name="info_bluetooth_connection_error_scale_offline">Tartı ile bağlantı kurulamıyor, lütfen tartının açık olduğundan emin olun</string>
+    <string name="info_scale_low_battery">Düşük pil düzeyi (%d%), lütfen tartının pilini değiştirin veya doldurun</string>
+    <string name="info_bluetooth_connection_error_scale_offline">Tartı ile bağlantı kurulamıyor, lütfen açık olduğundan emin olun.</string>
     <string name="label_empty">boş</string>
     <string name="label_age">Yaş</string>
     <string name="label_slide_welcome_main_text">Bluetooth tartıları destekleyen, açık kaynaklı ağırlık ve vücut ölçüleri izleyicisi.</string>
@@ -252,7 +252,7 @@
     <string name="label_slide_user_top_text">Birden fazla kullanıcı desteklenmektedir.</string>
     <string name="label_slide_user_main_text">openScale için çevrimiçi hesap oluşturmanız gerekmez.
 \n
-\nBazı vücut ölçülerini hesaplamak için yalnızca kullanıcı bilgilerinize ihtiyacımız var.</string>
+\nVücut ölçüleri ölçümlerden hesaplanır.</string>
     <string name="label_slide_opensource_top_text">Yüksek derecede saydamlığa sahip açık kaynaklı bir yazılımdır.</string>
     <string name="label_slide_opensource_main_text">openScale <a href="https://github.com/oliexdev/openScale/blob/master/LICENSE">GPLv3</a> ile lisanslıdır.
 \n
@@ -262,8 +262,13 @@
     <string name="label_slide_bluetooth_top_text">Farklı üreticilerin çeşitli Bluetooth ölçekleri desteklenir.</string>
     <string name="label_slide_metrics_top_text">Vücut ölçülerinizi izleyin ve çözümleyin.</string>
     <string name="label_slide_support_top_text">OpenScale\'i geliştirmemize yardımcı olun.</string>
-    <string name="app_intro_skip_button">ATLA</string>
-    <string name="app_intro_next_button">SONRAKİ</string>
-    <string name="app_intro_back_button">GERİ</string>
-    <string name="app_intro_done_button">TAMAM</string>
+    <string name="app_intro_skip_button">Atla</string>
+    <string name="app_intro_next_button">Sonraki</string>
+    <string name="app_intro_back_button">Geri</string>
+    <string name="app_intro_done_button">Tamam</string>
+    <string name="label_slide_metrics_main_text">openScale 22\'den fazla gövde ölçüsünü destekler.
+\n
+\nÖnem verdiklerinizi gösterecek şekilde yapılandırın.
+\n
+\nVücut yağı, vücut suyu ve yağsız vücut kütlesi eksikse, <a href="https://github.com/oliexdev/openScale/wiki/Body-metric-estimations">bilimsel yayınlarına bakarak çıkarım yapılabilir</a>.</string>
 </resources>
