@@ -70,7 +70,7 @@
     <string name="error_user_name_required">Помилка: Ім\'я обов\'язкове</string>
     <string name="error_height_required">Помилка: Зріст обов\'язковий</string>
     <string name="error_initial_weight_required">Помилка: Початкова вага обов\'язкова</string>
-    <string name="error_goal_weight_required">Помилка: Цільова вага обов\'язкова</string>
+    <string name="error_goal_weight_required">Цільова вага обов\'язкова</string>
     <string name="info_data_deleted">Запис видалено</string>
     <string name="info_data_all_deleted">Всі записи видалено</string>
     <string name="info_data_exported">Експортовано до</string>
@@ -242,7 +242,15 @@
     <string name="label_empty">брак даних</string>
     <string name="label_age">Вік</string>
     <string name="label_slide_welcome_top_text">Вітаємо в openScale</string>
-    <string name="label_slide_welcome_main_text">"Програма з відкритим кодом для відстеження  ваги та інших показників тіла, з підтримкою Bluetooth вагів."</string>
+    <string name="label_slide_welcome_main_text">Програма з відкритим кодом для відстеження ваги та інших показників тіла, за допомогою ваг з підтримкою Bluetooth.</string>
     <string name="label_slide_privacy_top_text">Захистіть свої персональні дані.</string>
     <string name="label_slide_user_top_text">Підтримується декілька користувачів.</string>
+    <string name="label_slide_privacy_main_text">OpenScale не надсилає жодних даних до хмарного сховища та не має доступу до мережі.
+\n
+\nЯкщо потрібна синхронізація вашої ваги з GoogleFit чи за допомогою MQTT, можете встановити додаток: <a href="https://play.google.com/store/apps/details?id=com.health.openscale.sync">openScale sync</a>.</string>
+    <string name="label_slide_support_top_text">Допоможіть покращити openScale.</string>
+    <string name="app_intro_skip_button">Пропустити</string>
+    <string name="app_intro_next_button">Далі</string>
+    <string name="app_intro_back_button">Назад</string>
+    <string name="app_intro_done_button">Готово</string>
 </resources>
