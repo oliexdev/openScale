@@ -26,7 +26,7 @@
     <string name="label_bmr">Основний обмін (BMR)</string>
     <string name="label_tdee">Загальна щоденна витрата енергії (TDEE)</string>
     <string name="label_fat">Жир в організмі</string>
-    <string name="label_water">Вода в організмі</string>
+    <string name="label_water">Загалом води в організмі</string>
     <string name="label_muscle">М\'язи</string>
     <string name="label_lbm">М\'язова вага тіла</string>
     <string name="label_waist">Обхват талії</string>
