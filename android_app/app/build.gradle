@@ -7,8 +7,8 @@ android {
         testApplicationId "com.health.openscale.test"
         minSdkVersion 21
         targetSdkVersion 29
-        versionCode 47
-        versionName "2.1.2"
+        versionCode 48
+        versionName "2.2.0"
         archivesBaseName = "openScale-$versionName"
 
         manifestPlaceholders = [
@@ -69,7 +69,7 @@ dependencies {
     // Simple CSV
     implementation 'com.j256.simplecsv:simplecsv:2.3'
     // Blessed Android
-    implementation 'com.github.weliem:blessed-android:1.0'
+    implementation 'com.github.weliem:blessed-android:1.2'
     // CustomActivityOnCrash
     implementation 'cat.ereza:customactivityoncrash:2.2.0'
     // AppIntro
