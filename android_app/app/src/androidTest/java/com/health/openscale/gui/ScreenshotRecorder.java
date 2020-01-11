@@ -127,29 +127,24 @@ public class ScreenshotRecorder {
                 .commit();
     }
 
-    private ScaleUser getTestUser() {
-        ScaleUser user = new ScaleUser();
-        user.setUserName("Test");
-        user.setBodyHeight(180);
-        user.setInitialWeight(80.0f);
-        user.setGoalWeight(60.0f);
-
-        Calendar birthday = Calendar.getInstance();
-        birthday.add(Calendar.YEAR, -28);
-        birthday.set(birthday.get(Calendar.YEAR), Calendar.JANUARY, 19, 0, 0, 0);
-        birthday.set(Calendar.MILLISECOND, 0);
-
-        user.setBirthday(birthday.getTime());
-
-        Calendar goalDate = Calendar.getInstance();
-        goalDate.add(Calendar.YEAR, 1);
-        goalDate.set(goalDate.get(Calendar.YEAR), Calendar.JANUARY, 31, 0, 0, 0);
-        goalDate.set(Calendar.MILLISECOND, 0);
-
-        user.setGoalDate(goalDate.getTime());
-
-        return user;
-    }
+    private static ScaleUser getTestUser() {
+		ScaleUser user = new ScaleUser();
+		user.setUserName("Test");
+		user.setBodyHeight(180);
+		user.setInitialWeight(80.0f);
+		user.setGoalWeight(60.0f);
+		Calendar birthday = Calendar.getInstance();
+		birthday.add(Calendar.YEAR, -28);
+		birthday.set(birthday.get(Calendar.YEAR), Calendar.JANUARY, 19, 0, 0, 0);
+		birthday.set(Calendar.MILLISECOND, 0);
+		user.setBirthday(birthday.getTime());
+		Calendar goalDate = Calendar.getInstance();
+		goalDate.add(Calendar.YEAR, 1);
+		goalDate.set(goalDate.get(Calendar.YEAR), Calendar.JANUARY, 31, 0, 0, 0);
+		goalDate.set(Calendar.MILLISECOND, 0);
+		user.setGoalDate(goalDate.getTime());
+		return user;
+	}
 
     private List<ScaleMeasurement> getTestMeasurements() {
         List<ScaleMeasurement> scaleMeasurementList = new ArrayList<>();
