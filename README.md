@@ -3,7 +3,7 @@ https://travis-ci.org/oliexdev/openScale)
 [![Translation status](https://hosted.weblate.org/widgets/openscale/-/strings/svg-badge.svg)](https://hosted.weblate.org/engage/openscale/?utm_source=widget)
 =========
 
-Open-source weight and body metrics tracker, with support for Bluetooth scales
+Copylefted libre software weight and body metrics tracker, with support for Bluetooth scales
 
 <a href="https://f-droid.org/repository/browse/?fdid=com.health.openscale" target="_blank">
 <img src="https://f-droid.org/badge/get-it-on.png" alt="Get it on F-Droid" height="80"/></a>
@@ -14,15 +14,15 @@ Install [openScale-dev-build.apk](https://github.com/oliexdev/openScale/releases
 
 # Summary :clipboard:
 
-Monitor and track your weight, BMI, body fat, body water, muscle and other body metrics in an open source app that:
-* has an easy to use user interface with graphs,
-* supports various Bluetooth scales,
-* doesn't require you to create an account,
-* can be configured to only show the metrics you care about, and
-* respects your privacy and lets you decide what to do with your data.
+Use the app to monitor and track your weight, BMI, body fat, body water, muscle and other body metrics:
+* Easy to use user interface with graphs.
+* Support for various Bluetooth scales.
+* No account required.
+* Show only the metrics you care about.
+* Privacy and the ability to do what you want with _your_ data.
 
 # Supported Bluetooth scales :rocket:
-openScale has built-in support for a number of Bluetooth (BLE or "smart") scales from  many manufacturers, e.g. Beurer, Sanitas, Yunmai, Xiaomi, etc. (see model list below). Together with our users we constantly improve and extend the set of supported scales and in many cases pick up where the original app falls short.
+Built-in support for a number of Bluetooth (BLE or "smart") scales from  many manufacturers. Beurer, Sanitas, Yunmai, Xiaomi, etc. (listed below). Together with our users we constantly improve and extend the set of supported scales and in many cases pick up where the original app falls short.
 
 - Custom made Bluetooth scale
 - Beurer BF700, BF710 and BF800
@@ -40,33 +40,33 @@ openScale has built-in support for a number of Bluetooth (BLE or "smart") scales
 - Yunmai Mini and SE
 - iHealth HS3
 - Easy Home 64050
-- and many more
+- + many more
 
-Please see [openScale wikipage](https://github.com/oliexdev/openScale/wiki/Supported-scales-in-openScale) for the full list and the level of support for each scale.
+Please consult the [openScale wikipage](https://github.com/oliexdev/openScale/wiki/Supported-scales-in-openScale) for the full list and supported features of each scale.
 
 For scales without Bluetooth, or Bluetooth scales not (yet) supported by openScale, measurements can be manually entered in a quick and easy way.
 
 # Supported metrics :chart_with_upwards_trend:
-Weight, BMI (body mass index), body water, muscle, LBM (lean body mass), body fat, bone mass, waist circumference, waist-to-height ratio, hip circumference, waist-hip ratio, visceral fat, chest circumference, thigh circumference, biceps circumference, neck circumference, body fat caliper, BMR (basal metabolic rate), TDEE (Total Daily Energy Expenditure) and Calories. Each entry can also have an optional comment.
+Weight, BMI (body mass index), body water, muscle, LBM (lean body mass), body fat, bone mass, waist circumference, waist-to-height ratio, hip circumference, waist-hip ratio, visceral fat, chest circumference, thigh circumference, biceps circumference, neck circumference, body fat caliper, BMR (basal metabolic rate), TDEE (Total Daily Energy Expenditure) and calories. Each entry can also have an optional comment.
 
-<b>Note:</b> don't worry if you think the list is too long: metrics you don't use can be disabled and hidden.
+<b>Note:</b> Metrics you don't use can be turned off and hidden.
 
 # Other features :zap:
-- Resizable widget to show the latest measurement on the home screen
-- Configure your weight unit: kg, lb or st
-- Set a goal to help keep your diet
-- Displays all your data on a chart and in a table to track your progress
+- Resizable widget to show the latest measurement on the home screen.
+- Configure your weight unit: kg, lb or st.
+- Set a goal to help keep your diet.
+- Displays all your data on a chart and in a table to track your progress.
 - Evaluates measurements and gives a quick visual feedback to show you if you're within or outside the recommended range given your age, sex, height etc.
-- Import or export your data from/into a CSV (comma separated value) file
+- Import or export your data from/into a CSV (comma separated value) file.
 - Supports body fat, body water and lean body mass estimations based on scientific publications. Useful if your scale doesn't support those measurements.
-- Support for multiple users
-- Partially or fully translated into more than 27 languages, see [weblate project site](https://hosted.weblate.org/projects/openscale/#languages) for the full list
-- Optional dark theme selectable
+- Support for multiple users.
+- Partially or fully translated into more than 27 languages, see [weblate project site](https://hosted.weblate.org/projects/openscale/#languages) for the full list.
+- Optional dark theme.
 
 # Privacy :lock:
-This app has no ads and requests no unnecessary permissions. The location permission is only needed to find a Bluetooth scale. Once found the permission can be revoked (or never granted if Bluetooth isn't used).
+No ads and no unnecessary permissions. Location permission is only needed to find a Bluetooth scale. Once found the permission can be revoked (or never granted if Bluetooth isn't used).
 
-openScale doesn't send any data to a cloud and not having permission to access the internet is a strong guarantee of that.
+openScale doesn't send any data to a cloud. It doesn't even have Internet access.
 
 If you want to synchronise your weight to GoogleFit and/or MQTT 3.1, you can install [openScale sync](https://github.com/oliexdev/openScale/wiki/openScale-sync) from [GooglePlay](https://play.google.com/store/apps/details?id=com.health.openscale.sync).
 
@@ -76,17 +76,16 @@ Before asking, please first read the [FAQ](https://github.com/oliexdev/openScale
 
 # Donations :heart:
 
-If you would like to support this project's further development, the creator of this project or the continuous maintenance of this project, feel free to donate. Your donation is highly appreciated. Thank you!
+Support the creator in further development and maintenance of this project. It is highly appreciated. Thank you!
 
 [![PayPal Donation](https://www.paypalobjects.com/en_US/DK/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=H5KSTQA6TKTE4&source=url)
 
 # Contributing :+1:
+Found a bug or have a question or idea of how to improve the openScale app? Open an issue or comment on an existing one. Contribute code by forking the repository and sending in a pull request.
 
-If you found a bug, have an idea how to improve the openScale app or have a question, please create new issue or comment existing one. If you would like to contribute code, fork the repository and send a pull request.
+Help support your Bluetooth scale [here](https://github.com/oliexdev/openScale/wiki/How-to-reverse-engineer-a-Bluetooth-4.x-scale).
 
-If you want to help to support your Bluetooth scale please see [here](https://github.com/oliexdev/openScale/wiki/How-to-reverse-engineer-a-Bluetooth-4.x-scale) for further information.
-
-If you want to help to translate the app in your language please see [here](https://github.com/oliexdev/openScale/wiki/Frequently-Asked-Questions-(FAQ)#why-is-my-language-xyz-is-missing-or-incomplete)
+Translate the app in your language [here](https://github.com/oliexdev/openScale/wiki/Frequently-Asked-Questions-(FAQ)#why-is-my-language-xyz-is-missing-or-incomplete)
 
 # Screenshots :eyes:
 
@@ -132,7 +131,7 @@ If you want to help to translate the app in your language please see [here](http
 
 # License :page_facing_up:
 
-openScale is licensed under the GPL v3, see LICENSE file for full notice.
+openScale is licensed GPLv3+, see the LICENSE file for the full notice.
 
     Copyright (C) 2014  olie.xdev <olie.xdev@googlemail.com>
     
