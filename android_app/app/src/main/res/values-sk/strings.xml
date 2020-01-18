@@ -56,12 +56,12 @@
     <string name="label_delete_all">Vymazať všetko</string>
     <string name="error_value_required">Povinná hodnota</string>
     <string name="error_value_range">Hodnota mimo rozsah</string>
-    <string name="error_exporting">Chyba pri exporte</string>
-    <string name="error_importing">Chyba pri importe</string>
-    <string name="error_user_name_required">Chyba: Meno je povinné</string>
-    <string name="error_height_required">Chyba: Výška je povinná</string>
-    <string name="error_initial_weight_required">Chyba: Počiatočná hmotnosť je povinná</string>
-    <string name="error_goal_weight_required">Chyba: Cieľová hmotnosť je povinná</string>
+    <string name="error_exporting">Nepodarilo sa exportovať</string>
+    <string name="error_importing">Nepodarilo sa importovať</string>
+    <string name="error_user_name_required">Meno je povinné</string>
+    <string name="error_height_required">Výška je povinná</string>
+    <string name="error_initial_weight_required">Počiatočná hmotnosť je povinná</string>
+    <string name="error_goal_weight_required">Cieľová hmotnosť je povinná</string>
     <string name="info_data_deleted">Položka bola vymazaná</string>
     <string name="info_data_all_deleted">Všetky položky boli vymazané</string>
     <string name="info_data_exported">Exportované do</string>
@@ -74,9 +74,9 @@
     <string name="info_is_not_enable">zakázané</string>
     <string name="info_is_not_available">nedostupné</string>
     <string name="info_bluetooth_try_connection">Pripájanie k:</string>
-    <string name="info_bluetooth_connection_lost">Bluetooth pripojenie sa stratilo</string>
+    <string name="info_bluetooth_connection_lost">Bluetooth pripojenie sa prerušilo</string>
     <string name="info_bluetooth_no_device">Nenašli sa žiadne Bluetooth zariadenia</string>
-    <string name="info_bluetooth_connection_successful">Spojenie nadviazané</string>
+    <string name="info_bluetooth_connection_successful">Pripojené</string>
     <string name="info_bluetooth_init">Inicializácia Bluetooth zariadenia</string>
     <string name="info_bluetooth_connection_error">Neočakávaná chyba Bluetooth</string>
     <string name="info_new_data_added">Do %4$s boli pridané %1$.2f%2$s [%3$s]</string>
@@ -125,7 +125,7 @@
     <string name="close_drawer">zavrieť</string>
     <string name="label_share">Zdieľať</string>
     <string name="label_share_subject">Export údajov do CSV súboru (%s)</string>
-    <string name="info_bluetooth_no_device_set">Nevybrali ste žiadne bluetooth zariadenie</string>
+    <string name="info_bluetooth_no_device_set">Zvoľte zariadenie bluetooth</string>
     <string name="info_new_data_duplicated">meranie s rovnakým dátumom a časom už existuje</string>
     <string name="label_mergeWithLastMeasurement">Zlúčiť s posledným meraním</string>
     <string name="label_bluetooth_searching_finished">Vyhľadávanie dokončené</string>
@@ -195,10 +195,10 @@
     <string name="label_neck">Obvod krku</string>
     <string name="label_measure_unit">Jednotka merania</string>
     <string name="label_activity_level">Stupeň aktivity</string>
-    <string name="activity_level_sedentary">Málo pohyblivý</string>
-    <string name="activity_level_mild">Stredne</string>
-    <string name="activity_level_moderate">Priemerne</string>
-    <string name="activity_level_extreme">Extrémne</string>
+    <string name="activity_level_sedentary">Malý</string>
+    <string name="activity_level_mild">Mierny</string>
+    <string name="activity_level_moderate">Priemerný</string>
+    <string name="activity_level_extreme">Extrémny</string>
     <string name="label_calories">Kalórie</string>
     <string name="info_bluetooth_no_device_retrying">Nepodarilo sa pripojiť, znovu…</string>
     <string name="info_bluetooth_connection_disconnected">Bluetooth spojenie ukončené</string>
@@ -213,8 +213,8 @@
 \nPripojte sa znovu pre prijatie údajov meraní.</string>
     <string name="label_rolling_chart">Pohyblivý diagram</string>
     <string name="label_measurement_bar">Lišta merania</string>
-    <string name="info_scale_low_battery">Nízka úroveň batérie (% d%), vymeňte prosím batérie vo váhe</string>
-    <string name="info_bluetooth_connection_error_scale_offline">Nepodarilo sa pripojiť k váhe. Skontrolujte prosím, či je váha zapnutá</string>
+    <string name="info_scale_low_battery">Nízka úroveň batérie (%d\\%%), vymeňte alebo nabite prosím batérie vo váhe</string>
+    <string name="info_bluetooth_connection_error_scale_offline">Nepodarilo sa pripojiť k váhe. Overte, či je váha zapnutá.</string>
     <string name="label_empty">prázdny</string>
     <string name="label_add_or_fix_translation">Pridať nové alebo upraviť existujúce</string>
     <string name="label_debug_log">Uložiť denník ladenia do súboru</string>
@@ -231,9 +231,14 @@
     <string name="label_slide_welcome_top_text">Vitajte v
 \nopenScale</string>
     <string name="label_slide_privacy_top_text">Chráňte svoje osobné údaje o zdraví.</string>
-    <string name="label_slide_support_top_text">Pomôžte nám vylepšiť openScale.</string>
-    <string name="app_intro_skip_button">PRESKOČIŤ</string>
-    <string name="app_intro_next_button">ĎALEJ</string>
-    <string name="app_intro_back_button">SPÄŤ</string>
-    <string name="app_intro_done_button">HOTOVO</string>
+    <string name="label_slide_support_top_text">Pomôžte vylepšiť openScale.</string>
+    <string name="app_intro_skip_button">Preskočiť</string>
+    <string name="app_intro_next_button">Ďalej</string>
+    <string name="app_intro_back_button">Späť</string>
+    <string name="app_intro_done_button">Hotovo</string>
+    <string name="label_click_to_help_add_support">Kliknite sem a pomôžte pre ňu pridať podporu</string>
+    <string name="label_long_press_drag_reorder">Po dlhom stlačení potiahnite meranie pre zmenu poradia</string>
+    <string name="activity_level_heavy">Vysoký</string>
+    <string name="permission_read_write_data_label">Čítanie/Zápis dát openScale</string>
+    <string name="permission_location_service_info">Pre vyhľadanie Bluetooth zariadení prosím udeľte oprávnenie prístupu k polohe v nastaveniach Androidu. Potom ho môžete zase odobrať.</string>
 </resources>
