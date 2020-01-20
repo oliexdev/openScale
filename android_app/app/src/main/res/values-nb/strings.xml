@@ -278,4 +278,5 @@
 \nAlle kroppsutregninger er gjennomsiktig anlagt, og ingen skjulte dataoverføringer eller brukeridentifikasjon finner sted.
 \n
 \nDu kan finne hele kildekoden på <a href="https://github.com/oliexdev/openScale">GitHub</a>. Overbevis deg selv ved å gjennomse den.</string>
+    <string name="label_slide_welcome_main_text">Fri programvare for vekt- og kroppsmålingssporing, med Blåtannsvektstøtte.</string>
 </resources>
