@@ -253,4 +253,29 @@
     <string name="app_intro_next_button">Далі</string>
     <string name="app_intro_back_button">Назад</string>
     <string name="app_intro_done_button">Готово</string>
+    <string name="label_rolling_chart">Біжучий графік</string>
+    <string name="label_slide_user_main_text">openScale не вимагає від вас створення онлайн облікового запису.
+\n
+\nПоказники тіла розраховані з вимірювань.</string>
+    <string name="label_slide_opensource_top_text">Це програма з відкритим кодом і високим ступенем прозорості.</string>
+    <string name="label_slide_opensource_main_text">openScale ліцензується згідно з <a href="https://github.com/oliexdev/openScale/blob/master/LICENSE">GPLv3</a>.
+\n
+\nВсі розрахунки показників виконуються прозоро, відсутні приховане передавання даних або ідентифікація користувача.
+\n
+\nВи можете знайти повний похідний код програми у <a href="https://github.com/oliexdev/openScale">GitHub</a>. Переконайтесь в надійності openScale переглянувши його.</string>
+    <string name="label_slide_bluetooth_top_text">Підтримуються ваги з Bluetooth від різноманітних виробників.</string>
+    <string name="label_slide_bluetooth_main_text">openScale підтримує багато моделей вагів з Bluetooth від різноманітних виробників.
+\n
+\nМи постійно розширюємо перелік моделей вагів які підтримуються. Ви можете знайти повний список і рівень підтримки для кожної моделі вагів у <a href="https://github.com/oliexdev/openScale/wiki/Supported-scales-in-openScale">GitHub</a>.</string>
+    <string name="label_slide_metrics_top_text">Відслідковуйте і аналізуйте показники вашого тіла.</string>
+    <string name="label_slide_metrics_main_text">openScale підтримує понад 22 показники тіла.
+\n
+\nОберіть для відображення ті, які вас цікавлять.
+\n
+\n Якщо показники жиру, води та ваги м\'язів недоступні, їх можна облічити згідно з <a href="https://github.com/oliexdev/openScale/wiki/Body-metric-estimations">науковими публікаціями</a>.</string>
+    <string name="label_slide_support_main_text">openScale потребує вашої допомоги. Створіть <a href="https://github.com/oliexdev/openScale/issues">нове issue</a>, якщо ви знайшли помилку, маєте ідею або питання, чи хочете додати підтримку вашої моделі вагів з Bluetooth.
+\n
+\nПідтримайте авторів цього проекту у подальшій розробці і постійному обслуговуванню, поставивши openScale позитивну оцінку у <a href="http://play.google.com/store/apps/details?id=com.health.openscale.pro">GooglePlay</a> або поставте зірочку у <a href="https://github.com/oliexdev/openScale">GitHub</a>.
+\n
+\nМи високо цінимо ваші відгуки і підтримку. Дякуємо.</string>
 </resources>
