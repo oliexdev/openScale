@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="action_settings">Einstellungen</string>
-    <string name="error_height_required">Fehler: Körpergröße ist erforderlich</string>
-    <string name="error_exporting">Fehler beim Exportieren</string>
-    <string name="error_importing">Fehler beim Importieren</string>
-    <string name="error_user_name_required">Fehler: Benutzername erfoderlich</string>
+    <string name="error_height_required">Körpergröße ist erforderlich</string>
+    <string name="error_exporting">Export fehlgeschlagen</string>
+    <string name="error_importing">Import fehlgeschlagen</string>
+    <string name="error_user_name_required">Benutzername erforderlich</string>
     <string name="info_data_all_deleted">Alle Einträge wurden gelöscht</string>
     <string name="info_data_deleted">Eintrag wurde gelöscht</string>
     <string name="info_data_exported">Exportiert nach</string>
@@ -51,7 +51,7 @@
     <string name="label_title_last_measurement">Letzte Messung</string>
     <string name="label_title_user">Benutzer</string>
     <string name="label_user_name">Name</string>
-    <string name="label_water">Wassergehalt</string>
+    <string name="label_water">Körperwasseranteil</string>
     <string name="label_weight">Gewicht</string>
     <string name="label_weight_difference">Gewichtsunterschied</string>
     <string name="label_female">Weiblich</string>
@@ -64,7 +64,7 @@
     <string name="title_users">Benutzer</string>
     <string name="label_add_user">Benutzer hinzufügen</string>
     <string name="label_add_measurement">Messung hinzufügen</string>
-    <string name="error_goal_weight_required">Fehler: Zielgewicht ist erforderlich</string>
+    <string name="error_goal_weight_required">Zielgewicht ist erforderlich</string>
     <string name="info_is_not_enable">ausgeschaltet</string>
     <string name="info_is_enable">eingeschaltet</string>
     <string name="label_waist">Taillenumfang</string>
@@ -74,8 +74,8 @@
     <string name="label_whr">Taille-Hüft-Verhältnis</string>
     <string name="action_bluetooth_status">Bluetooth-Status</string>
     <string name="info_bluetooth_connection_error">Unerwarteter Bluetooth-Fehler</string>
-    <string name="info_bluetooth_connection_lost">Bluetooth Verbindung verloren</string>
-    <string name="info_bluetooth_connection_successful">Verbindung hergestellt</string>
+    <string name="info_bluetooth_connection_lost">Bluetooth Verbindung unterbrochen</string>
+    <string name="info_bluetooth_connection_successful">Verbunden</string>
     <string name="info_bluetooth_no_device">Kein Bluetooth Gerät gefunden</string>
     <string name="info_bluetooth_try_connection">Verbinde mit:</string>
     <string name="info_bluetooth_init">Initializiere Bluetooth Gerät</string>
@@ -107,7 +107,7 @@
     <string name="label_not_found">nicht gefunden</string>
     <string name="label_ignoreOutOfRange">Ignoriere Daten außerhalb des zulässigen Bereiches</string>
     <string name="label_initial_weight">Anfangsgewicht</string>
-    <string name="error_initial_weight_required">Fehler: Anfangsgewicht ist erforderlich</string>
+    <string name="error_initial_weight_required">Anfangsgewicht ist erforderlich</string>
     <string name="label_bt_device_no_support">Gerät wird nicht unterstützt</string>
     <string name="label_goal_line">Ziellinie</string>
     <string name="label_regression_line">Regressionsgerade</string>
@@ -128,7 +128,7 @@
     <string name="title_about">Info</string>
     <string name="open_drawer">öffnen</string>
     <string name="close_drawer">schließen</string>
-    <string name="info_bluetooth_no_device_set">Kein Bluetooth Gerät ausgewählt</string>
+    <string name="info_bluetooth_no_device_set">Bitte ein Bluetooth-Gerät auswählen</string>
     <string name="info_new_data_duplicated">Messung mit gleichen Datum und Uhrzeit existiert bereits</string>
     <string name="label_feedback_message_enjoying">Gefällt Dir openScale?</string>
     <string name="label_feedback_message_rate_app">Wie wäre es dann mit einer Bewertung bei GooglePlay oder bei GitHub?</string>
@@ -222,8 +222,8 @@
     <string name="trisa_scale_pairing_succeeded">Die Kopplung ist erfolgreich!
 \n
 \nWieder verbinden, um Messdaten abzurufen.</string>
-    <string name="info_bluetooth_no_device_retrying">Kann keine Verbindnung herstellen, versuche erneut…</string>
-    <string name="label_tdee">Gesamtenergieumsatz (TDEE)</string>
+    <string name="info_bluetooth_no_device_retrying">Kann keine Verbindung herstellen, versuche erneut…</string>
+    <string name="label_tdee">Täglicher Energiebedarf (TDEE)</string>
     <string name="label_calories">Kalorien</string>
     <string name="info_bluetooth_connection_disconnected">Bluetooth Verbindung getrennt</string>
     <string name="info_step_on_scale">Bitte Barfuß auf die Wage stellen</string>
@@ -237,21 +237,21 @@
     <string name="label_is_on_right_axis">Auf der rechten Achse</string>
     <string name="label_upgrade_to_openScale_pro">Bitte upgraden Sie auf openScale pro für Bluetooth-Unterstützung</string>
     <string name="action_donation">Spende</string>
-    <string name="info_scale_low_battery">Geringer Batterielevel (%d%), bitte tauschen Sie die Batterien Ihrer Waage aus</string>
-    <string name="info_bluetooth_connection_error_scale_offline">Keine Verbindung zur Waage, bitte stellen Sie sicher das Ihre Waage eingeschaltet ist</string>
+    <string name="info_scale_low_battery">Niedriger Batteriestand (%d%), bitte aufladen oder Batterien der Waage austauschen</string>
+    <string name="info_bluetooth_connection_error_scale_offline">Keine Verbindung zur Waage, bitte überprüfen, ob sie eingeschaltet ist.</string>
     <string name="label_empty">leer</string>
     <string name="label_age">Alter</string>
     <string name="label_slide_welcome_top_text">Willkommen zu
 \nopenScale</string>
-    <string name="label_slide_welcome_main_text">Open-Source Tracker für Gewichts- und Körpermetriken, mit Unterstützung für Bluetooth-Waagen.</string>
+    <string name="label_slide_welcome_main_text">Open-Source Tracker für Gewichts- und Körpermetriken mit Bluetooth-Waagen Anbindung.</string>
     <string name="label_slide_privacy_top_text">Schützt Ihre persönlichen Gesundheitsdaten.</string>
     <string name="label_slide_privacy_main_text">openScale sendet keine Daten an eine Cloud und die fehlende Zugriffsberechtigung auf das Internet ist eine starke Garantie dafür.
 \n
 \nWenn Sie Ihr Gewicht wirklich mit GoogleFit oder mit MQTT synchronisieren wollen, können Sie <a href="https://play.google.com/store/apps/details?id=com.health.openscale.sync">openScale sync</a> installieren.</string>
     <string name="label_slide_user_top_text">Es werden mehrere Benutzer unterstützt.</string>
-    <string name="label_slide_user_main_text">openScale verlangt nicht, dass Sie ein Online-Konto erstellen.
-\n
-\nWir benötigen nur ein paar Benutzerdaten von Ihnen, um einige Körpermetriken berechnen zu können.</string>
+    <string name="label_slide_user_main_text">openScale verlangt nicht, dass Sie ein Online-Konto erstellen. 
+\n 
+\nKörpermetriken werden anhand der Messwerte berechnet.</string>
     <string name="label_slide_opensource_top_text">Es handelt sich um Open-Source Software mit einem hohen Maß an Transparenz.</string>
     <string name="label_slide_opensource_main_text">openScale ist lizenziert unter der <a href="https://github.com/oliexdev/openScale/blob/master/LICENSE">GPLv3</a>.
 \n
@@ -263,19 +263,19 @@
 \n
 \nWir verbessern und erweitern ständig den Umfang der unterstützten Waagen. Die vollständige Liste und den Grad der Unterstützung für jede Waage finden Sie auf <a href="https://github.com/oliexdev/openScale/wiki/Supported-scales-in-openScale">GitHub</a>.</string>
     <string name="label_slide_metrics_top_text">Verfolgen und analysieren Sie Ihre Körpermetriken.</string>
-    <string name="label_slide_metrics_main_text">openScale unterstützt über 22 Körpermetriken.
-\n
-\nEs kann individuell konfiguriert werden, um nur die Körpermetriken anzuzeigen, die Ihnen wichtig sind.
-\n
-\nWenn Ihre Waage Körperfett, Körperwasser und fettfreie Körpermasse nicht unterstützt, können Sie diese Messungen sogar auf der Grundlage von <a href="https://github.com/oliexdev/openScale/wiki/Body-metric-estimations">wissenschaftlichen Publikationen</a> schätzen lassen.</string>
-    <string name="label_slide_support_top_text">Helfen Sie uns, openScale zu verbessern.</string>
-    <string name="label_slide_support_main_text">openScale braucht dich! Wenn du einen Fehler gefunden hast, eine Idee oder eine Frage hast oder helfen möchtest, deine Bluetooth Waage zu unterstützen, erstelle bitte ein <a href="https://github.com/oliexdev/openScale/issues">neues Ticket</a> auf GitHub.
-\n
-\nWenn Sie den Entwickler dieses Projekts in der Weiterentwicklung und der kontinuierlichen Pflege motivieren möchten, geben Sie openScale gerne eine positive Bewertung auf <a href="http://play.google.com/store/apps/details?id=com.health.openscale.pro">GooglePlay</a> oder einen Stern auf <a href="https://github.com/oliexdev/openScale">GitHub</a>.
-\n
-\nIhre Unterstützung und Ihr positives Feedback sind herzlichst willkommen. Ich danke Ihnen!</string>
-    <string name="app_intro_skip_button">ÜBERSPRINGEN</string>
-    <string name="app_intro_next_button">NÄCHSTE</string>
-    <string name="app_intro_back_button">ZURÜCK</string>
-    <string name="app_intro_done_button">FERTIG</string>
+    <string name="label_slide_metrics_main_text">openScale unterstützt über 22 Körpermetriken. 
+\n 
+\nSie legen fest, welche davon beobachtet werden sollen. 
+\n 
+\nWenn Ihre Waage Körperfett, Körperwasser und Muskelmasse nicht unterstützt, können Sie diese Messungen auf der Grundlage von <a href="https://github.com/oliexdev/openScale/wiki/Body-metric-estimations">wissenschaftlichen Publikationen</a> schätzen lassen.</string>
+    <string name="label_slide_support_top_text">Helfen Sie, openScale zu verbessern.</string>
+    <string name="label_slide_support_main_text">openScale braucht dich! Wenn du einen Fehler gefunden hast, eine Idee oder eine Frage hast oder helfen möchtest, deine Bluetooth Waage zu unterstützen, erstelle bitte ein <a href="https://github.com/oliexdev/openScale/issues">neues Ticket</a> auf GitHub. 
+\n 
+\nWenn Sie den Entwickler dieses Projekts in der Weiterentwicklung und der kontinuierlichen Pflege motivieren möchten, geben Sie openScale eine positive Bewertung auf <a href="http://play.google.com/store/apps/details?id=com.health.openscale.pro">GooglePlay</a> oder einen Stern auf <a href="https://github.com/oliexdev/openScale">GitHub</a>. 
+\n 
+\nIhre Unterstützung und Ihr positives Feedback sind herzlichst willkommen. Vielen dank.</string>
+    <string name="app_intro_skip_button">Überspringen</string>
+    <string name="app_intro_next_button">Weiter</string>
+    <string name="app_intro_back_button">Zurück</string>
+    <string name="app_intro_done_button">Fertig</string>
 </resources>
