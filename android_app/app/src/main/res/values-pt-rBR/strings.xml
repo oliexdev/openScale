@@ -194,4 +194,5 @@
     <string name="label_rolling_chart">Gráfico</string>
     <string name="label_measurement_bar">Barra de medidas</string>
     <string name="action_donation">Doação</string>
+    <string name="label_empty">Vazio</string>
 </resources>
