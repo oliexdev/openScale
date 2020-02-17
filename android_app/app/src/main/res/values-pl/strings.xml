@@ -205,7 +205,7 @@
     <string name="label_caliper3_female">Fałd skórny biodra</string>
     <string name="label_add_measurement">Dodaj pomiary</string>
     <string name="label_tdee">Całkowity dzienny wydatek energii (TDEE)</string>
-    <string name="info_step_on_scale">Proszę stanąć boso na wadze</string>
+    <string name="info_step_on_scale">Proszę stanąć boso na wagi</string>
     <string name="label_click_measurement_configure">Kliknij pomiar aby skonfigurować</string>
     <string name="info_bluetooth_no_device_retrying">Nie można nawiązać połączenia, ponawianie…</string>
     <string name="info_bluetooth_connection_disconnected">Zakończono połączenie bluetooth</string>
