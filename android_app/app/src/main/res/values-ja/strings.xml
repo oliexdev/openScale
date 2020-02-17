@@ -30,7 +30,7 @@
     <string name="label_male">男性</string>
     <string name="label_muscle">筋肉</string>
     <string name="label_gender">性別</string>
-    <string name="label_water">体水分</string>
+    <string name="label_water">総体水分量</string>
     <string name="label_title_user">ユーザー</string>
     <string name="label_goal_weight">目標体重</string>
     <string name="label_days_left">目標まで</string>
@@ -43,10 +43,10 @@
     <string name="label_bluetooth_enable">体重計との起動時の接続</string>
     <string name="label_last_month">先月の平均</string>
     <string name="label_last_week">先週の平均</string>
-    <string name="error_exporting">エクスポートのエラー</string>
-    <string name="error_importing">インポートのエラー</string>
-    <string name="error_height_required">エラー：身長が必要です</string>
-    <string name="error_user_name_required">エラー：名前が必要です</string>
+    <string name="error_exporting">エクスポートができませんでした</string>
+    <string name="error_importing">インポートができませんでした</string>
+    <string name="error_height_required">身長が必要です</string>
+    <string name="error_user_name_required">名前が必要です</string>
     <string name="info_data_all_deleted">全記録が削除されました</string>
     <string name="info_data_deleted">記録が削除されました</string>
     <string name="info_data_exported">エクスポート先</string>
@@ -63,7 +63,7 @@
     <string name="info_enter_value_in">値</string>
     <string name="question_really_delete_all">全ユーザーの全記録を削除しますか？</string>
     <string name="question_really_delete_user">ユーザーを削除しますか？</string>
-    <string name="error_goal_weight_required">エラー：目標体重が必要です</string>
+    <string name="error_goal_weight_required">目標体重が必要です</string>
     <string name="info_is_not_enable">無効</string>
     <string name="info_is_enable">有効</string>
     <string name="label_waist">胴囲</string>
@@ -76,7 +76,7 @@
     <string name="info_bluetooth_try_connection">接続中：</string>
     <string name="info_bluetooth_connection_error">予期しないBluetoothエラー</string>
     <string name="info_bluetooth_connection_lost">Bluetooth接続が切断されました</string>
-    <string name="info_bluetooth_connection_successful">接続が確立しました</string>
+    <string name="info_bluetooth_connection_successful">接続しました</string>
     <string name="info_bluetooth_init">Bluetooth接続を初期化する</string>
     <string name="default_value_reminder_notify_text">体重測定の時間</string>
     <string name="label_reminder">リマインダー</string>
@@ -97,7 +97,7 @@
     <string name="error_value_required">値が必要です</string>
     <string name="error_value_range">範囲外の値</string>
     <string name="title_statistics">統計</string>
-    <string name="error_initial_weight_required">エラー：初期体重が必要です</string>
+    <string name="error_initial_weight_required">初期体重が必要です</string>
     <string name="label_initial_weight">初期体重</string>
     <string name="title_about">アプリについて</string>
     <string name="title_general">一般</string>
@@ -107,7 +107,7 @@
     <string name="label_bmr">基礎代謝率 (BMR)</string>
     <string name="label_lbm">除脂肪体重</string>
     <string name="label_bone">骨密度</string>
-    <string name="info_bluetooth_no_device_set">Bluetooth端末が選択されていません</string>
+    <string name="info_bluetooth_no_device_set">Bluetooth端末を選択してください</string>
     <string name="info_new_data_duplicated">同じ日時のものがすでに存在している測定</string>
     <string name="label_bluetooth_searching">Bluetooth対応体重計を検索中</string>
     <string name="label_bluetooth_searching_finished">検索終了</string>
@@ -224,7 +224,7 @@
     <string name="permission_read_write_data_label">openScaleデータの読み取り/書き込み</string>
     <string name="label_tdee">1日の総エネルギー消費量 (TDEE)</string>
     <string name="label_calories">カロリー</string>
-    <string name="info_bluetooth_no_device_retrying">接続を確立できません。再試行しています…</string>
+    <string name="info_bluetooth_no_device_retrying">接続を確立できませんでした。再試行しています…</string>
     <string name="info_bluetooth_connection_disconnected">Bluetooth接続が閉じられました</string>
     <string name="info_step_on_scale_for_reference">基準測定のために裸足で体重計に乗ってください</string>
     <string name="permission_location_service_info">Bluetooth設定を検索するには、Android設定で位置情報アクセスを許可します。必要に応じて、後で取り消してください。</string>
@@ -236,6 +236,27 @@
     <string name="label_measurement_bar">測定バー</string>
     <string name="label_is_on_right_axis">右軸上に</string>
     <string name="label_upgrade_to_openScale_pro">Bluetoothサポートは、openScale proにアップグレードしてください</string>
-    <string name="info_scale_low_battery">電池の残量が少なくなっています (%d%)、体重計の電池を交換してください</string>
-    <string name="info_bluetooth_connection_error_scale_offline">体重計に接続できません。体重計がオンになっていることを確認してください</string>
+    <string name="info_scale_low_battery">電池の残量が少なくなっています (%d\\%%)、体重計の電池を充電または交換してください。</string>
+    <string name="info_bluetooth_connection_error_scale_offline">体重計に接続できませんでした。オンになっていることを確認してください。</string>
+    <string name="label_age">年齢</string>
+    <string name="label_slide_welcome_main_text">オープンソースの体重・身体指標トラッカー、Bluetooth体重計をサポート。</string>
+    <string name="label_slide_privacy_top_text">個人の健康データを保護しよう。</string>
+    <string name="label_slide_privacy_main_text">"openScale はどんなデータもクラウドに送信しません。インターネットのアクセス権限を持っていないことがこれを強く保証します。
+\n
+\n体重をGoogleFitまたはMQTTと本当に同期させたい場合は次のアプリがあります。  "<a href="https://play.google.com/store/apps/details?id=com.health.openscale.sync">openScale sync</a>.</string>
+    <string name="label_slide_user_top_text">複数ユーザをサポートしています。</string>
+    <string name="label_slide_user_main_text">openScale はオンラインアカウントの作成を必要としません。
+\n 
+\n身体指標は測定値から計算されます。</string>
+    <string name="label_slide_opensource_top_text">高い透明性を持ったオープンソースソフトウェアです。</string>
+    <string name="label_slide_opensource_main_text">openScaleは <a href="https://github.com/oliexdev/openScale/blob/master/LICENSE">GPLv3</a>の下でライセンスされています。
+\n 
+\n全ての指標の算出法は明らかにされており、隠蔽されたデータ転送や個人識別の機能はありません。
+\n 
+\n全てのソースコードは <a href="https://github.com/oliexdev/openScale">GitHub</a>にあります。 納得できるまで openScale を検証してください。</string>
+    <string name="label_slide_bluetooth_top_text">様々なメーカーの いろんなBluetooth 体重計がサポートされています。</string>
+    <string name="label_slide_bluetooth_main_text">openScale は様々なメーカーの多くのBluetooth体重計との連携機能を内蔵しています。
+\n
+\n我々は常にサポートする体重計のリストを改善し拡張しています。全てのリストと個々のサポート水準については <a href="https://github.com/oliexdev/openScale/wiki/Supported-scales-in-openScale">GitHub</a> で確認できます.</string>
+    <string name="label_slide_metrics_top_text">身体指標を追跡し分析する。</string>
 </resources>
