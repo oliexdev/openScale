@@ -67,9 +67,9 @@
     <string name="error_value_range">Значення поза межами</string>
     <string name="error_exporting">Помилка експорту</string>
     <string name="error_importing">Помилка імпорту</string>
-    <string name="error_user_name_required">Помилка: Ім\'я обов\'язкове</string>
-    <string name="error_height_required">Помилка: Зріст обов\'язковий</string>
-    <string name="error_initial_weight_required">Помилка: Початкова вага обов\'язкова</string>
+    <string name="error_user_name_required">Ім\'я обов\'язкове</string>
+    <string name="error_height_required">Зріст обов\'язковий</string>
+    <string name="error_initial_weight_required">Початкова вага обов\'язкова</string>
     <string name="error_goal_weight_required">Цільова вага обов\'язкова</string>
     <string name="info_data_deleted">Запис видалено</string>
     <string name="info_data_all_deleted">Всі записи видалено</string>
@@ -176,7 +176,7 @@
     <string name="label_weeks_view">За тиждень</string>
     <string name="label_year_view">За рік</string>
     <string name="permission_not_granted">Дозволу не отримано</string>
-    <string name="permission_bluetooth_info">Доступ до позиціювання необхідний для пошуку Bluetooth пристроїв. Дозвіл можна буде відхилити після того як пристрій буде знайдено.</string>
+    <string name="permission_bluetooth_info">Доступ до позиціювання необхідний для пошуку Bluetooth пристроїв. Дозвіл можна буде відмінити після того як пристрій буде знайдено.</string>
     <string name="permission_location_service_info">Надайте доступ до позиціювання в налаштуваннях Android для пошуку Bluetooth пристроїв. Надалі цей дозвіл можна відхилити.</string>
     <string name="permission_bluetooth_info_title">Інформація</string>
     <string name="permission_read_write_data_description">Обробка openScale даних, з інформацією про користувача та всі збережені виміри</string>
@@ -242,7 +242,7 @@
     <string name="label_empty">брак даних</string>
     <string name="label_age">Вік</string>
     <string name="label_slide_welcome_top_text">Вітаємо в openScale</string>
-    <string name="label_slide_welcome_main_text">Програма з відкритим кодом для відстеження ваги та інших показників тіла, за допомогою ваг з підтримкою Bluetooth.</string>
+    <string name="label_slide_welcome_main_text">Програма з відкритим кодом для відстеження ваги та інших показників тіла за допомогою Bluetooth вагів.</string>
     <string name="label_slide_privacy_top_text">Захистіть свої персональні дані.</string>
     <string name="label_slide_user_top_text">Підтримується декілька користувачів.</string>
     <string name="label_slide_privacy_main_text">OpenScale не надсилає жодних даних до хмарного сховища та не має доступу до мережі.
