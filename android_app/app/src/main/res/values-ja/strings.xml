@@ -211,7 +211,7 @@
     <string name="label_activity_level">活動レベル</string>
     <string name="activity_level_sedentary">座りがち</string>
     <string name="activity_level_mild">軽度</string>
-    <string name="activity_level_moderate">中程 度</string>
+    <string name="activity_level_moderate">中程度</string>
     <string name="activity_level_heavy">重度</string>
     <string name="activity_level_extreme">激しい</string>
     <string name="trisa_scale_not_paired">この体重計はペアリングされていません! 
@@ -241,9 +241,9 @@
     <string name="label_age">年齢</string>
     <string name="label_slide_welcome_main_text">オープンソースの体重・身体指標トラッカー、Bluetooth体重計をサポート。</string>
     <string name="label_slide_privacy_top_text">個人の健康データを保護しよう。</string>
-    <string name="label_slide_privacy_main_text">"openScale はどんなデータもクラウドに送信しません。インターネットのアクセス権限を持っていないことがこれを強く保証します。
+    <string name="label_slide_privacy_main_text">openScale はどんなデータもクラウドに送信しません。インターネットのアクセス権限を持っていないことがこれを強く保証します。
 \n
-\n体重をGoogleFitまたはMQTTと本当に同期させたい場合は次のアプリがあります。  "<a href="https://play.google.com/store/apps/details?id=com.health.openscale.sync">openScale sync</a>.</string>
+\n体重をGoogleFitまたはMQTTと本当に同期させたい場合は次のアプリがあります。 <a href="https://play.google.com/store/apps/details?id=com.health.openscale.sync">openScale sync</a>.</string>
     <string name="label_slide_user_top_text">複数ユーザをサポートしています。</string>
     <string name="label_slide_user_main_text">openScale はオンラインアカウントの作成を必要としません。
 \n 
@@ -259,4 +259,6 @@
 \n
 \n我々は常にサポートする体重計のリストを改善し拡張しています。全てのリストと個々のサポート水準については <a href="https://github.com/oliexdev/openScale/wiki/Supported-scales-in-openScale">GitHub</a> で確認できます.</string>
     <string name="label_slide_metrics_top_text">身体指標を追跡し分析する。</string>
+    <string name="label_slide_welcome_top_text">openScale
+\nにようこそ</string>
 </resources>
