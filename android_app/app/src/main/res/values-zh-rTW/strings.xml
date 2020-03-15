@@ -220,4 +220,6 @@
     <string name="label_neck">頸圍</string>
     <string name="label_calories">卡路里</string>
     <string name="label_fat_caliper">體脂夾</string>
+    <string name="action_donation">捐赠</string>
+    <string name="label_empty">空</string>
 </resources>
