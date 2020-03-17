@@ -204,7 +204,10 @@
     <string name="label_caliper2_female">Plica cutanea addominale</string>
     <string name="label_caliper3_female">Plica cutanea del fianco</string>
     <string name="label_add_measurement">Aggiungi misurazione</string>
-    <string name="label_tdee">Spesa energetica giornaliera totale (TDEE)</string>
+    <string name="label_tdee">Fabbisogno giornaliero</string>
     <string name="action_donation">Donazione</string>
     <string name="label_empty">vuoto</string>
+    <string name="trisa_scale_not_paired">La bilancia non è accoppiata col BT
+\nPremere il bottone della bilancia per attivare la modalità di accoppiamento, quibdi connettersi di nuovo per recuperare la password della bilancia stessa</string>
+    <string name="label_rolling_chart">Grafico a linee</string>
 </resources>
