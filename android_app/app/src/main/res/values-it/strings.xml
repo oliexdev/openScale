@@ -55,7 +55,7 @@
     <string name="label_goal_weight">Obiettivo di peso</string>
     <string name="label_goal_date">Data dell\'obiettivo</string>
     <string name="label_title_user">utente</string>
-    <string name="label_title_last_measurement">ultima misurazione</string>
+    <string name="label_title_last_measurement">Ultima misurazione</string>
     <string name="label_title_goal">Obiettivo</string>
     <string name="label_import">Importa</string>
     <string name="label_export">Esporta</string>
@@ -210,4 +210,15 @@
     <string name="trisa_scale_not_paired">La bilancia non è accoppiata col BT
 \nPremere il bottone della bilancia per attivare la modalità di accoppiamento, quibdi connettersi di nuovo per recuperare la password della bilancia stessa</string>
     <string name="label_rolling_chart">Grafico a linee</string>
+    <string name="info_step_on_scale">Posizionati sulla bilancia a piedi scalzi</string>
+    <string name="info_bluetooth_no_device_retrying">Impossibile stabilire una connessione, nuovo tentativo in corso…</string>
+    <string name="info_bluetooth_connection_disconnected">Connessione Bluetooth spenta</string>
+    <string name="permission_location_service_info">Concedi l\' accesso alla posizione dalle impostazioni di Android per ricercare i dispositivi Bluetooth. Questa autorizzazione può essere poi eventualmente revocata.</string>
+    <string name="label_enable_legend">Legenda grafico</string>
+    <string name="label_enable_yaxis">Asse Y</string>
+    <string name="label_day_view">Vista giornaliera</string>
+    <string name="label_year_view">Vista annuale</string>
+    <string name="info_scale_low_battery">Livello di batteria basso (%d\\%%), ricarica o sostituisci le batterie della bilancia</string>
+    <string name="info_bluetooth_connection_error_scale_offline">Impossibile connettersi alla bilancia, assicurati che sia accesa.</string>
+    <string name="label_age">Età</string>
 </resources>
