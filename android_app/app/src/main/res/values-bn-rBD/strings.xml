@@ -1,2 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="label_weight_difference">ওজনের পার্থক্য</string>
+    <string name="label_last_month">গত মাসের গড়</string>
+    <string name="label_last_week">আগের সপ্তাহের গড়</string>
+    <plurals name="label_days">
+        <item quantity="one">দিন %d</item>
+        <item quantity="other">দিনসমূহ %d</item>
+    </plurals>
+    <string name="label_smartUserAssign">চটপটে ব্যবহারকারীর কাজ</string>
+    <string name="label_age">বয়স</string>
+    <string name="label_bone">অস্থির ভর</string>
+    <string name="label_whr">কোমর-কোমরের নিচের অনুপাত</string>
+    <string name="label_whtr">কোমর-উচ্চতা অনুপাত</string>
+    <string name="label_comment">মতামত</string>
+    <string name="label_hip">কোমরের নিচের পরিধি</string>
+    <string name="label_waist">কোমরের পরিধি</string>
+    <string name="label_lbm">চর্বিহীন শরীরের ভর</string>
+    <string name="label_muscle">পেশি</string>
+    <string name="label_add_measurement">পরিমাপ যুক্ত করুন</string>
+    <string name="label_ok">আচ্ছা</string>
+    <string name="title_statistics">পরিসংখ্যান</string>
+    <string name="title_table">ছক</string>
+    <string name="title_graph">তালিকা</string>
+    <string name="title_overview">সাধারণ দৃশ্য</string>
+    <string name="label_water">দেহে পানির মোট পরিমাণ</string>
+    <string name="label_fat">দেহ চর্বি</string>
+    <string name="label_tdee">দৈনিক মোট শক্তির ব্যয় (টি.ডি.ই.ই.)</string>
+    <string name="label_bmr">সাধারণ বিপাকীয় হার (বি.এ.আর.)</string>
+    <string name="label_bmi">দেহ ওজন নির্দেশক (বিএমআই)</string>
+    <string name="label_weight">ওজন</string>
+    <string name="label_share_subject">সিএসভি ডেটা বের করুন (%s)</string>
+    <string name="label_share">ভাগাভাগি</string>
+    <string name="label_add_user">ব্যবহারকারী যুক্ত করুন</string>
+    <string name="label_empty">খালি</string>
+    <string name="label_delete">মুছুন</string>
+    <string name="label_no">না</string>
+    <string name="label_yes">হ্যাঁ</string>
+    <string name="label_cancel">বাতিল</string>
+    <string name="close_drawer">বন্ধ</string>
+    <string name="open_drawer">খোলা</string>
+    <string name="action_donation">দান</string>
+    <string name="action_bluetooth_status">ব্লুটুথ অবস্থা</string>
+    <string name="action_settings">নিয়ম বিন্যাস</string>
+    <string name="title_general">সাধারণ</string>
+    <string name="title_about">সম্পর্কিত</string>
+    <string name="title_measurements">পরিমাপ</string>
+    <string name="title_users">ব্যবহারকারীগণ</string>
+</resources>
