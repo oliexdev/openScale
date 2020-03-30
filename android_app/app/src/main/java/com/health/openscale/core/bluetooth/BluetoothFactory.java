@@ -78,7 +78,7 @@ public class BluetoothFactory {
             return new BluetoothMedisanaBS44x(context, false);
         }
 
-        if (deviceName.startsWith("SWAN") || name.equals("icomon".toLowerCase(Locale.US))) {
+        if (deviceName.startsWith("SWAN") || name.equals("icomon".toLowerCase(Locale.US)) || name.equals("YG".toLowerCase(Locale.US))) {
             return new BluetoothMGB(context);
         }
         if (name.equals("MI_SCALE".toLowerCase(Locale.US)) || name.equals("MI SCALE2".toLowerCase(Locale.US))) {
