@@ -232,7 +232,7 @@
     <string name="label_day_view">Tagesansicht</string>
     <string name="label_year_view">Jahresansicht</string>
     <string name="label_rolling_chart">Rollendes Diagramm</string>
-    <string name="label_measurement_bar">Messwerteanzeige</string>
+    <string name="label_measurement_bar">Messwertanzeige</string>
     <string name="permission_location_service_info">Gewährleisten Sie den Standortzugriff in den Android-Einstellungen, um nach Bluetooth-Geräten zu suchen. Sie können es anschließend wieder widerrufen.</string>
     <string name="label_is_on_right_axis">Auf der rechten Achse</string>
     <string name="label_upgrade_to_openScale_pro">Bitte upgraden Sie auf openScale pro für Bluetooth-Unterstützung</string>

@@ -54,9 +54,9 @@
     <string name="error_value_range">Valeur hors plage</string>
     <string name="error_exporting">Erreur durant l\'exportation</string>
     <string name="error_importing">Erreur durant l\'importation</string>
-    <string name="error_user_name_required">Erreur : nom d\'utilisateur requis</string>
-    <string name="error_height_required">Erreur : hauteur requise</string>
-    <string name="error_goal_weight_required">Erreur : objectif de poids requis</string>
+    <string name="error_user_name_required">Nom d\'utilisateur requis</string>
+    <string name="error_height_required">Hauteur requise</string>
+    <string name="error_goal_weight_required">Objectif de poids requis</string>
     <string name="info_data_deleted">L\'entrée a été supprimée</string>
     <string name="info_data_all_deleted">Toutes les entrées ont été supprimées</string>
     <string name="info_data_exported">Exporté vers</string>
@@ -71,7 +71,7 @@
     <string name="info_bluetooth_try_connection">Tentative de connexion à :</string>
     <string name="info_bluetooth_connection_lost">La connexion Bluetooth a été perdue</string>
     <string name="info_bluetooth_no_device">Aucun appareil Bluetooth détecté</string>
-    <string name="info_bluetooth_connection_successful">Connexion établie</string>
+    <string name="info_bluetooth_connection_successful">Connecté</string>
     <string name="info_bluetooth_init">Initialisation du périphérique Bluetooth</string>
     <string name="info_bluetooth_connection_error">Erreur Bluetooth</string>
     <string name="info_enter_user_name">Votre nom</string>
@@ -102,7 +102,7 @@
     <string name="label_bone">Masse osseuse</string>
     <string name="label_bmr">Taux métabolique basal (BMR)</string>
     <string name="title_general">Général</string>
-    <string name="info_bluetooth_no_device_set">Aucun appareil Bluetooth sélectionné</string>
+    <string name="info_bluetooth_no_device_set">Sélectionnez un appareil Bluetooth</string>
     <string name="label_website">Site web</string>
     <string name="label_license">Licence</string>
     <string name="label_theme">Thème</string>
@@ -124,7 +124,7 @@
     <string name="label_next">Suivant</string>
     <string name="title_about">À propos</string>
     <string name="label_share">Partager</string>
-    <string name="error_initial_weight_required">Erreur : poids initial requis</string>
+    <string name="error_initial_weight_required">Poids initial requis</string>
     <string name="label_exportBackup">Exporter la sauvegarde</string>
     <string name="label_importBackup">Importer la sauvegarde</string>
     <string name="label_backup">Sauvegarde</string>
@@ -236,4 +236,33 @@
     <string name="label_is_on_right_axis">Est sur le bon axe</string>
     <string name="label_upgrade_to_openScale_pro">Veuillez mettre à niveau vers openScale pro pour la prise en charge du Bluetooth</string>
     <string name="action_donation">Don</string>
+    <string name="app_intro_back_button">Précédent</string>
+    <string name="app_intro_next_button">Suivant</string>
+    <string name="app_intro_skip_button">Passer</string>
+    <string name="label_age">Âge</string>
+    <string name="app_intro_done_button">Terminé</string>
+    <string name="label_slide_support_top_text">Aidez à améliorer openScale.</string>
+    <string name="label_slide_welcome_top_text">Bienvenue dans
+\nopenScale</string>
+    <string name="label_slide_bluetooth_main_text">openScale possède un support intégré pour un certain nombre de balances Bluetooth de différents fabricants.
+\n
+\nNous améliorons et étendons constamment l\'ensemble des balances prises en charge. Vous pouvez trouver la liste complète et le niveau de support pour chaque balance sur <a href="https://github.com/oliexdev/openScale/wiki/Supported-scales-in-openScale">GitHub</a>.</string>
+    <string name="label_slide_bluetooth_top_text">Diverses balances Bluetooth de différents fabricants sont prises en charge.</string>
+    <string name="label_slide_opensource_main_text">openScale est sous licence <a href="https://github.com/oliexdev/openScale/blob/master/LICENSE">GPLv3</a>.
+\n
+\nTous les calculs liés aux mesures corporelles sont transparents et il n\'y a pas de fonction cachée de transfert de données ou d\'identification de l\'utilisateur.
+\n
+\nVous pouvez trouver le code source complet sur <a href="https://github.com/oliexdev/openScale">GitHub</a>. Passez le code en revue pour vous assurer qu\'openScale ne fait rien dans votre dos.</string>
+    <string name="label_slide_opensource_top_text">C\'est un logiciel libre avec un haut degré de transparence.</string>
+    <string name="label_slide_welcome_main_text">Logiciel libre de suivi du poids et des métriques corporelles, avec prise en charge des balances Bluetooth.</string>
+    <string name="label_slide_user_main_text">openScale ne nécessite pas de compte en ligne. 
+\n 
+\nLes métriques corporelles sont calculées à partir de mesures.</string>
+    <string name="label_empty">vide</string>
+    <string name="label_slide_privacy_main_text">openScale n\'envoie aucune donnée dans le cloud et le fait de ne pas avoir la permission d\'accéder à l\'internet en est une garantie solide.
+\n
+\nSi vous voulez vraiment synchroniser votre poids avec GoogleFit ou avec MQTT, vous pouvez installer <a href="https://play.google.com/store/apps/details?id=com.health.openscale.sync">openScale sync</a>.</string>
+    <string name="label_slide_privacy_top_text">Protégez vos données de santé personnelles.</string>
+    <string name="info_bluetooth_connection_error_scale_offline">Impossible de se connecter à la balance, assurez-vous qu\'elle soit allumée.</string>
+    <string name="info_scale_low_battery">Niveau de batterie faible (%d\\%%), rechargez ou remplacez les piles de la balance</string>
 </resources>
