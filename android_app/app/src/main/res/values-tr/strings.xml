@@ -271,4 +271,7 @@
 \nÖnem verdiklerinizi gösterecek şekilde yapılandırın.
 \n
 \nVücut yağı, vücut suyu ve yağsız vücut kütlesi eksikse, <a href="https://github.com/oliexdev/openScale/wiki/Body-metric-estimations">bilimsel yayınlarına bakarak çıkarım yapılabilir</a>.</string>
+    <string name="label_slide_privacy_main_text">"OpenScale bir buluta herhangi bir veri göndermez ve internete erişim izninin olmaması bunun en güçlü garantisidir.
+\n
+\nKilonuzu  GoogleFit veya MQTT ile gerçekten  eşzamanlamak istiyorsanız, "<a href="https://play.google.com/store/apps/details?id=com.health.openscale.sync"> adresinden openScale</a> yükleyebilirsiniz.</string>
 </resources>
