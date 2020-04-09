@@ -16,9 +16,9 @@
     <string name="label_delete">Sil</string>
     <string name="label_add_user">Kullanıcı ekle</string>
     <string name="label_weight">Ağırlık</string>
-    <string name="label_bmi">Vücut Kitle Endeksi (BMI)</string>
+    <string name="label_bmi">Vücut kitle endeksi (BMI)</string>
     <string name="label_bmr">Bazal Metabolizma Hızı (BMR)</string>
-    <string name="label_fat">Vücut Yağ Yüzdesi</string>
+    <string name="label_fat">Vücut yağ yüzdesi</string>
     <string name="label_water">Toplam vücut suyu</string>
     <string name="label_muscle">Kas oranı</string>
     <string name="label_lbm">Yağsız vücut kütlesi</string>
@@ -165,8 +165,8 @@
     <string name="label_weeks_view">Hafta görünümü</string>
     <string name="permission_not_granted">İzin verilmedi</string>
     <string name="permission_bluetooth_info_title">Bilgi</string>
-    <string name="permission_read_write_data_description">tüm kayıtlı ölçümler ve kullanıcı bilgilerini içeren openScale verisini oku</string>
-    <string name="permission_read_write_data_label">openScale Verisini Okuyun</string>
+    <string name="permission_read_write_data_description">kullanıcı bilgileri ve kaydedilen tüm ölçümler dahil olmak üzere openScale verilerini oku/yaz</string>
+    <string name="permission_read_write_data_label">openScale Verilerini Oku/Yaz</string>
     <string name="label_next">Sonraki</string>
     <string name="label_click_measurement_configure">Yapılandırmak için ölçümü tıklayın</string>
     <string name="label_estimate_measurement">Tahmini ölçüm</string>
@@ -241,7 +241,7 @@
     <string name="permission_location_service_info">Bluetooth aygıtlarını aramak için Android ayarlarından konum erişim izni verin. İsteğe bağlı olarak daha sonra iptal edebilirsiniz.</string>
     <string name="label_is_on_right_axis">Sağ eksende</string>
     <string name="label_calories">Kaloriler</string>
-    <string name="label_upgrade_to_openScale_pro">Bluetooth özelliğini etkinleştirmek için openScale paralı sürüme yükseltin</string>
+    <string name="label_upgrade_to_openScale_pro">Bluetooth desteği için openScale paralı sürüme yükseltin</string>
     <string name="action_donation">Bağış</string>
     <string name="info_scale_low_battery">Düşük pil düzeyi (%d%), lütfen tartının pilini değiştirin veya doldurun</string>
     <string name="info_bluetooth_connection_error_scale_offline">Tartı ile bağlantı kurulamıyor, lütfen açık olduğundan emin olun.</string>
@@ -250,28 +250,38 @@
     <string name="label_slide_welcome_main_text">Bluetooth tartıları destekleyen, açık kaynaklı ağırlık ve vücut ölçüleri izleyicisi.</string>
     <string name="label_slide_privacy_top_text">Kişisel sağlık verilerinizi koruyun.</string>
     <string name="label_slide_user_top_text">Birden fazla kullanıcı desteklenmektedir.</string>
-    <string name="label_slide_user_main_text">openScale için çevrimiçi hesap oluşturmanız gerekmez.
+    <string name="label_slide_user_main_text">openScale için çevrim içi bir hesap oluşturmanız gerekmez.
 \n
 \nVücut ölçüleri ölçümlerden hesaplanır.</string>
     <string name="label_slide_opensource_top_text">Yüksek derecede saydamlığa sahip açık kaynaklı bir yazılımdır.</string>
-    <string name="label_slide_opensource_main_text">openScale <a href="https://github.com/oliexdev/openScale/blob/master/LICENSE">GPLv3</a> ile lisanslıdır.
+    <string name="label_slide_opensource_main_text">openScale <a href="https://github.com/oliexdev/openScale/blob/master/LICENSE">GPLv3</a> altında lisanslanmıştır.
 \n
-\nTüm hesaplamalar saydamdır ve hiçbir gizli veri aktarılmaz veya kullanıcı kimliği üstlenilmez.
+\nTüm hesaplamalar saydamdır ve hiçbir gizli veri aktarımı veya kullanıcı tanımlaması yapılmaz.
 \n
-\nKaynak kodunun tamamını <a href="https://github.com/oliexdev/openScale">GitHub</a>\'da bulabilirsiniz. Onu inceleyerek kendinizi openScale kullanmaya ikna edin.</string>
+\nKaynak kodunun tamamını <a href="https://github.com/oliexdev/openScale">GitHub</a> sayfasında bulabilirsiniz. Onu inceleyerek kendinizi openScale kullanmaya ikna edin.</string>
     <string name="label_slide_bluetooth_top_text">Farklı üreticilerin çeşitli Bluetooth ölçekleri desteklenir.</string>
     <string name="label_slide_metrics_top_text">Vücut ölçülerinizi izleyin ve çözümleyin.</string>
-    <string name="label_slide_support_top_text">OpenScale\'i geliştirmemize yardımcı olun.</string>
+    <string name="label_slide_support_top_text">openScale\'i iyileştirmeye yardımcı olun.</string>
     <string name="app_intro_skip_button">Atla</string>
     <string name="app_intro_next_button">Sonraki</string>
     <string name="app_intro_back_button">Geri</string>
     <string name="app_intro_done_button">Tamam</string>
-    <string name="label_slide_metrics_main_text">openScale 22\'den fazla gövde ölçüsünü destekler.
+    <string name="label_slide_metrics_main_text">openScale 22\'den fazla vücut ölçüsünü desteklemektedir.
 \n
-\nÖnem verdiklerinizi gösterecek şekilde yapılandırın.
+\nSizin için önemli olanları gösterecek şekilde yapılandırın.
 \n
-\nVücut yağı, vücut suyu ve yağsız vücut kütlesi eksikse, <a href="https://github.com/oliexdev/openScale/wiki/Body-metric-estimations">bilimsel yayınlarına bakarak çıkarım yapılabilir</a>.</string>
-    <string name="label_slide_privacy_main_text">"OpenScale bir buluta herhangi bir veri göndermez ve internete erişim izninin olmaması bunun en güçlü garantisidir.
+\nVücut yağı, vücut suyu ve yağsız vücut kütlesi eksikse, <a href="https://github.com/oliexdev/openScale/wiki/Body-metric-estimations">bilimsel yayınlara</a> dayalı olarak çıkarım yapılabilir.</string>
+    <string name="label_slide_privacy_main_text">openScale bir buluta herhangi bir veri göndermez ve internete erişim izninin olmaması bunun en güçlü garantisidir.
 \n
-\nKilonuzu  GoogleFit veya MQTT ile gerçekten  eşzamanlamak istiyorsanız, "<a href="https://play.google.com/store/apps/details?id=com.health.openscale.sync"> adresinden openScale</a> yükleyebilirsiniz.</string>
+\nKilonuzu GoogleFit veya MQTT ile gerçekten eşzamanlamak istiyorsanız, <a href="https://play.google.com/store/apps/details?id=com.health.openscale.sync">openScale sync</a> yükleyebilirsiniz.</string>
+    <string name="label_slide_bluetooth_main_text">openScale, farklı üreticilerden Bluetooth tartıları için yerleşik desteğe sahiptir.
+\n
+\nDesteklenen tartı setini sürekli iyileştiriyor ve genişletiyoruz. Tam listeyi ve her tartının destek seviyesini <a href="https://github.com/oliexdev/openScale/wiki/Supported-scales-in-openScale">GitHub</a> sayfasında bulabilirsiniz.</string>
+    <string name="label_slide_support_main_text">openScale\'in size ihtiyacı var. Bir hata bulduysanız, bir fikriniz, sorunuz varsa veya Bluetooth tartınızın desteklenmesine yardımcı olmak istiyorsanız <a href="https://github.com/oliexdev/openScale/issues">yeni bir kayıt</a> oluşturun.
+\n
+\nopenScale\'e <a href="http://play.google.com/store/apps/details?id=com.health.openscale.pro"> GooglePlay</a>\'de olumlu bir puan vererek veya<a href="https://github.com/oliexdev/openScale"> GitHub</a> sayfasında yıldızlayarak bu projenin yaratıcısını daha fazla geliştirmek ve devamlı bakımını yapmak için motive edin.
+\n
+\nDesteğiniz ve olumlu geri bildirimleriniz çok takdir edilmektedir. Teşekkürler.</string>
+    <string name="label_slide_welcome_top_text">openScale\'e
+\nhoş geldiniz</string>
 </resources>
