@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="title_overview">Pregled</string>
     <string name="title_graph">Grafikon</string>
@@ -7,13 +7,11 @@
     <string name="title_users">Korisnici</string>
     <string name="title_measurements">Mjerenja</string>
     <string name="title_about">O programu</string>
-    <string name="title_general">Općenito</string>
-
+    <string name="title_general">Opće</string>
     <string name="action_settings">Postavke</string>
-    <string name="action_bluetooth_status">Bluetooth Status</string>
+    <string name="action_bluetooth_status">Bluetooth stanje</string>
     <string name="open_drawer">otvori</string>
     <string name="close_drawer">zatvori</string>
-
     <string name="label_cancel">Odustani</string>
     <string name="label_ok">U redu</string>
     <string name="label_yes">Da</string>
@@ -21,14 +19,13 @@
     <string name="label_delete">Izbriši</string>
     <string name="label_add_user">Dodaj korisnika</string>
     <string name="label_add_measurement">Dodaj mjerenje</string>
-    <string name="label_share">Podjeli</string>
+    <string name="label_share">Podijeli</string>
     <string name="label_share_subject">CSV izvoz (%s)</string>
-
     <string name="label_weight">Težina</string>
     <string name="label_bmi">Indeks tjelesne mase (BMI)</string>
     <string name="label_bmr">Bazalni metabolizam (BMR)</string>
     <string name="label_fat">Masnoća</string>
-    <string name="label_water">Voda</string>
+    <string name="label_water">Ukupna voda</string>
     <string name="label_muscle">Mišići</string>
     <string name="label_lbm">Težina bez masnoća</string>
     <string name="label_waist">Opseg struka</string>
@@ -38,105 +35,87 @@
     <string name="label_whr">Omjer struka i kukova</string>
     <string name="label_bone">Masa kostiju</string>
     <string name="label_smartUserAssign">Pametna dodjela korisnika</string>
-
     <plurals name="label_days">
-        <item quantity="one">Jedan</item>
-        <item quantity="few">Nekoliko</item>
-        <item quantity="other">Ostalo</item>
+        <item quantity="one">%d dan</item>
+        <item quantity="few">%d dana</item>
+        <item quantity="other">%d dana</item>
     </plurals>
     <string name="label_last_week">Prosjek prošlog tjedna</string>
     <string name="label_last_month">Prosjek prošlog mjeseca</string>
     <string name="label_weight_difference">Razlika težine</string>
     <string name="label_goal_date_is">Ciljani datum:</string>
     <string name="label_days_left">Preostalo dana</string>
-
     <string name="label_date">Datum</string>
     <string name="label_time">Vrijeme</string>
     <string name="label_birthday">Datum rođenja</string>
     <string name="label_user_name">Ime</string>
     <string name="label_height">Visina</string>
-    <string name="label_scale_unit">Mjerne jedinice</string>
+    <string name="label_scale_unit">Mjerna jedinica</string>
     <string name="label_gender">Spol</string>
     <string name="label_male">Muški</string>
     <string name="label_female">Ženski</string>
     <string name="label_goal_weight">Ciljana težina</string>
     <string name="label_goal_date">Ciljani datum</string>
-
     <string name="label_title_user">korisnik</string>
     <string name="label_title_last_measurement">zadnje mjerenje</string>
     <string name="label_title_goal">Cilj</string>
-
     <string name="label_import">Uvoz</string>
     <string name="label_export">Izvoz</string>
     <string name="label_delete_all">Izbriši sve</string>
-
     <string name="error_value_required">Potrebna vrijednost</string>
     <string name="error_value_range">Vrijednost izvan granica</string>
-    <string name="error_exporting">Greška u izvozu</string>
-    <string name="error_importing">Greška u uvozu</string>
-    <string name="error_user_name_required">Greška: Unesite ime</string>
-    <string name="error_height_required">Greška: Unesite težinu</string>
-    <string name="error_initial_weight_required">Greška: Unesite početnu težinu</string>
-    <string name="error_goal_weight_required">Greška: Unesite ciljanu težinu</string>
-
-    <string name="info_data_deleted">Stavka obrisana</string>
-    <string name="info_data_all_deleted">Sve stavke obrisane</string>
+    <string name="error_exporting">Izvoz nije moguć</string>
+    <string name="error_importing">Uvoz nije moguć</string>
+    <string name="error_user_name_required">Ime se mora zadati</string>
+    <string name="error_height_required">Visina se mora zadati</string>
+    <string name="error_initial_weight_required">Početna težina se mora zadati</string>
+    <string name="error_goal_weight_required">Ciljana težina se mora zadati</string>
+    <string name="info_data_deleted">Unos je izbrisan</string>
+    <string name="info_data_all_deleted">Svi unosi su izbrisani</string>
     <string name="info_data_exported">Izvezeno u</string>
     <string name="info_data_imported">Uvezeno iz</string>
     <string name="info_enter_value_in">Vrijednost u</string>
-    <string name="info_enter_comment">Komentar (neobavezan)</string>
+    <string name="info_enter_comment">Opcionalan komentar</string>
     <string name="info_is_visible">je vidljivo</string>
     <string name="info_is_not_visible">nije vidljivo</string>
     <string name="info_is_enable">uključeno</string>
     <string name="info_is_not_enable">isključeno</string>
     <string name="info_is_not_available">nedostupno</string>
     <string name="info_bluetooth_try_connection">Spajanje na:</string>
-    <string name="info_bluetooth_connection_lost">Izgubljena Bluetooth veza</string>
+    <string name="info_bluetooth_connection_lost">Izgubila se Bluetooth veza</string>
     <string name="info_bluetooth_no_device">Nije pronađen nijedan uređaj</string>
-    <string name="info_bluetooth_no_device_set">Nije odabran nijedan uređaj</string>
-    <string name="info_bluetooth_connection_successful">Veza uspostavljena</string>
-    <string name="info_bluetooth_init">Inicijalizacija Bluetooth uređaja</string>
+    <string name="info_bluetooth_no_device_set">Odaberi Bluetooth uređaj</string>
+    <string name="info_bluetooth_connection_successful">Povezano</string>
+    <string name="info_bluetooth_init">Inicijaliziraj Bluetooth uređaj</string>
     <string name="info_bluetooth_connection_error">Neočekivana Bluetooth greška</string>
     <string name="info_new_data_added">%1$.2f%2$s [%3$s] do %4$s dodan</string>
     <string name="info_new_data_duplicated">mjerenje s istim datumom i vremenom već postoji</string>
-
-    <string name="info_enter_user_name">Vaše ime</string>
-    <string name="info_no_selected_user">Ne postoji niti jedan korisnik. Stvorite ga u postavkama.</string>
+    <string name="info_enter_user_name">Tvoje ime</string>
+    <string name="info_no_selected_user">Ne postoji niti jedan korisnik. Stvori jednog korisnika u postavkama.</string>
     <string name="info_no_evaluation_available">Nije moguće procijeniti vrijednost</string>
-
-    <string name="question_really_delete">Izbrisati stavku?</string>
-    <string name="question_really_delete_all">Izbrisati sve stavke svih korisnika ?</string>
+    <string name="question_really_delete">Izbrisati unos\?</string>
+    <string name="question_really_delete_all">Izbrisati sve unose svih korisnika\?</string>
     <string name="question_really_delete_user">Izbrisati korisnika?</string>
-
     <string name="label_bluetooth_title">Bluetooth</string>
-    <string name="label_bluetooth_enable">Povezivanje sa vagom kod pokretanja</string>
-    <string name="label_mergeWithLastMeasurement">Spoji sa zadnjim mjerenjem</string>
-    <string name="label_bluetooth_searching">Tražim Vašu Bluetooth vagu</string>
+    <string name="label_bluetooth_enable">Povezivanje s vagom prilikom pokretanja</string>
+    <string name="label_mergeWithLastMeasurement">Sjedini sa zadnjim mjerenjem</string>
+    <string name="label_bluetooth_searching">Traži se tvoja Bluetooth vaga</string>
     <string name="label_bluetooth_searching_finished">Pretraga završena</string>
-
-    <string name="label_enable_labels">Oznake</string>
-    <string name="label_enable_points">Točka</string>
-
+    <string name="label_enable_labels">Oznaka podatka</string>
+    <string name="label_enable_points">Točka podatka</string>
     <string name="label_delete_confirmation">Potvrda brisanja</string>
-
-    <string name="label_category_measurement_database">Baza podataka</string>
-
+    <string name="label_category_measurement_database">Baza podataka mjerenja</string>
     <string name="label_maintainer">Održavatelj</string>
     <string name="label_website">Web stranica</string>
     <string name="label_license">Licenca</string>
-
     <string name="label_automatic">automatski</string>
-
     <string name="label_theme">Tema</string>
-
     <string name="label_reminder">Podsjetnik</string>
     <string name="label_reminder_weekdays">Dani</string>
     <string name="label_reminder_time">Vrijeme</string>
     <string name="label_reminder_notify_text">Tekst obavijesti</string>
-    <string name="default_value_reminder_notify_text">Vaganje za</string>
-
-    <string name="info_on_date">u</string>
-
+    <string name="default_value_reminder_notify_text">Vrijeme za vaganje u</string>
+    <string name="info_on_date">na dan</string>
     <string name="Monday">Ponedjeljak</string>
     <string name="Tuesday">Utorak</string>
     <string name="Wednesday">Srijeda</string>
@@ -156,78 +135,73 @@
     <string name="label_regression_line_degree">Polinom regresije</string>
     <string name="label_goal_line">Ciljana linija</string>
     <string name="label_help">Pomoć</string>
-
-    <string name="label_feedback_message_enjoying">Preporučate openScale?</string>
-    <string name="label_feedback_message_rate_app">A ocjena na Google Play ili GitHub ?</string>
-    <string name="label_feedback_message_issue">Želite li dati svoje mišljenje ?</string>
+    <string name="label_feedback_message_enjoying">Sviđa ti se openScale\?</string>
+    <string name="label_feedback_message_rate_app">Kako bi bilo, da ocijeniš program na Google Play-u ili GitHub-u\?</string>
+    <string name="label_feedback_message_issue">Želiš li poslati povratne informacije\?</string>
     <string name="label_feedback_message_yes">Da</string>
     <string name="label_feedback_message_no">Baš i ne</string>
     <string name="label_feedback_message_positive">U redu</string>
     <string name="label_feedback_message_negative">Ne, hvala</string>
-
-    <string name="error_max_scale_users">Dosegnut maksimalni broj korisnika</string>
-    <string name="info_step_on_scale_for_reference">Stanite bosi na vagu radi referentnog mjerenja</string>
+    <string name="error_max_scale_users">Dosegnut je maksimalan broj istovremenih korisnika vage</string>
+    <string name="info_step_on_scale_for_reference">Stani bez cipela na vagu za referentna mjerenja</string>
     <string name="info_measuring">Mjerenje težine: %.2f</string>
-
-    <string name="customactivityoncrash_error_activity_error_occurred_explanation">Došlo je do neočekivane pogreške
+    <string name="customactivityoncrash_error_activity_error_occurred_explanation">Došlo je do neočekivane greške.
 \n
-\nMolimo da prijavite problem sa podacima o grešci na
+\nPrijavi problem s podacima o grešci na 
 \nhttps://github.com/oliexdev/openScale/issues</string>
-    <string name="customactivityoncrash_error_activity_restart_app">Ponovo pokreni</string>
-    <string name="customactivityoncrash_error_activity_close_app">Zatvori</string>
-    <string name="customactivityoncrash_error_activity_error_details">Detalji o pogrešci</string>
-    <string name="customactivityoncrash_error_activity_error_details_title">Detalji o pogrešci</string>
+    <string name="customactivityoncrash_error_activity_restart_app">Ponovo pokreni program</string>
+    <string name="customactivityoncrash_error_activity_close_app">Zatvori program</string>
+    <string name="customactivityoncrash_error_activity_error_details">Detalji greške</string>
+    <string name="customactivityoncrash_error_activity_error_details_title">Detalji greške</string>
     <string name="customactivityoncrash_error_activity_error_details_close">Zatvori</string>
     <string name="customactivityoncrash_error_activity_error_details_copy">Kopiraj u međuspremnik</string>
     <string name="customactivityoncrash_error_activity_error_details_copied">Kopirano u međuspremnik</string>
-    <string name="customactivityoncrash_error_activity_error_details_clipboard_label">Informacije o pogrešci</string>
-    <string name="toggle_expand">Proširi</string>
+    <string name="customactivityoncrash_error_activity_error_details_clipboard_label">Informacije o grešci</string>
+    <string name="toggle_expand">Uklj./Isklj. širenje</string>
     <string name="edit">Uredi</string>
     <string name="save">Spremi</string>
-
-    <string name="label_month_view">Mjesec</string>
-    <string name="label_weeks_view">Tjedan</string>
-
+    <string name="label_month_view">Mjesečni prikaz</string>
+    <string name="label_weeks_view">Tjedni prikaz</string>
     <string name="permission_not_granted">Nije dozvoljeno</string>
-    <string name="permission_bluetooth_info">Dozvola pristupu lokaciji je potrebna za traženje Bluetooth uređaja. Može se opet zabraniti pristup nakon pronalaska uređaja.</string>
-    <string name="permission_bluetooth_info_title">Info</string>
-    <string name="label_next">Sljedeći</string>
-    <string name="label_long_press_drag_reorder">Dugo pritisnite i povucite mjerenja za promjenu redoslijeda</string>
-    <string name="label_click_measurement_configure">Odaberite mjerenje za uređivanje</string>
-    <string name="label_set_default_order">Zadan redosljed</string>
-    <string name="label_export_overwrite">Prebriši prijašnji izvoz \"%s\"?</string>
-    <string name="label_measurement_in_percent">Mjerenja u %</string>
-    <string name="label_estimate_measurement">Procjenjeno mjerenje</string>
+    <string name="permission_bluetooth_info">Dozvola pristupu lokaciji je potrebna za traženje Bluetooth uređaja. Može se opet zabraniti nakon što se uređaj pronađe.</string>
+    <string name="permission_bluetooth_info_title">Informacije</string>
+    <string name="label_next">Dalje</string>
+    <string name="label_long_press_drag_reorder">Pritisni i povuci mjerenje za promjenu redoslijeda</string>
+    <string name="label_click_measurement_configure">Odaberi mjerenje za postavljanje</string>
+    <string name="label_set_default_order">Postavi standardni redoslijed</string>
+    <string name="label_export_overwrite">Prepisati prethodni izvoz „%s”\?</string>
+    <string name="label_measurement_in_percent">Mjerenje u %</string>
+    <string name="label_estimate_measurement">Procijenjeno mjerenje</string>
     <string name="label_estimation_formula">Formula za procjenu</string>
     <string name="language_default">Zadana postavka</string>
     <string name="label_language">Jezik</string>
     <string name="theme_light">Svjetlo</string>
     <string name="theme_dark">Tamno</string>
-    <string name="label_contribute_translation">Pomognite prevesti</string>
+    <string name="label_contribute_translation">Pomogni prevesti</string>
     <string name="label_add_or_fix_translation">Dodaj novi ili popravi postojeći</string>
     <string name="label_percent">Posto</string>
     <string name="label_estimated">Procjena</string>
-    <string name="label_estimate_measurement_summary">Temeljeno na težini, visini, dobi, spolu, itd.</string>
+    <string name="label_estimate_measurement_summary">Na osnovi težine, visine, dobi, spolu, itd.</string>
     <string name="label_auto_backup">Automatska sigurnosna kopija</string>
     <string name="label_auto_backup_schedule">Raspored sigurnosne kopije</string>
-    <string name="label_overwrite_backup">Prebriši prijašnju sigurnosnu kopiju</string>
+    <string name="label_overwrite_backup">Prepiši prethodnu sigurnosnu kopiju</string>
     <string name="label_daily">dnevno</string>
     <string name="label_weekly">tjedno</string>
     <string name="label_monthly">mjesečno</string>
-    <string name="label_scale_not_supported">Da li je Vaša vaga podržana ?</string>
-    <string name="label_click_to_help_add_support">Pomognite da bi ju podržali</string>
+    <string name="label_scale_not_supported">Je li tvoja vaga nije podržana\?</string>
+    <string name="label_click_to_help_add_support">Pritisni ovdje i pomogni dodati podršku za vagu</string>
     <string name="label_development">Razvoj</string>
     <string name="label_debug_log">Spremi log zapis u datoteku</string>
-    <string name="label_your_bluetooth_scale">Vaša Bluetooth vaga</string>
-    <string name="label_select_measurement">Odaberite mjerenje</string>
-    <string name="label_select_user">Odaberite korisnika</string>
-    <string name="label_configure_widget">Podesiti widget</string>
+    <string name="label_your_bluetooth_scale">Tvoja Bluetooth vaga</string>
+    <string name="label_select_measurement">Odaberi mjerenje</string>
+    <string name="label_select_user">Odaberi korisnika</string>
+    <string name="label_configure_widget">Podesi widget</string>
     <string name="label_visceral_fat">Visceralne masnoće</string>
     <string name="label_chest">Opseg prsa</string>
     <string name="label_thigh">Opseg bedra</string>
     <string name="label_biceps">Opseg bicepsa</string>
     <string name="label_neck">Opseg vrata</string>
-    <string name="label_fat_caliper">Kaliper za mjerenje nabora</string>
+    <string name="label_fat_caliper">Mjerač za mjerenje nabora</string>
     <string name="label_caliper1_male">Nabor na prsima</string>
     <string name="label_caliper2_male">Nabor na trbuhu</string>
     <string name="label_caliper3_male">Nabor na bedru</string>
@@ -236,9 +210,73 @@
     <string name="label_caliper3_female">Nabor na kukovima</string>
     <string name="label_measure_unit">Mjerna jedinica</string>
     <string name="label_activity_level">Razina aktivnosti</string>
-    <string name="activity_level_sedentary">Sjedeći</string>
-    <string name="activity_level_mild">Blag</string>
-    <string name="activity_level_moderate">Umjeren</string>
-    <string name="activity_level_heavy">Jak</string>
-    <string name="activity_level_extreme">Ekstreman</string>
+    <string name="activity_level_sedentary">Sjedeća</string>
+    <string name="activity_level_mild">Blaga</string>
+    <string name="activity_level_moderate">Umjerena</string>
+    <string name="activity_level_heavy">Jaka</string>
+    <string name="activity_level_extreme">Ekstremna</string>
+    <string name="label_slide_support_main_text">openScale treba tebe. Prijavi <a href="https://github.com/oliexdev/openScale/issues">novi problem</a>, ako pronađeš grešku, ako imaš ideju, ako imaš pitanje ili ako želiš pomoći podršci tvoje Bluetooth vage.
+\n
+\nMotiviraj autora ovog projekta da nadalje razvija i održava openScale, davajući pozitivnu ocjenu na <a href="http://play.google.com/store/apps/details?id=com.health.openscale.pro">GooglePlay-u</a> ili zvijezdu na <a href="https://github.com/oliexdev/openScale">GitHub-u</a>.
+\n
+\nIzuzetno cijenimo tvoju podršku i pozitivne povratne informacije. Hvala ti.</string>
+    <string name="app_intro_done_button">Gotovo</string>
+    <string name="app_intro_back_button">Natrag</string>
+    <string name="app_intro_next_button">Dalje</string>
+    <string name="app_intro_skip_button">Preskoči</string>
+    <string name="label_slide_support_top_text">Pomogni poboljšati openScale.</string>
+    <string name="label_slide_metrics_main_text">openScale podržava više od 22 tjelesne metrike.
+\n
+\nPrilagodi program svojim potrebama i željama.
+\n
+\nAko masnoća, voda i tjelesna masa nedostaju, moguće ih je procijeniti na temelju <a href="https://github.com/oliexdev/openScale/wiki/Body-metric-assessments">znanstvenih publikacija</a>.</string>
+    <string name="label_slide_metrics_top_text">Prati i analiziraj svoje tjelesne metrike.</string>
+    <string name="label_slide_bluetooth_main_text">openScale ima ugrađenu podršku za niz Bluetooth vaga raznih proizvođača.
+\n
+\nProgram stalno poboljšavamo i omogućujemo podršku za daljnje vage. Potpun popis i razinu podrške za svaku vagu možeš pronaći na <a href="https://github.com/oliexdev/openScale/wiki/Supported-scales-in-openScale">GitHub-u</a>.</string>
+    <string name="label_slide_bluetooth_top_text">Podržavaju se Bluetooth vage od raznih proizvođača.</string>
+    <string name="label_slide_opensource_main_text">openScale je licenciran pod <a href="https://github.com/oliexdev/openScale/blob/master/LICENSE">GPLv3</a>. 
+\n
+\nSvi izračuni tijela su transparentni i ne poduzimaju se skrivene funkcije prijenosa podataka ili identifikacija korisnika. 
+\n
+\nSav izvorni kod nalazi se na <a href="https://github.com/oliexdev/openScale">GitHub-u</a>. Isprobaj openScale još danas.</string>
+    <string name="label_slide_opensource_top_text">Radi se o softveru otvorenog koda s visokim stupnjem transparentnosti.</string>
+    <string name="label_slide_user_main_text">openScale ne zahtijeva stvaranje internetskog računa.
+\n
+\nMetrike tijela se izračunavaju iz mjerenja.</string>
+    <string name="label_slide_user_top_text">Podržano je više korisnika.</string>
+    <string name="label_slide_privacy_main_text">openScale ne šalje podatke u oblak jer uopće nema dozvolu za pristup internetu.
+\n
+\nAko baš želiš sinkronizirati svoju težinu s GoogleFitom ili MQTT-om, instaliraj <a href="https://play.google.com/store/apps/details?id=com.health.openscale.sync">openScale sync</a>.</string>
+    <string name="label_slide_privacy_top_text">Zaštiti svoje osobne zdravstvene podatke.</string>
+    <string name="label_slide_welcome_main_text">Softver otvorenog koda za praćenje težine i tjelesne metrike, s Bluetooth podrškom za vagu.</string>
+    <string name="label_slide_welcome_top_text">Dobro došli u
+\nopenScale</string>
+    <string name="label_upgrade_to_openScale_pro">Nadogradi na „openScale pro” za Bluetooth podršku</string>
+    <string name="label_calories">Kalorije</string>
+    <string name="label_is_on_right_axis">Je na desnoj osi</string>
+    <string name="permission_read_write_data_label">Čitaj/zapiši openScale podatke</string>
+    <string name="permission_read_write_data_description">čitaj/zapiši openScale podatke, uključujući korisničke podatke i sva spremljena mjerenja</string>
+    <string name="permission_location_service_info">Dozvoli pristup lokaciji u Androidovim postavkama za traženje Bluetooth uređaja. Opcionalno zabrani pristup nakon toga.</string>
+    <string name="label_measurement_bar">Mjerna traka</string>
+    <string name="label_rolling_chart">Dinamički dijagram</string>
+    <string name="label_year_view">Godišnji prikaz</string>
+    <string name="label_day_view">Dnevni prikaz</string>
+    <string name="trisa_scale_pairing_succeeded">Uparivanje je uspjelo!
+\n
+\nPonovo se poveži za dohvaćanje mjernih podataka.</string>
+    <string name="trisa_scale_not_paired">Ova vaga nije uparena!
+\n
+\nDrži gumb na dnu vage pritisnutim za prebacivanje na modus uparivanja, a zatim se ponovo poveži za dobivanje lozinke uređaja.</string>
+    <string name="info_step_on_scale">Stani bez cipela na vagu</string>
+    <string name="label_enable_yaxis">os y</string>
+    <string name="label_enable_legend">Legenda dijagrama</string>
+    <string name="info_bluetooth_connection_disconnected">Bluetooth veza je zatvorena</string>
+    <string name="info_bluetooth_connection_error_scale_offline">Neuspjelo povezivanje s vagom, provjeri je li uključena.</string>
+    <string name="info_bluetooth_no_device_retrying">Neuspjelo uspostavljanje veze. Pokušaj se ponavlja …</string>
+    <string name="info_scale_low_battery">Niska razina napunjenosti baterije (%d\\% %), napuni ili zamijeni bateriju</string>
+    <string name="label_age">Dob</string>
+    <string name="label_tdee">Ukupna dnevna potrošnja energije (TDEE)</string>
+    <string name="label_empty">prazno</string>
+    <string name="action_donation">Donacija</string>
 </resources>
