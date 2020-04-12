@@ -63,7 +63,7 @@
     <string name="label_delete_all">Slett alle</string>
     <string name="error_value_required">Verdi kreves</string>
     <string name="error_value_range">Verdien utenfor tillatt rekkevidde</string>
-    <string name="error_exporting">Eksport feilet</string>
+    <string name="error_exporting">Eksport mislyktes</string>
     <string name="error_importing">Feil ved import</string>
     <string name="error_user_name_required">Krever brukernavn</string>
     <string name="error_height_required">Krever høyde</string>
@@ -224,7 +224,7 @@
 \nKoble til igjen for å hente målingsdata.</string>
     <string name="label_tdee">Totalt daglig energibehov (TDEE)</string>
     <string name="label_calories">Kalorier</string>
-    <string name="info_bluetooth_no_device_retrying">Klarte ikke etablere forbindelse, prøver igjen…</string>
+    <string name="info_bluetooth_no_device_retrying">Klarte ikke å etablere forbindelse, prøver igjen…</string>
     <string name="info_bluetooth_connection_disconnected">Blåtannstilkobling lukket</string>
     <string name="info_step_on_scale">Tre opp på vekta barfot</string>
     <string name="permission_location_service_info">Innvilg posisjonstilgang for å søke etter Blåtannsenheter. Du kan skru den av etterpå.</string>
@@ -278,5 +278,5 @@
 \nAlle kroppsutregninger er gjennomsiktig anlagt, og ingen skjulte dataoverføringer eller brukeridentifikasjon finner sted.
 \n
 \nDu kan finne hele kildekoden på <a href="https://github.com/oliexdev/openScale">GitHub</a>. Overbevis deg selv ved å gjennomse den.</string>
-    <string name="label_slide_welcome_main_text">Fri programvare for vekt- og kroppsmålingssporing, med støtte for blåtannsvekt</string>
+    <string name="label_slide_welcome_main_text">Fri programvare for vekt- og kroppsmålingssporing, med støtte for Blåtannsvekter.</string>
 </resources>
