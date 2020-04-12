@@ -170,7 +170,7 @@
     <string name="label_next">Sonraki</string>
     <string name="label_click_measurement_configure">Yapılandırmak için ölçümü tıklayın</string>
     <string name="label_estimate_measurement">Tahmini ölçüm</string>
-    <string name="language_default">Sistem öntanımlısı</string>
+    <string name="language_default">Sistem öntanımlı değeri</string>
     <string name="label_language">Dil</string>
     <string name="theme_light">Açık</string>
     <string name="theme_dark">Koyu</string>
@@ -213,7 +213,7 @@
 \n</string>
     <string name="permission_bluetooth_info">Bluetooth aygıtlarını aramak için konum izni gerekli. Aygıt bulunduktan sonra iptal edilebilir.</string>
     <string name="label_long_press_drag_reorder">Yeniden sıralamak için uzun basın ve ölçümü sürükleyin</string>
-    <string name="label_set_default_order">Öntanımlı sıralama ayarı</string>
+    <string name="label_set_default_order">Öntanımlı sıralamayı ayarla</string>
     <string name="label_export_overwrite">\"%s\" Önceki dışa aktarımın üzerine yazılsın mı\?</string>
     <string name="label_estimation_formula">Tahmin formülü</string>
     <string name="label_estimate_measurement_summary">Ağırlık, boy, yaş, cinsiyet vb. temelli.</string>
