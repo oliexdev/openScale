@@ -274,7 +274,7 @@
     <string name="info_bluetooth_connection_disconnected">Bluetooth veza je zatvorena</string>
     <string name="info_bluetooth_connection_error_scale_offline">Neuspjelo povezivanje s vagom, provjeri je li uključena.</string>
     <string name="info_bluetooth_no_device_retrying">Neuspjelo uspostavljanje veze. Pokušaj se ponavlja …</string>
-    <string name="info_scale_low_battery">Niska razina napunjenosti baterije (%d\\% %), napuni ili zamijeni bateriju</string>
+    <string name="info_scale_low_battery">Niska razina napunjenosti baterije (%d\\%%), napuni ili zamijeni bateriju</string>
     <string name="label_age">Dob</string>
     <string name="label_tdee">Ukupna dnevna potrošnja energije (TDEE)</string>
     <string name="label_empty">prazno</string>
