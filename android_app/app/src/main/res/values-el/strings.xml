@@ -237,6 +237,6 @@
     <string name="label_is_on_right_axis">Είναι στον δεξιό άξονα</string>
     <string name="label_upgrade_to_openScale_pro">Παρακαλώ αναβαθμίστε σε openScale pro για υποστήριξη Bluetooth</string>
     <string name="action_donation">Δωρεά</string>
-    <string name="info_scale_low_battery">Χαμηλό επίπεδο μπαταρίας (%d\\%%), παρακαλώ αλλάξτε τις μπαταρίες της ζυγαριάς</string>
+    <string name="info_scale_low_battery">Χαμηλό επίπεδο μπαταρίας (%d%%), παρακαλώ αλλάξτε τις μπαταρίες της ζυγαριάς</string>
     <string name="info_bluetooth_connection_error_scale_offline">Δεν μπορεί να γίνει σύνδεση με την ζυγαριά, παρακαλώ σιγουρευτείτε ότι η ζυγαριά είναι αναμμένη</string>
 </resources>

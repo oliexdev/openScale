@@ -264,5 +264,5 @@
 \nSi vous voulez vraiment synchroniser votre poids avec GoogleFit ou avec MQTT, vous pouvez installer <a href="https://play.google.com/store/apps/details?id=com.health.openscale.sync">openScale sync</a>.</string>
     <string name="label_slide_privacy_top_text">Protégez vos données de santé personnelles.</string>
     <string name="info_bluetooth_connection_error_scale_offline">Impossible de se connecter à la balance, assurez-vous qu\'elle soit allumée.</string>
-    <string name="info_scale_low_battery">Niveau de batterie faible (%d\\%%), rechargez ou remplacez les piles de la balance</string>
+    <string name="info_scale_low_battery">Niveau de batterie faible (%d%%), rechargez ou remplacez les piles de la balance</string>
 </resources>

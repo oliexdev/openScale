@@ -237,7 +237,7 @@
     <string name="info_on_date">на</string>
     <string name="label_measurement_bar">Шкала вимірювань</string>
     <string name="label_is_on_right_axis">На вісі праворуч</string>
-    <string name="info_scale_low_battery">Низький заряд батареї вагів (%d\\%%), будь-ласка зарядіть або замініть батареї</string>
+    <string name="info_scale_low_battery">Низький заряд батареї вагів (%d%%), будь-ласка зарядіть або замініть батареї</string>
     <string name="info_bluetooth_connection_error_scale_offline">Не можу під\'єднатись до вагів, переконайтеся що вони увімкнені.</string>
     <string name="label_empty">брак даних</string>
     <string name="label_age">Вік</string>

@@ -85,7 +85,7 @@
     <string name="info_is_enable">enabled</string>
     <string name="info_is_not_enable">disabled</string>
     <string name="info_is_not_available">not available</string>
-    <string name="info_scale_low_battery">Low battery level (%d\\%%), please recharge or replace scale batteries</string>
+    <string name="info_scale_low_battery">Low battery level (%d%%), please recharge or replace scale batteries</string>
     <string name="info_bluetooth_try_connection">Connecting to:</string>
     <string name="info_bluetooth_connection_lost">Bluetooth connection lost</string>
     <string name="info_bluetooth_no_device">No Bluetooth device found</string>

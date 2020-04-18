@@ -218,7 +218,7 @@
     <string name="label_enable_yaxis">Asse Y</string>
     <string name="label_day_view">Vista giornaliera</string>
     <string name="label_year_view">Vista annuale</string>
-    <string name="info_scale_low_battery">Livello di batteria basso (%d\\%%), ricarica o sostituisci le batterie della bilancia</string>
+    <string name="info_scale_low_battery">Livello di batteria basso (%d%%), ricarica o sostituisci le batterie della bilancia</string>
     <string name="info_bluetooth_connection_error_scale_offline">Impossibile connettersi alla bilancia, assicurati che sia accesa.</string>
     <string name="label_age">Età</string>
 </resources>

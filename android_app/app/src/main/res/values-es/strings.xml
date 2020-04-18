@@ -237,7 +237,7 @@
     <string name="label_calories">Calorías</string>
     <string name="label_upgrade_to_openScale_pro">Cambie a la versión Pro de openScale para obtener la prestación de Bluetooth</string>
     <string name="action_donation">Donación</string>
-    <string name="info_scale_low_battery">Queda poca energía (%d\\%%); recargue o sustituya las baterías de la báscula</string>
+    <string name="info_scale_low_battery">Queda poca energía (%d%%); recargue o sustituya las baterías de la báscula</string>
     <string name="info_bluetooth_connection_error_scale_offline">No se pudo conectar con la báscula; asegúrese de que está encendida.</string>
     <string name="label_empty">vacío</string>
     <string name="label_age">Edad</string>
