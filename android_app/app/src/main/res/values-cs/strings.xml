@@ -212,7 +212,7 @@
     <string name="label_year_view">Roční pohled</string>
     <string name="label_measurement_bar">Panel měření</string>
     <string name="action_donation">Darovat</string>
-    <string name="info_scale_low_battery">Baterie ve váze je téměř vybitá (%d%), prosím nabijte váhu</string>
+    <string name="info_scale_low_battery">Baterie ve váze je téměř vybitá (%d\\%%), prosím nabijte váhu</string>
     <string name="info_bluetooth_connection_error_scale_offline">Nemohu se připojit k váze. Ujistěte se prosím, že je zapnutá.</string>
     <string name="label_empty">prázdný</string>
     <string name="label_age">Věk</string>

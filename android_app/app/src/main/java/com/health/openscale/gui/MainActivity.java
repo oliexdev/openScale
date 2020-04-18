@@ -565,8 +565,13 @@ public class MainActivity extends BaseAppCompatActivity
                     Timber.e("Bluetooth unexpected error: %s", msg.obj);
                     break;
                 case SCALE_MESSAGE:
-                    String toastMessage = String.format(getResources().getString(msg.arg1), msg.obj);
-                    Toast.makeText(getApplicationContext(), toastMessage, Toast.LENGTH_LONG).show();
+                    try {
+                        String toastMessage = String.format(getResources().getString(msg.arg1), msg.obj);
+                        Toast.makeText(getApplicationContext(), toastMessage, Toast.LENGTH_LONG).show();
+                        Timber.d("Bluetooth scale message: " + toastMessage);
+                    } catch (Exception ex) {
+                        Timber.e("Bluetooth scale message error: " + ex);
+                    }
                     break;
             }
         }

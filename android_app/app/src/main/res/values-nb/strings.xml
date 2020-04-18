@@ -250,32 +250,32 @@
     <string name="info_scale_low_battery">Lavt batterinivå (%d\\%%), lad eller bytt vektbatteriene</string>
     <string name="info_bluetooth_connection_error_scale_offline">Klarte ikke koble til vekt, sjekk at den er påskrudd.</string>
     <string name="label_slide_user_top_text">Støtter flere brukere.</string>
-    <string name="label_slide_user_main_text">openScale krever ingen nettbasert konto. 
-\n 
+    <string name="label_slide_user_main_text">openScale krever ingen nettbasert konto.
+\n
 \nKroppsmålinger regnes ut fra målinger.</string>
     <string name="label_slide_bluetooth_top_text">Forskjellige Blåtannsvekter fra forskjellige produsenter støttes.</string>
     <string name="label_slide_bluetooth_main_text">openScale kommer med støtte for mange Blåtannsvekter fra ulike produsenter.
-\n 
+\n
 \nStøtten forbedres statig. Fullstendig liste for hver av dem er å finne på <a href="https://github.com/oliexdev/openScale/wiki/Supported-scales-in-openScale">GitHub</a>.</string>
     <string name="label_slide_metrics_top_text">Spor og analyser dine kroppsmål.</string>
-    <string name="label_slide_metrics_main_text">openScale støtter over 22 kroppsmålinger. 
-\n 
-\nDu kan sette den opp til å vise de målene du bryr deg om. 
-\n 
+    <string name="label_slide_metrics_main_text">openScale støtter over 22 kroppsmålinger.
+\n
+\nDu kan sette den opp til å vise de målene du bryr deg om.
+\n
 \nHvis vekten din ikke støtter kroppsfett, kroppsvann og fettfri kroppsvekt, kan du anslå disse målene basert på <a href="https://github.com/oliexdev/openScale/wiki/Body-metric-estimations">publisert forskning</a>.</string>
-    <string name="label_slide_support_main_text">openScale trenger deg. Hvis du har funnet en feil, har en idé eller spørsmål og ønsker å støtte din Blåtannsvekt, opprett en ny <a href="https://github.com/oliexdev/openScale/issues">mangelmelding</a>. 
-\n 
-\nHvis du ønsker å motivere skaperen av prosjektet i videre utvikling og vedvarende vedlikehold kan du gi openScale en god vurdering på <a href="http://play.google.com/store/apps/details?id=com.health.openscale.pro">GooglePlay</a> eller stjernemerke det på <a href="https://github.com/oliexdev/openScale">GitHub</a>. 
-\n 
+    <string name="label_slide_support_main_text">openScale trenger deg. Hvis du har funnet en feil, har en idé eller spørsmål og ønsker å støtte din Blåtannsvekt, opprett en ny <a href="https://github.com/oliexdev/openScale/issues">mangelmelding</a>.
+\n
+\nHvis du ønsker å motivere skaperen av prosjektet i videre utvikling og vedvarende vedlikehold kan du gi openScale en god vurdering på <a href="http://play.google.com/store/apps/details?id=com.health.openscale.pro">GooglePlay</a> eller stjernemerke det på <a href="https://github.com/oliexdev/openScale">GitHub</a>.
+\n
 \nDin støtte og positive tilbakemelding tas varmt imot. Tusen takk.</string>
     <string name="label_slide_privacy_main_text">openScale sender ingen data til skyen og det å ikke ha tilgang til å koble seg til Internett er en sterk garanti for at dette stemmer.
-\n 
+\n
 \nHvis du virkelig ønsker å synkronisere vekten din til GoogleFit eller med MQTT, så kan du installere <a href="https://play.google.com/store/apps/details?id=com.health.openscale.sync">openScale sync</a>.</string>
     <string name="label_slide_opensource_top_text">Transparent copylefted libre software.</string>
-    <string name="label_slide_opensource_main_text">Bruksvilkårene for openScale er <a href="https://github.com/oliexdev/openScale/blob/master/LICENSE">GPLv3+</a>. 
-\n 
-\nAlle kroppsutregninger er gjennomsiktig anlagt, og ingen skjulte dataoverføringer eller brukeridentifikasjon finner sted. 
-\n 
+    <string name="label_slide_opensource_main_text">Bruksvilkårene for openScale er <a href="https://github.com/oliexdev/openScale/blob/master/LICENSE">GPLv3+</a>.
+\n
+\nAlle kroppsutregninger er gjennomsiktig anlagt, og ingen skjulte dataoverføringer eller brukeridentifikasjon finner sted.
+\n
 \nDu kan finne hele kildekoden på <a href="https://github.com/oliexdev/openScale">GitHub</a>. Gjør deg trygg på openScale ved å gå igjennom koden.</string>
     <string name="label_slide_welcome_main_text">Fri programvare for vekt- og kroppsmålingssporing, med støtte for Blåtannsvekter.</string>
 </resources>
