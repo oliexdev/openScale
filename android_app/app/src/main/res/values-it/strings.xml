@@ -203,7 +203,7 @@
     <string name="label_caliper1_female">Plica cutanea del tricipite</string>
     <string name="label_caliper2_female">Plica cutanea addominale</string>
     <string name="label_caliper3_female">Plica cutanea del fianco</string>
-    <string name="label_add_measurement">Aggiungi misurazione</string>
+    <string name="label_add_measurement">Aggiungi la misurazione</string>
     <string name="label_tdee">Fabbisogno giornaliero</string>
     <string name="action_donation">Donazione</string>
     <string name="label_empty">vuoto</string>
@@ -212,7 +212,7 @@
     <string name="label_rolling_chart">Grafico a linee</string>
     <string name="info_step_on_scale">Posizionati sulla bilancia a piedi scalzi</string>
     <string name="info_bluetooth_no_device_retrying">Impossibile stabilire una connessione, nuovo tentativo in corso…</string>
-    <string name="info_bluetooth_connection_disconnected">Connessione Bluetooth spenta</string>
+    <string name="info_bluetooth_connection_disconnected">Connessione BT chiusa</string>
     <string name="permission_location_service_info">Concedi l\' accesso alla posizione dalle impostazioni di Android per ricercare i dispositivi Bluetooth. Questa autorizzazione può essere poi eventualmente revocata.</string>
     <string name="label_enable_legend">Legenda grafico</string>
     <string name="label_enable_yaxis">Asse Y</string>
