@@ -226,4 +226,6 @@
 \n
 \nRiconnettiti per ottenere i dati della misurazione.</string>
     <string name="label_measurement_bar">Barra delle misurazioni</string>
+    <string name="permission_read_write_data_label">Leggi/Scrivi dati openScale</string>
+    <string name="permission_read_write_data_description">leggi/scrivi dati openScale, incluse le informazioni utente e tutte le misurazioni salvate</string>
 </resources>
