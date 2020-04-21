@@ -234,4 +234,6 @@
     <string name="label_activity_level">Livello di attività</string>
     <string name="label_measure_unit">Unità di misura</string>
     <string name="label_calories">Calorie</string>
+    <string name="activity_level_extreme">Estrema</string>
+    <string name="activity_level_heavy">Pesante</string>
 </resources>
