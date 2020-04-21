@@ -225,4 +225,5 @@
     <string name="trisa_scale_pairing_succeeded">Associazione avvenuta con successo!
 \n
 \nRiconnettiti per ottenere i dati della misurazione.</string>
+    <string name="label_measurement_bar">Barra delle misurazioni</string>
 </resources>
