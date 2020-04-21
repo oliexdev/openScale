@@ -158,7 +158,7 @@
     <string name="label_month_view">Vista mensile</string>
     <string name="label_weeks_view">Vista settimanale</string>
     <string name="permission_not_granted">Autorizzazione non concessa</string>
-    <string name="permission_bluetooth_info">L\'autorizzazione di \"geolocalizzazione a basso consumo\" è necessaria per la ricerca dei dispositivi Bluetooth. Può essere revocata dopo che la rilevazione del dispositivo</string>
+    <string name="permission_bluetooth_info">L\'autorizzazione di geolocalizzazione è necessaria per la ricerca dei dispositivi Bluetooth. Può essere revocata dopo aver trovato il dispositivo.</string>
     <string name="permission_bluetooth_info_title">Informazioni</string>
     <string name="label_next">Avanti</string>
     <string name="label_set_default_order">Imposta ordine predefinito</string>
@@ -214,7 +214,7 @@
     <string name="info_step_on_scale">Posizionati sulla bilancia a piedi scalzi</string>
     <string name="info_bluetooth_no_device_retrying">Impossibile stabilire una connessione, nuovo tentativo in corso…</string>
     <string name="info_bluetooth_connection_disconnected">Connessione Bluetooth chiusa</string>
-    <string name="permission_location_service_info">Concedi l\' accesso alla posizione dalle impostazioni di Android per ricercare i dispositivi Bluetooth. Questa autorizzazione può essere poi eventualmente revocata.</string>
+    <string name="permission_location_service_info">Concedi l\'accesso alla posizione dalle impostazioni di Android per ricercare i dispositivi Bluetooth. Questa autorizzazione può essere poi eventualmente revocata.</string>
     <string name="label_enable_legend">Legenda grafico</string>
     <string name="label_enable_yaxis">Asse y</string>
     <string name="label_day_view">Vista giornaliera</string>
