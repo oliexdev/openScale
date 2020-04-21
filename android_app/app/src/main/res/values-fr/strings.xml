@@ -261,7 +261,7 @@
     <string name="label_slide_privacy_main_text">openScale n\'envoie aucune donnée dans le cloud et le fait de ne pas avoir la permission d\'accéder à l\'internet en est une garantie solide.
 \n
 \nSi vous voulez vraiment synchroniser votre poids avec GoogleFit ou avec MQTT, vous pouvez installer <a href="https://play.google.com/store/apps/details?id=com.health.openscale.sync">openScale sync</a>.</string>
-    <string name="label_slide_privacy_top_text">"Protégez vos données personnelles de santé "</string>
+    <string name="label_slide_privacy_top_text">Protégez vos données personnelles de santé.</string>
     <string name="info_bluetooth_connection_error_scale_offline">Impossible de se connecter à la balance, assurez-vous qu\'elle soit allumée.</string>
     <string name="info_scale_low_battery">Niveau de batterie faible (%d%%), rechargez ou remplacez les piles de la balance</string>
     <string name="label_slide_support_main_text">openScale a besoin de vous. Créez un <a href="https://github.com/oliexdev/openScale/issues">nouveau signalement</a> si vous trouvez un problème, avez une idée, une question ou voulez aider à soutenir votre échelle Bluetooth.
