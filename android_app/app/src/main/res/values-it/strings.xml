@@ -33,7 +33,7 @@
     <string name="label_whtr">Rapporto vita-altezza</string>
     <string name="label_whr">Rapporto vita-fianchi</string>
     <string name="label_bone">Densità minerale ossea</string>
-    <string name="label_smartUserAssign">Assegnazione utente smart</string>
+    <string name="label_smartUserAssign">Assegnazione utente intelligente</string>
     <plurals name="label_days">
         <item quantity="one">%d giorno</item>
         <item quantity="other">%d giorni</item>
@@ -62,9 +62,9 @@
     <string name="label_delete_all">Cancella tutto</string>
     <string name="error_value_required">Valore obbligatorio</string>
     <string name="error_value_range">Valore fuori dall\'intervallo</string>
-    <string name="error_exporting">Errore durante l\'esportazione</string>
-    <string name="error_importing">Errore di importazione</string>
-    <string name="error_user_name_required">Errore: Nome obbligatorio</string>
+    <string name="error_exporting">Impossibile esportare</string>
+    <string name="error_importing">Impossibile importare</string>
+    <string name="error_user_name_required">Nome obbligatorio</string>
     <string name="error_height_required">Altezza necessaria</string>
     <string name="error_initial_weight_required">Peso iniziale richiesto</string>
     <string name="error_goal_weight_required">Obiettivo di peso richiesto</string>
@@ -109,7 +109,7 @@
     <string name="label_automatic">auto</string>
     <string name="label_theme">Tema</string>
     <string name="label_reminder">Promemoria</string>
-    <string name="label_reminder_weekdays">Giorni della settimana</string>
+    <string name="label_reminder_weekdays">Giorni</string>
     <string name="label_reminder_time">Orario</string>
     <string name="label_reminder_notify_text">Testo di notifica</string>
     <string name="default_value_reminder_notify_text">È l\'ora di pesarsi</string>
@@ -235,6 +235,10 @@
     <string name="label_measure_unit">Unità di misura</string>
     <string name="label_calories">Calorie</string>
     <string name="activity_level_extreme">Estremo</string>
-    <string name="activity_level_heavy">Pesante</string>
-    <string name="label_upgrade_to_openScale_pro">Passa alla versione pro se vuoi il protocollo BT</string>
+    <string name="activity_level_heavy">Importante</string>
+    <string name="label_upgrade_to_openScale_pro">Passa alla versione pro se vuoi il protocollo Bluetooth</string>
+    <string name="label_slide_privacy_top_text">Proteggi i tuoi dati sanitari personali.</string>
+    <string name="label_slide_welcome_main_text">Software open-source per la rilevazione del peso e della metrica corporea, con supporto per la bilancia Bluetooth.</string>
+    <string name="label_slide_welcome_top_text">Benvenuti a
+\nopenScale</string>
 </resources>
