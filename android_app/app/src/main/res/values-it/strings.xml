@@ -187,15 +187,15 @@
     <string name="label_debug_log">Salva il log di debug in un file</string>
     <string name="label_your_bluetooth_scale">La tua bilancia Bluetooth</string>
     <string name="label_long_press_drag_reorder">Tieni premuto e trascina le misurazioni per riordinarle..</string>
-    <string name="label_click_measurement_configure">Premi la misurazione per configurare</string>
+    <string name="label_click_measurement_configure">Premi misurazioni per configurare</string>
     <string name="label_select_measurement">Seleziona misurazione</string>
     <string name="label_select_user">Seleziona utente</string>
     <string name="label_configure_widget">Configura widget</string>
     <string name="label_visceral_fat">Grasso viscerale</string>
-    <string name="label_chest">Circonferenza del petto</string>
+    <string name="label_chest">Circonferenza torace</string>
     <string name="label_thigh">Circonferenza della coscia</string>
-    <string name="label_biceps">Circonferenza del bicipite</string>
-    <string name="label_neck">Circonferenza del collo</string>
+    <string name="label_biceps">Circonferenza bicipiti</string>
+    <string name="label_neck">Circonferenza collo</string>
     <string name="label_fat_caliper">Calibro del grasso corporeo</string>
     <string name="label_caliper1_male">Plica cutanea del petto</string>
     <string name="label_caliper2_male">Plica cutanea addominale</string>
@@ -228,4 +228,10 @@
     <string name="label_measurement_bar">Barra delle misurazioni</string>
     <string name="permission_read_write_data_label">Leggi/Scrivi dati openScale</string>
     <string name="permission_read_write_data_description">leggi/scrivi dati openScale, incluse le informazioni utente e tutte le misurazioni salvate</string>
+    <string name="activity_level_moderate">Moderata</string>
+    <string name="activity_level_mild">Medio</string>
+    <string name="activity_level_sedentary">Sefentario</string>
+    <string name="label_activity_level">Livello di attività</string>
+    <string name="label_measure_unit">Unità di misura</string>
+    <string name="label_calories">Calorie</string>
 </resources>
