@@ -16,7 +16,7 @@
     <string name="label_weight">Poids</string>
     <string name="label_bmi">IMC</string>
     <string name="label_fat">Graisse corporelle</string>
-    <string name="label_water">Pourcentage d\'eau</string>
+    <string name="label_water">Eau corporelle totale</string>
     <string name="label_muscle">Muscle</string>
     <string name="label_waist">Tour de taille</string>
     <string name="label_hip">Tour de hanches</string>
@@ -52,7 +52,7 @@
     <string name="label_delete_all">Tout supprimer</string>
     <string name="error_value_required">Valeur requise</string>
     <string name="error_value_range">Valeur hors plage</string>
-    <string name="error_exporting">Erreur durant l\'exportation</string>
+    <string name="error_exporting">Impossible d\'exporter</string>
     <string name="error_importing">Erreur durant l\'importation</string>
     <string name="error_user_name_required">Nom d\'utilisateur requis</string>
     <string name="error_height_required">Hauteur requise</string>
