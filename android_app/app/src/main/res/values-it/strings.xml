@@ -39,7 +39,7 @@
         <item quantity="other">%d giorni</item>
     </plurals>
     <string name="label_last_week">Media ultima settimana</string>
-    <string name="label_last_month">Ultimi 30 giorni</string>
+    <string name="label_last_month">Media ultimo mese</string>
     <string name="label_weight_difference">Differenza di peso</string>
     <string name="label_goal_date_is">Data dell\'obiettivo:</string>
     <string name="label_days_left">Giorni rimanenti</string>
@@ -171,7 +171,7 @@
     <string name="theme_light">Chiaro</string>
     <string name="theme_dark">Scuro</string>
     <string name="label_contribute_translation">Contribuire alla traduzione</string>
-    <string name="label_add_or_fix_translation">Aggiungi nuova o modifica esistente</string>
+    <string name="label_add_or_fix_translation">Aggiungi una nuova o modifica un\'esistente</string>
     <string name="label_percent">Percentuale</string>
     <string name="label_estimated">Stimato</string>
     <string name="label_estimate_measurement_summary">Basato sul peso, l\'altezza, l\'età, il sesso, ecc.</string>
@@ -241,4 +241,12 @@
     <string name="label_slide_welcome_main_text">Software open-source per la rilevazione del peso e della metrica corporea, con supporto per la bilancia Bluetooth.</string>
     <string name="label_slide_welcome_top_text">Benvenuti a
 \nopenScale</string>
+    <string name="app_intro_back_button">Indietro</string>
+    <string name="app_intro_next_button">Avanti</string>
+    <string name="app_intro_skip_button">Salta</string>
+    <string name="label_slide_support_top_text">Aiuta a migliorare openScale.</string>
+    <string name="label_slide_bluetooth_top_text">Sono supportate varie bilance Bluetooth di diversi produttori.</string>
+    <string name="label_slide_opensource_top_text">È un software open source con un alto grado di trasparenza.</string>
+    <string name="label_slide_user_top_text">Utenti multipli sono supportati.</string>
+    <string name="app_intro_done_button">Fatto</string>
 </resources>
