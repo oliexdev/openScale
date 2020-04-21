@@ -162,7 +162,7 @@
     <string name="permission_bluetooth_info_title">Informazioni</string>
     <string name="label_next">Avanti</string>
     <string name="label_set_default_order">Imposta ordine predefinito</string>
-    <string name="label_export_overwrite">Sovrascrivere la precedente esportazione \"%s\"?</string>
+    <string name="label_export_overwrite">Sovrascrivere la precedente esportazione «%s»\?</string>
     <string name="label_measurement_in_percent">Misurazioni in %</string>
     <string name="label_estimate_measurement">Stimare la misurazione</string>
     <string name="label_estimation_formula">Formula della stima</string>
@@ -174,7 +174,7 @@
     <string name="label_add_or_fix_translation">Aggiungi nuova o modifica esistente</string>
     <string name="label_percent">Percentuale</string>
     <string name="label_estimated">Stimato</string>
-    <string name="label_estimate_measurement_summary">Basato su peso, altezza, età, genere, ecc.</string>
+    <string name="label_estimate_measurement_summary">Basato sul peso, l\'altezza, l\'età, il sesso, ecc.</string>
     <string name="label_auto_backup">Backup automatico</string>
     <string name="label_auto_backup_schedule">Pianificazione backup</string>
     <string name="label_overwrite_backup">Sovrascrivere il backup precedente</string>
@@ -186,7 +186,7 @@
     <string name="label_development">Sviluppo</string>
     <string name="label_debug_log">Salva il log di debug in un file</string>
     <string name="label_your_bluetooth_scale">La tua bilancia Bluetooth</string>
-    <string name="label_long_press_drag_reorder">Tieni premuto e trascina le misurazioni per riordinarle..</string>
+    <string name="label_long_press_drag_reorder">Tieni premuto e trascina le misurazioni per riordinarle</string>
     <string name="label_click_measurement_configure">Premi misurazioni per configurare</string>
     <string name="label_select_measurement">Seleziona misurazione</string>
     <string name="label_select_user">Seleziona utente</string>
