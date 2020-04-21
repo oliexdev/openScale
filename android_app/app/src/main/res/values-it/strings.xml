@@ -207,8 +207,9 @@
     <string name="label_tdee">Fabbisogno giornaliero</string>
     <string name="action_donation">Donazione</string>
     <string name="label_empty">vuoto</string>
-    <string name="trisa_scale_not_paired">La bilancia non è accoppiata col BT
-\nPremere il bottone della bilancia per attivare la modalità di accoppiamento, quibdi connettersi di nuovo per recuperare la password della bilancia stessa</string>
+    <string name="trisa_scale_not_paired">Questa bilancia non è stata associata!
+\n
+\nTieni premuto il bottone che si trova sollo la bilancia per metterlà in modalità associazione e poi riconnetiti per ottenere la password del dispositivo.</string>
     <string name="label_rolling_chart">Grafico a linee</string>
     <string name="info_step_on_scale">Posizionati sulla bilancia a piedi scalzi</string>
     <string name="info_bluetooth_no_device_retrying">Impossibile stabilire una connessione, nuovo tentativo in corso…</string>
@@ -221,4 +222,7 @@
     <string name="info_scale_low_battery">Livello di batteria basso (%d%%), ricarica o sostituisci le batterie della bilancia</string>
     <string name="info_bluetooth_connection_error_scale_offline">Impossibile connettersi alla bilancia, assicurati che sia accesa.</string>
     <string name="label_age">Età</string>
+    <string name="trisa_scale_pairing_succeeded">Associazione avvenuta con successo!
+\n
+\nRiconnettiti per ottenere i dati della misurazione.</string>
 </resources>
