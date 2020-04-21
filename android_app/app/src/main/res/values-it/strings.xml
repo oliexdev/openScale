@@ -236,4 +236,5 @@
     <string name="label_calories">Calorie</string>
     <string name="activity_level_extreme">Estremo</string>
     <string name="activity_level_heavy">Pesante</string>
+    <string name="label_upgrade_to_openScale_pro">Passa alla versione pro se vuoi il protocollo BT</string>
 </resources>
