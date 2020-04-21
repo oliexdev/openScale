@@ -21,7 +21,7 @@
     <string name="label_share">Del</string>
     <string name="label_share_subject">CVS-dataeksport (%s)</string>
     <string name="label_weight">Vekt</string>
-    <string name="label_bmi">Kroppsmasseindeks (BMI)</string>
+    <string name="label_bmi">Kroppsmasseindeks (KMI)</string>
     <string name="label_bmr">Hvilestoffskifte (BMR)</string>
     <string name="label_fat">Kroppsfett</string>
     <string name="label_water">Kroppsvann</string>
@@ -247,7 +247,7 @@
     <string name="app_intro_next_button">Neste</string>
     <string name="app_intro_back_button">Tilbake</string>
     <string name="app_intro_done_button">Ferdig</string>
-    <string name="info_scale_low_battery">Lavt batterinivå (%d\\%%), lad eller bytt vektbatteriene</string>
+    <string name="info_scale_low_battery">Lavt batterinivå (%d%%), lad eller bytt vektbatteriene</string>
     <string name="info_bluetooth_connection_error_scale_offline">Klarte ikke koble til vekt, sjekk at den er påskrudd.</string>
     <string name="label_slide_user_top_text">Støtter flere brukere.</string>
     <string name="label_slide_user_main_text">openScale krever ingen nettbasert konto.
