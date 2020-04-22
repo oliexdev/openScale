@@ -271,7 +271,7 @@
     <string name="label_slide_privacy_main_text">openScale sender ingen data til skyen og det å ikke ha tilgang til å koble seg til Internett er en sterk garanti for at dette stemmer.
 \n
 \nHvis du virkelig ønsker å synkronisere vekten din til GoogleFit eller med MQTT, så kan du installere <a href="https://play.google.com/store/apps/details?id=com.health.openscale.sync">openScale sync</a>.</string>
-    <string name="label_slide_opensource_top_text">Transparent copylefted libre software.</string>
+    <string name="label_slide_opensource_top_text">Transparent gemen fri programvare.</string>
     <string name="label_slide_opensource_main_text">Bruksvilkårene for openScale er <a href="https://github.com/oliexdev/openScale/blob/master/LICENSE">GPLv3+</a>.
 \n
 \nAlle kroppsutregninger er gjennomsiktig anlagt, og ingen skjulte dataoverføringer eller brukeridentifikasjon finner sted.
