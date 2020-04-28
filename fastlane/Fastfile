@@ -1,0 +1,122 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+opt_out_usage
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+# Add gradle get version name plugin
+# fastlane add_plugin get_version_name
+
+default_platform(:android)
+
+platform :android do 
+    versionName = get_version_name(
+        gradle_file_path:"android_app/app/build.gradle",
+        ext_constant_name:"versionName"
+    )
+
+    versionCode = get_version_name(
+        gradle_file_path:"android_app/app/build.gradle",
+        ext_constant_name:"versionCode"
+    )
+
+    desc "Generate openScale release version"
+    lane :release do |options|
+        gradle(
+            task: "clean", 
+            project_dir: 'android_app/'
+        )
+        gradle(
+            task: "assemble",
+            project_dir: 'android_app/',
+            build_type: "Release"
+        )
+    end
+
+    desc "Generate openScale light version"
+    lane :light do |options|
+        gradle(
+            task: "clean", 
+            project_dir: 'android_app/'
+        )
+        gradle(
+            task: "assemble",
+            project_dir: 'android_app/',
+            build_type: "Light"
+        )
+    end
+
+    desc "Generate openScale pro version"
+    lane :pro do |options|
+        gradle(
+            task: "clean", 
+            project_dir: 'android_app/'
+        )
+        gradle(
+            task: "assemble",
+            project_dir: 'android_app/',
+            build_type: "Pro"
+        )
+    end
+
+    desc "Deploy a new openScale light version to Google Play"
+    lane :deployLight do
+        gradle(
+            task: "clean", 
+            project_dir: 'android_app/'
+        )
+        gradle(
+            task: "assemble",
+            project_dir: 'android_app/',
+            build_type: "Light"
+        )
+        upload_to_play_store(
+            package_name: "com.health.openscale.light",
+            track: "production",
+            metadata_path: "fastlane/openScale_light/",
+            apk: "android_app/app/build/outputs/apk/light/openScale-#{versionName}-light.apk"
+        )
+    end
+
+    desc "Deploy a new openScale pro version to Google Play"
+    lane :deployPro do
+        gradle(
+            task: "clean", 
+            project_dir: 'android_app/'
+        )
+        gradle(
+            task: "assemble",
+            project_dir: 'android_app/',
+            build_type: "Pro"
+        )
+        upload_to_play_store(
+            package_name: "com.health.openscale.pro",
+            track: "production",
+            metadata_path: "fastlane/openScale_pro/",
+            apk: "android_app/app/build/outputs/apk/pro/openScale-#{versionName}-pro.apk"
+        )
+    end
+
+    desc "Deploy a new version to GitHub"
+    lane :deployGitHubRelease do
+        set_github_release(
+            repository_name: "oliexdev/openScale",
+            api_token: ENV["OLIEXDEV_GITHUB_API_TOKEN"],
+            name: "openScale #{versionName} release",
+            tag_name: "v#{versionName}",
+            description: (File.read("metadata/openScale/en-GB/changelogs/#{versionCode}.txt") rescue "No changelog provided"),
+            upload_assets: [ "android_app/app/build/outputs/apk/release/openScale-#{versionName}-release.apk" ]
+        )
+    end
+end

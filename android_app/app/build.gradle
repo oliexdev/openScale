@@ -1,5 +1,17 @@
 apply plugin: 'com.android.application'
 
+def keystorePropertiesFile = rootProject.file("../../openScale.keystore")
+def keystoreProperties = new Properties()
+keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+
+def keystoreLightPropertiesFile = rootProject.file("../../openScale_light.keystore")
+def keystoreLightProperties = new Properties()
+keystoreLightProperties.load(new FileInputStream(keystoreLightPropertiesFile))
+
+def keystoreProPropertiesFile = rootProject.file("../../openScale_pro.keystore")
+def keystoreProProperties = new Properties()
+keystoreProProperties.load(new FileInputStream(keystoreProPropertiesFile))
+
 android {
     compileSdkVersion 29
     defaultConfig {
@@ -29,10 +41,35 @@ android {
     lintOptions {
         abortOnError false
     }
+
+    signingConfigs {
+        release {
+            storeFile file(rootDir.getCanonicalPath() + '/' + keystoreProperties['releaseKeyStore'])
+            keyAlias keystoreProperties['releaseKeyAlias']
+            keyPassword keystoreProperties['releaseKeyPassword']
+            storePassword keystoreProperties['releaseStorePassword']
+        }
+
+        light {
+            storeFile file(rootDir.getCanonicalPath() + '/' + keystoreLightProperties['releaseKeyStore'])
+            keyAlias keystoreLightProperties['releaseKeyAlias']
+            keyPassword keystoreLightProperties['releaseKeyPassword']
+            storePassword keystoreLightProperties['releaseStorePassword']
+        }
+
+        pro {
+            storeFile file(rootDir.getCanonicalPath() + '/' + keystoreProProperties['releaseKeyStore'])
+            keyAlias keystoreProProperties['releaseKeyAlias']
+            keyPassword keystoreProProperties['releaseKeyPassword']
+            storePassword keystoreProProperties['releaseStorePassword']
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            signingConfig signingConfigs.release
         }
         light {
             manifestPlaceholders = [
@@ -42,6 +79,7 @@ android {
             versionNameSuffix "-light"
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            signingConfig signingConfigs.light
         }
         pro {
             manifestPlaceholders = [
@@ -51,6 +89,7 @@ android {
             versionNameSuffix "-pro"
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            signingConfig signingConfigs.pro
         }
     }
     compileOptions {
@@ -60,7 +99,7 @@ android {
 }
 
 dependencies {
-    implementation 'com.google.android.material:material:1.2.0-alpha03'
+    implementation 'com.google.android.material:material:1.2.0-alpha06'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
@@ -69,16 +108,16 @@ dependencies {
     // Simple CSV
     implementation 'com.j256.simplecsv:simplecsv:2.3'
     // Blessed Android
-    implementation 'com.github.weliem:blessed-android:1.2'
+    implementation 'com.github.weliem:blessed-android:1.15'
     // CustomActivityOnCrash
     implementation 'cat.ereza:customactivityoncrash:2.2.0'
     // AppIntro
     implementation 'com.github.AppIntro:AppIntro:6.0.0-alpha3'
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.3.50'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.3.71'
     // Room
-    implementation 'androidx.room:room-runtime:2.2.3'
-    annotationProcessor 'androidx.room:room-compiler:2.2.3'
-    androidTestImplementation 'androidx.room:room-testing:2.2.3'
+    implementation 'androidx.room:room-runtime:2.2.5'
+    annotationProcessor 'androidx.room:room-compiler:2.2.5'
+    androidTestImplementation 'androidx.room:room-testing:2.2.5'
     // Timber
     implementation 'com.jakewharton.timber:timber:4.7.1'
     // Local unit tests
