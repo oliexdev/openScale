@@ -1,17 +1,5 @@
 apply plugin: 'com.android.application'
 
-def keystorePropertiesFile = rootProject.file("../../openScale.keystore")
-def keystoreProperties = new Properties()
-keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
-
-def keystoreLightPropertiesFile = rootProject.file("../../openScale_light.keystore")
-def keystoreLightProperties = new Properties()
-keystoreLightProperties.load(new FileInputStream(keystoreLightPropertiesFile))
-
-def keystoreProPropertiesFile = rootProject.file("../../openScale_pro.keystore")
-def keystoreProProperties = new Properties()
-keystoreProProperties.load(new FileInputStream(keystoreProPropertiesFile))
-
 android {
     compileSdkVersion 29
     defaultConfig {
@@ -44,6 +32,10 @@ android {
 
     signingConfigs {
         release {
+            def keystorePropertiesFile = rootProject.file("../../openScale.keystore")
+            def keystoreProperties = new Properties()
+            keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+
             storeFile file(rootDir.getCanonicalPath() + '/' + keystoreProperties['releaseKeyStore'])
             keyAlias keystoreProperties['releaseKeyAlias']
             keyPassword keystoreProperties['releaseKeyPassword']
@@ -51,6 +43,10 @@ android {
         }
 
         light {
+            def keystoreLightPropertiesFile = rootProject.file("../../openScale_light.keystore")
+            def keystoreLightProperties = new Properties()
+            keystoreLightProperties.load(new FileInputStream(keystoreLightPropertiesFile))
+
             storeFile file(rootDir.getCanonicalPath() + '/' + keystoreLightProperties['releaseKeyStore'])
             keyAlias keystoreLightProperties['releaseKeyAlias']
             keyPassword keystoreLightProperties['releaseKeyPassword']
@@ -58,6 +54,10 @@ android {
         }
 
         pro {
+            def keystoreProPropertiesFile = rootProject.file("../../openScale_pro.keystore")
+            def keystoreProProperties = new Properties()
+            keystoreProProperties.load(new FileInputStream(keystoreProPropertiesFile))
+            
             storeFile file(rootDir.getCanonicalPath() + '/' + keystoreProProperties['releaseKeyStore'])
             keyAlias keystoreProProperties['releaseKeyAlias']
             keyPassword keystoreProProperties['releaseKeyPassword']
