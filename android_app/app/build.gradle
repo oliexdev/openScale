@@ -34,34 +34,54 @@ android {
         release {
             def keystorePropertiesFile = rootProject.file("../../openScale.keystore")
             def keystoreProperties = new Properties()
-            keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+            try {
+                keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+            } catch (FileNotFoundException e) {
+                keystoreProperties = null;
+            }
 
-            storeFile file(rootDir.getCanonicalPath() + '/' + keystoreProperties['releaseKeyStore'])
-            keyAlias keystoreProperties['releaseKeyAlias']
-            keyPassword keystoreProperties['releaseKeyPassword']
-            storePassword keystoreProperties['releaseStorePassword']
+            if (keystoreProperties != null) {
+                storeFile file(rootDir.getCanonicalPath() + '/' + keystoreProperties['releaseKeyStore'])
+                keyAlias keystoreProperties['releaseKeyAlias']
+                keyPassword keystoreProperties['releaseKeyPassword']
+                storePassword keystoreProperties['releaseStorePassword']
+            }
         }
 
         light {
             def keystoreLightPropertiesFile = rootProject.file("../../openScale_light.keystore")
             def keystoreLightProperties = new Properties()
-            keystoreLightProperties.load(new FileInputStream(keystoreLightPropertiesFile))
+            try {
+                keystoreLightProperties.load(new FileInputStream(keystoreLightPropertiesFile))
+            }
+            catch (FileNotFoundException e) {
+                keystoreLightProperties = null;
+            }
 
-            storeFile file(rootDir.getCanonicalPath() + '/' + keystoreLightProperties['releaseKeyStore'])
-            keyAlias keystoreLightProperties['releaseKeyAlias']
-            keyPassword keystoreLightProperties['releaseKeyPassword']
-            storePassword keystoreLightProperties['releaseStorePassword']
+            if (keystoreLightProperties != null) {
+                storeFile file(rootDir.getCanonicalPath() + '/' + keystoreLightProperties['releaseKeyStore'])
+                keyAlias keystoreLightProperties['releaseKeyAlias']
+                keyPassword keystoreLightProperties['releaseKeyPassword']
+                storePassword keystoreLightProperties['releaseStorePassword']
+            }
         }
 
         pro {
             def keystoreProPropertiesFile = rootProject.file("../../openScale_pro.keystore")
             def keystoreProProperties = new Properties()
-            keystoreProProperties.load(new FileInputStream(keystoreProPropertiesFile))
-            
-            storeFile file(rootDir.getCanonicalPath() + '/' + keystoreProProperties['releaseKeyStore'])
-            keyAlias keystoreProProperties['releaseKeyAlias']
-            keyPassword keystoreProProperties['releaseKeyPassword']
-            storePassword keystoreProProperties['releaseStorePassword']
+            try {
+                keystoreProProperties.load(new FileInputStream(keystoreProPropertiesFile))
+            }
+            catch (FileNotFoundException e) {
+                keystoreProProperties = null;
+            }
+
+            if (keystoreProProperties != null) {
+                storeFile file(rootDir.getCanonicalPath() + '/' + keystoreProProperties['releaseKeyStore'])
+                keyAlias keystoreProProperties['releaseKeyAlias']
+                keyPassword keystoreProProperties['releaseKeyPassword']
+                storePassword keystoreProProperties['releaseStorePassword']
+            }
         }
     }
 
