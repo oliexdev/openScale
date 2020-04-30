@@ -69,7 +69,7 @@
     <string name="info_scale_low_battery">ব্যাটারির কম (%d%%), দয়া করে রিচার্জ করুন বা স্কেলের ব্যাটারি প্রতিস্থাপন করুন</string>
     <string name="info_is_not_available">প্রাপ্য নয়</string>
     <string name="info_data_imported">থেকে আমদানি করা</string>
-    <string name="info_data_exported">রফতানি হয়েছে</string>
+    <string name="info_data_exported">রফতানি করা হয়েছে</string>
     <string name="label_export">রপ্তানি</string>
     <string name="info_is_not_enable">অক্ষম</string>
     <string name="info_is_enable">সক্রিয়</string>
