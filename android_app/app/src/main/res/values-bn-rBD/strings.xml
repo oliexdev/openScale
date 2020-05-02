@@ -101,4 +101,87 @@
     <string name="label_date">তারিখ</string>
     <string name="label_days_left">দিন বাকি</string>
     <string name="label_goal_date_is">লক্ষ্য তারিখ:</string>
+    <string name="permission_bluetooth_info_title">তথ্য</string>
+    <string name="permission_location_service_info">ব্লুটুথ ডিভাইসগুলি অনুসন্ধান করতে অ্যান্ড্রয়েড সেটিংসে অবস্থান পাওয়ারঅনুমতি দিন। ঐচ্ছিকভাবে এটি পরে বাতিল করুন।</string>
+    <string name="permission_bluetooth_info">ব্লুটুথ ডিভাইসগুলি অনুসন্ধান করার জন্য অবস্থানের অনুমতি প্রয়োজন। ডিভাইসটি খুঁজে পাওয়ার পরে এটি প্রত্যাহার করা যায়।</string>
+    <string name="permission_not_granted">অনুমতি দেয়া হয়নি</string>
+    <string name="label_measurement_bar">পরিমাপ বার</string>
+    <string name="label_rolling_chart">ঘূর্ণায়মান তালিকা</string>
+    <string name="label_year_view">বছরের চিত্র</string>
+    <string name="label_weeks_view">সপ্তাহের চিত্র</string>
+    <string name="label_month_view">মাসের চিত্র</string>
+    <string name="label_day_view">দিনের চিত্র</string>
+    <string name="save">সংরক্ষণ</string>
+    <string name="edit">সম্পাদনা</string>
+    <string name="toggle_expand">বিস্তৃত চালু/বন্ধ</string>
+    <string name="customactivityoncrash_error_activity_error_details_clipboard_label">ত্রুটির তথ্য</string>
+    <string name="customactivityoncrash_error_activity_error_details_copied">ক্লিপবোর্ডে কপি করা হয়েছে</string>
+    <string name="customactivityoncrash_error_activity_error_details_copy">ক্লিপবোর্ডে কপি করুন</string>
+    <string name="customactivityoncrash_error_activity_error_details_close">বন্ধ</string>
+    <string name="customactivityoncrash_error_activity_error_details_title">ত্রুটির বিবরণ</string>
+    <string name="customactivityoncrash_error_activity_error_details">ত্রুটির বিবরণ</string>
+    <string name="customactivityoncrash_error_activity_close_app">অ্যাপ বন্ধ করুন</string>
+    <string name="customactivityoncrash_error_activity_restart_app">অ্যাপ আবার চালু করুন</string>
+    <string name="customactivityoncrash_error_activity_error_occurred_explanation">অপ্রত্যাশিত একটি ঝামেলা হয়েছে।
+\n
+\nদয়া করে সমস্যার বিবরণ দিয়ে একটি সমস্যা খুলুন এখানে
+\nhttps://github.com/oliexdev/openScale/issues</string>
+    <string name="trisa_scale_pairing_succeeded">সংযুক্তকরণ সফল!
+\n
+\nপুনযুক্ত করুন পরিমাপের তথ্য পাওয়ার জন্য।</string>
+    <string name="trisa_scale_not_paired">এই স্কেল যুক্ত করা হয়নি!
+\n
+\nস্কেলের নিচের বোতাম চেপে রাখুন স্কেলকে সংযুক্ত মোডে পাল্টানোর জন্য, তারপর আবার যুক্ত করুন ডিভাইস পাসওয়ার্ড পাওয়ার জন্য।</string>
+    <string name="info_measuring">ওজন মাপা হচ্ছে: %.2f</string>
+    <string name="info_step_on_scale">দয়া করে খালি পায়ে স্কেলে দাঁড়ান</string>
+    <string name="info_step_on_scale_for_reference">প্রসঙ্গ মাপের জন্য দয়া করে খালি পায়ে স্কেলে দাঁড়ান</string>
+    <string name="error_max_scale_users">একযোগে সর্বোচ্চ স্কেল ব্যবহারকারীর সংখ্যায় পৌঁছেছে</string>
+    <string name="label_feedback_message_negative">না, ধন্যবাদ</string>
+    <string name="label_feedback_message_positive">আচ্ছা</string>
+    <string name="label_feedback_message_no">আসলে না</string>
+    <string name="label_feedback_message_yes">হ্যাঁ</string>
+    <string name="label_feedback_message_issue">আপনি কিছু প্রতিক্রিয়া প্রদান করতে চান\?</string>
+    <string name="label_feedback_message_rate_app">গুগল প্লে বা গিটহাব-এ রেটিং দেবেন\?</string>
+    <string name="label_feedback_message_enjoying">ওপেনস্কেল ভালো লেগেছে\?</string>
+    <string name="label_help">সহায়তা</string>
+    <string name="label_goal_line">লক্ষ্য রেখা</string>
+    <string name="label_initial_weight">প্রাথমিক ওজন</string>
+    <string name="label_ignoreOutOfRange">সীমার বাইরের তথ্য উপেক্ষা করুন</string>
+    <string name="label_not_found">পাওয়া যায়নি</string>
+    <string name="label_export_dir">ডাইরেক্টরি রপ্তানি করুন</string>
+    <string name="label_backup">ব্যাকআপ</string>
+    <string name="label_importBackup">ব্যাকআপ আমদানি করুন</string>
+    <string name="label_exportBackup">ব্যাকআপ রপ্তানি করুন</string>
+    <string name="label_bt_device_no_support">ডিভাইস সমর্থিত নয়</string>
+    <string name="Sunday">রবিবার</string>
+    <string name="Saturday">শনিবার</string>
+    <string name="Friday">শুক্রবার</string>
+    <string name="Thursday">বৃহস্পতিবার</string>
+    <string name="Wednesday">বুধবার</string>
+    <string name="Tuesday">মঙ্গলবার</string>
+    <string name="Monday">সোমবার</string>
+    <string name="info_on_date">চালু</string>
+    <string name="default_value_reminder_notify_text">ওজন করার সময়</string>
+    <string name="label_reminder_notify_text">নোটিফিকেশনের লেখা</string>
+    <string name="label_reminder_time">সময়</string>
+    <string name="label_reminder_weekdays">দিনসমূহ</string>
+    <string name="label_reminder">অনুস্মারক</string>
+    <string name="label_theme">মূলভাব</string>
+    <string name="label_automatic">স্বয়ংক্রিয়</string>
+    <string name="label_license">অনুমতিপত্র</string>
+    <string name="label_website">ওয়েবসাইট</string>
+    <string name="label_maintainer">রক্ষণাবেক্ষণকারী</string>
+    <string name="label_category_measurement_database">পরিমাপের তথ্যভাণ্ডার</string>
+    <string name="label_delete_confirmation">নিশ্চিতকরণ বাতিল করুন</string>
+    <string name="label_enable_points">তথ্য বিন্দু</string>
+    <string name="label_enable_labels">ডাটা লেবেল</string>
+    <string name="label_enable_yaxis">কোটি-অক্ষ</string>
+    <string name="label_enable_legend">গ্রাফ লেজেন্ড</string>
+    <string name="label_bluetooth_searching_finished">অনুসন্ধান শেষ</string>
+    <string name="label_bluetooth_searching">ব্লুটুথ স্কেলের জন্য অনুসন্ধান হচ্ছে</string>
+    <string name="label_mergeWithLastMeasurement">শেষ পরিমাপের সাথে একত্রীকরণ করুন</string>
+    <string name="label_bluetooth_enable">প্রারম্ভের সময় স্কেলের সাথে যুক্ত করুন</string>
+    <string name="label_bluetooth_title">ব্লুটুথ</string>
+    <string name="question_really_delete_user">ব্যবহারকারী মুছে ফেলুন\?</string>
+    <string name="question_really_delete_all">সকল ব্যবহারকারীর জন্য সকল এন্ট্রি মুছে ফেলুন\?</string>
 </resources>
