@@ -184,4 +184,16 @@
     <string name="label_bluetooth_title">ব্লুটুথ</string>
     <string name="question_really_delete_user">ব্যবহারকারী মুছে ফেলুন\?</string>
     <string name="question_really_delete_all">সকল ব্যবহারকারীর জন্য সকল এন্ট্রি মুছে ফেলুন\?</string>
+    <string name="label_daily">দৈনিক</string>
+    <string name="label_overwrite_backup">পূর্ববর্তী ব্যাকআপ প্রতিস্থাপন করুন</string>
+    <string name="label_auto_backup_schedule">ব্যাকআপের সময়সূচী</string>
+    <string name="label_auto_backup">স্বয়ংক্রিয় ব্যাকআপ</string>
+    <string name="label_estimate_measurement_summary">ওজন, উচ্চতা, বয়স, লিঙ্গ ইত্যাদির উপর ভিত্তি করে ।</string>
+    <string name="label_estimated">আনুমানিক</string>
+    <string name="label_percent">শতাংশ</string>
+    <string name="label_add_or_fix_translation">নতুন যুক্ত করুন বা বিদ্যমান ঠিক করুন</string>
+    <string name="label_contribute_translation">অনুবাদে অবদান রাখুন</string>
+    <string name="theme_dark">অন্ধকার</string>
+    <string name="theme_light">আলোকিত</string>
+    <string name="label_language">ভাষা</string>
 </resources>
