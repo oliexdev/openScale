@@ -70,9 +70,9 @@ public class BluetoothIntroSlide extends Fragment {
         btnSearchScale.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // TODO
-                /*Intent intent = new Intent(getContext(), BluetoothSettingsFragment.class);
-                startActivityForResult(intent, BluetoothSettingsFragment.GET_SCALE_REQUEST);*/
+                Intent intent = new Intent(getContext(), SlideToNavigationAdapter.class);
+                intent.putExtra(SlideToNavigationAdapter.EXTRA_MODE, SlideToNavigationAdapter.EXTRA_BLUETOOTH_SETTING_MODE);
+                startActivityForResult(intent, 100);
             }
         });
 
@@ -81,10 +81,7 @@ public class BluetoothIntroSlide extends Fragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        // TODO
-        /*if (requestCode == BluetoothSettingsFragment.GET_SCALE_REQUEST) {
-            txtFoundDevice.setText(getCurrentDeviceName());
-        }*/
+        txtFoundDevice.setText(getCurrentDeviceName());
     }
 
     private final String formatDeviceName(String name, String address) {

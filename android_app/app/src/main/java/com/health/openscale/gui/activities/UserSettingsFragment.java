@@ -78,7 +78,11 @@ public class UserSettingsFragment extends Fragment {
 
         setHasOptionsMenu(true);
 
-        mode = UserSettingsFragmentArgs.fromBundle(getArguments()).getMode();
+        if (getArguments() != null) {
+            mode = UserSettingsFragmentArgs.fromBundle(getArguments()).getMode();
+        } else {
+            mode = USER_SETTING_MODE.ADD;
+        }
 
         txtUserName = root.findViewById(R.id.txtUserName);
         txtBodyHeight = root.findViewById(R.id.txtBodyHeight);
@@ -220,8 +224,12 @@ public class UserSettingsFragment extends Fragment {
         switch (item.getItemId()) {
             case R.id.saveButton:
                 if (saveUserData()) {
-                    Navigation.findNavController(getActivity(), R.id.nav_host_fragment).getPreviousBackStackEntry().getSavedStateHandle().set("update", true);
-                    Navigation.findNavController(getActivity(), R.id.nav_host_fragment).navigateUp();
+                    if (getActivity().findViewById(R.id.nav_host_fragment) != null){
+                        Navigation.findNavController(getActivity(), R.id.nav_host_fragment).getPreviousBackStackEntry().getSavedStateHandle().set("update", true);
+                        Navigation.findNavController(getActivity(), R.id.nav_host_fragment).navigateUp();
+                    } else {
+                         getActivity().finish();
+                    }
                 }
                 return true;
 

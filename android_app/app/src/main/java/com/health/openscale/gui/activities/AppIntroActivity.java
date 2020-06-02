@@ -19,12 +19,9 @@ import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.navigation.Navigation;
 
 import com.github.appintro.AppIntro;
-import com.health.openscale.MobileNavigationDirections;
 import com.health.openscale.R;
-import com.health.openscale.core.OpenScale;
 import com.health.openscale.gui.slides.BluetoothIntroSlide;
 import com.health.openscale.gui.slides.MetricsIntroSlide;
 import com.health.openscale.gui.slides.OpenSourceIntroSlide;
@@ -55,14 +52,12 @@ public class AppIntroActivity extends AppIntro {
     public void onSkipPressed(Fragment currentFragment) {
         super.onSkipPressed(currentFragment);
         finish();
-        checkUserCreation();
     }
 
     @Override
     public void onDonePressed(Fragment currentFragment) {
         super.onDonePressed(currentFragment);
         finish();
-        checkUserCreation();
     }
 
     @Override
@@ -75,15 +70,6 @@ public class AppIntroActivity extends AppIntro {
         } else {
             setSkipButtonEnabled(false);
             setWizardMode(true);
-        }
-    }
-
-    private void checkUserCreation() {
-        if (OpenScale.getInstance().getSelectedScaleUserId() == -1) {
-            MobileNavigationDirections.ActionNavMobileNavigationToNavUsersettings action = MobileNavigationDirections.actionNavMobileNavigationToNavUsersettings();
-            action.setMode(UserSettingsFragment.USER_SETTING_MODE.ADD);
-            action.setTitle(getString(R.string.label_add_user));
-            Navigation.findNavController(getParent(), R.id.nav_host_fragment).navigate(action);
         }
     }
 }

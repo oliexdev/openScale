@@ -203,20 +203,4 @@
             android:id="@+id/action_nav_user_preferences_to_nav_usersettings"
             app:destination="@id/nav_usersettings" />
     </fragment>
-
-    <activity
-        android:id="@+id/nav_app_intro"
-        android:name="com.health.openscale.gui.activities.AppIntroActivity">
-    </activity>
-
-    <fragment
-        android:id="@+id/nav_user_intro_slide"
-        android:name="com.health.openscale.gui.slides.UserIntroSlide">
-        <action
-            android:id="@+id/action_nav_user_intro_slide_to_nav_usersettings"
-            app:destination="@id/nav_usersettings" />
-    </fragment>
-    <action
-        android:id="@+id/action_global_nav_app_intro"
-        app:destination="@id/nav_app_intro" />
 </navigation>

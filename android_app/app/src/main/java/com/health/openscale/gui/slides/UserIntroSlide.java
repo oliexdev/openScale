@@ -15,6 +15,7 @@
  */
 package com.health.openscale.gui.slides;
 
+import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -28,12 +29,10 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.navigation.Navigation;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleUser;
-import com.health.openscale.gui.activities.UserSettingsFragment;
 
 import java.util.List;
 
@@ -83,12 +82,19 @@ public class UserIntroSlide extends Fragment{
 
         @Override
         public void onClick(View view) {
-            UserIntroSlideDirections.ActionNavUserIntroSlideToNavUsersettings action = UserIntroSlideDirections.actionNavUserIntroSlideToNavUsersettings();
-            action.setMode(UserSettingsFragment.USER_SETTING_MODE.ADD);
-            action.setTitle(getString(R.string.label_add_user));
-            Navigation.findNavController(getActivity(), R.id.view_pager).navigate(action);
+            Intent intent = new Intent(getContext(), SlideToNavigationAdapter.class);
+            intent.putExtra(SlideToNavigationAdapter.EXTRA_MODE, SlideToNavigationAdapter.EXTRA_USER_SETTING_MODE);
+            startActivityForResult(intent, 100);
         }
     }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        updateTableUsers();
+    }
+
 
     private void updateTableUsers() {
         tblUsers.removeAllViews();

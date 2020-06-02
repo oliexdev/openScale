@@ -37,6 +37,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".gui.activities.AppIntroActivity"/>
+        <activity android:name=".gui.slides.SlideToNavigationAdapter"/>
 
         <receiver android:name=".core.alarm.ReminderBootReceiver" android:enabled="false">
             <intent-filter>

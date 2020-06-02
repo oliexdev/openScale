@@ -43,7 +43,6 @@ import androidx.core.content.FileProvider;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.navigation.NavController;
-import androidx.navigation.NavDirections;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
@@ -57,10 +56,11 @@ import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.bluetooth.BluetoothCommunication;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
+import com.health.openscale.gui.activities.AppIntroActivity;
 import com.health.openscale.gui.activities.BaseAppCompatActivity;
 import com.health.openscale.gui.activities.BluetoothSettingsFragment;
 import com.health.openscale.gui.activities.MeasurementEntryFragment;
-import com.health.openscale.gui.preferences.MainPreferencesDirections;
+import com.health.openscale.gui.activities.UserSettingsFragment;
 
 import java.io.File;
 import java.util.List;
@@ -79,6 +79,7 @@ public class MainActivity extends BaseAppCompatActivity
     private static final int IMPORT_DATA_REQUEST = 100;
     private static final int EXPORT_DATA_REQUEST = 101;
     private static final int ENABLE_BLUETOOTH_REQUEST = 102;
+    private static final int APPINTRO_REQUEST = 103;
 
     private AppBarConfiguration mAppBarConfiguration;
     private DrawerLayout drawerLayout;
@@ -175,15 +176,12 @@ public class MainActivity extends BaseAppCompatActivity
             navigationView.getMenu().findItem(R.id.nav_donation).setVisible(false);
         }
 
-        if (prefs.getBoolean("firstStart", true)) {
-            // TODO
-            NavDirections action = MainPreferencesDirections.actionGlobalNavAppIntro();
-            navController.navigate(action);
-            //Intent appIntroIntent = new Intent(this, AppIntroActivity.class);
-            //startActivity(appIntroIntent);
+       // if (prefs.getBoolean("firstStart", true)) {
+            Intent appIntroIntent = new Intent(this, AppIntroActivity.class);
+            startActivityForResult(appIntroIntent, APPINTRO_REQUEST);
 
             prefs.edit().putBoolean("firstStart", false).apply();
-        }
+        //}
 
         if (prefs.getBoolean("resetLaunchCountForVersion2.0", true)) {
             prefs.edit().putInt("launchCount", 0).commit();
@@ -635,6 +633,8 @@ public class MainActivity extends BaseAppCompatActivity
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
+        OpenScale openScale = OpenScale.getInstance();
+
         if (requestCode == ENABLE_BLUETOOTH_REQUEST) {
             if (resultCode == RESULT_OK) {
                 invokeConnectToBluetoothDevice();
@@ -645,11 +645,19 @@ public class MainActivity extends BaseAppCompatActivity
             return;
         }
 
+        if (requestCode == APPINTRO_REQUEST) {
+            if (openScale.getSelectedScaleUserId() == -1) {
+                MobileNavigationDirections.ActionNavMobileNavigationToNavUsersettings action = MobileNavigationDirections.actionNavMobileNavigationToNavUsersettings();
+                action.setMode(UserSettingsFragment.USER_SETTING_MODE.ADD);
+                action.setTitle(getString(R.string.label_add_user));
+                Navigation.findNavController(this, R.id.nav_host_fragment).navigate(action);
+            }
+        }
+
         if (resultCode != RESULT_OK || data == null) {
             return;
         }
 
-        OpenScale openScale = OpenScale.getInstance();
 
         switch (requestCode) {
             case IMPORT_DATA_REQUEST:
