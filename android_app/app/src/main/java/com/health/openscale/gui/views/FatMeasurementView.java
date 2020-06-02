@@ -17,7 +17,8 @@ package com.health.openscale.gui.views;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.preference.ListPreference;
+
+import androidx.preference.ListPreference;
 
 import com.health.openscale.R;
 import com.health.openscale.core.bodymetric.EstimatedFatMetric;

@@ -91,6 +91,7 @@ public class AlarmBackupHandler
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
+        // TODO to disable in the AndroidManfiest the requestLegacyExternalStorage on SDK >= 29 we need store the files on shared storages
         File exportDir = new File(Environment.getExternalStorageDirectory(),
                 prefs.getString("exportDir", "openScale Backup"));
         if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {

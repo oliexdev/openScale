@@ -1,4 +1,5 @@
 /* Copyright (C) 2014  olie.xdev <olie.xdev@googlemail.com>
+*  Copyright (C) 2018 Erik Johansson <erik@ejohansson.se>
 *
 *    This program is free software: you can redistribute it and/or modify
 *    it under the terms of the GNU General Public License as published by
@@ -20,15 +21,28 @@ import android.view.Menu;
 import android.view.MenuInflater;
 
 import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceScreen;
 
 import com.health.openscale.R;
+import com.health.openscale.gui.views.MeasurementView;
 
-public class GeneralPreferences extends PreferenceFragmentCompat {
+public class MeasurementDetailPreferences extends PreferenceFragmentCompat {
+
+   private static MeasurementView measurementView;
+
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-        setPreferencesFromResource(R.xml.general_preferences, rootKey);
+        setPreferencesFromResource(R.xml.measurement_detail_preferences, rootKey);
 
         setHasOptionsMenu(true);
+
+        final PreferenceScreen screen = getPreferenceManager().createPreferenceScreen(getActivity());
+        measurementView.prepareExtraPreferencesScreen(screen);
+        setPreferenceScreen(screen);
+    }
+
+    public static void setMeasurementView(MeasurementView view) {
+        measurementView = view;
     }
 
     @Override

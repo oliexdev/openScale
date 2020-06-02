@@ -19,21 +19,24 @@ import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import androidx.core.graphics.drawable.DrawableCompat;
-import androidx.appcompat.widget.Toolbar;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.Toast;
+
+import androidx.core.graphics.drawable.DrawableCompat;
+import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
@@ -45,12 +48,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-public class UserSettingsActivity extends BaseAppCompatActivity {
-    public static final String EXTRA_ID = "id";
-    public static final String EXTRA_MODE = "mode";
+public class UserSettingsFragment extends Fragment {
+    public enum USER_SETTING_MODE {ADD, EDIT};
 
-    public static final int ADD_USER_REQUEST = 0;
-    public static final int EDIT_USER_REQUEST = 1;
+    private USER_SETTING_MODE mode = USER_SETTING_MODE.ADD;
 
     private Date birthday = new Date();
     private Date goal_date = new Date();
@@ -71,29 +72,25 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
     private Context context;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View root = inflater.inflate(R.layout.fragment_usersettings, container, false);
+        context = getContext();
 
-        setContentView(R.layout.activity_usersettings);
-        context = this;
+        setHasOptionsMenu(true);
 
-        Toolbar toolbar = findViewById(R.id.userEntryToolbar);
-        setSupportActionBar(toolbar);
+        mode = UserSettingsFragmentArgs.fromBundle(getArguments()).getMode();
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setTitle(R.string.label_add_user);
+        txtUserName = root.findViewById(R.id.txtUserName);
+        txtBodyHeight = root.findViewById(R.id.txtBodyHeight);
+        radioScaleUnit = root.findViewById(R.id.groupScaleUnit);
+        radioGender = root.findViewById(R.id.groupGender);
+        radioMeasurementUnit = root.findViewById(R.id.groupMeasureUnit);
+        spinnerActivityLevel = root.findViewById(R.id.spinnerActivityLevel);
+        txtInitialWeight = root.findViewById(R.id.txtInitialWeight);
+        txtGoalWeight = root.findViewById(R.id.txtGoalWeight);
 
-        txtUserName = findViewById(R.id.txtUserName);
-        txtBodyHeight = findViewById(R.id.txtBodyHeight);
-        radioScaleUnit = findViewById(R.id.groupScaleUnit);
-        radioGender = findViewById(R.id.groupGender);
-        radioMeasurementUnit = findViewById(R.id.groupMeasureUnit);
-        spinnerActivityLevel = findViewById(R.id.spinnerActivityLevel);
-        txtInitialWeight = findViewById(R.id.txtInitialWeight);
-        txtGoalWeight = findViewById(R.id.txtGoalWeight);
-
-        txtBirthday = findViewById(R.id.txtBirthday);
-        txtGoalDate = findViewById(R.id.txtGoalDate);
+        txtBirthday = root.findViewById(R.id.txtBirthday);
+        txtGoalDate = root.findViewById(R.id.txtGoalDate);
 
         txtBodyHeight.setHint(getResources().getString(R.string.info_enter_value_in) + " " + Converters.MeasureUnit.CM.toString());
         txtInitialWeight.setHint(getResources().getString(R.string.info_enter_value_in) + " " + Converters.WeightUnit.KG.toString());
@@ -175,11 +172,13 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
                 txtBodyHeight.setHint(getResources().getString(R.string.info_enter_value_in) + " " + measure_unit.toString());
             }
         });
+
+        return root;
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        menu.clear();
         inflater.inflate(R.menu.userentry_menu, menu);
 
         // Apply a tint to all icons in the toolbar
@@ -203,15 +202,17 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
 
         MenuItem deleteButton = menu.findItem(R.id.deleteButton);
 
-        if (getIntent().getExtras().getInt(EXTRA_MODE) == EDIT_USER_REQUEST) {
-            editMode();
-            deleteButton.setVisible(true);
-        }
-        else {
-            deleteButton.setVisible(false);
+        switch (mode)  {
+            case ADD:
+                deleteButton.setVisible(false);
+                break;
+            case EDIT:
+                editMode();
+                deleteButton.setVisible(true);
+                break;
         }
 
-        return super.onCreateOptionsMenu(menu);
+        super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override
@@ -219,21 +220,13 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
         switch (item.getItemId()) {
             case R.id.saveButton:
                 if (saveUserData()) {
-                    Intent returnIntent = new Intent();
-                    setResult(RESULT_OK, returnIntent);
-
-                    finish();
+                    Navigation.findNavController(getActivity(), R.id.nav_host_fragment).getPreviousBackStackEntry().getSavedStateHandle().set("update", true);
+                    Navigation.findNavController(getActivity(), R.id.nav_host_fragment).navigateUp();
                 }
                 return true;
 
             case R.id.deleteButton:
                 deleteUser();
-                return true;
-
-            // Override the default behaviour in order to return to the correct fragment
-            // (e.g. the table view) and not always go to the overview.
-            case android.R.id.home:
-                onBackPressed();
                 return true;
         }
 
@@ -242,13 +235,11 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
 
     private void editMode()
     {
-        int id = getIntent().getExtras().getInt(EXTRA_ID);
+        int id = UserSettingsFragmentArgs.fromBundle(getArguments()).getUserId();
 
         OpenScale openScale = OpenScale.getInstance();
 
         ScaleUser scaleUser = openScale.getScaleUser(id);
-
-        getSupportActionBar().setTitle(scaleUser.getUserName());
 
         birthday = scaleUser.getBirthday();
         goal_date = scaleUser.getGoalDate();
@@ -354,7 +345,7 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
 
         deleteAllDialog.setPositiveButton(getResources().getString(R.string.label_yes), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                int userId = getIntent().getExtras().getInt(EXTRA_ID);
+                int userId = UserSettingsFragmentArgs.fromBundle(getArguments()).getUserId();
 
                 OpenScale openScale = OpenScale.getInstance();
                 boolean isSelected = openScale.getSelectedScaleUserId() == userId;
@@ -374,11 +365,8 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
                 }
 
                 openScale.updateScaleData();
-
-                Intent returnIntent = new Intent();
-                setResult(RESULT_OK, returnIntent);
-
-                finish();
+                Navigation.findNavController(getActivity(), R.id.nav_host_fragment).getPreviousBackStackEntry().getSavedStateHandle().set("update", true);
+                Navigation.findNavController(getActivity(), R.id.nav_host_fragment).navigateUp();
             }
         });
 
@@ -451,13 +439,15 @@ public class UserSettingsActivity extends BaseAppCompatActivity {
                 scaleUser.setGoalWeight(Converters.toKilogram(goal_weight, scale_unit));
                 scaleUser.setGoalDate(goal_date);
 
-                if (getIntent().getExtras().getInt(EXTRA_MODE) == EDIT_USER_REQUEST) {
-                    int id = getIntent().getExtras().getInt(EXTRA_ID);
-                    scaleUser.setId(id);
-                    openScale.updateScaleUser(scaleUser);
-                } else {
-                    int id = openScale.addScaleUser(scaleUser);
-                    scaleUser.setId(id);
+                switch (mode) {
+                    case ADD:
+                        int id = openScale.addScaleUser(scaleUser);
+                        scaleUser.setId(id);
+                        break;
+                    case EDIT:
+                        scaleUser.setId(UserSettingsFragmentArgs.fromBundle(getArguments()).getUserId());
+                        openScale.updateScaleUser(scaleUser);
+                        break;
                 }
 
                 openScale.selectScaleUser(scaleUser.getId());

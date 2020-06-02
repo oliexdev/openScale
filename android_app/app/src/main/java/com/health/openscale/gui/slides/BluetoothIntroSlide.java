@@ -29,7 +29,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.health.openscale.R;
-import com.health.openscale.gui.activities.BluetoothSettingsActivity;
+import com.health.openscale.gui.activities.BluetoothSettingsFragment;
 
 public class BluetoothIntroSlide extends Fragment {
     private static final String ARG_LAYOUT_RES_ID = "layoutResId";
@@ -70,8 +70,9 @@ public class BluetoothIntroSlide extends Fragment {
         btnSearchScale.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(getContext(), BluetoothSettingsActivity.class);
-                startActivityForResult(intent, BluetoothSettingsActivity.GET_SCALE_REQUEST);
+                // TODO
+                /*Intent intent = new Intent(getContext(), BluetoothSettingsFragment.class);
+                startActivityForResult(intent, BluetoothSettingsFragment.GET_SCALE_REQUEST);*/
             }
         });
 
@@ -80,9 +81,10 @@ public class BluetoothIntroSlide extends Fragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == BluetoothSettingsActivity.GET_SCALE_REQUEST) {
+        // TODO
+        /*if (requestCode == BluetoothSettingsFragment.GET_SCALE_REQUEST) {
             txtFoundDevice.setText(getCurrentDeviceName());
-        }
+        }*/
     }
 
     private final String formatDeviceName(String name, String address) {
@@ -95,7 +97,7 @@ public class BluetoothIntroSlide extends Fragment {
     private String getCurrentDeviceName() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
         return formatDeviceName(
-                prefs.getString(BluetoothSettingsActivity.PREFERENCE_KEY_BLUETOOTH_DEVICE_NAME, ""),
-                prefs.getString(BluetoothSettingsActivity.PREFERENCE_KEY_BLUETOOTH_HW_ADDRESS, ""));
+                prefs.getString(BluetoothSettingsFragment.PREFERENCE_KEY_BLUETOOTH_DEVICE_NAME, ""),
+                prefs.getString(BluetoothSettingsFragment.PREFERENCE_KEY_BLUETOOTH_HW_ADDRESS, ""));
     }
 }

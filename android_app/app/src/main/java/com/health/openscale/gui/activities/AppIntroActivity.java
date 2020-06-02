@@ -15,13 +15,14 @@
  */
 package com.health.openscale.gui.activities;
 
-import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 
-import com.github.paolorotolo.appintro.AppIntro;
+import com.github.appintro.AppIntro;
+import com.health.openscale.MobileNavigationDirections;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.gui.slides.BluetoothIntroSlide;
@@ -79,9 +80,10 @@ public class AppIntroActivity extends AppIntro {
 
     private void checkUserCreation() {
         if (OpenScale.getInstance().getSelectedScaleUserId() == -1) {
-            Intent intent = new Intent(this, UserSettingsActivity.class);
-            intent.putExtra(UserSettingsActivity.EXTRA_MODE, UserSettingsActivity.ADD_USER_REQUEST);
-            startActivity(intent);
+            MobileNavigationDirections.ActionNavMobileNavigationToNavUsersettings action = MobileNavigationDirections.actionNavMobileNavigationToNavUsersettings();
+            action.setMode(UserSettingsFragment.USER_SETTING_MODE.ADD);
+            action.setTitle(getString(R.string.label_add_user));
+            Navigation.findNavController(getParent(), R.id.nav_host_fragment).navigate(action);
         }
     }
 }

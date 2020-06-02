@@ -15,18 +15,27 @@
  */
 package com.health.openscale.gui.preferences;
 
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.Preference;
-import android.preference.PreferenceFragment;
-import android.widget.BaseAdapter;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.lifecycle.Observer;
+import androidx.navigation.NavDirections;
+import androidx.navigation.Navigation;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceFragmentCompat;
 
 import com.health.openscale.R;
-import com.health.openscale.gui.activities.BluetoothSettingsActivity;
+import com.health.openscale.gui.activities.BluetoothSettingsFragment;
 
 
-public class BluetoothPreferences extends PreferenceFragment {
+public class BluetoothPreferences extends PreferenceFragmentCompat {
     private static final String PREFERENCE_KEY_BLUETOOTH_SCANNER = "btScanner";
 
     private Preference btScanner;
@@ -41,42 +50,50 @@ public class BluetoothPreferences extends PreferenceFragment {
     private String getCurrentDeviceName() {
         SharedPreferences prefs = getPreferenceManager().getSharedPreferences();
         return formatDeviceName(
-                prefs.getString(BluetoothSettingsActivity.PREFERENCE_KEY_BLUETOOTH_DEVICE_NAME, ""),
-                prefs.getString(BluetoothSettingsActivity.PREFERENCE_KEY_BLUETOOTH_HW_ADDRESS, ""));
-    }
-
-    private void updateBtScannerSummary() {
-        // Set summary text and trigger data set changed to make UI update
-        btScanner.setSummary(getCurrentDeviceName());
-        ((BaseAdapter)getPreferenceScreen().getRootAdapter()).notifyDataSetChanged();
+                prefs.getString(BluetoothSettingsFragment.PREFERENCE_KEY_BLUETOOTH_DEVICE_NAME, ""),
+                prefs.getString(BluetoothSettingsFragment.PREFERENCE_KEY_BLUETOOTH_HW_ADDRESS, ""));
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+        setPreferencesFromResource(R.xml.bluetooth_preferences, rootKey);
 
-        addPreferencesFromResource(R.xml.bluetooth_preferences);
+        setHasOptionsMenu(true);
 
         btScanner = (Preference) findPreference(PREFERENCE_KEY_BLUETOOTH_SCANNER);
 
         btScanner.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                Intent intent = new Intent(preference.getContext(), BluetoothSettingsActivity.class);
-                startActivityForResult(intent, BluetoothSettingsActivity.GET_SCALE_REQUEST);
+                NavDirections action = BluetoothPreferencesDirections.actionNavBluetoothPreferencesToNavBluetoothSettings();
+                Navigation.findNavController(getActivity(), R.id.nav_host_fragment).navigate(action);
                 return true;
             }
         });
 
-        updateBtScannerSummary();
+        btScanner.setSummary(getCurrentDeviceName());
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
 
-        if (requestCode == BluetoothSettingsActivity.GET_SCALE_REQUEST) {
-            updateBtScannerSummary();
-        }
+        View view = super.onCreateView(inflater, container, savedInstanceState);
+
+        Navigation.findNavController(getActivity(), R.id.nav_host_fragment).getCurrentBackStackEntry().getSavedStateHandle().getLiveData("update", false).observe(getViewLifecycleOwner(), new Observer<Boolean>() {
+            @Override
+            public void onChanged(Boolean aBoolean) {
+                if (aBoolean) {
+                    btScanner.setSummary(getCurrentDeviceName());
+                }
+            }
+        });
+
+        return view;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        menu.clear();
     }
 }

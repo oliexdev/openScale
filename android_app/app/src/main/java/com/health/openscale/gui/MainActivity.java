@@ -23,7 +23,6 @@ import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -33,37 +32,35 @@ import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.FileProvider;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
+import androidx.navigation.NavController;
+import androidx.navigation.NavDirections;
+import androidx.navigation.Navigation;
+import androidx.navigation.ui.AppBarConfiguration;
+import androidx.navigation.ui.NavigationUI;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.health.openscale.BuildConfig;
+import com.health.openscale.MobileNavigationDirections;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.bluetooth.BluetoothCommunication;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
-import com.health.openscale.gui.activities.AppIntroActivity;
 import com.health.openscale.gui.activities.BaseAppCompatActivity;
-import com.health.openscale.gui.activities.BluetoothSettingsActivity;
-import com.health.openscale.gui.activities.DataEntryActivity;
-import com.health.openscale.gui.activities.SettingsActivity;
-import com.health.openscale.gui.fragments.GraphFragment;
-import com.health.openscale.gui.fragments.OverviewFragment;
-import com.health.openscale.gui.fragments.StatisticsFragment;
-import com.health.openscale.gui.fragments.TableFragment;
+import com.health.openscale.gui.activities.BluetoothSettingsFragment;
+import com.health.openscale.gui.activities.MeasurementEntryFragment;
+import com.health.openscale.gui.preferences.MainPreferencesDirections;
 
 import java.io.File;
 import java.util.List;
@@ -83,10 +80,11 @@ public class MainActivity extends BaseAppCompatActivity
     private static final int EXPORT_DATA_REQUEST = 101;
     private static final int ENABLE_BLUETOOTH_REQUEST = 102;
 
+    private AppBarConfiguration mAppBarConfiguration;
     private DrawerLayout drawerLayout;
-    private NavigationView navDrawer;
-    private BottomNavigationView navBottomDrawer;
-    private ActionBarDrawerToggle drawerToggle;
+    private NavController navController;
+    private NavigationView navigationView;
+    private BottomNavigationView navigationBottomView;
 
     private boolean settingsActivityRunning = false;
 
@@ -107,51 +105,82 @@ public class MainActivity extends BaseAppCompatActivity
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onSupportNavigateUp();
+            }
+        });
 
         // Find our drawer view
         drawerLayout = findViewById(R.id.drawer_layout);
 
         // Find our drawer view
-        navDrawer = findViewById(R.id.navigation_view);
+        navigationView = findViewById(R.id.navigation_view);
+        navigationBottomView = findViewById(R.id.navigation_bottom_view);
 
-        navBottomDrawer = findViewById(R.id.navigation_bottom_view);
-        navBottomDrawer.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+        // Passing each menu ID as a set of Ids because each
+        // menu should be considered as top level destinations.
+        mAppBarConfiguration = new AppBarConfiguration.Builder(
+                R.id.nav_overview, R.id.nav_graph, R.id.nav_table, R.id.nav_statistic, R.id.nav_main_preferences)
+                .setOpenableLayout(drawerLayout)
+                .build();
+        navController = Navigation.findNavController(this, R.id.nav_host_fragment);
+        NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
+        NavigationUI.setupWithNavController(navigationView, navController);
+        NavigationUI.setupWithNavController(navigationBottomView, navController);
+
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                selectDrawerItem(item.getItemId());
+                switch (item.getItemId()) {
+                    case R.id.nav_donation:
+                        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=H5KSTQA6TKTE4&source=url")));
+                        drawerLayout.closeDrawers();
+                        return true;
+                    case R.id.nav_help:
+                        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/oliexdev/openScale/wiki")));
+                        drawerLayout.closeDrawers();
+                        return true;
+                }
+
+                prefs.edit().putInt("lastFragmentId", item.getItemId()).apply();
+                NavigationUI.onNavDestinationSelected(item, navController);
+
+                // Close the navigation drawer
+                drawerLayout.closeDrawers();
+
                 return true;
             }
         });
 
-        //Create Drawer Toggle
-        drawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.open_drawer, R.string.close_drawer){
+        navigationBottomView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                prefs.edit().putInt("lastFragmentId", item.getItemId()).apply();
+                NavigationUI.onNavDestinationSelected(item, navController);
+                return true;
+            }
+        });
 
-        };
-
-        drawerLayout.addDrawerListener(drawerToggle);
-
-        // Setup drawer view
-        setupDrawerContent(navDrawer);
-
-        selectDrawerItem(prefs.getInt("lastFragmentId", R.id.nav_overview));
-
-        navBottomDrawer.setSelectedItemId(prefs.getInt("lastFragmentId", R.id.nav_overview));
+        navigationBottomView.setSelectedItemId(prefs.getInt("lastFragmentId", R.id.nav_overview));
 
         if (BuildConfig.BUILD_TYPE == "light") {
-            ImageView launcherIcon = navDrawer.getHeaderView(0).findViewById(R.id.profileImageView);
+            ImageView launcherIcon = navigationView.getHeaderView(0).findViewById(R.id.profileImageView);
             launcherIcon.setImageResource(R.drawable.ic_launcher_openscale_light);
-            navDrawer.getMenu().findItem(R.id.nav_donation).setVisible(false);
+            navigationView.getMenu().findItem(R.id.nav_donation).setVisible(false);
         } else if (BuildConfig.BUILD_TYPE == "pro") {
-            ImageView launcherIcon = navDrawer.getHeaderView(0).findViewById(R.id.profileImageView);
+            ImageView launcherIcon = navigationView.getHeaderView(0).findViewById(R.id.profileImageView);
             launcherIcon.setImageResource(R.drawable.ic_launcher_openscale_pro);
-            navDrawer.getMenu().findItem(R.id.nav_donation).setVisible(false);
+            navigationView.getMenu().findItem(R.id.nav_donation).setVisible(false);
         }
 
         if (prefs.getBoolean("firstStart", true)) {
-            Intent appIntroIntent = new Intent(this, AppIntroActivity.class);
-            startActivity(appIntroIntent);
+            // TODO
+            NavDirections action = MainPreferencesDirections.actionGlobalNavAppIntro();
+            navController.navigate(action);
+            //Intent appIntroIntent = new Intent(this, AppIntroActivity.class);
+            //startActivity(appIntroIntent);
 
             prefs.edit().putBoolean("firstStart", false).apply();
         }
@@ -191,6 +220,13 @@ public class MainActivity extends BaseAppCompatActivity
                 }
             }
         }
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
+        return NavigationUI.navigateUp(navController, mAppBarConfiguration)
+                || super.onSupportNavigateUp();
     }
 
     @Override
@@ -264,106 +300,6 @@ public class MainActivity extends BaseAppCompatActivity
         dialog.show();
     }
 
-    private void setupDrawerContent(NavigationView navigationView) {
-        navigationView.setNavigationItemSelectedListener(
-
-                new NavigationView.OnNavigationItemSelectedListener() {
-                    @Override
-                    public boolean onNavigationItemSelected(MenuItem menuItem) {
-                        selectDrawerItem(menuItem.getItemId());
-                        navBottomDrawer.setSelectedItemId(menuItem.getItemId());
-                        return true;
-
-                    }
-
-                });
-    }
-
-    private void selectDrawerItem(int menuItemId) {
-        // Create a new fragment and specify the fragment to show based on nav item clicked
-        Class fragmentClass;
-        String fragmentTitle;
-
-        switch (menuItemId) {
-            default:
-            case R.id.nav_overview:
-                fragmentClass = OverviewFragment.class;
-                fragmentTitle = getResources().getString(R.string.title_overview);
-                break;
-            case R.id.nav_graph:
-                fragmentClass = GraphFragment.class;
-                fragmentTitle = getResources().getString(R.string.title_graph);
-                break;
-            case R.id.nav_table:
-                fragmentClass = TableFragment.class;
-                fragmentTitle = getResources().getString(R.string.title_table);
-                break;
-            case R.id.nav_statistic:
-                fragmentClass = StatisticsFragment.class;
-                fragmentTitle = getResources().getString(R.string.title_statistics);
-                break;
-            case R.id.nav_settings:
-                drawerLayout.closeDrawer(navDrawer, false);
-                Intent settingsIntent = new Intent(this, SettingsActivity.class);
-                settingsActivityRunning = true;
-                startActivity(settingsIntent);
-                return;
-            case R.id.nav_donation:
-                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=H5KSTQA6TKTE4&source=url")));
-                drawerLayout.closeDrawers();
-                return;
-            case R.id.nav_help:
-                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/oliexdev/openScale/wiki")));
-                drawerLayout.closeDrawers();
-                return;
-        }
-
-        prefs.edit().putInt("lastFragmentId", menuItemId).apply();
-
-        FragmentManager fragmentManager = getSupportFragmentManager();
-
-        // Make sure that any pending transaction completes so that added fragments are
-        // actually added and won't get added again (may happen during activity creation
-        // when this method is called twice).
-        fragmentManager.executePendingTransactions();
-
-        FragmentTransaction transaction = fragmentManager.beginTransaction();
-        final String tag = String.valueOf(menuItemId);
-
-        boolean found = false;
-        for (Fragment fragment : fragmentManager.getFragments()) {
-            if (fragment.getTag().equals(tag)) {
-                // Show selected fragment if already added
-                transaction.show(fragment);
-                found = true;
-            }
-            else if (!fragment.isHidden()) {
-                // Hide currently shown fragment
-                transaction.hide(fragment);
-            }
-        }
-
-        // If fragment isn't found then add it
-        if (!found) {
-            try {
-                transaction.add(R.id.fragment_content, (Fragment) fragmentClass.newInstance(), tag);
-            } catch (Exception e) {
-                Timber.e(e, "Failed to add fragment %s", tag);
-            }
-        }
-
-        transaction.commit();
-
-        // Set action bar title
-        setTitle(fragmentTitle);
-
-        // Set checked item
-        navDrawer.setCheckedItem(menuItemId);
-
-        // Close the navigation drawer
-        drawerLayout.closeDrawers();
-    }
-
     private void showNoSelectedUserDialog() {
         AlertDialog.Builder infoDialog = new AlertDialog.Builder(this);
 
@@ -374,11 +310,6 @@ public class MainActivity extends BaseAppCompatActivity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
-        if (drawerToggle.onOptionsItemSelected(item)) {
-            return true;
-        }
-
         switch (item.getItemId()) {
             case android.R.id.home:
                 drawerLayout.openDrawer(GravityCompat.START);
@@ -389,9 +320,10 @@ public class MainActivity extends BaseAppCompatActivity
                     return true;
                 }
 
-                Intent intent = new Intent(getApplicationContext(), DataEntryActivity.class);
-                intent.putExtra(DataEntryActivity.EXTRA_MODE, DataEntryActivity.ADD_MEASUREMENT_REQUEST);
-                startActivity(intent);
+                MobileNavigationDirections.ActionNavMobileNavigationToNavDataentry action = MobileNavigationDirections.actionNavMobileNavigationToNavDataentry();
+                action.setMode(MeasurementEntryFragment.DATA_ENTRY_MODE.ADD);
+                action.setTitle(getString(R.string.label_add_measurement));
+                Navigation.findNavController(this, R.id.nav_host_fragment).navigate(action);
                 return true;
             case R.id.action_bluetooth_status:
                 if (OpenScale.getInstance().disconnectFromBluetoothDevice()) {
@@ -439,19 +371,7 @@ public class MainActivity extends BaseAppCompatActivity
             setBluetoothStatusIcon(bluetoothStatusIcon);
         }
 
-        return true;
-    }
-
-    @Override
-    protected void onPostCreate(Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-        drawerToggle.syncState();
-    }
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfig){
-        super.onConfigurationChanged(newConfig);
-        drawerToggle.onConfigurationChanged(newConfig);
+        return super.onCreateOptionsMenu(menu);
     }
 
     private void invokeConnectToBluetoothDevice() {
@@ -478,9 +398,9 @@ public class MainActivity extends BaseAppCompatActivity
         }
 
         String deviceName = prefs.getString(
-                BluetoothSettingsActivity.PREFERENCE_KEY_BLUETOOTH_DEVICE_NAME, "");
+                BluetoothSettingsFragment.PREFERENCE_KEY_BLUETOOTH_DEVICE_NAME, "");
         String hwAddress = prefs.getString(
-                BluetoothSettingsActivity.PREFERENCE_KEY_BLUETOOTH_HW_ADDRESS, "");
+                BluetoothSettingsFragment.PREFERENCE_KEY_BLUETOOTH_HW_ADDRESS, "");
 
         if (!BluetoothAdapter.checkBluetoothAddress(hwAddress)) {
             setBluetoothStatusIcon(R.drawable.ic_bluetooth_connection_lost);

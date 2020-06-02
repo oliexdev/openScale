@@ -24,8 +24,6 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.preference.PreferenceScreen;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.util.TypedValue;
@@ -42,6 +40,8 @@ import android.widget.TableRow;
 import android.widget.TextView;
 
 import androidx.core.content.ContextCompat;
+import androidx.preference.PreferenceManager;
+import androidx.preference.PreferenceScreen;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;

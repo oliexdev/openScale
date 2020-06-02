@@ -18,7 +18,6 @@ package com.health.openscale.gui.fragments;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -34,6 +33,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.components.AxisBase;
@@ -51,7 +51,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
-import com.health.openscale.gui.activities.DataEntryActivity;
+import com.health.openscale.gui.activities.MeasurementEntryFragment;
 import com.health.openscale.gui.utils.ColorUtil;
 import com.health.openscale.gui.views.ChartActionBarView;
 import com.health.openscale.gui.views.ChartMeasurementView;
@@ -255,12 +255,10 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         showMenu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int id = markedMeasurement.getId();
-
-                Intent intent = new Intent(graphView.getContext(), DataEntryActivity.class);
-                intent.putExtra(DataEntryActivity.EXTRA_ID, id);
-                intent.putExtra(DataEntryActivity.EXTRA_MODE, DataEntryActivity.VIEW_MEASUREMENT_REQUEST);
-                startActivity(intent);
+                GraphFragmentDirections.ActionNavGraphToNavDataentry action = GraphFragmentDirections.actionNavGraphToNavDataentry();
+                action.setMeasurementId(markedMeasurement.getId());
+                action.setMode(MeasurementEntryFragment.DATA_ENTRY_MODE.VIEW);
+                Navigation.findNavController(getActivity(), R.id.nav_host_fragment).navigate(action);
             }
         });
 
@@ -268,12 +266,10 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         editMenu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int id = markedMeasurement.getId();
-
-                Intent intent = new Intent(graphView.getContext(), DataEntryActivity.class);
-                intent.putExtra(DataEntryActivity.EXTRA_ID, id);
-                intent.putExtra(DataEntryActivity.EXTRA_MODE, DataEntryActivity.EDIT_MEASUREMENT_REQUEST);
-                startActivity(intent);
+                GraphFragmentDirections.ActionNavGraphToNavDataentry action = GraphFragmentDirections.actionNavGraphToNavDataentry();
+                action.setMeasurementId(markedMeasurement.getId());
+                action.setMode(MeasurementEntryFragment.DATA_ENTRY_MODE.EDIT);
+                Navigation.findNavController(getActivity(), R.id.nav_host_fragment).navigate(action);
             }
         });
         deleteMenu = graphView.findViewById(R.id.deleteMenu);

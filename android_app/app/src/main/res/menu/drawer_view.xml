@@ -28,7 +28,7 @@
            android:checkableBehavior="none">
 
         <item
-            android:id="@+id/nav_settings"
+            android:id="@+id/nav_main_preferences"
             android:icon="@drawable/ic_preferences_settings"
             android:title="@string/action_settings" />
 

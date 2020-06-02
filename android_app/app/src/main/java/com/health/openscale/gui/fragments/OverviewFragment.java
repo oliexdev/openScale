@@ -17,7 +17,6 @@ package com.health.openscale.gui.fragments;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -36,6 +35,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.highlight.Highlight;
@@ -44,7 +44,7 @@ import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
-import com.health.openscale.gui.activities.DataEntryActivity;
+import com.health.openscale.gui.activities.MeasurementEntryFragment;
 import com.health.openscale.gui.utils.ColorUtil;
 import com.health.openscale.gui.views.ChartActionBarView;
 import com.health.openscale.gui.views.ChartMeasurementView;
@@ -219,12 +219,10 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         showEntry.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int id = markedMeasurement.getId();
-
-                Intent intent = new Intent(overviewView.getContext(), DataEntryActivity.class);
-                intent.putExtra(DataEntryActivity.EXTRA_ID, id);
-                intent.putExtra(DataEntryActivity.EXTRA_MODE, DataEntryActivity.VIEW_MEASUREMENT_REQUEST);
-                startActivity(intent);
+                OverviewFragmentDirections.ActionNavOverviewToNavDataentry action = OverviewFragmentDirections.actionNavOverviewToNavDataentry();
+                action.setMeasurementId(markedMeasurement.getId());
+                action.setMode(MeasurementEntryFragment.DATA_ENTRY_MODE.VIEW);
+                Navigation.findNavController(getActivity(), R.id.nav_host_fragment).navigate(action);
             }
         });
 
@@ -232,12 +230,10 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         editEntry.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int id = markedMeasurement.getId();
-
-                Intent intent = new Intent(overviewView.getContext(), DataEntryActivity.class);
-                intent.putExtra(DataEntryActivity.EXTRA_ID, id);
-                intent.putExtra(DataEntryActivity.EXTRA_MODE, DataEntryActivity.EDIT_MEASUREMENT_REQUEST);
-                startActivity(intent);
+                OverviewFragmentDirections.ActionNavOverviewToNavDataentry action = OverviewFragmentDirections.actionNavOverviewToNavDataentry();
+                action.setMeasurementId(markedMeasurement.getId());
+                action.setMode(MeasurementEntryFragment.DATA_ENTRY_MODE.EDIT);
+                Navigation.findNavController(getActivity(), R.id.nav_host_fragment).navigate(action);
             }
         });
         deleteEntry = overviewView.findViewById(R.id.deleteEntry);

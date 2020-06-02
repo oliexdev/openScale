@@ -15,7 +15,6 @@
 */
 package com.health.openscale.gui.fragments;
 
-import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.text.SpannableStringBuilder;
@@ -29,6 +28,7 @@ import android.widget.TableRow;
 import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -36,7 +36,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
-import com.health.openscale.gui.activities.DataEntryActivity;
+import com.health.openscale.gui.activities.MeasurementEntryFragment;
 import com.health.openscale.gui.utils.ColorUtil;
 import com.health.openscale.gui.views.MeasurementView;
 import com.health.openscale.gui.views.UserMeasurementView;
@@ -255,10 +255,10 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
             row.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent intent = new Intent(getContext(), DataEntryActivity.class);
-                    intent.putExtra(DataEntryActivity.EXTRA_ID, measurement.getId());
-                    intent.putExtra(DataEntryActivity.EXTRA_MODE, DataEntryActivity.VIEW_MEASUREMENT_REQUEST);
-                    startActivity(intent);
+                    TableFragmentDirections.ActionNavTableToNavDataentry action = TableFragmentDirections.actionNavTableToNavDataentry();
+                    action.setMeasurementId(measurement.getId());
+                    action.setMode(MeasurementEntryFragment.DATA_ENTRY_MODE.VIEW);
+                    Navigation.findNavController(getActivity(), R.id.nav_host_fragment).navigate(action);
                 }
             });
         }

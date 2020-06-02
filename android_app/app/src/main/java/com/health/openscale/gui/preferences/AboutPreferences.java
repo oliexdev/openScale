@@ -19,10 +19,13 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.CheckBoxPreference;
-import android.preference.Preference;
-import android.preference.PreferenceFragment;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+
+import androidx.preference.CheckBoxPreference;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceFragmentCompat;
 
 import com.health.openscale.BuildConfig;
 import com.health.openscale.R;
@@ -39,7 +42,7 @@ import timber.log.Timber;
 
 import static android.app.Activity.RESULT_OK;
 
-public class AboutPreferences extends PreferenceFragment {
+public class AboutPreferences extends PreferenceFragmentCompat {
     private static final String KEY_APP_VERSION = "pref_app_version";
     private static final String KEY_DEBUG_LOG = "debug_log";
 
@@ -96,10 +99,10 @@ public class AboutPreferences extends PreferenceFragment {
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+        setPreferencesFromResource(R.xml.about_preferences, rootKey);
 
-        addPreferencesFromResource(R.xml.about_preferences);
+        setHasOptionsMenu(true);
 
         findPreference(KEY_APP_VERSION).setSummary(
                 String.format("v%s (%d)", BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE));
@@ -159,5 +162,10 @@ public class AboutPreferences extends PreferenceFragment {
         }
 
         debugLog.setChecked(getEnabledFileDebugTree() != null);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        menu.clear();
     }
 }

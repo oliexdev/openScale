@@ -16,10 +16,8 @@
 package com.health.openscale.gui.utils;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.Fragment;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
@@ -27,12 +25,13 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
+import android.os.Build;
 import android.provider.Settings;
 import android.widget.Toast;
 
-import com.health.openscale.R;
+import androidx.fragment.app.Fragment;
 
-import androidx.core.app.ActivityCompat;
+import com.health.openscale.R;
 
 import static android.content.Context.LOCATION_SERVICE;
 
@@ -43,53 +42,55 @@ public class PermissionHelper {
 
     public final static int ENABLE_BLUETOOTH_REQUEST = 5;
 
-    public static boolean requestBluetoothPermission(final Activity activity) {
-        final BluetoothManager bluetoothManager = (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
+    public static boolean requestBluetoothPermission(final Fragment fragment) {
+        final BluetoothManager bluetoothManager = (BluetoothManager) fragment.getActivity().getSystemService(Context.BLUETOOTH_SERVICE);
         BluetoothAdapter btAdapter = bluetoothManager.getAdapter();
 
         if (btAdapter == null || !btAdapter.isEnabled()) {
-            Toast.makeText(activity, "Bluetooth " + activity.getResources().getString(R.string.info_is_not_enable), Toast.LENGTH_SHORT).show();
+            Toast.makeText(fragment.getContext(), "Bluetooth " + fragment.getContext().getResources().getString(R.string.info_is_not_enable), Toast.LENGTH_SHORT).show();
 
             if (btAdapter != null) {
                 Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                activity.startActivityForResult(enableBtIntent, ENABLE_BLUETOOTH_REQUEST);
+                fragment.getActivity().startActivityForResult(enableBtIntent, ENABLE_BLUETOOTH_REQUEST);
             }
             return false;
         }
 
         // Check if Bluetooth 4.x is available
-        if (!activity.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-            Toast.makeText(activity, "Bluetooth 4.x " + activity.getResources().getString(R.string.info_is_not_available), Toast.LENGTH_SHORT).show();
+        if (!fragment.getActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+            Toast.makeText(fragment.getContext(), "Bluetooth 4.x " + fragment.getContext().getResources().getString(R.string.info_is_not_available), Toast.LENGTH_SHORT).show();
             return false;
          }
 
-        if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (fragment.getContext().checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(fragment.getActivity());
 
-            builder.setMessage(R.string.permission_bluetooth_info)
-                    .setTitle(R.string.permission_bluetooth_info_title)
-                    .setIcon(R.drawable.ic_preferences_about)
-                    .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            dialog.dismiss();
-                            ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
-                        }
-                    });
+                builder.setMessage(R.string.permission_bluetooth_info)
+                        .setTitle(R.string.permission_bluetooth_info_title)
+                        .setIcon(R.drawable.ic_preferences_about)
+                        .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.dismiss();
+                                fragment.requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+                            }
+                        });
 
-            Dialog alertDialog = builder.create();
-            alertDialog.setCanceledOnTouchOutside(false);
-            alertDialog.show();
-            return false;
+                Dialog alertDialog = builder.create();
+                alertDialog.setCanceledOnTouchOutside(false);
+                alertDialog.show();
+                return false;
+            }
         }
 
         return true;
     }
 
-    public static boolean requestLocationServicePermission(final Activity activity) {
-        LocationManager locationManager = (LocationManager) activity.getSystemService(LOCATION_SERVICE);
+    public static boolean requestLocationServicePermission(final Fragment fragment) {
+        LocationManager locationManager = (LocationManager) fragment.getActivity().getSystemService(LOCATION_SERVICE);
         if (!(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))) {
 
-            AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+            AlertDialog.Builder builder = new AlertDialog.Builder(fragment.getContext());
             builder.setTitle(R.string.permission_bluetooth_info_title);
             builder.setIcon(R.drawable.ic_preferences_about);
             builder.setMessage(R.string.permission_location_service_info);
@@ -97,7 +98,7 @@ public class PermissionHelper {
                 public void onClick(DialogInterface dialogInterface, int i) {
                     // Show location settings when the user acknowledges the alert dialog
                     Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                    activity.startActivity(intent);
+                    fragment.getActivity().startActivity(intent);
                 }
             });
 
@@ -110,21 +111,25 @@ public class PermissionHelper {
         return true;
     }
 
-    public static boolean requestReadPermission(final Activity activity) {
-        if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSIONS_REQUEST_ACCESS_READ_STORAGE);
-        } else {
-            return true;
+    public static boolean requestReadPermission(final Fragment fragment) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (fragment.getContext().checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                fragment.requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSIONS_REQUEST_ACCESS_READ_STORAGE);
+            } else {
+                return true;
+            }
         }
 
         return false;
     }
 
-    public static boolean requestWritePermission(final Activity activity) {
-        if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSIONS_REQUEST_ACCESS_WRITE_STORAGE);
-        } else {
-            return true;
+    public static boolean requestWritePermission(final Fragment fragment) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (fragment.getContext().checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                fragment.requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSIONS_REQUEST_ACCESS_WRITE_STORAGE);
+            } else {
+                return true;
+            }
         }
 
         return false;

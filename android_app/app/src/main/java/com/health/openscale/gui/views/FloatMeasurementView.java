@@ -16,21 +16,11 @@
 
 package com.health.openscale.gui.views;
 
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.res.Resources;
-import android.database.DataSetObserver;
 import android.graphics.Color;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.preference.CheckBoxPreference;
-import android.preference.ListPreference;
-import android.preference.Preference;
-import android.preference.PreferenceScreen;
-import android.preference.SwitchPreference;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
@@ -41,9 +31,14 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.ListAdapter;
 import android.widget.TableRow;
 import android.widget.TextView;
+
+import androidx.preference.CheckBoxPreference;
+import androidx.preference.ListPreference;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceScreen;
+import androidx.preference.SwitchPreference;
 
 import com.health.openscale.R;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
@@ -527,7 +522,8 @@ public abstract class FloatMeasurementView extends MeasurementView {
             super(context);
         }
 
-        @Override
+        // TODO
+        /*@Override
         protected void onPrepareDialogBuilder(AlertDialog.Builder builder) {
             super.onPrepareDialogBuilder(builder);
 
@@ -539,7 +535,7 @@ public abstract class FloatMeasurementView extends MeasurementView {
                             Uri.parse("https://github.com/oliexdev/openScale/wiki/Body-metric-estimations")));
                 }
             });
-        }
+        }*/
     }
 
     @Override
@@ -590,7 +586,8 @@ public abstract class FloatMeasurementView extends MeasurementView {
                 }
             });
 
-            final ListAdapter adapter = screen.getRootAdapter();
+            // TODO
+            /*final ListAdapter adapter = screen.getRootAdapter();
             adapter.registerDataSetObserver(new DataSetObserver() {
                 @Override
                 public void onChanged() {
@@ -599,7 +596,7 @@ public abstract class FloatMeasurementView extends MeasurementView {
                     formula.setDependency(estimate.getKey());
                     formula.setSummary(formula.getEntry());
                 }
-            });
+            });*/
             screen.addPreference(formula);
         }
     }

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <Preference android:title="@string/label_exportBackup" android:key="exportBackup"/>
     <Preference android:title="@string/label_importBackup" android:key="importBackup"/>
 
@@ -11,6 +12,7 @@
         android:entryValues="@array/auto_backup_values"
         android:key="autoBackup_Schedule"
         android:title="@string/label_auto_backup_schedule"
+        app:useSimpleSummaryProvider="true"
         android:defaultValue="Monthly"/>
     <EditTextPreference android:title="@string/label_export_dir" android:key="exportDir" android:dependency="autoBackup" android:defaultValue="openScale backup" />
 </PreferenceScreen>

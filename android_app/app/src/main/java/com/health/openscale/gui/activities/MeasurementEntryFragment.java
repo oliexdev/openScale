@@ -23,18 +23,21 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.graphics.drawable.DrawableCompat;
+import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
@@ -50,14 +53,11 @@ import java.text.DateFormat;
 import java.util.Date;
 import java.util.List;
 
-public class DataEntryActivity extends BaseAppCompatActivity {
-    public static final String EXTRA_ID = "id";
-    public static final String EXTRA_MODE = "mode";
+public class MeasurementEntryFragment extends Fragment {
+    public enum DATA_ENTRY_MODE {ADD, EDIT, VIEW};
     private static final String PREF_EXPAND = "expandEvaluator";
 
-    public static final int ADD_MEASUREMENT_REQUEST = 0;
-    public static final int EDIT_MEASUREMENT_REQUEST = 1;
-    public static final int VIEW_MEASUREMENT_REQUEST = 2;
+    private DATA_ENTRY_MODE mode = DATA_ENTRY_MODE.ADD;
 
     private MeasurementView.MeasurementViewMode measurementViewMode;
 
@@ -80,26 +80,21 @@ public class DataEntryActivity extends BaseAppCompatActivity {
     private Context context;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View root = inflater.inflate(R.layout.fragment_dataentry, container, false);
 
-        setContentView(R.layout.activity_dataentry);
+        setHasOptionsMenu(true);
 
-        Toolbar toolbar = findViewById(R.id.dataEntryToolbar);
-        setSupportActionBar(toolbar);
+        context = getContext();
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-        context = this;
-
-        TableLayout tableLayoutDataEntry = findViewById(R.id.tableLayoutDataEntry);
+        TableLayout tableLayoutDataEntry = root.findViewById(R.id.tableLayoutDataEntry);
 
         dataEntryMeasurements = MeasurementView.getMeasurementList(
                 context, MeasurementView.DateTimeOrder.LAST);
 
-        txtDataNr = findViewById(R.id.txtDataNr);
-        btnLeft = findViewById(R.id.btnLeft);
-        btnRight = findViewById(R.id.btnRight);
+        txtDataNr = root.findViewById(R.id.txtDataNr);
+        btnLeft = root.findViewById(R.id.btnLeft);
+        btnRight = root.findViewById(R.id.btnRight);
 
         btnLeft.setVisibility(View.INVISIBLE);
         btnRight.setVisibility(View.INVISIBLE);
@@ -117,25 +112,32 @@ public class DataEntryActivity extends BaseAppCompatActivity {
             }
         });
 
-        int mode = getIntent().getExtras().getInt(EXTRA_MODE);
         MeasurementView.MeasurementViewMode measurementMode = MeasurementView.MeasurementViewMode.ADD;
 
-        if (mode == ADD_MEASUREMENT_REQUEST) {
-            measurementMode = MeasurementView.MeasurementViewMode.ADD;
-        }
-        else if (mode == VIEW_MEASUREMENT_REQUEST){
-            measurementMode = MeasurementView.MeasurementViewMode.VIEW;
+        mode = MeasurementEntryFragmentArgs.fromBundle(getArguments()).getMode();
+
+        switch (mode) {
+            case ADD:
+                measurementMode = MeasurementView.MeasurementViewMode.ADD;
+                break;
+            case EDIT:
+                break;
+            case VIEW:
+                measurementMode = MeasurementView.MeasurementViewMode.VIEW;
+                break;
         }
 
         for (MeasurementView measurement : dataEntryMeasurements) {
             measurement.setEditMode(measurementMode);
         }
 
-        updateOnView();
+        int id = MeasurementEntryFragmentArgs.fromBundle(getArguments()).getMeasurementId();
+
+        updateOnView(id);
 
         onMeasurementViewUpdateListener updateListener = new onMeasurementViewUpdateListener();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        final boolean expand = mode == ADD_MEASUREMENT_REQUEST
+        final boolean expand = mode == DATA_ENTRY_MODE.ADD
                 ? false : prefs.getBoolean(PREF_EXPAND, false);
 
         for (MeasurementView measurement : dataEntryMeasurements) {
@@ -143,29 +145,13 @@ public class DataEntryActivity extends BaseAppCompatActivity {
             measurement.setOnUpdateListener(updateListener);
             measurement.setExpand(expand);
         }
+
+        return root;
     }
 
     @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-
-        for (MeasurementView measurement : dataEntryMeasurements) {
-            measurement.restoreState(savedInstanceState);
-        }
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-
-        for (MeasurementView measurement : dataEntryMeasurements) {
-            measurement.saveState(outState);
-        }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        menu.clear();
         inflater.inflate(R.menu.dataentry_menu, menu);
 
         // Apply a tint to all icons in the toolbar
@@ -196,18 +182,20 @@ public class DataEntryActivity extends BaseAppCompatActivity {
         expandButton = menu.findItem(R.id.expandButton);
         deleteButton = menu.findItem(R.id.deleteButton);
 
-        int mode = getIntent().getExtras().getInt(EXTRA_MODE);
         // Hide/show icons as appropriate for the view mode
-        if (mode == ADD_MEASUREMENT_REQUEST) {
-            setViewMode(MeasurementView.MeasurementViewMode.ADD);
-        }
-        else if (mode == VIEW_MEASUREMENT_REQUEST){
-            setViewMode(MeasurementView.MeasurementViewMode.VIEW);
-        } else if (mode == EDIT_MEASUREMENT_REQUEST) {
-            setViewMode(MeasurementView.MeasurementViewMode.EDIT);
+        switch (mode) {
+            case ADD:
+                setViewMode(MeasurementView.MeasurementViewMode.ADD);
+                break;
+            case EDIT:
+                setViewMode(MeasurementView.MeasurementViewMode.EDIT);
+                break;
+            case VIEW:
+                setViewMode(MeasurementView.MeasurementViewMode.VIEW);
+                break;
         }
 
-        return super.onCreateOptionsMenu(menu);
+        super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override
@@ -220,7 +208,7 @@ public class DataEntryActivity extends BaseAppCompatActivity {
                     setViewMode(MeasurementView.MeasurementViewMode.VIEW);
                 }
                 else {
-                    finish();
+                    Navigation.findNavController(getActivity(), R.id.nav_host_fragment).navigateUp();
                 }
                 return true;
 
@@ -241,16 +229,12 @@ public class DataEntryActivity extends BaseAppCompatActivity {
             case R.id.deleteButton:
                 deleteMeasurement();
                 return true;
-
-            // Override the default behaviour in order to return to the correct fragment
-            // (e.g. the table view) and not always go to the overview.
-            case android.R.id.home:
-                onBackPressed();
-                return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
+    // TODO
+    /*
     @Override
     public void onBackPressed() {
         if (measurementViewMode == MeasurementView.MeasurementViewMode.EDIT) {
@@ -263,14 +247,9 @@ public class DataEntryActivity extends BaseAppCompatActivity {
         else {
             super.onBackPressed();
         }
-    }
+    }*/
 
-    private void updateOnView() {
-        int id = 0;
-        if (getIntent().hasExtra(EXTRA_ID)) {
-            id = getIntent().getExtras().getInt(EXTRA_ID);
-        }
-
+    private void updateOnView(int id) {
         if (scaleMeasurement == null || scaleMeasurement.getId() != id) {
             isDirty = false;
             scaleMeasurement = null;
@@ -332,8 +311,6 @@ public class DataEntryActivity extends BaseAppCompatActivity {
 
         switch (viewMode) {
             case VIEW:
-                getSupportActionBar().setTitle("");
-
                 saveButton.setVisible(false);
                 editButton.setVisible(true);
                 expandButton.setVisible(true);
@@ -348,8 +325,6 @@ public class DataEntryActivity extends BaseAppCompatActivity {
                 dateTimeVisibility = View.GONE;
                 break;
             case EDIT:
-                getSupportActionBar().setTitle("");
-
                 saveButton.setVisible(true);
                 editButton.setVisible(false);
                 expandButton.setVisible(true);
@@ -362,8 +337,6 @@ public class DataEntryActivity extends BaseAppCompatActivity {
                 btnRight.setEnabled(false);
                 break;
             case ADD:
-                getSupportActionBar().setTitle(R.string.label_add_measurement);
-
                 saveButton.setVisible(true);
                 editButton.setVisible(false);
                 expandButton.setVisible(false);
@@ -433,7 +406,7 @@ public class DataEntryActivity extends BaseAppCompatActivity {
 
         final boolean hasNext = moveLeft() || moveRight();
         if (!hasNext) {
-            finish();
+            Navigation.findNavController(getActivity(), R.id.nav_host_fragment).navigateUp();
         }
         else if (measurementViewMode == MeasurementView.MeasurementViewMode.EDIT) {
             setViewMode(MeasurementView.MeasurementViewMode.VIEW);
@@ -442,8 +415,7 @@ public class DataEntryActivity extends BaseAppCompatActivity {
 
     private boolean moveLeft() {
         if (previousMeasurement != null) {
-            getIntent().putExtra(EXTRA_ID, previousMeasurement.getId());
-            updateOnView();
+            updateOnView(previousMeasurement.getId());
             return true;
         }
 
@@ -452,8 +424,7 @@ public class DataEntryActivity extends BaseAppCompatActivity {
 
     private boolean moveRight() {
         if (nextMeasurement != null) {
-            getIntent().putExtra(EXTRA_ID, nextMeasurement.getId());
-            updateOnView();
+            updateOnView(nextMeasurement.getId());
             return true;
         }
 

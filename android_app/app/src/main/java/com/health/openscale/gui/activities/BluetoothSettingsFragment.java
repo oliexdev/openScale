@@ -37,15 +37,19 @@ import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.RelativeSizeSpan;
 import android.view.Gravity;
-import android.view.MenuItem;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
@@ -62,10 +66,8 @@ import java.util.Map;
 
 import timber.log.Timber;
 
-public class BluetoothSettingsActivity extends BaseAppCompatActivity {
+public class BluetoothSettingsFragment extends Fragment {
     private Context context;
-
-    public static final int GET_SCALE_REQUEST = 150;
 
     public static final String PREFERENCE_KEY_BLUETOOTH_DEVICE_NAME = "btDeviceName";
     public static final String PREFERENCE_KEY_BLUETOOTH_HW_ADDRESS = "btHwAddress";
@@ -79,40 +81,39 @@ public class BluetoothSettingsActivity extends BaseAppCompatActivity {
     private BluetoothCentral central;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View root = inflater.inflate(R.layout.fragment_bluetoothsettings, container, false);
 
-        setContentView(R.layout.activity_bluetoothsettings);
-        context = this;
+        setHasOptionsMenu(true);
 
-        deviceListView = findViewById(R.id.deviceListView);
-        txtSearching = findViewById(R.id.txtSearching);
-        progressBar = findViewById(R.id.progressBar);
-        Toolbar toolbar = findViewById(R.id.bluetoothSettingToolbar);
-        setSupportActionBar(toolbar);
+        context = getContext();
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setTitle(R.string.label_bluetooth_title);
+        deviceListView = root.findViewById(R.id.deviceListView);
+        txtSearching = root.findViewById(R.id.txtSearching);
+        progressBar = root.findViewById(R.id.progressBar);
 
+        return root;
+    }
+
+    @Override
+    public void onPause() {
+        stopBluetoothDiscovery();
+        super.onPause();
+    }
+
+    @Override
+    public void onResume() {
         if (PermissionHelper.requestBluetoothPermission(this)) {
             if (PermissionHelper.requestLocationServicePermission(this)) {
                 startBluetoothDiscovery();
             }
         }
+        super.onResume();
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            // Override the default behaviour in order to return to the correct fragment
-            // (e.g. the table view) and not always go to the overview.
-            case android.R.id.home:
-                stopBluetoothDiscovery();
-                onBackPressed();
-                return true;
-        }
-
-        return super.onOptionsItemSelected(item);
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        menu.clear();
     }
 
     private static final String formatDeviceName(String name, String address) {
@@ -137,7 +138,7 @@ public class BluetoothSettingsActivity extends BaseAppCompatActivity {
         deviceListView.removeAllViews();
         foundDevices.clear();
 
-        central = new BluetoothCentral(getApplicationContext(), bluetoothCentralCallback, new Handler(Looper.getMainLooper()));
+        central = new BluetoothCentral(getContext(), bluetoothCentralCallback, new Handler(Looper.getMainLooper()));
         central.scanForPeripherals();
 
         txtSearching.setVisibility(View.VISIBLE);
@@ -191,10 +192,10 @@ public class BluetoothSettingsActivity extends BaseAppCompatActivity {
             return;
         }
 
-        BluetoothDeviceView deviceView = new BluetoothDeviceView(this);
+        BluetoothDeviceView deviceView = new BluetoothDeviceView(getContext());
         deviceView.setDeviceName(formatDeviceName(bleScanResult.getDevice()));
 
-        BluetoothCommunication btDevice = BluetoothFactory.createDeviceDriver(this, device.getName());
+        BluetoothCommunication btDevice = BluetoothFactory.createDeviceDriver(getContext(), device.getName());
         if (btDevice != null) {
             Timber.d("Found supported device %s (driver: %s)",
                     formatDeviceName(device), btDevice.driverName());
@@ -225,7 +226,7 @@ public class BluetoothSettingsActivity extends BaseAppCompatActivity {
     }
 
     private void getDebugInfo(final BluetoothDevice device) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle("Fetching info")
                 .setMessage("Please wait while we fetch extended info from your scale...")
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -323,7 +324,7 @@ public class BluetoothSettingsActivity extends BaseAppCompatActivity {
         public void setIcon(int resId) {
             deviceIcon.setImageResource(resId);
 
-            int tintColor = ColorUtil.getTextColor(getApplicationContext());
+            int tintColor = ColorUtil.getTextColor(getContext());
             deviceIcon.setColorFilter(tintColor, PorterDuff.Mode.SRC_IN);
         }
 
@@ -355,8 +356,8 @@ public class BluetoothSettingsActivity extends BaseAppCompatActivity {
             Timber.d("Saved Bluetooth device " + device.getName() + " with address " + device.getAddress());
 
             stopBluetoothDiscovery();
-            setResult(GET_SCALE_REQUEST);
-            finish();
+            Navigation.findNavController(getActivity(), R.id.nav_host_fragment).getPreviousBackStackEntry().getSavedStateHandle().set("update", true);
+            Navigation.findNavController(getActivity(), R.id.nav_host_fragment).navigateUp();
         }
     }
 
@@ -367,9 +368,6 @@ public class BluetoothSettingsActivity extends BaseAppCompatActivity {
                 if (PermissionHelper.requestBluetoothPermission(this)) {
                     startBluetoothDiscovery();
                 }
-            }
-            else {
-                onBackPressed();
             }
         }
 
@@ -385,8 +383,7 @@ public class BluetoothSettingsActivity extends BaseAppCompatActivity {
                         startBluetoothDiscovery();
                     }
                 } else {
-                    Toast.makeText(this, R.string.permission_not_granted, Toast.LENGTH_SHORT).show();
-                    onBackPressed();
+                    Toast.makeText(getContext(), R.string.permission_not_granted, Toast.LENGTH_SHORT).show();
                 }
                 break;
             }

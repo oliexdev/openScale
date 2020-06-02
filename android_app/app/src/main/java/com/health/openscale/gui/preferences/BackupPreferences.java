@@ -21,14 +21,14 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.CheckBoxPreference;
-import android.preference.EditTextPreference;
-import android.preference.ListPreference;
-import android.preference.MultiSelectListPreference;
-import android.preference.Preference;
-import android.preference.PreferenceFragment;
-import android.preference.PreferenceGroup;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.widget.Toast;
+
+import androidx.fragment.app.Fragment;
+import androidx.preference.CheckBoxPreference;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceFragmentCompat;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
@@ -37,13 +37,10 @@ import com.health.openscale.core.alarm.ReminderBootReceiver;
 import com.health.openscale.gui.utils.PermissionHelper;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 
 import static android.app.Activity.RESULT_OK;
 
-public class BackupPreferences extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
+public class BackupPreferences extends PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener {
     private static final String PREFERENCE_KEY_IMPORT_BACKUP = "importBackup";
     private static final String PREFERENCE_KEY_EXPORT_BACKUP = "exportBackup";
     private static final String PREFERENCE_KEY_AUTO_BACKUP = "autoBackup";
@@ -58,11 +55,15 @@ public class BackupPreferences extends PreferenceFragment implements SharedPrefe
 
     private boolean isAutoBackupAskForPermission;
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    private Fragment fragment;
 
-        addPreferencesFromResource(R.xml.backup_preferences);
+    @Override
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+        setPreferencesFromResource(R.xml.backup_preferences, rootKey);
+
+        setHasOptionsMenu(true);
+
+        fragment = this;
 
         importBackup = (Preference) findPreference(PREFERENCE_KEY_IMPORT_BACKUP);
         importBackup.setOnPreferenceClickListener(new onClickListenerImportBackup());
@@ -73,7 +74,6 @@ public class BackupPreferences extends PreferenceFragment implements SharedPrefe
         autoBackup = (CheckBoxPreference) findPreference(PREFERENCE_KEY_AUTO_BACKUP);
         autoBackup.setOnPreferenceClickListener(new onClickListenerAutoBackup());
 
-        initSummary(getPreferenceScreen());
         updateBackupPreferences();
     }
 
@@ -115,59 +115,9 @@ public class BackupPreferences extends PreferenceFragment implements SharedPrefe
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key)
     {
-        updatePrefSummary(findPreference(key));
         updateBackupPreferences();
     }
 
-    private void initSummary(Preference p) {
-        if (p instanceof PreferenceGroup) {
-            PreferenceGroup pGrp = (PreferenceGroup) p;
-            for (int i = 0; i < pGrp.getPreferenceCount(); i++) {
-                initSummary(pGrp.getPreference(i));
-            }
-        } else {
-            updatePrefSummary(p);
-        }
-    }
-
-    private void updatePrefSummary(Preference p)
-    {
-        if (p instanceof ListPreference)
-        {
-            ListPreference listPref = (ListPreference) p;
-            p.setSummary(listPref.getEntry());
-        }
-
-        if (p instanceof EditTextPreference)
-        {
-            EditTextPreference editTextPref = (EditTextPreference) p;
-            if (p.getTitle().toString().contains("assword"))
-            {
-                p.setSummary("******");
-            }
-            else
-            {
-                p.setSummary(editTextPref.getText());
-            }
-        }
-
-        if (p instanceof MultiSelectListPreference)
-        {
-            MultiSelectListPreference editMultiListPref = (MultiSelectListPreference) p;
-
-            CharSequence[] entries = editMultiListPref.getEntries();
-            CharSequence[] entryValues = editMultiListPref.getEntryValues();
-            List<String> currentEntries = new ArrayList<>();
-            Set<String> currentEntryValues = editMultiListPref.getValues();
-
-            for (int i = 0; i < entries.length; i++)
-            {
-                if (currentEntryValues.contains(entryValues[i].toString())) currentEntries.add(entries[i].toString());
-            }
-
-            p.setSummary(currentEntries.toString());
-        }
-    }
 
     private class onClickListenerAutoBackup implements Preference.OnPreferenceClickListener {
         @Override
@@ -175,7 +125,7 @@ public class BackupPreferences extends PreferenceFragment implements SharedPrefe
             if (autoBackup.isChecked()) {
                 isAutoBackupAskForPermission = true;
 
-                PermissionHelper.requestWritePermission(getActivity());
+                PermissionHelper.requestWritePermission(fragment);
             }
 
             return true;
@@ -185,7 +135,7 @@ public class BackupPreferences extends PreferenceFragment implements SharedPrefe
     private class onClickListenerImportBackup implements Preference.OnPreferenceClickListener {
         @Override
         public boolean onPreferenceClick(Preference preference) {
-            if (PermissionHelper.requestReadPermission(getActivity())) {
+            if (PermissionHelper.requestReadPermission(fragment)) {
                 importBackup();
             }
 
@@ -196,7 +146,7 @@ public class BackupPreferences extends PreferenceFragment implements SharedPrefe
     private class onClickListenerExportBackup implements Preference.OnPreferenceClickListener {
         @Override
         public boolean onPreferenceClick(Preference preference) {
-            if (PermissionHelper.requestWritePermission(getActivity())) {
+            if (PermissionHelper.requestWritePermission(fragment)) {
                 exportBackup();
             }
 
@@ -265,13 +215,14 @@ public class BackupPreferences extends PreferenceFragment implements SharedPrefe
         return true;
     }
 
-    public void onMyOwnRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         switch (requestCode) {
             case PermissionHelper.PERMISSIONS_REQUEST_ACCESS_READ_STORAGE:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     importBackup();
                 } else {
-                    Toast.makeText(getActivity().getApplicationContext(), getResources().getString(R.string.permission_not_granted), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), getResources().getString(R.string.permission_not_granted), Toast.LENGTH_SHORT).show();
                 }
             break;
             case PermissionHelper.PERMISSIONS_REQUEST_ACCESS_WRITE_STORAGE:
@@ -287,9 +238,14 @@ public class BackupPreferences extends PreferenceFragment implements SharedPrefe
                         autoBackup.setChecked(false);
                     }
 
-                    Toast.makeText(getActivity().getApplicationContext(), getResources().getString(R.string.permission_not_granted), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), getResources().getString(R.string.permission_not_granted), Toast.LENGTH_SHORT).show();
                 }
             break;
         }
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        menu.clear();
     }
 }
