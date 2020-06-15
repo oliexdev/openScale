@@ -44,7 +44,8 @@
                         android:layout_width="20dp"
                         android:layout_height="20dp"
                         android:layout_gravity="center"
-                        android:src="@drawable/ic_target" />
+                        android:src="@drawable/ic_target"
+                        android:tint="?attr/colorControlNormal" />
 
                     <TextView
                         android:id="@+id/txtLabelGoalWeight"
@@ -87,7 +88,8 @@
                         android:layout_width="20dp"
                         android:layout_height="20dp"
                         android:layout_gravity="center"
-                        android:src="@drawable/ic_difference" />
+                        android:src="@drawable/ic_difference"
+                        android:tint="?attr/colorControlNormal" />
 
                     <TextView
                         android:id="@+id/txtLabelGoalDiff"
@@ -130,7 +132,8 @@
                         android:layout_width="20dp"
                         android:layout_height="20dp"
                         android:layout_gravity="center"
-                        android:src="@drawable/ic_daysleft" />
+                        android:src="@drawable/ic_daysleft"
+                        android:tint="?attr/colorControlNormal" />
 
                     <TextView
                         android:id="@+id/txtLabelDayLeft"

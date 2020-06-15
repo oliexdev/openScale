@@ -23,10 +23,16 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.widget.DatePicker;
 
+import androidx.test.espresso.ViewInteraction;
+import androidx.test.espresso.contrib.PickerActions;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.filters.LargeTest;
+import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.rule.ActivityTestRule;
+
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleUser;
-import com.health.openscale.gui.activities.BaseAppCompatActivity;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -39,13 +45,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Calendar;
-
-import androidx.test.espresso.ViewInteraction;
-import androidx.test.espresso.contrib.PickerActions;
-import androidx.test.ext.junit.runners.AndroidJUnit4;
-import androidx.test.filters.LargeTest;
-import androidx.test.platform.app.InstrumentationRegistry;
-import androidx.test.rule.ActivityTestRule;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
@@ -75,7 +74,7 @@ public class AddUserTest {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         prefs.edit()
                 .putBoolean("firstStart", true)
-                .putString(BaseAppCompatActivity.PREFERENCE_LANGUAGE, "en")
+                .putString(MainActivity.PREFERENCE_LANGUAGE, "en")
                 .commit();
     }
 

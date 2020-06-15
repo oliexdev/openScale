@@ -48,8 +48,8 @@ import androidx.preference.PreferenceViewHolder;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
-import com.health.openscale.gui.views.MeasurementView;
-import com.health.openscale.gui.views.WeightMeasurementView;
+import com.health.openscale.gui.measurement.MeasurementView;
+import com.health.openscale.gui.measurement.WeightMeasurementView;
 
 import java.util.ArrayList;
 import java.util.List;

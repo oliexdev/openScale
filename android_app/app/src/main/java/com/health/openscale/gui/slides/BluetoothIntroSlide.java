@@ -29,7 +29,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.health.openscale.R;
-import com.health.openscale.gui.activities.BluetoothSettingsFragment;
+import com.health.openscale.gui.preferences.BluetoothSettingsFragment;
 
 public class BluetoothIntroSlide extends Fragment {
     private static final String ARG_LAYOUT_RES_ID = "layoutResId";

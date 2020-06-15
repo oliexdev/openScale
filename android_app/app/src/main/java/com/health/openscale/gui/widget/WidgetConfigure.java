@@ -25,16 +25,17 @@ import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.TableRow;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleUser;
-import com.health.openscale.gui.activities.BaseAppCompatActivity;
-import com.health.openscale.gui.views.MeasurementView;
+import com.health.openscale.gui.measurement.MeasurementView;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class WidgetConfigure extends BaseAppCompatActivity {
+public class WidgetConfigure extends AppCompatActivity {
     private int appWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
 
     @Override

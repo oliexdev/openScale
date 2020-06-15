@@ -38,7 +38,6 @@ import androidx.preference.PreferenceViewHolder;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleUser;
-import com.health.openscale.gui.activities.UserSettingsFragment;
 
 public class UsersPreferences extends PreferenceFragmentCompat {
     private static final String PREFERENCE_KEY_ADD_USER = "addUser";

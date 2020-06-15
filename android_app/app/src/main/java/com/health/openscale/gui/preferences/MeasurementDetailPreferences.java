@@ -24,7 +24,7 @@ import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceScreen;
 
 import com.health.openscale.R;
-import com.health.openscale.gui.views.MeasurementView;
+import com.health.openscale.gui.measurement.MeasurementView;
 
 public class MeasurementDetailPreferences extends PreferenceFragmentCompat {
 

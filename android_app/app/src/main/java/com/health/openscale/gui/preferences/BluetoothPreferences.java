@@ -32,7 +32,6 @@ import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
 import com.health.openscale.R;
-import com.health.openscale.gui.activities.BluetoothSettingsFragment;
 
 
 public class BluetoothPreferences extends PreferenceFragmentCompat {

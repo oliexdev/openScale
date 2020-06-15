@@ -20,15 +20,18 @@ import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
 import android.text.Html;
+import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -38,6 +41,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.FileProvider;
 import androidx.core.view.GravityCompat;
@@ -56,20 +60,22 @@ import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.bluetooth.BluetoothCommunication;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
-import com.health.openscale.gui.activities.AppIntroActivity;
-import com.health.openscale.gui.activities.BaseAppCompatActivity;
-import com.health.openscale.gui.activities.BluetoothSettingsFragment;
-import com.health.openscale.gui.activities.MeasurementEntryFragment;
-import com.health.openscale.gui.activities.UserSettingsFragment;
+import com.health.openscale.gui.measurement.MeasurementEntryFragment;
+import com.health.openscale.gui.preferences.BluetoothSettingsFragment;
+import com.health.openscale.gui.preferences.UserSettingsFragment;
+import com.health.openscale.gui.slides.AppIntroActivity;
 
 import java.io.File;
 import java.util.List;
+import java.util.Locale;
 
 import cat.ereza.customactivityoncrash.config.CaocConfig;
 import timber.log.Timber;
 
-public class MainActivity extends BaseAppCompatActivity
+public class MainActivity extends AppCompatActivity
         implements SharedPreferences.OnSharedPreferenceChangeListener{
+    public static final String PREFERENCE_LANGUAGE = "language";
+    private static Locale systemDefaultLocale = null;
     private SharedPreferences prefs;
     private static boolean firstAppStart = true;
     private static boolean valueOfCountModified = false;
@@ -88,6 +94,43 @@ public class MainActivity extends BaseAppCompatActivity
     private BottomNavigationView navigationBottomView;
 
     private boolean settingsActivityRunning = false;
+
+    public static Context createBaseContext(Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+
+        String language = prefs.getString(PREFERENCE_LANGUAGE, "");
+        if (language.isEmpty() || language.equals("default")) {
+            if (systemDefaultLocale != null) {
+                Locale.setDefault(systemDefaultLocale);
+                systemDefaultLocale = null;
+            }
+            return context;
+        }
+
+        if (systemDefaultLocale == null) {
+            systemDefaultLocale = Locale.getDefault();
+        }
+
+        Locale locale;
+        String[] localeParts = TextUtils.split(language, "-");
+        if (localeParts.length == 2) {
+            locale = new Locale(localeParts[0], localeParts[1]);
+        }
+        else {
+            locale = new Locale(localeParts[0]);
+        }
+        Locale.setDefault(locale);
+
+        Configuration config = context.getResources().getConfiguration();
+        config.setLocale(locale);
+
+        return context.createConfigurationContext(config);
+    }
+
+    @Override
+    protected void attachBaseContext(Context context) {
+        super.attachBaseContext(createBaseContext(context));
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

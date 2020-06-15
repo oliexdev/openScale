@@ -83,14 +83,14 @@
                     app:srcCompat="@drawable/ic_options" />
             </LinearLayout>
 
-            <com.health.openscale.gui.views.ChartActionBarView
+            <com.health.openscale.gui.measurement.ChartActionBarView
                 android:id="@+id/chartActionBar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="?attr/colorPrimary"
                 android:fillViewport="true"/>
 
-            <com.health.openscale.gui.views.ChartMeasurementView
+            <com.health.openscale.gui.measurement.ChartMeasurementView
                 android:id="@+id/chartView"
                 android:layout_width="match_parent"
                 android:layout_height="250dp"

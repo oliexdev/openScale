@@ -32,7 +32,7 @@
 
     <fragment
         android:id="@+id/nav_overview"
-        android:name="com.health.openscale.gui.fragments.OverviewFragment"
+        android:name="com.health.openscale.gui.overview.OverviewFragment"
         android:label="@string/title_overview"
         tools:layout="@layout/fragment_overview">
         <action
@@ -42,7 +42,7 @@
 
     <fragment
         android:id="@+id/nav_graph"
-        android:name="com.health.openscale.gui.fragments.GraphFragment"
+        android:name="com.health.openscale.gui.graph.GraphFragment"
         android:label="@string/title_graph"
         tools:layout="@layout/fragment_graph">
         <action
@@ -52,7 +52,7 @@
 
     <fragment
         android:id="@+id/nav_table"
-        android:name="com.health.openscale.gui.fragments.TableFragment"
+        android:name="com.health.openscale.gui.table.TableFragment"
         android:label="@string/title_table"
         tools:layout="@layout/fragment_table">
         <action
@@ -62,19 +62,19 @@
 
     <fragment
         android:id="@+id/nav_statistic"
-        android:name="com.health.openscale.gui.fragments.StatisticsFragment"
+        android:name="com.health.openscale.gui.statistic.StatisticsFragment"
         android:label="@string/title_statistics"
         tools:layout="@layout/fragment_statistics">
     </fragment>
 
     <fragment
         android:id="@+id/nav_dataentry"
-        android:name="com.health.openscale.gui.activities.MeasurementEntryFragment"
+        android:name="com.health.openscale.gui.measurement.MeasurementEntryFragment"
         android:label="{title}"
         tools:layout="@layout/fragment_dataentry">
         <argument
             android:name="mode"
-            app:argType="com.health.openscale.gui.activities.MeasurementEntryFragment$DATA_ENTRY_MODE"
+            app:argType="com.health.openscale.gui.measurement.MeasurementEntryFragment$DATA_ENTRY_MODE"
             android:defaultValue="VIEW" />
         <argument
             android:name="measurementId"
@@ -88,12 +88,12 @@
 
     <fragment
         android:id="@+id/nav_usersettings"
-        android:name="com.health.openscale.gui.activities.UserSettingsFragment"
+        android:name="com.health.openscale.gui.preferences.UserSettingsFragment"
         android:label="{title}"
         tools:layout="@layout/fragment_usersettings">
         <argument
             android:name="mode"
-            app:argType="com.health.openscale.gui.activities.UserSettingsFragment$USER_SETTING_MODE"
+            app:argType="com.health.openscale.gui.preferences.UserSettingsFragment$USER_SETTING_MODE"
             android:defaultValue="ADD" />
         <argument
             android:name="userId"
@@ -158,7 +158,7 @@
 
     <fragment
         android:id="@+id/nav_bluetooth_settings"
-        android:name="com.health.openscale.gui.activities.BluetoothSettingsFragment"
+        android:name="com.health.openscale.gui.preferences.BluetoothSettingsFragment"
         android:label="@string/label_bluetooth_title">
     </fragment>
 

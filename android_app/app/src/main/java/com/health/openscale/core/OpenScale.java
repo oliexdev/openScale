@@ -52,10 +52,10 @@ import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
 import com.health.openscale.core.utils.CsvHelper;
 import com.health.openscale.gui.fragments.FragmentUpdateListener;
-import com.health.openscale.gui.views.FatMeasurementView;
-import com.health.openscale.gui.views.LBMMeasurementView;
-import com.health.openscale.gui.views.MeasurementViewSettings;
-import com.health.openscale.gui.views.WaterMeasurementView;
+import com.health.openscale.gui.measurement.FatMeasurementView;
+import com.health.openscale.gui.measurement.LBMMeasurementView;
+import com.health.openscale.gui.measurement.MeasurementViewSettings;
+import com.health.openscale.gui.measurement.WaterMeasurementView;
 import com.health.openscale.gui.widget.WidgetProvider;
 
 import java.io.BufferedReader;

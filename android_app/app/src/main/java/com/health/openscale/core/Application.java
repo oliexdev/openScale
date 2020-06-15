@@ -16,6 +16,11 @@
 
 package com.health.openscale.core;
 
+import android.content.SharedPreferences;
+
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.preference.PreferenceManager;
+
 import com.health.openscale.BuildConfig;
 
 import timber.log.Timber;
@@ -38,6 +43,13 @@ public class Application extends android.app.Application {
         super.onCreate();
 
         Timber.plant(new TimberLogAdapter());
+
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        String prefTheme = sharedPreferences.getString("app_theme", "Light");
+
+        if (prefTheme.equals("Dark")) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        }
 
         // Create OpenScale instance
         OpenScale.createInstance(getApplicationContext());

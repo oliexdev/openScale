@@ -147,7 +147,7 @@ dependencies {
     // Timber
     implementation 'com.jakewharton.timber:timber:4.7.1'
     // Local unit tests
-    testImplementation 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.13'
     // Instrumented unit tests
     androidTestImplementation 'androidx.annotation:annotation:1.1.0'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
