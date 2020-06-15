@@ -9,7 +9,7 @@
         android:persistent="false"
         android:selectable="false"
         android:title="@string/label_maintainer"
-        android:summary="\u2022 olie.xdev &lt;olie.xdev@googlemail.com&gt;\n\u2022 Erik Johansson &lt;erik@ejohansson.se&gt;"/>
+        android:summary="\u2022 olie.xdev &lt;olie.xdev@googlemail.com&gt;"/>
     <Preference
         android:persistent="false"
         android:title="@string/label_website"

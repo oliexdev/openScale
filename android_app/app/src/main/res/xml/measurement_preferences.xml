@@ -4,7 +4,7 @@
         android:key="resetOrder"
         android:summary="@string/label_long_press_drag_reorder"
         android:title="@string/label_set_default_order" />
-    <PreferenceCategory android:title="@string/label_click_measurement_configure" android:key="measurements" />
+    <PreferenceCategory android:title="@string/title_measurements" android:key="measurements" />
     <PreferenceCategory android:title="@string/label_category_measurement_database">
         <Preference
             android:title="@string/label_delete_all"

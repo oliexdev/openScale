@@ -22,10 +22,11 @@
 
     <ImageView
         android:id="@+id/iconView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
         android:layout_marginStart="8dp"
         android:tint="?attr/colorControlNormal"
+        app:layout_constraintBottom_toBottomOf="@+id/reorderView"
         app:layout_constraintStart_toEndOf="@+id/reorderView"
         app:layout_constraintTop_toTopOf="@id/reorderView"
         app:srcCompat="@drawable/ic_fat" />
@@ -64,12 +65,12 @@
 
     <ImageView
         android:id="@+id/settingsView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
         android:layout_gravity="center"
         android:layout_marginEnd="8dp"
         android:tint="?attr/colorControlNormal"
-        app:layout_constraintBottom_toBottomOf="@+id/switchView"
+        app:layout_constraintBottom_toBottomOf="@+id/iconView"
         app:layout_constraintEnd_toStartOf="@+id/switchView"
         app:layout_constraintTop_toTopOf="@+id/switchView"
         app:srcCompat="@drawable/ic_preferences_settings" />
@@ -79,6 +80,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
+        app:layout_constraintBottom_toBottomOf="@+id/iconView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/iconView" />
 </androidx.constraintlayout.widget.ConstraintLayout>

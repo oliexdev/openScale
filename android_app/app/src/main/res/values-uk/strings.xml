@@ -183,7 +183,6 @@
     <string name="permission_read_write_data_label">Обробка openScale даних</string>
     <string name="label_next">Наступний</string>
     <string name="label_long_press_drag_reorder">Натисніть, та утримуючи перемістіть вимір для зміни порядку</string>
-    <string name="label_click_measurement_configure">Натисніть, для налаштування виміру</string>
     <string name="label_set_default_order">Встановити типовий порядок</string>
     <string name="label_export_overwrite">Перезаписати попередній експорт \"%s\"\?</string>
     <string name="label_measurement_in_percent">Виміри у %</string>

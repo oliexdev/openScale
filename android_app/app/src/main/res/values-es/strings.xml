@@ -189,7 +189,6 @@
     <string name="label_development">Desarrollo</string>
     <string name="label_debug_log">Guardar registro de depuración en archivo</string>
     <string name="label_long_press_drag_reorder">Mantenga pulsada y arrastre la medida para reordenarla</string>
-    <string name="label_click_measurement_configure">Pulse en la medida para configurarla</string>
     <string name="label_your_bluetooth_scale">Su báscula Bluetooth</string>
     <string name="label_add_measurement">"Añadir medición "</string>
     <string name="permission_read_write_data_description">"leer/escribir los datos de openScale, incluyendo la información de usuarios y todas las mediciones guardadas "</string>

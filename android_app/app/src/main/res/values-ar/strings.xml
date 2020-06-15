@@ -170,7 +170,6 @@
     <string name="permission_read_write_data_label">قراءة / كتابة بيانات openScale</string>
     <string name="label_next">التالى</string>
     <string name="label_long_press_drag_reorder">اضغط مع الاستمرار على القياس وسحب لإعادة الترتيب</string>
-    <string name="label_click_measurement_configure">انقر قياس للتثبيت</string>
     <string name="label_set_default_order">ضبط الطلب الافتراضي</string>
     <string name="label_export_overwrite">هل تريد استبدال التصدير السابق\"%s\"؟</string>
     <string name="label_measurement_in_percent">القياس ب ٪</string>

@@ -168,7 +168,6 @@
     <string name="permission_read_write_data_label">Uitlezen van openScale-gegevens</string>
     <string name="label_next">Volgende</string>
     <string name="label_long_press_drag_reorder">Houdt een meting ingedrukt en versleep om te herordenen</string>
-    <string name="label_click_measurement_configure">Druk op een meting om deze in te stellen</string>
     <string name="label_set_default_order">Standaard volgorde instellen</string>
     <string name="label_export_overwrite">Vorige export \'%s\' overschrijven\?</string>
     <string name="label_measurement_in_percent">Meting in %</string>

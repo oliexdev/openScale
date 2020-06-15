@@ -199,7 +199,6 @@
     <string name="permission_read_write_data_label">Đọc dữ liệu openScale</string>
     <string name="label_next">Tiếp</string>
     <string name="label_long_press_drag_reorder">Giữ lâu và kéo số đo để sắp xếp lại</string>
-    <string name="label_click_measurement_configure">Ấn vào số đo để cấu hình</string>
     <string name="label_set_default_order">Đặt thứ tự mặc định</string>
     <string name="label_export_overwrite">Ghi đè lên bản xuất \"%s\"\?</string>
     <string name="label_measurement_in_percent">Đo trong %</string>

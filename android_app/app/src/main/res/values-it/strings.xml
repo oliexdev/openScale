@@ -187,7 +187,6 @@
     <string name="label_debug_log">Salva il log di debug in un file</string>
     <string name="label_your_bluetooth_scale">La tua bilancia Bluetooth</string>
     <string name="label_long_press_drag_reorder">Tieni premuto e trascina le misurazioni per riordinarle</string>
-    <string name="label_click_measurement_configure">Premi misurazioni per configurare</string>
     <string name="label_select_measurement">Seleziona misurazione</string>
     <string name="label_select_user">Seleziona utente</string>
     <string name="label_configure_widget">Configura widget</string>

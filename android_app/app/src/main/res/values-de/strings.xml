@@ -188,7 +188,6 @@
     <string name="label_weekly">wöchentlich</string>
     <string name="label_monthly">monatlich</string>
     <string name="label_long_press_drag_reorder">Zum Neuordnen der Messwerte lange drücken und halten</string>
-    <string name="label_click_measurement_configure">Zum Konfigurieren auf Messwert klicken</string>
     <string name="label_development">Entwicklung</string>
     <string name="label_select_measurement">Messwert auswählen</string>
     <string name="label_select_user">Benutzer auswählen</string>
