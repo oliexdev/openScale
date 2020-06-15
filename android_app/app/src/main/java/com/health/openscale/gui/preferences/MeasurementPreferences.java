@@ -21,12 +21,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
-import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.util.TypedValue;
 import android.view.DragEvent;
 import android.view.GestureDetector;
 import android.view.Menu;
@@ -34,7 +32,9 @@ import android.view.MenuInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.CompoundButton;
+import android.widget.ImageView;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.navigation.NavDirections;
@@ -95,17 +95,6 @@ public class MeasurementPreferences extends PreferenceFragmentCompat implements 
         for (MeasurementView measurement : measurementViews) {
             Preference preference = new MeasurementOrderPreference(
                     getActivity(), measurementCategory, measurement);
-            preference.setKey(measurement.getSettings().getEnabledKey());
-            preference.setDefaultValue(measurement.getSettings().isEnabledIgnoringDependencies());
-            preference.setPersistent(true);
-            preference.setEnabled(measurement.getSettings().areDependenciesEnabled());
-
-            Drawable icon = measurement.getIcon();
-            icon.setColorFilter(measurement.getForegroundColor(), PorterDuff.Mode.SRC_IN);
-            preference.setIcon(icon);
-
-            preference.setTitle(measurement.getName());
-            preference.setSummary(measurement.getPreferenceSummary());
 
             measurementCategory.addPreference(preference);
         }
@@ -167,7 +156,12 @@ public class MeasurementPreferences extends PreferenceFragmentCompat implements 
         GestureDetector gestureDetector;
 
         View boundView;
-        Switch measurementSwitch;
+        ImageView iconView;
+        TextView textView;
+        TextView summaryView;
+        Switch switchView;
+        ImageView reorderView;
+        ImageView settingsView;
 
         MeasurementOrderPreference(Context context, PreferenceGroup parent, MeasurementView measurementView) {
             super(context);
@@ -177,7 +171,7 @@ public class MeasurementPreferences extends PreferenceFragmentCompat implements 
             gestureDetector = new GestureDetector(getContext(), this);
             gestureDetector.setIsLongpressEnabled(true);
 
-            setWidgetLayoutResource(R.layout.measurement_preferences_widget_layout);
+            setLayoutResource(R.layout.measurement_preferences_widget_layout);
         }
 
         @Override
@@ -189,43 +183,71 @@ public class MeasurementPreferences extends PreferenceFragmentCompat implements 
         public void onBindViewHolder(PreferenceViewHolder holder) {
             super.onBindViewHolder(holder);
             boundView = holder.itemView;
-            boundView.post(new Runnable(){
-                public void run() {
-                    measurementSwitch = holder.itemView.findViewById(R.id.measurement_switch);
-                    if (measurement instanceof WeightMeasurementView) {
-                        measurementSwitch.setVisibility(View.INVISIBLE);
-                    } else {
-                        measurementSwitch.setChecked(measurement.getSettings().isEnabledIgnoringDependencies());
-                        measurementSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                            @Override
-                            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                                persistBoolean(isChecked);
-                                for (int i = 0; i < getParent().getPreferenceCount(); ++i) {
-                                    MeasurementOrderPreference preference =
-                                            (MeasurementOrderPreference) getParent().getPreference(i);
-                                    preference.setEnabled(preference.measurement.getSettings().areDependenciesEnabled());
-                                }
-                            }
-                        });
-                    }
 
-                    if (!measurement.hasExtraPreferences()) {
-                        holder.itemView.findViewById(R.id.measurement_switch_separator).setVisibility(View.GONE);
-                    }
+            textView = (TextView)holder.findViewById(R.id.textView);
+            summaryView = (TextView)holder.findViewById(R.id.summaryView);
+            iconView = (ImageView)holder.findViewById(R.id.iconView);
+            switchView = (Switch)holder.findViewById(R.id.switchView);
+            reorderView = (ImageView)holder.findViewById(R.id.reorderView);
+            settingsView = (ImageView)holder.findViewById(R.id.settingsView);
 
-                    TypedValue outValue = new TypedValue();
-                    getActivity().getTheme().resolveAttribute(R.attr.selectableItemBackground, outValue, true);
-                    boundView.setBackgroundResource(outValue.resourceId);
+            textView.setText(measurement.getName());
+            summaryView.setText(measurement.getPreferenceSummary());
+            Drawable icon = measurement.getIcon();
+            icon.setColorFilter(measurement.getForegroundColor(), PorterDuff.Mode.SRC_IN);
+            iconView.setImageDrawable(icon);
 
-                    holder.itemView.setOnTouchListener(new View.OnTouchListener() {
-                        @Override
-                        public boolean onTouch(View v, MotionEvent event) {
-                            return gestureDetector.onTouchEvent(event);
+            switchView.setChecked(measurement.getSettings().isEnabledIgnoringDependencies());
+
+            setKey(measurement.getSettings().getEnabledKey());
+            setDefaultValue(measurement.getSettings().isEnabledIgnoringDependencies());
+            setPersistent(true);
+
+            setEnableView(measurement.getSettings().areDependenciesEnabled() && switchView.isChecked());
+
+            if (measurement instanceof WeightMeasurementView) {
+                switchView.setVisibility(View.INVISIBLE);
+            } else {
+                switchView.setVisibility(View.VISIBLE);
+            }
+
+            switchView.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    if (buttonView.isPressed()) {
+                        persistBoolean(isChecked);
+                        setEnableView(isChecked);
+
+                        for (int i = 0; i < getParent().getPreferenceCount(); ++i) {
+                            MeasurementOrderPreference preference = (MeasurementOrderPreference) getParent().getPreference(i);
+                            preference.setEnabled(preference.measurement.getSettings().areDependenciesEnabled());
                         }
-                    });
-                    holder.itemView.setOnDragListener(new onDragListener());
+                    }
                 }
             });
+
+            boundView.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    return gestureDetector.onTouchEvent(event);
+                }
+            });
+
+            boundView.setOnDragListener(new onDragListener());
+        }
+
+        private void setEnableView(boolean status) {
+            if(status) {
+                textView.setEnabled(true);
+                summaryView.setEnabled(true);
+                reorderView.setEnabled(true);
+                settingsView.setEnabled(true);
+            } else {
+                textView.setEnabled(false);
+                summaryView.setEnabled(false);
+                reorderView.setEnabled(false);
+                settingsView.setEnabled(false);
+            }
         }
 
         @Override
@@ -243,8 +265,8 @@ public class MeasurementPreferences extends PreferenceFragmentCompat implements 
             boundView.setPressed(false);
 
             if (!measurement.hasExtraPreferences()) {
-                if (measurementSwitch.getVisibility() == View.VISIBLE) {
-                    measurementSwitch.toggle();
+                if (switchView.getVisibility() == View.VISIBLE) {
+                    switchView.toggle();
                 }
                 return true;
             }
@@ -298,80 +320,35 @@ public class MeasurementPreferences extends PreferenceFragmentCompat implements 
         }
 
         private class onDragListener implements View.OnDragListener {
-            Drawable background = null;
-            // background may be set to null, thus the extra boolean
-            boolean hasBackground = false;
-
-            private MeasurementOrderPreference castLocalState(DragEvent event) {
-                return (MeasurementOrderPreference) event.getLocalState();
-            }
-
-            private boolean isDraggedView(View view, DragEvent event) {
-                return castLocalState(event).boundView == view;
-            }
-
-            private void setTemporaryBackgroundColor(View view, int color) {
-                if (!hasBackground) {
-                    background = view.getBackground();
-                    hasBackground = true;
-                    view.setBackgroundColor(color);
-                }
-            }
-
-            private void restoreBackground(View view) {
-                if (hasBackground) {
-                    view.setBackground(background);
-                    background = null;
-                    hasBackground = false;
-                }
-            }
-
             @Override
             public boolean onDrag(View view, DragEvent event) {
                 switch (event.getAction()) {
-                    case DragEvent.ACTION_DRAG_STARTED:
-                        break;
-                    case DragEvent.ACTION_DRAG_ENTERED:
-                        if (!isDraggedView(view, event)) {
-                            setTemporaryBackgroundColor(view, Color.LTGRAY);
-                        }
-                        break;
-                    case DragEvent.ACTION_DRAG_EXITED:
-                        if (!isDraggedView(view, event)) {
-                            restoreBackground(view);
-                        }
-                        break;
                     case DragEvent.ACTION_DROP:
-                        MeasurementOrderPreference draggedPref = castLocalState(event);
-                        PreferenceGroup group = draggedPref.getParent();
-
-                        ArrayList<MeasurementOrderPreference> preferences = new ArrayList<>();
-                        for (int i = 0; i < group.getPreferenceCount(); ++i) {
-                            MeasurementOrderPreference pref = (MeasurementOrderPreference) group.getPreference(i);
-                            // Add all preferences except the dragged one
-                            if (pref != draggedPref) {
-                                preferences.add(pref);
-                            }
-                            // When we find the view that is the drop target use add(index, ...).
-                            // This will add the dragged preference before the drop if dragged upwards,
-                            // and after if dragged downwards.
-                            if (pref.boundView == view) {
-                                preferences.add(i, draggedPref);
-                            }
-                        }
+                        MeasurementOrderPreference draggedPref = (MeasurementOrderPreference) event.getLocalState();
 
                         ArrayList<MeasurementView> measurementViews = new ArrayList<>();
-                        // Re-add all preferences in the new order
-                        group.removeAll();
-                        for (MeasurementOrderPreference p : preferences) {
-                            p.setOrder(DEFAULT_ORDER);
-                            group.addPreference(p);
-                            measurementViews.add(p.measurement);
+                        for (int i = 0; i < measurementCategory.getPreferenceCount(); i++) {
+                            MeasurementOrderPreference pref = (MeasurementOrderPreference) measurementCategory.getPreference(i);
+
+                            if (pref != draggedPref) {
+                                measurementViews.add(pref.measurement);
+                            }
+
+                            if (pref.boundView == view) {
+                                measurementViews.add(draggedPref.measurement);
+                            }
                         }
+
+                        measurementCategory.removeAll();
+
+                        for (MeasurementView measurement : measurementViews) {
+                            Preference preference = new MeasurementOrderPreference(
+                                    getActivity(), measurementCategory, measurement);
+
+                            measurementCategory.addPreference(preference);
+                        }
+
                         MeasurementView.saveMeasurementViewsOrder(getContext(), measurementViews);
-                        break;
-                    case DragEvent.ACTION_DRAG_ENDED:
-                        restoreBackground(view);
                         break;
                 }
                 return true;

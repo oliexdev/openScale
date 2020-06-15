@@ -19,6 +19,8 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 
+import androidx.preference.ListPreference;
+import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
 import com.health.openscale.R;
@@ -29,6 +31,24 @@ public class GeneralPreferences extends PreferenceFragmentCompat {
         setPreferencesFromResource(R.xml.general_preferences, rootKey);
 
         setHasOptionsMenu(true);
+
+        final ListPreference prefTheme = findPreference("app_theme");
+        prefTheme.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                getActivity().recreate();
+                return true;
+            }
+        });
+
+        final ListPreference prefLanguage = findPreference("language");
+        prefLanguage.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                getActivity().recreate();
+                return true;
+            }
+        });
     }
 
     @Override

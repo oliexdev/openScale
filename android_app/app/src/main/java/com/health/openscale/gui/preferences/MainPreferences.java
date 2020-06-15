@@ -15,14 +15,19 @@
  */
 package com.health.openscale.gui.preferences;
 
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuInflater;
 
+import androidx.core.content.ContextCompat;
+import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.navigation.NavDirections;
 import androidx.navigation.Navigation;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceGroup;
 
 import com.health.openscale.R;
 
@@ -33,6 +38,12 @@ public class MainPreferences extends PreferenceFragmentCompat {
         setPreferencesFromResource(R.xml.main_preferences, rootKey);
 
         setHasOptionsMenu(true);
+
+        TypedValue typedValue = new TypedValue();
+        getContext().getTheme().resolveAttribute(R.attr.colorControlNormal, typedValue, true);
+        int color = ContextCompat.getColor(getContext(), typedValue.resourceId);
+
+        tintIcons(getPreferenceScreen(), color);
 
         final Preference prefBackup = findPreference("backup");
         prefBackup.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
@@ -118,5 +129,19 @@ public class MainPreferences extends PreferenceFragmentCompat {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         menu.clear();
+    }
+
+    private static void tintIcons(Preference preference, int color) {
+        if (preference instanceof PreferenceGroup) {
+            PreferenceGroup group = ((PreferenceGroup) preference);
+            for (int i = 0; i < group.getPreferenceCount(); i++) {
+                tintIcons(group.getPreference(i), color);
+            }
+        } else {
+            Drawable icon = preference.getIcon();
+            if (icon != null) {
+                DrawableCompat.setTint(icon, color);
+            }
+        }
     }
 }

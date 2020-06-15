@@ -176,12 +176,12 @@ public class MainActivity extends BaseAppCompatActivity
             navigationView.getMenu().findItem(R.id.nav_donation).setVisible(false);
         }
 
-       // if (prefs.getBoolean("firstStart", true)) {
+        if (prefs.getBoolean("firstStart", true)) {
             Intent appIntroIntent = new Intent(this, AppIntroActivity.class);
             startActivityForResult(appIntroIntent, APPINTRO_REQUEST);
 
             prefs.edit().putBoolean("firstStart", false).apply();
-        //}
+        }
 
         if (prefs.getBoolean("resetLaunchCountForVersion2.0", true)) {
             prefs.edit().putInt("launchCount", 0).commit();
