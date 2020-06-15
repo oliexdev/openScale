@@ -37,7 +37,7 @@ public class GeneralPreferences extends PreferenceFragmentCompat {
         prefTheme.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
-                if (prefTheme.getValue().equals("Light")) {
+                if (newValue.equals("Dark")) {
                     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
                 } else {
                     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
