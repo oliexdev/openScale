@@ -170,7 +170,6 @@
     <string name="permission_read_write_data_label">קריאת נתוני openScale</string>
     <string name="label_next">הבא</string>
     <string name="label_long_press_drag_reorder">ניתן לגעת נגיעה ארוכה במדידה ולגרור כדי לשנות את הסדר</string>
-    <string name="label_click_measurement_configure">יש ללחוץ על מדידה כדי להגדיר מחדש</string>
     <string name="label_set_default_order">הגדרת סדר בררת מחדל</string>
     <string name="label_export_overwrite">לשכתב על הייצוא הקודם „%s”\?</string>
     <string name="label_measurement_in_percent">מדידה באחוזים</string>

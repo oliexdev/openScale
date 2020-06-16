@@ -185,7 +185,6 @@
     <string name="permission_read_write_data_label">Llegir/escriure dades de l\'openScale</string>
     <string name="label_next">Endavant</string>
     <string name="label_long_press_drag_reorder">Mantingueu premut i arrossegueu la mesura per a reordenar-la</string>
-    <string name="label_click_measurement_configure">Premeu la mesura per a configurar-la</string>
     <string name="label_set_default_order">Estableix l\'ordre per defecte</string>
     <string name="label_export_overwrite">Voleu sobreescriure l\'exportació anterior \"%s\"\?</string>
     <string name="label_is_on_right_axis">A l\'eix de la dreta</string>

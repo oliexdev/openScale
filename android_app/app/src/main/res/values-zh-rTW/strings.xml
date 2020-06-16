@@ -207,7 +207,6 @@
     <string name="permission_read_write_data_description">讀/寫 openScale 的資料，包括使用者的信息及所有已經儲存的測量資料</string>
     <string name="permission_read_write_data_label">讀/寫 openScale 的資料</string>
     <string name="label_long_press_drag_reorder">可以長按及移動測量的資料以重新排列</string>
-    <string name="label_click_measurement_configure">選擇測量的資料以修改</string>
     <string name="label_is_on_right_axis">在右軸上</string>
     <string name="label_your_bluetooth_scale">您的藍牙體重計</string>
     <string name="label_select_measurement">選擇單位</string>

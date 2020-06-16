@@ -218,7 +218,6 @@
     <string name="label_empty">prázdny</string>
     <string name="label_add_or_fix_translation">Pridať nové alebo upraviť existujúce</string>
     <string name="label_debug_log">Uložiť denník ladenia do súboru</string>
-    <string name="label_click_measurement_configure">Pre nastavenie kliknite na meranie</string>
     <string name="label_configure_widget">Nastaviť miniaplikáciu</string>
     <string name="label_visceral_fat">Viscerálny tuk</string>
     <string name="label_chest">Obvod hrudníka</string>

@@ -19,23 +19,20 @@ import android.content.ComponentName;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.preference.CheckBoxPreference;
-import android.preference.EditTextPreference;
-import android.preference.ListPreference;
-import android.preference.MultiSelectListPreference;
-import android.preference.Preference;
-import android.preference.PreferenceFragment;
-import android.preference.PreferenceGroup;
+import android.view.Menu;
+import android.view.MenuInflater;
+
+import androidx.fragment.app.DialogFragment;
+import androidx.preference.CheckBoxPreference;
+import androidx.preference.MultiSelectListPreference;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceFragmentCompat;
 
 import com.health.openscale.R;
 import com.health.openscale.core.alarm.AlarmHandler;
 import com.health.openscale.core.alarm.ReminderBootReceiver;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
-public class ReminderPreferences extends PreferenceFragment
+public class ReminderPreferences extends PreferenceFragmentCompat
         implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     public static final String PREFERENCE_KEY_REMINDER_NOTIFY_TEXT = "reminderNotifyText";
@@ -46,31 +43,38 @@ public class ReminderPreferences extends PreferenceFragment
     private CheckBoxPreference reminderEnable;
 
     @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
-        super.onCreate(savedInstanceState);
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+        setPreferencesFromResource(R.xml.reminder_preferences, rootKey);
 
-        addPreferencesFromResource(R.xml.reminder_preferences);
+        setHasOptionsMenu(true);
 
         reminderEnable = (CheckBoxPreference) findPreference(PREFERENCE_KEY_REMINDER_ENABLE);
 
+        final MultiSelectListPreference prefDays = findPreference("reminderWeekdays");
+
+        prefDays.setSummaryProvider(new Preference.SummaryProvider<MultiSelectListPreference>() {
+            @Override
+            public CharSequence provideSummary(MultiSelectListPreference preference) {
+                return preference.getValues().toString();
+            }
+        });
+
         updateAlarmPreferences();
-        initSummary(getPreferenceScreen());
     }
 
-    private void initSummary(Preference p)
-    {
-        if (p instanceof PreferenceGroup)
-        {
-            PreferenceGroup pGrp = (PreferenceGroup) p;
-            for (int i = 0; i < pGrp.getPreferenceCount(); i++)
-            {
-                initSummary(pGrp.getPreference(i));
-            }
+    @Override
+    public void onDisplayPreferenceDialog(Preference preference) {
+        DialogFragment dialogFragment = null;
+
+        if (preference instanceof TimePreference) {
+            dialogFragment = TimePreferenceDialog.newInstance(preference.getKey());
         }
-        else
-        {
-            updatePrefSummary(p);
+
+        if (dialogFragment != null) {
+            dialogFragment.setTargetFragment(this, 0);
+            dialogFragment.show(getParentFragmentManager(), "timePreferenceDialog");
+        } else {
+            super.onDisplayPreferenceDialog(preference);
         }
     }
 
@@ -91,7 +95,6 @@ public class ReminderPreferences extends PreferenceFragment
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key)
     {
-        updatePrefSummary(findPreference(key));
         updateAlarmPreferences();
     }
 
@@ -115,43 +118,9 @@ public class ReminderPreferences extends PreferenceFragment
             }
     }
 
-    private void updatePrefSummary(Preference p)
-    {
-        if (p instanceof ListPreference)
-        {
-            ListPreference listPref = (ListPreference) p;
-            p.setSummary(listPref.getEntry());
-        }
-
-        if (p instanceof EditTextPreference)
-        {
-            EditTextPreference editTextPref = (EditTextPreference) p;
-            if (p.getTitle().toString().contains("assword"))
-            {
-                p.setSummary("******");
-            }
-            else
-            {
-                p.setSummary(editTextPref.getText());
-            }
-        }
-
-        if (p instanceof MultiSelectListPreference)
-        {
-            MultiSelectListPreference editMultiListPref = (MultiSelectListPreference) p;
-
-            CharSequence[] entries = editMultiListPref.getEntries();
-            CharSequence[] entryValues = editMultiListPref.getEntryValues();
-            List<String> currentEntries = new ArrayList<>();
-            Set<String> currentEntryValues = editMultiListPref.getValues();
-
-            for (int i = 0; i < entries.length; i++)
-            {
-                if (currentEntryValues.contains(entryValues[i].toString())) currentEntries.add(entries[i].toString());
-            }
-
-            p.setSummary(currentEntries.toString());
-        }
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        menu.clear();
     }
 }
 

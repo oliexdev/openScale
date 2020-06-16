@@ -12,7 +12,7 @@
             android:id="@+id/yearSelect"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="?attr/colorPrimary"
+            android:background="?attr/colorPrimaryDark"
             android:gravity="center"
             android:orientation="horizontal"
             android:padding="5dp">
@@ -20,11 +20,10 @@
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="?attr/colorPrimary"
-                android:gravity="left"
                 android:layout_weight="1"
-                android:orientation="horizontal">
-            </LinearLayout>
+                android:background="?attr/colorPrimaryDark"
+                android:gravity="left"
+                android:orientation="horizontal"></LinearLayout>
 
             <Button
                 android:id="@+id/btnLeftYear"
@@ -61,9 +60,9 @@
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="?attr/colorPrimary"
-                android:gravity="right"
                 android:layout_weight="0.9"
+                android:background="?attr/colorPrimaryDark"
+                android:gravity="right"
                 android:orientation="horizontal">
 
                 <ImageView
@@ -85,13 +84,13 @@
             android:layout_gravity="bottom|end"
             android:orientation="vertical">
 
-            <com.health.openscale.gui.views.ChartActionBarView
+            <com.health.openscale.gui.measurement.ChartActionBarView
                 android:id="@+id/chartActionBar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="?attr/colorPrimary"
                 android:fillViewport="true">
-            </com.health.openscale.gui.views.ChartActionBarView>
+            </com.health.openscale.gui.measurement.ChartActionBarView>
 
             <com.github.mikephil.charting.charts.BarChart
                 android:id="@+id/chart_top"
@@ -99,7 +98,7 @@
                 android:layout_height="0dp"
                 android:layout_weight="0.25" />
 
-            <com.health.openscale.gui.views.ChartMeasurementView
+            <com.health.openscale.gui.measurement.ChartMeasurementView
                 android:id="@+id/chartView"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"

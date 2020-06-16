@@ -191,7 +191,6 @@
     <string name="label_monthly">毎月</string>
     <string name="label_your_bluetooth_scale">お使いのBluetooth体重計</string>
     <string name="label_long_press_drag_reorder">測定を長押し、ドラッグして並べ替え</string>
-    <string name="label_click_measurement_configure">測定をクリックして設定します</string>
     <string name="label_select_measurement">測定を選択</string>
     <string name="label_select_user">ユーザーを選択</string>
     <string name="label_configure_widget">ウィジェットを設定</string>

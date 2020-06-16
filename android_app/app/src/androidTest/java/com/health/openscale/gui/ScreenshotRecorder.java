@@ -22,12 +22,20 @@ import android.graphics.Bitmap;
 import android.preference.PreferenceManager;
 import android.view.Gravity;
 
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.filters.LargeTest;
+import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.rule.ActivityTestRule;
+import androidx.test.rule.GrantPermissionRule;
+import androidx.test.runner.screenshot.BasicScreenCaptureProcessor;
+import androidx.test.runner.screenshot.ScreenCapture;
+import androidx.test.runner.screenshot.Screenshot;
+
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.CsvHelper;
-import com.health.openscale.gui.activities.BaseAppCompatActivity;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -44,14 +52,6 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
-import androidx.test.ext.junit.runners.AndroidJUnit4;
-import androidx.test.filters.LargeTest;
-import androidx.test.platform.app.InstrumentationRegistry;
-import androidx.test.rule.ActivityTestRule;
-import androidx.test.rule.GrantPermissionRule;
-import androidx.test.runner.screenshot.BasicScreenCaptureProcessor;
-import androidx.test.runner.screenshot.ScreenCapture;
-import androidx.test.runner.screenshot.Screenshot;
 import timber.log.Timber;
 
 import static android.os.Environment.DIRECTORY_PICTURES;
@@ -107,23 +107,23 @@ public class ScreenshotRecorder {
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
-        String language = prefs.getString(BaseAppCompatActivity.PREFERENCE_LANGUAGE, "default");
+        String language = prefs.getString(MainActivity.PREFERENCE_LANGUAGE, "default");
 
         prefs.edit()
                 .remove("lastFragmentId")
-                .putString(BaseAppCompatActivity.PREFERENCE_LANGUAGE, "en")
+                .putString(MainActivity.PREFERENCE_LANGUAGE, "en")
                 .commit();
         screenshotRecorder();
 
         prefs.edit()
                 .remove("lastFragmentId")
-                .putString(BaseAppCompatActivity.PREFERENCE_LANGUAGE, "de")
+                .putString(MainActivity.PREFERENCE_LANGUAGE, "de")
                 .commit();
         screenshotRecorder();
 
         // Restore language setting
         prefs.edit()
-                .putString(BaseAppCompatActivity.PREFERENCE_LANGUAGE, language)
+                .putString(MainActivity.PREFERENCE_LANGUAGE, language)
                 .commit();
     }
 
@@ -230,7 +230,7 @@ public class ScreenshotRecorder {
         List<ScaleMeasurement> scaleMeasurementList = getTestMeasurements();
 
         for (ScaleMeasurement measurement : scaleMeasurementList) {
-            openScale.addScaleData(measurement, true);
+            openScale.addScaleMeasurement(measurement, true);
         }
     }
 

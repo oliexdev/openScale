@@ -190,7 +190,6 @@
     <string name="label_debug_log">Enregistrez les données de débogage dans un fichier</string>
     <string name="label_add_measurement">Ajouter une mesure</string>
     <string name="label_long_press_drag_reorder">Effectuez un appui long suivi d\'un déplacement des mesures pour les réorganiser</string>
-    <string name="label_click_measurement_configure">Cliquez sur une mesure pour la configurer</string>
     <string name="label_your_bluetooth_scale">Votre pèse-personne Bluetooth</string>
     <string name="label_select_measurement">Sélectionner une mesure</string>
     <string name="label_select_user">Sélectionner un utilisateur</string>

@@ -193,7 +193,6 @@
     <string name="permission_read_write_data_description">Чтение данных openScale, включая информацию о пользователе и все сохраненные измерения</string>
     <string name="permission_read_write_data_label">Чтение данных openScale</string>
     <string name="label_long_press_drag_reorder">Нажмите, удерживайте и перетащите измерения, чтобы изменить порядок отображения</string>
-    <string name="label_click_measurement_configure">Нажмите, чтобы настроить измерения</string>
     <string name="label_export_overwrite">Сохранить поверх предыдущего \"%s\"\?</string>
     <string name="label_estimate_measurement">Оценочное измерение</string>
     <string name="label_estimation_formula">Формула для оценочных измерений</string>

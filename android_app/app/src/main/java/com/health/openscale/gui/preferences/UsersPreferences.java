@@ -17,41 +17,49 @@
 package com.health.openscale.gui.preferences;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
-import android.preference.Preference;
-import android.preference.PreferenceCategory;
-import android.preference.PreferenceFragment;
 import android.util.TypedValue;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.RadioButton;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.lifecycle.Observer;
+import androidx.navigation.Navigation;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceCategory;
+import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceViewHolder;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleUser;
-import com.health.openscale.gui.activities.UserSettingsActivity;
 
-import static android.app.Activity.RESULT_OK;
-
-public class UsersPreferences extends PreferenceFragment {
+public class UsersPreferences extends PreferenceFragmentCompat {
     private static final String PREFERENCE_KEY_ADD_USER = "addUser";
     private static final String PREFERENCE_KEY_USERS = "users";
 
     private PreferenceCategory users;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+        setPreferencesFromResource(R.xml.users_preferences, rootKey);
 
-        addPreferencesFromResource(R.xml.users_preferences);
+        setHasOptionsMenu(true);
 
         Preference addUser = findPreference(PREFERENCE_KEY_ADD_USER);
         addUser.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                Intent intent = new Intent(preference.getContext(), UserSettingsActivity.class);
-                intent.putExtra(UserSettingsActivity.EXTRA_MODE, UserSettingsActivity.ADD_USER_REQUEST);
-                startActivityForResult(intent, UserSettingsActivity.ADD_USER_REQUEST);
+                UsersPreferencesDirections.ActionNavUserPreferencesToNavUsersettings action = UsersPreferencesDirections.actionNavUserPreferencesToNavUsersettings();
+                action.setMode(UserSettingsFragment.USER_SETTING_MODE.ADD);
+                action.setTitle(getString(R.string.label_add_user));
+
+                Navigation.findNavController(getActivity(), R.id.nav_host_fragment).navigate(action);
                 return true;
             }
         });
@@ -60,21 +68,28 @@ public class UsersPreferences extends PreferenceFragment {
         updateUserPreferences();
     }
 
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+
+       View view = super.onCreateView(inflater, container, savedInstanceState);
+
+        Navigation.findNavController(getActivity(), R.id.nav_host_fragment).getCurrentBackStackEntry().getSavedStateHandle().getLiveData("update", false).observe(getViewLifecycleOwner(), new Observer<Boolean>() {
+            @Override
+            public void onChanged(Boolean aBoolean) {
+                if (aBoolean) {
+                    updateUserPreferences();
+                }
+            }
+        });
+
+        return view;
+    }
+
     private void updateUserPreferences() {
         users.removeAll();
         for (ScaleUser scaleUser : OpenScale.getInstance().getScaleUserList()) {
             users.addPreference(new UserPreference(getActivity(), users, scaleUser));
-        }
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode != RESULT_OK) {
-            return;
-        }
-        if (requestCode == UserSettingsActivity.ADD_USER_REQUEST
-            || requestCode == UserSettingsActivity.EDIT_USER_REQUEST) {
-            updateUserPreferences();
         }
     }
 
@@ -94,24 +109,25 @@ public class UsersPreferences extends PreferenceFragment {
         }
 
         @Override
-        protected void onBindView(View view) {
-            super.onBindView(view);
+        public void onBindViewHolder(PreferenceViewHolder holder) {
+            super.onBindViewHolder(holder);
 
-            view.setOnClickListener(new View.OnClickListener() {
+            holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent intent = new Intent(getActivity(), UserSettingsActivity.class);
-                    intent.putExtra(UserSettingsActivity.EXTRA_MODE, UserSettingsActivity.EDIT_USER_REQUEST);
-                    intent.putExtra(UserSettingsActivity.EXTRA_ID, scaleUser.getId());
-                    startActivityForResult(intent, UserSettingsActivity.EDIT_USER_REQUEST);
+                    UsersPreferencesDirections.ActionNavUserPreferencesToNavUsersettings action = UsersPreferencesDirections.actionNavUserPreferencesToNavUsersettings();
+                    action.setMode(UserSettingsFragment.USER_SETTING_MODE.EDIT);
+                    action.setTitle(scaleUser.getUserName());
+                    action.setUserId(scaleUser.getId());
+                    Navigation.findNavController(getActivity(), R.id.nav_host_fragment).navigate(action);
                 }
             });
 
             TypedValue outValue = new TypedValue();
             getActivity().getTheme().resolveAttribute(R.attr.selectableItemBackground, outValue, true);
-            view.setBackgroundResource(outValue.resourceId);
+            holder.itemView.setBackgroundResource(outValue.resourceId);
 
-            radioButton = view.findViewById(R.id.user_radio_button);
+            radioButton = holder.itemView.findViewById(R.id.user_radio_button);
             radioButton.setChecked(scaleUser.getId() == OpenScale.getInstance().getSelectedScaleUserId());
 
             radioButton.setOnClickListener(new View.OnClickListener() {
@@ -131,5 +147,10 @@ public class UsersPreferences extends PreferenceFragment {
         public void setChecked(boolean checked) {
             radioButton.setChecked(checked);
         }
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        menu.clear();
     }
 }

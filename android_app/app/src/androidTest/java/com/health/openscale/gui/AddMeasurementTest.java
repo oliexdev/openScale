@@ -22,31 +22,36 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.TimePicker;
 
+import androidx.test.espresso.contrib.PickerActions;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.filters.LargeTest;
+import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.rule.ActivityTestRule;
+
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
-import com.health.openscale.gui.activities.BaseAppCompatActivity;
-import com.health.openscale.gui.views.BicepsMeasurementView;
-import com.health.openscale.gui.views.BoneMeasurementView;
-import com.health.openscale.gui.views.Caliper1MeasurementView;
-import com.health.openscale.gui.views.Caliper2MeasurementView;
-import com.health.openscale.gui.views.Caliper3MeasurementView;
-import com.health.openscale.gui.views.ChestMeasurementView;
-import com.health.openscale.gui.views.CommentMeasurementView;
-import com.health.openscale.gui.views.DateMeasurementView;
-import com.health.openscale.gui.views.FatMeasurementView;
-import com.health.openscale.gui.views.HipMeasurementView;
-import com.health.openscale.gui.views.LBMMeasurementView;
-import com.health.openscale.gui.views.MuscleMeasurementView;
-import com.health.openscale.gui.views.NeckMeasurementView;
-import com.health.openscale.gui.views.ThighMeasurementView;
-import com.health.openscale.gui.views.TimeMeasurementView;
-import com.health.openscale.gui.views.VisceralFatMeasurementView;
-import com.health.openscale.gui.views.WaistMeasurementView;
-import com.health.openscale.gui.views.WaterMeasurementView;
-import com.health.openscale.gui.views.WeightMeasurementView;
+import com.health.openscale.gui.measurement.BicepsMeasurementView;
+import com.health.openscale.gui.measurement.BoneMeasurementView;
+import com.health.openscale.gui.measurement.Caliper1MeasurementView;
+import com.health.openscale.gui.measurement.Caliper2MeasurementView;
+import com.health.openscale.gui.measurement.Caliper3MeasurementView;
+import com.health.openscale.gui.measurement.ChestMeasurementView;
+import com.health.openscale.gui.measurement.CommentMeasurementView;
+import com.health.openscale.gui.measurement.DateMeasurementView;
+import com.health.openscale.gui.measurement.FatMeasurementView;
+import com.health.openscale.gui.measurement.HipMeasurementView;
+import com.health.openscale.gui.measurement.LBMMeasurementView;
+import com.health.openscale.gui.measurement.MuscleMeasurementView;
+import com.health.openscale.gui.measurement.NeckMeasurementView;
+import com.health.openscale.gui.measurement.ThighMeasurementView;
+import com.health.openscale.gui.measurement.TimeMeasurementView;
+import com.health.openscale.gui.measurement.VisceralFatMeasurementView;
+import com.health.openscale.gui.measurement.WaistMeasurementView;
+import com.health.openscale.gui.measurement.WaterMeasurementView;
+import com.health.openscale.gui.measurement.WeightMeasurementView;
 
 import org.hamcrest.Matchers;
 import org.junit.AfterClass;
@@ -57,12 +62,6 @@ import org.junit.runner.RunWith;
 
 import java.util.Calendar;
 import java.util.List;
-
-import androidx.test.espresso.contrib.PickerActions;
-import androidx.test.ext.junit.runners.AndroidJUnit4;
-import androidx.test.filters.LargeTest;
-import androidx.test.platform.app.InstrumentationRegistry;
-import androidx.test.rule.ActivityTestRule;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
@@ -97,7 +96,7 @@ public class AddMeasurementTest {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         prefs.edit()
                 .putBoolean("firstStart", false)
-                .putString(BaseAppCompatActivity.PREFERENCE_LANGUAGE, "en")
+                .putString(MainActivity.PREFERENCE_LANGUAGE, "en")
                 .putBoolean(VisceralFatMeasurementView.KEY + "Enable", true)
                 .putBoolean(LBMMeasurementView.KEY + "Enable", true)
                 .putBoolean(BoneMeasurementView.KEY + "Enable", true)

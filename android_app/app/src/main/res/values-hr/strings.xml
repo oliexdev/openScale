@@ -167,7 +167,6 @@
     <string name="permission_bluetooth_info_title">Informacije</string>
     <string name="label_next">Dalje</string>
     <string name="label_long_press_drag_reorder">Pritisni i povuci mjerenje za promjenu redoslijeda</string>
-    <string name="label_click_measurement_configure">Odaberi mjerenje za postavljanje</string>
     <string name="label_set_default_order">Postavi standardni redoslijed</string>
     <string name="label_export_overwrite">Prepisati prethodni izvoz „%s”\?</string>
     <string name="label_measurement_in_percent">Mjerenje u %</string>

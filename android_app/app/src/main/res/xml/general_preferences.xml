@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <ListPreference
         android:defaultValue="default"
         android:entries="@array/language_entries"
         android:entryValues="@array/language_values"
         android:key="language"
+        app:useSimpleSummaryProvider="true"
         android:title="@string/label_language" />
     <Preference android:title="@string/label_contribute_translation"
         android:summary="@string/label_add_or_fix_translation">
@@ -16,6 +18,7 @@
         android:entries="@array/theme_entries"
         android:entryValues="@array/theme_values"
         android:key="app_theme"
+        app:useSimpleSummaryProvider="true"
         android:title="@string/label_theme" />
     <CheckBoxPreference
         android:defaultValue="true"

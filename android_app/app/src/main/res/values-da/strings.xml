@@ -190,7 +190,6 @@
     <string name="label_debug_log">Gem fejlfindingslog</string>
     <string name="label_your_bluetooth_scale">Din Bluetooth personvægt</string>
     <string name="label_long_press_drag_reorder">Tryk, og træk til den ønskede position</string>
-    <string name="label_click_measurement_configure">Klik på målinger for at konfigurere</string>
     <string name="label_select_measurement">Vælg målenhed</string>
     <string name="label_select_user">Vælg bruger</string>
     <string name="label_configure_widget">Konfigurér widget</string>

@@ -33,7 +33,6 @@ import androidx.fragment.app.Fragment;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleUser;
-import com.health.openscale.gui.activities.UserSettingsActivity;
 
 import java.util.List;
 
@@ -83,8 +82,8 @@ public class UserIntroSlide extends Fragment{
 
         @Override
         public void onClick(View view) {
-            Intent intent = new Intent(getContext(), UserSettingsActivity.class);
-            intent.putExtra(UserSettingsActivity.EXTRA_MODE, UserSettingsActivity.ADD_USER_REQUEST);
+            Intent intent = new Intent(getContext(), SlideToNavigationAdapter.class);
+            intent.putExtra(SlideToNavigationAdapter.EXTRA_MODE, SlideToNavigationAdapter.EXTRA_USER_SETTING_MODE);
             startActivityForResult(intent, 100);
         }
     }
@@ -95,6 +94,7 @@ public class UserIntroSlide extends Fragment{
 
         updateTableUsers();
     }
+
 
     private void updateTableUsers() {
         tblUsers.removeAllViews();

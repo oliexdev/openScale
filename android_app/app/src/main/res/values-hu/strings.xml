@@ -153,7 +153,6 @@
     <string name="permission_not_granted">Hozzáférés nincs megadva</string>
     <string name="permission_bluetooth_info_title">Infó</string>
     <string name="label_next">Következő</string>
-    <string name="label_click_measurement_configure">Kattintson a mérésre a beállításhoz</string>
     <string name="label_set_default_order">Alap sorrend beállítása</string>
     <string name="label_export_overwrite">Felülírja az előző exportot \"%s\"\?</string>
     <string name="label_estimation_formula">Becslő formula</string>

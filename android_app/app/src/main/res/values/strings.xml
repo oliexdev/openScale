@@ -184,7 +184,6 @@
     <string name="permission_read_write_data_label">Read/Write openScale Data</string>
     <string name="label_next">Next</string>
     <string name="label_long_press_drag_reorder">Long press and drag measurement to reorder</string>
-    <string name="label_click_measurement_configure">Click measurement to configure</string>
     <string name="label_set_default_order">Set default order</string>
     <string name="label_export_overwrite">Overwrite previous export \"%s\"?</string>
     <string name="label_is_on_right_axis">Is on right axis</string>

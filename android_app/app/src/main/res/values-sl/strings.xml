@@ -193,7 +193,6 @@
     <string name="permission_bluetooth_info_title">Informacije</string>
     <string name="label_next">Naprej</string>
     <string name="label_long_press_drag_reorder">Dolgo držite in potegnite meritve za prerazporejanja</string>
-    <string name="label_click_measurement_configure">Kliknite meritve za rekonfiguracijo</string>
     <string name="label_set_default_order">Nastavi privzet vrstni red</string>
     <string name="label_export_overwrite">Zamenjaj prejšnji izvoz \"%s\"?</string>
     <string name="label_measurement_in_percent">Meritev v %</string>

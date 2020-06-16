@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TextView
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
     style="?attr/spinnerDropDownItemStyle"
-    android:singleLine="true"
-    android:background="?attr/colorPrimary"
-    android:textColor="@android:color/white"
-    android:gravity="center"
+    android:layout_width="match_parent"
     android:layout_height="?attr/dropdownListPreferredItemHeight"
+    android:background="?attr/colorPrimaryDark"
     android:ellipsize="marquee"
-    />
+    android:gravity="center"
+    android:singleLine="true"
+    android:textColor="@android:color/white" />

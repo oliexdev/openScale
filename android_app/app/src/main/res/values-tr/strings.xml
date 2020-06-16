@@ -168,7 +168,6 @@
     <string name="permission_read_write_data_description">kullanıcı bilgileri ve kaydedilen tüm ölçümler dahil olmak üzere openScale verilerini oku/yaz</string>
     <string name="permission_read_write_data_label">openScale Verilerini Oku/Yaz</string>
     <string name="label_next">Sonraki</string>
-    <string name="label_click_measurement_configure">Yapılandırmak için ölçümü tıklayın</string>
     <string name="label_estimate_measurement">Tahmini ölçüm</string>
     <string name="language_default">Sistem öntanımlı değeri</string>
     <string name="label_language">Dil</string>

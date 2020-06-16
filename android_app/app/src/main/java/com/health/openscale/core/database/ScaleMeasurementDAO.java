@@ -18,16 +18,17 @@ package com.health.openscale.core.database;
 
 import android.database.Cursor;
 
-import com.health.openscale.core.datatypes.ScaleMeasurement;
-
-import java.util.Date;
-import java.util.List;
-
+import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.Update;
+
+import com.health.openscale.core.datatypes.ScaleMeasurement;
+
+import java.util.Date;
+import java.util.List;
 
 @Dao
 public interface ScaleMeasurementDAO {
@@ -43,14 +44,23 @@ public interface ScaleMeasurementDAO {
     @Query("SELECT * FROM scaleMeasurements WHERE datetime > (SELECT datetime FROM scaleMeasurements WHERE id = :id) AND userId = :userId AND enabled = 1 LIMIT 0,1")
     ScaleMeasurement getNext(int id, int userId);
 
+    @Query("SELECT count(id) FROM scaleMeasurements WHERE userId = :userId AND enabled = 1")
+    long getCount(int userId);
+
     @Query("SELECT * FROM scaleMeasurements WHERE userId = :userId AND enabled = 1 ORDER BY datetime DESC")
     List<ScaleMeasurement> getAll(int userId);
+
+    @Query("SELECT * FROM scaleMeasurements WHERE userId = :userId AND enabled = 1 ORDER BY datetime DESC")
+    LiveData<List<ScaleMeasurement>> getAllAsLiveData(int userId);
 
     @Query("SELECT * FROM scaleMeasurements WHERE datetime >= :startYear AND datetime < :endYear AND userId = :userId AND enabled = 1 ORDER BY datetime DESC")
     List<ScaleMeasurement> getAllInRange(Date startYear, Date endYear, int userId);
 
     @Query("SELECT * FROM scaleMeasurements WHERE userId = :userId AND enabled = 1 ORDER BY datetime DESC LIMIT 1")
     ScaleMeasurement getLatest(int userId);
+
+    @Query("SELECT * FROM scaleMeasurements WHERE userId = :userId AND enabled = 1 ORDER BY datetime ASC LIMIT 1")
+    ScaleMeasurement getFirst(int userId);
 
     @Insert (onConflict = OnConflictStrategy.IGNORE)
     long insert(ScaleMeasurement measurement);

@@ -33,8 +33,7 @@ import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.gui.MainActivity;
-import com.health.openscale.gui.activities.BaseAppCompatActivity;
-import com.health.openscale.gui.views.MeasurementView;
+import com.health.openscale.gui.measurement.MeasurementView;
 
 import java.text.DateFormat;
 import java.util.List;
@@ -55,7 +54,7 @@ public class WidgetProvider extends AppWidgetProvider {
     private void updateWidget(Context context, AppWidgetManager appWidgetManager,
                               int appWidgetId, Bundle newOptions) {
         // Make sure we use the correct language
-        context = BaseAppCompatActivity.createBaseContext(context);
+        context = MainActivity.createBaseContext(context);
 
         final int minWidth = newOptions.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH);
 
@@ -80,9 +79,9 @@ public class WidgetProvider extends AppWidgetProvider {
         }
 
         OpenScale openScale = OpenScale.getInstance();
-        ScaleMeasurement latest = openScale.getLatestScaleMeasurement(userId);
+        ScaleMeasurement latest = openScale.getLastScaleMeasurement(userId);
         if (latest != null) {
-            ScaleMeasurement previous = openScale.getTupleScaleData(latest.getId())[0];
+            ScaleMeasurement previous = openScale.getTupleOfScaleMeasurement(latest.getId())[0];
             measurementView.loadFrom(latest, previous);
         }
 

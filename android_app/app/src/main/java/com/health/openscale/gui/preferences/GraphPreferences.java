@@ -15,23 +15,23 @@
 */
 package com.health.openscale.gui.preferences;
 
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
-import android.preference.PreferenceFragment;
+import android.view.Menu;
+import android.view.MenuInflater;
+
+import androidx.preference.PreferenceFragmentCompat;
 
 import com.health.openscale.R;
-import com.health.openscale.core.OpenScale;
 
-public class GraphPreferences extends PreferenceFragment implements OnSharedPreferenceChangeListener {
+public class GraphPreferences extends PreferenceFragmentCompat {
 
     private static final String PREFERENCE_KEY_REGRESSION_LINE_ORDER = "regressionLineOrder";
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+        setPreferencesFromResource(R.xml.graph_preferences, rootKey);
 
-        addPreferencesFromResource(R.xml.graph_preferences);
+        setHasOptionsMenu(true);
 
         // TODO replaced it with sliding average
         /*EditTextPreference regressionLineOrder =
@@ -49,19 +49,7 @@ public class GraphPreferences extends PreferenceFragment implements OnSharedPref
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
-    }
-
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        OpenScale.getInstance().updateScaleData();
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        menu.clear();
     }
 }

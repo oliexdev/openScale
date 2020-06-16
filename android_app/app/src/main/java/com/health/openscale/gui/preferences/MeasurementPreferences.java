@@ -17,42 +17,42 @@
 package com.health.openscale.gui.preferences;
 
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
-import android.database.DataSetObserver;
-import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.preference.Preference;
-import android.preference.PreferenceCategory;
-import android.preference.PreferenceFragment;
-import android.preference.PreferenceGroup;
-import android.preference.PreferenceManager;
-import android.preference.PreferenceScreen;
-import android.util.TypedValue;
 import android.view.DragEvent;
 import android.view.GestureDetector;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.CompoundButton;
-import android.widget.ListAdapter;
+import android.widget.ImageView;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.navigation.NavDirections;
+import androidx.navigation.Navigation;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceCategory;
+import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceGroup;
+import androidx.preference.PreferenceManager;
+import androidx.preference.PreferenceViewHolder;
 
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
-import com.health.openscale.gui.views.MeasurementView;
-import com.health.openscale.gui.views.WeightMeasurementView;
+import com.health.openscale.gui.measurement.MeasurementView;
+import com.health.openscale.gui.measurement.WeightMeasurementView;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class MeasurementPreferences extends PreferenceFragment implements OnSharedPreferenceChangeListener {
+public class MeasurementPreferences extends PreferenceFragmentCompat {
     private static final String PREFERENCE_KEY_DELETE_ALL = "deleteAll";
     private static final String PREFERENCE_KEY_RESET_ORDER = "resetOrder";
     private static final String PREFERENCE_KEY_MEASUREMENTS = "measurements";
@@ -60,10 +60,10 @@ public class MeasurementPreferences extends PreferenceFragment implements OnShar
     private PreferenceCategory measurementCategory;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+        setPreferencesFromResource(R.xml.measurement_preferences, rootKey);
 
-        addPreferencesFromResource(R.xml.measurement_preferences);
+        setHasOptionsMenu(true);
 
         Preference deleteAll = findPreference(PREFERENCE_KEY_DELETE_ALL);
         deleteAll.setOnPreferenceClickListener(new onClickListenerDeleteAll());
@@ -93,37 +93,9 @@ public class MeasurementPreferences extends PreferenceFragment implements OnShar
         for (MeasurementView measurement : measurementViews) {
             Preference preference = new MeasurementOrderPreference(
                     getActivity(), measurementCategory, measurement);
-            preference.setKey(measurement.getSettings().getEnabledKey());
-            preference.setDefaultValue(measurement.getSettings().isEnabledIgnoringDependencies());
-            preference.setPersistent(true);
-            preference.setEnabled(measurement.getSettings().areDependenciesEnabled());
-
-            Drawable icon = measurement.getIcon();
-            icon.setColorFilter(measurement.getForegroundColor(), PorterDuff.Mode.SRC_IN);
-            preference.setIcon(icon);
-
-            preference.setTitle(measurement.getName());
-            preference.setSummary(measurement.getPreferenceSummary());
 
             measurementCategory.addPreference(preference);
         }
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
-    }
-
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        OpenScale.getInstance().updateScaleData();
     }
 
     private class onClickListenerDeleteAll implements Preference.OnPreferenceClickListener {
@@ -139,7 +111,7 @@ public class MeasurementPreferences extends PreferenceFragment implements OnShar
                     OpenScale openScale = OpenScale.getInstance();
                     int selectedUserId = openScale.getSelectedScaleUserId();
 
-                    openScale.clearScaleData(selectedUserId);
+                    openScale.clearScaleMeasurements(selectedUserId);
 
                     Toast.makeText(getActivity().getApplicationContext(), getResources().getString(R.string.info_data_all_deleted), Toast.LENGTH_SHORT).show();
                 }
@@ -165,7 +137,12 @@ public class MeasurementPreferences extends PreferenceFragment implements OnShar
         GestureDetector gestureDetector;
 
         View boundView;
-        Switch measurementSwitch;
+        ImageView iconView;
+        TextView textView;
+        TextView summaryView;
+        Switch switchView;
+        ImageView reorderView;
+        ImageView settingsView;
 
         MeasurementOrderPreference(Context context, PreferenceGroup parent, MeasurementView measurementView) {
             super(context);
@@ -175,7 +152,7 @@ public class MeasurementPreferences extends PreferenceFragment implements OnShar
             gestureDetector = new GestureDetector(getContext(), this);
             gestureDetector.setIsLongpressEnabled(true);
 
-            setWidgetLayoutResource(R.layout.measurement_preferences_widget_layout);
+            setLayoutResource(R.layout.preference_measurement_order);
         }
 
         @Override
@@ -184,44 +161,74 @@ public class MeasurementPreferences extends PreferenceFragment implements OnShar
         }
 
         @Override
-        protected void onBindView(View view) {
-            super.onBindView(view);
-            boundView = view;
+        public void onBindViewHolder(PreferenceViewHolder holder) {
+            super.onBindViewHolder(holder);
+            boundView = holder.itemView;
 
-            measurementSwitch = view.findViewById(R.id.measurement_switch);
+            textView = (TextView)holder.findViewById(R.id.textView);
+            summaryView = (TextView)holder.findViewById(R.id.summaryView);
+            iconView = (ImageView)holder.findViewById(R.id.iconView);
+            switchView = (Switch)holder.findViewById(R.id.switchView);
+            reorderView = (ImageView)holder.findViewById(R.id.reorderView);
+            settingsView = (ImageView)holder.findViewById(R.id.settingsView);
+
+            textView.setText(measurement.getName());
+            summaryView.setText(measurement.getPreferenceSummary());
+            Drawable icon = measurement.getIcon();
+            icon.setColorFilter(measurement.getForegroundColor(), PorterDuff.Mode.SRC_IN);
+            iconView.setImageDrawable(icon);
+
+            switchView.setChecked(measurement.getSettings().isEnabledIgnoringDependencies());
+
+            setKey(measurement.getSettings().getEnabledKey());
+            setDefaultValue(measurement.getSettings().isEnabledIgnoringDependencies());
+            setPersistent(true);
+
+            setEnableView(measurement.getSettings().areDependenciesEnabled() && switchView.isChecked());
+
             if (measurement instanceof WeightMeasurementView) {
-                measurementSwitch.setVisibility(View.INVISIBLE);
+                switchView.setVisibility(View.INVISIBLE);
+            } else {
+                switchView.setVisibility(View.VISIBLE);
             }
-            else {
-                measurementSwitch.setChecked(measurement.getSettings().isEnabledIgnoringDependencies());
-                measurementSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                    @Override
-                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+
+            switchView.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    if (buttonView.isPressed()) {
                         persistBoolean(isChecked);
+                        setEnableView(isChecked);
+
                         for (int i = 0; i < getParent().getPreferenceCount(); ++i) {
-                            MeasurementOrderPreference preference =
-                                    (MeasurementOrderPreference) getParent().getPreference(i);
+                            MeasurementOrderPreference preference = (MeasurementOrderPreference) getParent().getPreference(i);
                             preference.setEnabled(preference.measurement.getSettings().areDependenciesEnabled());
                         }
                     }
-                });
-            }
+                }
+            });
 
-            if (!measurement.hasExtraPreferences()) {
-                view.findViewById(R.id.measurement_switch_separator).setVisibility(View.GONE);
-            }
-
-            TypedValue outValue = new TypedValue();
-            getActivity().getTheme().resolveAttribute(R.attr.selectableItemBackground, outValue, true);
-            boundView.setBackgroundResource(outValue.resourceId);
-
-            view.setOnTouchListener(new View.OnTouchListener() {
+            boundView.setOnTouchListener(new View.OnTouchListener() {
                 @Override
                 public boolean onTouch(View v, MotionEvent event) {
                     return gestureDetector.onTouchEvent(event);
                 }
             });
-            view.setOnDragListener(new onDragListener());
+
+            boundView.setOnDragListener(new onDragListener());
+        }
+
+        private void setEnableView(boolean status) {
+            if(status) {
+                textView.setEnabled(true);
+                summaryView.setEnabled(true);
+                reorderView.setEnabled(true);
+                settingsView.setEnabled(true);
+            } else {
+                textView.setEnabled(false);
+                summaryView.setEnabled(false);
+                reorderView.setEnabled(false);
+                settingsView.setEnabled(false);
+            }
         }
 
         @Override
@@ -239,8 +246,8 @@ public class MeasurementPreferences extends PreferenceFragment implements OnShar
             boundView.setPressed(false);
 
             if (!measurement.hasExtraPreferences()) {
-                if (measurementSwitch.getVisibility() == View.VISIBLE) {
-                    measurementSwitch.toggle();
+                if (switchView.getVisibility() == View.VISIBLE) {
+                    switchView.toggle();
                 }
                 return true;
             }
@@ -250,40 +257,11 @@ public class MeasurementPreferences extends PreferenceFragment implements OnShar
                 return true;
             }
 
-            final PreferenceScreen screen = getPreferenceManager().createPreferenceScreen(getActivity());
+            // HACK to pass an object using navigation controller
+            MeasurementDetailPreferences.setMeasurementView(measurement);
 
-            // Register as an observer so that the loop to getItem() below will find the new
-            // preference screen added at the end. The add is done on another thread so we must
-            // wait for it to complete.
-            final ListAdapter adapter = getPreferenceScreen().getRootAdapter();
-            adapter.registerDataSetObserver(new DataSetObserver() {
-                @Override
-                public void onChanged() {
-                    adapter.unregisterDataSetObserver(this);
-
-                    // Simulate a click to have the preference screen open
-                    for (int i = adapter.getCount() - 1; i >= 0; --i) {
-                        if (adapter.getItem(i) == screen) {
-                            getPreferenceScreen().onItemClick(null, null, i, 0);
-                            break;
-                        }
-                    }
-
-                    // Remove the preference when the dialog is dismissed
-                    Dialog dialog = screen.getDialog();
-                    dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                        @Override
-                        public void onDismiss(DialogInterface dialog) {
-                            screen.onDismiss(dialog);
-                            getPreferenceScreen().removePreference(screen);
-                            setSummary(measurement.getPreferenceSummary());
-                        }
-                    });
-                }
-            });
-
-            getPreferenceScreen().addPreference(screen);
-            measurement.prepareExtraPreferencesScreen(screen);
+            NavDirections action = MeasurementPreferencesDirections.actionNavMeasurementPreferencesToNavMeasurementDetailPreferences();
+            Navigation.findNavController(getActivity(), R.id.nav_host_fragment).navigate(action);
 
             return true;
         }
@@ -323,84 +301,44 @@ public class MeasurementPreferences extends PreferenceFragment implements OnShar
         }
 
         private class onDragListener implements View.OnDragListener {
-            Drawable background = null;
-            // background may be set to null, thus the extra boolean
-            boolean hasBackground = false;
-
-            private MeasurementOrderPreference castLocalState(DragEvent event) {
-                return (MeasurementOrderPreference) event.getLocalState();
-            }
-
-            private boolean isDraggedView(View view, DragEvent event) {
-                return castLocalState(event).boundView == view;
-            }
-
-            private void setTemporaryBackgroundColor(View view, int color) {
-                if (!hasBackground) {
-                    background = view.getBackground();
-                    hasBackground = true;
-                    view.setBackgroundColor(color);
-                }
-            }
-
-            private void restoreBackground(View view) {
-                if (hasBackground) {
-                    view.setBackground(background);
-                    background = null;
-                    hasBackground = false;
-                }
-            }
-
             @Override
             public boolean onDrag(View view, DragEvent event) {
                 switch (event.getAction()) {
-                    case DragEvent.ACTION_DRAG_STARTED:
-                        break;
-                    case DragEvent.ACTION_DRAG_ENTERED:
-                        if (!isDraggedView(view, event)) {
-                            setTemporaryBackgroundColor(view, Color.LTGRAY);
-                        }
-                        break;
-                    case DragEvent.ACTION_DRAG_EXITED:
-                        if (!isDraggedView(view, event)) {
-                            restoreBackground(view);
-                        }
-                        break;
                     case DragEvent.ACTION_DROP:
-                        MeasurementOrderPreference draggedPref = castLocalState(event);
-                        PreferenceGroup group = draggedPref.getParent();
-
-                        ArrayList<MeasurementOrderPreference> preferences = new ArrayList<>();
-                        for (int i = 0; i < group.getPreferenceCount(); ++i) {
-                            MeasurementOrderPreference pref = (MeasurementOrderPreference) group.getPreference(i);
-                            // Add all preferences except the dragged one
-                            if (pref != draggedPref) {
-                                preferences.add(pref);
-                            }
-                            // When we find the view that is the drop target use add(index, ...).
-                            // This will add the dragged preference before the drop if dragged upwards,
-                            // and after if dragged downwards.
-                            if (pref.boundView == view) {
-                                preferences.add(i, draggedPref);
-                            }
-                        }
+                        MeasurementOrderPreference draggedPref = (MeasurementOrderPreference) event.getLocalState();
 
                         ArrayList<MeasurementView> measurementViews = new ArrayList<>();
-                        // Re-add all preferences in the new order
-                        group.removeAll();
-                        for (MeasurementOrderPreference p : preferences) {
-                            p.setOrder(DEFAULT_ORDER);
-                            group.addPreference(p);
-                            measurementViews.add(p.measurement);
+                        for (int i = 0; i < measurementCategory.getPreferenceCount(); i++) {
+                            MeasurementOrderPreference pref = (MeasurementOrderPreference) measurementCategory.getPreference(i);
+
+                            if (pref != draggedPref) {
+                                measurementViews.add(pref.measurement);
+                            }
+
+                            if (pref.boundView == view) {
+                                measurementViews.add(draggedPref.measurement);
+                            }
                         }
+
+                        measurementCategory.removeAll();
+
+                        for (MeasurementView measurement : measurementViews) {
+                            Preference preference = new MeasurementOrderPreference(
+                                    getActivity(), measurementCategory, measurement);
+
+                            measurementCategory.addPreference(preference);
+                        }
+
                         MeasurementView.saveMeasurementViewsOrder(getContext(), measurementViews);
-                        break;
-                    case DragEvent.ACTION_DRAG_ENDED:
-                        restoreBackground(view);
                         break;
                 }
                 return true;
             }
         }
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        menu.clear();
     }
 }

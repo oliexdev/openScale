@@ -1,5 +1,4 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical"
@@ -42,10 +41,11 @@
 
                     <ImageView
                         android:id="@+id/imageGoalWeight"
-                        android:layout_width="match_parent"
+                        android:layout_width="20dp"
                         android:layout_height="20dp"
                         android:layout_gravity="center"
-                        android:src="@drawable/ic_target" />
+                        android:src="@drawable/ic_target"
+                        android:tint="?attr/colorControlNormal" />
 
                     <TextView
                         android:id="@+id/txtLabelGoalWeight"
@@ -85,10 +85,11 @@
 
                     <ImageView
                         android:id="@+id/imageGoalDiff"
-                        android:layout_width="match_parent"
+                        android:layout_width="20dp"
                         android:layout_height="20dp"
                         android:layout_gravity="center"
-                        android:src="@drawable/ic_difference" />
+                        android:src="@drawable/ic_difference"
+                        android:tint="?attr/colorControlNormal" />
 
                     <TextView
                         android:id="@+id/txtLabelGoalDiff"
@@ -128,10 +129,11 @@
 
                     <ImageView
                         android:id="@+id/imageDayLeft"
-                        android:layout_width="match_parent"
+                        android:layout_width="20dp"
                         android:layout_height="20dp"
                         android:layout_gravity="center"
-                        android:src="@drawable/ic_daysleft" />
+                        android:src="@drawable/ic_daysleft"
+                        android:tint="?attr/colorControlNormal" />
 
                     <TextView
                         android:id="@+id/txtLabelDayLeft"
