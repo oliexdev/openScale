@@ -8,12 +8,13 @@ android {
         testApplicationId "com.health.openscale.test"
         minSdkVersion 21
         targetSdkVersion 29
-        versionCode 48
-        versionName "2.2.0"
+        versionCode 49
+        versionName "2.3.0"
         archivesBaseName = "openScale-$versionName"
 
         manifestPlaceholders = [
-                appIcon: "@drawable/ic_launcher_openscale"
+                appIcon: "@drawable/ic_launcher_openscale",
+                appIconRound: "@mipmap/ic_launcher_openscale_round"
         ]
 
         javaCompileOptions {
@@ -94,7 +95,8 @@ android {
         }
         light {
             manifestPlaceholders = [
-                    appIcon: "@drawable/ic_launcher_openscale_light"
+                    appIcon: "@drawable/ic_launcher_openscale_light",
+                    appIconRound: "@mipmap/ic_launcher_openscale_light_round"
             ]
             applicationIdSuffix ".light"
             versionNameSuffix "-light"
@@ -104,7 +106,8 @@ android {
         }
         pro {
             manifestPlaceholders = [
-                    appIcon: "@drawable/ic_launcher_openscale_pro"
+                    appIcon: "@drawable/ic_launcher_openscale_pro",
+                    appIconRound: "@mipmap/ic_launcher_openscale_pro_round"
             ]
             applicationIdSuffix ".pro"
             versionNameSuffix "-pro"
