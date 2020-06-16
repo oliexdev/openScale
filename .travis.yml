@@ -22,6 +22,7 @@ branches:
 
 before_install:
   - yes | sdkmanager "platforms;android-29"
+  - yes | sdkmanager "platform-tools"
 
 before_script:
   - sed -i -r
