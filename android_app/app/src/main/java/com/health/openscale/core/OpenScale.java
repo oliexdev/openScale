@@ -251,27 +251,27 @@ public class OpenScale {
         return measurementDAO.getAll(getSelectedScaleUserId());
     }
 
-    public ScaleMeasurement[] getTupleScaleData(int id)
+    public ScaleMeasurement[] getTupleOfScaleMeasurement(int id)
     {
-        ScaleMeasurement[] tupleScaleData = new ScaleMeasurement[3];
+        ScaleMeasurement[] tupleScaleMeasurement = new ScaleMeasurement[3];
 
-        tupleScaleData[0] = null;
-        tupleScaleData[1] = measurementDAO.get(id);
-        tupleScaleData[2] = null;
+        tupleScaleMeasurement[0] = null;
+        tupleScaleMeasurement[1] = measurementDAO.get(id);
+        tupleScaleMeasurement[2] = null;
 
-        if (tupleScaleData[1] != null) {
-            tupleScaleData[0] = measurementDAO.getPrevious(id, tupleScaleData[1].getUserId());
-            tupleScaleData[2] = measurementDAO.getNext(id, tupleScaleData[1].getUserId());
+        if (tupleScaleMeasurement[1] != null) {
+            tupleScaleMeasurement[0] = measurementDAO.getPrevious(id, tupleScaleMeasurement[1].getUserId());
+            tupleScaleMeasurement[2] = measurementDAO.getNext(id, tupleScaleMeasurement[1].getUserId());
         }
 
-        return tupleScaleData;
+        return tupleScaleMeasurement;
     }
 
-    public int addScaleData(final ScaleMeasurement scaleMeasurement) {
-        return addScaleData(scaleMeasurement, false);
+    public int addScaleMeasurement(final ScaleMeasurement scaleMeasurement) {
+        return addScaleMeasurement(scaleMeasurement, false);
     }
 
-    public int addScaleData(final ScaleMeasurement scaleMeasurement, boolean silent) {
+    public int addScaleMeasurement(final ScaleMeasurement scaleMeasurement, boolean silent) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
         if (scaleMeasurement.getUserId() == -1) {
@@ -381,7 +381,7 @@ public class OpenScale {
         return getSelectedScaleUser().getId();
     }
 
-    public void getMeasurementsLiveData(ScaleMeasurement scaleMeasurement) {
+    public void updateScaleMeasurement(ScaleMeasurement scaleMeasurement) {
         Timber.d("Update measurement: %s", scaleMeasurement);
         measurementDAO.update(scaleMeasurement);
         alarmHandler.entryChanged(context, scaleMeasurement);
@@ -390,7 +390,7 @@ public class OpenScale {
         triggerWidgetUpdate();
     }
 
-    public void deleteScaleData(int id) {
+    public void deleteScaleMeasurement(int id) {
         syncDeleteMeasurement(measurementDAO.get(id).getDateTime());
         measurementDAO.delete(id);
     }
@@ -508,7 +508,7 @@ public class OpenScale {
         return false;
     }
 
-    public void clearScaleData(int userId) {
+    public void clearScaleMeasurements(int userId) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         prefs.edit().putInt("uniqueNumber", 0x00).apply();
         syncClearMeasurements();
@@ -534,7 +534,7 @@ public class OpenScale {
         return numOfMonth;
     }
 
-    public List<ScaleMeasurement> getScaleDataOfStartDate(int year, int month, int day) {
+    public List<ScaleMeasurement> getScaleMeasurementOfStartDate(int year, int month, int day) {
         int selectedUserId = getSelectedScaleUserId();
 
         Calendar startCalender = Calendar.getInstance();
@@ -545,7 +545,7 @@ public class OpenScale {
         return measurementDAO.getAllInRange(startCalender.getTime(), endCalender.getTime(), selectedUserId);
     }
 
-    public List<ScaleMeasurement> getScaleDataOfDay(int year, int month, int day) {
+    public List<ScaleMeasurement> getScaleMeasurementOfDay(int year, int month, int day) {
         int selectedUserId = getSelectedScaleUserId();
 
         Calendar startCalender = Calendar.getInstance();
@@ -558,7 +558,7 @@ public class OpenScale {
         return measurementDAO.getAllInRange(startCalender.getTime(), endCalender.getTime(), selectedUserId);
     }
 
-    public List<ScaleMeasurement> getScaleDataOfMonth(int year, int month) {
+    public List<ScaleMeasurement> getScaleMeasurementOfMonth(int year, int month) {
         int selectedUserId = getSelectedScaleUserId();
 
         Calendar startCalender = Calendar.getInstance();
@@ -571,7 +571,7 @@ public class OpenScale {
         return measurementDAO.getAllInRange(startCalender.getTime(), endCalender.getTime(), selectedUserId);
     }
 
-    public List<ScaleMeasurement> getScaleDataOfYear(int year) {
+    public List<ScaleMeasurement> getScaleMeasurementOfYear(int year) {
         int selectedUserId = getSelectedScaleUserId();
 
         Calendar startCalender = Calendar.getInstance();
@@ -621,7 +621,7 @@ public class OpenScale {
         return true;
     }
 
-    public LiveData<List<ScaleMeasurement>> getMeasurementsLiveData() {
+    public LiveData<List<ScaleMeasurement>> getScaleMeasurementsLiveData() {
         int selectedUserId = getSelectedScaleUserId();
 
         return measurementDAO.getAllAsLiveData(selectedUserId);

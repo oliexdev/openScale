@@ -256,7 +256,7 @@ public class MeasurementEntryFragment extends Fragment {
         if (id > 0) {
             // Show selected scale data
             if (scaleMeasurement ==  null) {
-                ScaleMeasurement[] tupleScaleData = openScale.getTupleScaleData(id);
+                ScaleMeasurement[] tupleScaleData = openScale.getTupleOfScaleMeasurement(id);
                 previousMeasurement = tupleScaleData[0];
                 scaleMeasurement = tupleScaleData[1].clone();
                 nextMeasurement = tupleScaleData[2];
@@ -359,10 +359,10 @@ public class MeasurementEntryFragment extends Fragment {
         }
 
         if (scaleMeasurement.getId() > 0) {
-            openScale.getMeasurementsLiveData(scaleMeasurement);
+            openScale.updateScaleMeasurement(scaleMeasurement);
         }
         else {
-            openScale.addScaleData(scaleMeasurement);
+            openScale.addScaleMeasurement(scaleMeasurement);
         }
         isDirty = false;
     }
@@ -395,7 +395,7 @@ public class MeasurementEntryFragment extends Fragment {
     }
 
     private void doDeleteMeasurement() {
-        OpenScale.getInstance().deleteScaleData(scaleMeasurement.getId());
+        OpenScale.getInstance().deleteScaleMeasurement(scaleMeasurement.getId());
         Toast.makeText(context, getResources().getString(R.string.info_data_deleted), Toast.LENGTH_SHORT).show();
 
         final boolean hasNext = moveLeft() || moveRight();

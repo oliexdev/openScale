@@ -81,7 +81,7 @@ public class WidgetProvider extends AppWidgetProvider {
         OpenScale openScale = OpenScale.getInstance();
         ScaleMeasurement latest = openScale.getLastScaleMeasurement(userId);
         if (latest != null) {
-            ScaleMeasurement previous = openScale.getTupleScaleData(latest.getId())[0];
+            ScaleMeasurement previous = openScale.getTupleOfScaleMeasurement(latest.getId())[0];
             measurementView.loadFrom(latest, previous);
         }
 

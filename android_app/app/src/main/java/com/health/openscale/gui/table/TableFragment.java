@@ -88,7 +88,7 @@ public class TableFragment extends Fragment {
             measurement.setUpdateViews(false);
         }
 
-        OpenScale.getInstance().getMeasurementsLiveData().observe(getViewLifecycleOwner(), new Observer<List<ScaleMeasurement>>() {
+        OpenScale.getInstance().getScaleMeasurementsLiveData().observe(getViewLifecycleOwner(), new Observer<List<ScaleMeasurement>>() {
             @Override
             public void onChanged(List<ScaleMeasurement> scaleMeasurements) {
                 updateOnView(scaleMeasurements);

@@ -358,7 +358,7 @@ public class UserSettingsFragment extends Fragment {
                 OpenScale openScale = OpenScale.getInstance();
                 boolean isSelected = openScale.getSelectedScaleUserId() == userId;
 
-                openScale.clearScaleData(userId);
+                openScale.clearScaleMeasurements(userId);
                 openScale.deleteScaleUser(userId);
 
                 if (isSelected) {

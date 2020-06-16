@@ -144,7 +144,7 @@ public class StatisticsFragment extends Fragment {
         mv.setChartView(radarChartMonth);
         radarChartMonth.setMarker(mv);
 
-        OpenScale.getInstance().getMeasurementsLiveData().observe(getViewLifecycleOwner(), new Observer<List<ScaleMeasurement>>() {
+        OpenScale.getInstance().getScaleMeasurementsLiveData().observe(getViewLifecycleOwner(), new Observer<List<ScaleMeasurement>>() {
             @Override
             public void onChanged(List<ScaleMeasurement> scaleMeasurements) {
                 updateOnView(scaleMeasurements);

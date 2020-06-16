@@ -251,7 +251,7 @@ public class OverviewFragment extends Fragment {
 
         chartView.animateY(700);
 
-        OpenScale.getInstance().getMeasurementsLiveData().observe(getViewLifecycleOwner(), new Observer<List<ScaleMeasurement>>() {
+        OpenScale.getInstance().getScaleMeasurementsLiveData().observe(getViewLifecycleOwner(), new Observer<List<ScaleMeasurement>>() {
             @Override
             public void onChanged(List<ScaleMeasurement> scaleMeasurements) {
                 updateOnView(scaleMeasurements);
@@ -281,7 +281,7 @@ public class OverviewFragment extends Fragment {
     }
 
     private void updateMesurementViews(ScaleMeasurement selectedMeasurement) {
-        ScaleMeasurement[] tupleScaleData = OpenScale.getInstance().getTupleScaleData(selectedMeasurement.getId());
+        ScaleMeasurement[] tupleScaleData = OpenScale.getInstance().getTupleOfScaleMeasurement(selectedMeasurement.getId());
         ScaleMeasurement prevScaleMeasurement = tupleScaleData[0];
 
         for (MeasurementView measurement : lastMeasurementViews) {
@@ -397,7 +397,7 @@ public class OverviewFragment extends Fragment {
     }
 
     private void doDeleteMeasurement() {
-        OpenScale.getInstance().deleteScaleData(markedMeasurement.getId());
+        OpenScale.getInstance().deleteScaleMeasurement(markedMeasurement.getId());
         Toast.makeText(overviewView.getContext(), getResources().getString(R.string.info_data_deleted), Toast.LENGTH_SHORT).show();
 
         showEntry.setEnabled(false);

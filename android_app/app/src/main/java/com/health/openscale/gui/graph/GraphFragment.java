@@ -167,7 +167,7 @@ public class GraphFragment extends Fragment {
                 txtYear.setText(Integer.toString(calYears.get(Calendar.YEAR)));
 
                 List<ScaleMeasurement> scaleMeasurementList =
-                        OpenScale.getInstance().getScaleDataOfYear(calYears.get(Calendar.YEAR));
+                        OpenScale.getInstance().getScaleMeasurementOfYear(calYears.get(Calendar.YEAR));
                 if (!scaleMeasurementList.isEmpty()) {
                     calLastSelected.setTime(scaleMeasurementList.get(0).getDateTime());
                 }
@@ -182,7 +182,7 @@ public class GraphFragment extends Fragment {
                 txtYear.setText(Integer.toString(calYears.get(Calendar.YEAR)));
 
                 List<ScaleMeasurement> scaleMeasurementList =
-                        OpenScale.getInstance().getScaleDataOfYear(calYears.get(Calendar.YEAR));
+                        OpenScale.getInstance().getScaleMeasurementOfYear(calYears.get(Calendar.YEAR));
                 if (!scaleMeasurementList.isEmpty()) {
                     calLastSelected.setTime(scaleMeasurementList.get(scaleMeasurementList.size() - 1).getDateTime());
                 }
@@ -280,7 +280,7 @@ public class GraphFragment extends Fragment {
             }
         });
 
-        OpenScale.getInstance().getMeasurementsLiveData().observe(getViewLifecycleOwner(), new Observer<List<ScaleMeasurement>>() {
+        OpenScale.getInstance().getScaleMeasurementsLiveData().observe(getViewLifecycleOwner(), new Observer<List<ScaleMeasurement>>() {
             @Override
             public void onChanged(List<ScaleMeasurement> scaleMeasurements) {
                 generateGraphs();
@@ -452,7 +452,7 @@ public class GraphFragment extends Fragment {
     }
 
     private void doDeleteMeasurement() {
-        OpenScale.getInstance().deleteScaleData(markedMeasurement.getId());
+        OpenScale.getInstance().deleteScaleMeasurement(markedMeasurement.getId());
         Toast.makeText(graphView.getContext(), getResources().getString(R.string.info_data_deleted), Toast.LENGTH_SHORT).show();
 
         showMenu.setVisibility(View.GONE);

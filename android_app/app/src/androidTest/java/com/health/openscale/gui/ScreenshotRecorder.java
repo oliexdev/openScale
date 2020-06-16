@@ -230,7 +230,7 @@ public class ScreenshotRecorder {
         List<ScaleMeasurement> scaleMeasurementList = getTestMeasurements();
 
         for (ScaleMeasurement measurement : scaleMeasurementList) {
-            openScale.addScaleData(measurement, true);
+            openScale.addScaleMeasurement(measurement, true);
         }
     }
 

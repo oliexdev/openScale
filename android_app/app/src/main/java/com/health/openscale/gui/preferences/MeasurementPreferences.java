@@ -111,7 +111,7 @@ public class MeasurementPreferences extends PreferenceFragmentCompat {
                     OpenScale openScale = OpenScale.getInstance();
                     int selectedUserId = openScale.getSelectedScaleUserId();
 
-                    openScale.clearScaleData(selectedUserId);
+                    openScale.clearScaleMeasurements(selectedUserId);
 
                     Toast.makeText(getActivity().getApplicationContext(), getResources().getString(R.string.info_data_all_deleted), Toast.LENGTH_SHORT).show();
                 }

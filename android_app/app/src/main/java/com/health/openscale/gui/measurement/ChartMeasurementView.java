@@ -128,7 +128,7 @@ public class ChartMeasurementView extends LineChart {
                         throw new IllegalArgumentException("view mode not implemented");
                 }
 
-                setMeasurementList(openScale.getScaleDataOfStartDate(lastMeasurementCalender.get(Calendar.YEAR), lastMeasurementCalender.get(Calendar.MONTH), lastMeasurementCalender.get(Calendar.DAY_OF_MONTH)));
+                setMeasurementList(openScale.getScaleMeasurementOfStartDate(lastMeasurementCalender.get(Calendar.YEAR), lastMeasurementCalender.get(Calendar.MONTH), lastMeasurementCalender.get(Calendar.DAY_OF_MONTH)));
             }
         } else {
             setMeasurementList(openScale.getScaleMeasurementList());
@@ -144,7 +144,7 @@ public class ChartMeasurementView extends LineChart {
 
     public void setViewRange(int year, final ViewMode mode) {
         progressBar.setVisibility(VISIBLE);
-        setMeasurementList(openScale.getScaleDataOfYear(year));
+        setMeasurementList(openScale.getScaleMeasurementOfYear(year));
         setViewMode(mode);
 
         refresh();
@@ -152,7 +152,7 @@ public class ChartMeasurementView extends LineChart {
 
     public void setViewRange(int year, int month, final ViewMode mode) {
         progressBar.setVisibility(VISIBLE);
-        setMeasurementList(openScale.getScaleDataOfMonth(year, month));
+        setMeasurementList(openScale.getScaleMeasurementOfMonth(year, month));
         setViewMode(mode);
 
         refresh();
