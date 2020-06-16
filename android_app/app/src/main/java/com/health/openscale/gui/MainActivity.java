@@ -66,7 +66,6 @@ import com.health.openscale.gui.preferences.UserSettingsFragment;
 import com.health.openscale.gui.slides.AppIntroActivity;
 
 import java.io.File;
-import java.util.List;
 import java.util.Locale;
 
 import cat.ereza.customactivityoncrash.config.CaocConfig;
@@ -480,10 +479,8 @@ public class MainActivity extends AppCompatActivity
                     OpenScale openScale = OpenScale.getInstance();
 
                     if (prefs.getBoolean("mergeWithLastMeasurement", true)) {
-                        List<ScaleMeasurement> scaleMeasurementList = openScale.getScaleMeasurementList();
-
-                        if (!scaleMeasurementList.isEmpty()) {
-                            ScaleMeasurement lastMeasurement = scaleMeasurementList.get(0);
+                        if (!openScale.isScaleMeasurementListEmpty()) {
+                            ScaleMeasurement lastMeasurement = openScale.getLastScaleMeasurement();
                             scaleBtData.merge(lastMeasurement);
                         }
                     }

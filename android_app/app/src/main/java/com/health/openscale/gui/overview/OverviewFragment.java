@@ -35,6 +35,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 import androidx.navigation.Navigation;
 
 import com.github.mikephil.charting.data.Entry;
@@ -44,7 +45,6 @@ import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
-import com.health.openscale.gui.fragments.FragmentUpdateListener;
 import com.health.openscale.gui.measurement.ChartActionBarView;
 import com.health.openscale.gui.measurement.ChartMeasurementView;
 import com.health.openscale.gui.measurement.MeasurementEntryFragment;
@@ -54,7 +54,7 @@ import com.health.openscale.gui.utils.ColorUtil;
 import java.util.ArrayList;
 import java.util.List;
 
-public class OverviewFragment extends Fragment implements FragmentUpdateListener {
+public class OverviewFragment extends Fragment {
     private View overviewView;
 
     private TextView txtTitleUser;
@@ -249,20 +249,18 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         editEntry.setEnabled(false);
         deleteEntry.setEnabled(false);
 
-        OpenScale.getInstance().registerFragment(this);
-
         chartView.animateY(700);
+
+        OpenScale.getInstance().getMeasurementsLiveData().observe(getViewLifecycleOwner(), new Observer<List<ScaleMeasurement>>() {
+            @Override
+            public void onChanged(List<ScaleMeasurement> scaleMeasurements) {
+                updateOnView(scaleMeasurements);
+            }
+        });
 
         return overviewView;
     }
 
-    @Override
-    public void onDestroyView() {
-        OpenScale.getInstance().unregisterFragment(this);
-        super.onDestroyView();
-    }
-
-    @Override
     public void updateOnView(List<ScaleMeasurement> scaleMeasurementList) {
         if (scaleMeasurementList.isEmpty()) {
             markedMeasurement = new ScaleMeasurement();
@@ -361,7 +359,7 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
                  ScaleUser scaleUser = scaleUserList.get(position);
 
                  openScale.selectScaleUser(scaleUser.getId());
-                 openScale.updateScaleData();
+                 updateOnView(openScale.getScaleMeasurementList());
              }
         }
 
@@ -409,7 +407,5 @@ public class OverviewFragment extends Fragment implements FragmentUpdateListener
         showEntry.setColorFilter(ColorUtil.COLOR_GRAY);
         editEntry.setColorFilter(ColorUtil.COLOR_GRAY);
         deleteEntry.setColorFilter(ColorUtil.COLOR_GRAY);
-
-        updateOnView(OpenScale.getInstance().getScaleMeasurementList());
     }
 }

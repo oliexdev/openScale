@@ -105,7 +105,7 @@ public class ChartMeasurementView extends LineChart {
         isRollingChart = rollingChart;
 
         if (isRollingChart) {
-            ScaleMeasurement lastMeasurement = openScale.getLatestScaleMeasurement(openScale.getSelectedScaleUserId());
+            ScaleMeasurement lastMeasurement = openScale.getLastScaleMeasurement();
 
             if (lastMeasurement != null) {
                 Calendar lastMeasurementCalender = Calendar.getInstance();

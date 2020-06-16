@@ -32,7 +32,7 @@ import android.text.format.DateFormat;
 import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LiveData;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.sqlite.db.SupportSQLiteDatabase;
@@ -51,7 +51,6 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
 import com.health.openscale.core.utils.CsvHelper;
-import com.health.openscale.gui.fragments.FragmentUpdateListener;
 import com.health.openscale.gui.measurement.FatMeasurementView;
 import com.health.openscale.gui.measurement.LBMMeasurementView;
 import com.health.openscale.gui.measurement.MeasurementViewSettings;
@@ -94,17 +93,13 @@ public class OpenScale {
 
     private Context context;
 
-    private ArrayList<FragmentUpdateListener> fragmentList;
-
     private OpenScale(Context context) {
         this.context = context;
         alarmHandler = new AlarmHandler();
         btDeviceDriver = null;
-        fragmentList = new ArrayList<>();
+        scaleMeasurementList = new ArrayList<>();
 
         reopenDatabase(false);
-
-        updateScaleData();
     }
 
     public static void createInstance(Context context) {
@@ -232,18 +227,28 @@ public class OpenScale {
         selectedScaleUser = null;
     }
 
-    public List<ScaleMeasurement> getScaleMeasurementList() {
-        if (!scaleMeasurementList.isEmpty()) {
-            if (scaleMeasurementList.get(0).getUserId() != getSelectedScaleUserId()) {
-                scaleMeasurementList = measurementDAO.getAll(getSelectedScaleUserId());
-            }
+    public boolean isScaleMeasurementListEmpty() {
+        if (measurementDAO.getCount(getSelectedScaleUserId()) == 0) {
+            return true;
         }
 
-        return scaleMeasurementList;
+        return false;
     }
 
-    public ScaleMeasurement getLatestScaleMeasurement(int userId) {
+    public ScaleMeasurement getLastScaleMeasurement() {
+        return measurementDAO.getLatest(getSelectedScaleUserId());
+    }
+
+    public ScaleMeasurement getLastScaleMeasurement(int userId) {
         return measurementDAO.getLatest(userId);
+    }
+
+    public ScaleMeasurement getFirstScaleMeasurement() {
+        return measurementDAO.getFirst(getSelectedScaleUserId());
+    }
+
+    public List<ScaleMeasurement> getScaleMeasurementList() {
+        return measurementDAO.getAll(getSelectedScaleUserId());
     }
 
     public ScaleMeasurement[] getTupleScaleData(int id)
@@ -325,7 +330,6 @@ public class OpenScale {
 
             syncInsertMeasurement(scaleMeasurement);
             alarmHandler.entryChanged(context, scaleMeasurement);
-            updateScaleData();
             triggerWidgetUpdate();
         } else {
             Timber.d("to be added measurement is thrown away because measurement with the same date and time already exist");
@@ -377,22 +381,18 @@ public class OpenScale {
         return getSelectedScaleUser().getId();
     }
 
-    public void updateScaleData(ScaleMeasurement scaleMeasurement) {
+    public void getMeasurementsLiveData(ScaleMeasurement scaleMeasurement) {
         Timber.d("Update measurement: %s", scaleMeasurement);
         measurementDAO.update(scaleMeasurement);
         alarmHandler.entryChanged(context, scaleMeasurement);
         syncUpdateMeasurement(scaleMeasurement);
 
-        updateScaleData();
         triggerWidgetUpdate();
     }
 
-    public void deleteScaleData(int id)
-    {
+    public void deleteScaleData(int id) {
         syncDeleteMeasurement(measurementDAO.get(id).getDateTime());
         measurementDAO.delete(id);
-
-        updateScaleData();
     }
 
     public String getFilenameFromUriMayThrow(Uri uri) {
@@ -438,7 +438,6 @@ public class OpenScale {
 
             if (!getScaleUserList().isEmpty()) {
                 selectScaleUser(getScaleUserList().get(0).getId());
-                updateScaleData();
             }
         } catch (SQLiteDatabaseCorruptException e) {
             copyFile(Uri.fromFile(tmpExportFile), Uri.fromFile(exportFile));
@@ -491,7 +490,6 @@ public class OpenScale {
             }
 
             measurementDAO.insertAll(csvScaleMeasurementList);
-            updateScaleData();
             runUiToastMsg(context.getString(R.string.info_data_imported) + " " + filename);
         } catch (IOException | ParseException e) {
             runUiToastMsg(context.getString(R.string.error_importing) + ": " + e.getMessage());
@@ -515,8 +513,6 @@ public class OpenScale {
         prefs.edit().putInt("uniqueNumber", 0x00).apply();
         syncClearMeasurements();
         measurementDAO.deleteAll(userId);
-
-        updateScaleData();
     }
 
     public int[] getCountsOfMonth(int year) {
@@ -625,32 +621,10 @@ public class OpenScale {
         return true;
     }
 
-    public void registerFragment(FragmentUpdateListener fragment) {
-        fragmentList.add(fragment);
-
+    public LiveData<List<ScaleMeasurement>> getMeasurementsLiveData() {
         int selectedUserId = getSelectedScaleUserId();
 
-        scaleMeasurementList = measurementDAO.getAll(selectedUserId);
-
-        fragment.updateOnView(scaleMeasurementList);
-    }
-
-    public void unregisterFragment(FragmentUpdateListener fragment) {
-        fragmentList.remove(fragment);
-    }
-
-    public void updateScaleData() {
-        int selectedUserId = getSelectedScaleUserId();
-
-        scaleMeasurementList = measurementDAO.getAll(selectedUserId);
-
-        for (FragmentUpdateListener fragment : fragmentList) {
-            if (fragment != null) {
-                if (((Fragment)fragment).isAdded()) {
-                    fragment.updateOnView(scaleMeasurementList);
-                }
-            }
-        }
+        return measurementDAO.getAllAsLiveData(selectedUserId);
     }
 
     // As getScaleUserList(), but as a Cursor for export via a Content Provider.

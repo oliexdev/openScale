@@ -33,6 +33,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 import androidx.navigation.Navigation;
 
 import com.github.mikephil.charting.charts.BarChart;
@@ -51,7 +52,6 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
-import com.health.openscale.gui.fragments.FragmentUpdateListener;
 import com.health.openscale.gui.measurement.ChartActionBarView;
 import com.health.openscale.gui.measurement.ChartMeasurementView;
 import com.health.openscale.gui.measurement.MeasurementEntryFragment;
@@ -63,7 +63,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
-public class GraphFragment extends Fragment implements FragmentUpdateListener {
+public class GraphFragment extends Fragment {
     private View graphView;
     private ChartMeasurementView chartView;
     private ChartActionBarView chartActionBarView;
@@ -98,10 +98,9 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         openScale = OpenScale.getInstance();
 
         if (savedInstanceState == null) {
-            List<ScaleMeasurement> scaleMeasurementList = openScale.getScaleMeasurementList();
-            if (!scaleMeasurementList.isEmpty()) {
-                calYears.setTime(scaleMeasurementList.get(0).getDateTime());
-                calLastSelected.setTime(scaleMeasurementList.get(0).getDateTime());
+            if (!openScale.isScaleMeasurementListEmpty()) {
+                calYears.setTime(openScale.getLastScaleMeasurement().getDateTime());
+                calLastSelected.setTime(openScale.getLastScaleMeasurement().getDateTime());
             }
         }
         else {
@@ -281,15 +280,14 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
             }
         });
 
-        openScale.registerFragment(this);
+        OpenScale.getInstance().getMeasurementsLiveData().observe(getViewLifecycleOwner(), new Observer<List<ScaleMeasurement>>() {
+            @Override
+            public void onChanged(List<ScaleMeasurement> scaleMeasurements) {
+                generateGraphs();
+            }
+        });
 
         return graphView;
-    }
-
-    @Override
-    public void onDestroyView() {
-        OpenScale.getInstance().unregisterFragment(this);
-        super.onDestroyView();
     }
 
     @Override
@@ -298,12 +296,6 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
 
         outState.putLong(CAL_YEARS_KEY, calYears.getTimeInMillis());
         outState.putLong(CAL_LAST_SELECTED_KEY, calLastSelected.getTimeInMillis());
-    }
-
-    @Override
-    public void updateOnView(List<ScaleMeasurement> scaleMeasurementList)
-    {
-        generateGraphs();
     }
 
     private void generateColumnData()
@@ -342,14 +334,13 @@ public class GraphFragment extends Fragment implements FragmentUpdateListener {
         int firstYear = selectedYear;
         int lastYear = selectedYear;
 
-        List<ScaleMeasurement> scaleMeasurementList = openScale.getScaleMeasurementList();
-        if (!scaleMeasurementList.isEmpty()) {
+        if (!openScale.isScaleMeasurementListEmpty()) {
             Calendar cal = Calendar.getInstance();
 
-            cal.setTime(scaleMeasurementList.get(scaleMeasurementList.size() - 1).getDateTime());
+            cal.setTime(openScale.getFirstScaleMeasurement().getDateTime());
             firstYear = cal.get(Calendar.YEAR);
 
-            cal.setTime(scaleMeasurementList.get(0).getDateTime());
+            cal.setTime(openScale.getLastScaleMeasurement().getDateTime());
             lastYear = cal.get(Calendar.YEAR);
         }
         btnLeftYear.setEnabled(selectedYear > firstYear);

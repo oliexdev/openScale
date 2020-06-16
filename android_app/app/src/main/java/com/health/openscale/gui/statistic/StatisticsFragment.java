@@ -25,6 +25,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 
 import com.github.mikephil.charting.charts.RadarChart;
 import com.github.mikephil.charting.components.Legend;
@@ -41,7 +42,6 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
 import com.health.openscale.core.utils.DateTimeHelpers;
-import com.health.openscale.gui.fragments.FragmentUpdateListener;
 import com.health.openscale.gui.measurement.BMIMeasurementView;
 import com.health.openscale.gui.measurement.BoneMeasurementView;
 import com.health.openscale.gui.measurement.ChartMarkerView;
@@ -59,7 +59,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-public class StatisticsFragment extends Fragment implements FragmentUpdateListener {
+public class StatisticsFragment extends Fragment {
 
     private View statisticsView;
 
@@ -144,18 +144,16 @@ public class StatisticsFragment extends Fragment implements FragmentUpdateListen
         mv.setChartView(radarChartMonth);
         radarChartMonth.setMarker(mv);
 
-        OpenScale.getInstance().registerFragment(this);
+        OpenScale.getInstance().getMeasurementsLiveData().observe(getViewLifecycleOwner(), new Observer<List<ScaleMeasurement>>() {
+            @Override
+            public void onChanged(List<ScaleMeasurement> scaleMeasurements) {
+                updateOnView(scaleMeasurements);
+            }
+        });
 
         return statisticsView;
     }
 
-    @Override
-    public void onDestroyView() {
-        OpenScale.getInstance().unregisterFragment(this);
-        super.onDestroyView();
-    }
-
-    @Override
     public void updateOnView(List<ScaleMeasurement> scaleMeasurementList) {
         currentScaleUser = OpenScale.getInstance().getSelectedScaleUser();
 

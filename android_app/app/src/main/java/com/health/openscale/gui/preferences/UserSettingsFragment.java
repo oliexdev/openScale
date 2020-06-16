@@ -372,7 +372,6 @@ public class UserSettingsFragment extends Fragment {
                     openScale.selectScaleUser(lastUserId);
                 }
 
-                openScale.updateScaleData();
                 Navigation.findNavController(getActivity(), R.id.nav_host_fragment).getPreviousBackStackEntry().getSavedStateHandle().set("update", true);
                 Navigation.findNavController(getActivity(), R.id.nav_host_fragment).navigateUp();
             }
@@ -459,7 +458,6 @@ public class UserSettingsFragment extends Fragment {
                 }
 
                 openScale.selectScaleUser(scaleUser.getId());
-                openScale.updateScaleData();
 
                 return true;
             }

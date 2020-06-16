@@ -28,6 +28,7 @@ import android.widget.TableRow;
 import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -36,7 +37,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
-import com.health.openscale.gui.fragments.FragmentUpdateListener;
 import com.health.openscale.gui.measurement.MeasurementEntryFragment;
 import com.health.openscale.gui.measurement.MeasurementView;
 import com.health.openscale.gui.measurement.UserMeasurementView;
@@ -49,7 +49,7 @@ import java.util.List;
 
 import static android.util.TypedValue.COMPLEX_UNIT_DIP;
 
-public class TableFragment extends Fragment implements FragmentUpdateListener {
+public class TableFragment extends Fragment {
     private View tableView;
     private LinearLayout tableHeaderView;
 
@@ -88,18 +88,16 @@ public class TableFragment extends Fragment implements FragmentUpdateListener {
             measurement.setUpdateViews(false);
         }
 
-        OpenScale.getInstance().registerFragment(this);
+        OpenScale.getInstance().getMeasurementsLiveData().observe(getViewLifecycleOwner(), new Observer<List<ScaleMeasurement>>() {
+            @Override
+            public void onChanged(List<ScaleMeasurement> scaleMeasurements) {
+                updateOnView(scaleMeasurements);
+            }
+        });
 
         return tableView;
     }
 
-    @Override
-    public void onDestroyView() {
-        OpenScale.getInstance().unregisterFragment(this);
-        super.onDestroyView();
-    }
-
-    @Override
     public void updateOnView(List<ScaleMeasurement> scaleMeasurementList)
     {
         tableHeaderView.removeAllViews();

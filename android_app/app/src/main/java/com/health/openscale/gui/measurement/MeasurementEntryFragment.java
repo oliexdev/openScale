@@ -265,14 +265,14 @@ public class MeasurementEntryFragment extends Fragment {
                 btnRight.setEnabled(nextMeasurement != null);
             }
         } else {
-            if (openScale.getScaleMeasurementList().isEmpty()) {
+            if (openScale.isScaleMeasurementListEmpty()) {
                 // Show default values
                 scaleMeasurement = new ScaleMeasurement();
                 scaleMeasurement.setWeight(openScale.getSelectedScaleUser().getInitialWeight());
             }
             else {
                 // Show the last scale data as default
-                scaleMeasurement = openScale.getScaleMeasurementList().get(0).clone();
+                scaleMeasurement = openScale.getLastScaleMeasurement().clone();
                 scaleMeasurement.setId(0);
                 scaleMeasurement.setDateTime(new Date());
                 scaleMeasurement.setComment("");
@@ -359,7 +359,7 @@ public class MeasurementEntryFragment extends Fragment {
         }
 
         if (scaleMeasurement.getId() > 0) {
-            openScale.updateScaleData(scaleMeasurement);
+            openScale.getMeasurementsLiveData(scaleMeasurement);
         }
         else {
             openScale.addScaleData(scaleMeasurement);
