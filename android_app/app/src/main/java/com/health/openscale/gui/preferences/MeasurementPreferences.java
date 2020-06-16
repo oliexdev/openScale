@@ -152,7 +152,7 @@ public class MeasurementPreferences extends PreferenceFragmentCompat {
             gestureDetector = new GestureDetector(getContext(), this);
             gestureDetector.setIsLongpressEnabled(true);
 
-            setLayoutResource(R.layout.measurement_preferences_widget_layout);
+            setLayoutResource(R.layout.preference_measurement_order);
         }
 
         @Override

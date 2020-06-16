@@ -227,22 +227,6 @@ public class MeasurementEntryFragment extends Fragment {
         return super.onOptionsItemSelected(item);
     }
 
-    // TODO
-    /*
-    @Override
-    public void onBackPressed() {
-        if (measurementViewMode == MeasurementView.MeasurementViewMode.EDIT) {
-            setViewMode(MeasurementView.MeasurementViewMode.VIEW);
-            if (isDirty) {
-                scaleMeasurement = null;
-            }
-            updateOnView();
-        }
-        else {
-            super.onBackPressed();
-        }
-    }*/
-
     private void updateOnView(int id) {
         if (scaleMeasurement == null || scaleMeasurement.getId() != id) {
             isDirty = false;

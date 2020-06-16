@@ -17,8 +17,10 @@
 package com.health.openscale.gui.measurement;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.SpannableStringBuilder;
@@ -30,6 +32,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -38,6 +41,7 @@ import androidx.preference.CheckBoxPreference;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceScreen;
+import androidx.preference.PreferenceViewHolder;
 import androidx.preference.SwitchPreference;
 
 import com.health.openscale.R;
@@ -520,22 +524,25 @@ public abstract class FloatMeasurementView extends MeasurementView {
     private class ListPreferenceWithNeutralButton extends ListPreference {
         ListPreferenceWithNeutralButton(Context context) {
             super(context);
+
+            setWidgetLayoutResource(R.layout.preference_info);
         }
 
-        // TODO
-        /*@Override
-        protected void onPrepareDialogBuilder(AlertDialog.Builder builder) {
-            super.onPrepareDialogBuilder(builder);
+        @Override
+        public void onBindViewHolder(PreferenceViewHolder holder) {
+            super.onBindViewHolder(holder);
 
-            builder.setNeutralButton(R.string.label_help, new DialogInterface.OnClickListener() {
+            ImageView helpView = (ImageView)holder.findViewById(R.id.helpView);
+
+            helpView.setOnClickListener(new OnClickListener() {
                 @Override
-                public void onClick(DialogInterface dialog, int which) {
+                public void onClick(View v) {
                     getContext().startActivity(new Intent(
                             Intent.ACTION_VIEW,
                             Uri.parse("https://github.com/oliexdev/openScale/wiki/Body-metric-estimations")));
                 }
             });
-        }*/
+        }
     }
 
     @Override
@@ -573,6 +580,8 @@ public abstract class FloatMeasurementView extends MeasurementView {
             formula.setPersistent(true);
             formula.setDefaultValue(settings.getEstimationFormula());
             prepareEstimationFormulaPreference(formula);
+            formula.setEnabled(estimate.isChecked());
+            formula.setSummary(formula.getEntries()[formula.findIndexOfValue(settings.getEstimationFormula())]);
             formula.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object newValue) {
@@ -586,17 +595,18 @@ public abstract class FloatMeasurementView extends MeasurementView {
                 }
             });
 
-            // TODO
-            /*final ListAdapter adapter = screen.getRootAdapter();
-            adapter.registerDataSetObserver(new DataSetObserver() {
+            estimate.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
-                public void onChanged() {
-                    adapter.unregisterDataSetObserver(this);
-
-                    formula.setDependency(estimate.getKey());
-                    formula.setSummary(formula.getEntry());
+                public boolean onPreferenceChange(Preference preference, Object newValue) {
+                    if ((Boolean)newValue == true) {
+                        formula.setEnabled(true);
+                    } else {
+                        formula.setEnabled(false);
+                    }
+                    return true;
                 }
-            });*/
+            });
+
             screen.addPreference(formula);
         }
     }
