@@ -1,4 +1,4 @@
-&nbsp; ![openScale logo](https://github.com/oliexdev/openScale/blob/master/android_app/app/src/main/res/drawable-mdpi/ic_launcher_openscale.png) &nbsp;openScale [![Build Status](https://travis-ci.org/oliexdev/openScale.svg?branch=master)](
+&nbsp; <img src="https://github.com/oliexdev/openScale/blob/master/fastlane/openScale/en-GB/images/icon.png" alt="openScale logo" height="60"/> &nbsp;openScale [![Build Status](https://travis-ci.org/oliexdev/openScale.svg?branch=master)](
 https://travis-ci.org/oliexdev/openScale)
 [![Translation status](https://hosted.weblate.org/widgets/openscale/-/strings/svg-badge.svg)](https://hosted.weblate.org/engage/openscale/?utm_source=widget)
 =========
@@ -19,7 +19,7 @@ Monitor and track your weight, BMI, body fat, body water, muscle and other body 
 * supports various Bluetooth scales,
 * doesn't require you to create an account,
 * can be configured to only show the metrics you care about, and
-* respects your privacy and lets you decide what to do with your data.
+* respects your privacy and lets you decide what to do with your data.60"
 
 # Supported Bluetooth scales :rocket:
 openScale has built-in support for a number of Bluetooth (BLE or "smart") scales from  many manufacturers, e.g. Beurer, Sanitas, Yunmai, Xiaomi, etc. (see model list below). Together with our users we constantly improve and extend the set of supported scales and in many cases pick up where the original app falls short.
