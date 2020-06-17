@@ -25,6 +25,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -37,6 +38,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -60,12 +62,16 @@ import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.bluetooth.BluetoothCommunication;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
+import com.health.openscale.core.utils.Converters;
 import com.health.openscale.gui.measurement.MeasurementEntryFragment;
 import com.health.openscale.gui.preferences.BluetoothSettingsFragment;
 import com.health.openscale.gui.preferences.UserSettingsFragment;
 import com.health.openscale.gui.slides.AppIntroActivity;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 
 import cat.ereza.customactivityoncrash.config.CaocConfig;
@@ -360,17 +366,30 @@ public class MainActivity extends AppCompatActivity
                     return true;
                 }
 
-                MobileNavigationDirections.ActionNavMobileNavigationToNavDataentry action = MobileNavigationDirections.actionNavMobileNavigationToNavDataentry();
-                action.setMode(MeasurementEntryFragment.DATA_ENTRY_MODE.ADD);
-                action.setTitle(getString(R.string.label_add_measurement));
-                Navigation.findNavController(this, R.id.nav_host_fragment).navigate(action);
+                if (OpenScale.getInstance().getSelectedScaleUser().isAssistedWeighing()) {
+                    showAssistedWeighingDialog(true);
+                } else {
+                    MobileNavigationDirections.ActionNavMobileNavigationToNavDataentry action = MobileNavigationDirections.actionNavMobileNavigationToNavDataentry();
+                    action.setMode(MeasurementEntryFragment.DATA_ENTRY_MODE.ADD);
+                    action.setTitle(getString(R.string.label_add_measurement));
+                    Navigation.findNavController(this, R.id.nav_host_fragment).navigate(action);
+                }
                 return true;
             case R.id.action_bluetooth_status:
                 if (OpenScale.getInstance().disconnectFromBluetoothDevice()) {
                     setBluetoothStatusIcon(R.drawable.ic_bluetooth_disabled);
                 }
                 else {
-                    invokeConnectToBluetoothDevice();
+                    if (OpenScale.getInstance().getSelectedScaleUserId() == -1) {
+                        showNoSelectedUserDialog();
+                        return true;
+                    }
+
+                    if (OpenScale.getInstance().getSelectedScaleUser().isAssistedWeighing()) {
+                        showAssistedWeighingDialog(false);
+                    } else {
+                        invokeConnectToBluetoothDevice();
+                    }
                 }
                 return true;
             case R.id.importData:
@@ -385,6 +404,95 @@ public class MainActivity extends AppCompatActivity
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void showAssistedWeighingDialog(boolean manuelEntry) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        LinearLayout linearLayout = new LinearLayout(this);
+        linearLayout.setOrientation(LinearLayout.VERTICAL);
+        linearLayout.setPadding(50, 50, 0, 0);
+        TextView title = new TextView(this);
+        title.setText(R.string.label_assisted_weighing);
+        title.setTextSize(24);
+        title.setTypeface(null, Typeface.BOLD);
+
+        TextView description = new TextView(this);
+        description.setPadding(0, 20, 0, 0);
+        description.setText(R.string.info_assisted_weighing_choose_reference_user);
+        linearLayout.addView(title);
+        linearLayout.addView(description);
+
+        builder.setCustomTitle(linearLayout);
+
+        List<ScaleUser> scaleUserList = OpenScale.getInstance().getScaleUserList();
+        ArrayList<String> infoTexts = new ArrayList<>();
+        ArrayList<Integer> userIds = new ArrayList<>();
+
+        int assistedWeighingRefUserId = prefs.getInt("assistedWeighingRefUserId", -1);
+        int checkedItem = 0;
+
+        for (ScaleUser scaleUser : scaleUserList) {
+            String singleInfoText = scaleUser.getUserName();
+
+            if (!scaleUser.isAssistedWeighing()) {
+                ScaleMeasurement lastRefScaleMeasurement = OpenScale.getInstance().getLastScaleMeasurement(scaleUser.getId());
+
+                if (lastRefScaleMeasurement != null) {
+                    singleInfoText += " [" + Converters.fromKilogram(lastRefScaleMeasurement.getWeight(), scaleUser.getScaleUnit()) + scaleUser.getScaleUnit().toString() + "]";
+                } else {
+                    singleInfoText += " [" + getString(R.string.label_empty) + "]";
+                }
+
+                infoTexts.add(singleInfoText);
+                userIds.add(scaleUser.getId());
+            }
+
+            if (scaleUser.getId() == assistedWeighingRefUserId) {
+                checkedItem = infoTexts.indexOf(singleInfoText);
+            }
+        }
+
+        if (!infoTexts.isEmpty()) {
+            builder.setSingleChoiceItems(infoTexts.toArray(new CharSequence[infoTexts.size()]), checkedItem, null);
+        } else {
+            builder.setMessage(getString(R.string.info_assisted_weighing_no_reference_user));
+        }
+
+        builder.setNegativeButton(R.string.label_cancel, null);
+        builder.setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                int selectedPosition = ((AlertDialog)dialog).getListView().getCheckedItemPosition();
+                prefs.edit().putInt("assistedWeighingRefUserId", userIds.get(selectedPosition)).commit();
+
+                ScaleMeasurement lastRefScaleMeasurement = OpenScale.getInstance().getLastScaleMeasurement(userIds.get(selectedPosition));
+
+                if (lastRefScaleMeasurement != null) {
+                    Calendar calMinusOneDay = Calendar.getInstance();
+                    calMinusOneDay.add(Calendar.DAY_OF_YEAR, -1);
+
+                    if (calMinusOneDay.getTime().after(lastRefScaleMeasurement.getDateTime())) {
+                        Toast.makeText(getApplicationContext(), getString(R.string.info_assisted_weighing_old_reference_measurement), Toast.LENGTH_LONG).show();
+                    }
+                } else {
+                    Toast.makeText(getApplicationContext(), getString(R.string.info_assisted_weighing_no_reference_measurements), Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                if (manuelEntry) {
+                    MobileNavigationDirections.ActionNavMobileNavigationToNavDataentry action = MobileNavigationDirections.actionNavMobileNavigationToNavDataentry();
+                    action.setMode(MeasurementEntryFragment.DATA_ENTRY_MODE.ADD);
+                    action.setTitle(getString(R.string.label_add_measurement));
+                    navController.navigate(action);
+                } else {
+                    invokeConnectToBluetoothDevice();
+                }
+            }
+        });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 
     @Override

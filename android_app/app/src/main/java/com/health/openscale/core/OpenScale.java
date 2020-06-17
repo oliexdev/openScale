@@ -133,7 +133,7 @@ public class OpenScale {
                         db.setForeignKeyConstraintsEnabled(true);
                     }
                 })
-                .addMigrations(AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3, AppDatabase.MIGRATION_3_4)
+                .addMigrations(AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3, AppDatabase.MIGRATION_3_4, AppDatabase.MIGRATION_4_5)
                 .build();
         measurementDAO = appDB.measurementDAO();
         userDAO = appDB.userDAO();
@@ -285,6 +285,21 @@ public class OpenScale {
             if (scaleMeasurement.getUserId() == -1) {
                 Timber.e("to be added measurement are thrown away because no user is selected");
                 return -1;
+            }
+        }
+
+        if (getScaleUser(scaleMeasurement.getUserId()).isAssistedWeighing()) {
+            int assistedWeighingRefUserId = prefs.getInt("assistedWeighingRefUserId", -1);
+            if (assistedWeighingRefUserId != -1) {
+                ScaleMeasurement lastRefScaleMeasurement = getLastScaleMeasurement(assistedWeighingRefUserId);
+
+                if (lastRefScaleMeasurement != null) {
+                    float refWeight = lastRefScaleMeasurement.getWeight();
+                    float diffToRef = scaleMeasurement.getWeight() - refWeight;
+                    scaleMeasurement.setWeight(diffToRef);
+                }
+            } else {
+                Timber.e("assisted weighing reference user id is -1");
             }
         }
 

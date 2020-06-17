@@ -109,6 +109,24 @@
             </TableRow>
 
             <TableRow
+                android:id="@+id/rowAssistedWeighing"
+                android:layout_weight="1"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/lblAssistedWeighing"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_assisted_weighing" />
+
+                <CheckBox
+                    android:id="@+id/asisstedWeighing"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+                </CheckBox>
+            </TableRow>
+
+            <TableRow
                 android:id="@+id/rowMeasureUnit"
                 android:layout_weight="1"
                 android:gravity="center_vertical">

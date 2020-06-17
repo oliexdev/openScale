@@ -16,16 +16,16 @@
 
 package com.health.openscale.core.datatypes;
 
+import androidx.annotation.NonNull;
+import androidx.room.ColumnInfo;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+
 import com.health.openscale.core.utils.Converters;
 import com.health.openscale.core.utils.DateTimeHelpers;
 
 import java.util.Calendar;
 import java.util.Date;
-
-import androidx.annotation.NonNull;
-import androidx.room.ColumnInfo;
-import androidx.room.Entity;
-import androidx.room.PrimaryKey;
 
 @Entity(tableName = "scaleUsers")
 public class ScaleUser {
@@ -38,7 +38,6 @@ public class ScaleUser {
     @NonNull
     @ColumnInfo(name = "birthday")
     private Date birthday;
-    @NonNull
     @ColumnInfo(name = "bodyHeight")
     private float bodyHeight;
     @ColumnInfo(name = "scaleUnit")
@@ -59,6 +58,8 @@ public class ScaleUser {
     @NonNull
     @ColumnInfo(name = "activityLevel")
     private Converters.ActivityLevel activityLevel;
+    @ColumnInfo(name = "assistedWeighing")
+    private boolean assistedWeighing;
 
     public ScaleUser() {
         userName = "";
@@ -71,6 +72,7 @@ public class ScaleUser {
         goalDate = new Date();
         measureUnit = Converters.MeasureUnit.CM;
         activityLevel = Converters.ActivityLevel.SEDENTARY;
+        assistedWeighing = false;
     }
 
     public int getId() {
@@ -177,6 +179,14 @@ public class ScaleUser {
         return activityLevel;
     }
 
+    public boolean isAssistedWeighing() {
+        return assistedWeighing;
+    }
+
+    public void setAssistedWeighing(boolean assistedWeighing) {
+        this.assistedWeighing = assistedWeighing;
+    }
+
     public static String getPreferenceKey(int userId, String key) {
         return String.format("user.%d.%s", userId, key);
     }
@@ -191,9 +201,9 @@ public class ScaleUser {
         return String.format(
                 "id(%d) name(%s) birthday(%s) age(%d) body height(%.2f) scale unit(%s) " +
                 "gender(%s) initial weight(%.2f) goal weight(%.2f) goal date(%s) " +
-                "measure unt(%s) activity level(%d)",
+                "measure unt(%s) activity level(%d) assisted weighing(%b)",
                 id, userName, birthday.toString(), getAge(), bodyHeight, scaleUnit.toString(),
                 gender.toString().toLowerCase(), initialWeight, goalWeight, goalDate.toString(),
-                measureUnit.toString(), activityLevel.toInt());
+                measureUnit.toString(), activityLevel.toInt(), assistedWeighing);
     }
 }

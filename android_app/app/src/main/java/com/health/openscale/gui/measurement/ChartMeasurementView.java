@@ -129,6 +129,9 @@ public class ChartMeasurementView extends LineChart {
                 }
 
                 setMeasurementList(openScale.getScaleMeasurementOfStartDate(lastMeasurementCalender.get(Calendar.YEAR), lastMeasurementCalender.get(Calendar.MONTH), lastMeasurementCalender.get(Calendar.DAY_OF_MONTH)));
+            } else {
+                clear();
+                return;
             }
         } else {
             setMeasurementList(openScale.getScaleMeasurementList());

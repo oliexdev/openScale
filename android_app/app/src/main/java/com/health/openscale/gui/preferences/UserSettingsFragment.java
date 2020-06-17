@@ -28,6 +28,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.RadioGroup;
@@ -64,6 +65,7 @@ public class UserSettingsFragment extends Fragment {
     private EditText txtGoalDate;
     private RadioGroup radioScaleUnit;
     private RadioGroup radioGender;
+    private CheckBox assistedWeighing;
     private RadioGroup radioMeasurementUnit;
     private Spinner spinnerActivityLevel;
 
@@ -88,6 +90,7 @@ public class UserSettingsFragment extends Fragment {
         txtBodyHeight = root.findViewById(R.id.txtBodyHeight);
         radioScaleUnit = root.findViewById(R.id.groupScaleUnit);
         radioGender = root.findViewById(R.id.groupGender);
+        assistedWeighing = root.findViewById(R.id.asisstedWeighing);
         radioMeasurementUnit = root.findViewById(R.id.groupMeasureUnit);
         spinnerActivityLevel = root.findViewById(R.id.spinnerActivityLevel);
         txtInitialWeight = root.findViewById(R.id.txtInitialWeight);
@@ -294,6 +297,8 @@ public class UserSettingsFragment extends Fragment {
                 break;
         }
 
+        assistedWeighing.setChecked(scaleUser.isAssistedWeighing());
+
         spinnerActivityLevel.setSelection(scaleUser.getActivityLevel().toInt());
     }
 
@@ -442,6 +447,7 @@ public class UserSettingsFragment extends Fragment {
                 scaleUser.setActivityLevel(Converters.fromActivityLevelInt(
                         spinnerActivityLevel.getSelectedItemPosition()));
                 scaleUser.setGender(gender);
+                scaleUser.setAssistedWeighing(assistedWeighing.isChecked());
                 scaleUser.setInitialWeight(Converters.toKilogram(initial_weight, scale_unit));
                 scaleUser.setGoalWeight(Converters.toKilogram(goal_weight, scale_unit));
                 scaleUser.setGoalDate(goal_date);

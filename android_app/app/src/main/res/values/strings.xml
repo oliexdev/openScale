@@ -56,6 +56,7 @@
     <string name="label_height">Height</string>
     <string name="label_scale_unit">Scale unit</string>
     <string name="label_gender">Gender</string>
+    <string name="label_assisted_weighing">Assisted weighing</string>
     <string name="label_male">Male</string>
     <string name="label_female">Female</string>
     <string name="label_goal_weight">Goal weight</string>
@@ -85,6 +86,10 @@
     <string name="info_is_enable">enabled</string>
     <string name="info_is_not_enable">disabled</string>
     <string name="info_is_not_available">not available</string>
+    <string name="info_assisted_weighing_no_reference_measurements">Reference user has no measurements</string>
+    <string name="info_assisted_weighing_old_reference_measurement">Warning last reference measurement is older than a day</string>
+    <string name="info_assisted_weighing_no_reference_user">No reference user available, please create one</string>
+    <string name="info_assisted_weighing_choose_reference_user">Choose the reference user which the weight is subtracted</string>
     <string name="info_scale_low_battery">Low battery level (%d%%), please recharge or replace scale batteries</string>
     <string name="info_bluetooth_try_connection">Connecting to:</string>
     <string name="info_bluetooth_connection_lost">Bluetooth connection lost</string>

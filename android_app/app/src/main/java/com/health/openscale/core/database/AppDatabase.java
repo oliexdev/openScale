@@ -16,17 +16,17 @@
 
 package com.health.openscale.core.database;
 
-import com.health.openscale.core.datatypes.ScaleMeasurement;
-import com.health.openscale.core.datatypes.ScaleUser;
-import com.health.openscale.core.utils.Converters;
-
 import androidx.room.Database;
 import androidx.room.RoomDatabase;
 import androidx.room.TypeConverters;
 import androidx.room.migration.Migration;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
-@Database(entities = {ScaleMeasurement.class, ScaleUser.class}, version = 4)
+import com.health.openscale.core.datatypes.ScaleMeasurement;
+import com.health.openscale.core.datatypes.ScaleUser;
+import com.health.openscale.core.utils.Converters;
+
+@Database(entities = {ScaleMeasurement.class, ScaleUser.class}, version = 5)
 @TypeConverters({Converters.class})
 public abstract class AppDatabase extends RoomDatabase {
     public abstract ScaleMeasurementDAO measurementDAO();
@@ -168,6 +168,22 @@ public abstract class AppDatabase extends RoomDatabase {
 
                 // Delete old table
                 database.execSQL("DROP TABLE scaleMeasurementsOld");
+
+                database.setTransactionSuccessful();
+            }
+            finally {
+                database.endTransaction();
+            }
+        }
+    };
+
+    public static final Migration MIGRATION_4_5 = new Migration(4, 5) {
+        @Override
+        public void migrate(SupportSQLiteDatabase database) {
+            database.beginTransaction();
+            try {
+                // Add assisted weighing to table
+                database.execSQL("ALTER TABLE scaleUsers ADD assistedWeighing INTEGER NOT NULL default 0");
 
                 database.setTransactionSuccessful();
             }
