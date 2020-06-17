@@ -453,6 +453,25 @@ public abstract class FloatMeasurementView extends MeasurementView {
             }
         }
 
+        final float evalValue = maybeConvertToOriginalValue(value);
+
+        EvaluationSheet evalSheet = new EvaluationSheet(getScaleUser(), dateTime);
+        evaluationResult = evaluateSheet(evalSheet, evalValue);
+
+        if (evaluationResult != null) {
+            switch (evaluationResult.eval_state) {
+                case LOW:
+                    color = (diff > 0.0f) ? Color.GREEN : Color.RED;
+                    break;
+                case HIGH:
+                    color = (diff < 0.0f) ? Color.GREEN : Color.RED;
+                    break;
+                case NORMAL:
+                    color = Color.GREEN;
+                    break;
+            }
+        }
+
         if (newLine) {
             text.append('\n');
         }
