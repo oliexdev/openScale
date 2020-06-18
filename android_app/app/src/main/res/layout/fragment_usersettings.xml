@@ -127,6 +127,42 @@
             </TableRow>
 
             <TableRow
+                android:id="@+id/rowLeftAmputationLevel"
+                android:layout_weight="1"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/lblLeftAmputationLevel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_amputation_left" />
+
+                <Spinner
+                    android:id="@+id/spinnerLeftAmputationLevel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:entries="@array/amputation_level_entries" />
+            </TableRow>
+
+            <TableRow
+                android:id="@+id/rowRightAmputationLevel"
+                android:layout_weight="1"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/lblRightAmputationLevel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_amputation_right" />
+
+                <Spinner
+                    android:id="@+id/spinnerRightAmputationLevel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:entries="@array/amputation_level_entries" />
+            </TableRow>
+
+            <TableRow
                 android:id="@+id/rowMeasureUnit"
                 android:layout_weight="1"
                 android:gravity="center_vertical">

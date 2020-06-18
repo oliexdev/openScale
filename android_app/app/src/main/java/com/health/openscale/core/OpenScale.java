@@ -274,6 +274,7 @@ public class OpenScale {
     public int addScaleMeasurement(final ScaleMeasurement scaleMeasurement, boolean silent) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
+        // Check user id and do a smart user assign if option is enabled
         if (scaleMeasurement.getUserId() == -1) {
             if (prefs.getBoolean("smartUserAssign", false)) {
                 scaleMeasurement.setUserId(getSmartUserAssignment(scaleMeasurement.getWeight(), 15.0f));
@@ -288,6 +289,7 @@ public class OpenScale {
             }
         }
 
+        // Assisted weighing
         if (getScaleUser(scaleMeasurement.getUserId()).isAssistedWeighing()) {
             int assistedWeighingRefUserId = prefs.getInt("assistedWeighingRefUserId", -1);
             if (assistedWeighingRefUserId != -1) {
@@ -303,6 +305,10 @@ public class OpenScale {
             }
         }
 
+        // Calculate the amputation correction factor for the weight, if available
+        scaleMeasurement.setWeight((scaleMeasurement.getWeight() * 100.0f) / getScaleUser(scaleMeasurement.getUserId()).getAmputationCorrectionFactor());
+
+        // If option is enabled then calculate body measurements from generic formulas
         MeasurementViewSettings settings = new MeasurementViewSettings(prefs, WaterMeasurementView.KEY);
         if (settings.isEnabled() && settings.isEstimationEnabled()) {
             EstimatedWaterMetric waterMetric = EstimatedWaterMetric.getEstimatedMetric(
@@ -325,6 +331,7 @@ public class OpenScale {
             scaleMeasurement.setLbm(lbmMetric.getLBM(getScaleUser(scaleMeasurement.getUserId()), scaleMeasurement));
         }
 
+        // Insert measurement into the database, check return if it was successful inserted
         if (measurementDAO.insert(scaleMeasurement) != -1) {
             Timber.d("Added measurement: %s", scaleMeasurement);
             if (!silent) {

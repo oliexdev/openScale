@@ -182,8 +182,10 @@ public abstract class AppDatabase extends RoomDatabase {
         public void migrate(SupportSQLiteDatabase database) {
             database.beginTransaction();
             try {
-                // Add assisted weighing to table
+                // Add assisted weighing and left/right amputation level to table
                 database.execSQL("ALTER TABLE scaleUsers ADD assistedWeighing INTEGER NOT NULL default 0");
+                database.execSQL("ALTER TABLE scaleUsers ADD leftAmputationLevel INTEGER NOT NULL default 0");
+                database.execSQL("ALTER TABLE scaleUsers ADD rightAmputationLevel INTEGER NOT NULL default 0");
 
                 database.setTransactionSuccessful();
             }

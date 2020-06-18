@@ -84,4 +84,14 @@
         <item>@string/activity_level_heavy</item>
         <item>@string/activity_level_extreme</item>
     </string-array>
+
+    <string-array name="amputation_level_entries">
+        <item>@string/amputation_level_none</item>
+        <item>@string/amputation_level_hand</item>
+        <item>@string/amputation_level_forearm_hand</item>
+        <item>@string/amputation_level_arm</item>
+        <item>@string/amputation_level_foot</item>
+        <item>@string/amputation_level_lower_leg_foot</item>
+        <item>@string/amputation_level_leg</item>
+    </string-array>
 </resources>

@@ -145,6 +145,52 @@ public class Converters {
         }
     }
 
+    public enum AmputationLevel {
+        NONE, HAND, FOREARM_HAND, ARM, FOOT, LOWER_LEG_FOOT, LEG;
+
+        public static AmputationLevel fromInt(int unit) {
+            switch (unit) {
+                case 0:
+                    return NONE;
+                case 1:
+                    return HAND;
+                case 2:
+                    return FOREARM_HAND;
+                case 3:
+                    return ARM;
+                case 4:
+                    return FOOT;
+                case 5:
+                    return LOWER_LEG_FOOT;
+                case 6:
+                    return LEG;
+            }
+
+            return NONE;
+        }
+
+        public int toInt() {
+            switch (this) {
+                case NONE:
+                    return 0;
+                case HAND:
+                    return 1;
+                case FOREARM_HAND:
+                    return 2;
+                case ARM:
+                    return 3;
+                case FOOT:
+                    return 4;
+                case LOWER_LEG_FOOT:
+                    return 5;
+                case LEG:
+                    return 6;
+            }
+
+            return 0;
+        }
+    }
+
     private static final float KG_LB = 2.20462f;
     private static final float KG_ST = 0.157473f;
     private static final float CM_IN = 0.393701f;
@@ -196,6 +242,16 @@ public class Converters {
 
     @TypeConverter
     public static int toActivityLevelInt(ActivityLevel level) {
+        return level.toInt();
+    }
+
+    @TypeConverter
+    public static AmputationLevel fromAmputationLevelInt(int level) {
+        return AmputationLevel.fromInt(level);
+    }
+
+    @TypeConverter
+    public static int toAmputationLevelInt(AmputationLevel level) {
         return level.toInt();
     }
 

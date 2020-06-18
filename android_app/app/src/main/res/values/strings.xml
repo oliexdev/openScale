@@ -57,6 +57,9 @@
     <string name="label_scale_unit">Scale unit</string>
     <string name="label_gender">Gender</string>
     <string name="label_assisted_weighing">Assisted weighing</string>
+    <string name="label_amputation">Amputation</string>
+    <string name="label_amputation_left">Amputation left</string>
+    <string name="label_amputation_right">Amputation right</string>
     <string name="label_male">Male</string>
     <string name="label_female">Female</string>
     <string name="label_goal_weight">Goal weight</string>
@@ -238,6 +241,13 @@
     <string name="activity_level_moderate">Moderate</string>
     <string name="activity_level_heavy">Heavy</string>
     <string name="activity_level_extreme">Extreme</string>
+    <string name="amputation_level_none">No amputation</string>
+    <string name="amputation_level_hand">Hand</string>
+    <string name="amputation_level_forearm_hand">Forearm and leg</string>
+    <string name="amputation_level_arm">Arm</string>
+    <string name="amputation_level_foot">Foot</string>
+    <string name="amputation_level_lower_leg_foot">Lower leg and foot</string>
+    <string name="amputation_level_leg">Leg</string>
     <string name="label_upgrade_to_openScale_pro">Please upgrade to openScale pro for Bluetooth support</string>
     <string name="label_slide_welcome_top_text">Welcome to\nopenScale</string>
     <string name="label_slide_welcome_main_text">Open-source software weight and body metrics tracker, with Bluetooth scale support.</string>

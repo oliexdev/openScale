@@ -60,6 +60,12 @@ public class ScaleUser {
     private Converters.ActivityLevel activityLevel;
     @ColumnInfo(name = "assistedWeighing")
     private boolean assistedWeighing;
+    @NonNull
+    @ColumnInfo(name = "leftAmputationLevel")
+    private Converters.AmputationLevel leftAmputationLevel;
+    @NonNull
+    @ColumnInfo(name = "rightAmputationLevel")
+    private Converters.AmputationLevel rightAmputationLevel;
 
     public ScaleUser() {
         userName = "";
@@ -73,6 +79,8 @@ public class ScaleUser {
         measureUnit = Converters.MeasureUnit.CM;
         activityLevel = Converters.ActivityLevel.SEDENTARY;
         assistedWeighing = false;
+        leftAmputationLevel = Converters.AmputationLevel.NONE;
+        rightAmputationLevel = Converters.AmputationLevel.NONE;
     }
 
     public int getId() {
@@ -185,6 +193,76 @@ public class ScaleUser {
 
     public void setAssistedWeighing(boolean assistedWeighing) {
         this.assistedWeighing = assistedWeighing;
+    }
+
+    @NonNull
+    public Converters.AmputationLevel getLeftAmputationLevel() {
+        return leftAmputationLevel;
+    }
+
+    public void setLeftAmputationLevel(@NonNull Converters.AmputationLevel leftAmputationLevel) {
+        this.leftAmputationLevel = leftAmputationLevel;
+    }
+
+    @NonNull
+    public Converters.AmputationLevel getRightAmputationLevel() {
+        return rightAmputationLevel;
+    }
+
+    public void setRightAmputationLevel(@NonNull Converters.AmputationLevel rightAmputationLevel) {
+        this.rightAmputationLevel = rightAmputationLevel;
+    }
+
+    public float getAmputationCorrectionFactor() {
+        float correctionFactor = 100.0f;
+
+        switch (rightAmputationLevel) {
+            case NONE:
+                break;
+            case HAND:
+                correctionFactor -= 0.8f;
+                break;
+            case FOREARM_HAND:
+                correctionFactor -= 3.0f;
+                break;
+            case ARM:
+                correctionFactor -= 11.5f;
+                break;
+            case FOOT:
+                correctionFactor -= 1.8f;
+                break;
+            case LOWER_LEG_FOOT:
+                correctionFactor -= 7.1f;
+                break;
+            case LEG:
+                correctionFactor -= 18.7f;
+                break;
+        }
+
+        switch (leftAmputationLevel) {
+            case NONE:
+                break;
+            case HAND:
+                correctionFactor -= 0.8f;
+                break;
+            case FOREARM_HAND:
+                correctionFactor -= 3.0f;
+                break;
+            case ARM:
+                correctionFactor -= 11.5f;
+                break;
+            case FOOT:
+                correctionFactor -= 1.8f;
+                break;
+            case LOWER_LEG_FOOT:
+                correctionFactor -= 7.1f;
+                break;
+            case LEG:
+                correctionFactor -= 18.7f;
+                break;
+        }
+
+        return correctionFactor;
     }
 
     public static String getPreferenceKey(int userId, String key) {

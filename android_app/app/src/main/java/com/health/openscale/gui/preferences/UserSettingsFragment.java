@@ -68,6 +68,8 @@ public class UserSettingsFragment extends Fragment {
     private CheckBox assistedWeighing;
     private RadioGroup radioMeasurementUnit;
     private Spinner spinnerActivityLevel;
+    private Spinner spinnerLeftAmputationLevel;
+    private Spinner spinnerRightAmputationLevel;
 
     private final DateFormat dateFormat = DateFormat.getDateInstance();
 
@@ -93,6 +95,8 @@ public class UserSettingsFragment extends Fragment {
         assistedWeighing = root.findViewById(R.id.asisstedWeighing);
         radioMeasurementUnit = root.findViewById(R.id.groupMeasureUnit);
         spinnerActivityLevel = root.findViewById(R.id.spinnerActivityLevel);
+        spinnerLeftAmputationLevel = root.findViewById(R.id.spinnerLeftAmputationLevel);
+        spinnerRightAmputationLevel = root.findViewById(R.id.spinnerRightAmputationLevel);
         txtInitialWeight = root.findViewById(R.id.txtInitialWeight);
         txtGoalWeight = root.findViewById(R.id.txtGoalWeight);
 
@@ -300,6 +304,8 @@ public class UserSettingsFragment extends Fragment {
         assistedWeighing.setChecked(scaleUser.isAssistedWeighing());
 
         spinnerActivityLevel.setSelection(scaleUser.getActivityLevel().toInt());
+        spinnerLeftAmputationLevel.setSelection(scaleUser.getLeftAmputationLevel().toInt());
+        spinnerRightAmputationLevel.setSelection(scaleUser.getRightAmputationLevel().toInt());
     }
 
     private boolean validateInput()
@@ -444,8 +450,9 @@ public class UserSettingsFragment extends Fragment {
                 scaleUser.setBodyHeight(Converters.toCentimeter(body_height, measure_unit));
                 scaleUser.setScaleUnit(scale_unit);
                 scaleUser.setMeasureUnit(measure_unit);
-                scaleUser.setActivityLevel(Converters.fromActivityLevelInt(
-                        spinnerActivityLevel.getSelectedItemPosition()));
+                scaleUser.setActivityLevel(Converters.fromActivityLevelInt(spinnerActivityLevel.getSelectedItemPosition()));
+                scaleUser.setLeftAmputationLevel(Converters.fromAmputationLevelInt(spinnerLeftAmputationLevel.getSelectedItemPosition()));
+                scaleUser.setRightAmputationLevel(Converters.fromAmputationLevelInt(spinnerRightAmputationLevel.getSelectedItemPosition()));
                 scaleUser.setGender(gender);
                 scaleUser.setAssistedWeighing(assistedWeighing.isChecked());
                 scaleUser.setInitialWeight(Converters.toKilogram(initial_weight, scale_unit));

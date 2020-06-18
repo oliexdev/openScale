@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 5,
-    "identityHash": "f0e80a69f9fff0c48f2b7df10de3228f",
+    "identityHash": "d66fc1fc2752b2d6f41700fa2102492a",
     "entities": [
       {
         "tableName": "scaleMeasurements",
@@ -174,7 +174,7 @@
       },
       {
         "tableName": "scaleUsers",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `username` TEXT NOT NULL, `birthday` INTEGER NOT NULL, `bodyHeight` REAL NOT NULL, `scaleUnit` INTEGER NOT NULL, `gender` INTEGER NOT NULL, `initialWeight` REAL NOT NULL, `goalWeight` REAL NOT NULL, `goalDate` INTEGER, `measureUnit` INTEGER NOT NULL, `activityLevel` INTEGER NOT NULL, `assistedWeighing` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `username` TEXT NOT NULL, `birthday` INTEGER NOT NULL, `bodyHeight` REAL NOT NULL, `scaleUnit` INTEGER NOT NULL, `gender` INTEGER NOT NULL, `initialWeight` REAL NOT NULL, `goalWeight` REAL NOT NULL, `goalDate` INTEGER, `measureUnit` INTEGER NOT NULL, `activityLevel` INTEGER NOT NULL, `assistedWeighing` INTEGER NOT NULL, `leftAmputationLevel` INTEGER NOT NULL, `rightAmputationLevel` INTEGER NOT NULL)",
         "fields": [
           {
             "fieldPath": "id",
@@ -247,6 +247,18 @@
             "columnName": "assistedWeighing",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "leftAmputationLevel",
+            "columnName": "leftAmputationLevel",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rightAmputationLevel",
+            "columnName": "rightAmputationLevel",
+            "affinity": "INTEGER",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -262,7 +274,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f0e80a69f9fff0c48f2b7df10de3228f')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd66fc1fc2752b2d6f41700fa2102492a')"
     ]
   }
 }
