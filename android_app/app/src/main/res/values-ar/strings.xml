@@ -136,8 +136,6 @@
     <string name="label_not_found">غير موجود</string>
     <string name="label_ignoreOutOfRange">تجاهل خارج نطاق البيانات</string>
     <string name="label_initial_weight">الوزن البدائي</string>
-    <string name="label_regression_line">خط الوزن الانحداري</string>
-    <string name="label_regression_line_degree">خط انحداري متعدد الحدود</string>
     <string name="label_goal_line">خط الهدف</string>
     <string name="label_help">مساعدة</string>
     <string name="label_feedback_message_enjoying">استمتعت ب openScale؟</string>

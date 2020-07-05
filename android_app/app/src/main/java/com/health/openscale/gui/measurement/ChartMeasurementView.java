@@ -25,7 +25,6 @@ import android.preference.PreferenceManager;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.AxisBase;
@@ -623,11 +622,8 @@ public class ChartMeasurementView extends LineChart {
             }
         }
 
+        addTrendLine(lineDataSets);
         addGoalLine(lineDataSets);
-
-        if (isInGraphKey) {
-            addRegressionLine(lineDataSets);
-        }
 
         LineData data = new LineData(lineDataSets);
         setData(data);
@@ -648,6 +644,7 @@ public class ChartMeasurementView extends LineChart {
         measurementLine.setColor(measurementView.getColor());
         measurementLine.setValueTextColor(ColorUtil.getTintColor(getContext()));
         measurementLine.setCircleColor(measurementView.getColor());
+        measurementLine.setCircleHoleColor(measurementView.getColor());
         measurementLine.setAxisDependency(measurementView.getSettings().isOnRightAxis() ? YAxis.AxisDependency.RIGHT : YAxis.AxisDependency.LEFT);
         measurementLine.setHighlightEnabled(true);
         measurementLine.setDrawHighlightIndicators(true);
@@ -656,6 +653,10 @@ public class ChartMeasurementView extends LineChart {
         measurementLine.setHighLightColor(Color.RED);
         measurementLine.setDrawCircles(prefs.getBoolean("pointsEnable", true));
         measurementLine.setDrawValues(prefs.getBoolean("labelsEnable", true));
+        if (prefs.getBoolean("trendLine", true)) {
+            // show only data point if trend line is enabled
+            measurementLine.enableDashedLine(0, 1, 0);
+        }
         measurementLine.setValueFormatter(new ValueFormatter() {
             @Override
             public String getPointLabel(Entry entry) {
@@ -712,51 +713,60 @@ public class ChartMeasurementView extends LineChart {
         }
     }
 
-    private void addRegressionLine(List<ILineDataSet> lineDataSets) {
-        if (prefs.getBoolean("regressionLine", false)) {
-            int regressLineOrder = 1;
+    private void addTrendLine(List<ILineDataSet> lineDataSets) {
+        if (!prefs.getBoolean("trendLine", true)) {
+            return;
+        }
 
-            try {
-                regressLineOrder = Integer.parseInt(prefs.getString("regressionLineOrder", "1"));
-            } catch (NumberFormatException e) {
-                Toast.makeText(getContext(), getContext().getString(R.string.error_value_required) + ":" + e.getMessage(), Toast.LENGTH_LONG).show();
-                prefs.edit().putString("regressionLineOrder", "1").apply();
+        List<ILineDataSet> trendlineDataSets = new ArrayList<>();
+
+        for (ILineDataSet dataSet : lineDataSets) {
+            // we need at least two data points
+            if (dataSet.getEntryCount() < 2) {
+                continue;
             }
 
-            List<ILineDataSet> regressionLineDataSets = new ArrayList<>();
+            PolynomialFitter polyFitter = new PolynomialFitter(1);
 
-            for (ILineDataSet dataSet : lineDataSets) {
-                PolynomialFitter polyFitter = new PolynomialFitter(Math.min(regressLineOrder, 100));
+            List<Entry> valuesTrendLine = new Stack<>();
+            valuesTrendLine.add(dataSet.getEntryForIndex(0));
+            polyFitter.addPoint((double) valuesTrendLine.get(0).getX(), (double) valuesTrendLine.get(0).getY());
 
-                for (int i=0; i<dataSet.getEntryCount(); i++) {
-                    Entry entry = dataSet.getEntryForIndex(i);
-                    polyFitter.addPoint((double) entry.getX(), (double) entry.getY());
-                }
+            for (int i = 1; i < dataSet.getEntryCount(); i++) {
+                Entry entry = dataSet.getEntryForIndex(i);
+                Entry trendPreviousEntry = valuesTrendLine.get(i - 1);
+                float trendYValue = (trendPreviousEntry.getY() + 0.1f * (entry.getY() - trendPreviousEntry.getY()));
+                polyFitter.addPoint((double) entry.getX(), (double) trendYValue);
+                valuesTrendLine.add(new Entry(entry.getX(), trendYValue));
+                /*Timber.d("ENTRY X " + entry.getX() + " Y " + entry.getY());
+                Timber.d("PREVIOUS X " + trendPreviousEntry.getX() + " Y " + trendPreviousEntry.getY());
+                Timber.d("TREND X " + entry.getX() + " Y " + trendYValue);*/
+            }
 
+            if (isInGraphKey) {
                 PolynomialFitter.Polynomial polynomial = polyFitter.getBestFit();
 
-                List<Entry> valuesLinearRegression = new Stack<>();
-
-                for (int i = minXValue; i < maxXValue + minXValue + 1; i++) {
+                int x_last = (int) dataSet.getEntryForIndex(dataSet.getEntryCount() - 1).getX();
+                for (int i = x_last; i < maxXValue + minXValue + 1; i++) {
                     double y_value = polynomial.getY(i);
-                    valuesLinearRegression.add(new Entry((float) i, (float) y_value));
+                    valuesTrendLine.add(new Entry((float) i, (float) y_value));
                 }
-
-                LineDataSet linearRegressionLine = new LineDataSet(valuesLinearRegression, dataSet.getLabel() + "-" + getContext().getString(R.string.label_regression_line));
-                linearRegressionLine.setLineWidth(1.5f);
-                linearRegressionLine.setColor(dataSet.getColor());
-                linearRegressionLine.setAxisDependency(dataSet.getAxisDependency());
-                linearRegressionLine.setDrawValues(false);
-                linearRegressionLine.setDrawCircles(false);
-                linearRegressionLine.setHighlightEnabled(false);
-                linearRegressionLine.enableDashedLine(10, 30, 0);
-
-                regressionLineDataSets.add(linearRegressionLine);
             }
 
-            for (ILineDataSet dataSet : regressionLineDataSets) {
-                lineDataSets.add(dataSet);
-            }
+            LineDataSet trendLine = new LineDataSet(valuesTrendLine, dataSet.getLabel() + "-" + getContext().getString(R.string.label_trend_line));
+            trendLine.setLineWidth(1.5f);
+            trendLine.setColor(dataSet.getColor());
+            trendLine.setAxisDependency(dataSet.getAxisDependency());
+            trendLine.setDrawValues(false);
+            trendLine.setDrawCircles(false);
+            trendLine.setHighlightEnabled(false);
+            //trendLine.enableDashedLine(10, 30, 0);
+
+            trendlineDataSets.add(trendLine);
+        }
+
+        for (ILineDataSet dataSet : trendlineDataSets) {
+            lineDataSets.add(dataSet);
         }
     }
 }

@@ -119,8 +119,6 @@
     <string name="label_not_found">hittades inte</string>
     <string name="label_ignoreOutOfRange">Ignorera data utanför intervall</string>
     <string name="label_initial_weight">Startvikt</string>
-    <string name="label_regression_line">Regressionslinje</string>
-    <string name="label_regression_line_degree">Regressions-polynom-gradtal</string>
     <string name="label_goal_line">Mållinje</string>
     <string name="error_max_scale_users">Max antal samtidiga våganvändare nått</string>
     <string name="info_step_on_scale_for_reference">Kliv upp barfota på vågen för referensmätningar</string>

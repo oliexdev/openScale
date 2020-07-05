@@ -129,8 +129,6 @@
     <string name="label_not_found">non trovato</string>
     <string name="label_ignoreOutOfRange">Ignorare i dati fuori intervallo</string>
     <string name="label_initial_weight">Peso iniziale</string>
-    <string name="label_regression_line">Retta di regressione</string>
-    <string name="label_regression_line_degree">Grado di regressione polinomiale</string>
     <string name="label_goal_line">Linea obiettivo</string>
     <string name="label_help">Aiuto</string>
     <string name="label_feedback_message_enjoying">Ti piace openScale?</string>

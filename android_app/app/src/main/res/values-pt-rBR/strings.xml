@@ -83,8 +83,6 @@
     <string name="label_no">Não</string>
     <string name="label_ok">OK</string>
     <string name="label_not_found">não encontrado</string>
-    <string name="label_regression_line">Linha de tendência de peso</string>
-    <string name="label_regression_line_degree">Grau de regressão polinomial (tendência)</string>
     <string name="label_reminder">Lembrete</string>
     <string name="label_reminder_notify_text">Título da notificação</string>
     <string name="label_reminder_time">Hora</string>

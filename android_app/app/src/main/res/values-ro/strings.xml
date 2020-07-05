@@ -140,8 +140,6 @@
     <string name="label_not_found">negăsit</string>
     <string name="label_ignoreOutOfRange">Ignorare a valorilor invalide</string>
     <string name="label_initial_weight">Greutate inițială</string>
-    <string name="label_regression_line">Linie de regresie</string>
-    <string name="label_regression_line_degree">Gradul polinomului</string>
     <string name="label_goal_line">Linie pentru obiectiv</string>
     <string name="label_help">Ajutor</string>
 
