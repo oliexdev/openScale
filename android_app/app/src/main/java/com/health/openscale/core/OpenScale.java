@@ -65,7 +65,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -86,7 +85,6 @@ public class OpenScale {
     private ScaleUserDAO userDAO;
 
     private ScaleUser selectedScaleUser;
-    private List<ScaleMeasurement> scaleMeasurementList;
 
     private BluetoothCommunication btDeviceDriver;
     private AlarmHandler alarmHandler;
@@ -97,7 +95,6 @@ public class OpenScale {
         this.context = context;
         alarmHandler = new AlarmHandler();
         btDeviceDriver = null;
-        scaleMeasurementList = new ArrayList<>();
 
         reopenDatabase(false);
     }
@@ -520,6 +517,7 @@ public class OpenScale {
 
     public boolean exportData(Uri uri) {
         try {
+            List<ScaleMeasurement> scaleMeasurementList = getScaleMeasurementList();
             OutputStream output = context.getContentResolver().openOutputStream(uri);
             CsvHelper.exportTo(new OutputStreamWriter(output), scaleMeasurementList);
             return true;
