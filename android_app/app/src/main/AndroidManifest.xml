@@ -38,8 +38,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".gui.slides.AppIntroActivity"/>
-        <activity android:name=".gui.slides.SlideToNavigationAdapter"/>
+        <activity android:name=".gui.slides.AppIntroActivity" android:theme="@style/AppTheme.NoActionBar"/>
+        <activity android:name=".gui.slides.SlideToNavigationAdapter" android:theme="@style/AppTheme.NoActionBar"/>
 
         <receiver android:name=".core.alarm.ReminderBootReceiver" android:enabled="false">
             <intent-filter>
