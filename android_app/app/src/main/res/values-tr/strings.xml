@@ -42,7 +42,7 @@
     <string name="label_time">Zaman</string>
     <string name="label_birthday">Doğum günü</string>
     <string name="label_user_name">Ad</string>
-    <string name="label_height">"Boy "</string>
+    <string name="label_height">Boy</string>
     <string name="label_scale_unit">Ölçek birimi</string>
     <string name="label_gender">Cinsiyet</string>
     <string name="label_male">Erkek</string>
@@ -146,11 +146,10 @@
     <string name="trisa_scale_pairing_succeeded">Eşleşme başarılı oldu! 
 \n 
 \nÖlçüm verilerini almak için tekrar bağlanın.</string>
-    <string name="customactivityoncrash_error_activity_error_occurred_explanation">Beklenmedik bir hata oluştu
+    <string name="customactivityoncrash_error_activity_error_occurred_explanation">Beklenmedik bir hata oluştu.
 \n
-\nLütfen hata ayrıntılarını içeren yeni bir kayıt oluşturun
-\nhttps://github.com/oliexdev/openScale/issues
-\n</string>
+\nLütfen https://github.com/oliexdev/openScale/issues
+\nadresinde hata ayrıntılarını içeren yeni bir kayıt oluşturun</string>
     <string name="customactivityoncrash_error_activity_restart_app">Uygulamayı yeniden başlat</string>
     <string name="customactivityoncrash_error_activity_close_app">Uygulamayı kapat</string>
     <string name="customactivityoncrash_error_activity_error_details">Hata ayrıntıları</string>
@@ -202,14 +201,9 @@
     <string name="activity_level_mild">Hafif</string>
     <string name="activity_level_heavy">Ağır</string>
     <string name="activity_level_extreme">Aşırı</string>
-    <string name="trisa_scale_not_paired">Bu tartı eşleşmedi!
-\n
-\nEşleştirme moduna geçmek için, terazinin altındaki düğmeyi basılı tutun ve ardından cihaz parolasını geri almak için tekrar bağlanın.
-\n
-\n
-\n
+    <string name="trisa_scale_not_paired">Bu tartı eşleştirilmedi! 
 \n 
-\n</string>
+\nEşleştirme moduna geçmek için, terazinin altındaki düğmeyi basılı tutun ve ardından cihaz parolasını geri almak için tekrar bağlanın.</string>
     <string name="permission_bluetooth_info">Bluetooth aygıtlarını aramak için konum izni gerekli. Aygıt bulunduktan sonra iptal edilebilir.</string>
     <string name="label_long_press_drag_reorder">Yeniden sıralamak için uzun basın ve ölçümü sürükleyin</string>
     <string name="label_set_default_order">Öntanımlı sıralamayı ayarla</string>
@@ -283,4 +277,19 @@
 \nDesteğiniz ve olumlu geri bildirimleriniz çok takdir edilmektedir. Teşekkürler.</string>
     <string name="label_slide_welcome_top_text">openScale\'e
 \nhoş geldiniz</string>
+    <string name="amputation_level_leg">Bacak</string>
+    <string name="amputation_level_lower_leg_foot">Alt bacak ve ayak</string>
+    <string name="amputation_level_foot">Ayak</string>
+    <string name="amputation_level_arm">Kol</string>
+    <string name="amputation_level_forearm_hand">Ön kol ve bacak</string>
+    <string name="amputation_level_hand">El</string>
+    <string name="amputation_level_none">Ampütasyon yok</string>
+    <string name="info_assisted_weighing_choose_reference_user">Ağırlığın çıkartılacağı referans kullanıcıyı seçin</string>
+    <string name="info_assisted_weighing_no_reference_user">Referans kullanıcı yok, lütfen bir tane oluşturun</string>
+    <string name="info_assisted_weighing_old_reference_measurement">Uyarı: Son referans ölçümü bir günden daha eski</string>
+    <string name="info_assisted_weighing_no_reference_measurements">Referans kullanıcının ölçümü yok</string>
+    <string name="label_amputation_right">Sağ ampütasyon</string>
+    <string name="label_amputation_left">Sol ampütasyon</string>
+    <string name="label_amputation">Ampütasyon</string>
+    <string name="label_assisted_weighing">Destekli tartım</string>
 </resources>
