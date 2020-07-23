@@ -277,4 +277,19 @@
     <string name="app_intro_next_button">Següent</string>
     <string name="app_intro_back_button">Endarrere</string>
     <string name="app_intro_done_button">Fet</string>
+    <string name="amputation_level_leg">Cama</string>
+    <string name="amputation_level_lower_leg_foot">Part inferior de la cama i peu</string>
+    <string name="amputation_level_foot">Peu</string>
+    <string name="amputation_level_arm">Braç</string>
+    <string name="amputation_level_forearm_hand">Avantbraç i cama</string>
+    <string name="amputation_level_hand">Mà</string>
+    <string name="amputation_level_none">Sense amputació</string>
+    <string name="info_assisted_weighing_choose_reference_user">Trieu l\'usuari de referència del qual es restarà el pes</string>
+    <string name="info_assisted_weighing_no_reference_user">No hi ha cap usuari de referència disponible, creeu-ne un</string>
+    <string name="info_assisted_weighing_old_reference_measurement">Atenció, la darrera mesura de referència és de fa més d\'un dia</string>
+    <string name="info_assisted_weighing_no_reference_measurements">L\'usuari de referència no té cap mesura</string>
+    <string name="label_amputation_right">Amputació dreta</string>
+    <string name="label_amputation_left">Amputació esquerra</string>
+    <string name="label_amputation">Amputació</string>
+    <string name="label_assisted_weighing">Pesatge assistit</string>
 </resources>
