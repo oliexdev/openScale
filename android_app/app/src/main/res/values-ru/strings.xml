@@ -51,7 +51,7 @@
     <string name="label_female">Женский</string>
     <string name="label_goal_weight">Цель по весу</string>
     <string name="label_goal_date">Целевая дата</string>
-    <string name="label_title_user">пользователь</string>
+    <string name="label_title_user">Пользователь</string>
     <string name="label_title_last_measurement">последнее измерение</string>
     <string name="label_title_goal">Цель</string>
     <string name="label_import">Импорт</string>
@@ -59,12 +59,12 @@
     <string name="label_delete_all">Удалить все</string>
     <string name="error_value_required">Необходимо значение</string>
     <string name="error_value_range">Значение вне диапазона</string>
-    <string name="error_exporting">Ошибка при экспортировании</string>
-    <string name="error_importing">Ошибка при импортировании</string>
-    <string name="error_user_name_required">Ошибка: необходимо Имя</string>
-    <string name="error_height_required">Ошибка: требуется указать Рост</string>
-    <string name="error_initial_weight_required">Ошибка: необходимо указать начальный вес</string>
-    <string name="error_goal_weight_required">Ошибка: необходимо указать цель по весу</string>
+    <string name="error_exporting">Не удалось экспортировать</string>
+    <string name="error_importing">Не удалось импортировать</string>
+    <string name="error_user_name_required">Необходимо указать Имя</string>
+    <string name="error_height_required">Необходимо указать Рост</string>
+    <string name="error_initial_weight_required">Необходимо указать начальный вес</string>
+    <string name="error_goal_weight_required">Необходимо указать целевой вес</string>
     <string name="info_data_deleted">Запись удалена</string>
     <string name="info_data_all_deleted">Все записи удалены</string>
     <string name="info_data_exported">Экспортировано в</string>
@@ -73,14 +73,14 @@
     <string name="info_enter_comment">Опциональный комментарий</string>
     <string name="info_is_visible">отображается</string>
     <string name="info_is_not_visible">не отображается</string>
-    <string name="info_is_enable">включена</string>
-    <string name="info_is_not_enable">выключена</string>
+    <string name="info_is_enable">включено</string>
+    <string name="info_is_not_enable">выключено</string>
     <string name="info_is_not_available">не доступна</string>
     <string name="info_bluetooth_try_connection">Соединение с:</string>
-    <string name="info_bluetooth_connection_lost">Соединение Bluetooth потеряно</string>
+    <string name="info_bluetooth_connection_lost">Bluetooth соединение потеряно</string>
     <string name="info_bluetooth_no_device">Устройство Bluetooth не найдено</string>
-    <string name="info_bluetooth_no_device_set">Устройство Bluetooth не выбрано</string>
-    <string name="info_bluetooth_connection_successful">Соединение установлено</string>
+    <string name="info_bluetooth_no_device_set">Выберите Bluetooth устройство</string>
+    <string name="info_bluetooth_connection_successful">Подключено</string>
     <string name="info_bluetooth_init">Инициализировать Bluetooth устройство</string>
     <string name="info_bluetooth_connection_error">Неожиданная ошибка Bluetooth</string>
     <string name="info_new_data_duplicated">измерение с такой датой и временем уже существует</string>
@@ -96,7 +96,7 @@
     <string name="label_bluetooth_searching">Поиск Ваших Bluetooth весов</string>
     <string name="label_bluetooth_searching_finished">Поиск завершен</string>
     <string name="label_enable_points">Точка измерения</string>
-    <string name="label_delete_confirmation">Удалить подтверждение</string>
+    <string name="label_delete_confirmation">Подтверждение удаления</string>
     <string name="label_category_measurement_database">База измерений</string>
     <string name="label_maintainer">Сопровождающий</string>
     <string name="label_website">Веб-сайт</string>
@@ -225,7 +225,7 @@
     <string name="label_tdee">Общий ежедневный расход энергии (TDEE)</string>
     <string name="label_calories">Калории</string>
     <string name="info_step_on_scale">Пожалуйста, встаньте голыми ступнями на весы</string>
-    <string name="info_bluetooth_no_device_retrying">Невозможно установить соединение, переподключение…</string>
+    <string name="info_bluetooth_no_device_retrying">Не удается подключиться, пробуем снова…</string>
     <string name="info_bluetooth_connection_disconnected">Bluetooth соединение закрыто</string>
     <string name="permission_location_service_info">Предоставьте доступ к местоположению в настройках Android для нахождения устройств Bluetooth. После соединения доступ может быть отозван.</string>
     <string name="label_enable_legend">Легенда графика</string>
@@ -237,4 +237,23 @@
     <string name="label_is_on_right_axis">на правой оси</string>
     <string name="label_upgrade_to_openScale_pro">Пожалуйста, обновите до openScale Pro для подддержки Bluetooth</string>
     <string name="action_donation">Пожертвование</string>
+    <string name="app_intro_done_button">Готово</string>
+    <string name="app_intro_back_button">Назад</string>
+    <string name="app_intro_next_button">Далее</string>
+    <string name="app_intro_skip_button">Пропустить</string>
+    <string name="label_slide_user_main_text">openScale не требует создание аккаунта в облаке. 
+\n 
+\nПоказатели тела считаются из измерений.</string>
+    <string name="label_slide_user_top_text">Есть поддержка нескольких пользователей.</string>
+    <string name="label_slide_privacy_main_text">openScale не отправляет никакие данные в облако, что подтверждается отсутствием разрешений для доступа в интернет.
+\n
+\nЕсли вы хотите синхронизировать свой вес с Google Fit или MQTT, вы можете установить <a href="https://play.google.com/store/apps/details?id=com.health.openscale.sync">openScale sync</a>.</string>
+    <string name="label_slide_privacy_top_text">Защитите ваши данные о здоровье.</string>
+    <string name="label_slide_welcome_main_text">Приложение с открытым исходным кодом для отслеживания веса и прочих показателей, с поддержкой Bluetooth весов.</string>
+    <string name="label_slide_welcome_top_text">Добро пожаловать в
+\nopenScale</string>
+    <string name="info_bluetooth_connection_error_scale_offline">Не удалось подключиться к весам, проверьте, что они включены.</string>
+    <string name="info_scale_low_battery">Низкий заряд батарей (%d%%), пожалуйста, замените или зарядите батареи в весах</string>
+    <string name="label_age">Возраст</string>
+    <string name="label_empty">Пусто</string>
 </resources>
