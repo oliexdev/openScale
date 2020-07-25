@@ -277,4 +277,19 @@
 \nMotiveer de maker om de app te blijven ontwikkelen en onderhouden door openScale positief te beoordelen op <a href="http://play.google.com/store/apps/details?id=com.health.openscale.pro">Google Play</a>, of door een ster toe te voegen op <a href="https://github.com/oliexdev/openScale">GitHub</a>. 
 \n 
 \nIk word blij van al je positieve beoordelingen en feedback. Bij voorbaat dank.</string>
+    <string name="amputation_level_leg">Been</string>
+    <string name="amputation_level_lower_leg_foot">Onderbeen en voet</string>
+    <string name="amputation_level_foot">Voet</string>
+    <string name="amputation_level_arm">Arm</string>
+    <string name="amputation_level_forearm_hand">Bovenarm en been</string>
+    <string name="amputation_level_hand">Hand</string>
+    <string name="amputation_level_none">Geen amputatie</string>
+    <string name="info_assisted_weighing_choose_reference_user">Kies de referentiegebruiker die moet worden bijgehouden</string>
+    <string name="info_assisted_weighing_no_reference_user">Geen referentiegebruiker - voeg er één toe</string>
+    <string name="info_assisted_weighing_old_reference_measurement">Waarschuwing: de vorige meting is ouder dan één dag</string>
+    <string name="info_assisted_weighing_no_reference_measurements">De referentiegebruiker heeft geen afmetingen</string>
+    <string name="label_amputation_right">Amputatie (rechts)</string>
+    <string name="label_amputation_left">Amputatie (links)</string>
+    <string name="label_amputation">Amputatie</string>
+    <string name="label_assisted_weighing">Begeleid wegen</string>
 </resources>
