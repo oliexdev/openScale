@@ -233,7 +233,6 @@
     <string name="info_step_on_scale">Lütfen tartıya yalınayak çıkın</string>
     <string name="label_day_view">Gün görünümü</string>
     <string name="label_year_view">Yıl görünümü</string>
-    <string name="label_rolling_chart">Grafik şema</string>
     <string name="label_measurement_bar">Ölçü çubuğu</string>
     <string name="permission_location_service_info">Bluetooth aygıtlarını aramak için Android ayarlarından konum erişim izni verin. İsteğe bağlı olarak daha sonra iptal edebilirsiniz.</string>
     <string name="label_is_on_right_axis">Sağ eksende</string>

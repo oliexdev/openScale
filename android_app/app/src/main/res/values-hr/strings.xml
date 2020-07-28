@@ -256,7 +256,6 @@
     <string name="permission_read_write_data_description">čitaj/zapiši openScale podatke, uključujući korisničke podatke i sva spremljena mjerenja</string>
     <string name="permission_location_service_info">Dozvoli pristup lokaciji u Androidovim postavkama za traženje Bluetooth uređaja. Opcionalno zabrani pristup nakon toga.</string>
     <string name="label_measurement_bar">Mjerna traka</string>
-    <string name="label_rolling_chart">Dinamički dijagram</string>
     <string name="label_year_view">Godišnji prikaz</string>
     <string name="label_day_view">Dnevni prikaz</string>
     <string name="trisa_scale_pairing_succeeded">Uparivanje je uspjelo!

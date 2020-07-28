@@ -231,7 +231,6 @@
     <string name="label_enable_yaxis">ציר Y</string>
     <string name="label_day_view">תצוגה יומית</string>
     <string name="label_year_view">תצוגה שנתית</string>
-    <string name="label_rolling_chart">תרשים מתגלגל</string>
     <string name="label_measurement_bar">סרגל מדידה</string>
     <string name="label_is_on_right_axis">בציר הימני</string>
     <string name="label_upgrade_to_openScale_pro">נא לשדרג לגרסה המקצועית של openScale לתמיכה ב־Bluetooth</string>

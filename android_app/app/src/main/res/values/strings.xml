@@ -181,7 +181,6 @@
     <string name="label_month_view">Month view</string>
     <string name="label_weeks_view">Week view</string>
     <string name="label_year_view">Year view</string>
-    <string name="label_rolling_chart">Rolling chart</string>
     <string name="label_measurement_bar">Measurement bar</string>
     <string name="permission_not_granted">Permission not granted</string>
     <string name="permission_bluetooth_info">Location permission needed to search for Bluetooth devices. It can be revoked after the device is found.</string>

@@ -228,7 +228,6 @@
     <string name="info_step_on_scale">Παρακαλώ πατήστε ξυπόλυτοι στην ζυγαριά</string>
     <string name="label_day_view">Προβολή ημέρας</string>
     <string name="label_year_view">Προβολή έτους</string>
-    <string name="label_rolling_chart">Κυλιόμενο διάγραμμα</string>
     <string name="label_measurement_bar">Μπάρα μέτρησης</string>
     <string name="permission_location_service_info">Χορηγήστε πρόσβαση τοποθεσίας στις ρυθμίσεις του Android για να ψάχνει συσκευές Bluetooth. Προαιρετικά ανακαλέστε το μεταγενέστερα.</string>
     <string name="label_is_on_right_axis">Είναι στον δεξιό άξονα</string>

@@ -178,7 +178,6 @@
 \nCreeu una nova incidència incloent-hi els detalls de l\'error a
 \nhttps://github.com/oliexdev/openScale/issues</string>
     <string name="toggle_expand">Expandeix o contrau</string>
-    <string name="label_rolling_chart">Gràfica dinàmica</string>
     <string name="permission_read_write_data_description">llegir/escriure dades de l\'openScale, incloent-hi informació dels usuaris i totes les mesures desades</string>
     <string name="permission_read_write_data_label">Llegir/escriure dades de l\'openScale</string>
     <string name="label_next">Endavant</string>

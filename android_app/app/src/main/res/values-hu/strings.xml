@@ -229,7 +229,6 @@
     <string name="label_enable_yaxis">Y tengely</string>
     <string name="label_day_view">Napi nézet</string>
     <string name="label_year_view">Éves nézet</string>
-    <string name="label_rolling_chart">Mozgó diagram</string>
     <string name="label_measurement_bar">Mérési sáv</string>
     <string name="label_is_on_right_axis">a jobb oldali tengelyen</string>
     <string name="label_upgrade_to_openScale_pro">Kérem frissítsen az openScale Pro-ra a Bluetooth támogatáshoz</string>

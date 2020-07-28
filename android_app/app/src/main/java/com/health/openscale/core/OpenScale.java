@@ -65,6 +65,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -601,6 +602,42 @@ public class OpenScale {
         endCalender.set(year+1, Calendar.JANUARY, 1, 0, 0, 0);
 
         return measurementDAO.getAllInRange(startCalender.getTime(), endCalender.getTime(), selectedUserId);
+    }
+
+    public List<ScaleMeasurement> getScaleMeasurementsAsTrendline() {
+        int selectedUserId = getSelectedScaleUserId();
+
+        List<ScaleMeasurement> trendlineList = new ArrayList<>();
+
+       /* ScaleMeasurement a = new ScaleMeasurement();
+        a.setWeight(173.2f);
+        ScaleMeasurement b = new ScaleMeasurement();
+        b.setWeight(171.5f);
+
+        ScaleMeasurement entry = b.clone();
+        ScaleMeasurement trendPreviousEntry = a.clone();
+        ScaleMeasurement tempScaleMeasurement = entry.clone();
+
+        tempScaleMeasurement.subtract(a);
+        tempScaleMeasurement.multiply(0.1f);
+        trendPreviousEntry.add(tempScaleMeasurement);*/
+
+        List<ScaleMeasurement> measurementList = measurementDAO.getAll(selectedUserId);
+        trendlineList.add(measurementList.get(0));
+
+        for (int i = 1; i < measurementList.size(); i++) {
+            ScaleMeasurement entry = measurementList.get(i).clone();
+            ScaleMeasurement trendPreviousEntry = trendlineList.get(i - 1).clone();
+
+            entry.subtract(trendPreviousEntry);
+            entry.multiply(0.1f);
+            entry.add(trendPreviousEntry);
+
+            trendlineList.add(entry);
+           // Timber.d("TREND LINE " + entry.getWeight() + " DATE " + entry.getDateTime());
+        }
+
+        return trendlineList;
     }
 
     public void connectToBluetoothDeviceDebugMode(String hwAddress, Handler callbackBtHandler) {

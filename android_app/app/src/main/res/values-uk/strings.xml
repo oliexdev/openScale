@@ -250,7 +250,6 @@
     <string name="app_intro_next_button">Далі</string>
     <string name="app_intro_back_button">Назад</string>
     <string name="app_intro_done_button">Готово</string>
-    <string name="label_rolling_chart">Біжучий графік</string>
     <string name="label_slide_user_main_text">openScale не вимагає від вас створення онлайн облікового запису.
 \n
 \nПоказники тіла розраховані з вимірювань.</string>

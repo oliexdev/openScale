@@ -209,7 +209,6 @@
     <string name="trisa_scale_pairing_succeeded">Spárovanie úspešné!
 \n
 \nPripojte sa znovu pre prijatie údajov meraní.</string>
-    <string name="label_rolling_chart">Pohyblivý diagram</string>
     <string name="label_measurement_bar">Lišta merania</string>
     <string name="info_scale_low_battery">Nízka úroveň batérie (%d%%), vymeňte alebo nabite prosím batérie vo váhe</string>
     <string name="info_bluetooth_connection_error_scale_offline">Nepodarilo sa pripojiť k váhe. Overte, či je váha zapnutá.</string>

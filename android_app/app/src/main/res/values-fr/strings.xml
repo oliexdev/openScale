@@ -226,7 +226,6 @@
     <string name="label_enable_yaxis">Ordonnée</string>
     <string name="label_day_view">Vue journalière</string>
     <string name="label_year_view">Vue annuelle</string>
-    <string name="label_rolling_chart">Histogramme</string>
     <string name="label_measurement_bar">Barre des mesures</string>
     <string name="permission_location_service_info">Autoriser l\'accès à la location pour chercher des dispositifs Bluetooth. Cette permissions peut être révoqué par la suite.</string>
     <string name="label_is_on_right_axis">Est sur l\'axe de droite</string>

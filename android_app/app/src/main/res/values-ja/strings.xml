@@ -229,7 +229,6 @@
     <string name="label_enable_yaxis">Y 軸</string>
     <string name="label_day_view">日表示</string>
     <string name="label_year_view">年表示</string>
-    <string name="label_rolling_chart">ローリングチャート</string>
     <string name="label_measurement_bar">測定バー</string>
     <string name="label_is_on_right_axis">右軸上に</string>
     <string name="label_upgrade_to_openScale_pro">Bluetoothサポートは、openScale proにアップグレードしてください</string>

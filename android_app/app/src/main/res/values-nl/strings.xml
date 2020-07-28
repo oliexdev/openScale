@@ -228,7 +228,6 @@
     <string name="label_enable_yaxis">Y-as</string>
     <string name="label_day_view">Dagweergave</string>
     <string name="label_year_view">Jaarweergave</string>
-    <string name="label_rolling_chart">Voortschrijdende grafiek</string>
     <string name="label_measurement_bar">Meetlat</string>
     <string name="permission_location_service_info">Verleen toegang tot je locatie in de Android-instellingen om te zoeken naar Bluetooth-apparaten. Dit kun je achteraf evt. weer intrekken.</string>
     <string name="label_is_on_right_axis">Staat op de rechteras</string>

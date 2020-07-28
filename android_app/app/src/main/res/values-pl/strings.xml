@@ -216,7 +216,6 @@
 \nPołącz ponownie aby pobrać pomiary.</string>
     <string name="label_day_view">Widok dnia</string>
     <string name="label_year_view">Widok roku</string>
-    <string name="label_rolling_chart">Wykres przewijany</string>
     <string name="label_calories">Kalorie</string>
     <string name="label_measure_unit">Jednostka pomiaru</string>
     <string name="label_activity_level">Poziom aktywności</string>

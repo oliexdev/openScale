@@ -8,12 +8,6 @@
         android:checkable="true"
         android:checked="false"/>
 
-    <item
-        android:id="@+id/enableRollingChart"
-        android:title="@string/label_rolling_chart"
-        android:checkable="true"
-        android:checked="true"/>
-
     <group android:id="@+id/rangeGroup"
         android:checkableBehavior="single">
         <item android:id="@+id/menu_range_day"

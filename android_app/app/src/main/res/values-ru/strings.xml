@@ -230,7 +230,6 @@
     <string name="label_enable_yaxis">ось Y</string>
     <string name="label_day_view">За день</string>
     <string name="label_year_view">За год</string>
-    <string name="label_rolling_chart">Относительный масштаб</string>
     <string name="label_measurement_bar">Отображение измерений</string>
     <string name="label_is_on_right_axis">на правой оси</string>
     <string name="label_upgrade_to_openScale_pro">Пожалуйста, обновите до openScale Pro для подддержки Bluetooth</string>

@@ -227,7 +227,6 @@
     <string name="info_step_on_scale">Súbase con los pies descalzos en la báscula</string>
     <string name="label_day_view">Vista diaria</string>
     <string name="label_year_view">Vista anual</string>
-    <string name="label_rolling_chart">Gráfico dinámico</string>
     <string name="label_measurement_bar">Barra de medición</string>
     <string name="permission_location_service_info">Otorgue permiso para acceso a la ubicación, en la configuración de Android, para buscar dispositivos Bluetooth. Podrá revocarlo después.</string>
     <string name="label_is_on_right_axis">Está en el eje de la derecha</string>
