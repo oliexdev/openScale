@@ -89,7 +89,7 @@
     <string name="label_reminder_weekdays">Jours</string>
     <string name="label_reminder_time">Heure</string>
     <string name="label_reminder_notify_text">Intitulé de la notification</string>
-    <string name="default_value_reminder_notify_text">C\'est l\'heure de se peser !</string>
+    <string name="default_value_reminder_notify_text">C\'est l\'heure de se peser</string>
     <string name="info_on_date">le</string>
     <string name="Monday">lundi</string>
     <string name="Tuesday">mardi</string>
@@ -215,8 +215,10 @@
     <string name="activity_level_extreme">Extrême</string>
     <string name="label_tdee">Dépense journalière totale d\'énergie</string>
     <string name="trisa_scale_not_paired">Cette balance n\'a pas été jumelée !
+\n
 \nMaintenez le bouton situé au bas de la balance pour passer en mode de couplage, puis reconnectez-vous pour récupérer le mot de passe de l\'appareil.</string>
-    <string name="trisa_scale_pairing_succeeded">Le jumelage a réussi!
+    <string name="trisa_scale_pairing_succeeded">Le jumelage a réussi !
+\n
 \nReconnectez-vous pour récupérer les données de mesure.</string>
     <string name="permission_read_write_data_description">lire ou écrire les données openScale, y compris les informations d\'utilisateur et toutes les mesures enregistrées</string>
     <string name="permission_read_write_data_label">Lire ou écrire les données openScale</string>
@@ -275,4 +277,19 @@
 \n Si la graisse, l\'eau corporelle et la masse maigre du corps vous manquent, elles peuvent être estimées à partir de <a href="https://github.com/oliexdev/openScale/wiki/Body-metric-estimations">publications scientifiques</a>.</string>
     <string name="label_slide_metrics_top_text">Suivez et analysez vos mesures corporelles.</string>
     <string name="label_slide_user_top_text">Prend en charge plusieurs utilisateurs.</string>
+    <string name="amputation_level_none">Pas d\'amputation</string>
+    <string name="amputation_level_leg">Jambe</string>
+    <string name="amputation_level_lower_leg_foot">Bas de la jambe et pied</string>
+    <string name="amputation_level_foot">Pied</string>
+    <string name="amputation_level_arm">Bras</string>
+    <string name="amputation_level_forearm_hand">Avant-bras et jambe</string>
+    <string name="amputation_level_hand">Main</string>
+    <string name="info_assisted_weighing_choose_reference_user">Choisissez l\'utilisateur de référence auquel le poids est soustrait</string>
+    <string name="info_assisted_weighing_no_reference_user">Pas d\'utilisateur de référence disponible, veuillez en créer un</string>
+    <string name="info_assisted_weighing_old_reference_measurement">Attention, la dernière mesure de référence date de plus d\'un jour</string>
+    <string name="info_assisted_weighing_no_reference_measurements">L\'utilisateur de référence n\'a pas de mesures</string>
+    <string name="label_amputation_right">Amputation droite</string>
+    <string name="label_amputation_left">Amputation gauche</string>
+    <string name="label_amputation">Amputation</string>
+    <string name="label_assisted_weighing">Pesée assistée</string>
 </resources>
