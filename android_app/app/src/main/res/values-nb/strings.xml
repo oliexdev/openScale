@@ -277,4 +277,19 @@
 \n
 \nDu kan finne hele kildekoden på <a href="https://github.com/oliexdev/openScale">GitHub</a>. Gjør deg trygg på openScale ved å gå igjennom koden.</string>
     <string name="label_slide_welcome_main_text">Fri programvare for vekt- og kroppsmålingssporing, med støtte for Blåtannsvekter.</string>
+    <string name="amputation_level_lower_leg_foot">Legg og fotblad</string>
+    <string name="info_assisted_weighing_old_reference_measurement">Siste referansemåling er over én dag gammel</string>
+    <string name="amputation_level_leg">Legg</string>
+    <string name="amputation_level_foot">Fot</string>
+    <string name="amputation_level_arm">Arm</string>
+    <string name="amputation_level_forearm_hand">Albue og fot</string>
+    <string name="amputation_level_hand">Hånd</string>
+    <string name="amputation_level_none">Ingen amputasjon</string>
+    <string name="info_assisted_weighing_choose_reference_user">Velg referansebrukeren vekten trekkes fra</string>
+    <string name="info_assisted_weighing_no_reference_user">Opprett en referansebruker</string>
+    <string name="info_assisted_weighing_no_reference_measurements">Referansebruker har ingen målinger</string>
+    <string name="label_amputation_right">Amputasjon høyre</string>
+    <string name="label_amputation_left">Amputasjon venstre</string>
+    <string name="label_amputation">Amputasjon</string>
+    <string name="label_assisted_weighing">Assistert veiing</string>
 </resources>
