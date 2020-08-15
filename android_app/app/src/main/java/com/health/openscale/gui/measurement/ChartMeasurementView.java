@@ -40,17 +40,19 @@ import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
 import com.health.openscale.gui.utils.ColorUtil;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Stack;
 
 import timber.log.Timber;
+
+import static java.time.temporal.ChronoUnit.DAYS;
 
 public class ChartMeasurementView extends LineChart {
     public enum ViewMode {
@@ -93,9 +95,10 @@ public class ChartMeasurementView extends LineChart {
 
         refresh();
 
-        setGranularityAndRange(0, 0);
+        setGranularityAndRange(1980, 1);
 
-        moveViewToX(convertDateInShort(openScale.getLastScaleMeasurement().getDateTime()));
+        moveViewToX(convertDateToInt(openScale.getLastScaleMeasurement().getDateTime()));
+
         Timber.d("SET VIEW");
     }
 
@@ -104,19 +107,18 @@ public class ChartMeasurementView extends LineChart {
 
         refresh();
 
-        setGranularityAndRange(year, 0);
+        setGranularityAndRange(year, 1);
 
-        Calendar viewModeCalender = Calendar.getInstance();
-        viewModeCalender.setTimeInMillis(0);
-        viewModeCalender.set(Calendar.YEAR, year);
+        LocalDate startDate = LocalDate.of(year, 1, 1);
 
-        int startDate = convertDateInShort(viewModeCalender.getTime());
         /*viewModeCalender.add(Calendar.YEAR, 1);
         int endDate = convertDateInShort(viewModeCalender.getTime());
 
         setVisibleXRangeMaximum(endDate - startDate);*/
 
-        moveViewToX(startDate);
+        moveViewToX(convertDateToInt(startDate));
+
+        Timber.d("SET YEAR VIEW");
     }
 
     public void setViewRange(int year, int month, final ViewMode mode) {
@@ -126,81 +128,72 @@ public class ChartMeasurementView extends LineChart {
 
         setGranularityAndRange(year, month);
 
-        Calendar viewModeCalender = Calendar.getInstance();
-        viewModeCalender.setTimeInMillis(0);
-        viewModeCalender.set(Calendar.YEAR, year);
-        viewModeCalender.set(Calendar.MONTH, month);
+        LocalDate startDate = LocalDate.of(year, month, 1);
 
-        Timber.d("START DATE " + viewModeCalender.getTime());
-        int startDate = convertDateInShort(viewModeCalender.getTime());
-        viewModeCalender.add(Calendar.MONTH, -1);
-        int endDate = convertDateInShort(viewModeCalender.getTime());
-
-        Timber.d("END DATE " + viewModeCalender.getTime());
-
-        Timber.d("DIFF " + (startDate - endDate));
-
-        moveViewToX(startDate);
-        setVisibleXRangeMaximum(startDate - endDate);
-
+        moveViewToX(convertDateToInt(startDate));
+        
         Timber.d("SET YEAR/MONTH VIEW");
     }
 
     private void setGranularityAndRange(int year, int month) {
-        Calendar zeroCalendar = new GregorianCalendar();
-        zeroCalendar.setTime(new Date(0));
-        zeroCalendar.set(Calendar.YEAR, year);
-        zeroCalendar.set(Calendar.MONTH, month);
-
-        Calendar deltaCalendar = new GregorianCalendar();
-        deltaCalendar.setTime(zeroCalendar.getTime());
+        LocalDate startDate = LocalDate.of(year, month, 1);
+        LocalDate endDate = LocalDate.of(year, month, 1);
 
         int range = 0;
         int granularity = 0;
 
         switch (viewMode) {
             case DAY_OF_MONTH:
-                Timber.d("DAY OF MONTH");
-                deltaCalendar.add(Calendar.MONTH, 1);
-                range = convertDateInShort(deltaCalendar.getTime()) - convertDateInShort(zeroCalendar.getTime());
-                deltaCalendar.add(Calendar.MONTH, -1);
-                deltaCalendar.add(Calendar.DAY_OF_MONTH, 1);
-                granularity = convertDateInShort(deltaCalendar.getTime()) - convertDateInShort(zeroCalendar.getTime());
+                endDate = startDate.plusMonths(1);
+                range = (int)DAYS.between(startDate, endDate);
+                granularity = 1;
                 break;
             case WEEK_OF_MONTH:
+                endDate = startDate.plusMonths(1);
+                range = (int)DAYS.between(startDate, endDate);
+                granularity = 7;
                 break;
             case WEEK_OF_YEAR:
+                endDate = startDate.plusYears(1);
+                range = (int)DAYS.between(startDate, endDate);
+                granularity = 7;
                 break;
             case MONTH_OF_YEAR:
+                endDate = startDate.plusYears(1);
+                range = (int)DAYS.between(startDate, endDate);
+                granularity = 30;
                 break;
             case DAY_OF_YEAR:
+                endDate = startDate.plusYears(1);
+                range = (int)DAYS.between(startDate, endDate);
+                granularity = 1;
                 break;
             case DAY_OF_ALL:
-                deltaCalendar.add(Calendar.DAY_OF_YEAR, 1);
-                granularity = convertDateInShort(deltaCalendar.getTime()) - convertDateInShort(zeroCalendar.getTime());
-                range = granularity * 14;
+                endDate = startDate.plusMonths(1);
+                range = (int)DAYS.between(startDate, endDate);
+                granularity = 1;
                 break;
             case WEEK_OF_ALL:
-                deltaCalendar.add(Calendar.WEEK_OF_YEAR, 1);
-                granularity = convertDateInShort(deltaCalendar.getTime()) - convertDateInShort(zeroCalendar.getTime());
-                range = granularity * 4;
+                endDate = startDate.plusMonths(1);
+                range = (int)DAYS.between(startDate, endDate);
+                granularity = 7;
                 break;
             case MONTH_OF_ALL:
-                deltaCalendar.add(Calendar.MONTH, 1);
-                granularity = convertDateInShort(deltaCalendar.getTime()) - convertDateInShort(zeroCalendar.getTime());
-                range = granularity * 4;
+                endDate = startDate.plusMonths(3);
+                range = (int)DAYS.between(startDate, endDate);
+                granularity = 30;
                 break;
             case YEAR_OF_ALL:
-                deltaCalendar.add(Calendar.YEAR, 1);
-                granularity = convertDateInShort(deltaCalendar.getTime()) - convertDateInShort(zeroCalendar.getTime());
-                range = granularity * 3;
+                endDate = startDate.plusYears(1);
+                range = (int)DAYS.between(startDate, endDate);
+                granularity = 365;
                 break;
             default:
                 throw new IllegalArgumentException("view mode not implemented");
         }
 
-        setAutoScaleMinMaxEnabled(true);
-
+        Timber.d("GRANUALITY " + granularity);
+        Timber.d("RANGE " + range);
         getXAxis().setGranularity(granularity);
         setVisibleXRangeMaximum(range);
     }
@@ -226,6 +219,7 @@ public class ChartMeasurementView extends LineChart {
         progressBar = null;
 
         setHardwareAccelerationEnabled(true);
+        setAutoScaleMinMaxEnabled(true);
         setMarker(new ChartMarkerView(getContext(), R.layout.chart_markerview));
         setDoubleTapToZoomEnabled(false);
         setHighlightPerTapEnabled(true);
@@ -240,57 +234,62 @@ public class ChartMeasurementView extends LineChart {
         getAxisRight().setTextColor(ColorUtil.getTintColor(getContext()));
         getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM);
         getXAxis().setTextColor(ColorUtil.getTintColor(getContext()));
+        getXAxis().setGranularityEnabled(true);
     }
 
-    private int convertDateInShort(Date date) {
-        return (int)(date.getTime() / 1000000L);
+    private int convertDateToInt(LocalDate date) {
+        return (int)date.toEpochDay();
     }
 
-    private Date convertShortInDate(int shortDate) {
-        return new Date(shortDate * 1000000L);
+    private int convertDateToInt(Date date) {
+        LocalDate localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        return (int)localDate.toEpochDay();
+    }
+
+    private LocalDate convertIntToDate(int shortDate) {
+        return LocalDate.ofEpochDay(shortDate);
     }
 
     private void setXValueFormat(final ViewMode mode) {
         getXAxis().setValueFormatter(new ValueFormatter() {
-            private final SimpleDateFormat xValueFormat = new SimpleDateFormat();
-            private final Calendar calendar = Calendar.getInstance();
 
             @Override
             public String getAxisLabel(float value, AxisBase axis) {
-                calendar.setTime(convertShortInDate((int)value));
+                DateTimeFormatter formatter;
 
                 switch (mode) {
                     case DAY_OF_MONTH:
-                        xValueFormat.applyLocalizedPattern("dd");
+                        formatter = DateTimeFormatter.ofPattern("dd");
                         break;
                     case WEEK_OF_MONTH:
-                        xValueFormat.applyLocalizedPattern("'W'W");
+                        formatter = DateTimeFormatter.ofPattern("'W'W");
                         break;
                     case WEEK_OF_YEAR:
-                        xValueFormat.applyLocalizedPattern("'W'w");
+                        formatter = DateTimeFormatter.ofPattern("'W'w");
                         break;
                     case MONTH_OF_YEAR:
-                        xValueFormat.applyLocalizedPattern("MMM");
+                        formatter = DateTimeFormatter.ofPattern("MMM");
                         break;
                     case DAY_OF_YEAR:
-                        xValueFormat.applyLocalizedPattern("D");
+                        formatter = DateTimeFormatter.ofPattern("D");
                         break;
                     case DAY_OF_ALL:
-                        return DateFormat.getDateInstance(DateFormat.SHORT).format(calendar.getTime());
+                        formatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT);
+                        break;
                     case WEEK_OF_ALL:
-                        xValueFormat.applyLocalizedPattern("'W'w yyyy");
+                        formatter = DateTimeFormatter.ofPattern("'W'w yyyy");
                         break;
                     case MONTH_OF_ALL:
-                        xValueFormat.applyLocalizedPattern("MMM yyyy");
+                        formatter = DateTimeFormatter.ofPattern("MMM yyyy");
                         break;
                     case YEAR_OF_ALL:
-                        xValueFormat.applyLocalizedPattern("yyyy");
+                        formatter = DateTimeFormatter.ofPattern("yyyy");
                         break;
                     default:
                         throw new IllegalArgumentException("view mode not implemented");
                 }
 
-                return xValueFormat.format(calendar.getTime());
+                return formatter.format(convertIntToDate((int)value));
             }
         });
     }
@@ -323,7 +322,7 @@ public class ChartMeasurementView extends LineChart {
                     }
 
                     Entry entry = new Entry();
-                    entry.setX(convertDateInShort(measurement.getDateTime()));
+                    entry.setX(convertDateToInt(measurement.getDateTime()));
                     entry.setY(measurementView.getValue());
                     Object[] extraData = new Object[3];
                     extraData[0] = measurement;
@@ -446,7 +445,7 @@ public class ChartMeasurementView extends LineChart {
                     }
 
                     Entry entry = new Entry();
-                    entry.setX(convertDateInShort(measurement.getDateTime()));
+                    entry.setX(convertDateToInt(measurement.getDateTime()));
                     entry.setY(measurementView.getValue());
                     Object[] extraData = new Object[3];
                     extraData[0] = measurement;

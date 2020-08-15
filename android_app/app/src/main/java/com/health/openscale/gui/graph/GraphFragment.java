@@ -58,6 +58,8 @@ import com.health.openscale.gui.measurement.MeasurementEntryFragment;
 import com.health.openscale.gui.utils.ColorUtil;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -79,8 +81,8 @@ public class GraphFragment extends Fragment {
 
     private OpenScale openScale;
 
-    private final Calendar calYears;
-    private Calendar calLastSelected;
+    private LocalDate calYears;
+    private LocalDate calLastSelected;
 
     private ScaleMeasurement markedMeasurement;
 
@@ -88,8 +90,8 @@ public class GraphFragment extends Fragment {
     private static final String CAL_LAST_SELECTED_KEY = "calLastSelected";
 
     public GraphFragment() {
-        calYears = Calendar.getInstance();
-        calLastSelected = Calendar.getInstance();
+        calYears = LocalDate.now();
+        calLastSelected = LocalDate.now();
     }
 
     @Override
@@ -99,13 +101,13 @@ public class GraphFragment extends Fragment {
 
         if (savedInstanceState == null) {
             if (!openScale.isScaleMeasurementListEmpty()) {
-                calYears.setTime(openScale.getLastScaleMeasurement().getDateTime());
-                calLastSelected.setTime(openScale.getLastScaleMeasurement().getDateTime());
+                calYears = openScale.getLastScaleMeasurement().getDateTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();;
+                calLastSelected = openScale.getLastScaleMeasurement().getDateTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
             }
         }
         else {
-            calYears.setTimeInMillis(savedInstanceState.getLong(CAL_YEARS_KEY));
-            calLastSelected.setTimeInMillis(savedInstanceState.getLong(CAL_LAST_SELECTED_KEY));
+            calYears = LocalDate.ofEpochDay(savedInstanceState.getLong(CAL_YEARS_KEY));
+            calLastSelected = LocalDate.ofEpochDay(savedInstanceState.getLong(CAL_LAST_SELECTED_KEY));
         }
 
         graphView = inflater.inflate(R.layout.fragment_graph, container, false);
@@ -142,7 +144,7 @@ public class GraphFragment extends Fragment {
         });
 
         txtYear = graphView.findViewById(R.id.txtYear);
-        txtYear.setText(Integer.toString(calYears.get(Calendar.YEAR)));
+        txtYear.setText(Integer.toString(calYears.getYear()));
 
         chartActionBarView = graphView.findViewById(R.id.chartActionBar);
         chartActionBarView.setOnActionClickListener(new View.OnClickListener() {
@@ -163,14 +165,9 @@ public class GraphFragment extends Fragment {
         btnLeftYear = graphView.findViewById(R.id.btnLeftYear);
         btnLeftYear.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
-                calYears.roll(Calendar.YEAR, false);
-                txtYear.setText(Integer.toString(calYears.get(Calendar.YEAR)));
+                calYears = calYears.minusYears(1);
+                txtYear.setText(Integer.toString(calYears.getYear()));
 
-                List<ScaleMeasurement> scaleMeasurementList =
-                        OpenScale.getInstance().getScaleMeasurementOfYear(calYears.get(Calendar.YEAR));
-                if (!scaleMeasurementList.isEmpty()) {
-                    calLastSelected.setTime(scaleMeasurementList.get(0).getDateTime());
-                }
                 generateGraphs();
             }
         });
@@ -178,14 +175,9 @@ public class GraphFragment extends Fragment {
         btnRightYear = graphView.findViewById(R.id.btnRightYear);
         btnRightYear.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
-                calYears.roll(Calendar.YEAR, true);
-                txtYear.setText(Integer.toString(calYears.get(Calendar.YEAR)));
+                calYears = calYears.plusYears(1);
+                txtYear.setText(Integer.toString(calYears.getYear()));
 
-                List<ScaleMeasurement> scaleMeasurementList =
-                        OpenScale.getInstance().getScaleMeasurementOfYear(calYears.get(Calendar.YEAR));
-                if (!scaleMeasurementList.isEmpty()) {
-                    calLastSelected.setTime(scaleMeasurementList.get(scaleMeasurementList.size() - 1).getDateTime());
-                }
                 generateGraphs();
             }
         });
@@ -216,6 +208,8 @@ public class GraphFragment extends Fragment {
                             prefs.edit().putBoolean("showMonth", true).apply();
                         }
 
+                        getActivity().recreate(); // TODO HACK to refresh graph; graph.invalidate and notfiydatachange is not enough!?
+
                         generateGraphs();
                         return true;
                     case R.id.enableWeek:
@@ -226,6 +220,8 @@ public class GraphFragment extends Fragment {
                             item.setChecked(true);
                             prefs.edit().putBoolean("showWeek", true).apply();
                         }
+
+                        getActivity().recreate(); // TODO HACK to refresh graph; graph.invalidate and notfiydatachange is not enough!?
 
                         generateGraphs();
                         return true;
@@ -294,25 +290,24 @@ public class GraphFragment extends Fragment {
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        outState.putLong(CAL_YEARS_KEY, calYears.getTimeInMillis());
-        outState.putLong(CAL_LAST_SELECTED_KEY, calLastSelected.getTimeInMillis());
+        outState.putLong(CAL_YEARS_KEY, calYears.toEpochDay());
+        outState.putLong(CAL_LAST_SELECTED_KEY, calLastSelected.toEpochDay());
     }
 
     private void generateColumnData()
     {
-        int[] numOfMonth = openScale.getCountsOfMonth(calYears.get(Calendar.YEAR));
+        int[] numOfMonth = openScale.getCountsOfMonth(calYears.getYear());
 
-        Calendar calMonths = Calendar.getInstance();
-        calMonths.set(Calendar.MONTH, Calendar.JANUARY);
+        LocalDate calMonths = LocalDate.of(2020, 1, 1);
 
         List<IBarDataSet> dataSets = new ArrayList<>();
 
         for (int i=0; i<12; i++) {
             List<BarEntry> entries = new ArrayList<>();
 
-            entries.add(new BarEntry(calMonths.get(Calendar.MONTH), numOfMonth[i]));
+            entries.add(new BarEntry(calMonths.getMonthValue(), numOfMonth[i]));
 
-            calMonths.add(Calendar.MONTH, 1);
+            calMonths = calMonths.plusMonths(1);
 
             BarDataSet set = new BarDataSet(entries, "month "+i);
             set.setColor(ColorUtil.COLORS[i % 4]);
@@ -329,7 +324,7 @@ public class GraphFragment extends Fragment {
     }
 
     private void generateGraphs() {
-        final int selectedYear = calYears.get(Calendar.YEAR);
+        final int selectedYear = calYears.getYear();
 
         int firstYear = selectedYear;
         int lastYear = selectedYear;
@@ -362,9 +357,9 @@ public class GraphFragment extends Fragment {
             generateColumnData();
 
            if (prefs.getBoolean("showWeek", false)) {
-                chartView.setViewRange(selectedYear, calLastSelected.get(Calendar.MONTH), ChartMeasurementView.ViewMode.WEEK_OF_MONTH);
+                chartView.setViewRange(selectedYear, calLastSelected.getMonthValue(), ChartMeasurementView.ViewMode.WEEK_OF_MONTH);
             } else {
-                chartView.setViewRange(selectedYear, calLastSelected.get(Calendar.MONTH), ChartMeasurementView.ViewMode.DAY_OF_MONTH);
+                chartView.setViewRange(selectedYear, calLastSelected.getMonthValue(), ChartMeasurementView.ViewMode.DAY_OF_MONTH);
             }
         } else { // show only yearly diagram and hide monthly diagram
             chartTop.setVisibility(View.GONE);
@@ -381,10 +376,7 @@ public class GraphFragment extends Fragment {
     private class chartTopValueTouchListener implements OnChartValueSelectedListener {
         @Override
         public void onValueSelected(Entry e, Highlight h) {
-            Calendar cal = Calendar.getInstance();
-            cal.set(Calendar.MONTH, (int)e.getX());
-
-            calLastSelected = cal;
+            calLastSelected = calLastSelected.withMonth((int)e.getX());
 
             generateGraphs();
 
