@@ -277,4 +277,19 @@
     <string name="app_intro_next_button">Weiter</string>
     <string name="app_intro_back_button">Zurück</string>
     <string name="app_intro_done_button">Fertig</string>
+    <string name="amputation_level_leg">Bein</string>
+    <string name="amputation_level_lower_leg_foot">Unterschenkel und Fuß</string>
+    <string name="amputation_level_foot">Fuß</string>
+    <string name="amputation_level_arm">Arm</string>
+    <string name="amputation_level_forearm_hand">Unterarm und Bein</string>
+    <string name="amputation_level_hand">Hand</string>
+    <string name="amputation_level_none">Keine Amputation</string>
+    <string name="info_assisted_weighing_choose_reference_user">Wählen Sie den Referenz Benutzer, von dem das Gewicht subtrahiert wird</string>
+    <string name="info_assisted_weighing_no_reference_user">Kein Referenz Benutzer verfügbar, bitte erstellen sie einen</string>
+    <string name="info_assisted_weighing_old_reference_measurement">Warnung letzte Messung ist älter als ein Tag</string>
+    <string name="info_assisted_weighing_no_reference_measurements">Referenz Benutzer hat keine Messwerte</string>
+    <string name="label_amputation_right">Amputation rechts</string>
+    <string name="label_amputation_left">Amputation links</string>
+    <string name="label_amputation">Amputation</string>
+    <string name="label_assisted_weighing">Assistiertes Wiegen</string>
 </resources>
