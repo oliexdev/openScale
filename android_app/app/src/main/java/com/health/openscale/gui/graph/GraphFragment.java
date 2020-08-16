@@ -388,7 +388,7 @@ public class GraphFragment extends Fragment {
     private class chartTopValueTouchListener implements OnChartValueSelectedListener {
         @Override
         public void onValueSelected(Entry e, Highlight h) {
-            calLastSelected = calLastSelected.withMonth((int)e.getX());
+            calLastSelected = calLastSelected.withMonth((int)e.getX()+1);
 
             generateGraphs();
 
