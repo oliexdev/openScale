@@ -88,6 +88,9 @@ android {
     }
 
     buildTypes {
+        debug {
+            archivesBaseName = "openScale"
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
@@ -140,7 +143,7 @@ dependencies {
     annotationProcessor "android.arch.lifecycle:compiler:1.1.1"
 
     // MPAndroidChart
-    implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
+    implementation 'com.github.PhilJay:MPAndroidChart:master-SNAPSHOT'
     // Simple CSV
     implementation 'com.j256.simplecsv:simplecsv:2.6'
     // Blessed Android

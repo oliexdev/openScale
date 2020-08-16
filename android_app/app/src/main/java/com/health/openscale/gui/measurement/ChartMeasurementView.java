@@ -19,6 +19,7 @@ package com.health.openscale.gui.measurement;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.graphics.RectF;
 import android.preference.PreferenceManager;
 import android.util.AttributeSet;
 import android.widget.ProgressBar;
@@ -33,6 +34,7 @@ import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
+import com.github.mikephil.charting.utils.Utils;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
@@ -70,6 +72,7 @@ public class ChartMeasurementView extends LineChart {
     private OpenScale openScale;
     private SharedPreferences prefs;
     private List<MeasurementView> measurementViews;
+    private List<ScaleMeasurement> scaleMeasurementList;
     private ViewMode viewMode;
     private boolean isAnimationOn;
     private boolean isInGraphKey;
@@ -93,9 +96,8 @@ public class ChartMeasurementView extends LineChart {
     public void setViewRange(final ViewMode mode) {
         viewMode = mode;
 
-        refresh();
-
         setGranularityAndRange(1980, 1);
+        setXValueFormat(viewMode);
 
         moveViewToX(convertDateToInt(openScale.getLastScaleMeasurement().getDateTime()));
 
@@ -105,9 +107,8 @@ public class ChartMeasurementView extends LineChart {
     public void setViewRange(int year, final ViewMode mode) {
         viewMode = mode;
 
-        refresh();
-
         setGranularityAndRange(year, 1);
+        setXValueFormat(viewMode);
 
         LocalDate startDate = LocalDate.of(year, 1, 1);
 
@@ -124,9 +125,8 @@ public class ChartMeasurementView extends LineChart {
     public void setViewRange(int year, int month, final ViewMode mode) {
         viewMode = mode;
 
-        refresh();
-
         setGranularityAndRange(year, month);
+        setXValueFormat(viewMode);
 
         LocalDate startDate = LocalDate.of(year, month, 1);
 
@@ -196,6 +196,7 @@ public class ChartMeasurementView extends LineChart {
         Timber.d("RANGE " + range);
         getXAxis().setGranularity(granularity);
         setVisibleXRangeMaximum(range);
+        setCustomViewPortOffsets(); // set custom viewPortOffsets to avoid jitter on translating while auto scale is on
     }
 
     public void setAnimationOn(boolean status) {
@@ -294,39 +295,101 @@ public class ChartMeasurementView extends LineChart {
         });
     }
 
-    private void refresh() {
+    private void setCustomViewPortOffsets() {
+        float offsetLeft = 0f, offsetRight = 0f, offsetTop = 0f, offsetBottom = 0f;
+
+        RectF mOffsetsBuffer = new RectF();
+        calculateLegendOffsets(mOffsetsBuffer);
+
+        offsetLeft += mOffsetsBuffer.left;
+        offsetTop += mOffsetsBuffer.top;
+        offsetRight += mOffsetsBuffer.right;
+        offsetBottom += Math.max(70f, mOffsetsBuffer.bottom);
+
+        // offsets for y-labels
+        if (mAxisLeft.needsOffset()) {
+            offsetLeft += mAxisLeft.getRequiredWidthSpace(mAxisRendererLeft
+                    .getPaintAxisLabels());
+        }
+
+        if (mAxisRight.needsOffset()) {
+            offsetRight += mAxisRight.getRequiredWidthSpace(mAxisRendererRight
+                    .getPaintAxisLabels());
+        }
+
+        if (mXAxis.isEnabled() && mXAxis.isDrawLabelsEnabled()) {
+
+            float xLabelHeight = mXAxis.mLabelRotatedHeight + mXAxis.getYOffset();
+
+            // offsets for x-labels
+            if (mXAxis.getPosition() == XAxis.XAxisPosition.BOTTOM) {
+
+                offsetBottom += xLabelHeight;
+
+            } else if (mXAxis.getPosition() == XAxis.XAxisPosition.TOP) {
+
+                offsetTop += xLabelHeight;
+
+            } else if (mXAxis.getPosition() == XAxis.XAxisPosition.BOTH_SIDED) {
+
+                offsetBottom += xLabelHeight;
+                offsetTop += xLabelHeight;
+            }
+        }
+
+        offsetTop += getExtraTopOffset();
+        offsetRight += getExtraRightOffset();
+        offsetBottom += getExtraBottomOffset();
+        offsetLeft += getExtraLeftOffset();
+
+        float minOffset = Utils.convertDpToPixel(mMinOffset);
+
+        setViewPortOffsets(
+                Math.max(minOffset, offsetLeft),
+                Math.max(minOffset, offsetTop),
+                Math.max(minOffset, offsetRight),
+                Math.max(minOffset, offsetBottom));
+    }
+
+    public void updateMeasurementList(final List<ScaleMeasurement> scaleMeasurementList) {
         clear();
-
-        List<ScaleMeasurement> scaleMeasurementList = openScale.getScaleMeasurementList();
-
-        Collections.reverse(scaleMeasurementList);
 
         if (scaleMeasurementList.isEmpty()) {
             return;
         }
 
-        List<ILineDataSet> lineDataSets = new ArrayList<>();
+        Collections.reverse(scaleMeasurementList);
+
+        this.scaleMeasurementList = scaleMeasurementList;
+        refreshMeasurementList();
+    }
+
+    public void refreshMeasurementList() {
+        progressBar.setVisibility(VISIBLE);
+
+        List<ILineDataSet> lineDataSets;
+        lineDataSets = new ArrayList<>();
 
         for (MeasurementView view : measurementViews) {
-            if (view instanceof FloatMeasurementView) {
+            if (view instanceof FloatMeasurementView && view.isVisible()) {
                 final FloatMeasurementView measurementView = (FloatMeasurementView) view;
 
                 final List<Entry> lineEntries = new ArrayList<>();
 
-                for (ScaleMeasurement measurement : scaleMeasurementList) {
-                   // ScaleMeasurement prevMeasuremnt = openScale.getTupleOfScaleMeasurement(measurement.getId())[0];
-                    measurementView.loadFrom(measurement, null);
+                for (int i=0; i<scaleMeasurementList.size(); i++) {
+                    ScaleMeasurement measurement = scaleMeasurementList.get(i);
+                    float value = measurementView.getMeasurementValue(measurement);
 
-                    if (measurementView.getValue() == 0.0f) {
+                    if (value == 0.0f) {
                         continue;
                     }
 
                     Entry entry = new Entry();
                     entry.setX(convertDateToInt(measurement.getDateTime()));
-                    entry.setY(measurementView.getValue());
+                    entry.setY(value);
                     Object[] extraData = new Object[3];
                     extraData[0] = measurement;
-                    extraData[1] = null;
+                    extraData[1] = (i == 0) ? null : scaleMeasurementList.get(i-1);
                     extraData[2] = measurementView;
                     entry.setData(extraData);
 
@@ -339,7 +402,6 @@ public class ChartMeasurementView extends LineChart {
 
         addTrendLine(lineDataSets);
        // addGoalLine(lineDataSets);
-        setXValueFormat(viewMode);
 
         LineData data = new LineData(lineDataSets);
         setData(data);
@@ -424,32 +486,66 @@ public class ChartMeasurementView extends LineChart {
         }
     }
 
+    private List<ScaleMeasurement> getScaleMeasurementsAsTrendline(List<ScaleMeasurement> measurementList) {
+        Collections.reverse(measurementList);
+        List<ScaleMeasurement> trendlineList = new ArrayList<>();
+
+       /* ScaleMeasurement a = new ScaleMeasurement();
+        a.setWeight(173.2f);
+        ScaleMeasurement b = new ScaleMeasurement();
+        b.setWeight(171.5f);
+
+        ScaleMeasurement entry = b.clone();
+        ScaleMeasurement trendPreviousEntry = a.clone();
+        ScaleMeasurement tempScaleMeasurement = entry.clone();
+
+        tempScaleMeasurement.subtract(a);
+        tempScaleMeasurement.multiply(0.1f);
+        trendPreviousEntry.add(tempScaleMeasurement);*/
+
+        trendlineList.add(measurementList.get(0));
+
+        for (int i = 1; i < measurementList.size(); i++) {
+            ScaleMeasurement entry = measurementList.get(i).clone();
+            ScaleMeasurement trendPreviousEntry = trendlineList.get(i - 1).clone();
+
+            entry.subtract(trendPreviousEntry);
+            entry.multiply(0.1f);
+            entry.add(trendPreviousEntry);
+
+            trendlineList.add(entry);
+            // Timber.d("TREND LINE " + entry.getWeight() + " DATE " + entry.getDateTime());
+        }
+        Collections.reverse(measurementList);
+
+        return trendlineList;
+    }
+
     private void addTrendLine(List<ILineDataSet> lineDataSets) {
 
-        List<ScaleMeasurement> scaleMeasurementsAsTrendlineList = openScale.getScaleMeasurementsAsTrendline();
+        List<ScaleMeasurement> scaleMeasurementsAsTrendlineList = getScaleMeasurementsAsTrendline(scaleMeasurementList);
         Collections.reverse(scaleMeasurementsAsTrendlineList);
 
         for (MeasurementView view : measurementViews) {
-            if (view instanceof FloatMeasurementView) {
+            if (view instanceof FloatMeasurementView && view.isVisible()) {
                 final FloatMeasurementView measurementView = (FloatMeasurementView) view;
 
                 final List<Entry> lineEntries = new ArrayList<>();
 
-                for (ScaleMeasurement measurement : scaleMeasurementsAsTrendlineList) {
-                    // TODO
-                   // ScaleMeasurement prevMeasuremnt = openScale.getTupleOfScaleMeasurement(measurement.getId());
-                    measurementView.loadFrom(measurement, null);
+                for (int i=0; i<scaleMeasurementsAsTrendlineList.size(); i++) {
+                    ScaleMeasurement measurement = scaleMeasurementsAsTrendlineList.get(i);
+                    float value = measurementView.getMeasurementValue(measurement);
 
-                    if (measurementView.getValue() == 0.0f) {
+                    if (value == 0.0f) {
                         continue;
                     }
 
                     Entry entry = new Entry();
                     entry.setX(convertDateToInt(measurement.getDateTime()));
-                    entry.setY(measurementView.getValue());
+                    entry.setY(value);
                     Object[] extraData = new Object[3];
                     extraData[0] = measurement;
-                    extraData[1] = null;
+                    extraData[1] = (i == 0) ? null : scaleMeasurementsAsTrendlineList.get(i-1);
                     extraData[2] = measurementView;
                     entry.setData(extraData);
 
@@ -521,17 +617,17 @@ public class ChartMeasurementView extends LineChart {
         LineDataSet measurementLine = new LineDataSet(lineEntries, measurementView.getName().toString() + "-" + getContext().getString(R.string.label_trend_line));
         measurementLine.setLineWidth(1.5f);
         measurementLine.setValueTextSize(10.0f);
-        measurementLine.setColor(Color.GREEN);
+        measurementLine.setColor(measurementView.getColor());
         measurementLine.setValueTextColor(ColorUtil.getTintColor(getContext()));
-        measurementLine.setCircleColor(Color.GREEN);
-        measurementLine.setCircleHoleColor(Color.GREEN);
+        measurementLine.setCircleColor(measurementView.getColor());
+        measurementLine.setCircleHoleColor(measurementView.getColor());
         measurementLine.setAxisDependency(measurementView.getSettings().isOnRightAxis() ? YAxis.AxisDependency.RIGHT : YAxis.AxisDependency.LEFT);
         measurementLine.setHighlightEnabled(true);
         measurementLine.setDrawHighlightIndicators(true);
         measurementLine.setHighlightLineWidth(1.5f);
         measurementLine.setDrawHorizontalHighlightIndicator(false);
         measurementLine.setHighLightColor(Color.RED);
-        measurementLine.setDrawCircles(prefs.getBoolean("pointsEnable", true));
+        measurementLine.setDrawCircles(false);//prefs.getBoolean("pointsEnable", true));
         measurementLine.setDrawValues(prefs.getBoolean("labelsEnable", true));
         measurementLine.setValueFormatter(new ValueFormatter() {
             @Override

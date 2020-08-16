@@ -261,13 +261,11 @@ public class OverviewFragment extends Fragment {
 
         updateUserSelection();
         updateMesurementViews(markedMeasurement);
+        chartView.updateMeasurementList(scaleMeasurementList);
         updateChartView();
     }
 
     private void updateChartView() {
-        // TODO
-        boolean enableRollingChart = prefs.getBoolean("enableRollingChart", true);
-
         ChartMeasurementView.ViewMode selectedRangeMode = ChartMeasurementView.ViewMode.values()[prefs.getInt("selectRangeMode", ChartMeasurementView.ViewMode.DAY_OF_ALL.ordinal())];
         chartView.setViewRange(selectedRangeMode);
     }

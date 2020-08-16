@@ -280,6 +280,7 @@ public class GraphFragment extends Fragment {
         OpenScale.getInstance().getScaleMeasurementsLiveData().observe(getViewLifecycleOwner(), new Observer<List<ScaleMeasurement>>() {
             @Override
             public void onChanged(List<ScaleMeasurement> scaleMeasurements) {
+                chartView.updateMeasurementList(scaleMeasurements);
                 generateGraphs();
             }
         });
@@ -312,7 +313,7 @@ public class GraphFragment extends Fragment {
 
         List<IBarDataSet> dataSets = new ArrayList<>();
 
-        for (int i=0; i<12; i++) {
+        for (int i=1; i<12; i++) {
             List<BarEntry> entries = new ArrayList<>();
 
             entries.add(new BarEntry(calMonths.getMonthValue(), numOfMonth[i]));
@@ -381,6 +382,7 @@ public class GraphFragment extends Fragment {
                 chartView.setViewRange(selectedYear, ChartMeasurementView.ViewMode.MONTH_OF_YEAR);
             }
         }
+        chartView.refreshMeasurementList();
     }
 
     private class chartTopValueTouchListener implements OnChartValueSelectedListener {
