@@ -119,6 +119,8 @@
     <string name="label_not_found">blev ikke fundet</string>
     <string name="label_ignoreOutOfRange">Ignorér data udenfor interval</string>
     <string name="label_initial_weight">Startvægt</string>
+    <string name="label_regression_line">Vægt tilbagegang</string>
+    <string name="label_regression_line_degree">Grad af tilbagegang</string>
     <string name="label_goal_line">Mållinje</string>
     <string name="error_max_scale_users">Det maksimale antal brugere er nået</string>
     <string name="info_step_on_scale_for_reference">Træd op på vægten med bare fødder for at foretagen en referencemåling</string>

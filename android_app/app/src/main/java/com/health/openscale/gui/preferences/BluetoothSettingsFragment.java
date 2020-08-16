@@ -67,8 +67,6 @@ import java.util.Map;
 import timber.log.Timber;
 
 public class BluetoothSettingsFragment extends Fragment {
-    private Context context;
-
     public static final String PREFERENCE_KEY_BLUETOOTH_DEVICE_NAME = "btDeviceName";
     public static final String PREFERENCE_KEY_BLUETOOTH_HW_ADDRESS = "btHwAddress";
 
@@ -85,8 +83,6 @@ public class BluetoothSettingsFragment extends Fragment {
         View root = inflater.inflate(R.layout.fragment_bluetoothsettings, container, false);
 
         setHasOptionsMenu(true);
-
-        context = getContext();
 
         deviceListView = root.findViewById(R.id.deviceListView);
         txtSearching = root.findViewById(R.id.txtSearching);
@@ -156,9 +152,9 @@ public class BluetoothSettingsFragment extends Fragment {
                 txtSearching.setText(R.string.label_bluetooth_searching_finished);
                 progressBar.setVisibility(View.GONE);
 
-                BluetoothDeviceView notSupported = new BluetoothDeviceView(context);
-                notSupported.setDeviceName(getString(R.string.label_scale_not_supported));
-                notSupported.setSummaryText(getString(R.string.label_click_to_help_add_support));
+                BluetoothDeviceView notSupported = new BluetoothDeviceView(getContext());
+                notSupported.setDeviceName(getContext().getString(R.string.label_scale_not_supported));
+                notSupported.setSummaryText(getContext().getString(R.string.label_click_to_help_add_support));
                 notSupported.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -207,7 +203,7 @@ public class BluetoothSettingsFragment extends Fragment {
             Timber.d("Found unsupported device %s",
                     formatDeviceName(device));
             deviceView.setIcon(R.drawable.ic_bluetooth_device_not_supported);
-            deviceView.setSummaryText(getString(R.string.label_bt_device_no_support));
+            deviceView.setSummaryText(getContext().getString(R.string.label_bt_device_no_support));
             deviceView.setEnabled(false);
 
             if (OpenScale.DEBUG_MODE) {
@@ -346,7 +342,7 @@ public class BluetoothSettingsFragment extends Fragment {
         public void onClick(View view) {
             BluetoothDevice device = foundDevices.get(getDeviceAddress());
 
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
 
             prefs.edit()
                     .putString(PREFERENCE_KEY_BLUETOOTH_HW_ADDRESS, device.getAddress())

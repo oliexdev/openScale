@@ -168,6 +168,8 @@
     <string name="label_category_measurement_database">測定データベース</string>
     <string name="label_export_dir">エクスポートディレクトリー</string>
     <string name="label_not_found">見つかりません</string>
+    <string name="label_regression_line">回帰線</string>
+    <string name="label_regression_line_degree">回帰多項式次数</string>
     <string name="label_goal_line">目標線</string>
     <string name="error_max_scale_users">最大同時測定のユーザー数に達しました</string>
     <string name="info_step_on_scale">裸足で体重計に載ってください</string>

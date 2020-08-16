@@ -135,6 +135,8 @@
     <string name="label_not_found">не знайдено</string>
     <string name="label_ignoreOutOfRange">Ігнорувати дані за межами діапазону</string>
     <string name="label_initial_weight">Початкова вага</string>
+    <string name="label_regression_line">Графік зниження</string>
+    <string name="label_regression_line_degree">Ступінь поліномінальної регресії</string>
     <string name="label_goal_line">Лінія мети</string>
     <string name="label_help">Допомога</string>
     <string name="label_feedback_message_enjoying">До вподоби openScale\?</string>

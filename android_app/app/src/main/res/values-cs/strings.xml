@@ -189,6 +189,8 @@
     <string name="label_enable_legend">Legenda grafu</string>
     <string name="label_enable_yaxis">Osa Y</string>
     <string name="label_enable_labels">Popisek dat</string>
+    <string name="label_regression_line">Regresivní křivka</string>
+    <string name="label_regression_line_degree">Stupeň polynomické regrese</string>
     <string name="label_goal_line">Cílová čára</string>
     <string name="info_step_on_scale_for_reference">Stoupněte na váhu naboso pro referenční měření</string>
     <string name="info_step_on_scale">Stoupněte na váhu naboso</string>
@@ -214,4 +216,12 @@
     <string name="info_bluetooth_connection_error_scale_offline">Nemohu se připojit k váze. Ujistěte se prosím, že je zapnutá.</string>
     <string name="label_empty">prázdný</string>
     <string name="label_age">Věk</string>
+    <string name="label_contribute_translation">Přidat překlad</string>
+    <string name="label_measurement_in_percent">Měření v %</string>
+    <string name="label_export_overwrite">Přepsat předchozí export \"%s\"\?</string>
+    <string name="permission_read_write_data_description">číst/zapisovat openScale data, včetně uživatelských informací a všech uložených měření</string>
+    <string name="default_value_reminder_notify_text">Čas příštího vážení</string>
+    <string name="info_assisted_weighing_old_reference_measurement">Varování: poslední referenční měření je starší než jeden den</string>
+    <string name="label_activity_level">Úroveň aktivity</string>
+    <string name="label_assisted_weighing">Asistované vážení</string>
 </resources>
