@@ -99,9 +99,9 @@ public class ChartMeasurementView extends LineChart {
         setGranularityAndRange(1980, 1);
         setXValueFormat(viewMode);
 
-        moveViewToX(convertDateToInt(openScale.getLastScaleMeasurement().getDateTime()));
-
-        Timber.d("SET VIEW");
+        if (openScale.getLastScaleMeasurement() != null) {
+            moveViewToX(convertDateToInt(openScale.getLastScaleMeasurement().getDateTime()));
+        }
     }
 
     public void setViewRange(int year, final ViewMode mode) {
@@ -112,14 +112,7 @@ public class ChartMeasurementView extends LineChart {
 
         LocalDate startDate = LocalDate.of(year, 1, 1);
 
-        /*viewModeCalender.add(Calendar.YEAR, 1);
-        int endDate = convertDateInShort(viewModeCalender.getTime());
-
-        setVisibleXRangeMaximum(endDate - startDate);*/
-
         moveViewToX(convertDateToInt(startDate));
-
-        Timber.d("SET YEAR VIEW");
     }
 
     public void setViewRange(int year, int month, final ViewMode mode) {
@@ -131,8 +124,6 @@ public class ChartMeasurementView extends LineChart {
         LocalDate startDate = LocalDate.of(year, month, 1);
 
         moveViewToX(convertDateToInt(startDate));
-        
-        Timber.d("SET YEAR/MONTH VIEW");
     }
 
     private void setGranularityAndRange(int year, int month) {
@@ -355,6 +346,7 @@ public class ChartMeasurementView extends LineChart {
         clear();
 
         if (scaleMeasurementList.isEmpty()) {
+            progressBar.setVisibility(GONE);
             return;
         }
 
@@ -365,6 +357,11 @@ public class ChartMeasurementView extends LineChart {
     }
 
     public void refreshMeasurementList() {
+        if (scaleMeasurementList == null) {
+            progressBar.setVisibility(GONE);
+            return;
+        }
+
         progressBar.setVisibility(VISIBLE);
 
         List<ILineDataSet> lineDataSets;
