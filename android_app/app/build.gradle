@@ -88,6 +88,9 @@ android {
     }
 
     buildTypes {
+        debug {
+            archivesBaseName = "openScale"
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
