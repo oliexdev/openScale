@@ -309,14 +309,14 @@ public class GraphFragment extends Fragment {
     {
         int[] numOfMonth = openScale.getCountsOfMonth(calYears.getYear());
 
-        LocalDate calMonths = LocalDate.of(2020, 1, 1);
+        LocalDate calMonths = LocalDate.of(calYears.getYear(), 1, 1);
 
         List<IBarDataSet> dataSets = new ArrayList<>();
 
-        for (int i=1; i<12; i++) {
+        for (int i=0; i<12; i++) {
             List<BarEntry> entries = new ArrayList<>();
 
-            entries.add(new BarEntry(calMonths.getMonthValue(), numOfMonth[i]));
+            entries.add(new BarEntry(calMonths.getMonthValue()-1, numOfMonth[i]));
 
             calMonths = calMonths.plusMonths(1);
 
