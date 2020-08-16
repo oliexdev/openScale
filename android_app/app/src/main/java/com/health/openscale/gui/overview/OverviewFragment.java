@@ -100,6 +100,7 @@ public class OverviewFragment extends Fragment {
         chartActionBarView.setOnActionClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                chartView.refreshMeasurementList();
                 updateChartView();
             }
         });
