@@ -139,7 +139,7 @@ dependencies {
     // Simple CSV
     implementation 'com.j256.simplecsv:simplecsv:2.6'
     // Blessed Android
-    implementation 'com.github.weliem:blessed-android:1.20'
+    implementation 'com.github.weliem:blessed-android:1.26'
     // CustomActivityOnCrash
     implementation 'cat.ereza:customactivityoncrash:2.2.0'
     // AppIntro
