@@ -240,4 +240,5 @@
     <string name="activity_level_heavy">Vysoký</string>
     <string name="permission_read_write_data_label">Čítanie/Zápis dát openScale</string>
     <string name="permission_location_service_info">Pre vyhľadanie Bluetooth zariadení prosím udeľte oprávnenie prístupu k polohe v nastaveniach Androidu. Potom ho môžete zase odobrať.</string>
+    <string name="label_amputation">Amputácia</string>
 </resources>
