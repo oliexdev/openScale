@@ -484,7 +484,6 @@ public class ChartMeasurementView extends LineChart {
     }
 
     private List<ScaleMeasurement> getScaleMeasurementsAsTrendline(List<ScaleMeasurement> measurementList) {
-        Collections.reverse(measurementList);
         List<ScaleMeasurement> trendlineList = new ArrayList<>();
 
        /* ScaleMeasurement a = new ScaleMeasurement();
@@ -513,7 +512,6 @@ public class ChartMeasurementView extends LineChart {
             trendlineList.add(entry);
             // Timber.d("TREND LINE " + entry.getWeight() + " DATE " + entry.getDateTime());
         }
-        Collections.reverse(measurementList);
 
         return trendlineList;
     }
@@ -521,7 +519,6 @@ public class ChartMeasurementView extends LineChart {
     private void addTrendLine(List<ILineDataSet> lineDataSets) {
 
         List<ScaleMeasurement> scaleMeasurementsAsTrendlineList = getScaleMeasurementsAsTrendline(scaleMeasurementList);
-        Collections.reverse(scaleMeasurementsAsTrendlineList);
 
         for (MeasurementView view : measurementViews) {
             if (view instanceof FloatMeasurementView && view.isVisible()) {
