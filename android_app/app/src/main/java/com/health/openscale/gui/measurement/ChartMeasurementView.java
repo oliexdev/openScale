@@ -499,7 +499,40 @@ public class ChartMeasurementView extends LineChart {
         tempScaleMeasurement.multiply(0.1f);
         trendPreviousEntry.add(tempScaleMeasurement);*/
 
-        trendlineList.add(measurementList.get(0));
+       // moving average for 7 days
+
+        int day = 7;
+
+        for (int i = 0; i < measurementList.size(); i++) {
+
+            if (i < day) {
+                ScaleMeasurement entry = measurementList.get(i).clone();
+
+                if (i >= 1) {
+                    for (int j = 1; j < i+1; j++) {
+                        ScaleMeasurement previousEntry = measurementList.get(i - j).clone();
+                        entry.add(previousEntry);
+                    }
+
+                    entry.divide(i+1);
+                }
+
+                trendlineList.add(entry);
+            } else {
+                ScaleMeasurement entry = measurementList.get(i).clone();
+
+                for (int j = 1; j<day; j++) {
+                    ScaleMeasurement previousEntry = measurementList.get(i - j).clone();
+                    entry.add(previousEntry);
+                }
+
+                entry.divide(day);
+                trendlineList.add(entry);
+            }
+        }
+
+       // exponentially smoothed moving average with 10% smoothing
+        /*trendlineList.add(measurementList.get(0));
 
         for (int i = 1; i < measurementList.size(); i++) {
             ScaleMeasurement entry = measurementList.get(i).clone();
@@ -511,7 +544,7 @@ public class ChartMeasurementView extends LineChart {
 
             trendlineList.add(entry);
             // Timber.d("TREND LINE " + entry.getWeight() + " DATE " + entry.getDateTime());
-        }
+        }*/
 
         return trendlineList;
     }
