@@ -65,7 +65,7 @@ public class BluetoothPreferences extends PreferenceFragmentCompat {
             @Override
             public boolean onPreferenceClick(Preference preference) {
                 NavDirections action = BluetoothPreferencesDirections.actionNavBluetoothPreferencesToNavBluetoothSettings();
-                Navigation.findNavController(getActivity(), R.id.nav_host_fragment).navigate(action);
+                Navigation.findNavController(requireActivity(), R.id.nav_host_fragment).navigate(action);
                 return true;
             }
         });
@@ -79,7 +79,7 @@ public class BluetoothPreferences extends PreferenceFragmentCompat {
 
         View view = super.onCreateView(inflater, container, savedInstanceState);
 
-        Navigation.findNavController(getActivity(), R.id.nav_host_fragment).getCurrentBackStackEntry().getSavedStateHandle().getLiveData("update", false).observe(getViewLifecycleOwner(), new Observer<Boolean>() {
+        Navigation.findNavController(requireActivity(), R.id.nav_host_fragment).getCurrentBackStackEntry().getSavedStateHandle().getLiveData("update", false).observe(getViewLifecycleOwner(), new Observer<Boolean>() {
             @Override
             public void onChanged(Boolean aBoolean) {
                 if (aBoolean) {
