@@ -398,6 +398,7 @@ public class ChartMeasurementView extends LineChart {
         }
 
         addTrendLine(lineDataSets);
+        addTrendLine2(lineDataSets);
        // addGoalLine(lineDataSets);
 
         LineData data = new LineData(lineDataSets);
@@ -645,6 +646,181 @@ public class ChartMeasurementView extends LineChart {
         measurementLine.setLineWidth(1.5f);
         measurementLine.setValueTextSize(10.0f);
         measurementLine.setColor(measurementView.getColor());
+        measurementLine.setValueTextColor(ColorUtil.getTintColor(getContext()));
+        measurementLine.setCircleColor(measurementView.getColor());
+        measurementLine.setCircleHoleColor(measurementView.getColor());
+        measurementLine.setAxisDependency(measurementView.getSettings().isOnRightAxis() ? YAxis.AxisDependency.RIGHT : YAxis.AxisDependency.LEFT);
+        measurementLine.setHighlightEnabled(true);
+        measurementLine.setDrawHighlightIndicators(true);
+        measurementLine.setHighlightLineWidth(1.5f);
+        measurementLine.setDrawHorizontalHighlightIndicator(false);
+        measurementLine.setHighLightColor(Color.RED);
+        measurementLine.setDrawCircles(false);//prefs.getBoolean("pointsEnable", true));
+        measurementLine.setDrawValues(prefs.getBoolean("labelsEnable", true));
+        measurementLine.setValueFormatter(new ValueFormatter() {
+            @Override
+            public String getPointLabel(Entry entry) {
+                String prefix = new String();
+
+                Object[] extraData = (Object[])entry.getData();
+                ScaleMeasurement measurement = (ScaleMeasurement)extraData[0];
+                ScaleMeasurement prevMeasurement = (ScaleMeasurement)extraData[1];
+                FloatMeasurementView measurementView = (FloatMeasurementView)extraData[2];
+
+                measurementView.loadFrom(measurement, prevMeasurement);
+
+                if (measurement.isAverageValue()) {
+                    prefix = "Ø ";
+                }
+
+                return prefix + measurementView.getValueAsString(true);
+            }
+        });
+
+        if (measurementView.isVisible()) {
+            if (isInGraphKey) {
+                if (measurementView.getSettings().isInGraph()) {
+                    lineDataSets.add(measurementLine);
+                }
+            } else {
+                if (measurementView.getSettings().isInOverviewGraph()) {
+                    lineDataSets.add(measurementLine);
+                }
+            }
+        }
+    }
+
+    private List<ScaleMeasurement> getScaleMeasurementsAsTrendline2(List<ScaleMeasurement> measurementList) {
+        List<ScaleMeasurement> trendlineList = new ArrayList<>();
+
+       /* ScaleMeasurement a = new ScaleMeasurement();
+        a.setWeight(173.2f);
+        ScaleMeasurement b = new ScaleMeasurement();
+        b.setWeight(171.5f);
+
+        ScaleMeasurement entry = b.clone();
+        ScaleMeasurement trendPreviousEntry = a.clone();
+        ScaleMeasurement tempScaleMeasurement = entry.clone();
+
+        tempScaleMeasurement.subtract(a);
+        tempScaleMeasurement.multiply(0.1f);
+        trendPreviousEntry.add(tempScaleMeasurement);*/
+
+
+        // exponentially smoothed moving average with 10% smoothing
+        trendlineList.add(measurementList.get(0));
+
+        for (int i = 1; i < measurementList.size(); i++) {
+            ScaleMeasurement entry = measurementList.get(i).clone();
+            ScaleMeasurement trendPreviousEntry = trendlineList.get(i - 1).clone();
+
+            entry.subtract(trendPreviousEntry);
+            entry.multiply(0.1f);
+            entry.add(trendPreviousEntry);
+
+            trendlineList.add(entry);
+            // Timber.d("TREND LINE " + entry.getWeight() + " DATE " + entry.getDateTime());
+        }
+
+        return trendlineList;
+    }
+
+    private void addTrendLine2(List<ILineDataSet> lineDataSets) {
+
+        List<ScaleMeasurement> scaleMeasurementsAsTrendlineList = getScaleMeasurementsAsTrendline2(scaleMeasurementList);
+
+        for (MeasurementView view : measurementViews) {
+            if (view instanceof FloatMeasurementView && view.isVisible()) {
+                final FloatMeasurementView measurementView = (FloatMeasurementView) view;
+
+                final List<Entry> lineEntries = new ArrayList<>();
+
+                for (int i=0; i<scaleMeasurementsAsTrendlineList.size(); i++) {
+                    ScaleMeasurement measurement = scaleMeasurementsAsTrendlineList.get(i);
+                    float value = measurementView.getMeasurementValue(measurement);
+
+                    if (value == 0.0f) {
+                        continue;
+                    }
+
+                    Entry entry = new Entry();
+                    entry.setX(convertDateToInt(measurement.getDateTime()));
+                    entry.setY(value);
+                    Object[] extraData = new Object[3];
+                    extraData[0] = measurement;
+                    extraData[1] = (i == 0) ? null : scaleMeasurementsAsTrendlineList.get(i-1);
+                    extraData[2] = measurementView;
+                    entry.setData(extraData);
+
+                    lineEntries.add(entry);
+                }
+
+                addMeasurementLineTrend2(lineDataSets, lineEntries, measurementView);
+            }
+        }
+
+
+        /*if (!prefs.getBoolean("trendLine", true)) {
+            return;
+        }
+
+        List<ILineDataSet> trendlineDataSets = new ArrayList<>();
+
+        for (ILineDataSet dataSet : lineDataSets) {
+            // we need at least two data points
+            if (dataSet.getEntryCount() < 2) {
+                continue;
+            }
+
+            PolynomialFitter polyFitter = new PolynomialFitter(1);
+
+            List<Entry> valuesTrendLine = new Stack<>();
+            valuesTrendLine.add(dataSet.getEntryForIndex(0));
+            polyFitter.addPoint((double) valuesTrendLine.get(0).getX(), (double) valuesTrendLine.get(0).getY());
+
+            for (int i = 1; i < dataSet.getEntryCount(); i++) {
+                Entry entry = dataSet.getEntryForIndex(i);
+                Entry trendPreviousEntry = valuesTrendLine.get(i - 1);
+                float trendYValue = (trendPreviousEntry.getY() + 0.1f * (entry.getY() - trendPreviousEntry.getY()));
+                polyFitter.addPoint((double) entry.getX(), (double) trendYValue);
+                valuesTrendLine.add(new Entry(entry.getX(), trendYValue));
+                /*Timber.d("ENTRY X " + entry.getX() + " Y " + entry.getY());
+                Timber.d("PREVIOUS X " + trendPreviousEntry.getX() + " Y " + trendPreviousEntry.getY());
+                Timber.d("TREND X " + entry.getX() + " Y " + trendYValue);*/
+            /*}
+
+            if (isInGraphKey) {
+                PolynomialFitter.Polynomial polynomial = polyFitter.getBestFit();
+
+                int x_last = (int) dataSet.getEntryForIndex(dataSet.getEntryCount() - 1).getX();
+                for (int i = x_last; i < maxXValue + minXValue + 1; i++) {
+                    double y_value = polynomial.getY(i);
+                    valuesTrendLine.add(new Entry((float) i, (float) y_value));
+                }
+            }
+
+            LineDataSet trendLine = new LineDataSet(valuesTrendLine, dataSet.getLabel() + "-" + getContext().getString(R.string.label_trend_line));
+            trendLine.setLineWidth(1.5f);
+            trendLine.setColor(dataSet.getColor());
+            trendLine.setAxisDependency(dataSet.getAxisDependency());
+            trendLine.setDrawValues(false);
+            trendLine.setDrawCircles(false);
+            trendLine.setHighlightEnabled(false);
+            //trendLine.enableDashedLine(10, 30, 0);
+
+            trendlineDataSets.add(trendLine);
+        }
+
+        for (ILineDataSet dataSet : trendlineDataSets) {
+            lineDataSets.add(dataSet);
+        }*/
+    }
+
+    private void addMeasurementLineTrend2(List<ILineDataSet> lineDataSets, List<Entry> lineEntries, FloatMeasurementView measurementView) {
+        LineDataSet measurementLine = new LineDataSet(lineEntries, measurementView.getName().toString() + "- Trendline 2");
+        measurementLine.setLineWidth(1.5f);
+        measurementLine.setValueTextSize(10.0f);
+        measurementLine.setColor(ColorUtil.COLOR_GREEN);
         measurementLine.setValueTextColor(ColorUtil.getTintColor(getContext()));
         measurementLine.setCircleColor(measurementView.getColor());
         measurementLine.setCircleHoleColor(measurementView.getColor());
