@@ -190,10 +190,10 @@
     <string name="label_debug_log">Guardar registro de depuración en archivo</string>
     <string name="label_long_press_drag_reorder">Mantenga pulsada y arrastre la medida para reordenarla</string>
     <string name="label_your_bluetooth_scale">Su báscula Bluetooth</string>
-    <string name="label_add_measurement">"Añadir medición "</string>
-    <string name="permission_read_write_data_description">"leer/escribir los datos de openScale, incluyendo la información de usuarios y todas las mediciones guardadas "</string>
+    <string name="label_add_measurement">Añadir medida</string>
+    <string name="permission_read_write_data_description">leer/escribir los datos de openScale, incluyendo la información de usuarios y todas las medidas guardadas</string>
     <string name="permission_read_write_data_label">Leer/Escribir datos de openScale</string>
-    <string name="label_select_measurement">"Elegir medición "</string>
+    <string name="label_select_measurement">Elegir medida</string>
     <string name="label_select_user">Elegir usuario</string>
     <string name="label_configure_widget">Configurar widget</string>
     <string name="label_visceral_fat">Grasa visceral</string>
@@ -277,4 +277,19 @@
     <string name="app_intro_next_button">Siguiente</string>
     <string name="app_intro_back_button">Anterior</string>
     <string name="app_intro_done_button">Hecho</string>
+    <string name="amputation_level_leg">Pierna</string>
+    <string name="amputation_level_lower_leg_foot">Parte inferior de la pierna y el pie</string>
+    <string name="amputation_level_foot">Pie</string>
+    <string name="amputation_level_arm">Brazo</string>
+    <string name="amputation_level_forearm_hand">Antebrazo y pierna</string>
+    <string name="amputation_level_hand">Mano</string>
+    <string name="amputation_level_none">Sin amputación</string>
+    <string name="info_assisted_weighing_choose_reference_user">Elija el usuario de referencia al que se le reste el peso</string>
+    <string name="info_assisted_weighing_no_reference_user">No hay un usuario de referencia disponible, por favor cree uno</string>
+    <string name="info_assisted_weighing_old_reference_measurement">Advertencia la última medida de referencia es más vieja que un día</string>
+    <string name="info_assisted_weighing_no_reference_measurements">El usuario de referencia no tiene medidas</string>
+    <string name="label_amputation_right">Amputación derecha</string>
+    <string name="label_amputation_left">Amputación izquierda</string>
+    <string name="label_amputation">Amputación</string>
+    <string name="label_assisted_weighing">Pesaje asistido</string>
 </resources>
