@@ -126,7 +126,12 @@ public class BluetoothSettingsFragment extends Fragment {
     private final BluetoothCentralCallback bluetoothCentralCallback = new BluetoothCentralCallback() {
         @Override
         public void onDiscoveredPeripheral(BluetoothPeripheral peripheral, ScanResult scanResult) {
-            onDeviceFound(scanResult);
+            new Handler().post(new Runnable() {
+                @Override
+                public void run() {
+                    onDeviceFound(scanResult);
+                }
+            });
         }
     };
 
@@ -152,20 +157,25 @@ public class BluetoothSettingsFragment extends Fragment {
                 txtSearching.setText(R.string.label_bluetooth_searching_finished);
                 progressBar.setVisibility(View.GONE);
 
-                BluetoothDeviceView notSupported = new BluetoothDeviceView(requireContext());
-                notSupported.setDeviceName(requireContext().getString(R.string.label_scale_not_supported));
-                notSupported.setSummaryText(requireContext().getString(R.string.label_click_to_help_add_support));
-                notSupported.setOnClickListener(new View.OnClickListener() {
+                new Handler().post(new Runnable() {
                     @Override
-                    public void onClick(View view) {
-                        Intent notSupportedIntent = new Intent(Intent.ACTION_VIEW);
-                        notSupportedIntent.setData(
-                                Uri.parse("https://github.com/oliexdev/openScale/wiki/Supported-scales-in-openScale"));
+                    public void run() {
+                        BluetoothDeviceView notSupported = new BluetoothDeviceView(requireContext());
+                        notSupported.setDeviceName(requireContext().getString(R.string.label_scale_not_supported));
+                        notSupported.setSummaryText(requireContext().getString(R.string.label_click_to_help_add_support));
+                        notSupported.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                Intent notSupportedIntent = new Intent(Intent.ACTION_VIEW);
+                                notSupportedIntent.setData(
+                                        Uri.parse("https://github.com/oliexdev/openScale/wiki/Supported-scales-in-openScale"));
 
-                        startActivity(notSupportedIntent);
+                                startActivity(notSupportedIntent);
+                            }
+                        });
+                        deviceListView.addView(notSupported);
                     }
-                });
-                deviceListView.addView(notSupported);
+                    });
             }
         }, 20 * 1000);
     }
