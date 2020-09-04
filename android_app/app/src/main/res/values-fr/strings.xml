@@ -157,8 +157,6 @@
     <string name="label_export_dir">Dossier pour l\'exportation</string>
     <string name="label_not_found">Non trouvé</string>
     <string name="label_ignoreOutOfRange">Ignorer les valeurs hors de plage valide</string>
-    <string name="label_regression_line">Ligne de régression</string>
-    <string name="label_regression_line_degree">Degré du polynôme pour la ligne</string>
     <string name="label_goal_line">Ligne pour l\'objectif</string>
     <string name="label_feedback_message_enjoying">Êtes-vous satisfait d\'openScale ?</string>
     <string name="label_feedback_message_rate_app">Laisser une évaluation sur Google Play ou GitHub ?</string>
