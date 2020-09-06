@@ -73,7 +73,6 @@ public class ChartMeasurementView extends LineChart {
     private List<MeasurementView> measurementViews;
     private List<ScaleMeasurement> scaleMeasurementList;
     private ViewMode viewMode;
-    private boolean isAnimationOn;
     private boolean isInGraphKey;
     private ProgressBar progressBar;
 
@@ -187,10 +186,6 @@ public class ChartMeasurementView extends LineChart {
         setCustomViewPortOffsets(); // set custom viewPortOffsets to avoid jitter on translating while auto scale is on
     }
 
-    public void setAnimationOn(boolean status) {
-        isAnimationOn = status;
-    }
-
     public void setIsInGraphKey(boolean status) {
         isInGraphKey = status;
     }
@@ -203,7 +198,6 @@ public class ChartMeasurementView extends LineChart {
         prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
         openScale = OpenScale.getInstance();
         measurementViews = MeasurementView.getMeasurementList(getContext(), MeasurementView.DateTimeOrder.NONE);
-        isAnimationOn = true;
         isInGraphKey = true;
         progressBar = null;
 
@@ -429,25 +423,6 @@ public class ChartMeasurementView extends LineChart {
             // show only data point if trend line is enabled
             measurementLine.enableDashedLine(0, 1, 0);
         }
-        measurementLine.setValueFormatter(new ValueFormatter() {
-            @Override
-            public String getPointLabel(Entry entry) {
-                String prefix = new String();
-
-                Object[] extraData = (Object[])entry.getData();
-                ScaleMeasurement measurement = (ScaleMeasurement)extraData[0];
-                ScaleMeasurement prevMeasurement = (ScaleMeasurement)extraData[1];
-                FloatMeasurementView measurementView = (FloatMeasurementView)extraData[2];
-
-                measurementView.loadFrom(measurement, prevMeasurement);
-
-                if (measurement.isAverageValue()) {
-                    prefix = "Ø ";
-                }
-
-                return prefix + measurementView.getValueAsString(true);
-            }
-        });
 
         if (measurementView.isVisible()) {
             if (isInGraphKey) {
@@ -491,7 +466,7 @@ public class ChartMeasurementView extends LineChart {
 
         for (int i = 1; i < measurementList.size(); i++) {
             ScaleMeasurement entry = measurementList.get(i).clone();
-            ScaleMeasurement trendPreviousEntry = trendlineList.get(i - 1).clone();
+            ScaleMeasurement trendPreviousEntry = trendlineList.get(i - 1);
 
             entry.subtract(trendPreviousEntry);
             entry.multiply(0.1f);
@@ -609,25 +584,6 @@ public class ChartMeasurementView extends LineChart {
         measurementLine.setHighLightColor(Color.RED);
         measurementLine.setDrawCircles(false);//prefs.getBoolean("pointsEnable", true));
         measurementLine.setDrawValues(prefs.getBoolean("labelsEnable", true));
-        measurementLine.setValueFormatter(new ValueFormatter() {
-            @Override
-            public String getPointLabel(Entry entry) {
-                String prefix = new String();
-
-                Object[] extraData = (Object[])entry.getData();
-                ScaleMeasurement measurement = (ScaleMeasurement)extraData[0];
-                ScaleMeasurement prevMeasurement = (ScaleMeasurement)extraData[1];
-                FloatMeasurementView measurementView = (FloatMeasurementView)extraData[2];
-
-                measurementView.loadFrom(measurement, prevMeasurement);
-
-                if (measurement.isAverageValue()) {
-                    prefix = "Ø ";
-                }
-
-                return prefix + measurementView.getValueAsString(true);
-            }
-        });
 
         if (measurementView.isVisible()) {
             if (isInGraphKey) {

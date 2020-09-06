@@ -92,7 +92,6 @@ public class OverviewFragment extends Fragment {
         chartView = overviewView.findViewById(R.id.chartView);
         chartView.setOnChartValueSelectedListener(new onChartSelectedListener());
         chartView.setProgressBar(overviewView.findViewById(R.id.progressBar));
-        chartView.setAnimationOn(false);
         chartView.setIsInGraphKey(false);
 
         chartActionBarView = overviewView.findViewById(R.id.chartActionBar);

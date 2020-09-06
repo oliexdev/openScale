@@ -62,7 +62,7 @@ public class ChartMarkerView extends MarkerView {
             markerText.append("\n");
 
             if (measurement.isAverageValue()) {
-                markerText.append("Ø ");
+                markerText.append(getContext().getString(R.string.label_trend) + " ");
             }
         }
 
