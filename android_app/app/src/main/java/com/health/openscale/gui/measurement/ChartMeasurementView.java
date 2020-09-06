@@ -392,12 +392,12 @@ public class ChartMeasurementView extends LineChart {
             addTrendLine(lineDataSets);
         }
 
-        if (prefs.getBoolean("goalLine", true)) {
-            addGoalLine(lineDataSets);
-        }
-
         LineData data = new LineData(lineDataSets);
         setData(data);
+
+        if (prefs.getBoolean("goalLine", false)) {
+            addGoalLine(lineDataSets);
+        }
 
         progressBar.setVisibility(GONE);
     }
@@ -417,7 +417,7 @@ public class ChartMeasurementView extends LineChart {
         measurementLine.setDrawHorizontalHighlightIndicator(false);
         measurementLine.setHighLightColor(Color.RED);
         measurementLine.setDrawCircles(prefs.getBoolean("pointsEnable", true));
-        measurementLine.setDrawValues(prefs.getBoolean("labelsEnable", true));
+        measurementLine.setDrawValues(prefs.getBoolean("labelsEnable", false));
         measurementLine.setMode(LineDataSet.Mode.HORIZONTAL_BEZIER);
         if (prefs.getBoolean("trendLine", true)) {
             // show only data point if trend line is enabled
@@ -583,7 +583,7 @@ public class ChartMeasurementView extends LineChart {
         measurementLine.setDrawHorizontalHighlightIndicator(false);
         measurementLine.setHighLightColor(Color.RED);
         measurementLine.setDrawCircles(false);//prefs.getBoolean("pointsEnable", true));
-        measurementLine.setDrawValues(prefs.getBoolean("labelsEnable", true));
+        measurementLine.setDrawValues(prefs.getBoolean("labelsEnable", false));
 
         if (measurementView.isVisible()) {
             if (isInGraphKey) {
