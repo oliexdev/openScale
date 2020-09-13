@@ -15,7 +15,7 @@
     <string name="error_goal_weight_required">Erro: peso desejado é obrigatório</string>
     <string name="error_importing">Erro ao importar</string>
     <string name="error_initial_weight_required">Erro: falta o peso</string>
-    <string name="error_max_scale_users">Número máximo de usuários atingido</string>
+    <string name="error_max_scale_users">Quantidade máxima de utilizadores concurrentes atingidos</string>
     <string name="error_user_name_required">Erro: Nome do utilizador é obrigatório</string>
     <string name="error_value_range">Valor não está no intervalo</string>
     <string name="error_value_required">Valor é obrigatório</string>
@@ -103,14 +103,14 @@
     <string name="label_female">Femino</string>
     <string name="label_yes">Sim</string>
     <string name="question_really_delete">Apagar dados\?</string>
-    <string name="question_really_delete_all">Apagar todos os dados de todos os usuários\?</string>
-    <string name="question_really_delete_user">Apagar usuário\?</string>
+    <string name="question_really_delete_all">Apagar todos os dados de todos os utilizadores\?</string>
+    <string name="question_really_delete_user">Apagar utilizador\?</string>
     <string name="title_graph">Gráfico</string>
     <string name="title_measurements">Medidas</string>
     <string name="title_overview">Visão geral</string>
     <string name="title_statistics">Estatísticas</string>
     <string name="title_table">Tabela</string>
-    <string name="title_users">Usuários</string>
+    <string name="title_users">Utilizadores</string>
     <string name="title_about">Sobre</string>
     <string name="title_general">Menu</string>
     <string name="open_drawer">abrir</string>
@@ -132,7 +132,7 @@
     <string name="label_license">Licença</string>
     <string name="label_automatic">auto</string>
     <string name="label_theme">Tema</string>
-    <string name="label_bt_device_no_support">dispositivo não suportado</string>
+    <string name="label_bt_device_no_support">aparelho não suportado</string>
     <string name="label_help">Ajuda</string>
     <string name="label_feedback_message_enjoying">Gostou do openScale?</string>
     <string name="label_feedback_message_rate_app">Que tal avaliar o openScale no GooglePlay ou no GitHub\?</string>
@@ -181,14 +181,16 @@
     <string name="info_step_on_scale">Por favor suba descalço para a balança</string>
     <string name="label_enable_legend">Legenda</string>
     <string name="label_enable_yaxis">Eixo Y</string>
-    <string name="trisa_scale_not_paired">A balança não foi pareada!
-\nPressione o botão da balança para mudar para o modo de pareamento e então reconecte para recuperar a senha do dispositivo.</string>
+    <string name="trisa_scale_not_paired">A balança não foi pareada! 
+\nPressione o botão da balança para mudar para o modo de pareamento e então reconecte para recuperar a palavra-passe do aparelho.</string>
     <string name="trisa_scale_pairing_succeeded">Pareamento feito!
 \nReconecte para recuperar os dados das medições.</string>
     <string name="label_day_view">Visualização diária</string>
     <string name="label_year_view">Visualização anual</string>
     <string name="label_long_press_drag_reorder">Toque firmemente e arraste a medição para reorganiza-la</string>
     <string name="permission_read_write_data_description">leia/escreva dados no openScale, incluindo informações dos usuários e todas as medidas salvas.</string>
+    <string name="permission_read_write_data_description">leia/escreva dados no openScale, incluindo informações dos utilizadores e todas as medidas salvas.</string>
+    <string name="label_rolling_chart">Gráfico</string>
     <string name="label_measurement_bar">Barra de medidas</string>
     <string name="action_donation">Doação</string>
     <string name="label_empty">Vazio</string>

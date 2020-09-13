@@ -253,4 +253,41 @@
     <string name="info_scale_low_battery">Низкий заряд батарей (%d%%), пожалуйста, замените или зарядите батареи в весах</string>
     <string name="label_age">Возраст</string>
     <string name="label_empty">Пусто</string>
+    <string name="amputation_level_none">Нет ампутаций</string>
+    <string name="label_amputation_right">Ампутации справа</string>
+    <string name="label_amputation_left">Ампутации слева</string>
+    <string name="label_amputation">Ампутации</string>
+    <string name="label_slide_support_main_text">Вы нужны openScale. Создайте <a href="https://github.com/oliexdev/openScale/issues">новый запрос</a>, если вы обнаружили ошибку, у вас есть идея, вопрос или вы хотите помочь в поддержке ваших Bluetooth весов.
+\n 
+\nМотивируйте создателя этого проекта на дальнейшее развитие и постоянную поддержку, поставив openScale положительную оценку на <a href="http://play.google.com/store/apps/details?id=com.health.openscale.pro">GooglePlay</a> или отметив его звездой на <a href="https://github.com/oliexdev/openScale">GitHub</a>.
+\n 
+\nМы высоко ценим вашу поддержку и положительные отзывы. Спасибо.</string>
+    <string name="label_slide_support_top_text">Помогите улучшить openScale.</string>
+    <string name="label_slide_metrics_main_text">openScale поддерживает более 22 показателей тела.
+\n 
+\nНастройте его так, чтобы отображались те, которые вам небезразличны.
+\n 
+\n Отсутствие жировых отложений, воды в организме и безжировой массы тела можно оценить на основании <a href="https://github.com/oliexdev/openScale/wiki/Body-metric-estimations">научных публикаций</a>.</string>
+    <string name="label_slide_metrics_top_text">Отслеживайте и анализируйте показатели своего тела.</string>
+    <string name="label_slide_bluetooth_main_text">openScale имеет встроенную поддержку ряда Bluetooth весов от разных производителей.
+\n
+\nМы постоянно улучшаем и расширяем набор поддерживаемых весов. Вы можете найти полный список и уровень поддержки для каждых весов на <a href="https://github.com/oliexdev/openScale/wiki/Supported-scales-in-openScale">GitHub</a>.</string>
+    <string name="label_slide_bluetooth_top_text">Поддерживаются различные Bluetooth весы от разных производителей.</string>
+    <string name="label_slide_opensource_main_text">openScale распространяется под лицензией <a href="https://github.com/oliexdev/openScale/blob/master/LICENSE">GPLv3</a>.
+\n 
+\nВсе вычисления тела прозрачны и не используются скрытые функции передачи данных или идентификация пользователя.
+\n 
+\nВы можете найти полный исходный код на <a href="https://github.com/oliexdev/openScale">GitHub</a>. Убедите себя в openScale, просмотрев его.</string>
+    <string name="label_slide_opensource_top_text">Это программное обеспечение с открытым исходным кодом и высокой степенью прозрачности.</string>
+    <string name="amputation_level_hand">Кисть</string>
+    <string name="amputation_level_foot">Ступня</string>
+    <string name="amputation_level_leg">Нога</string>
+    <string name="amputation_level_lower_leg_foot">Голень и ступня</string>
+    <string name="amputation_level_arm">Рука</string>
+    <string name="amputation_level_forearm_hand">Предплечье и нога</string>
+    <string name="info_assisted_weighing_choose_reference_user">Выберите справочного пользователя, у которого вычитается вес</string>
+    <string name="info_assisted_weighing_no_reference_user">Нет справочного пользователя, пожалуйста, создайте его</string>
+    <string name="info_assisted_weighing_old_reference_measurement">Предупреждение: последнее контрольное измерение старше суток</string>
+    <string name="info_assisted_weighing_no_reference_measurements">Контрольный пользователь не имеет измерений</string>
+    <string name="label_assisted_weighing">Вспомогательное взвешивание</string>
 </resources>

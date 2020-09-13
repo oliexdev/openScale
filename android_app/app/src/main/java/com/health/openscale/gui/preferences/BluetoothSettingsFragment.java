@@ -126,7 +126,12 @@ public class BluetoothSettingsFragment extends Fragment {
     private final BluetoothCentralCallback bluetoothCentralCallback = new BluetoothCentralCallback() {
         @Override
         public void onDiscoveredPeripheral(BluetoothPeripheral peripheral, ScanResult scanResult) {
-            onDeviceFound(scanResult);
+            new Handler().post(new Runnable() {
+                @Override
+                public void run() {
+                    onDeviceFound(scanResult);
+                }
+            });
         }
     };
 
@@ -134,7 +139,7 @@ public class BluetoothSettingsFragment extends Fragment {
         deviceListView.removeAllViews();
         foundDevices.clear();
 
-        central = new BluetoothCentral(getContext(), bluetoothCentralCallback, new Handler(Looper.getMainLooper()));
+        central = new BluetoothCentral(requireContext(), bluetoothCentralCallback, new Handler(Looper.getMainLooper()));
         central.scanForPeripherals();
 
         txtSearching.setVisibility(View.VISIBLE);
@@ -152,20 +157,25 @@ public class BluetoothSettingsFragment extends Fragment {
                 txtSearching.setText(R.string.label_bluetooth_searching_finished);
                 progressBar.setVisibility(View.GONE);
 
-                BluetoothDeviceView notSupported = new BluetoothDeviceView(getContext());
-                notSupported.setDeviceName(getContext().getString(R.string.label_scale_not_supported));
-                notSupported.setSummaryText(getContext().getString(R.string.label_click_to_help_add_support));
-                notSupported.setOnClickListener(new View.OnClickListener() {
+                new Handler().post(new Runnable() {
                     @Override
-                    public void onClick(View view) {
-                        Intent notSupportedIntent = new Intent(Intent.ACTION_VIEW);
-                        notSupportedIntent.setData(
-                                Uri.parse("https://github.com/oliexdev/openScale/wiki/Supported-scales-in-openScale"));
+                    public void run() {
+                        BluetoothDeviceView notSupported = new BluetoothDeviceView(requireContext());
+                        notSupported.setDeviceName(requireContext().getString(R.string.label_scale_not_supported));
+                        notSupported.setSummaryText(requireContext().getString(R.string.label_click_to_help_add_support));
+                        notSupported.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                Intent notSupportedIntent = new Intent(Intent.ACTION_VIEW);
+                                notSupportedIntent.setData(
+                                        Uri.parse("https://github.com/oliexdev/openScale/wiki/Supported-scales-in-openScale"));
 
-                        startActivity(notSupportedIntent);
+                                startActivity(notSupportedIntent);
+                            }
+                        });
+                        deviceListView.addView(notSupported);
                     }
-                });
-                deviceListView.addView(notSupported);
+                    });
             }
         }, 20 * 1000);
     }
@@ -188,10 +198,10 @@ public class BluetoothSettingsFragment extends Fragment {
             return;
         }
 
-        BluetoothDeviceView deviceView = new BluetoothDeviceView(getContext());
+        BluetoothDeviceView deviceView = new BluetoothDeviceView(requireContext());
         deviceView.setDeviceName(formatDeviceName(bleScanResult.getDevice()));
 
-        BluetoothCommunication btDevice = BluetoothFactory.createDeviceDriver(getContext(), device.getName());
+        BluetoothCommunication btDevice = BluetoothFactory.createDeviceDriver(requireContext(), device.getName());
         if (btDevice != null) {
             Timber.d("Found supported device %s (driver: %s)",
                     formatDeviceName(device), btDevice.driverName());
@@ -203,7 +213,7 @@ public class BluetoothSettingsFragment extends Fragment {
             Timber.d("Found unsupported device %s",
                     formatDeviceName(device));
             deviceView.setIcon(R.drawable.ic_bluetooth_device_not_supported);
-            deviceView.setSummaryText(getContext().getString(R.string.label_bt_device_no_support));
+            deviceView.setSummaryText(requireContext().getString(R.string.label_bt_device_no_support));
             deviceView.setEnabled(false);
 
             if (OpenScale.DEBUG_MODE) {
@@ -222,7 +232,7 @@ public class BluetoothSettingsFragment extends Fragment {
     }
 
     private void getDebugInfo(final BluetoothDevice device) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
         builder.setTitle("Fetching info")
                 .setMessage("Please wait while we fetch extended info from your scale...")
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -320,7 +330,7 @@ public class BluetoothSettingsFragment extends Fragment {
         public void setIcon(int resId) {
             deviceIcon.setImageResource(resId);
 
-            int tintColor = ColorUtil.getTintColor(getContext());
+            int tintColor = ColorUtil.getTintColor(requireContext());
             deviceIcon.setColorFilter(tintColor, PorterDuff.Mode.SRC_IN);
         }
 
@@ -342,7 +352,7 @@ public class BluetoothSettingsFragment extends Fragment {
         public void onClick(View view) {
             BluetoothDevice device = foundDevices.get(getDeviceAddress());
 
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(requireContext());
 
             prefs.edit()
                     .putString(PREFERENCE_KEY_BLUETOOTH_HW_ADDRESS, device.getAddress())
@@ -352,8 +362,8 @@ public class BluetoothSettingsFragment extends Fragment {
             Timber.d("Saved Bluetooth device " + device.getName() + " with address " + device.getAddress());
 
             stopBluetoothDiscovery();
-            Navigation.findNavController(getActivity(), R.id.nav_host_fragment).getPreviousBackStackEntry().getSavedStateHandle().set("update", true);
-            Navigation.findNavController(getActivity(), R.id.nav_host_fragment).navigateUp();
+            Navigation.findNavController(requireActivity(), R.id.nav_host_fragment).getPreviousBackStackEntry().getSavedStateHandle().set("update", true);
+            Navigation.findNavController(requireActivity(), R.id.nav_host_fragment).navigateUp();
         }
     }
 
@@ -379,7 +389,7 @@ public class BluetoothSettingsFragment extends Fragment {
                         startBluetoothDiscovery();
                     }
                 } else {
-                    Toast.makeText(getContext(), R.string.permission_not_granted, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), R.string.permission_not_granted, Toast.LENGTH_SHORT).show();
                 }
                 break;
             }
