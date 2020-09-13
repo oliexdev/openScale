@@ -188,9 +188,7 @@
     <string name="label_day_view">Visualização diária</string>
     <string name="label_year_view">Visualização anual</string>
     <string name="label_long_press_drag_reorder">Toque firmemente e arraste a medição para reorganiza-la</string>
-    <string name="permission_read_write_data_description">leia/escreva dados no openScale, incluindo informações dos usuários e todas as medidas salvas.</string>
     <string name="permission_read_write_data_description">leia/escreva dados no openScale, incluindo informações dos utilizadores e todas as medidas salvas.</string>
-    <string name="label_rolling_chart">Gráfico</string>
     <string name="label_measurement_bar">Barra de medidas</string>
     <string name="action_donation">Doação</string>
     <string name="label_empty">Vazio</string>
