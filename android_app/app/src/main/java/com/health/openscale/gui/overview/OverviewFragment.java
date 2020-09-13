@@ -92,7 +92,6 @@ public class OverviewFragment extends Fragment {
         chartView = overviewView.findViewById(R.id.chartView);
         chartView.setOnChartValueSelectedListener(new onChartSelectedListener());
         chartView.setProgressBar(overviewView.findViewById(R.id.progressBar));
-        chartView.setAnimationOn(false);
         chartView.setIsInGraphKey(false);
 
         chartActionBarView = overviewView.findViewById(R.id.chartActionBar);
@@ -100,6 +99,7 @@ public class OverviewFragment extends Fragment {
         chartActionBarView.setOnActionClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                chartView.refreshMeasurementList();
                 updateChartView();
             }
         });
@@ -131,18 +131,6 @@ public class OverviewFragment extends Fragment {
                             chartActionBarView.setVisibility(View.VISIBLE);
                         }
                         return true;
-                    case R.id.enableRollingChart:
-                        if (item.isChecked()) {
-                            item.setChecked(false);
-                            prefs.edit().putBoolean("enableRollingChart", false).apply();
-                        } else {
-                            item.setChecked(true);
-                            prefs.edit().putBoolean("enableRollingChart", true).apply();
-                        }
-
-                        getActivity().recreate(); // TODO HACK to refresh graph; graph.invalidate and notfiydatachange is not enough!?
-
-                        return true;
                     case R.id.menu_range_day:
                         prefs.edit().putInt("selectRangeMode", ChartMeasurementView.ViewMode.DAY_OF_ALL.ordinal()).commit();
                         break;
@@ -156,14 +144,9 @@ public class OverviewFragment extends Fragment {
                         prefs.edit().putInt("selectRangeMode", ChartMeasurementView.ViewMode.YEAR_OF_ALL.ordinal()).commit();
                 }
 
-
                 item.setChecked(true);
 
-                if (prefs.getBoolean("enableRollingChart", true)) {
-                    getActivity().recreate(); // TODO HACK to refresh graph; if rolling chart is enabled then graph.invalidate and notfiydatachange is not enough!?
-                } else {
-                    updateChartView();
-                }
+                getActivity().recreate(); // TODO HACK to refresh graph; graph.invalidate and notfiydatachange is not enough!?
 
                 return true;
             }
@@ -185,8 +168,6 @@ public class OverviewFragment extends Fragment {
                 rangePopupMenu.getMenu().findItem(R.id.menu_range_year).setChecked(true);
                 break;
         }
-
-        rangePopupMenu.getMenu().findItem(R.id.enableRollingChart).setChecked(prefs.getBoolean("enableRollingChart", true));
 
         MenuItem enableMeasurementBar = rangePopupMenu.getMenu().findItem(R.id.enableChartActionBar);
         enableMeasurementBar.setChecked(prefs.getBoolean("enableOverviewChartActionBar", false));
@@ -280,14 +261,13 @@ public class OverviewFragment extends Fragment {
 
         updateUserSelection();
         updateMesurementViews(markedMeasurement);
+        chartView.updateMeasurementList(scaleMeasurementList);
         updateChartView();
     }
 
     private void updateChartView() {
-        boolean enableRollingChart = prefs.getBoolean("enableRollingChart", true);
-
         ChartMeasurementView.ViewMode selectedRangeMode = ChartMeasurementView.ViewMode.values()[prefs.getInt("selectRangeMode", ChartMeasurementView.ViewMode.DAY_OF_ALL.ordinal())];
-        chartView.setViewRange(selectedRangeMode, enableRollingChart);
+        chartView.setViewRange(selectedRangeMode);
     }
 
     private void updateMesurementViews(ScaleMeasurement selectedMeasurement) {

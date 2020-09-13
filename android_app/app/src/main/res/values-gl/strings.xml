@@ -126,8 +126,6 @@
     <string name="label_not_found">non atopado</string>
     <string name="label_ignoreOutOfRange">Ignorar datos fóra de rango</string>
     <string name="label_initial_weight">Peso inicial</string>
-    <string name="label_regression_line">Liña de tendencia de peso</string>
-    <string name="label_regression_line_degree">Grao do polinomio de regresión (tendencia)</string>
     <string name="label_goal_line">Liña do obxectivo</string>
     <string name="label_help">Axuda</string>
     <string name="label_feedback_message_enjoying">Gústache openScale?</string>
@@ -254,7 +252,6 @@
     <string name="permission_read_write_data_description">leer/escribir os datos de openScale, incluindo a información de usuarios e todas as medidas gardadas</string>
     <string name="permission_location_service_info">Outorgue permiso para acceso á ubicuación, na configuración de Android, para buscar dispositivos Bluetooth. Poderá quitalo despois.</string>
     <string name="label_measurement_bar">Barra de medida</string>
-    <string name="label_rolling_chart">Gráfico dinámico</string>
     <string name="label_year_view">Vista anual</string>
     <string name="label_day_view">Vista diaria</string>
     <string name="toggle_expand">Alternar o expandir</string>

@@ -16,18 +16,19 @@
 
 package com.health.openscale.core.datatypes;
 
-import com.health.openscale.core.utils.CsvHelper;
-import com.j256.simplecsv.common.CsvColumn;
-
-import java.lang.reflect.Field;
-import java.util.Date;
-
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
 import androidx.room.Ignore;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
+
+import com.health.openscale.core.utils.CsvHelper;
+import com.j256.simplecsv.common.CsvColumn;
+
+import java.lang.reflect.Field;
+import java.util.Date;
+
 import timber.log.Timber;
 
 @Entity(tableName = "scaleMeasurements",
@@ -158,6 +159,59 @@ public class ScaleMeasurement implements Cloneable {
             }
 
             count++;
+        } catch (IllegalAccessException e) {
+            Timber.e(e);
+        }
+    }
+
+    public void add(final float summand) {
+        try {
+            Field[] fields = getClass().getDeclaredFields();
+
+            for (Field field : fields) {
+                field.setAccessible(true);
+                Object value = field.get(this);
+
+                if (value != null && Float.class.isAssignableFrom(value.getClass())) {
+                    field.set(this, (float)value + summand);
+                }
+                field.setAccessible(false);
+            }
+
+        } catch (IllegalAccessException e) {
+            Timber.e(e);
+        }
+    }
+
+    public void subtract(final ScaleMeasurement minuend) {
+        try {
+            Field[] fields = getClass().getDeclaredFields();
+
+            for (Field field : fields) {
+                field.setAccessible(true);
+                Object value = field.get(this);
+                if (value != null && Float.class.isAssignableFrom(value.getClass())) {
+                    field.set(this, (float)value - (float)field.get(minuend));
+                }
+                field.setAccessible(false);
+            }
+        } catch (IllegalAccessException e) {
+            Timber.e(e);
+        }
+    }
+
+    public void multiply(final float factor) {
+        try {
+            Field[] fields = getClass().getDeclaredFields();
+
+            for (Field field : fields) {
+                field.setAccessible(true);
+                Object value = field.get(this);
+                if (value != null && Float.class.isAssignableFrom(value.getClass())) {
+                    field.set(this, (float)value * factor);
+                }
+                field.setAccessible(false);
+            }
         } catch (IllegalAccessException e) {
             Timber.e(e);
         }

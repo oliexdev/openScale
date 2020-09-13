@@ -18,14 +18,11 @@ package com.health.openscale.gui.measurement;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.RectF;
 import android.preference.PreferenceManager;
 import android.util.AttributeSet;
-import android.view.MotionEvent;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.AxisBase;
@@ -37,8 +34,6 @@ import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
-import com.github.mikephil.charting.listener.ChartTouchListener;
-import com.github.mikephil.charting.listener.OnChartGestureListener;
 import com.github.mikephil.charting.utils.Utils;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
@@ -48,14 +43,17 @@ import com.health.openscale.core.utils.Converters;
 import com.health.openscale.core.utils.PolynomialFitter;
 import com.health.openscale.gui.utils.ColorUtil;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Stack;
+
+import static java.time.temporal.ChronoUnit.DAYS;
 
 public class ChartMeasurementView extends LineChart {
     public enum ViewMode {
@@ -72,18 +70,11 @@ public class ChartMeasurementView extends LineChart {
 
     private OpenScale openScale;
     private SharedPreferences prefs;
-    private List<ScaleMeasurement> scaleMeasurementList;
     private List<MeasurementView> measurementViews;
-    private ScaleMeasurement firstMeasurement;
-    private ScaleMeasurement lastMeasurement;
-    private int maxXValue;
-    private int minXValue;
+    private List<ScaleMeasurement> scaleMeasurementList;
     private ViewMode viewMode;
-    private boolean isAnimationOn;
     private boolean isInGraphKey;
-    private int scrollHistoryCount;
     private ProgressBar progressBar;
-    private boolean isRollingChart;
 
     public ChartMeasurementView(Context context) {
         super(context);
@@ -100,69 +91,99 @@ public class ChartMeasurementView extends LineChart {
         initChart();
     }
 
-    public void setViewRange(final ViewMode mode, boolean rollingChart) {
-        progressBar.setVisibility(VISIBLE);
-        isRollingChart = rollingChart;
+    public void setViewRange(final ViewMode mode) {
+        viewMode = mode;
 
-        if (isRollingChart) {
-            ScaleMeasurement lastMeasurement = openScale.getLastScaleMeasurement();
+        setGranularityAndRange(1980, 1);
+        setXValueFormat(viewMode);
 
-            if (lastMeasurement != null) {
-                Calendar lastMeasurementCalender = Calendar.getInstance();
-                lastMeasurementCalender.setTime(lastMeasurement.getDateTime());
-
-                switch (mode) {
-                    case DAY_OF_ALL:
-                        lastMeasurementCalender.add(Calendar.DAY_OF_MONTH, -28 * scrollHistoryCount);
-                        break;
-                    case WEEK_OF_ALL:
-                        lastMeasurementCalender.add(Calendar.WEEK_OF_YEAR, -4 * scrollHistoryCount);
-                        break;
-                    case MONTH_OF_ALL:
-                        lastMeasurementCalender.add(Calendar.MONTH, -4 * scrollHistoryCount);
-                        break;
-                    case YEAR_OF_ALL:
-                        lastMeasurementCalender.add(Calendar.YEAR, -4 * scrollHistoryCount);
-                        break;
-                    default:
-                        throw new IllegalArgumentException("view mode not implemented");
-                }
-
-                setMeasurementList(openScale.getScaleMeasurementOfStartDate(lastMeasurementCalender.get(Calendar.YEAR), lastMeasurementCalender.get(Calendar.MONTH), lastMeasurementCalender.get(Calendar.DAY_OF_MONTH)));
-            } else {
-                clear();
-                return;
-            }
-        } else {
-            setMeasurementList(openScale.getScaleMeasurementList());
-        }
-        setViewMode(mode);
-
-        refresh();
-
-        if (isRollingChart) {
-            setRollingChartOn(mode);
+        if (openScale.getLastScaleMeasurement() != null) {
+            moveViewToX(convertDateToInt(openScale.getLastScaleMeasurement().getDateTime()));
         }
     }
 
     public void setViewRange(int year, final ViewMode mode) {
-        progressBar.setVisibility(VISIBLE);
-        setMeasurementList(openScale.getScaleMeasurementOfYear(year));
-        setViewMode(mode);
+        viewMode = mode;
 
-        refresh();
+        setGranularityAndRange(year, 1);
+        setXValueFormat(viewMode);
+
+        LocalDate startDate = LocalDate.of(year, 1, 1);
+
+        moveViewToX(convertDateToInt(startDate));
     }
 
     public void setViewRange(int year, int month, final ViewMode mode) {
-        progressBar.setVisibility(VISIBLE);
-        setMeasurementList(openScale.getScaleMeasurementOfMonth(year, month));
-        setViewMode(mode);
+        viewMode = mode;
 
-        refresh();
+        setGranularityAndRange(year, month);
+        setXValueFormat(viewMode);
+
+        LocalDate startDate = LocalDate.of(year, month, 1);
+
+        moveViewToX(convertDateToInt(startDate));
     }
 
-    public void setAnimationOn(boolean status) {
-        isAnimationOn = status;
+    private void setGranularityAndRange(int year, int month) {
+        LocalDate startDate = LocalDate.of(year, month, 1);
+        LocalDate endDate = LocalDate.of(year, month, 1);
+
+        int range = 0;
+        int granularity = 0;
+
+        switch (viewMode) {
+            case DAY_OF_MONTH:
+                endDate = startDate.plusMonths(1);
+                range = (int)DAYS.between(startDate, endDate);
+                granularity = 1;
+                break;
+            case WEEK_OF_MONTH:
+                endDate = startDate.plusMonths(1);
+                range = (int)DAYS.between(startDate, endDate);
+                granularity = 7;
+                break;
+            case WEEK_OF_YEAR:
+                endDate = startDate.plusYears(1);
+                range = (int)DAYS.between(startDate, endDate);
+                granularity = 7;
+                break;
+            case MONTH_OF_YEAR:
+                endDate = startDate.plusYears(1);
+                range = (int)DAYS.between(startDate, endDate);
+                granularity = 30;
+                break;
+            case DAY_OF_YEAR:
+                endDate = startDate.plusYears(1);
+                range = (int)DAYS.between(startDate, endDate);
+                granularity = 1;
+                break;
+            case DAY_OF_ALL:
+                endDate = startDate.plusMonths(1);
+                range = (int)DAYS.between(startDate, endDate);
+                granularity = 1;
+                break;
+            case WEEK_OF_ALL:
+                endDate = startDate.plusMonths(1);
+                range = (int)DAYS.between(startDate, endDate);
+                granularity = 7;
+                break;
+            case MONTH_OF_ALL:
+                endDate = startDate.plusMonths(3);
+                range = (int)DAYS.between(startDate, endDate);
+                granularity = 30;
+                break;
+            case YEAR_OF_ALL:
+                endDate = startDate.plusYears(1);
+                range = (int)DAYS.between(startDate, endDate);
+                granularity = 365;
+                break;
+            default:
+                throw new IllegalArgumentException("view mode not implemented");
+        }
+
+        getXAxis().setGranularity(granularity);
+        setVisibleXRangeMaximum(range);
+        setCustomViewPortOffsets(); // set custom viewPortOffsets to avoid jitter on translating while auto scale is on
     }
 
     public void setIsInGraphKey(boolean status) {
@@ -176,18 +197,12 @@ public class ChartMeasurementView extends LineChart {
     private void initChart() {
         prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
         openScale = OpenScale.getInstance();
-        scaleMeasurementList = new ArrayList<>();
         measurementViews = MeasurementView.getMeasurementList(getContext(), MeasurementView.DateTimeOrder.NONE);
-        firstMeasurement = new ScaleMeasurement();
-        lastMeasurement = new ScaleMeasurement();
-        maxXValue = 0;
-        minXValue = 0;
-        isAnimationOn = true;
         isInGraphKey = true;
-        scrollHistoryCount = 1;
         progressBar = null;
 
         setHardwareAccelerationEnabled(true);
+        setAutoScaleMinMaxEnabled(true);
         setMarker(new ChartMarkerView(getContext(), R.layout.chart_markerview));
         setDoubleTapToZoomEnabled(false);
         setHighlightPerTapEnabled(true);
@@ -202,134 +217,64 @@ public class ChartMeasurementView extends LineChart {
         getAxisRight().setTextColor(ColorUtil.getTintColor(getContext()));
         getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM);
         getXAxis().setTextColor(ColorUtil.getTintColor(getContext()));
+        getXAxis().setGranularityEnabled(true);
+    }
 
-        setOnChartGestureListener(new OnChartGestureListener() {
+    private int convertDateToInt(LocalDate date) {
+        return (int)date.toEpochDay();
+    }
+
+    private int convertDateToInt(Date date) {
+        LocalDate localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        return (int)localDate.toEpochDay();
+    }
+
+    private LocalDate convertIntToDate(int shortDate) {
+        return LocalDate.ofEpochDay(shortDate);
+    }
+
+    private void setXValueFormat(final ViewMode mode) {
+        getXAxis().setValueFormatter(new ValueFormatter() {
+
             @Override
-            public void onChartGestureStart(MotionEvent me, ChartTouchListener.ChartGesture lastPerformedGesture) {
+            public String getAxisLabel(float value, AxisBase axis) {
+                DateTimeFormatter formatter;
 
-            }
-
-            @Override
-            public void onChartGestureEnd(MotionEvent me, ChartTouchListener.ChartGesture lastPerformedGesture) {
-                if (isRollingChart) {
-                    if (progressBar.getVisibility() == GONE) {
-                        if (Math.round(getLowestVisibleX()) == Math.round(getXChartMin())) {
-                            scrollHistoryCount++;
-                            setViewRange(viewMode, isRollingChart);
-                        }
-                    }
+                switch (mode) {
+                    case DAY_OF_MONTH:
+                        formatter = DateTimeFormatter.ofPattern("dd");
+                        break;
+                    case WEEK_OF_MONTH:
+                        formatter = DateTimeFormatter.ofPattern("'W'W");
+                        break;
+                    case WEEK_OF_YEAR:
+                        formatter = DateTimeFormatter.ofPattern("'W'w");
+                        break;
+                    case MONTH_OF_YEAR:
+                        formatter = DateTimeFormatter.ofPattern("MMM");
+                        break;
+                    case DAY_OF_YEAR:
+                        formatter = DateTimeFormatter.ofPattern("D");
+                        break;
+                    case DAY_OF_ALL:
+                        formatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT);
+                        break;
+                    case WEEK_OF_ALL:
+                        formatter = DateTimeFormatter.ofPattern("'W'w yyyy");
+                        break;
+                    case MONTH_OF_ALL:
+                        formatter = DateTimeFormatter.ofPattern("MMM yyyy");
+                        break;
+                    case YEAR_OF_ALL:
+                        formatter = DateTimeFormatter.ofPattern("yyyy");
+                        break;
+                    default:
+                        throw new IllegalArgumentException("view mode not implemented");
                 }
-            }
 
-            @Override
-            public void onChartLongPressed(MotionEvent me) {
-
-            }
-
-            @Override
-            public void onChartDoubleTapped(MotionEvent me) {
-
-            }
-
-            @Override
-            public void onChartSingleTapped(MotionEvent me) {
-
-            }
-
-            @Override
-            public void onChartFling(MotionEvent me1, MotionEvent me2, float velocityX, float velocityY) {
-
-            }
-
-            @Override
-            public void onChartScale(MotionEvent me, float scaleX, float scaleY) {
-
-            }
-
-            @Override
-            public void onChartTranslate(MotionEvent me, float dX, float dY) {
-
+                return formatter.format(convertIntToDate((int)value));
             }
         });
-    }
-
-    @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-
-        progressBar.setVisibility(GONE);
-    }
-
-    private void setViewMode(final ViewMode mode) {
-        viewMode = mode;
-        Calendar viewModeCalender = Calendar.getInstance();
-        viewModeCalender.setTime(lastMeasurement.getDateTime());
-
-        switch (mode) {
-            case DAY_OF_MONTH:
-                minXValue = viewModeCalender.getMinimum(Calendar.DAY_OF_MONTH);
-                maxXValue = viewModeCalender.getMaximum(Calendar.DAY_OF_MONTH);
-                break;
-            case WEEK_OF_MONTH:
-                minXValue = 1;
-                maxXValue = viewModeCalender.getActualMaximum(Calendar.WEEK_OF_MONTH);
-                break;
-            case WEEK_OF_YEAR:
-                minXValue = viewModeCalender.getActualMinimum(Calendar.WEEK_OF_YEAR);
-                maxXValue = viewModeCalender.getActualMaximum(Calendar.WEEK_OF_YEAR);
-                break;
-            case MONTH_OF_YEAR:
-                minXValue = viewModeCalender.getActualMinimum(Calendar.MONTH);
-                maxXValue = viewModeCalender.getActualMaximum(Calendar.MONTH);
-                break;
-            case DAY_OF_YEAR:
-                minXValue = viewModeCalender.getActualMinimum(Calendar.DAY_OF_YEAR);
-                maxXValue = viewModeCalender.getActualMaximum(Calendar.DAY_OF_YEAR);
-                break;
-            case DAY_OF_ALL:
-            case WEEK_OF_ALL:
-            case MONTH_OF_ALL:
-            case YEAR_OF_ALL:
-                minXValue = convertDateInShort(firstMeasurement.getDateTime());
-                maxXValue = convertDateInShort(lastMeasurement.getDateTime());
-                break;
-            default:
-                throw new IllegalArgumentException("view mode not implemented");
-        }
-
-        setXValueFormat(mode);
-    }
-
-    private int convertDateInShort(Date date) {
-        Calendar shortDate = Calendar.getInstance();
-        shortDate.setTime(new Date(0));
-
-        Calendar dateCalendar = Calendar.getInstance();
-        dateCalendar.setTime(date);
-
-        switch (viewMode) {
-            case DAY_OF_ALL:
-                shortDate.set(Calendar.DAY_OF_MONTH, dateCalendar.get(Calendar.DAY_OF_MONTH));
-                shortDate.set(Calendar.MONTH, dateCalendar.get(Calendar.MONTH));
-                shortDate.set(Calendar.YEAR, dateCalendar.get(Calendar.YEAR));
-                break;
-            case WEEK_OF_ALL:
-                shortDate.set(Calendar.WEEK_OF_YEAR, dateCalendar.get(Calendar.WEEK_OF_YEAR));
-                shortDate.set(Calendar.YEAR, dateCalendar.get(Calendar.YEAR));
-                break;
-            case MONTH_OF_ALL:
-                shortDate.set(Calendar.MONTH, dateCalendar.get(Calendar.MONTH));
-                shortDate.set(Calendar.YEAR, dateCalendar.get(Calendar.YEAR));
-                break;
-            case YEAR_OF_ALL:
-                shortDate.set(Calendar.YEAR, dateCalendar.get(Calendar.YEAR));
-                break;
-            default:
-                throw new IllegalArgumentException("view mode not implemented");
-
-        }
-
-        return (int)(shortDate.getTime().getTime() / 1000000L);
     }
 
     private void setCustomViewPortOffsets() {
@@ -388,231 +333,51 @@ public class ChartMeasurementView extends LineChart {
                 Math.max(minOffset, offsetBottom));
     }
 
-    private Date convertShortInDate(int shortDate) {
-        return new Date(shortDate * 1000000L);
-    }
-
-    private void setMeasurementList(List<ScaleMeasurement> measurementList) {
-        scaleMeasurementList = measurementList;
-
-        if (!measurementList.isEmpty()) {
-            lastMeasurement = measurementList.get(0);
-            Collections.reverse(measurementList);
-            firstMeasurement = measurementList.get(0);
-            Collections.reverse(measurementList);
-        }
-    }
-
-    private void setRollingChartOn(ViewMode mode) {
-        if (!scaleMeasurementList.isEmpty()) {
-            Calendar zeroCalendar = Calendar.getInstance();
-            zeroCalendar.setTime(new Date(0));
-
-            Calendar lastCalendar = Calendar.getInstance();
-            lastCalendar.setTime(lastMeasurement.getDateTime());
-
-            Calendar deltaCalendar = Calendar.getInstance();
-
-            int range = 0;
-            int granularity = 0;
-
-            switch (mode) {
-                case DAY_OF_ALL:
-                    zeroCalendar.set(Calendar.DAY_OF_MONTH, lastCalendar.get(Calendar.DAY_OF_MONTH));
-                    zeroCalendar.set(Calendar.MONTH, lastCalendar.get(Calendar.MONTH));
-                    zeroCalendar.set(Calendar.YEAR, lastCalendar.get(Calendar.YEAR));
-                    deltaCalendar.setTime(zeroCalendar.getTime());
-                    deltaCalendar.add(Calendar.DAY_OF_MONTH, -1);
-                    granularity = convertDateInShort(zeroCalendar.getTime()) - convertDateInShort(deltaCalendar.getTime());
-                    range = granularity * 14;
-                    break;
-                case WEEK_OF_ALL:
-                    zeroCalendar.set(Calendar.WEEK_OF_YEAR, lastCalendar.get(Calendar.WEEK_OF_YEAR));
-                    zeroCalendar.set(Calendar.YEAR, lastCalendar.get(Calendar.YEAR));
-                    deltaCalendar.setTime(zeroCalendar.getTime());
-                    deltaCalendar.add(Calendar.WEEK_OF_YEAR, -1);
-                    granularity = convertDateInShort(zeroCalendar.getTime()) - convertDateInShort(deltaCalendar.getTime());
-                    range = granularity * 4;
-                    break;
-                case MONTH_OF_ALL:
-                    zeroCalendar.set(Calendar.MONTH, lastCalendar.get(Calendar.MONTH));
-                    zeroCalendar.set(Calendar.YEAR, lastCalendar.get(Calendar.YEAR));
-                    deltaCalendar.setTime(zeroCalendar.getTime());
-                    deltaCalendar.add(Calendar.MONTH, -1);
-                    granularity = convertDateInShort(zeroCalendar.getTime()) - convertDateInShort(deltaCalendar.getTime());
-                    range = granularity * 4;
-                    break;
-                case YEAR_OF_ALL:
-                    zeroCalendar.set(Calendar.YEAR, lastCalendar.get(Calendar.YEAR));
-                    deltaCalendar.add(Calendar.YEAR, -1);
-                    granularity = convertDateInShort(zeroCalendar.getTime()) - convertDateInShort(deltaCalendar.getTime());
-                    range = granularity * 3;
-                    break;
-                default:
-                    throw new IllegalArgumentException("view mode not implemented");
-            }
-
-            setAutoScaleMinMaxEnabled(true);
-            setCustomViewPortOffsets(); // set custom viewPortOffsets to avoid jitter on translating while auto scale is on
-
-            getXAxis().setGranularity(granularity);
-            setVisibleXRangeMaximum(range);
-
-            moveViewToX(getBinNr(lastMeasurement));
-        }
-    }
-
-    private void setXValueFormat(final ViewMode mode) {
-        getXAxis().setValueFormatter(new ValueFormatter() {
-            private final SimpleDateFormat xValueFormat = new SimpleDateFormat();
-            private final Calendar calendar = Calendar.getInstance();
-
-            @Override
-            public String getAxisLabel(float value, AxisBase axis) {
-                calendar.setTime(new Date(0));
-
-                switch (mode) {
-                    case DAY_OF_MONTH:
-                        calendar.set(Calendar.DAY_OF_MONTH, (int)value);
-                        xValueFormat.applyLocalizedPattern("dd");
-                        break;
-                    case WEEK_OF_MONTH:
-                        calendar.set(Calendar.WEEK_OF_MONTH, (int)value);
-                        xValueFormat.applyLocalizedPattern("'W'W");
-                        break;
-                    case WEEK_OF_YEAR:
-                        calendar.set(Calendar.WEEK_OF_YEAR, (int)value);
-                        xValueFormat.applyLocalizedPattern("'W'w");
-                        break;
-                    case MONTH_OF_YEAR:
-                        calendar.set(Calendar.MONTH, (int)value);
-                        xValueFormat.applyLocalizedPattern("MMM");
-                        break;
-                    case DAY_OF_YEAR:
-                        calendar.set(Calendar.DAY_OF_YEAR, (int)value);
-                        xValueFormat.applyLocalizedPattern("D");
-                        break;
-                    case DAY_OF_ALL:
-                        calendar.setTime(convertShortInDate((int)value));
-                        return DateFormat.getDateInstance(DateFormat.SHORT).format(calendar.getTime());
-                    case WEEK_OF_ALL:
-                        calendar.setTime(convertShortInDate((int)value));
-                        xValueFormat.applyLocalizedPattern("'W'w yyyy");
-                        return xValueFormat.format(calendar.getTime());
-                    case MONTH_OF_ALL:
-                        calendar.setTime(convertShortInDate((int)value));
-                        xValueFormat.applyLocalizedPattern("MMM yyyy");
-                        return xValueFormat.format(calendar.getTime());
-                    case YEAR_OF_ALL:
-                        calendar.setTime(convertShortInDate((int)value));
-                        xValueFormat.applyLocalizedPattern("yyyy");
-                        return xValueFormat.format(calendar.getTime());
-                    default:
-                        throw new IllegalArgumentException("view mode not implemented");
-                }
-
-                return xValueFormat.format(calendar.getTime());
-            }
-        });
-    }
-
-    private ScaleMeasurement[] averageScaleMeasurementList(List<ScaleMeasurement> measurementList) {
-        final ScaleMeasurement[] avgMeasurementList = new ScaleMeasurement[ maxXValue + minXValue + 1];
-
-        for (ScaleMeasurement measurement : measurementList) {
-            int binNr = getBinNr(measurement);
-
-            if (avgMeasurementList[binNr] == null) {
-                avgMeasurementList[binNr] = measurement.clone();
-            } else {
-                avgMeasurementList[binNr].add(measurement);
-            }
-        }
-
-        for (ScaleMeasurement avgMeasurement : avgMeasurementList) {
-            if (avgMeasurement == null) {
-                continue;
-            }
-
-            int binNr = getBinNr(avgMeasurement);
-            avgMeasurement.divide(avgMeasurementList[binNr].count());
-        }
-
-        return avgMeasurementList;
-    }
-
-    private ScaleMeasurement getPreviousMeasurment(ScaleMeasurement[] masurementList, int binNr) {
-        for (int i=binNr-1; i >= 0; i--) {
-            if (masurementList[i] != null) {
-                return masurementList[i];
-            }
-        }
-
-        return null;
-    }
-
-    private int getBinNr(ScaleMeasurement measurement) {
-        Calendar measurementCalendar = Calendar.getInstance();
-        measurementCalendar.setTime(measurement.getDateTime());
-
-        switch (viewMode) {
-            case DAY_OF_MONTH:
-                return measurementCalendar.get(Calendar.DAY_OF_MONTH);
-            case WEEK_OF_MONTH:
-                return measurementCalendar.get(Calendar.WEEK_OF_MONTH);
-            case WEEK_OF_YEAR:
-                return measurementCalendar.get(Calendar.WEEK_OF_YEAR);
-            case MONTH_OF_YEAR:
-                return measurementCalendar.get(Calendar.MONTH);
-            case DAY_OF_YEAR:
-                return measurementCalendar.get(Calendar.DAY_OF_YEAR);
-            case DAY_OF_ALL:
-            case WEEK_OF_ALL:
-            case MONTH_OF_ALL:
-            case YEAR_OF_ALL:
-                return convertDateInShort(measurement.getDateTime());
-            default:
-                throw new IllegalArgumentException("view mode not implemented");
-        }
-    }
-
-    private void refresh() {
+    public void updateMeasurementList(final List<ScaleMeasurement> scaleMeasurementList) {
         clear();
 
         if (scaleMeasurementList.isEmpty()) {
+            progressBar.setVisibility(GONE);
             return;
         }
 
-        List<ILineDataSet> lineDataSets = new ArrayList<>();
+        Collections.reverse(scaleMeasurementList);
 
-        ScaleMeasurement[] avgMeasurementList = averageScaleMeasurementList(scaleMeasurementList);
+        this.scaleMeasurementList = scaleMeasurementList;
+        refreshMeasurementList();
+    }
+
+    public void refreshMeasurementList() {
+        if (scaleMeasurementList == null) {
+            progressBar.setVisibility(GONE);
+            return;
+        }
+
+        progressBar.setVisibility(VISIBLE);
+
+        List<ILineDataSet> lineDataSets;
+        lineDataSets = new ArrayList<>();
 
         for (MeasurementView view : measurementViews) {
-            if (view instanceof FloatMeasurementView) {
+            if (view instanceof FloatMeasurementView && view.isVisible()) {
                 final FloatMeasurementView measurementView = (FloatMeasurementView) view;
 
                 final List<Entry> lineEntries = new ArrayList<>();
 
-                for (ScaleMeasurement avgMeasurement : avgMeasurementList) {
-                    if (avgMeasurement == null) {
-                        continue;
-                    }
+                for (int i=0; i<scaleMeasurementList.size(); i++) {
+                    ScaleMeasurement measurement = scaleMeasurementList.get(i);
+                    float value = measurementView.getMeasurementValue(measurement);
 
-                    int binNr = getBinNr(avgMeasurement);
-
-                    ScaleMeasurement prevMeasuremnt = getPreviousMeasurment(avgMeasurementList, binNr);
-                    measurementView.loadFrom(avgMeasurement, prevMeasuremnt);
-
-                    if (measurementView.getValue() == 0.0f) {
+                    if (value == 0.0f) {
                         continue;
                     }
 
                     Entry entry = new Entry();
-                    entry.setX(binNr);
-                    entry.setY(measurementView.getValue());
+                    entry.setX(convertDateToInt(measurement.getDateTime()));
+                    entry.setY(value);
                     Object[] extraData = new Object[3];
-                    extraData[0] = avgMeasurement;
-                    extraData[1] = prevMeasuremnt;
+                    extraData[0] = measurement;
+                    extraData[1] = (i == 0) ? null : scaleMeasurementList.get(i-1);
                     extraData[2] = measurementView;
                     entry.setData(extraData);
 
@@ -623,22 +388,18 @@ public class ChartMeasurementView extends LineChart {
             }
         }
 
-        addGoalLine(lineDataSets);
-
-        if (isInGraphKey) {
-            addRegressionLine(lineDataSets);
+        if (prefs.getBoolean("trendLine", true)) {
+            addTrendLine(lineDataSets);
         }
 
         LineData data = new LineData(lineDataSets);
         setData(data);
 
-        getXAxis().setAxisMinimum(minXValue);
-        getXAxis().setAxisMaximum(maxXValue);
-        if (isAnimationOn) {
-            animateY(700);
+        if (prefs.getBoolean("goalLine", false)) {
+            addGoalLine(lineDataSets);
         }
-        notifyDataSetChanged();
-        invalidate();
+
+        progressBar.setVisibility(GONE);
     }
 
     private void addMeasurementLine(List<ILineDataSet> lineDataSets, List<Entry> lineEntries, FloatMeasurementView measurementView) {
@@ -648,6 +409,7 @@ public class ChartMeasurementView extends LineChart {
         measurementLine.setColor(measurementView.getColor());
         measurementLine.setValueTextColor(ColorUtil.getTintColor(getContext()));
         measurementLine.setCircleColor(measurementView.getColor());
+        measurementLine.setCircleHoleColor(measurementView.getColor());
         measurementLine.setAxisDependency(measurementView.getSettings().isOnRightAxis() ? YAxis.AxisDependency.RIGHT : YAxis.AxisDependency.LEFT);
         measurementLine.setHighlightEnabled(true);
         measurementLine.setDrawHighlightIndicators(true);
@@ -655,26 +417,12 @@ public class ChartMeasurementView extends LineChart {
         measurementLine.setDrawHorizontalHighlightIndicator(false);
         measurementLine.setHighLightColor(Color.RED);
         measurementLine.setDrawCircles(prefs.getBoolean("pointsEnable", true));
-        measurementLine.setDrawValues(prefs.getBoolean("labelsEnable", true));
-        measurementLine.setValueFormatter(new ValueFormatter() {
-            @Override
-            public String getPointLabel(Entry entry) {
-                String prefix = new String();
-
-                Object[] extraData = (Object[])entry.getData();
-                ScaleMeasurement measurement = (ScaleMeasurement)extraData[0];
-                ScaleMeasurement prevMeasurement = (ScaleMeasurement)extraData[1];
-                FloatMeasurementView measurementView = (FloatMeasurementView)extraData[2];
-
-                measurementView.loadFrom(measurement, prevMeasurement);
-
-                if (measurement.isAverageValue()) {
-                    prefix = "Ø ";
-                }
-
-                return prefix + measurementView.getValueAsString(true);
-            }
-        });
+        measurementLine.setDrawValues(prefs.getBoolean("labelsEnable", false));
+        measurementLine.setMode(LineDataSet.Mode.HORIZONTAL_BEZIER);
+        if (prefs.getBoolean("trendLine", true)) {
+            // show only data point if trend line is enabled
+            measurementLine.enableDashedLine(0, 1, 0);
+        }
 
         if (measurementView.isVisible()) {
             if (isInGraphKey) {
@@ -690,73 +438,164 @@ public class ChartMeasurementView extends LineChart {
     }
 
     private void addGoalLine(List<ILineDataSet> lineDataSets) {
-        if (prefs.getBoolean("goalLine", true)) {
-            List<Entry> valuesGoalLine = new Stack<>();
+        List<Entry> valuesGoalLine = new Stack<>();
 
-            ScaleUser user = OpenScale.getInstance().getSelectedScaleUser();
-            float goalWeight = Converters.fromKilogram(user.getGoalWeight(), user.getScaleUnit());
+        ScaleUser user = OpenScale.getInstance().getSelectedScaleUser();
+        float goalWeight = Converters.fromKilogram(user.getGoalWeight(), user.getScaleUnit());
 
-            valuesGoalLine.add(new Entry(minXValue, goalWeight));
-            valuesGoalLine.add(new Entry(maxXValue, goalWeight));
+        valuesGoalLine.add(new Entry(getXChartMin(), goalWeight));
+        valuesGoalLine.add(new Entry(getXChartMax(), goalWeight));
 
-            LineDataSet goalLine = new LineDataSet(valuesGoalLine, getContext().getString(R.string.label_goal_line));
-            goalLine.setLineWidth(1.5f);
-            goalLine.setColor(ColorUtil.COLOR_GREEN);
-            goalLine.setAxisDependency(prefs.getBoolean("weightOnRightAxis", true) ? YAxis.AxisDependency.RIGHT : YAxis.AxisDependency.LEFT);
-            goalLine.setDrawValues(false);
-            goalLine.setDrawCircles(false);
-            goalLine.setHighlightEnabled(false);
-            goalLine.enableDashedLine(10, 30, 0);
+        LineDataSet goalLine = new LineDataSet(valuesGoalLine, getContext().getString(R.string.label_goal_line));
+        goalLine.setLineWidth(1.5f);
+        goalLine.setColor(ColorUtil.COLOR_GREEN);
+        goalLine.setAxisDependency(prefs.getBoolean("weightOnRightAxis", true) ? YAxis.AxisDependency.RIGHT : YAxis.AxisDependency.LEFT);
+        goalLine.setDrawValues(false);
+        goalLine.setDrawCircles(false);
+        goalLine.setHighlightEnabled(false);
+        goalLine.enableDashedLine(10, 30, 0);
 
-            lineDataSets.add(goalLine);
+        lineDataSets.add(goalLine);
+    }
+
+    private List<ScaleMeasurement> getScaleMeasurementsAsTrendline(List<ScaleMeasurement> measurementList) {
+        List<ScaleMeasurement> trendlineList = new ArrayList<>();
+
+       // exponentially smoothed moving average with 10% smoothing
+        trendlineList.add(measurementList.get(0));
+
+        for (int i = 1; i < measurementList.size(); i++) {
+            ScaleMeasurement entry = measurementList.get(i).clone();
+            ScaleMeasurement trendPreviousEntry = trendlineList.get(i - 1);
+
+            entry.subtract(trendPreviousEntry);
+            entry.multiply(0.1f);
+            entry.add(trendPreviousEntry);
+
+            trendlineList.add(entry);
+        }
+
+        return trendlineList;
+    }
+
+    private void addTrendLine(List<ILineDataSet> lineDataSets) {
+
+        List<ScaleMeasurement> scaleMeasurementsAsTrendlineList = getScaleMeasurementsAsTrendline(scaleMeasurementList);
+
+        for (MeasurementView view : measurementViews) {
+            if (view instanceof FloatMeasurementView && view.isVisible()) {
+                final FloatMeasurementView measurementView = (FloatMeasurementView) view;
+
+                final List<Entry> lineEntries = new ArrayList<>();
+
+                for (int i=0; i<scaleMeasurementsAsTrendlineList.size(); i++) {
+                    ScaleMeasurement measurement = scaleMeasurementsAsTrendlineList.get(i);
+                    float value = measurementView.getMeasurementValue(measurement);
+
+                    if (value == 0.0f) {
+                        continue;
+                    }
+
+                    Entry entry = new Entry();
+                    entry.setX(convertDateToInt(measurement.getDateTime()));
+                    entry.setY(value);
+                    Object[] extraData = new Object[3];
+                    extraData[0] = measurement;
+                    extraData[1] = (i == 0) ? null : scaleMeasurementsAsTrendlineList.get(i-1);
+                    extraData[2] = measurementView;
+                    entry.setData(extraData);
+
+                    lineEntries.add(entry);
+                }
+
+                addMeasurementLineTrend(lineDataSets, lineEntries, measurementView);
+                addPredictionLine(lineDataSets, lineEntries, measurementView);
+            }
         }
     }
 
-    private void addRegressionLine(List<ILineDataSet> lineDataSets) {
-        if (prefs.getBoolean("regressionLine", false)) {
-            int regressLineOrder = 1;
+    private void addPredictionLine(List<ILineDataSet> lineDataSets, List<Entry> lineEntries, FloatMeasurementView measurementView) {
+        if (lineEntries.size() < 2) {
+            return;
+        }
 
-            try {
-                regressLineOrder = Integer.parseInt(prefs.getString("regressionLineOrder", "1"));
-            } catch (NumberFormatException e) {
-                Toast.makeText(getContext(), getContext().getString(R.string.error_value_required) + ":" + e.getMessage(), Toast.LENGTH_LONG).show();
-                prefs.edit().putString("regressionLineOrder", "1").apply();
+        PolynomialFitter polyFitter = new PolynomialFitter(3);
+
+        // use only the last 30 values for the polynomial fitter
+        for (int i=1; i<30; i++) {
+            int pos = lineEntries.size() - i;
+
+            if (pos >= 0) {
+                Entry entry = lineEntries.get(pos);
+
+                polyFitter.addPoint((double) entry.getX(), (double) entry.getY());
             }
+        }
 
-            List<ILineDataSet> regressionLineDataSets = new ArrayList<>();
+        PolynomialFitter.Polynomial polynomial = polyFitter.getBestFit();
 
-            for (ILineDataSet dataSet : lineDataSets) {
-                PolynomialFitter polyFitter = new PolynomialFitter(Math.min(regressLineOrder, 100));
+        Entry lastEntry = lineEntries.get(lineEntries.size() - 1);
+        int maxX = (int) lastEntry.getX()+1;
+        List<Entry> predictionValues = new Stack<>();
 
-                for (int i=0; i<dataSet.getEntryCount(); i++) {
-                    Entry entry = dataSet.getEntryForIndex(i);
-                    polyFitter.addPoint((double) entry.getX(), (double) entry.getY());
+        predictionValues.add(lastEntry);
+
+        // predict 30 days into the future
+        for (int i = maxX; i < maxX + 30; i++) {
+            double yPredictionValue = polynomial.getY(i);
+            predictionValues.add(new Entry((float) i, (float) yPredictionValue));
+        }
+
+        LineDataSet predictionLine = new LineDataSet(predictionValues, measurementView.getName().toString() + "-" + getContext().getString(R.string.label_prediction));
+        predictionLine.setLineWidth(1.5f);
+        predictionLine.setColor(measurementView.getColor());
+        predictionLine.setAxisDependency(measurementView.getSettings().isOnRightAxis() ? YAxis.AxisDependency.RIGHT : YAxis.AxisDependency.LEFT);
+        predictionLine.setDrawValues(false);
+        predictionLine.setDrawCircles(false);
+        predictionLine.setHighlightEnabled(false);
+        predictionLine.enableDashedLine(10, 30, 0);
+
+        if (measurementView.isVisible()) {
+            if (isInGraphKey) {
+                if (measurementView.getSettings().isInGraph()) {
+                    lineDataSets.add(predictionLine);
                 }
-
-                PolynomialFitter.Polynomial polynomial = polyFitter.getBestFit();
-
-                List<Entry> valuesLinearRegression = new Stack<>();
-
-                for (int i = minXValue; i < maxXValue + minXValue + 1; i++) {
-                    double y_value = polynomial.getY(i);
-                    valuesLinearRegression.add(new Entry((float) i, (float) y_value));
+            } else {
+                if (measurementView.getSettings().isInOverviewGraph()) {
+                    lineDataSets.add(predictionLine);
                 }
-
-                LineDataSet linearRegressionLine = new LineDataSet(valuesLinearRegression, dataSet.getLabel() + "-" + getContext().getString(R.string.label_regression_line));
-                linearRegressionLine.setLineWidth(1.5f);
-                linearRegressionLine.setColor(dataSet.getColor());
-                linearRegressionLine.setAxisDependency(dataSet.getAxisDependency());
-                linearRegressionLine.setDrawValues(false);
-                linearRegressionLine.setDrawCircles(false);
-                linearRegressionLine.setHighlightEnabled(false);
-                linearRegressionLine.enableDashedLine(10, 30, 0);
-
-                regressionLineDataSets.add(linearRegressionLine);
-            }
-
-            for (ILineDataSet dataSet : regressionLineDataSets) {
-                lineDataSets.add(dataSet);
             }
         }
     }
+
+    private void addMeasurementLineTrend(List<ILineDataSet> lineDataSets, List<Entry> lineEntries, FloatMeasurementView measurementView) {
+        LineDataSet measurementLine = new LineDataSet(lineEntries, measurementView.getName().toString() + "-" + getContext().getString(R.string.label_trend_line));
+        measurementLine.setLineWidth(1.5f);
+        measurementLine.setValueTextSize(10.0f);
+        measurementLine.setColor(measurementView.getColor());
+        measurementLine.setValueTextColor(ColorUtil.getTintColor(getContext()));
+        measurementLine.setCircleColor(measurementView.getColor());
+        measurementLine.setCircleHoleColor(measurementView.getColor());
+        measurementLine.setAxisDependency(measurementView.getSettings().isOnRightAxis() ? YAxis.AxisDependency.RIGHT : YAxis.AxisDependency.LEFT);
+        measurementLine.setHighlightEnabled(true);
+        measurementLine.setDrawHighlightIndicators(true);
+        measurementLine.setHighlightLineWidth(1.5f);
+        measurementLine.setDrawHorizontalHighlightIndicator(false);
+        measurementLine.setHighLightColor(Color.RED);
+        measurementLine.setDrawCircles(false);//prefs.getBoolean("pointsEnable", true));
+        measurementLine.setDrawValues(prefs.getBoolean("labelsEnable", false));
+
+        if (measurementView.isVisible()) {
+            if (isInGraphKey) {
+                if (measurementView.getSettings().isInGraph()) {
+                    lineDataSets.add(measurementLine);
+                }
+            } else {
+                if (measurementView.getSettings().isInOverviewGraph()) {
+                    lineDataSets.add(measurementLine);
+                }
+            }
+        }
+    }
+
 }

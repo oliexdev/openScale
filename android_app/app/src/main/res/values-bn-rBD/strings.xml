@@ -106,7 +106,6 @@
     <string name="permission_bluetooth_info">ব্লুটুথ ডিভাইসগুলি অনুসন্ধান করার জন্য অবস্থানের অনুমতি প্রয়োজন। ডিভাইসটি খুঁজে পাওয়ার পরে এটি প্রত্যাহার করা যায়।</string>
     <string name="permission_not_granted">অনুমতি দেয়া হয়নি</string>
     <string name="label_measurement_bar">পরিমাপ বার</string>
-    <string name="label_rolling_chart">ঘূর্ণায়মান তালিকা</string>
     <string name="label_year_view">বছরের চিত্র</string>
     <string name="label_weeks_view">সপ্তাহের চিত্র</string>
     <string name="label_month_view">মাসের চিত্র</string>

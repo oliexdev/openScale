@@ -83,8 +83,6 @@
     <string name="label_no">Não</string>
     <string name="label_ok">OK</string>
     <string name="label_not_found">não encontrado</string>
-    <string name="label_regression_line">Linha de tendência de peso</string>
-    <string name="label_regression_line_degree">Grau de regressão polinomial (tendência)</string>
     <string name="label_reminder">Lembrete</string>
     <string name="label_reminder_notify_text">Título da notificação</string>
     <string name="label_reminder_time">Hora</string>
@@ -190,6 +188,7 @@
     <string name="label_day_view">Visualização diária</string>
     <string name="label_year_view">Visualização anual</string>
     <string name="label_long_press_drag_reorder">Toque firmemente e arraste a medição para reorganiza-la</string>
+    <string name="permission_read_write_data_description">leia/escreva dados no openScale, incluindo informações dos usuários e todas as medidas salvas.</string>
     <string name="permission_read_write_data_description">leia/escreva dados no openScale, incluindo informações dos utilizadores e todas as medidas salvas.</string>
     <string name="label_rolling_chart">Gráfico</string>
     <string name="label_measurement_bar">Barra de medidas</string>

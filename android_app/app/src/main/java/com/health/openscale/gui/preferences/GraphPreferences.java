@@ -24,28 +24,11 @@ import androidx.preference.PreferenceFragmentCompat;
 import com.health.openscale.R;
 
 public class GraphPreferences extends PreferenceFragmentCompat {
-
-    private static final String PREFERENCE_KEY_REGRESSION_LINE_ORDER = "regressionLineOrder";
-
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.graph_preferences, rootKey);
 
         setHasOptionsMenu(true);
-
-        // TODO replaced it with sliding average
-        /*EditTextPreference regressionLineOrder =
-                (EditTextPreference) findPreference(PREFERENCE_KEY_REGRESSION_LINE_ORDER);
-        regressionLineOrder.getEditText().setKeyListener(new DigitsKeyListener());
-        regressionLineOrder.getEditText().setSelectAllOnFocus(true);
-        regressionLineOrder.setSummary(regressionLineOrder.getText());
-        regressionLineOrder.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-            @Override
-            public boolean onPreferenceChange(Preference preference, Object newValue) {
-                preference.setSummary((String) newValue);
-                return true;
-            }
-        });*/
     }
 
     @Override

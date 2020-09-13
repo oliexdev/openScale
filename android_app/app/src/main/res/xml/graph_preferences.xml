@@ -7,7 +7,7 @@
         android:summaryOn="@string/info_is_visible"
         android:title="@string/label_enable_legend" />
     <CheckBoxPreference
-        android:defaultValue="true"
+        android:defaultValue="false"
         android:key="labelsEnable"
         android:summaryOff="@string/info_is_not_visible"
         android:summaryOn="@string/info_is_visible"
@@ -19,20 +19,15 @@
         android:summaryOn="@string/info_is_visible"
         android:title="@string/label_enable_points" />
     <CheckBoxPreference
-        android:defaultValue="true"
+        android:defaultValue="false"
         android:key="goalLine"
         android:summaryOff="@string/info_is_not_visible"
         android:summaryOn="@string/info_is_visible"
         android:title="@string/label_goal_line" />
     <CheckBoxPreference
         android:defaultValue="false"
-        android:key="regressionLine"
-        android:summaryOff="@string/info_is_not_visible"
-        android:summaryOn="@string/info_is_visible"
-        android:title="@string/label_regression_line" />
-    <EditTextPreference
-        android:defaultValue="1"
-        android:dependency="regressionLine"
-        android:key="regressionLineOrder"
-        android:title="@string/label_regression_line_degree" />
+        android:key="trendLine"
+        android:summaryOff="@string/info_is_not_enable"
+        android:summaryOn="@string/info_is_enable"
+        android:title="@string/label_trend_line" />
 </PreferenceScreen>

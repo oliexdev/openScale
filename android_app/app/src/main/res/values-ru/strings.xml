@@ -172,8 +172,6 @@
     <string name="label_enable_labels">Метка данных</string>
     <string name="default_value_reminder_notify_text">Пора взвеситься</string>
     <string name="info_on_date">в день</string>
-    <string name="label_regression_line">График снижения веса</string>
-    <string name="label_regression_line_degree">Степень полиномиальной регрессии</string>
     <string name="label_feedback_message_rate_app">Поставить оценку на Google Play или GitHub\?</string>
     <string name="trisa_scale_not_paired">Эти весы не были подключены!
 \n
@@ -232,7 +230,6 @@
     <string name="label_enable_yaxis">ось Y</string>
     <string name="label_day_view">За день</string>
     <string name="label_year_view">За год</string>
-    <string name="label_rolling_chart">Относительный масштаб</string>
     <string name="label_measurement_bar">Отображение измерений</string>
     <string name="label_is_on_right_axis">на правой оси</string>
     <string name="label_upgrade_to_openScale_pro">Пожалуйста, обновите до openScale Pro для подддержки Bluetooth</string>
