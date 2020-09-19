@@ -30,7 +30,6 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.Spinner;
-import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,6 +37,8 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.navigation.Navigation;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.highlight.Highlight;
@@ -62,6 +63,8 @@ public class OverviewFragment extends Fragment {
 
     private List<MeasurementView> lastMeasurementViews;
 
+    private RecyclerView recyclerView;
+    private OverviewAdapter overviewAdapter;
     private ChartMeasurementView chartView;
     private ChartActionBarView chartActionBarView;
 
@@ -93,6 +96,12 @@ public class OverviewFragment extends Fragment {
         chartView.setOnChartValueSelectedListener(new onChartSelectedListener());
         chartView.setProgressBar(overviewView.findViewById(R.id.progressBar));
         chartView.setIsInGraphKey(false);
+        chartView.getLegend().setEnabled(false);
+        chartView.getAxisRight().setDrawLabels(false);
+        chartView.getAxisRight().setDrawGridLines(false);
+        chartView.getAxisLeft().setDrawGridLines(false);
+        chartView.getAxisLeft().setDrawLabels(false);
+        chartView.getXAxis().setDrawGridLines(false);
 
         chartActionBarView = overviewView.findViewById(R.id.chartActionBar);
         chartActionBarView.setIsInGraphKey(false);
@@ -181,11 +190,12 @@ public class OverviewFragment extends Fragment {
         lastMeasurementViews = MeasurementView.getMeasurementList(
                 getContext(), MeasurementView.DateTimeOrder.LAST);
 
-        TableLayout tableOverviewLayout = overviewView.findViewById(R.id.tableLayoutMeasurements);
-
-        for (MeasurementView measurement : lastMeasurementViews) {
-            tableOverviewLayout.addView(measurement);
-        }
+        recyclerView = overviewView.findViewById(R.id.recyclerView);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
+        layoutManager.setInitialPrefetchItemCount(5);
+        layoutManager.setReverseLayout(true);
+        layoutManager.setStackFromEnd(true);
+        recyclerView.setLayoutManager(layoutManager);
 
         spinUserAdapter = new ArrayAdapter<>(overviewView.getContext(), R.layout.spinner_item, new ArrayList<String>());
         spinUser.setAdapter(spinUserAdapter);
@@ -258,6 +268,9 @@ public class OverviewFragment extends Fragment {
         } else {
             markedMeasurement = scaleMeasurementList.get(0);
         }
+
+        overviewAdapter = new OverviewAdapter(getContext(), scaleMeasurementList);
+        recyclerView.setAdapter(overviewAdapter);
 
         updateUserSelection();
         updateMesurementViews(markedMeasurement);
