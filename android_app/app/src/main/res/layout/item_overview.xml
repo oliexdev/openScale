@@ -22,7 +22,7 @@
 
             <TextView
                 android:id="@+id/dateView"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="TextView"
                 android:textSize="12sp"
@@ -44,11 +44,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="16dp"
-                android:tint="?attr/colorControlNormal"
                 app:layout_constraintBottom_toBottomOf="@+id/weightView"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@+id/weightView"
-                app:srcCompat="@drawable/ic_expand_more" />
+                app:srcCompat="@drawable/ic_expand_more"
+                app:tint="?attr/colorControlNormal" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/measurementRecyclerView"
@@ -56,7 +55,32 @@
                 android:layout_height="match_parent"
                 android:layout_marginTop="8dp"
                 android:visibility="gone"
-                app:layout_constraintTop_toBottomOf="@+id/weightView" />
+                app:layout_constraintTop_toBottomOf="@+id/weightView" >
+
+            </androidx.recyclerview.widget.RecyclerView>
+
+            <ImageView
+                android:id="@+id/commentIconView"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginTop="8dp"
+                android:visibility="gone"
+                app:tint="?attr/colorControlNormal"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/measurementRecyclerView"
+                app:srcCompat="@drawable/ic_comment" />
+
+            <TextView
+                android:id="@+id/commentTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="TextView"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="@+id/commentIconView"
+                app:layout_constraintStart_toEndOf="@+id/commentIconView"
+                app:layout_constraintTop_toTopOf="@+id/commentIconView" />
+
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.cardview.widget.CardView>

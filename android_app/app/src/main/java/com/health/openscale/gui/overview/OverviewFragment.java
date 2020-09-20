@@ -269,7 +269,7 @@ public class OverviewFragment extends Fragment {
             markedMeasurement = scaleMeasurementList.get(0);
         }
 
-        overviewAdapter = new OverviewAdapter(getContext(), scaleMeasurementList);
+        overviewAdapter = new OverviewAdapter(getActivity(), scaleMeasurementList);
         recyclerView.setAdapter(overviewAdapter);
 
         updateUserSelection();

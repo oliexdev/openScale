@@ -1,6 +1,6 @@
 package com.health.openscale.gui.overview;
 
-import android.content.Context;
+import android.app.Activity;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
@@ -12,6 +12,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.flexbox.AlignItems;
@@ -20,17 +21,18 @@ import com.google.android.flexbox.FlexboxLayoutManager;
 import com.google.android.flexbox.JustifyContent;
 import com.health.openscale.R;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
+import com.health.openscale.gui.measurement.MeasurementEntryFragment;
 import com.health.openscale.gui.measurement.WeightMeasurementView;
 
 import java.text.DateFormat;
 import java.util.List;
 
 class OverviewAdapter extends RecyclerView.Adapter<OverviewAdapter.ViewHolder> {
-    private Context context;
+    private Activity activity;
     private List<ScaleMeasurement> scaleMeasurementList;
 
-    public OverviewAdapter(Context aContext, List<ScaleMeasurement> scaleMeasurementList) {
-        this.context = aContext;
+    public OverviewAdapter(Activity activity, List<ScaleMeasurement> scaleMeasurementList) {
+        this.activity = activity;
         this.scaleMeasurementList = scaleMeasurementList;
     }
 
@@ -59,16 +61,35 @@ class OverviewAdapter extends RecyclerView.Adapter<OverviewAdapter.ViewHolder> {
             }
         });
 
-        FlexboxLayoutManager layoutManager = new FlexboxLayoutManager(context);
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                OverviewFragmentDirections.ActionNavOverviewToNavDataentry action = OverviewFragmentDirections.actionNavOverviewToNavDataentry();
+                action.setMeasurementId(scaleMeasurement.getId());
+                action.setMode(MeasurementEntryFragment.DATA_ENTRY_MODE.VIEW);
+                Navigation.findNavController(activity, R.id.nav_host_fragment).navigate(action);
+            }
+        });
+
+        if (!scaleMeasurement.getComment().isEmpty()) {
+            holder.commentTextView.setVisibility(View.VISIBLE);
+            holder.commentIconView.setVisibility(View.VISIBLE);
+            holder.commentTextView.setText(scaleMeasurement.getComment());
+        } else {
+            holder.commentTextView.setVisibility(View.GONE);
+            holder.commentIconView.setVisibility(View.GONE);
+        }
+
+        FlexboxLayoutManager layoutManager = new FlexboxLayoutManager(activity);
         layoutManager.setFlexDirection(FlexDirection.ROW);
         layoutManager.setJustifyContent(JustifyContent.SPACE_AROUND);
         layoutManager.setAlignItems(AlignItems.CENTER);
         holder.measurementRecyclerView.setLayoutManager(layoutManager);
         holder.measurementRecyclerView.setHasFixedSize(true);
         holder.measurementRecyclerView.setNestedScrollingEnabled(false);
-        holder.measurementRecyclerView.setAdapter(new MeasurementAdapter(context, scaleMeasurement, prevScaleMeasurement));
+        holder.measurementRecyclerView.setAdapter(new MeasurementAdapter(activity, scaleMeasurement, prevScaleMeasurement));
 
-        WeightMeasurementView weightMeasurementView = new WeightMeasurementView(context);
+        WeightMeasurementView weightMeasurementView = new WeightMeasurementView(activity);
         weightMeasurementView.loadFrom(scaleMeasurement, prevScaleMeasurement);
         SpannableStringBuilder weightValue = new SpannableStringBuilder();
         weightValue.append("◆ ");
@@ -99,6 +120,8 @@ class OverviewAdapter extends RecyclerView.Adapter<OverviewAdapter.ViewHolder> {
         TextView weightView;
         ImageView expandMoreView;
         RecyclerView measurementRecyclerView;
+        ImageView commentIconView;
+        TextView commentTextView;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -107,6 +130,8 @@ class OverviewAdapter extends RecyclerView.Adapter<OverviewAdapter.ViewHolder> {
             weightView = itemView.findViewById(R.id.weightView);
             expandMoreView = itemView.findViewById(R.id.expandMoreView);
             measurementRecyclerView = itemView.findViewById(R.id.measurementRecyclerView);
+            commentIconView = itemView.findViewById(R.id.commentIconView);
+            commentTextView = itemView.findViewById(R.id.commentTextView);
         }
     }
 }
