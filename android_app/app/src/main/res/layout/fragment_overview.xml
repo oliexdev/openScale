@@ -46,7 +46,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginRight="10dp"
                     android:scaleType="centerInside"
-                    android:tint="#d3d3d3"
+                    app:tint="#d3d3d3"
                     app:srcCompat="@drawable/ic_show" />
 
                 <ImageView
@@ -55,7 +55,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginRight="10dp"
                     android:scaleType="centerInside"
-                    android:tint="#d3d3d3"
+                    app:tint="#d3d3d3"
                     app:srcCompat="@drawable/ic_editable" />
 
                 <ImageView
@@ -64,7 +64,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginRight="20dp"
                     android:scaleType="centerInside"
-                    android:tint="#d3d3d3"
+                    app:tint="#d3d3d3"
                     app:srcCompat="@drawable/ic_delete" />
 
                 <ImageView
@@ -72,7 +72,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:scaleType="centerInside"
-                    android:tint="@android:color/white"
+                    app:tint="@android:color/white"
                     app:srcCompat="@drawable/ic_options" />
             </LinearLayout>
 
@@ -87,7 +87,42 @@
                 android:id="@+id/chartView"
                 android:layout_width="match_parent"
                 android:layout_height="200dp"
-                android:layout_gravity="center" />
+                android:layout_gravity="center" >
+
+            </com.health.openscale.gui.measurement.ChartMeasurementView>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/initialWeightView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="TextView" />
+
+                <TextView
+                    android:id="@+id/differenceWeightView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="TextView" />
+
+                <TextView
+                    android:id="@+id/goalWeightView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="TextView" />
+            </LinearLayout>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerView"
