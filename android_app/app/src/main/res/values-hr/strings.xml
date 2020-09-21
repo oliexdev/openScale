@@ -20,7 +20,7 @@
     <string name="label_add_user">Dodaj korisnika</string>
     <string name="label_add_measurement">Dodaj mjerenje</string>
     <string name="label_share">Podijeli</string>
-    <string name="label_share_subject">CSV izvoz (%s)</string>
+    <string name="label_share_subject">Izvezi podatke kao CSV (%s)</string>
     <string name="label_weight">Težina</string>
     <string name="label_bmi">Indeks tjelesne mase (BMI)</string>
     <string name="label_bmr">Bazalni metabolizam (BMR)</string>
@@ -287,7 +287,7 @@
     <string name="amputation_level_none">Bez amputacije</string>
     <string name="info_assisted_weighing_choose_reference_user">Odaberi referentnog korisnika čija se težina oduzima</string>
     <string name="info_assisted_weighing_no_reference_user">Nema referentnog korisnika, stvori ga</string>
-    <string name="info_assisted_weighing_old_reference_measurement">Upozorenje, da je zadnje referentno mjerenje starije je od jednog dana</string>
+    <string name="info_assisted_weighing_old_reference_measurement">Upozorenje: zadnje referentno mjerenje starije je od jednog dana</string>
     <string name="info_assisted_weighing_no_reference_measurements">Referentni korisnik nema mjerenja</string>
     <string name="label_amputation_right">Amputacija desno</string>
     <string name="label_amputation_left">Amputacija lijevo</string>
