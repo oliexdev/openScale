@@ -50,7 +50,7 @@
     <string name="label_user_name">Imie</string>
     <string name="label_height">Wzrost</string>
     <string name="label_scale_unit">Jednostka wagi</string>
-    <string name="label_gender">Płęć</string>
+    <string name="label_gender">Płeć</string>
     <string name="label_male">Mężczyzna</string>
     <string name="label_female">Kobieta</string>
     <string name="label_goal_weight">Docelowa waga</string>
@@ -276,6 +276,21 @@
 \nYour support and positive feedback is highly appreciated. Thank you.</string>
     <string name="app_intro_skip_button">Pomin</string>
     <string name="app_intro_next_button">Kolejny</string>
-    <string name="app_intro_back_button">Nazad</string>
+    <string name="app_intro_back_button">Powrót</string>
     <string name="app_intro_done_button">Gotowe</string>
+    <string name="info_assisted_weighing_old_reference_measurement">Uwaga: poprzedni pomiary jest starsze za dobę</string>
+    <string name="amputation_level_lower_leg_foot">Dolna część nogi i stopa</string>
+    <string name="label_amputation_right">Amputacje prawych kończyn</string>
+    <string name="label_amputation_left">Amputacje lewych kończyn</string>
+    <string name="label_amputation">Amputacje</string>
+    <string name="amputation_level_hand">Nadgarstek</string>
+    <string name="label_assisted_weighing">Ważenie z poradami</string>
+    <string name="amputation_level_leg">Noga</string>
+    <string name="amputation_level_foot">Stopa</string>
+    <string name="amputation_level_arm">Ręka</string>
+    <string name="amputation_level_forearm_hand">Przedramię i noga</string>
+    <string name="amputation_level_none">Bez amputacji</string>
+    <string name="info_assisted_weighing_choose_reference_user">Wybierz wzorowego użytkownika, waga jakiego zostanie odejmowana</string>
+    <string name="info_assisted_weighing_no_reference_user">Nie mają wzorowego użytkownika, utwórz go</string>
+    <string name="info_assisted_weighing_no_reference_measurements">Wzorowy użytkownik nie mają pomiarów</string>
 </resources>
