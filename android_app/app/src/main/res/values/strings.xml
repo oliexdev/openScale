@@ -23,7 +23,7 @@
     <string name="label_add_user">Add user</string>
     <string name="label_add_measurement">Add measurement</string>
     <string name="label_share">Share</string>
-    <string name="label_share_subject">CSV data export (%s)</string>
+    <string name="label_share_subject">Export data as CSV (%s)</string>
     <string name="label_weight">Weight</string>
     <string name="label_bmi">Body mass index (BMI)</string>
     <string name="label_bmr">Basal metabolic rate (BMR)</string>
@@ -90,7 +90,7 @@
     <string name="info_is_not_enable">disabled</string>
     <string name="info_is_not_available">not available</string>
     <string name="info_assisted_weighing_no_reference_measurements">Reference user has no measurements</string>
-    <string name="info_assisted_weighing_old_reference_measurement">Warning last reference measurement is older than a day</string>
+    <string name="info_assisted_weighing_old_reference_measurement">Warning: last reference measurement is older than a day</string>
     <string name="info_assisted_weighing_no_reference_user">No reference user available, please create one</string>
     <string name="info_assisted_weighing_choose_reference_user">Choose the reference user which the weight is subtracted</string>
     <string name="info_scale_low_battery">Low battery level (%d%%), please recharge or replace scale batteries</string>
