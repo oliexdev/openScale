@@ -20,7 +20,7 @@
     <string name="label_add_user">Gebruiker toevoegen</string>
     <string name="label_add_measurement">Meting toevoegen</string>
     <string name="label_share">Delen</string>
-    <string name="label_share_subject">CSV-gegevens exporteren (%s)</string>
+    <string name="label_share_subject">Gegevens exporteren naar csv-bestand (%s)</string>
     <string name="label_weight">Gewicht</string>
     <string name="label_bmi">Body Mass Index (BMI)</string>
     <string name="label_bmr">Basaal Metabolisme (BMR)</string>
