@@ -289,4 +289,7 @@
     <string name="label_amputation_left">Sol ampütasyon</string>
     <string name="label_amputation">Ampütasyon</string>
     <string name="label_assisted_weighing">Destekli tartım</string>
+    <string name="label_trend">Eğilim</string>
+    <string name="label_prediction">Tahmin</string>
+    <string name="label_trend_line">Eğilim çizgisi</string>
 </resources>
