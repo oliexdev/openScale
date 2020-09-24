@@ -215,7 +215,7 @@
     <string name="label_caliper2_female">Karın derisi kıvrım kalınlığı</string>
     <string name="label_caliper3_female">Kalça derisi kıvrım kalınlığı</string>
     <string name="activity_level_moderate">Orta derecede</string>
-    <string name="label_share_subject">CSV veri dışa aktarımı (%s)</string>
+    <string name="label_share_subject">Verileri CSV olarak dışa aktar (%s)</string>
     <string name="label_click_to_help_add_support">Yardım ekleyerek destek olmak için buraya tıklayın</string>
     <string name="label_measurement_in_percent">% cinsinden ölçüm</string>
     <string name="toggle_expand">Geçiş genişlemesi</string>
@@ -283,7 +283,7 @@
     <string name="amputation_level_none">Ampütasyon yok</string>
     <string name="info_assisted_weighing_choose_reference_user">Ağırlığın çıkartılacağı referans kullanıcıyı seçin</string>
     <string name="info_assisted_weighing_no_reference_user">Referans kullanıcı yok, lütfen bir tane oluşturun</string>
-    <string name="info_assisted_weighing_old_reference_measurement">Uyarı: Son referans ölçümü bir günden daha eski</string>
+    <string name="info_assisted_weighing_old_reference_measurement">Uyarı: son referans ölçümü bir günden daha eski</string>
     <string name="info_assisted_weighing_no_reference_measurements">Referans kullanıcının ölçümü yok</string>
     <string name="label_amputation_right">Sağ ampütasyon</string>
     <string name="label_amputation_left">Sol ampütasyon</string>
