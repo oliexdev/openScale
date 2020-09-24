@@ -289,4 +289,7 @@
     <string name="label_amputation_left">Amputatie (links)</string>
     <string name="label_amputation">Amputatie</string>
     <string name="label_assisted_weighing">Begeleid wegen</string>
+    <string name="label_trend">Trend</string>
+    <string name="label_prediction">Voorspelling</string>
+    <string name="label_trend_line">Trendlijn</string>
 </resources>
