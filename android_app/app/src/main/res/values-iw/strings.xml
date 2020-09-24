@@ -20,7 +20,7 @@
     <string name="label_add_user">הוספת משתמש</string>
     <string name="label_add_measurement">הוספת מדידה</string>
     <string name="label_share">שיתוף</string>
-    <string name="label_share_subject">ייצוא נתונים ב־CSV ‏(%s)</string>
+    <string name="label_share_subject">ייצוא נתונים כ־CSV ‏(%s)</string>
     <string name="label_weight">משקל</string>
     <string name="label_bmi">מדד מסת גוף (BMI)</string>
     <string name="label_bmr">קצב מטבולי בסיסי (BMR)</string>
@@ -285,10 +285,13 @@
     <string name="amputation_level_none">אין קטיעה</string>
     <string name="info_assisted_weighing_choose_reference_user">נא לבחור את המשתמש המופנה שממנו יוחסר המשקל</string>
     <string name="info_assisted_weighing_no_reference_user">לא קיים משתמש מופנה, נא ליצור אחד</string>
-    <string name="info_assisted_weighing_old_reference_measurement">אזהרה: המדידה המופנית האחרונה בת יותר מיום</string>
+    <string name="info_assisted_weighing_old_reference_measurement">אזהרה: מדידת הייחוס האחרונה בת יותר מיום</string>
     <string name="info_assisted_weighing_no_reference_measurements">למשתמש המופנה אין מדדים</string>
     <string name="label_amputation_right">קטיעה ימנית</string>
     <string name="label_amputation_left">קטיעה שמאלית</string>
     <string name="label_amputation">קטיעה</string>
     <string name="label_assisted_weighing">שקילה נתמכת</string>
+    <string name="label_trend">מגמה</string>
+    <string name="label_prediction">חיזוי</string>
+    <string name="label_trend_line">קו מגמה</string>
 </resources>
