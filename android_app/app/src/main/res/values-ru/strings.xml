@@ -290,4 +290,7 @@
     <string name="info_assisted_weighing_old_reference_measurement">Предупреждение: последнее контрольное измерение старше суток</string>
     <string name="info_assisted_weighing_no_reference_measurements">Контрольный пользователь не имеет измерений</string>
     <string name="label_assisted_weighing">Вспомогательное взвешивание</string>
+    <string name="label_trend_line">Линия тренда</string>
+    <string name="label_trend">Тренд</string>
+    <string name="label_prediction">Прогноз</string>
 </resources>
