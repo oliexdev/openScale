@@ -131,7 +131,7 @@
     <string name="label_not_found">nije pronađeno</string>
     <string name="label_ignoreOutOfRange">Zanemari podatke izvan granica</string>
     <string name="label_initial_weight">Početna težina</string>
-    <string name="label_goal_line">Ciljana linija</string>
+    <string name="label_goal_line">Smjer cilja</string>
     <string name="label_help">Pomoć</string>
     <string name="label_feedback_message_enjoying">Sviđa ti se openScale\?</string>
     <string name="label_feedback_message_rate_app">Kako bi bilo, da ocijeniš program na Google Play-u ili GitHub-u\?</string>
@@ -290,4 +290,7 @@
     <string name="label_amputation_left">Amputacija lijevo</string>
     <string name="label_amputation">Amputacija</string>
     <string name="label_assisted_weighing">Potpomognuto vaganje</string>
+    <string name="label_trend_line">Smjer trenda</string>
+    <string name="label_trend">Trend</string>
+    <string name="label_prediction">Predviđanje</string>
 </resources>
