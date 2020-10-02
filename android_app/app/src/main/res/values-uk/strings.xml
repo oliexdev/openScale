@@ -290,4 +290,7 @@
     <string name="label_amputation_left">Ампутації ліворуч</string>
     <string name="label_amputation_right">Ампутації праворуч</string>
     <string name="label_amputation">Ампутації</string>
+    <string name="label_trend">Тренд</string>
+    <string name="label_prediction">Прогноз</string>
+    <string name="label_trend_line">Лінія тренду</string>
 </resources>
