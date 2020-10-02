@@ -290,4 +290,7 @@
     <string name="info_assisted_weighing_choose_reference_user">Wybierz wzorowego użytkownika, waga jakiego zostanie odejmowana</string>
     <string name="info_assisted_weighing_no_reference_user">Nie mają wzorowego użytkownika, utwórz go</string>
     <string name="info_assisted_weighing_no_reference_measurements">Wzorowy użytkownik nie mają pomiarów</string>
+    <string name="label_trend">Trend</string>
+    <string name="label_trend_line">Linia trendu</string>
+    <string name="label_prediction">Prognoza</string>
 </resources>
