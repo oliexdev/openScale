@@ -19,7 +19,7 @@
     <string name="label_delete">Elimina</string>
     <string name="label_add_user">Aggiungi utente</string>
     <string name="label_share">Condividi</string>
-    <string name="label_share_subject">Esportazione dati in formato CSV (%s)</string>
+    <string name="label_share_subject">Esporta dati in formato CSV (%s)</string>
     <string name="label_weight">Peso</string>
     <string name="label_bmi">Indice di massa corporea (IMC)</string>
     <string name="label_bmr">Metabolismo basale (MB)</string>
@@ -141,7 +141,10 @@
     <string name="error_max_scale_users">È stato raggiunto il numero massimo di utenti simultanei per la bilancia</string>
     <string name="info_step_on_scale_for_reference">Fare un passo a piedi nudi sulla bilancia per la misura di riferimento</string>
     <string name="info_measuring">Misurazione del peso: %.2f</string>
-    <string name="customactivityoncrash_error_activity_error_occurred_explanation">Si è verificato un errore imprevisto.\n\nSi prega di creare un nuovo problema, inclusi i dettagli dell\'errore su https://github.com/oliexdev/openScale/issues</string>
+    <string name="customactivityoncrash_error_activity_error_occurred_explanation">Si è verificato un errore imprevisto.
+\n
+\nSi prega di creare un nuovo problema, inclusi i dettagli dell\'errore su 
+\nhttps://github.com/oliexdev/openScale/issues</string>
     <string name="customactivityoncrash_error_activity_restart_app">Riavviare l\'app</string>
     <string name="customactivityoncrash_error_activity_close_app">Chiudi l\'app</string>
     <string name="customactivityoncrash_error_activity_error_details">Dettagli errore</string>
@@ -226,7 +229,7 @@
     <string name="permission_read_write_data_description">leggi/scrivi dati openScale, incluse le informazioni utente e tutte le misurazioni salvate</string>
     <string name="activity_level_moderate">Moderato</string>
     <string name="activity_level_mild">Medio</string>
-    <string name="activity_level_sedentary">Sefentario</string>
+    <string name="activity_level_sedentary">Sedentario</string>
     <string name="label_activity_level">Livello di attività</string>
     <string name="label_measure_unit">Unità di misura</string>
     <string name="label_calories">Calorie</string>
@@ -245,4 +248,48 @@
     <string name="label_slide_opensource_top_text">È un software open source con un alto grado di trasparenza.</string>
     <string name="label_slide_user_top_text">Utenti multipli sono supportati.</string>
     <string name="app_intro_done_button">Fatto</string>
+    <string name="label_slide_support_main_text">openScale ha bisogno di te. Crea una <a href="https://github.com/oliexdev/openScale/issues">nuova issue</a> se trovi un bug, se hai un\'idea, una domanda o se vuoi aiutarci a supportare la tua bilancia Bluetooth.
+\n
+\nSupporta il creatore di questo progetto in modo che questo possa essere aggiornato, scrivi una recensione positiva su <a href="http://play.google.com/store/apps/details?id=com.health.openscale.pro">GooglePlay</a> o aggiungi il progetto ai preferiti su <a href="https://github.com/oliexdev/openScale">GitHub</a>.
+\n
+\nApprezziamo molto il tuo supporto e le recensioni positive. Grazie.</string>
+    <string name="label_slide_metrics_main_text">openScale supporta più di 22 dati del corpo.
+\n
+\nConfigurala per fare in modo che mostri quelli che ti interessano di più.
+\n
+\nSe la tua bilancia non supporta i dati della quantità di acqua e della massa corporea magra, è possibile stimarli sulla base di <a href="https://github.com/oliexdev/openScale/wiki/Body-metric-estimations">pubblicaizoni scientifiche</a>.</string>
+    <string name="label_slide_metrics_top_text">Traccia e analizza i dati del tuo corpo.</string>
+    <string name="label_slide_bluetooth_main_text">openScale supporta un gran numero di bilance Bluetooth di diversi produttori.
+\n
+\nMiglioriamo ed espandiamo il numero di bilance supportate costantemente. Puoi trovare la lista completa e il livello di supporto di ogni singola bilancia su <a href="https://github.com/oliexdev/openScale/wiki/Supported-scales-in-openScale">GitHub</a>.</string>
+    <string name="label_slide_opensource_main_text">openScale è distribuito con licenza <a href="https://github.com/oliexdev/openScale/blob/master/LICENSE">GPLv3</a>.
+\n
+\nTutte le misurazioni sono trasparenti e non avvengono trasferimenti di dati o di informazioni identificative nascosti.
+\n
+\nPuoi trovare il codice sorgente di questo programma su <a href="https://github.com/oliexdev/openScale">GitHub</a>. Se vuoi puoi controllare tu stesso.</string>
+    <string name="label_slide_user_main_text">openScale non richiede la creazione di account.
+\n
+\nI dati del corpo vengono calcolati dalle misurazioni effettuate.</string>
+    <string name="label_slide_privacy_main_text">openScale non invia dati in cloud e non richiede alcun permesso di accesso alla rete così puoi essere sicuro che ciò non avvenga.
+\n
+\nSe vuoi sincronizzare il tuo peso su GoogleFit o con MQTT puoi installare <a href="https://play.google.com/store/apps/details?id=com.health.openscale.sync">openScale sync</a>.</string>
+    <string name="amputation_level_leg">Gamba</string>
+    <string name="amputation_level_lower_leg_foot">Parte inferiore della gamba e piede</string>
+    <string name="amputation_level_foot">Piede</string>
+    <string name="amputation_level_arm">Braccio</string>
+    <string name="amputation_level_forearm_hand">Avambraccio e gamba</string>
+    <string name="amputation_level_hand">Mano</string>
+    <string name="amputation_level_none">Nessuna amputazione</string>
+    <string name="label_is_on_right_axis">Su asse destro</string>
+    <string name="label_trend">Tendenza</string>
+    <string name="label_prediction">Predizione</string>
+    <string name="label_trend_line">Tendenza</string>
+    <string name="info_assisted_weighing_choose_reference_user">Scegli un utente a cui sottrarre il peso</string>
+    <string name="info_assisted_weighing_no_reference_user">Nessun utente presente, creane uno</string>
+    <string name="info_assisted_weighing_old_reference_measurement">Attenzione: L\'ultima misurazione è più vecchia di un giorno</string>
+    <string name="info_assisted_weighing_no_reference_measurements">L\'utente non ha effettuato misurazioni</string>
+    <string name="label_amputation_right">Amputazione destra</string>
+    <string name="label_amputation_left">Amputazione sinistra</string>
+    <string name="label_amputation">Amputazione</string>
+    <string name="label_assisted_weighing">Pesata assistita</string>
 </resources>
