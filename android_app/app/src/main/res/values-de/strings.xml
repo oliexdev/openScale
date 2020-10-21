@@ -162,7 +162,7 @@
     <string name="permission_bluetooth_info_title">Information</string>
     <string name="label_next">Weiter</string>
     <string name="label_set_default_order">Default Reihenfolge wiederherstellen</string>
-    <string name="label_share_subject">CSV Datenexport (%s)</string>
+    <string name="label_share_subject">Daten als CSV exportieren (%s)</string>
     <string name="label_mergeWithLastMeasurement">Zusammenführen mit der letzten Messung</string>
     <string name="label_export_overwrite">Vorherigen Export überschreiben %s?</string>
     <string name="label_measurement_in_percent">Messwert in %</string>
