@@ -5,13 +5,16 @@
         <!-- Keep the list below alphabetically sorted -->
         <!-- Native names from https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes -->
         <item>Arabic (العربية)</item>
+        <item>Bengali (বাংলা)</item>
         <item>Catalan (català)</item>
         <item>Chinese (traditional; 中文 (繁體))</item>
+        <item>Chinese (simplified); 中文 (汉语))</item>
         <item>Croatian (hrvatski jezik)</item>
         <item>Czech (čeština)</item>
         <item>Danish (dansk)</item>
         <item>Dutch (Nederlands)</item>
         <item>English</item>
+        <item>Finnish (suomi)</item>
         <item>French (français)</item>
         <item>Galician (Galego)</item>
         <item>German (Deutsch)</item>
@@ -31,6 +34,7 @@
         <item>Spanish (Español)</item>
         <item>Swedish (Svenska)</item>
         <item>Turkish (Türkçe)</item>
+        <item>Ukrainian (Українська)</item>
         <item>Vietnamese (Tiếng Việt)</item>
     </string-array>
 
@@ -38,13 +42,16 @@
         <item>default</item>
         <!-- The order below should match the language order above -->
         <item>ar</item>
+        <item>bn-rBD</item>
         <item>ca</item>
         <item>zh-TW</item>
+        <item>zh-CN</item>
         <item>hr</item>
         <item>cs</item>
         <item>da</item>
         <item>nl</item>
         <item>en</item>
+        <item>fi</item>
         <item>fr</item>
         <item>gl</item>
         <item>de</item>
@@ -64,6 +71,7 @@
         <item>es</item>
         <item>sv</item>
         <item>tr</item>
+        <item>uk</item>
         <item>vi</item>
     </string-array>
 
