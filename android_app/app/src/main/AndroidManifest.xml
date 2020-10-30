@@ -8,6 +8,8 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-configuration  android:reqTouchScreen="finger" />
+    <uses-feature  android:name="android.hardware.touchscreen"  android:required="true" />
 
     <!-- Permission to allow read of data from the database through a ContentProvider.
          Marked "dangerous" so that explicit user approval is required to read this data, not
@@ -27,6 +29,7 @@
         android:roundIcon="${appIconRound}"
         android:label="@string/app_name"
         android:name=".core.Application"
+        android:resizeableActivity="true"
         android:theme="@style/AppTheme" >
         <activity
             android:name=".gui.MainActivity"
