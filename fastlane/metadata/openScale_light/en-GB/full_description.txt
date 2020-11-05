@@ -1,0 +1,39 @@
+Monitor and track your weight, BMI, body fat, body water, muscle and other body metrics in an open source app that:
+* has an easy to use user interface with graphs,
+* doesn't require you to create an account,
+* can be configured to only show the metrics you care about, and
+* respects your privacy and lets you decide what to do with your data.
+
+<h2><b>Bluetooth scales (pro version)</b></h2>
+
+openScale has built-in support for a number of Bluetooth (BLE or "smart") scales from  many manufacturers, e.g. Beurer, Sanitas, Yunmai, Xiaomi, etc. (see model list below). Together with our users we constantly improve and extend the set of supported scales and in many cases pick up where the original app falls short.
+
+For scales without Bluetooth, or Bluetooth scales not (yet) supported by openScale, measurements can be manually entered in a quick and easy way.
+
+<b>Note:</b> Please install openScale pro version to enable Bluetooth support
+
+<h2><b>Privacy</b></h2>
+This app has no ads and requests no unnecessary permissions. The location permission is only needed to find a Bluetooth scale. Once found the permission can be revoked (or never granted if Bluetooth isn't used).
+
+<h2><b>Supported metrics</b></h2>
+Weight, BMI (body mass index), body water, muscle, LBM (lean body mass), body fat, bone mass, waist circumference, waist-to-height ratio, hip circumference, waist-hip ratio, visceral fat, chest circumference, thigh circumference, biceps circumference, neck circumference, body fat caliper, BMR (basal metabolic rate), TDEE (Total Daily Energy Expenditure) and Calories. Each entry can also have an optional comment.
+
+<b>Note:</b> don't worry if you think the list is too long: metrics you don't use can be disabled and hidden.
+
+<h2><b>Other features</b></h2>
+- Synchronize your weight to GoogleFit with openScale sync
+- Resizable widget to show the latest measurement on the home screen
+- Configure your weight unit: kg, lb or st
+- Set a goal to help keep your diet
+- Displays all your data on a chart and in a table to track your progress
+- Evaluates measurements and gives a quick visual feedback to show you if you're within or outside the recommended range given your age, sex, height etc.
+- Import or export your data from/into a CSV (comma separated value) file
+- Supports body fat, body water and lean body mass estimations based on scientific publications. Useful if your scale doesn't support those measurements.
+- Support for multiple users
+- Support for assisted weighing (e.g. for babies or pets)
+- Support for people with amputations
+- Partially or fully translated into more than 27 languages
+- Optional dark theme selectable
+
+<h2><b>Support</b></h2>
+If you find a bug, have an idea on how to improve openScale or have a question, please visit the openScale project page on GitHub: https://github.com/oliexdev/openScale
