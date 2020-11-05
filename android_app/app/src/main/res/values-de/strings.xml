@@ -39,7 +39,7 @@
     <string name="label_goal_date_is">Zieldatum:</string>
     <string name="label_goal_weight">Zielgewicht</string>
     <string name="label_import">Importieren</string>
-    <string name="label_last_month">Monatsschnitt</string>
+    <string name="label_last_month">Monatsdurchschnitt</string>
     <string name="label_last_week">Wochendurchschnitt</string>
     <string name="label_male">Männlich</string>
     <string name="label_muscle">Muskelmasse</string>
@@ -148,7 +148,7 @@
     <string name="customactivityoncrash_error_activity_error_details_copied">in Zwischenablage kopiert</string>
     <string name="customactivityoncrash_error_activity_error_details_clipboard_label">Fehlerinformationen</string>
     <string name="title_general">Allgemein</string>
-    <string name="label_theme">Aussehen</string>
+    <string name="label_theme">Theme</string>
     <string name="label_share">Teilen</string>
     <string name="label_bluetooth_searching_finished">Suche beendet</string>
     <string name="label_help">Hilfe</string>
@@ -185,7 +185,7 @@
     <string name="label_daily">täglich</string>
     <string name="label_weekly">wöchentlich</string>
     <string name="label_monthly">monatlich</string>
-    <string name="label_long_press_drag_reorder">Langes Drücken und Halten zum erneuten messen</string>
+    <string name="label_long_press_drag_reorder">Langes Drücken und Halten zum Neuordnen</string>
     <string name="label_development">Entwicklung</string>
     <string name="label_select_measurement">Messwert auswählen</string>
     <string name="label_select_user">Benutzer auswählen</string>
@@ -247,7 +247,7 @@
     <string name="label_slide_user_top_text">Es werden mehrere Benutzer unterstützt.</string>
     <string name="label_slide_user_main_text">openScale verlangt nicht, dass Sie ein Online-Konto erstellen.
 \n
-\nKörperdaten werden aus den Messungen berechnet.</string>
+\nKörpermetriken werden anhand der Messwerte berechnet.</string>
     <string name="label_slide_opensource_top_text">Es handelt sich um Open-Source Software mit einem hohen Maß an Transparenz.</string>
     <string name="label_slide_opensource_main_text">openScale ist lizenziert unter der <a href="https://github.com/oliexdev/openScale/blob/master/LICENSE">GPLv3</a>.
 \n
@@ -263,7 +263,7 @@
 \n
 \nEs kann individuell konfiguriert werden, um nur die Körpermetriken anzuzeigen, die Ihnen wichtig sind.
 \n
-\nWenn Ihre Waage Körperfett, Körperwasser und fettfreie Körpermasse fehlt, können Sie diese Werte auf der Grundlage von <a href="https://github.com/oliexdev/openScale/wiki/Body-metric-estimations">wissenschaftlichen Publikationen</a> schätzen lassen.</string>
+\nWenn Ihre Waage Körperfett, Körperwasser und Muskelmasse nicht unterstützt, können Sie diese Werte auf der Grundlage von <a href="https://github.com/oliexdev/openScale/wiki/Body-metric-estimations">wissenschaftlichen Publikationen</a> schätzen lassen.</string>
     <string name="label_slide_support_top_text">Helfen Sie uns, openScale zu verbessern.</string>
     <string name="label_slide_support_main_text">openScale braucht dich! Erstelle ein <a href="https://github.com/oliexdev/openScale/issues">neues Ticket</a> auf GitHub, wenn du einen Fehler gefunden hast, eine Idee oder eine Frage hast oder helfen möchtest, deine Bluetooth Waage zu unterstützen.
 \n
