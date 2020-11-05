@@ -10,7 +10,6 @@ android {
         targetSdkVersion 29
         versionCode 51
         versionName "2.3.2"
-        archivesBaseName = "openScale-$versionName"
 
         manifestPlaceholders = [
                 appIcon: "@drawable/ic_launcher_openscale",
@@ -92,11 +91,13 @@ android {
             archivesBaseName = "openScale"
         }
         release {
+            archivesBaseName = "openScale-"+defaultConfig.versionName
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
             signingConfig signingConfigs.release
         }
         light {
+            archivesBaseName = "openScale-"+defaultConfig.versionName
             manifestPlaceholders = [
                     appIcon: "@drawable/ic_launcher_openscale_light",
                     appIconRound: "@mipmap/ic_launcher_openscale_light_round"
@@ -108,6 +109,7 @@ android {
             signingConfig signingConfigs.light
         }
         pro {
+            archivesBaseName = "openScale-"+defaultConfig.versionName
             manifestPlaceholders = [
                     appIcon: "@drawable/ic_launcher_openscale_pro",
                     appIconRound: "@mipmap/ic_launcher_openscale_pro_round"
