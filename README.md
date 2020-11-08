@@ -1,4 +1,4 @@
-&nbsp; <img src="https://github.com/oliexdev/openScale/blob/master/fastlane/openScale/en-GB/images/icon.png" alt="openScale logo" height="60"/> &nbsp;openScale [![Build Status](https://travis-ci.org/oliexdev/openScale.svg?branch=master)](
+&nbsp; <img src="https://github.com/oliexdev/openScale/blob/master/fastlane/metadata/android/en-GB/images/icon.png" alt="openScale logo" height="60"/> &nbsp;openScale [![Build Status](https://travis-ci.org/oliexdev/openScale.svg?branch=master)](
 https://travis-ci.org/oliexdev/openScale)
 [![Translation status](https://hosted.weblate.org/widgets/openscale/-/strings/svg-badge.svg)](https://hosted.weblate.org/engage/openscale/?utm_source=widget)
 =========
