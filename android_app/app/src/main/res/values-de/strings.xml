@@ -219,7 +219,7 @@
     <string name="trisa_scale_pairing_succeeded">Die Kopplung ist erfolgreich!
 \n
 \nWieder verbinden, um Messdaten abzurufen.</string>
-    <string name="info_bluetooth_no_device_retrying">Kann keine Verbindung herstellen, versuche erneut…</string>
+    <string name="info_bluetooth_no_device_retrying">Kann keine Verbindung herstellen; versuche erneut …</string>
     <string name="label_tdee">Gesamttagesenergieumsatz (TDEE)</string>
     <string name="label_calories">Kalorien</string>
     <string name="info_bluetooth_connection_disconnected">Bluetooth Verbindung getrennt</string>
