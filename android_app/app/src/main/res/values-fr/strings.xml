@@ -256,7 +256,7 @@
 \n 
 \nLes métriques corporelles sont calculées à partir de mesures.</string>
     <string name="label_empty">vide</string>
-    <string name="label_slide_privacy_main_text">openScale n\'envoie aucune donnée dans le cloud et le fait de ne pas avoir la permission d\'accéder à l\'internet en est une garantie solide.
+    <string name="label_slide_privacy_main_text">openScale n\'envoie aucune donnée dans le nuage et le fait de ne pas avoir la permission d\'accéder à l\'internet en est une garantie solide.
 \n
 \nSi vous voulez vraiment synchroniser votre poids avec GoogleFit ou avec MQTT, vous pouvez installer <a href="https://play.google.com/store/apps/details?id=com.health.openscale.sync">openScale sync</a>.</string>
     <string name="label_slide_privacy_top_text">Protégez vos données personnelles de santé.</string>
