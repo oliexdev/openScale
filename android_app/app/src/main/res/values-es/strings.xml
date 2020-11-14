@@ -224,7 +224,7 @@
     <string name="info_bluetooth_connection_disconnected">Conexión Bluetooth cerrada</string>
     <string name="label_enable_legend">Leyenda del gráfico</string>
     <string name="label_enable_yaxis">Eje Y</string>
-    <string name="info_step_on_scale">Súbase con los pies descalzos en la báscula</string>
+    <string name="info_step_on_scale">Por favor, párese descalzo en la balanza</string>
     <string name="label_day_view">Vista diaria</string>
     <string name="label_year_view">Vista anual</string>
     <string name="label_measurement_bar">Barra de medida</string>
