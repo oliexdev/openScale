@@ -36,8 +36,8 @@
     <string name="label_whr">Midje-til-hofte -forhold</string>
     <string name="label_smartUserAssign">Smart brukertildeling</string>
     <plurals name="label_days">
-        <item quantity="one">dag %d</item>
-        <item quantity="other">dager %d</item>
+        <item quantity="one">%d dag</item>
+        <item quantity="other">%d dager</item>
     </plurals>
     <string name="label_last_week">Gjennomsnitt siste uke</string>
     <string name="label_last_month">Gjennomsnitt den siste måneden</string>
@@ -291,5 +291,5 @@
     <string name="label_assisted_weighing">Assistert veiing</string>
     <string name="label_trend_line">Tendenslinje</string>
     <string name="label_trend">Tendens</string>
-    <string name="label_prediction">Forventning</string>
+    <string name="label_prediction">Prognose</string>
 </resources>
