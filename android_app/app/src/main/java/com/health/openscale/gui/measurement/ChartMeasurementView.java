@@ -392,8 +392,12 @@ public class ChartMeasurementView extends LineChart {
             addTrendLine(lineDataSets);
         }
 
-        LineData data = new LineData(lineDataSets);
-        setData(data);
+        if (!lineDataSets.isEmpty()) {
+            LineData data = new LineData(lineDataSets);
+            setData(data);
+        } else {
+            setData(null);
+        }
 
         if (prefs.getBoolean("goalLine", false)) {
             addGoalLine(lineDataSets);
@@ -424,7 +428,7 @@ public class ChartMeasurementView extends LineChart {
             measurementLine.enableDashedLine(0, 1, 0);
         }
 
-        if (measurementView.isVisible()) {
+        if (measurementView.isVisible() && !lineEntries.isEmpty()) {
             if (isInGraphKey) {
                 if (measurementView.getSettings().isInGraph()) {
                     lineDataSets.add(measurementLine);
