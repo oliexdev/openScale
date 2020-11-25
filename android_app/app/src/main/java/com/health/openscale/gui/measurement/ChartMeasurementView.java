@@ -523,7 +523,7 @@ public class ChartMeasurementView extends LineChart {
             return;
         }
 
-        PolynomialFitter polyFitter = new PolynomialFitter(3);
+        PolynomialFitter polyFitter = new PolynomialFitter(lineEntries.size() == 2 ? 2 : 3);
 
         // use only the last 30 values for the polynomial fitter
         for (int i=1; i<30; i++) {

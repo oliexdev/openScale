@@ -362,9 +362,13 @@ public class BluetoothSettingsFragment extends Fragment {
             Timber.d("Saved Bluetooth device " + device.getName() + " with address " + device.getAddress());
 
             stopBluetoothDiscovery();
-            Navigation.findNavController(requireActivity(), R.id.nav_host_fragment).getPreviousBackStackEntry().getSavedStateHandle().set("update", true);
-            Navigation.findNavController(requireActivity(), R.id.nav_host_fragment).navigateUp();
-        }
+
+            if (getActivity().findViewById(R.id.nav_host_fragment) != null){
+                Navigation.findNavController(requireActivity(), R.id.nav_host_fragment).getPreviousBackStackEntry().getSavedStateHandle().set("update", true);
+                Navigation.findNavController(requireActivity(), R.id.nav_host_fragment).navigateUp();
+            } else
+                getActivity().finish();
+            }
     }
 
     @Override
