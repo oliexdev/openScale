@@ -202,29 +202,30 @@ public class BluetoothOneByone extends BluetoothCommunication {
         try {
             dateTime.setLenient(false);
             scaleBtData.setDateTime(dateTime.getTime());
+
+            scaleBtData.setFat(oneByoneLib.getBodyFat(weight, impedanceCoeff));
+            scaleBtData.setWater(oneByoneLib.getWater(scaleBtData.getFat()));
+            scaleBtData.setBone(oneByoneLib.getBoneMass(weight, impedanceValue));
+            scaleBtData.setVisceralFat(oneByoneLib.getVisceralFat(weight));
+            scaleBtData.setMuscle(oneByoneLib.getMuscle(weight, scaleBtData.getFat(), scaleBtData.getBone()));
+
+            Timber.d("scale measurement [%s]", scaleBtData);
+
+            if (dateTime.getTimeInMillis() - lastDateTime.getTimeInMillis() < DATE_TIME_THRESHOLD) {
+                return; // don't save measurements too close to each other
+            }
+            lastDateTime = dateTime;
+
+            addScaleMeasurement(scaleBtData);
         }
         catch (IllegalArgumentException e) {
             if (historicMeasurement) {
                 Timber.d("invalid time-stamp: year %d, month %d, day %d, hour %d, minute %d, second %d",
-                         Converters.fromUnsignedInt16Be(weightBytes, 11),
-                         weightBytes[13], weightBytes[14], weightBytes[15],
-                         weightBytes[16], weightBytes[17]);
+                        Converters.fromUnsignedInt16Be(weightBytes, 11),
+                        weightBytes[13], weightBytes[14], weightBytes[15],
+                        weightBytes[16], weightBytes[17]);
                 return; // discard historic measurement with invalid time-stamp
             }
         }
-        scaleBtData.setFat(oneByoneLib.getBodyFat(weight, impedanceCoeff));
-        scaleBtData.setWater(oneByoneLib.getWater(scaleBtData.getFat()));
-        scaleBtData.setBone(oneByoneLib.getBoneMass(weight, impedanceValue));
-        scaleBtData.setVisceralFat(oneByoneLib.getVisceralFat(weight));
-        scaleBtData.setMuscle(oneByoneLib.getMuscle(weight, scaleBtData.getFat(), scaleBtData.getBone()));
-
-        Timber.d("scale measurement [%s]", scaleBtData);
-
-        if (dateTime.getTimeInMillis() - lastDateTime.getTimeInMillis() < DATE_TIME_THRESHOLD) {
-            return; // don't save measurements too close to each other
-        }
-        lastDateTime = dateTime;
-
-        addScaleMeasurement(scaleBtData);
     }
 }
