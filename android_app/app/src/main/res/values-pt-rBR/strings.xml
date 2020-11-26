@@ -10,25 +10,25 @@
     <string name="action_bluetooth_status">Estado do Bluetooth</string>
     <string name="action_settings">Configurações</string>
     <string name="default_value_reminder_notify_text">Hora de pesar-se</string>
-    <string name="error_height_required">Erro: falta a altura</string>
+    <string name="error_height_required">Altura requerida</string>
     <string name="error_exporting">Erro ao exportar</string>
-    <string name="error_goal_weight_required">Erro: peso desejado é obrigatório</string>
+    <string name="error_goal_weight_required">Meta de peso requerida</string>
     <string name="error_importing">Erro ao importar</string>
-    <string name="error_initial_weight_required">Erro: falta o peso</string>
+    <string name="error_initial_weight_required">Peso inicial requerido</string>
     <string name="error_max_scale_users">Quantidade máxima de utilizadores concurrentes atingidos</string>
-    <string name="error_user_name_required">Erro: Nome do utilizador é obrigatório</string>
-    <string name="error_value_range">Valor não está no intervalo</string>
+    <string name="error_user_name_required">Nome requerido</string>
+    <string name="error_value_range">Valor fora do intervalo</string>
     <string name="error_value_required">Valor é obrigatório</string>
     <string name="info_bluetooth_connection_error">Ocorreu um erro inesperado com o Bluetooth</string>
-    <string name="info_bluetooth_connection_lost">Ligação bluetooth perdida</string>
-    <string name="info_bluetooth_connection_successful">Ligação estabelecida</string>
+    <string name="info_bluetooth_connection_lost">Conexão Bluetooth perdida</string>
+    <string name="info_bluetooth_connection_successful">Conectado</string>
     <string name="info_bluetooth_init">Iniciar aparelho Bluetooh</string>
     <string name="info_bluetooth_no_device">Nenhum aparelho Bluetooth encontrado</string>
     <string name="info_bluetooth_try_connection">Conectando a:</string>
     <string name="info_data_all_deleted">Todos os dados foram apagados</string>
     <string name="info_data_deleted">Dados apagados</string>
-    <string name="info_data_exported">Dados exportados para</string>
-    <string name="info_data_imported">Dados importados de</string>
+    <string name="info_data_exported">Exportado para</string>
+    <string name="info_data_imported">Importado de</string>
     <string name="info_enter_comment">Digite um comentário opcional</string>
     <string name="info_enter_user_name">Digite seu nome</string>
     <string name="info_enter_value_in">Digite o valor em</string>
@@ -95,7 +95,7 @@
     <string name="label_title_user">utilizador</string>
     <string name="label_user_name">Nome</string>
     <string name="label_waist">Perimetro abdominal</string>
-    <string name="label_water">Quantidade de água</string>
+    <string name="label_water">Água corporal total</string>
     <string name="label_weight">Peso</string>
     <string name="label_weight_difference">Diferença de peso</string>
     <string name="label_whr">Relação anca-cintura</string>
@@ -120,7 +120,7 @@
     <string name="label_bmr">Taxa Metabólica Basal (TMB)</string>
     <string name="label_lbm">Massa Magra</string>
     <string name="label_bone">Massa óssea</string>
-    <string name="info_bluetooth_no_device_set">Sem dispositivo Bluetooth selecionado</string>
+    <string name="info_bluetooth_no_device_set">Selecione um dispositivo Bluetooth</string>
     <string name="info_new_data_added">%1$.2f%2$s [%3$s] para %4$s adicionado</string>
     <string name="info_new_data_duplicated">media já inserida com a mesma data e hora</string>
     <string name="label_mergeWithLastMeasurement">Juntar à última medida</string>
@@ -136,13 +136,15 @@
     <string name="label_help">Ajuda</string>
     <string name="label_feedback_message_enjoying">Gostou do openScale?</string>
     <string name="label_feedback_message_rate_app">Que tal avaliar o openScale no GooglePlay ou no GitHub\?</string>
-    <string name="label_feedback_message_issue">Qual é a sua opinião sobre a app?</string>
+    <string name="label_feedback_message_issue">Qual é a sua opinião sobre o app\?</string>
     <string name="label_feedback_message_yes">Sim</string>
     <string name="label_feedback_message_no">Não necessáriamente</string>
     <string name="label_feedback_message_positive">Ok</string>
     <string name="label_feedback_message_negative">Não, obrigado</string>
-    <string name="customactivityoncrash_error_activity_error_occurred_explanation">Um erro inesperado ocorreu. 
-\nPor favor crie um novo issue incluindo os detalhes no https://github.com/oliexdev/openScale/issues</string>
+    <string name="customactivityoncrash_error_activity_error_occurred_explanation">Um erro inesperado ocorreu.
+\n
+\nFavor criar um novo issue incluindo detalhes do erro em
+\nhttps://github.com/oliexdev/openScale/issues</string>
     <string name="customactivityoncrash_error_activity_restart_app">Recomeçar a app</string>
     <string name="customactivityoncrash_error_activity_close_app">Fecha a app</string>
     <string name="customactivityoncrash_error_activity_error_details">Detalhes do erro</string>
@@ -157,7 +159,7 @@
     <string name="label_month_view">Visão mensal</string>
     <string name="label_weeks_view">Visão semanal</string>
     <string name="permission_not_granted">Não permitido</string>
-    <string name="permission_bluetooth_info">openScale precisa de permissão para procurar dispositivos Bluetooth</string>
+    <string name="permission_bluetooth_info">Permissão de Localização necessária para buscar dispositivos Bluetooth. Pode ser revogada após encontrar dispositivo.</string>
     <string name="permission_bluetooth_info_title">Infos</string>
     <string name="label_next">Próximo</string>
     <string name="label_set_default_order">Define ordem por defeito</string>
@@ -192,4 +194,18 @@
     <string name="label_measurement_bar">Barra de medidas</string>
     <string name="action_donation">Doação</string>
     <string name="label_empty">Vazio</string>
+    <string name="label_trend">Tendência</string>
+    <string name="label_trend_line">Linha de tendência</string>
+    <string name="label_prediction">Previsão</string>
+    <string name="info_bluetooth_connection_error_scale_offline">Sem conexão com balança, certifique-se que está ligada.</string>
+    <string name="info_scale_low_battery">Bateria baixa (%d%%), favor recarregar ou trocar as baterias da balança</string>
+    <string name="info_assisted_weighing_choose_reference_user">Escolha o usuário-referência cujo peso será descontado</string>
+    <string name="info_assisted_weighing_no_reference_user">Sem usuário-referência disponível, favor criar um</string>
+    <string name="info_assisted_weighing_old_reference_measurement">Alerta: última medida de referência tem mais de um dia</string>
+    <string name="info_assisted_weighing_no_reference_measurements">Usuário-referência sem medidas</string>
+    <string name="label_amputation_right">Amputação direita</string>
+    <string name="label_amputation_left">Amputação esquerda</string>
+    <string name="label_amputation">Amputação</string>
+    <string name="label_assisted_weighing">Pesagem assistida</string>
+    <string name="label_age">Idade</string>
 </resources>
