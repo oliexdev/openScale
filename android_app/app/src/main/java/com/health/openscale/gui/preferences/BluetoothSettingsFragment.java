@@ -160,21 +160,25 @@ public class BluetoothSettingsFragment extends Fragment {
                 new Handler().post(new Runnable() {
                     @Override
                     public void run() {
-                        BluetoothDeviceView notSupported = new BluetoothDeviceView(requireContext());
-                        notSupported.setDeviceName(requireContext().getString(R.string.label_scale_not_supported));
-                        notSupported.setSummaryText(requireContext().getString(R.string.label_click_to_help_add_support));
-                        notSupported.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                Intent notSupportedIntent = new Intent(Intent.ACTION_VIEW);
-                                notSupportedIntent.setData(
-                                        Uri.parse("https://github.com/oliexdev/openScale/wiki/Supported-scales-in-openScale"));
+                        try {
+                            BluetoothDeviceView notSupported = new BluetoothDeviceView(requireContext());
+                            notSupported.setDeviceName(requireContext().getString(R.string.label_scale_not_supported));
+                            notSupported.setSummaryText(requireContext().getString(R.string.label_click_to_help_add_support));
+                            notSupported.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    Intent notSupportedIntent = new Intent(Intent.ACTION_VIEW);
+                                    notSupportedIntent.setData(
+                                            Uri.parse("https://github.com/oliexdev/openScale/wiki/Supported-scales-in-openScale"));
 
-                                startActivity(notSupportedIntent);
-                            }
-                        });
-                        deviceListView.addView(notSupported);
-                    }
+                                    startActivity(notSupportedIntent);
+                                }
+                            });
+                            deviceListView.addView(notSupported);
+                        } catch(IllegalStateException ex) {
+                            Timber.e(ex.getMessage());
+                        }
+                        }
                     });
             }
         }, 20 * 1000);
