@@ -253,15 +253,15 @@
 \nSupporta il creatore di questo progetto in modo che questo possa essere aggiornato, scrivi una recensione positiva su <a href="http://play.google.com/store/apps/details?id=com.health.openscale.pro">GooglePlay</a> o aggiungi il progetto ai preferiti su <a href="https://github.com/oliexdev/openScale">GitHub</a>.
 \n
 \nApprezziamo molto il tuo supporto e le recensioni positive. Grazie.</string>
-    <string name="label_slide_metrics_main_text">openScale supporta più di 22 dati del corpo.
+    <string name="label_slide_metrics_main_text">openScale supporta più di 22 metriche corporee.
 \n
-\nConfigurala per fare in modo che mostri quelli che ti interessano di più.
+\nConfigurala per fare in modo che mostri quelle che ti interessano di più.
 \n
-\nSe la tua bilancia non supporta i dati della quantità di acqua e della massa corporea magra, è possibile stimarli sulla base di <a href="https://github.com/oliexdev/openScale/wiki/Body-metric-estimations">pubblicaizoni scientifiche</a>.</string>
-    <string name="label_slide_metrics_top_text">Traccia e analizza le metriche del tuo corpo.</string>
+\nSe la tua bilancia non supporta le metriche della quantità di acqua e della massa corporea magra, è possibile stimarli sulla base di <a href="https://github.com/oliexdev/openScale/wiki/Body-metric-estimations">pubblicazioni scientifiche</a>.</string>
+    <string name="label_slide_metrics_top_text">Traccia e analizza le tue metriche corporee.</string>
     <string name="label_slide_bluetooth_main_text">openScale supporta un gran numero di bilance Bluetooth di diversi produttori.
 \n
-\nMiglioriamo ed espandiamo il numero di bilance supportate costantemente. Puoi trovare la lista completa e il livello di supporto di ogni singola bilancia su <a href="https://github.com/oliexdev/openScale/wiki/Supported-scales-in-openScale">GitHub</a>.</string>
+\nMiglioriamo ed espandiamo il numero di bilance supportate costantemente. Puoi trovare la lista completa e il livello di supporto di ogni bilancia su <a href="https://github.com/oliexdev/openScale/wiki/Supported-scales-in-openScale">GitHub</a>.</string>
     <string name="label_slide_opensource_main_text">openScale è distribuito con licenza <a href="https://github.com/oliexdev/openScale/blob/master/LICENSE">GPLv3</a>.
 \n
 \nTutte le misurazioni sono trasparenti e non avvengono trasferimenti di dati o di informazioni identificative nascosti.
