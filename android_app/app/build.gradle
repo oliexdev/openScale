@@ -8,8 +8,8 @@ android {
         testApplicationId "com.health.openscale.test"
         minSdkVersion 21
         targetSdkVersion 29
-        versionCode 52
-        versionName "2.3.3"
+        versionCode 53
+        versionName "2.3.4"
 
         manifestPlaceholders = [
                 appIcon: "@drawable/ic_launcher_openscale",
@@ -132,15 +132,14 @@ android {
 dependencies {
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.1'
 
-    implementation 'com.google.android.material:material:1.3.0-alpha03'
-    implementation 'com.google.android.material:material:1.3.0-alpha03'
+    implementation 'com.google.android.material:material:1.3.0-alpha04'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     implementation 'androidx.preference:preference:1.1.1'
-    implementation 'androidx.navigation:navigation-fragment:2.3.1'
-    implementation 'androidx.navigation:navigation-ui:2.3.1'
+    implementation 'androidx.navigation:navigation-fragment:2.3.2'
+    implementation 'androidx.navigation:navigation-ui:2.3.2'
     implementation "android.arch.lifecycle:extensions:1.1.1"
     annotationProcessor "android.arch.lifecycle:compiler:1.1.1"
 
@@ -149,7 +148,7 @@ dependencies {
     // Simple CSV
     implementation 'com.j256.simplecsv:simplecsv:2.6'
     // Blessed Android
-    implementation 'com.github.weliem:blessed-android:1.29'
+    implementation 'com.github.weliem:blessed-android:1.30'
     // CustomActivityOnCrash
     implementation 'cat.ereza:customactivityoncrash:2.3.0'
     // AppIntro
