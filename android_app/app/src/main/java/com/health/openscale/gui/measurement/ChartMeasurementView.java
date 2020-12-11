@@ -525,20 +525,28 @@ public class ChartMeasurementView extends LineChart {
 
         PolynomialFitter polyFitter = new PolynomialFitter(lineEntries.size() == 2 ? 2 : 3);
 
+        // add last point to polynomial fitter first
+        int lastPos = lineEntries.size() - 1;
+        Entry lastEntry = lineEntries.get(lastPos);
+        polyFitter.addPoint((double) lastEntry.getX(), (double) lastEntry.getY());
+
         // use only the last 30 values for the polynomial fitter
-        for (int i=1; i<30; i++) {
+        for (int i=2; i<30; i++) {
             int pos = lineEntries.size() - i;
 
             if (pos >= 0) {
                 Entry entry = lineEntries.get(pos);
+                Entry prevEntry = lineEntries.get(pos+1);
 
-                polyFitter.addPoint((double) entry.getX(), (double) entry.getY());
+                // check if x position is different otherwise that point is useless for the polynomial calculation.
+                if (entry.getX() != prevEntry.getX()) {
+                    polyFitter.addPoint((double) entry.getX(), (double) entry.getY());
+                }
             }
         }
 
         PolynomialFitter.Polynomial polynomial = polyFitter.getBestFit();
 
-        Entry lastEntry = lineEntries.get(lineEntries.size() - 1);
         int maxX = (int) lastEntry.getX()+1;
         List<Entry> predictionValues = new Stack<>();
 
