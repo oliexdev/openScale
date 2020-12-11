@@ -388,7 +388,7 @@ public class ChartMeasurementView extends LineChart {
             }
         }
 
-        if (prefs.getBoolean("trendLine", true)) {
+        if (prefs.getBoolean("trendLine", false)) {
             addTrendLine(lineDataSets);
         }
 
@@ -423,7 +423,7 @@ public class ChartMeasurementView extends LineChart {
         measurementLine.setDrawCircles(prefs.getBoolean("pointsEnable", true));
         measurementLine.setDrawValues(prefs.getBoolean("labelsEnable", false));
         measurementLine.setMode(LineDataSet.Mode.HORIZONTAL_BEZIER);
-        if (prefs.getBoolean("trendLine", true)) {
+        if (prefs.getBoolean("trendLine", false)) {
             // show only data point if trend line is enabled
             measurementLine.enableDashedLine(0, 1, 0);
         }
