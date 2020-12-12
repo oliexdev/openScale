@@ -89,7 +89,7 @@
     <string name="info_new_data_added">%1$.2f%2$s [%3$s] a %4$s aggiunto</string>
     <string name="info_new_data_duplicated">esistono già misurazioni con la stessa data e ora</string>
     <string name="info_enter_user_name">Il tuo nome</string>
-    <string name="info_no_selected_user">Nessun utente. Si prega di creare uno nelle impostazioni.</string>
+    <string name="info_no_selected_user">Non esiste alcun utente. Si prega di crearne uno nelle impostazioni.</string>
     <string name="info_no_evaluation_available">Impossibile valutare il valore</string>
     <string name="question_really_delete">Eliminare la misurazione?</string>
     <string name="question_really_delete_all">Eliminare tutte le misurazini di tutti gli utenti?</string>
