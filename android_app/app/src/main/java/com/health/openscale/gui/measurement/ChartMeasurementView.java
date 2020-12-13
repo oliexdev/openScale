@@ -348,6 +348,8 @@ public class ChartMeasurementView extends LineChart {
     }
 
     public void refreshMeasurementList() {
+        highlightValue(null, false); // deselect any highlighted value
+
         if (scaleMeasurementList == null) {
             progressBar.setVisibility(GONE);
             return;
@@ -366,7 +368,7 @@ public class ChartMeasurementView extends LineChart {
 
                 for (int i=0; i<scaleMeasurementList.size(); i++) {
                     ScaleMeasurement measurement = scaleMeasurementList.get(i);
-                    float value = measurementView.getMeasurementValue(measurement);
+                    float value = measurementView.getConvertedMeasurementValue(measurement);
 
                     if (value == 0.0f) {
                         continue;
@@ -512,7 +514,7 @@ public class ChartMeasurementView extends LineChart {
 
                 for (int i=0; i<scaleMeasurementsAsTrendlineList.size(); i++) {
                     ScaleMeasurement measurement = scaleMeasurementsAsTrendlineList.get(i);
-                    float value = measurementView.getMeasurementValue(measurement);
+                    float value = measurementView.getConvertedMeasurementValue(measurement);
 
                     Entry entry = new Entry();
                     entry.setX(convertDateToInt(measurement.getDateTime()));
