@@ -17,9 +17,9 @@
 \n
 \n非常感谢您的支持和积极反馈。谢谢你。</string>
     <string name="label_slide_support_top_text">帮助改进openScale。</string>
-    <string name="label_slide_metrics_main_text">openScale支持超过22个身体指标。
+    <string name="label_slide_metrics_main_text">应用支持超过22个身体指标。
 \n
-\n配置它以显示您所关心的指标。
+\n对它进行配置以显示您所关心的指标。
 \n
 \n如果身体脂肪、水分和去脂体重缺失，可以根据
 \n<a href="https://github.com/oliexdev/openScale/wiki/Body-metric-estimations">科学出版物</a>进行估算。</string>
@@ -38,7 +38,7 @@
 \n
 \n身体指标是根据测量值计算出来的。</string>
     <string name="label_slide_user_top_text">支持多用户。</string>
-    <string name="label_slide_privacy_main_text">openScale不向云发送任何数据，且没有访问互联网的权限是这一承诺的有力保证。
+    <string name="label_slide_privacy_main_text">openScale 不向云发送任何数据，且没有访问互联网的权限是这一承诺的有力保证。
 \n
 \n如果你真的想将你的体重同步到GoogleFit或与MQTT同步，您可以安装
 \n<a href="https://play.google.com/store/apps/details?id=com.health.openscale.sync">openScale sync</a>.</string>
