@@ -32,6 +32,9 @@ import com.health.openscale.R;
 import com.health.openscale.core.alarm.AlarmHandler;
 import com.health.openscale.core.alarm.ReminderBootReceiver;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 public class ReminderPreferences extends PreferenceFragmentCompat
         implements SharedPreferences.OnSharedPreferenceChangeListener {
 
@@ -55,7 +58,9 @@ public class ReminderPreferences extends PreferenceFragmentCompat
         prefDays.setSummaryProvider(new Preference.SummaryProvider<MultiSelectListPreference>() {
             @Override
             public CharSequence provideSummary(MultiSelectListPreference preference) {
-                return preference.getValues().toString();
+                return Arrays.stream(getResources().getStringArray(R.array.weekdays_values))
+                    .filter(preference.getValues()::contains)
+                    .collect(Collectors.joining(", "));
             }
         });
 
