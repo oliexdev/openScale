@@ -19,6 +19,7 @@ import android.content.ComponentName;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.util.Pair;
 import android.view.Menu;
 import android.view.MenuInflater;
 
@@ -32,8 +33,8 @@ import com.health.openscale.R;
 import com.health.openscale.core.alarm.AlarmHandler;
 import com.health.openscale.core.alarm.ReminderBootReceiver;
 
-import java.util.Arrays;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class ReminderPreferences extends PreferenceFragmentCompat
         implements SharedPreferences.OnSharedPreferenceChangeListener {
@@ -58,8 +59,13 @@ public class ReminderPreferences extends PreferenceFragmentCompat
         prefDays.setSummaryProvider(new Preference.SummaryProvider<MultiSelectListPreference>() {
             @Override
             public CharSequence provideSummary(MultiSelectListPreference preference) {
-                return Arrays.stream(getResources().getStringArray(R.array.weekdays_values))
-                    .filter(preference.getValues()::contains)
+                final String[] values = getResources().getStringArray(R.array.weekdays_values);
+                final String[] translated = getResources().getStringArray(R.array.weekdays_entries);
+
+                return IntStream.range(0, values.length)
+                    .mapToObj(i -> new Pair<>(values[i], translated[i]))
+                    .filter(p -> preference.getValues().contains(p.first))
+                    .map(p -> p.second)
                     .collect(Collectors.joining(", "));
             }
         });
