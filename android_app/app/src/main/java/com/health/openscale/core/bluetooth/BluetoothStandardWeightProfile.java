@@ -184,7 +184,7 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
 
         if(userIDPresent) {
             int userID = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8);
-            Timber.d(String.format("User id: %i", userID));
+            Timber.d(String.format("User id: %d", userID));
         }
 
         if(bmiAndHeightPresent) {
@@ -228,7 +228,7 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
         // Read userID if present
         if (userIDPresent) {
             int userID = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8);
-            Timber.d(String.format("user id: %i", userID));
+            Timber.d(String.format("user id: %d", userID));
         }
 
         // Read bmr if present
