@@ -295,4 +295,5 @@
     <string name="label_trend">趋势</string>
     <string name="label_prediction">预测</string>
     <string name="label_trend_line">趋势线</string>
+    <string name="label_estimate_measurement">估算的测量值</string>
 </resources>
