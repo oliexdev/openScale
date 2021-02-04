@@ -12,8 +12,8 @@
     <string name="action_bluetooth_status">Κατάσταση Bluetooth</string>
     <string name="open_drawer">άνοιξε</string>
     <string name="close_drawer">κλείσε</string>
-    <string name="label_cancel">ακύρωσε</string>
-    <string name="label_ok">εντάξει</string>
+    <string name="label_cancel">Ακύρωσε</string>
+    <string name="label_ok">Εντάξει</string>
     <string name="label_yes">Ναι</string>
     <string name="label_no">Όχι</string>
     <string name="label_delete">Διάγραψε</string>
@@ -104,7 +104,7 @@
     <string name="label_delete_confirmation">Επιβεβαίωση διαγραφής</string>
     <string name="label_category_measurement_database">Βάση δεδομένων μετρήσεων</string>
     <string name="label_maintainer">Συντηρητής</string>
-    <string name="label_website">Ιστοσελίδα</string>
+    <string name="label_website">Ιστότοπος</string>
     <string name="label_license">Άδεια</string>
     <string name="label_automatic">αυτόματο</string>
     <string name="label_theme">Θέμα</string>
@@ -149,9 +149,9 @@
     <string name="customactivityoncrash_error_activity_close_app">Κλείσε την εφαρμογή</string>
     <string name="customactivityoncrash_error_activity_error_details">Λεπτομέρειες σφάλματος</string>
     <string name="customactivityoncrash_error_activity_error_details_title">Λεπτομέρειες σφάλματος</string>
-    <string name="customactivityoncrash_error_activity_error_details_close">Κλείσε</string>
-    <string name="customactivityoncrash_error_activity_error_details_copy">Αντέγραψε στο πρόχειρο</string>
-    <string name="customactivityoncrash_error_activity_error_details_copied">Αντεγράφη στο πρόχειρο</string>
+    <string name="customactivityoncrash_error_activity_error_details_close">Κλείσιμο</string>
+    <string name="customactivityoncrash_error_activity_error_details_copy">Αντιγραφή στο πρόχειρο</string>
+    <string name="customactivityoncrash_error_activity_error_details_copied">Αντιγράφηκε στο πρόχειρο</string>
     <string name="customactivityoncrash_error_activity_error_details_clipboard_label">Πληροφορίες σφάλματος</string>
     <string name="toggle_expand">Μετέβαλε επέκταση</string>
     <string name="edit">Επεξεργάσου</string>
