@@ -12,7 +12,7 @@
     <string name="action_bluetooth_status">Κατάσταση Bluetooth</string>
     <string name="open_drawer">άνοιξε</string>
     <string name="close_drawer">κλείσε</string>
-    <string name="label_cancel">Ακύρωσε</string>
+    <string name="label_cancel">Ακύρωση</string>
     <string name="label_ok">Εντάξει</string>
     <string name="label_yes">Ναι</string>
     <string name="label_no">Όχι</string>
@@ -155,7 +155,7 @@
     <string name="customactivityoncrash_error_activity_error_details_clipboard_label">Πληροφορίες σφάλματος</string>
     <string name="toggle_expand">Μετέβαλε επέκταση</string>
     <string name="edit">Επεξεργάσου</string>
-    <string name="save">Αποθήκευσε</string>
+    <string name="save">Αποθήκευση</string>
     <string name="label_month_view">Μηνιαία προβολή</string>
     <string name="label_weeks_view">Εβδομαδιαία προβολή</string>
     <string name="permission_not_granted">Δεν χορηγήθηκε άδεια</string>
