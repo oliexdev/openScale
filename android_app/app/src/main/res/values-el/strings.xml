@@ -12,13 +12,13 @@
     <string name="action_bluetooth_status">Κατάσταση Bluetooth</string>
     <string name="open_drawer">άνοιξε</string>
     <string name="close_drawer">κλείσε</string>
-    <string name="label_cancel">Ακύρωση</string>
+    <string name="label_cancel">Άκυρο</string>
     <string name="label_ok">Εντάξει</string>
     <string name="label_yes">Ναι</string>
     <string name="label_no">Όχι</string>
-    <string name="label_delete">Διάγραψε</string>
+    <string name="label_delete">Διαγραφή</string>
     <string name="label_add_user">Πρόσθεσε χρήστη</string>
-    <string name="label_share">Μοιράσου</string>
+    <string name="label_share">Κοινοποίηση</string>
     <string name="label_share_subject">Εξαγωγή δεδομένων CSV (%s)</string>
     <string name="label_weight">Βάρος</string>
     <string name="label_bmi">Δείκτης μάζας σώματος (ΔΜΣ)</string>
@@ -106,7 +106,7 @@
     <string name="label_maintainer">Συντηρητής</string>
     <string name="label_website">Ιστότοπος</string>
     <string name="label_license">Άδεια</string>
-    <string name="label_automatic">αυτόματο</string>
+    <string name="label_automatic">αυτόματη</string>
     <string name="label_theme">Θέμα</string>
     <string name="label_reminder">Υπενθύμιση</string>
     <string name="label_reminder_weekdays">Ημέρες</string>
@@ -126,7 +126,7 @@
     <string name="label_importBackup">Εισήγαγε αντίγραφο ασφαλείας</string>
     <string name="label_backup">Αντίγραφο ασφαλείας</string>
     <string name="label_export_dir">Εξήγαγε κατάλογο</string>
-    <string name="label_not_found">δεν βρέθηκε</string>
+    <string name="label_not_found">δε βρέθηκε</string>
     <string name="label_ignoreOutOfRange">Αγνόησε δεδομένα εκτός εύρους</string>
     <string name="label_initial_weight">Αρχικό βάρος</string>
     <string name="label_goal_line">Γραμμή στόχου</string>
@@ -153,8 +153,8 @@
     <string name="customactivityoncrash_error_activity_error_details_copy">Αντιγραφή στο πρόχειρο</string>
     <string name="customactivityoncrash_error_activity_error_details_copied">Αντιγράφηκε στο πρόχειρο</string>
     <string name="customactivityoncrash_error_activity_error_details_clipboard_label">Πληροφορίες σφάλματος</string>
-    <string name="toggle_expand">Μετέβαλε επέκταση</string>
-    <string name="edit">Επεξεργάσου</string>
+    <string name="toggle_expand">Εναλλαγή επέκτασης</string>
+    <string name="edit">Επεξεργασία</string>
     <string name="save">Αποθήκευση</string>
     <string name="label_month_view">Μηνιαία προβολή</string>
     <string name="label_weeks_view">Εβδομαδιαία προβολή</string>
