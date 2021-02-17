@@ -243,7 +243,7 @@
     <string name="label_slide_privacy_top_text">Bescherm je persoonlijke gezondheidsgegevens.</string>
     <string name="label_slide_privacy_main_text">openScale verstuurt geen gegevens naar de cloud. Het ontbreken van toestemming voor internettoegang is daar het beste bewijs van.
 \n
-\nAls je gewicht wilt synchroniseren met Google Fit of MQTT, dan kun je <a href="https://play.google.com/store/apps/details?id=com.health.openscale.sync">openScale-sync</a> installeren.</string>
+\nAls je je gewicht wilt synchroniseren met Google Fit of MQTT, dan kun je <a href="https://play.google.com/store/apps/details?id=com.health.openscale.sync">openScale-sync</a> installeren.</string>
     <string name="label_slide_user_top_text">De app ondersteunt meerdere gebruikers.</string>
     <string name="label_slide_user_main_text">openScale vereist geen online-account. 
 \n 
