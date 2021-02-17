@@ -215,7 +215,7 @@
     <string name="label_caliper2_female">Karın derisi kıvrım kalınlığı</string>
     <string name="label_caliper3_female">Kalça derisi kıvrım kalınlığı</string>
     <string name="activity_level_moderate">Orta derecede</string>
-    <string name="label_share_subject">Verileri CSV olarak dışa aktar (%s)</string>
+    <string name="label_share_subject">openScale veri dışa aktarımı (%s)</string>
     <string name="label_click_to_help_add_support">Yardım ekleyerek destek olmak için buraya tıklayın</string>
     <string name="label_measurement_in_percent">% cinsinden ölçüm</string>
     <string name="toggle_expand">Geçiş genişlemesi</string>
