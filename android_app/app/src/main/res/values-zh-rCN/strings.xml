@@ -271,7 +271,7 @@
     <string name="label_bmr">基础代谢率 (BMR)</string>
     <string name="label_bmi">身体质量指数 (BMI)</string>
     <string name="label_weight">重量</string>
-    <string name="label_share_subject">导出数据为 CSV(%s)</string>
+    <string name="label_share_subject">openScale 数据导出(%s)</string>
     <string name="label_share">分享</string>
     <string name="label_add_measurement">添加量度</string>
     <string name="label_add_user">添加用户</string>
