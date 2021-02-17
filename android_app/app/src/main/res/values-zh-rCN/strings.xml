@@ -40,8 +40,7 @@
     <string name="label_slide_user_top_text">支持多用户。</string>
     <string name="label_slide_privacy_main_text">openScale 不向云发送任何数据，且没有访问互联网的权限是这一承诺的有力保证。
 \n
-\n如果你真的想将你的体重同步到GoogleFit或与MQTT同步，您可以安装
-\n<a href="https://play.google.com/store/apps/details?id=com.health.openscale.sync">openScale sync</a>.</string>
+\n如果你真的想将你的体重同步到GoogleFit或与MQTT同步，您可以安装 <a href="https://play.google.com/store/apps/details?id=com.health.openscale.sync">openScale sync</a>.</string>
     <string name="label_slide_privacy_top_text">保护你的个人健康数据。</string>
     <string name="label_slide_welcome_main_text">带蓝牙秤支持的开源体重和身体指标跟踪软件。</string>
     <string name="label_slide_welcome_top_text">欢迎来到
