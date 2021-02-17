@@ -69,8 +69,8 @@
     <string name="error_goal_weight_required">Hiba: Cél súly szükséges</string>
     <string name="info_data_deleted">Bejegyzés törölve</string>
     <string name="info_data_all_deleted">Minden bejegyzés törölve</string>
-    <string name="info_data_exported">"Exportálva ide "</string>
-    <string name="info_data_imported">"Importálva innen "</string>
+    <string name="info_data_exported">Exportálva ide</string>
+    <string name="info_data_imported">Importálva innen</string>
     <string name="info_enter_comment">Opcionális megjegyzés</string>
     <string name="info_is_visible">látható</string>
     <string name="info_is_enable">engedélyezve</string>
@@ -185,7 +185,7 @@
 \nhttps://github.com/oliexdev/openScale/issues-on</string>
     <string name="toggle_expand">Kattintson a megnyitáshoz</string>
     <string name="permission_bluetooth_info">A Bluetooth-eszközök kereséséhez szükséges a tartózkodási hely hozzáférése. A készülék megtalálása után visszavonható.</string>
-    <string name="permission_read_write_data_description">"openScale adatok olvasása/írása, beleértve a felhasználói infót és minden mentett mérési eredményt "</string>
+    <string name="permission_read_write_data_description">openScale adatok olvasása/írása, beleértve a felhasználói infót és minden mentett mérési eredményt</string>
     <string name="permission_read_write_data_label">"OpenScale adatokat olvasása/írása "</string>
     <string name="label_long_press_drag_reorder">Hosszan nyomva a mérési eredményt átrendezheti</string>
     <string name="label_measurement_in_percent">Mérés %-ban</string>
