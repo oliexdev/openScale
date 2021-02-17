@@ -155,7 +155,7 @@
     <string name="label_month_view">Vista de mes</string>
     <string name="label_weeks_view">Vista de semana</string>
     <string name="permission_not_granted">Permiso non concedido</string>
-    <string name="permission_bluetooth_info">Necesítase permiso de localización para para buscar dispositivos Bluetooth. Pódese retirar unha vez atopado o dispositivo.</string>
+    <string name="permission_bluetooth_info">Necesítase permiso de localización para buscar dispositivos Bluetooth. Pódese retirar unha vez atopado o dispositivo.</string>
     <string name="permission_bluetooth_info_title">Información</string>
     <string name="label_next">Seguinte</string>
     <string name="label_long_press_drag_reorder">Manteña pulsada a medida e arrastre para reordenar</string>
