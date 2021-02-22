@@ -20,7 +20,7 @@
     <string name="label_add_user">הוספת משתמש</string>
     <string name="label_add_measurement">הוספת מדידה</string>
     <string name="label_share">שיתוף</string>
-    <string name="label_share_subject">ייצוא נתונים כ־CSV ‏(%s)</string>
+    <string name="label_share_subject">ייצוא נתונים כ־openScale ‏(%s)</string>
     <string name="label_weight">משקל</string>
     <string name="label_bmi">מדד מסת גוף (BMI)</string>
     <string name="label_bmr">קצב מטבולי בסיסי (BMR)</string>
