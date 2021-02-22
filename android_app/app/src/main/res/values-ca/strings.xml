@@ -128,7 +128,7 @@
     <string name="title_general">General</string>
     <string name="label_add_measurement">Afegeix una mesura</string>
     <string name="label_share">Comparteix</string>
-    <string name="label_share_subject">Exporta les dades com a CSV (%s)</string>
+    <string name="label_share_subject">Exportació de dades de l\'openScale (%s)</string>
     <string name="info_bluetooth_no_device_retrying">No s\'ha pogut establir una connexió, s\'està tornant a provar…</string>
     <string name="info_bluetooth_no_device_set">Seleccioneu un dispositiu Bluetooth</string>
     <string name="info_bluetooth_connection_disconnected">S\'ha tancat la connexió Bluetooth</string>
