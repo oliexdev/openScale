@@ -116,6 +116,9 @@ public class BluetoothFactory {
         if (deviceName.startsWith("Shape200") || deviceName.startsWith("Shape100") || deviceName.startsWith("Shape50") || deviceName.startsWith("Style100")) {
             return new BluetoothSoehnle(context);
         }
+        if (deviceName.equals("Hoffen BS-8107")) {
+            return new BluetoothHoffenBBS8107(context);
+        }
         return null;
     }
 }
