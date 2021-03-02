@@ -19,8 +19,8 @@
     <string name="label_delete">Izbriši</string>
     <string name="label_add_user">Dodaj korisnika</string>
     <string name="label_add_measurement">Dodaj mjerenje</string>
-    <string name="label_share">Podijeli</string>
-    <string name="label_share_subject">Izvezi podatke kao CSV (%s)</string>
+    <string name="label_share">Dijeli</string>
+    <string name="label_share_subject">Izvoz openScale podataka (%s)</string>
     <string name="label_weight">Težina</string>
     <string name="label_bmi">Indeks tjelesne mase (BMI)</string>
     <string name="label_bmr">Bazalni metabolizam (BMR)</string>
