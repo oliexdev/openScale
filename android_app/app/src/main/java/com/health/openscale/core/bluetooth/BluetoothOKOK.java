@@ -34,10 +34,11 @@ public class BluetoothOKOK extends BluetoothCommunication {
         public void onDiscoveredPeripheral(@NotNull BluetoothPeripheral peripheral, @NotNull ScanResult scanResult) {
             SparseArray<byte[]> manufacturerSpecificData = scanResult.getScanRecord().getManufacturerSpecificData();
             byte[] data = scanResult.getScanRecord().getManufacturerSpecificData(MANUFACTURER_DATA_ID);
+            float divider = 10.0f;
             byte checksum = 0x20; // Version field is part of the checksum, but not in array
             if (data == null || data.length != 19)
                 return;
-            if (data[IDX_FINAL] == 0)
+            if ((data[IDX_FINAL] & 1) == 0)
                 return;
             for (int i = 0; i < IDX_CHECKSUM; i++)
                 checksum ^= data[i];
@@ -45,13 +46,15 @@ public class BluetoothOKOK extends BluetoothCommunication {
                 Timber.d("Checksum error, got %x, expected %x", data[12] & 0xff, checksum & 0xff);
                 return;
             }
+            if ((data[IDX_FINAL] & 4) == 4)
+                divider = 100.0f;
             int weight = data[IDX_WEIGHT_MSB] & 0xff;
             weight = weight << 8 | (data[IDX_WEIGHT_LSB] & 0xff);
             int impedance = data[IDX_IMPEDANCE_MSB] & 0xff;
             impedance = impedance << 8 | (data[IDX_IMPEDANCE_LSB] & 0xff);
-            Timber.d("Got weight: %f and impedance %f", weight / 10f, impedance / 10f);
+            Timber.d("Got weight: %f and impedance %f", weight / divider, impedance / 10f);
             ScaleMeasurement entry = new ScaleMeasurement();
-            entry.setWeight(weight / 10.0f);
+            entry.setWeight(weight / divider);
             addScaleMeasurement(entry);
             disconnect();
         }
