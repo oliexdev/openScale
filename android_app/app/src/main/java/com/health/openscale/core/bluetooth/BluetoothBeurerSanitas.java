@@ -369,9 +369,10 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
 
             if (currentRemoteUser.remoteUserId != remoteUsers.get(remoteUsers.size() - 1).remoteUserId) {
                 // Only jump back to state 5 if we are in 5
-                jumpNextToStepNr( 5, 5 );
-                // Only resume state machine when we are in state 5
-                resumeMachineState( 5 );
+                if( jumpNextToStepNr( 5, 5 ) ) {
+                    // Now resume
+                    resumeMachineState();
+                }
             }
         }
     }
@@ -417,6 +418,12 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
         if (current == count && currentRemoteUser != null) {
             sendCommand(CMD_DELETE_SAVED_MEASUREMENTS, encodeUserId(currentRemoteUser));
         }
+
+        // Normally no resume is required for this message, but when receive the measurements in state 4, it confuses the state machine or the scale, so retry.
+        if( jumpNextToStepNr( 4, 4 ) ) {
+            Timber.i("Measurement received in state 4. Retrying state 4. Resuming.");
+            resumeMachineState();
+        }
     }
 
     private void processScaleAck(byte[] data) {
@@ -460,8 +467,15 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                     Timber.d("Set scale unit to %s (%d)", user.getScaleUnit(), requestedUnit);
                     sendCommand(CMD_SET_UNIT, requestedUnit);
                 } else {
-                    // Only resume state machine when we are in state 3, waiting for 4
-                    resumeMachineState( 3 );
+                    // Regular resume when we are in state 3, waiting for 4
+                    if( !resumeMachineState( 3 ) ) {
+                        // When we received this message in state 4, the scale seems to be confused, so let's try again.
+                        Timber.i("Unexpected scale status received in state other than 3, trying to jump back to 4 only when we are in 4.");
+                        if( jumpNextToStepNr( 4, 4 ) ) {
+                            Timber.i("Jumped back to state 4, resuming.");
+                            resumeMachineState();
+                        }
+                    }
                 }
                 break;
 
@@ -490,9 +504,10 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                     // Skip delete all measurements step (since there are no measurements to delete)
                     Timber.d("No saved measurements found for user " + currentRemoteUser.name);
                     // Only reset to state 5 when we are in state 5
-                    jumpNextToStepNr( 5, 5 );
-                    // Only resume state machine when we are in state 5
-                    resumeMachineState( 5 );
+                    if( jumpNextToStepNr( 5, 5 ) ) {
+                        // Now resume
+                        resumeMachineState();
+                    }
                 }
                 // Otherwise wait for CMD_SAVED_MEASUREMENT notifications which will,
                 // once all measurements have been received, resume the state machine.
@@ -526,9 +541,10 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                 // Force disconnect
                 Timber.d("Send disconnect command to scale");
                 // Only reset to state 8 when we are in state 6
-                jumpNextToStepNr( 6, 8 );
-                // Only resume state machine when we are in state 6, waiting for 7
-                resumeMachineState( 6 );
+                if( jumpNextToStepNr( 6, 8 ) ) {
+                    // Now resume
+                    resumeMachineState();
+                }
                 break;
 
             case CMD_DO_MEASUREMENT:

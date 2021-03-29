@@ -199,13 +199,15 @@ public abstract class BluetoothCommunication {
      * This function jumps to the step newStepNr only if the current step equals curStepNr,
      * i.e. if the next step (stepNr) is 1 above curStepNr
      */
-    protected synchronized void jumpNextToStepNr( int curStepNr, int newStepNr ) {
+    protected synchronized boolean jumpNextToStepNr( int curStepNr, int newStepNr ) {
         if( curStepNr == stepNr-1 ) {
             Timber.d("curStepNr " + curStepNr + " matches stepNr " + stepNr + "-1, jumping next to step nr " + newStepNr);
             stepNr = newStepNr;
+            return true;
         }
         else {
             Timber.d("curStepNr " + curStepNr + " does not match stepNr " + stepNr + "-1, keeping next at step nr " + stepNr);
+            return false;
         }
     }
 
