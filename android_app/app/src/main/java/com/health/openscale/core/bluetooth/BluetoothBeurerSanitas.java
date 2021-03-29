@@ -308,6 +308,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
             Timber.d("Received user %d/%d: %s (%d)", current, count, name, year);
         }
 
+        Timber.d("Sending ack for User Info");
         sendAck(data);
 
         if (current != count) {
@@ -359,6 +360,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
 
         processMeasurementData(data, 4, current % 2 == 1);
 
+        Timber.d("Sending ack for Saved Measurements");
         sendAck(data);
 
         if (current == count) {
@@ -402,12 +404,17 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
             }
         }
         else {
-            processMeasurementData(data, 4, current == 2);
+            // Process data, but only when we were able to identify the remote user on the first message
+            if( currentRemoteUser != null ) processMeasurementData(data, 4, current == 2);
+            else Timber.i("Discarded measurement, because no matching remote user found in first part.");
         }
 
+        // Even if we did not process the data, always ack the message
+        Timber.d("Sending ack for Measurement");
         sendAck(data);
 
-        if (current == count) {
+        // Delete saved measurement, but only when we processed it before
+        if (current == count && currentRemoteUser != null) {
             sendCommand(CMD_DELETE_SAVED_MEASUREMENTS, encodeUserId(currentRemoteUser));
         }
     }
