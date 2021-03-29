@@ -258,7 +258,8 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
 
         if (data[0] == getAlternativeStartByte(ID_START_NIBBLE_INIT)) {
             Timber.d("Got init ack from scale; scale is ready");
-            resumeMachineState();
+            // Only resume state machine when we are in state 1, waiting for 2.
+            resumeMachineState( 1 );
             return;
         }
 
@@ -332,7 +333,8 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
         }
 
         // All users received
-        resumeMachineState();
+        // Only resume state machine when we are in state 4, waiting for 5
+        resumeMachineState( 4 );
     }
 
     private void processMeasurementData(byte[] data, int offset, boolean firstPart) {
@@ -364,8 +366,10 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
             sendCommand(CMD_DELETE_SAVED_MEASUREMENTS, encodeUserId(currentRemoteUser));
 
             if (currentRemoteUser.remoteUserId != remoteUsers.get(remoteUsers.size() - 1).remoteUserId) {
-                jumpNextToStepNr(5);
-                resumeMachineState();
+                // Only jump back to state 5 if we are in 5
+                jumpNextToStepNr( 5, 5 );
+                // Only resume state machine when we are in state 5
+                resumeMachineState( 5 );
             }
         }
     }
@@ -449,7 +453,8 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                     Timber.d("Set scale unit to %s (%d)", user.getScaleUnit(), requestedUnit);
                     sendCommand(CMD_SET_UNIT, requestedUnit);
                 } else {
-                    resumeMachineState();
+                    // Only resume state machine when we are in state 3, waiting for 4
+                    resumeMachineState( 3 );
                 }
                 break;
 
@@ -457,7 +462,8 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                 if (data[3] == 0) {
                     Timber.d("Scale unit successfully set");
                 }
-                resumeMachineState();
+                // Only resume state machine when we are in state 3, waiting for 4
+                resumeMachineState( 3 );
                 break;
 
             case CMD_USER_LIST:
@@ -465,7 +471,8 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                 int maxUserCount = data[5] & 0xFF;
                 Timber.d("Have %d users (max is %d)", userCount, maxUserCount);
                 if (userCount == 0) {
-                    resumeMachineState();
+                    // Only resume state machine when we are in state 4, waiting for 5
+                    resumeMachineState( 4 );
                 }
                 // Otherwise wait for CMD_USER_INFO notifications
                 break;
@@ -475,8 +482,10 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                 if (measurementCount == 0) {
                     // Skip delete all measurements step (since there are no measurements to delete)
                     Timber.d("No saved measurements found for user " + currentRemoteUser.name);
-                    jumpNextToStepNr(5);
-                    resumeMachineState();
+                    // Only reset to state 5 when we are in state 5
+                    jumpNextToStepNr( 5, 5 );
+                    // Only resume state machine when we are in state 5
+                    resumeMachineState( 5 );
                 }
                 // Otherwise wait for CMD_SAVED_MEASUREMENT notifications which will,
                 // once all measurements have been received, resume the state machine.
@@ -486,7 +495,14 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                 if (data[3] == 0) {
                     Timber.d("Saved measurements successfully deleted for user " + currentRemoteUser.name);
                 }
-                resumeMachineState();
+                // Try to resume state machine in state 5, waiting for 6
+                if( !resumeMachineState( 5 ) ) {
+                    // Didn't work, so maybe we are in state 6, waiting for 7
+                    if( !resumeMachineState( 6 ) ) {
+                        // Also didn't work, so maybe we are in state 8, waiting to finish.
+                        resumeMachineState( 8 );
+                    }
+                }
                 break;
 
             case CMD_USER_ADD:
@@ -502,8 +518,10 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                 sendMessage(R.string.error_max_scale_users, 0);
                 // Force disconnect
                 Timber.d("Send disconnect command to scale");
-                jumpNextToStepNr(8);
-                resumeMachineState();
+                // Only reset to state 8 when we are in state 6
+                jumpNextToStepNr( 6, 8 );
+                // Only resume state machine when we are in state 6, waiting for 7
+                resumeMachineState( 6 );
                 break;
 
             case CMD_DO_MEASUREMENT:
@@ -526,7 +544,8 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                     Timber.d("Name: %s, Birthday: %d-%02d-%02d, Height: %d, Sex: %s, activity: %d",
                             name, year, month, day, height, male ? "male" : "female", activity);
                 }
-                resumeMachineState();
+                // Only resume state machine when we are in state 7, waiting for 8
+                resumeMachineState( 7 );
                 break;
 
             default:
