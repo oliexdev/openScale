@@ -212,6 +212,16 @@ public abstract class BluetoothCommunication {
     }
 
     /**
+     * Call this function to decrement the current step counter of the state machine by one.
+     * Usually, if you call this function followed by resumeMachineState(), the current step will be repeated.
+     * Call multiple times to actually go back in time to previous steps.
+     */
+    protected synchronized void jumpBackOneStep() {
+        stepNr--;
+        Timber.d("Jumped back one step to " + stepNr);
+    }
+
+    /**
      * Write a byte array to a Bluetooth device.
      *
      * @param characteristic the Bluetooth UUID characteristic
