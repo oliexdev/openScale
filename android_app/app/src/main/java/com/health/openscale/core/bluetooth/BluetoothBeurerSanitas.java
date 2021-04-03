@@ -65,9 +65,18 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
         }
     }
 
+    private class StoredData {
+        public byte[] measurementData = null;
+        public long storedUid = -1;
+        public long candidateUid = -1;
+    }
+
     private ArrayList<RemoteUser> remoteUsers = new ArrayList<>();
     private RemoteUser currentRemoteUser;
-    private byte[] measurementData;
+    private byte[] measurementData = null;
+    private StoredData storedMeasurement = new StoredData();
+    private boolean readyForData = false;
+    private boolean dataReceived = false;
 
     private final int ID_START_NIBBLE_INIT = 6;
     private final int ID_START_NIBBLE_CMD = 7;
@@ -175,6 +184,11 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
     protected boolean onNextStep(int stepNr) {
         switch (stepNr) {
             case 0:
+                // Fresh start, so reset everything
+                measurementData = null;
+                storedMeasurement.measurementData = null;
+                readyForData = false;
+                dataReceived = false;
                 // Setup notification
                 setNotificationOn(CUSTOM_SERVICE_1, CUSTOM_CHARACTERISTIC_WEIGHT);
                 break;
@@ -255,13 +269,28 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                 stopMachineState();
                 break;
             case 8:
-                if (currentRemoteUser != null && !currentRemoteUser.isNew) {
+                // If we have unprocessed data available, store it now.
+                if( storedMeasurement.measurementData != null ) {
+                    Timber.d("Reached state 8 (end) and still have saved data available. Storing now.");
+                    if( currentRemoteUser != null ) {
+                        Timber.i("User has been identified in the meantime, so store the data for them.");
+                        addMeasurement(measurementData, currentRemoteUser.localUserId);
+                    }
+                    else {
+                        Timber.i("User still not identified, so storing the data for the selected user.");
+                        addMeasurement(measurementData, OpenScale.getInstance().getSelectedScaleUser().getId());
+                    }
+                    storedMeasurement.measurementData = null;
+                }
+                else if (!dataReceived && currentRemoteUser != null && !currentRemoteUser.isNew) {
+                    // Looks like we never received a fresh measurement in this run, so request it now.
+                    // Chances are not good that this will work, but let's try it anyway.
                     waitForDataInStep = 8;
                     Timber.d("Sending command: CMD_DO_MEASUREMENT");
                     sendCommand(CMD_DO_MEASUREMENT, encodeUserId(currentRemoteUser));
                     stopMachineState();
                 } else {
-                    Timber.d("Nothing to do.");
+                    Timber.d("All finished, nothing to do.");
                     return false;
                 }
                 break;
@@ -394,9 +423,15 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
         resumeMachineState();
     }
 
-    private void processMeasurementData(byte[] data, int offset, boolean firstPart) {
+    private void processMeasurementData(byte[] data, int offset, boolean firstPart, boolean processingSavedMeasurements) {
         if (firstPart) {
+            if( measurementData != null ) Timber.d("Discarding existing data.");
             measurementData = Arrays.copyOfRange(data, offset, data.length);
+            return;
+        }
+
+        if( measurementData == null ) {
+            Timber.w("Received second measurement part without receiving first part before. Discarding data.");
             return;
         }
 
@@ -406,8 +441,42 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
         measurementData = Arrays.copyOf(measurementData, oldEnd + toCopy);
         System.arraycopy(data, offset, measurementData, oldEnd, toCopy);
 
-        addMeasurement(measurementData, currentRemoteUser.localUserId);
-        measurementData = null;
+        // Store data, but only if we are ready and know the user. Otherwise leave it for later.
+        if( currentRemoteUser != null && (readyForData || processingSavedMeasurements) ) {
+            Timber.d("Measurement complete, user identified and app ready: Storing data.");
+            addMeasurement(measurementData, currentRemoteUser.localUserId);
+            // Do we have unsaved data?
+            if( storedMeasurement.measurementData != null ) {
+                // Does it belong to the current user
+                if( currentRemoteUser.remoteUserId == storedMeasurement.storedUid ) {
+                    // Does it have the same time stamp?
+                    if( Converters.fromUnsignedInt32Be(measurementData, 0) == Converters.fromUnsignedInt32Be(storedMeasurement.measurementData, 0) ) {
+                        // Then delete the unsaved data because it is already part of the received saved data
+                        Timber.d("Discarding data saved for later, because it is already part of the received saved data from the scale.");
+                        storedMeasurement.measurementData = null;
+                    }
+                }
+            }
+            // Data processed, so discard it.
+            measurementData = null;
+            // Also discard saved data, because we got and processed new data
+            storedMeasurement.measurementData = null;
+        }
+        else if( !processingSavedMeasurements ) {
+            if( !readyForData ) {
+                Timber.d("New measurement complete, but not stored, because app not ready: Saving data for later.");
+            }
+            else {
+                Timber.d("New measurement complete, but not stored, because user not identified: Saving data for later.");
+            }
+            storedMeasurement.measurementData = measurementData;
+            storedMeasurement.storedUid = storedMeasurement.candidateUid;
+        }
+        else {
+            // How the f*** did we end up here?
+            Timber.e("Received saved measurement, but do not know for what user. This should not happen. Discarding data.");
+            measurementData = null;
+        }
     }
 
     private void processSavedMeasurement(byte[] data) {
@@ -415,7 +484,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
         int current = data[3] & 0xFF;
         Timber.d("Received part %d (of 2) of saved measurement %d of %d.", current % 2 == 1 ? 1 : 2, current / 2, count / 2);
 
-        processMeasurementData(data, 4, current % 2 == 1);
+        processMeasurementData(data, 4, current % 2 == 1, true);
 
         Timber.d("Sending ack for CMD_SAVED_MEASUREMENT");
         sendAck(data);
@@ -445,6 +514,9 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
             // Let's not delete data we received unexpectedly, so just get out of here.
             return;
         }
+
+        // We are done with saved measurements, from now on we can process unrequested measurement data.
+        readyForData = true;
 
         Timber.d("Deleting saved measurements (CMD_DELETE_SAVED_MEASUREMENTS) for %s", currentRemoteUser.name);
         sendCommand(CMD_DELETE_SAVED_MEASUREMENTS, encodeUserId(currentRemoteUser));
@@ -483,18 +555,24 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
 
         if (current == 1) {
             long uid = decodeUserId(data, 5);
+            Timber.d("Receiving measurement data for remote UID %d.", uid);
+            // Remember uid in case we need it to save data for later.
+            storedMeasurement.candidateUid = uid;
+            // Now search for user
             currentRemoteUser = null;
             for (RemoteUser remoteUser : remoteUsers) {
                 if (remoteUser.remoteUserId == uid) {
                     currentRemoteUser = remoteUser;
+                    Timber.d("Local user %s matches remote UID %d.", currentRemoteUser.name, uid);
                     break;
                 }
             }
+            if( currentRemoteUser == null ) {
+                Timber.d("No local user identified for remote UID %d.", uid);
+            }
         }
         else {
-            // Process data, but only when we were able to identify the remote user on the first message
-            if( currentRemoteUser != null ) processMeasurementData(data, 4, current == 2);
-            else Timber.w("Discarded measurement, because no matching remote user found in first part.");
+            processMeasurementData(data, 4, current == 2, false);
         }
 
         // Even if we did not process the data, always ack the message
@@ -510,8 +588,15 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
 
         Timber.i("All measurement parts received.");
 
+        // Delete saved measurement, but only when we processed it before
+        if (currentRemoteUser != null && readyForData ) {
+            Timber.d("Sending command: CMD_DELETE_SAVED_MEASUREMENTS");
+            sendCommand(CMD_DELETE_SAVED_MEASUREMENTS, encodeUserId(currentRemoteUser));
+            // We sent a new command, so make sure we wait
+            stopMachineState();
+        }
         // This message should only be received in step 6 and 8
-        if( waitForDataInStep != 6 && waitForDataInStep != 8 ) {
+        else if( waitForDataInStep != 6 && waitForDataInStep != 8 ) {
             Timber.w("Received final CMD_MEASUREMENT in wrong state...");
             if( waitForDataInStep >= 0 ){
                 Timber.w("...while waiting for other data. Retrying last step.");
@@ -523,18 +608,10 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
             else {
                 Timber.w("...ignored, no data expected.");
             }
-            // Let's not delete data we received unexpectedly, so just get out of here.
-            return;
         }
-
-        // Delete saved measurement, but only when we processed it before
-        if (currentRemoteUser != null) {
-            Timber.d("Sending command: CMD_DELETE_SAVED_MEASUREMENTS");
-            sendCommand(CMD_DELETE_SAVED_MEASUREMENTS, encodeUserId(currentRemoteUser));
+        else {
+            resumeMachineState();
         }
-
-        // We sent a new command, so make sure we wait
-        stopMachineState();
     }
 
 
@@ -660,6 +737,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                 Timber.d("Received ACK for CMD_GET_SAVED_MEASUREMENTS for %d measurements.", measurementCount/2);
                 if (measurementCount == 0) {
                     // We expect no more data, because there are no measurements.
+                    readyForData = true;
                     // This message should only be received in step 5.
                     if( waitForDataInStep != 5 ) {
                         Timber.w("Received ACK for CMD_GET_SAVED_MEASUREMENTS in wrong state...");
@@ -691,7 +769,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                     Timber.d("Saved measurements successfully deleted for user " + currentRemoteUser.name);
                 }
                 // This message should only be received in state 5, 6 or 8
-                if( waitForDataInStep != 5 && waitForDataInStep != 6 && waitForDataInStep != 7 ) {
+                if( waitForDataInStep != 5 && waitForDataInStep != 6 && waitForDataInStep != 8 ) {
                     Timber.w("Received ACK for CMD_DELETE_SAVED_MEASUREMENTS in wrong state...");
                     if( waitForDataInStep >= 0 ){
                         Timber.w("...while waiting for other data. Retrying last step.");
@@ -730,9 +808,19 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                 }
 
                 if (data[3] == 0) {
+                    remoteUsers.add(currentRemoteUser);
+                    // If we have unprocessed data available, store it now.
+                    if( storedMeasurement.measurementData != null ) {
+                        Timber.d("User identified, storing unprocessed data.");
+                        addMeasurement(storedMeasurement.measurementData, currentRemoteUser.localUserId);
+                        storedMeasurement.measurementData = null;
+                    }
+                    // We can now receive and process data, user has been identified and send to the scale.
+                    readyForData = true;
+                    // Try to start a measurement to make the scale learn the reference weight to recognize the user next time.
+                    // If we already have data, this will most likely run into time-out and the scale switches off before finishing.
                     Timber.d("New user successfully added; time to step on scale");
                     sendMessage(R.string.info_step_on_scale_for_reference, 0);
-                    remoteUsers.add(currentRemoteUser);
                     Timber.d("Sending command: CMD_DO_MEASUREMENT");
                     sendCommand(CMD_DO_MEASUREMENT, encodeUserId(currentRemoteUser));
                     // We send a new command, so make sure we wait
@@ -776,6 +864,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                 }
                 else {
                     Timber.d("Measure command successfully received");
+                    sendMessage(R.string.info_step_on_scale, 0);
                     // More data should be incoming, so make sure we wait
                     stopMachineState();
                 }
