@@ -17,7 +17,7 @@
     <string name="label_yes">Ναι</string>
     <string name="label_no">Όχι</string>
     <string name="label_delete">Διαγραφή</string>
-    <string name="label_add_user">Πρόσθεσε χρήστη</string>
+    <string name="label_add_user">Προσθήκη χρήστη</string>
     <string name="label_share">Κοινοποίηση</string>
     <string name="label_share_subject">Εξαγωγή δεδομένων CSV (%s)</string>
     <string name="label_weight">Βάρος</string>
