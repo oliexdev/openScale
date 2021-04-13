@@ -19,7 +19,7 @@
     <string name="label_delete">Slett</string>
     <string name="label_add_user">Legg til bruker</string>
     <string name="label_share">Del</string>
-    <string name="label_share_subject">Eksporter data som CSV (%s)</string>
+    <string name="label_share_subject">openScale data-eksport (%s)</string>
     <string name="label_weight">Vekt</string>
     <string name="label_bmi">Kroppsmasseindeks (KMI)</string>
     <string name="label_bmr">Hvilestoffskifte (BMR)</string>

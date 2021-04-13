@@ -20,7 +20,7 @@
     <string name="label_add_user">Добавить пользователя</string>
     <string name="label_add_measurement">Добавить измерение</string>
     <string name="label_share">Поделиться</string>
-    <string name="label_share_subject">Экспорт данных CSV в (%s)</string>
+    <string name="label_share_subject">экспорт данных openScale (%s)</string>
     <string name="label_weight">Вес</string>
     <string name="label_bmi">Индекс массы тела (ИМТ)</string>
     <string name="label_bmr">Основной обмен (ОО)</string>

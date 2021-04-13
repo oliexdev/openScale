@@ -85,7 +85,7 @@
     <string name="info_bluetooth_connection_successful">連結成功</string>
     <string name="info_bluetooth_init">啟動藍芽設備</string>
     <string name="info_bluetooth_connection_error">藍芽出現錯誤</string>
-    <string name="info_new_data_added">"%1$.2f%2$s [%3$s] 加入至 %4$s "</string>
+    <string name="info_new_data_added">%1$.2f%2$s [%3$s] 加入至 %4$s</string>
     <string name="info_new_data_duplicated">相同日期及時間的測量數值已經存在</string>
     <string name="info_enter_user_name">你的名字</string>
     <string name="info_no_selected_user">沒有此用戶。 請在設定中加入新用戶。</string>
@@ -158,8 +158,7 @@
     <string name="label_month_view">按月顯示</string>
     <string name="label_weeks_view">按周顯示</string>
     <string name="permission_not_granted">未有開放權限</string>
-    <string name="permission_bluetooth_info">搜尋藍芽器材時， 需要開放大概位置的權限。 
-\n當搜尋完成時， 此權限可以再次關上。</string>
+    <string name="permission_bluetooth_info">搜尋藍芽器材時， 需要開放大概位置的權限。當搜尋完成時， 此權限可以再次關上。</string>
     <string name="permission_bluetooth_info_title">資料</string>
     <string name="label_next">下一項</string>
     <string name="label_set_default_order">設定預設的排序</string>

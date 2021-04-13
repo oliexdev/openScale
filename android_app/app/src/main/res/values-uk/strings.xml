@@ -20,7 +20,7 @@
     <string name="label_add_user">Додати користувача</string>
     <string name="label_add_measurement">Додати вимір</string>
     <string name="label_share">Поділитися</string>
-    <string name="label_share_subject">Експорт даних до CSV (%s)</string>
+    <string name="label_share_subject">openScale експорт даних (%s)</string>
     <string name="label_weight">Вага</string>
     <string name="label_bmi">Індекс маси тіла (BMI)</string>
     <string name="label_bmr">Основний обмін (BMR)</string>

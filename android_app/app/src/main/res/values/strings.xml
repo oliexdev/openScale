@@ -23,7 +23,7 @@
     <string name="label_add_user">Add user</string>
     <string name="label_add_measurement">Add measurement</string>
     <string name="label_share">Share</string>
-    <string name="label_share_subject">Export data as CSV (%s)</string>
+    <string name="label_share_subject">openScale data export (%s)</string>
     <string name="label_weight">Weight</string>
     <string name="label_bmi">Body mass index (BMI)</string>
     <string name="label_bmr">Basal metabolic rate (BMR)</string>

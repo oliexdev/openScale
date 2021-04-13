@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources><string name="title_overview">نظرة عامة</string>
+<resources>
+    <string name="title_overview">نظرة عامة</string>
     <string name="title_graph">جدولة</string>
     <string name="title_table">لائحة</string>
     <string name="title_statistics">إحصائيات</string>
@@ -19,31 +20,30 @@
     <string name="label_add_user">إضافة مستعمل</string>
     <string name="label_add_measurement">اضافة قياس</string>
     <string name="label_share">مشاركة</string>
-    <string name="label_share_subject">"تصدرير بيانات CSV "</string>
+    <string name="label_share_subject">تصدرير بيانات CSV (%s)</string>
     <string name="label_weight">وزن</string>
-    <string name="label_bmi">"مؤشر كتلة الجسم (BMI) "</string>
+    <string name="label_bmi">مؤشر كتلة الجسم (BMI)</string>
     <string name="label_bmr">معدل الأيض الأساسي (BMR)</string>
     <string name="label_tdee">مجموع نفقات الطاقة اليومية (TDEE)</string>
     <string name="label_fat">دهون الجسم</string>
     <string name="label_water">ماء الجسم</string>
     <string name="label_muscle">العضلات</string>
     <string name="label_lbm">كتلة بدون دهنيات</string>
-    <string name="label_waist">محيط الخصر
-\n</string>
+    <string name="label_waist">محيط الخصر</string>
     <string name="label_hip">محيط الورك</string>
     <string name="label_comment">علق</string>
     <string name="label_whtr">نسبة الخصر إلى الطول</string>
     <string name="label_whr">نسبة الخصر إلى الورك</string>
     <string name="label_bone">كتلة عضمية</string>
-    <string name="label_smartUserAssign">"التعيين الذكي للمستخدم "</string>
+    <string name="label_smartUserAssign">التعيين الذكي للمستخدم</string>
     <plurals name="label_days">
-    <item quantity="zero">صفر</item>
-    <item quantity="one">واحد</item>
-    <item quantity="two">اثنان</item>
-    <item quantity="few">بعض</item>
-    <item quantity="many">كثيرة</item>
-    <item quantity="other">اخرى</item>
-</plurals>
+        <item quantity="zero">صفر %d</item>
+        <item quantity="one">واحد %d</item>
+        <item quantity="two">اثنان %d</item>
+        <item quantity="few">بعض %d</item>
+        <item quantity="many">كثيرة %d</item>
+        <item quantity="other">اخرى %d</item>
+    </plurals>
     <string name="label_last_week">الأسبوع الماضي</string>
     <string name="label_last_month">الشهر الماضي</string>
     <string name="label_weight_difference">فرق الوزن</string>
@@ -93,7 +93,7 @@
     <string name="info_bluetooth_connection_successful">تم الاتصال</string>
     <string name="info_bluetooth_init">تهيئة جهاز بلوتوث</string>
     <string name="info_bluetooth_connection_error">خطأ غير متوقع في البلوتوث</string>
-    <string name="info_bluetooth_connection_disconnected">"اغلق اتصال بلوتوث "</string>
+    <string name="info_bluetooth_connection_disconnected">اغلق اتصال بلوتوث</string>
     <string name="info_new_data_duplicated">القياس مع نفس التاريخ والوقت موجود بالفعل</string>
     <string name="info_enter_user_name">إسمك</string>
     <string name="info_no_selected_user">لا يوجد مستخدم. الرجاء إنشاء واحد في الإعدادات.</string>
@@ -105,10 +105,10 @@
     <string name="label_bluetooth_enable">الاتصال بالميزان عند بدء التشغيل</string>
     <string name="label_mergeWithLastMeasurement">دمج مع القياس الاخير</string>
     <string name="label_bluetooth_searching">البحث عن ميزان البلوتوث</string>
-    <string name="label_bluetooth_searching_finished">"انتهى البحث "</string>
+    <string name="label_bluetooth_searching_finished">انتهى البحث</string>
     <string name="label_enable_labels">تسمية البيانات</string>
     <string name="label_enable_points">نقطة البيانات</string>
-    <string name="label_delete_confirmation">"تأكيد الحذف "</string>
+    <string name="label_delete_confirmation">تأكيد الحذف</string>
     <string name="label_category_measurement_database">قاعدة بيانات القياسات</string>
     <string name="label_website">موقع</string>
     <string name="label_license">رخصة</string>
@@ -178,6 +178,7 @@
 \n
 \nاضغط على الزر الموجود أسفل الميزان لتحويله إلى وضع الإقران ، ثم أعد توصيله لاسترداد كلمة مرور الجهاز.</string>
     <string name="trisa_scale_pairing_succeeded">نجح الاقتران!
+\n
 \nأعد الاتصال لاسترداد بيانات القياس.</string>
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">حدث خطأ غير متوقع.
 \n

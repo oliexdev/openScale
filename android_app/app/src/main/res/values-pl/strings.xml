@@ -19,7 +19,7 @@
     <string name="label_delete">Usuń</string>
     <string name="label_add_user">Dodaj użytkownika</string>
     <string name="label_share">Udostępnij</string>
-    <string name="label_share_subject">Export danych do CSV (%s)</string>
+    <string name="label_share_subject">openScale eksportowane info (%s)</string>
     <string name="label_weight">Waga</string>
     <string name="label_bmi">Wskaźnik masy ciała (BMI)</string>
     <string name="label_bmr">Wskaźnik podstawowej przemiany materii (BMR)</string>

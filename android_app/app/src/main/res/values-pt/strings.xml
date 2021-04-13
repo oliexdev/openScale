@@ -10,7 +10,7 @@
     <string name="label_enable_legend">Legenda</string>
     <string name="info_step_on_scale_for_reference">Por favor, suba para a balança para obter medidas de referência</string>
     <string name="info_bluetooth_connection_disconnected">Conexão Bluetooth terminada</string>
-    <string name="permission_read_write_data_description">leia/escreva dados no openScale, incluindo informações dos utilizadores e todas as medidas salvas.</string>
+    <string name="permission_read_write_data_description">leia/escreva dados no openScale, incluindo informações dos utilizadores e todas as medidas salvas</string>
     <string name="trisa_scale_pairing_succeeded">Pareamento feito! 
 \nReconecte para recuperar os dados das medições.</string>
     <string name="trisa_scale_not_paired">A balança não foi pareada! 
@@ -135,8 +135,8 @@
     <string name="label_weight_difference">Diferença de peso</string>
     <string name="label_last_month">Média do mês passado</string>
     <plurals name="label_days">
-        <item quantity="one">"dia %d "</item>
-        <item quantity="other">"dias %d "</item>
+        <item quantity="one">dia %d</item>
+        <item quantity="other">dias %d</item>
     </plurals>
     <string name="label_smartUserAssign">Identificação inteligente de utilizador</string>
     <string name="label_bone">Massa óssea</string>

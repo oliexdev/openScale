@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources><string name="title_overview">개요</string>
+<resources>
+    <string name="title_overview">개요</string>
     <string name="title_graph">차트</string>
     <string name="title_table">표</string>
     <string name="title_statistics">통계</string>
@@ -35,8 +36,8 @@
     <string name="label_bone">골부피</string>
     <string name="label_smartUserAssign">스마트 사용자 할당</string>
     <plurals name="label_days">
-    <item quantity="other">%d 일</item>
-</plurals>
+        <item quantity="other">%d 일</item>
+    </plurals>
     <string name="label_last_week">지난 주 평균</string>
     <string name="label_last_month">지난 달 평균</string>
     <string name="label_weight_difference">무게 차이</string>
@@ -69,7 +70,7 @@
     <string name="error_goal_weight_required">오류: 목표 무게 필요</string>
     <string name="info_data_deleted">항목 삭제됨</string>
     <string name="info_data_all_deleted">모든 항목 삭제됨</string>
-    <string name="info_data_exported">"다음 위치로 내보냄: "</string>
+    <string name="info_data_exported">다음 위치로 내보냄:</string>
     <string name="info_data_imported">"다음 위치에서 가져옴: "</string>
     <string name="info_enter_value_in">다음 위치에 있는 값</string>
     <string name="info_enter_comment">비고</string>
@@ -148,7 +149,8 @@
 \n측정치를 가져오기 위해서 다시 연결하세요.</string>
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">예측하지 못한 오류 발생.
 \n
-\nhttps://github.com/oliexdev/openScale/issues 에 오류에 대한 자세한 정보를 넣어서 새 이슈를 만들어 주세요</string>
+\n에 오류에 대한 자세한 정보를 넣어서 새 이슈를 만들어 주세요
+\nhttps://github.com/oliexdev/openScale/issues</string>
     <string name="customactivityoncrash_error_activity_restart_app">앱 재시작</string>
     <string name="customactivityoncrash_error_activity_close_app">앱 닫기</string>
     <string name="customactivityoncrash_error_activity_error_details">오류 정보</string>

@@ -53,8 +53,8 @@
     <string name="label_comment">Comentário</string>
     <string name="label_date">Data</string>
     <plurals name="label_days">
-        <item quantity="one">"dia %d "</item>
-        <item quantity="other">"dias %d "</item>
+        <item quantity="one">dia %d</item>
+        <item quantity="other">dias %d</item>
     </plurals>
     <string name="label_days_left">Dias restantes</string>
     <string name="label_delete">Apagar</string>
@@ -163,7 +163,7 @@
     <string name="permission_bluetooth_info_title">Infos</string>
     <string name="label_next">Próximo</string>
     <string name="label_set_default_order">Define ordem por defeito</string>
-    <string name="label_export_overwrite">"Gravar sobre o export \"%s\"  anterior ?"</string>
+    <string name="label_export_overwrite">Gravar sobre o export \"%s\" anterior \?</string>
     <string name="label_measurement_in_percent">Medida em %</string>
     <string name="label_estimate_measurement">Medida estimada</string>
     <string name="label_estimation_formula">Formula de estimativa</string>
@@ -183,14 +183,16 @@
     <string name="info_step_on_scale">Por favor suba descalço para a balança</string>
     <string name="label_enable_legend">Legenda</string>
     <string name="label_enable_yaxis">Eixo Y</string>
-    <string name="trisa_scale_not_paired">A balança não foi pareada! 
+    <string name="trisa_scale_not_paired">A balança não foi pareada!
+\n
 \nPressione o botão da balança para mudar para o modo de pareamento e então reconecte para recuperar a palavra-passe do aparelho.</string>
     <string name="trisa_scale_pairing_succeeded">Pareamento feito!
+\n
 \nReconecte para recuperar os dados das medições.</string>
     <string name="label_day_view">Visualização diária</string>
     <string name="label_year_view">Visualização anual</string>
     <string name="label_long_press_drag_reorder">Toque firmemente e arraste a medição para reorganiza-la</string>
-    <string name="permission_read_write_data_description">leia/escreva dados no openScale, incluindo informações dos utilizadores e todas as medidas salvas.</string>
+    <string name="permission_read_write_data_description">leia/escreva dados no openScale, incluindo informações dos utilizadores e todas as medidas salvas</string>
     <string name="label_measurement_bar">Barra de medidas</string>
     <string name="action_donation">Doação</string>
     <string name="label_empty">Vazio</string>

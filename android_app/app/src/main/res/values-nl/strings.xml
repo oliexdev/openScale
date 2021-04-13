@@ -20,7 +20,7 @@
     <string name="label_add_user">Gebruiker toevoegen</string>
     <string name="label_add_measurement">Meting toevoegen</string>
     <string name="label_share">Delen</string>
-    <string name="label_share_subject">Gegevens exporteren naar csv-bestand (%s)</string>
+    <string name="label_share_subject">openScale-gegevens exporteren (%s)</string>
     <string name="label_weight">Gewicht</string>
     <string name="label_bmi">Body Mass Index (BMI)</string>
     <string name="label_bmr">Basaal Metabolisme (BMR)</string>
@@ -241,8 +241,8 @@
 \nopenScale</string>
     <string name="label_slide_welcome_main_text">Open source gewichts- en lichaamskenmerkenlogboek, met ondersteuning voor Bluetooth-weegschalen.</string>
     <string name="label_slide_privacy_top_text">Bescherm je persoonlijke gezondheidsgegevens.</string>
-    <string name="label_slide_privacy_main_text">openScale verstuurt geen gegevens naar de cloud. Het ontbreken van toestemming voor internettoegang is daar het beste bewijs van. 
-\n 
+    <string name="label_slide_privacy_main_text">openScale verstuurt geen gegevens naar de cloud. Het ontbreken van toestemming voor internettoegang is daar het beste bewijs van.
+\n
 \nAls je je gewicht wilt synchroniseren met Google Fit of MQTT, dan kun je <a href="https://play.google.com/store/apps/details?id=com.health.openscale.sync">openScale-sync</a> installeren.</string>
     <string name="label_slide_user_top_text">De app ondersteunt meerdere gebruikers.</string>
     <string name="label_slide_user_main_text">openScale vereist geen online-account. 
@@ -251,11 +251,11 @@
     <string name="label_slide_opensource_top_text">De app is open source en kent een hoge mate van transparantie.</string>
     <string name="label_slide_bluetooth_top_text">De app ondersteunt verscheidene Bluetooth-weegschalen van verschillende fabrikanten.</string>
     <string name="label_slide_metrics_top_text">Verzamel en analyseer je lichaamskenmerken.</string>
-    <string name="label_slide_opensource_main_text">openScale wordt verspreid onder de <a href="https://github.com/oliexdev/openScale/blob/master/LICENSE">GPLv3</a>-licentie. 
-\n 
-\nAlle lichaamsberekeningen zijn transparant. Er vindt geen verborgen gegevensoverdracht of gebruikersidentificatie plaats. 
-\n 
-\nJe kunt de volledige broncode bekijken op <a href="https://github.com/oliexdev/openScale">GitHub</a>. Probeer openScale vandaag nog!</string>
+    <string name="label_slide_opensource_main_text">openScale wordt verspreid onder de <a href="https://github.com/oliexdev/openScale/blob/master/LICENSE">GPLv3</a>-licentie.
+\n
+\nAlle lichaamsberekeningen zijn transparant. Er vindt geen verborgen gegevensoverdracht of gebruikersidentificatie plaats.
+\n
+\nJe kunt de volledige broncode bekijken op <a href="https://github.com/oliexdev/openScale">GitHub</a>. Probeer openScale vandaag nog.</string>
     <string name="label_slide_bluetooth_main_text">openScale heeft ingebouwde ondersteuning voor een aantal Bluetooth-weegschalen van verschillende fabrikanten. 
 \n 
 \nDe ondersteuning van huidige en nieuwe weegschalen wordt continue verbeterd. De volledige lijst met weegschalen en hun ondersteuningsniveaus is te vinden op <a href="https://github.com/oliexdev/openScale/wiki/Supported-scales-in-openScale">GitHub</a>.</string>
