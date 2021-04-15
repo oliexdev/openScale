@@ -104,7 +104,7 @@
     <string name="info_bluetooth_connection_error">Unexpected Bluetooth error</string>
     <string name="info_bluetooth_connection_error_scale_offline">Could not connect to scale, please ensure it is on.</string>
     <string name="info_bluetooth_connection_disconnected">Bluetooth connection closed</string>
-    <string name="info_new_data_added">%1$.2f%2$s [%3$s] to %4$s added</string>
+    <string name="info_new_data_added">%1$.2f%2$s [%3$s] added to %4$s</string>
     <string name="info_new_data_duplicated">measurement with the same date and time already exist</string>
     <string name="info_enter_user_name">Your name</string>
     <string name="info_no_selected_user">No user exists. Please create one in the settings.</string>
