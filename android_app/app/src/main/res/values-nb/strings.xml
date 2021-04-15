@@ -87,7 +87,7 @@
     <string name="info_bluetooth_connection_successful">Tilkoblet</string>
     <string name="info_bluetooth_init">Igangsett Blåtannsenhet</string>
     <string name="info_bluetooth_connection_error">Uventet Blåtannsfeil</string>
-    <string name="info_new_data_added">%1$.2f%2$s [%3$s] til %4$s lagt til</string>
+    <string name="info_new_data_added">%1$.2f%2$s [%3$s] lagt til til %4$s</string>
     <string name="info_new_data_duplicated">måling med samme dato og tid finnes allerede</string>
     <string name="info_enter_user_name">Ditt navn</string>
     <string name="info_no_selected_user">Ingen bruker finnes. Opprett en i innstillingene.</string>
