@@ -158,7 +158,7 @@
     <string name="permission_not_granted">Permiso no otorgado</string>
     <string name="permission_bluetooth_info">Se requiere permiso para ubicar dispositivos Bluetooth. Este permiso puede ser revocado después de que se encontró el dispositivo.</string>
     <string name="permission_bluetooth_info_title">Información</string>
-    <string name="label_share_subject">Exportar datos como CSV (%s)</string>
+    <string name="label_share_subject">openScale datos exportar (%s)</string>
     <string name="label_mergeWithLastMeasurement">Unir con la última medición</string>
     <string name="label_weeks_view">Vista semanal</string>
     <string name="label_next">Siguiente</string>
