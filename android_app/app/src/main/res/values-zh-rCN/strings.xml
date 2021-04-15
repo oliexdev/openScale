@@ -21,8 +21,7 @@
 \n
 \n对它进行配置以显示您所关心的指标。
 \n
-\n如果身体脂肪、水分和去脂体重缺失，可以根据
-\n<a href="https://github.com/oliexdev/openScale/wiki/Body-metric-estimations">科学出版物</a>进行估算。</string>
+\n如果身体脂肪、水分和去脂体重缺失，可以根据 <a href="https://github.com/oliexdev/openScale/wiki/Body-metric-estimations">科学出版物</a>进行估算。</string>
     <string name="label_slide_metrics_top_text">跟踪并分析你的身体指标。</string>
     <string name="label_slide_bluetooth_main_text">openScale内置了对来自不同制造商的许多蓝牙秤的支持。
 \n
@@ -193,7 +192,7 @@
     <string name="info_no_selected_user">没有用户存在。请在设置中创建一个。</string>
     <string name="info_enter_user_name">你的名字</string>
     <string name="info_new_data_duplicated">已存在日期和时间相同的测量值</string>
-    <string name="info_new_data_added">%1$.2f%2$s [%3$s] to %4$s 已添加</string>
+    <string name="info_new_data_added">%1$.2f%2$s [%3$s] 已添加 to %4$s</string>
     <string name="info_bluetooth_connection_disconnected">蓝牙连接已关闭</string>
     <string name="info_bluetooth_connection_error_scale_offline">无法连接到scale，请确保其处于开启状态。</string>
     <string name="info_bluetooth_connection_error">意外的蓝牙错误</string>
