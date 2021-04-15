@@ -114,7 +114,7 @@
     <string name="label_bone">Knochenmasse</string>
     <string name="label_bmr">Grundumsatz (BMR)</string>
     <string name="info_measuring">Messe Gewicht: %.2f</string>
-    <string name="info_new_data_added">%1$.2f%2$s [%3$s] zu %4$s hinzugefügt</string>
+    <string name="info_new_data_added">%1$.2f%2$s [%3$s] hinzugefügt zu %4$s</string>
     <string name="error_max_scale_users">Maximale Anzahl gleichzeitiger Benutzer erreicht</string>
     <string name="info_step_on_scale_for_reference">Bitte steigen Sie barfuß auf die Waage zur Referenzmessung</string>
     <string name="label_automatic">auto</string>
@@ -162,7 +162,7 @@
     <string name="permission_bluetooth_info_title">Information</string>
     <string name="label_next">Weiter</string>
     <string name="label_set_default_order">Default Reihenfolge wiederherstellen</string>
-    <string name="label_share_subject">Daten als CSV exportieren (%s)</string>
+    <string name="label_share_subject">openScale datenexport (%s)</string>
     <string name="label_mergeWithLastMeasurement">Zusammenführen mit der letzten Messung</string>
     <string name="label_export_overwrite">Vorherigen Export überschreiben %s?</string>
     <string name="label_measurement_in_percent">Messwert in %</string>
