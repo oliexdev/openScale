@@ -38,6 +38,10 @@ import java.util.UUID;
 import timber.log.Timber;
 
 public class BluetoothBeurerSanitas extends BluetoothCommunication {
+    // < 0 means we are not actually waiting for data
+    // any value >= 0 means we are waiting for data in that state
+    private int waitForDataInStep = -1;
+
     enum DeviceType { BEURER_BF700_800_RT_LIBRA, BEURER_BF710, SANITAS_SBF70_70 }
 
     private static final UUID CUSTOM_SERVICE_1 = BluetoothGattUuid.fromShortCode(0xffe0);
@@ -61,9 +65,18 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
         }
     }
 
+    private class StoredData {
+        public byte[] measurementData = null;
+        public long storedUid = -1;
+        public long candidateUid = -1;
+    }
+
     private ArrayList<RemoteUser> remoteUsers = new ArrayList<>();
     private RemoteUser currentRemoteUser;
-    private byte[] measurementData;
+    private byte[] measurementData = null;
+    private StoredData storedMeasurement = new StoredData();
+    private boolean readyForData = false;
+    private boolean dataReceived = false;
 
     private final int ID_START_NIBBLE_INIT = 6;
     private final int ID_START_NIBBLE_CMD = 7;
@@ -171,26 +184,41 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
     protected boolean onNextStep(int stepNr) {
         switch (stepNr) {
             case 0:
+                // Fresh start, so reset everything
+                measurementData = null;
+                storedMeasurement.measurementData = null;
+                readyForData = false;
+                dataReceived = false;
                 // Setup notification
                 setNotificationOn(CUSTOM_SERVICE_1, CUSTOM_CHARACTERISTIC_WEIGHT);
                 break;
             case 1:
+                // we will be waiting for data in state 1
+                waitForDataInStep = 1;
                 // Say "Hello" to the scale and wait for ack
+                Timber.d("Sending command: ID_START_NIBBLE_INIT");
                 sendAlternativeStartCode(ID_START_NIBBLE_INIT, (byte) 0x01);
                 stopMachineState();
                 break;
             case 2:
                 // Update time on the scale (no ack)
                 long unixTime = System.currentTimeMillis() / 1000L;
+                Timber.d("Sending command: ID_START_NIBBLE_SET_TIME");
                 sendAlternativeStartCode(ID_START_NIBBLE_SET_TIME, Converters.toInt32Be(unixTime));
                 break;
             case 3:
+                // We will be waiting for data in state 3
+                waitForDataInStep = 3;
                 // Request scale status and wait for ack
+                Timber.d("Sending command: CMD_SCALE_STATUS");
                 sendCommand(CMD_SCALE_STATUS, encodeUserId(null));
                 stopMachineState();
                 break;
             case 4:
+                // We will be waiting for data in state 4
+                waitForDataInStep = 4;
                 // Request list of all users and wait until all have been received
+                Timber.d("Sending command: CMD_USER_LIST");
                 sendCommand(CMD_USER_LIST);
                 stopMachineState();
                 break;
@@ -209,10 +237,13 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
 
                 // Fetch saved measurements
                 if (currentRemoteUser != null) {
-                    Timber.d("Request saved measurements for %s", currentRemoteUser.name);
+                    // We will be waiting for data in state 5
+                    waitForDataInStep = 5;
+                    Timber.d("Request saved measurements (CMD_GET_SAVED_MEASUREMENTS) for %s", currentRemoteUser.name);
                     sendCommand(CMD_GET_SAVED_MEASUREMENTS, encodeUserId(currentRemoteUser));
                     stopMachineState();
                 }
+                // No user found, just continue to next step.
                 break;
             case 6:
                 // Create a remote user for selected openScale user if needed
@@ -225,24 +256,47 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                     }
                 }
                 if (currentRemoteUser == null) {
+                    waitForDataInStep = 6;
                     createRemoteUser(selectedUser);
                     stopMachineState();
                 }
+                // Do not need to create new user, just continue to next step.
                 break;
             case 7:
+                waitForDataInStep = 7;
+                Timber.d("Sending command: CMD_USER_DETAILS");
                 sendCommand(CMD_USER_DETAILS, encodeUserId(currentRemoteUser));
                 stopMachineState();
                 break;
             case 8:
-                if (currentRemoteUser != null && !currentRemoteUser.isNew) {
+                // If we have unprocessed data available, store it now.
+                if( storedMeasurement.measurementData != null ) {
+                    Timber.d("Reached state 8 (end) and still have saved data available. Storing now.");
+                    if( currentRemoteUser != null ) {
+                        Timber.i("User has been identified in the meantime, so store the data for them.");
+                        addMeasurement(measurementData, currentRemoteUser.localUserId);
+                    }
+                    else {
+                        Timber.i("User still not identified, so storing the data for the selected user.");
+                        addMeasurement(measurementData, OpenScale.getInstance().getSelectedScaleUser().getId());
+                    }
+                    storedMeasurement.measurementData = null;
+                }
+                else if (!dataReceived && currentRemoteUser != null && !currentRemoteUser.isNew) {
+                    // Looks like we never received a fresh measurement in this run, so request it now.
+                    // Chances are not good that this will work, but let's try it anyway.
+                    waitForDataInStep = 8;
+                    Timber.d("Sending command: CMD_DO_MEASUREMENT");
                     sendCommand(CMD_DO_MEASUREMENT, encodeUserId(currentRemoteUser));
                     stopMachineState();
                 } else {
+                    Timber.d("All finished, nothing to do.");
                     return false;
                 }
                 break;
             default:
                 // Finish init if everything is done
+                Timber.d("End of state flow reached.");
                 return false;
         }
 
@@ -253,11 +307,22 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
     public void onBluetoothNotify(UUID characteristic, byte[] value) {
         byte[] data = value;
         if (data == null || data.length == 0) {
+            Timber.d("Received empty message.");
             return;
         }
 
         if (data[0] == getAlternativeStartByte(ID_START_NIBBLE_INIT)) {
-            Timber.d("Got init ack from scale; scale is ready");
+            // this message should only happen in state 1
+            if( waitForDataInStep == 1 ) {
+                Timber.d("Received init ack (ID_START_NIBBLE_INIT) from scale; scale is ready");
+            }
+            else {
+                Timber.w("Received init ack (ID_START_NIBBLE_INIT) from scale in wrong state. Scale or app is confused. Continue in state 2.");
+                jumpNextToStepNr( 2 );
+            }
+            // All data received, no more waiting.
+            waitForDataInStep = -1;
+            // On to state 2
             resumeMachineState();
             return;
         }
@@ -270,18 +335,23 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
         try {
             switch (data[1]) {
                 case CMD_USER_INFO:
+                    Timber.d("Received: CMD_USER_INFO");
                     processUserInfo(data);
                     break;
                 case CMD_SAVED_MEASUREMENT:
+                    Timber.d("Received: CMD_SAVED_MEASUREMENT");
                     processSavedMeasurement(data);
                     break;
                 case CMD_WEIGHT_MEASUREMENT:
+                    Timber.d("Received: CMD_WEIGHT_MEASUREMENT");
                     processWeightMeasurement(data);
                     break;
                 case CMD_MEASUREMENT:
+                    Timber.d("Received: CMD_MEASUREMENT");
                     processMeasurement(data);
                     break;
                 case CMD_SCALE_ACK:
+                    Timber.d("Received: CMD_SCALE_ACK");
                     processScaleAck(data);
                     break;
                 default:
@@ -307,9 +377,13 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
             Timber.d("Received user %d/%d: %s (%d)", current, count, name, year);
         }
 
+        Timber.d("Sending ack for CMD_USER_INFO");
         sendAck(data);
 
         if (current != count) {
+            Timber.d("Not all users received, waiting for more...");
+            // More data should be incoming, so make sure we wait
+            stopMachineState();
             return;
         }
 
@@ -331,13 +405,33 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
             }
         }
 
+        if( waitForDataInStep != 4 ) {
+            Timber.w("Received final CMD_USER_INFO in wrong state...");
+            if( waitForDataInStep >= 0 ){
+                Timber.w("...while waiting for other data. Retrying last step.");
+                // We are in the wrong state.
+                // This may happen, so let's just retry whatever we did before.
+                jumpBackOneStep();
+            }
+            else {
+                Timber.w("...ignored, no data expected.");
+            }
+        }
+        // All data received, no more waiting.
+        waitForDataInStep = -1;
         // All users received
         resumeMachineState();
     }
 
-    private void processMeasurementData(byte[] data, int offset, boolean firstPart) {
+    private void processMeasurementData(byte[] data, int offset, boolean firstPart, boolean processingSavedMeasurements) {
         if (firstPart) {
+            if( measurementData != null ) Timber.d("Discarding existing data.");
             measurementData = Arrays.copyOfRange(data, offset, data.length);
+            return;
+        }
+
+        if( measurementData == null ) {
+            Timber.w("Received second measurement part without receiving first part before. Discarding data.");
             return;
         }
 
@@ -347,27 +441,98 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
         measurementData = Arrays.copyOf(measurementData, oldEnd + toCopy);
         System.arraycopy(data, offset, measurementData, oldEnd, toCopy);
 
-        addMeasurement(measurementData, currentRemoteUser.localUserId);
-        measurementData = null;
+        // Store data, but only if we are ready and know the user. Otherwise leave it for later.
+        if( currentRemoteUser != null && (readyForData || processingSavedMeasurements) ) {
+            Timber.d("Measurement complete, user identified and app ready: Storing data.");
+            addMeasurement(measurementData, currentRemoteUser.localUserId);
+            // Do we have unsaved data?
+            if( storedMeasurement.measurementData != null ) {
+                // Does it belong to the current user
+                if( currentRemoteUser.remoteUserId == storedMeasurement.storedUid ) {
+                    // Does it have the same time stamp?
+                    if( Converters.fromUnsignedInt32Be(measurementData, 0) == Converters.fromUnsignedInt32Be(storedMeasurement.measurementData, 0) ) {
+                        // Then delete the unsaved data because it is already part of the received saved data
+                        Timber.d("Discarding data saved for later, because it is already part of the received saved data from the scale.");
+                        storedMeasurement.measurementData = null;
+                    }
+                }
+            }
+            // Data processed, so discard it.
+            measurementData = null;
+            // Also discard saved data, because we got and processed new data
+            storedMeasurement.measurementData = null;
+        }
+        else if( !processingSavedMeasurements ) {
+            if( !readyForData ) {
+                Timber.d("New measurement complete, but not stored, because app not ready: Saving data for later.");
+            }
+            else {
+                Timber.d("New measurement complete, but not stored, because user not identified: Saving data for later.");
+            }
+            storedMeasurement.measurementData = measurementData;
+            storedMeasurement.storedUid = storedMeasurement.candidateUid;
+        }
+        else {
+            // How the f*** did we end up here?
+            Timber.e("Received saved measurement, but do not know for what user. This should not happen. Discarding data.");
+            measurementData = null;
+        }
     }
 
     private void processSavedMeasurement(byte[] data) {
         int count = data[2] & 0xFF;
         int current = data[3] & 0xFF;
+        Timber.d("Received part %d (of 2) of saved measurement %d of %d.", current % 2 == 1 ? 1 : 2, current / 2, count / 2);
 
-        processMeasurementData(data, 4, current % 2 == 1);
+        processMeasurementData(data, 4, current % 2 == 1, true);
 
+        Timber.d("Sending ack for CMD_SAVED_MEASUREMENT");
         sendAck(data);
 
-        if (current == count) {
-            Timber.d("Deleting saved measurements for %s", currentRemoteUser.name);
-            sendCommand(CMD_DELETE_SAVED_MEASUREMENTS, encodeUserId(currentRemoteUser));
+        if (current != count) {
+            Timber.d("Not all parts / saved measurements received, waiting for more...");
+            // More data should be incoming, so make sure we wait
+            stopMachineState();
+            return;
+        }
 
-            if (currentRemoteUser.remoteUserId != remoteUsers.get(remoteUsers.size() - 1).remoteUserId) {
-                jumpNextToStepNr(5);
+        Timber.i("All saved measurements received.");
+
+        // This message should only be received in step 5
+        if( waitForDataInStep != 5 ) {
+            Timber.w("Received final CMD_SAVED_MEASUREMENT in wrong state...");
+            if( waitForDataInStep >= 0 ){
+                Timber.w("...while waiting for other data. Retrying last step.");
+                // We are in the wrong state.
+                // This may happen, so let's just retry whatever we did before.
+                jumpBackOneStep();
+                resumeMachineState();
+            }
+            else {
+                Timber.w("...ignored, no data expected.");
+            }
+            // Let's not delete data we received unexpectedly, so just get out of here.
+            return;
+        }
+
+        // We are done with saved measurements, from now on we can process unrequested measurement data.
+        readyForData = true;
+
+        Timber.d("Deleting saved measurements (CMD_DELETE_SAVED_MEASUREMENTS) for %s", currentRemoteUser.name);
+        sendCommand(CMD_DELETE_SAVED_MEASUREMENTS, encodeUserId(currentRemoteUser));
+        // We sent a new command, so make sure we wait
+        stopMachineState();
+
+        /* Why do we want to resume the state machine, when we are not the last remote user?
+         * In the moment I do not understand this code, so I'll comment it out but leave it here for reference.
+        if (currentRemoteUser.remoteUserId != remoteUsers.get(remoteUsers.size() - 1).remoteUserId) {
+            // Only jump back to state 5 if we are in 5
+            if( jumpNextToStepNr( 5, 5 ) ) {
+                // Now resume
                 resumeMachineState();
             }
         }
+        */
     }
 
     private void processWeightMeasurement(byte[] data) {
@@ -386,31 +551,74 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
     private void processMeasurement(byte[] data) {
         int count = data[2] & 0xFF;
         int current = data[3] & 0xFF;
+        Timber.d("Received measurement part %d of %d.", current, count );
 
         if (current == 1) {
             long uid = decodeUserId(data, 5);
+            Timber.d("Receiving measurement data for remote UID %d.", uid);
+            // Remember uid in case we need it to save data for later.
+            storedMeasurement.candidateUid = uid;
+            // Now search for user
             currentRemoteUser = null;
             for (RemoteUser remoteUser : remoteUsers) {
                 if (remoteUser.remoteUserId == uid) {
                     currentRemoteUser = remoteUser;
+                    Timber.d("Local user %s matches remote UID %d.", currentRemoteUser.name, uid);
                     break;
                 }
             }
+            if( currentRemoteUser == null ) {
+                Timber.d("No local user identified for remote UID %d.", uid);
+            }
         }
         else {
-            processMeasurementData(data, 4, current == 2);
+            processMeasurementData(data, 4, current == 2, false);
         }
 
+        // Even if we did not process the data, always ack the message
+        Timber.d("Sending ack for CMD_MEASUREMENT");
         sendAck(data);
 
-        if (current == count) {
+        if (current != count) {
+            Timber.d("Not all measurement parts received, waiting for more...");
+            // More data should be incoming, so make sure we wait
+            stopMachineState();
+            return;
+        }
+
+        Timber.i("All measurement parts received.");
+
+        // Delete saved measurement, but only when we processed it before
+        if (currentRemoteUser != null && readyForData ) {
+            Timber.d("Sending command: CMD_DELETE_SAVED_MEASUREMENTS");
             sendCommand(CMD_DELETE_SAVED_MEASUREMENTS, encodeUserId(currentRemoteUser));
+            // We sent a new command, so make sure we wait
+            stopMachineState();
+        }
+        // This message should only be received in step 6 and 8
+        else if( waitForDataInStep != 6 && waitForDataInStep != 8 ) {
+            Timber.w("Received final CMD_MEASUREMENT in wrong state...");
+            if( waitForDataInStep >= 0 ){
+                Timber.w("...while waiting for other data. Retrying last step.");
+                // We are in the wrong state.
+                // This may happen, so let's just retry whatever we did before.
+                jumpBackOneStep();
+                resumeMachineState();
+            }
+            else {
+                Timber.w("...ignored, no data expected.");
+            }
+        }
+        else {
+            resumeMachineState();
         }
     }
+
 
     private void processScaleAck(byte[] data) {
         switch (data[2]) {
             case CMD_SCALE_STATUS:
+                Timber.d("ACK type: CMD_SCALE_STATUS");
                 // data[3] != 0 if an invalid user id is given to the command,
                 // but it still provides some useful information (e.g. current unit).
                 final int batteryLevel = data[4] & 0xFF;
@@ -446,73 +654,224 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                         break;
                 }
                 if (requestedUnit != currentUnit) {
-                    Timber.d("Set scale unit to %s (%d)", user.getScaleUnit(), requestedUnit);
+                    Timber.d("Set scale unit (CMD_SET_UNIT) to %s (%d)", user.getScaleUnit(), requestedUnit);
                     sendCommand(CMD_SET_UNIT, requestedUnit);
+                    // We send a new command, so make sure we wait
+                    stopMachineState();
                 } else {
+                    // This should only be received in step 3
+                    if( waitForDataInStep != 3 ) {
+                        Timber.w("Received ACK for CMD_SCALE_STATUS in wrong state...");
+                        if( waitForDataInStep >= 0 ){
+                            Timber.w("...while waiting for other data. Retrying last step.");
+                            // We are in the wrong state.
+                            // This may happen, so let's just retry whatever we did before.
+                            jumpBackOneStep();
+                        }
+                        else {
+                            Timber.w("...ignored, no data expected.");
+                        }
+                    }
+                    // All data received, no more waiting.
+                    waitForDataInStep = -1;
                     resumeMachineState();
                 }
                 break;
 
             case CMD_SET_UNIT:
+                Timber.d("ACK type: CMD_SET_UNIT");
                 if (data[3] == 0) {
                     Timber.d("Scale unit successfully set");
                 }
+                // This should only be received in step 3
+                if( waitForDataInStep != 3 ) {
+                    Timber.w("Received ACK for CMD_SET_UNIT in wrong state...");
+                    if( waitForDataInStep >= 0 ){
+                        Timber.w("...while waiting for other data. Retrying last step.");
+                        // We are in the wrong state.
+                        // This may happen, so let's just retry whatever we did before.
+                        jumpBackOneStep();
+                    }
+                    else {
+                        Timber.w("...ignored, no data expected.");
+                    }
+                }
+                // All data received, no more waiting.
+                waitForDataInStep = -1;
                 resumeMachineState();
                 break;
 
             case CMD_USER_LIST:
+                Timber.d("ACK type: CMD_USER_LIST");
                 int userCount = data[4] & 0xFF;
                 int maxUserCount = data[5] & 0xFF;
                 Timber.d("Have %d users (max is %d)", userCount, maxUserCount);
                 if (userCount == 0) {
+                    // We expect no more data, because there are no stored users.
+                    // This message should only be received in state 4.
+                    if( waitForDataInStep != 4 ) {
+                        Timber.w("Received ACK for CMD_USER_LIST in wrong state...");
+                        if( waitForDataInStep >= 0 ){
+                            Timber.w("...while waiting for other data.");
+                            // We are in the wrong state.
+                            // This may happen, so let's just retry whatever we did before.
+                            jumpBackOneStep();
+                        }
+                        else {
+                            Timber.w("...ignored, no data expected.");
+                        }
+                    }
+                    // User list is empty, no more waiting.
+                    waitForDataInStep = -1;
                     resumeMachineState();
                 }
-                // Otherwise wait for CMD_USER_INFO notifications
+                else {
+                    // More data should be incoming, so make sure we wait
+                    stopMachineState();
+                }
                 break;
 
             case CMD_GET_SAVED_MEASUREMENTS:
+                Timber.d("ACK type: CMD_GET_SAVED_MEASUREMENTS");
                 int measurementCount = data[3] & 0xFF;
+                Timber.d("Received ACK for CMD_GET_SAVED_MEASUREMENTS for %d measurements.", measurementCount/2);
                 if (measurementCount == 0) {
-                    // Skip delete all measurements step (since there are no measurements to delete)
-                    Timber.d("No saved measurements found for user " + currentRemoteUser.name);
-                    jumpNextToStepNr(5);
+                    // We expect no more data, because there are no measurements.
+                    readyForData = true;
+                    // This message should only be received in step 5.
+                    if( waitForDataInStep != 5 ) {
+                        Timber.w("Received ACK for CMD_GET_SAVED_MEASUREMENTS in wrong state...");
+                        if( waitForDataInStep >= 0 ){
+                            Timber.w("...while waiting for other data. Retrying last step.");
+                            // We are in the wrong state.
+                            // This may happen, so let's just retry whatever we did before.
+                            jumpBackOneStep();
+                        }
+                        else {
+                            Timber.w("...ignored, no data expected.");
+                        }
+                    }
+                    // No saved data, no more waiting.
+                    waitForDataInStep = -1;
                     resumeMachineState();
                 }
                 // Otherwise wait for CMD_SAVED_MEASUREMENT notifications which will,
                 // once all measurements have been received, resume the state machine.
+                else {
+                    // More data should be incoming, so make sure we wait
+                    stopMachineState();
+                }
                 break;
 
             case CMD_DELETE_SAVED_MEASUREMENTS:
+                Timber.d("ACK type: CMD_DELETE_SAVED_MEASUREMENTS");
                 if (data[3] == 0) {
                     Timber.d("Saved measurements successfully deleted for user " + currentRemoteUser.name);
                 }
+                // This message should only be received in state 5, 6 or 8
+                if( waitForDataInStep != 5 && waitForDataInStep != 6 && waitForDataInStep != 8 ) {
+                    Timber.w("Received ACK for CMD_DELETE_SAVED_MEASUREMENTS in wrong state...");
+                    if( waitForDataInStep >= 0 ){
+                        Timber.w("...while waiting for other data. Retrying last step.");
+                        // We are in the wrong state.
+                        // This may happen, so let's just retry whatever we did before.
+                        jumpBackOneStep();
+                    }
+                    else {
+                        Timber.w("...ignored, no data expected.");
+                    }
+                }
+                // All data received, no more waiting.
+                waitForDataInStep = -1;
                 resumeMachineState();
                 break;
 
             case CMD_USER_ADD:
+                Timber.d("ACK type: CMD_USER_ADD");
+                // This message should only be received in state 6
+                if( waitForDataInStep != 6 ) {
+                    Timber.w("Received ACK for CMD_USER_ADD in wrong state...");
+                    if( waitForDataInStep >= 0 ){
+                        Timber.w("...while waiting for other data. Retrying last step.");
+                        // We are in the wrong state.
+                        // This may happen, so let's just retry whatever we did before.
+                        jumpBackOneStep();
+                    }
+                    else {
+                        Timber.w("...ignored, no data expected.");
+                    }
+                    // No more data expected after this command.
+                    waitForDataInStep = -1;
+                    resumeMachineState();
+                    // Get out of here, this wasn't supposed to happen.
+                    break;
+                }
+
                 if (data[3] == 0) {
+                    remoteUsers.add(currentRemoteUser);
+                    // If we have unprocessed data available, store it now.
+                    if( storedMeasurement.measurementData != null ) {
+                        Timber.d("User identified, storing unprocessed data.");
+                        addMeasurement(storedMeasurement.measurementData, currentRemoteUser.localUserId);
+                        storedMeasurement.measurementData = null;
+                    }
+                    // We can now receive and process data, user has been identified and send to the scale.
+                    readyForData = true;
+                    // Try to start a measurement to make the scale learn the reference weight to recognize the user next time.
+                    // If we already have data, this will most likely run into time-out and the scale switches off before finishing.
                     Timber.d("New user successfully added; time to step on scale");
                     sendMessage(R.string.info_step_on_scale_for_reference, 0);
-                    remoteUsers.add(currentRemoteUser);
+                    Timber.d("Sending command: CMD_DO_MEASUREMENT");
                     sendCommand(CMD_DO_MEASUREMENT, encodeUserId(currentRemoteUser));
+                    // We send a new command, so make sure we wait
+                    stopMachineState();
                     break;
                 }
 
                 Timber.d("Cannot create additional scale user (error 0x%02x)", data[3]);
                 sendMessage(R.string.error_max_scale_users, 0);
                 // Force disconnect
-                Timber.d("Send disconnect command to scale");
-                jumpNextToStepNr(8);
+                Timber.d("Terminating state machine.");
+                jumpNextToStepNr( 9 );
+                // All data received, no more waiting.
+                waitForDataInStep = -1;
                 resumeMachineState();
                 break;
 
             case CMD_DO_MEASUREMENT:
-                if (data[3] == 0) {
+                Timber.d("ACK type: CMD_DO_MEASUREMENT");
+                if (data[3] != 0) {
+                    Timber.d("Measure command rejected.");
+                    // We expect no more data, because measure command was not accepted.
+                    // This message should only be received in state 6 or 8
+                    if( waitForDataInStep != 6 && waitForDataInStep != 8 ) {
+                        Timber.w("Received ACK for CMD_DO_MEASUREMENT in wrong state...");
+                        if( waitForDataInStep >= 0 ){
+                            Timber.w("...while waiting for other data. Retrying last step.");
+                            // We are in the wrong state.
+                            // This may happen, so let's just retry whatever we did before.
+                            jumpBackOneStep();
+                        }
+                        else {
+                            Timber.w("...ignored, no data expected.");
+                        }
+                        // No more data expected after this command.
+                        waitForDataInStep = -1;
+                        resumeMachineState();
+                        // Get out of here, this wasn't supposed to happen.
+                        break;
+                    }
+                }
+                else {
                     Timber.d("Measure command successfully received");
+                    sendMessage(R.string.info_step_on_scale, 0);
+                    // More data should be incoming, so make sure we wait
+                    stopMachineState();
                 }
                 break;
 
             case CMD_USER_DETAILS:
+                Timber.d("ACK type: CMD_USER_DETAILS");
                 if (data[3] == 0) {
                     String name = decodeString(data, 4, 3);
                     int year = 1900 + (data[7] & 0xFF);
@@ -526,6 +885,21 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                     Timber.d("Name: %s, Birthday: %d-%02d-%02d, Height: %d, Sex: %s, activity: %d",
                             name, year, month, day, height, male ? "male" : "female", activity);
                 }
+                // This message should only be received in state 7
+                if( waitForDataInStep != 7 ) {
+                    Timber.w("Received ACK for CMD_USER_DETAILS in wrong state...");
+                    if( waitForDataInStep >= 0 ){
+                        Timber.w("...while waiting for other data. Retrying last step.");
+                        // We are in the wrong state.
+                        // This may happen, so let's just retry whatever we did before.
+                        jumpBackOneStep();
+                    }
+                    else {
+                        Timber.w("...ignored, no data expected.");
+                    }
+                }
+                // All data received, no more waiting.
+                waitForDataInStep = -1;
                 resumeMachineState();
                 break;
 
@@ -628,6 +1002,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
 
         byte[] uid = encodeUserId(currentRemoteUser);
 
+        Timber.d("Sending command: CMD_USER_ADD");
         sendCommand(CMD_USER_ADD, uid[0], uid[1], uid[2], uid[3], uid[4], uid[5], uid[6], uid[7],
                 nick[0], nick[1], nick[2], year, month, day, height, (byte) (sex | activity));
     }

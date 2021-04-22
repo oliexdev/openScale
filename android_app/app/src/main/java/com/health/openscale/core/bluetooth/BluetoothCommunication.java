@@ -173,9 +173,52 @@ public abstract class BluetoothCommunication {
         nextMachineStep();
     }
 
+    /**
+     * This function only resumes the state machine if the current step equals curStep,
+     * i.e. if the next step (stepNr) is 1 above curStep.
+     */
+    protected synchronized boolean resumeMachineState( int curStep ) {
+        if( curStep == stepNr-1 ) {
+            Timber.d("curStep " + curStep + " matches stepNr " + stepNr + "-1, resume state machine.");
+            stopped = false;
+            nextMachineStep();
+            return true;
+        }
+        else {
+            Timber.d("curStep " + curStep + " does not match stepNr " + stepNr + "-1, not resuming state machine.");
+            return false;
+        }
+    }
+
     protected synchronized void jumpNextToStepNr(int nr) {
         Timber.d("Jump next to step nr " + nr);
         stepNr = nr;
+    }
+
+    /**
+     * This function jumps to the step newStepNr only if the current step equals curStepNr,
+     * i.e. if the next step (stepNr) is 1 above curStepNr
+     */
+    protected synchronized boolean jumpNextToStepNr( int curStepNr, int newStepNr ) {
+        if( curStepNr == stepNr-1 ) {
+            Timber.d("curStepNr " + curStepNr + " matches stepNr " + stepNr + "-1, jumping next to step nr " + newStepNr);
+            stepNr = newStepNr;
+            return true;
+        }
+        else {
+            Timber.d("curStepNr " + curStepNr + " does not match stepNr " + stepNr + "-1, keeping next at step nr " + stepNr);
+            return false;
+        }
+    }
+
+    /**
+     * Call this function to decrement the current step counter of the state machine by one.
+     * Usually, if you call this function followed by resumeMachineState(), the current step will be repeated.
+     * Call multiple times to actually go back in time to previous steps.
+     */
+    protected synchronized void jumpBackOneStep() {
+        stepNr--;
+        Timber.d("Jumped back one step to " + stepNr);
     }
 
     /**
