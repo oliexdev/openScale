@@ -171,4 +171,36 @@
     <string name="title_table">Tabela</string>
     <string name="title_graph">Gráfico</string>
     <string name="title_overview">Visão geral</string>
+    <string name="app_intro_next_button">Próximo</string>
+    <string name="permission_bluetooth_info">Permissão de Localização necessária para buscar aparelhos Bluetooth. Pode ser revogada após encontrar aparelho.</string>
+    <string name="customactivityoncrash_error_activity_error_occurred_explanation">Um erro inesperado ocorreu.
+\n
+\nFavor criar um novo issue incluindo detalhes do erro em
+\nhttps://github.com/oliexdev/openScale/issues</string>
+    <string name="label_feedback_message_issue">Qual é a sua opinião sobre o app\?</string>
+    <string name="label_trend">Tendência</string>
+    <string name="label_prediction">Previsão</string>
+    <string name="label_trend_line">Linha de tendência</string>
+    <string name="info_bluetooth_connection_error_scale_offline">Sem conexão com balança, certifique-se que está ligada.</string>
+    <string name="info_bluetooth_connection_successful">Conectado</string>
+    <string name="info_bluetooth_no_device_set">Selecione um aparelho Bluetooth</string>
+    <string name="info_bluetooth_connection_lost">Conexão Bluetooth perdida</string>
+    <string name="info_scale_low_battery">Bateria baixa (%d%%), favor recarregar ou trocar as baterias da balança</string>
+    <string name="info_assisted_weighing_choose_reference_user">Escolha o utilizador-referência cujo peso será descontado</string>
+    <string name="info_assisted_weighing_no_reference_user">Sem utilizador-referência disponível, favor criar um</string>
+    <string name="info_assisted_weighing_old_reference_measurement">Alerta: última medida de referência tem mais de um dia</string>
+    <string name="info_assisted_weighing_no_reference_measurements">Utilizador-referência sem medidas</string>
+    <string name="info_data_imported">Importado de</string>
+    <string name="info_data_exported">Exportado para</string>
+    <string name="error_goal_weight_required">Meta de peso requerida</string>
+    <string name="error_initial_weight_required">Peso inicial requerido</string>
+    <string name="error_height_required">Altura requerida</string>
+    <string name="error_user_name_required">Nome requerido</string>
+    <string name="error_value_range">Valor fora do intervalo</string>
+    <string name="label_amputation_right">Amputação direita</string>
+    <string name="label_amputation_left">Amputação esquerda</string>
+    <string name="label_amputation">Amputação</string>
+    <string name="label_assisted_weighing">Pesagem assistida</string>
+    <string name="label_age">Idade</string>
+    <string name="label_water">Água corporal total</string>
 </resources>
