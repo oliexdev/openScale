@@ -200,4 +200,9 @@
     <string name="action_settings">Asetukset</string>
     <string name="title_measurements">Mittaukset</string>
     <string name="title_users">Käyttäjät</string>
+    <string name="error_value_range">Arvo on rajojen ulkopuolella</string>
+    <string name="label_goal_date_is">Tavoitepäivä:</string>
+    <string name="label_weight_difference">Painonmuutos</string>
+    <string name="label_bone">Luumassa</string>
+    <string name="label_muscle">Lihaskudos</string>
 </resources>
