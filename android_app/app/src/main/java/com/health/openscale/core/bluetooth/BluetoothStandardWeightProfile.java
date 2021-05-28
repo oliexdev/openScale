@@ -20,6 +20,8 @@
 package com.health.openscale.core.bluetooth;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
@@ -29,6 +31,8 @@ import com.welie.blessed.BluetoothBytesParser;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
+import java.util.GregorianCalendar;
+import java.util.Random;
 
 import timber.log.Timber;
 
@@ -36,25 +40,36 @@ import static com.welie.blessed.BluetoothBytesParser.FORMAT_UINT16;
 import static com.welie.blessed.BluetoothBytesParser.FORMAT_UINT8;
 
 public class BluetoothStandardWeightProfile extends BluetoothCommunication {
-    private int CURRENT_USER_CONSENT = 3289;
+    protected int CURRENT_USER_CONSENT = 3289;
 
     // UDS control point codes
-    private static final byte UDS_CP_REGISTER_NEW_USER              = 0x01;
-    private static final byte UDS_CP_CONSENT                        = 0x02;
-    private static final byte UDS_CP_DELETE_USER_DATA               = 0x03;
-    private static final byte UDS_CP_LIST_ALL_USERS                 = 0x04;
-    private static final byte UDS_CP_DELETE_USERS                   = 0x05;
-    private static final byte UDS_CP_RESPONSE                       = 0x20;
+    protected static final byte UDS_CP_REGISTER_NEW_USER              = 0x01;
+    protected static final byte UDS_CP_CONSENT                        = 0x02;
+    protected static final byte UDS_CP_DELETE_USER_DATA               = 0x03;
+    protected static final byte UDS_CP_LIST_ALL_USERS                 = 0x04;
+    protected static final byte UDS_CP_DELETE_USERS                   = 0x05;
+    protected static final byte UDS_CP_RESPONSE                       = 0x20;
 
     // UDS response codes
-    private static final byte UDS_CP_RESP_VALUE_SUCCESS             = 0x01;
-    private static final byte UDS_CP_RESP_OP_CODE_NOT_SUPPORTED     = 0x02;
-    private static final byte UDS_CP_RESP_INVALID_PARAMETER         = 0x03;
-    private static final byte UDS_CP_RESP_OPERATION_FAILED          = 0x04;
-    private static final byte UDS_CP_RESP_USER_NOT_AUTHORIZED       = 0x05;
+    protected static final byte UDS_CP_RESP_VALUE_SUCCESS             = 0x01;
+    protected static final byte UDS_CP_RESP_OP_CODE_NOT_SUPPORTED     = 0x02;
+    protected static final byte UDS_CP_RESP_INVALID_PARAMETER         = 0x03;
+    protected static final byte UDS_CP_RESP_OPERATION_FAILED          = 0x04;
+    protected static final byte UDS_CP_RESP_USER_NOT_AUTHORIZED       = 0x05;
+
+    SharedPreferences prefs;
+    protected boolean registerNewUser;
+    protected boolean useExistingScaleUser;
+    protected boolean createNewAppUser;
+    ScaleUser selectedUser;
 
     public BluetoothStandardWeightProfile(Context context) {
         super(context);
+        this.prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        this.selectedUser = OpenScale.getInstance().getSelectedScaleUser();
+        this.registerNewUser = true;
+        this.useExistingScaleUser = false;
+        this.createNewAppUser = false;
     }
 
     @Override
@@ -72,38 +87,69 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
                 readBytes(BluetoothGattUuid.SERVICE_DEVICE_INFORMATION, BluetoothGattUuid.CHARACTERISTIC_MODEL_NUMBER_STRING);
                 break;
             case 1:
-                // Write the current time
-                BluetoothBytesParser parser = new BluetoothBytesParser();
-                parser.setCurrentTime(Calendar.getInstance());
-                writeBytes(BluetoothGattUuid.SERVICE_CURRENT_TIME, BluetoothGattUuid.CHARACTERISTIC_CURRENT_TIME, parser.getValue());
-                break;
-            case 2:
+                writeCurrentTime();
                 // Turn on notification for Weight Service
                 setNotificationOn(BluetoothGattUuid.SERVICE_WEIGHT_SCALE, BluetoothGattUuid.CHARACTERISTIC_WEIGHT_MEASUREMENT);
                 break;
-            case 3:
+            case 2:
                 // Turn on notification for Body Composition Service
                 setNotificationOn(BluetoothGattUuid.SERVICE_BODY_COMPOSITION, BluetoothGattUuid.CHARACTERISTIC_BODY_COMPOSITION_MEASUREMENT);
                 break;
-            case 4:
-                // Turn on notification for User Data Service
+            case 3:
+                // Turn on notification for User Data Service Change Increment
                 setNotificationOn(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_CHANGE_INCREMENT);
-                setNotificationOn(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_USER_CONTROL_POINT);
+                break;
+            case 4:
+                // Turn on notification for User Control Point
+                setIndicationOn(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_USER_CONTROL_POINT);
+                // read Battery Service
+                readBytes(BluetoothGattUuid.SERVICE_BATTERY_LEVEL, BluetoothGattUuid.CHARACTERISTIC_BATTERY_LEVEL);
                 break;
             case 5:
                 // Turn on notifications for Battery Service
                 setNotificationOn(BluetoothGattUuid.SERVICE_BATTERY_LEVEL, BluetoothGattUuid.CHARACTERISTIC_BATTERY_LEVEL);
                 break;
             case 6:
-                final ScaleUser selectedUser = OpenScale.getInstance().getSelectedScaleUser();
-                registerUser(CURRENT_USER_CONSENT);
-                setUser(selectedUser.getId(), CURRENT_USER_CONSENT);
+                int userId = this.selectedUser.getId();
+                int consentCode = prefs.getInt("userConsentCode" + userId, -1);
+                if (consentCode != -1) {
+                    registerNewUser = false;
+                }
+                if (registerNewUser) {
+                    Random randomFactory = new Random();
+                    consentCode = randomFactory.nextInt(10000);
+                    this.prefs.edit().putInt("userConsentCode" + userId, consentCode).apply();
+                    registerUser(consentCode);
+                    stopMachineState();
+                } else {
+                    Timber.d("Set existing user!");
+                    setUser(userId);
+                }
                 break;
+            case 7:
+                if (registerNewUser) {
+                    Timber.d("Set newly registered user!");
+                    setUser(this.selectedUser.getId());
+                    stopMachineState();
+                    break;
+                }
+            case 8:
+                if (registerNewUser) {
+                    writeUserDataToScale();
+                    break;
+                }
             default:
                 return false;
         }
 
         return true;
+    }
+
+    protected void writeUserDataToScale() {
+        writeBirthday();
+        writeGender();
+        writeHeight();
+        setChangeIncrement();
     }
 
     @Override
@@ -138,12 +184,20 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
                     case UDS_CP_REGISTER_NEW_USER:
                         if (value[2] == UDS_CP_RESP_VALUE_SUCCESS) {
                             int userIndex = value[3];
-                            Timber.d(String.format("Created user %d", userIndex));
+                            int userId = this.selectedUser.getId();
+                            Timber.d(String.format("Created user with ID %d and Index %d", userId, userIndex));
+                            this.prefs.edit().putInt("userScaleIndex" + userId, userIndex).apply();
+                            this.prefs.edit().putInt("userIdFromUserScaleIndex" + userIndex, userId).apply();
+                            resumeMachineState();
                         } else {
                             Timber.e("ERROR: could not register new user");
                         }
                         break;
                     case UDS_CP_CONSENT:
+                        if (registerNewUser) {
+                            resumeMachineState();
+                            break;
+                        }
                         if (value[2] == UDS_CP_RESP_VALUE_SUCCESS) {
                             Timber.d("Success user consent");
                         } else if (value[2] == UDS_CP_RESP_USER_NOT_AUTHORIZED) {
@@ -160,7 +214,7 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
         }
     }
 
-    private void handleWeightMeasurement(byte[] value) {
+    protected void handleWeightMeasurement(byte[] value) {
         BluetoothBytesParser parser = new BluetoothBytesParser(value);
         final int flags = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8);
         boolean isKg = (flags & 0x01) == 0;
@@ -185,6 +239,17 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
         if(userIDPresent) {
             int userID = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8);
             Timber.d(String.format("User id: %d", userID));
+
+            if (registerNewUser) {
+                Timber.d(String.format("Setting initial weight for user %s to: %s and registerNewUser to false", userID,
+                        weightValue));
+                if (selectedUser.getId() == userID) {
+                    this.selectedUser.setInitialWeight(weightValue);
+                } else {
+                    OpenScale.getInstance().getScaleUser(userID).setInitialWeight(weightValue);
+                }
+                registerNewUser = false;
+            }
         }
 
         if(bmiAndHeightPresent) {
@@ -196,7 +261,7 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
         addScaleMeasurement(scaleMeasurement);
     }
 
-    private void handleBodyCompositionMeasurement(byte[] value) {
+    protected void handleBodyCompositionMeasurement(byte[] value) {
         BluetoothBytesParser parser = new BluetoothBytesParser(value);
         final int flags = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT16);
         boolean isKg = (flags & 0x0001) == 0;
@@ -284,7 +349,7 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
         addScaleMeasurement(scaleMeasurement);
     }
 
-    private void registerUser(int consentCode) {
+    protected void registerUser(int consentCode) {
         BluetoothBytesParser parser = new BluetoothBytesParser(new byte[]{0,0,0});
         parser.setIntValue(UDS_CP_REGISTER_NEW_USER, FORMAT_UINT8,0);
         parser.setIntValue(consentCode, FORMAT_UINT16,1);
@@ -292,12 +357,76 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
         writeBytes(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_USER_CONTROL_POINT, parser.getValue());
     }
 
-    private void setUser(int userIndex, int consentCode) {
+    protected void setUser(int userIndex, int consentCode) {
         BluetoothBytesParser parser = new BluetoothBytesParser(new byte[]{0,0,0,0});
         parser.setIntValue(UDS_CP_CONSENT,FORMAT_UINT8,0);
         parser.setIntValue(userIndex, FORMAT_UINT8,1);
         parser.setIntValue(consentCode, FORMAT_UINT16,2);
         Timber.d(String.format("setUser userIndex: %d, consentCode: %d", userIndex, consentCode));
         writeBytes(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_USER_CONTROL_POINT, parser.getValue());
+    }
+
+    protected synchronized void setUser(int userId) {
+        int userIndex = prefs.getInt("userScaleIndex" + userId, -1);
+        int consentCode = prefs.getInt("userConsentCode" + userId, -1);
+        Timber.d(String.format("setting: userId %d, userIndex: %d, consent Code: %d ", userId, userIndex, consentCode));
+        setUser(userIndex, consentCode);
+    }
+
+    protected void deleteUser(int userIndex, int consentCode) {
+        setUser(userIndex, consentCode);
+        deleteUser();
+    }
+
+    protected void deleteUser() {
+        BluetoothBytesParser parser = new BluetoothBytesParser(new byte[] { 0 });
+        parser.setIntValue(UDS_CP_DELETE_USER_DATA, FORMAT_UINT8, 0);
+        writeBytes(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_USER_CONTROL_POINT,
+                parser.getValue());
+    }
+
+    protected void writeCurrentTime() {
+        BluetoothBytesParser parser = new BluetoothBytesParser();
+        parser.setCurrentTime(Calendar.getInstance());
+        writeBytes(BluetoothGattUuid.SERVICE_CURRENT_TIME, BluetoothGattUuid.CHARACTERISTIC_CURRENT_TIME,
+                parser.getValue());
+    }
+
+    protected void writeBirthday() {
+        BluetoothBytesParser parser = new BluetoothBytesParser();
+        parser.setDateTime(dateToCalender(this.selectedUser.getBirthday()));
+        writeBytes(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_USER_BIRTHDAY,
+                parser.getValue());
+    }
+
+    protected Calendar dateToCalender(Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        return calendar;
+    }
+
+    protected void writeGender() {
+        BluetoothBytesParser parser = new BluetoothBytesParser();
+        int gender = this.selectedUser.getGender().toInt();
+        Timber.d(String.format("gender: %d", gender));
+        parser.setIntValue(gender, FORMAT_UINT8);
+        writeBytes(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_USER_GENDER,
+                parser.getValue());
+    }
+
+    protected void writeHeight() {
+        BluetoothBytesParser parser = new BluetoothBytesParser();
+        int height = (int) this.selectedUser.getBodyHeight();
+        Timber.d(String.format("height: %d", height));
+        parser.setIntValue(height, FORMAT_UINT16);
+        writeBytes(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_USER_HEIGHT,
+                parser.getValue());
+    }
+
+    protected void setChangeIncrement() {
+        BluetoothBytesParser parser = new BluetoothBytesParser();
+        parser.setIntValue(1, FORMAT_UINT8);
+        writeBytes(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_CHANGE_INCREMENT,
+                parser.getValue());
     }
 }

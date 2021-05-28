@@ -83,6 +83,22 @@ public class ScaleUser {
         rightAmputationLevel = Converters.AmputationLevel.NONE;
     }
 
+    public ScaleUser(String userName, Date birthday, float bodyHeight, int genderInt, int activityLevelInt) {
+        this.userName = userName;
+        this.birthday = birthday;
+        this.bodyHeight = bodyHeight;
+        scaleUnit = Converters.WeightUnit.KG;
+        this.gender = Converters.Gender.fromInt(genderInt);
+        initialWeight = -1;
+        goalWeight = -1;
+        goalDate = new Date();
+        measureUnit = Converters.MeasureUnit.CM;
+        activityLevel = Converters.ActivityLevel.fromInt(activityLevelInt);
+        assistedWeighing = false;
+        leftAmputationLevel = Converters.AmputationLevel.NONE;
+        rightAmputationLevel = Converters.AmputationLevel.NONE;
+    }
+
     public int getId() {
         return id;
     }

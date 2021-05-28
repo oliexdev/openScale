@@ -122,6 +122,9 @@ public class BluetoothFactory {
         if (deviceName.equals("ADV")) {
             return new BluetoothOKOK(context);
         }
+        if (deviceName.equals("BF105")) {
+            return new BluetoothBeurerBF105(context);
+        }
         return null;
     }
 }
