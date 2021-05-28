@@ -47,12 +47,10 @@ public class BluetoothGattUuid {
                 if (uuid.equals(field.get(null))) {
                     String name = field.getName();
                     name = name.substring(name.indexOf('_') + 1);
-                    str = String.format("%s \"%s\"", str,
-                            name.replace('_', ' ').toLowerCase(Locale.US));
+                    str = String.format("%s \"%s\"", str, name.replace('_', ' ').toLowerCase(Locale.US));
                     break;
                 }
-            }
-            catch (IllegalAccessException e) {
+            } catch (IllegalAccessException e) {
                 // Ignore
             }
         }
@@ -93,6 +91,7 @@ public class BluetoothGattUuid {
     public static final UUID CHARACTERISTIC_CHANGE_INCREMENT = fromShortCode(0x2a99);
     public static final UUID CHARACTERISTIC_USER_CONTROL_POINT = fromShortCode(0x2A9F);
     public static final UUID CHARACTERISTIC_USER_AGE = fromShortCode(0x2A80);
+    public static final UUID CHARACTERISTIC_USER_BIRTHDAY = fromShortCode(0x2A85);
     public static final UUID CHARACTERISTIC_USER_GENDER = fromShortCode(0x2A8C);
     public static final UUID CHARACTERISTIC_USER_HEIGHT = fromShortCode(0x2A8E);
 

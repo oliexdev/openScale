@@ -83,6 +83,22 @@ public class ScaleUser {
         rightAmputationLevel = Converters.AmputationLevel.NONE;
     }
 
+    public ScaleUser(String userName, Date birthday, float bodyHeight, int genderInt, int activityLevelInt) {
+        this.userName = userName;
+        this.birthday = birthday;
+        this.bodyHeight = bodyHeight;
+        scaleUnit = Converters.WeightUnit.KG;
+        this.gender = Converters.Gender.fromInt(genderInt);
+        initialWeight = -1;
+        goalWeight = -1;
+        goalDate = new Date();
+        measureUnit = Converters.MeasureUnit.CM;
+        activityLevel = Converters.ActivityLevel.fromInt(activityLevelInt);
+        assistedWeighing = false;
+        leftAmputationLevel = Converters.AmputationLevel.NONE;
+        rightAmputationLevel = Converters.AmputationLevel.NONE;
+    }
+
     public int getId() {
         return id;
     }
@@ -274,14 +290,13 @@ public class ScaleUser {
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return String.format(
-                "id(%d) name(%s) birthday(%s) age(%d) body height(%.2f) scale unit(%s) " +
-                "gender(%s) initial weight(%.2f) goal weight(%.2f) goal date(%s) " +
-                "measure unt(%s) activity level(%d) assisted weighing(%b)",
+                "\nUser:\n id(%d)\n name(%s)\n birthday(%s)\n age(%d)\n body height(%.2f)\n scale unit(%s)\n "
+                        + "gender(%s)\n initial weight(%.2f)\n goal weight(%.2f)\n goal date(%s)\n "
+                        + "measure unit(%s)\n activity level(%d)\n assisted weighing(%b)",
                 id, userName, birthday.toString(), getAge(), bodyHeight, scaleUnit.toString(),
-                gender.toString().toLowerCase(), initialWeight, goalWeight, goalDate.toString(),
-                measureUnit.toString(), activityLevel.toInt(), assistedWeighing);
+                gender.toString().toLowerCase(), initialWeight, goalWeight, goalDate.toString(), measureUnit.toString(),
+                activityLevel.toInt(), assistedWeighing);
     }
 }

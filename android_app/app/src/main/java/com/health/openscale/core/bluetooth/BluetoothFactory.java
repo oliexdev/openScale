@@ -118,9 +118,12 @@ public class BluetoothFactory {
         }
         if (deviceName.equals("Hoffen BS-8107")) {
             return new BluetoothHoffenBBS8107(context);
-	}
+	    }
         if (deviceName.equals("ADV")) {
             return new BluetoothOKOK(context);
+        }
+        if (deviceName.equals("BF105")) {
+            return new BluetoothBeurerBF105(context);
         }
         return null;
     }
