@@ -119,25 +119,20 @@ public class EvaluationSheet {
 
         waterEvaluateSheet_Woman.add(new sheetEntry(10, 1000, 45, 60));
 
-        muscleEvaluateSheet_Man.add(new sheetEntry(10, 14, 44, 57));
-        muscleEvaluateSheet_Man.add(new sheetEntry(15, 19, 43, 56));
-        muscleEvaluateSheet_Man.add(new sheetEntry(20, 29, 42, 54));
-        muscleEvaluateSheet_Man.add(new sheetEntry(30, 39, 41, 52));
-        muscleEvaluateSheet_Man.add(new sheetEntry(40, 49, 40, 50));
-        muscleEvaluateSheet_Man.add(new sheetEntry(50, 59, 39, 48));
-        muscleEvaluateSheet_Man.add(new sheetEntry(60, 69, 38, 47));
-        muscleEvaluateSheet_Man.add(new sheetEntry(70, 1000, 37, 46));
+        // Muscle Reference: "Skeletal muscle mass and distribution in 468 men and women aged 18–88 yr" by IAN JANSSEN, STEVEN B. HEYMSFIELD, ZIMIAN WANG, and ROBERT ROS in J Appl Physiol89: 81–88, 2000
+        muscleEvaluateSheet_Man.add(new sheetEntry(18, 29, 37.9f, 46.7f));
+        muscleEvaluateSheet_Man.add(new sheetEntry(30, 39, 34.1f, 44.1f));
+        muscleEvaluateSheet_Man.add(new sheetEntry(40, 49, 33.1f, 41.1f));
+        muscleEvaluateSheet_Man.add(new sheetEntry(50, 59, 31.7f, 38.5f));
+        muscleEvaluateSheet_Man.add(new sheetEntry(60, 69, 29.9f, 37.7f));
+        muscleEvaluateSheet_Man.add(new sheetEntry(70, 1000, 28.7f, 43.3f));
 
-
-        muscleEvaluateSheet_Woman.add(new sheetEntry(10, 14, 36, 43));
-        muscleEvaluateSheet_Woman.add(new sheetEntry(15, 19, 35, 41));
-        muscleEvaluateSheet_Woman.add(new sheetEntry(20, 29, 34, 39));
-        muscleEvaluateSheet_Woman.add(new sheetEntry(30, 39, 33, 38));
-        muscleEvaluateSheet_Woman.add(new sheetEntry(40, 49, 31, 36));
-        muscleEvaluateSheet_Woman.add(new sheetEntry(50, 59, 29, 34));
-        muscleEvaluateSheet_Woman.add(new sheetEntry(60, 69, 28, 33));
-        muscleEvaluateSheet_Woman.add(new sheetEntry(70, 1000, 27, 32));
-
+        muscleEvaluateSheet_Woman.add(new sheetEntry(18, 29, 28.4f, 39.8f));
+        muscleEvaluateSheet_Woman.add(new sheetEntry(30, 39, 25.0f, 36.2f));
+        muscleEvaluateSheet_Woman.add(new sheetEntry(40, 49, 24.2f, 34.2f));
+        muscleEvaluateSheet_Woman.add(new sheetEntry(50, 59, 24.7f, 33.5f));
+        muscleEvaluateSheet_Woman.add(new sheetEntry(60, 69, 22.7f, 31.9f));
+        muscleEvaluateSheet_Woman.add(new sheetEntry(70, 1000, 25.5f, 34.9f));
 
         bmiEvaluateSheet_Man.add(new sheetEntry(16, 24, 20, 25));
         bmiEvaluateSheet_Man.add(new sheetEntry(25, 34, 21, 26));
@@ -145,7 +140,6 @@ public class EvaluationSheet {
         bmiEvaluateSheet_Man.add(new sheetEntry(45, 54, 23, 28));
         bmiEvaluateSheet_Man.add(new sheetEntry(55, 64, 24, 29));
         bmiEvaluateSheet_Man.add(new sheetEntry(65, 90, 25, 30));
-
 
         bmiEvaluateSheet_Woman.add(new sheetEntry(16, 24, 19, 24));
         bmiEvaluateSheet_Woman.add(new sheetEntry(25, 34, 20, 25));
