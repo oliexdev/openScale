@@ -119,25 +119,13 @@ public class EvaluationSheet {
 
         waterEvaluateSheet_Woman.add(new sheetEntry(10, 1000, 45, 60));
 
-        muscleEvaluateSheet_Man.add(new sheetEntry(10, 14, 44, 57));
-        muscleEvaluateSheet_Man.add(new sheetEntry(15, 19, 43, 56));
-        muscleEvaluateSheet_Man.add(new sheetEntry(20, 29, 42, 54));
-        muscleEvaluateSheet_Man.add(new sheetEntry(30, 39, 41, 52));
-        muscleEvaluateSheet_Man.add(new sheetEntry(40, 49, 40, 50));
-        muscleEvaluateSheet_Man.add(new sheetEntry(50, 59, 39, 48));
-        muscleEvaluateSheet_Man.add(new sheetEntry(60, 69, 38, 47));
-        muscleEvaluateSheet_Man.add(new sheetEntry(70, 1000, 37, 46));
+        muscleEvaluateSheet_Man.add(new sheetEntry(18, 39, 33.3f, 44.0f));
+        muscleEvaluateSheet_Man.add(new sheetEntry(40, 59, 33.1f, 43.8f));
+        muscleEvaluateSheet_Man.add(new sheetEntry(60, 1000, 32.9f, 43.6f));
 
-
-        muscleEvaluateSheet_Woman.add(new sheetEntry(10, 14, 36, 43));
-        muscleEvaluateSheet_Woman.add(new sheetEntry(15, 19, 35, 41));
-        muscleEvaluateSheet_Woman.add(new sheetEntry(20, 29, 34, 39));
-        muscleEvaluateSheet_Woman.add(new sheetEntry(30, 39, 33, 38));
-        muscleEvaluateSheet_Woman.add(new sheetEntry(40, 49, 31, 36));
-        muscleEvaluateSheet_Woman.add(new sheetEntry(50, 59, 29, 34));
-        muscleEvaluateSheet_Woman.add(new sheetEntry(60, 69, 28, 33));
-        muscleEvaluateSheet_Woman.add(new sheetEntry(70, 1000, 27, 32));
-
+        muscleEvaluateSheet_Woman.add(new sheetEntry(18, 39, 24.3f, 35.3f));
+        muscleEvaluateSheet_Woman.add(new sheetEntry(40, 59, 24.2f, 35.1f));
+        muscleEvaluateSheet_Woman.add(new sheetEntry(60, 1000, 23.9f, 34.9f));
 
         bmiEvaluateSheet_Man.add(new sheetEntry(16, 24, 20, 25));
         bmiEvaluateSheet_Man.add(new sheetEntry(25, 34, 21, 26));
@@ -145,7 +133,6 @@ public class EvaluationSheet {
         bmiEvaluateSheet_Man.add(new sheetEntry(45, 54, 23, 28));
         bmiEvaluateSheet_Man.add(new sheetEntry(55, 64, 24, 29));
         bmiEvaluateSheet_Man.add(new sheetEntry(65, 90, 25, 30));
-
 
         bmiEvaluateSheet_Woman.add(new sheetEntry(16, 24, 19, 24));
         bmiEvaluateSheet_Woman.add(new sheetEntry(25, 34, 20, 25));
