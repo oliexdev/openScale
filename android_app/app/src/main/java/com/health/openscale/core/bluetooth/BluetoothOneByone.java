@@ -206,7 +206,7 @@ public class BluetoothOneByone extends BluetoothCommunication {
             scaleBtData.setWater(oneByoneLib.getWater(scaleBtData.getFat()));
             scaleBtData.setBone(oneByoneLib.getBoneMass(weight, impedanceValue));
             scaleBtData.setVisceralFat(oneByoneLib.getVisceralFat(weight));
-            scaleBtData.setMuscle(oneByoneLib.getMuscle(impedanceValue));
+            scaleBtData.setMuscle(oneByoneLib.getMuscle(weight, impedanceValue));
             scaleBtData.setLbm(oneByoneLib.getLBM(weight, scaleBtData.getFat()));
 
             Timber.d("scale measurement [%s]", scaleBtData);

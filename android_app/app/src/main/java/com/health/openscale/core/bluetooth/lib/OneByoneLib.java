@@ -37,8 +37,8 @@ public class OneByoneLib {
         return weight - (bodyFat / 100.0f * weight);
     }
 
-    public float getMuscle(float impedanceValue){
-        return (float)((height * height / impedanceValue * 0.401) + (sex * 3.825) - (age * 0.071) + 5.102);
+    public float getMuscle(float weight, float impedanceValue){
+        return (float)((height * height / impedanceValue * 0.401) + (sex * 3.825) - (age * 0.071) + 5.102) / weight * 100.0f;
     }
 
     public float getWater(float bodyFat) {
