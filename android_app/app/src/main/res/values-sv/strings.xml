@@ -19,7 +19,7 @@
     <string name="label_bmi">Kroppsmasseindex (BMI)</string>
     <string name="label_bmr">Basal ämnesomsättning (BMR)</string>
     <string name="label_fat">Kroppsfett</string>
-    <string name="label_water">Kroppsvatten</string>
+    <string name="label_water">Totalt kroppsvatten</string>
     <string name="Monday">Måndag</string>
     <string name="Tuesday">Tisdag</string>
     <string name="Wednesday">Onsdag</string>
@@ -72,10 +72,10 @@
     <string name="error_value_required">Värde krävs</string>
     <string name="error_value_range">Värde utanför intervall</string>
     <string name="error_importing">Fel vid import</string>
-    <string name="error_user_name_required">Fel: namn krävs</string>
-    <string name="error_height_required">Fel: längd krävs</string>
-    <string name="error_initial_weight_required">Fel: startvikt krävs</string>
-    <string name="error_goal_weight_required">Fel: målvikt krävs</string>
+    <string name="error_user_name_required">Namn krävs</string>
+    <string name="error_height_required">Längd krävs</string>
+    <string name="error_initial_weight_required">Startvikt krävs</string>
+    <string name="error_goal_weight_required">Målvikt krävs</string>
     <string name="info_data_deleted">Post borttagen</string>
     <string name="info_data_all_deleted">Alla poster borttagna</string>
     <string name="info_data_exported">Exporterad till</string>
@@ -90,7 +90,7 @@
     <string name="info_bluetooth_try_connection">Ansluter till:</string>
     <string name="info_bluetooth_connection_lost">Förlorade Bluetooth-anslutningen</string>
     <string name="info_bluetooth_no_device">Ingen Bluetooth-enhet hittades</string>
-    <string name="info_bluetooth_connection_successful">Anslutning etablerad</string>
+    <string name="info_bluetooth_connection_successful">Ansluten</string>
     <string name="info_bluetooth_init">Initiera Bluetooth-enhet</string>
     <string name="info_bluetooth_connection_error">Oväntat Bluetooth fel</string>
     <string name="info_new_data_added">La till %1$.2f%2$s [%3$s] till %4$s</string>
@@ -125,7 +125,7 @@
     <string name="info_measuring">Mäter vikt: %.2f</string>
     <string name="open_drawer">öppna</string>
     <string name="close_drawer">stäng</string>
-    <string name="info_bluetooth_no_device_set">Ingen Bluetooth-enhet vald</string>
+    <string name="info_bluetooth_no_device_set">Välj Bluetooth-enhet</string>
     <string name="info_new_data_duplicated">mätning med samma datum och tid existerar redan</string>
     <string name="title_general">Allmänt</string>
     <string name="label_theme">Tema</string>
@@ -158,7 +158,7 @@
     <string name="permission_not_granted">Tillstånd beviljas inte</string>
     <string name="permission_bluetooth_info">Platsbehörighet krävs för att söka efter Bluetooth-enheter. Det kan återkallas när enheten har hittats.</string>
     <string name="permission_bluetooth_info_title">Info</string>
-    <string name="label_share_subject">CSV dataexport (%s)</string>
+    <string name="label_share_subject">openScale dataexport (%s)</string>
     <string name="label_next">Nästa</string>
     <string name="label_set_default_order">Ställ in standardordning</string>
     <string name="label_weeks_view">Veckovy</string>
@@ -223,4 +223,6 @@
     <string name="label_calories">Kalorier</string>
     <string name="label_upgrade_to_openScale_pro">Vänligen uppgradera till openScale pro för Bluetooth-stöd</string>
     <string name="action_donation">Donation</string>
+    <string name="label_age">Ålder</string>
+    <string name="label_empty">tom</string>
 </resources>
