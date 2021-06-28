@@ -236,19 +236,19 @@ public class OneByoneLib {
 
         if (sex != 0) {
             if (61.0f > weight) {
-                bodyVar = 0.98f;
+                bodyVar *= 0.98f;
             }
         } else {
             if (50.0f > weight) {
-                bodyVar = 1.02f;
+                bodyVar *= 1.02f;
             }
 
             if (weight > 60.0f) {
-                bodyVar = 0.96f;
+                bodyVar *= 0.96f;
             }
 
             if (height > 160.0f) {
-                bodyVar = 1.03f;
+                bodyVar *= 1.03f;
             }
         }
 
