@@ -319,7 +319,8 @@ public class BluetoothBeurerBF105 extends BluetoothStandardWeightProfile {
                 parser.getValue());
     }
 
-    private void writeActivityLevel() {
+    @Override
+    protected void writeActivityLevel() {
         BluetoothBytesParser parser = new BluetoothBytesParser();
         int activityLevel = this.selectedUser.getActivityLevel().toInt() + 1;
         Timber.d(String.format("activityLevel: %d", activityLevel));
