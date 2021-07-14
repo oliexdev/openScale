@@ -208,7 +208,7 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
         }
     }
 
-    protected void handleWeightMeasurement(byte[] value) {
+    protected ScaleMeasurement weightMeasurementToScaleMeasurement(byte[] value) {
         BluetoothBytesParser parser = new BluetoothBytesParser(value);
         final int flags = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8);
         boolean isKg = (flags & 0x01) == 0;
@@ -255,10 +255,14 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
         }
 
         Timber.d(String.format("Got weight: %s", weightValue));
-        addScaleMeasurement(scaleMeasurement);
+        return scaleMeasurement;
     }
 
-    protected void handleBodyCompositionMeasurement(byte[] value) {
+    protected void handleWeightMeasurement(byte[] value) {
+        addScaleMeasurement(weightMeasurementToScaleMeasurement(value));
+    }
+
+    protected ScaleMeasurement bodyCompositionMeasurementToScaleMeasurement(byte[] value) {
         BluetoothBytesParser parser = new BluetoothBytesParser(value);
         final int flags = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT16);
         boolean isKg = (flags & 0x0001) == 0;
@@ -347,7 +351,11 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
         }
 
         Timber.d(String.format("Got body composition: %s", byteInHex(value)));
-        addScaleMeasurement(scaleMeasurement);
+        return scaleMeasurement;
+    }
+
+    protected void handleBodyCompositionMeasurement(byte[] value) {
+        addScaleMeasurement(bodyCompositionMeasurementToScaleMeasurement(value));
     }
 
     protected void registerUser(int consentCode) {
