@@ -394,7 +394,7 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
     protected void writeBirthday() {
         BluetoothBytesParser parser = new BluetoothBytesParser();
         parser.setDateTime(dateToCalender(this.selectedUser.getBirthday()));
-        writeBytes(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_USER_BIRTHDAY,
+        writeBytes(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_USER_DATE_OF_BIRTH,
                 parser.getValue());
     }
 
