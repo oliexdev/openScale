@@ -244,6 +244,7 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
                         weightValue));
                 if (selectedUser.getId() == userID) {
                     this.selectedUser.setInitialWeight(weightValue);
+                    OpenScale.getInstance().updateScaleUser(selectedUser);
                 }
                 registerNewUser = false;
             }
