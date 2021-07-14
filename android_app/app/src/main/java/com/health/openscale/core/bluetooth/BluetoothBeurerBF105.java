@@ -372,7 +372,8 @@ public class BluetoothBeurerBF105 extends BluetoothStandardWeightProfile {
         return initials;
     }
 
-    private synchronized void requestMeasurement() {
+    @Override
+    protected synchronized void requestMeasurement() {
         BluetoothBytesParser parser = new BluetoothBytesParser();
         parser.setIntValue(0, FORMAT_UINT8);
         writeBytes(BluetoothGattUuidBF105.SERVICE_BF105_CUSTOM, BluetoothGattUuidBF105.CHARACTERISTIC_TAKE_MEASUREMENT,

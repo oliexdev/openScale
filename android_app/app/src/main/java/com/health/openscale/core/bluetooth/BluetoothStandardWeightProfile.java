@@ -129,6 +129,9 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
                     writeUserDataToScale();
                 }
                 break;
+            case 9:
+                requestMeasurement();
+                break;
             default:
                 return false;
         }
@@ -424,6 +427,10 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
         parser.setIntValue(1, FORMAT_UINT8);
         writeBytes(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_CHANGE_INCREMENT,
                 parser.getValue());
+    }
+
+    protected void requestMeasurement() {
+        Timber.d("Take measurement command not implemented!");
     }
 
     protected synchronized void storeUserScaleConsentCode(int userId, int consentCode) {
