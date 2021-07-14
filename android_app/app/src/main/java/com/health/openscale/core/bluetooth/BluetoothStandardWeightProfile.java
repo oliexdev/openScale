@@ -66,7 +66,7 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
         super(context);
         this.prefs = PreferenceManager.getDefaultSharedPreferences(context);
         this.selectedUser = OpenScale.getInstance().getSelectedScaleUser();
-        this.registerNewUser = true;
+        this.registerNewUser = false;
         this.useExistingScaleUser = false;
         this.createNewAppUser = false;
     }
@@ -111,8 +111,9 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
             case 6:
                 int userId = this.selectedUser.getId();
                 int consentCode = getUserScaleConsent(userId);
-                if (consentCode != -1) {
-                    registerNewUser = false;
+                int userIndex = getUserScaleIndex(userId);
+                if (consentCode == -1 || userIndex == -1) {
+                    registerNewUser = true;
                 }
                 if (registerNewUser) {
                     Random randomFactory = new Random();
