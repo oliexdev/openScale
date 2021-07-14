@@ -234,6 +234,9 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
             int scaleUserIndex = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8);
             int userID = getUserIdFromScaleIndex(scaleUserIndex);
             Timber.d(String.format("User id: %d, scale user index: %d", userID, scaleUserIndex));
+            if (userID != -1) {
+                scaleMeasurement.setUserId(userID);
+            }
 
             if (registerNewUser) {
                 Timber.d(String.format("Setting initial weight for user %s to: %s and registerNewUser to false", userID,
@@ -289,6 +292,9 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
             int scaleUserIndex = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8);
             int userID = getUserIdFromScaleIndex(scaleUserIndex);
             Timber.d(String.format("User id: %d, scale user index: %d", userID, scaleUserIndex));
+            if (userID != -1) {
+                scaleMeasurement.setUserId(userID);
+            }
         }
 
         // Read bmr if present
