@@ -31,7 +31,6 @@ import com.welie.blessed.BluetoothBytesParser;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
-import java.util.GregorianCalendar;
 import java.util.Random;
 
 import timber.log.Timber;
