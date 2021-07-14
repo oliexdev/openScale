@@ -101,14 +101,14 @@ public class BluetoothBeurerBF105 extends BluetoothStandardWeightProfile {
                 break;
             case 7:
                 int userId = this.selectedUser.getId();
-                int consentCode = prefs.getInt("userConsentCode" + userId, -1);
+                int consentCode = getUserScaleConsent(userId);
                 if (consentCode != -1) {
                     registerNewUser = false;
                 }
                 if (registerNewUser) {
                     Random randomFactory = new Random();
                     consentCode = randomFactory.nextInt(10000);
-                    this.prefs.edit().putInt("userConsentCode" + userId, consentCode).apply();
+                    storeUserScaleConsentCode(userId, consentCode);
                     registerUser(consentCode);
                     stopMachineState();
                 } else {
@@ -205,8 +205,7 @@ public class BluetoothBeurerBF105 extends BluetoothStandardWeightProfile {
                             int userIndex = value[3];
                             int userId = this.selectedUser.getId();
                             Timber.d(String.format("Created user with ID %d and Index %d", userId, userIndex));
-                            this.prefs.edit().putInt("userScaleIndex" + userId, userIndex).apply();
-                            this.prefs.edit().putInt("userIdFromUserScaleIndex" + userIndex, userId).apply();
+                            storeUserScaleIndex(userId, userIndex);
                             resumeMachineState();
                         } else {
                             Timber.e("ERROR: could not register new user");
@@ -251,7 +250,7 @@ public class BluetoothBeurerBF105 extends BluetoothStandardWeightProfile {
 
         int userIndex = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8);
         Timber.d(String.format("scale User index: %d", userIndex));
-        int userId = prefs.getInt("userIdFromUserScaleIndex" + userIndex, -1);
+        int userId = getUserIdFromScaleIndex(userIndex);
         Timber.d(String.format("user ID: %d", userId));
         setUser(userId);
         scaleMeasurement.setUserId(userId);
@@ -355,7 +354,7 @@ public class BluetoothBeurerBF105 extends BluetoothStandardWeightProfile {
 
     private String getDefaultInitials() {
         int userId = this.selectedUser.getId();
-        int userIndex = prefs.getInt("userScaleIndex" + userId, -1);
+        int userIndex = getUserScaleIndex(userId);
         return "P" + userIndex + " ";
     }
 
