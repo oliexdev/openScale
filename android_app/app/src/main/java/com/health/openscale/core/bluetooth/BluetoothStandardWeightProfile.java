@@ -58,8 +58,6 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
 
     SharedPreferences prefs;
     protected boolean registerNewUser;
-    protected boolean useExistingScaleUser;
-    protected boolean createNewAppUser;
     ScaleUser selectedUser;
 
     public BluetoothStandardWeightProfile(Context context) {
@@ -67,8 +65,6 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
         this.prefs = PreferenceManager.getDefaultSharedPreferences(context);
         this.selectedUser = OpenScale.getInstance().getSelectedScaleUser();
         this.registerNewUser = false;
-        this.useExistingScaleUser = false;
-        this.createNewAppUser = false;
     }
 
     @Override
