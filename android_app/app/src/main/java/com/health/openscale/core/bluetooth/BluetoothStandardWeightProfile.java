@@ -111,14 +111,14 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
                 break;
             case 6:
                 int userId = this.selectedUser.getId();
-                int consentCode = prefs.getInt("userConsentCode" + userId, -1);
+                int consentCode = getUserScaleConsent(userId);
                 if (consentCode != -1) {
                     registerNewUser = false;
                 }
                 if (registerNewUser) {
                     Random randomFactory = new Random();
                     consentCode = randomFactory.nextInt(10000);
-                    this.prefs.edit().putInt("userConsentCode" + userId, consentCode).apply();
+                    storeUserScaleConsentCode(userId, consentCode);
                     registerUser(consentCode);
                     stopMachineState();
                 } else {
@@ -186,8 +186,7 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
                             int userIndex = value[3];
                             int userId = this.selectedUser.getId();
                             Timber.d(String.format("Created user with ID %d and Index %d", userId, userIndex));
-                            this.prefs.edit().putInt("userScaleIndex" + userId, userIndex).apply();
-                            this.prefs.edit().putInt("userIdFromUserScaleIndex" + userIndex, userId).apply();
+                            storeUserScaleIndex(userId, userIndex);
                             resumeMachineState();
                         } else {
                             Timber.e("ERROR: could not register new user");
@@ -367,8 +366,8 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
     }
 
     protected synchronized void setUser(int userId) {
-        int userIndex = prefs.getInt("userScaleIndex" + userId, -1);
-        int consentCode = prefs.getInt("userConsentCode" + userId, -1);
+        int userIndex = getUserScaleIndex(userId);
+        int consentCode = getUserScaleConsent(userId);
         Timber.d(String.format("setting: userId %d, userIndex: %d, consent Code: %d ", userId, userIndex, consentCode));
         setUser(userIndex, consentCode);
     }
@@ -428,5 +427,26 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
         parser.setIntValue(1, FORMAT_UINT8);
         writeBytes(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_CHANGE_INCREMENT,
                 parser.getValue());
+    }
+
+    protected synchronized void storeUserScaleConsentCode(int userId, int consentCode) {
+        prefs.edit().putInt("userConsentCode" + userId, consentCode).apply();
+    }
+
+    protected synchronized int getUserScaleConsent(int userId) {
+        return prefs.getInt("userConsentCode" + userId, -1);
+    }
+
+    protected synchronized void storeUserScaleIndex(int userId, int userIndex) {
+        prefs.edit().putInt("userScaleIndex" + userId, userIndex).apply();
+        prefs.edit().putInt("userIdFromUserScaleIndex" + userIndex, userId).apply();
+    }
+
+    protected synchronized int getUserIdFromScaleIndex(int userScaleIndex) {
+        return prefs.getInt("userIdFromUserScaleIndex" + userScaleIndex, -1);
+    }
+
+    protected synchronized int getUserScaleIndex(int userId) {
+        return prefs.getInt("userScaleIndex" + userId, -1);
     }
 }
