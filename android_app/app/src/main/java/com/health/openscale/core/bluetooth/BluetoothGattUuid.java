@@ -93,6 +93,7 @@ public class BluetoothGattUuid {
     public static final UUID CHARACTERISTIC_CHANGE_INCREMENT = fromShortCode(0x2a99);
     public static final UUID CHARACTERISTIC_USER_CONTROL_POINT = fromShortCode(0x2A9F);
     public static final UUID CHARACTERISTIC_USER_AGE = fromShortCode(0x2A80);
+    public static final UUID CHARACTERISTIC_USER_DATE_OF_BIRTH = fromShortCode(0x2A85);
     public static final UUID CHARACTERISTIC_USER_GENDER = fromShortCode(0x2A8C);
     public static final UUID CHARACTERISTIC_USER_HEIGHT = fromShortCode(0x2A8E);
 
