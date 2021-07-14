@@ -117,23 +117,18 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
                     storeUserScaleConsentCode(userId, consentCode);
                     registerUser(consentCode);
                     stopMachineState();
-                } else {
-                    Timber.d("Set existing user!");
-                    setUser(userId);
                 }
                 break;
             case 7:
-                if (registerNewUser) {
-                    Timber.d("Set newly registered user!");
-                    setUser(this.selectedUser.getId());
-                    stopMachineState();
-                    break;
-                }
+                Timber.d("Select user on scale!");
+                setUser(this.selectedUser.getId());
+                stopMachineState();
+                break;
             case 8:
                 if (registerNewUser) {
                     writeUserDataToScale();
-                    break;
                 }
+                break;
             default:
                 return false;
         }
