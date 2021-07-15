@@ -72,39 +72,73 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
         return "Bluetooth Standard Weight Profile";
     }
 
+    enum SM_STEPS {
+        START,
+        READ_DEVICE_MANUFACTURER,
+        READ_DEVICE_MODEL,
+        WRITE_CURRENT_TIME,
+        SET_NOTIFY_WEIGHT_MEASUREMENT,
+        SET_NOTIFY_BODY_COMPOSITION_MEASUREMENT,
+        SET_NOTIFY_CHANGE_INCREMENT,
+        SET_INDICATION_USER_CONTROL_POINT,
+        SET_NOTIFY_BATTERY_LEVEL,
+        READ_BATTERY_LEVEL,
+        REGISTER_NEW_SCALE_USER,
+        SELECT_SCALE_USER,
+        SET_SCALE_USER_DATA,
+        REQUEST_MEASUREMENT,
+        MAX_STEP
+    }
+
     @Override
     protected boolean onNextStep(int stepNr) {
 
-        switch (stepNr) {
-            case 0:
-                // Read manufacturer and model number from the Device Information Service
+        if (stepNr > SM_STEPS.MAX_STEP.ordinal()) {
+            Timber.d( "WARNING: stepNr == " + stepNr + " outside range, must be from 0 to " + SM_STEPS.MAX_STEP);
+            stepNr = SM_STEPS.MAX_STEP.ordinal();
+        }
+        SM_STEPS step = SM_STEPS.values()[stepNr];
+        Timber.d("stepNr: " + stepNr + " " + step);
+
+        switch (step) {
+            case START:
+                break;
+            case READ_DEVICE_MANUFACTURER:
+                // Read manufacturer from the Device Information Service
                 readBytes(BluetoothGattUuid.SERVICE_DEVICE_INFORMATION, BluetoothGattUuid.CHARACTERISTIC_MANUFACTURER_NAME_STRING);
+                break;
+            case READ_DEVICE_MODEL:
+                // Read model number from the Device Information Service
                 readBytes(BluetoothGattUuid.SERVICE_DEVICE_INFORMATION, BluetoothGattUuid.CHARACTERISTIC_MODEL_NUMBER_STRING);
                 break;
-            case 1:
+            case WRITE_CURRENT_TIME:
                 writeCurrentTime();
+                break;
+            case SET_NOTIFY_WEIGHT_MEASUREMENT:
                 // Turn on notification for Weight Service
                 setNotificationOn(BluetoothGattUuid.SERVICE_WEIGHT_SCALE, BluetoothGattUuid.CHARACTERISTIC_WEIGHT_MEASUREMENT);
                 break;
-            case 2:
+            case SET_NOTIFY_BODY_COMPOSITION_MEASUREMENT:
                 // Turn on notification for Body Composition Service
                 setNotificationOn(BluetoothGattUuid.SERVICE_BODY_COMPOSITION, BluetoothGattUuid.CHARACTERISTIC_BODY_COMPOSITION_MEASUREMENT);
                 break;
-            case 3:
+            case SET_NOTIFY_CHANGE_INCREMENT:
                 // Turn on notification for User Data Service Change Increment
                 setNotificationOn(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_CHANGE_INCREMENT);
                 break;
-            case 4:
+            case SET_INDICATION_USER_CONTROL_POINT:
                 // Turn on notification for User Control Point
                 setIndicationOn(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_USER_CONTROL_POINT);
+                break;
+            case READ_BATTERY_LEVEL:
                 // read Battery Service
                 readBytes(BluetoothGattUuid.SERVICE_BATTERY_LEVEL, BluetoothGattUuid.CHARACTERISTIC_BATTERY_LEVEL);
                 break;
-            case 5:
+            case SET_NOTIFY_BATTERY_LEVEL:
                 // Turn on notifications for Battery Service
                 setNotificationOn(BluetoothGattUuid.SERVICE_BATTERY_LEVEL, BluetoothGattUuid.CHARACTERISTIC_BATTERY_LEVEL);
                 break;
-            case 6:
+            case REGISTER_NEW_SCALE_USER:
                 int userId = this.selectedUser.getId();
                 int consentCode = getUserScaleConsent(userId);
                 int userIndex = getUserScaleIndex(userId);
@@ -119,17 +153,17 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
                     stopMachineState();
                 }
                 break;
-            case 7:
+            case SELECT_SCALE_USER:
                 Timber.d("Select user on scale!");
                 setUser(this.selectedUser.getId());
                 stopMachineState();
                 break;
-            case 8:
+            case SET_SCALE_USER_DATA:
                 if (registerNewUser) {
                     writeUserDataToScale();
                 }
                 break;
-            case 9:
+            case REQUEST_MEASUREMENT:
                 requestMeasurement();
                 break;
             default:
