@@ -22,14 +22,18 @@ package com.health.openscale.core.bluetooth;
 import android.content.Context;
 
 import com.health.openscale.core.datatypes.ScaleMeasurement;
+import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
 import com.welie.blessed.BluetoothBytesParser;
 
 import java.util.Arrays;
+import java.util.GregorianCalendar;
 import java.util.UUID;
+import java.util.Vector;
 
 import timber.log.Timber;
 
+import static com.welie.blessed.BluetoothBytesParser.FORMAT_UINT16;
 import static com.welie.blessed.BluetoothBytesParser.FORMAT_UINT8;
 
 class BluetoothGattUuidBF600 extends BluetoothGattUuid {
@@ -44,10 +48,12 @@ class BluetoothGattUuidBF600 extends BluetoothGattUuid {
 public class BluetoothBeurerBF600 extends BluetoothStandardWeightProfile {
 
     ScaleMeasurement scaleMeasurement;
+    private Vector<ScaleUser> scaleUserList;
 
     public BluetoothBeurerBF600(Context context) {
         super(context);
         scaleMeasurement = new ScaleMeasurement();
+        scaleUserList = new Vector<ScaleUser>();
     }
 
     @Override
@@ -91,5 +97,65 @@ public class BluetoothBeurerBF600 extends BluetoothStandardWeightProfile {
     protected void handleBodyCompositionMeasurement(byte[] value) {
         scaleMeasurement.merge(bodyCompositionMeasurementToScaleMeasurement(value));
         addScaleMeasurement(scaleMeasurement);
+    }
+
+    @Override
+    protected void setNotifyVendorSpecificUserList() {
+        setNotificationOn(BluetoothGattUuidBF600.SERVICE_BEURER_CUSTOM_BF600,
+                BluetoothGattUuidBF600.CHARACTERISTIC_BEURER_BF600_USER_LIST);
+    }
+
+    @Override
+    protected synchronized void requestVendorSpecificUserList() {
+        BluetoothBytesParser parser = new BluetoothBytesParser();
+        parser.setIntValue(0x00, FORMAT_UINT8);
+        writeBytes(BluetoothGattUuidBF600.SERVICE_BEURER_CUSTOM_BF600, BluetoothGattUuidBF600.CHARACTERISTIC_BEURER_BF600_USER_LIST,
+                parser.getValue());
+        stopMachineState();
+    }
+
+    @Override
+    public void onBluetoothNotify(UUID characteristic, byte[] value) {
+        if (characteristic.equals(BluetoothGattUuidBF600.CHARACTERISTIC_BEURER_BF600_USER_LIST)) {
+            Timber.d(String.format("Got user data: <%s>", byteInHex(value)));
+            BluetoothBytesParser parser = new BluetoothBytesParser(value);
+            int userListStatus = parser.getIntValue(FORMAT_UINT8);
+            if (userListStatus == 2) {
+                Timber.d("scale have no users!");
+                storeUserScaleConsentCode(selectedUser.getId(), -1);
+                storeUserScaleIndex(selectedUser.getId(), -1);
+                jumpNextToStepNr(SM_STEPS.REGISTER_NEW_SCALE_USER.ordinal());
+                resumeMachineState();
+                return;
+            }
+            else if (userListStatus == 1) {
+                for (int i = 0; i < scaleUserList.size(); i++) {
+                    if (i == 0) {
+                        Timber.d("scale user list:");
+                    }
+                    Timber.d("\n" + (i + 1) + ". " + scaleUserList.get(i));
+                }
+                resumeMachineState();
+                return;
+            }
+            int index = parser.getIntValue(FORMAT_UINT8);
+            String initials = parser.getStringValue();
+            int end = 3 > initials.length() ? initials.length() : 3;
+            initials = initials.substring(0, end);
+            parser.setOffset(5);
+            int year = parser.getIntValue(FORMAT_UINT16);
+            int month = parser.getIntValue(FORMAT_UINT8);
+            int day = parser.getIntValue(FORMAT_UINT8);
+            int height = parser.getIntValue(FORMAT_UINT8);
+            int gender = parser.getIntValue(FORMAT_UINT8);
+            int activityLevel = parser.getIntValue(FORMAT_UINT8);
+            GregorianCalendar calendar = new GregorianCalendar(year, month - 1, day);
+            ScaleUser scaleUser = new ScaleUser(initials, calendar.getTime(), height, gender, activityLevel - 1);
+            scaleUser.setId(index);
+            scaleUserList.add(scaleUser);
+        }
+        else {
+            super.onBluetoothNotify(characteristic, value);
+        }
     }
 }
