@@ -506,8 +506,14 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
     }
 
     protected synchronized void storeUserScaleIndex(int userId, int userIndex) {
+        int currentUserIndex = getUserScaleIndex(userId);
+        if (currentUserIndex != -1) {
+            prefs.edit().putInt("userIdFromUserScaleIndex" + currentUserIndex, -1);
+        }
         prefs.edit().putInt("userScaleIndex" + userId, userIndex).apply();
-        prefs.edit().putInt("userIdFromUserScaleIndex" + userIndex, userId).apply();
+        if (userIndex != -1) {
+            prefs.edit().putInt("userIdFromUserScaleIndex" + userIndex, userId).apply();
+        }
     }
 
     protected synchronized int getUserIdFromScaleIndex(int userScaleIndex) {
