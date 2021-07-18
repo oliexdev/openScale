@@ -83,6 +83,8 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
         SET_INDICATION_USER_CONTROL_POINT,
         SET_NOTIFY_BATTERY_LEVEL,
         READ_BATTERY_LEVEL,
+        SET_NOTIFY_VENDOR_SPECIFIC_USER_LIST,
+        REQUEST_VENDOR_SPECIFIC_USER_LIST,
         REGISTER_NEW_SCALE_USER,
         SELECT_SCALE_USER,
         SET_SCALE_USER_DATA,
@@ -137,6 +139,12 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
             case SET_NOTIFY_BATTERY_LEVEL:
                 // Turn on notifications for Battery Service
                 setNotificationOn(BluetoothGattUuid.SERVICE_BATTERY_LEVEL, BluetoothGattUuid.CHARACTERISTIC_BATTERY_LEVEL);
+                break;
+            case SET_NOTIFY_VENDOR_SPECIFIC_USER_LIST:
+                setNotifyVendorSpecificUserList();
+                break;
+            case REQUEST_VENDOR_SPECIFIC_USER_LIST:
+                requestVendorSpecificUserList();
                 break;
             case REGISTER_NEW_SCALE_USER:
                 int userId = this.selectedUser.getId();
@@ -390,6 +398,14 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
 
     protected void handleBodyCompositionMeasurement(byte[] value) {
         addScaleMeasurement(bodyCompositionMeasurementToScaleMeasurement(value));
+    }
+
+    protected void setNotifyVendorSpecificUserList() {
+        Timber.d("Set notify vendor user list not implemented!");
+    }
+
+    protected void requestVendorSpecificUserList() {
+        Timber.d("Request vendor user list not implemented!");
     }
 
     protected void registerUser(int consentCode) {
