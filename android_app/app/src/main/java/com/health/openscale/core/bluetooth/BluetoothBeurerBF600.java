@@ -25,6 +25,7 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.utils.Converters;
 import com.welie.blessed.BluetoothBytesParser;
 
+import java.util.Arrays;
 import java.util.UUID;
 
 import timber.log.Timber;
@@ -52,6 +53,14 @@ public class BluetoothBeurerBF600 extends BluetoothStandardWeightProfile {
     @Override
     public String driverName() {
         return "Beurer BF600";
+    }
+
+    @Override
+    protected void writeBirthday() {
+        BluetoothBytesParser parser = new BluetoothBytesParser();
+        parser.setDateTime(dateToCalender(this.selectedUser.getBirthday()));
+        writeBytes(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_USER_DATE_OF_BIRTH,
+                Arrays.copyOfRange(parser.getValue(), 0, 3));
     }
 
     @Override
