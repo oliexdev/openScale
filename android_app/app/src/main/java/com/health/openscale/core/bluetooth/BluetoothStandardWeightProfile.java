@@ -173,7 +173,10 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
                 }
                 break;
             case REQUEST_MEASUREMENT:
-                requestMeasurement();
+                if (registerNewUser) {
+                    requestMeasurement();
+                    sendMessage(R.string.info_step_on_scale_for_reference, 0);
+                }
                 break;
             default:
                 return false;
