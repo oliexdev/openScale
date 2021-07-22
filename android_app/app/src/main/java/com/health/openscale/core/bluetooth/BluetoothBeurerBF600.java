@@ -20,12 +20,14 @@
 package com.health.openscale.core.bluetooth;
 
 import android.content.Context;
+import android.util.Pair;
 
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
 import com.welie.blessed.BluetoothBytesParser;
 
+import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.GregorianCalendar;
 import java.util.UUID;
@@ -49,6 +51,7 @@ public class BluetoothBeurerBF600 extends BluetoothStandardWeightProfile {
 
     ScaleMeasurement scaleMeasurement;
     private Vector<ScaleUser> scaleUserList;
+    static final int BF600_MAX_USERS = 8;
 
     public BluetoothBeurerBF600(Context context) {
         super(context);
@@ -107,6 +110,7 @@ public class BluetoothBeurerBF600 extends BluetoothStandardWeightProfile {
 
     @Override
     protected synchronized void requestVendorSpecificUserList() {
+        scaleUserList.clear();
         BluetoothBytesParser parser = new BluetoothBytesParser();
         parser.setIntValue(0x00, FORMAT_UINT8);
         writeBytes(BluetoothGattUuidBF600.SERVICE_BEURER_CUSTOM_BF600, BluetoothGattUuidBF600.CHARACTERISTIC_BEURER_BF600_USER_LIST,
@@ -135,6 +139,17 @@ public class BluetoothBeurerBF600 extends BluetoothStandardWeightProfile {
                     }
                     Timber.d("\n" + (i + 1) + ". " + scaleUserList.get(i));
                 }
+                if ((scaleUserList.size() == 0)) {
+                    storeUserScaleConsentCode(selectedUser.getId(), -1);
+                    storeUserScaleIndex(selectedUser.getId(), -1);
+                    jumpNextToStepNr(SM_STEPS.REGISTER_NEW_SCALE_USER.ordinal());
+                    resumeMachineState();
+                    return;
+                }
+                if (getUserScaleIndex(selectedUser.getId()) == -1 || getUserScaleConsent(selectedUser.getId()) == -1)  {
+                    chooseExistingScaleUser(scaleUserList);
+                    return;
+                }
                 resumeMachineState();
                 return;
             }
@@ -153,9 +168,38 @@ public class BluetoothBeurerBF600 extends BluetoothStandardWeightProfile {
             ScaleUser scaleUser = new ScaleUser(initials, calendar.getTime(), height, gender, activityLevel - 1);
             scaleUser.setId(index);
             scaleUserList.add(scaleUser);
+            if (scaleUserList.size() == BF600_MAX_USERS) {
+                chooseExistingScaleUser(scaleUserList);
+            }
         }
         else {
             super.onBluetoothNotify(characteristic, value);
         }
+    }
+
+    protected void chooseExistingScaleUser(Vector<ScaleUser> userList) {
+        final DateFormat dateFormat = DateFormat.getDateInstance();
+        int choicesCount = userList.size();
+        if (userList.size() < BF600_MAX_USERS) {
+            choicesCount = userList.size() + 1;
+        }
+        CharSequence[] choiceStrings = new String[choicesCount];
+        int indexArray[] = new int[choicesCount];
+        int selectedItem = -1;
+        for (int i = 0; i < userList.size(); ++i) {
+            ScaleUser u = userList.get(i);
+            choiceStrings[i] = "P-0" + u.getId()
+                    + " " + (u.getGender().isMale() ? "male" : "female")
+                    + " " + "height:" + u.getBodyHeight()
+                    + " birthday:" + dateFormat.format(u.getBirthday())
+                    + " " + "AL:" + (u.getActivityLevel().toInt() + 1);
+            indexArray[i] = u.getId();
+        }
+        if (userList.size() < BF600_MAX_USERS) {
+            choiceStrings[userList.size()] = "Create new user on scale.";
+            indexArray[userList.size()] = -1;
+        }
+        Pair<CharSequence[], int[]> choices = new Pair(choiceStrings, indexArray);
+        chooseScaleUserUi(choices);
     }
 }

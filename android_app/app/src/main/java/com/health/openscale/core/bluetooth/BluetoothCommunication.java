@@ -53,7 +53,9 @@ public abstract class BluetoothCommunication {
         CONNECTION_LOST,
         NO_DEVICE_FOUND,
         UNEXPECTED_ERROR,
-        SCALE_MESSAGE
+        SCALE_MESSAGE,
+        CHOOSE_SCALE_USER,
+        ENTER_SCALE_USER_CONSENT,
     }
 
     private int stepNr;
@@ -116,6 +118,20 @@ public abstract class BluetoothCommunication {
         if (callbackBtHandler != null) {
             callbackBtHandler.obtainMessage(
                     BT_STATUS.RETRIEVE_SCALE_DATA.ordinal(), scaleMeasurement).sendToTarget();
+        }
+    }
+
+    protected void chooseScaleUserUi(Object userList) {
+        if (callbackBtHandler != null) {
+            callbackBtHandler.obtainMessage(
+                    BT_STATUS.CHOOSE_SCALE_USER.ordinal(), userList).sendToTarget();
+        }
+    }
+
+    protected void enterScaleUserConsentUi(int appScaleUserId, int scaleUserIndex) {
+        if (callbackBtHandler != null) {
+            callbackBtHandler.obtainMessage(
+                    BT_STATUS.ENTER_SCALE_USER_CONSENT.ordinal(), appScaleUserId, scaleUserIndex).sendToTarget();
         }
     }
 
@@ -301,6 +317,14 @@ public abstract class BluetoothCommunication {
         }
         callbackBtHandler = null;
         disconnectHandler.removeCallbacksAndMessages(null);
+    }
+
+    public void selectScaleUserIndexForAppUserId(int appUserId, int scaleUserIndex) {
+        Timber.d("Set scale user index for app user id: Not implemented!");
+    }
+
+    public void setScaleUserConsent(int appUserId, int scaleUserConsent) {
+        Timber.d("Set scale user consent for app user id: Not implemented!");
     }
 
     /**

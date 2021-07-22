@@ -641,6 +641,24 @@ public class OpenScale {
         return true;
     }
 
+    public boolean setBluetoothDeviceUserIndex(int appUserId, int scaleUserIndex) {
+        if (btDeviceDriver == null) {
+            return false;
+        }
+
+        btDeviceDriver.selectScaleUserIndexForAppUserId(appUserId, scaleUserIndex);
+        return true;
+    }
+
+    public boolean setBluetoothDeviceUserConsent(int appUserId, int scaleUserConsent) {
+        if (btDeviceDriver == null) {
+            return false;
+        }
+
+        btDeviceDriver.setScaleUserConsent(appUserId, scaleUserConsent);
+        return true;
+    }
+
     public LiveData<List<ScaleMeasurement>> getScaleMeasurementsLiveData() {
         int selectedUserId = getSelectedScaleUserId();
 

@@ -236,8 +236,13 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
                         }
                         if (value[2] == UDS_CP_RESP_VALUE_SUCCESS) {
                             Timber.d("Success user consent");
+                            resumeMachineState();
                         } else if (value[2] == UDS_CP_RESP_USER_NOT_AUTHORIZED) {
                             Timber.e("Not authorized");
+                            enterScaleUserConsentUi(this.selectedUser.getId(), getUserScaleIndex(this.selectedUser.getId()));
+                        }
+                        else {
+                            Timber.e("UDS_CP_CONSENT: unhandled, code: " + value[2]);
                         }
                         break;
                     default:
@@ -522,5 +527,38 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
 
     protected synchronized int getUserScaleIndex(int userId) {
         return prefs.getInt("userScaleIndex" + userId, -1);
+    }
+
+    @Override
+    public void selectScaleUserIndexForAppUserId(int appUserId, int scaleUserIndex) {
+        Timber.d("Select scale user index from UI: user id: " + appUserId + ", scale user index: " + scaleUserIndex);
+        if (scaleUserIndex == -1) {
+            jumpNextToStepNr(SM_STEPS.REGISTER_NEW_SCALE_USER.ordinal());
+            resumeMachineState();
+        }
+        else {
+            storeUserScaleIndex(appUserId, scaleUserIndex);
+            if (getUserScaleConsent(appUserId) == -1) {
+                enterScaleUserConsentUi(appUserId, scaleUserIndex);
+            }
+            else {
+                jumpNextToStepNr(SM_STEPS.SELECT_SCALE_USER.ordinal());
+                resumeMachineState();
+            }
+        }
+    }
+
+    @Override
+    public void setScaleUserConsent(int appUserId, int scaleUserConsent) {
+        Timber.d("set scale user consent from UI: user id: " + appUserId + ", scale user consent: " + scaleUserConsent);
+        storeUserScaleConsentCode(appUserId, scaleUserConsent);
+        if (scaleUserConsent == -1) {
+            jumpNextToStepNr(SM_STEPS.REQUEST_VENDOR_SPECIFIC_USER_LIST.ordinal());
+            resumeMachineState();
+        }
+        else {
+            jumpNextToStepNr(SM_STEPS.SELECT_SCALE_USER.ordinal());
+            resumeMachineState();
+        }
     }
 }
