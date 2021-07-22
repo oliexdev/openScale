@@ -23,6 +23,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
@@ -206,6 +207,9 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
         else if(characteristic.equals(BluetoothGattUuid.CHARACTERISTIC_BATTERY_LEVEL)) {
             int batteryLevel = parser.getIntValue(FORMAT_UINT8);
             Timber.d(String.format("Received battery level %d%%", batteryLevel));
+            if (batteryLevel <= 10) {
+                sendMessage(R.string.info_scale_low_battery, batteryLevel);
+            }
         }
         else if(characteristic.equals(BluetoothGattUuid.CHARACTERISTIC_MANUFACTURER_NAME_STRING)) {
             String manufacturer = parser.getStringValue(0);
