@@ -679,7 +679,7 @@ public class MainActivity extends AppCompatActivity
         mBuilder.setSingleChoiceItems(choices.first, -1 , new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialoginterface, int i) {
                     Timber.d("UI selected " + i + ": " + choices.first[i] + " P-0" + choices.second[i]);
-                    OpenScale.getInstance().setBluetoothDeviceUserIndex(OpenScale.getInstance().getSelectedScaleUser().getId(), choices.second[i]);
+                    OpenScale.getInstance().setBluetoothDeviceUserIndex(OpenScale.getInstance().getSelectedScaleUser().getId(), choices.second[i], callbackBtHandler);
                     dialoginterface.dismiss();
                 }
             });
@@ -711,13 +711,13 @@ public class MainActivity extends AppCompatActivity
         mBuilder.setPositiveButton("Ok!", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialoginterface, int i) {
-                    OpenScale.getInstance().setBluetoothDeviceUserConsent(appUserId, consentCode[0]);
+                    OpenScale.getInstance().setBluetoothDeviceUserConsent(appUserId, consentCode[0], callbackBtHandler);
                     dialoginterface.dismiss();
                 }
             });
         mBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialoginterface, int i) {
-                    OpenScale.getInstance().setBluetoothDeviceUserConsent(appUserId, -1);
+                    OpenScale.getInstance().setBluetoothDeviceUserConsent(appUserId, -1, callbackBtHandler);
                     dialoginterface.dismiss();
                 }
             });

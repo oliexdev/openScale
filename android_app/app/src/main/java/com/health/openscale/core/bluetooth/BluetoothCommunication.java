@@ -18,6 +18,7 @@ package com.health.openscale.core.bluetooth;
 
 import android.Manifest;
 import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothProfile;
 import android.bluetooth.le.ScanResult;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -76,6 +77,19 @@ public abstract class BluetoothCommunication {
         this.stepNr = 0;
         this.stopped = false;
         this.central = new BluetoothCentral(context, bluetoothCentralCallback, new Handler(Looper.getMainLooper()));
+    }
+
+    protected boolean needReConnect() {
+        if (callbackBtHandler == null) {
+            return true;
+        }
+        if (btPeripheral != null) {
+            int state = btPeripheral.getState();
+            if (state == BluetoothProfile.STATE_CONNECTED || state == BluetoothProfile.STATE_CONNECTING) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -211,6 +225,10 @@ public abstract class BluetoothCommunication {
         stepNr = nr;
     }
 
+    protected synchronized int getStepNr() {
+        return stepNr;
+    }
+
     /**
      * This function jumps to the step newStepNr only if the current step equals curStepNr,
      * i.e. if the next step (stepNr) is 1 above curStepNr
@@ -319,11 +337,11 @@ public abstract class BluetoothCommunication {
         disconnectHandler.removeCallbacksAndMessages(null);
     }
 
-    public void selectScaleUserIndexForAppUserId(int appUserId, int scaleUserIndex) {
+    public void selectScaleUserIndexForAppUserId(int appUserId, int scaleUserIndex, Handler uiHandler) {
         Timber.d("Set scale user index for app user id: Not implemented!");
     }
 
-    public void setScaleUserConsent(int appUserId, int scaleUserConsent) {
+    public void setScaleUserConsent(int appUserId, int scaleUserConsent, Handler uiHandler) {
         Timber.d("Set scale user consent for app user id: Not implemented!");
     }
 
@@ -504,6 +522,20 @@ public abstract class BluetoothCommunication {
                 central.connectPeripheral(peripheral, peripheralCallback);
             }
         }, 1000);
+    }
+
+    protected boolean reConnectPreviousPeripheral(Handler uiHandler) {
+        if (btPeripheral == null) {
+            return false;
+        }
+        if (btPeripheral.getState() != BluetoothProfile.STATE_DISCONNECTED) {
+            disconnect();
+        }
+        if (callbackBtHandler == null) {
+            registerCallbackHandler(uiHandler);
+        }
+        connect(btPeripheral.getAddress());
+        return true;
     }
 
     private void resetDisconnectTimer() {

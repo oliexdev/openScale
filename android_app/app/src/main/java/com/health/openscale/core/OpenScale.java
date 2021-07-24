@@ -641,21 +641,19 @@ public class OpenScale {
         return true;
     }
 
-    public boolean setBluetoothDeviceUserIndex(int appUserId, int scaleUserIndex) {
+    public boolean setBluetoothDeviceUserIndex(int appUserId, int scaleUserIndex, Handler uiHandler) {
         if (btDeviceDriver == null) {
             return false;
         }
-
-        btDeviceDriver.selectScaleUserIndexForAppUserId(appUserId, scaleUserIndex);
+        btDeviceDriver.selectScaleUserIndexForAppUserId(appUserId, scaleUserIndex, uiHandler);
         return true;
     }
 
-    public boolean setBluetoothDeviceUserConsent(int appUserId, int scaleUserConsent) {
+    public boolean setBluetoothDeviceUserConsent(int appUserId, int scaleUserConsent, Handler uiHandler) {
         if (btDeviceDriver == null) {
             return false;
         }
-
-        btDeviceDriver.setScaleUserConsent(appUserId, scaleUserConsent);
+        btDeviceDriver.setScaleUserConsent(appUserId, scaleUserConsent, uiHandler);
         return true;
     }
 

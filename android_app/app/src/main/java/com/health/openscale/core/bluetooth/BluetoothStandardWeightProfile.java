@@ -21,6 +21,7 @@ package com.health.openscale.core.bluetooth;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 
 import com.health.openscale.R;
@@ -536,12 +537,24 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
         return prefs.getInt("userScaleIndex" + userId, -1);
     }
 
+    protected void reconnectOrSetSmState(SM_STEPS requestedState, SM_STEPS minState, Handler uiHandler) {
+        if (needReConnect()) {
+            jumpNextToStepNr(SM_STEPS.START.ordinal());
+            stopMachineState();
+            reConnectPreviousPeripheral(uiHandler);
+            return;
+        }
+        if (getStepNr() > minState.ordinal()) {
+            jumpNextToStepNr(requestedState.ordinal());
+        }
+        resumeMachineState();
+    }
+
     @Override
-    public void selectScaleUserIndexForAppUserId(int appUserId, int scaleUserIndex) {
+    public void selectScaleUserIndexForAppUserId(int appUserId, int scaleUserIndex, Handler uiHandler) {
         Timber.d("Select scale user index from UI: user id: " + appUserId + ", scale user index: " + scaleUserIndex);
         if (scaleUserIndex == -1) {
-            jumpNextToStepNr(SM_STEPS.REGISTER_NEW_SCALE_USER.ordinal());
-            resumeMachineState();
+            reconnectOrSetSmState(SM_STEPS.REGISTER_NEW_SCALE_USER, SM_STEPS.REGISTER_NEW_SCALE_USER, uiHandler);
         }
         else {
             storeUserScaleIndex(appUserId, scaleUserIndex);
@@ -549,23 +562,20 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
                 enterScaleUserConsentUi(appUserId, scaleUserIndex);
             }
             else {
-                jumpNextToStepNr(SM_STEPS.SELECT_SCALE_USER.ordinal());
-                resumeMachineState();
+                reconnectOrSetSmState(SM_STEPS.SELECT_SCALE_USER, SM_STEPS.REQUEST_VENDOR_SPECIFIC_USER_LIST, uiHandler);
             }
         }
     }
 
     @Override
-    public void setScaleUserConsent(int appUserId, int scaleUserConsent) {
+    public void setScaleUserConsent(int appUserId, int scaleUserConsent, Handler uiHandler) {
         Timber.d("set scale user consent from UI: user id: " + appUserId + ", scale user consent: " + scaleUserConsent);
         storeUserScaleConsentCode(appUserId, scaleUserConsent);
         if (scaleUserConsent == -1) {
-            jumpNextToStepNr(SM_STEPS.REQUEST_VENDOR_SPECIFIC_USER_LIST.ordinal());
-            resumeMachineState();
+            reconnectOrSetSmState(SM_STEPS.REQUEST_VENDOR_SPECIFIC_USER_LIST, SM_STEPS.REQUEST_VENDOR_SPECIFIC_USER_LIST, uiHandler);
         }
         else {
-            jumpNextToStepNr(SM_STEPS.SELECT_SCALE_USER.ordinal());
-            resumeMachineState();
+            reconnectOrSetSmState(SM_STEPS.SELECT_SCALE_USER, SM_STEPS.REQUEST_VENDOR_SPECIFIC_USER_LIST, uiHandler);
         }
     }
 }
