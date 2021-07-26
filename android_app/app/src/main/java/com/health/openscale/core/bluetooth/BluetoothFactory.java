@@ -125,8 +125,8 @@ public class BluetoothFactory {
         if (deviceName.equals("BF105")) {
             return new BluetoothBeurerBF105(context);
         }
-        if (deviceName.equals("BF600")) {
-            return new BluetoothBeurerBF600(context);
+        if (deviceName.equals("BF600") || deviceName.equals("BF850") || deviceName.equals("BF950")) {
+            return new BluetoothBeurerBF600(context, deviceName);
         }
         return null;
     }
