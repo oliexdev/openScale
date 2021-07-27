@@ -41,7 +41,6 @@ import static com.welie.blessed.BluetoothBytesParser.FORMAT_UINT16;
 import static com.welie.blessed.BluetoothBytesParser.FORMAT_UINT8;
 
 public class BluetoothStandardWeightProfile extends BluetoothCommunication {
-    protected int CURRENT_USER_CONSENT = 3289;
 
     // UDS control point codes
     protected static final byte UDS_CP_REGISTER_NEW_USER              = 0x01;
