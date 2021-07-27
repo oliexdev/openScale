@@ -224,42 +224,46 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
             Timber.d(String.format("Received modelnumber: %s", modelNumber));
         }
         else if(characteristic.equals(BluetoothGattUuid.CHARACTERISTIC_USER_CONTROL_POINT)) {
-            if(value[0]==UDS_CP_RESPONSE) {
-                switch (value[1]) {
-                    case UDS_CP_REGISTER_NEW_USER:
-                        if (value[2] == UDS_CP_RESP_VALUE_SUCCESS) {
-                            int userIndex = value[3];
-                            int userId = this.selectedUser.getId();
-                            Timber.d(String.format("Created user with ID %d and Index %d", userId, userIndex));
-                            storeUserScaleIndex(userId, userIndex);
-                            resumeMachineState();
-                        } else {
-                            Timber.e("ERROR: could not register new user");
-                        }
-                        break;
-                    case UDS_CP_CONSENT:
-                        if (registerNewUser) {
-                            resumeMachineState();
-                            break;
-                        }
-                        if (value[2] == UDS_CP_RESP_VALUE_SUCCESS) {
-                            Timber.d("Success user consent");
-                            resumeMachineState();
-                        } else if (value[2] == UDS_CP_RESP_USER_NOT_AUTHORIZED) {
-                            Timber.e("Not authorized");
-                            enterScaleUserConsentUi(this.selectedUser.getId(), getUserScaleIndex(this.selectedUser.getId()));
-                        }
-                        else {
-                            Timber.e("UDS_CP_CONSENT: unhandled, code: " + value[2]);
-                        }
-                        break;
-                    default:
-                        Timber.e("Unhandled response");
-                        break;
-                }
-            }
+            handleUserControlPointNotify(value);
         } else {
             Timber.d(String.format("Got data: <%s>", byteInHex(value)));
+        }
+    }
+
+    protected void handleUserControlPointNotify(byte[] value) {
+        if(value[0]==UDS_CP_RESPONSE) {
+            switch (value[1]) {
+                case UDS_CP_REGISTER_NEW_USER:
+                    if (value[2] == UDS_CP_RESP_VALUE_SUCCESS) {
+                        int userIndex = value[3];
+                        int userId = this.selectedUser.getId();
+                        Timber.d(String.format("Created user with ID %d and Index %d", userId, userIndex));
+                        storeUserScaleIndex(userId, userIndex);
+                        resumeMachineState();
+                    } else {
+                        Timber.e("ERROR: could not register new user");
+                    }
+                    break;
+                case UDS_CP_CONSENT:
+                    if (registerNewUser) {
+                        resumeMachineState();
+                        break;
+                    }
+                    if (value[2] == UDS_CP_RESP_VALUE_SUCCESS) {
+                        Timber.d("Success user consent");
+                        resumeMachineState();
+                    } else if (value[2] == UDS_CP_RESP_USER_NOT_AUTHORIZED) {
+                        Timber.e("Not authorized");
+                        enterScaleUserConsentUi(this.selectedUser.getId(), getUserScaleIndex(this.selectedUser.getId()));
+                    }
+                    else {
+                        Timber.e("UDS_CP_CONSENT: unhandled, code: " + value[2]);
+                    }
+                    break;
+                default:
+                    Timber.e("Unhandled response");
+                    break;
+            }
         }
     }
 
