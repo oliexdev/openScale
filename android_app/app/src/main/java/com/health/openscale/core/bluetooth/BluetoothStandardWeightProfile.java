@@ -280,12 +280,21 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
     }
 
     protected ScaleMeasurement weightMeasurementToScaleMeasurement(byte[] value) {
+        String prefix = "weightMeasurementToScaleMeasurement() ";
+        Timber.d(String.format(prefix + "value: [%s]", byteInHex(value)));
         BluetoothBytesParser parser = new BluetoothBytesParser(value);
+
         final int flags = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8);
         boolean isKg = (flags & 0x01) == 0;
         final boolean timestampPresent = (flags & 0x02) > 0;
         final boolean userIDPresent = (flags & 0x04) > 0;
         final boolean bmiAndHeightPresent = (flags & 0x08) > 0;
+        Timber.d(String.format(prefix + "flags: 0x%02x ", flags)
+                + "[" + (isKg ? "SI" : "Imperial")
+                + (timestampPresent ? ", timestamp" : "")
+                + (userIDPresent ? ", userID" : "")
+                + (bmiAndHeightPresent ? ", bmiAndHeight" : "")
+                + "], " + String.format("reserved flags: 0x%02x ", flags & 0xf0));
 
         ScaleMeasurement scaleMeasurement = new ScaleMeasurement();
 
@@ -294,23 +303,25 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
 
         // Get weight
         float weightValue = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT16) * weightMultiplier;
+        Timber.d(prefix+ "weight: " + weightValue);
         scaleMeasurement.setWeight(weightValue);
 
         if(timestampPresent) {
             Date timestamp = parser.getDateTime();
+            Timber.d(prefix + "timestamp: " + timestamp.toString());
             scaleMeasurement.setDateTime(timestamp);
         }
 
         if(userIDPresent) {
             int scaleUserIndex = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8);
             int userID = getUserIdFromScaleIndex(scaleUserIndex);
-            Timber.d(String.format("User id: %d, scale user index: %d", userID, scaleUserIndex));
+            Timber.d(String.format(prefix + "scale user index: %d (app user id: %d)", scaleUserIndex, userID));
             if (userID != -1) {
                 scaleMeasurement.setUserId(userID);
             }
 
             if (registerNewUser) {
-                Timber.d(String.format("Setting initial weight for user %s to: %s and registerNewUser to false", userID,
+                Timber.d(String.format(prefix + "Setting initial weight for user %s to: %s and registerNewUser to false", userID,
                         weightValue));
                 if (selectedUser.getId() == userID) {
                     this.selectedUser.setInitialWeight(weightValue);
@@ -322,7 +333,9 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
 
         if(bmiAndHeightPresent) {
             float BMI = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT16) * 0.1f;
+            Timber.d(prefix + "BMI: " + BMI);
             float heightInMeters = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT16) * 0.001f;
+            Timber.d(prefix + "heightInMeters: " + heightInMeters);
         }
 
         Timber.d(String.format("Got weight: %s", weightValue));
@@ -334,7 +347,10 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
     }
 
     protected ScaleMeasurement bodyCompositionMeasurementToScaleMeasurement(byte[] value) {
+        String prefix = "bodyCompositionMeasurementToScaleMeasurement() ";
+        Timber.d(String.format(prefix + "value: [%s]", byteInHex(value)));
         BluetoothBytesParser parser = new BluetoothBytesParser(value);
+
         final int flags = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT16);
         boolean isKg = (flags & 0x0001) == 0;
         float massMultiplier = (float) (isKg ? 0.005 : 0.01);
@@ -350,15 +366,32 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
         boolean weightPresent = (flags & 0x0400) > 0;
         boolean heightPresent = (flags & 0x0800) > 0;
         boolean multiPacketMeasurement = (flags & 0x1000) > 0;
+        Timber.d(String.format(prefix + "flags: 0x%02x ", flags)
+                + "[" + (isKg ? "SI" : "Imperial")
+                + (timestampPresent ? ", timestamp" : "")
+                + (userIDPresent ? ", userID" : "")
+                + (bmrPresent ? ", bmr" : "")
+                + (musclePercentagePresent ? ", musclePercentage" : "")
+                + (muscleMassPresent ? ", muscleMass" : "")
+                + (fatFreeMassPresent ? ", fatFreeMass" : "")
+                + (softLeanMassPresent ? ", softLeanMass" : "")
+                + (bodyWaterMassPresent ? ", bodyWaterMass" : "")
+                + (impedancePresent ? ", impedance" : "")
+                + (weightPresent ? ", weight" : "")
+                + (heightPresent ? ", height" : "")
+                + (multiPacketMeasurement ? ", multiPacketMeasurement" : "")
+                + "], " + String.format("reserved flags: 0x%04x ", flags & 0xe000));
 
         ScaleMeasurement scaleMeasurement = new ScaleMeasurement();
 
         float bodyFatPercentage = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT16) * 0.1f;
+        Timber.d(prefix + "bodyFatPercentage: " + bodyFatPercentage);
         scaleMeasurement.setFat(bodyFatPercentage);
 
         // Read timestamp if present
         if (timestampPresent) {
             Date timestamp = parser.getDateTime();
+            Timber.d(prefix + "timestamp: " + timestamp.toString());
             scaleMeasurement.setDateTime(timestamp);
         }
 
@@ -366,7 +399,7 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
         if (userIDPresent) {
             int scaleUserIndex = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT8);
             int userID = getUserIdFromScaleIndex(scaleUserIndex);
-            Timber.d(String.format("User id: %d, scale user index: %d", userID, scaleUserIndex));
+            Timber.d(String.format(prefix + "scale user index: %d (app user id: %d)", scaleUserIndex, userID));
             if (userID != -1) {
                 scaleMeasurement.setUserId(userID);
             }
@@ -376,49 +409,62 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
         if (bmrPresent) {
             int bmrInJoules = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT16);
             int bmrInKcal = Math.round(((bmrInJoules / 4.1868f) * 10.0f) / 10.0f);
+            Timber.d(prefix + "bmrInJoules: " + bmrInJoules + " bmrInKcal: " + bmrInKcal);
         }
 
         // Read musclePercentage if present
         if (musclePercentagePresent) {
             float musclePercentage = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT16) * 0.1f;
+            Timber.d(prefix + "musclePercentage: " + musclePercentage);
             scaleMeasurement.setMuscle(musclePercentage);
         }
 
         // Read muscleMass if present
         if (muscleMassPresent) {
             float muscleMass = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT16) * massMultiplier;
+            Timber.d(prefix + "muscleMass: " + muscleMass);
         }
 
         // Read fatFreeMassPresent if present
         if (fatFreeMassPresent) {
             float fatFreeMass = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT16) * massMultiplier;
+            Timber.d(prefix + "fatFreeMass: " + fatFreeMass);
         }
 
         // Read softleanMass if present
         if (softLeanMassPresent) {
             float softLeanMass = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT16) * massMultiplier;
+            Timber.d(prefix + "softLeanMass: " + softLeanMass);
         }
 
         // Read bodyWaterMass if present
         if (bodyWaterMassPresent) {
             float bodyWaterMass = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT16) * massMultiplier;
+            Timber.d(prefix + "bodyWaterMass: " + bodyWaterMass);
             scaleMeasurement.setWater(bodyWaterMass);
         }
 
         // Read impedance if present
         if (impedancePresent) {
             float impedance = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT16) * 0.1f;
+            Timber.d(prefix + "impedance: " + impedance);
         }
 
         // Read weight if present
         if (weightPresent) {
             float weightValue = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT16) * massMultiplier;
+            Timber.d(prefix + "weightValue: " + weightValue);
             scaleMeasurement.setWeight(weightValue);
         }
 
         // Read height if present
         if (heightPresent) {
             float heightValue = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT16);
+            Timber.d(prefix + "heightValue: " + heightValue);
+        }
+
+        if (multiPacketMeasurement) {
+            Timber.e(prefix + "multiPacketMeasurement not supported!");
         }
 
         Timber.d(String.format("Got body composition: %s", byteInHex(value)));
