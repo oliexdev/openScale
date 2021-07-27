@@ -98,7 +98,7 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
     protected boolean onNextStep(int stepNr) {
 
         if (stepNr > SM_STEPS.MAX_STEP.ordinal()) {
-            Timber.d( "WARNING: stepNr == " + stepNr + " outside range, must be from 0 to " + SM_STEPS.MAX_STEP);
+            Timber.d( "WARNING: stepNr == " + stepNr + " outside range, must be from 0 to " + SM_STEPS.MAX_STEP.ordinal());
             stepNr = SM_STEPS.MAX_STEP.ordinal();
         }
         SM_STEPS step = SM_STEPS.values()[stepNr];
