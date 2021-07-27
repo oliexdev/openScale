@@ -434,8 +434,9 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
         }
 
         // Read softleanMass if present
+        float softLeanMass = 0.0f;
         if (softLeanMassPresent) {
-            float softLeanMass = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT16) * massMultiplier;
+            softLeanMass = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT16) * massMultiplier;
             Timber.d(prefix + "softLeanMass: " + softLeanMass);
         }
 
@@ -453,10 +454,28 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
         }
 
         // Read weight if present
+        float weightValue = 0.0f;
         if (weightPresent) {
-            float weightValue = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT16) * massMultiplier;
+            weightValue = parser.getIntValue(BluetoothBytesParser.FORMAT_UINT16) * massMultiplier;
             Timber.d(prefix + "weightValue: " + weightValue);
             scaleMeasurement.setWeight(weightValue);
+        }
+        else {
+            if (previousMeasurement != null) {
+                weightValue = previousMeasurement.getWeight();
+                if (weightValue > 0) {
+                    weightPresent = true;
+                }
+            }
+        }
+
+        // calculate lean body mass and bone mass
+        if (weightPresent && softLeanMassPresent) {
+            float fatMass = weightValue * bodyFatPercentage / 100.0f;
+            float leanBodyMass = weightValue - fatMass;
+            float boneMass = leanBodyMass - softLeanMass;
+            scaleMeasurement.setLbm(leanBodyMass);
+            scaleMeasurement.setBone(boneMass);
         }
 
         // Read height if present
