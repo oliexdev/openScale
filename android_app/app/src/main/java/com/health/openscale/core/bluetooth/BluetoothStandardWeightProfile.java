@@ -225,8 +225,10 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
         }
         else if(characteristic.equals(BluetoothGattUuid.CHARACTERISTIC_USER_CONTROL_POINT)) {
             handleUserControlPointNotify(value);
-        } else {
-            Timber.d(String.format("Got data: <%s>", byteInHex(value)));
+        }
+        else {
+            Timber.d(String.format("Notification from unhandled characteristic: %s, value: [%s]",
+                    characteristic.toString(), byteInHex(value)));
         }
     }
 
