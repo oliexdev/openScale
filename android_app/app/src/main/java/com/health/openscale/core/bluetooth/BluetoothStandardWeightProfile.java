@@ -233,27 +233,32 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
     protected void handleUserControlPointNotify(byte[] value) {
         if(value[0]==UDS_CP_RESPONSE) {
             switch (value[1]) {
+                case UDS_CP_LIST_ALL_USERS:
+                    Timber.d("UDS_CP_LIST_ALL_USERS value [" + byteInHex(value) + "]");
+                    break;
                 case UDS_CP_REGISTER_NEW_USER:
                     if (value[2] == UDS_CP_RESP_VALUE_SUCCESS) {
                         int userIndex = value[3];
                         int userId = this.selectedUser.getId();
-                        Timber.d(String.format("Created user with ID %d and Index %d", userId, userIndex));
+                        Timber.d(String.format("UDS_CP_REGISTER_NEW_USER: Created scale user index: "
+                                + "%d (app user id: %d)", userIndex, userId));
                         storeUserScaleIndex(userId, userIndex);
                         resumeMachineState();
                     } else {
-                        Timber.e("ERROR: could not register new user");
+                        Timber.e("UDS_CP_REGISTER_NEW_USER: ERROR: could not register new scale user, code: " + value[2]);
                     }
                     break;
                 case UDS_CP_CONSENT:
                     if (registerNewUser) {
+                        Timber.d("UDS_CP_CONSENT: registerNewUser==true, value[2] == " + value[2]);
                         resumeMachineState();
                         break;
                     }
                     if (value[2] == UDS_CP_RESP_VALUE_SUCCESS) {
-                        Timber.d("Success user consent");
+                        Timber.d("UDS_CP_CONSENT: Success user consent");
                         resumeMachineState();
                     } else if (value[2] == UDS_CP_RESP_USER_NOT_AUTHORIZED) {
-                        Timber.e("Not authorized");
+                        Timber.e("UDS_CP_CONSENT: Not authorized");
                         enterScaleUserConsentUi(this.selectedUser.getId(), getUserScaleIndex(this.selectedUser.getId()));
                     }
                     else {
@@ -261,9 +266,14 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
                     }
                     break;
                 default:
-                    Timber.e("Unhandled response");
+                    Timber.e("CHARACTERISTIC_USER_CONTROL_POINT: Unhandled response code "
+                            + value[1] + " value [" + byteInHex(value) + "]");
                     break;
             }
+        }
+        else {
+            Timber.d("CHARACTERISTIC_USER_CONTROL_POINT: non-response code " + value[0]
+                    + " value [" + byteInHex(value) + "]");
         }
     }
 
