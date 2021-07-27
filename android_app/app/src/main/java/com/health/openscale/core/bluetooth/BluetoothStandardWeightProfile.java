@@ -61,12 +61,14 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
     SharedPreferences prefs;
     protected boolean registerNewUser;
     ScaleUser selectedUser;
+    ScaleMeasurement previousMeasurement;
 
     public BluetoothStandardWeightProfile(Context context) {
         super(context);
         this.prefs = PreferenceManager.getDefaultSharedPreferences(context);
         this.selectedUser = OpenScale.getInstance().getSelectedScaleUser();
         this.registerNewUser = false;
+        previousMeasurement = null;
     }
 
     @Override
@@ -343,7 +345,7 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
     }
 
     protected void handleWeightMeasurement(byte[] value) {
-        addScaleMeasurement(weightMeasurementToScaleMeasurement(value));
+        mergeWithPreviousScaleMeasurement(weightMeasurementToScaleMeasurement(value));
     }
 
     protected ScaleMeasurement bodyCompositionMeasurementToScaleMeasurement(byte[] value) {
@@ -472,7 +474,55 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
     }
 
     protected void handleBodyCompositionMeasurement(byte[] value) {
-        addScaleMeasurement(bodyCompositionMeasurementToScaleMeasurement(value));
+        mergeWithPreviousScaleMeasurement(bodyCompositionMeasurementToScaleMeasurement(value));
+    }
+
+    /**
+     * Bluetooth scales usually implement both "Weight Scale Feature" and "Body Composition Feature".
+     * It seems that scale first transmits weight measurement (with user index and timestamp) and
+     * later transmits body composition measurement (without user index and timestamp).
+     * If previous measurement contains user index and new measurements does not then merge them and
+     * store as one.
+     * disconnect() function must store previousMeasurement to openScale db (if present).
+     *
+     * @param newMeasurement the scale data that should be merged with previous measurement or
+     *                       stored as previous measurement.
+     */
+    protected void mergeWithPreviousScaleMeasurement(ScaleMeasurement newMeasurement) {
+        if (previousMeasurement == null) {
+            if (newMeasurement.getUserId() == -1) {
+                addScaleMeasurement(newMeasurement);
+            }
+            else {
+                previousMeasurement = newMeasurement;
+            }
+        }
+        else {
+            if ((newMeasurement.getUserId() == -1) && (previousMeasurement.getUserId() != -1)) {
+                previousMeasurement.merge(newMeasurement);
+                addScaleMeasurement(previousMeasurement);
+                previousMeasurement = null;
+            }
+            else {
+                addScaleMeasurement(previousMeasurement);
+                if (newMeasurement.getUserId() == -1) {
+                    addScaleMeasurement(newMeasurement);
+                    previousMeasurement = null;
+                }
+                else {
+                    previousMeasurement = newMeasurement;
+                }
+            }
+        }
+    }
+
+    @Override
+    public void disconnect() {
+        if (previousMeasurement != null) {
+            addScaleMeasurement(previousMeasurement);
+            previousMeasurement = null;
+        }
+        super.disconnect();
     }
 
     protected void setNotifyVendorSpecificUserList() {

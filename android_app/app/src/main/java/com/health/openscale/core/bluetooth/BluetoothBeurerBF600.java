@@ -93,17 +93,6 @@ public class BluetoothBeurerBF600 extends BluetoothStandardWeightProfile {
     }
 
     @Override
-    protected void handleWeightMeasurement(byte[] value) {
-        scaleMeasurement = weightMeasurementToScaleMeasurement(value);
-    }
-
-    @Override
-    protected void handleBodyCompositionMeasurement(byte[] value) {
-        scaleMeasurement.merge(bodyCompositionMeasurementToScaleMeasurement(value));
-        addScaleMeasurement(scaleMeasurement);
-    }
-
-    @Override
     protected void setNotifyVendorSpecificUserList() {
         setNotificationOn(BluetoothGattUuidBF600.SERVICE_BEURER_CUSTOM_BF600,
                 BluetoothGattUuidBF600.CHARACTERISTIC_BEURER_BF600_USER_LIST);
