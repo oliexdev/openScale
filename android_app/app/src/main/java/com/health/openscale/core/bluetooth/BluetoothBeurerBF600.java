@@ -58,7 +58,8 @@ public class BluetoothBeurerBF600 extends BluetoothStandardWeightProfile {
         super(context);
         scaleMeasurement = new ScaleMeasurement();
         scaleUserList = new Vector<ScaleUser>();
-        deviceName = name;    }
+        deviceName = name;
+    }
 
     @Override
     public String driverName() {
