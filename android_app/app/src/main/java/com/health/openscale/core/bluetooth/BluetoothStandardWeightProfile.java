@@ -61,6 +61,7 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
     protected boolean registerNewUser;
     ScaleUser selectedUser;
     ScaleMeasurement previousMeasurement;
+    protected boolean haveBatteryService;
 
     public BluetoothStandardWeightProfile(Context context) {
         super(context);
@@ -68,6 +69,7 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
         this.selectedUser = OpenScale.getInstance().getSelectedScaleUser();
         this.registerNewUser = false;
         previousMeasurement = null;
+        haveBatteryService = false;
     }
 
     @Override
@@ -135,13 +137,20 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
                 // Turn on notification for User Control Point
                 setIndicationOn(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_USER_CONTROL_POINT);
                 break;
-            case READ_BATTERY_LEVEL:
-                // read Battery Service
-                readBytes(BluetoothGattUuid.SERVICE_BATTERY_LEVEL, BluetoothGattUuid.CHARACTERISTIC_BATTERY_LEVEL);
-                break;
             case SET_NOTIFY_BATTERY_LEVEL:
                 // Turn on notifications for Battery Service
-                setNotificationOn(BluetoothGattUuid.SERVICE_BATTERY_LEVEL, BluetoothGattUuid.CHARACTERISTIC_BATTERY_LEVEL);
+                if (setNotificationOn(BluetoothGattUuid.SERVICE_BATTERY_LEVEL, BluetoothGattUuid.CHARACTERISTIC_BATTERY_LEVEL)) {
+                    haveBatteryService = true;
+                }
+                else {
+                    haveBatteryService = false;
+                }
+                break;
+            case READ_BATTERY_LEVEL:
+                // read Battery Service
+                if (haveBatteryService) {
+                    readBytes(BluetoothGattUuid.SERVICE_BATTERY_LEVEL, BluetoothGattUuid.CHARACTERISTIC_BATTERY_LEVEL);
+                }
                 break;
             case SET_NOTIFY_VENDOR_SPECIFIC_USER_LIST:
                 setNotifyVendorSpecificUserList();
