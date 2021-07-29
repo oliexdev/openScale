@@ -84,8 +84,13 @@ public class BluetoothBeurerBF600 extends BluetoothStandardWeightProfile {
 
     @Override
     protected void setNotifyVendorSpecificUserList() {
-        setNotificationOn(BluetoothGattUuidBF600.SERVICE_BEURER_CUSTOM_BF600,
-                BluetoothGattUuidBF600.CHARACTERISTIC_BEURER_BF600_USER_LIST);
+        if (setNotificationOn(BluetoothGattUuidBF600.SERVICE_BEURER_CUSTOM_BF600,
+                BluetoothGattUuidBF600.CHARACTERISTIC_BEURER_BF600_USER_LIST)) {
+            Timber.d("setNotifyVendorSpecificUserList() OK");
+        }
+        else {
+            Timber.d("setNotifyVendorSpecificUserList() FAILED");
+        }
     }
 
     @Override

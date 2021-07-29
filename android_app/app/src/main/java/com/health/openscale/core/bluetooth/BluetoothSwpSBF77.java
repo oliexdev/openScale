@@ -59,8 +59,13 @@ public class BluetoothSwpSBF77 extends BluetoothStandardWeightProfile {
 
     @Override
     protected void setNotifyVendorSpecificUserList() {
-        setNotificationOn(BluetoothGattUuidSBF77.SERVICE_CUSTOM_SBF77,
-                BluetoothGattUuidSBF77.CHARACTERISTIC_SBF77_USER_LIST);
+        if (setNotificationOn(BluetoothGattUuidSBF77.SERVICE_CUSTOM_SBF77,
+                BluetoothGattUuidSBF77.CHARACTERISTIC_SBF77_USER_LIST)) {
+            Timber.d("setNotifyVendorSpecificUserList() OK");
+        }
+        else {
+            Timber.d("setNotifyVendorSpecificUserList() FAILED");
+        }
     }
 
     @Override
