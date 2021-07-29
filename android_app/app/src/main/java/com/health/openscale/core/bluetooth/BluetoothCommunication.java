@@ -308,14 +308,20 @@ public abstract class BluetoothCommunication {
      * Set notification flag on for the Bluetooth device.
      *
      * @param characteristic the Bluetooth UUID characteristic
+     * @return true if the operation was enqueued, false if the characteristic doesn't support notification or indications or
      */
-    protected void setNotificationOn(UUID service, UUID characteristic) {
+    protected boolean setNotificationOn(UUID service, UUID characteristic) {
         Timber.d("Invoke set notification on " + BluetoothGattUuid.prettyPrint(characteristic));
         if(btPeripheral.getService(service) != null) {
-            stopMachineState();
             BluetoothGattCharacteristic currentTimeCharacteristic = btPeripheral.getCharacteristic(service, characteristic);
-            btPeripheral.setNotify(currentTimeCharacteristic, true);
+            if (currentTimeCharacteristic != null) {
+                if (btPeripheral.setNotify(currentTimeCharacteristic, true)) {
+                    stopMachineState();
+                    return true;
+                }
+            }
         }
+        return false;
     }
 
     /**
