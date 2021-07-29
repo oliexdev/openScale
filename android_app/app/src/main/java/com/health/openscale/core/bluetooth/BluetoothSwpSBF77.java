@@ -125,6 +125,11 @@ public class BluetoothSwpSBF77 extends BluetoothStandardWeightProfile {
             String initials = parser.getStringValue();
             int end = 3 > initials.length() ? initials.length() : 3;
             initials = initials.substring(0, end);
+            if (initials.length() == 3) {
+                if (initials.charAt(0) == 0xff && initials.charAt(1) == 0xff && initials.charAt(2) == 0xff) {
+                    initials = "";
+                }
+            }
             parser.setOffset(5);
             int year = parser.getIntValue(FORMAT_UINT16);
             int month = parser.getIntValue(FORMAT_UINT8);
@@ -156,7 +161,8 @@ public class BluetoothSwpSBF77 extends BluetoothStandardWeightProfile {
         int selectedItem = -1;
         for (int i = 0; i < userList.size(); ++i) {
             ScaleUser u = userList.get(i);
-            choiceStrings[i] = "P-0" + u.getId()
+            String name = u.getUserName();
+            choiceStrings[i] = (name.length() > 0 ? name : String.format("P%02d", u.getId()))
                     + " " + (u.getGender().isMale() ? "male" : "female")
                     + " " + "height:" + u.getBodyHeight()
                     + " birthday:" + dateFormat.format(u.getBirthday())
