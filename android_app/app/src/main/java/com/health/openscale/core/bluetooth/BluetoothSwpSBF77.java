@@ -48,16 +48,18 @@ public class BluetoothSwpSBF77 extends BluetoothStandardWeightProfile {
     ScaleMeasurement scaleMeasurement;
     private Vector<ScaleUser> scaleUserList;
     static final int SBF77_MAX_USERS = 8;
+    String deviceName;
 
-    public BluetoothSwpSBF77(Context context) {
+    public BluetoothSwpSBF77(Context context, String name) {
         super(context);
         scaleMeasurement = new ScaleMeasurement();
         scaleUserList = new Vector<ScaleUser>();
+        deviceName = name;
     }
 
     @Override
     public String driverName() {
-        return "SBF77";
+        return deviceName;
     }
 
     @Override
