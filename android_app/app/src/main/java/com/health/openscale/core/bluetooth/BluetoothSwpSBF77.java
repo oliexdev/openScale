@@ -20,6 +20,7 @@
 package com.health.openscale.core.bluetooth;
 
 import android.content.Context;
+
 import com.health.openscale.core.utils.Converters;
 import com.welie.blessed.BluetoothBytesParser;
 
