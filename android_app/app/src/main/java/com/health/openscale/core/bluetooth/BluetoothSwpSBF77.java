@@ -33,6 +33,7 @@ import static com.welie.blessed.BluetoothBytesParser.FORMAT_UINT8;
 class BluetoothGattUuidSBF77 extends BluetoothGattUuid {
     public static final UUID SERVICE_CUSTOM_SBF77 = fromShortCode(0xffff);
     public static final UUID CHARACTERISTIC_SBF77_USER_LIST = fromShortCode(0x0001);
+    public static final UUID CHARACTERISTIC_SBF77_INITIALS = fromShortCode(0x0002);
 }
 
 public class BluetoothSwpSBF77 extends BluetoothStandardWeightProfile {
