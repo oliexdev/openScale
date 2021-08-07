@@ -36,6 +36,7 @@ class BluetoothGattUuidSBF77 extends BluetoothGattUuid {
     public static final UUID CHARACTERISTIC_SBF77_USER_LIST = fromShortCode(0x0001);
     public static final UUID CHARACTERISTIC_SBF77_INITIALS = fromShortCode(0x0002);
     public static final UUID CHARACTERISTIC_SBF77_ACTIVITY_LEVEL = fromShortCode(0x0004);
+    public static final UUID CHARACTERISTIC_SBF77_TAKE_MEASUREMENT = fromShortCode(0x0006);
 }
 
 public class BluetoothSwpSBF77 extends BluetoothStandardWeightProfile {
@@ -68,6 +69,15 @@ public class BluetoothSwpSBF77 extends BluetoothStandardWeightProfile {
         Timber.d(String.format("setCurrentUserData Activity level: %d", al.toInt() + 1));
         writeBytes(BluetoothGattUuidSBF77.SERVICE_CUSTOM_SBF77,
                 BluetoothGattUuidSBF77.CHARACTERISTIC_SBF77_ACTIVITY_LEVEL, parser.getValue());
+    }
+
+    @Override
+    protected void requestMeasurement() {
+        BluetoothBytesParser parser = new BluetoothBytesParser(new byte[]{0});
+        parser.setIntValue(0x00, FORMAT_UINT8, 0);
+        Timber.d(String.format("requestMeasurement 0x0006 magic: 0x00"));
+        writeBytes(BluetoothGattUuidSBF77.SERVICE_CUSTOM_SBF77,
+                BluetoothGattUuidSBF77.CHARACTERISTIC_SBF77_TAKE_MEASUREMENT, parser.getValue());
     }
 
     @Override
