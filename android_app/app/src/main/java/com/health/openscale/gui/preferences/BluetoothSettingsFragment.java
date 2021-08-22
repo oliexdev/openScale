@@ -57,8 +57,8 @@ import com.health.openscale.core.bluetooth.BluetoothCommunication;
 import com.health.openscale.core.bluetooth.BluetoothFactory;
 import com.health.openscale.gui.utils.ColorUtil;
 import com.health.openscale.gui.utils.PermissionHelper;
-import com.welie.blessed.BluetoothCentral;
-import com.welie.blessed.BluetoothCentralCallback;
+import com.welie.blessed.BluetoothCentralManager;
+import com.welie.blessed.BluetoothCentralManagerCallback;
 import com.welie.blessed.BluetoothPeripheral;
 
 import java.util.HashMap;
@@ -76,7 +76,7 @@ public class BluetoothSettingsFragment extends Fragment {
     private TextView txtSearching;
     private ProgressBar progressBar;
     private Handler progressHandler;
-    private BluetoothCentral central;
+    private BluetoothCentralManager central;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -123,7 +123,7 @@ public class BluetoothSettingsFragment extends Fragment {
         return formatDeviceName(device.getName(), device.getAddress());
     }
 
-    private final BluetoothCentralCallback bluetoothCentralCallback = new BluetoothCentralCallback() {
+    private final BluetoothCentralManagerCallback bluetoothCentralCallback = new BluetoothCentralManagerCallback() {
         @Override
         public void onDiscoveredPeripheral(BluetoothPeripheral peripheral, ScanResult scanResult) {
             new Handler().post(new Runnable() {
@@ -139,7 +139,7 @@ public class BluetoothSettingsFragment extends Fragment {
         deviceListView.removeAllViews();
         foundDevices.clear();
 
-        central = new BluetoothCentral(requireContext(), bluetoothCentralCallback, new Handler(Looper.getMainLooper()));
+        central = new BluetoothCentralManager(requireContext(), bluetoothCentralCallback, new Handler(Looper.getMainLooper()));
         central.scanForPeripherals();
 
         txtSearching.setVisibility(View.VISIBLE);
