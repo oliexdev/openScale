@@ -19,6 +19,8 @@
  */
 package com.health.openscale.core.bluetooth;
 
+import static com.welie.blessed.BluetoothBytesParser.FORMAT_UINT8;
+
 import android.content.Context;
 
 import com.health.openscale.core.utils.Converters;
@@ -29,21 +31,15 @@ import java.util.UUID;
 
 import timber.log.Timber;
 
-import static com.welie.blessed.BluetoothBytesParser.FORMAT_UINT16;
-import static com.welie.blessed.BluetoothBytesParser.FORMAT_UINT8;
-
-class BluetoothGattUuidBF600 extends BluetoothGattUuid {
-    public static final UUID SERVICE_BEURER_CUSTOM_BF600 = fromShortCode(0xfff0);
-    public static final UUID CHARACTERISTIC_BEURER_BF600_SCALE_SETTING = fromShortCode(0xfff1);
-    public static final UUID CHARACTERISTIC_BEURER_BF600_USER_LIST = fromShortCode(0xfff2);
-    public static final UUID CHARACTERISTIC_BEURER_BF600_ACTIVITY_LEVEL = fromShortCode(0xfff3);
-    public static final UUID CHARACTERISTIC_BEURER_BF600_TAKE_MEASUREMENT = fromShortCode(0xfff4);
-    public static final UUID CHARACTERISTIC_BEURER_BF600_REFER_WEIGHT_BF = fromShortCode(0xfff5);
-}
-
 public class BluetoothBeurerBF600 extends BluetoothStandardWeightProfile {
+    private static final UUID SERVICE_BEURER_CUSTOM_BF600 = BluetoothGattUuid.fromShortCode(0xfff0);
+    private static final UUID CHARACTERISTIC_BEURER_BF600_SCALE_SETTING = BluetoothGattUuid.fromShortCode(0xfff1);
+    private static final UUID CHARACTERISTIC_BEURER_BF600_USER_LIST = BluetoothGattUuid.fromShortCode(0xfff2);
+    private static final UUID CHARACTERISTIC_BEURER_BF600_ACTIVITY_LEVEL = BluetoothGattUuid.fromShortCode(0xfff3);
+    private static final UUID CHARACTERISTIC_BEURER_BF600_TAKE_MEASUREMENT = BluetoothGattUuid.fromShortCode(0xfff4);
+    private static final UUID CHARACTERISTIC_BEURER_BF600_REFER_WEIGHT_BF = BluetoothGattUuid.fromShortCode(0xfff5);
 
-    String deviceName;
+    private String deviceName;
 
     public BluetoothBeurerBF600(Context context, String name) {
         super(context);
@@ -69,8 +65,8 @@ public class BluetoothBeurerBF600 extends BluetoothStandardWeightProfile {
         BluetoothBytesParser parser = new BluetoothBytesParser(new byte[]{0});
         parser.setIntValue(al.toInt() + 1, FORMAT_UINT8, 0);
         Timber.d(String.format("setCurrentUserData Activity level: %d", al.toInt() + 1));
-        writeBytes(BluetoothGattUuidBF600.SERVICE_BEURER_CUSTOM_BF600,
-                BluetoothGattUuidBF600.CHARACTERISTIC_BEURER_BF600_ACTIVITY_LEVEL, parser.getValue());
+        writeBytes(SERVICE_BEURER_CUSTOM_BF600,
+                CHARACTERISTIC_BEURER_BF600_ACTIVITY_LEVEL, parser.getValue());
     }
 
     @Override
@@ -78,14 +74,14 @@ public class BluetoothBeurerBF600 extends BluetoothStandardWeightProfile {
         BluetoothBytesParser parser = new BluetoothBytesParser(new byte[]{0});
         parser.setIntValue(0x00, FORMAT_UINT8, 0);
         Timber.d(String.format("requestMeasurement BEURER 0xFFF4 magic: 0x00"));
-        writeBytes(BluetoothGattUuidBF600.SERVICE_BEURER_CUSTOM_BF600,
-                BluetoothGattUuidBF600.CHARACTERISTIC_BEURER_BF600_TAKE_MEASUREMENT, parser.getValue());
+        writeBytes(SERVICE_BEURER_CUSTOM_BF600,
+                CHARACTERISTIC_BEURER_BF600_TAKE_MEASUREMENT, parser.getValue());
     }
 
     @Override
     protected void setNotifyVendorSpecificUserList() {
-        if (setNotificationOn(BluetoothGattUuidBF600.SERVICE_BEURER_CUSTOM_BF600,
-                BluetoothGattUuidBF600.CHARACTERISTIC_BEURER_BF600_USER_LIST)) {
+        if (setNotificationOn(SERVICE_BEURER_CUSTOM_BF600,
+                CHARACTERISTIC_BEURER_BF600_USER_LIST)) {
             Timber.d("setNotifyVendorSpecificUserList() OK");
         }
         else {
@@ -97,14 +93,14 @@ public class BluetoothBeurerBF600 extends BluetoothStandardWeightProfile {
     protected synchronized void requestVendorSpecificUserList() {
         BluetoothBytesParser parser = new BluetoothBytesParser();
         parser.setIntValue(0x00, FORMAT_UINT8);
-        writeBytes(BluetoothGattUuidBF600.SERVICE_BEURER_CUSTOM_BF600, BluetoothGattUuidBF600.CHARACTERISTIC_BEURER_BF600_USER_LIST,
+        writeBytes(SERVICE_BEURER_CUSTOM_BF600, CHARACTERISTIC_BEURER_BF600_USER_LIST,
                 parser.getValue());
         stopMachineState();
     }
 
     @Override
     public void onBluetoothNotify(UUID characteristic, byte[] value) {
-        if (characteristic.equals(BluetoothGattUuidBF600.CHARACTERISTIC_BEURER_BF600_USER_LIST)) {
+        if (characteristic.equals(CHARACTERISTIC_BEURER_BF600_USER_LIST)) {
             handleVendorSpecificUserList(value);
         }
         else {

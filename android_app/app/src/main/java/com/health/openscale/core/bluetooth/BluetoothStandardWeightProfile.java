@@ -85,7 +85,7 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
         return "Bluetooth Standard Weight Profile";
     }
 
-    enum SM_STEPS {
+    private enum SM_STEPS {
         START,
         READ_DEVICE_MANUFACTURER,
         READ_DEVICE_MODEL,

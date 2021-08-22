@@ -39,6 +39,24 @@ import java.util.UUID;
 import timber.log.Timber;
 
 public class BluetoothBeurerBF105 extends BluetoothStandardWeightProfile {
+    private static final UUID SERVICE_BF105_CUSTOM = BluetoothGattUuid.fromShortCode(0xffff);
+    private static final UUID SERVICE_BF105_IMG = BluetoothGattUuid.fromShortCode(0xffc0);
+
+    private static final UUID CHARACTERISTIC_SCALE_SETTINGS = BluetoothGattUuid.fromShortCode(0x0000);
+    private static final UUID CHARACTERISTIC_USER_LIST = BluetoothGattUuid.fromShortCode(0x0001);
+    private static final UUID CHARACTERISTIC_INITIALS = BluetoothGattUuid.fromShortCode(0x0002);
+    private static final UUID CHARACTERISTIC_TARGET_WEIGHT = BluetoothGattUuid.fromShortCode(0x0003);
+    private static final UUID CHARACTERISTIC_ACTIVITY_LEVEL = BluetoothGattUuid.fromShortCode(0x0004);
+    private static final UUID CHARACTERISTIC_REFER_WEIGHT_BF = BluetoothGattUuid.fromShortCode(0x000b);
+    private static final UUID CHARACTERISTIC_BT_MODULE = BluetoothGattUuid.fromShortCode(0x0005);
+    private static final UUID CHARACTERISTIC_TAKE_MEASUREMENT = BluetoothGattUuid.fromShortCode(0x0006);
+    private static final UUID CHARACTERISTIC_TAKE_GUEST_MEASUREMENT = BluetoothGattUuid.fromShortCode(0x0007);
+    private static final UUID CHARACTERISTIC_BEURER_I = BluetoothGattUuid.fromShortCode(0x0008);
+    private static final UUID CHARACTERISTIC_UPPER_LOWER_BODY = CHARACTERISTIC_BEURER_I;
+    private static final UUID CHARACTERISTIC_BEURER_II = BluetoothGattUuid.fromShortCode(0x0009);
+    private static final UUID CHARACTERISTIC_BEURER_III = BluetoothGattUuid.fromShortCode(0x000a);
+    private static final UUID CHARACTERISTIC_IMG_IDENTIFY = BluetoothGattUuid.fromShortCode(0xffc1);
+    private static final UUID CHARACTERISTIC_IMG_BLOCK = BluetoothGattUuid.fromShortCode(0xffc2);
 
     private ScaleMeasurement scaleMeasurement;
     private ScaleUser scaleUserList[];
@@ -89,8 +107,8 @@ public class BluetoothBeurerBF105 extends BluetoothStandardWeightProfile {
                 readBytes(BluetoothGattUuid.SERVICE_BATTERY_LEVEL, BluetoothGattUuid.CHARACTERISTIC_BATTERY_LEVEL);
                 break;
             case 5:
-                setNotificationOn(BluetoothGattUuidBF105.SERVICE_BF105_CUSTOM,
-                        BluetoothGattUuidBF105.CHARACTERISTIC_USER_LIST);
+                setNotificationOn(SERVICE_BF105_CUSTOM,
+                        CHARACTERISTIC_USER_LIST);
                 break;
             case 6:
                 requestUserList();
@@ -152,7 +170,7 @@ public class BluetoothBeurerBF105 extends BluetoothStandardWeightProfile {
         if (characteristic.equals(BluetoothGattUuid.CHARACTERISTIC_CURRENT_TIME)) {
             Date currentTime = parser.getDateTime();
             Timber.d(String.format("Received device time: %s", currentTime));
-        } else if (characteristic.equals(BluetoothGattUuidBF105.CHARACTERISTIC_USER_LIST)) {
+        } else if (characteristic.equals(CHARACTERISTIC_USER_LIST)) {
             Timber.d(String.format("Got user data: <%s>", byteInHex(value)));
             if (parser.getIntValue(FORMAT_UINT8) == 1) {
                 for (int i = 0; i < 10; i++) {
@@ -317,7 +335,7 @@ public class BluetoothBeurerBF105 extends BluetoothStandardWeightProfile {
     private synchronized void requestUserList() {
         BluetoothBytesParser parser = new BluetoothBytesParser();
         parser.setIntValue(1, FORMAT_UINT8);
-        writeBytes(BluetoothGattUuidBF105.SERVICE_BF105_CUSTOM, BluetoothGattUuidBF105.CHARACTERISTIC_USER_LIST,
+        writeBytes(SERVICE_BF105_CUSTOM, CHARACTERISTIC_USER_LIST,
                 parser.getValue());
     }
 
@@ -327,7 +345,7 @@ public class BluetoothBeurerBF105 extends BluetoothStandardWeightProfile {
         int activityLevel = this.selectedUser.getActivityLevel().toInt() + 1;
         Timber.d(String.format("activityLevel: %d", activityLevel));
         parser.setIntValue(activityLevel, FORMAT_UINT8);
-        writeBytes(BluetoothGattUuidBF105.SERVICE_BF105_CUSTOM, BluetoothGattUuidBF105.CHARACTERISTIC_ACTIVITY_LEVEL,
+        writeBytes(SERVICE_BF105_CUSTOM, CHARACTERISTIC_ACTIVITY_LEVEL,
                 parser.getValue());
     }
 
@@ -335,7 +353,7 @@ public class BluetoothBeurerBF105 extends BluetoothStandardWeightProfile {
         BluetoothBytesParser parser = new BluetoothBytesParser();
         int targetWeight = (int) this.selectedUser.getGoalWeight();
         parser.setIntValue(targetWeight, FORMAT_UINT16);
-        writeBytes(BluetoothGattUuidBF105.SERVICE_BF105_CUSTOM, BluetoothGattUuidBF105.CHARACTERISTIC_TARGET_WEIGHT,
+        writeBytes(SERVICE_BF105_CUSTOM, CHARACTERISTIC_TARGET_WEIGHT,
                 parser.getValue());
     }
 
@@ -344,7 +362,7 @@ public class BluetoothBeurerBF105 extends BluetoothStandardWeightProfile {
         String initials = getInitials(this.selectedUser.getUserName());
         Timber.d("Initials: " + initials);
         parser.setString(initials);
-        writeBytes(BluetoothGattUuidBF105.SERVICE_BF105_CUSTOM, BluetoothGattUuidBF105.CHARACTERISTIC_INITIALS,
+        writeBytes(SERVICE_BF105_CUSTOM, CHARACTERISTIC_INITIALS,
                 parser.getValue());
     }
 
@@ -378,7 +396,7 @@ public class BluetoothBeurerBF105 extends BluetoothStandardWeightProfile {
     protected synchronized void requestMeasurement() {
         BluetoothBytesParser parser = new BluetoothBytesParser();
         parser.setIntValue(0, FORMAT_UINT8);
-        writeBytes(BluetoothGattUuidBF105.SERVICE_BF105_CUSTOM, BluetoothGattUuidBF105.CHARACTERISTIC_TAKE_MEASUREMENT,
+        writeBytes(SERVICE_BF105_CUSTOM, CHARACTERISTIC_TAKE_MEASUREMENT,
                 parser.getValue());
     }
 }

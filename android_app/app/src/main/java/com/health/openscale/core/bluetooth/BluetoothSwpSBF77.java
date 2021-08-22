@@ -19,6 +19,8 @@
  */
 package com.health.openscale.core.bluetooth;
 
+import static com.welie.blessed.BluetoothBytesParser.FORMAT_UINT8;
+
 import android.content.Context;
 
 import com.health.openscale.core.utils.Converters;
@@ -29,20 +31,14 @@ import java.util.UUID;
 
 import timber.log.Timber;
 
-import static com.welie.blessed.BluetoothBytesParser.FORMAT_UINT16;
-import static com.welie.blessed.BluetoothBytesParser.FORMAT_UINT8;
-
-class BluetoothGattUuidSBF77 extends BluetoothGattUuid {
-    public static final UUID SERVICE_CUSTOM_SBF77 = fromShortCode(0xffff);
-    public static final UUID CHARACTERISTIC_SBF77_USER_LIST = fromShortCode(0x0001);
-    public static final UUID CHARACTERISTIC_SBF77_INITIALS = fromShortCode(0x0002);
-    public static final UUID CHARACTERISTIC_SBF77_ACTIVITY_LEVEL = fromShortCode(0x0004);
-    public static final UUID CHARACTERISTIC_SBF77_TAKE_MEASUREMENT = fromShortCode(0x0006);
-}
-
 public class BluetoothSwpSBF77 extends BluetoothStandardWeightProfile {
+    private static final UUID SERVICE_CUSTOM_SBF77 = BluetoothGattUuid.fromShortCode(0xffff);
+    private static final UUID CHARACTERISTIC_SBF77_USER_LIST = BluetoothGattUuid.fromShortCode(0x0001);
+    private static final UUID CHARACTERISTIC_SBF77_INITIALS = BluetoothGattUuid.fromShortCode(0x0002);
+    private static final UUID CHARACTERISTIC_SBF77_ACTIVITY_LEVEL = BluetoothGattUuid.fromShortCode(0x0004);
+    private static final UUID CHARACTERISTIC_SBF77_TAKE_MEASUREMENT = BluetoothGattUuid.fromShortCode(0x0006);
 
-    String deviceName;
+    private String deviceName;
 
     public BluetoothSwpSBF77(Context context, String name) {
         super(context);
@@ -68,8 +64,8 @@ public class BluetoothSwpSBF77 extends BluetoothStandardWeightProfile {
         BluetoothBytesParser parser = new BluetoothBytesParser(new byte[]{0});
         parser.setIntValue(al.toInt() + 1, FORMAT_UINT8, 0);
         Timber.d(String.format("setCurrentUserData Activity level: %d", al.toInt() + 1));
-        writeBytes(BluetoothGattUuidSBF77.SERVICE_CUSTOM_SBF77,
-                BluetoothGattUuidSBF77.CHARACTERISTIC_SBF77_ACTIVITY_LEVEL, parser.getValue());
+        writeBytes(SERVICE_CUSTOM_SBF77,
+                CHARACTERISTIC_SBF77_ACTIVITY_LEVEL, parser.getValue());
     }
 
     @Override
@@ -77,14 +73,14 @@ public class BluetoothSwpSBF77 extends BluetoothStandardWeightProfile {
         BluetoothBytesParser parser = new BluetoothBytesParser(new byte[]{0});
         parser.setIntValue(0x00, FORMAT_UINT8, 0);
         Timber.d(String.format("requestMeasurement 0x0006 magic: 0x00"));
-        writeBytes(BluetoothGattUuidSBF77.SERVICE_CUSTOM_SBF77,
-                BluetoothGattUuidSBF77.CHARACTERISTIC_SBF77_TAKE_MEASUREMENT, parser.getValue());
+        writeBytes(SERVICE_CUSTOM_SBF77,
+                CHARACTERISTIC_SBF77_TAKE_MEASUREMENT, parser.getValue());
     }
 
     @Override
     protected void setNotifyVendorSpecificUserList() {
-        if (setNotificationOn(BluetoothGattUuidSBF77.SERVICE_CUSTOM_SBF77,
-                BluetoothGattUuidSBF77.CHARACTERISTIC_SBF77_USER_LIST)) {
+        if (setNotificationOn(SERVICE_CUSTOM_SBF77,
+                CHARACTERISTIC_SBF77_USER_LIST)) {
             Timber.d("setNotifyVendorSpecificUserList() OK");
         }
         else {
@@ -96,14 +92,14 @@ public class BluetoothSwpSBF77 extends BluetoothStandardWeightProfile {
     protected synchronized void requestVendorSpecificUserList() {
         BluetoothBytesParser parser = new BluetoothBytesParser();
         parser.setIntValue(0x00, FORMAT_UINT8);
-        writeBytes(BluetoothGattUuidSBF77.SERVICE_CUSTOM_SBF77, BluetoothGattUuidSBF77.CHARACTERISTIC_SBF77_USER_LIST,
+        writeBytes(SERVICE_CUSTOM_SBF77, CHARACTERISTIC_SBF77_USER_LIST,
                 parser.getValue());
         stopMachineState();
     }
 
     @Override
     public void onBluetoothNotify(UUID characteristic, byte[] value) {
-        if (characteristic.equals(BluetoothGattUuidSBF77.CHARACTERISTIC_SBF77_USER_LIST)) {
+        if (characteristic.equals(CHARACTERISTIC_SBF77_USER_LIST)) {
             handleVendorSpecificUserList(value);
         }
         else {
