@@ -43,12 +43,11 @@ import android.util.Pair;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TextSwitcher;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -78,13 +77,10 @@ import com.health.openscale.gui.preferences.UserSettingsFragment;
 import com.health.openscale.gui.slides.AppIntroActivity;
 
 import java.io.File;
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
-import java.util.Vector;
 
 import cat.ereza.customactivityoncrash.config.CaocConfig;
 import timber.log.Timber;
@@ -675,7 +671,7 @@ public class MainActivity extends AppCompatActivity
         AlertDialog.Builder mBuilder = new AlertDialog.Builder(MainActivity.this);
         Pair<CharSequence[], int[]> choices = (Pair<CharSequence[], int[]>)msg.obj;
 
-        mBuilder.setTitle("Select scale user");
+        mBuilder.setTitle(getResources().getString(R.string.info_select_scale_user));
         mBuilder.setSingleChoiceItems(choices.first, -1 , new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialoginterface, int i) {
                     Timber.d("UI selected " + i + ": " + choices.first[i] + " P-0" + choices.second[i]);
@@ -683,7 +679,7 @@ public class MainActivity extends AppCompatActivity
                     dialoginterface.dismiss();
                 }
             });
-        mBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        mBuilder.setNegativeButton(getResources().getString(R.string.label_cancel), new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialoginterface, int i) {
                     dialoginterface.dismiss();
                 }
@@ -699,7 +695,7 @@ public class MainActivity extends AppCompatActivity
         final int[] consentCode = {-1};
 
         AlertDialog.Builder mBuilder = new AlertDialog.Builder(MainActivity.this);
-        mBuilder.setTitle("Enter scale user " + scaleUserIndex + " PIN/consent code:");
+        mBuilder.setTitle(getResources().getString(R.string.info_enter_consent_code_for_scale_user, Integer.toString(scaleUserIndex)));
 
         final EditText input = new EditText(this);
         input.setInputType(InputType.TYPE_CLASS_NUMBER);
@@ -708,14 +704,14 @@ public class MainActivity extends AppCompatActivity
         input.setFilters(filterArray);
         mBuilder.setView(input);
 
-        mBuilder.setPositiveButton("Ok!", new DialogInterface.OnClickListener() {
+        mBuilder.setPositiveButton(getResources().getString(R.string.label_ok), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialoginterface, int i) {
                     OpenScale.getInstance().setBluetoothDeviceUserConsent(appUserId, consentCode[0], callbackBtHandler);
                     dialoginterface.dismiss();
                 }
             });
-        mBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        mBuilder.setNegativeButton(getResources().getString(R.string.label_cancel), new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialoginterface, int i) {
                     OpenScale.getInstance().setBluetoothDeviceUserConsent(appUserId, -1, callbackBtHandler);
                     dialoginterface.dismiss();
