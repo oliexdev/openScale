@@ -19,6 +19,9 @@
  */
 package com.health.openscale.core.bluetooth;
 
+import static com.welie.blessed.BluetoothBytesParser.FORMAT_UINT16;
+import static com.welie.blessed.BluetoothBytesParser.FORMAT_UINT8;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Handler;
@@ -29,20 +32,18 @@ import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
+import com.health.openscale.core.utils.Converters;
 import com.welie.blessed.BluetoothBytesParser;
 
 import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.UUID;
 import java.util.Random;
+import java.util.UUID;
 import java.util.Vector;
 
 import timber.log.Timber;
-
-import static com.welie.blessed.BluetoothBytesParser.FORMAT_UINT16;
-import static com.welie.blessed.BluetoothBytesParser.FORMAT_UINT8;
 
 public class BluetoothStandardWeightProfile extends BluetoothCommunication {
 
@@ -776,7 +777,12 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
             int gender = parser.getIntValue(FORMAT_UINT8);
             int activityLevel = parser.getIntValue(FORMAT_UINT8);
             GregorianCalendar calendar = new GregorianCalendar(year, month - 1, day);
-            ScaleUser scaleUser = new ScaleUser(initials, calendar.getTime(), height, gender, activityLevel - 1);
+            ScaleUser scaleUser = new ScaleUser();
+            scaleUser.setUserName(initials);
+            scaleUser.setBirthday(calendar.getTime());
+            scaleUser.setBodyHeight(height);
+            scaleUser.setGender(Converters.Gender.fromInt(gender));
+            scaleUser.setActivityLevel(Converters.ActivityLevel.fromInt(activityLevel - 1));
             scaleUser.setId(index);
             scaleUserList.add(scaleUser);
             if (scaleUserList.size() == VENDOR_SPECIFIC_MAX_USERS) {
