@@ -36,6 +36,7 @@ import com.health.openscale.core.utils.Converters;
 import com.welie.blessed.BluetoothBytesParser;
 
 import java.text.DateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -616,7 +617,7 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
         BluetoothBytesParser parser = new BluetoothBytesParser();
         parser.setDateTime(dateToCalender(this.selectedUser.getBirthday()));
         writeBytes(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_USER_DATE_OF_BIRTH,
-                parser.getValue());
+                Arrays.copyOfRange(parser.getValue(), 0, 3));
     }
 
     protected Calendar dateToCalender(Date date) {
