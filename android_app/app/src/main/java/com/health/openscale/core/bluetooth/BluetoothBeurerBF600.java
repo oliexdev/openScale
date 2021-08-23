@@ -37,6 +37,7 @@ public class BluetoothBeurerBF600 extends BluetoothStandardWeightProfile {
     private static final UUID CHARACTERISTIC_BEURER_BF600_ACTIVITY_LEVEL = BluetoothGattUuid.fromShortCode(0xfff3);
     private static final UUID CHARACTERISTIC_BEURER_BF600_TAKE_MEASUREMENT = BluetoothGattUuid.fromShortCode(0xfff4);
     private static final UUID CHARACTERISTIC_BEURER_BF600_REFER_WEIGHT_BF = BluetoothGattUuid.fromShortCode(0xfff5);
+    private static final UUID CHARACTERISTIC_BEURER_BF850_INITIALS = BluetoothGattUuid.fromShortCode(0xfff6);
 
     private String deviceName;
 
@@ -58,6 +59,18 @@ public class BluetoothBeurerBF600 extends BluetoothStandardWeightProfile {
         Timber.d(String.format("setCurrentUserData Activity level: %d", al.toInt() + 1));
         writeBytes(SERVICE_BEURER_CUSTOM_BF600,
                 CHARACTERISTIC_BEURER_BF600_ACTIVITY_LEVEL, parser.getValue());
+    }
+
+    @Override
+    protected void writeInitials() {
+        if (haveCharacteristic(SERVICE_BEURER_CUSTOM_BF600, CHARACTERISTIC_BEURER_BF850_INITIALS)) {
+            BluetoothBytesParser parser = new BluetoothBytesParser();
+            String initials = getInitials(this.selectedUser.getUserName());
+            Timber.d("Initials: " + initials);
+            parser.setString(initials);
+            writeBytes(SERVICE_BEURER_CUSTOM_BF600, CHARACTERISTIC_BEURER_BF850_INITIALS,
+                    parser.getValue());
+        }
     }
 
     @Override

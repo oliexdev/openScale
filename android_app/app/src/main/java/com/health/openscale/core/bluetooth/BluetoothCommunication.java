@@ -257,6 +257,16 @@ public abstract class BluetoothCommunication {
     }
 
     /**
+     * Check if specific characteristic exists on Bluetooth device.
+     *
+     * @param Bluetooth UUID characteristic
+     * @return true if characteristic exists
+     */
+    protected boolean haveCharacteristic(UUID service, UUID characteristic) {
+        return btPeripheral.getCharacteristic(service, characteristic) != null;
+    }
+
+    /**
      * Write a byte array to a Bluetooth device.
      *
      * @param characteristic the Bluetooth UUID characteristic
