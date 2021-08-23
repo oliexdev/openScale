@@ -21,7 +21,6 @@ import static android.content.Context.LOCATION_SERVICE;
 
 import android.Manifest;
 import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothProfile;
 import android.bluetooth.le.ScanResult;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -87,7 +86,7 @@ public abstract class BluetoothCommunication {
         }
         if (btPeripheral != null) {
             ConnectionState state = btPeripheral.getState();
-            if (state.equals(BluetoothProfile.STATE_CONNECTED) || state.equals(BluetoothProfile.STATE_CONNECTING)) {
+            if (state.equals(ConnectionState.CONNECTED) || state.equals(ConnectionState.CONNECTING)) {
                 return false;
             }
         }
