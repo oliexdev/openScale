@@ -817,4 +817,30 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
         Pair<CharSequence[], int[]> choices = new Pair(choiceStrings, indexArray);
         chooseScaleUserUi(choices);
     }
+
+    protected String getInitials(String fullName) {
+        if (fullName == null || fullName.isEmpty() || fullName.chars().allMatch(Character::isWhitespace)) {
+            return getDefaultInitials();
+        }
+        return buildInitialsStringFrom(fullName).toUpperCase();
+    }
+
+    private String getDefaultInitials() {
+        int userId = this.selectedUser.getId();
+        int userIndex = getUserScaleIndex(userId);
+        return "P" + userIndex + " ";
+    }
+
+    private String buildInitialsStringFrom(String fullName) {
+        String[] name = fullName.split(" ");
+        String initials = "";
+        for (int i = 0; i < 3; i++) {
+            if (i < name.length && name[i] != "") {
+                initials += name[i].charAt(0);
+            } else {
+                initials += " ";
+            }
+        }
+        return initials;
+    }
 }
