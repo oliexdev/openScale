@@ -809,14 +809,14 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
             ScaleUser u = userList.get(i);
             String name = u.getUserName();
             choiceStrings[i] = (name.length() > 0 ? name : String.format("P%02d", u.getId()))
-                    + " " + (u.getGender().isMale() ? "male" : "female")
-                    + " " + "height:" + u.getBodyHeight()
-                    + " birthday:" + dateFormat.format(u.getBirthday())
-                    + " " + "AL:" + (u.getActivityLevel().toInt() + 1);
+                    + " " + context.getString(u.getGender().isMale() ? R.string.label_male : R.string.label_female).toLowerCase()
+                    + " " + context.getString(R.string.label_height).toLowerCase() + ":" + u.getBodyHeight()
+                    + " " + context.getString(R.string.label_birthday).toLowerCase() + ":" + dateFormat.format(u.getBirthday())
+                    + " " + context.getString(R.string.label_activity_level).toLowerCase() + ":" + (u.getActivityLevel().toInt() + 1);
             indexArray[i] = u.getId();
         }
         if (userList.size() < VENDOR_SPECIFIC_MAX_USERS) {
-            choiceStrings[userList.size()] = "Create new user on scale.";
+            choiceStrings[userList.size()] = context.getString(R.string.info_create_new_user_on_scale);
             indexArray[userList.size()] = -1;
         }
         Pair<CharSequence[], int[]> choices = new Pair(choiceStrings, indexArray);
