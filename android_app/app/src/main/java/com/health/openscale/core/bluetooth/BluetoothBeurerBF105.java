@@ -91,7 +91,7 @@ public class BluetoothBeurerBF105 extends BluetoothStandardWeightProfile {
     @Override
     protected synchronized void requestVendorSpecificUserList() {
         BluetoothBytesParser parser = new BluetoothBytesParser();
-        parser.setIntValue(1, FORMAT_UINT8);
+        parser.setIntValue(0, FORMAT_UINT8);
         writeBytes(SERVICE_BF105_CUSTOM, CHARACTERISTIC_USER_LIST,
                 parser.getValue());
     }
