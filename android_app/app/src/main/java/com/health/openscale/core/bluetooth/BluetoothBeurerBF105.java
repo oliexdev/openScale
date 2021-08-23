@@ -63,7 +63,6 @@ public class BluetoothBeurerBF105 extends BluetoothStandardWeightProfile {
 
     @Override
     protected void writeUserDataToScale() {
-        writeInitials();
         writeTargetWeight();
         super.writeUserDataToScale();
     }
@@ -114,7 +113,8 @@ public class BluetoothBeurerBF105 extends BluetoothStandardWeightProfile {
                 parser.getValue());
     }
 
-    private void writeInitials() {
+    @Override
+    protected void writeInitials() {
         BluetoothBytesParser parser = new BluetoothBytesParser();
         String initials = getInitials(this.selectedUser.getUserName());
         Timber.d("Initials: " + initials);

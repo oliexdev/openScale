@@ -211,6 +211,7 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
         writeGender();
         writeHeight();
         writeActivityLevel();
+        writeInitials();
         setChangeIncrement();
     }
 
@@ -646,6 +647,10 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
 
     protected void writeActivityLevel() {
         Timber.d("Write user activity level not implemented!");
+    }
+
+    protected void writeInitials() {
+        Timber.d("Write user initials not implemented!");
     }
 
     protected void setChangeIncrement() {
