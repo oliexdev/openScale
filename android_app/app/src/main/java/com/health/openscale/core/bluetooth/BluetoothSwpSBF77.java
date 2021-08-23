@@ -60,6 +60,18 @@ public class BluetoothSwpSBF77 extends BluetoothStandardWeightProfile {
     }
 
     @Override
+    protected void writeInitials() {
+        if (haveCharacteristic(SERVICE_CUSTOM_SBF77, CHARACTERISTIC_SBF77_INITIALS)) {
+            BluetoothBytesParser parser = new BluetoothBytesParser();
+            String initials = getInitials(this.selectedUser.getUserName());
+            Timber.d("Initials: " + initials);
+            parser.setString(initials);
+            writeBytes(SERVICE_CUSTOM_SBF77, CHARACTERISTIC_SBF77_INITIALS,
+                    parser.getValue());
+        }
+    }
+
+    @Override
     protected void requestMeasurement() {
         BluetoothBytesParser parser = new BluetoothBytesParser(new byte[]{0});
         parser.setIntValue(0x00, FORMAT_UINT8, 0);
