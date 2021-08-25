@@ -837,7 +837,7 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
     }
 
     private String buildInitialsStringFrom(String fullName) {
-        String[] name = fullName.split(" ");
+        String[] name = fullName.trim().split(" ");
         String initials = "";
         for (int i = 0; i < 3; i++) {
             if (i < name.length && name[i] != "") {
