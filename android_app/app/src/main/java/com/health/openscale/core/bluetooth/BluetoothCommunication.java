@@ -326,7 +326,14 @@ public abstract class BluetoothCommunication {
         if(btPeripheral.getService(service) != null) {
             BluetoothGattCharacteristic currentTimeCharacteristic = btPeripheral.getCharacteristic(service, characteristic);
             if (currentTimeCharacteristic != null) {
-                if (btPeripheral.setNotify(currentTimeCharacteristic, true)) {
+                boolean notifySet;
+                try {
+                    notifySet = btPeripheral.setNotify(currentTimeCharacteristic, true);
+                }
+                catch (IllegalArgumentException e){
+                    notifySet = false;
+                };
+                if (notifySet) {
                     stopMachineState();
                     return true;
                 }
