@@ -50,6 +50,36 @@ public class BluetoothSwpSBF77 extends BluetoothStandardWeightProfile {
     }
 
     @Override
+    public void onBluetoothNotify(UUID characteristic, byte[] value) {
+        if (characteristic.equals(CHARACTERISTIC_SBF77_USER_LIST)) {
+            handleVendorSpecificUserList(value);
+        }
+        else {
+            super.onBluetoothNotify(characteristic, value);
+        }
+    }
+
+    @Override
+    protected void setNotifyVendorSpecificUserList() {
+        if (setNotificationOn(SERVICE_CUSTOM_SBF77,
+                CHARACTERISTIC_SBF77_USER_LIST)) {
+            Timber.d("setNotifyVendorSpecificUserList() OK");
+        }
+        else {
+            Timber.d("setNotifyVendorSpecificUserList() FAILED");
+        }
+    }
+
+    @Override
+    protected synchronized void requestVendorSpecificUserList() {
+        BluetoothBytesParser parser = new BluetoothBytesParser();
+        parser.setIntValue(0x00, FORMAT_UINT8);
+        writeBytes(SERVICE_CUSTOM_SBF77, CHARACTERISTIC_SBF77_USER_LIST,
+                parser.getValue());
+        stopMachineState();
+    }
+
+    @Override
     protected void writeActivityLevel() {
         Converters.ActivityLevel al = selectedUser.getActivityLevel();
         BluetoothBytesParser parser = new BluetoothBytesParser(new byte[]{0});
@@ -78,35 +108,5 @@ public class BluetoothSwpSBF77 extends BluetoothStandardWeightProfile {
         Timber.d(String.format("requestMeasurement 0x0006 magic: 0x00"));
         writeBytes(SERVICE_CUSTOM_SBF77,
                 CHARACTERISTIC_SBF77_TAKE_MEASUREMENT, parser.getValue());
-    }
-
-    @Override
-    protected void setNotifyVendorSpecificUserList() {
-        if (setNotificationOn(SERVICE_CUSTOM_SBF77,
-                CHARACTERISTIC_SBF77_USER_LIST)) {
-            Timber.d("setNotifyVendorSpecificUserList() OK");
-        }
-        else {
-            Timber.d("setNotifyVendorSpecificUserList() FAILED");
-        }
-    }
-
-    @Override
-    protected synchronized void requestVendorSpecificUserList() {
-        BluetoothBytesParser parser = new BluetoothBytesParser();
-        parser.setIntValue(0x00, FORMAT_UINT8);
-        writeBytes(SERVICE_CUSTOM_SBF77, CHARACTERISTIC_SBF77_USER_LIST,
-                parser.getValue());
-        stopMachineState();
-    }
-
-    @Override
-    public void onBluetoothNotify(UUID characteristic, byte[] value) {
-        if (characteristic.equals(CHARACTERISTIC_SBF77_USER_LIST)) {
-            handleVendorSpecificUserList(value);
-        }
-        else {
-            super.onBluetoothNotify(characteristic, value);
-        }
     }
 }
