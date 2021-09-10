@@ -19,24 +19,11 @@
  */
 package com.health.openscale.core.bluetooth;
 
-import static com.welie.blessed.BluetoothBytesParser.FORMAT_UINT8;
-
 import android.content.Context;
-
-import com.health.openscale.core.utils.Converters;
-import com.welie.blessed.BluetoothBytesParser;
-
-import java.util.UUID;
 
 import timber.log.Timber;
 
-public class BluetoothBeurerBF950 extends BluetoothStandardWeightProfile {
-    private static final UUID SERVICE_CUSTOM_SBF77 = BluetoothGattUuid.fromShortCode(0xffff);
-    private static final UUID CHARACTERISTIC_SBF77_USER_LIST = BluetoothGattUuid.fromShortCode(0x0001);
-    private static final UUID CHARACTERISTIC_SBF77_INITIALS = BluetoothGattUuid.fromShortCode(0x0002);
-    private static final UUID CHARACTERISTIC_SBF77_ACTIVITY_LEVEL = BluetoothGattUuid.fromShortCode(0x0004);
-    private static final UUID CHARACTERISTIC_SBF77_TAKE_MEASUREMENT = BluetoothGattUuid.fromShortCode(0x0006);
-
+public class BluetoothBeurerBF950 extends BluetoothBeurerBF105 {
     private String deviceName;
 
     public BluetoothBeurerBF950(Context context, String name) {
@@ -55,62 +42,7 @@ public class BluetoothBeurerBF950 extends BluetoothStandardWeightProfile {
     }
 
     @Override
-    public void onBluetoothNotify(UUID characteristic, byte[] value) {
-        if (characteristic.equals(CHARACTERISTIC_SBF77_USER_LIST)) {
-            handleVendorSpecificUserList(value);
-        }
-        else {
-            super.onBluetoothNotify(characteristic, value);
-        }
-    }
-
-    @Override
-    protected void setNotifyVendorSpecificUserList() {
-        if (setNotificationOn(SERVICE_CUSTOM_SBF77, CHARACTERISTIC_SBF77_USER_LIST)) {
-            Timber.d("setNotifyVendorSpecificUserList() OK");
-        }
-        else {
-            Timber.d("setNotifyVendorSpecificUserList() FAILED");
-        }
-    }
-
-    @Override
-    protected synchronized void requestVendorSpecificUserList() {
-        BluetoothBytesParser parser = new BluetoothBytesParser();
-        parser.setIntValue(0x00, FORMAT_UINT8);
-        writeBytes(SERVICE_CUSTOM_SBF77, CHARACTERISTIC_SBF77_USER_LIST,
-                parser.getValue());
-        stopMachineState();
-    }
-
-    @Override
-    protected void writeActivityLevel() {
-        Converters.ActivityLevel al = selectedUser.getActivityLevel();
-        BluetoothBytesParser parser = new BluetoothBytesParser(new byte[]{0});
-        parser.setIntValue(al.toInt() + 1, FORMAT_UINT8, 0);
-        Timber.d(String.format("setCurrentUserData Activity level: %d", al.toInt() + 1));
-        writeBytes(SERVICE_CUSTOM_SBF77,
-                CHARACTERISTIC_SBF77_ACTIVITY_LEVEL, parser.getValue());
-    }
-
-    @Override
-    protected void writeInitials() {
-        if (haveCharacteristic(SERVICE_CUSTOM_SBF77, CHARACTERISTIC_SBF77_INITIALS)) {
-            BluetoothBytesParser parser = new BluetoothBytesParser();
-            String initials = getInitials(this.selectedUser.getUserName());
-            Timber.d("Initials: " + initials);
-            parser.setString(initials);
-            writeBytes(SERVICE_CUSTOM_SBF77, CHARACTERISTIC_SBF77_INITIALS,
-                    parser.getValue());
-        }
-    }
-
-    @Override
-    protected void requestMeasurement() {
-        BluetoothBytesParser parser = new BluetoothBytesParser(new byte[]{0});
-        parser.setIntValue(0x00, FORMAT_UINT8, 0);
-        Timber.d(String.format("requestMeasurement 0x0006 magic: 0x00"));
-        writeBytes(SERVICE_CUSTOM_SBF77,
-                CHARACTERISTIC_SBF77_TAKE_MEASUREMENT, parser.getValue());
+    protected void writeTargetWeight() {
+        Timber.d("Target Weight not supported on " + deviceName);
     }
 }
