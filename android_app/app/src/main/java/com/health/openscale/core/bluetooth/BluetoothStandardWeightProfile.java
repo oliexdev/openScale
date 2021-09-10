@@ -46,7 +46,7 @@ import java.util.Vector;
 
 import timber.log.Timber;
 
-public class BluetoothStandardWeightProfile extends BluetoothCommunication {
+public abstract class BluetoothStandardWeightProfile extends BluetoothCommunication {
 
     // UDS control point codes
     protected static final byte UDS_CP_REGISTER_NEW_USER              = 0x01;
@@ -564,13 +564,9 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
         super.disconnect();
     }
 
-    protected void setNotifyVendorSpecificUserList() {
-        Timber.d("Set notify vendor user list not implemented!");
-    }
+    protected abstract void setNotifyVendorSpecificUserList();
 
-    protected void requestVendorSpecificUserList() {
-        Timber.d("Request vendor user list not implemented!");
-    }
+    protected abstract void requestVendorSpecificUserList();
 
     protected void registerUser(int consentCode) {
         BluetoothBytesParser parser = new BluetoothBytesParser(new byte[]{0,0,0});
