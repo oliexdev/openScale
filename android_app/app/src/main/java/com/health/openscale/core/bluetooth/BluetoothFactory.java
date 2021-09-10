@@ -129,7 +129,7 @@ public class BluetoothFactory {
             return new BluetoothBeurerBF600(context, deviceName);
         }
         if (deviceName.equals("SBF77") || deviceName.equals("BF950")) {
-            return new BluetoothSwpSBF77(context, deviceName);
+            return new BluetoothBeurerBF950(context, deviceName);
         }
         return null;
     }

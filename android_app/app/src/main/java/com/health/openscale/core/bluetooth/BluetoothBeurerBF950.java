@@ -30,7 +30,7 @@ import java.util.UUID;
 
 import timber.log.Timber;
 
-public class BluetoothSwpSBF77 extends BluetoothStandardWeightProfile {
+public class BluetoothBeurerBF950 extends BluetoothStandardWeightProfile {
     private static final UUID SERVICE_CUSTOM_SBF77 = BluetoothGattUuid.fromShortCode(0xffff);
     private static final UUID CHARACTERISTIC_SBF77_USER_LIST = BluetoothGattUuid.fromShortCode(0x0001);
     private static final UUID CHARACTERISTIC_SBF77_INITIALS = BluetoothGattUuid.fromShortCode(0x0002);
@@ -39,7 +39,7 @@ public class BluetoothSwpSBF77 extends BluetoothStandardWeightProfile {
 
     private String deviceName;
 
-    public BluetoothSwpSBF77(Context context, String name) {
+    public BluetoothBeurerBF950(Context context, String name) {
         super(context);
         deviceName = name;
     }
