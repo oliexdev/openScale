@@ -50,6 +50,11 @@ public class BluetoothSwpSBF77 extends BluetoothStandardWeightProfile {
     }
 
     @Override
+    protected int getVendorSpecificMaxUserCount() {
+        return 8;
+    }
+
+    @Override
     public void onBluetoothNotify(UUID characteristic, byte[] value) {
         if (characteristic.equals(CHARACTERISTIC_SBF77_USER_LIST)) {
             handleVendorSpecificUserList(value);

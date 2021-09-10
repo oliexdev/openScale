@@ -69,7 +69,6 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
     ScaleMeasurement previousMeasurement;
     protected boolean haveBatteryService;
     protected Vector<ScaleUser> scaleUserList;
-    static final int VENDOR_SPECIFIC_MAX_USERS = 8;
 
     public BluetoothStandardWeightProfile(Context context) {
         super(context);
@@ -85,6 +84,8 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
     public String driverName() {
         return "Bluetooth Standard Weight Profile";
     }
+
+    protected abstract int getVendorSpecificMaxUserCount();
 
     private enum SM_STEPS {
         START,
@@ -788,7 +789,7 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
             scaleUser.setActivityLevel(Converters.ActivityLevel.fromInt(activityLevel - 1));
             scaleUser.setId(index);
             scaleUserList.add(scaleUser);
-            if (scaleUserList.size() == VENDOR_SPECIFIC_MAX_USERS) {
+            if (scaleUserList.size() == getVendorSpecificMaxUserCount()) {
                 chooseExistingScaleUser(scaleUserList);
             }
     }
@@ -796,7 +797,7 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
     protected void chooseExistingScaleUser(Vector<ScaleUser> userList) {
         final DateFormat dateFormat = DateFormat.getDateInstance();
         int choicesCount = userList.size();
-        if (userList.size() < VENDOR_SPECIFIC_MAX_USERS) {
+        if (userList.size() < getVendorSpecificMaxUserCount()) {
             choicesCount = userList.size() + 1;
         }
         CharSequence[] choiceStrings = new String[choicesCount];
@@ -812,7 +813,7 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
                     + " " + context.getString(R.string.label_activity_level).toLowerCase() + ":" + (u.getActivityLevel().toInt() + 1);
             indexArray[i] = u.getId();
         }
-        if (userList.size() < VENDOR_SPECIFIC_MAX_USERS) {
+        if (userList.size() < getVendorSpecificMaxUserCount()) {
             choiceStrings[userList.size()] = context.getString(R.string.info_create_new_user_on_scale);
             indexArray[userList.size()] = -1;
         }

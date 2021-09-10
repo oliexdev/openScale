@@ -52,6 +52,11 @@ public class BluetoothBeurerBF600 extends BluetoothStandardWeightProfile {
     }
 
     @Override
+    protected int getVendorSpecificMaxUserCount() {
+        return 8;
+    }
+
+    @Override
     protected void writeActivityLevel() {
         Converters.ActivityLevel al = selectedUser.getActivityLevel();
         BluetoothBytesParser parser = new BluetoothBytesParser(new byte[]{0});

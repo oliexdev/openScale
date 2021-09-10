@@ -62,6 +62,11 @@ public class BluetoothBeurerBF105 extends BluetoothStandardWeightProfile {
     }
 
     @Override
+    protected int getVendorSpecificMaxUserCount() {
+        return 10;
+    }
+
+    @Override
     protected void writeUserDataToScale() {
         writeTargetWeight();
         super.writeUserDataToScale();
