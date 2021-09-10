@@ -790,7 +790,11 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
             scaleUser.setId(index);
             scaleUserList.add(scaleUser);
             if (scaleUserList.size() == getVendorSpecificMaxUserCount()) {
-                chooseExistingScaleUser(scaleUserList);
+                if (getUserScaleIndex(selectedUser.getId()) == -1 || getUserScaleConsent(selectedUser.getId()) == -1)  {
+                    chooseExistingScaleUser(scaleUserList);
+                    return;
+                }
+                resumeMachineState();
             }
     }
 
