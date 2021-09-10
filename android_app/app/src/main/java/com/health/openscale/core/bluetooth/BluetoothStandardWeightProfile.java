@@ -167,6 +167,8 @@ public class BluetoothStandardWeightProfile extends BluetoothCommunication {
             case REQUEST_VENDOR_SPECIFIC_USER_LIST:
                 scaleUserList.clear();
                 requestVendorSpecificUserList();
+                requestVendorSpecificUserList();
+                stopMachineState();
                 break;
             case REGISTER_NEW_SCALE_USER:
                 int userId = this.selectedUser.getId();
