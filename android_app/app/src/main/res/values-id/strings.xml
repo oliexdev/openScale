@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="theme_dark">Thema Malam</string>
+    <string name="theme_dark">Gelap</string>
     <string name="customactivityoncrash_error_activity_error_details">Rincian galat</string>
     <string name="customactivityoncrash_error_activity_close_app">Tutup aplikasi</string>
     <string name="label_reminder_notify_text">Notifikasi teks</string>
@@ -82,4 +82,31 @@
     <string name="title_table">Tabel</string>
     <string name="title_graph">Bagan</string>
     <string name="title_overview">Ringkasan</string>
+    <string name="label_daily">harian</string>
+    <string name="label_overwrite_backup">Timpa cadangan sebelumnya</string>
+    <string name="label_auto_backup_schedule">Jadwal cadangan</string>
+    <string name="label_auto_backup">Pencadangan otomatis</string>
+    <string name="label_estimate_measurement_summary">Berdasarkan berat badan, tinggi badan, usia, jenis kelamin, dll.</string>
+    <string name="label_estimated">Diperkirakan</string>
+    <string name="label_percent">Persen</string>
+    <string name="label_add_or_fix_translation">Tambahkan yang baru atau perbaiki yang sudah ada</string>
+    <string name="label_contribute_translation">Kontribusi terjemahan</string>
+    <string name="theme_light">Terang</string>
+    <string name="label_language">Bahasa</string>
+    <string name="label_monthly">bulanan</string>
+    <string name="label_calories">Kalori</string>
+    <string name="label_activity_level">Tingkat aktivitas</string>
+    <string name="label_measure_unit">Unit pengukuran</string>
+    <string name="amputation_level_leg">Kaki</string>
+    <string name="amputation_level_hand">Lengan</string>
+    <string name="info_data_all_deleted">Semua entri dihapus</string>
+    <string name="info_data_deleted">Entri dihapus</string>
+    <string name="error_goal_weight_required">Target berat harus diisi</string>
+    <string name="error_initial_weight_required">Berat awal harus diisi</string>
+    <string name="error_height_required">Tinggi harus diisi</string>
+    <string name="error_user_name_required">Nama harus diisi</string>
+    <string name="error_importing">Tidak dapat mengimpor</string>
+    <string name="error_exporting">Tidak dapat mengekspor</string>
+    <string name="error_value_range">Nilai di luar jangkauan</string>
+    <string name="error_value_required">Nilai harus diisi</string>
 </resources>
