@@ -33,7 +33,7 @@
     <string name="label_whtr">Αναλογία μέσης-ύψους</string>
     <string name="label_whr">Αναλογία μέσης-γοφών</string>
     <string name="label_bone">Μάζα οστών</string>
-    <string name="label_smartUserAssign">Ανάθεση εργασίας Έξυπνου Χρήστη</string>
+    <string name="label_smartUserAssign">Ανάθεση Έξυπνου Χρήστη</string>
     <plurals name="label_days">
         <item quantity="one">ημέρα %d</item>
         <item quantity="other">ημέρες %d</item>
@@ -94,11 +94,11 @@
     <string name="question_really_delete">Διαγραφή καταχώρησης;</string>
     <string name="question_really_delete_all">Διαγραφή όλων των καταχωρήσεων για όλους τους χρήστες;</string>
     <string name="question_really_delete_user">Διαγραφή χρήστη;</string>
-    <string name="label_bluetooth_title">Bluetooth</string>
-    <string name="label_bluetooth_enable">Συνέδεσε στη ζυγαριά με το ξεκίνημα</string>
-    <string name="label_mergeWithLastMeasurement">Συγχώνευσε με τελευταία μέτρηση</string>
-    <string name="label_bluetooth_searching">Αναζητώντας για την ζυγαριά σας με Bluetooth ικανότητα</string>
-    <string name="label_bluetooth_searching_finished">Αναζήτηση ολοκληρώθηκε</string>
+    <string name="label_bluetooth_title">Ζυγαριά Bluetooth</string>
+    <string name="label_bluetooth_enable">Σύνδεση ζυγαριάς στην έναρξη</string>
+    <string name="label_mergeWithLastMeasurement">Συγχώνευση με τελευτ. μέτρηση</string>
+    <string name="label_bluetooth_searching">Αναζήτηση της Bluetooth ζυγαριάς σας</string>
+    <string name="label_bluetooth_searching_finished">Η αναζήτηση ολοκληρώθηκε</string>
     <string name="label_enable_labels">Ετικέτα δεδομένων</string>
     <string name="label_enable_points">Σημείο δεδομένων</string>
     <string name="label_delete_confirmation">Επιβεβαίωση διαγραφής</string>
@@ -186,7 +186,7 @@
     <string name="label_click_to_help_add_support">Πατήστε εδώ για να βοηθήσετε, προσθέσετε υποστήριξη</string>
     <string name="label_development">Ανάπτυξη</string>
     <string name="label_debug_log">Αποθήκευσε καταγραφή αποσφαλμάτωσης στο αρχείο</string>
-    <string name="label_your_bluetooth_scale">Η ζυγαριά σας με δυνατότητα Bluetooth</string>
+    <string name="label_your_bluetooth_scale">Αναζήτηση ζυγαριάς Bluetooth</string>
     <string name="label_add_measurement">Προσθήκη μέτρησης</string>
     <string name="trisa_scale_not_paired">Αυτή η ζυγαριά δεν έχει ζευγαρωθεί!
 \n
@@ -234,7 +234,7 @@
     <string name="label_upgrade_to_openScale_pro">Παρακαλώ αναβαθμίστε σε openScale pro για υποστήριξη Bluetooth</string>
     <string name="action_donation">Δωρεά</string>
     <string name="info_scale_low_battery">Χαμηλό επίπεδο μπαταρίας (%d%%), παρακαλώ φορτίστε ή αλλάξτε τις μπαταρίες της ζυγαριάς</string>
-    <string name="info_bluetooth_connection_error_scale_offline">Δεν μπορεί να γίνει σύνδεση με την ζυγαριά, παρακαλώ σιγουρευτείτε ότι η ζυγαριά είναι αναμμένη</string>
+    <string name="info_bluetooth_connection_error_scale_offline">Δεν μπορεί να γίνει σύνδεση με την ζυγαριά, παρακαλώ σιγουρευτείτε ότι είναι αναμμένη.</string>
     <string name="label_slide_welcome_main_text">Καταγραφέας βάρους και σωματικών μετρήσεων ανοιχτού λογισμικού, με υποστήριξη ζευγαριών Bluetooth.</string>
     <string name="app_intro_done_button">Ολοκληρώθηκε</string>
     <string name="app_intro_back_button">Πίσω</string>
