@@ -193,11 +193,17 @@ public abstract class BluetoothCommunication {
      */
     protected void onBluetoothDiscovery(BluetoothPeripheral peripheral) { }
 
+    /**
+     * Stopped current state machine
+     */
     protected synchronized void stopMachineState() {
         Timber.d("Stop machine state");
         stopped = true;
     }
 
+    /**
+     * resume current state machine
+     */
     protected synchronized void resumeMachineState() {
         Timber.d("Resume machine state");
         stopped = false;
@@ -221,11 +227,19 @@ public abstract class BluetoothCommunication {
         }
     }
 
+    /**
+     * This function jump to a specific step number
+     * @param nr the step number which the state machine should jump to.
+     */
     protected synchronized void jumpNextToStepNr(int nr) {
         Timber.d("Jump next to step nr " + nr);
         stepNr = nr;
     }
 
+    /**
+     * This function return the current step number
+     * @return the current step number
+     */
     protected synchronized int getStepNr() {
         return stepNr;
     }
@@ -259,7 +273,8 @@ public abstract class BluetoothCommunication {
     /**
      * Check if specific characteristic exists on Bluetooth device.
      *
-     * @param Bluetooth UUID characteristic
+     * @param service the Bluetooth UUID service
+     * @param characteristic the Bluetooth UUID characteristic
      * @return true if characteristic exists
      */
     protected boolean haveCharacteristic(UUID service, UUID characteristic) {
