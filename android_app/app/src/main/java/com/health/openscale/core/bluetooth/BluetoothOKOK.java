@@ -68,7 +68,7 @@ public class BluetoothOKOK extends BluetoothCommunication {
                 byte[] data = manufacturerSpecificData.get(MANUFACTURER_DATA_ID_V11);
                 float divider = 10.0f;
                 float extraWeight = 0;
-                byte checksum = 0xca ^ 0x11; // Version and magic fields are part of the checksum, but not in array
+                byte checksum = (byte)0xca ^ (byte)0x11; // Version and magic fields are part of the checksum, but not in array
                 if (data == null || data.length != IDX_V11_CHECKSUM + 6 + 1)
                     return;
                 for (int i = 0; i < IDX_V11_CHECKSUM; i++)
