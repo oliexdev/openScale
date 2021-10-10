@@ -16,6 +16,9 @@
 
 package com.health.openscale.core.bluetooth;
 
+import static android.bluetooth.BluetoothGatt.GATT_SUCCESS;
+import static android.content.Context.LOCATION_SERVICE;
+
 import android.Manifest;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.le.ScanResult;
@@ -29,19 +32,18 @@ import androidx.core.content.ContextCompat;
 
 import com.health.openscale.R;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
-import com.welie.blessed.BluetoothCentral;
-import com.welie.blessed.BluetoothCentralCallback;
+import com.welie.blessed.BluetoothCentralManager;
+import com.welie.blessed.BluetoothCentralManagerCallback;
 import com.welie.blessed.BluetoothPeripheral;
 import com.welie.blessed.BluetoothPeripheralCallback;
+import com.welie.blessed.ConnectionState;
+import com.welie.blessed.GattStatus;
+import com.welie.blessed.HciStatus;
+import com.welie.blessed.WriteType;
 
 import java.util.UUID;
 
 import timber.log.Timber;
-
-import static android.bluetooth.BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT;
-import static android.bluetooth.BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE;
-import static android.content.Context.LOCATION_SERVICE;
-import static com.welie.blessed.BluetoothPeripheral.GATT_SUCCESS;
 
 public abstract class BluetoothCommunication {
     public enum BT_STATUS {
@@ -53,7 +55,9 @@ public abstract class BluetoothCommunication {
         CONNECTION_LOST,
         NO_DEVICE_FOUND,
         UNEXPECTED_ERROR,
-        SCALE_MESSAGE
+        SCALE_MESSAGE,
+        CHOOSE_SCALE_USER,
+        ENTER_SCALE_USER_CONSENT,
     }
 
     private int stepNr;
@@ -64,7 +68,7 @@ public abstract class BluetoothCommunication {
     private Handler callbackBtHandler;
     private Handler disconnectHandler;
 
-    private BluetoothCentral central;
+    private BluetoothCentralManager central;
     private BluetoothPeripheral btPeripheral;
 
     public BluetoothCommunication(Context context)
@@ -73,7 +77,20 @@ public abstract class BluetoothCommunication {
         this.disconnectHandler = new Handler();
         this.stepNr = 0;
         this.stopped = false;
-        this.central = new BluetoothCentral(context, bluetoothCentralCallback, new Handler(Looper.getMainLooper()));
+        this.central = new BluetoothCentralManager(context, bluetoothCentralCallback, new Handler(Looper.getMainLooper()));
+    }
+
+    protected boolean needReConnect() {
+        if (callbackBtHandler == null) {
+            return true;
+        }
+        if (btPeripheral != null) {
+            ConnectionState state = btPeripheral.getState();
+            if (state.equals(ConnectionState.CONNECTED) || state.equals(ConnectionState.CONNECTING)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -116,6 +133,20 @@ public abstract class BluetoothCommunication {
         if (callbackBtHandler != null) {
             callbackBtHandler.obtainMessage(
                     BT_STATUS.RETRIEVE_SCALE_DATA.ordinal(), scaleMeasurement).sendToTarget();
+        }
+    }
+
+    protected void chooseScaleUserUi(Object userList) {
+        if (callbackBtHandler != null) {
+            callbackBtHandler.obtainMessage(
+                    BT_STATUS.CHOOSE_SCALE_USER.ordinal(), userList).sendToTarget();
+        }
+    }
+
+    protected void enterScaleUserConsentUi(int appScaleUserId, int scaleUserIndex) {
+        if (callbackBtHandler != null) {
+            callbackBtHandler.obtainMessage(
+                    BT_STATUS.ENTER_SCALE_USER_CONSENT.ordinal(), appScaleUserId, scaleUserIndex).sendToTarget();
         }
     }
 
@@ -162,11 +193,17 @@ public abstract class BluetoothCommunication {
      */
     protected void onBluetoothDiscovery(BluetoothPeripheral peripheral) { }
 
+    /**
+     * Stopped current state machine
+     */
     protected synchronized void stopMachineState() {
         Timber.d("Stop machine state");
         stopped = true;
     }
 
+    /**
+     * resume current state machine
+     */
     protected synchronized void resumeMachineState() {
         Timber.d("Resume machine state");
         stopped = false;
@@ -190,9 +227,21 @@ public abstract class BluetoothCommunication {
         }
     }
 
+    /**
+     * This function jump to a specific step number
+     * @param nr the step number which the state machine should jump to.
+     */
     protected synchronized void jumpNextToStepNr(int nr) {
         Timber.d("Jump next to step nr " + nr);
         stepNr = nr;
+    }
+
+    /**
+     * This function return the current step number
+     * @return the current step number
+     */
+    protected synchronized int getStepNr() {
+        return stepNr;
     }
 
     /**
@@ -222,6 +271,17 @@ public abstract class BluetoothCommunication {
     }
 
     /**
+     * Check if specific characteristic exists on Bluetooth device.
+     *
+     * @param service the Bluetooth UUID service
+     * @param characteristic the Bluetooth UUID characteristic
+     * @return true if characteristic exists
+     */
+    protected boolean haveCharacteristic(UUID service, UUID characteristic) {
+        return btPeripheral.getCharacteristic(service, characteristic) != null;
+    }
+
+    /**
      * Write a byte array to a Bluetooth device.
      *
      * @param characteristic the Bluetooth UUID characteristic
@@ -241,7 +301,7 @@ public abstract class BluetoothCommunication {
     protected void writeBytes(UUID service, UUID characteristic, byte[] bytes, boolean noResponse) {
         Timber.d("Invoke write bytes [" + byteInHex(bytes) + "] on " + BluetoothGattUuid.prettyPrint(characteristic));
         btPeripheral.writeCharacteristic(btPeripheral.getCharacteristic(service, characteristic), bytes,
-                noResponse ? WRITE_TYPE_NO_RESPONSE : WRITE_TYPE_DEFAULT);
+                noResponse ? WriteType.WITHOUT_RESPONSE : WriteType.WITH_RESPONSE);
     }
 
     /**
@@ -274,14 +334,27 @@ public abstract class BluetoothCommunication {
      * Set notification flag on for the Bluetooth device.
      *
      * @param characteristic the Bluetooth UUID characteristic
+     * @return true if the operation was enqueued, false if the characteristic doesn't support notification or indications or
      */
-    protected void setNotificationOn(UUID service, UUID characteristic) {
+    protected boolean setNotificationOn(UUID service, UUID characteristic) {
         Timber.d("Invoke set notification on " + BluetoothGattUuid.prettyPrint(characteristic));
         if(btPeripheral.getService(service) != null) {
-            stopMachineState();
             BluetoothGattCharacteristic currentTimeCharacteristic = btPeripheral.getCharacteristic(service, characteristic);
-            btPeripheral.setNotify(currentTimeCharacteristic, true);
+            if (currentTimeCharacteristic != null) {
+                boolean notifySet;
+                try {
+                    notifySet = btPeripheral.setNotify(currentTimeCharacteristic, true);
+                }
+                catch (IllegalArgumentException e){
+                    notifySet = false;
+                };
+                if (notifySet) {
+                    stopMachineState();
+                    return true;
+                }
+            }
         }
+        return false;
     }
 
     /**
@@ -301,6 +374,14 @@ public abstract class BluetoothCommunication {
         }
         callbackBtHandler = null;
         disconnectHandler.removeCallbacksAndMessages(null);
+    }
+
+    public void selectScaleUserIndexForAppUserId(int appUserId, int scaleUserIndex, Handler uiHandler) {
+        Timber.d("Set scale user index for app user id: Not implemented!");
+    }
+
+    public void setScaleUserConsent(int appUserId, int scaleUserConsent, Handler uiHandler) {
+        Timber.d("Set scale user consent for app user id: Not implemented!");
     }
 
     /**
@@ -373,8 +454,8 @@ public abstract class BluetoothCommunication {
         }
 
         @Override
-        public void onNotificationStateUpdate(BluetoothPeripheral peripheral, BluetoothGattCharacteristic characteristic, int status) {
-            if( status == GATT_SUCCESS) {
+        public void onNotificationStateUpdate(BluetoothPeripheral peripheral, BluetoothGattCharacteristic characteristic, GattStatus status) {
+            if( status.value == GATT_SUCCESS) {
                 if(peripheral.isNotifying(characteristic)) {
                     Timber.d(String.format("SUCCESS: Notify set for %s", characteristic.getUuid()));
                     resumeMachineState();
@@ -385,8 +466,8 @@ public abstract class BluetoothCommunication {
         }
 
         @Override
-        public void onCharacteristicWrite(BluetoothPeripheral peripheral, byte[] value, BluetoothGattCharacteristic characteristic, int status) {
-            if( status == GATT_SUCCESS) {
+        public void onCharacteristicWrite(BluetoothPeripheral peripheral, byte[] value, BluetoothGattCharacteristic characteristic, GattStatus status) {
+            if( status.value == GATT_SUCCESS) {
                 Timber.d(String.format("SUCCESS: Writing <%s> to <%s>", byteInHex(value), characteristic.getUuid().toString()));
                 nextMachineStep();
 
@@ -396,14 +477,14 @@ public abstract class BluetoothCommunication {
         }
 
         @Override
-        public void onCharacteristicUpdate(final BluetoothPeripheral peripheral, byte[] value, final BluetoothGattCharacteristic characteristic, final int status) {
+        public void onCharacteristicUpdate(final BluetoothPeripheral peripheral, byte[] value, final BluetoothGattCharacteristic characteristic, GattStatus status) {
             resetDisconnectTimer();
             onBluetoothNotify(characteristic.getUuid(), value);
         }
     };
 
     // Callback for central
-    private final BluetoothCentralCallback bluetoothCentralCallback = new BluetoothCentralCallback() {
+    private final BluetoothCentralManagerCallback bluetoothCentralCallback = new BluetoothCentralManagerCallback() {
 
         @Override
         public void onConnectedPeripheral(BluetoothPeripheral peripheral) {
@@ -415,18 +496,18 @@ public abstract class BluetoothCommunication {
         }
 
         @Override
-        public void onConnectionFailed(BluetoothPeripheral peripheral, final int status) {
-            Timber.e(String.format("connection '%s' failed with status %d", peripheral.getName(), status ));
+        public void onConnectionFailed(BluetoothPeripheral peripheral, HciStatus status) {
+            Timber.e(String.format("connection '%s' failed with status %d", peripheral.getName(), status.value));
             setBluetoothStatus(BT_STATUS.CONNECTION_LOST);
 
-            if (status == 8) {
+            if (status.value == 8) {
                 sendMessage(R.string.info_bluetooth_connection_error_scale_offline, 0);
             }
         }
 
         @Override
-        public void onDisconnectedPeripheral(final BluetoothPeripheral peripheral, final int status) {
-            Timber.d(String.format("disconnected '%s' with status %d", peripheral.getName(), status));
+        public void onDisconnectedPeripheral(final BluetoothPeripheral peripheral, HciStatus status) {
+            Timber.d(String.format("disconnected '%s' with status %d", peripheral.getName(), status.value));
         }
 
         @Override
@@ -480,6 +561,20 @@ public abstract class BluetoothCommunication {
                 central.connectPeripheral(peripheral, peripheralCallback);
             }
         }, 1000);
+    }
+
+    protected boolean reConnectPreviousPeripheral(Handler uiHandler) {
+        if (btPeripheral == null) {
+            return false;
+        }
+        if (btPeripheral.getState() != ConnectionState.DISCONNECTED) {
+            disconnect();
+        }
+        if (callbackBtHandler == null) {
+            registerCallbackHandler(uiHandler);
+        }
+        connect(btPeripheral.getAddress());
+        return true;
     }
 
     private void resetDisconnectTimer() {

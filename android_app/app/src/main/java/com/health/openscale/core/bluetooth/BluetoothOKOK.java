@@ -1,15 +1,15 @@
 package com.health.openscale.core.bluetooth;
 
+import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanResult;
 import android.content.Context;
-import android.bluetooth.le.ScanFilter;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.SparseArray;
 
 import com.health.openscale.core.datatypes.ScaleMeasurement;
-import com.welie.blessed.BluetoothCentral;
-import com.welie.blessed.BluetoothCentralCallback;
+import com.welie.blessed.BluetoothCentralManager;
+import com.welie.blessed.BluetoothCentralManagerCallback;
 import com.welie.blessed.BluetoothPeripheral;
 
 import org.jetbrains.annotations.NotNull;
@@ -28,8 +28,8 @@ public class BluetoothOKOK extends BluetoothCommunication {
     private static final int IDX_IMPEDANCE_LSB = 11;
     private static final int IDX_CHECKSUM = 12;
 
-    private BluetoothCentral central;
-    private final BluetoothCentralCallback btCallback = new BluetoothCentralCallback() {
+    private BluetoothCentralManager central;
+    private final BluetoothCentralManagerCallback btCallback = new BluetoothCentralManagerCallback() {
         @Override
         public void onDiscoveredPeripheral(@NotNull BluetoothPeripheral peripheral, @NotNull ScanResult scanResult) {
             SparseArray<byte[]> manufacturerSpecificData = scanResult.getScanRecord().getManufacturerSpecificData();
@@ -63,7 +63,7 @@ public class BluetoothOKOK extends BluetoothCommunication {
     public BluetoothOKOK(Context context)
     {
         super(context);
-        central = new BluetoothCentral(context, btCallback, new Handler(Looper.getMainLooper()));
+        central = new BluetoothCentralManager(context, btCallback, new Handler(Looper.getMainLooper()));
     }
 
     @Override

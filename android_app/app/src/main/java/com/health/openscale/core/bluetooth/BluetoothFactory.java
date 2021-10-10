@@ -42,14 +42,6 @@ public class BluetoothFactory {
                 || name.equals("BF700".toLowerCase(Locale.US))) {
             return new BluetoothBeurerSanitas(context, BluetoothBeurerSanitas.DeviceType.BEURER_BF710);
         }
-        /*if (name.startsWith("BEURER BF600".toLowerCase(Locale.US))
-                || name.startsWith("BEURER BF850".toLowerCase(Locale.US))
-                || name.startsWith("BF600".toLowerCase(Locale.US))
-                || name.startsWith("BF850".toLowerCase(Locale.US))
-                || name.startsWith("BF-600".toLowerCase(Locale.US))
-                || name.startsWith("BF-850".toLowerCase(Locale.US))) {
-            return new BluetoothStandardWeightProfile(context);
-        }*/
         if (name.equals("openScale".toLowerCase(Locale.US))) {
             return new BluetoothCustomOpenScale(context);
         }
@@ -121,6 +113,15 @@ public class BluetoothFactory {
 	}
         if (deviceName.equals("ADV")) {
             return new BluetoothOKOK(context);
+        }
+        if (deviceName.equals("BF105")) {
+            return new BluetoothBeurerBF105(context);
+        }
+        if (deviceName.equals("BF600") || deviceName.equals("BF850")) {
+            return new BluetoothBeurerBF600(context, deviceName);
+        }
+        if (deviceName.equals("SBF77") || deviceName.equals("BF950")) {
+            return new BluetoothBeurerBF950(context, deviceName);
         }
         return null;
     }

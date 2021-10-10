@@ -32,12 +32,18 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.text.Editable;
 import android.text.Html;
+import android.text.InputFilter;
+import android.text.InputType;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
+import android.util.Pair;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -651,9 +657,91 @@ public class MainActivity extends AppCompatActivity
                         Timber.e("Bluetooth scale message error: " + ex);
                     }
                     break;
+                case CHOOSE_SCALE_USER:
+                    chooseScaleUser(msg);
+                    break;
+                case ENTER_SCALE_USER_CONSENT:
+                    enterScaleUserConsent(msg);
+                    break;
             }
         }
     };
+
+    private void chooseScaleUser(Message msg) {
+        AlertDialog.Builder mBuilder = new AlertDialog.Builder(MainActivity.this);
+        Pair<CharSequence[], int[]> choices = (Pair<CharSequence[], int[]>)msg.obj;
+
+        mBuilder.setTitle(getResources().getString(R.string.info_select_scale_user));
+        mBuilder.setSingleChoiceItems(choices.first, -1 , new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialoginterface, int i) {
+                    Timber.d("UI selected " + i + ": " + choices.first[i] + " P-0" + choices.second[i]);
+                    OpenScale.getInstance().setBluetoothDeviceUserIndex(OpenScale.getInstance().getSelectedScaleUser().getId(), choices.second[i], callbackBtHandler);
+                    dialoginterface.dismiss();
+                }
+            });
+        mBuilder.setNegativeButton(getResources().getString(R.string.label_cancel), new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialoginterface, int i) {
+                    dialoginterface.dismiss();
+                }
+            });
+
+        AlertDialog mDialog = mBuilder.create();
+        mDialog.show();
+    }
+
+    private void enterScaleUserConsent(Message msg) {
+        final int appUserId = msg.arg1;
+        final int scaleUserIndex = msg.arg2;
+        final int[] consentCode = {-1};
+
+        AlertDialog.Builder mBuilder = new AlertDialog.Builder(MainActivity.this);
+        mBuilder.setTitle(getResources().getString(R.string.info_enter_consent_code_for_scale_user, Integer.toString(scaleUserIndex)));
+
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_NUMBER);
+        InputFilter[] filterArray = new InputFilter[1];
+        filterArray[0] = new InputFilter.LengthFilter(4);
+        input.setFilters(filterArray);
+        mBuilder.setView(input);
+
+        mBuilder.setPositiveButton(getResources().getString(R.string.label_ok), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialoginterface, int i) {
+                    OpenScale.getInstance().setBluetoothDeviceUserConsent(appUserId, consentCode[0], callbackBtHandler);
+                    dialoginterface.dismiss();
+                }
+            });
+        mBuilder.setNegativeButton(getResources().getString(R.string.label_cancel), new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialoginterface, int i) {
+                    OpenScale.getInstance().setBluetoothDeviceUserConsent(appUserId, -1, callbackBtHandler);
+                    dialoginterface.dismiss();
+                }
+            });
+
+        AlertDialog mDialog = mBuilder.create();
+        mDialog.show();
+
+        mDialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
+        input.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                }
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                }
+                @Override
+                public void afterTextChanged(Editable s) {
+                    try {
+                        consentCode[0] = Integer.parseInt(s.toString());
+                        Timber.d("consent code set to " + consentCode[0] + "(" + s.toString() + ")");
+                        mDialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(true);
+                    } catch(NumberFormatException nfe) {
+                        Timber.d("Could not parse " + nfe);
+                        mDialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
+                    }
+                }
+            });
+    }
 
     private void setBluetoothStatusIcon(int iconResource) {
         bluetoothStatusIcon = iconResource;

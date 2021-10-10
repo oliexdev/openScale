@@ -164,6 +164,8 @@
     <string name="error_max_scale_users">Max. number of concurrent scale users reached</string>
     <string name="info_step_on_scale_for_reference">Please step barefoot on the scale for reference measurements</string>
     <string name="info_step_on_scale">Please step barefoot on the scale</string>
+    <string name="info_select_scale_user">Select scale user</string>
+    <string name="info_enter_consent_code_for_scale_user">Enter PIN/consent code for scale user %s</string>
     <string name="info_measuring">Measuring weight: %.2f</string>
     <string name="trisa_scale_not_paired">This scale has not been paired!\n\nHold the button on the bottom of the scale to switch it to pairing mode, and then reconnect to retrieve the device password.</string>
     <string name="trisa_scale_pairing_succeeded">Pairing succeeded!\n\nReconnect to retrieve measurement data.</string>
@@ -283,4 +285,5 @@
     <string name="app_intro_next_button">Next</string>
     <string name="app_intro_back_button">Back</string>
     <string name="app_intro_done_button">Done</string>
+    <string name="info_create_new_user_on_scale">Create new user on scale.</string>
 </resources>
