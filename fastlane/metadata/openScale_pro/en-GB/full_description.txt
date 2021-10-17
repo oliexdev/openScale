@@ -34,7 +34,7 @@ Weight, BMI (body mass index), body water, muscle, LBM (lean body mass), body fa
 
 <h2><b>Supported Bluetooth scales</b></h2>
 - Custom made Bluetooth scale
-- Beurer BF700, BF710 and BF800
+- Beurer BF700, BF710, BF800, BF105, BF600, BF850 and BF950
 - Digoo DG-S038H
 - Excelvan CF369BLE
 - Exingtech Y1
@@ -43,7 +43,7 @@ Weight, BMI (body mass index), body water, muscle, LBM (lean body mass), body fa
 - Medisana BS444, BS440
 - Runtastic Libra
 - Sanitas SBF70
-- Silvercrest SBF75
+- Silvercrest SBF75, SBF77
 - Xiaomi Mi scale v1 and v2
 - Yunmai Mini and SE
 - iHealth HS3
