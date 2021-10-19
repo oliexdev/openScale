@@ -21,7 +21,7 @@
     <string name="label_share">Distribuiți</string>
     <string name="label_share_subject">Exportați ca și fișier CSV (%s)</string>
     <string name="label_weight">Greutate</string>
-    <string name="label_bmi">"Indice de masă corporală (IMC) "</string>
+    <string name="label_bmi">Indice de masă corporală (IMC)</string>
     <string name="label_bmr">Metabolism bazal (BMR)</string>
     <string name="label_fat">Țesut adipos</string>
     <string name="label_water">Apa din organism</string>
