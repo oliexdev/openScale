@@ -294,4 +294,7 @@
     <string name="label_prediction">预测</string>
     <string name="label_trend_line">趋势线</string>
     <string name="label_estimate_measurement">估算的测量值</string>
+    <string name="info_select_scale_user">选择 scale 用户</string>
+    <string name="info_enter_consent_code_for_scale_user">输入 scale 用户 %s 的 PIN/同意码</string>
+    <string name="info_create_new_user_on_scale">创建 scale 新用户。</string>
 </resources>
