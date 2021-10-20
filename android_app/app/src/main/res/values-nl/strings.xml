@@ -292,4 +292,7 @@
     <string name="label_trend">Trend</string>
     <string name="label_prediction">Voorspelling</string>
     <string name="label_trend_line">Trendlijn</string>
+    <string name="info_create_new_user_on_scale">Maak een nieuwe gebruiker aan.</string>
+    <string name="info_select_scale_user">Kies een gebruiker</string>
+    <string name="info_enter_consent_code_for_scale_user">Voer de pin- of toegangscode in van %s</string>
 </resources>
