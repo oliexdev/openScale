@@ -270,11 +270,11 @@
 \nОберіть для показу ті, які вас цікавлять.
 \n
 \n Якщо показники жиру, води та ваги м\'язів недоступні, їх можна обчислити згідно з <a href="https://github.com/oliexdev/openScale/wiki/Body-metric-estimations">науковими публікаціями</a>.</string>
-    <string name="label_slide_support_main_text">openScale потребує вашої допомоги. Створіть <a href="https://github.com/oliexdev/openScale/issues">нове issue</a>, якщо ви знайшли помилку, маєте ідею або питання, чи хочете додати підтримку вашої моделі вагів з Bluetooth.
+    <string name="label_slide_support_main_text">openScale потребує вашої допомоги. Створіть <a href="https://github.com/oliexdev/openScale/issues">нове issue</a>, якщо ви знайшли помилку, маєте ідею або питання, чи хочете додати підтримку вашої моделі ваг з Bluetooth.
 \n
-\nПідтримайте авторів цього проєкту у подальшій розробці і постійному обслуговуванні, поставивши openScale позитивну оцінку у <a href="http://play.google.com/store/apps/details?id=com.health.openscale.pro">GooglePlay</a> або поставте зірочку у <a href="https://github.com/oliexdev/openScale">GitHub</a>.
+\nПідтримайте авторів цього проєкту у подальшій розробці й постійному обслуговуванні, поставивши openScale позитивну оцінку у <a href="http://play.google.com/store/apps/details?id=com.health.openscale.pro">GooglePlay</a> або поставте зірочку у <a href="https://github.com/oliexdev/openScale">GitHub</a>.
 \n
-\nМи високо цінимо ваші відгуки і підтримку. Дякуємо.</string>
+\nМи високо цінимо ваші відгуки та підтримку. Дякуємо.</string>
     <string name="info_assisted_weighing_old_reference_measurement">Увага: попереднє зважування-орієнтир давніше за добу</string>
     <string name="amputation_level_foot">Стопа</string>
     <string name="amputation_level_lower_leg_foot">Гомілка та стопа</string>
@@ -293,4 +293,7 @@
     <string name="label_trend">Тренд</string>
     <string name="label_prediction">Прогноз</string>
     <string name="label_trend_line">Лінія тренду</string>
+    <string name="info_select_scale_user">Виберіть користувача ваг</string>
+    <string name="info_enter_consent_code_for_scale_user">Введіть код користувача ваг %s</string>
+    <string name="info_create_new_user_on_scale">Створити нового користувача ваг.</string>
 </resources>
