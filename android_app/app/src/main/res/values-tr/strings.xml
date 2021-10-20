@@ -292,4 +292,7 @@
     <string name="label_trend">Eğilim</string>
     <string name="label_prediction">Tahmin</string>
     <string name="label_trend_line">Eğilim çizgisi</string>
+    <string name="info_select_scale_user">Tartı kullanıcısını seçin</string>
+    <string name="info_enter_consent_code_for_scale_user">Tartı kullanıcısı %s için PIN/onay kodunu girin</string>
+    <string name="info_create_new_user_on_scale">Tartıda yeni kullanıcı oluşturun.</string>
 </resources>
