@@ -179,7 +179,7 @@
     <string name="label_estimate_measurement_summary">Basierend auf Gewicht, Größe, Alter, Geschlecht, etc.</string>
     <string name="label_scale_not_supported">Wird deine Waage nicht unterstützt?</string>
     <string name="label_click_to_help_add_support">Klicke hier, wenn du helfen möchtest</string>
-    <string name="label_auto_backup">Automatiches Backup</string>
+    <string name="label_auto_backup">Automatisches Backup</string>
     <string name="label_auto_backup_schedule">Backup Zeitplan</string>
     <string name="label_overwrite_backup">Überschreibe Backup</string>
     <string name="label_daily">täglich</string>
@@ -292,4 +292,7 @@
     <string name="label_trend">Tendenz</string>
     <string name="label_prediction">Prognose</string>
     <string name="label_trend_line">Trendlinie</string>
+    <string name="info_select_scale_user">Benutzer auswählen</string>
+    <string name="info_enter_consent_code_for_scale_user">PIN/Zustimmungscode eingeben für Benutzer %s</string>
+    <string name="info_create_new_user_on_scale">Neuen Benutzer auf der Waage erstellen.</string>
 </resources>
