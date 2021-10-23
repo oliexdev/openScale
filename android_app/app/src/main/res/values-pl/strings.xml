@@ -293,4 +293,7 @@
     <string name="label_trend">Trend</string>
     <string name="label_trend_line">Linia trendu</string>
     <string name="label_prediction">Prognoza</string>
+    <string name="info_enter_consent_code_for_scale_user">Wprowadź kod PIN/kod zgody dla użytkownika wagi %s</string>
+    <string name="info_create_new_user_on_scale">Utwórz nowego użytkownika wagi.</string>
+    <string name="info_select_scale_user">Wybierz użytkownika wagi</string>
 </resources>
