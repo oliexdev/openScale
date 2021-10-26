@@ -109,4 +109,53 @@
     <string name="error_exporting">Tidak dapat mengekspor</string>
     <string name="error_value_range">Nilai di luar jangkauan</string>
     <string name="error_value_required">Nilai harus diisi</string>
+    <string name="activity_level_heavy">Berat</string>
+    <string name="activity_level_extreme">Ekstrem</string>
+    <string name="label_slide_welcome_top_text">Selamat datang di
+\nopenScale</string>
+    <string name="amputation_level_foot">Kaki</string>
+    <string name="amputation_level_none">Tidak ada amputasi</string>
+    <string name="label_slide_privacy_top_text">Lindungi data kesehatan pribadi Anda.</string>
+    <string name="label_slide_privacy_main_text">openScale tidak mengirim data apa pun ke cloud dan tidak memiliki izin untuk mengakses internet adalah jaminan.
+\n
+\nJika Anda benar-benar ingin menyinkronkan berat badan Anda ke GoogleFit atau dengan MQTT, Anda dapat menginstal <a href="https://play.google.com/store/apps/details?id=com.health.openscale.sync"> openScale sync</a>.</string>
+    <string name="label_slide_bluetooth_main_text">openScale memiliki dukungan bawaan untuk sejumlah timbangan Bluetooth dari berbagai produsen.
+\n
+\nKami terus meningkatkan dan memperluas rangkaian timbangan yang didukung. Anda dapat menemukan daftar lengkap dan tingkat dukungan untuk setiap skala di <a href="https://github.com/oliexdev/openScale/wiki/Supported-scales-in-openScale">GitHub</a>.</string>
+    <string name="label_amputation">Amputasi</string>
+    <string name="label_slide_opensource_main_text">openScale dilisensikan di bawah <a href="https://github.com/oliexdev/openScale/blob/master/LICENSE">GPLv3 </a>.
+\n
+\nSemua perhitungan tubuh transparan dan tidak ada fungsi transfer data tersembunyi atau identifikasi pengguna yang dilakukan.
+\n
+\nAnda dapat menemukan kode sumber lengkap di <a href="https://github.com/oliexdev/openScale">GitHub</a>. Pelajari lebih lanjut tentang openScale dengan meninjaunya.</string>
+    <string name="label_slide_support_top_text">Bantu tingkatkan openScale.</string>
+    <string name="label_slide_support_main_text">OpenScale membutuhkan Anda. Buat <a href="https://github.com/oliexdev/openScale/issues">issue baru</a> jika Anda menemukan bug, memiliki ide, pertanyaan, atau ingin membantu mendukung skala Bluetooth Anda.
+\n
+\nDukung pencipta proyek ini dalam pengembangan lebih lanjut dan pemeliharaan berkelanjutan dengan memberikan openScale peringkat positif pada <a href="http://play.google.com/store/apps/details?id=com.health.openscale.pro"> GooglePlay </a> atau bintang itu di <a href="https://github.com/oliexdev/openScale"> GitHub </a>.
+\n
+\nDukungan dan umpan balik positif Anda sangat dihargai. Terima kasih.</string>
+    <string name="label_amputation_left">Amputasi kiri</string>
+    <string name="label_amputation_right">Amputasi kanan</string>
+    <string name="label_development">Pengembangan</string>
+    <string name="label_debug_log">Simpan log debug ke file</string>
+    <string name="label_select_user">Pilih pengguna</string>
+    <string name="label_configure_widget">Atur widget</string>
+    <string name="label_weekly">mingguan</string>
+    <string name="label_slide_welcome_main_text">Software open-source pelacak berat dan ukuran tubuh, dengan dukungan Bluetooth.</string>
+    <string name="label_slide_user_top_text">Mendukung multi-pengguna.</string>
+    <string name="label_slide_opensource_top_text">Ini adalah software open-source dengan tingkat transparansi yang tinggi.</string>
+    <string name="label_slide_bluetooth_top_text">Dukungan berbagai skala Bluetooth dari produsen yang berbeda.</string>
+    <string name="label_slide_metrics_top_text">Lacak dan analisis metrik tubuh Anda.</string>
+    <string name="label_slide_metrics_main_text">openScale mendukung lebih dari 22 metrik tubuh.
+\n
+\nAnda bisa mengaturnya sesuai kebutuhan.
+\n
+\nJika lemak tubuh, air tubuh dan massa tubuh tanpa lemak hilang, dapat diperkirakan berdasarkan <a href="https://github.com/oliexdev/openScale/wiki/Body-metric-estimations"> publikasi ilmiah </a>.</string>
+    <string name="info_create_new_user_on_scale">Buat pengguna baru pada skala .</string>
+    <string name="label_slide_user_main_text">Anda tidak perlu membuat akun online untuk menggunakan openScale.
+\n
+\nMetrik tubuh dihitung dari pengukuran.</string>
+    <string name="label_upgrade_to_openScale_pro">Silakan upgrade ke openScale pro untuk dukungan Bluetooth</string>
+    <string name="activity_level_mild">Ringan</string>
+    <string name="activity_level_moderate">Sedang</string>
 </resources>
