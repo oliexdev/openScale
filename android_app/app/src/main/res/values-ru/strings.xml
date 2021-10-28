@@ -293,4 +293,7 @@
     <string name="label_trend_line">Линия тренда</string>
     <string name="label_trend">Тренд</string>
     <string name="label_prediction">Прогноз</string>
+    <string name="info_select_scale_user">Выберите пользователя весов</string>
+    <string name="info_enter_consent_code_for_scale_user">Введите PIN-код для пользователя весов %s</string>
+    <string name="info_create_new_user_on_scale">Создайте нового пользователя весов.</string>
 </resources>
