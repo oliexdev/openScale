@@ -292,4 +292,7 @@
     <string name="label_amputation_left">Amputazione sinistra</string>
     <string name="label_amputation">Amputazione</string>
     <string name="label_assisted_weighing">Pesata assistita</string>
+    <string name="info_enter_consent_code_for_scale_user">Inserire il NIP/codice di consenso per l\'utente della bilancia %s</string>
+    <string name="info_select_scale_user">Seleziona un utente</string>
+    <string name="info_create_new_user_on_scale">Crea un nuovo utente sulla bilancia.</string>
 </resources>
