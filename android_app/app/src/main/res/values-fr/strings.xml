@@ -160,8 +160,8 @@
     <string name="label_goal_line">Ligne pour l\'objectif</string>
     <string name="label_feedback_message_enjoying">Êtes-vous satisfait d\'openScale ?</string>
     <string name="label_feedback_message_rate_app">Laisser une évaluation sur Google Play ou GitHub ?</string>
-    <string name="error_max_scale_users">Le nombre maximum d\'utilisateurs de la balance atteint</string>
-    <string name="info_step_on_scale_for_reference">Montez svp sur la balance, pieds nus, pour les mesures de référence</string>
+    <string name="error_max_scale_users">Nombre maximal d\'utilisateurs de la balance atteint</string>
+    <string name="info_step_on_scale_for_reference">Veuillez monter sur la balance, pieds nus, pour les mesures de référence</string>
     <string name="info_measuring">En train de mesurer le poids : %.2f</string>
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">Une erreur est apparue.
 \n
@@ -292,4 +292,7 @@
     <string name="label_trend">Tendance</string>
     <string name="label_prediction">Prédiction</string>
     <string name="label_trend_line">Ligne de tendances</string>
+    <string name="info_create_new_user_on_scale">Créer un nouvel utilisateur sur la balance.</string>
+    <string name="info_enter_consent_code_for_scale_user">Entrez le NIP/code de consentement de l\'utilisateur de la balance %s</string>
+    <string name="info_select_scale_user">Sélectionner un utilisateur</string>
 </resources>
