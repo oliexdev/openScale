@@ -15,6 +15,8 @@
 */
 package com.health.openscale.gui.utils;
 
+import static android.content.Context.LOCATION_SERVICE;
+
 import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -33,10 +35,8 @@ import androidx.fragment.app.Fragment;
 
 import com.health.openscale.R;
 
-import static android.content.Context.LOCATION_SERVICE;
-
 public class PermissionHelper {
-    public final static int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
+    public final static int PERMISSIONS_REQUEST_ACCESS_BLUETOOTH = 1;
     public final static int PERMISSIONS_REQUEST_ACCESS_READ_STORAGE = 2;
     public final static int PERMISSIONS_REQUEST_ACCESS_WRITE_STORAGE = 3;
 
@@ -62,6 +62,21 @@ public class PermissionHelper {
             return false;
          }
 
+        int targetSdkVersion = fragment.getActivity().getApplicationInfo().targetSdkVersion;
+
+        String[] requiredPermissions;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && targetSdkVersion >= Build.VERSION_CODES.S) {
+            requiredPermissions = new String[]{Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT};
+            fragment.requestPermissions(requiredPermissions, PERMISSIONS_REQUEST_ACCESS_BLUETOOTH);
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && targetSdkVersion >= Build.VERSION_CODES.Q) {
+            return requestLocationPermission(fragment, new String[]{Manifest.permission.ACCESS_FINE_LOCATION});
+        } else return requestLocationPermission(fragment, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION});
+
+        return true;
+    }
+
+    private static boolean requestLocationPermission(final Fragment fragment, String[] requiredPermissions) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (fragment.getContext().checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(fragment.getActivity());
@@ -72,7 +87,7 @@ public class PermissionHelper {
                         .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 dialog.dismiss();
-                                fragment.requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+                                fragment.requestPermissions(requiredPermissions, PERMISSIONS_REQUEST_ACCESS_BLUETOOTH);
                             }
                         });
 

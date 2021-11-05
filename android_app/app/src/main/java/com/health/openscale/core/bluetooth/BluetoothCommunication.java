@@ -533,9 +533,10 @@ public abstract class BluetoothCommunication {
         // Otherwise the connection almost never succeeds.
         LocationManager locationManager = (LocationManager)context.getSystemService(LOCATION_SERVICE);
 
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED && (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
-                || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
+        if ((ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)  == PackageManager.PERMISSION_GRANTED) ||
+            (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED ) &&
+            (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
+            (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)))
         ) {
             Timber.d("Do LE scan before connecting to device");
             central.scanForPeripheralsWithAddresses(new String[]{macAddress});
