@@ -25,6 +25,7 @@ import static com.welie.blessed.BluetoothBytesParser.FORMAT_UINT8;
 
 import android.content.Context;
 
+import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.welie.blessed.BluetoothBytesParser;
 
 import java.util.UUID;
@@ -80,6 +81,20 @@ public class BluetoothBeurerBF105 extends BluetoothStandardWeightProfile {
         else {
             super.onBluetoothNotify(characteristic, value);
         }
+    }
+
+    @Override
+    protected ScaleMeasurement bodyCompositionMeasurementToScaleMeasurement(byte[] value) {
+        ScaleMeasurement measurement = super.bodyCompositionMeasurementToScaleMeasurement(value);
+        float weight = measurement.getWeight();
+        if (weight == 0.f && previousMeasurement != null) {
+            weight = previousMeasurement.getWeight();
+        }
+        if (weight != 0.f) {
+            float water = Math.round(((measurement.getWater() / weight) * 10000.f))/100.f;
+            measurement.setWater(water);
+        }
+        return measurement;
     }
 
     @Override
