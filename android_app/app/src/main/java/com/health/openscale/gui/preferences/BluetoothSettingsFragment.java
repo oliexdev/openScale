@@ -100,9 +100,7 @@ public class BluetoothSettingsFragment extends Fragment {
     @Override
     public void onResume() {
         if (PermissionHelper.requestBluetoothPermission(this)) {
-            if (PermissionHelper.requestLocationServicePermission(this)) {
-                startBluetoothDiscovery();
-            }
+            startBluetoothDiscovery();
         }
         super.onResume();
     }
@@ -401,10 +399,10 @@ public class BluetoothSettingsFragment extends Fragment {
                 }
 
                 if (allGranted) {
-                    if (PermissionHelper.requestLocationServicePermission(this)) {
-                        startBluetoothDiscovery();
-                    }
+                    Timber.d("All Bluetooth permissions granted");
+                    startBluetoothDiscovery();
                 } else {
+                    Timber.d("At least one Bluetooth permission was not granted");
                     Toast.makeText(requireContext(), R.string.permission_not_granted, Toast.LENGTH_SHORT).show();
                 }
                 break;

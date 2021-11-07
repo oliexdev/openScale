@@ -35,6 +35,8 @@ import androidx.fragment.app.Fragment;
 
 import com.health.openscale.R;
 
+import timber.log.Timber;
+
 public class PermissionHelper {
     public final static int PERMISSIONS_REQUEST_ACCESS_BLUETOOTH = 1;
     public final static int PERMISSIONS_REQUEST_ACCESS_READ_STORAGE = 2;
@@ -67,43 +69,51 @@ public class PermissionHelper {
         String[] requiredPermissions;
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && targetSdkVersion >= Build.VERSION_CODES.S) {
+            Timber.d("SDK >= 31 request for Bluetooth Scan and Bluetooth connect permissions");
             requiredPermissions = new String[]{Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT};
             fragment.requestPermissions(requiredPermissions, PERMISSIONS_REQUEST_ACCESS_BLUETOOTH);
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && targetSdkVersion >= Build.VERSION_CODES.Q) {
+            Timber.d("SDK >= 29 request for Access fine location permission");
             return requestLocationPermission(fragment, new String[]{Manifest.permission.ACCESS_FINE_LOCATION});
-        } else return requestLocationPermission(fragment, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION});
+        } else {
+            Timber.d("SDK < 29 request for coarse location permission");
+            return requestLocationPermission(fragment, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION});
+        }
 
         return true;
     }
 
     private static boolean requestLocationPermission(final Fragment fragment, String[] requiredPermissions) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (fragment.getContext().checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(fragment.getActivity());
+            if (requestLocationServicePermission(fragment)) {
+                if (fragment.getContext().checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(fragment.getActivity());
 
-                builder.setMessage(R.string.permission_bluetooth_info)
-                        .setTitle(R.string.permission_bluetooth_info_title)
-                        .setIcon(R.drawable.ic_preferences_about)
-                        .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                dialog.dismiss();
-                                fragment.requestPermissions(requiredPermissions, PERMISSIONS_REQUEST_ACCESS_BLUETOOTH);
-                            }
-                        });
+                    builder.setMessage(R.string.permission_bluetooth_info)
+                            .setTitle(R.string.permission_bluetooth_info_title)
+                            .setIcon(R.drawable.ic_preferences_about)
+                            .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    dialog.dismiss();
+                                    fragment.requestPermissions(requiredPermissions, PERMISSIONS_REQUEST_ACCESS_BLUETOOTH);
+                                }
+                            });
 
-                Dialog alertDialog = builder.create();
-                alertDialog.setCanceledOnTouchOutside(false);
-                alertDialog.show();
-                return false;
+                    Dialog alertDialog = builder.create();
+                    alertDialog.setCanceledOnTouchOutside(false);
+                    alertDialog.show();
+                    return false;
+                }
             }
         }
 
         return true;
     }
 
-    public static boolean requestLocationServicePermission(final Fragment fragment) {
+    private static boolean requestLocationServicePermission(final Fragment fragment) {
         LocationManager locationManager = (LocationManager) fragment.getActivity().getSystemService(LOCATION_SERVICE);
         if (!(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))) {
+            Timber.d("No GPS or Network location service is enabled, ask user for permission");
 
             AlertDialog.Builder builder = new AlertDialog.Builder(fragment.getContext());
             builder.setTitle(R.string.permission_bluetooth_info_title);
