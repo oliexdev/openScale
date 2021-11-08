@@ -114,7 +114,7 @@ public class BluetoothFactory {
         if (deviceName.equals("ADV") || deviceName.equals("Chipsea-BLE")) {
             return new BluetoothOKOK(context);
         }
-        if (deviceName.equals("BF105")) {
+        if (deviceName.equals("BF105") || deviceName.equals("BF720")) {
             return new BluetoothBeurerBF105(context);
         }
         if (deviceName.equals("BF600") || deviceName.equals("BF850")) {
