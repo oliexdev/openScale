@@ -88,7 +88,14 @@ android {
 
     buildTypes {
         debug {
-            archivesBaseName = "openScale"
+            // don't include version number into the apk filename for debug build type so Travis can find it
+            applicationVariants.all { variant ->
+                variant.outputs.all { output ->
+                    if (variant.buildType.name == "debug") {
+                        outputFileName = "openScale-debug.apk"
+                    }
+                }
+            }
         }
         release {
             archivesBaseName = "openScale-"+defaultConfig.versionName
