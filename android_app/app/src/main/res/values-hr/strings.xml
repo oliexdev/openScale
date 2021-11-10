@@ -293,4 +293,7 @@
     <string name="label_trend_line">Smjer trenda</string>
     <string name="label_trend">Trend</string>
     <string name="label_prediction">Predviđanje</string>
+    <string name="info_create_new_user_on_scale">Kreiraj novog korisnika vage.</string>
+    <string name="info_select_scale_user">Odaberi korisnika vage</string>
+    <string name="info_enter_consent_code_for_scale_user">Upiši PIN/kod za korisnika vage %s</string>
 </resources>
