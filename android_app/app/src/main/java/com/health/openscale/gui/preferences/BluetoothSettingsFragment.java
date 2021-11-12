@@ -102,6 +102,7 @@ public class BluetoothSettingsFragment extends Fragment {
         if (PermissionHelper.requestBluetoothPermission(this)) {
             startBluetoothDiscovery();
         }
+
         super.onResume();
     }
 
@@ -404,6 +405,13 @@ public class BluetoothSettingsFragment extends Fragment {
                 } else {
                     Timber.d("At least one Bluetooth permission was not granted");
                     Toast.makeText(requireContext(), R.string.permission_not_granted, Toast.LENGTH_SHORT).show();
+
+                    if (getActivity().findViewById(R.id.nav_host_fragment) != null){
+                        Navigation.findNavController(requireActivity(), R.id.nav_host_fragment).getPreviousBackStackEntry().getSavedStateHandle().set("update", true);
+                        Navigation.findNavController(requireActivity(), R.id.nav_host_fragment).navigateUp();
+                    } else {
+                        getActivity().finish();
+                    }
                 }
                 break;
             }

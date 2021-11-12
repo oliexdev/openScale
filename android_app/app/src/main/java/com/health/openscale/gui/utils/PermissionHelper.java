@@ -72,6 +72,7 @@ public class PermissionHelper {
             Timber.d("SDK >= 31 request for Bluetooth Scan and Bluetooth connect permissions");
             requiredPermissions = new String[]{Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT};
             fragment.requestPermissions(requiredPermissions, PERMISSIONS_REQUEST_ACCESS_BLUETOOTH);
+            return false;
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && targetSdkVersion >= Build.VERSION_CODES.Q) {
             Timber.d("SDK >= 29 request for Access fine location permission");
             return requestLocationPermission(fragment, new String[]{Manifest.permission.ACCESS_FINE_LOCATION});
@@ -79,8 +80,6 @@ public class PermissionHelper {
             Timber.d("SDK < 29 request for coarse location permission");
             return requestLocationPermission(fragment, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION});
         }
-
-        return true;
     }
 
     private static boolean requestLocationPermission(final Fragment fragment, String[] requiredPermissions) {
