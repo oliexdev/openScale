@@ -15,6 +15,8 @@
 */
 package com.health.openscale.core.alarm;
 
+import static android.content.Context.NOTIFICATION_SERVICE;
+
 import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -25,6 +27,8 @@ import android.content.Intent;
 import android.os.Build;
 import android.service.notification.StatusBarNotification;
 
+import androidx.core.app.NotificationCompat;
+
 import com.health.openscale.R;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.gui.MainActivity;
@@ -34,10 +38,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import androidx.core.app.NotificationCompat;
 import timber.log.Timber;
-
-import static android.content.Context.NOTIFICATION_SERVICE;
 
 public class AlarmHandler
 {
@@ -116,7 +117,7 @@ public class AlarmHandler
         Intent alarmIntent = new Intent(context, ReminderBootReceiver.class);
         alarmIntent.putExtra(INTENT_EXTRA_ALARM, true);
 
-        return PendingIntent.getBroadcast(context, dayOfWeek, alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        return PendingIntent.getBroadcast(context, dayOfWeek, alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
 
     public void disableAllAlarms(Context context)
@@ -156,7 +157,7 @@ public class AlarmHandler
         Intent notifyIntent = new Intent(context, MainActivity.class);
 
         PendingIntent notifyPendingIntent =
-                PendingIntent.getActivity(context, 0, notifyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                PendingIntent.getActivity(context, 0, notifyIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context, "openScale_notify");
 
