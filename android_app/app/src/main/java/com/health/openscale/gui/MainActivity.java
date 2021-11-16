@@ -591,10 +591,19 @@ public class MainActivity extends AppCompatActivity
             return;
         }
 
+        connectToBluetooth();
+    }
+
+    private void connectToBluetooth() {
+        String deviceName = prefs.getString(
+                BluetoothSettingsFragment.PREFERENCE_KEY_BLUETOOTH_DEVICE_NAME, "");
+        String hwAddress = prefs.getString(
+                BluetoothSettingsFragment.PREFERENCE_KEY_BLUETOOTH_HW_ADDRESS, "");
+
         Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_try_connection) + " " + deviceName, Toast.LENGTH_SHORT).show();
         setBluetoothStatusIcon(R.drawable.ic_bluetooth_searching);
 
-        if (!openScale.connectToBluetoothDevice(deviceName, hwAddress, callbackBtHandler)) {
+        if (!OpenScale.getInstance().connectToBluetoothDevice(deviceName, hwAddress, callbackBtHandler)) {
             setBluetoothStatusIcon(R.drawable.ic_bluetooth_connection_lost);
             Toast.makeText(getApplicationContext(), deviceName + " " + getResources().getString(R.string.label_bt_device_no_support), Toast.LENGTH_SHORT).show();
         }
@@ -902,7 +911,7 @@ public class MainActivity extends AppCompatActivity
 
                 if (allGranted) {
                     Timber.d("All Bluetooth permissions granted");
-                    invokeConnectToBluetoothDevice();
+                    connectToBluetooth();
                 } else {
                     Timber.d("At least one Bluetooth permission was not granted");
                     Toast.makeText(this, R.string.permission_not_granted, Toast.LENGTH_SHORT).show();
