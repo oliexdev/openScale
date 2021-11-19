@@ -224,7 +224,7 @@
     <string name="activity_level_heavy">Intensywny</string>
     <string name="activity_level_extreme">Ekstremalny</string>
     <string name="label_contribute_translation">Pomoc w tłumaczeniu</string>
-    <string name="label_add_or_fix_translation">Dodaj nowe lub napraw istniejące</string>
+    <string name="label_add_or_fix_translation">Dodaj nowe lub popraw istniejące</string>
     <string name="label_development">Rozwój</string>
     <string name="activity_level_sedentary">Siedzący</string>
     <string name="permission_read_write_data_description">odczyt/zapis danych openScale, w tym informacji o użytkowniku i wszystkich zapisanych pomiarach</string>
