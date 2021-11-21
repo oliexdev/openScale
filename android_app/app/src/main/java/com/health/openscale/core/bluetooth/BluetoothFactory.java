@@ -110,7 +110,7 @@ public class BluetoothFactory {
         }
         if (deviceName.equals("Hoffen BS-8107")) {
             return new BluetoothHoffenBBS8107(context);
-	}
+	    }
         if (deviceName.equals("ADV") || deviceName.equals("Chipsea-BLE")) {
             return new BluetoothOKOK(context);
         }
@@ -122,6 +122,9 @@ public class BluetoothFactory {
         }
         if (deviceName.equals("SBF77") || deviceName.equals("BF950")) {
             return new BluetoothBeurerBF950(context, deviceName);
+        }
+        if (deviceName.equals("TNT_PAIR")) {
+            return new BluetoothTanita(context);
         }
         return null;
     }
