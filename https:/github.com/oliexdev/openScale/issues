@@ -1,0 +1,16 @@
+Build version: 2.4.5 
+Build date: 1981-01-01 01:01:02 
+Current date: 2021-11-27 22:21:26 
+Device: OPPO CPH2083 
+OS version: Android 9 (SDK 28) 
+ 
+Stack trace:  
+java.lang.NullPointerException: Attempt to invoke virtual method 'int android.widget.ListView.getCheckedItemPosition()' on a null object reference
+	at com.health.openscale.gui.MainActivity$10.onClick(MainActivity.java:487)
+	at com.android.internal.app.AlertController$ButtonHandler.handleMessage(AlertController.java:203)
+	at android.os.Handler.dispatchMessage(Handler.java:106)
+	at android.os.Looper.loop(Looper.java:233)
+	at android.app.ActivityThread.main(ActivityThread.java:7225)
+	at java.lang.reflect.Method.invoke(Native Method)
+	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:499)
+	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:962)
