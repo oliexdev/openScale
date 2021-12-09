@@ -196,15 +196,16 @@ public class BluetoothSettingsFragment extends Fragment {
 
     private void onDeviceFound(final ScanResult bleScanResult) {
         BluetoothDevice device = bleScanResult.getDevice();
+        Context context = getContext();
 
-        if (device.getName() == null || foundDevices.containsKey(device.getAddress())) {
+        if (device.getName() == null || foundDevices.containsKey(device.getAddress()) || context == null) {
             return;
         }
 
-        BluetoothDeviceView deviceView = new BluetoothDeviceView(requireContext());
+        BluetoothDeviceView deviceView = new BluetoothDeviceView(context);
         deviceView.setDeviceName(formatDeviceName(bleScanResult.getDevice()));
 
-        BluetoothCommunication btDevice = BluetoothFactory.createDeviceDriver(requireContext(), device.getName());
+        BluetoothCommunication btDevice = BluetoothFactory.createDeviceDriver(context, device.getName());
         if (btDevice != null) {
             Timber.d("Found supported device %s (driver: %s)",
                     formatDeviceName(device), btDevice.driverName());
@@ -216,7 +217,7 @@ public class BluetoothSettingsFragment extends Fragment {
             Timber.d("Found unsupported device %s",
                     formatDeviceName(device));
             deviceView.setIcon(R.drawable.ic_bluetooth_device_not_supported);
-            deviceView.setSummaryText(requireContext().getString(R.string.label_bt_device_no_support));
+            deviceView.setSummaryText(context.getString(R.string.label_bt_device_no_support));
             deviceView.setEnabled(false);
 
             if (OpenScale.DEBUG_MODE) {
