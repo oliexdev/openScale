@@ -83,26 +83,24 @@ public class PermissionHelper {
     }
 
     private static boolean requestLocationPermission(final Fragment fragment, String[] requiredPermissions) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (requestLocationServicePermission(fragment)) {
-                if (fragment.getContext().checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(fragment.getActivity());
+        if (requestLocationServicePermission(fragment)) {
+            if (fragment.getContext().checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(fragment.getActivity());
 
-                    builder.setMessage(R.string.permission_bluetooth_info)
-                            .setTitle(R.string.permission_bluetooth_info_title)
-                            .setIcon(R.drawable.ic_preferences_about)
-                            .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    dialog.dismiss();
-                                    fragment.requestPermissions(requiredPermissions, PERMISSIONS_REQUEST_ACCESS_BLUETOOTH);
-                                }
-                            });
+                builder.setMessage(R.string.permission_bluetooth_info)
+                        .setTitle(R.string.permission_bluetooth_info_title)
+                        .setIcon(R.drawable.ic_preferences_about)
+                        .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.dismiss();
+                                fragment.requestPermissions(requiredPermissions, PERMISSIONS_REQUEST_ACCESS_BLUETOOTH);
+                            }
+                        });
 
-                    Dialog alertDialog = builder.create();
-                    alertDialog.setCanceledOnTouchOutside(false);
-                    alertDialog.show();
-                    return false;
-                }
+                Dialog alertDialog = builder.create();
+                alertDialog.setCanceledOnTouchOutside(false);
+                alertDialog.show();
+                return false;
             }
         }
 
@@ -136,24 +134,20 @@ public class PermissionHelper {
     }
 
     public static boolean requestReadPermission(final Fragment fragment) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (fragment.getContext().checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                fragment.requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSIONS_REQUEST_ACCESS_READ_STORAGE);
-            } else {
-                return true;
-            }
+        if (fragment.getContext().checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            fragment.requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSIONS_REQUEST_ACCESS_READ_STORAGE);
+        } else {
+            return true;
         }
 
         return false;
     }
 
     public static boolean requestWritePermission(final Fragment fragment) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (fragment.getContext().checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                fragment.requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSIONS_REQUEST_ACCESS_WRITE_STORAGE);
-            } else {
-                return true;
-            }
+        if (fragment.getContext().checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            fragment.requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSIONS_REQUEST_ACCESS_WRITE_STORAGE);
+        } else {
+            return true;
         }
 
         return false;

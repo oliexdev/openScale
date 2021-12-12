@@ -1,0 +1,1 @@
+- fixed for Android 12 backup errors and Bluetooth connection erros

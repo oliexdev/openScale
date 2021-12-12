@@ -16,6 +16,7 @@
 
 package com.health.openscale.gui;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
@@ -24,6 +25,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Typeface;
 import android.net.Uri;
@@ -75,6 +77,7 @@ import com.health.openscale.gui.measurement.MeasurementEntryFragment;
 import com.health.openscale.gui.preferences.BluetoothSettingsFragment;
 import com.health.openscale.gui.preferences.UserSettingsFragment;
 import com.health.openscale.gui.slides.AppIntroActivity;
+import com.health.openscale.gui.utils.PermissionHelper;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -582,10 +585,25 @@ public class MainActivity extends AppCompatActivity
             return;
         }
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && getApplicationInfo().targetSdkVersion >= Build.VERSION_CODES.S) {
+            Timber.d("SDK >= 31 request for Bluetooth Scan and Bluetooth connect permissions");
+            requestPermissions(new String[]{Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT}, PermissionHelper.PERMISSIONS_REQUEST_ACCESS_BLUETOOTH);
+            return;
+        }
+
+        connectToBluetooth();
+    }
+
+    private void connectToBluetooth() {
+        String deviceName = prefs.getString(
+                BluetoothSettingsFragment.PREFERENCE_KEY_BLUETOOTH_DEVICE_NAME, "");
+        String hwAddress = prefs.getString(
+                BluetoothSettingsFragment.PREFERENCE_KEY_BLUETOOTH_HW_ADDRESS, "");
+
         Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_try_connection) + " " + deviceName, Toast.LENGTH_SHORT).show();
         setBluetoothStatusIcon(R.drawable.ic_bluetooth_searching);
 
-        if (!openScale.connectToBluetoothDevice(deviceName, hwAddress, callbackBtHandler)) {
+        if (!OpenScale.getInstance().connectToBluetoothDevice(deviceName, hwAddress, callbackBtHandler)) {
             setBluetoothStatusIcon(R.drawable.ic_bluetooth_connection_lost);
             Toast.makeText(getApplicationContext(), deviceName + " " + getResources().getString(R.string.label_bt_device_no_support), Toast.LENGTH_SHORT).show();
         }
@@ -875,6 +893,32 @@ public class MainActivity extends AppCompatActivity
                 getResources().getString(R.string.label_share_subject, selectedScaleUser.getUserName()));
 
         startActivity(Intent.createChooser(intent, getResources().getString(R.string.label_share)));
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        switch (requestCode) {
+            case PermissionHelper.PERMISSIONS_REQUEST_ACCESS_BLUETOOTH: {
+                boolean allGranted = true;
+                for (int result : grantResults) {
+                    if (result != PackageManager.PERMISSION_GRANTED) {
+                        allGranted = false;
+                        break;
+                    }
+                }
+
+                if (allGranted) {
+                    Timber.d("All Bluetooth permissions granted");
+                    connectToBluetooth();
+                } else {
+                    Timber.d("At least one Bluetooth permission was not granted");
+                    Toast.makeText(this, R.string.permission_not_granted, Toast.LENGTH_SHORT).show();
+                }
+                break;
+            }
+        }
     }
 
     @Override

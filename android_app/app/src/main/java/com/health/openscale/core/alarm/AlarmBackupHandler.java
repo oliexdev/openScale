@@ -75,7 +75,7 @@ public class AlarmBackupHandler
         Intent alarmIntent = new Intent(context, ReminderBootReceiver.class);
         alarmIntent.putExtra(INTENT_EXTRA_BACKUP_ALARM, true);
 
-        return PendingIntent.getBroadcast(context, ALARM_NOTIFICATION_ID, alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        return PendingIntent.getBroadcast(context, ALARM_NOTIFICATION_ID, alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
 
     public void disableAlarm(Context context) {

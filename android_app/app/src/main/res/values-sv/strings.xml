@@ -52,8 +52,8 @@
     <string name="label_goal_date_is">Måldatum:</string>
     <string name="label_weight_difference">Viktskillnad</string>
     <plurals name="label_days">
-        <item quantity="one">%d dag</item>
-        <item quantity="other">%d dagar</item>
+        <item quantity="one">dag %d</item>
+        <item quantity="other">dagar %d</item>
     </plurals>
     <string name="label_last_week">Medelvärde senaste veckan</string>
     <string name="label_last_month">Medelvärde senaste månaden</string>

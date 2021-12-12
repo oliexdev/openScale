@@ -144,7 +144,7 @@ public class WidgetProvider extends AppWidgetProvider {
 
         // Start main activity when widget is clicked
         Intent intent = new Intent(context, MainActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE);
         views.setOnClickPendingIntent(R.id.widget_layout, pendingIntent);
 
         appWidgetManager.updateAppWidget(appWidgetId, views);
