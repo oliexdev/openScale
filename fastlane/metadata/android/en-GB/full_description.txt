@@ -33,7 +33,7 @@ Weight, BMI (body mass index), body water, muscle, LBM (lean body mass), body fa
 
 <h2><b>Supported Bluetooth scales</b></h2>
 - Custom made Bluetooth scale
-- Beurer BF700, BF710, BF800, BF105, BF600, BF850 and BF950
+- Beurer BF700, BF710, BF800, BF105, BF720, BF600, BF850 and BF950
 - Digoo DG-S038H
 - Excelvan CF369BLE
 - Exingtech Y1
