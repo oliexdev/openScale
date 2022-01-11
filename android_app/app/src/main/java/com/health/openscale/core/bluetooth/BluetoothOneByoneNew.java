@@ -108,9 +108,10 @@ public class BluetoothOneByoneNew extends BluetoothCommunication{
         }
     }
 
-    private void populateMeasurement(@NonNull ScaleMeasurement measurement, int impedance, float weight) {
+    private void populateMeasurement(ScaleMeasurement measurement, int impedance, float weight) {
         ScaleUser user = OpenScale.getInstance().getSelectedScaleUser();
-        OneByoneNewLib onebyoneLib = new OneByoneNewLib(getUserGender(user), user.getAge(), user.getBodyHeight(), user.getActivityLevel().toInt());
+        float cmHeight = Converters.fromCentimeter(user.getBodyHeight(), user.getMeasureUnit());
+        OneByoneNewLib onebyoneLib = new OneByoneNewLib(getUserGender(user), user.getAge(), cmHeight, user.getActivityLevel().toInt());
         measurement.setWeight(weight);
         measurement.setDateTime(Calendar.getInstance().getTime());
         measurement.setFat(onebyoneLib.getBodyFatPercentage(weight, impedance));
