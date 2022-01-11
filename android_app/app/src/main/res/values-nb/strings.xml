@@ -292,4 +292,7 @@
     <string name="label_trend_line">Tendenslinje</string>
     <string name="label_trend">Tendens</string>
     <string name="label_prediction">Prognose</string>
+    <string name="info_select_scale_user">Velg vektbruker</string>
+    <string name="info_enter_consent_code_for_scale_user">Skriv inn PIN/samtykkekode for vektbruker %s</string>
+    <string name="info_create_new_user_on_scale">Lag ny vektbruker.</string>
 </resources>

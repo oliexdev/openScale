@@ -292,4 +292,7 @@
     <string name="label_trend">Tendencia</string>
     <string name="label_prediction">Proyección</string>
     <string name="label_trend_line">Línea de tendencia</string>
+    <string name="info_enter_consent_code_for_scale_user">Introduce PIN/código de consentimiento para el usuario %s</string>
+    <string name="info_create_new_user_on_scale">Crea nuevo usuario en la escala.</string>
+    <string name="info_select_scale_user">Selecciona usuario</string>
 </resources>

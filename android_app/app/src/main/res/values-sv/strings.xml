@@ -289,4 +289,8 @@
 \nKonfigurera appen så att den visar den data du bryr dig om.
 \n
 \n Om kroppsfett, kroppsvatten och fettfri kroppsvikt saknas kan de uppskattas baserat på <a href="https://github.com/oliexdev/openScale/wiki/Body-metric-estimations">vetenskapligt publicerade modeller</a>.</string>
+    <string name="label_assisted_weighing">Assisterad vägning</string>
+    <string name="label_enable_legend">Graflegend</string>
+    <string name="info_assisted_weighing_choose_reference_user">Välj referensanvändaren som vikten dras av</string>
+    <string name="info_enter_consent_code_for_scale_user">Ange PIN/samtyckeskod för våganvändaren %s</string>
 </resources>
