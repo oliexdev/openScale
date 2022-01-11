@@ -1,7 +1,8 @@
 package com.health.openscale.core.bluetooth;
 
 import android.content.Context;
-import android.icu.number.Scale;
+
+import androidx.annotation.NonNull;
 
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.bluetooth.lib.OneByoneNewLib;
@@ -10,7 +11,6 @@ import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
 
 import java.math.BigInteger;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
@@ -42,7 +42,7 @@ public class BluetoothOneByoneNew extends BluetoothCommunication{
 
         Timber.i("Received %s", new BigInteger(1, data).toString(16));
 
-        if(data.length < 20){
+        if(data.length < MSG_LENGTH){
             Timber.e("Received a message too short");
             return;
         }
@@ -51,21 +51,45 @@ public class BluetoothOneByoneNew extends BluetoothCommunication{
             Timber.e("Unrecognized message received from scale.");
         }
 
+        float weight;
+        int impedance;
+
 
         switch(data[2]){
             case (byte)0x00:
-                // real time measurement
+                // real time measurement OR historic measurement
+                // real time has the exact same format of 0x80, but we can ignore it
+                // we want to capture the historic measures
+
+                // filter out real time measurments
+                if (data[7] != (byte)0x80){
+                    Timber.i("Received real-time measurement. Skipping.");
+                    break;
+                }
+
+                Date time = getTimestamp32(data, 3);
+                weight = Converters.fromUnsignedInt24Be(data, 8) & 0x03ffff;
+                weight /= 1000;
+                impedance = Converters.fromUnsignedInt16Be(data, 15);
+
+                ScaleMeasurement historicMeasurement = new ScaleMeasurement();
+                populateMeasurement(historicMeasurement, impedance, weight);
+                historicMeasurement.setDateTime(time);
+                addScaleMeasurement(historicMeasurement);
+                Timber.i("Added historic measurement. Weight: %s, impedance: %s, timestamp: %s", weight, impedance, time.toString());
+                break;
+
             case (byte)0x80:
                 // final measurement
                 currentMeasurement = new ScaleMeasurement();
-                float weight = Converters.fromUnsignedInt24Be(data, 3) & 0x03ffff;
-                weight = weight/1000;
+                weight = Converters.fromUnsignedInt24Be(data, 3) & 0x03ffff;
+                weight = weight / 1000;
                 currentMeasurement.setWeight(weight);
                 Timber.d("Weight: %s", weight);
                 Timber.d("Weight after save: %s", currentMeasurement.getWeight());
                 break;
             case (byte)0x01:
-                int impedance = Converters.fromUnsignedInt24Be(data, 3);
+                impedance = Converters.fromUnsignedInt16Be(data, 4);
                 Timber.d("impedance: %s", impedance);
 
                 if(currentMeasurement == null){
@@ -73,15 +97,8 @@ public class BluetoothOneByoneNew extends BluetoothCommunication{
                     break;
                 }
 
-                ScaleUser user = OpenScale.getInstance().getSelectedScaleUser();
-                OneByoneNewLib onebyoneLib = new OneByoneNewLib(getUserGender(user), user.getAge(), user.getBodyHeight(), user.getActivityLevel().toInt());
-                currentMeasurement.setDateTime(Calendar.getInstance().getTime());
-                currentMeasurement.setFat(onebyoneLib.getBodyFatPercentage(currentMeasurement.getWeight(), impedance));
-                currentMeasurement.setWater(onebyoneLib.getWaterPercentage(currentMeasurement.getWeight(), impedance));
-                currentMeasurement.setBone(onebyoneLib.getBoneMass(currentMeasurement.getWeight(), impedance));
-                currentMeasurement.setVisceralFat(onebyoneLib.getVisceralFat(currentMeasurement.getWeight()));
-                currentMeasurement.setMuscle(onebyoneLib.getMuscleMass(currentMeasurement.getWeight(), impedance));
-                currentMeasurement.setLbm(onebyoneLib.getLBM(currentMeasurement.getWeight(), impedance));
+                float measurementWeight = currentMeasurement.getWeight();
+                populateMeasurement(currentMeasurement, impedance, measurementWeight);
                 addScaleMeasurement(currentMeasurement);
                 resumeMachineState();
                 sendUsersHistory(OpenScale.getInstance().getSelectedScaleUserId());
@@ -89,6 +106,19 @@ public class BluetoothOneByoneNew extends BluetoothCommunication{
             default:
                 Timber.e("Unrecognized message receveid");
         }
+    }
+
+    private void populateMeasurement(@NonNull ScaleMeasurement measurement, int impedance, float weight) {
+        ScaleUser user = OpenScale.getInstance().getSelectedScaleUser();
+        OneByoneNewLib onebyoneLib = new OneByoneNewLib(getUserGender(user), user.getAge(), user.getBodyHeight(), user.getActivityLevel().toInt());
+        measurement.setWeight(weight);
+        measurement.setDateTime(Calendar.getInstance().getTime());
+        measurement.setFat(onebyoneLib.getBodyFatPercentage(weight, impedance));
+        measurement.setWater(onebyoneLib.getWaterPercentage(weight, impedance));
+        measurement.setBone(onebyoneLib.getBoneMass(weight, impedance));
+        measurement.setVisceralFat(onebyoneLib.getVisceralFat(weight));
+        measurement.setMuscle(onebyoneLib.getMuscleMass(weight, impedance) * weight / 100);
+        measurement.setLbm(onebyoneLib.getLBM(weight, impedance));
     }
 
     @Override
@@ -116,7 +146,7 @@ public class BluetoothOneByoneNew extends BluetoothCommunication{
 
     private void sendWeightRequest() {
         ScaleUser currentUser = OpenScale.getInstance().getSelectedScaleUser();
-        byte[] msg_pre = new byte[20];
+        byte[] msg_pre = new byte[MSG_LENGTH];
         setupMeasurementMessage(msg_pre, 0);
         writeBytes(WEIGHT_MEASUREMENT_SERVICE, CMD_AFTER_MEASUREMENT, msg_pre, true);
 
@@ -133,7 +163,7 @@ public class BluetoothOneByoneNew extends BluetoothCommunication{
                     return u1LastMeasureDate.compareTo(u2LastMeasureDate);
                 }
         );
-        byte[] msg = new byte[20];
+        byte[] msg = new byte[MSG_LENGTH];
         int msgCounter = 0;
         for(int i = 0; i < scaleUsers.size(); i++){
             ScaleUser user = scaleUsers.get(i);
@@ -148,7 +178,7 @@ public class BluetoothOneByoneNew extends BluetoothCommunication{
             int entryPosition = i % 2;
 
             if (entryPosition == 0){
-                msg = new byte[20];
+                msg = new byte[MSG_LENGTH];
                 msgCounter ++;
                 msg[0] = HEADER_BYTES[0];
                 msg[1] = HEADER_BYTES[1];
@@ -166,7 +196,7 @@ public class BluetoothOneByoneNew extends BluetoothCommunication{
 
             if (entryPosition == 1 || i + 1 == scaleUsers.size()){
                 msg[18] = (byte)0xD4;
-                msg[19] = d4Checksum(msg, 0, 20);
+                msg[19] = d4Checksum(msg, 0, MSG_LENGTH);
                 writeBytes(WEIGHT_MEASUREMENT_SERVICE, CMD_AFTER_MEASUREMENT, msg, true);
             }
 
@@ -191,10 +221,12 @@ public class BluetoothOneByoneNew extends BluetoothCommunication{
 
     private void setTimestamp32(byte[] msg, int offset){
         long timestamp = System.currentTimeMillis()/1000L;
-        msg[offset] = (byte) (timestamp >> 24);
-        msg[offset+1] = (byte) (timestamp >> 16);
-        msg[offset+2] = (byte) (timestamp >> 8);
-        msg[offset+3] = (byte) timestamp;
+        Converters.toInt32Be(msg, offset, timestamp);
+    }
+
+    private Date getTimestamp32(byte[] msg, int offset){
+        long timestamp = Converters.fromUnsignedInt32Be(msg, offset);
+        return new Date(timestamp * 1000);
     }
 
     private boolean setupMeasurementMessage(byte[] msg, int offset){
@@ -269,10 +301,10 @@ public class BluetoothOneByoneNew extends BluetoothCommunication{
 
     // Since we need to send the impedance to the scale the next time,
     // we obtain it from the previous measurement using the LBM
-    public int getImpedanceFromLBM(ScaleUser user, ScaleMeasurement measurement){
+    public int getImpedanceFromLBM(ScaleUser user, ScaleMeasurement measurement) {
         float finalLbm = measurement.getLbm();
         float postImpedanceLbm = finalLbm + user.getAge() * 0.0542F;
-        float preImpedanceLbm = user.getBodyHeight()/100 * user.getBodyHeight()/100 * 9.058F + 12.226F + measurement.getWeight() * 0.32F;
+        float preImpedanceLbm = user.getBodyHeight() / 100 * user.getBodyHeight() / 100 * 9.058F + 12.226F + measurement.getWeight() * 0.32F;
         return Math.round((preImpedanceLbm - postImpedanceLbm) / 0.0068F);
     }
 
