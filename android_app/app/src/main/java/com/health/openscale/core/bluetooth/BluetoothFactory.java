@@ -82,6 +82,10 @@ public class BluetoothFactory {
         if (name.equals("Health Scale".toLowerCase(Locale.US))) {
             return new BluetoothOneByone(context);
         }
+        if(name.equals("1byone scale".toLowerCase(Locale.US))){
+            return new BluetoothOneByoneNew(context);
+        }
+
         if (name.equals("SENSSUN FAT".toLowerCase(Locale.US))) {
             return new BluetoothSenssun(context);
         }
