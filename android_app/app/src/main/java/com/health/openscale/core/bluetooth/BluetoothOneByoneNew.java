@@ -86,7 +86,6 @@ public class BluetoothOneByoneNew extends BluetoothCommunication{
                 weight = weight / 1000;
                 currentMeasurement.setWeight(weight);
                 Timber.d("Weight: %s", weight);
-                Timber.d("Weight after save: %s", currentMeasurement.getWeight());
                 break;
             case (byte)0x01:
                 impedance = Converters.fromUnsignedInt16Be(data, 4);
@@ -101,7 +100,6 @@ public class BluetoothOneByoneNew extends BluetoothCommunication{
                 populateMeasurement(currentMeasurement, impedance, measurementWeight);
                 addScaleMeasurement(currentMeasurement);
                 resumeMachineState();
-                sendUsersHistory(OpenScale.getInstance().getSelectedScaleUserId());
                 break;
             default:
                 Timber.e("Unrecognized message receveid");
@@ -131,12 +129,23 @@ public class BluetoothOneByoneNew extends BluetoothCommunication{
     protected boolean onNextStep(int stepNr) {
         switch(stepNr){
             case 0:
-                sendWeightRequest();
+                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC_BODY_COMPOSITION);
                 break;
             case 1:
                 // Setup notification on new weight
-                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, WEIGHT_MEASUREMENT_CHARACTERISTIC_BODY_COMPOSITION);
+                sendWeightRequest();
+
+                // Update the user history on the scale
+                // Priority given to the current user
+                ScaleUser currentUser = OpenScale.getInstance().getSelectedScaleUser();
+                sendUsersHistory(currentUser.getId());
+
+                // We wait for the response
                 stopMachineState();
+                break;
+            case 2:
+                // After the measurement took place, we store the data and send back to the scale
+                sendUsersHistory(OpenScale.getInstance().getSelectedScaleUserId());
                 break;
             default:
                 return false;
@@ -146,12 +155,9 @@ public class BluetoothOneByoneNew extends BluetoothCommunication{
     }
 
     private void sendWeightRequest() {
-        ScaleUser currentUser = OpenScale.getInstance().getSelectedScaleUser();
-        byte[] msg_pre = new byte[MSG_LENGTH];
-        setupMeasurementMessage(msg_pre, 0);
-        writeBytes(WEIGHT_MEASUREMENT_SERVICE, CMD_AFTER_MEASUREMENT, msg_pre, true);
-
-        sendUsersHistory(currentUser.getId());
+        byte[] msgSetup = new byte[MSG_LENGTH];
+        setupMeasurementMessage(msgSetup, 0);
+        writeBytes(WEIGHT_MEASUREMENT_SERVICE, CMD_AFTER_MEASUREMENT, msgSetup, true);
     }
 
     private void sendUsersHistory(int priorityUser){
