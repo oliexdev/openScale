@@ -118,7 +118,7 @@ public class BluetoothOneByoneNew extends BluetoothCommunication{
         measurement.setWater(onebyoneLib.getWaterPercentage(weight, impedance));
         measurement.setBone(onebyoneLib.getBoneMass(weight, impedance));
         measurement.setVisceralFat(onebyoneLib.getVisceralFat(weight));
-        measurement.setMuscle(onebyoneLib.getMuscleMass(weight, impedance) * weight / 100);
+        measurement.setMuscle(onebyoneLib.getSkeletonMusclePercentage(weight, impedance));
         measurement.setLbm(onebyoneLib.getLBM(weight, impedance));
     }
 

@@ -135,6 +135,15 @@ public class OneByoneNewLib {
         return getBounded(muscleMass, 10, 120);
     }
 
+    public float getSkeletonMusclePercentage(float weight, int impedance){
+        float skeletonMuscleMass = getWaterPercentage(weight, impedance);
+        skeletonMuscleMass *= weight;
+        skeletonMuscleMass *= 0.8422F  * 0.01F;
+        skeletonMuscleMass -= 2.9903;
+        skeletonMuscleMass /= weight;
+        return skeletonMuscleMass * 100;
+    }
+
     public float getVisceralFat(float weight){
         float visceralFat;
         if (sex == 1) {
