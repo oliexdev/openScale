@@ -205,7 +205,11 @@ public class BluetoothOneByoneNew extends BluetoothCommunication{
     }
 
     private void setMeasurementEntry(byte[] msg, int offset, int entryNum, int height, float weight, int sex, int age, int impedance, boolean impedanceLe){
-        int roundedWeight = Math.round(weight*100);
+        // The scale wants a value rounded to the first decimal place
+        // Otherwise we receive always a UP/DOWN arrow since we would communicate
+        // AB.CX instead of AB.D0 where D0 is the approximation of CX and it is what the scale uses
+        // to compute the UP/DOWN arrows
+        int roundedWeight = Math.round( weight * 10) * 10;
         msg[offset] = (byte)(entryNum & 0xFF);
         msg[offset+1] = (byte)(height & 0xFF);
         Converters.toInt16Be(msg, offset+2, roundedWeight);
