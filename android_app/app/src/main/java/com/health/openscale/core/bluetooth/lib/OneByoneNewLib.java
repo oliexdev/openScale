@@ -96,7 +96,9 @@ public class OneByoneNewLib {
                 bodyFat *= 1.02;
             } else if(weight > 60){
                 bodyFat *= 0.96;
-            } else if(weight > 160){
+            }
+
+            if(height > 160){
                 bodyFat *= 1.03;
             }
         } else {
