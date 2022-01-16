@@ -73,7 +73,12 @@ public class BluetoothOneByoneNew extends BluetoothCommunication{
                 impedance = Converters.fromUnsignedInt16Be(data, 15);
 
                 ScaleMeasurement historicMeasurement = new ScaleMeasurement();
-                populateMeasurement(historicMeasurement, impedance, weight);
+                int assignableUserId = OpenScale.getInstance().getAssignableUser(weight);
+                if(assignableUserId == -1){
+                    Timber.i("Discarding historic measurement: no user found with intelligent user recognition");
+                    break;
+                }
+                populateMeasurement(assignableUserId, historicMeasurement, impedance, weight);
                 historicMeasurement.setDateTime(time);
                 addScaleMeasurement(historicMeasurement);
                 Timber.i("Added historic measurement. Weight: %s, impedance: %s, timestamp: %s", weight, impedance, time.toString());
@@ -97,7 +102,8 @@ public class BluetoothOneByoneNew extends BluetoothCommunication{
                 }
 
                 float measurementWeight = currentMeasurement.getWeight();
-                populateMeasurement(currentMeasurement, impedance, measurementWeight);
+                ScaleUser user = OpenScale.getInstance().getSelectedScaleUser();
+                populateMeasurement(user.getId(), currentMeasurement, impedance, measurementWeight);
                 addScaleMeasurement(currentMeasurement);
                 resumeMachineState();
                 break;
@@ -106,10 +112,15 @@ public class BluetoothOneByoneNew extends BluetoothCommunication{
         }
     }
 
-    private void populateMeasurement(ScaleMeasurement measurement, int impedance, float weight) {
-        ScaleUser user = OpenScale.getInstance().getSelectedScaleUser();
+    private void populateMeasurement(int userId, ScaleMeasurement measurement, int impedance, float weight) {
+        if(userId == -1){
+            Timber.e("Discarding measurement population since invalid user");
+            return;
+        }
+        ScaleUser user = OpenScale.getInstance().getScaleUser(userId);
         float cmHeight = Converters.fromCentimeter(user.getBodyHeight(), user.getMeasureUnit());
         OneByoneNewLib onebyoneLib = new OneByoneNewLib(getUserGender(user), user.getAge(), cmHeight, user.getActivityLevel().toInt());
+        measurement.setUserId(userId);
         measurement.setWeight(weight);
         measurement.setDateTime(Calendar.getInstance().getTime());
         measurement.setFat(onebyoneLib.getBodyFatPercentage(weight, impedance));

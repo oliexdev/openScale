@@ -77,6 +77,7 @@ public class OpenScale {
     public static boolean DEBUG_MODE = false;
 
     public static final String DATABASE_NAME = "openScale.db";
+    public static final float SMART_USER_ASSIGN_DEFAULT_RANGE = 15.0F;
 
     private static OpenScale instance;
 
@@ -273,11 +274,7 @@ public class OpenScale {
 
         // Check user id and do a smart user assign if option is enabled
         if (scaleMeasurement.getUserId() == -1) {
-            if (prefs.getBoolean("smartUserAssign", false)) {
-                scaleMeasurement.setUserId(getSmartUserAssignment(scaleMeasurement.getWeight(), 15.0f));
-            } else {
-                scaleMeasurement.setUserId(getSelectedScaleUser().getId());
-            }
+            scaleMeasurement.setUserId(getAssignableUser(scaleMeasurement.getWeight()));
 
             // don't add scale data if no user is selected
             if (scaleMeasurement.getUserId() == -1) {
@@ -358,6 +355,20 @@ public class OpenScale {
         }
 
         return scaleMeasurement.getUserId();
+    }
+
+
+    public int getAssignableUser(float weight){
+        // Not the best function name
+        // Returns smart user assignment, if options allow it
+        // Otherwise it returns the selected user
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+
+        if (prefs.getBoolean("smartUserAssign", false)) {
+            return getSmartUserAssignment(weight, SMART_USER_ASSIGN_DEFAULT_RANGE);
+        } else {
+            return getSelectedScaleUser().getId();
+        }
     }
 
     private int getSmartUserAssignment(float weight, float range) {
