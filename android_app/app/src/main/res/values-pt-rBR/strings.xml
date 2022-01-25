@@ -210,4 +210,7 @@
     <string name="label_amputation">Amputação</string>
     <string name="label_assisted_weighing">Pesagem assistida</string>
     <string name="label_age">Idade</string>
+    <string name="info_select_scale_user">Selecione a balança para utilização</string>
+    <string name="info_enter_consent_code_for_scale_user">Entre com PIN/Código de Consentimento do usuário %s</string>
+    <string name="permission_read_write_data_label">Ler/Escrever dados do openScale</string>
 </resources>
