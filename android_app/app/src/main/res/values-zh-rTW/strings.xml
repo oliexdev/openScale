@@ -218,4 +218,14 @@
     <string name="label_fat_caliper">體脂夾</string>
     <string name="action_donation">捐赠</string>
     <string name="label_empty">空</string>
+    <string name="info_assisted_weighing_no_reference_measurements">參考用戶沒有測量值</string>
+    <string name="info_assisted_weighing_old_reference_measurement">警告：上次參考測量時間超過一天</string>
+    <string name="info_assisted_weighing_choose_reference_user">選擇減去重量的參考使用者</string>
+    <string name="info_assisted_weighing_no_reference_user">沒有可用的參考使用者，請創建一個</string>
+    <string name="label_amputation_left">左截肢</string>
+    <string name="label_amputation_right">右截肢</string>
+    <string name="label_assisted_weighing">輔助稱重</string>
+    <string name="label_amputation">截肢</string>
+    <string name="label_age">年齡</string>
+    <string name="info_create_new_user_on_scale">在秤上建立新用戶。</string>
 </resources>
