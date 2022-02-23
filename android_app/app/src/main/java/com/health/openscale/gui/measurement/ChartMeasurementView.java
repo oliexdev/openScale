@@ -29,6 +29,7 @@ import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.DataSet;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
@@ -40,6 +41,7 @@ import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
+import com.health.openscale.core.utils.CubicSpline;
 import com.health.openscale.core.utils.PolynomialFitter;
 import com.health.openscale.gui.utils.ColorUtil;
 
@@ -52,6 +54,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Stack;
+import java.util.function.Consumer;
 
 import static java.time.temporal.ChronoUnit.DAYS;
 
@@ -409,22 +412,37 @@ public class ChartMeasurementView extends LineChart {
     }
 
     private void addMeasurementLine(List<ILineDataSet> lineDataSets, List<Entry> lineEntries, FloatMeasurementView measurementView) {
-        LineDataSet measurementLine = new LineDataSet(lineEntries, measurementView.getName().toString());
-        measurementLine.setLineWidth(1.5f);
-        measurementLine.setValueTextSize(10.0f);
-        measurementLine.setColor(measurementView.getColor());
-        measurementLine.setValueTextColor(ColorUtil.getTintColor(getContext()));
-        measurementLine.setCircleColor(measurementView.getColor());
-        measurementLine.setCircleHoleColor(measurementView.getColor());
-        measurementLine.setAxisDependency(measurementView.getSettings().isOnRightAxis() ? YAxis.AxisDependency.RIGHT : YAxis.AxisDependency.LEFT);
-        measurementLine.setHighlightEnabled(true);
-        measurementLine.setDrawHighlightIndicators(true);
-        measurementLine.setHighlightLineWidth(1.5f);
-        measurementLine.setDrawHorizontalHighlightIndicator(false);
-        measurementLine.setHighLightColor(Color.RED);
-        measurementLine.setDrawCircles(prefs.getBoolean("pointsEnable", true));
-        measurementLine.setDrawValues(prefs.getBoolean("labelsEnable", false));
-        measurementLine.setMode(LineDataSet.Mode.HORIZONTAL_BEZIER);
+        List<Entry> interpolationValues = new Stack<>();
+
+        System.out.println("entry: " + lineEntries.size());
+
+        if(lineEntries.size() > 0){
+            CubicSpline cubicSpline = new CubicSpline(lineEntries);
+            cubicSpline.calculate();
+
+            double minX = lineEntries.get(0).getX();
+            double maxX = lineEntries.get(lineEntries.size()-1).getX();
+
+            System.out.println(minX + " ; " + maxX);
+
+            for(double x=minX;x<maxX;x+=0.1){
+                interpolationValues.add(new Entry(
+                        (float) x,
+                        (float) cubicSpline.predict(x)
+                ));
+            }
+        }
+        System.out.println("interpolation: " + interpolationValues.size());
+
+        LineDataSet measurementLine = new LineDataSet(interpolationValues, measurementView.getName().toString());
+        setupLine(measurementLine, measurementView);
+        measurementLine.setDrawCircles(false);
+
+        LineDataSet circlesDataSet = new LineDataSet(lineEntries, "");
+        setupLine(circlesDataSet, measurementView);
+        circlesDataSet.setColor(0);
+
+        //measurementLine.setMode(LineDataSet.Mode.HORIZONTAL_BEZIER);
         if (prefs.getBoolean("trendLine", false)) {
             // show only data point if trend line is enabled
             measurementLine.enableDashedLine(0, 1, 0);
@@ -434,13 +452,32 @@ public class ChartMeasurementView extends LineChart {
             if (isInGraphKey) {
                 if (measurementView.getSettings().isInGraph()) {
                     lineDataSets.add(measurementLine);
+                    lineDataSets.add(circlesDataSet);
                 }
             } else {
                 if (measurementView.getSettings().isInOverviewGraph()) {
                     lineDataSets.add(measurementLine);
+                    lineDataSets.add(circlesDataSet);
                 }
             }
         }
+    }
+
+    private void setupLine(LineDataSet line, FloatMeasurementView view) {
+        line.setLineWidth(1.5f);
+        line.setValueTextSize(10.0f);
+        line.setColor(view.getColor());
+        line.setValueTextColor(ColorUtil.getTintColor(getContext()));
+        line.setCircleColor(view.getColor());
+        line.setCircleHoleColor(view.getColor());
+        line.setAxisDependency(view.getSettings().isOnRightAxis() ? YAxis.AxisDependency.RIGHT : YAxis.AxisDependency.LEFT);
+        line.setHighlightEnabled(true);
+        line.setDrawHighlightIndicators(true);
+        line.setHighlightLineWidth(1.5f);
+        line.setDrawHorizontalHighlightIndicator(false);
+        line.setHighLightColor(Color.RED);
+        line.setDrawValues(prefs.getBoolean("labelsEnable", false));
+        line.setDrawValues(prefs.getBoolean("labelsEnable", false));
     }
 
     private void addGoalLine(List<ILineDataSet> lineDataSets) {

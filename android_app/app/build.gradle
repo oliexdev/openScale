@@ -167,6 +167,8 @@ dependencies {
     androidTestImplementation 'androidx.room:room-testing:2.3.0'
     // Timber
     implementation 'com.jakewharton.timber:timber:5.0.1'
+    // Matrix
+    implementation 'gov.nist.math:jama:1.0.3'
     // Local unit tests
     testImplementation 'junit:junit:4.13.1'
     // Instrumented unit tests
