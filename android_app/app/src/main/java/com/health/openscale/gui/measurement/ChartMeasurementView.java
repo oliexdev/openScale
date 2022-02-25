@@ -437,6 +437,7 @@ public class ChartMeasurementView extends LineChart {
         LineDataSet measurementLine = new LineDataSet(interpolationValues, measurementView.getName().toString());
         setupLine(measurementLine, measurementView);
         measurementLine.setDrawCircles(false);
+        measurementLine.setHighlightEnabled(false);
 
         LineDataSet circlesDataSet = new LineDataSet(lineEntries, "");
         setupLine(circlesDataSet, measurementView);
