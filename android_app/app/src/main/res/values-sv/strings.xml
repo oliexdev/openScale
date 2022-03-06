@@ -155,8 +155,8 @@
     <string name="toggle_expand">Växla expandera</string>
     <string name="edit">Ändra</string>
     <string name="label_month_view">Månadsvy</string>
-    <string name="permission_not_granted">Tillstånd beviljas inte</string>
-    <string name="permission_bluetooth_info">Platsbehörighet krävs för att söka efter Bluetooth-enheter. Det kan återkallas när enheten har hittats.</string>
+    <string name="permission_not_granted">Behörighet saknas</string>
+    <string name="permission_bluetooth_info">Platsbehörighet krävs för att söka efter Bluetooth-enheter. Den kan återkallas när enheten har hittats.</string>
     <string name="permission_bluetooth_info_title">Info</string>
     <string name="label_share_subject">openScale dataexport (%s)</string>
     <string name="label_next">Nästa</string>
@@ -212,7 +212,7 @@
     <string name="activity_level_heavy">Hård</string>
     <string name="activity_level_extreme">Extrem</string>
     <string name="permission_read_write_data_description">läs openScale-data, inklusive användarinformation och alla sparade mätningar</string>
-    <string name="permission_read_write_data_label">Läs openScale-data</string>
+    <string name="permission_read_write_data_label">Läs/Skriv openScale-data</string>
     <string name="label_tdee">Total daglig energiförbrukning (TDEE)</string>
     <string name="trisa_scale_not_paired">Vågen har inte parats!
 \n
