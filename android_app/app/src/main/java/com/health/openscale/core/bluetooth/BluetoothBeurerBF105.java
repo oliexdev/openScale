@@ -59,7 +59,7 @@ public class BluetoothBeurerBF105 extends BluetoothStandardWeightProfile {
 
     @Override
     public String driverName() {
-        return "Beurer BF105";
+        return "Beurer BF105/720";
     }
 
     @Override
