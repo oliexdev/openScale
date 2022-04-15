@@ -15,11 +15,14 @@
 */
 package com.health.openscale.gui.preferences;
 
+import static android.app.Activity.RESULT_OK;
+
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -37,8 +40,6 @@ import com.health.openscale.core.alarm.ReminderBootReceiver;
 import com.health.openscale.gui.utils.PermissionHelper;
 
 import java.io.IOException;
-
-import static android.app.Activity.RESULT_OK;
 
 public class BackupPreferences extends PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener {
     private static final String PREFERENCE_KEY_IMPORT_BACKUP = "importBackup";
@@ -146,7 +147,9 @@ public class BackupPreferences extends PreferenceFragmentCompat implements Share
     private class onClickListenerExportBackup implements Preference.OnPreferenceClickListener {
         @Override
         public boolean onPreferenceClick(Preference preference) {
-            if (PermissionHelper.requestWritePermission(fragment)) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                exportBackup();
+            } else if (PermissionHelper.requestWritePermission(fragment)) {
                 exportBackup();
             }
 
@@ -208,6 +211,7 @@ public class BackupPreferences extends PreferenceFragmentCompat implements Share
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+        intent.putExtra(Intent.EXTRA_TITLE, "openScale.db");
         intent.setType("*/*");
 
         startActivityForResult(intent, EXPORT_DATA_REQUEST);
