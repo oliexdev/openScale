@@ -162,9 +162,9 @@ dependencies {
     implementation 'com.github.AppIntro:AppIntro:6.0.0'
     implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.4.32'
     // Room
-    implementation 'androidx.room:room-runtime:2.4.2'
-    annotationProcessor 'androidx.room:room-compiler:2.4.2'
-    androidTestImplementation 'androidx.room:room-testing:2.4.2'
+    implementation 'androidx.room:room-runtime:2.3.0'
+    annotationProcessor 'androidx.room:room-compiler:2.3.0'
+    androidTestImplementation 'androidx.room:room-testing:2.3.0'
     // Timber
     implementation 'com.jakewharton.timber:timber:5.0.1'
     // Local unit tests
