@@ -17,8 +17,9 @@
  /*
  * Based on source-code by weliem/blessed-android
  */
-package com.health.openscale.core.bluetooth;
+ package com.health.openscale.core.bluetooth;
 
+import static com.welie.blessed.BluetoothBytesParser.FORMAT_UINT32;
 import static com.welie.blessed.BluetoothBytesParser.FORMAT_UINT16;
 import static com.welie.blessed.BluetoothBytesParser.FORMAT_UINT8;
 
@@ -193,11 +194,16 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
             case SET_SCALE_USER_DATA:
                 if (registerNewUser) {
                     writeUserDataToScale();
+                    // stopping machine state to have all user data written, before the reference measurment starts, otherwise the scale might not store the user
+                    stopMachineState();
+                    // reading CHARACTERISTIC_CHANGE_INCREMENT to resume machine state
+                    readBytes(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_CHANGE_INCREMENT);
                 }
                 break;
             case REQUEST_MEASUREMENT:
                 if (registerNewUser) {
                     requestMeasurement();
+                    stopMachineState();
                     sendMessage(R.string.info_step_on_scale_for_reference, 0);
                 }
                 break;
@@ -246,8 +252,13 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
             String modelNumber = parser.getStringValue(0);
             Timber.d(String.format("Received modelnumber: %s", modelNumber));
         }
-        else if(characteristic.equals(BluetoothGattUuid.CHARACTERISTIC_USER_CONTROL_POINT)) {
+        else if (characteristic.equals(BluetoothGattUuid.CHARACTERISTIC_USER_CONTROL_POINT)) {
             handleUserControlPointNotify(value);
+        }
+        else if (characteristic.equals(BluetoothGattUuid.CHARACTERISTIC_CHANGE_INCREMENT)) {
+            int increment = parser.getIntValue(FORMAT_UINT32);
+            Timber.d(String.format("Notification from CHARACTERISTIC_CHANGE_INCREMENT, value: %s", increment));
+            resumeMachineState();
         }
         else {
             Timber.d(String.format("Notification from unhandled characteristic: %s, value: [%s]",
@@ -351,6 +362,7 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
                     OpenScale.getInstance().updateScaleUser(selectedUser);
                 }
                 registerNewUser = false;
+                resumeMachineState();
             }
         }
 
@@ -614,9 +626,11 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
 
     protected void writeBirthday() {
         BluetoothBytesParser parser = new BluetoothBytesParser();
-        parser.setDateTime(dateToCalender(this.selectedUser.getBirthday()));
+        Calendar userBirthday = dateToCalender(this.selectedUser.getBirthday());
+        Timber.d(String.format("user Birthday: %tD", userBirthday));
+        parser.setDateTime(userBirthday);
         writeBytes(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_USER_DATE_OF_BIRTH,
-                Arrays.copyOfRange(parser.getValue(), 0, 3));
+                Arrays.copyOfRange(parser.getValue(), 0, 4));
     }
 
     protected Calendar dateToCalender(Date date) {
@@ -653,7 +667,9 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
 
     protected void setChangeIncrement() {
         BluetoothBytesParser parser = new BluetoothBytesParser();
-        parser.setIntValue(1, FORMAT_UINT8);
+        int i = 1;
+        Timber.d(String.format("Setting Change increment to %s", i));
+        parser.setIntValue(i, FORMAT_UINT32);
         writeBytes(BluetoothGattUuid.SERVICE_USER_DATA, BluetoothGattUuid.CHARACTERISTIC_CHANGE_INCREMENT,
                 parser.getValue());
     }
