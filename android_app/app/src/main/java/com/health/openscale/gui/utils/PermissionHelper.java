@@ -78,7 +78,7 @@ public class PermissionHelper {
             return requestLocationPermission(fragment, new String[]{Manifest.permission.ACCESS_FINE_LOCATION});
         } else {
             Timber.d("SDK < 29 request for coarse location permission");
-            return requestLocationPermission(fragment, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION});
+            return requestLocationPermission(fragment, new String[]{Manifest.permission.ACCESS_FINE_LOCATION});
         }
     }
 
