@@ -484,6 +484,11 @@ public class MainActivity extends AppCompatActivity
         builder.setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                if (userIds.isEmpty()) {
+                    Toast.makeText(getApplicationContext(), getString(R.string.info_assisted_weighing_no_reference_user), Toast.LENGTH_LONG).show();
+                    return;
+                }
+
                 int selectedPosition = ((AlertDialog)dialog).getListView().getCheckedItemPosition();
                 prefs.edit().putInt("assistedWeighingRefUserId", userIds.get(selectedPosition)).commit();
 
