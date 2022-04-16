@@ -34,14 +34,12 @@ jobs:
           java-version: '11'
       - name: Build APK
         run: ./gradlew assembleDebug
-      - name: File
-        run: ls -l /home/runner/work/openScale/openScale/android_app/app/build/outputs/apk/
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           automatic_release_tag: "dev-build"
           prerelease: true
-          title: "Development Build"
+          title: "openScale development build"
           files: |
             /home/runner/work/openScale/openScale/android_app/app/build/outputs/apk/debug/openScale-debug.apk
 
