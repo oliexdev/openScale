@@ -115,7 +115,7 @@ public class BluetoothSenssun extends BluetoothCommunication {
         switch(data[5]) {
             case (byte)0xAA:
             case (byte)0xA0:
-                if (values > 1) {
+                if (weightStabilized) {
                     return;
                 }
                 if (!stepMessageDisplayed) {
@@ -127,13 +127,9 @@ public class BluetoothSenssun extends BluetoothCommunication {
                 Timber.d("the byte is %d stable is %s", (data[5] & 0xff), weightStabilized ? "true": "false");
                 lastWeight = ((data[1] & 0xff) << 8) | (data[2] & 0xff);
 
-                if (lastWeight > 0) {
-                    sendMessage(R.string.info_measuring, lastWeight / 10.0f);
-
-                }
-
                 if (weightStabilized) {
                     values |= 1;
+                    sendMessage(R.string.info_measuring, lastWeight / 10.0f);
                     synchroniseUser();
                 }
                 break;
