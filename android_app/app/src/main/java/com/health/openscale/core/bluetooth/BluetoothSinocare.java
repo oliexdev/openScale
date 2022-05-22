@@ -20,7 +20,7 @@ import java.util.List;
 import timber.log.Timber;
 
 public class BluetoothSinocare extends BluetoothCommunication {
-    private static final int MANUFACTURER_DATA_ID = 0xe5ec; // 16-bit little endian "header"
+    private static final int MANUFACTURER_DATA_ID = 0xff64; // 16-bit little endian "header"
 
     private BluetoothCentralManager central;
     private final BluetoothCentralManagerCallback btCallback = new BluetoothCentralManagerCallback() {
