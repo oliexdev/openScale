@@ -19,7 +19,7 @@ import java.util.List;
 
 import timber.log.Timber;
 
-public class BluetoothOKOK extends BluetoothCommunication {
+public class BluetoothSinocare extends BluetoothCommunication {
     private static final int MANUFACTURER_DATA_ID_V20 = 0x20ca; // 16-bit little endian "header" 0xca 0x20
     private static final int MANUFACTURER_DATA_ID_V11 = 0x11ca; // 16-bit little endian "header" 0xca 0x11
     private static final int IDX_V20_FINAL = 6;
@@ -119,7 +119,7 @@ public class BluetoothOKOK extends BluetoothCommunication {
         }
     };
 
-    public BluetoothOKOK(Context context)
+    public BluetoothSinocare(Context context)
     {
         super(context);
         central = new BluetoothCentralManager(context, btCallback, new Handler(Looper.getMainLooper()));
@@ -127,7 +127,7 @@ public class BluetoothOKOK extends BluetoothCommunication {
 
     @Override
     public String driverName() {
-        return "OKOK";
+        return "Sinocare";
     }
 
     @Override
