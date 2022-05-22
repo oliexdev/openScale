@@ -22,11 +22,17 @@ import timber.log.Timber;
 public class BluetoothSinocare extends BluetoothCommunication {
     private static final int MANUFACTURER_DATA_ID = 0xff64; // 16-bit little endian "header"
 
+    private static final int WEIGHT_MSB = 10;
+    private static final int WEIGHT_LSB = 9;
     private BluetoothCentralManager central;
     private final BluetoothCentralManagerCallback btCallback = new BluetoothCentralManagerCallback() {
         @Override
         public void onDiscoveredPeripheral(@NotNull BluetoothPeripheral peripheral, @NotNull ScanResult scanResult) {
         SparseArray<byte[]> manufacturerSpecificData = scanResult.getScanRecord().getManufacturerSpecificData();
+            byte[] data = manufacturerSpecificData.get(MANUFACTURER_DATA_ID);//maybe FF64? 64FF?
+            float divider = 100.0f;
+            int weight = data[WEIGHT_MSB] & 0xff;
+            weight = weight << 8 | (data[WEIGHT_LSB] & 0xff);
         }
     };
 
