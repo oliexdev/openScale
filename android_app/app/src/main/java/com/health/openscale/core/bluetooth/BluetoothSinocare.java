@@ -55,6 +55,9 @@ public class BluetoothSinocare extends BluetoothCommunication {
         ScanFilter.Builder b = new ScanFilter.Builder();
         b.setDeviceAddress(macAddress);
 
+        b.setDeviceName("Weight Scale");
+        b.setManufacturerData(MANUFACTURER_DATA_ID, null, null);
+        filters.add(b.build());
 
         central.scanForPeripheralsUsingFilters(filters);
     }
