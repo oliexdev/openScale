@@ -130,6 +130,9 @@ public class BluetoothFactory {
         if (deviceName.equals("SBF72")) {
             return new BluetoothSanitasSBF72(context);
         }
+        if (deviceName.equals("Weight Scale")){
+            return new BluetoothSinocare(context);
+        }
         return null;
     }
 }

@@ -49,13 +49,6 @@ public class BluetoothSinocare extends BluetoothCommunication {
         ScanFilter.Builder b = new ScanFilter.Builder();
         b.setDeviceAddress(macAddress);
 
-        b.setDeviceName("ADV");
-        b.setManufacturerData(MANUFACTURER_DATA_ID_V20, null, null);
-        filters.add(b.build());
-
-        b.setDeviceName("Chipsea-BLE");
-        b.setManufacturerData(MANUFACTURER_DATA_ID_V11, null, null);
-        filters.add(b.build());
 
         central.scanForPeripheralsUsingFilters(filters);
     }
