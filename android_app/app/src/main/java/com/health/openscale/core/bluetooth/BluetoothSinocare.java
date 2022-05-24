@@ -38,7 +38,7 @@ public class BluetoothSinocare extends BluetoothCommunication {
         @Override
         public void onDiscoveredPeripheral(@NotNull BluetoothPeripheral peripheral, @NotNull ScanResult scanResult) {
         SparseArray<byte[]> manufacturerSpecificData = scanResult.getScanRecord().getManufacturerSpecificData();
-            byte[] data = manufacturerSpecificData.get(MANUFACTURER_DATA_ID);//maybe FF64? 64FF?
+            byte[] data = manufacturerSpecificData.get(MANUFACTURER_DATA_ID);
             float divider = 100.0f;
             int weight = data[WEIGHT_MSB] & 0xff;
             weight = weight << 8 | (data[WEIGHT_LSB] & 0xff);
