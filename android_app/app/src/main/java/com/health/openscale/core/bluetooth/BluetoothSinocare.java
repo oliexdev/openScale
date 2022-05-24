@@ -24,6 +24,15 @@ public class BluetoothSinocare extends BluetoothCommunication {
 
     private static final int WEIGHT_MSB = 10;
     private static final int WEIGHT_LSB = 9;
+
+    // the number of consecutive times the same weight should be seen before it is considered "final"
+    private static final int WEIGHT_TRIGGER_THRESHOLD = 9;
+
+    //these values are used to check for whether the scale's weight reading has leveled out since
+    // the scale doesnt appear to communicate when it has a solid reading.
+    private static int last_seen_weight = 0;
+    private static int last_wait_repeat_count = 0;
+
     private BluetoothCentralManager central;
     private final BluetoothCentralManagerCallback btCallback = new BluetoothCentralManagerCallback() {
         @Override
