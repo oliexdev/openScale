@@ -42,6 +42,22 @@ public class BluetoothSinocare extends BluetoothCommunication {
             float divider = 100.0f;
             int weight = data[WEIGHT_MSB] & 0xff;
             weight = weight << 8 | (data[WEIGHT_LSB] & 0xff);
+            if (weight > 0){
+                if (weight != last_seen_weight) {
+                    //record the current weight and reset the count for mow many times that value has been seen
+                    last_seen_weight = weight;
+                    last_wait_repeat_count = 1;
+                } else if (weight == last_seen_weight && last_wait_repeat_count >= WEIGHT_TRIGGER_THRESHOLD){
+                    // record the weight
+                    ScaleMeasurement entry = new ScaleMeasurement();
+                    entry.setWeight(last_seen_weight / divider);
+                    addScaleMeasurement(entry);
+                    disconnect();
+                } else {
+                    //increment the counter for the number of times this weight value has been seen
+                    last_wait_repeat_count += 1;
+                }
+            }
         }
     };
 
