@@ -40,6 +40,15 @@ public class BluetoothSinocare extends BluetoothCommunication {
         SparseArray<byte[]> manufacturerSpecificData = scanResult.getScanRecord().getManufacturerSpecificData();
             byte[] data = manufacturerSpecificData.get(MANUFACTURER_DATA_ID);
             float divider = 100.0f;
+            byte checksum = 0x00;
+            //the checksum here only covers the data that is between the MAC address and the checksum
+            //this should be bytes at indices 6-15 (both inclusive)
+            for (int i = 6; i < CHECKSUM_INDEX; i++)
+                checksum ^= data[i];
+            if (data[CHECKSUM_INDEX] != checksum) {
+                Timber.d("Checksum error, got %x, expected %x", data[CHECKSUM_INDEX] & 0xff, checksum & 0xff);
+                return;
+            }
             int weight = data[WEIGHT_MSB] & 0xff;
             weight = weight << 8 | (data[WEIGHT_LSB] & 0xff);
             if (weight > 0){
