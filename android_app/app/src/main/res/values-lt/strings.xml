@@ -56,4 +56,24 @@
     <string name="label_amputation_left">Amputuota kairėje</string>
     <string name="label_amputation_right">Amputuota dešinėje</string>
     <string name="label_female">Moteris</string>
+    <string name="label_fat">Kūno riebalai</string>
+    <string name="label_goal_date">Tikslo data</string>
+    <string name="label_title_user">naudotojas</string>
+    <string name="label_title_last_measurement">paskutinis matavimas</string>
+    <string name="error_exporting">Eksportuoti nepavyko</string>
+    <string name="error_importing">Nepavyko importuoti</string>
+    <string name="error_user_name_required">Vardas privalomas</string>
+    <string name="error_height_required">Ūgis privalomas</string>
+    <string name="error_initial_weight_required">Pradinis svoris privalomas</string>
+    <string name="info_enter_value_in">Vertė</string>
+    <string name="info_enter_comment">Neprivalomas komentaras</string>
+    <string name="info_is_not_visible">yra nematomas</string>
+    <string name="info_is_enable">įjungta</string>
+    <string name="info_data_deleted">Įrašas ištrintas</string>
+    <string name="info_is_visible">matomas</string>
+    <string name="info_data_all_deleted">Visi įrašai ištrinti</string>
+    <string name="info_data_exported">Eksportuota į</string>
+    <string name="info_data_imported">Importuota iš</string>
+    <string name="info_is_not_enable">išjungta</string>
+    <string name="info_is_not_available">nėra</string>
 </resources>
