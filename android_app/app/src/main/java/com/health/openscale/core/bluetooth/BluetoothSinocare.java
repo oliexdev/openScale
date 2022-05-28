@@ -51,6 +51,12 @@ public class BluetoothSinocare extends BluetoothCommunication {
                 Timber.d("Checksum error, got %x, expected %x", data[CHECKSUM_INDEX] & 0xff, checksum & 0xff);
                 return;
             }
+            // mac address is first 6 bytes, might be helpful if this needs to be capable of handling
+            // multiple scales at once. Is this a priority?
+//            byte[] macAddress = ;
+
+            //this is the "raw" weight as an integer number of dekagrams (1 dekagram is 0.01kg or 10 grams),
+            // regardless of what unit the scale is set to
             int weight = data[WEIGHT_MSB] & 0xff;
             weight = weight << 8 | (data[WEIGHT_LSB] & 0xff);
             if (weight > 0){
