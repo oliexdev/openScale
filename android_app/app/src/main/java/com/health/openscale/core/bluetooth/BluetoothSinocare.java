@@ -25,6 +25,8 @@ public class BluetoothSinocare extends BluetoothCommunication {
     private static final int WEIGHT_MSB = 10;
     private static final int WEIGHT_LSB = 9;
 
+    private static final int CHECKSUM_INDEX = 16;
+
     // the number of consecutive times the same weight should be seen before it is considered "final"
     private static final int WEIGHT_TRIGGER_THRESHOLD = 9;
 
