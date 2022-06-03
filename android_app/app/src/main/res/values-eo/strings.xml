@@ -166,4 +166,5 @@
     <string name="amputation_level_forearm_hand">Antaŭbrako kaj gambo</string>
     <string name="amputation_level_none">Ne amputita</string>
     <string name="label_slide_support_top_text">Helpu plibonigi openScale.</string>
+    <string name="permission_bluetooth_info_title">Informo</string>
 </resources>
