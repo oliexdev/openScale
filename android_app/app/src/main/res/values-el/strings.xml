@@ -19,7 +19,7 @@
     <string name="label_delete">Διαγραφή</string>
     <string name="label_add_user">Προσθήκη χρήστη</string>
     <string name="label_share">Κοινοποίηση</string>
-    <string name="label_share_subject">Εξαγωγή δεδομένων CSV (%s)</string>
+    <string name="label_share_subject">Εξαγωγή δεδομένων openScale (%s)</string>
     <string name="label_weight">Βάρος</string>
     <string name="label_bmi">Δείκτης μάζας σώματος (ΔΜΣ)</string>
     <string name="label_bmr">Βασικός μεταβολικός ρυθμός (ΒΜΡ)</string>
@@ -125,7 +125,7 @@
     <string name="label_exportBackup">Εξήγαγε αντίγραφο ασφαλείας</string>
     <string name="label_importBackup">Εισήγαγε αντίγραφο ασφαλείας</string>
     <string name="label_backup">Αντίγραφο ασφαλείας</string>
-    <string name="label_export_dir">Εξήγαγε κατάλογο</string>
+    <string name="label_export_dir">Κατάλογος εξαγωγής</string>
     <string name="label_not_found">δε βρέθηκε</string>
     <string name="label_ignoreOutOfRange">Αγνόησε δεδομένα εκτός εύρους</string>
     <string name="label_initial_weight">Αρχικό βάρος</string>
@@ -268,4 +268,31 @@
     <string name="label_assisted_weighing">Υποβοηθούμενη ζύγιση</string>
     <string name="label_age">Ηλικία</string>
     <string name="label_empty">κενό</string>
+    <string name="info_enter_consent_code_for_scale_user">Εισαγωγή PIN/κώδικα συναίνεσης, για τον χρήστη %s της ζυγαριάς</string>
+    <string name="label_slide_privacy_main_text">Το openScale δεν στέλνει οποιαδήποτε δεδομένα στο cloud και το ότι δεν έχει άδεια πρόσβασης στο διαδίκτυο είναι ισχυρή εγγύηση.
+\n
+\nΑν θέλετε να συγχρονίσετε το βάρος σας στο GoogleFit ή με MQTT, μπορείτε να εγκαταστήσετε το \u0020<a href="https://play.google.com/store/apps/details?id=com.health.openscale.sync">openScale sync</a>.</string>
+    <string name="label_slide_opensource_main_text">Το openScale αδειοδοτείται υπό την <a href="https://github.com/oliexdev/openScale/blob/master/LICENSE">GPLv3</a>.
+\n
+\nΌλες οι σωματικές μετρήσεις είναι διαφανείς και δεν γίνεται κάποια μεταφορά δεδομένων ή ταυτοποίηση χρήστη.
+\n
+\nΜπορείτε να βρείτε τον πλήρη κώδικα στο <a href="https://github.com/oliexdev/openScale">GitHub</a>. Πείσε τον εαυτό σου για το openScale βλέποντας το.</string>
+    <string name="label_slide_bluetooth_main_text">Το openScale έχει ενσωματωμένη υποστήριξη για αρκετές ζυγαριές Bluetooth από διαφορετικούς κατασκευαστές.
+\n
+\nΒελτιώνουμε συνεχώς και επεκτείνουμε την υποστήριξη ζυγαριών. Μπορείτε να βρείτε την πλήρη λίστα και το επίπεδο υποστήριξης για κάθε ζυγαριά στο <a href="https://github.com/oliexdev/openScale/wiki/Supported-scales-in-openScale">GitHub</a>.</string>
+    <string name="label_slide_support_main_text">Το openScale σας χρειάζεται. Δημιουργήστε ένα <a href="https://github.com/oliexdev/openScale/issues">new issue</a> αν βρείτε κάποιο σφάλμα, έχετε μια ιδέα, ερώτηση, ή θέλετε να βοηθήσετε στην υποστήριξη της Bluetooth ζυγαριάς σας.
+\n
+\nΠαρακινήστε τον δημιουργό αυτού του έργου σε περαιτέρω ανάπτυξη και συνεχιζόμενη συντήρηση, δίνοντας στο openScale θετική βαθμολογία στο <a href="http://play.google.com/store/apps/details?id=com.health.openscale.pro">GooglePlay</a> ή ένα αστέρι στο <a href="https://github.com/oliexdev/openScale">GitHub</a>.
+\n
+\nΗ υποστήριξή σας και τα θετικά σας σχόλια εκτιμούνται ιδιαίτερα. Σας ευχαριστώ.</string>
+    <string name="info_create_new_user_on_scale">Δημιουργία νέου χρήστη στην ζυγαριά.</string>
+    <string name="info_select_scale_user">Επιλογή χρήστη ζυγαριάς</string>
+    <string name="label_slide_user_main_text">Το openScale δεν απαιτεί την δημιουργία διαδικτυακού λογαριασμού.
+\n
+\nΤα ανθρωπομετρικά στοιχεία υπολογίζονται από τις μετρήσεις.</string>
+    <string name="label_slide_metrics_main_text">Το openScale υποστηρίζει πάνω από 22 μετρήσεις σώματος.
+\n
+\nΡυθμίστε το να δείχνει αυτές που σας ενδιαφέρουν..
+\n
+\n Αν το body fat, body water και lean body mass λείπει, μπορεί να προσδιοριστεί με βάση <a href="https://github.com/oliexdev/openScale/wiki/Body-metric-estimations">επιστημονικές δημοσιεύσεις</a>.</string>
 </resources>
