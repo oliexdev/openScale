@@ -11,10 +11,12 @@
     <string name="info_step_on_scale_for_reference">Por favor, suba para a balança para obter medidas de referência</string>
     <string name="info_bluetooth_connection_disconnected">Conexão Bluetooth terminada</string>
     <string name="permission_read_write_data_description">leia/escreva dados no openScale, incluindo informações dos utilizadores e todas as medidas salvas</string>
-    <string name="trisa_scale_pairing_succeeded">Pareamento feito! 
+    <string name="trisa_scale_pairing_succeeded">Emparelhamento concluído!
+\n
 \nReconecte para recuperar os dados das medições.</string>
-    <string name="trisa_scale_not_paired">A balança não foi pareada! 
-\nPressione o botão da balança para mudar para o modo de pareamento e então reconecte para recuperar a palavra-passe do aparelho.</string>
+    <string name="trisa_scale_not_paired">Esta balança não foi emparelhada!
+\n
+\nPressione o botão da balança para mudar para o modo de emparelhamento e então reconecte para recuperar a palavra-passe do aparelho.</string>
     <string name="label_add_measurement">Adicionar medição</string>
     <string name="info_enter_value_in">Digite o valor em</string>
     <string name="label_long_press_drag_reorder">Toque firmemente e arraste a medição para reorganiza-la</string>
@@ -30,7 +32,7 @@
     <string name="label_estimation_formula">Formula de estimativa</string>
     <string name="label_estimate_measurement">Medida estimada</string>
     <string name="label_measurement_in_percent">Medida em %</string>
-    <string name="label_export_overwrite">"Gravar sobre o export \"%s\"  anterior \?"</string>
+    <string name="label_export_overwrite">Gravar sobre o export anterior \"%s\"\?</string>
     <string name="label_set_default_order">Define ordem por defeito</string>
     <string name="label_next">Próximo</string>
     <string name="permission_bluetooth_info_title">Infos</string>
@@ -99,7 +101,7 @@
     <string name="info_no_selected_user">Nenhum utilizador existe. Por favor, crie um novo utilizador em Configurações.</string>
     <string name="info_enter_user_name">Digite seu nome</string>
     <string name="info_new_data_duplicated">media já inserida com a mesma data e hora</string>
-    <string name="info_new_data_added">%1$.2f%2$s [%3$s] para %4$s adicionado</string>
+    <string name="info_new_data_added">%1$.2f%2$s [%3$s] adicionado a %4$s</string>
     <string name="info_bluetooth_connection_error">Ocorreu um erro inesperado com o Bluetooth</string>
     <string name="info_bluetooth_init">Iniciar aparelho Bluetooh</string>
     <string name="info_bluetooth_no_device">Nenhum aparelho Bluetooth encontrado</string>
@@ -151,7 +153,7 @@
     <string name="label_bmr">Taxa Metabólica Basal (TMB)</string>
     <string name="label_bmi">Índice de Massa Corporal (IMC)</string>
     <string name="label_weight">Peso</string>
-    <string name="label_share_subject">Exportar dados para CSV (%s)</string>
+    <string name="label_share_subject">Exportar dados do openScale (%s)</string>
     <string name="label_share">Partilhar</string>
     <string name="label_add_user">Adicionar utilizador</string>
     <string name="label_delete">Apagar</string>
@@ -203,4 +205,25 @@
     <string name="label_assisted_weighing">Pesagem assistida</string>
     <string name="label_age">Idade</string>
     <string name="label_water">Água corporal total</string>
+    <string name="info_bluetooth_no_device_retrying">Não foi possível conectar, a tentar novamente…</string>
+    <string name="error_exporting">Não foi possível exportar</string>
+    <string name="label_last_week">Média da semana passada</string>
+    <string name="error_importing">Não foi possível importar</string>
+    <string name="default_value_reminder_notify_text">Hora de pesar</string>
+    <string name="label_ignoreOutOfRange">Ignorar dados fora do intervalo</string>
+    <string name="label_auto_backup_schedule">Agendamento de backup</string>
+    <string name="label_weekly">semanalmente</string>
+    <string name="label_your_bluetooth_scale">A sua balança Bluetooth</string>
+    <string name="label_select_measurement">Selecionar medição</string>
+    <string name="customactivityoncrash_error_activity_error_details_clipboard_label">Informação do erro</string>
+    <string name="permission_location_service_info">Conceda acesso à localização nas configurações do Android para procurar dispositivos Bluetooth. Opcionalmente, pode revogar posteriormente.</string>
+    <string name="permission_read_write_data_label">Ler/gravar dados do openScale</string>
+    <string name="label_is_on_right_axis">Está no eixo direito</string>
+    <string name="label_auto_backup">Backup automático</string>
+    <string name="label_overwrite_backup">Substituir backup anterior</string>
+    <string name="label_daily">diariamente</string>
+    <string name="label_monthly">mensal</string>
+    <string name="label_scale_not_supported">A sua balança não é suportada\?</string>
+    <string name="label_development">Desenvolvimento</string>
+    <string name="label_debug_log">Guardar registo de depuração para um ficheiro</string>
 </resources>
