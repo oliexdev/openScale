@@ -384,6 +384,17 @@ public abstract class BluetoothCommunication {
         Timber.d("Set scale user consent for app user id: Not implemented!");
     }
 
+    // +++
+    public byte[] getScaleMacAddress() {
+        String[] mac = btPeripheral.getAddress().split(":");
+        byte[] macAddress = new byte[6];
+        for(int i = 0; i < mac.length; i++) {
+            macAddress[i] = Integer.decode("0x" + mac[i]).byteValue();
+        }
+        return macAddress;
+    }
+    // ---
+
     /**
      * Convert a byte array to hex for debugging purpose
      *

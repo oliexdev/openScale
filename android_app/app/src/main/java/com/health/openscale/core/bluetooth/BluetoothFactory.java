@@ -133,6 +133,9 @@ public class BluetoothFactory {
         if (deviceName.equals("Weight Scale")){
             return new BluetoothSinocare(context);
         }
+        if (deviceName.equals("CH100")){
+            return new BluetoothHuaweiAH100(context);
+        }
         return null;
     }
 }
