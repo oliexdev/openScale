@@ -446,6 +446,7 @@ public class BluetoothHuaweiAH100 extends BluetoothCommunication {
     }
 
     private void AHcmdSetUnit() {
+        // TODO: set correct units
         byte[] pl = new byte[]{0x01}; // 1 = kg; 2 = pounds. set kg only
         AHsendCommand(AH100_CMD_SET_UNIT, pl);
     }
@@ -489,10 +490,14 @@ public class BluetoothHuaweiAH100 extends BluetoothCommunication {
         Timber.d("---- measured  second      %d",second     );
         Timber.d("---- measured  week day    %d",weekNumber );
         ///////////////////////////
+        Calendar calendar = Calendar.getInstance();
+        calendar.set( year, month, dayInMonth, hour, minute, second);
+        Date date = calendar.getTime();
+
         ScaleUser currentUser = OpenScale.getInstance().getSelectedScaleUser();
         ScaleMeasurement receivedMeasurement = new ScaleMeasurement();
         receivedMeasurement.setUserId(currentUser.getId());
-        receivedMeasurement.setDateTime(new Date( year - 1900, month, dayInMonth, hour, minute, second) );
+        receivedMeasurement.setDateTime( date );
         receivedMeasurement.setWeight(weight);
         receivedMeasurement.setFat(fat);
 //        receivedMeasurement.setWater(water);
