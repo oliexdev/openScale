@@ -472,7 +472,7 @@ public class BluetoothHuaweiAH100 extends BluetoothCommunication {
         float fat        = Converters.fromUnsignedInt16Le(data, 3) / 10.0f;
         int year       = Converters.fromUnsignedInt16Le(data, 5) ;
         int resistance = Converters.fromUnsignedInt16Le(data, 13) ;
-        byte month       = data[7];
+        byte month       = (byte) (data[7] - 1);    // 1..12 to zero-based month
         byte dayInMonth  = data[8];
         byte hour        = data[9];
         byte minute      = data[10];
