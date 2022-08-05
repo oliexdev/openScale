@@ -35,7 +35,6 @@ import timber.log.Timber;
 
 // +++
 import android.os.Handler;
-import android.provider.Settings.Secure;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
@@ -58,8 +57,10 @@ public class BluetoothHuaweiAH100 extends BluetoothCommunication {
         SCALE_UNIT,
         SCALE_TIME,
         USER_INFO,
+        SCALE_VERSION,
         WAIT_MEASUREMENT,
         READ_HIST,
+        READ_HIST_NEXT,
         EXIT,
         BIND,
         EXIT2
@@ -72,8 +73,10 @@ public class BluetoothHuaweiAH100 extends BluetoothCommunication {
     private static final byte AH100_NOTIFICATION_SCALE_CLOCK = 0x08;
     private static final byte AH100_NOTIFICATION_SCALE_VERSION = 0x0C;
     private static final byte AH100_NOTIFICATION_MEASUREMENT = 0x0E;
+    private static final byte AH100_NOTIFICATION_MEASUREMENT2 = (byte) 0x8E;
     private static final byte AH100_NOTIFICATION_MEASUREMENT_WEIGHT = 0x0F;
     private static final byte AH100_NOTIFICATION_HISTORY_RECORD = 0x10;
+    private static final byte AH100_NOTIFICATION_HISTORY_RECORD2 = (byte) 0x90;
     private static final byte AH100_NOTIFICATION_UPGRADE_RESPONSE = 0x11;
     private static final byte AH100_NOTIFICATION_UPGRADE_RESULT = 0x12;
     private static final byte AH100_NOTIFICATION_WEIGHT_OVERLOAD = 0x13;
@@ -119,7 +122,12 @@ public class BluetoothHuaweiAH100 extends BluetoothCommunication {
 
     private int triesToAuth = 0;
     private int triesToBind = 0;
+    private int lastMeasuredWeight = -1;
     private boolean authorised = false;
+    private boolean scaleWakedUp = false;
+    private boolean scaleBinded = false;
+    private byte receivedPacketType = 0x00;
+    private byte[] receivedPacket1;
 
     private Handler beatHandler;
 
@@ -167,6 +175,10 @@ public class BluetoothHuaweiAH100 extends BluetoothCommunication {
                 stopMachineState();
                 break;
             case AUTHORISE:
+                if ( scaleWakedUp == false ) {
+                    jumpNextToStepNr( STEPS.INIT.ordinal() );
+                    break;
+                }
                 // authorize in scale
                 Timber.d("AH100::onNextStep  = authorize on scale");
                 triesToAuth++;
@@ -193,6 +205,15 @@ public class BluetoothHuaweiAH100 extends BluetoothCommunication {
                 AHcmdUserInfo();
                 stopMachineState();
                 break;
+            case SCALE_VERSION:
+                Timber.d("AH100::onNextStep  = request scale version");
+                if ( !authorised ) {
+                    jumpNextToStepNr( STEPS.AUTHORISE.ordinal() );
+                    break;
+                }
+                AHcmdGetVersion();
+                stopMachineState();
+                break;
             case WAIT_MEASUREMENT:
                 AHcmdGetUserList();
                 Timber.d("AH100::onNextStep  = Do nothing, wait while scale tries disconnect");
@@ -208,8 +229,19 @@ public class BluetoothHuaweiAH100 extends BluetoothCommunication {
                 AHcmdReadHistory();
                 stopMachineState();
                 break;
+            case READ_HIST_NEXT:
+                Timber.d("AH100::onNextStep  = read NEXT history record from scale");
+                if ( !authorised ) {
+                    jumpNextToStepNr( STEPS.AUTHORISE.ordinal() );
+                    break;
+                }
+                AHcmdReadHistoryNext();
+                stopMachineState();
+                break;
             case EXIT:
                 Timber.d("AH100::onNextStep  = Exit");
+                authorised = false;
+                scaleWakedUp = false;
                 stopHeartBeat();
                 disconnect();
                 return false;
@@ -223,7 +255,10 @@ public class BluetoothHuaweiAH100 extends BluetoothCommunication {
                 stopMachineState();
                 break;
             case EXIT2:
+                authorised = false;
+                scaleWakedUp = false;
                 stopHeartBeat();
+                disconnect();
                 Timber.d("AH100::onNextStep  = BIND Exit");
             default:
                 return false;
@@ -249,6 +284,7 @@ public class BluetoothHuaweiAH100 extends BluetoothCommunication {
             // responce from scale received
                 switch (data[2]) {
                     case AH100_NOTIFICATION_WAKEUP:
+                        scaleWakedUp = true;
                         if (getStepNr() - 1 == STEPS.INIT_W.ordinal() ) {
                             Timber.d("AH100::onNotify = Scale is waked up in Init-stage");
                             startHeartBeat();
@@ -262,9 +298,9 @@ public class BluetoothHuaweiAH100 extends BluetoothCommunication {
 //                            break;
 //                        }
                         Timber.d("AH100::onNotify = Scale is waked up");
-                        authorised = false;
-                        jumpNextToStepNr(STEPS.AUTHORISE.ordinal());
-                        resumeMachineState();
+//                        authorised = false;
+//                        jumpNextToStepNr(STEPS.AUTHORISE.ordinal());
+//                        resumeMachineState();
                         break;
                     case AH100_NOTIFICATION_GO_SLEEP:
                         resumeMachineState();
@@ -278,6 +314,9 @@ public class BluetoothHuaweiAH100 extends BluetoothCommunication {
                         resumeMachineState();
                         break;
                     case AH100_NOTIFICATION_SCALE_VERSION:
+                        byte[] VERpayload = getPayload(data);
+                        Timber.d("Get Scale Version: input data: %s", byteInHex(VERpayload));
+                        resumeMachineState();
                         break;
                     case AH100_NOTIFICATION_MEASUREMENT:
                         if (data[0] == (byte) 0xBD) {
@@ -285,10 +324,32 @@ public class BluetoothHuaweiAH100 extends BluetoothCommunication {
                         }
                         if (data[0] == (byte) 0xBC) {
                             Timber.d("Scale encoded response received");
-                            AHrcvEncodedMeasurement(data);
+                            receivedPacket1 = Arrays.copyOfRange(data, 0, data.length );
+                            receivedPacketType = AH100_NOTIFICATION_MEASUREMENT;
                         }
-                        jumpNextToStepNr(STEPS.WAIT_MEASUREMENT.ordinal(),
-                                STEPS.READ_HIST.ordinal());
+                        break;
+                    case AH100_NOTIFICATION_MEASUREMENT2:
+                        if (data[0] == (byte) 0xBC) {   /// normal packet
+                            Timber.d("Scale encoded response received");
+                            if (receivedPacketType == AH100_NOTIFICATION_MEASUREMENT) {
+                                AHrcvEncodedMeasurement(receivedPacket1, data, AH100_NOTIFICATION_MEASUREMENT);
+                                receivedPacketType = 0x00;
+                                if (scaleBinded == true) {
+                                    AHcmdMeasurementAck();
+                                } else {
+                                    if (lastMeasuredWeight > 0) {
+                                        AHcmdUserInfo(lastMeasuredWeight);
+                                    }
+                                }
+                                jumpNextToStepNr( STEPS.READ_HIST.ordinal() );
+                                resumeMachineState();
+                            }
+                            break;
+                        }
+                        if (data[0] == (byte) 0xBD) {
+                            Timber.d("Scale plain response received");
+                        }
+                        jumpNextToStepNr( STEPS.INIT.ordinal() );
                         resumeMachineState();
                         break;
                     case AH100_NOTIFICATION_MEASUREMENT_WEIGHT:
@@ -299,9 +360,27 @@ public class BluetoothHuaweiAH100 extends BluetoothCommunication {
                         }
                         if (data[0] == (byte) 0xBC) {
                             Timber.d("Scale encoded response received");
-                            AHrcvEncodedMeasurement(data);
+                            receivedPacket1 = Arrays.copyOfRange(data, 0, data.length );
+                            receivedPacketType = AH100_NOTIFICATION_HISTORY_RECORD;
                         }
-                        jumpBackOneStep();
+                        break;
+                    case AH100_NOTIFICATION_HISTORY_RECORD2:
+                        if (data[0] == (byte) 0xBC) {   /// normal packet
+                            Timber.d("Scale encoded response received");
+                            if (receivedPacketType == AH100_NOTIFICATION_HISTORY_RECORD) {
+                                AHrcvEncodedMeasurement(receivedPacket1, data, AH100_NOTIFICATION_HISTORY_RECORD);
+                                receivedPacketType = 0x00;
+                                // todo: jumpback only in ReadHistoryNext
+                                jumpNextToStepNr(STEPS.READ_HIST_NEXT.ordinal(),
+                                        STEPS.READ_HIST_NEXT.ordinal());
+                                resumeMachineState();
+                            }
+                            break;
+                        }
+                        if (data[0] == (byte) 0xBD) {
+                            Timber.d("Scale plain response received");
+                        }
+                        jumpNextToStepNr( STEPS.INIT.ordinal() );
                         resumeMachineState();
                         break;
                     case AH100_NOTIFICATION_UPGRADE_RESPONSE:
@@ -345,6 +424,7 @@ public class BluetoothHuaweiAH100 extends BluetoothCommunication {
                     case AH100_NOTIFICATION_BINDING_SUCCESSFUL:
                         // jump to authorise again
                         jumpNextToStepNr(STEPS.SCALE_TIME.ordinal());
+                        scaleBinded = true;
                         // TODO: count binding tries
                         break;
                     case AH100_NOTIFICATION_FIRMWARE_UPDATE_RECEIVED:
@@ -394,7 +474,6 @@ public class BluetoothHuaweiAH100 extends BluetoothCommunication {
         byte min = (byte)currentDateTime.get(Calendar.MINUTE);
         byte sec = (byte)currentDateTime.get(Calendar.SECOND);
         byte dow = (byte)currentDateTime.get(Calendar.DAY_OF_WEEK);
-        Timber.d("AH100::AHcmdDate");
         byte[] date = new byte[]{
                 0x00, 0x00, // year, fill later
                 month,
@@ -409,8 +488,15 @@ public class BluetoothHuaweiAH100 extends BluetoothCommunication {
         AHsendCommand(AH100_CMD_SET_SCALE_CLOCK, date);
     }
 
-
     private void AHcmdUserInfo() {
+        ///String user example =  "27 af 00 2a 03 ff ff";
+
+        ScaleUser currentUser = OpenScale.getInstance().getSelectedScaleUser();
+        int weight = (int) currentUser.getInitialWeight() * 10;
+        AHcmdUserInfo(weight);
+    }
+
+    private void AHcmdUserInfo(int weight) {
         ///String user example =  "27 af 00 2a 03 ff ff";
         /*
             payload[7] = sex == 1 ? age | 0x80 : age
@@ -423,7 +509,6 @@ public class BluetoothHuaweiAH100 extends BluetoothCommunication {
          */
         ScaleUser currentUser = OpenScale.getInstance().getSelectedScaleUser();
         byte height = (byte) currentUser.getBodyHeight();
-        int weight = (int) currentUser.getInitialWeight() * 10;
         byte sex = currentUser.getGender().isMale() ? 0 : (byte) 0x80;
         byte age = (byte) ( sex  |  ((byte) currentUser.getAge()) );
         byte[] user = new byte[]{
@@ -431,10 +516,11 @@ public class BluetoothHuaweiAH100 extends BluetoothCommunication {
                 height,
                 0,
                 0x00, 0x00, // weight, fill later
-                (byte) 0xFF, (byte) 0xFF    // resistance, wkwtfdim
+                (byte) 0xFF, (byte) 0xFF,    // resistance, wkwtfdim
+                (byte) 0x1C, (byte) 0xE2,
         };
         Converters.toInt16Le(user, 3, weight);
-        byte[] userinfo = hexConcatenate( obfuscate(authCode), user );
+        byte[] userinfo = hexConcatenate( authCode, user );
         AHsendCommand(AH100_CMD_USER_INFO, userinfo, 14);
     }
 
@@ -443,6 +529,11 @@ public class BluetoothHuaweiAH100 extends BluetoothCommunication {
         byte[] xp = {xorChecksum(authCode, 0, authCode.length)};
         pl = hexConcatenate(  authCode, xp );
         AHsendCommand(AH100_CMD_GET_RECORD, pl, 0x07 - 1);
+    }
+
+    private void AHcmdReadHistoryNext() {
+        byte[] pl = {0x01};
+        AHsendCommand(AH100_CMD_GET_RECORD, pl);
     }
 
     private void AHcmdSetUnit() {
@@ -457,18 +548,39 @@ public class BluetoothHuaweiAH100 extends BluetoothCommunication {
 //        AHsendCommand(AH100_CMD_SELECT_USER, pl);
     }
 
-    private void AHrcvEncodedMeasurement(byte[] encdata) {
-        byte[] payload = getPayload(encdata);
-        byte[] data = decryptAES(payload, magicKey, initialValue);
-        Timber.d("Decrypted measurement:  hex data: %s", byteInHex(data));
-        AHaddMeasurement(data);
+    private void AHcmdGetVersion() {
+        byte[] pl = new byte[]{};
+        AHsendCommand(AH100_CMD_GET_VERSION, pl);
     }
 
+    private void AHcmdMeasurementAck() {
+        byte[] pl = new byte[]{0x00};
+        AHsendCommand(AH100_CMD_FAT_RESULT_ACK, pl);
+    }
 
-    private void AHaddMeasurement(byte[] data) {
+    private void AHrcvEncodedMeasurement(byte[] encdata, byte[] encdata2, byte type) {
+        byte[] payload = getPayload(encdata);
+        byte[] data;
+        try{
+            data = decryptAES(payload, magicKey, initialValue);
+            Timber.d("Decrypted measurement:  hex data: %s", byteInHex(data));
+            if (  (type == AH100_NOTIFICATION_MEASUREMENT) ||
+                  (type == AH100_NOTIFICATION_HISTORY_RECORD) )   {
+                AHaddFatMeasurement(data);
+            }
+        } catch (Exception e) {
+            Timber.d("Decrypting FAIL!!!");
+        }
+    }
 
+    private void AHaddFatMeasurement(byte[] data) {
+        if (data.length < 14) {
+            Timber.d(":: AHaddFatMeasurement : data is too short. Expected at least 14 bytes of data." );
+            return ;
+        }
         byte userid     = data[0]; ///// Arrays.copyOfRange(data, 0, 0 );
-        float weight     = Converters.fromUnsignedInt16Le(data, 1) / 10.0f;
+        lastMeasuredWeight = Converters.fromUnsignedInt16Le(data, 1);
+        float weight     = lastMeasuredWeight / 10.0f;
         float fat        = Converters.fromUnsignedInt16Le(data, 3) / 10.0f;
         int year       = Converters.fromUnsignedInt16Le(data, 5) ;
         int resistance = Converters.fromUnsignedInt16Le(data, 13) ;
@@ -585,8 +697,14 @@ public class BluetoothHuaweiAH100 extends BluetoothCommunication {
         ScaleUser currentUser = OpenScale.getInstance().getSelectedScaleUser();
         byte id = (byte) currentUser.getId();
         byte[] auth = new byte[] {0x11, 0x22, 0x33, 0x44, 0x55, 0x00, id};
-//        Converters.toInt16Le(auth, 5, id);
         auth[5] = xorChecksum(auth, 0, auth.length); // set xor of authorise code to 0x00
+        return auth;
+/////        return getfakeUserID();
+    }
+
+    public byte[] getfakeUserID() {
+        String fid = "0f 00 43 06 7b 4e 7f"; // "c7b25de6bed0b7";
+        byte[] auth =  hexToByteArray(fid) ;
         return auth;
     }
 
