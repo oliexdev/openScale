@@ -41,6 +41,8 @@ import com.health.openscale.gui.utils.PermissionHelper;
 
 import java.io.IOException;
 
+import timber.log.Timber;
+
 public class BackupPreferences extends PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener {
     private static final String PREFERENCE_KEY_IMPORT_BACKUP = "importBackup";
     private static final String PREFERENCE_KEY_EXPORT_BACKUP = "exportBackup";
@@ -87,11 +89,13 @@ public class BackupPreferences extends PreferenceFragmentCompat implements Share
         isAutoBackupAskForPermission = false;
 
         if (autoBackup.isChecked()) {
+            Timber.d("Auto-Backup enabled");
             alarmBackupHandler.scheduleAlarms(getActivity());
 
             pm.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
                     PackageManager.DONT_KILL_APP);
         } else {
+            Timber.d("Auto-Backup disabled");
             alarmBackupHandler.disableAlarm(getActivity());
 
             pm.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
@@ -123,12 +127,20 @@ public class BackupPreferences extends PreferenceFragmentCompat implements Share
     private class onClickListenerAutoBackup implements Preference.OnPreferenceClickListener {
         @Override
         public boolean onPreferenceClick(Preference preference) {
-            if (autoBackup.isChecked()) {
-                isAutoBackupAskForPermission = true;
-
-                PermissionHelper.requestWritePermission(fragment);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                if (autoBackup.isChecked()) {
+                    autoBackup.setChecked(true);
+                } else {
+                    autoBackup.setChecked(false);
+                }
             }
+            else {
+                if (autoBackup.isChecked()) {
+                    isAutoBackupAskForPermission = true;
 
+                    PermissionHelper.requestWritePermission(fragment);
+                }
+            }
             return true;
         }
     }
