@@ -226,4 +226,75 @@
     <string name="label_scale_not_supported">A sua balança não é suportada\?</string>
     <string name="label_development">Desenvolvimento</string>
     <string name="label_debug_log">Guardar registo de depuração para um ficheiro</string>
+    <string name="amputation_level_arm">Braço</string>
+    <string name="label_upgrade_to_openScale_pro">Por favor, atualize para openScale pro para suporte a Bluetooth</string>
+    <string name="amputation_level_foot">Pé</string>
+    <string name="label_slide_welcome_top_text">Bem-vindo ao
+\nopenScale</string>
+    <string name="label_slide_welcome_main_text">Software de código aberto de rastreio de peso e métricas corporais, com suporte a balanças Bluetooth.</string>
+    <string name="app_intro_back_button">Voltar</string>
+    <string name="label_slide_opensource_main_text">openScale está licenciado sob a <a href="https://github.com/oliexdev/openScale/blob/master/LICENSE">GPLv3</a>.
+\n
+\nTodos os cálculos do corpo são transparentes e nenhuma função oculta de transferência de dados ou identificação do utilizador é realizada.
+\n
+\nPode encontrar o código-fonte completo em <a href="https://github.com/oliexdev/openScale">GitHub</a>. Convença-se sobre o openScale, revendo-o.</string>
+    <string name="label_slide_metrics_main_text">openScale suporta mais de 22 métricas corporais.
+\n
+\nConfigure-o para mostrar aquelas que lhe interessam.
+\n
+\n Se a gordura corporal, água corporal e massa magra estiverem em falta, estas podem ser estimadas com base em <a href="https://github.com/oliexdev/openScale/wiki/Body-metric-estimations">publicações científicas</a>.</string>
+    <string name="label_slide_support_main_text">openScale precisa de si. Crie um <a href="https://github.com/oliexdev/openScale/issues">novo issue</a> se encontrou um bug, tem uma ideia, pergunta, ou quer ajudar a suportar a sua balança Bluetooth.
+\n
+\nMotive o criador deste projeto para mais desenvolvimentos e manutenção contínua, dando ao openScale uma avaliação positiva no <a href="http://play.google.com/store/apps/details?id=com.health.openscale.pro">GooglePlay</a> ou uma estrela no <a href="https://github.com/oliexdev/openScale">GitHub</a>.
+\n
+\nO seu apoio e feedback positivo são muito apreciados. Obrigado.</string>
+    <string name="label_slide_privacy_main_text">openScale não envia nenhuns dados para a nuvem e não ter a permissão de acesso à Internet é uma forte garantia disso.
+\n
+\nSe quiser realmente sincronizar o seu peso com o GoogleFit ou usando MQTT, pode instalar <a href="https://play.google.com/store/apps/details?id=com.health.openscale.sync">openScale sync</a>.</string>
+    <string name="label_tdee">Gasto energético diário total (TDEE)</string>
+    <string name="label_neck">Circunferência do pescoço</string>
+    <string name="info_select_scale_user">Selecione o utilizador</string>
+    <string name="info_enter_consent_code_for_scale_user">Introduza o código PIN/consentimento para o utilizador da balança %s</string>
+    <string name="label_click_to_help_add_support">Clique aqui para ajudar a adicionar apoio para o mesmo</string>
+    <string name="label_select_user">Selecione o utilizador</string>
+    <string name="label_configure_widget">Configurar widget</string>
+    <string name="label_visceral_fat">Gordura visceral</string>
+    <string name="label_chest">Circunferência do peito</string>
+    <string name="label_thigh">Circunferência da coxa</string>
+    <string name="label_biceps">Circunferência do bíceps</string>
+    <string name="label_calories">Calorias</string>
+    <string name="label_caliper2_male">Dobra da pele abdominal</string>
+    <string name="label_caliper1_male">Dobra da pele do peito</string>
+    <string name="label_caliper3_male">Dobra da pele da coxa</string>
+    <string name="label_caliper1_female">Dobra da pele do tríceps</string>
+    <string name="label_caliper2_female">Dobra de pele abdominal</string>
+    <string name="label_caliper3_female">Dobra da pele da anca</string>
+    <string name="label_measure_unit">Unidade de medida</string>
+    <string name="label_activity_level">Nível de atividade</string>
+    <string name="activity_level_sedentary">Sedentário</string>
+    <string name="activity_level_mild">Suave</string>
+    <string name="activity_level_moderate">Moderado</string>
+    <string name="activity_level_heavy">Pesado</string>
+    <string name="activity_level_extreme">Extremo</string>
+    <string name="amputation_level_none">Sem amputação</string>
+    <string name="amputation_level_hand">Mão</string>
+    <string name="amputation_level_forearm_hand">Antebraço e perna</string>
+    <string name="amputation_level_lower_leg_foot">Parte inferior da perna e pé</string>
+    <string name="amputation_level_leg">Perna</string>
+    <string name="label_fat_caliper">Pinça de medição de gordura corporal</string>
+    <string name="label_slide_privacy_top_text">Proteja os seus dados pessoais de saúde.</string>
+    <string name="label_slide_user_top_text">São suportados múltiplos utilizadores.</string>
+    <string name="label_slide_user_main_text">openScale não requer a criação de uma conta online.
+\n
+\nAs métricas corporais são calculadas a partir das medições.</string>
+    <string name="label_slide_opensource_top_text">É um software de código aberto com um elevado grau de transparência.</string>
+    <string name="label_slide_bluetooth_top_text">São suportadas várias balanças Bluetooth de diferentes fabricantes.</string>
+    <string name="label_slide_metrics_top_text">Acompanhe e analise as métricas do seu corpo.</string>
+    <string name="label_slide_support_top_text">Ajude a melhorar o openScale.</string>
+    <string name="app_intro_skip_button">Saltar</string>
+    <string name="app_intro_done_button">Concluído</string>
+    <string name="info_create_new_user_on_scale">Criar um novo utilizador na balança.</string>
+    <string name="label_slide_bluetooth_main_text">O openScale suporta várias balanças Bluetooth de diferentes fabricantes.
+\n
+\nMelhoramos constantemente e alargamos o conjunto de balanças suportadas. Pode encontrar a lista completa e o nível de apoio para cada uma em <a href="https://github.com/oliexdev/openScale/wiki/Supported-scales-in-openScale">GitHub</a>.</string>
 </resources>
