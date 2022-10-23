@@ -292,7 +292,7 @@
     <string name="label_trend">Tendència</string>
     <string name="label_prediction">Predicció</string>
     <string name="label_trend_line">Línia de tendència</string>
-    <string name="info_select_scale_user">Seleccioneu l\'usuari de bàscula</string>
+    <string name="info_select_scale_user">Seleccioneu l\'usuari de la bàscula</string>
     <string name="info_enter_consent_code_for_scale_user">Introduïu el PIN/codi de consentiment per a l\'usuari de la bàscula %s</string>
     <string name="info_create_new_user_on_scale">Creeu un nou usuari a la bàscula.</string>
 </resources>
