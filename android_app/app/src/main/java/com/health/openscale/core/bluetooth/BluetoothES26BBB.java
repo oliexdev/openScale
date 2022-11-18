@@ -56,55 +56,65 @@ public class BluetoothES26BBB extends BluetoothCommunication {
     @Override
     public void onBluetoothNotify(UUID characteristic, byte[] value) {
         if (characteristic.equals(NOTIFY_MEASUREMENT_CHARACTERISTIC)) {
-            parseMeasurementPacket(value);
+            parseNotifyPacket(value);
         }
     }
 
     /**
-     * Parse a measurement sent by the scale, through characteristic NOTIFY_MEASUREMENT_CHARACTERISTIC.
+     * Parse a packet sent by the scale, through characteristic NOTIFY_MEASUREMENT_CHARACTERISTIC.
      *
-     * @param value The data payload (in bytes)
+     * @param data The data payload (in bytes)
      */
-    private void parseMeasurementPacket(byte[] value) {
-        Timber.d("Received measurement packet: %s", byteInHex(value));
+    private void parseNotifyPacket(byte[] data) {
+        String dataStr = byteInHex(data);
+        Timber.d("Received measurement packet: %s", dataStr);
 
-        if (!isChecksumValid(value)) {
-            Timber.w("Checksum of packet did not match. Ignoring measurement. Packet: %s", byteInHex(value));
+        if (!isChecksumValid(data)) {
+            Timber.w("Checksum of packet did not match. Ignoring measurement. Packet: %s", dataStr);
             return;
         }
 
-        // All packets seem to start with this
-        if (value[0] != (byte) 0x55 || value[1] != (byte) 0xAA) {
-            // Warn us if they don't
-            Timber.w("Unknown packet structure: %s", byteInHex(value));
-            return;
-        }
+        // Bytes 0, 1, 3 and 4 seem to be ignored by the original implementation
 
-        switch (value[2]) {
+        byte action = data[2];
+        switch (action) {
             case 0x14:
-                // TODO not sure what more options are available
-                Timber.d("Parsing measurement");
-
-                if (value[5] != 0x01) {
-                    // This byte indicates whether the measurement is final or not
-                    // Discard if it isn't
-                    Timber.d("Discarded measurement since it is not final");
-                    return;
-                }
-
-                Timber.d("Saving measurement");
-                // Weight (in kg) is stored as big-endian in bytes 8 and 9
-                int weightKg = (value[8] << 8) | value[9];
-                // TODO get other stuff
-
-                saveMeasurement(weightKg);
-
+                handleMeasurementPayload(data);
                 break;
             case 0x11:
                 // TODO this seems to be sent at the start and at the end of the measurement (?)
+                // This sends scale information, such as power status, unit, precision, offline count and battery
+                byte powerStatus = data[5];
+                byte unit = data[6];
+                byte precision = data[7];
+                byte offlineCount = data[8];
+                byte battery = data[9];
+
+                Timber.d(
+                        "Received scale information. Power status: %d, Unit: %d, Precision: %d, Offline count: %d, Battery: %d",
+                        powerStatus,
+                        unit,
+                        precision,
+                        offlineCount,
+                        battery
+                );
+                // TODO
+
                 break;
             case 0x15:
-                // TODO this is send near the start of the measurements
+                // TODO this is sent near the start of the measurements
+                // From reversing the APK, this is offline data
+                break;
+            case 0x10:
+                // TODO this is callback from write actions (?)
+                byte success = data[5];
+                if (success == 1) {
+                    // TODO success
+                } else {
+                    // TODO failure
+                }
+            default:
+                Timber.w("Unknown action sent from scale: %x. Full packet: %s", action, dataStr);
                 break;
         }
     }
@@ -132,11 +142,47 @@ public class BluetoothES26BBB extends BluetoothCommunication {
     }
 
     /**
+     * Handle a packet of type "measurement" (0x14).
+     * There are two types: real time (0x00/0x10) or final (0x01/0x11), indicated by byte 5.
+     * Real time measurements only have weight, whereas final measurements can also have resistance.
+     * <p>
+     * This will create and save a measurement if it is final, discarding real time measurements.
+     *
+     * @param data The data payload (in bytes)
+     */
+    private void handleMeasurementPayload(byte[] data) {
+        // TODO not sure what more options are available
+        Timber.d("Parsing measurement");
+
+        // 0x01 and 0x11 are final measurements, 0x00 and 0x10 are real-time measurements
+        byte measurementType = data[5];
+
+        if (data[5] != 0x01 && data[5] != 0x11) {
+            // This byte indicates whether the measurement is final or not
+            // Discard if it isn't, we only want the final value
+            Timber.d("Discarded measurement since it is not final");
+            return;
+        }
+
+        Timber.d("Saving measurement");
+        // Weight (in kg) is stored as big-endian in bytes 6 to 9
+        // It should fit in a byte, but original implementation uses a long (probably to avoid handling unsigned int)
+        long weightKg = (data[6] << 24) | (data[7] << 16) | (data[8] << 8) | data[9];
+        int resistance = (data[10] << 8) | data[11];
+
+        Timber.d("Got measurement from scale. Weight: %d, Resistance: %d", weightKg, resistance);
+
+        // FIXME weight might be in other units, investigate
+
+        saveMeasurement(weightKg);
+    }
+
+    /**
      * Save a measurement from the scale to openScale.
      *
      * @param weightKg The weight, in kilograms, multiplied by 100 (that is, as an integer)
      */
-    private void saveMeasurement(int weightKg) {
+    private void saveMeasurement(long weightKg) {
         // TODO add more measurements
 
         final ScaleUser scaleUser = OpenScale.getInstance().getSelectedScaleUser();
