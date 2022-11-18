@@ -68,6 +68,11 @@ public class BluetoothES26BBB extends BluetoothCommunication {
     private void parseMeasurementPacket(byte[] value) {
         Timber.d("Received measurement packet: %s", byteInHex(value));
 
+        if (!isChecksumValid(value)) {
+            Timber.w("Checksum of packet did not match. Ignoring measurement. Packet: %s", byteInHex(value));
+            return;
+        }
+
         // All packets seem to start with this
         if (value[0] != (byte) 0x55 || value[1] != (byte) 0xAA) {
             // Warn us if they don't
@@ -79,8 +84,6 @@ public class BluetoothES26BBB extends BluetoothCommunication {
             case 0x14:
                 // TODO not sure what more options are available
                 Timber.d("Parsing measurement");
-
-                // TODO check checksum (?)
 
                 if (value[5] != 0x01) {
                     // This byte indicates whether the measurement is final or not
@@ -107,6 +110,28 @@ public class BluetoothES26BBB extends BluetoothCommunication {
     }
 
     /**
+     * The last byte of the payload is a checksum.
+     * It is calculated by summing all the other bytes and AND'ing it with 255 (that is, truncate to byte).
+     *
+     * @param data The payload to check, where the last byte is the checksum
+     * @return True if the checksum matches, false otherwise
+     */
+    private boolean isChecksumValid(byte[] data) {
+        if (data.length == 0) {
+            Timber.d("Could not validate checksum because payload is empty");
+            return false;
+        }
+
+        byte checksum = data[data.length - 1];
+        byte sum = 0;
+        for (int i = 0; i < data.length - 1; ++i) {
+            sum += data[i];
+        }
+        Timber.d("Comparing checksum (%x == %x)", sum, checksum);
+        return sum == checksum;
+    }
+
+    /**
      * Save a measurement from the scale to openScale.
      *
      * @param weightKg The weight, in kilograms, multiplied by 100 (that is, as an integer)
@@ -119,7 +144,7 @@ public class BluetoothES26BBB extends BluetoothCommunication {
         Timber.d("Saving measurement for scale user %s", scaleUser);
 
         final ScaleMeasurement btScaleMeasurement = new ScaleMeasurement();
-        btScaleMeasurement.setWeight((float)weightKg / 100);
+        btScaleMeasurement.setWeight((float) weightKg / 100);
 
         addScaleMeasurement(btScaleMeasurement);
     }
