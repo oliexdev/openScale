@@ -26,7 +26,7 @@
     <string name="label_bmr">معدل الأيض الأساسي (BMR)</string>
     <string name="label_tdee">مجموع نفقات الطاقة اليومية (TDEE)</string>
     <string name="label_fat">دهون الجسم</string>
-    <string name="label_water">ماء الجسم</string>
+    <string name="label_water">إجمالي مياه الجسم</string>
     <string name="label_muscle">العضلات</string>
     <string name="label_lbm">كتلة بدون دهنيات</string>
     <string name="label_waist">محيط الخصر</string>
@@ -68,12 +68,12 @@
     <string name="label_delete_all">حذف الكل</string>
     <string name="error_value_required">القيمة المطلوبة</string>
     <string name="error_value_range">قيمة خارج النطاق</string>
-    <string name="error_exporting">خطأ في التصدير</string>
-    <string name="error_importing">خطأ في الاستيراد</string>
-    <string name="error_user_name_required">خطأ: الاسم مطلوب</string>
-    <string name="error_height_required">خطأ: الطول مطلوب</string>
-    <string name="error_initial_weight_required">خطأ: الوزن الأولي مطلوب</string>
-    <string name="error_goal_weight_required">خطأ: مطلوب الوزن الهدف</string>
+    <string name="error_exporting">تعذر التصدير</string>
+    <string name="error_importing">تعذر الاستيراد</string>
+    <string name="error_user_name_required">الاسم مطلوب</string>
+    <string name="error_height_required">الطول مطلوب</string>
+    <string name="error_initial_weight_required">الوزن الأولي مطلوب</string>
+    <string name="error_goal_weight_required">الوزن المستهدف مطلوب</string>
     <string name="info_data_deleted">إدخال حذف</string>
     <string name="info_data_all_deleted">كل الادخالات حذفت</string>
     <string name="info_data_exported">تم التصدير إلى</string>
@@ -86,11 +86,11 @@
     <string name="info_is_not_enable">غير مشغل</string>
     <string name="info_is_not_available">غير موجود</string>
     <string name="info_bluetooth_try_connection">الاتصال ب:</string>
-    <string name="info_bluetooth_connection_lost">اتصال بلوتوث فقد</string>
+    <string name="info_bluetooth_connection_lost">انقطع اتصال البلوتوث</string>
     <string name="info_bluetooth_no_device">لم يتم العثور على جهاز بلوتوث</string>
-    <string name="info_bluetooth_no_device_retrying">لا يمكن إنشاء اتصال ، جارٍ إعادة المحاولة …</string>
-    <string name="info_bluetooth_no_device_set">لم يتم تحديد أي جهاز بلوتوث</string>
-    <string name="info_bluetooth_connection_successful">تم الاتصال</string>
+    <string name="info_bluetooth_no_device_retrying">تعذر إنشاء اتصال ، إعادة المحاولة …</string>
+    <string name="info_bluetooth_no_device_set">اختار جهاز بلوتوث</string>
+    <string name="info_bluetooth_connection_successful">متصل</string>
     <string name="info_bluetooth_init">تهيئة جهاز بلوتوث</string>
     <string name="info_bluetooth_connection_error">خطأ غير متوقع في البلوتوث</string>
     <string name="info_bluetooth_connection_disconnected">اغلق اتصال بلوتوث</string>
@@ -172,7 +172,7 @@
     <string name="label_export_overwrite">هل تريد استبدال التصدير السابق\"%s\"؟</string>
     <string name="label_measurement_in_percent">القياس ب ٪</string>
     <string name="label_estimate_measurement">تقدير القياس</string>
-    <string name="info_new_data_added">%1$.2f%2$s [%3$s] ل %4 $s اضيف</string>
+    <string name="info_new_data_added">%4$s أضيفت إلى [%3$s] %2$s%1$.2f</string>
     <string name="info_measuring">%.2f قياس الوزن : هو</string>
     <string name="trisa_scale_not_paired">لم يتم إقران مع هذا الميزان!
 \n
@@ -228,4 +228,76 @@
     <string name="activity_level_moderate">معتدل</string>
     <string name="activity_level_heavy">كثيف</string>
     <string name="activity_level_extreme">شديد</string>
+    <string name="label_prediction">التنبؤ</string>
+    <string name="label_age">العمر</string>
+    <string name="info_assisted_weighing_old_reference_measurement">تحذير: آخر قياس مرجعي مضى عليه أكثر من يوم</string>
+    <string name="info_assisted_weighing_choose_reference_user">اختر المستخدم المرجعي الذي يتم طرح الوزن</string>
+    <string name="info_assisted_weighing_no_reference_user">لا يوجد مستخدم مرجعي متاح ، يرجى إنشاء واحد</string>
+    <string name="info_scale_low_battery">مستوى البطارية منخفض(%d%%) ، يرجى إعادة شحن أو استبدال بطاريات الميزان</string>
+    <string name="label_enable_yaxis">المحور Y</string>
+    <string name="info_bluetooth_connection_error_scale_offline">تعذر الاتصال بالميزان، يرجى التأكد من تشغيله.</string>
+    <string name="label_enable_legend">أسطورة الرسم البياني</string>
+    <string name="label_trend_line">خط الأساس</string>
+    <string name="label_trend">الاتجاه</string>
+    <string name="label_assisted_weighing">الوزن بمساعدة</string>
+    <string name="label_year_view">عرض السنة</string>
+    <string name="label_is_on_right_axis">يقع على المحور الأيمن</string>
+    <string name="permission_location_service_info">امنح الوصول إلى الموقع الجغرافي في إعدادات أندرويد للبحث عن أجهزة بلوتوث. يمكنك الإلغائ بعد ذلك.</string>
+    <string name="amputation_level_none">لا بتر</string>
+    <string name="amputation_level_foot">قدم</string>
+    <string name="label_upgrade_to_openScale_pro">يرجى الترقية إلى أوبن سكيل برو لدعم البلوتوث</string>
+    <string name="label_slide_privacy_main_text">لا يرسل openScale أي بيانات إلى سحابة وعدم وجود إذن للوصول إلى الإنترنت هو ضمان قوي لذلك.
+\n
+\nإذا كنت تريد حقا مزامنة وزنك مع GoogleFit أو مع MQTT ، فيمكنك تثبيت <a href="https://play.google.com/store/apps/details?id=com.health.openscale.sync"> openScale sync </a>.</string>
+    <string name="label_slide_bluetooth_main_text">يحتوي اوبن سكيل على دعم مدمج لعدد من موازين البلوتوث من مختلف الشركات المصنعة.
+\n
+\nنحن نعمل باستمرار على تحسين وتوسيع مجموعة الموازين المدعومة. يمكنك العثور على القائمة الكاملة ومستوى الدعم لكل مقياس على <a href="https://github.com/oliexdev/openScale/wiki/Supported-scales-in-openScale"> GitHub</a>.</string>
+    <string name="label_slide_opensource_main_text">اوبن سكيل مرخص بموجب <a href="https://github.com/oliexdev/openScale/blob/master/LICENSE"> GPLv3 </a>.
+\n
+\nجميع حسابات الجسم شفافة ولا يتم إجراء أي وظيفة نقل بيانات مخفية أو تحديد هوية المستخدم.
+\n
+\nيمكنك العثور على شفرة المصدر الكاملة على <a href="https://github.com/oliexdev/openScale"> GitHub</a>. أقنع نفسك ب اوبن سكيل من خلال مراجعته.</string>
+    <string name="label_slide_support_main_text">أوبن سكيل يحتاج إليك. أنشئ مشكلة جديدة <a href="https://github.com/oliexdev/openScale/issues"> </a> إذا عثرت على خطأ أو كانت لديك فكرة أو سؤال أو تريد المساعدة في دعم مقياس البلوتوث الخاص بك.
+\n
+\nحفز منشئ هذا المشروع على مزيد من التطوير والصيانة المستمرة من خلال منح أوبن سكيل تقييما إيجابيا على <a href="http://play.google.com/store/apps/details?id=com.health.openscale.pro"> GooglePlay </a> أو نجمة على <a href="https://github.com/oliexdev/openScale"> GitHub </a>.
+\n
+\nدعمكم وردود الفعل الإيجابية هو موضع تقدير كبير. شكرًا.</string>
+    <string name="info_assisted_weighing_no_reference_measurements">ليس لدى المستخدم المرجعي قياسات</string>
+    <string name="label_amputation_left">البتر الأيسر</string>
+    <string name="label_amputation_right">البتر اليمين</string>
+    <string name="label_amputation">بتر</string>
+    <string name="label_empty">فارغ</string>
+    <string name="action_donation">تبرّع</string>
+    <string name="info_select_scale_user">حدد مستخدم الميزان</string>
+    <string name="info_enter_consent_code_for_scale_user">أدخل رمز PIN/الموافقة لمستخدم المقياس %s</string>
+    <string name="label_day_view">عرض اليوم</string>
+    <string name="label_measurement_bar">شريط القياس</string>
+    <string name="amputation_level_hand">يد</string>
+    <string name="amputation_level_forearm_hand">اللؤلؤ والساق</string>
+    <string name="amputation_level_arm">ذراع</string>
+    <string name="amputation_level_lower_leg_foot">الساق السفلية والقدم</string>
+    <string name="amputation_level_leg">ساق</string>
+    <string name="label_slide_welcome_top_text">مرحبا بكم في
+\nأوبن سكيل</string>
+    <string name="label_slide_welcome_main_text">برنامج مفتوح المصدر لتعقب وزن الجسم ومقاييس الجسم ، مع دعم ميزان البلوتوث.</string>
+    <string name="label_slide_privacy_top_text">حماية بياناتك الصحية الشخصية.</string>
+    <string name="label_slide_user_top_text">يتم دعم العديد من المستخدمين.</string>
+    <string name="label_slide_user_main_text">اوبن سكيل لا يُطلب منك إنشاء حساب على الإنترنت
+\n
+\nوتحسب مقاييس الجسم من القياسات.</string>
+    <string name="label_slide_opensource_top_text">إنه برنامج مفتوح المصدر بدرجة عالية من الشفافية.</string>
+    <string name="label_slide_bluetooth_top_text">يتم دعم العديد من موازين البلوتوث من مختلف الشركات المصنعة.</string>
+    <string name="label_slide_metrics_top_text">تتبع وتحلل مقاييس جسمك.</string>
+    <string name="label_slide_support_top_text">ساعد في تحسين اوبن سكيل.</string>
+    <string name="app_intro_skip_button">تخطي</string>
+    <string name="app_intro_next_button">التالي</string>
+    <string name="app_intro_back_button">العودة</string>
+    <string name="app_intro_done_button">منجز</string>
+    <string name="info_create_new_user_on_scale">إنشاء مستخدم جديد على الميزان.</string>
+    <string name="label_slide_metrics_main_text">يدعم اوبن سكيل أكثر من 22 مقياسا للجسم.
+\n
+\nقم بتكوينه لإظهار تلك التي تهتم بها.
+\n
+\n
+\nإذا كانت الدهون في الجسم والماء وكتلة الجسم الخالية من الدهون مفقودة ، فيمكن تقديرها بناء على <a href="https://github.com/oliexdev/openScale/wiki/Body-metric-estimations">المنشورات العلمية </a>.</string>
 </resources>
