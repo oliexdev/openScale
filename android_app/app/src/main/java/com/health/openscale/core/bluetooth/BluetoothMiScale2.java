@@ -195,7 +195,7 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
                         scaleBtData.setWater(miScaleLib.getWater(weight, impedance));
                         scaleBtData.setVisceralFat(miScaleLib.getVisceralFat(weight));
                         scaleBtData.setFat(miScaleLib.getBodyFat(weight, impedance));
-                        scaleBtData.setMuscle((100.0f / scaleBtData.getWeight()) * miScaleLib.getMuscle(weight, impedance)); // convert muscle in kg to percent
+                        scaleBtData.setMuscle((100.0f / weight) * miScaleLib.getMuscle(weight, impedance)); // convert muscle in kg to percent
                         scaleBtData.setBone(miScaleLib.getBoneMass(weight, impedance));
                     } else {
                         Timber.d("Impedance value is zero");
