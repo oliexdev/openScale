@@ -86,6 +86,7 @@ public class PermissionHelper {
         if (requestLocationServicePermission(fragment)) {
             if (fragment.getContext().checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(fragment.getActivity());
+                Timber.d("No access fine location permission granted");
 
                 builder.setMessage(R.string.permission_bluetooth_info)
                         .setTitle(R.string.permission_bluetooth_info_title)
