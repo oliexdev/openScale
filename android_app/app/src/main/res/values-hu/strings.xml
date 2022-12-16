@@ -24,7 +24,7 @@
     <string name="label_weight">Súly</string>
     <string name="label_bmi">Test tömeg index (BMI)</string>
     <string name="label_fat">Test zsír</string>
-    <string name="label_water">Összes testvíz</string>
+    <string name="label_water">Testvíz</string>
     <string name="label_muscle">Izom</string>
     <string name="label_waist">Derék kerülete</string>
     <string name="label_hip">Csípő kerület</string>
