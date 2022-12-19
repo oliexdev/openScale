@@ -39,6 +39,9 @@ public class EvaluationSheet {
     private List<sheetEntry> bmiEvaluateSheet_Man;
     private List<sheetEntry> bmiEvaluateSheet_Woman;
 
+    private List<sheetEntry> lbmEvaluateSheet_Man;
+    private List<sheetEntry> lbmEvaluateSheet_Woman;
+
     private List<sheetEntry> waistEvaluateSheet_Man;
     private List<sheetEntry> waistEvaluateSheet_Woman;
 
@@ -90,6 +93,9 @@ public class EvaluationSheet {
         whrEvaluateSheet_Woman = new ArrayList<>();
 
         visceralFatEvaluateSheet = new ArrayList<>();
+
+        lbmEvaluateSheet_Man = new ArrayList<>();
+        lbmEvaluateSheet_Woman = new ArrayList<>();
 
         initEvaluationSheets();
     }
@@ -163,6 +169,22 @@ public class EvaluationSheet {
         whrEvaluateSheet_Woman.add(new sheetEntry(18, 90, 0.7f, 0.8f));
 
         visceralFatEvaluateSheet.add(new sheetEntry(18, 90, -1, 12));
+        // Lean body mass reference: "Lean body mass: reference values for Italian population between 18 to 88 years old" DOI: 10.26355/eurrev_201811_16415
+        // assuming low limits as P25 and upper limit as P75
+        lbmEvaluateSheet_Man.add(new sheetEntry(18, 24, 52.90f, 62.70f));
+        lbmEvaluateSheet_Man.add(new sheetEntry(25, 34, 53.10f, 64.80f));
+        lbmEvaluateSheet_Man.add(new sheetEntry(35, 44, 53.83f, 65.60f));
+        lbmEvaluateSheet_Man.add(new sheetEntry(45, 54, 53.60f, 65.20f));
+        lbmEvaluateSheet_Man.add(new sheetEntry(55, 64, 51.63f, 61.10f));
+        lbmEvaluateSheet_Man.add(new sheetEntry(65, 74, 48.48f, 58.20f));
+        lbmEvaluateSheet_Man.add(new sheetEntry(75, 88, 43.35f, 60.23f));
+        lbmEvaluateSheet_Woman.add(new sheetEntry(18, 24, 34.30f, 41.90f));
+        lbmEvaluateSheet_Woman.add(new sheetEntry(25, 34, 35.20f, 43.70f));
+        lbmEvaluateSheet_Woman.add(new sheetEntry(35, 44, 35.60f, 47.10f));
+        lbmEvaluateSheet_Woman.add(new sheetEntry(45, 54, 36.10f, 44.90f));
+        lbmEvaluateSheet_Woman.add(new sheetEntry(55, 64, 35.15f, 43.95f));
+        lbmEvaluateSheet_Woman.add(new sheetEntry(65, 74, 34.10f, 42.05f));
+        lbmEvaluateSheet_Woman.add(new sheetEntry(75, 88, 33.80f, 40.40f));
     }
 
 
@@ -237,6 +259,18 @@ public class EvaluationSheet {
         }
 
         return evaluateSheet(bmi, bodyEvaluateSheet);
+    }
+
+    public EvaluationResult evaluateLBM(float lbm) {
+        List<sheetEntry> bodyEvaluateSheet;
+
+        if (evalUser.getGender().isMale()) {
+            bodyEvaluateSheet =  lbmEvaluateSheet_Man;
+        } else {
+            bodyEvaluateSheet = lbmEvaluateSheet_Woman;
+        }
+
+        return evaluateSheet(lbm, bodyEvaluateSheet);
     }
 
     public EvaluationResult evaluateWaist(float waist) {

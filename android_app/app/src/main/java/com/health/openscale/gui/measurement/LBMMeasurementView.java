@@ -86,6 +86,6 @@ public class LBMMeasurementView extends FloatMeasurementView {
 
     @Override
     protected EvaluationResult evaluateSheet(EvaluationSheet evalSheet, float value) {
-        return null;
+        return evalSheet.evaluateLBM(value);
     }
 }

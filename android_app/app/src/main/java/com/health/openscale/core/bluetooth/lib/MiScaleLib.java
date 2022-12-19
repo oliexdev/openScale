@@ -58,7 +58,7 @@ public class MiScaleLib {
     }
 
     public float getMuscle(float weight, float impedance) {
-        return this.getLBM(weight,impedance); // this is wrong
+        return this.getLBM(weight,impedance); // this is wrong but coherent with MiFit app behaviour
     }
 
     public float getWater(float weight, float impedance) {
