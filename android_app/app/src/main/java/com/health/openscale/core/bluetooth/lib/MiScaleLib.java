@@ -44,17 +44,21 @@ public class MiScaleLib {
         return weight / (((height * height) / 100.0f) / 100.0f);
     }
 
+    public float getLBM(float weight, float impedance) {
+        float leanBodyMass = weight - ((getBodyFat(weight, impedance) * 0.01f) * weight) - getBoneMass(weight, impedance);
+
+        if (sex == 0 && leanBodyMass >= 84.0f) {
+            leanBodyMass = 120.0f;
+        }
+        else if (sex == 1 && leanBodyMass >= 93.5f) {
+            leanBodyMass = 120.0f;
+        }
+
+        return leanBodyMass;
+    }
+
     public float getMuscle(float weight, float impedance) {
-        float muscleMass = weight - ((getBodyFat(weight, impedance) * 0.01f) * weight) - getBoneMass(weight, impedance);
-
-        if (sex == 0 && muscleMass >= 84.0f) {
-            muscleMass = 120.0f;
-        }
-        else if (sex == 1 && muscleMass >= 93.5f) {
-            muscleMass = 120.0f;
-        }
-
-        return muscleMass;
+        return this.getLBM(weight,impedance); // this is wrong
     }
 
     public float getWater(float weight, float impedance) {
