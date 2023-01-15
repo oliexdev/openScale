@@ -127,8 +127,8 @@ public class BluetoothFactory {
         if (deviceName.equals("SBF77") || deviceName.equals("SBF76") || deviceName.equals("BF950")) {
             return new BluetoothBeurerBF950(context, deviceName);
         }
-        if (deviceName.equals("SBF72")) {
-            return new BluetoothSanitasSBF72(context);
+        if (deviceName.equals("SBF72") || deviceName.equals("BF915")) {
+            return new BluetoothSanitasSBF72(context, deviceName);
         }
         if (deviceName.equals("Weight Scale")){
             return new BluetoothSinocare(context);
