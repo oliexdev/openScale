@@ -15,6 +15,11 @@
 */
 package com.health.openscale.gui.measurement;
 
+import static com.health.openscale.gui.measurement.MeasurementView.MeasurementViewMode.ADD;
+import static com.health.openscale.gui.measurement.MeasurementView.MeasurementViewMode.EDIT;
+import static com.health.openscale.gui.measurement.MeasurementView.MeasurementViewMode.STATISTIC;
+import static com.health.openscale.gui.measurement.MeasurementView.MeasurementViewMode.VIEW;
+
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -52,11 +57,6 @@ import com.health.openscale.gui.utils.ColorUtil;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.health.openscale.gui.measurement.MeasurementView.MeasurementViewMode.ADD;
-import static com.health.openscale.gui.measurement.MeasurementView.MeasurementViewMode.EDIT;
-import static com.health.openscale.gui.measurement.MeasurementView.MeasurementViewMode.STATISTIC;
-import static com.health.openscale.gui.measurement.MeasurementView.MeasurementViewMode.VIEW;
 
 public abstract class MeasurementView extends TableLayout {
     public enum MeasurementViewMode {VIEW, EDIT, ADD, STATISTIC}
@@ -207,7 +207,7 @@ public abstract class MeasurementView extends TableLayout {
 
         iconView.setImageResource(iconId);
         iconView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-        iconView.setPadding(25,25,25,25);
+        iconView.setPadding(15,15,15,15);
 
         iconView.setColorFilter(ColorUtil.COLOR_BLACK);
         iconView.setBackground(iconViewBackground);

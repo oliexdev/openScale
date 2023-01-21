@@ -29,57 +29,31 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <TextView
-                android:id="@+id/weightView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:lineSpacingExtra="-5dp"
-                android:text="TextView"
-                android:textSize="18sp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/dateView" />
+            <TableLayout
+                android:id="@+id/measurementHighlightViews"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="5dp"
+                app:layout_constraintTop_toBottomOf="@id/dateView">
+            </TableLayout>
 
             <ImageView
                 android:id="@+id/expandMoreView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="16dp"
-                app:layout_constraintBottom_toBottomOf="@+id/weightView"
                 app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/measurementHighlightViews"
                 app:srcCompat="@drawable/ic_expand_more"
                 app:tint="?attr/colorControlNormal" />
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/measurementRecyclerView"
+            <TableLayout
+                android:id="@+id/measurementViews"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginTop="8dp"
-                android:visibility="gone"
-                app:layout_constraintTop_toBottomOf="@+id/weightView" >
-
-            </androidx.recyclerview.widget.RecyclerView>
-
-            <ImageView
-                android:id="@+id/commentIconView"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_marginTop="8dp"
-                android:visibility="gone"
-                app:tint="?attr/colorControlNormal"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/measurementRecyclerView"
-                app:srcCompat="@drawable/ic_comment" />
-
-            <TextView
-                android:id="@+id/commentTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:text="TextView"
-                android:visibility="gone"
-                app:layout_constraintBottom_toBottomOf="@+id/commentIconView"
-                app:layout_constraintStart_toEndOf="@+id/commentIconView"
-                app:layout_constraintTop_toTopOf="@+id/commentIconView" />
+                android:layout_marginTop="5dp"
+                app:layout_constraintTop_toBottomOf="@id/expandMoreView">
+            </TableLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

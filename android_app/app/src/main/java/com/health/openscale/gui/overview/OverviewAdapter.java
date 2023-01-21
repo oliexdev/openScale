@@ -1,28 +1,27 @@
 package com.health.openscale.gui.overview;
 
 import android.app.Activity;
-import android.text.SpannableStringBuilder;
-import android.text.Spanned;
-import android.text.style.ForegroundColorSpan;
-import android.text.style.RelativeSizeSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TableLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.transition.AutoTransition;
+import androidx.transition.TransitionManager;
 
-import com.google.android.flexbox.AlignItems;
-import com.google.android.flexbox.FlexDirection;
-import com.google.android.flexbox.FlexboxLayoutManager;
-import com.google.android.flexbox.JustifyContent;
 import com.health.openscale.R;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
+import com.health.openscale.gui.measurement.DateMeasurementView;
 import com.health.openscale.gui.measurement.MeasurementEntryFragment;
-import com.health.openscale.gui.measurement.WeightMeasurementView;
+import com.health.openscale.gui.measurement.MeasurementView;
+import com.health.openscale.gui.measurement.TimeMeasurementView;
+import com.health.openscale.gui.measurement.UserMeasurementView;
 
 import java.text.DateFormat;
 import java.util.List;
@@ -30,10 +29,13 @@ import java.util.List;
 class OverviewAdapter extends RecyclerView.Adapter<OverviewAdapter.ViewHolder> {
     private Activity activity;
     private List<ScaleMeasurement> scaleMeasurementList;
+    private int maxMeasurementView;
+
 
     public OverviewAdapter(Activity activity, List<ScaleMeasurement> scaleMeasurementList) {
         this.activity = activity;
         this.scaleMeasurementList = scaleMeasurementList;
+        this.maxMeasurementView = 3;
     }
 
     @Override
@@ -48,18 +50,11 @@ class OverviewAdapter extends RecyclerView.Adapter<OverviewAdapter.ViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull OverviewAdapter.ViewHolder holder, int position) {
         ScaleMeasurement scaleMeasurement = scaleMeasurementList.get(position);
-        ScaleMeasurement prevScaleMeasurement = scaleMeasurementList.get(position-1);
+        ScaleMeasurement prevScaleMeasurement = new ScaleMeasurement();
 
-        holder.expandMoreView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (holder.measurementRecyclerView.getVisibility() == View.GONE) {
-                    holder.measurementRecyclerView.setVisibility(View.VISIBLE);
-                } else {
-                    holder.measurementRecyclerView.setVisibility(View.GONE);
-                }
-            }
-        });
+        if (scaleMeasurementList.size() > 2) {
+            prevScaleMeasurement = scaleMeasurementList.get(position - 1);
+        }
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -71,38 +66,41 @@ class OverviewAdapter extends RecyclerView.Adapter<OverviewAdapter.ViewHolder> {
             }
         });
 
-        if (!scaleMeasurement.getComment().isEmpty()) {
-            holder.commentTextView.setVisibility(View.VISIBLE);
-            holder.commentIconView.setVisibility(View.VISIBLE);
-            holder.commentTextView.setText(scaleMeasurement.getComment());
-        } else {
-            holder.commentTextView.setVisibility(View.GONE);
-            holder.commentIconView.setVisibility(View.GONE);
-        }
+        holder.expandMeasurementView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                TransitionManager.beginDelayedTransition(holder.measurementViews, new AutoTransition());
 
-        FlexboxLayoutManager layoutManager = new FlexboxLayoutManager(activity);
-        layoutManager.setFlexDirection(FlexDirection.ROW);
-        layoutManager.setJustifyContent(JustifyContent.SPACE_AROUND);
-        layoutManager.setAlignItems(AlignItems.CENTER);
-        holder.measurementRecyclerView.setLayoutManager(layoutManager);
-        holder.measurementRecyclerView.setHasFixedSize(true);
-        holder.measurementRecyclerView.setNestedScrollingEnabled(false);
-        holder.measurementRecyclerView.setAdapter(new MeasurementAdapter(activity, scaleMeasurement, prevScaleMeasurement));
+                if (holder.measurementViews.getVisibility() == View.VISIBLE) {
+                    holder.measurementViews.setVisibility(View.GONE);
+                    holder.expandMeasurementView.setImageDrawable(ContextCompat.getDrawable(activity, R.drawable.ic_expand_more));
+                } else {
+                    holder.measurementViews.setVisibility(View.VISIBLE);
+                    holder.expandMeasurementView.setImageDrawable(ContextCompat.getDrawable(activity, R.drawable.ic_expand_less));
+                }
+            }
+        });
 
-        WeightMeasurementView weightMeasurementView = new WeightMeasurementView(activity);
-        weightMeasurementView.loadFrom(scaleMeasurement, prevScaleMeasurement);
-        SpannableStringBuilder weightValue = new SpannableStringBuilder();
-        weightValue.append("◆ ");
-        weightValue.setSpan(new ForegroundColorSpan(weightMeasurementView.getIndicatorColor()), 0, 1,
-                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-        weightValue.append(weightMeasurementView.getValueAsString(true));
-        int start = weightValue.length();
-        weightMeasurementView.appendDiffValue(weightValue, true);
-        weightValue.setSpan(new RelativeSizeSpan(0.9f), start, weightValue.length(),
-                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        holder.weightView.setText(weightValue);
         holder.dateView.setText(DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.SHORT).format(scaleMeasurement.getDateTime()));
+
+        List<MeasurementView> measurementViewList = MeasurementView.getMeasurementList(activity,  MeasurementView.DateTimeOrder.LAST);
+
+        int i = 0;
+        for (MeasurementView measurementView : measurementViewList) {
+            i++;
+            if (measurementView instanceof DateMeasurementView || measurementView instanceof TimeMeasurementView || measurementView instanceof UserMeasurementView) {
+                measurementView.setVisible(false);
+            }
+            else {
+                measurementView.loadFrom(scaleMeasurement, prevScaleMeasurement);
+
+                if (i <= maxMeasurementView) {
+                    holder.measurementHighlightViews.addView(measurementView);
+                } else {
+                    holder.measurementViews.addView(measurementView);
+                }
+            }
+        }
     }
 
     @Override
@@ -117,21 +115,18 @@ class OverviewAdapter extends RecyclerView.Adapter<OverviewAdapter.ViewHolder> {
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView dateView;
-        TextView weightView;
-        ImageView expandMoreView;
-        RecyclerView measurementRecyclerView;
-        ImageView commentIconView;
-        TextView commentTextView;
+        TableLayout measurementHighlightViews;
+        ImageView expandMeasurementView;
+        TableLayout measurementViews;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
 
             dateView = itemView.findViewById(R.id.dateView);
-            weightView = itemView.findViewById(R.id.weightView);
-            expandMoreView = itemView.findViewById(R.id.expandMoreView);
-            measurementRecyclerView = itemView.findViewById(R.id.measurementRecyclerView);
-            commentIconView = itemView.findViewById(R.id.commentIconView);
-            commentTextView = itemView.findViewById(R.id.commentTextView);
+            measurementHighlightViews = itemView.findViewById(R.id.measurementHighlightViews);
+            expandMeasurementView = itemView.findViewById(R.id.expandMoreView);
+            measurementViews = itemView.findViewById(R.id.measurementViews);
+            measurementViews.setVisibility(View.GONE);
         }
     }
 }

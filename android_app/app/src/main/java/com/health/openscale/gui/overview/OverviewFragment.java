@@ -309,7 +309,6 @@ public class OverviewFragment extends Fragment {
     }
 
     private void updateUserSelection() {
-
         currentScaleUser = OpenScale.getInstance().getSelectedScaleUser();
 
         spinUserAdapter.clear();
@@ -335,6 +334,11 @@ public class OverviewFragment extends Fragment {
 
         WeightMeasurementView weightMeasurementView = new WeightMeasurementView(getContext());
         ScaleMeasurement initialWeightMeasurement = OpenScale.getInstance().getLastScaleMeasurement();
+
+        if (initialWeightMeasurement == null) {
+            initialWeightMeasurement = new ScaleMeasurement();
+        }
+
         initialWeightMeasurement.setWeight(initialWeightMeasurement.getWeight());
         weightMeasurementView.loadFrom(initialWeightMeasurement, null);
 
