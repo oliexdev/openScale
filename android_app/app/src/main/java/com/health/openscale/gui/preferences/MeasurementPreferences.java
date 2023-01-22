@@ -245,13 +245,6 @@ public class MeasurementPreferences extends PreferenceFragmentCompat {
         public boolean onSingleTapUp(MotionEvent e) {
             boundView.setPressed(false);
 
-            if (!measurement.hasExtraPreferences()) {
-                if (switchView.getVisibility() == View.VISIBLE) {
-                    switchView.toggle();
-                }
-                return true;
-            }
-
             // Must be enabled to show extra preferences screen
             if (!measurement.getSettings().isEnabled()) {
                 return true;

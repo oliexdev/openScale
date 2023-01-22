@@ -537,9 +537,6 @@ public abstract class FloatMeasurementView extends MeasurementView {
         return "";
     }
 
-    @Override
-    public boolean hasExtraPreferences() { return true; }
-
     private class ListPreferenceWithNeutralButton extends ListPreference {
         ListPreferenceWithNeutralButton(Context context) {
             super(context);

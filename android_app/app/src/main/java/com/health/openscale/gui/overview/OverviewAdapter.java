@@ -1,12 +1,17 @@
 package com.health.openscale.gui.overview;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TableLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
@@ -16,6 +21,7 @@ import androidx.transition.AutoTransition;
 import androidx.transition.TransitionManager;
 
 import com.health.openscale.R;
+import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.gui.measurement.DateMeasurementView;
 import com.health.openscale.gui.measurement.MeasurementEntryFragment;
@@ -36,6 +42,38 @@ class OverviewAdapter extends RecyclerView.Adapter<OverviewAdapter.ViewHolder> {
         this.scaleMeasurementList = scaleMeasurementList;
     }
 
+    private void deleteMeasurement(int measurementId) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(activity);
+        boolean deleteConfirmationEnable = prefs.getBoolean("deleteConfirmationEnable", true);
+
+        if (deleteConfirmationEnable) {
+            AlertDialog.Builder deleteAllDialog = new AlertDialog.Builder(activity);
+            deleteAllDialog.setMessage(activity.getResources().getString(R.string.question_really_delete));
+
+            deleteAllDialog.setPositiveButton(activity.getResources().getString(R.string.label_yes), new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    doDeleteMeasurement(measurementId);
+                }
+            });
+
+            deleteAllDialog.setNegativeButton(activity.getResources().getString(R.string.label_no), new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    dialog.dismiss();
+                }
+            });
+
+            deleteAllDialog.show();
+        }
+        else {
+            doDeleteMeasurement(measurementId);
+        }
+    }
+
+    private void doDeleteMeasurement(int measurementId) {
+        OpenScale.getInstance().deleteScaleMeasurement(measurementId);
+        Toast.makeText(activity, activity.getResources().getString(R.string.info_data_deleted), Toast.LENGTH_SHORT).show();
+    }
+
     @Override
     public OverviewAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_overview, parent, false);
@@ -48,19 +86,38 @@ class OverviewAdapter extends RecyclerView.Adapter<OverviewAdapter.ViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull OverviewAdapter.ViewHolder holder, int position) {
         ScaleMeasurement scaleMeasurement = scaleMeasurementList.get(position);
-        ScaleMeasurement prevScaleMeasurement = new ScaleMeasurement();
+        ScaleMeasurement prevScaleMeasurement;
 
-        if (scaleMeasurementList.size() > 2) {
+        // for the first measurement no previous measurement are available, use standard measurement instead
+        if (position == 0) {
+            prevScaleMeasurement = new ScaleMeasurement();
+        } else {
             prevScaleMeasurement = scaleMeasurementList.get(position - 1);
         }
 
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
+        holder.showEntry.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 OverviewFragmentDirections.ActionNavOverviewToNavDataentry action = OverviewFragmentDirections.actionNavOverviewToNavDataentry();
                 action.setMeasurementId(scaleMeasurement.getId());
                 action.setMode(MeasurementEntryFragment.DATA_ENTRY_MODE.VIEW);
                 Navigation.findNavController(activity, R.id.nav_host_fragment).navigate(action);
+            }
+        });
+
+        holder.editEntry.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                OverviewFragmentDirections.ActionNavOverviewToNavDataentry action = OverviewFragmentDirections.actionNavOverviewToNavDataentry();
+                action.setMeasurementId(scaleMeasurement.getId());
+                action.setMode(MeasurementEntryFragment.DATA_ENTRY_MODE.EDIT);
+                Navigation.findNavController(activity, R.id.nav_host_fragment).navigate(action);
+            }
+        });
+        holder.deleteEntry.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                deleteMeasurement(scaleMeasurement.getId());
             }
         });
 
@@ -113,6 +170,9 @@ class OverviewAdapter extends RecyclerView.Adapter<OverviewAdapter.ViewHolder> {
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView dateView;
+        ImageView showEntry;
+        ImageView editEntry;
+        ImageView deleteEntry;
         TableLayout measurementHighlightViews;
         ImageView expandMeasurementView;
         TableLayout measurementViews;
@@ -121,6 +181,9 @@ class OverviewAdapter extends RecyclerView.Adapter<OverviewAdapter.ViewHolder> {
             super(itemView);
 
             dateView = itemView.findViewById(R.id.dateView);
+            showEntry = itemView.findViewById(R.id.showEntry);
+            editEntry = itemView.findViewById(R.id.editEntry);
+            deleteEntry = itemView.findViewById(R.id.deleteEntry);
             measurementHighlightViews = itemView.findViewById(R.id.measurementHighlightViews);
             expandMeasurementView = itemView.findViewById(R.id.expandMoreView);
             measurementViews = itemView.findViewById(R.id.measurementViews);

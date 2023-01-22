@@ -16,6 +16,8 @@
 
 package com.health.openscale.gui.measurement;
 
+import static java.time.temporal.ChronoUnit.DAYS;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -52,8 +54,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Stack;
-
-import static java.time.temporal.ChronoUnit.DAYS;
 
 public class ChartMeasurementView extends LineChart {
     public enum ViewMode {
@@ -195,6 +195,10 @@ public class ChartMeasurementView extends LineChart {
     }
 
     private void initChart() {
+        if (isInEditMode()) {
+            return;
+        }
+
         prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
         openScale = OpenScale.getInstance();
         measurementViews = MeasurementView.getMeasurementList(getContext(), MeasurementView.DateTimeOrder.NONE);

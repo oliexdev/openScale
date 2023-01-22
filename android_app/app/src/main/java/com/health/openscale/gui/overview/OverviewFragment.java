@@ -15,8 +15,6 @@
 */
 package com.health.openscale.gui.overview;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -35,14 +33,14 @@ import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
-import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.transition.ChangeScroll;
+import androidx.transition.TransitionManager;
 
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.highlight.Highlight;
@@ -54,10 +52,7 @@ import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.DateTimeHelpers;
 import com.health.openscale.gui.measurement.ChartActionBarView;
 import com.health.openscale.gui.measurement.ChartMeasurementView;
-import com.health.openscale.gui.measurement.MeasurementEntryFragment;
-import com.health.openscale.gui.measurement.MeasurementView;
 import com.health.openscale.gui.measurement.WeightMeasurementView;
-import com.health.openscale.gui.utils.ColorUtil;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -69,8 +64,6 @@ public class OverviewFragment extends Fragment {
 
     private TextView txtTitleUser;
 
-    private List<MeasurementView> lastMeasurementViews;
-
     private RecyclerView recyclerView;
     private OverviewAdapter overviewAdapter;
     private ChartMeasurementView chartView;
@@ -79,10 +72,6 @@ public class OverviewFragment extends Fragment {
     private Spinner spinUser;
 
     private PopupMenu rangePopupMenu;
-
-    private ImageView showEntry;
-    private ImageView editEntry;
-    private ImageView deleteEntry;
 
     private TextView differenceWeightView;
     private TextView initialWeightView;
@@ -94,6 +83,7 @@ public class OverviewFragment extends Fragment {
 
     private SharedPreferences prefs;
 
+    private List<ScaleMeasurement> scaleMeasurementList;
     private ScaleMeasurement markedMeasurement;
 
     @Override
@@ -101,8 +91,6 @@ public class OverviewFragment extends Fragment {
         overviewView = inflater.inflate(R.layout.fragment_overview, container, false);
 
         prefs = PreferenceManager.getDefaultSharedPreferences(overviewView.getContext());
-
-        txtTitleUser = overviewView.findViewById(R.id.txtTitleUser);
 
         differenceWeightView = overviewView.findViewById(R.id.differenceWeightView);
         initialWeightView = overviewView.findViewById(R.id.initialWeightView);
@@ -203,9 +191,6 @@ public class OverviewFragment extends Fragment {
             chartActionBarView.setVisibility(View.GONE);
         }
 
-        lastMeasurementViews = MeasurementView.getMeasurementList(
-                getContext(), MeasurementView.DateTimeOrder.LAST);
-
         recyclerView = overviewView.findViewById(R.id.recyclerView);
         LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
         layoutManager.setInitialPrefetchItemCount(5);
@@ -223,39 +208,6 @@ public class OverviewFragment extends Fragment {
                 updateUserSelection();
             }
         });
-
-        showEntry = overviewView.findViewById(R.id.showEntry);
-        showEntry.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                OverviewFragmentDirections.ActionNavOverviewToNavDataentry action = OverviewFragmentDirections.actionNavOverviewToNavDataentry();
-                action.setMeasurementId(markedMeasurement.getId());
-                action.setMode(MeasurementEntryFragment.DATA_ENTRY_MODE.VIEW);
-                Navigation.findNavController(getActivity(), R.id.nav_host_fragment).navigate(action);
-            }
-        });
-
-        editEntry = overviewView.findViewById(R.id.editEntry);
-        editEntry.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                OverviewFragmentDirections.ActionNavOverviewToNavDataentry action = OverviewFragmentDirections.actionNavOverviewToNavDataentry();
-                action.setMeasurementId(markedMeasurement.getId());
-                action.setMode(MeasurementEntryFragment.DATA_ENTRY_MODE.EDIT);
-                Navigation.findNavController(getActivity(), R.id.nav_host_fragment).navigate(action);
-            }
-        });
-        deleteEntry = overviewView.findViewById(R.id.deleteEntry);
-        deleteEntry.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                deleteMeasurement();
-            }
-        });
-
-        showEntry.setEnabled(false);
-        editEntry.setEnabled(false);
-        deleteEntry.setEnabled(false);
 
         chartView.animateY(700);
 
@@ -279,17 +231,12 @@ public class OverviewFragment extends Fragment {
     }
 
     public void updateOnView(List<ScaleMeasurement> scaleMeasurementList) {
-        if (scaleMeasurementList.isEmpty()) {
-            markedMeasurement = new ScaleMeasurement();
-        } else {
-            markedMeasurement = scaleMeasurementList.get(0);
-        }
+        this.scaleMeasurementList = scaleMeasurementList;
 
         overviewAdapter = new OverviewAdapter(getActivity(), scaleMeasurementList);
         recyclerView.setAdapter(overviewAdapter);
 
         updateUserSelection();
-        updateMesurementViews(markedMeasurement);
         chartView.updateMeasurementList(scaleMeasurementList);
         updateChartView();
     }
@@ -297,15 +244,6 @@ public class OverviewFragment extends Fragment {
     private void updateChartView() {
         ChartMeasurementView.ViewMode selectedRangeMode = ChartMeasurementView.ViewMode.values()[prefs.getInt("selectRangeMode", ChartMeasurementView.ViewMode.DAY_OF_ALL.ordinal())];
         chartView.setViewRange(selectedRangeMode);
-    }
-
-    private void updateMesurementViews(ScaleMeasurement selectedMeasurement) {
-        ScaleMeasurement[] tupleScaleData = OpenScale.getInstance().getTupleOfScaleMeasurement(selectedMeasurement.getId());
-        ScaleMeasurement prevScaleMeasurement = tupleScaleData[0];
-
-        for (MeasurementView measurement : lastMeasurementViews) {
-            measurement.loadFrom(selectedMeasurement, prevScaleMeasurement);
-        }
     }
 
     private void updateUserSelection() {
@@ -328,7 +266,6 @@ public class OverviewFragment extends Fragment {
 
         // Hide user selector when there is only one user
         int visibility = spinUserAdapter.getCount() < 2 ? View.GONE : View.VISIBLE;
-        txtTitleUser.setVisibility(visibility);
         spinUser.setVisibility(visibility);
 
 
@@ -409,26 +346,15 @@ public class OverviewFragment extends Fragment {
             markedMeasurement = (ScaleMeasurement)extraData[0];
             //MeasurementView measurementView = (MeasurementView)extraData[1];
 
-            showEntry.setEnabled(true);
-            editEntry.setEnabled(true);
-            deleteEntry.setEnabled(true);
-
-            showEntry.setColorFilter(ColorUtil.COLOR_BLUE);
-            editEntry.setColorFilter(ColorUtil.COLOR_GREEN);
-            deleteEntry.setColorFilter(ColorUtil.COLOR_RED);
-
-            updateMesurementViews(markedMeasurement);
+            if (scaleMeasurementList.contains(markedMeasurement)) {
+                TransitionManager.beginDelayedTransition(recyclerView, new ChangeScroll());
+                recyclerView.scrollToPosition(scaleMeasurementList.indexOf(markedMeasurement));
+            }
         }
 
         @Override
         public void onNothingSelected() {
-            showEntry.setEnabled(false);
-            editEntry.setEnabled(false);
-            deleteEntry.setEnabled(false);
-
-            showEntry.setColorFilter(ColorUtil.COLOR_GRAY);
-            editEntry.setColorFilter(ColorUtil.COLOR_GRAY);
-            deleteEntry.setColorFilter(ColorUtil.COLOR_GRAY);
+            // empty
         }
     }
 
@@ -453,45 +379,5 @@ public class OverviewFragment extends Fragment {
         public void onNothingSelected(AdapterView<?> parent) {
 
         }
-    }
-
-    private void deleteMeasurement() {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(overviewView.getContext());
-        boolean deleteConfirmationEnable = prefs.getBoolean("deleteConfirmationEnable", true);
-
-        if (deleteConfirmationEnable) {
-            AlertDialog.Builder deleteAllDialog = new AlertDialog.Builder(overviewView.getContext());
-            deleteAllDialog.setMessage(getResources().getString(R.string.question_really_delete));
-
-            deleteAllDialog.setPositiveButton(getResources().getString(R.string.label_yes), new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-                    doDeleteMeasurement();
-                }
-            });
-
-            deleteAllDialog.setNegativeButton(getResources().getString(R.string.label_no), new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-                    dialog.dismiss();
-                }
-            });
-
-            deleteAllDialog.show();
-        }
-        else {
-            doDeleteMeasurement();
-        }
-    }
-
-    private void doDeleteMeasurement() {
-        OpenScale.getInstance().deleteScaleMeasurement(markedMeasurement.getId());
-        Toast.makeText(overviewView.getContext(), getResources().getString(R.string.info_data_deleted), Toast.LENGTH_SHORT).show();
-
-        showEntry.setEnabled(false);
-        editEntry.setEnabled(false);
-        deleteEntry.setEnabled(false);
-
-        showEntry.setColorFilter(ColorUtil.COLOR_GRAY);
-        editEntry.setColorFilter(ColorUtil.COLOR_GRAY);
-        deleteEntry.setColorFilter(ColorUtil.COLOR_GRAY);
     }
 }

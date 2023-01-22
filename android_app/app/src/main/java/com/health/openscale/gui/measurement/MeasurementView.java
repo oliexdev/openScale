@@ -424,7 +424,6 @@ public abstract class MeasurementView extends TableLayout {
     }
 
     public String getPreferenceSummary() { return ""; }
-    public boolean hasExtraPreferences() { return true; }
     public void prepareExtraPreferencesScreen(PreferenceScreen screen) {
         MeasurementViewSettings settings = getSettings();
 
