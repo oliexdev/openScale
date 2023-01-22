@@ -45,6 +45,7 @@ import android.widget.TableRow;
 import android.widget.TextView;
 
 import androidx.core.content.ContextCompat;
+import androidx.preference.CheckBoxPreference;
 import androidx.preference.PreferenceManager;
 import androidx.preference.PreferenceScreen;
 
@@ -423,8 +424,17 @@ public abstract class MeasurementView extends TableLayout {
     }
 
     public String getPreferenceSummary() { return ""; }
-    public boolean hasExtraPreferences() { return false; }
-    public void prepareExtraPreferencesScreen(PreferenceScreen screen) { }
+    public boolean hasExtraPreferences() { return true; }
+    public void prepareExtraPreferencesScreen(PreferenceScreen screen) {
+        MeasurementViewSettings settings = getSettings();
+
+        CheckBoxPreference isSticky = new CheckBoxPreference(screen.getContext());
+        isSticky.setKey(settings.getIsStickyGraphKey());
+        isSticky.setTitle(R.string.label_is_sticky);
+        isSticky.setPersistent(true);
+        isSticky.setDefaultValue(settings.isSticky());
+        screen.addPreference(isSticky);
+    }
 
     protected abstract View getInputView();
     protected abstract boolean validateAndSetInput(View view);

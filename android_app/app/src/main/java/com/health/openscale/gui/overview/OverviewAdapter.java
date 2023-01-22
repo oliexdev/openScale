@@ -24,18 +24,16 @@ import com.health.openscale.gui.measurement.TimeMeasurementView;
 import com.health.openscale.gui.measurement.UserMeasurementView;
 
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 class OverviewAdapter extends RecyclerView.Adapter<OverviewAdapter.ViewHolder> {
     private Activity activity;
     private List<ScaleMeasurement> scaleMeasurementList;
-    private int maxMeasurementView;
-
 
     public OverviewAdapter(Activity activity, List<ScaleMeasurement> scaleMeasurementList) {
         this.activity = activity;
         this.scaleMeasurementList = scaleMeasurementList;
-        this.maxMeasurementView = 3;
     }
 
     @Override
@@ -81,22 +79,22 @@ class OverviewAdapter extends RecyclerView.Adapter<OverviewAdapter.ViewHolder> {
             }
         });
 
-        holder.dateView.setText(DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.SHORT).format(scaleMeasurement.getDateTime()));
+        holder.dateView.setText(DateFormat.getDateInstance(DateFormat.MEDIUM).format(scaleMeasurement.getDateTime()) +
+                " (" + new SimpleDateFormat("EE").format(scaleMeasurement.getDateTime()) + ") "+
+                DateFormat.getTimeInstance(DateFormat.SHORT).format(scaleMeasurement.getDateTime()));
 
         List<MeasurementView> measurementViewList = MeasurementView.getMeasurementList(activity,  MeasurementView.DateTimeOrder.LAST);
 
-        int i = 0;
         for (MeasurementView measurementView : measurementViewList) {
-            i++;
             if (measurementView instanceof DateMeasurementView || measurementView instanceof TimeMeasurementView || measurementView instanceof UserMeasurementView) {
                 measurementView.setVisible(false);
             }
-            else {
+            else if (measurementView.isVisible()) {
                 measurementView.loadFrom(scaleMeasurement, prevScaleMeasurement);
 
-                if (i <= maxMeasurementView) {
+                if (measurementView.getSettings().isSticky()) {
                     holder.measurementHighlightViews.addView(measurementView);
-                } else {
+                } else{
                     holder.measurementViews.addView(measurementView);
                 }
             }

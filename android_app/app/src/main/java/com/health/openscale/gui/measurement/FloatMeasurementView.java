@@ -566,6 +566,7 @@ public abstract class FloatMeasurementView extends MeasurementView {
 
     @Override
     public void prepareExtraPreferencesScreen(PreferenceScreen screen) {
+        super.prepareExtraPreferencesScreen(screen);
         MeasurementViewSettings settings = getSettings();
 
         CheckBoxPreference rightAxis = new CheckBoxPreference(screen.getContext());
