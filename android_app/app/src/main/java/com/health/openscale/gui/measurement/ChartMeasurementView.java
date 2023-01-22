@@ -352,6 +352,8 @@ public class ChartMeasurementView extends LineChart {
     }
 
     public void refreshMeasurementList() {
+        highlightValue(null, false); // deselect any highlighted value
+
         if (scaleMeasurementList == null) {
             progressBar.setVisibility(GONE);
             return;
@@ -370,7 +372,7 @@ public class ChartMeasurementView extends LineChart {
 
                 for (int i=0; i<scaleMeasurementList.size(); i++) {
                     ScaleMeasurement measurement = scaleMeasurementList.get(i);
-                    float value = measurementView.getMeasurementValue(measurement);
+                    float value = measurementView.getConvertedMeasurementValue(measurement);
 
                     if (value == 0.0f) {
                         continue;
@@ -392,12 +394,16 @@ public class ChartMeasurementView extends LineChart {
             }
         }
 
-        if (prefs.getBoolean("trendLine", true)) {
+        if (prefs.getBoolean("trendLine", false)) {
             addTrendLine(lineDataSets);
         }
 
-        LineData data = new LineData(lineDataSets);
-        setData(data);
+        if (!lineDataSets.isEmpty()) {
+            LineData data = new LineData(lineDataSets);
+            setData(data);
+        } else {
+            setData(null);
+        }
 
         if (prefs.getBoolean("goalLine", false)) {
             addGoalLine(lineDataSets);
@@ -423,12 +429,12 @@ public class ChartMeasurementView extends LineChart {
         measurementLine.setDrawCircles(prefs.getBoolean("pointsEnable", true));
         measurementLine.setDrawValues(prefs.getBoolean("labelsEnable", false));
         measurementLine.setMode(LineDataSet.Mode.HORIZONTAL_BEZIER);
-        if (prefs.getBoolean("trendLine", true)) {
+        if (prefs.getBoolean("trendLine", false)) {
             // show only data point if trend line is enabled
             measurementLine.enableDashedLine(0, 1, 0);
         }
 
-        if (measurementView.isVisible()) {
+        if (measurementView.isVisible() && !lineEntries.isEmpty()) {
             if (isInGraphKey) {
                 if (measurementView.getSettings().isInGraph()) {
                     lineDataSets.add(measurementLine);
@@ -484,21 +490,35 @@ public class ChartMeasurementView extends LineChart {
 
     private void addTrendLine(List<ILineDataSet> lineDataSets) {
 
-        List<ScaleMeasurement> scaleMeasurementsAsTrendlineList = getScaleMeasurementsAsTrendline(scaleMeasurementList);
-
         for (MeasurementView view : measurementViews) {
             if (view instanceof FloatMeasurementView && view.isVisible()) {
                 final FloatMeasurementView measurementView = (FloatMeasurementView) view;
 
                 final List<Entry> lineEntries = new ArrayList<>();
 
-                for (int i=0; i<scaleMeasurementsAsTrendlineList.size(); i++) {
-                    ScaleMeasurement measurement = scaleMeasurementsAsTrendlineList.get(i);
+                ArrayList<ScaleMeasurement> nonZeroScaleMeasurementList = new ArrayList<>();
+
+                // filter first all zero measurements out, so that the follow-up trendline calculations are not based on them
+                for (int i=0; i<scaleMeasurementList.size(); i++) {
+                    ScaleMeasurement measurement = scaleMeasurementList.get(i);
                     float value = measurementView.getMeasurementValue(measurement);
 
-                    if (value == 0.0f) {
-                        continue;
+                    if (value != 0.0f) {
+                        nonZeroScaleMeasurementList.add(measurement);
                     }
+                }
+
+                // check if we have some data left otherwise skip the measurement
+                if (nonZeroScaleMeasurementList.isEmpty()) {
+                    continue;
+                }
+
+                // calculate the trendline from the non-zero scale measurement list
+                List<ScaleMeasurement> scaleMeasurementsAsTrendlineList = getScaleMeasurementsAsTrendline(nonZeroScaleMeasurementList);
+
+                for (int i=0; i<scaleMeasurementsAsTrendlineList.size(); i++) {
+                    ScaleMeasurement measurement = scaleMeasurementsAsTrendlineList.get(i);
+                    float value = measurementView.getConvertedMeasurementValue(measurement);
 
                     Entry entry = new Entry();
                     entry.setX(convertDateToInt(measurement.getDateTime()));
@@ -523,22 +543,30 @@ public class ChartMeasurementView extends LineChart {
             return;
         }
 
-        PolynomialFitter polyFitter = new PolynomialFitter(3);
+        PolynomialFitter polyFitter = new PolynomialFitter(lineEntries.size() == 2 ? 2 : 3);
+
+        // add last point to polynomial fitter first
+        int lastPos = lineEntries.size() - 1;
+        Entry lastEntry = lineEntries.get(lastPos);
+        polyFitter.addPoint((double) lastEntry.getX(), (double) lastEntry.getY());
 
         // use only the last 30 values for the polynomial fitter
-        for (int i=1; i<30; i++) {
+        for (int i=2; i<30; i++) {
             int pos = lineEntries.size() - i;
 
             if (pos >= 0) {
                 Entry entry = lineEntries.get(pos);
+                Entry prevEntry = lineEntries.get(pos+1);
 
-                polyFitter.addPoint((double) entry.getX(), (double) entry.getY());
+                // check if x position is different otherwise that point is useless for the polynomial calculation.
+                if (entry.getX() != prevEntry.getX()) {
+                    polyFitter.addPoint((double) entry.getX(), (double) entry.getY());
+                }
             }
         }
 
         PolynomialFitter.Polynomial polynomial = polyFitter.getBestFit();
 
-        Entry lastEntry = lineEntries.get(lineEntries.size() - 1);
         int maxX = (int) lastEntry.getX()+1;
         List<Entry> predictionValues = new Stack<>();
 

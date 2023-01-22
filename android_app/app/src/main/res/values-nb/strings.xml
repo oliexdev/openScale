@@ -19,7 +19,7 @@
     <string name="label_delete">Slett</string>
     <string name="label_add_user">Legg til bruker</string>
     <string name="label_share">Del</string>
-    <string name="label_share_subject">CVS-dataeksport (%s)</string>
+    <string name="label_share_subject">openScale data-eksport (%s)</string>
     <string name="label_weight">Vekt</string>
     <string name="label_bmi">Kroppsmasseindeks (KMI)</string>
     <string name="label_bmr">Hvilestoffskifte (BMR)</string>
@@ -36,8 +36,8 @@
     <string name="label_whr">Midje-til-hofte -forhold</string>
     <string name="label_smartUserAssign">Smart brukertildeling</string>
     <plurals name="label_days">
-        <item quantity="one">dag %d</item>
-        <item quantity="other">dager %d</item>
+        <item quantity="one">%d dag</item>
+        <item quantity="other">%d dager</item>
     </plurals>
     <string name="label_last_week">Gjennomsnitt siste uke</string>
     <string name="label_last_month">Gjennomsnitt den siste måneden</string>
@@ -87,7 +87,7 @@
     <string name="info_bluetooth_connection_successful">Tilkoblet</string>
     <string name="info_bluetooth_init">Igangsett Blåtannsenhet</string>
     <string name="info_bluetooth_connection_error">Uventet Blåtannsfeil</string>
-    <string name="info_new_data_added">%1$.2f%2$s [%3$s] til %4$s lagt til</string>
+    <string name="info_new_data_added">%1$.2f%2$s [%3$s] lagt til til %4$s</string>
     <string name="info_new_data_duplicated">måling med samme dato og tid finnes allerede</string>
     <string name="info_enter_user_name">Ditt navn</string>
     <string name="info_no_selected_user">Ingen bruker finnes. Opprett en i innstillingene.</string>
@@ -275,7 +275,7 @@
 \nDu kan finne hele kildekoden på <a href="https://github.com/oliexdev/openScale">GitHub</a>. Gjør deg trygg på openScale ved å gå igjennom koden.</string>
     <string name="label_slide_welcome_main_text">Fri programvare for vekt- og kroppsmålingssporing, med støtte for Blåtannsvekter.</string>
     <string name="amputation_level_lower_leg_foot">Legg og fotblad</string>
-    <string name="info_assisted_weighing_old_reference_measurement">Siste referansemåling er over én dag gammel</string>
+    <string name="info_assisted_weighing_old_reference_measurement">Advarsel: Siste referansemåling er over én dag gammel</string>
     <string name="amputation_level_leg">Legg</string>
     <string name="amputation_level_foot">Fot</string>
     <string name="amputation_level_arm">Arm</string>
@@ -289,4 +289,10 @@
     <string name="label_amputation_left">Amputasjon venstre</string>
     <string name="label_amputation">Amputasjon</string>
     <string name="label_assisted_weighing">Assistert veiing</string>
+    <string name="label_trend_line">Tendenslinje</string>
+    <string name="label_trend">Tendens</string>
+    <string name="label_prediction">Prognose</string>
+    <string name="info_select_scale_user">Velg vektbruker</string>
+    <string name="info_enter_consent_code_for_scale_user">Skriv inn PIN/samtykkekode for vektbruker %s</string>
+    <string name="info_create_new_user_on_scale">Lag ny vektbruker.</string>
 </resources>

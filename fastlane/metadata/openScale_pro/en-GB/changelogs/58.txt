@@ -1,0 +1,1 @@
+- fixed for Android 12 installations errors and crashes

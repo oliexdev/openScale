@@ -16,6 +16,8 @@
 
 package com.health.openscale.core.bluetooth;
 
+import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_STATUS.UNEXPECTED_ERROR;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
@@ -28,15 +30,12 @@ import com.health.openscale.core.utils.Converters;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Random;
 import java.util.UUID;
 
 import timber.log.Timber;
-
-import static com.health.openscale.core.bluetooth.BluetoothCommunication.BT_STATUS.UNEXPECTED_ERROR;
 
 public class BluetoothMiScale2 extends BluetoothCommunication {
     private final UUID WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC = UUID.fromString("00002a2f-0000-3512-2118-0009af100700");
@@ -72,13 +71,6 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
                 writeBytes(BluetoothGattUuid.SERVICE_BODY_COMPOSITION, WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, userIdentifier);
 
                 resumeMachineState();
-            }
-
-            if (data.length == 26) {
-                final byte[] firstWeight = Arrays.copyOfRange(data, 0, 10);
-                final byte[] secondWeight = Arrays.copyOfRange(data, 10, 20);
-                parseBytes(firstWeight);
-                parseBytes(secondWeight);
             }
 
             if (data.length == 13) {
@@ -141,13 +133,12 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
             final byte ctrlByte1 = data[1];
 
             final boolean isWeightRemoved = isBitSet(ctrlByte1, 7);
-            final boolean isDateInvalid = isBitSet(ctrlByte1, 6);
             final boolean isStabilized = isBitSet(ctrlByte1, 5);
             final boolean isLBSUnit = isBitSet(ctrlByte0, 0);
             final boolean isCattyUnit = isBitSet(ctrlByte1, 6);
             final boolean isImpedance = isBitSet(ctrlByte1, 1);
 
-            if (isStabilized && !isWeightRemoved && !isDateInvalid) {
+            if (isStabilized && !isWeightRemoved) {
 
                 final int year = ((data[3] & 0xFF) << 8) | (data[2] & 0xFF);
                 final int month = (int) data[4];
@@ -195,7 +186,8 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
                         scaleBtData.setWater(miScaleLib.getWater(weight, impedance));
                         scaleBtData.setVisceralFat(miScaleLib.getVisceralFat(weight));
                         scaleBtData.setFat(miScaleLib.getBodyFat(weight, impedance));
-                        scaleBtData.setMuscle((100.0f / scaleBtData.getWeight()) * miScaleLib.getMuscle(weight, impedance)); // convert muscle in kg to percent
+                        scaleBtData.setMuscle((100.0f / weight) * miScaleLib.getMuscle(weight, impedance)); // convert muscle in kg to percent
+                        scaleBtData.setLbm(miScaleLib.getLBM(weight, impedance));
                         scaleBtData.setBone(miScaleLib.getBoneMass(weight, impedance));
                     } else {
                         Timber.d("Impedance value is zero");

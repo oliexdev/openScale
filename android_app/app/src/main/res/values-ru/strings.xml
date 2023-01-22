@@ -20,7 +20,7 @@
     <string name="label_add_user">Добавить пользователя</string>
     <string name="label_add_measurement">Добавить измерение</string>
     <string name="label_share">Поделиться</string>
-    <string name="label_share_subject">Экспорт данных CSV в (%s)</string>
+    <string name="label_share_subject">экспорт данных openScale (%s)</string>
     <string name="label_weight">Вес</string>
     <string name="label_bmi">Индекс массы тела (ИМТ)</string>
     <string name="label_bmr">Основной обмен (ОО)</string>
@@ -290,4 +290,10 @@
     <string name="info_assisted_weighing_old_reference_measurement">Предупреждение: последнее контрольное измерение старше суток</string>
     <string name="info_assisted_weighing_no_reference_measurements">Контрольный пользователь не имеет измерений</string>
     <string name="label_assisted_weighing">Вспомогательное взвешивание</string>
+    <string name="label_trend_line">Линия тренда</string>
+    <string name="label_trend">Тренд</string>
+    <string name="label_prediction">Прогноз</string>
+    <string name="info_select_scale_user">Выберите пользователя весов</string>
+    <string name="info_enter_consent_code_for_scale_user">Введите PIN-код для пользователя весов %s</string>
+    <string name="info_create_new_user_on_scale">Создайте нового пользователя весов.</string>
 </resources>

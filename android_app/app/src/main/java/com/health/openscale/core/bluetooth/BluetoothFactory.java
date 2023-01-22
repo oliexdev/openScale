@@ -42,14 +42,6 @@ public class BluetoothFactory {
                 || name.equals("BF700".toLowerCase(Locale.US))) {
             return new BluetoothBeurerSanitas(context, BluetoothBeurerSanitas.DeviceType.BEURER_BF710);
         }
-        /*if (name.startsWith("BEURER BF600".toLowerCase(Locale.US))
-                || name.startsWith("BEURER BF850".toLowerCase(Locale.US))
-                || name.startsWith("BF600".toLowerCase(Locale.US))
-                || name.startsWith("BF850".toLowerCase(Locale.US))
-                || name.startsWith("BF-600".toLowerCase(Locale.US))
-                || name.startsWith("BF-850".toLowerCase(Locale.US))) {
-            return new BluetoothStandardWeightProfile(context);
-        }*/
         if (name.equals("openScale".toLowerCase(Locale.US))) {
             return new BluetoothCustomOpenScale(context);
         }
@@ -90,6 +82,10 @@ public class BluetoothFactory {
         if (name.equals("Health Scale".toLowerCase(Locale.US))) {
             return new BluetoothOneByone(context);
         }
+        if(name.equals("1byone scale".toLowerCase(Locale.US))){
+            return new BluetoothOneByoneNew(context);
+        }
+
         if (name.equals("SENSSUN FAT".toLowerCase(Locale.US))) {
             return new BluetoothSenssun(context);
         }
@@ -115,6 +111,30 @@ public class BluetoothFactory {
         }
         if (deviceName.startsWith("Shape200") || deviceName.startsWith("Shape100") || deviceName.startsWith("Shape50") || deviceName.startsWith("Style100")) {
             return new BluetoothSoehnle(context);
+        }
+        if (deviceName.equals("Hoffen BS-8107")) {
+            return new BluetoothHoffenBBS8107(context);
+	}
+        if (deviceName.equals("ADV") || deviceName.equals("Chipsea-BLE")) {
+            return new BluetoothOKOK(context);
+        }
+        if (deviceName.equals("BF105") || deviceName.equals("BF720")) {
+            return new BluetoothBeurerBF105(context);
+        }
+        if (deviceName.equals("BF600") || deviceName.equals("BF850")) {
+            return new BluetoothBeurerBF600(context, deviceName);
+        }
+        if (deviceName.equals("SBF77") || deviceName.equals("SBF76") || deviceName.equals("BF950")) {
+            return new BluetoothBeurerBF950(context, deviceName);
+        }
+        if (deviceName.equals("SBF72") || deviceName.equals("BF915")) {
+            return new BluetoothSanitasSBF72(context, deviceName);
+        }
+        if (deviceName.equals("Weight Scale")){
+            return new BluetoothSinocare(context);
+        }
+        if (deviceName.equals("CH100")){
+            return new BluetoothHuaweiAH100(context);
         }
         return null;
     }

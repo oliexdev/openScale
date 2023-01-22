@@ -1,0 +1,3 @@
+- add support for Sanita SBF72, Beurer BF720 and new 1byone scale
+- fixed reference user bug
+- fixed minor bugs

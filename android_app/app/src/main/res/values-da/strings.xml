@@ -156,7 +156,7 @@
     <string name="edit">Redigér</string>
     <string name="label_month_view">Månedsvis</string>
     <string name="permission_not_granted">Tilladelse er ikke givet</string>
-    <string name="permission_bluetooth_info">Tilladelse til lokalbestemmelse er påkrævet for at søge efter Bluetooth-enheder.</string>
+    <string name="permission_bluetooth_info">Tilladelse til lokal bestemmelse er påkrævet for at søge efter Bluetooth-enheder.</string>
     <string name="permission_bluetooth_info_title">Information</string>
     <string name="label_share_subject">CSV dataeksport (%s)</string>
     <string name="label_next">Næste</string>

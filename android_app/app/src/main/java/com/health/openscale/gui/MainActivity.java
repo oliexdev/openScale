@@ -16,7 +16,9 @@
 
 package com.health.openscale.gui;
 
+import android.Manifest;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.content.ActivityNotFoundException;
@@ -24,29 +26,41 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Typeface;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
+import android.text.Editable;
 import android.text.Html;
+import android.text.InputFilter;
+import android.text.InputType;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
+import android.util.Pair;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -91,7 +105,6 @@ public class MainActivity extends AppCompatActivity
 
     private static final int IMPORT_DATA_REQUEST = 100;
     private static final int EXPORT_DATA_REQUEST = 101;
-    private static final int ENABLE_BLUETOOTH_REQUEST = 102;
     private static final int APPINTRO_REQUEST = 103;
 
     private AppBarConfiguration mAppBarConfiguration;
@@ -475,6 +488,11 @@ public class MainActivity extends AppCompatActivity
         builder.setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                if (userIds.isEmpty()) {
+                    Toast.makeText(getApplicationContext(), getString(R.string.info_assisted_weighing_no_reference_user), Toast.LENGTH_LONG).show();
+                    return;
+                }
+
                 int selectedPosition = ((AlertDialog)dialog).getListView().getCheckedItemPosition();
                 prefs.edit().putInt("assistedWeighingRefUserId", userIds.get(selectedPosition)).commit();
 
@@ -518,7 +536,6 @@ public class MainActivity extends AppCompatActivity
         boolean hasBluetooth = bluetoothManager.getAdapter() != null;
 
         if (!hasBluetooth) {
-            bluetoothStatus.setEnabled(false);
             setBluetoothStatusIcon(R.drawable.ic_bluetooth_disabled);
         }
         // Just search for a bluetooth device just once at the start of the app and if start preference enabled
@@ -557,6 +574,54 @@ public class MainActivity extends AppCompatActivity
             return;
         }
 
+        Timber.d("Main Activity Bluetooth permission check");
+
+        int targetSdkVersion = getApplicationInfo().targetSdkVersion;
+
+        final BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+        BluetoothAdapter btAdapter = bluetoothManager.getAdapter();
+
+        // Check if Bluetooth is enabled
+        if (btAdapter == null || !btAdapter.isEnabled()) {
+            Timber.d("Bluetooth is not enabled");
+            Toast.makeText(this, "Bluetooth " + getResources().getString(R.string.info_is_not_enable), Toast.LENGTH_SHORT).show();
+            setBluetoothStatusIcon(R.drawable.ic_bluetooth_disabled);
+            return;
+        }
+
+        // Check if Bluetooth 4.x is available
+        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+            Timber.d("No Bluetooth 4.x available");
+            Toast.makeText(this, "Bluetooth 4.x " + getResources().getString(R.string.info_is_not_available), Toast.LENGTH_SHORT).show();
+            setBluetoothStatusIcon(R.drawable.ic_bluetooth_disabled);
+            return;
+        }
+
+        // Check if GPS or Network location service is enabled
+        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        if (!(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))) {
+            Timber.d("No GPS or Network location service is enabled, ask user for permission");
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle(R.string.permission_bluetooth_info_title);
+            builder.setIcon(R.drawable.ic_preferences_about);
+            builder.setMessage(R.string.permission_location_service_info);
+            builder.setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    // Show location settings when the user acknowledges the alert dialog
+                    Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                    startActivity(intent);
+                }
+            });
+
+            Dialog alertDialog = builder.create();
+            alertDialog.setCanceledOnTouchOutside(false);
+            alertDialog.show();
+
+            setBluetoothStatusIcon(R.drawable.ic_bluetooth_disabled);
+            return;
+        }
+
         String deviceName = prefs.getString(
                 BluetoothSettingsFragment.PREFERENCE_KEY_BLUETOOTH_DEVICE_NAME, "");
         String hwAddress = prefs.getString(
@@ -568,18 +633,70 @@ public class MainActivity extends AppCompatActivity
             return;
         }
 
-        BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(BLUETOOTH_SERVICE);
-        if (!bluetoothManager.getAdapter().isEnabled()) {
-            setBluetoothStatusIcon(R.drawable.ic_bluetooth_connection_lost);
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBtIntent, ENABLE_BLUETOOTH_REQUEST);
-            return;
+        String[] requiredPermissions;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && targetSdkVersion >= Build.VERSION_CODES.S) {
+            Timber.d("SDK >= 31 request for Bluetooth Scan and Bluetooth connect permissions");
+            requiredPermissions = new String[]{Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT};
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && targetSdkVersion >= Build.VERSION_CODES.Q) {
+            Timber.d("SDK >= 29 request for Access fine location permission");
+            requiredPermissions = new String[]{Manifest.permission.ACCESS_FINE_LOCATION};
+        } else {
+            Timber.d("SDK < 29 request for coarse location permission");
+            requiredPermissions = new String[]{Manifest.permission.ACCESS_FINE_LOCATION};
         }
+
+        if (hasPermissions(requiredPermissions)) {
+            connectToBluetooth();
+        } else if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            Timber.d("No access fine location permission granted");
+
+            builder.setMessage(R.string.permission_bluetooth_info)
+                    .setTitle(R.string.permission_bluetooth_info_title)
+                    .setIcon(R.drawable.ic_preferences_about)
+                    .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            dialog.dismiss();
+                            requestPermissionBluetoothLauncher.launch(requiredPermissions);
+                        }
+                    });
+
+            Dialog alertDialog = builder.create();
+            alertDialog.setCanceledOnTouchOutside(false);
+            alertDialog.show();
+        } else if (shouldShowRequestPermissionRationale(Manifest.permission.BLUETOOTH_SCAN)) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            Timber.d("No access Bluetooth scan permission granted");
+
+            builder.setMessage(R.string.permission_bluetooth_info)
+                    .setTitle(R.string.permission_bluetooth_info_title)
+                    .setIcon(R.drawable.ic_preferences_about)
+                    .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            dialog.dismiss();
+                            requestPermissionBluetoothLauncher.launch(requiredPermissions);
+                        }
+                    });
+
+            Dialog alertDialog = builder.create();
+            alertDialog.setCanceledOnTouchOutside(false);
+            alertDialog.show();
+        } else {
+            requestPermissionBluetoothLauncher.launch(requiredPermissions);
+        }
+    }
+
+    private void connectToBluetooth() {
+        String deviceName = prefs.getString(
+                BluetoothSettingsFragment.PREFERENCE_KEY_BLUETOOTH_DEVICE_NAME, "");
+        String hwAddress = prefs.getString(
+                BluetoothSettingsFragment.PREFERENCE_KEY_BLUETOOTH_HW_ADDRESS, "");
 
         Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_try_connection) + " " + deviceName, Toast.LENGTH_SHORT).show();
         setBluetoothStatusIcon(R.drawable.ic_bluetooth_searching);
 
-        if (!openScale.connectToBluetoothDevice(deviceName, hwAddress, callbackBtHandler)) {
+        if (!OpenScale.getInstance().connectToBluetoothDevice(deviceName, hwAddress, callbackBtHandler)) {
             setBluetoothStatusIcon(R.drawable.ic_bluetooth_connection_lost);
             Toast.makeText(getApplicationContext(), deviceName + " " + getResources().getString(R.string.label_bt_device_no_support), Toast.LENGTH_SHORT).show();
         }
@@ -651,9 +768,91 @@ public class MainActivity extends AppCompatActivity
                         Timber.e("Bluetooth scale message error: " + ex);
                     }
                     break;
+                case CHOOSE_SCALE_USER:
+                    chooseScaleUser(msg);
+                    break;
+                case ENTER_SCALE_USER_CONSENT:
+                    enterScaleUserConsent(msg);
+                    break;
             }
         }
     };
+
+    private void chooseScaleUser(Message msg) {
+        AlertDialog.Builder mBuilder = new AlertDialog.Builder(MainActivity.this);
+        Pair<CharSequence[], int[]> choices = (Pair<CharSequence[], int[]>)msg.obj;
+
+        mBuilder.setTitle(getResources().getString(R.string.info_select_scale_user));
+        mBuilder.setSingleChoiceItems(choices.first, -1 , new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialoginterface, int i) {
+                    Timber.d("UI selected " + i + ": " + choices.first[i] + " P-0" + choices.second[i]);
+                    OpenScale.getInstance().setBluetoothDeviceUserIndex(OpenScale.getInstance().getSelectedScaleUser().getId(), choices.second[i], callbackBtHandler);
+                    dialoginterface.dismiss();
+                }
+            });
+        mBuilder.setNegativeButton(getResources().getString(R.string.label_cancel), new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialoginterface, int i) {
+                    dialoginterface.dismiss();
+                }
+            });
+
+        AlertDialog mDialog = mBuilder.create();
+        mDialog.show();
+    }
+
+    private void enterScaleUserConsent(Message msg) {
+        final int appUserId = msg.arg1;
+        final int scaleUserIndex = msg.arg2;
+        final int[] consentCode = {-1};
+
+        AlertDialog.Builder mBuilder = new AlertDialog.Builder(MainActivity.this);
+        mBuilder.setTitle(getResources().getString(R.string.info_enter_consent_code_for_scale_user, Integer.toString(scaleUserIndex)));
+
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_NUMBER);
+        InputFilter[] filterArray = new InputFilter[1];
+        filterArray[0] = new InputFilter.LengthFilter(4);
+        input.setFilters(filterArray);
+        mBuilder.setView(input);
+
+        mBuilder.setPositiveButton(getResources().getString(R.string.label_ok), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialoginterface, int i) {
+                    OpenScale.getInstance().setBluetoothDeviceUserConsent(appUserId, consentCode[0], callbackBtHandler);
+                    dialoginterface.dismiss();
+                }
+            });
+        mBuilder.setNegativeButton(getResources().getString(R.string.label_cancel), new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialoginterface, int i) {
+                    OpenScale.getInstance().setBluetoothDeviceUserConsent(appUserId, -1, callbackBtHandler);
+                    dialoginterface.dismiss();
+                }
+            });
+
+        AlertDialog mDialog = mBuilder.create();
+        mDialog.show();
+
+        mDialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
+        input.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                }
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                }
+                @Override
+                public void afterTextChanged(Editable s) {
+                    try {
+                        consentCode[0] = Integer.parseInt(s.toString());
+                        Timber.d("consent code set to " + consentCode[0] + "(" + s.toString() + ")");
+                        mDialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(true);
+                    } catch(NumberFormatException nfe) {
+                        Timber.d("Could not parse " + nfe);
+                        mDialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
+                    }
+                }
+            });
+    }
 
     private void setBluetoothStatusIcon(int iconResource) {
         bluetoothStatusIcon = iconResource;
@@ -795,16 +994,6 @@ public class MainActivity extends AppCompatActivity
 
         OpenScale openScale = OpenScale.getInstance();
 
-        if (requestCode == ENABLE_BLUETOOTH_REQUEST) {
-            if (resultCode == RESULT_OK) {
-                invokeConnectToBluetoothDevice();
-            }
-            else {
-                Toast.makeText(this, "Bluetooth " + getResources().getString(R.string.info_is_not_enable), Toast.LENGTH_SHORT).show();
-            }
-            return;
-        }
-
         if (requestCode == APPINTRO_REQUEST) {
             if (openScale.getSelectedScaleUserId() == -1) {
                 MobileNavigationDirections.ActionNavMobileNavigationToNavUsersettings action = MobileNavigationDirections.actionNavMobileNavigationToNavUsersettings();
@@ -855,4 +1044,29 @@ public class MainActivity extends AppCompatActivity
                 break;
         }
     }
+
+    private boolean hasPermissions(String[] permissions) {
+        if (permissions != null) {
+            for (String permission : permissions) {
+                if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                    Timber.d("Permission is not granted: " + permission);
+                    return false;
+                }
+                Timber.d("Permission already granted: " + permission);
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private ActivityResultLauncher<String[]> requestPermissionBluetoothLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), isGranted -> {
+                if (isGranted.containsValue(false)) {
+                    Timber.d("At least one Bluetooth permission was not granted");
+                    Toast.makeText(this, getString(R.string.label_bluetooth_title) + ": " + getString(R.string.permission_not_granted), Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    connectToBluetooth();
+                }
+            });
 }

@@ -2,15 +2,14 @@ apply plugin: 'com.android.application'
 apply plugin: "androidx.navigation.safeargs"
 
 android {
-    compileSdkVersion 29
+    compileSdkVersion 33
     defaultConfig {
         applicationId "com.health.openscale"
         testApplicationId "com.health.openscale.test"
-        minSdkVersion 21
-        targetSdkVersion 29
-        versionCode 50
-        versionName "2.3.1"
-        archivesBaseName = "openScale-$versionName"
+        minSdkVersion 23
+        targetSdkVersion 33
+        versionCode 61
+        versionName "2.4.6"
 
         manifestPlaceholders = [
                 appIcon: "@drawable/ic_launcher_openscale",
@@ -89,14 +88,23 @@ android {
 
     buildTypes {
         debug {
-            archivesBaseName = "openScale"
+            // don't include version number into the apk filename for debug build type so Travis can find it
+            applicationVariants.all { variant ->
+                variant.outputs.all { output ->
+                    if (variant.buildType.name == "debug") {
+                        outputFileName = "openScale-debug.apk"
+                    }
+                }
+            }
         }
         release {
+            archivesBaseName = "openScale-"+defaultConfig.versionName
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
             signingConfig signingConfigs.release
         }
         light {
+            archivesBaseName = "openScale-"+defaultConfig.versionName
             manifestPlaceholders = [
                     appIcon: "@drawable/ic_launcher_openscale_light",
                     appIconRound: "@mipmap/ic_launcher_openscale_light_round"
@@ -108,6 +116,7 @@ android {
             signingConfig signingConfigs.light
         }
         pro {
+            archivesBaseName = "openScale-"+defaultConfig.versionName
             manifestPlaceholders = [
                     appIcon: "@drawable/ic_launcher_openscale_pro",
                     appIconRound: "@mipmap/ic_launcher_openscale_pro_round"
@@ -128,45 +137,44 @@ android {
 }
 
 dependencies {
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.0.10'
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.5'
 
-    implementation 'com.google.android.material:material:1.3.0-alpha02'
+    implementation 'com.google.android.material:material:1.8.0-rc01'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation 'androidx.recyclerview:recyclerview:1.1.0'
-    implementation 'com.google.android:flexbox:0.3.2'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.1'
-    implementation 'androidx.preference:preference:1.1.1'
-    implementation 'androidx.navigation:navigation-fragment:2.3.0'
-    implementation 'androidx.navigation:navigation-ui:2.3.0'
+    implementation 'androidx.appcompat:appcompat:1.6.0'
+    implementation 'androidx.recyclerview:recyclerview:1.2.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.preference:preference:1.2.0'
+    implementation 'androidx.navigation:navigation-fragment:2.5.3'
+    implementation 'androidx.navigation:navigation-ui:2.5.3'
     implementation "android.arch.lifecycle:extensions:1.1.1"
-    annotationProcessor "android.arch.lifecycle:compiler:1.1.1"
+    annotationProcessor "androidx.lifecycle:lifecycle-common-java8:2.5.1"
 
     // MPAndroidChart
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
     // Simple CSV
     implementation 'com.j256.simplecsv:simplecsv:2.6'
     // Blessed Android
-    implementation 'com.github.weliem:blessed-android:1.26'
+    implementation 'com.github.weliem:blessed-android:2.4.0'
     // CustomActivityOnCrash
-    implementation 'cat.ereza:customactivityoncrash:2.2.0'
+    implementation 'cat.ereza:customactivityoncrash:2.3.0'
     // AppIntro
     implementation 'com.github.AppIntro:AppIntro:6.0.0'
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.3.72'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.4.31'
     // Room
-    implementation 'androidx.room:room-runtime:2.2.5'
-    annotationProcessor 'androidx.room:room-compiler:2.2.5'
-    androidTestImplementation 'androidx.room:room-testing:2.2.5'
+    implementation 'androidx.room:room-runtime:2.4.3'
+    annotationProcessor 'androidx.room:room-compiler:2.4.3'
+    androidTestImplementation 'androidx.room:room-testing:2.4.3'
     // Timber
-    implementation 'com.jakewharton.timber:timber:4.7.1'
+    implementation 'com.jakewharton.timber:timber:5.0.1'
     // Local unit tests
-    testImplementation 'junit:junit:4.13'
+    testImplementation 'junit:junit:4.13.2'
     // Instrumented unit tests
-    androidTestImplementation 'androidx.annotation:annotation:1.1.0'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
-    androidTestImplementation 'androidx.test:rules:1.2.0'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
-    androidTestImplementation 'androidx.test.espresso:espresso-contrib:3.2.0'
+    implementation 'androidx.annotation:annotation:1.5.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.4'
+    androidTestImplementation 'androidx.test:rules:1.5.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-contrib:3.5.0'
 }
 
 tasks.withType(Test) {

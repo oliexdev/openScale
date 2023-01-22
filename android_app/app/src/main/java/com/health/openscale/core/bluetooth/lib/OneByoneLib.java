@@ -33,8 +33,12 @@ public class OneByoneLib {
         return weight / (((height * height) / 100.0f) / 100.0f);
     }
 
-    public float getMuscle(float weight, float bodyFat, float boneMass) {
-        return (weight - ((bodyFat / 100.0f) * weight)) - boneMass;
+    public float getLBM(float weight, float bodyFat) {
+        return weight - (bodyFat / 100.0f * weight);
+    }
+
+    public float getMuscle(float weight, float impedanceValue){
+        return (float)((height * height / impedanceValue * 0.401) + (sex * 3.825) - (age * 0.071) + 5.102) / weight * 100.0f;
     }
 
     public float getWater(float bodyFat) {
@@ -50,7 +54,7 @@ public class OneByoneLib {
         return coeff * water;
     }
 
-    public float getBoneMass(float weight, int impedanceValue) {
+    public float getBoneMass(float weight, float impedanceValue) {
         float boneMass, sexConst , peopleCoeff  = 0.0f;
 
         switch (peopleType) {
@@ -173,30 +177,12 @@ public class OneByoneLib {
         }
     }
 
-    public float getBodyFat(float weight, int impedanceCoeff) {
-        float impedanceValue, bodyFatConst=0;
+    public float getBodyFat(float weight, float impedanceValue) {
+        float bodyFatConst=0;
 
-        if (impedanceCoeff == 0x0FFFFFF) {
-            return 1.0f;
-        }
-
-        impedanceValue = (float)(((impedanceCoeff & 0x0FF0000) >> 0x10) + (impedanceCoeff & 0x0F00) - ((impedanceCoeff & 0x0F000) >> 0xC) + (0 - (impedanceCoeff & 0xFF)) * 4) * 0.5f;
-
-        if (50.0f <= impedanceValue) {
-            if (impedanceValue > 3000.0f) {
-                bodyFatConst = 0.0068f;
-            } else {
-                if (200.0f > impedanceValue) {
-                    bodyFatConst = 1.36f;
-                } else {
-                    if (impedanceValue > 1200) {
-                        bodyFatConst = 8.16f;
-                    } else {
-                        bodyFatConst = 0.0068f * impedanceValue;
-                    }
-                }
-            }
-        }
+        if (impedanceValue >= 1200.0f) bodyFatConst = 8.16f;
+        else if (impedanceValue >= 200.0f) bodyFatConst = 0.0068f * impedanceValue;
+        else if (impedanceValue >= 50.0f) bodyFatConst = 1.36f;
 
         float peopleTypeCoeff, bodyVar, bodyFat;
 
@@ -236,19 +222,19 @@ public class OneByoneLib {
 
         if (sex != 0) {
             if (61.0f > weight) {
-                bodyVar = 0.98f;
+                bodyVar *= 0.98f;
             }
         } else {
             if (50.0f > weight) {
-                bodyVar = 1.02f;
+                bodyVar *= 1.02f;
             }
 
             if (weight > 60.0f) {
-                bodyVar = 0.96f;
+                bodyVar *= 0.96f;
             }
 
             if (height > 160.0f) {
-                bodyVar = 1.03f;
+                bodyVar *= 1.03f;
             }
         }
 

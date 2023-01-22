@@ -1,0 +1,3 @@
+- added support for Libra like trendlines
+- updated some translations
+- fixed minor bug

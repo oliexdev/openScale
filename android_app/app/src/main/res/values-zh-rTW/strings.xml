@@ -85,7 +85,7 @@
     <string name="info_bluetooth_connection_successful">連結成功</string>
     <string name="info_bluetooth_init">啟動藍芽設備</string>
     <string name="info_bluetooth_connection_error">藍芽出現錯誤</string>
-    <string name="info_new_data_added">"%1$.2f%2$s [%3$s] 加入至 %4$s "</string>
+    <string name="info_new_data_added">%1$.2f%2$s [%3$s] 加入至 %4$s</string>
     <string name="info_new_data_duplicated">相同日期及時間的測量數值已經存在</string>
     <string name="info_enter_user_name">你的名字</string>
     <string name="info_no_selected_user">沒有此用戶。 請在設定中加入新用戶。</string>
@@ -158,8 +158,7 @@
     <string name="label_month_view">按月顯示</string>
     <string name="label_weeks_view">按周顯示</string>
     <string name="permission_not_granted">未有開放權限</string>
-    <string name="permission_bluetooth_info">搜尋藍芽器材時， 需要開放大概位置的權限。 
-\n當搜尋完成時， 此權限可以再次關上。</string>
+    <string name="permission_bluetooth_info">搜尋藍芽器材時， 需要開放大概位置的權限。當搜尋完成時， 此權限可以再次關上。</string>
     <string name="permission_bluetooth_info_title">資料</string>
     <string name="label_next">下一項</string>
     <string name="label_set_default_order">設定預設的排序</string>
@@ -219,4 +218,14 @@
     <string name="label_fat_caliper">體脂夾</string>
     <string name="action_donation">捐赠</string>
     <string name="label_empty">空</string>
+    <string name="info_assisted_weighing_no_reference_measurements">參考用戶沒有測量值</string>
+    <string name="info_assisted_weighing_old_reference_measurement">警告：上次參考測量時間超過一天</string>
+    <string name="info_assisted_weighing_choose_reference_user">選擇減去重量的參考使用者</string>
+    <string name="info_assisted_weighing_no_reference_user">沒有可用的參考使用者，請創建一個</string>
+    <string name="label_amputation_left">左截肢</string>
+    <string name="label_amputation_right">右截肢</string>
+    <string name="label_assisted_weighing">輔助稱重</string>
+    <string name="label_amputation">截肢</string>
+    <string name="label_age">年齡</string>
+    <string name="info_create_new_user_on_scale">在秤上建立新用戶。</string>
 </resources>

@@ -1,5 +1,6 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<resources><string name="title_overview">Rezumat</string>
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title_overview">Rezumat</string>
     <string name="title_graph">Grafic</string>
     <string name="title_table">Tabel</string>
     <string name="title_statistics">Statistici</string>
@@ -7,12 +8,10 @@
     <string name="title_measurements">Măsurători</string>
     <string name="title_about">Despre</string>
     <string name="title_general">General</string>
-
     <string name="action_settings">Parametrare</string>
-    <string name="action_bluetooth_status">"Situația Bluetooth "</string>
+    <string name="action_bluetooth_status">Situația Bluetooth</string>
     <string name="open_drawer">deschide</string>
     <string name="close_drawer">inchide</string>
-
     <string name="label_cancel">Anulare</string>
     <string name="label_ok">OK</string>
     <string name="label_yes">Da</string>
@@ -20,13 +19,12 @@
     <string name="label_delete">Ștergere</string>
     <string name="label_add_user">Adăugați un utilizator</string>
     <string name="label_share">Distribuiți</string>
-    <string name="label_share_subject">"Exportați ca și fișier CSV (%s) "</string>
-
+    <string name="label_share_subject">Exportați ca și fișier CSV (%s)</string>
     <string name="label_weight">Greutate</string>
-    <string name="label_bmi">"Indice de masă corporală (IMC) "</string>
+    <string name="label_bmi">Indice de masă corporală (IMC)</string>
     <string name="label_bmr">Metabolism bazal (BMR)</string>
     <string name="label_fat">Țesut adipos</string>
-    <string name="label_water">Apa din organism</string>
+    <string name="label_water">Apa corporală totală</string>
     <string name="label_muscle">Masa musculară</string>
     <string name="label_lbm">Greutate în absența grăsimii</string>
     <string name="label_waist">Circumferința la nivelul taliei</string>
@@ -36,18 +34,16 @@
     <string name="label_whr">Raport talie-coapse</string>
     <string name="label_bone">Masa osoasă</string>
     <string name="label_smartUserAssign">Atribuire inteligentă la in utilizator</string>
-
     <plurals name="label_days">
         <item quantity="one">%d zi</item>
         <item quantity="few">%d zile</item>
         <item quantity="other">%d zile</item>
     </plurals>
-    <string name="label_last_week">Ultimele 7 zile</string>
-    <string name="label_last_month">Ultimele 30 de zile</string>
+    <string name="label_last_week">Media în ultima săptămână</string>
+    <string name="label_last_month">Media în ultima lună</string>
     <string name="label_weight_difference">Diferența de greutate</string>
     <string name="label_goal_date_is">Data atingerii obiectivului:</string>
     <string name="label_days_left">Zile rămase</string>
-
     <string name="label_date">Data</string>
     <string name="label_time">Ora</string>
     <string name="label_birthday">Data nașterii</string>
@@ -59,24 +55,20 @@
     <string name="label_female">Femeie</string>
     <string name="label_goal_weight">Greutatea dorită</string>
     <string name="label_goal_date">Data atingerii obiectivului</string>
-
     <string name="label_title_user">utilizator</string>
     <string name="label_title_last_measurement">ultima măsurătoare</string>
-    <string name="label_title_goal">obiectiv</string>
-
+    <string name="label_title_goal">Obiectiv</string>
     <string name="label_import">Importare</string>
     <string name="label_export">Exportare</string>
     <string name="label_delete_all">Ștergere completă</string>
-
     <string name="error_value_required">"O valoare e necesară "</string>
     <string name="error_value_range">Valoare în afara limitelor permise</string>
-    <string name="error_exporting">Eroare la export</string>
-    <string name="error_importing">Eroare la import</string>
-    <string name="error_user_name_required">Eroare: Nume necesar</string>
-    <string name="error_height_required">Eroare: Înălțime necesară</string>
-    <string name="error_initial_weight_required">Eroare: Greutatea inițială trebuie indicată</string>
-    <string name="error_goal_weight_required">Eroare: Greutatea dorită trebuie indicată</string>
-
+    <string name="error_exporting">Nu s-a putut exporta</string>
+    <string name="error_importing">Nu s-a putut importa</string>
+    <string name="error_user_name_required">Nume necesar</string>
+    <string name="error_height_required">Înălțime necesară</string>
+    <string name="error_initial_weight_required">Greutatea inițială trebuie indicată</string>
+    <string name="error_goal_weight_required">Greutatea dorită trebuie indicată</string>
     <string name="info_data_deleted">Înregistrare ștearsă</string>
     <string name="info_data_all_deleted">Toate înregistrările au fost șterse</string>
     <string name="info_data_exported">Exportat spre</string>
@@ -91,42 +83,32 @@
     <string name="info_bluetooth_try_connection">Conectare la:</string>
     <string name="info_bluetooth_connection_lost">Conexiune Bluetooth pierdută</string>
     <string name="info_bluetooth_no_device">Nici un dispozitiv Bluetooth detectat</string>
-    <string name="info_bluetooth_no_device_set">Nici un dispozitiv Bluetooth selecționat</string>
-    <string name="info_bluetooth_connection_successful">Conexiune stabilită</string>
+    <string name="info_bluetooth_no_device_set">Selectați un dispozitiv Bluetooth</string>
+    <string name="info_bluetooth_connection_successful">Conectat</string>
     <string name="info_bluetooth_init">Inițializare dispozitiv Bluetooth</string>
     <string name="info_bluetooth_connection_error">"Eroare Bluetooth "</string>
-    <string name="info_new_data_added">%1$.2f%2$s [%3$s] până la %4$s adăugate</string>
+    <string name="info_new_data_added">%1$.2f%2$s [%3$s] adăugate la %4$s</string>
     <string name="info_new_data_duplicated">măsurători la aceeași dată și oră deja realizate</string>
-
     <string name="info_enter_user_name">Numele dumneavoastră</string>
     <string name="info_no_selected_user">Nu s-a setat nici un utilizator. Vă rugăm creați unul în secțiunea parametri.</string>
     <string name="info_no_evaluation_available">Valoarea nu a putut fi evaluată</string>
-
     <string name="question_really_delete">Ștergere a înregistrării?</string>
     <string name="question_really_delete_all">Ștergere a tuturor înregistrărilor pentru toți utilizatorii?</string>
     <string name="question_really_delete_user">Ștergere utilizator?</string>
-
     <string name="label_bluetooth_title">Bluetooth</string>
     <string name="label_bluetooth_enable">Conectare la cântar la pornire</string>
     <string name="label_mergeWithLastMeasurement">Adaugă la ultima măsurătoare</string>
     <string name="label_bluetooth_searching">În curs de căutare a unui cântar Bluetooth</string>
     <string name="label_bluetooth_searching_finished">Căutare încheiată</string>
-
     <string name="label_enable_labels">Etichetare date</string>
     <string name="label_enable_points">Poziție</string>
-
     <string name="label_delete_confirmation">Confirmare a ștergerii</string>
-
     <string name="label_category_measurement_database">Baza de date cu măsurătorile</string>
-
     <string name="label_maintainer">Programator</string>
     <string name="label_website">Sit Internet</string>
     <string name="label_license">Licență</string>
-
     <string name="label_automatic">auto</string>
-
     <string name="label_theme">Temă</string>
-
     <string name="label_reminder">Alarmă</string>
     <string name="Thursday">Joi</string>
     <string name="Friday">Vineri</string>
@@ -142,7 +124,6 @@
     <string name="label_initial_weight">Greutate inițială</string>
     <string name="label_goal_line">Linie pentru obiectiv</string>
     <string name="label_help">Ajutor</string>
-
     <string name="label_feedback_message_enjoying">Satisfăcut de openScale?</string>
     <string name="label_feedback_message_rate_app">Lăsați o evaluare pe Google Play sau GitHub?</string>
     <string name="label_feedback_message_issue">Doriți să furnizați comentarii despre aplicație?</string>
@@ -150,11 +131,9 @@
     <string name="label_feedback_message_no">Nu neapărat</string>
     <string name="label_feedback_message_positive">OK</string>
     <string name="label_feedback_message_negative">Nu, mulțumesc</string>
-
     <string name="error_max_scale_users">Numărul maxim de utilizatori al unui același aparat depășit</string>
     <string name="info_step_on_scale_for_reference">Urcați vă rog pe cântar desculț pentru măsurătorile de referință</string>
     <string name="info_measuring">Măsurare a greutății în curs: %.2f</string>
-
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">O eroare a apărut.
 \n
 \nVă rugăm să adăugați un comentariu cu detaliile erorii la
@@ -170,22 +149,18 @@
     <string name="toggle_expand">Activarea modului extins</string>
     <string name="edit">Modificare</string>
     <string name="save">Salvare</string>
-
     <string name="label_month_view">Vizualizare a lunii</string>
     <string name="label_weeks_view">Vizualizare a săptămânii</string>
-
     <string name="permission_not_granted">Permisiune neacordată</string>
     <string name="permission_bluetooth_info">Permisiunea accesului la localizare e necesară pentru a căuta dispozitive Bluetooth. Permisiunea poate fi revocată o dată ce dispozitivul a fost găsit.</string>
     <string name="permission_bluetooth_info_title">Informație</string>
     <string name="label_next">Următoarea</string>
     <string name="label_set_default_order">Definire a ordinii de bază</string>
-    <string name="label_reminder_weekdays">Zile lucrătoare</string>
+    <string name="label_reminder_weekdays">Zile</string>
     <string name="label_reminder_time">Ora</string>
     <string name="label_reminder_notify_text">Textul notificării</string>
     <string name="default_value_reminder_notify_text">E momentul de a se cântări</string>
-
     <string name="info_on_date">în</string>
-
     <string name="Monday">Luni</string>
     <string name="Tuesday">Marți</string>
     <string name="Wednesday">Miercuri</string>
@@ -212,4 +187,20 @@
     <string name="label_click_to_help_add_support">Clic aici pentru a ajuta la adăugare printre dispozitivele cunoscute</string>
     <string name="label_development">Programare</string>
     <string name="label_debug_log">Înregistrarea datelor de diagnostic într-un fișier</string>
+    <string name="info_assisted_weighing_no_reference_measurements">Utilizatorul de referință nu are nicio măsurătură</string>
+    <string name="info_assisted_weighing_old_reference_measurement">Atenție: ultima măsurătură de referință e mai veche de o zi</string>
+    <string name="action_donation">Donație</string>
+    <string name="label_amputation">Amputare</string>
+    <string name="info_assisted_weighing_choose_reference_user">Alegeți utilizatorul de referință din care masa este scăzută</string>
+    <string name="info_bluetooth_connection_error_scale_offline">Nu s-a putut conecta la cântar, vă rugăm asigurați-vă că este pornit.</string>
+    <string name="label_amputation_right">Amputare dreapta</string>
+    <string name="info_assisted_weighing_no_reference_user">Niciun utilizator de referință disponibil, vă rugăm creați unul</string>
+    <string name="info_bluetooth_connection_disconnected">Conexiune Bluetooth închisă</string>
+    <string name="info_bluetooth_no_device_retrying">Nu s-a putut creea conexiunea, reîncercare…</string>
+    <string name="info_scale_low_battery">Nivel baterie scăzit (%d%%), vă rugăm să încărcați sau să înlocuiți bateriile</string>
+    <string name="label_amputation_left">Amputare stânga</string>
+    <string name="label_empty">gol</string>
+    <string name="label_age">Vârstă</string>
+    <string name="label_assisted_weighing">Cântărire asistată</string>
+    <string name="label_add_measurement">Adăugare măsurătură</string>
 </resources>

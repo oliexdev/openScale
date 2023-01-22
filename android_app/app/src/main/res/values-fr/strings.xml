@@ -144,7 +144,7 @@
     <string name="label_estimate_measurement_summary">Basé sur le poids, la taille, l\'âge, le sexe, etc.</string>
     <string name="open_drawer">ouvrir</string>
     <string name="close_drawer">fermer</string>
-    <string name="label_share_subject">Exporter comme fichier CSV (%s)</string>
+    <string name="label_share_subject">Exportation de données openScale (%s)</string>
     <string name="label_lbm">Masse sans graisse</string>
     <string name="info_new_data_added">%1$.2f%2$s [%3$s] ajouté pour %4$s</string>
     <string name="info_new_data_duplicated">Une mesure à la même date et heure existe déjà</string>
@@ -160,8 +160,8 @@
     <string name="label_goal_line">Ligne pour l\'objectif</string>
     <string name="label_feedback_message_enjoying">Êtes-vous satisfait d\'openScale ?</string>
     <string name="label_feedback_message_rate_app">Laisser une évaluation sur Google Play ou GitHub ?</string>
-    <string name="error_max_scale_users">Le nombre maximum d\'utilisateurs de la balance atteint</string>
-    <string name="info_step_on_scale_for_reference">Montez svp sur la balance, pieds nus, pour les mesures de référence</string>
+    <string name="error_max_scale_users">Nombre maximal d\'utilisateurs de la balance atteint</string>
+    <string name="info_step_on_scale_for_reference">Veuillez monter sur la balance, pieds nus, pour les mesures de référence</string>
     <string name="info_measuring">En train de mesurer le poids : %.2f</string>
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">Une erreur est apparue.
 \n
@@ -256,7 +256,7 @@
 \n 
 \nLes métriques corporelles sont calculées à partir de mesures.</string>
     <string name="label_empty">vide</string>
-    <string name="label_slide_privacy_main_text">openScale n\'envoie aucune donnée dans le cloud et le fait de ne pas avoir la permission d\'accéder à l\'internet en est une garantie solide.
+    <string name="label_slide_privacy_main_text">openScale n\'envoie aucune donnée dans le nuage et le fait de ne pas avoir la permission d\'accéder à l\'internet en est une garantie solide.
 \n
 \nSi vous voulez vraiment synchroniser votre poids avec GoogleFit ou avec MQTT, vous pouvez installer <a href="https://play.google.com/store/apps/details?id=com.health.openscale.sync">openScale sync</a>.</string>
     <string name="label_slide_privacy_top_text">Protégez vos données personnelles de santé.</string>
@@ -283,10 +283,16 @@
     <string name="amputation_level_hand">Main</string>
     <string name="info_assisted_weighing_choose_reference_user">Choisissez l\'utilisateur de référence auquel le poids est soustrait</string>
     <string name="info_assisted_weighing_no_reference_user">Pas d\'utilisateur de référence disponible, veuillez en créer un</string>
-    <string name="info_assisted_weighing_old_reference_measurement">Attention, la dernière mesure de référence date de plus d\'un jour</string>
+    <string name="info_assisted_weighing_old_reference_measurement">Attention : la dernière mesure de référence date de plus d\'un jour</string>
     <string name="info_assisted_weighing_no_reference_measurements">L\'utilisateur de référence n\'a pas de mesures</string>
     <string name="label_amputation_right">Amputation droite</string>
     <string name="label_amputation_left">Amputation gauche</string>
     <string name="label_amputation">Amputation</string>
     <string name="label_assisted_weighing">Pesée assistée</string>
+    <string name="label_trend">Tendance</string>
+    <string name="label_prediction">Prédiction</string>
+    <string name="label_trend_line">Ligne de tendances</string>
+    <string name="info_create_new_user_on_scale">Créer un nouvel utilisateur sur la balance.</string>
+    <string name="info_enter_consent_code_for_scale_user">Entrez le NIP/code de consentement de l\'utilisateur de la balance %s</string>
+    <string name="info_select_scale_user">Sélectionner un utilisateur</string>
 </resources>

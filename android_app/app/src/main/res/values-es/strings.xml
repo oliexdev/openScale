@@ -158,7 +158,7 @@
     <string name="permission_not_granted">Permiso no otorgado</string>
     <string name="permission_bluetooth_info">Se requiere permiso para ubicar dispositivos Bluetooth. Este permiso puede ser revocado después de que se encontró el dispositivo.</string>
     <string name="permission_bluetooth_info_title">Información</string>
-    <string name="label_share_subject">Exportar a CSV (%s)</string>
+    <string name="label_share_subject">openScale datos exportar (%s)</string>
     <string name="label_mergeWithLastMeasurement">Unir con la última medición</string>
     <string name="label_weeks_view">Vista semanal</string>
     <string name="label_next">Siguiente</string>
@@ -200,7 +200,7 @@
     <string name="label_biceps">Circunferencia del bíceps</string>
     <string name="label_neck">Circunferencia del cuello</string>
     <string name="label_fat_caliper">Calibrador de grasa corporal</string>
-    <string name="label_caliper1_male">Pliegues del pecho</string>
+    <string name="label_caliper1_male">Pliegues del torso</string>
     <string name="label_caliper2_male">Pliegues abdominales</string>
     <string name="label_caliper3_male">Pliegues del muslo</string>
     <string name="label_caliper1_female">Pliegues del tríceps</string>
@@ -219,17 +219,17 @@
     <string name="trisa_scale_pairing_succeeded">¡Emparejamiento exitoso! 
 \n 
 \nVuelva a conectar para obtener datos de mediciones.</string>
-    <string name="label_tdee">Gasto energético total diario (GET)</string>
+    <string name="label_tdee">Gasto energético total diario</string>
     <string name="info_bluetooth_no_device_retrying">No se pudo establecer la conexión; reintentando…</string>
     <string name="info_bluetooth_connection_disconnected">Conexión Bluetooth cerrada</string>
     <string name="label_enable_legend">Leyenda del gráfico</string>
     <string name="label_enable_yaxis">Eje Y</string>
-    <string name="info_step_on_scale">Súbase con los pies descalzos en la báscula</string>
+    <string name="info_step_on_scale">Por favor, párese descalzo en la balanza</string>
     <string name="label_day_view">Vista diaria</string>
     <string name="label_year_view">Vista anual</string>
-    <string name="label_measurement_bar">Barra de medición</string>
-    <string name="permission_location_service_info">Otorgue permiso para acceso a la ubicación, en la configuración de Android, para buscar dispositivos Bluetooth. Podrá revocarlo después.</string>
-    <string name="label_is_on_right_axis">Está en el eje de la derecha</string>
+    <string name="label_measurement_bar">Barra de medida</string>
+    <string name="permission_location_service_info">Otorgue acceso a la ubicación en la configuración de Android para buscar dispositivos Bluetooth. Opcionalmente puede revocarlo después.</string>
+    <string name="label_is_on_right_axis">Está en el eje derecho</string>
     <string name="label_calories">Calorías</string>
     <string name="label_upgrade_to_openScale_pro">Cambie a la versión Pro de openScale para obtener la prestación de Bluetooth</string>
     <string name="action_donation">Donación</string>
@@ -283,10 +283,16 @@
     <string name="amputation_level_none">Sin amputación</string>
     <string name="info_assisted_weighing_choose_reference_user">Elija el usuario de referencia al que se le reste el peso</string>
     <string name="info_assisted_weighing_no_reference_user">No hay un usuario de referencia disponible, por favor cree uno</string>
-    <string name="info_assisted_weighing_old_reference_measurement">Advertencia la última medida de referencia es más vieja que un día</string>
+    <string name="info_assisted_weighing_old_reference_measurement">Advertencia: la última medida de referencia es más vieja que un día</string>
     <string name="info_assisted_weighing_no_reference_measurements">El usuario de referencia no tiene medidas</string>
     <string name="label_amputation_right">Amputación derecha</string>
     <string name="label_amputation_left">Amputación izquierda</string>
     <string name="label_amputation">Amputación</string>
     <string name="label_assisted_weighing">Pesaje asistido</string>
+    <string name="label_trend">Tendencia</string>
+    <string name="label_prediction">Proyección</string>
+    <string name="label_trend_line">Línea de tendencia</string>
+    <string name="info_enter_consent_code_for_scale_user">Introduce PIN/código de consentimiento para el usuario %s</string>
+    <string name="info_create_new_user_on_scale">Crea nuevo usuario en la escala.</string>
+    <string name="info_select_scale_user">Selecciona usuario</string>
 </resources>

@@ -128,7 +128,7 @@
     <string name="title_general">General</string>
     <string name="label_add_measurement">Afegeix una mesura</string>
     <string name="label_share">Comparteix</string>
-    <string name="label_share_subject">Exporta les dades com a CSV (%s)</string>
+    <string name="label_share_subject">Exportació de dades de l\'openScale (%s)</string>
     <string name="info_bluetooth_no_device_retrying">No s\'ha pogut establir una connexió, s\'està tornant a provar…</string>
     <string name="info_bluetooth_no_device_set">Seleccioneu un dispositiu Bluetooth</string>
     <string name="info_bluetooth_connection_disconnected">S\'ha tancat la connexió Bluetooth</string>
@@ -283,10 +283,16 @@
     <string name="amputation_level_none">Sense amputació</string>
     <string name="info_assisted_weighing_choose_reference_user">Trieu l\'usuari de referència del qual es restarà el pes</string>
     <string name="info_assisted_weighing_no_reference_user">No hi ha cap usuari de referència disponible, creeu-ne un</string>
-    <string name="info_assisted_weighing_old_reference_measurement">Atenció, la darrera mesura de referència és de fa més d\'un dia</string>
+    <string name="info_assisted_weighing_old_reference_measurement">Atenció: la darrera mesura de referència és de fa més d\'un dia</string>
     <string name="info_assisted_weighing_no_reference_measurements">L\'usuari de referència no té cap mesura</string>
     <string name="label_amputation_right">Amputació dreta</string>
     <string name="label_amputation_left">Amputació esquerra</string>
     <string name="label_amputation">Amputació</string>
     <string name="label_assisted_weighing">Pesatge assistit</string>
+    <string name="label_trend">Tendència</string>
+    <string name="label_prediction">Predicció</string>
+    <string name="label_trend_line">Línia de tendència</string>
+    <string name="info_select_scale_user">Seleccioneu l\'usuari de la bàscula</string>
+    <string name="info_enter_consent_code_for_scale_user">Introduïu el PIN/codi de consentiment per a l\'usuari de la bàscula %s</string>
+    <string name="info_create_new_user_on_scale">Creeu un nou usuari a la bàscula.</string>
 </resources>

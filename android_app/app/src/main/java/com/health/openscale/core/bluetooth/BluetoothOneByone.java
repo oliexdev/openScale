@@ -145,9 +145,8 @@ public class BluetoothOneByone extends BluetoothCommunication {
 
     private void parseBytes(byte[] weightBytes) {
         float weight = Converters.fromUnsignedInt16Le(weightBytes, 3) / 100.0f;
-        int impedanceCoeff = Converters.fromUnsignedInt24Le(weightBytes, 5);
-        int impedanceValue = weightBytes[5] + weightBytes[6] + weightBytes[7];
-        boolean impedancePresent = (weightBytes[9] != 1) && (impedanceCoeff != 0);
+        float impedanceValue = ((float)(((weightBytes[2] & 0xFF) << 8) + (weightBytes[1] & 0xFF))) * 0.1f;
+        boolean impedancePresent = (weightBytes[9] != 1) && (impedanceValue != 0);
         boolean dateTimePresent = weightBytes.length >= 18;
 
         if (!impedancePresent || (!dateTimePresent && historicMeasurement)) {
@@ -166,7 +165,7 @@ public class BluetoothOneByone extends BluetoothCommunication {
         final ScaleUser scaleUser = OpenScale.getInstance().getSelectedScaleUser();
 
         Timber.d("received bytes [%s]", byteInHex(weightBytes));
-        Timber.d("received decrypted bytes [weight: %.2f, impedanceCoeff: %d, impedanceValue: %d]", weight, impedanceCoeff, impedanceValue);
+        Timber.d("received decoded bytes [weight: %.2f, impedanceValue: %f]", weight, impedanceValue);
         Timber.d("user [%s]", scaleUser);
 
         int sex = 0, peopleType = 0;
@@ -202,29 +201,31 @@ public class BluetoothOneByone extends BluetoothCommunication {
         try {
             dateTime.setLenient(false);
             scaleBtData.setDateTime(dateTime.getTime());
+
+            scaleBtData.setFat(oneByoneLib.getBodyFat(weight, impedanceValue));
+            scaleBtData.setWater(oneByoneLib.getWater(scaleBtData.getFat()));
+            scaleBtData.setBone(oneByoneLib.getBoneMass(weight, impedanceValue));
+            scaleBtData.setVisceralFat(oneByoneLib.getVisceralFat(weight));
+            scaleBtData.setMuscle(oneByoneLib.getMuscle(weight, impedanceValue));
+            scaleBtData.setLbm(oneByoneLib.getLBM(weight, scaleBtData.getFat()));
+
+            Timber.d("scale measurement [%s]", scaleBtData);
+
+            if (dateTime.getTimeInMillis() - lastDateTime.getTimeInMillis() < DATE_TIME_THRESHOLD) {
+                return; // don't save measurements too close to each other
+            }
+            lastDateTime = dateTime;
+
+            addScaleMeasurement(scaleBtData);
         }
         catch (IllegalArgumentException e) {
             if (historicMeasurement) {
                 Timber.d("invalid time-stamp: year %d, month %d, day %d, hour %d, minute %d, second %d",
-                         Converters.fromUnsignedInt16Be(weightBytes, 11),
-                         weightBytes[13], weightBytes[14], weightBytes[15],
-                         weightBytes[16], weightBytes[17]);
+                        Converters.fromUnsignedInt16Be(weightBytes, 11),
+                        weightBytes[13], weightBytes[14], weightBytes[15],
+                        weightBytes[16], weightBytes[17]);
                 return; // discard historic measurement with invalid time-stamp
             }
         }
-        scaleBtData.setFat(oneByoneLib.getBodyFat(weight, impedanceCoeff));
-        scaleBtData.setWater(oneByoneLib.getWater(scaleBtData.getFat()));
-        scaleBtData.setBone(oneByoneLib.getBoneMass(weight, impedanceValue));
-        scaleBtData.setVisceralFat(oneByoneLib.getVisceralFat(weight));
-        scaleBtData.setMuscle(oneByoneLib.getMuscle(weight, scaleBtData.getFat(), scaleBtData.getBone()));
-
-        Timber.d("scale measurement [%s]", scaleBtData);
-
-        if (dateTime.getTimeInMillis() - lastDateTime.getTimeInMillis() < DATE_TIME_THRESHOLD) {
-            return; // don't save measurements too close to each other
-        }
-        lastDateTime = dateTime;
-
-        addScaleMeasurement(scaleBtData);
     }
 }

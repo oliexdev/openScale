@@ -241,6 +241,17 @@ public abstract class FloatMeasurementView extends MeasurementView {
     protected abstract float getMeasurementValue(ScaleMeasurement measurement);
     protected abstract void setMeasurementValue(float value, ScaleMeasurement measurement);
 
+    public float getConvertedMeasurementValue(ScaleMeasurement measurement) {
+        updateUserConvertedWeight(measurement);
+
+        float convertedValue = getMeasurementValue(measurement);
+        convertedValue = maybeConvertValue(convertedValue);
+        convertedValue = clampValue(convertedValue);
+        convertedValue = roundValue(convertedValue);
+
+        return convertedValue;
+    }
+
     public abstract String getUnit();
     protected abstract float getMaxValue();
     protected int getDecimalPlaces() {
@@ -350,21 +361,12 @@ public abstract class FloatMeasurementView extends MeasurementView {
         float newPreviousValue = NO_VALUE;
 
         if (!useAutoValue()) {
-            updateUserConvertedWeight(measurement);
-
-            newValue = getMeasurementValue(measurement);
-            newValue = maybeConvertValue(newValue);
-            newValue = clampValue(newValue);
-            newValue = roundValue(newValue);
+            newValue = getConvertedMeasurementValue(measurement);
 
             if (previousMeasurement != null) {
                 float saveUserConvertedWeight = userConvertedWeight;
-                updateUserConvertedWeight(previousMeasurement);
 
-                newPreviousValue = getMeasurementValue(previousMeasurement);
-                newPreviousValue = maybeConvertValue(newPreviousValue);
-                newPreviousValue = clampValue(newPreviousValue);
-                newPreviousValue = roundValue(newPreviousValue);
+                newPreviousValue = getConvertedMeasurementValue(previousMeasurement);
 
                 userConvertedWeight = saveUserConvertedWeight;
             }

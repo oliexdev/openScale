@@ -23,7 +23,7 @@
     <string name="label_add_user">Add user</string>
     <string name="label_add_measurement">Add measurement</string>
     <string name="label_share">Share</string>
-    <string name="label_share_subject">CSV data export (%s)</string>
+    <string name="label_share_subject">openScale data export (%s)</string>
     <string name="label_weight">Weight</string>
     <string name="label_bmi">Body mass index (BMI)</string>
     <string name="label_bmr">Basal metabolic rate (BMR)</string>
@@ -90,7 +90,7 @@
     <string name="info_is_not_enable">disabled</string>
     <string name="info_is_not_available">not available</string>
     <string name="info_assisted_weighing_no_reference_measurements">Reference user has no measurements</string>
-    <string name="info_assisted_weighing_old_reference_measurement">Warning last reference measurement is older than a day</string>
+    <string name="info_assisted_weighing_old_reference_measurement">Warning: last reference measurement is older than a day</string>
     <string name="info_assisted_weighing_no_reference_user">No reference user available, please create one</string>
     <string name="info_assisted_weighing_choose_reference_user">Choose the reference user which the weight is subtracted</string>
     <string name="info_scale_low_battery">Low battery level (%d%%), please recharge or replace scale batteries</string>
@@ -104,7 +104,7 @@
     <string name="info_bluetooth_connection_error">Unexpected Bluetooth error</string>
     <string name="info_bluetooth_connection_error_scale_offline">Could not connect to scale, please ensure it is on.</string>
     <string name="info_bluetooth_connection_disconnected">Bluetooth connection closed</string>
-    <string name="info_new_data_added">%1$.2f%2$s [%3$s] to %4$s added</string>
+    <string name="info_new_data_added">%1$.2f%2$s [%3$s] added to %4$s</string>
     <string name="info_new_data_duplicated">measurement with the same date and time already exist</string>
     <string name="info_enter_user_name">Your name</string>
     <string name="info_no_selected_user">No user exists. Please create one in the settings.</string>
@@ -164,6 +164,8 @@
     <string name="error_max_scale_users">Max. number of concurrent scale users reached</string>
     <string name="info_step_on_scale_for_reference">Please step barefoot on the scale for reference measurements</string>
     <string name="info_step_on_scale">Please step barefoot on the scale</string>
+    <string name="info_select_scale_user">Select scale user</string>
+    <string name="info_enter_consent_code_for_scale_user">Enter PIN/consent code for scale user %s</string>
     <string name="info_measuring">Measuring weight: %.2f</string>
     <string name="trisa_scale_not_paired">This scale has not been paired!\n\nHold the button on the bottom of the scale to switch it to pairing mode, and then reconnect to retrieve the device password.</string>
     <string name="trisa_scale_pairing_succeeded">Pairing succeeded!\n\nReconnect to retrieve measurement data.</string>
@@ -284,4 +286,5 @@
     <string name="app_intro_next_button">Next</string>
     <string name="app_intro_back_button">Back</string>
     <string name="app_intro_done_button">Done</string>
+    <string name="info_create_new_user_on_scale">Create new user on scale.</string>
 </resources>

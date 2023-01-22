@@ -75,7 +75,7 @@ public class AlarmBackupHandler
         Intent alarmIntent = new Intent(context, ReminderBootReceiver.class);
         alarmIntent.putExtra(INTENT_EXTRA_BACKUP_ALARM, true);
 
-        return PendingIntent.getBroadcast(context, ALARM_NOTIFICATION_ID, alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        return PendingIntent.getBroadcast(context, ALARM_NOTIFICATION_ID, alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
 
     public void disableAlarm(Context context) {
@@ -91,8 +91,7 @@ public class AlarmBackupHandler
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
-        // TODO to disable in the AndroidManfiest the requestLegacyExternalStorage on SDK >= 29 we need store the files on shared storages
-        File exportDir = new File(Environment.getExternalStorageDirectory(),
+        File exportDir = new File(context.getExternalFilesDir(null).getPath(),
                 prefs.getString("exportDir", "openScale Backup"));
         if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             return;

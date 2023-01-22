@@ -39,6 +39,9 @@ public class EvaluationSheet {
     private List<sheetEntry> bmiEvaluateSheet_Man;
     private List<sheetEntry> bmiEvaluateSheet_Woman;
 
+    private List<sheetEntry> lbmEvaluateSheet_Man;
+    private List<sheetEntry> lbmEvaluateSheet_Woman;
+
     private List<sheetEntry> waistEvaluateSheet_Man;
     private List<sheetEntry> waistEvaluateSheet_Woman;
 
@@ -91,6 +94,9 @@ public class EvaluationSheet {
 
         visceralFatEvaluateSheet = new ArrayList<>();
 
+        lbmEvaluateSheet_Man = new ArrayList<>();
+        lbmEvaluateSheet_Woman = new ArrayList<>();
+
         initEvaluationSheets();
     }
 
@@ -119,25 +125,20 @@ public class EvaluationSheet {
 
         waterEvaluateSheet_Woman.add(new sheetEntry(10, 1000, 45, 60));
 
-        muscleEvaluateSheet_Man.add(new sheetEntry(10, 14, 44, 57));
-        muscleEvaluateSheet_Man.add(new sheetEntry(15, 19, 43, 56));
-        muscleEvaluateSheet_Man.add(new sheetEntry(20, 29, 42, 54));
-        muscleEvaluateSheet_Man.add(new sheetEntry(30, 39, 41, 52));
-        muscleEvaluateSheet_Man.add(new sheetEntry(40, 49, 40, 50));
-        muscleEvaluateSheet_Man.add(new sheetEntry(50, 59, 39, 48));
-        muscleEvaluateSheet_Man.add(new sheetEntry(60, 69, 38, 47));
-        muscleEvaluateSheet_Man.add(new sheetEntry(70, 1000, 37, 46));
+        // Muscle Reference: "Skeletal muscle mass and distribution in 468 men and women aged 18–88 yr" by IAN JANSSEN, STEVEN B. HEYMSFIELD, ZIMIAN WANG, and ROBERT ROS in J Appl Physiol89: 81–88, 2000
+        muscleEvaluateSheet_Man.add(new sheetEntry(18, 29, 37.9f, 46.7f));
+        muscleEvaluateSheet_Man.add(new sheetEntry(30, 39, 34.1f, 44.1f));
+        muscleEvaluateSheet_Man.add(new sheetEntry(40, 49, 33.1f, 41.1f));
+        muscleEvaluateSheet_Man.add(new sheetEntry(50, 59, 31.7f, 38.5f));
+        muscleEvaluateSheet_Man.add(new sheetEntry(60, 69, 29.9f, 37.7f));
+        muscleEvaluateSheet_Man.add(new sheetEntry(70, 1000, 28.7f, 43.3f));
 
-
-        muscleEvaluateSheet_Woman.add(new sheetEntry(10, 14, 36, 43));
-        muscleEvaluateSheet_Woman.add(new sheetEntry(15, 19, 35, 41));
-        muscleEvaluateSheet_Woman.add(new sheetEntry(20, 29, 34, 39));
-        muscleEvaluateSheet_Woman.add(new sheetEntry(30, 39, 33, 38));
-        muscleEvaluateSheet_Woman.add(new sheetEntry(40, 49, 31, 36));
-        muscleEvaluateSheet_Woman.add(new sheetEntry(50, 59, 29, 34));
-        muscleEvaluateSheet_Woman.add(new sheetEntry(60, 69, 28, 33));
-        muscleEvaluateSheet_Woman.add(new sheetEntry(70, 1000, 27, 32));
-
+        muscleEvaluateSheet_Woman.add(new sheetEntry(18, 29, 28.4f, 39.8f));
+        muscleEvaluateSheet_Woman.add(new sheetEntry(30, 39, 25.0f, 36.2f));
+        muscleEvaluateSheet_Woman.add(new sheetEntry(40, 49, 24.2f, 34.2f));
+        muscleEvaluateSheet_Woman.add(new sheetEntry(50, 59, 24.7f, 33.5f));
+        muscleEvaluateSheet_Woman.add(new sheetEntry(60, 69, 22.7f, 31.9f));
+        muscleEvaluateSheet_Woman.add(new sheetEntry(70, 1000, 25.5f, 34.9f));
 
         bmiEvaluateSheet_Man.add(new sheetEntry(16, 24, 20, 25));
         bmiEvaluateSheet_Man.add(new sheetEntry(25, 34, 21, 26));
@@ -145,7 +146,6 @@ public class EvaluationSheet {
         bmiEvaluateSheet_Man.add(new sheetEntry(45, 54, 23, 28));
         bmiEvaluateSheet_Man.add(new sheetEntry(55, 64, 24, 29));
         bmiEvaluateSheet_Man.add(new sheetEntry(65, 90, 25, 30));
-
 
         bmiEvaluateSheet_Woman.add(new sheetEntry(16, 24, 19, 24));
         bmiEvaluateSheet_Woman.add(new sheetEntry(25, 34, 20, 25));
@@ -169,6 +169,22 @@ public class EvaluationSheet {
         whrEvaluateSheet_Woman.add(new sheetEntry(18, 90, 0.7f, 0.8f));
 
         visceralFatEvaluateSheet.add(new sheetEntry(18, 90, -1, 12));
+        // Lean body mass reference: "Lean body mass: reference values for Italian population between 18 to 88 years old" DOI: 10.26355/eurrev_201811_16415
+        // assuming low limits as P25 and upper limit as P75
+        lbmEvaluateSheet_Man.add(new sheetEntry(18, 24, 52.90f, 62.70f));
+        lbmEvaluateSheet_Man.add(new sheetEntry(25, 34, 53.10f, 64.80f));
+        lbmEvaluateSheet_Man.add(new sheetEntry(35, 44, 53.83f, 65.60f));
+        lbmEvaluateSheet_Man.add(new sheetEntry(45, 54, 53.60f, 65.20f));
+        lbmEvaluateSheet_Man.add(new sheetEntry(55, 64, 51.63f, 61.10f));
+        lbmEvaluateSheet_Man.add(new sheetEntry(65, 74, 48.48f, 58.20f));
+        lbmEvaluateSheet_Man.add(new sheetEntry(75, 88, 43.35f, 60.23f));
+        lbmEvaluateSheet_Woman.add(new sheetEntry(18, 24, 34.30f, 41.90f));
+        lbmEvaluateSheet_Woman.add(new sheetEntry(25, 34, 35.20f, 43.70f));
+        lbmEvaluateSheet_Woman.add(new sheetEntry(35, 44, 35.60f, 47.10f));
+        lbmEvaluateSheet_Woman.add(new sheetEntry(45, 54, 36.10f, 44.90f));
+        lbmEvaluateSheet_Woman.add(new sheetEntry(55, 64, 35.15f, 43.95f));
+        lbmEvaluateSheet_Woman.add(new sheetEntry(65, 74, 34.10f, 42.05f));
+        lbmEvaluateSheet_Woman.add(new sheetEntry(75, 88, 33.80f, 40.40f));
     }
 
 
@@ -243,6 +259,18 @@ public class EvaluationSheet {
         }
 
         return evaluateSheet(bmi, bodyEvaluateSheet);
+    }
+
+    public EvaluationResult evaluateLBM(float lbm) {
+        List<sheetEntry> bodyEvaluateSheet;
+
+        if (evalUser.getGender().isMale()) {
+            bodyEvaluateSheet =  lbmEvaluateSheet_Man;
+        } else {
+            bodyEvaluateSheet = lbmEvaluateSheet_Woman;
+        }
+
+        return evaluateSheet(lbm, bodyEvaluateSheet);
     }
 
     public EvaluationResult evaluateWaist(float waist) {

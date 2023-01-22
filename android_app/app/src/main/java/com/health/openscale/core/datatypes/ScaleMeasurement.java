@@ -488,6 +488,10 @@ public class ScaleMeasurement implements Cloneable {
 
         float k0, k1, k2, ka;
 
+        if (caliper1 == 0.0f || caliper2 == 0.0f || caliper3 == 0.0f){
+            return 0.0f;
+        }
+
         float s = (caliper1 + caliper2 + caliper3) * 10.0f; // cm to mm
 
         if (scaleUser.getGender().isMale()) {

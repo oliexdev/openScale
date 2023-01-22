@@ -15,16 +15,23 @@
 */
 package com.health.openscale.gui.preferences;
 
+import static android.app.Activity.RESULT_OK;
+
+import android.Manifest;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.preference.CheckBoxPreference;
 import androidx.preference.Preference;
@@ -34,11 +41,10 @@ import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.alarm.AlarmBackupHandler;
 import com.health.openscale.core.alarm.ReminderBootReceiver;
-import com.health.openscale.gui.utils.PermissionHelper;
 
 import java.io.IOException;
 
-import static android.app.Activity.RESULT_OK;
+import timber.log.Timber;
 
 public class BackupPreferences extends PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener {
     private static final String PREFERENCE_KEY_IMPORT_BACKUP = "importBackup";
@@ -86,11 +92,13 @@ public class BackupPreferences extends PreferenceFragmentCompat implements Share
         isAutoBackupAskForPermission = false;
 
         if (autoBackup.isChecked()) {
+            Timber.d("Auto-Backup enabled");
             alarmBackupHandler.scheduleAlarms(getActivity());
 
             pm.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
                     PackageManager.DONT_KILL_APP);
         } else {
+            Timber.d("Auto-Backup disabled");
             alarmBackupHandler.disableAlarm(getActivity());
 
             pm.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
@@ -122,12 +130,25 @@ public class BackupPreferences extends PreferenceFragmentCompat implements Share
     private class onClickListenerAutoBackup implements Preference.OnPreferenceClickListener {
         @Override
         public boolean onPreferenceClick(Preference preference) {
-            if (autoBackup.isChecked()) {
-                isAutoBackupAskForPermission = true;
-
-                PermissionHelper.requestWritePermission(fragment);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                if (autoBackup.isChecked()) {
+                    autoBackup.setChecked(true);
+                } else {
+                    autoBackup.setChecked(false);
+                }
             }
+            else {
+                if (autoBackup.isChecked()) {
+                    isAutoBackupAskForPermission = true;
 
+                    if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                            == PackageManager.PERMISSION_GRANTED) {
+                        exportBackup();
+                    } else {
+                        requestPermissionExportLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                    }
+                }
+            }
             return true;
         }
     }
@@ -135,10 +156,16 @@ public class BackupPreferences extends PreferenceFragmentCompat implements Share
     private class onClickListenerImportBackup implements Preference.OnPreferenceClickListener {
         @Override
         public boolean onPreferenceClick(Preference preference) {
-            if (PermissionHelper.requestReadPermission(fragment)) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 importBackup();
+            } else {
+                if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.READ_EXTERNAL_STORAGE)
+                        == PackageManager.PERMISSION_GRANTED) {
+                    importBackup();
+                } else {
+                    requestPermissionImportLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE);
+                }
             }
-
             return true;
         }
     }
@@ -146,8 +173,15 @@ public class BackupPreferences extends PreferenceFragmentCompat implements Share
     private class onClickListenerExportBackup implements Preference.OnPreferenceClickListener {
         @Override
         public boolean onPreferenceClick(Preference preference) {
-            if (PermissionHelper.requestWritePermission(fragment)) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 exportBackup();
+            } else {
+                if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        == PackageManager.PERMISSION_GRANTED) {
+                    exportBackup();
+                } else {
+                    requestPermissionExportLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                }
             }
 
             return true;
@@ -208,6 +242,7 @@ public class BackupPreferences extends PreferenceFragmentCompat implements Share
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+        intent.putExtra(Intent.EXTRA_TITLE, "openScale.db");
         intent.setType("*/*");
 
         startActivityForResult(intent, EXPORT_DATA_REQUEST);
@@ -216,36 +251,35 @@ public class BackupPreferences extends PreferenceFragmentCompat implements Share
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case PermissionHelper.PERMISSIONS_REQUEST_ACCESS_READ_STORAGE:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        menu.clear();
+    }
+
+    private ActivityResultLauncher<String> requestPermissionImportLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
                     importBackup();
-                } else {
+                }
+                else {
                     Toast.makeText(getContext(), getResources().getString(R.string.permission_not_granted), Toast.LENGTH_SHORT).show();
                 }
-            break;
-            case PermissionHelper.PERMISSIONS_REQUEST_ACCESS_WRITE_STORAGE:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            });
+
+    private ActivityResultLauncher<String> requestPermissionExportLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
                     if (isAutoBackupAskForPermission) {
                         autoBackup.setChecked(true);
                     } else {
                         exportBackup();
                     }
-
-                } else {
+                }
+                else {
                     if (isAutoBackupAskForPermission) {
                         autoBackup.setChecked(false);
                     }
 
                     Toast.makeText(getContext(), getResources().getString(R.string.permission_not_granted), Toast.LENGTH_SHORT).show();
                 }
-            break;
-        }
-    }
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        menu.clear();
-    }
+            });
 }

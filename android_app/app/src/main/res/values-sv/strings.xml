@@ -19,7 +19,7 @@
     <string name="label_bmi">Kroppsmasseindex (BMI)</string>
     <string name="label_bmr">Basal ämnesomsättning (BMR)</string>
     <string name="label_fat">Kroppsfett</string>
-    <string name="label_water">Kroppsvatten</string>
+    <string name="label_water">Totalt kroppsvatten</string>
     <string name="Monday">Måndag</string>
     <string name="Tuesday">Tisdag</string>
     <string name="Wednesday">Onsdag</string>
@@ -33,7 +33,7 @@
     <string name="label_reminder_weekdays">Dagar</string>
     <string name="label_website">Hemsida</string>
     <string name="label_license">Licens</string>
-    <string name="error_exporting">Fel vid export</string>
+    <string name="error_exporting">Kunde inte exportera</string>
     <string name="label_gender">Kön</string>
     <string name="label_male">Man</string>
     <string name="label_female">Kvinna</string>
@@ -52,8 +52,8 @@
     <string name="label_goal_date_is">Måldatum:</string>
     <string name="label_weight_difference">Viktskillnad</string>
     <plurals name="label_days">
-        <item quantity="one">%d dag</item>
-        <item quantity="other">%d dagar</item>
+        <item quantity="one">dag %d</item>
+        <item quantity="other">dagar %d</item>
     </plurals>
     <string name="label_last_week">Medelvärde senaste veckan</string>
     <string name="label_last_month">Medelvärde senaste månaden</string>
@@ -71,11 +71,11 @@
     <string name="label_delete_all">Ta bort alla</string>
     <string name="error_value_required">Värde krävs</string>
     <string name="error_value_range">Värde utanför intervall</string>
-    <string name="error_importing">Fel vid import</string>
-    <string name="error_user_name_required">Fel: namn krävs</string>
-    <string name="error_height_required">Fel: längd krävs</string>
-    <string name="error_initial_weight_required">Fel: startvikt krävs</string>
-    <string name="error_goal_weight_required">Fel: målvikt krävs</string>
+    <string name="error_importing">Kunde ej importera</string>
+    <string name="error_user_name_required">Namn krävs</string>
+    <string name="error_height_required">Längd krävs</string>
+    <string name="error_initial_weight_required">Startvikt krävs</string>
+    <string name="error_goal_weight_required">Målvikt krävs</string>
     <string name="info_data_deleted">Post borttagen</string>
     <string name="info_data_all_deleted">Alla poster borttagna</string>
     <string name="info_data_exported">Exporterad till</string>
@@ -90,9 +90,9 @@
     <string name="info_bluetooth_try_connection">Ansluter till:</string>
     <string name="info_bluetooth_connection_lost">Förlorade Bluetooth-anslutningen</string>
     <string name="info_bluetooth_no_device">Ingen Bluetooth-enhet hittades</string>
-    <string name="info_bluetooth_connection_successful">Anslutning etablerad</string>
+    <string name="info_bluetooth_connection_successful">Ansluten</string>
     <string name="info_bluetooth_init">Initiera Bluetooth-enhet</string>
-    <string name="info_bluetooth_connection_error">Oväntat Bluetooth fel</string>
+    <string name="info_bluetooth_connection_error">Oväntat Bluetooth-fel</string>
     <string name="info_new_data_added">La till %1$.2f%2$s [%3$s] till %4$s</string>
     <string name="info_enter_user_name">Ditt namn</string>
     <string name="info_no_selected_user">Ingen användare finns. Skapa en i inställningarna.</string>
@@ -125,7 +125,7 @@
     <string name="info_measuring">Mäter vikt: %.2f</string>
     <string name="open_drawer">öppna</string>
     <string name="close_drawer">stäng</string>
-    <string name="info_bluetooth_no_device_set">Ingen Bluetooth-enhet vald</string>
+    <string name="info_bluetooth_no_device_set">Välj Bluetooth-enhet</string>
     <string name="info_new_data_duplicated">mätning med samma datum och tid existerar redan</string>
     <string name="title_general">Allmänt</string>
     <string name="label_theme">Tema</string>
@@ -155,10 +155,10 @@
     <string name="toggle_expand">Växla expandera</string>
     <string name="edit">Ändra</string>
     <string name="label_month_view">Månadsvy</string>
-    <string name="permission_not_granted">Tillstånd beviljas inte</string>
-    <string name="permission_bluetooth_info">Platsbehörighet krävs för att söka efter Bluetooth-enheter. Det kan återkallas när enheten har hittats.</string>
+    <string name="permission_not_granted">Behörighet saknas</string>
+    <string name="permission_bluetooth_info">Platsbehörighet krävs för att söka efter Bluetooth-enheter. Den kan återkallas när enheten har hittats.</string>
     <string name="permission_bluetooth_info_title">Info</string>
-    <string name="label_share_subject">CSV dataexport (%s)</string>
+    <string name="label_share_subject">openScale dataexport (%s)</string>
     <string name="label_next">Nästa</string>
     <string name="label_set_default_order">Ställ in standardordning</string>
     <string name="label_weeks_view">Veckovy</string>
@@ -212,8 +212,8 @@
     <string name="activity_level_heavy">Hård</string>
     <string name="activity_level_extreme">Extrem</string>
     <string name="permission_read_write_data_description">läs openScale-data, inklusive användarinformation och alla sparade mätningar</string>
-    <string name="permission_read_write_data_label">Läs openScale-data</string>
-    <string name="label_tdee">Totala dagliga energiförbrukningen (TDEE)</string>
+    <string name="permission_read_write_data_label">Läs/Skriv openScale-data</string>
+    <string name="label_tdee">Total daglig energiförbrukning (TDEE)</string>
     <string name="trisa_scale_not_paired">Vågen har inte parats!
 \n
 \nHåll in knappen under vågen för att växla till parningsläge, och anslut sedan igen för att hämta enhetens lösenord.</string>
@@ -223,4 +223,74 @@
     <string name="label_calories">Kalorier</string>
     <string name="label_upgrade_to_openScale_pro">Vänligen uppgradera till openScale pro för Bluetooth-stöd</string>
     <string name="action_donation">Donation</string>
+    <string name="label_age">Ålder</string>
+    <string name="label_empty">tom</string>
+    <string name="info_assisted_weighing_old_reference_measurement">Varning: senaste referensmätning är äldre än en dag</string>
+    <string name="label_prediction">Prognos</string>
+    <string name="label_trend">Tendens</string>
+    <string name="info_step_on_scale">Var god kliv upp barfota på vågen</string>
+    <string name="label_trend_line">Trendlinje</string>
+    <string name="info_select_scale_user">Välj våganvändare</string>
+    <string name="label_is_on_right_axis">Är på den högra axeln</string>
+    <string name="label_slide_welcome_top_text">Välkommen till
+\nopenScale</string>
+    <string name="label_year_view">Årsöversikt</string>
+    <string name="amputation_level_hand">Hand</string>
+    <string name="label_slide_privacy_main_text">openScale skickar inga data till något moln och att det saknar behörighet till internetåtkomst är en stark garanti för det.
+\n
+\nOm du verkligen vill synkronisera din vikt med GoogleFit eller med MQTT kan du installera <a href="https://play.google.com/store/apps/details?id=com.health.openscale.sync">openScale sync</a>.</string>
+    <string name="permission_location_service_info">Bevilja platsbehörighet i Android-inställningarna för att söka efter Bluetooth-enheter. Om du vill kan du dra tillbaka behörigheten efteråt.</string>
+    <string name="label_slide_opensource_main_text">openScale är publicerat under licensen <a href="https://github.com/oliexdev/openScale/blob/master/LICENSE">GPLv3</a>.
+\n
+\nAlla kroppsrelaterade beräkningar är transparenta och ingen dold dataöverföring eller identifikation av användarna utförs.
+\n
+\nDu hittar den fullständiga källkoden på <a href="https://github.com/oliexdev/openScale">GitHub</a>. Få förtroende för openScale genom att studera den.</string>
+    <string name="info_create_new_user_on_scale">Skapa ny användare av vågen.</string>
+    <string name="label_slide_support_main_text">openScale behöver dig. Skapa ett <a href="https://github.com/oliexdev/openScale/issues">nytt ärende</a> om du hittar ett fel, har en idé, fråga eller vill hjälpa till att införa stöd för din Bluetooth-våg.
+\n
+\nMotivera skaparen av det här projektet till fortsatt utveckling och fortlöpande underhåll genom att ge openScale ett positivt omdöme på <a href="http://play.google.com/store/apps/details?id=com.health.openscale.pro">GooglePlay</a> eller stjärnmärk det på <a href="https://github.com/oliexdev/openScale">GitHub</a>.
+\n
+\nDitt stöd och positiva återkoppling är varmt uppskattade. Stort tack.</string>
+    <string name="label_enable_yaxis">Y-axel</string>
+    <string name="info_bluetooth_connection_disconnected">Bluetoothanslutning avslutad</string>
+    <string name="info_bluetooth_connection_error_scale_offline">Kunde inte ansluta till vågen, var god kontrollera att den är på.</string>
+    <string name="info_bluetooth_no_device_retrying">Kunde inte upprätta en anslutning, försöker igen…</string>
+    <string name="info_scale_low_battery">Låg batterinivå (%d%%), var god ladda eller byt ut vågens batterier</string>
+    <string name="info_assisted_weighing_no_reference_user">Ingen referensanvändare tillgänglig, var god skapa en</string>
+    <string name="info_assisted_weighing_no_reference_measurements">Referensanvändaren har inga mätvärden</string>
+    <string name="label_amputation_left">Amputation vänster</string>
+    <string name="label_amputation_right">Amputation höger</string>
+    <string name="label_amputation">Amputation</string>
+    <string name="label_day_view">Dagsöversikt</string>
+    <string name="amputation_level_forearm_hand">Underarm och ben</string>
+    <string name="amputation_level_arm">Arm</string>
+    <string name="amputation_level_foot">Fot</string>
+    <string name="amputation_level_lower_leg_foot">Underben och fot</string>
+    <string name="amputation_level_leg">Ben</string>
+    <string name="label_slide_privacy_top_text">Skydda din personliga hälsodata.</string>
+    <string name="label_slide_user_top_text">Har stöd för flera användare.</string>
+    <string name="label_slide_user_main_text">openScale kräver inte att du skapar ett onlinekonto.
+\n
+\nKroppsdata beräknas utifrån mätvärden.</string>
+    <string name="label_slide_opensource_top_text">Programvara med öppen källkod och hög grad av transparens.</string>
+    <string name="amputation_level_none">Ingen amputation</string>
+    <string name="label_slide_bluetooth_top_text">Diverse Bluetooth-vågar från olika tillverkare stöds.</string>
+    <string name="label_slide_bluetooth_main_text">openScale har inbyggt stöd för ett antal Bluetooth-vågar från olika tillverkare.
+\n
+\nVi förbättrar och utökar ständigt raden av vågar som stöds. Du finner den fullständiga listan och till vilken grad varje våg stöds på <a href="https://github.com/oliexdev/openScale/wiki/Supported-scales-in-openScale">GitHub</a>.</string>
+    <string name="label_slide_metrics_top_text">Mät och beräkna fortlöpande din kroppsdata.</string>
+    <string name="label_slide_support_top_text">Hjälp till att förbättra openScale.</string>
+    <string name="app_intro_skip_button">Hoppa över</string>
+    <string name="app_intro_next_button">Nästa</string>
+    <string name="app_intro_back_button">Tillbaka</string>
+    <string name="app_intro_done_button">Klar</string>
+    <string name="label_slide_metrics_main_text">openScale har stöd för över 22 sorters kroppsdata.
+\n
+\nKonfigurera appen så att den visar den data du bryr dig om.
+\n
+\n Om kroppsfett, kroppsvatten och fettfri kroppsvikt saknas kan de uppskattas baserat på <a href="https://github.com/oliexdev/openScale/wiki/Body-metric-estimations">vetenskapligt publicerade modeller</a>.</string>
+    <string name="label_assisted_weighing">Assisterad vägning</string>
+    <string name="label_enable_legend">Graflegend</string>
+    <string name="info_assisted_weighing_choose_reference_user">Välj referensanvändaren som vikten dras av</string>
+    <string name="info_enter_consent_code_for_scale_user">Ange PIN/samtyckeskod för våganvändaren %s</string>
 </resources>

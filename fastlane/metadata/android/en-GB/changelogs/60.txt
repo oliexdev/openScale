@@ -1,0 +1,1 @@
+- fixed another bug for Android 12 Bluetooth connection error

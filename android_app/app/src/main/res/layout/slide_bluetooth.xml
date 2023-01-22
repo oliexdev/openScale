@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:background="@android:color/white">
+    android:background="?android:attr/windowBackground">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -48,8 +48,8 @@
             android:layout_width="60dp"
             android:layout_height="60dp"
             android:layout_marginBottom="40dp"
-            app:srcCompat="@drawable/ic_bluetooth_device_supported"
-            android:tint="@color/widgetTextColor"/>
+            app:tint="?android:attr/textColorSecondary"
+            app:srcCompat="@drawable/ic_bluetooth_device_supported" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -82,15 +82,15 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/flat_selector"
-            android:text="Add Bluetooth scale"
             android:paddingLeft="10dp"
             android:paddingRight="10dp"
+            android:text="Add Bluetooth scale"
             android:textColor="@android:color/white"
-            android:textSize="14sp"/>
+            android:textSize="14sp" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="250px"/>
+            android:layout_marginBottom="250px" />
     </LinearLayout>
 </ScrollView>

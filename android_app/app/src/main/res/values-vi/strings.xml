@@ -1,5 +1,6 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<resources><string name="title_overview">Tổng quan</string>
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title_overview">Tổng quan</string>
     <string name="title_graph">Biểu đồ</string>
     <string name="title_table">Bảng</string>
     <string name="title_statistics">Thống kê</string>
@@ -7,12 +8,10 @@
     <string name="title_measurements">Số đo</string>
     <string name="title_about">Thông tin</string>
     <string name="title_general">Tổng quan chung</string>
-
     <string name="action_settings">Cài đặt</string>
     <string name="action_bluetooth_status">Tình trạng Bluetooth</string>
     <string name="open_drawer">mở</string>
     <string name="close_drawer">đóng</string>
-
     <string name="label_cancel">Hủy</string>
     <string name="label_ok">OK</string>
     <string name="label_yes">Đồng ý</string>
@@ -22,7 +21,6 @@
     <string name="label_add_measurement">Thêm số đo</string>
     <string name="label_share">Chia sẻ</string>
     <string name="label_share_subject">Xuất file CSV (%s)</string>
-
     <string name="label_weight">Trọng lượng</string>
     <string name="label_bmi">Chỉ số khối cơ thể (BMI)</string>
     <string name="label_bmr">Tỉ lệ trao đổi chất cơ bản BMR)</string>
@@ -37,16 +35,14 @@
     <string name="label_whr">Tỉ số eo/hông</string>
     <string name="label_bone">Trọng lượng xương</string>
     <string name="label_smartUserAssign">Tự chọn người dùng</string>
-
     <plurals name="label_days">
-	<item quantity="other">%d ngày</item>
-</plurals>
+        <item quantity="other">%d ngày</item>
+    </plurals>
     <string name="label_last_week">Trung bình tuần trước</string>
     <string name="label_last_month">Trung bình tháng trước</string>
     <string name="label_weight_difference">Trọng lượng thay đổi</string>
     <string name="label_goal_date_is">Ngày đạt mục tiêu:</string>
     <string name="label_days_left">Số ngày còn lại</string>
-
     <string name="label_date">Ngày</string>
     <string name="label_time">Giờ</string>
     <string name="label_birthday">Ngày sinh</string>
@@ -58,15 +54,12 @@
     <string name="label_female">Nữ</string>
     <string name="label_goal_weight">Trọng lượng mục tiêu</string>
     <string name="label_goal_date">Ngày đạt mục tiêu</string>
-
     <string name="label_title_user">người sử dụng</string>
     <string name="label_title_last_measurement">số đo lần trước</string>
     <string name="label_title_goal">Mục tiêu</string>
-
     <string name="label_import">Nhập</string>
     <string name="label_export">Xuất</string>
     <string name="label_delete_all">Xóa tất cả</string>
-
     <string name="error_value_required">Giá trị là bắt buộc</string>
     <string name="error_value_range">Giá trị vượt khoảng</string>
     <string name="error_exporting">Lỗi khi xuất</string>
@@ -75,7 +68,6 @@
     <string name="error_height_required">Lỗi: Chiều cao là bắt buộc</string>
     <string name="error_initial_weight_required">Lỗi: Trọng lượng ban đầu là bắt buộc</string>
     <string name="error_goal_weight_required">Lỗi: Trọng lượng mục tiêu là bắt buộc</string>
-
     <string name="info_data_deleted">Bản ghi đã xóa</string>
     <string name="info_data_all_deleted">Tất cả bản ghi đã xóa</string>
     <string name="info_data_exported">Xuất đến</string>
@@ -96,44 +88,32 @@
     <string name="info_bluetooth_connection_error">Lỗi Bluetooth không mong đợi</string>
     <string name="info_new_data_added">%1$.2f%2$s [%3$s] đến %4$s đã được thêm</string>
     <string name="info_new_data_duplicated">số đo cùng ngày cùng giờ đã tồn tại</string>
-
     <string name="info_enter_user_name">Tên của bạn</string>
     <string name="info_no_selected_user">Không có người dùng nào. Hãy tạo một người dùng trong phần cài đặt.</string>
     <string name="info_no_evaluation_available">Không tính được giá trị</string>
-
     <string name="question_really_delete">Xóa bản ghi\?</string>
     <string name="question_really_delete_all">Xóa tất cả bản ghi của tất cả người dùng\?</string>
     <string name="question_really_delete_user">Xóa người dùng\?</string>
-
     <string name="label_bluetooth_title">Bluetooth</string>
     <string name="label_bluetooth_enable">Kết nối với cân khi khởi động</string>
     <string name="label_mergeWithLastMeasurement">Hợp nhất với số đo lần trước</string>
     <string name="label_bluetooth_searching">Đang tìm cân Bluetooth của bạn</string>
     <string name="label_bluetooth_searching_finished">Tìm xong</string>
-
     <string name="label_enable_labels">Nhãn cho dữ liệu</string>
     <string name="label_enable_points">Điểm cho dữ liệu</string>
-
     <string name="label_delete_confirmation">Hỏi trước khi xóa</string>
-
     <string name="label_category_measurement_database">Cơ sở dữ liệu các số đo</string>
-
     <string name="label_maintainer">Người bảo trì</string>
     <string name="label_website">Trang web</string>
     <string name="label_license">Thỏa thuận sử dụng</string>
-
     <string name="label_automatic">tự động</string>
-
     <string name="label_theme">Theme</string>
-
     <string name="label_reminder">Nhắc nhở</string>
     <string name="label_reminder_weekdays">Ngày</string>
     <string name="label_reminder_time">Giờ</string>
     <string name="label_reminder_notify_text">Văn bản thông báo</string>
     <string name="default_value_reminder_notify_text">Đến giờ cân</string>
-
     <string name="info_on_date">vào ngày</string>
-
     <string name="Monday">Thứ Hai</string>
     <string name="Tuesday">Thứ Ba</string>
     <string name="Wednesday">Thứ Tư</string>
@@ -151,7 +131,6 @@
     <string name="label_initial_weight">Trọng lượng ban đầu</string>
     <string name="label_goal_line">Đường thẳng mục tiêu</string>
     <string name="label_help">Trợ giúp</string>
-
     <string name="label_feedback_message_enjoying">Thích openScale\?</string>
     <string name="label_feedback_message_rate_app">Vậy đánh giá trên Google Play hoặc Github nhé\?</string>
     <string name="label_feedback_message_issue">Bạn có muốn phản hồi gì không\?</string>
@@ -159,7 +138,6 @@
     <string name="label_feedback_message_no">Không hẳn</string>
     <string name="label_feedback_message_positive">OK</string>
     <string name="label_feedback_message_negative">Không, cảm ơn</string>
-
     <string name="error_max_scale_users">Đã đạt đến số người sử đụng cùng lúc tối đa</string>
     <string name="info_step_on_scale_for_reference">Vui lòng bước chân trần lên cân để lấy số đo tham chiếu</string>
     <string name="info_measuring">Đang đo trọng lượng: %.2f</string>
@@ -169,12 +147,10 @@
     <string name="trisa_scale_pairing_succeeded">Ghép đôi thành công!
 \n
 \nKết nối lại để lấy số đo.</string>
-
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">Lỗi không mong đợi vừa xuất hiện.
 \n
 \nVui lòng tạo một vấn đề mới bao gồm thông tin chi tiết về lỗi tại
-\nhttps://github.com/oliexdev/openScale/issues
-\n</string>
+\nhttps://github.com/oliexdev/openScale/issues</string>
     <string name="customactivityoncrash_error_activity_restart_app">Khởi động lại ứng dụng</string>
     <string name="customactivityoncrash_error_activity_close_app">Đóng ứng dụng</string>
     <string name="customactivityoncrash_error_activity_error_details">Chi tiết lỗi</string>
@@ -186,10 +162,8 @@
     <string name="toggle_expand">Bật tắt mở rộng</string>
     <string name="edit">Chỉnh sửa</string>
     <string name="save">Lưu</string>
-
     <string name="label_month_view">Xem theo tháng</string>
     <string name="label_weeks_view">Xem theo tuần</string>
-
     <string name="permission_not_granted">Quyền không được cấp</string>
     <string name="permission_bluetooth_info">Cần quyền truy cập vị trí thô để tìm kiếm các thiết bị Bluetooth. Nó có thể được thu hồi sau khi thiết bị được tìm thấy.</string>
     <string name="permission_bluetooth_info_title">Thông tin</string>

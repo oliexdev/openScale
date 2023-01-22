@@ -19,8 +19,8 @@
     <string name="label_delete">Izbriši</string>
     <string name="label_add_user">Dodaj korisnika</string>
     <string name="label_add_measurement">Dodaj mjerenje</string>
-    <string name="label_share">Podijeli</string>
-    <string name="label_share_subject">CSV izvoz (%s)</string>
+    <string name="label_share">Dijeli</string>
+    <string name="label_share_subject">Izvoz openScale podataka (%s)</string>
     <string name="label_weight">Težina</string>
     <string name="label_bmi">Indeks tjelesne mase (BMI)</string>
     <string name="label_bmr">Bazalni metabolizam (BMR)</string>
@@ -88,7 +88,7 @@
     <string name="info_bluetooth_connection_successful">Povezano</string>
     <string name="info_bluetooth_init">Inicijaliziraj Bluetooth uređaj</string>
     <string name="info_bluetooth_connection_error">Neočekivana Bluetooth greška</string>
-    <string name="info_new_data_added">%1$.2f%2$s [%3$s] do %4$s dodan</string>
+    <string name="info_new_data_added">%1$.2f%2$s [%3$s] dodan do %4$s</string>
     <string name="info_new_data_duplicated">mjerenje s istim datumom i vremenom već postoji</string>
     <string name="info_enter_user_name">Tvoje ime</string>
     <string name="info_no_selected_user">Ne postoji niti jedan korisnik. Stvori jednog korisnika u postavkama.</string>
@@ -131,7 +131,7 @@
     <string name="label_not_found">nije pronađeno</string>
     <string name="label_ignoreOutOfRange">Zanemari podatke izvan granica</string>
     <string name="label_initial_weight">Početna težina</string>
-    <string name="label_goal_line">Ciljana linija</string>
+    <string name="label_goal_line">Smjer cilja</string>
     <string name="label_help">Pomoć</string>
     <string name="label_feedback_message_enjoying">Sviđa ti se openScale\?</string>
     <string name="label_feedback_message_rate_app">Kako bi bilo, da ocijeniš program na Google Play-u ili GitHub-u\?</string>
@@ -284,10 +284,16 @@
     <string name="amputation_level_none">Bez amputacije</string>
     <string name="info_assisted_weighing_choose_reference_user">Odaberi referentnog korisnika čija se težina oduzima</string>
     <string name="info_assisted_weighing_no_reference_user">Nema referentnog korisnika, stvori ga</string>
-    <string name="info_assisted_weighing_old_reference_measurement">Upozorenje, da je zadnje referentno mjerenje starije je od jednog dana</string>
+    <string name="info_assisted_weighing_old_reference_measurement">Upozorenje: zadnje referentno mjerenje starije je od jednog dana</string>
     <string name="info_assisted_weighing_no_reference_measurements">Referentni korisnik nema mjerenja</string>
     <string name="label_amputation_right">Amputacija desno</string>
     <string name="label_amputation_left">Amputacija lijevo</string>
     <string name="label_amputation">Amputacija</string>
     <string name="label_assisted_weighing">Potpomognuto vaganje</string>
+    <string name="label_trend_line">Smjer trenda</string>
+    <string name="label_trend">Trend</string>
+    <string name="label_prediction">Predviđanje</string>
+    <string name="info_create_new_user_on_scale">Kreiraj novog korisnika vage.</string>
+    <string name="info_select_scale_user">Odaberi korisnika vage</string>
+    <string name="info_enter_consent_code_for_scale_user">Upiši PIN/kod za korisnika vage %s</string>
 </resources>
