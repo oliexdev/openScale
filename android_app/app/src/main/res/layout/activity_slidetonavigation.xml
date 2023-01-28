@@ -16,7 +16,7 @@
         android:background="?attr/colorPrimaryDark">
     </androidx.appcompat.widget.Toolbar>
 
-    <fragment
+    <androidx.fragment.app.FragmentContainerView
         android:name="androidx.navigation.fragment.NavHostFragment"
         app:navGraph="@navigation/slide_navigation"
         app:defaultNavHost="false"

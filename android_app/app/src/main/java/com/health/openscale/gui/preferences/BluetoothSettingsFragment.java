@@ -87,6 +87,7 @@ public class BluetoothSettingsFragment extends Fragment {
     private ProgressBar progressBar;
     private Handler progressHandler;
     private BluetoothCentralManager central;
+    private Context context;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -97,6 +98,8 @@ public class BluetoothSettingsFragment extends Fragment {
         deviceListView = root.findViewById(R.id.deviceListView);
         txtSearching = root.findViewById(R.id.txtSearching);
         progressBar = root.findViewById(R.id.progressBar);
+
+        context = root.getContext();
 
         return root;
     }
@@ -113,9 +116,9 @@ public class BluetoothSettingsFragment extends Fragment {
 
         Timber.d("Bluetooth settings Bluetooth permission check");
 
-        int targetSdkVersion = getActivity().getApplicationInfo().targetSdkVersion;
+        int targetSdkVersion = context.getApplicationInfo().targetSdkVersion;
 
-        final BluetoothManager bluetoothManager = (BluetoothManager) getActivity().getSystemService(Context.BLUETOOTH_SERVICE);
+        final BluetoothManager bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
         BluetoothAdapter btAdapter = bluetoothManager.getAdapter();
 
         // Check if Bluetooth is enabled
@@ -127,7 +130,7 @@ public class BluetoothSettingsFragment extends Fragment {
         }
 
             // Check if Bluetooth 4.x is available
-        if (!getActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+        if (!context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
             Timber.d("No Bluetooth 4.x available");
             Toast.makeText(getContext(), "Bluetooth 4.x " + getContext().getResources().getString(R.string.info_is_not_available), Toast.LENGTH_SHORT).show();
             stepNavigationBack();
@@ -135,11 +138,11 @@ public class BluetoothSettingsFragment extends Fragment {
         }
 
         // Check if GPS or Network location service is enabled
-        LocationManager locationManager = (LocationManager) getActivity().getSystemService(LOCATION_SERVICE);
+        LocationManager locationManager = (LocationManager) context.getSystemService(LOCATION_SERVICE);
         if (!(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))) {
             Timber.d("No GPS or Network location service is enabled, ask user for permission");
 
-            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+            AlertDialog.Builder builder = new AlertDialog.Builder(context);
             builder.setTitle(R.string.permission_bluetooth_info_title);
             builder.setIcon(R.drawable.ic_preferences_about);
             builder.setMessage(R.string.permission_location_service_info);
@@ -147,15 +150,19 @@ public class BluetoothSettingsFragment extends Fragment {
                 public void onClick(DialogInterface dialogInterface, int i) {
                     // Show location settings when the user acknowledges the alert dialog
                     Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                    getActivity().startActivity(intent);
+                    context.startActivity(intent);
+                }
+            });
+            builder.setNegativeButton(R.string.label_no, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    stepNavigationBack();
                 }
             });
 
             Dialog alertDialog = builder.create();
             alertDialog.setCanceledOnTouchOutside(false);
             alertDialog.show();
-
-            stepNavigationBack();
             return;
         }
 
@@ -175,7 +182,7 @@ public class BluetoothSettingsFragment extends Fragment {
         if (hasPermissions(requiredPermissions)) {
             startBluetoothDiscovery();
         } else if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            AlertDialog.Builder builder = new AlertDialog.Builder(context);
             Timber.d("No access fine location permission granted");
 
             builder.setMessage(R.string.permission_bluetooth_info)
@@ -193,7 +200,7 @@ public class BluetoothSettingsFragment extends Fragment {
             alertDialog.show();
 
         } else if (shouldShowRequestPermissionRationale(Manifest.permission.BLUETOOTH_SCAN)) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
         Timber.d("No access Bluetooth scan permission granted");
 
         builder.setMessage(R.string.permission_bluetooth_info)
@@ -476,11 +483,7 @@ public class BluetoothSettingsFragment extends Fragment {
 
             stopBluetoothDiscovery();
 
-            if (getActivity().findViewById(R.id.nav_host_fragment) != null){
-                Navigation.findNavController(requireActivity(), R.id.nav_host_fragment).getPreviousBackStackEntry().getSavedStateHandle().set("update", true);
-                Navigation.findNavController(requireActivity(), R.id.nav_host_fragment).navigateUp();
-            } else
-                getActivity().finish();
+            stepNavigationBack();
             }
     }
 

@@ -66,6 +66,7 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
@@ -199,7 +200,7 @@ public class MainActivity extends AppCompatActivity
                 R.id.nav_overview, R.id.nav_graph, R.id.nav_table, R.id.nav_statistic, R.id.nav_main_preferences)
                 .setOpenableLayout(drawerLayout)
                 .build();
-        navController = Navigation.findNavController(this, R.id.nav_host_fragment);
+        navController = ((NavHostFragment)getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment)).getNavController();
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
         NavigationUI.setupWithNavController(navigationBottomView, navController);
