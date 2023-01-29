@@ -358,6 +358,8 @@ public abstract class MeasurementView extends TableLayout {
         return background.getColor();
     }
 
+    abstract public int getColor();
+
     protected void showEvaluatorRow(boolean show) {
         if (show) {
             evaluatorRow.setVisibility(View.VISIBLE);

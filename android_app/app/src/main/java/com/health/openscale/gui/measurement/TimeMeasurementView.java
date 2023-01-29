@@ -22,6 +22,7 @@ import android.widget.TimePicker;
 
 import com.health.openscale.R;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
+import com.health.openscale.gui.utils.ColorUtil;
 
 import java.text.DateFormat;
 import java.util.Calendar;
@@ -88,6 +89,9 @@ public class TimeMeasurementView extends MeasurementView {
     public void saveState(Bundle state) {
         state.putLong(getKey(), time.getTime());
     }
+
+    @Override
+    public int getColor() { return ColorUtil.COLOR_GRAY; };
 
     @Override
     public String getValueAsString(boolean withUnit) {

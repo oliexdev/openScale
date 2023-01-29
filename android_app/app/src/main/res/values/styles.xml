@@ -37,4 +37,26 @@
         <item name="positiveButtonText">@android:string/ok</item>
         <item name="negativeButtonText">@android:string/cancel</item>
     </style>
+
+    <declare-styleable name="StickyHeaderTableView">
+        <attr name="shtv_textLabelColor" format="color" />
+        <attr name="shtv_textLabelSize" format="dimension" />
+
+        <attr name="shtv_textHeaderColor" format="color" />
+        <attr name="shtv_textHeaderSize" format="dimension" />
+
+        <attr name="shtv_dividerColor" format="dimension" />
+        <attr name="shtv_dividerThickness" format="dimension" />
+
+        <attr name="shtv_contentCellFillColor" format="color" />
+        <attr name="shtv_headerCellFillColor" format="color" />
+        <attr name="shtv_cellPadding" format="dimension" />
+
+        <attr name="shtv_isDisplayLeftHeadersVertically" format="boolean" />
+        <attr name="shtv_isWrapHeightOfEachRow" format="boolean" />
+        <attr name="shtv_isWrapWidthOfEachColumn" format="boolean" />
+
+        <attr name="shtv_is2DScrollEnabled" format="boolean" />
+
+    </declare-styleable>
 </resources>
