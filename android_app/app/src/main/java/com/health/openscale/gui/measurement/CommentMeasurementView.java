@@ -23,6 +23,7 @@ import android.widget.EditText;
 
 import com.health.openscale.R;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
+import com.health.openscale.gui.utils.ColorUtil;
 
 public class CommentMeasurementView extends MeasurementView {
     // Don't change key value, it may be stored persistent in preferences
@@ -70,6 +71,9 @@ public class CommentMeasurementView extends MeasurementView {
     public void saveState(Bundle state) {
         state.putString(getKey(), comment);
     }
+
+    @Override
+    public int getColor() { return ColorUtil.COLOR_GRAY; };
 
     @Override
     public String getValueAsString(boolean withUnit) {

@@ -25,6 +25,7 @@ import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
+import com.health.openscale.gui.utils.ColorUtil;
 
 import java.util.ArrayList;
 
@@ -79,6 +80,9 @@ public class UserMeasurementView extends MeasurementView  {
     public void saveState(Bundle state) {
         state.putInt(getKey(), userId);
     }
+
+    @Override
+    public int getColor() { return ColorUtil.COLOR_GRAY; };
 
     @Override
     public String getValueAsString(boolean withUnit) {

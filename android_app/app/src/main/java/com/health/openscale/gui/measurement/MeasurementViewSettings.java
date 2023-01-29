@@ -27,6 +27,7 @@ public class MeasurementViewSettings {
     private final String key;
 
     private static final String PREFERENCE_SUFFIX_ENABLE = "Enable";
+    private static final String PREFERENCE_SUFFIX_IS_STICKY = "IsSticky";
     private static final String PREFERENCE_SUFFIX_IN_OVERVIEW_GRAPH = "InOverviewGraph";
     private static final String PREFERENCE_SUFFIX_ON_RIGHT_AXIS = "OnRightAxis";
     private static final String PREFERENCE_SUFFIX_IN_GRAPH = "InGraph";
@@ -114,6 +115,26 @@ public class MeasurementViewSettings {
 
     public boolean isEnabled() {
         return isEnabledIgnoringDependencies() && areDependenciesEnabled();
+    }
+
+    public boolean isSticky() {
+        boolean defaultValue;
+        switch (key) {
+            case WeightMeasurementView.KEY:
+            case WaterMeasurementView.KEY:
+            case MuscleMeasurementView.KEY:
+            case FatMeasurementView.KEY:
+                defaultValue = true;
+                break;
+            default:
+                defaultValue = false;
+                break;
+        }
+        return preferences.getBoolean(getIsStickyGraphKey(), defaultValue);
+    }
+
+    public String getIsStickyGraphKey() {
+        return getPreferenceKey(PREFERENCE_SUFFIX_IS_STICKY);
     }
 
     public String getInOverviewGraphKey() {

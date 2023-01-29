@@ -55,6 +55,10 @@ public class ChartActionBarView extends HorizontalScrollView {
     }
 
     private void init() {
+        if (isInEditMode()) {
+            return;
+        }
+
         actionBarView = new LinearLayout(getContext());
         actionBarView.setOrientation(LinearLayout.HORIZONTAL);
         actionBarView.setBackgroundColor(ColorUtil.COLOR_BLACK);

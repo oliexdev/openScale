@@ -15,6 +15,11 @@
 */
 package com.health.openscale.gui.measurement;
 
+import static com.health.openscale.gui.measurement.MeasurementView.MeasurementViewMode.ADD;
+import static com.health.openscale.gui.measurement.MeasurementView.MeasurementViewMode.EDIT;
+import static com.health.openscale.gui.measurement.MeasurementView.MeasurementViewMode.STATISTIC;
+import static com.health.openscale.gui.measurement.MeasurementView.MeasurementViewMode.VIEW;
+
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -40,6 +45,7 @@ import android.widget.TableRow;
 import android.widget.TextView;
 
 import androidx.core.content.ContextCompat;
+import androidx.preference.CheckBoxPreference;
 import androidx.preference.PreferenceManager;
 import androidx.preference.PreferenceScreen;
 
@@ -52,11 +58,6 @@ import com.health.openscale.gui.utils.ColorUtil;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.health.openscale.gui.measurement.MeasurementView.MeasurementViewMode.ADD;
-import static com.health.openscale.gui.measurement.MeasurementView.MeasurementViewMode.EDIT;
-import static com.health.openscale.gui.measurement.MeasurementView.MeasurementViewMode.STATISTIC;
-import static com.health.openscale.gui.measurement.MeasurementView.MeasurementViewMode.VIEW;
 
 public abstract class MeasurementView extends TableLayout {
     public enum MeasurementViewMode {VIEW, EDIT, ADD, STATISTIC}
@@ -207,7 +208,7 @@ public abstract class MeasurementView extends TableLayout {
 
         iconView.setImageResource(iconId);
         iconView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-        iconView.setPadding(25,25,25,25);
+        iconView.setPadding(15,15,15,15);
 
         iconView.setColorFilter(ColorUtil.COLOR_BLACK);
         iconView.setBackground(iconViewBackground);
@@ -285,7 +286,8 @@ public abstract class MeasurementView extends TableLayout {
 
     public CharSequence getName() { return nameView.getText(); }
     public abstract String getValueAsString(boolean withUnit);
-    public void appendDiffValue(SpannableStringBuilder builder, boolean newLine) { }
+    public void appendDiffValue(final SpannableStringBuilder builder, boolean newLine, boolean isEvalOn) { }
+    public void appendDiffValue(final SpannableStringBuilder builder, boolean newLine) { }
     public Drawable getIcon() { return iconView.getDrawable(); }
     public int getIconResource() { return iconId; }
     public void setBackgroundIconColor(int color) {
@@ -357,6 +359,8 @@ public abstract class MeasurementView extends TableLayout {
         return background.getColor();
     }
 
+    abstract public int getColor();
+
     protected void showEvaluatorRow(boolean show) {
         if (show) {
             evaluatorRow.setVisibility(View.VISIBLE);
@@ -423,8 +427,16 @@ public abstract class MeasurementView extends TableLayout {
     }
 
     public String getPreferenceSummary() { return ""; }
-    public boolean hasExtraPreferences() { return false; }
-    public void prepareExtraPreferencesScreen(PreferenceScreen screen) { }
+    public void prepareExtraPreferencesScreen(PreferenceScreen screen) {
+        MeasurementViewSettings settings = getSettings();
+
+        CheckBoxPreference isSticky = new CheckBoxPreference(screen.getContext());
+        isSticky.setKey(settings.getIsStickyGraphKey());
+        isSticky.setTitle(R.string.label_is_sticky);
+        isSticky.setPersistent(true);
+        isSticky.setDefaultValue(settings.isSticky());
+        screen.addPreference(isSticky);
+    }
 
     protected abstract View getInputView();
     protected abstract boolean validateAndSetInput(View view);

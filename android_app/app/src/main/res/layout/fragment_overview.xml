@@ -1,113 +1,94 @@
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_alignParentBottom="true"
-    android:layout_alignParentLeft="true"
-    android:layout_alignParentStart="true"
-    android:orientation="vertical"
-    android:weightSum="100">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-
-    <ScrollView
-        android:id="@+id/scrollView"
+    <Spinner
+        android:id="@+id/spinUser"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="100">
+        android:spinnerMode="dialog"
+        android:textAlignment="center"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
+    <ImageView
+        android:id="@+id/rangeOptionMenu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="16dp"
+        android:scaleType="centerInside"
+        android:translationZ="10dp"
+        app:layout_constraintBottom_toBottomOf="@+id/chartView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:srcCompat="@drawable/ic_options" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="?attr/colorPrimaryDark"
-                android:orientation="horizontal">
+    <com.health.openscale.gui.measurement.ChartActionBarView
+        android:id="@+id/chartActionBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorPrimary"
+        android:fillViewport="true"
+        app:layout_constraintTop_toTopOf="parent" />
 
-                <TextView
-                    android:id="@+id/txtTitleUser"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/label_title_user"
-                    android:textColor="@android:color/white" />
+    <com.health.openscale.gui.measurement.ChartMeasurementView
+        android:id="@+id/chartView"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_gravity="center"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/spinUser"></com.health.openscale.gui.measurement.ChartMeasurementView>
 
-                <Spinner
-                    android:id="@+id/spinUser"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-            </LinearLayout>
+    <TextView
+        android:id="@+id/initialWeightView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="TextView"
+        app:layout_constraintEnd_toStartOf="@+id/differenceWeightView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/chartView" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="?attr/colorPrimaryDark"
-                android:gravity="right"
-                android:orientation="horizontal"
-                android:padding="10dp">
+    <TextView
+        android:id="@+id/differenceWeightView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="TextView"
+        app:layout_constraintEnd_toStartOf="@+id/goalWeightView"
+        app:layout_constraintStart_toEndOf="@+id/initialWeightView"
+        app:layout_constraintTop_toTopOf="@+id/initialWeightView" />
 
-                <ImageView
-                    android:id="@+id/showEntry"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginRight="10dp"
-                    android:scaleType="centerInside"
-                    android:tint="#d3d3d3"
-                    app:srcCompat="@drawable/ic_show" />
+    <TextView
+        android:id="@+id/goalWeightView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="TextView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/differenceWeightView"
+        app:layout_constraintTop_toTopOf="@+id/differenceWeightView" />
 
-                <ImageView
-                    android:id="@+id/editEntry"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginRight="10dp"
-                    android:scaleType="centerInside"
-                    android:tint="#d3d3d3"
-                    app:srcCompat="@drawable/ic_editable" />
-
-                <ImageView
-                    android:id="@+id/deleteEntry"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginRight="20dp"
-                    android:scaleType="centerInside"
-                    android:tint="#d3d3d3"
-                    app:srcCompat="@drawable/ic_delete" />
-
-                <ImageView
-                    android:id="@+id/rangeOptionMenu"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:scaleType="centerInside"
-                    android:tint="@android:color/white"
-                    app:srcCompat="@drawable/ic_options" />
-            </LinearLayout>
-
-            <com.health.openscale.gui.measurement.ChartActionBarView
-                android:id="@+id/chartActionBar"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="?attr/colorPrimary"
-                android:fillViewport="true"/>
-
-            <com.health.openscale.gui.measurement.ChartMeasurementView
-                android:id="@+id/chartView"
-                android:layout_width="match_parent"
-                android:layout_height="250dp"
-                android:layout_gravity="center" />
-
-            <TableLayout
-                android:id="@+id/tableLayoutMeasurements"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
-    </ScrollView>
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/differenceWeightView" />
 
     <ProgressBar
         android:id="@+id/progressBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_anchor="@id/chartView"
-        app:layout_anchorGravity="center"
-        />
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+        app:layout_constraintBottom_toBottomOf="@+id/chartView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/chartActionBar" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

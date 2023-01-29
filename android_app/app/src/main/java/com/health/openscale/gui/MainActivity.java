@@ -86,8 +86,10 @@ import com.health.openscale.gui.preferences.UserSettingsFragment;
 import com.health.openscale.gui.slides.AppIntroActivity;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
 
@@ -1070,4 +1072,32 @@ public class MainActivity extends AppCompatActivity
                     connectToBluetooth();
                 }
             });
+
+    // Generate random dummy measurements - ONLY FOR TESTING PURPOSE
+    private void generateDummyMeasurements(int measurementCount) {
+        for (int i=0; i<measurementCount; i++) {
+            ScaleMeasurement scaleMeasurement = new ScaleMeasurement();
+
+            SimpleDateFormat dfDateTime  = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss",Locale.getDefault());
+            int year = randBetween(2005, 2023);// Here you can set Range of years you need
+            int month = randBetween(0, 11);
+            int hour = randBetween(9, 22); //Hours will be displayed in between 9 to 22
+            int min = randBetween(0, 59);
+            int sec = randBetween(0, 59);
+
+            GregorianCalendar gc = new GregorianCalendar(year, month, 1);
+            int day = randBetween(1, gc.getActualMaximum(gc.DAY_OF_MONTH));
+
+            gc.set(year, month, day, hour, min,sec);
+
+            scaleMeasurement.setDateTime(gc.getTime());
+            scaleMeasurement.setWeight(randBetween(30, 140));
+
+            OpenScale.getInstance().addScaleMeasurement(scaleMeasurement, true);
+        }
+    }
+
+    private static int randBetween(int start, int end) {
+        return start + (int)Math.round(Math.random() * (end - start));
+    }
 }
