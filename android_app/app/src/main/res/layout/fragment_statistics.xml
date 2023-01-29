@@ -127,11 +127,11 @@
                     android:orientation="horizontal">
 
                     <ImageView
-                        android:id="@+id/imageGoalWeight"
+                        android:id="@+id/imageTotalWeightLoss"
                         android:layout_width="20dp"
                         android:layout_height="20dp"
                         android:layout_gravity="center"
-                        android:src="@drawable/ic_target"
+                        android:src="@drawable/ic_weight_loss"
                         android:tint="?attr/colorControlNormal" />
 
                     <TextView
