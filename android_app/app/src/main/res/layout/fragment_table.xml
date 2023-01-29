@@ -11,7 +11,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:shtv_cellPadding="10dp"
+        app:shtv_cellPadding="16dp"
         app:shtv_dividerColor="?android:colorBackground"
         app:shtv_dividerThickness="1dp"
         app:shtv_headerCellFillColor="?android:colorBackground"
@@ -24,4 +24,15 @@
         app:shtv_textHeaderSize="14dp"
         app:shtv_textLabelColor="?android:colorForeground"
         app:shtv_textLabelSize="14dp" />
+
+    <ProgressBar
+        android:id="@+id/progressBarTable"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout >

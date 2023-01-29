@@ -286,7 +286,8 @@ public abstract class MeasurementView extends TableLayout {
 
     public CharSequence getName() { return nameView.getText(); }
     public abstract String getValueAsString(boolean withUnit);
-    public void appendDiffValue(SpannableStringBuilder builder, boolean newLine) { }
+    public void appendDiffValue(final SpannableStringBuilder builder, boolean newLine, boolean isEvalOn) { }
+    public void appendDiffValue(final SpannableStringBuilder builder, boolean newLine) { }
     public Drawable getIcon() { return iconView.getDrawable(); }
     public int getIconResource() { return iconId; }
     public void setBackgroundIconColor(int color) {

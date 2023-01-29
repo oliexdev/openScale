@@ -22,6 +22,7 @@ import android.text.SpannableStringBuilder;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.fragment.app.Fragment;
@@ -45,11 +46,16 @@ import java.util.List;
 public class TableFragment extends Fragment {
     private View tableView;
 
+    private ProgressBar progressBar;
     private StickyHeaderTableView tableDataView;
 
     private List<MeasurementView> measurementViews;
     private List<ScaleMeasurement> scaleMeasurementList;
     private ArrayList<Drawable> iconList;
+    private final DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
+    private final DateFormat timeFormat = DateFormat.getTimeInstance(DateFormat.SHORT);
+    private final DateFormat dayFormat = new SimpleDateFormat("EE");
+    private final SpannableStringBuilder contentFormat = new SpannableStringBuilder();
 
     public TableFragment() {
 
@@ -59,7 +65,9 @@ public class TableFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         tableView = inflater.inflate(R.layout.fragment_table, container, false);
 
+        progressBar = tableView.findViewById(R.id.progressBarTable);
         tableDataView = tableView.findViewById(R.id.tableDataView);
+        progressBar.setVisibility(View.VISIBLE);
 
         tableDataView.setOnTableCellClickListener(new StickyHeaderTableView.OnTableCellClickListener() {
             @Override
@@ -83,7 +91,7 @@ public class TableFragment extends Fragment {
                 continue;
             }
 
-           // measurementView.setUpdateViews(false);
+           measurementView.setUpdateViews(false);
 
             measurementView.getIcon().setColorFilter(measurementView.getColor(), PorterDuff.Mode.SRC_ATOP);
             iconList.add(measurementView.getIcon());
@@ -105,7 +113,6 @@ public class TableFragment extends Fragment {
 
         requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), onBackPressedCallback);
 
-
         return tableView;
     }
 
@@ -120,9 +127,8 @@ public class TableFragment extends Fragment {
             tableData[0][j] = iconList.get(j);
         }
 
-        int i = 0;
-        for (ScaleMeasurement scaleMeasurement : scaleMeasurementList) {
-            int j=0;
+        for (int i = 0; i<scaleMeasurementList.size(); i++ ) {
+            ScaleMeasurement scaleMeasurement = scaleMeasurementList.get(i);
 
             ScaleMeasurement prevScaleMeasurement = null;
 
@@ -130,32 +136,32 @@ public class TableFragment extends Fragment {
                 prevScaleMeasurement = scaleMeasurementList.get(i+1);
             }
 
+            int j=0;
             for (MeasurementView measurementView : measurementViews) {
                 if (!measurementView.isVisible() || measurementView instanceof UserMeasurementView || measurementView instanceof TimeMeasurementView) {
                     continue;
                 }
                 if (measurementView instanceof DateMeasurementView) {
-                    String strDateTime = (DateFormat.getDateInstance(DateFormat.SHORT).format(scaleMeasurement.getDateTime()) +
-                            " (" + new SimpleDateFormat("EE").format(scaleMeasurement.getDateTime()) + ")\n"+
-                            DateFormat.getTimeInstance(DateFormat.SHORT).format(scaleMeasurement.getDateTime()));
+                    String strDateTime = (dateFormat.format(scaleMeasurement.getDateTime()) +
+                            " (" + dayFormat.format(scaleMeasurement.getDateTime()) + ")\n"+
+                            timeFormat.format(scaleMeasurement.getDateTime()));
                     tableData[i+1][j] = strDateTime;
                 } else {
                     measurementView.loadFrom(scaleMeasurement, prevScaleMeasurement);
 
-                    SpannableStringBuilder string = new SpannableStringBuilder();
-                    string.append(measurementView.getValueAsString(false));
-                    measurementView.appendDiffValue(string, true);
+                    contentFormat.clear();
+                    contentFormat.append(measurementView.getValueAsString(false));
+                    measurementView.appendDiffValue(contentFormat, true, false);
 
-                    tableData[i+1][j] = string.toString();
+                    tableData[i+1][j] = contentFormat.toString();
                 }
 
                 j++;
             }
-
-            i++;
         }
 
         tableDataView.setData(tableData);
+        progressBar.setVisibility(View.GONE);
     }
 
 

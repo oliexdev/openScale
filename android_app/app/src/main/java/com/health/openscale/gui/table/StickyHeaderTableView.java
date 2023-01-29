@@ -36,7 +36,6 @@ import com.health.openscale.gui.utils.ColorUtil;
  */
 
 public class StickyHeaderTableView extends View implements NestedScrollingChild {
-
     private final Paint paintStrokeRect = new Paint();
     private final Paint paintHeaderCellFillRect = new Paint();
     private final Paint paintContentCellFillRect = new Paint();
@@ -45,6 +44,9 @@ public class StickyHeaderTableView extends View implements NestedScrollingChild 
 
     private final TextPaint paintHeaderText = new TextPaint();
     private final Rect textRectBounds = new Rect();
+
+    private int maxMeasure = 0;
+
     /**
      * Visible rect size of view which is displayed on screen
      */
@@ -483,11 +485,16 @@ public class StickyHeaderTableView extends View implements NestedScrollingChild 
      * Required for onMeasure() method
      */
     private void updateMaxWidthHeightOfCell() {
+        // call only once otherwise it is very cpu time consuming
+        if (maxMeasure > 0) {
+            return;
+        }
+        maxMeasure++;
 
         maxWidthOfCell = 0;
         maxHeightOfCell = 0;
-        maxHeightSparseIntArray = new SparseIntArray();
-        maxWidthSparseIntArray = new SparseIntArray();
+        maxHeightSparseIntArray.clear();
+        maxWidthSparseIntArray.clear();
 
         final int doubleCellPadding = cellPadding + cellPadding;
 
@@ -542,7 +549,6 @@ public class StickyHeaderTableView extends View implements NestedScrollingChild 
                     if (maxHeightSparseIntArray.get(i, 0) < textRectBounds.height()) {
                         maxHeightSparseIntArray.put(i, textRectBounds.height());
                     }
-
                 } else if (j == 0) {
                     // Left headers cells
                     if (data[i][j] instanceof String) {
@@ -557,10 +563,6 @@ public class StickyHeaderTableView extends View implements NestedScrollingChild 
                             }
                         }
                         paintHeaderText.getTextBounds(str, 0, str.length(), textRectBounds);
-                        StaticLayout staticLayout = StaticLayout.Builder.obtain(str, 0, str.length(), paintHeaderText, textRectBounds.width()).build();
-
-                        //textRectBounds.right = 50;
-                        textRectBounds.bottom = staticLayout.getHeight();
                     } else if (data[i][j] instanceof Drawable) {
                         Drawable icon = (Drawable) data[i][j];
                         textRectBounds.set(0,0,icon.getIntrinsicWidth(), icon.getIntrinsicHeight() / 2);
@@ -613,9 +615,6 @@ public class StickyHeaderTableView extends View implements NestedScrollingChild 
                             }
                         }
                         paintLabelText.getTextBounds(str, 0, str.length(), textRectBounds);
-                        StaticLayout staticLayout = StaticLayout.Builder.obtain(str, 0, str.length(), paintLabelText, textRectBounds.width()).build();
-
-                        textRectBounds.bottom = staticLayout.getHeight();
                     } else if (data[i][j] instanceof Drawable) {
                         Drawable icon = (Drawable) data[i][j];
                         textRectBounds.set(0,0,icon.getIntrinsicWidth(), icon.getIntrinsicHeight() / 2);
@@ -659,9 +658,11 @@ public class StickyHeaderTableView extends View implements NestedScrollingChild 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+
         if (data == null) {
             return;
         }
+
 
         int cellLeftX;
         int cellTopY = scrolledRect.top;

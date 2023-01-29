@@ -85,6 +85,9 @@ class OverviewAdapter extends RecyclerView.Adapter<OverviewAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull OverviewAdapter.ViewHolder holder, int position) {
+        holder.measurementHighlightViews.removeAllViews();
+        holder.measurementViews.removeAllViews();
+
         ScaleMeasurement scaleMeasurement = scaleMeasurementList.get(position);
         ScaleMeasurement prevScaleMeasurement;
 

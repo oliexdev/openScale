@@ -426,7 +426,7 @@ public abstract class FloatMeasurementView extends MeasurementView {
     }
 
     @Override
-    public void appendDiffValue(SpannableStringBuilder text, boolean newLine) {
+    public void appendDiffValue(final SpannableStringBuilder text, boolean newLine, boolean isEvalOn) {
         if (previousValue < 0.0f) {
             return;
         }
@@ -446,31 +446,34 @@ public abstract class FloatMeasurementView extends MeasurementView {
             color = Color.GRAY;
         }
 
-        // change color depending on if you are going towards or away from your weight goal
-        if (this instanceof WeightMeasurementView) {
-            if (diff> 0.0f) {
-                color = (value > getScaleUser().getGoalWeight()) ? Color.RED : Color.GREEN;
-            } else if (diff < 0.0f) {
-                color = (value < getScaleUser().getGoalWeight()) ? Color.RED : Color.GREEN;
+        // skip evaluation to speed the calculation up (e.g. not needed for table view)
+        if (isEvalOn) {
+            // change color depending on if you are going towards or away from your weight goal
+            if (this instanceof WeightMeasurementView) {
+                if (diff > 0.0f) {
+                    color = (value > getScaleUser().getGoalWeight()) ? Color.RED : Color.GREEN;
+                } else if (diff < 0.0f) {
+                    color = (value < getScaleUser().getGoalWeight()) ? Color.RED : Color.GREEN;
+                }
             }
-        }
 
-        final float evalValue = maybeConvertToOriginalValue(value);
+            final float evalValue = maybeConvertToOriginalValue(value);
 
-        EvaluationSheet evalSheet = new EvaluationSheet(getScaleUser(), dateTime);
-        evaluationResult = evaluateSheet(evalSheet, evalValue);
+            EvaluationSheet evalSheet = new EvaluationSheet(getScaleUser(), dateTime);
+            evaluationResult = evaluateSheet(evalSheet, evalValue);
 
-        if (evaluationResult != null) {
-            switch (evaluationResult.eval_state) {
-                case LOW:
-                    color = (diff > 0.0f) ? Color.GREEN : Color.RED;
-                    break;
-                case HIGH:
-                    color = (diff < 0.0f) ? Color.GREEN : Color.RED;
-                    break;
-                case NORMAL:
-                    color = Color.GREEN;
-                    break;
+            if (evaluationResult != null) {
+                switch (evaluationResult.eval_state) {
+                    case LOW:
+                        color = (diff > 0.0f) ? Color.GREEN : Color.RED;
+                        break;
+                    case HIGH:
+                        color = (diff < 0.0f) ? Color.GREEN : Color.RED;
+                        break;
+                    case NORMAL:
+                        color = Color.GREEN;
+                        break;
+                }
             }
         }
 
@@ -488,6 +491,12 @@ public abstract class FloatMeasurementView extends MeasurementView {
         text.append(formatValue(diff));
         text.setSpan(new RelativeSizeSpan(0.8f), start, text.length(),
                 Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+    }
+
+
+    @Override
+    public void appendDiffValue(final SpannableStringBuilder text, boolean newLine) {
+        appendDiffValue(text, newLine, true);
     }
 
     @Override
