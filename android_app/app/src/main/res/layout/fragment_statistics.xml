@@ -121,6 +121,49 @@
                 </TableRow>
 
                 <TableRow
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:layout_marginBottom="10dp"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:id="@+id/imageGoalWeight"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_target"
+                        android:tint="?attr/colorControlNormal" />
+
+                    <TextView
+                        android:id="@+id/txtLabelTotalWeightLost"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_column="1"
+                        android:layout_marginLeft="5dp"
+                        android:layout_weight="80"
+                        android:lines="2"
+                        android:password="false"
+                        android:phoneNumber="false"
+                        android:singleLine="false"
+                        android:text="Target weight"
+                        android:textAlignment="center"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:textSize="15dp" />
+
+                    <TextView
+                        android:id="@+id/txtTotalWeightLost"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_column="2"
+                        android:layout_gravity="center_vertical"
+                        android:layout_weight="20"
+                        android:gravity="right"
+                        android:text="0 kg"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:textSize="15dp" />
+                </TableRow>
+
+                <TableRow
                     android:id="@+id/tableRow10"
                     android:layout_width="fill_parent"
                     android:layout_height="fill_parent"
