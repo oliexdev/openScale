@@ -6,7 +6,7 @@ name: CI
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
   push:
-    branches: [ master ]
+    branches: [master]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -30,8 +30,8 @@ jobs:
       - name: Setup JDK
         uses: actions/setup-java@v3
         with:
-          distribution: 'zulu' # See 'Supported distributions' for available options
-          java-version: '11'
+          distribution: "zulu" # See 'Supported distributions' for available options
+          java-version: "11"
       - name: Build APK
         run: ./gradlew assembleDebug
       - uses: "marvinpinto/action-automatic-releases@latest"
@@ -41,6 +41,4 @@ jobs:
           prerelease: true
           title: "openScale development build"
           files: |
-            /home/runner/work/openScale/openScale/android_app/app/build/outputs/apk/debug/openScale-debug.apk
-
-
+            android_app/app/build/outputs/apk/debug/openScale-debug.apk
