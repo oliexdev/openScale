@@ -297,4 +297,5 @@
     <string name="info_select_scale_user">בחירת משתמש במשקל</string>
     <string name="info_enter_consent_code_for_scale_user">נא להקליד קוד אישי/הסכמה למשתמש במשקל %s</string>
     <string name="info_create_new_user_on_scale">יצירת משתמש חדש במשקל.</string>
+    <string name="label_is_sticky">דביקה</string>
 </resources>
