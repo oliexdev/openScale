@@ -296,4 +296,5 @@
     <string name="info_select_scale_user">Виберіть користувача ваг</string>
     <string name="info_enter_consent_code_for_scale_user">Введіть код користувача ваг %s</string>
     <string name="info_create_new_user_on_scale">Створити нового користувача ваг.</string>
+    <string name="label_is_sticky">Приліплюваний</string>
 </resources>
