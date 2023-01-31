@@ -67,15 +67,18 @@ public class StatisticsFragment extends Fragment {
     private TextView txtGoalWeight;
     private TextView txtGoalDiff;
     private TextView txtGoalDayLeft;
+    private TextView txtTotalWeightLost;
 
     private TextView txtLabelGoalWeight;
     private TextView txtLabelGoalDiff;
     private TextView txtLabelDayLeft;
+    private TextView txtLabelTotalWeightLost;
 
     private RadarChart radarChartWeek;
     private RadarChart radarChartMonth;
 
     private ScaleUser currentScaleUser;
+    private ScaleMeasurement firstScaleMeasurement;
     private ScaleMeasurement lastScaleMeasurement;
 
     private ArrayList <MeasurementView> viewMeasurementsStatistics;
@@ -90,6 +93,8 @@ public class StatisticsFragment extends Fragment {
         txtGoalDiff.setTextColor(ColorUtil.getTintColor(statisticsView.getContext()));
         txtGoalDayLeft = statisticsView.findViewById(R.id.txtGoalDayLeft);
         txtGoalDayLeft.setTextColor(ColorUtil.getTintColor(statisticsView.getContext()));
+        txtTotalWeightLost = statisticsView.findViewById(R.id.txtTotalWeightLost);
+        txtTotalWeightLost.setTextColor(ColorUtil.getTintColor(statisticsView.getContext()));
 
         txtLabelGoalWeight = statisticsView.findViewById(R.id.txtLabelGoalWeight);
         txtLabelGoalWeight.setTextColor(ColorUtil.getTintColor(statisticsView.getContext()));
@@ -97,6 +102,8 @@ public class StatisticsFragment extends Fragment {
         txtLabelGoalDiff.setTextColor(ColorUtil.getTintColor(statisticsView.getContext()));
         txtLabelDayLeft = statisticsView.findViewById(R.id.txtLabelDayLeft);
         txtLabelDayLeft.setTextColor(ColorUtil.getTintColor(statisticsView.getContext()));
+        txtLabelTotalWeightLost = statisticsView.findViewById(R.id.txtLabelTotalWeightLost);
+        txtLabelTotalWeightLost.setTextColor(ColorUtil.getTintColor(statisticsView.getContext()));
 
         viewMeasurementsStatistics = new ArrayList<>();
 
@@ -171,8 +178,10 @@ public class StatisticsFragment extends Fragment {
             lastScaleMeasurement = new ScaleMeasurement();
             lastScaleMeasurement.setUserId(currentScaleUser.getId());
             lastScaleMeasurement.setWeight(currentScaleUser.getInitialWeight());
+            firstScaleMeasurement = lastScaleMeasurement;
         } else {
             lastScaleMeasurement = scaleMeasurementList.get(0);
+            firstScaleMeasurement = scaleMeasurementList.get(scaleMeasurementList.size() - 1);
         }
 
         updateStatistics(scaleMeasurementList);
@@ -192,6 +201,10 @@ public class StatisticsFragment extends Fragment {
 
         txtGoalDiff.setText(String.format("%.1f %s",
                 Converters.fromKilogram(goalScaleMeasurement.getWeight() - lastScaleMeasurement.getWeight(), unit),
+                unit.toString()));
+
+        txtTotalWeightLost.setText(String.format("%.1f %s",
+                Converters.fromKilogram(firstScaleMeasurement.getWeight() - lastScaleMeasurement.getWeight(), unit),
                 unit.toString()));
 
         Calendar goalCalendar = Calendar.getInstance();
@@ -228,6 +241,14 @@ public class StatisticsFragment extends Fragment {
                         getResources().getString(R.string.label_days_left),
                         getResources().getString(R.string.label_goal_date_is),
                         DateFormat.getDateInstance(DateFormat.LONG).format(currentScaleUser.getGoalDate()))));
+
+        txtLabelTotalWeightLost.setText(
+                Html.fromHtml(String.format(
+                        "%s<br><font color='grey'><small>%s %.1f %s</small></font>",
+                        getResources().getString(R.string.label_total_weight_lost),
+                        getResources().getString(R.string.label_total_weight_lost_weight_reference),
+                        Converters.fromKilogram(firstScaleMeasurement.getWeight(), unit),
+                        unit.toString())));
     }
 
     private void updateStatistics(List<ScaleMeasurement> scaleMeasurementList) {
