@@ -296,4 +296,5 @@
     <string name="info_enter_consent_code_for_scale_user">Wprowadź kod PIN/kod zgody dla użytkownika wagi %s</string>
     <string name="info_create_new_user_on_scale">Utwórz nowego użytkownika wagi.</string>
     <string name="info_select_scale_user">Wybierz użytkownika wagi</string>
+    <string name="label_is_sticky">Jest lepki</string>
 </resources>
