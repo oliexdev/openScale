@@ -204,7 +204,7 @@ public class StatisticsFragment extends Fragment {
                 unit.toString()));
 
         txtTotalWeightLost.setText(String.format("%.1f %s",
-                Converters.fromKilogram(firstScaleMeasurement.getWeight() - lastScaleMeasurement.getWeight(), unit),
+                Converters.fromKilogram(lastScaleMeasurement.getWeight() - firstScaleMeasurement.getWeight(), unit),
                 unit.toString()));
 
         Calendar goalCalendar = Calendar.getInstance();
