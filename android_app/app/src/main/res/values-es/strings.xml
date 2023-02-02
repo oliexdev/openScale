@@ -30,8 +30,9 @@
     <string name="label_bone">Masa ósea</string>
     <string name="label_smartUserAssign">Asignación inteligente de usuario</string>
     <plurals name="label_days">
-        <item quantity="one">%d día</item>
-        <item quantity="other">%d días</item>
+        <item quantity="one">día %d</item>
+        <item quantity="many">días %d</item>
+        <item quantity="other">días %d</item>
     </plurals>
     <string name="label_last_week">Promedio de la semana pasada</string>
     <string name="label_last_month">Promedio del mes pasado</string>
@@ -295,4 +296,7 @@
     <string name="info_enter_consent_code_for_scale_user">Introduce PIN/código de consentimiento para el usuario %s</string>
     <string name="info_create_new_user_on_scale">Crea nuevo usuario en la escala.</string>
     <string name="info_select_scale_user">Selecciona usuario</string>
+    <string name="label_total_weight_lost">Pérdida total de peso</string>
+    <string name="label_is_sticky">Fijado</string>
+    <string name="label_total_weight_lost_weight_reference">Peso de referencia:</string>
 </resources>
