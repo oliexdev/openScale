@@ -297,4 +297,7 @@
     <string name="info_select_scale_user">选择 scale 用户</string>
     <string name="info_enter_consent_code_for_scale_user">输入 scale 用户 %s 的 PIN/同意码</string>
     <string name="info_create_new_user_on_scale">创建 scale 新用户。</string>
+    <string name="label_is_sticky">粘性标签</string>
+    <string name="label_total_weight_lost">总共减去的体重</string>
+    <string name="label_total_weight_lost_weight_reference">参考体重：</string>
 </resources>
