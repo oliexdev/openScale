@@ -26,6 +26,7 @@
     <string name="label_smartUserAssign">Affectation intelligente de l’utilisateur</string>
     <plurals name="label_days">
         <item quantity="one">%d jour</item>
+        <item quantity="many">%d jours</item>
         <item quantity="other">%d jours</item>
     </plurals>
     <string name="label_last_week">Moyenne de la dernière semaine</string>
@@ -295,4 +296,7 @@
     <string name="info_create_new_user_on_scale">Créer un nouvel utilisateur sur la balance.</string>
     <string name="info_enter_consent_code_for_scale_user">Entrez le NIP/code de consentement de l’utilisateur de la balance %s</string>
     <string name="info_select_scale_user">Sélectionner un utilisateur</string>
+    <string name="label_total_weight_lost">Poids total perdu</string>
+    <string name="label_total_weight_lost_weight_reference">Poids de référence :</string>
+    <string name="label_is_sticky">Est collant</string>
 </resources>
