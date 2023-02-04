@@ -296,4 +296,6 @@
     <string name="info_select_scale_user">Kies een gebruiker</string>
     <string name="info_enter_consent_code_for_scale_user">Voer de pin- of toegangscode in van %s</string>
     <string name="label_is_sticky">Is vastgezet</string>
+    <string name="label_total_weight_lost_weight_reference">Referentiegewicht:</string>
+    <string name="label_total_weight_lost">Totaal gewichtsverlies</string>
 </resources>
