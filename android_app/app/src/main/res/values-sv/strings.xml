@@ -293,4 +293,8 @@
     <string name="label_enable_legend">Graflegend</string>
     <string name="info_assisted_weighing_choose_reference_user">Välj referensanvändaren som vikten dras av</string>
     <string name="info_enter_consent_code_for_scale_user">Ange PIN/samtyckeskod för våganvändaren %s</string>
+    <string name="label_total_weight_lost_weight_reference">Referensvikt:</string>
+    <string name="label_is_sticky">Är klibbig</string>
+    <string name="label_slide_welcome_main_text">Vikt och kroppsmätare med öppen källkod, med stöd för Bluetooth-våg.</string>
+    <string name="label_measurement_bar">Måttstång</string>
 </resources>
