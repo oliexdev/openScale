@@ -81,10 +81,22 @@ class StatisticAdapter extends RecyclerView.Adapter<StatisticAdapter.ViewHolder>
 
         int i=0;
         float sumValue = 0;
+        float maxValue = Float.MIN_VALUE;
+        float minValue = Float.MAX_VALUE;
         for (ScaleMeasurement scaleMeasurement : scaleMeasurementList) {
             measurementView.loadFrom(scaleMeasurement, null);
-            sumValue += measurementView.getValue();
-            lineEntries.add(new Entry(i, measurementView.getValue()));
+
+            float value = measurementView.getValue();
+
+            sumValue += value;
+            if (value > maxValue) {
+                maxValue = value;
+            }
+            if (value < minValue) {
+                minValue = value;
+            }
+
+            lineEntries.add(new Entry(i, value));
             i++;
         }
 
@@ -108,14 +120,19 @@ class StatisticAdapter extends RecyclerView.Adapter<StatisticAdapter.ViewHolder>
         measurementView.loadFrom(lastMeasurement, firstMeasurement);
 
         holder.measurementName.setText(measurementView.getName());
-        SpannableStringBuilder diffValueText = new SpannableStringBuilder();
-        float avgValue = sumValue / scaleMeasurementList.size();
-        diffValueText.append("(\u00d8 " + measurementView.formatValue(avgValue, true) + ") ");
-        diffValueText.setSpan(new RelativeSizeSpan(0.8f), 0, diffValueText.length(),
+        SpannableStringBuilder statisticValueText = new SpannableStringBuilder();
+        statisticValueText.append(activity.getResources().getString(R.string.label_abbr_min) + " " + measurementView.formatValue(minValue != Float.MAX_VALUE ? minValue : 0, true) + "\n");
+        statisticValueText.append(activity.getResources().getString(R.string.label_abbr_max) + " " + measurementView.formatValue(maxValue != Float.MIN_VALUE ? maxValue : 0, true) + "\n");
+        statisticValueText.append(activity.getResources().getString(R.string.label_abbr_avg) + " " + measurementView.formatValue(sumValue != 0 ? sumValue / scaleMeasurementList.size() : 0, true) + "\n");
+        statisticValueText.setSpan(new RelativeSizeSpan(0.8f), 0, statisticValueText.length(),
                 Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        measurementView.appendDiffValue(diffValueText, false);
-        holder.diffValueView.setText(diffValueText);
-        holder.endValueView.setText(measurementView.getValueAsString(true));
+
+        holder.statisticValueView.setText(statisticValueText);
+        SpannableStringBuilder endValueText = new SpannableStringBuilder();
+        measurementView.appendDiffValue(endValueText, true );
+        endValueText.append("\n");
+        endValueText.append(measurementView.getValueAsString(true));
+        holder.endValueView.setText(endValueText);
         holder.iconView.setImageDrawable(measurementView.getIcon());
         holder.iconView.setBackgroundTintList(ColorStateList.valueOf(measurementView.getColor()));
 
@@ -140,7 +157,7 @@ class StatisticAdapter extends RecyclerView.Adapter<StatisticAdapter.ViewHolder>
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView measurementName;
-        TextView diffValueView;
+        TextView statisticValueView;
         TextView startValueView;
         FloatingActionButton iconView;
         LineChart diffChartView;
@@ -150,7 +167,7 @@ class StatisticAdapter extends RecyclerView.Adapter<StatisticAdapter.ViewHolder>
             super(itemView);
 
             measurementName = itemView.findViewById(R.id.measurementName);
-            diffValueView = itemView.findViewById(R.id.diffValueView);
+            statisticValueView = itemView.findViewById(R.id.statisticValueView);
             startValueView = itemView.findViewById(R.id.startValueView);
             iconView = itemView.findViewById(R.id.iconView);
             diffChartView = itemView.findViewById(R.id.diffChartView);
