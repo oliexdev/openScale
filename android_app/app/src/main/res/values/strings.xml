@@ -147,7 +147,9 @@
     <string name="label_exportBackup">Export backup</string>
     <string name="label_importBackup">Import backup</string>
     <string name="label_backup">Backup</string>
-    <string name="label_export_dir">Export dir</string>
+    <string name="label_export_dir">Export directory</string>
+    <string name="label_auto_export_test">Test auto backup</string>
+    <string name="summary_auto_export_test">Executes auto backup with current settings</string>
     <string name="label_not_found">not found</string>
     <string name="label_ignoreOutOfRange">Ignore out of range data</string>
     <string name="label_initial_weight">Initial weight</string>
@@ -169,6 +171,7 @@
     <string name="info_select_scale_user">Select scale user</string>
     <string name="info_enter_consent_code_for_scale_user">Enter PIN/consent code for scale user %s</string>
     <string name="info_measuring">Measuring weight: %.2f</string>
+    <string name="info_select_auto_backup_export_dir">Select auto backup export directory</string>
     <string name="trisa_scale_not_paired">This scale has not been paired!\n\nHold the button on the bottom of the scale to switch it to pairing mode, and then reconnect to retrieve the device password.</string>
     <string name="trisa_scale_pairing_succeeded">Pairing succeeded!\n\nReconnect to retrieve measurement data.</string>
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">An unexpected error occurred.\n\nPlease create a new issue including the error details on\nhttps://github.com/oliexdev/openScale/issues</string>
@@ -213,6 +216,7 @@
     <string name="label_estimated">Estimated</string>
     <string name="label_estimate_measurement_summary">Based on weight, height, age, gender, etc.</string>
     <string name="label_auto_backup">Auto backup</string>
+    <string name="label_auto_backup_lacation">No auto backup location selected</string>
     <string name="label_auto_backup_schedule">Backup schedule</string>
     <string name="label_overwrite_backup">Overwrite previous backup</string>
     <string name="label_daily">daily</string>
