@@ -69,7 +69,7 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/endValueView"
                 app:layout_constraintStart_toEndOf="@+id/startValueView"
-                app:layout_constraintTop_toBottomOf="@+id/statisticValueView" />
+                app:layout_constraintTop_toBottomOf="@+id/measurementName" />
 
             <TextView
                 android:id="@+id/endValueView"
