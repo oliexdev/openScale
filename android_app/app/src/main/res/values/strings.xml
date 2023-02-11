@@ -54,6 +54,11 @@
     <string name="label_date">Date</string>
     <string name="label_time">Time</string>
     <string name="label_time_period">Time period</string>
+    <string name="label_time_period_all_days">all days</string>
+    <string name="label_time_period_last_7_days">last 7 days</string>
+    <string name="label_time_period_last_30_days">last 30 days</string>
+    <string name="label_time_period_set_reference_day">set reference day</string>
+    <string name="label_time_period_set_custom_range">set custom range</string>
     <string name="label_with">with</string>
     <string name="label_birthday">Birthday</string>
     <string name="label_user_name">Name</string>

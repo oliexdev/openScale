@@ -16,6 +16,7 @@
 
 package com.health.openscale.gui.statistic;
 
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Parcel;
@@ -28,6 +29,7 @@ import android.widget.TextView;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
@@ -72,59 +74,46 @@ public class StatisticsFragment extends Fragment {
         datePickerView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                List<CalendarConstraints.DateValidator> dateValidatorList = new ArrayList<>();
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                    builder.setTitle(R.string.label_time_period)
+                            .setItems(R.array.range_options_entries, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    switch (which) {
+                                        case 0: // all days
+                                            setAllDaysRange();
+                                            break;
+                                        case 1: // last 7 days
+                                            setLast7DaysRange();
+                                            break;
+                                        case 2: // last 30 days
+                                            setLast30DaysRange();
+                                            break;
+                                        case 3: // set reference day
+                                            MaterialDatePicker materialDatePicker = MaterialDatePicker.Builder.datePicker().setCalendarConstraints(getCalendarConstraints()).build();
+                                            materialDatePicker.show(getActivity().getSupportFragmentManager(), "MATERIAL_DATE_PICKER");
 
-                CalendarConstraints.DateValidator selectedDateValidator = new CalendarConstraints.DateValidator() {
-                    @Override
-                    public boolean isValid(long date) {
-                        Calendar dateCalendar = Calendar.getInstance();
-                        dateCalendar.setTime(new Date(date));
+                                            materialDatePicker.addOnPositiveButtonClickListener(new MaterialPickerOnPositiveButtonClickListener<Long>() {
+                                                @Override
+                                                public void onPositiveButtonClick(Long selection) {
+                                                    setReferenceDay(new Date(selection));
+                                                }
+                                            });
+                                            break;
+                                        case 4: // custom range
+                                            MaterialDatePicker<Pair<Long, Long>> materialDateRangePicker = MaterialDatePicker.Builder.dateRangePicker().setCalendarConstraints(getCalendarConstraints()).build();
+                                            materialDateRangePicker.show(getActivity().getSupportFragmentManager(), "MATERIAL_DATE_RANGE_PICKER");
 
-                        List<ScaleMeasurement> dateScaleMeasurementList = OpenScale.getInstance().getScaleMeasurementOfDay(dateCalendar.get(Calendar.YEAR), dateCalendar.get(Calendar.MONTH), dateCalendar.get(Calendar.DAY_OF_MONTH));
-
-                        if (!dateScaleMeasurementList.isEmpty()) {
-                            return true;
-                        }
-
-                        return false;
-                    }
-
-                    @Override
-                    public int describeContents() {
-                        return 0;
-                    }
-
-                    @Override
-                    public void writeToParcel(@NonNull Parcel parcel, int i) {
-
-                    }
-                };
-                dateValidatorList.add(DateValidatorPointForward.from(scaleMeasurementList.get(scaleMeasurementList.size()-1).getDateTime().getTime()));
-                dateValidatorList.add(DateValidatorPointBackward.before(scaleMeasurementList.get(0).getDateTime().getTime()));
-                dateValidatorList.add(selectedDateValidator);
-
-                CalendarConstraints constraintsBuilderRange = new CalendarConstraints.Builder().setValidator(CompositeDateValidator.allOf(dateValidatorList)).build();
-
-                MaterialDatePicker<Pair<Long, Long>> materialDate = MaterialDatePicker.Builder.dateRangePicker().setCalendarConstraints(constraintsBuilderRange).build();
-                materialDate.show(getActivity().getSupportFragmentManager(), "MATERIAL_DATE_PICKER");
-
-                materialDate.addOnPositiveButtonClickListener(new MaterialPickerOnPositiveButtonClickListener<Pair<Long, Long>>() {
-                    @Override public void onPositiveButtonClick(Pair<Long,Long> selection) {
-                        Calendar startCalendar = Calendar.getInstance();
-                        startCalendar.setTime(new Date(selection.first));
-                        Calendar endCalendar = Calendar.getInstance();
-                        endCalendar.setTime(new Date(selection.second));
-
-                        setDiffDateText(startCalendar.getTime(), endCalendar.getTime());
-
-                        List<ScaleMeasurement> rangeScaleMeasurementList = OpenScale.getInstance().getScaleMeasurementOfRangeDates(startCalendar.get(Calendar.YEAR), startCalendar.get(Calendar.MONTH), startCalendar.get(Calendar.DAY_OF_MONTH),
-                                endCalendar.get(Calendar.YEAR), endCalendar.get(Calendar.MONTH), endCalendar.get(Calendar.DAY_OF_MONTH));
-
-                        prefs.edit().putLong("statistic_range_start_date", startCalendar.getTime().getTime()).commit();
-
-                        updateStatistic(rangeScaleMeasurementList);
-                    }
-                });
+                                            materialDateRangePicker.addOnPositiveButtonClickListener(new MaterialPickerOnPositiveButtonClickListener<Pair<Long, Long>>() {
+                                                @Override public void onPositiveButtonClick(Pair<Long,Long> selection) {
+                                                    setCustomRange(new Date(selection.first), new Date(selection.second));
+                                                }
+                                            });
+                                            break;
+                                    }
+                                }
+                            });
+                    builder.create();
+                    builder.show();
             }
         });
 
@@ -156,6 +145,92 @@ public class StatisticsFragment extends Fragment {
         compareRecyclerView.setAdapter(statisticAdapter);
 
         countMeasurementTextView.setText(rangeScaleMeasurementList.size() + " " + getResources().getString(R.string.label_measurements));
+    }
+
+    public void setDiffDateText(Date firstDate, Date secondDate) {
+        String diffDateText = DateFormat.getDateInstance(DateFormat.MEDIUM).format(firstDate) + " - " +
+                DateFormat.getDateInstance(DateFormat.MEDIUM).format(secondDate);
+
+        diffDateTextView.setText(diffDateText);
+    }
+
+    public void updateOnView(List<ScaleMeasurement> scaleMeasurementList) {
+        this.scaleMeasurementList = scaleMeasurementList;
+
+        Long prefStartDate = prefs.getLong("statistic_range_start_date", -1);
+        Long prefEndDate = prefs.getLong("statistic_range_end_date", -1);
+
+        if (prefStartDate == -1) {
+            setAllDaysRange();
+        } else if (prefStartDate == -7) {
+            setLast7DaysRange();
+        } else if (prefStartDate == -30) {
+            setLast30DaysRange();
+        } else if (prefEndDate == -1 && prefStartDate > 0) {
+            setReferenceDay(new Date(prefStartDate));
+        }else if (prefEndDate > 0 && prefStartDate > 0) {
+            setCustomRange(new Date(prefStartDate), new Date(prefEndDate));
+        }
+    }
+
+    private void setAllDaysRange() {
+        diffDateTextView.setText(getResources().getString(R.string.label_time_period_all_days));
+        prefs.edit().putLong("statistic_range_start_date", -1).commit();
+        updateStatistic(scaleMeasurementList);
+    }
+
+    private void setLast7DaysRange() {
+        Calendar startCalendar = Calendar.getInstance();
+        startCalendar.setTime(new Date());
+        startCalendar.add(Calendar.DAY_OF_YEAR, -7);
+
+        prefs.edit().putLong("statistic_range_start_date", -7).commit();
+        diffDateTextView.setText(getResources().getString(R.string.label_time_period_last_7_days));
+
+        List<ScaleMeasurement> rangeScaleMeasurementList = OpenScale.getInstance().getScaleMeasurementOfStartDate(startCalendar.get(Calendar.YEAR), startCalendar.get(Calendar.MONTH), startCalendar.get(Calendar.DAY_OF_MONTH));
+
+        updateStatistic(rangeScaleMeasurementList);
+    }
+
+    private void setLast30DaysRange() {
+        Calendar startCalendar = Calendar.getInstance();
+        startCalendar.setTime(new Date());
+        startCalendar.add(Calendar.DAY_OF_YEAR, -30);
+
+        prefs.edit().putLong("statistic_range_start_date", -30).commit();
+        diffDateTextView.setText(getResources().getString(R.string.label_time_period_last_30_days));
+
+        List<ScaleMeasurement> rangeScaleMeasurementList = OpenScale.getInstance().getScaleMeasurementOfStartDate(startCalendar.get(Calendar.YEAR), startCalendar.get(Calendar.MONTH), startCalendar.get(Calendar.DAY_OF_MONTH));
+
+        updateStatistic(rangeScaleMeasurementList);
+    }
+
+    private void setReferenceDay(Date selectionDate) {
+        Calendar startCalendar = Calendar.getInstance();
+        startCalendar.setTime(selectionDate);
+        List<ScaleMeasurement> rangeScaleMeasurementList = OpenScale.getInstance().getScaleMeasurementOfStartDate(startCalendar.get(Calendar.YEAR), startCalendar.get(Calendar.MONTH), startCalendar.get(Calendar.DAY_OF_MONTH));
+
+        prefs.edit().putLong("statistic_range_start_date", startCalendar.getTime().getTime()).commit();
+        prefs.edit().putLong("statistic_range_end_date", -1).commit();
+
+        diffDateTextView.setText(DateFormat.getDateInstance(DateFormat.MEDIUM).format(startCalendar.getTime()));
+
+        updateStatistic(rangeScaleMeasurementList);
+    }
+
+    private void setCustomRange(Date begin, Date end) {
+        Calendar startCalendar = Calendar.getInstance();
+        startCalendar.setTime(begin);
+        Calendar endCalendar = Calendar.getInstance();
+        endCalendar.setTime(end);
+
+        setDiffDateText(startCalendar.getTime(), endCalendar.getTime());
+
+        List<ScaleMeasurement> rangeScaleMeasurementList = OpenScale.getInstance().getScaleMeasurementOfRangeDates(startCalendar.get(Calendar.YEAR), startCalendar.get(Calendar.MONTH), startCalendar.get(Calendar.DAY_OF_MONTH),
+                endCalendar.get(Calendar.YEAR), endCalendar.get(Calendar.MONTH), endCalendar.get(Calendar.DAY_OF_MONTH));
+
+        prefs.edit().putLong("statistic_range_start_date", startCalendar.getTime().getTime()).commit();
+        prefs.edit().putLong("statistic_range_end_date", endCalendar.getTime().getTime()).commit();
 
         ScaleMeasurement firstMeasurement;
         ScaleMeasurement lastMeasurement;
@@ -172,35 +247,44 @@ public class StatisticsFragment extends Fragment {
         }
 
         setDiffDateText(firstMeasurement.getDateTime(), lastMeasurement.getDateTime());
+
+        updateStatistic(rangeScaleMeasurementList);
     }
 
-    public void setDiffDateText(Date firstDate, Date secondDate) {
-        String diffDateText = DateFormat.getDateInstance(DateFormat.MEDIUM).format(firstDate) + " - " +
-                DateFormat.getDateInstance(DateFormat.MEDIUM).format(secondDate);
+    private final CalendarConstraints getCalendarConstraints() {
+        List<CalendarConstraints.DateValidator> dateValidatorList = new ArrayList<>();
 
-        diffDateTextView.setText(diffDateText);
-    }
+        CalendarConstraints.DateValidator selectedDateValidator = new CalendarConstraints.DateValidator() {
+            @Override
+            public boolean isValid(long date) {
+                Calendar dateCalendar = Calendar.getInstance();
+                dateCalendar.setTime(new Date(date));
 
-    public void updateOnView(List<ScaleMeasurement> scaleMeasurementList) {
-        this.scaleMeasurementList = scaleMeasurementList;
+                List<ScaleMeasurement> dateScaleMeasurementList = OpenScale.getInstance().getScaleMeasurementOfDay(dateCalendar.get(Calendar.YEAR), dateCalendar.get(Calendar.MONTH), dateCalendar.get(Calendar.DAY_OF_MONTH));
 
-        Long prefDate = prefs.getLong("statistic_range_start_date", 0);
+                if (!dateScaleMeasurementList.isEmpty()) {
+                    return true;
+                }
 
-        if (prefDate != 0) {
-            Calendar startCalendar = Calendar.getInstance();
-            startCalendar.setTime(new Date(prefDate));
-            Calendar endCalendar = Calendar.getInstance();
-            endCalendar.setTime(new Date());
+                return false;
+            }
 
-            setDiffDateText(startCalendar.getTime(), endCalendar.getTime());
+            @Override
+            public int describeContents() {
+                return 0;
+            }
 
-            List<ScaleMeasurement> rangeScaleMeasurementList = OpenScale.getInstance().getScaleMeasurementOfRangeDates(startCalendar.get(Calendar.YEAR), startCalendar.get(Calendar.MONTH), startCalendar.get(Calendar.DAY_OF_MONTH),
-                    endCalendar.get(Calendar.YEAR), endCalendar.get(Calendar.MONTH), endCalendar.get(Calendar.DAY_OF_MONTH));
+            @Override
+            public void writeToParcel(@NonNull Parcel parcel, int i) {
 
-            updateStatistic(rangeScaleMeasurementList);
-        } else {
-            updateStatistic(scaleMeasurementList);
-        }
+            }
+        };
+        dateValidatorList.add(DateValidatorPointForward.from(scaleMeasurementList.get(scaleMeasurementList.size()-1).getDateTime().getTime()));
+        dateValidatorList.add(DateValidatorPointBackward.before(scaleMeasurementList.get(0).getDateTime().getTime()));
+        dateValidatorList.add(selectedDateValidator);
 
+        CalendarConstraints constraintsBuilderRange = new CalendarConstraints.Builder().setValidator(CompositeDateValidator.allOf(dateValidatorList)).build();
+
+        return constraintsBuilderRange;
     }
 }
