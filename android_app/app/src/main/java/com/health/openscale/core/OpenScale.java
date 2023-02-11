@@ -576,6 +576,19 @@ public class OpenScale {
         return measurementDAO.getAllInRange(startCalender.getTime(), endCalender.getTime(), selectedUserId);
     }
 
+    public List<ScaleMeasurement> getScaleMeasurementOfRangeDates(int startYear, int startMonth, int startDay, int endYear, int endMonth, int endDay) {
+        int selectedUserId = getSelectedScaleUserId();
+
+        Calendar startCalender = Calendar.getInstance();
+        Calendar endCalender = Calendar.getInstance();
+
+        startCalender.set(startYear, startMonth, startDay, 0, 0, 0);
+        endCalender.set(endYear, endMonth, endDay, 0, 0, 0);
+        endCalender.add(Calendar.DAY_OF_MONTH, 1);
+
+        return measurementDAO.getAllInRange(startCalender.getTime(), endCalender.getTime(), selectedUserId);
+    }
+
     public List<ScaleMeasurement> getScaleMeasurementOfDay(int year, int month, int day) {
         int selectedUserId = getSelectedScaleUserId();
 

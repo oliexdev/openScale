@@ -115,6 +115,7 @@
         app:fabSize="mini"
         app:srcCompat="@drawable/ic_show"
         android:layout_below="@id/deleteMenu"
+        app:backgroundTint="#33B5E5"
         app:layout_anchor="@id/editMenu"
         android:clickable="true"
         android:visibility="gone"

@@ -103,8 +103,10 @@ public class OverviewFragment extends Fragment {
         chartView.getLegend().setEnabled(false);
         chartView.getAxisRight().setDrawLabels(false);
         chartView.getAxisRight().setDrawGridLines(false);
+        chartView.getAxisRight().setDrawAxisLine(false);
         chartView.getAxisLeft().setDrawGridLines(false);
         chartView.getAxisLeft().setDrawLabels(false);
+        chartView.getAxisLeft().setDrawAxisLine(false);
         chartView.getXAxis().setDrawGridLines(false);
 
         chartActionBarView = overviewView.findViewById(R.id.chartActionBar);

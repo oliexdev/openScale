@@ -228,7 +228,7 @@ public abstract class FloatMeasurementView extends MeasurementView {
         setValue(clampValue(value - INC_DEC_DELTA), previousValue, true);
     }
 
-    private String formatValue(float value, boolean withUnit) {
+    public String formatValue(float value, boolean withUnit) {
         final String format = String.format(Locale.getDefault(), "%%.%df%s",
                 getDecimalPlaces(), withUnit && !getUnit().isEmpty() ? " %s" : "");
         return String.format(Locale.getDefault(), format, value, getUnit());

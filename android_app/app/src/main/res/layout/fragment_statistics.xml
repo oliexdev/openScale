@@ -1,248 +1,65 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:orientation="vertical"
-    android:padding="5dp">
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-    <ScrollView
-        android:id="@+id/scrollView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+    <TextView
+        android:id="@+id/timePeriodView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="@string/label_time_period"
+        app:layout_constraintBottom_toBottomOf="@+id/datePickerView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+    <TextView
+        android:id="@+id/diffDateTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="01.01.1900 - 01.01.2000"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/datePickerView"
+        app:layout_constraintStart_toEndOf="@+id/timePeriodView"
+        app:layout_constraintTop_toTopOf="parent" />
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:autoText="false"
-                android:text="@string/label_title_goal"
-                android:textSize="20dp"
-                android:typeface="monospace" />
+    <TextView
+        android:id="@+id/withTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/label_with"
+        app:layout_constraintEnd_toEndOf="@+id/timePeriodView"
+        app:layout_constraintTop_toBottomOf="@+id/timePeriodView" />
 
-            <View
-                android:layout_width="fill_parent"
-                android:layout_height="1dp"
-                android:background="@android:color/darker_gray" />
+    <TextView
+        android:id="@+id/countMeasurementTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="0 measurements"
+        android:textStyle="bold"
+        app:layout_constraintStart_toEndOf="@+id/diffDateTextView"
+        app:layout_constraintStart_toStartOf="@+id/diffDateTextView"
+        app:layout_constraintTop_toBottomOf="@+id/diffDateTextView" />
 
-            <TableLayout
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
-                android:layout_weight="90"
-                android:stretchColumns="1">
+    <ImageView
+        android:id="@+id/datePickerView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        app:layout_constraintBottom_toTopOf="@+id/compareRecyclerView"
+        app:layout_constraintStart_toEndOf="@+id/diffDateTextView"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_calendar" />
 
-                <TableRow
-                    android:layout_width="fill_parent"
-                    android:layout_height="fill_parent"
-                    android:layout_marginBottom="10dp"
-                    android:orientation="horizontal">
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/compareRecyclerView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/countMeasurementTextView" />
 
-                    <ImageView
-                        android:id="@+id/imageGoalWeight"
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:layout_gravity="center"
-                        android:src="@drawable/ic_target"
-                        android:tint="?attr/colorControlNormal" />
-
-                    <TextView
-                        android:id="@+id/txtLabelGoalWeight"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_column="1"
-                        android:layout_marginLeft="5dp"
-                        android:layout_weight="80"
-                        android:lines="2"
-                        android:password="false"
-                        android:phoneNumber="false"
-                        android:singleLine="false"
-                        android:text="Target weight"
-                        android:textAlignment="center"
-                        android:textAppearance="?android:attr/textAppearanceLarge"
-                        android:textSize="15dp" />
-
-                    <TextView
-                        android:id="@+id/txtGoalWeight"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_column="2"
-                        android:layout_gravity="center_vertical"
-                        android:layout_weight="20"
-                        android:gravity="right"
-                        android:text="-1 kg"
-                        android:textAppearance="?android:attr/textAppearanceLarge"
-                        android:textSize="15dp" />
-                </TableRow>
-
-                <TableRow
-                    android:id="@+id/tableRow9"
-                    android:layout_width="fill_parent"
-                    android:layout_height="fill_parent"
-                    android:layout_marginBottom="10dp"
-                    android:orientation="horizontal">
-
-                    <ImageView
-                        android:id="@+id/imageGoalDiff"
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:layout_gravity="center"
-                        android:src="@drawable/ic_difference"
-                        android:tint="?attr/colorControlNormal" />
-
-                    <TextView
-                        android:id="@+id/txtLabelGoalDiff"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_column="1"
-                        android:layout_marginLeft="5dp"
-                        android:layout_weight="80"
-                        android:lines="2"
-                        android:password="false"
-                        android:phoneNumber="false"
-                        android:singleLine="false"
-                        android:text="Weight difference"
-                        android:textAlignment="center"
-                        android:textAppearance="?android:attr/textAppearanceLarge"
-                        android:textSize="15dp" />
-
-                    <TextView
-                        android:id="@+id/txtGoalDiff"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_column="2"
-                        android:layout_gravity="center_vertical"
-                        android:layout_weight="20"
-                        android:gravity="right"
-                        android:text="-1 kg"
-                        android:textAppearance="?android:attr/textAppearanceLarge"
-                        android:textSize="15dp" />
-                </TableRow>
-
-                <TableRow
-                    android:layout_width="fill_parent"
-                    android:layout_height="fill_parent"
-                    android:layout_marginBottom="10dp"
-                    android:orientation="horizontal">
-
-                    <ImageView
-                        android:id="@+id/imageTotalWeightLoss"
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:layout_gravity="center"
-                        android:src="@drawable/ic_weight_loss"
-                        android:tint="?attr/colorControlNormal" />
-
-                    <TextView
-                        android:id="@+id/txtLabelTotalWeightLost"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_column="1"
-                        android:layout_marginLeft="5dp"
-                        android:layout_weight="80"
-                        android:lines="2"
-                        android:password="false"
-                        android:phoneNumber="false"
-                        android:singleLine="false"
-                        android:text="Target weight"
-                        android:textAlignment="center"
-                        android:textAppearance="?android:attr/textAppearanceLarge"
-                        android:textSize="15dp" />
-
-                    <TextView
-                        android:id="@+id/txtTotalWeightLost"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_column="2"
-                        android:layout_gravity="center_vertical"
-                        android:layout_weight="20"
-                        android:gravity="right"
-                        android:text="0 kg"
-                        android:textAppearance="?android:attr/textAppearanceLarge"
-                        android:textSize="15dp" />
-                </TableRow>
-
-                <TableRow
-                    android:id="@+id/tableRow10"
-                    android:layout_width="fill_parent"
-                    android:layout_height="fill_parent"
-                    android:layout_marginBottom="10dp"
-                    android:orientation="horizontal">
-
-                    <ImageView
-                        android:id="@+id/imageDayLeft"
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:layout_gravity="center"
-                        android:src="@drawable/ic_daysleft"
-                        android:tint="?attr/colorControlNormal" />
-
-                    <TextView
-                        android:id="@+id/txtLabelDayLeft"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_column="1"
-                        android:layout_marginLeft="5dp"
-                        android:layout_weight="80"
-                        android:lines="2"
-                        android:password="false"
-                        android:phoneNumber="false"
-                        android:singleLine="false"
-                        android:text="Days left"
-                        android:textAlignment="center"
-                        android:textAppearance="?android:attr/textAppearanceLarge"
-                        android:textSize="15dp" />
-
-                    <TextView
-                        android:id="@+id/txtGoalDayLeft"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_column="2"
-                        android:layout_gravity="center_vertical"
-                        android:layout_weight="20"
-                        android:gravity="right"
-                        android:text="-1 days"
-                        android:textAppearance="?android:attr/textAppearanceLarge"
-                        android:textSize="15dp" />
-                </TableRow>
-
-            </TableLayout>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/label_last_week"
-                android:textSize="20dp"
-                android:typeface="monospace" />
-
-            <View
-                android:layout_width="fill_parent"
-                android:layout_height="1dp"
-                android:background="@android:color/darker_gray" />
-
-            <com.github.mikephil.charting.charts.RadarChart
-                android:id="@+id/radarPastWeek"
-                android:layout_width="match_parent"
-                android:layout_height="250dp"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/label_last_month"
-                android:textSize="20dp"
-                android:typeface="monospace" />
-
-            <View
-                android:layout_width="fill_parent"
-                android:layout_height="1dp"
-                android:background="@android:color/darker_gray" />
-
-            <com.github.mikephil.charting.charts.RadarChart
-                android:id="@+id/radarPastMonth"
-                android:layout_width="match_parent"
-                android:layout_height="250dp"/>
-
-        </LinearLayout>
-    </ScrollView>
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
