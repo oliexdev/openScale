@@ -21,12 +21,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.os.Environment;
 import android.preference.PreferenceManager;
+
+import androidx.documentfile.provider.DocumentFile;
 
 import com.health.openscale.core.OpenScale;
 
-import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -91,9 +91,19 @@ public class AlarmBackupHandler
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
-        File exportDir = new File(context.getExternalFilesDir(null).getPath(),
-                prefs.getString("exportDir", "openScale Backup"));
-        if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+        // Extra check that there is a exportDir saved in settings
+        String exportDirString = prefs.getString("exportDir", null);
+        if (exportDirString == null) {
+            return;
+        }
+
+        DocumentFile exportDir = DocumentFile.fromTreeUri(context, Uri.parse(exportDirString));
+        // Check if it is possible to read and write to auto export dir
+        // If it is not possible auto backup function will be disabled
+        if (!exportDir.canRead() || !exportDir.canWrite()) {
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putBoolean("autoBackup", false);
+            editor.apply();
             return;
         }
 
@@ -102,14 +112,13 @@ public class AlarmBackupHandler
             databaseName = dateFormat.format(new Date()) + "_" + databaseName;
         }
 
-        File exportFile = new File(exportDir, databaseName);
-
-        if (!exportDir.exists()) {
-            exportDir.mkdirs();
+        DocumentFile exportFile = exportDir.findFile(databaseName);
+        if (exportFile == null) {
+            exportFile = exportDir.createFile("application/x-sqlite3", databaseName);
         }
 
         try {
-            openScale.exportDatabase(Uri.fromFile(exportFile));
+            openScale.exportDatabase(exportFile.getUri());
             Timber.d("openScale Auto Backup to %s", exportFile);
         } catch (IOException e) {
             Timber.e(e, "Error while exporting database");

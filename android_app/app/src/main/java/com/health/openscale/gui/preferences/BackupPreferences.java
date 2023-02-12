@@ -25,12 +25,14 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.preference.CheckBoxPreference;
@@ -50,16 +52,20 @@ public class BackupPreferences extends PreferenceFragmentCompat implements Share
     private static final String PREFERENCE_KEY_IMPORT_BACKUP = "importBackup";
     private static final String PREFERENCE_KEY_EXPORT_BACKUP = "exportBackup";
     private static final String PREFERENCE_KEY_AUTO_BACKUP = "autoBackup";
+    private static final String PREFERENCE_KEY_AUTO_BACKUP_DIR = "exportDir";
 
     private static final int IMPORT_DATA_REQUEST = 100;
     private static final int EXPORT_DATA_REQUEST = 101;
 
     private Preference importBackup;
     private Preference exportBackup;
+    private Preference autoBackupDir;
 
     private CheckBoxPreference autoBackup;
 
     private boolean isAutoBackupAskForPermission;
+
+    private SharedPreferences prefs;
 
     private Fragment fragment;
 
@@ -71,6 +77,8 @@ public class BackupPreferences extends PreferenceFragmentCompat implements Share
 
         fragment = this;
 
+        prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+
         importBackup = (Preference) findPreference(PREFERENCE_KEY_IMPORT_BACKUP);
         importBackup.setOnPreferenceClickListener(new onClickListenerImportBackup());
 
@@ -79,6 +87,13 @@ public class BackupPreferences extends PreferenceFragmentCompat implements Share
 
         autoBackup = (CheckBoxPreference) findPreference(PREFERENCE_KEY_AUTO_BACKUP);
         autoBackup.setOnPreferenceClickListener(new onClickListenerAutoBackup());
+
+        // Auto backup preference
+        autoBackupDir = (Preference) findPreference(PREFERENCE_KEY_AUTO_BACKUP_DIR);
+        autoBackupDir.setOnPreferenceClickListener(new onClickListenerAutoBackupDir());
+        // Setting auto backup preference's summary to location or message that none is selected
+        String autoBackupDirString = prefs.getString("exportDir", null);
+        autoBackupDir.setSummary(autoBackupDirString != null ? Uri.parse(autoBackupDirString).getLastPathSegment() : getString(R.string.label_auto_backup_lacation));
 
         updateBackupPreferences();
     }
@@ -130,28 +145,49 @@ public class BackupPreferences extends PreferenceFragmentCompat implements Share
     private class onClickListenerAutoBackup implements Preference.OnPreferenceClickListener {
         @Override
         public boolean onPreferenceClick(Preference preference) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                if (autoBackup.isChecked()) {
-                    autoBackup.setChecked(true);
-                } else {
-                    autoBackup.setChecked(false);
+            if (autoBackup.isChecked()) {
+                autoBackup.setChecked(true);
+                // If exportDir location already saved user won't be prompted to select a new location
+                if (prefs.getString("exportDir", null) == null) {
+                    Toast.makeText(getContext(), R.string.info_select_auto_backup_export_dir, Toast.LENGTH_SHORT).show();
+                    selectAutoBackupDir.launch(null);
                 }
-            }
-            else {
-                if (autoBackup.isChecked()) {
-                    isAutoBackupAskForPermission = true;
-
-                    if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                            == PackageManager.PERMISSION_GRANTED) {
-                        exportBackup();
-                    } else {
-                        requestPermissionExportLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE);
-                    }
-                }
+            } else {
+                autoBackup.setChecked(false);
             }
             return true;
         }
     }
+
+    /**
+     *  Function for "Export directory" setting
+     */
+    private class onClickListenerAutoBackupDir implements Preference.OnPreferenceClickListener {
+        @Override
+        public boolean onPreferenceClick(@NonNull Preference preference) {
+            selectAutoBackupDir.launch(null);
+            return true;
+        }
+    }
+
+    /**
+     * Launches Android File Picker to choose a directory where automatic backups should be saved
+     * If user exits File Picker without selecting an directory
+     * and previously none where select a "Auto backup" checkbox is removed
+     */
+    ActivityResultLauncher<Uri> selectAutoBackupDir = registerForActivityResult(new ActivityResultContracts.OpenDocumentTree(), result -> {
+        if (result != null) {
+            getActivity().getContentResolver().takePersistableUriPermission(result, Intent.FLAG_GRANT_READ_URI_PERMISSION|Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            autoBackupDir.setSummary(result.getLastPathSegment());
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putString("exportDir", result.toString());
+            editor.commit();
+        } else {
+            if (prefs.getString("exportDir", null) == null) {
+                this.autoBackup.setChecked(false);
+            }
+        }
+    });
 
     private class onClickListenerImportBackup implements Preference.OnPreferenceClickListener {
         @Override
