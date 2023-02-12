@@ -10,8 +10,6 @@
 
     <string name="action_settings">Nastavitve</string>
     <string name="action_bluetooth_status">Bluetooth nastavitve</string>
-    <string name="open_drawer">odpri</string>
-    <string name="close_drawer">zapri</string>
 
     <string name="label_cancel">Prekliči</string>
     <string name="label_ok">OK</string>
@@ -38,16 +36,7 @@
     <string name="label_bone">Masa kosti</string>
     <string name="label_smartUserAssign">Pametna določitev uporabnika</string>
 
-    <plurals name="label_days">
-        <item quantity="one">%d dan</item>
-        <item quantity="two">%d dneva</item>
-        <item quantity="few">%d dnevi</item>
-        <item quantity="other"/>
-    </plurals>
-    <string name="label_last_week">Povprečje prejšnjega tedna</string>
-    <string name="label_last_month">Povprečje prejšnjega meseca</string>
     <string name="label_weight_difference">Razlika teže</string>
-    <string name="label_goal_date_is">Datum cilja:</string>
     <string name="label_days_left">Preostali dnevi</string>
 
     <string name="label_date">Datum</string>
@@ -63,8 +52,6 @@
     <string name="label_goal_date">Ciljni datum</string>
 
     <string name="label_title_user">uporabnik</string>
-    <string name="label_title_last_measurement">zadnja meritev</string>
-    <string name="label_title_goal">Cilj</string>
 
     <string name="label_import">Uvozi</string>
     <string name="label_export">Izvozi</string>
@@ -135,8 +122,6 @@
     <string name="label_reminder_notify_text">Besedilo obvestila</string>
     <string name="default_value_reminder_notify_text">Čas za tehtanje</string>
 
-    <string name="info_on_date">v</string>
-
     <string name="Monday">ponedeljek</string>
     <string name="Tuesday">torek</string>
     <string name="Wednesday">sreda</string>
@@ -149,7 +134,6 @@
     <string name="label_importBackup">Uvozi varnostno datoteko</string>
     <string name="label_backup">Varnostna datoteka</string>
     <string name="label_export_dir">Izvozi mapo</string>
-    <string name="label_not_found">nič ni bilo najdeno</string>
     <string name="label_ignoreOutOfRange">Ignoriraj vrednosti zunaj meje</string>
     <string name="label_initial_weight">Začetna teža</string>
     <string name="label_goal_line">Ciljna krivulja</string>

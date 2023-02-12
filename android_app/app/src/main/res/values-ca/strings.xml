@@ -29,14 +29,7 @@
     <string name="label_whr">Proporció cintura-maluc</string>
     <string name="label_bone">Massa òssia</string>
     <string name="label_smartUserAssign">Assignació intel·ligent d\'usuari</string>
-    <plurals name="label_days">
-        <item quantity="one">dia %d</item>
-        <item quantity="other">dies %d</item>
-    </plurals>
-    <string name="label_last_week">Mitjana de la setmana passada</string>
-    <string name="label_last_month">Mitjana del mes passat</string>
     <string name="label_weight_difference">Diferència de pes</string>
-    <string name="label_goal_date_is">Data objectiu:</string>
     <string name="label_days_left">Dies restants</string>
     <string name="label_date">Data</string>
     <string name="label_time">Hora</string>
@@ -50,8 +43,6 @@
     <string name="label_goal_weight">Pes objectiu</string>
     <string name="label_goal_date">Data objectiu</string>
     <string name="label_title_user">usuari</string>
-    <string name="label_title_last_measurement">darrera mesura</string>
-    <string name="label_title_goal">Objectiu</string>
     <string name="label_import">Importa</string>
     <string name="label_export">Exporta</string>
     <string name="label_delete_all">Suprimeix-ho tot</string>
@@ -103,7 +94,6 @@
     <string name="label_reminder_time">Hora</string>
     <string name="label_reminder_notify_text">Text de la notificació</string>
     <string name="default_value_reminder_notify_text">És l\'hora de pesar-se</string>
-    <string name="info_on_date">el</string>
     <string name="Monday">Dilluns</string>
     <string name="Tuesday">Dimarts</string>
     <string name="Wednesday">Dimecres</string>
@@ -116,15 +106,12 @@
     <string name="label_importBackup">Importa una còpia de seguretat</string>
     <string name="label_backup">Còpia de seguretat</string>
     <string name="label_export_dir">Directori d\'exportació</string>
-    <string name="label_not_found">no s\'ha trobat</string>
     <string name="label_ignoreOutOfRange">Ignora les dades fora del rang</string>
     <string name="label_initial_weight">Pes inicial</string>
     <string name="label_goal_line">Línia de l\'objectiu</string>
     <string name="error_max_scale_users">S\'ha assolit el nombre màxim d\'usuaris simultanis de la bàscula</string>
     <string name="info_step_on_scale_for_reference">Pugeu a la bàscula amb els peus nus per a obtenir les mesures de referència</string>
     <string name="info_measuring">Mesura del pes: %.2f</string>
-    <string name="open_drawer">obre</string>
-    <string name="close_drawer">tanca</string>
     <string name="title_general">General</string>
     <string name="label_add_measurement">Afegeix una mesura</string>
     <string name="label_share">Comparteix</string>
@@ -135,7 +122,6 @@
     <string name="info_new_data_duplicated">ja hi ha una mesura amb la mateixa data i hora</string>
     <string name="label_bluetooth_searching_finished">Cerca finalitzada</string>
     <string name="label_enable_legend">Llegenda de la gràfica</string>
-    <string name="label_enable_yaxis">Eix Y</string>
     <string name="label_theme">Tema</string>
     <string name="label_help">Ajuda</string>
     <string name="label_feedback_message_yes">Sí</string>
@@ -287,7 +273,6 @@
     <string name="info_assisted_weighing_no_reference_measurements">L\'usuari de referència no té cap mesura</string>
     <string name="label_amputation_right">Amputació dreta</string>
     <string name="label_amputation_left">Amputació esquerra</string>
-    <string name="label_amputation">Amputació</string>
     <string name="label_assisted_weighing">Pesatge assistit</string>
     <string name="label_trend">Tendència</string>
     <string name="label_prediction">Predicció</string>

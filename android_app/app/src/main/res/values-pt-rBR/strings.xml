@@ -39,7 +39,6 @@
     <string name="info_is_visible">está visível</string>
     <string name="info_measuring">Medindo peso: %.2f</string>
     <string name="info_no_evaluation_available">Valor não pode ser processado</string>
-    <string name="info_on_date">na/o</string>
     <string name="info_no_selected_user">Nenhum utilizador existe. Por favor, crie um novo utilizador em Configurações.</string>
     <string name="info_step_on_scale_for_reference">Por favor, suba para a balança para obter medidas de referência</string>
     <string name="label_add_user">Adicionar utilizador</string>
@@ -52,10 +51,6 @@
     <string name="label_cancel">Cancelar</string>
     <string name="label_comment">Comentário</string>
     <string name="label_date">Data</string>
-    <plurals name="label_days">
-        <item quantity="one">dia %d</item>
-        <item quantity="other">dias %d</item>
-    </plurals>
     <string name="label_days_left">Dias restantes</string>
     <string name="label_delete">Apagar</string>
     <string name="label_delete_all">Apagar tudo</string>
@@ -68,7 +63,6 @@
     <string name="label_fat">Gordura corporal</string>
     <string name="label_gender">Sexo</string>
     <string name="label_goal_date">Data do objetivo</string>
-    <string name="label_goal_date_is">Data final da meta:</string>
     <string name="label_goal_line">Linha objetivo</string>
     <string name="label_goal_weight">Peso a atingir</string>
     <string name="label_hip">Perimetro da anca</string>
@@ -76,13 +70,10 @@
     <string name="label_import">Importar</string>
     <string name="label_importBackup">Importar Backup</string>
     <string name="label_initial_weight">Peso inicial</string>
-    <string name="label_last_month">Média do mês passado</string>
-    <string name="label_last_week">Média da semana passada</string>
     <string name="label_male">Masculino</string>
     <string name="label_muscle">Massa muscular</string>
     <string name="label_no">Não</string>
     <string name="label_ok">OK</string>
-    <string name="label_not_found">não encontrado</string>
     <string name="label_reminder">Lembrete</string>
     <string name="label_reminder_notify_text">Título da notificação</string>
     <string name="label_reminder_time">Hora</string>
@@ -90,8 +81,6 @@
     <string name="label_scale_unit">Unidade de medida</string>
     <string name="label_smartUserAssign">Identificação inteligente de utilizador</string>
     <string name="label_time">Hora</string>
-    <string name="label_title_goal">Objetivo</string>
-    <string name="label_title_last_measurement">última medida</string>
     <string name="label_title_user">utilizador</string>
     <string name="label_user_name">Nome</string>
     <string name="label_waist">Perimetro abdominal</string>
@@ -113,8 +102,6 @@
     <string name="title_users">Utilizadores</string>
     <string name="title_about">Sobre</string>
     <string name="title_general">Menu</string>
-    <string name="open_drawer">abrir</string>
-    <string name="close_drawer">fechar</string>
     <string name="label_share">Partilhar</string>
     <string name="label_share_subject">Exportar dados para CSV (%s)</string>
     <string name="label_bmr">Taxa Metabólica Basal (TMB)</string>
@@ -182,7 +169,6 @@
     <string name="info_bluetooth_connection_disconnected">Conexão Bluetooth terminada</string>
     <string name="info_step_on_scale">Por favor suba descalço para a balança</string>
     <string name="label_enable_legend">Legenda</string>
-    <string name="label_enable_yaxis">Eixo Y</string>
     <string name="trisa_scale_not_paired">A balança não foi pareada!
 \n
 \nPressione o botão da balança para mudar para o modo de pareamento e então reconecte para recuperar a palavra-passe do aparelho.</string>
@@ -207,7 +193,6 @@
     <string name="info_assisted_weighing_no_reference_measurements">Usuário-referência sem medidas</string>
     <string name="label_amputation_right">Amputação direita</string>
     <string name="label_amputation_left">Amputação esquerda</string>
-    <string name="label_amputation">Amputação</string>
     <string name="label_assisted_weighing">Pesagem assistida</string>
     <string name="label_age">Idade</string>
     <string name="info_select_scale_user">Selecione a balança para utilização</string>

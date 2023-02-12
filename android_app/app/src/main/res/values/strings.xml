@@ -12,8 +12,6 @@
     <string name="action_settings">Settings</string>
     <string name="action_bluetooth_status">Bluetooth Status</string>
     <string name="action_donation">Donation</string>
-    <string name="open_drawer">open</string>
-    <string name="close_drawer">close</string>
     <string name="label_cancel">Cancel</string>
     <string name="label_ok">OK</string>
     <string name="label_yes">Yes</string>
@@ -40,16 +38,7 @@
     <string name="label_bone">Bone mass</string>
     <string name="label_age">Age</string>
     <string name="label_smartUserAssign">Smart User assignment</string>
-    <plurals name="label_days">
-        <item quantity="one">day %d</item>
-        <item quantity="other">days %d</item>
-    </plurals>
-    <string name="label_last_week">Average past week</string>
-    <string name="label_last_month">Average past month</string>
     <string name="label_weight_difference">Weight difference</string>
-    <string name="label_total_weight_lost">Total weight lost</string>
-    <string name="label_total_weight_lost_weight_reference">Reference weight:</string>
-    <string name="label_goal_date_is">Goal date:</string>
     <string name="label_days_left">Days left</string>
     <string name="label_date">Date</string>
     <string name="label_time">Time</string>
@@ -69,7 +58,6 @@
     <string name="label_scale_unit">Scale unit</string>
     <string name="label_gender">Gender</string>
     <string name="label_assisted_weighing">Assisted weighing</string>
-    <string name="label_amputation">Amputation</string>
     <string name="label_amputation_left">Amputation left</string>
     <string name="label_amputation_right">Amputation right</string>
     <string name="label_male">Male</string>
@@ -78,8 +66,6 @@
     <string name="label_goal_weight">Goal weight</string>
     <string name="label_goal_date">Goal date</string>
     <string name="label_title_user">user</string>
-    <string name="label_title_last_measurement">last measurement</string>
-    <string name="label_title_goal">Goal</string>
     <string name="label_measurements">measurements</string>
     <string name="label_import">Import</string>
     <string name="label_export">Export</string>
@@ -132,7 +118,6 @@
     <string name="label_bluetooth_searching">Searching for your Bluetooth scale</string>
     <string name="label_bluetooth_searching_finished">Search finished</string>
     <string name="label_enable_legend">Graph legend</string>
-    <string name="label_enable_yaxis">Y-axis</string>
     <string name="label_enable_labels">Data label</string>
     <string name="label_enable_points">Data point</string>
     <string name="label_delete_confirmation">Delete confirmation</string>
@@ -147,7 +132,6 @@
     <string name="label_reminder_time">Time</string>
     <string name="label_reminder_notify_text">Notification text</string>
     <string name="default_value_reminder_notify_text">Time to weigh in</string>
-    <string name="info_on_date">on</string>
     <string name="Monday">Monday</string>
     <string name="Tuesday">Tuesday</string>
     <string name="Wednesday">Wednesday</string>
@@ -160,7 +144,6 @@
     <string name="label_importBackup">Import backup</string>
     <string name="label_backup">Backup</string>
     <string name="label_export_dir">Export directory</string>
-    <string name="label_not_found">not found</string>
     <string name="label_ignoreOutOfRange">Ignore out of range data</string>
     <string name="label_initial_weight">Initial weight</string>
     <string name="label_goal_line">Goal line</string>

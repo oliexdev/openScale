@@ -10,8 +10,6 @@
     <string name="title_general">Ogólne</string>
     <string name="action_settings">Ustawienia</string>
     <string name="action_bluetooth_status">Stan Bluetooth</string>
-    <string name="open_drawer">otwórz</string>
-    <string name="close_drawer">zamknij</string>
     <string name="label_cancel">Anuluj</string>
     <string name="label_ok">OK</string>
     <string name="label_yes">Tak</string>
@@ -34,15 +32,7 @@
     <string name="label_whr">Stosunek obwodu talii do obwodu bioder</string>
     <string name="label_bone">Masa kostna</string>
     <string name="label_smartUserAssign">Inteligente przypisywanie użytkowników</string>
-    <plurals name="label_days">
-        <item quantity="one">%d dzień</item>
-        <item quantity="few">%d dni</item>
-        <item quantity="many">%d dni</item>
-    </plurals>
-    <string name="label_last_week">Średnia z tygodnia</string>
-    <string name="label_last_month">Średnia z miesiąca</string>
     <string name="label_weight_difference">Różnica wagi</string>
-    <string name="label_goal_date_is">Data realizacji celu:</string>
     <string name="label_days_left">Pozostało dni</string>
     <string name="label_date">Data</string>
     <string name="label_time">Czas</string>
@@ -56,8 +46,6 @@
     <string name="label_goal_weight">Docelowa waga</string>
     <string name="label_goal_date">Data celu</string>
     <string name="label_title_user">użytkownik</string>
-    <string name="label_title_last_measurement">ostatni pomiar</string>
-    <string name="label_title_goal">Cel</string>
     <string name="label_import">Import</string>
     <string name="label_export">Eksport</string>
     <string name="label_delete_all">Usuń wszystko</string>
@@ -114,7 +102,6 @@
     <string name="label_reminder_time">Czas</string>
     <string name="label_reminder_notify_text">Tekst powiadomienia</string>
     <string name="default_value_reminder_notify_text">Pora by się zważyć</string>
-    <string name="info_on_date">na dzień</string>
     <string name="Monday">Poniedziałek</string>
     <string name="Tuesday">Wtorek</string>
     <string name="Wednesday">Środa</string>
@@ -127,7 +114,6 @@
     <string name="label_importBackup">Importuj kopie zapasową</string>
     <string name="label_backup">Kopia zapasowa</string>
     <string name="label_export_dir">Katalog do eksportu</string>
-    <string name="label_not_found">nie znaleziono</string>
     <string name="label_ignoreOutOfRange">Ignoruj dane spoza zakresu</string>
     <string name="label_initial_weight">Waga początkowa</string>
     <string name="label_goal_line">Linia celu</string>
@@ -207,7 +193,6 @@
     <string name="info_bluetooth_no_device_retrying">Nie można nawiązać połączenia, ponawianie…</string>
     <string name="info_bluetooth_connection_disconnected">Zakończono połączenie bluetooth</string>
     <string name="label_enable_legend">Legenda</string>
-    <string name="label_enable_yaxis">oś Y</string>
     <string name="trisa_scale_not_paired">Nie sparowano z wagą!
 \n
 \nPrzytrzymaj przycisk na spodzie wagi, aby rozpocząć parowanie, a potem połącz ponownie by pobrać hasło urządzenia.</string>
@@ -279,7 +264,6 @@
     <string name="amputation_level_lower_leg_foot">Dolna część nogi i stopa</string>
     <string name="label_amputation_right">Amputacje prawych kończyn</string>
     <string name="label_amputation_left">Amputacje lewych kończyn</string>
-    <string name="label_amputation">Amputacje</string>
     <string name="amputation_level_hand">Nadgarstek</string>
     <string name="label_assisted_weighing">Ważenie z poradami</string>
     <string name="amputation_level_leg">Noga</string>

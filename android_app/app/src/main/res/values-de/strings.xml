@@ -16,7 +16,6 @@
     <string name="info_is_visible">ist sichtbar</string>
     <string name="info_is_not_available">nicht verfügbar</string>
     <string name="info_no_selected_user">Kein Benutzer vorhanden. Bitte erzeugen Sie einen neuen Benutzer in den Einstellungen.</string>
-    <string name="info_on_date">am</string>
     <string name="label_birthday">Geburtstag</string>
     <string name="label_bluetooth_enable">Verbinde mit Waage beim Start</string>
     <string name="label_bluetooth_title">Bluetooth</string>
@@ -24,10 +23,6 @@
     <string name="label_height">Körpergröße</string>
     <string name="label_comment">Kommentar</string>
     <string name="label_date">Datum</string>
-    <plurals name="label_days">
-        <item quantity="one">%d Tag</item>
-        <item quantity="other">%d Tage</item>
-    </plurals>
     <string name="label_days_left">Tage übrig</string>
     <string name="label_delete">Löschen</string>
     <string name="label_delete_all">Alles löschen</string>
@@ -36,19 +31,14 @@
     <string name="label_fat">Körperfett</string>
     <string name="label_gender">Geschlecht</string>
     <string name="label_goal_date">Zieldatum</string>
-    <string name="label_goal_date_is">Zieldatum:</string>
     <string name="label_goal_weight">Zielgewicht</string>
     <string name="label_import">Importieren</string>
-    <string name="label_last_month">Monatsdurchschnitt</string>
-    <string name="label_last_week">Wochendurchschnitt</string>
     <string name="label_male">Männlich</string>
     <string name="label_muscle">Muskelmasse</string>
     <string name="label_no">Nein</string>
     <string name="label_ok">OK</string>
     <string name="label_scale_unit">Einheit</string>
     <string name="label_time">Zeit</string>
-    <string name="label_title_goal">Ziel</string>
-    <string name="label_title_last_measurement">Letzte Messung</string>
     <string name="label_title_user">Benutzer</string>
     <string name="label_user_name">Name</string>
     <string name="label_water">Wassergehalt</string>
@@ -104,7 +94,6 @@
     <string name="label_exportBackup">Exportiere Datensicherung</string>
     <string name="label_importBackup">Importiere Datensicherung</string>
     <string name="label_export_dir">Export Ordner</string>
-    <string name="label_not_found">nicht gefunden</string>
     <string name="label_ignoreOutOfRange">Ignoriere Daten außerhalb des zulässigen Bereiches</string>
     <string name="label_initial_weight">Anfangsgewicht</string>
     <string name="error_initial_weight_required">Anfangsgewicht ist erforderlich</string>
@@ -124,8 +113,6 @@
     <string name="label_maintainer">Hauptentwickler</string>
     <string name="label_website">Webseite</string>
     <string name="title_about">Über</string>
-    <string name="open_drawer">öffnen</string>
-    <string name="close_drawer">schließen</string>
     <string name="info_bluetooth_no_device_set">Wählen Sie ein Bluetooth-Gerät aus</string>
     <string name="info_new_data_duplicated">Messung mit gleichen Datum und Uhrzeit existiert bereits</string>
     <string name="label_feedback_message_enjoying">Gefällt Dir openScale?</string>
@@ -225,7 +212,6 @@
     <string name="info_bluetooth_connection_disconnected">Bluetooth Verbindung getrennt</string>
     <string name="info_step_on_scale">Bitte Barfuß auf die Wage stellen</string>
     <string name="label_enable_legend">Diagrammlegende</string>
-    <string name="label_enable_yaxis">Y-Achse</string>
     <string name="label_day_view">Tagesansicht</string>
     <string name="label_year_view">Jahresansicht</string>
     <string name="label_measurement_bar">Messwertanzeige</string>
@@ -287,7 +273,6 @@
     <string name="info_assisted_weighing_no_reference_measurements">Referenz Benutzer hat keine Messwerte</string>
     <string name="label_amputation_right">Amputation rechts</string>
     <string name="label_amputation_left">Amputation links</string>
-    <string name="label_amputation">Amputation</string>
     <string name="label_assisted_weighing">Assistiertes Wiegen</string>
     <string name="label_trend">Tendenz</string>
     <string name="label_prediction">Prognose</string>

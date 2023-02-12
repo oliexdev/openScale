@@ -20,9 +20,6 @@
     <string name="label_height">身長</string>
     <string name="label_cancel">キャンセル</string>
     <string name="label_comment">コメント</string>
-    <plurals name="label_days">
-        <item quantity="other">%d 日</item>
-    </plurals>
     <string name="label_date">期日</string>
     <string name="label_delete">削除</string>
     <string name="label_export">エクスポート</string>
@@ -34,15 +31,10 @@
     <string name="label_title_user">ユーザー</string>
     <string name="label_goal_weight">目標体重</string>
     <string name="label_days_left">目標まで</string>
-    <string name="label_title_goal">目標</string>
     <string name="label_goal_date">目標期日</string>
     <string name="label_scale_unit">目盛り単位</string>
-    <string name="label_title_last_measurement">最新測定</string>
-    <string name="label_goal_date_is">目標日：</string>
     <string name="label_delete_all">全て削除する</string>
     <string name="label_bluetooth_enable">体重計との起動時の接続</string>
-    <string name="label_last_month">先月の平均</string>
-    <string name="label_last_week">先週の平均</string>
     <string name="error_exporting">エクスポートできませんでした</string>
     <string name="error_importing">インポートできませんでした</string>
     <string name="error_height_required">身長が必要です</string>
@@ -51,7 +43,6 @@
     <string name="info_data_deleted">記録が削除されました</string>
     <string name="info_data_exported">エクスポート先</string>
     <string name="info_data_imported">インポート元</string>
-    <string name="info_on_date">日付</string>
     <string name="info_no_selected_user">ユーザーが存在しません。設定で作成してください。</string>
     <string name="label_add_user">ユーザーの追加</string>
     <string name="label_enable_labels">データラベル</string>
@@ -101,8 +92,6 @@
     <string name="label_initial_weight">初期体重</string>
     <string name="title_about">アプリについて</string>
     <string name="title_general">一般</string>
-    <string name="open_drawer">開く</string>
-    <string name="close_drawer">閉じる</string>
     <string name="label_share">共有</string>
     <string name="label_bmr">基礎代謝率 (BMR)</string>
     <string name="label_lbm">除脂肪体重</string>
@@ -167,7 +156,6 @@
     <string name="info_new_data_added">%1$.2f%2$s [%3$s] を %4$s に追加しました</string>
     <string name="label_category_measurement_database">測定データベース</string>
     <string name="label_export_dir">エクスポートディレクトリー</string>
-    <string name="label_not_found">見つかりません</string>
     <string name="label_goal_line">目標線</string>
     <string name="error_max_scale_users">最大同時測定のユーザー数に達しました</string>
     <string name="info_step_on_scale">裸足で体重計に載ってください</string>
@@ -226,7 +214,6 @@
     <string name="info_step_on_scale_for_reference">基準測定のために裸足で体重計に乗ってください</string>
     <string name="permission_location_service_info">Bluetooth設定を検索するには、Android設定で位置情報アクセスを許可します。必要に応じて、後で取り消してください。</string>
     <string name="label_enable_legend">グラフの凡例</string>
-    <string name="label_enable_yaxis">Y 軸</string>
     <string name="label_day_view">日表示</string>
     <string name="label_year_view">年表示</string>
     <string name="label_measurement_bar">測定バー</string>

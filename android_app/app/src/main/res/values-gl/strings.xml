@@ -8,8 +8,6 @@
     <string name="title_measurements">Medidas</string>
     <string name="action_settings">Configuración</string>
     <string name="action_bluetooth_status">Estado do Bluetooth</string>
-    <string name="open_drawer">abrir</string>
-    <string name="close_drawer">pechar</string>
     <string name="label_cancel">Cancelar</string>
     <string name="label_yes">Si</string>
     <string name="label_no">Non</string>
@@ -31,14 +29,7 @@
     <string name="label_whr">Proporción cintura-cadeira</string>
     <string name="label_bone">Masa ósea</string>
     <string name="label_smartUserAssign">Asignación intelixente do usuario</string>
-    <plurals name="label_days">
-        <item quantity="one">%d día</item>
-        <item quantity="other">%d días</item>
-    </plurals>
-    <string name="label_last_week">Media da última semana</string>
-    <string name="label_last_month">Media do último mes</string>
     <string name="label_weight_difference">Diferencia de peso</string>
-    <string name="label_goal_date_is">Data obxectivo:</string>
     <string name="label_days_left">Días restantes</string>
     <string name="label_date">Data</string>
     <string name="label_time">Hora</string>
@@ -52,8 +43,6 @@
     <string name="label_goal_weight">Peso obxectivo</string>
     <string name="label_goal_date">Data obxectivo</string>
     <string name="label_title_user">usuario</string>
-    <string name="label_title_last_measurement">última medida</string>
-    <string name="label_title_goal">Obxectivo</string>
     <string name="label_import">Importar</string>
     <string name="label_export">Exportar</string>
     <string name="label_delete_all">Borrar todo</string>
@@ -110,7 +99,6 @@
     <string name="label_reminder_time">Hora</string>
     <string name="label_reminder_notify_text">Texto da modificación</string>
     <string name="default_value_reminder_notify_text">É hora de pesarse</string>
-    <string name="info_on_date">o</string>
     <string name="Monday">Luns</string>
     <string name="Tuesday">Martes</string>
     <string name="Wednesday">Mércores</string>
@@ -123,7 +111,6 @@
     <string name="label_importBackup">Importar copia de seguridade</string>
     <string name="label_backup">Copia de seguridade</string>
     <string name="label_export_dir">Directorio de exportación</string>
-    <string name="label_not_found">non atopado</string>
     <string name="label_ignoreOutOfRange">Ignorar datos fóra de rango</string>
     <string name="label_initial_weight">Peso inicial</string>
     <string name="label_goal_line">Liña do obxectivo</string>
@@ -262,7 +249,6 @@
 \n
 \nManteña pulsado o botón da báscula para poñela en modo de emparellamento e logo volva conectar para obter a clave do dispositivo.</string>
     <string name="info_step_on_scale">Por favor, suba á báscula descalzo</string>
-    <string name="label_enable_yaxis">Eixo Y</string>
     <string name="label_enable_legend">Lenda do gráfico</string>
     <string name="info_bluetooth_connection_disconnected">Conexión Bluetooth pechada</string>
     <string name="info_bluetooth_connection_error_scale_offline">Non se puido conectar coa báscula, por favor asegúrese de que está acendida.</string>

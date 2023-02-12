@@ -24,15 +24,7 @@
     <string name="label_whtr">Rapport hauteur-taille</string>
     <string name="label_whr">Rapport taille-hanches</string>
     <string name="label_smartUserAssign">Affectation intelligente de l’utilisateur</string>
-    <plurals name="label_days">
-        <item quantity="one">%d jour</item>
-        <item quantity="many">%d jours</item>
-        <item quantity="other">%d jours</item>
-    </plurals>
-    <string name="label_last_week">Moyenne de la dernière semaine</string>
-    <string name="label_last_month">Moyenne du mois dernier</string>
     <string name="label_weight_difference">Différence de poids</string>
-    <string name="label_goal_date_is">Date de l’objectif :</string>
     <string name="label_days_left">Jours restants</string>
     <string name="label_date">Date</string>
     <string name="label_time">Heure</string>
@@ -46,8 +38,6 @@
     <string name="label_goal_weight">Objectif de poids</string>
     <string name="label_goal_date">Date de l’objectif</string>
     <string name="label_title_user">Utilisateur</string>
-    <string name="label_title_last_measurement">Dernière mesure</string>
-    <string name="label_title_goal">Objectif</string>
     <string name="label_import">Importer</string>
     <string name="label_export">Exporter</string>
     <string name="label_delete_all">Tout supprimer</string>
@@ -91,7 +81,6 @@
     <string name="label_reminder_time">Heure</string>
     <string name="label_reminder_notify_text">Intitulé de la notification</string>
     <string name="default_value_reminder_notify_text">C\'est l’heure de se peser</string>
-    <string name="info_on_date">le</string>
     <string name="Monday">lundi</string>
     <string name="Tuesday">mardi</string>
     <string name="Wednesday">mercredi</string>
@@ -143,8 +132,6 @@
     <string name="label_percent">Pourcent</string>
     <string name="label_estimated">Estimé</string>
     <string name="label_estimate_measurement_summary">Basé sur le poids, la taille, l’âge, le sexe, etc.</string>
-    <string name="open_drawer">ouvrir</string>
-    <string name="close_drawer">fermer</string>
     <string name="label_share_subject">Export des données openScale (%s)</string>
     <string name="label_lbm">Masse sans graisse</string>
     <string name="info_new_data_added">%1$.2f%2$s [%3$s] ajouté pour %4$s</string>
@@ -156,7 +143,6 @@
     <string name="label_maintainer">Mainteneur</string>
     <string name="label_automatic">auto</string>
     <string name="label_export_dir">Dossier pour l\'exportation</string>
-    <string name="label_not_found">Non trouvé</string>
     <string name="label_ignoreOutOfRange">Ignorer les valeurs hors de plage valide</string>
     <string name="label_goal_line">Ligne pour l’objectif</string>
     <string name="label_feedback_message_enjoying">Êtes-vous satisfait d’openScale \?</string>
@@ -226,7 +212,6 @@
     <string name="info_bluetooth_connection_disconnected">Connexion Bluetooth fermée</string>
     <string name="info_step_on_scale">Veuillez monter pieds nus sur la balance</string>
     <string name="label_enable_legend">Légende du graphique</string>
-    <string name="label_enable_yaxis">Ordonnée</string>
     <string name="label_day_view">Vue journalière</string>
     <string name="label_year_view">Vue annuelle</string>
     <string name="label_measurement_bar">Barre des mesures</string>
@@ -288,7 +273,6 @@
     <string name="info_assisted_weighing_no_reference_measurements">L’utilisateur de référence n’a pas de mesures</string>
     <string name="label_amputation_right">Amputation droite</string>
     <string name="label_amputation_left">Amputation gauche</string>
-    <string name="label_amputation">Amputation</string>
     <string name="label_assisted_weighing">Pesée assistée</string>
     <string name="label_trend">Tendance</string>
     <string name="label_prediction">Prédiction</string>
@@ -296,7 +280,5 @@
     <string name="info_create_new_user_on_scale">Créer un nouvel utilisateur sur la balance.</string>
     <string name="info_enter_consent_code_for_scale_user">Entrez le NIP/code de consentement de l’utilisateur de la balance %s</string>
     <string name="info_select_scale_user">Sélectionner un utilisateur</string>
-    <string name="label_total_weight_lost">Poids total perdu</string>
-    <string name="label_total_weight_lost_weight_reference">Poids de référence :</string>
     <string name="label_is_sticky">Est collant</string>
 </resources>

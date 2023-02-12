@@ -10,8 +10,6 @@
     <string name="title_general">Основное</string>
     <string name="action_settings">Настройки</string>
     <string name="action_bluetooth_status">Статус Bluetooth</string>
-    <string name="open_drawer">открыть</string>
-    <string name="close_drawer">закрыть</string>
     <string name="label_cancel">Отмена</string>
     <string name="label_ok">ОК</string>
     <string name="label_yes">Да</string>
@@ -35,10 +33,7 @@
     <string name="label_whr">Соотношение обхвата талии к бедру</string>
     <string name="label_bone">Костная масса</string>
     <string name="label_smartUserAssign">Умное определение Пользователя</string>
-    <string name="label_last_week">Среднее за прошлую неделю</string>
-    <string name="label_last_month">Среднее за прошлый месяц</string>
     <string name="label_weight_difference">Разница в весе</string>
-    <string name="label_goal_date_is">Целевая дата:</string>
     <string name="label_days_left">Осталось дней</string>
     <string name="label_date">Дата</string>
     <string name="label_time">Время</string>
@@ -52,8 +47,6 @@
     <string name="label_goal_weight">Цель по весу</string>
     <string name="label_goal_date">Целевая дата</string>
     <string name="label_title_user">Пользователь</string>
-    <string name="label_title_last_measurement">последнее измерение</string>
-    <string name="label_title_goal">Цель</string>
     <string name="label_import">Импорт</string>
     <string name="label_export">Экспорт</string>
     <string name="label_delete_all">Удалить все</string>
@@ -119,7 +112,6 @@
     <string name="label_importBackup">Импорт резервного файла</string>
     <string name="label_backup">Резервный файл</string>
     <string name="label_export_dir">Каталог экспорта</string>
-    <string name="label_not_found">не найден</string>
     <string name="label_ignoreOutOfRange">Игнорировать данные вне диапазона</string>
     <string name="label_initial_weight">Начальный вес</string>
     <string name="label_goal_line">Линия цели</string>
@@ -163,15 +155,9 @@
     <string name="label_select_user">Выберите пользователя</string>
     <string name="label_configure_widget">Настройте виджет</string>
     <string name="label_measure_unit">Единица измерения</string>
-    <plurals name="label_days">
-        <item quantity="one">%d день</item>
-        <item quantity="few">%d дня</item>
-        <item quantity="many">%d дней</item>
-    </plurals>
     <string name="info_new_data_added">%1$.2f%2$s [%3$s] добавлено к %4$s</string>
     <string name="label_enable_labels">Метка данных</string>
     <string name="default_value_reminder_notify_text">Пора взвеситься</string>
-    <string name="info_on_date">в день</string>
     <string name="label_feedback_message_rate_app">Поставить оценку на Google Play или GitHub\?</string>
     <string name="trisa_scale_not_paired">Эти весы не были подключены!
 \n
@@ -227,7 +213,6 @@
     <string name="info_bluetooth_connection_disconnected">Bluetooth соединение закрыто</string>
     <string name="permission_location_service_info">Предоставьте доступ к местоположению в настройках Android для нахождения устройств Bluetooth. После соединения доступ может быть отозван.</string>
     <string name="label_enable_legend">Легенда графика</string>
-    <string name="label_enable_yaxis">ось Y</string>
     <string name="label_day_view">За день</string>
     <string name="label_year_view">За год</string>
     <string name="label_measurement_bar">Отображение измерений</string>
@@ -256,7 +241,6 @@
     <string name="amputation_level_none">Нет ампутаций</string>
     <string name="label_amputation_right">Ампутации справа</string>
     <string name="label_amputation_left">Ампутации слева</string>
-    <string name="label_amputation">Ампутации</string>
     <string name="label_slide_support_main_text">Вы нужны openScale. Создайте <a href="https://github.com/oliexdev/openScale/issues">новый запрос</a>, если вы обнаружили ошибку, у вас есть идея, вопрос или вы хотите помочь в поддержке ваших Bluetooth весов.
 \n 
 \nМотивируйте создателя этого проекта на дальнейшее развитие и постоянную поддержку, поставив openScale положительную оценку на <a href="http://play.google.com/store/apps/details?id=com.health.openscale.pro">GooglePlay</a> или отметив его звездой на <a href="https://github.com/oliexdev/openScale">GitHub</a>.

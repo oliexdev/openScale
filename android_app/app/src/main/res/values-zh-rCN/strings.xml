@@ -108,7 +108,6 @@
     <string name="permission_location_service_info">在Android设置中授予搜索蓝牙设备的位置访问权限。然后可选择撤销它。</string>
     <string name="permission_bluetooth_info">搜索蓝牙设备需要位置许可。在找到设备后可以撤销它。</string>
     <string name="permission_not_granted">未授予权限</string>
-    <string name="label_rolling_chart">旋转图表</string>
     <string name="label_year_view">年视图</string>
     <string name="label_weeks_view">周视图</string>
     <string name="label_month_view">月视图</string>
@@ -147,11 +146,8 @@
     <string name="label_feedback_message_enjoying">享受 openScale\?</string>
     <string name="label_help">帮助</string>
     <string name="label_goal_line">目标线</string>
-    <string name="label_regression_line_degree">回归多项式程度</string>
-    <string name="label_regression_line">回归线</string>
     <string name="label_initial_weight">初始体重</string>
     <string name="label_ignoreOutOfRange">忽略超范围数据</string>
-    <string name="label_not_found">未找到</string>
     <string name="label_export_dir">导出目录</string>
     <string name="label_backup">备份</string>
     <string name="label_importBackup">导入备份</string>
@@ -164,7 +160,6 @@
     <string name="Wednesday">周三</string>
     <string name="Tuesday">周二</string>
     <string name="Monday">周一</string>
-    <string name="info_on_date">在</string>
     <string name="default_value_reminder_notify_text">称体重时间</string>
     <string name="label_reminder_notify_text">通知文本</string>
     <string name="label_reminder_time">时间</string>
@@ -179,7 +174,6 @@
     <string name="label_delete_confirmation">删除确认</string>
     <string name="label_enable_points">数据点</string>
     <string name="label_enable_labels">数据标签</string>
-    <string name="label_enable_yaxis">Y轴</string>
     <string name="label_enable_legend">图例</string>
     <string name="label_bluetooth_searching_finished">搜索完成</string>
     <string name="label_mergeWithLastMeasurement">与上一个测量值合并</string>
@@ -230,14 +224,11 @@
     <string name="label_delete_all">删除全部</string>
     <string name="label_export">导出</string>
     <string name="label_import">导入</string>
-    <string name="label_title_goal">目标</string>
-    <string name="label_title_last_measurement">上次测量值</string>
     <string name="label_title_user">用户</string>
     <string name="label_goal_date">目标日期</string>
     <string name="label_goal_weight">目标体重</string>
     <string name="label_female">女性</string>
     <string name="label_male">男性</string>
-    <string name="label_amputation">截肢</string>
     <string name="label_gender">性别</string>
     <string name="label_scale_unit">标度单位</string>
     <string name="label_height">身高</string>
@@ -246,13 +237,7 @@
     <string name="label_time">时间</string>
     <string name="label_date">日期</string>
     <string name="label_days_left">剩余天数</string>
-    <string name="label_goal_date_is">目标日期：</string>
     <string name="label_weight_difference">体重差异</string>
-    <string name="label_last_month">上月平均</string>
-    <string name="label_last_week">上周平均数</string>
-    <plurals name="label_days">
-        <item quantity="other">第 %d 天</item>
-    </plurals>
     <string name="label_smartUserAssign">智能用户分配</string>
     <string name="label_age">年龄</string>
     <string name="label_bone">骨量</string>
@@ -279,8 +264,6 @@
     <string name="label_yes">是</string>
     <string name="label_ok">好</string>
     <string name="label_cancel">取消</string>
-    <string name="close_drawer">关闭</string>
-    <string name="open_drawer">打开</string>
     <string name="action_donation">捐赠</string>
     <string name="action_bluetooth_status">蓝牙状态</string>
     <string name="action_settings">设置</string>
@@ -298,6 +281,4 @@
     <string name="info_enter_consent_code_for_scale_user">输入 scale 用户 %s 的 PIN/同意码</string>
     <string name="info_create_new_user_on_scale">创建 scale 新用户。</string>
     <string name="label_is_sticky">粘性标签</string>
-    <string name="label_total_weight_lost">总共减去的体重</string>
-    <string name="label_total_weight_lost_weight_reference">参考体重：</string>
 </resources>

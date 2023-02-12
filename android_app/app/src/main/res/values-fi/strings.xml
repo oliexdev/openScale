@@ -7,8 +7,6 @@
     <string name="label_scale_unit">Vaa\'an yksiköt</string>
     <string name="label_empty">tyhjä</string>
     <string name="label_ok">OK</string>
-    <string name="close_drawer">sulje</string>
-    <string name="open_drawer">avaa</string>
     <string name="label_share_subject">CSV-vienti (%s)</string>
     <string name="action_donation">Lahjoitus</string>
     <string name="action_bluetooth_status">Bluetoothin tila</string>
@@ -69,7 +67,6 @@
     <string name="label_is_on_right_axis">On oikealla akselilla</string>
     <string name="label_export_overwrite">Kirjoita yli edellinen vienti \"%s\"\?</string>
     <string name="label_set_default_order">Aseta oletusjärjestys</string>
-    <string name="label_click_measurement_configure">Napauta mittaustietoa muuttaaksesi</string>
     <string name="label_long_press_drag_reorder">Paina pitkään mittaustietoa ja raahaa uudelleenjärjestääksesi</string>
     <string name="label_next">Seuraava</string>
     <string name="permission_read_write_data_label">Lue ja tallenna openScalen tiedot</string>
@@ -105,7 +102,6 @@
     <string name="label_feedback_message_enjoying">Pidätkö openScalesta\?</string>
     <string name="label_help">Ohje</string>
     <string name="label_initial_weight">Lähtöpaino</string>
-    <string name="label_not_found">ei löytynyt</string>
     <string name="label_backup">Varmuuskopio</string>
     <string name="label_importBackup">Tuo varmuuskopiosta</string>
     <string name="label_exportBackup">Vie varmuuskopioon</string>
@@ -125,7 +121,6 @@
     <string name="label_maintainer">Ylläpitäjä</string>
     <string name="label_category_measurement_database">Mittaus-tietokanta</string>
     <string name="label_delete_confirmation">Poiston varmistaminen</string>
-    <string name="label_enable_yaxis">Y-akseli</string>
     <string name="label_bluetooth_enable">Yhdistä vaakaan käynnistettäessä</string>
     <string name="label_bluetooth_title">Bluetooth</string>
     <string name="question_really_delete_user">Poista käyttäjä\?</string>
@@ -162,8 +157,6 @@
     <string name="label_delete_all">Poista kaikki</string>
     <string name="label_export">Vie</string>
     <string name="label_import">Tuo</string>
-    <string name="label_title_goal">Tavoite</string>
-    <string name="label_title_last_measurement">viimeisin mittaus</string>
     <string name="label_title_user">käyttäjä</string>
     <string name="label_goal_date">Tavoitepäivämäärä</string>
     <string name="label_goal_weight">Tavoitepaino</string>
@@ -176,10 +169,6 @@
     <string name="label_time">Aika</string>
     <string name="label_date">Päivämäärä</string>
     <string name="label_days_left">Päiviä jäljellä</string>
-    <plurals name="label_days">
-        <item quantity="one">päivä %d</item>
-        <item quantity="other">päivää %d</item>
-    </plurals>
     <string name="label_age">Ikä</string>
     <string name="label_comment">Kommentti</string>
     <string name="label_hip">Lantion ympärys</string>
@@ -201,7 +190,6 @@
     <string name="title_measurements">Mittaukset</string>
     <string name="title_users">Käyttäjät</string>
     <string name="error_value_range">Arvo on rajojen ulkopuolella</string>
-    <string name="label_goal_date_is">Tavoitepäivä:</string>
     <string name="label_weight_difference">Painonmuutos</string>
     <string name="label_bone">Luumassa</string>
     <string name="label_muscle">Lihaskudos</string>

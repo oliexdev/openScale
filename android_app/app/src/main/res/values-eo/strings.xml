@@ -11,8 +11,6 @@
     <string name="action_settings">Agordoj</string>
     <string name="action_bluetooth_status">Bludenta statuso</string>
     <string name="action_donation">Donaci</string>
-    <string name="open_drawer">malfermi</string>
-    <string name="close_drawer">fermi</string>
     <string name="label_cancel">Nuligi</string>
     <string name="label_ok">Bone</string>
     <string name="label_yes">Jes</string>
@@ -29,23 +27,15 @@
     <string name="label_muscle">Muskoloj</string>
     <string name="label_comment">Komento</string>
     <string name="label_bone">Ostomaso</string>
-    <plurals name="label_days">
-        <item quantity="one">tago %d</item>
-        <item quantity="other">tagoj %d</item>
-    </plurals>
-    <string name="label_goal_date_is">Cela dato:</string>
     <string name="label_date">Dato</string>
     <string name="label_time">Tempo</string>
     <string name="label_birthday">Naskiĝtago</string>
     <string name="label_user_name">Nomo</string>
     <string name="label_height">Alto</string>
     <string name="label_gender">Genro</string>
-    <string name="label_amputation">Amputadoj</string>
     <string name="label_male">Iĉa</string>
     <string name="label_goal_date">Cela dato</string>
     <string name="label_title_user">uzanto</string>
-    <string name="label_title_last_measurement">lasta mezuro</string>
-    <string name="label_title_goal">Celo</string>
     <string name="label_import">Enporti</string>
     <string name="label_export">Elporti</string>
     <string name="label_delete_all">Forigi ĉiujn</string>
@@ -77,7 +67,6 @@
     <string name="question_really_delete_user">Forigi uzanton\?</string>
     <string name="label_bluetooth_title">Bludento</string>
     <string name="label_enable_legend">Legendo de grafo</string>
-    <string name="label_enable_yaxis">Y-akso</string>
     <string name="label_enable_labels">Data etikedo</string>
     <string name="label_website">Retejo</string>
     <string name="label_license">Permesilo</string>
@@ -88,13 +77,11 @@
     <string name="label_reminder_time">Tempo</string>
     <string name="label_reminder_notify_text">Sciiga teksto</string>
     <string name="default_value_reminder_notify_text">Tempo por vi pesi sin</string>
-    <string name="info_on_date">je</string>
     <string name="Monday">Lundo</string>
     <string name="Saturday">Sabato</string>
     <string name="Sunday">Dimanĉo</string>
     <string name="label_backup">Savkopio</string>
     <string name="label_export_dir">Dosierujo elportota</string>
-    <string name="label_not_found">ne trovita</string>
     <string name="label_goal_line">Cela linio</string>
     <string name="label_age">Aĝo</string>
     <string name="app_intro_done_button">Farita</string>

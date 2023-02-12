@@ -10,8 +10,6 @@
     <string name="title_general">일반</string>
     <string name="action_settings">설정</string>
     <string name="action_bluetooth_status">블루투스 상태</string>
-    <string name="open_drawer">열기</string>
-    <string name="close_drawer">닫기</string>
     <string name="label_cancel">취소</string>
     <string name="label_ok">확인</string>
     <string name="label_yes">네</string>
@@ -35,13 +33,7 @@
     <string name="label_whr">허리 엉덩이 비율</string>
     <string name="label_bone">골부피</string>
     <string name="label_smartUserAssign">스마트 사용자 할당</string>
-    <plurals name="label_days">
-        <item quantity="other">%d 일</item>
-    </plurals>
-    <string name="label_last_week">지난 주 평균</string>
-    <string name="label_last_month">지난 달 평균</string>
     <string name="label_weight_difference">무게 차이</string>
-    <string name="label_goal_date_is">목표 날짜:</string>
     <string name="label_days_left">일 남음</string>
     <string name="label_date">날짜</string>
     <string name="label_time">시간</string>
@@ -55,8 +47,6 @@
     <string name="label_goal_weight">목표 무게</string>
     <string name="label_goal_date">목표 날짜</string>
     <string name="label_title_user">사용자</string>
-    <string name="label_title_last_measurement">마지막 측정치</string>
-    <string name="label_title_goal">목표</string>
     <string name="label_import">가져오기</string>
     <string name="label_export">내보내기</string>
     <string name="label_delete_all">모두 삭제</string>
@@ -113,7 +103,6 @@
     <string name="label_reminder_time">시간</string>
     <string name="label_reminder_notify_text">알림 텍스트</string>
     <string name="default_value_reminder_notify_text">무게를 측정할 시간</string>
-    <string name="info_on_date">에</string>
     <string name="Monday">월요일</string>
     <string name="Tuesday">화요일</string>
     <string name="Wednesday">수요일</string>
@@ -126,7 +115,6 @@
     <string name="label_importBackup">백업 가져오기</string>
     <string name="label_backup">백업</string>
     <string name="label_export_dir">내보내기 경로</string>
-    <string name="label_not_found">발견되지 않음</string>
     <string name="label_ignoreOutOfRange">범위를 벗어난 데이터 무시</string>
     <string name="label_initial_weight">초기 무게</string>
     <string name="label_goal_line">목표선</string>

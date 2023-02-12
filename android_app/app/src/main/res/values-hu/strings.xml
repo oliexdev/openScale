@@ -10,8 +10,6 @@
     <string name="title_general">Általános</string>
     <string name="action_settings">Beállítások</string>
     <string name="action_bluetooth_status">Bluetooth státusz</string>
-    <string name="open_drawer">megnyitás</string>
-    <string name="close_drawer">bezárás</string>
     <string name="label_cancel">Mégse</string>
     <string name="label_ok">Ok</string>
     <string name="label_yes">Igen</string>
@@ -33,14 +31,7 @@
     <string name="label_whr">Derék-csipő arány</string>
     <string name="label_bone">Csont tömeg</string>
     <string name="label_smartUserAssign">Okos felhasználó összerendelés</string>
-    <plurals name="label_days">
-        <item quantity="one">%d nap</item>
-        <item quantity="other">%d napok</item>
-    </plurals>
-    <string name="label_last_week">Múlt hét átlaga</string>
-    <string name="label_last_month">Múlt hónap átlaga</string>
     <string name="label_weight_difference">Súly különbség</string>
-    <string name="label_goal_date_is">Cél dátum:</string>
     <string name="label_days_left">Fennmaradó napok</string>
     <string name="label_date">Dátum</string>
     <string name="label_time">Idő</string>
@@ -54,8 +45,6 @@
     <string name="label_goal_weight">Cél súly</string>
     <string name="label_goal_date">Cél dátum</string>
     <string name="label_title_user">felhasználó</string>
-    <string name="label_title_last_measurement">utolsó mérés</string>
-    <string name="label_title_goal">Cél</string>
     <string name="label_import">Importálás</string>
     <string name="label_export">Exportálás</string>
     <string name="label_delete_all">Töröld mind</string>
@@ -120,9 +109,7 @@
     <string name="label_importBackup">Biztonsági mentés importálása</string>
     <string name="label_backup">Biztonsági mentés</string>
     <string name="label_export_dir">Export könyvtár</string>
-    <string name="label_not_found">nincs meg</string>
     <string name="label_mergeWithLastMeasurement">Hozzáfűzés utolsó méréshez</string>
-    <string name="info_on_date">be</string>
     <string name="label_ignoreOutOfRange">Tartományon kívüli adat elhagyása</string>
     <string name="label_initial_weight">Kezdő súly</string>
     <string name="label_goal_line">Cél vonal</string>
@@ -226,7 +213,6 @@
     <string name="info_step_on_scale_for_reference">Kérem mindig csupasz lábbal álljon a mérlegre az ismételhetőség végett</string>
     <string name="permission_location_service_info">Adja meg a tartózkodási hely hozzáférést az Android beállításokban a Bluetooth eszközök kereséséhez. Később visszavonhatja.</string>
     <string name="label_enable_legend">Jelmagyarázat</string>
-    <string name="label_enable_yaxis">Y tengely</string>
     <string name="label_day_view">Napi nézet</string>
     <string name="label_year_view">Éves nézet</string>
     <string name="label_measurement_bar">Mérési sáv</string>
@@ -240,7 +226,6 @@
 \nAz összes testszámítás átlátható, és nem történik rejtett adatátviteli funkció vagy felhasználói azonosítás.
 \n
 \nA teljes forráskód megtalálható a <a href="https://github.com/oliexdev/openScale">GitHub</a> oldalon. Győződjön meg róla az openScale áttekintésével.</string>
-    <string name="label_amputation">Amputáció</string>
     <string name="info_scale_low_battery">Alacsony töltöttségi szint (%d%%), kérjük, töltse fel vagy cserélje ki a mérleg elemeit</string>
     <string name="label_amputation_right">Amputáció jobb</string>
     <string name="info_select_scale_user">Felhasználó kiválasztása</string>

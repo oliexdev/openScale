@@ -27,15 +27,7 @@
     <string name="label_whr">Pomer pásu a bokov</string>
     <string name="label_bone">Hmotnosť kostí</string>
     <string name="label_smartUserAssign">Chytré priradenie používateľa</string>
-    <plurals name="label_days">
-        <item quantity="one">%d deň</item>
-        <item quantity="few">%d dni</item>
-        <item quantity="other">%d dní</item>
-    </plurals>
-    <string name="label_last_week">Týždenný priemer</string>
-    <string name="label_last_month">Mesačný priemer</string>
     <string name="label_weight_difference">Rozdiel hmotnosti</string>
-    <string name="label_goal_date_is">Cieľový dátum:</string>
     <string name="label_days_left">Zostávajúce dni</string>
     <string name="label_date">Dátum</string>
     <string name="label_time">Čas</string>
@@ -49,8 +41,6 @@
     <string name="label_goal_weight">Cieľová hmotnosť</string>
     <string name="label_goal_date">Cieľový dátum</string>
     <string name="label_title_user">používateľ</string>
-    <string name="label_title_last_measurement">posledné meranie</string>
-    <string name="label_title_goal">Cieľ</string>
     <string name="label_import">Import</string>
     <string name="label_export">Export</string>
     <string name="label_delete_all">Vymazať všetko</string>
@@ -97,7 +87,6 @@
     <string name="label_reminder_time">Čas</string>
     <string name="label_reminder_notify_text">Text upozornenia</string>
     <string name="default_value_reminder_notify_text">Čas na váženie</string>
-    <string name="info_on_date">v deň</string>
     <string name="Monday">Pondelok</string>
     <string name="Tuesday">Utorok</string>
     <string name="Wednesday">Streda</string>
@@ -110,7 +99,6 @@
     <string name="label_importBackup">Import zálohy</string>
     <string name="label_backup">Zálohovanie</string>
     <string name="label_export_dir">Adresár zálohy</string>
-    <string name="label_not_found">nenájdený</string>
     <string name="label_ignoreOutOfRange">Ignorovať údaje mimo rozsah</string>
     <string name="label_initial_weight">Počiatočná hmotnosť</string>
     <string name="label_goal_line">Cieľová línia</string>
@@ -119,8 +107,6 @@
     <string name="info_measuring">Nameraná hmotnosť: %.2f</string>
     <string name="title_about">O aplikácii</string>
     <string name="title_general">Všeobecné</string>
-    <string name="open_drawer">otvoriť</string>
-    <string name="close_drawer">zavrieť</string>
     <string name="label_share">Zdieľať</string>
     <string name="label_share_subject">Export údajov do CSV súboru (%s)</string>
     <string name="info_bluetooth_no_device_set">Zvoľte zariadenie bluetooth</string>
@@ -202,7 +188,6 @@
     <string name="info_bluetooth_no_device_retrying">Nepodarilo sa pripojiť, znovu…</string>
     <string name="info_bluetooth_connection_disconnected">Bluetooth spojenie ukončené</string>
     <string name="label_enable_legend">Legenda grafu</string>
-    <string name="label_enable_yaxis">Os Y</string>
     <string name="label_day_view">Denný prehľad</string>
     <string name="label_year_view">Ročný prehľad</string>
     <string name="action_donation">Príspevok</string>
@@ -238,5 +223,4 @@
     <string name="activity_level_heavy">Vysoký</string>
     <string name="permission_read_write_data_label">Čítanie/Zápis dát openScale</string>
     <string name="permission_location_service_info">Pre vyhľadanie Bluetooth zariadení prosím udeľte oprávnenie prístupu k polohe v nastaveniach Androidu. Potom ho môžete zase odobrať.</string>
-    <string name="label_amputation">Amputácia</string>
 </resources>

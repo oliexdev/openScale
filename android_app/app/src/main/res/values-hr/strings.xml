@@ -10,8 +10,6 @@
     <string name="title_general">Opće</string>
     <string name="action_settings">Postavke</string>
     <string name="action_bluetooth_status">Bluetooth stanje</string>
-    <string name="open_drawer">otvori</string>
-    <string name="close_drawer">zatvori</string>
     <string name="label_cancel">Odustani</string>
     <string name="label_ok">U redu</string>
     <string name="label_yes">Da</string>
@@ -35,15 +33,7 @@
     <string name="label_whr">Omjer struka i kukova</string>
     <string name="label_bone">Masa kostiju</string>
     <string name="label_smartUserAssign">Pametna dodjela korisnika</string>
-    <plurals name="label_days">
-        <item quantity="one">%d dan</item>
-        <item quantity="few">%d dana</item>
-        <item quantity="other">%d dana</item>
-    </plurals>
-    <string name="label_last_week">Prosjek prošlog tjedna</string>
-    <string name="label_last_month">Prosjek prošlog mjeseca</string>
     <string name="label_weight_difference">Razlika težine</string>
-    <string name="label_goal_date_is">Ciljani datum:</string>
     <string name="label_days_left">Preostalo dana</string>
     <string name="label_date">Datum</string>
     <string name="label_time">Vrijeme</string>
@@ -57,8 +47,6 @@
     <string name="label_goal_weight">Ciljana težina</string>
     <string name="label_goal_date">Ciljani datum</string>
     <string name="label_title_user">korisnik</string>
-    <string name="label_title_last_measurement">zadnje mjerenje</string>
-    <string name="label_title_goal">Cilj</string>
     <string name="label_import">Uvoz</string>
     <string name="label_export">Izvoz</string>
     <string name="label_delete_all">Izbriši sve</string>
@@ -115,7 +103,6 @@
     <string name="label_reminder_time">Vrijeme</string>
     <string name="label_reminder_notify_text">Tekst obavijesti</string>
     <string name="default_value_reminder_notify_text">Vrijeme za vaganje u</string>
-    <string name="info_on_date">na dan</string>
     <string name="Monday">Ponedjeljak</string>
     <string name="Tuesday">Utorak</string>
     <string name="Wednesday">Srijeda</string>
@@ -128,7 +115,6 @@
     <string name="label_importBackup">Uvoz sigurnosne kopije</string>
     <string name="label_backup">Sigurnosna kopija</string>
     <string name="label_export_dir">Mapa za izvoz</string>
-    <string name="label_not_found">nije pronađeno</string>
     <string name="label_ignoreOutOfRange">Zanemari podatke izvan granica</string>
     <string name="label_initial_weight">Početna težina</string>
     <string name="label_goal_line">Smjer cilja</string>
@@ -265,7 +251,6 @@
 \n
 \nDrži gumb na dnu vage pritisnutim za prebacivanje na modus uparivanja, a zatim se ponovo poveži za dobivanje lozinke uređaja.</string>
     <string name="info_step_on_scale">Stani bez cipela na vagu</string>
-    <string name="label_enable_yaxis">os y</string>
     <string name="label_enable_legend">Legenda dijagrama</string>
     <string name="info_bluetooth_connection_disconnected">Bluetooth veza je zatvorena</string>
     <string name="info_bluetooth_connection_error_scale_offline">Neuspjelo povezivanje s vagom, provjeri je li uključena.</string>
@@ -288,7 +273,6 @@
     <string name="info_assisted_weighing_no_reference_measurements">Referentni korisnik nema mjerenja</string>
     <string name="label_amputation_right">Amputacija desno</string>
     <string name="label_amputation_left">Amputacija lijevo</string>
-    <string name="label_amputation">Amputacija</string>
     <string name="label_assisted_weighing">Potpomognuto vaganje</string>
     <string name="label_trend_line">Smjer trenda</string>
     <string name="label_trend">Trend</string>
@@ -296,7 +280,5 @@
     <string name="info_create_new_user_on_scale">Kreiraj novog korisnika vage.</string>
     <string name="info_select_scale_user">Odaberi korisnika vage</string>
     <string name="info_enter_consent_code_for_scale_user">Upiši PIN/kod za korisnika vage %s</string>
-    <string name="label_total_weight_lost">Ukupno izgubljena težina</string>
-    <string name="label_total_weight_lost_weight_reference">Referentna težina:</string>
     <string name="label_is_sticky">Prikvačeno</string>
 </resources>

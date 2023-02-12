@@ -10,8 +10,6 @@
     <string name="title_general">Загальне</string>
     <string name="action_settings">Налаштування</string>
     <string name="action_bluetooth_status">Стан Bluetooth</string>
-    <string name="open_drawer">відкрити</string>
-    <string name="close_drawer">закрити</string>
     <string name="label_cancel">Скасувати</string>
     <string name="label_ok">Гаразд</string>
     <string name="label_yes">Так</string>
@@ -36,15 +34,7 @@
     <string name="label_whr">Відношення обхвату талії до стегна</string>
     <string name="label_bone">Кісткова маса</string>
     <string name="label_smartUserAssign">Розумне визначення користувача</string>
-    <plurals name="label_days">
-        <item quantity="one">%d день</item>
-        <item quantity="few">%d дні</item>
-        <item quantity="many">%d днів</item>
-    </plurals>
-    <string name="label_last_week">Середнє за минулий тиждень</string>
-    <string name="label_last_month">Середнє за минулий місяць</string>
     <string name="label_weight_difference">Різниця ваги</string>
-    <string name="label_goal_date_is">Дата мети:</string>
     <string name="label_days_left">Лишилося днів</string>
     <string name="label_date">Дата</string>
     <string name="label_time">Час</string>
@@ -58,8 +48,6 @@
     <string name="label_goal_weight">Мета ваги</string>
     <string name="label_goal_date">Дата мети</string>
     <string name="label_title_user">користувач</string>
-    <string name="label_title_last_measurement">останній вимір</string>
-    <string name="label_title_goal">Мета</string>
     <string name="label_import">Імпорт</string>
     <string name="label_export">Експорт</string>
     <string name="label_delete_all">Видалити все</string>
@@ -105,7 +93,6 @@
     <string name="label_bluetooth_searching">Пошук ваших Bluetooth вагів</string>
     <string name="label_bluetooth_searching_finished">Пошук завершено</string>
     <string name="label_enable_legend">Легенда графіку</string>
-    <string name="label_enable_yaxis">Вісь Y</string>
     <string name="label_enable_labels">Мітка даних</string>
     <string name="label_enable_points">Точка виміру</string>
     <string name="label_delete_confirmation">Видалити підтвердження</string>
@@ -132,7 +119,6 @@
     <string name="label_importBackup">Імпорт резервної копії</string>
     <string name="label_backup">Резервна копія</string>
     <string name="label_export_dir">Тека експорту</string>
-    <string name="label_not_found">не знайдено</string>
     <string name="label_ignoreOutOfRange">Ігнорувати дані за межами діапазону</string>
     <string name="label_initial_weight">Початкова вага</string>
     <string name="label_goal_line">Лінія мети</string>
@@ -231,7 +217,6 @@
     <string name="activity_level_extreme">Екстремальний</string>
     <string name="label_upgrade_to_openScale_pro">Оновіться до openScale pro версії для підтримки Bluetooth</string>
     <string name="action_donation">Підтримати</string>
-    <string name="info_on_date">на</string>
     <string name="label_measurement_bar">Шкала вимірювань</string>
     <string name="label_is_on_right_axis">На вісі праворуч</string>
     <string name="info_scale_low_battery">Низький заряд батарей вагів (%d%%), зарядіть або замініть їх</string>
@@ -289,7 +274,6 @@
     <string name="amputation_level_none">Без ампутацій</string>
     <string name="label_amputation_left">Ампутації ліворуч</string>
     <string name="label_amputation_right">Ампутації праворуч</string>
-    <string name="label_amputation">Ампутації</string>
     <string name="label_trend">Тренд</string>
     <string name="label_prediction">Прогноз</string>
     <string name="label_trend_line">Лінія тренду</string>
@@ -297,6 +281,4 @@
     <string name="info_enter_consent_code_for_scale_user">Введіть код користувача ваг %s</string>
     <string name="info_create_new_user_on_scale">Створити нового користувача ваг.</string>
     <string name="label_is_sticky">Приліплюваний</string>
-    <string name="label_total_weight_lost">Загальне зниження ваги</string>
-    <string name="label_total_weight_lost_weight_reference">Еталонна вага:</string>
 </resources>

@@ -40,8 +40,6 @@
     <string name="label_goal_weight">Målvægt</string>
     <string name="label_goal_date">Måldato</string>
     <string name="label_title_user">Bruger</string>
-    <string name="label_title_last_measurement">Seneste vejning</string>
-    <string name="label_title_goal">Mål</string>
     <string name="label_date">Dato</string>
     <string name="label_time">Tid</string>
     <string name="label_birthday">Fødselsdag</string>
@@ -49,14 +47,7 @@
     <string name="label_height">Højde</string>
     <string name="label_scale_unit">Vægtenhed</string>
     <string name="label_days_left">Dage tilbage</string>
-    <string name="label_goal_date_is">Måldatoen:</string>
     <string name="label_weight_difference">Vægtforskel</string>
-    <plurals name="label_days">
-        <item quantity="one">%d dag</item>
-        <item quantity="other">%d dage</item>
-    </plurals>
-    <string name="label_last_week">Gennemsnit den seneste uge</string>
-    <string name="label_last_month">Gennemsnit den seneste måned</string>
     <string name="label_muscle">Muskler</string>
     <string name="label_lbm">Fedtfri kropsvægt</string>
     <string name="label_waist">Taljemål</string>
@@ -111,20 +102,16 @@
     <string name="label_automatic">auto</string>
     <string name="label_reminder">Påmindelse</string>
     <string name="label_reminder_notify_text">Meddelelsestekst</string>
-    <string name="info_on_date">på</string>
     <string name="label_bt_device_no_support">enheden er ikke understøttet</string>
     <string name="label_exportBackup">Exportér sikkerhedskopi</string>
     <string name="label_importBackup">Importér sikkerhedskopi</string>
     <string name="label_export_dir">Eksportmappe</string>
-    <string name="label_not_found">blev ikke fundet</string>
     <string name="label_ignoreOutOfRange">Ignorér data udenfor interval</string>
     <string name="label_initial_weight">Startvægt</string>
     <string name="label_goal_line">Mållinje</string>
     <string name="error_max_scale_users">Det maksimale antal brugere er nået</string>
     <string name="info_step_on_scale_for_reference">Træd op på vægten med bare fødder for at foretagen en referencemåling</string>
     <string name="info_measuring">Måler vægt: %.2f</string>
-    <string name="open_drawer">Åben</string>
-    <string name="close_drawer">Luk</string>
     <string name="info_bluetooth_no_device_set">Ingen Bluetooth enhed er valgt</string>
     <string name="info_new_data_duplicated">En måling med samme dato og tidspunkt findes allerede</string>
     <string name="title_general">Generelt</string>
