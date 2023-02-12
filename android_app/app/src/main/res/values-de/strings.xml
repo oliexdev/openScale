@@ -280,4 +280,19 @@
     <string name="info_select_scale_user">Benutzer auswählen</string>
     <string name="info_enter_consent_code_for_scale_user">PIN/Zustimmungscode eingeben für Benutzer %s</string>
     <string name="info_create_new_user_on_scale">Neuen Benutzer auf der Waage erstellen.</string>
+    <string name="label_time_period">Zeitraum</string>
+    <string name="label_time_period_all_days">alle Tage</string>
+    <string name="label_time_period_last_7_days">letzten 7 Tage</string>
+    <string name="label_time_period_last_30_days">letzten 30 Tage</string>
+    <string name="label_time_period_set_reference_day">setze Referenztag</string>
+    <string name="label_time_period_set_custom_range">setze benutzerdefinierten Zeitraum</string>
+    <string name="label_with">mit</string>
+    <string name="label_abbr_min">min</string>
+    <string name="label_abbr_max">max</string>
+    <string name="label_abbr_avg">avg</string>
+    <string name="label_goal_enabled">Ziel eingeschaltet</string>
+    <string name="label_measurements">Messwerte</string>
+    <string name="info_select_auto_backup_export_dir">Wähle Auto-Backup Export Verzeichnis</string>
+    <string name="label_is_sticky">Ist anheftend</string>
+    <string name="label_auto_backup_lacation">Kein Auto-Backup Verzeichnis ausgewählt</string>
 </resources>
