@@ -159,6 +159,12 @@ class OverviewAdapter extends RecyclerView.Adapter<OverviewAdapter.ViewHolder> {
                 }
             }
         }
+
+        if (holder.measurementViews.getChildCount() == 0) {
+            holder.expandMeasurementView.setVisibility(View.GONE);
+        } else {
+            holder.expandMeasurementView.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override

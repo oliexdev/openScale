@@ -271,7 +271,26 @@
             </TableRow>
 
             <TableRow
+                android:id="@+id/rowGoalEnabled"
+                android:layout_weight="1"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/lblGoalEnabled"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_goal_enabled" />
+
+                <CheckBox
+                    android:id="@+id/chkGoalEnabled"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ems="10" />
+            </TableRow>
+
+            <TableRow
                 android:id="@+id/rowGoalWeight"
+                android:visibility="gone"
                 android:layout_weight="1"
                 android:gravity="center_vertical">
 
@@ -292,6 +311,7 @@
             <TableRow
                 android:id="@+id/rowGoalDate"
                 android:layout_weight="1"
+                android:visibility="gone"
                 android:gravity="center_vertical">
 
                 <TextView

@@ -29,10 +29,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
+import android.widget.TableRow;
 import android.widget.Toast;
 
 import androidx.core.graphics.drawable.DrawableCompat;
@@ -61,6 +63,7 @@ public class UserSettingsFragment extends Fragment {
     private EditText txtBodyHeight;
     private EditText txtBirthday;
     private EditText txtInitialWeight;
+    private CheckBox chkGoalEnabled;
     private EditText txtGoalWeight;
     private EditText txtGoalDate;
     private RadioGroup radioScaleUnit;
@@ -70,6 +73,8 @@ public class UserSettingsFragment extends Fragment {
     private Spinner spinnerActivityLevel;
     private Spinner spinnerLeftAmputationLevel;
     private Spinner spinnerRightAmputationLevel;
+    private TableRow rowGoalWeight;
+    private TableRow rowGoalDate;
 
     private final DateFormat dateFormat = DateFormat.getDateInstance();
 
@@ -98,10 +103,13 @@ public class UserSettingsFragment extends Fragment {
         spinnerLeftAmputationLevel = root.findViewById(R.id.spinnerLeftAmputationLevel);
         spinnerRightAmputationLevel = root.findViewById(R.id.spinnerRightAmputationLevel);
         txtInitialWeight = root.findViewById(R.id.txtInitialWeight);
+        chkGoalEnabled = root.findViewById(R.id.chkGoalEnabled);
         txtGoalWeight = root.findViewById(R.id.txtGoalWeight);
+        txtGoalDate = root.findViewById(R.id.txtGoalDate);
+        rowGoalWeight = root.findViewById(R.id.rowGoalWeight);
+        rowGoalDate = root.findViewById(R.id.rowGoalDate);
 
         txtBirthday = root.findViewById(R.id.txtBirthday);
-        txtGoalDate = root.findViewById(R.id.txtGoalDate);
 
         txtBodyHeight.setHint(getResources().getString(R.string.info_enter_value_in) + " " + Converters.MeasureUnit.CM.toString());
         txtInitialWeight.setHint(getResources().getString(R.string.info_enter_value_in) + " " + Converters.WeightUnit.KG.toString());
@@ -130,6 +138,19 @@ public class UserSettingsFragment extends Fragment {
                      cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
                  datePicker.show();
              }
+        });
+
+        chkGoalEnabled.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if (b) {
+                    rowGoalDate.setVisibility(View.VISIBLE);
+                    rowGoalWeight.setVisibility(View.VISIBLE);
+                } else {
+                    rowGoalDate.setVisibility(View.GONE);
+                    rowGoalWeight.setVisibility(View.GONE);
+                }
+            }
         });
 
         txtGoalDate.setOnClickListener(new View.OnClickListener() {
@@ -301,7 +322,16 @@ public class UserSettingsFragment extends Fragment {
                 break;
         }
 
+        chkGoalEnabled.setChecked(scaleUser.isGoalEnabled());
         assistedWeighing.setChecked(scaleUser.isAssistedWeighing());
+
+        if (chkGoalEnabled.isChecked()) {
+            rowGoalDate.setVisibility(View.VISIBLE);
+            rowGoalWeight.setVisibility(View.VISIBLE);
+        } else {
+            rowGoalDate.setVisibility(View.GONE);
+            rowGoalWeight.setVisibility(View.GONE);
+        }
 
         spinnerActivityLevel.setSelection(scaleUser.getActivityLevel().toInt());
         spinnerLeftAmputationLevel.setSelection(scaleUser.getLeftAmputationLevel().toInt());
@@ -327,9 +357,11 @@ public class UserSettingsFragment extends Fragment {
             validate = false;
         }
 
-        if (txtGoalWeight.getText().toString().length() == 0) {
-            txtGoalWeight.setError(getResources().getString(R.string.error_goal_weight_required));
-            validate = false;
+        if (chkGoalEnabled.isChecked()) {
+            if (txtGoalWeight.getText().toString().length() == 0) {
+                txtGoalWeight.setError(getResources().getString(R.string.error_goal_weight_required));
+                validate = false;
+            }
         }
 
         return validate;
@@ -405,7 +437,6 @@ public class UserSettingsFragment extends Fragment {
                 String name = txtUserName.getText().toString();
                 float body_height = Float.valueOf(txtBodyHeight.getText().toString());
                 float initial_weight = Float.valueOf(txtInitialWeight.getText().toString());
-                float goal_weight = Float.valueOf(txtGoalWeight.getText().toString());
 
                 Converters.MeasureUnit measure_unit = Converters.MeasureUnit.CM;
 
@@ -456,8 +487,12 @@ public class UserSettingsFragment extends Fragment {
                 scaleUser.setGender(gender);
                 scaleUser.setAssistedWeighing(assistedWeighing.isChecked());
                 scaleUser.setInitialWeight(Converters.toKilogram(initial_weight, scale_unit));
-                scaleUser.setGoalWeight(Converters.toKilogram(goal_weight, scale_unit));
-                scaleUser.setGoalDate(goal_date);
+                scaleUser.setGoalEnabled(chkGoalEnabled.isChecked());
+                if (chkGoalEnabled.isChecked()) {
+                    float goal_weight = Float.valueOf(txtGoalWeight.getText().toString());
+                    scaleUser.setGoalWeight(Converters.toKilogram(goal_weight, scale_unit));
+                    scaleUser.setGoalDate(goal_date);
+                }
 
                 switch (mode) {
                     case ADD:
