@@ -46,6 +46,8 @@ public class ScaleUser {
     @ColumnInfo(name = "gender")
     @NonNull
     private Converters.Gender gender;
+    @ColumnInfo(name = "goalEnabled")
+    private boolean goalEnabled;
     @ColumnInfo(name = "initialWeight")
     private float initialWeight;
     @ColumnInfo(name = "goalWeight")
@@ -74,6 +76,7 @@ public class ScaleUser {
         scaleUnit = Converters.WeightUnit.KG;
         gender = Converters.Gender.MALE;
         initialWeight = -1;
+        goalEnabled = false;
         goalWeight = -1;
         goalDate = new Date();
         measureUnit = Converters.MeasureUnit.CM;
@@ -129,6 +132,14 @@ public class ScaleUser {
 
     public void setGender(Converters.Gender gender) {
         this.gender = gender;
+    }
+
+    public boolean isGoalEnabled() {
+        return goalEnabled;
+    }
+
+    public void setGoalEnabled(boolean goalEnabled) {
+        this.goalEnabled = goalEnabled;
     }
 
     public float getGoalWeight() {
@@ -278,10 +289,10 @@ public class ScaleUser {
     {
         return String.format(
                 "id(%d) name(%s) birthday(%s) age(%d) body height(%.2f) scale unit(%s) " +
-                "gender(%s) initial weight(%.2f) goal weight(%.2f) goal date(%s) " +
+                "gender(%s) initial weight(%.2f) goal enabled(%b) goal weight(%.2f) goal date(%s) " +
                 "measure unt(%s) activity level(%d) assisted weighing(%b)",
                 id, userName, birthday.toString(), getAge(), bodyHeight, scaleUnit.toString(),
-                gender.toString().toLowerCase(), initialWeight, goalWeight, goalDate.toString(),
+                gender.toString().toLowerCase(), initialWeight, goalEnabled, goalWeight, goalDate.toString(),
                 measureUnit.toString(), activityLevel.toInt(), assistedWeighing);
     }
 }

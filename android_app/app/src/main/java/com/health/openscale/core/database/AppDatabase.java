@@ -26,7 +26,7 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
 
-@Database(entities = {ScaleMeasurement.class, ScaleUser.class}, version = 5)
+@Database(entities = {ScaleMeasurement.class, ScaleUser.class}, version = 6)
 @TypeConverters({Converters.class})
 public abstract class AppDatabase extends RoomDatabase {
     public abstract ScaleMeasurementDAO measurementDAO();
@@ -186,6 +186,22 @@ public abstract class AppDatabase extends RoomDatabase {
                 database.execSQL("ALTER TABLE scaleUsers ADD assistedWeighing INTEGER NOT NULL default 0");
                 database.execSQL("ALTER TABLE scaleUsers ADD leftAmputationLevel INTEGER NOT NULL default 0");
                 database.execSQL("ALTER TABLE scaleUsers ADD rightAmputationLevel INTEGER NOT NULL default 0");
+
+                database.setTransactionSuccessful();
+            }
+            finally {
+                database.endTransaction();
+            }
+        }
+    };
+
+    public static final Migration MIGRATION_5_6 = new Migration(5, 6) {
+        @Override
+        public void migrate(SupportSQLiteDatabase database) {
+            database.beginTransaction();
+            try {
+                // Add goal enabled to scale user table
+                database.execSQL("ALTER TABLE scaleUsers ADD goalEnabled INTEGER NOT NULL default 0");
 
                 database.setTransactionSuccessful();
             }

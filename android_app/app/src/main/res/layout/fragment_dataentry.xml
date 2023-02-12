@@ -14,12 +14,10 @@
 
         <Button
             android:id="@+id/btnLeft"
-            style="?android:attr/buttonStyleSmall"
+            style="@style/Widget.MaterialComponents.Button"
             android:layout_width="wrap_content"
-            android:layout_height="20dp"
-            android:background="@drawable/flat_selector"
-            android:text="&lt;"
-            android:textColor="@android:color/white" />
+            android:layout_height="wrap_content"
+            android:text="&lt;"/>
 
         <TextView
             android:id="@+id/txtDataNr"
@@ -36,13 +34,11 @@
 
         <Button
             android:id="@+id/btnRight"
-            style="?android:attr/buttonStyleSmall"
+            style="@style/Widget.MaterialComponents.Button"
             android:layout_width="wrap_content"
-            android:layout_height="20dp"
+            android:layout_height="wrap_content"
             android:layout_weight="0"
-            android:background="@drawable/flat_selector"
-            android:text=">"
-            android:textColor="@android:color/white" />
+            android:text=">"/>
 
     </LinearLayout>
 

@@ -30,6 +30,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -73,6 +74,7 @@ public class OverviewFragment extends Fragment {
 
     private PopupMenu rangePopupMenu;
 
+    private LinearLayout rowGoal;
     private TextView differenceWeightView;
     private TextView initialWeightView;
     private TextView goalWeightView;
@@ -92,6 +94,7 @@ public class OverviewFragment extends Fragment {
 
         prefs = PreferenceManager.getDefaultSharedPreferences(overviewView.getContext());
 
+        rowGoal = overviewView.findViewById(R.id.rowGoal);
         differenceWeightView = overviewView.findViewById(R.id.differenceWeightView);
         initialWeightView = overviewView.findViewById(R.id.initialWeightView);
         goalWeightView = overviewView.findViewById(R.id.goalWeightView);
@@ -270,73 +273,78 @@ public class OverviewFragment extends Fragment {
         int visibility = spinUserAdapter.getCount() < 2 ? View.GONE : View.VISIBLE;
         spinUser.setVisibility(visibility);
 
+        if (currentScaleUser.isGoalEnabled()) {
+            rowGoal.setVisibility(View.VISIBLE);
 
-        WeightMeasurementView weightMeasurementView = new WeightMeasurementView(getContext());
-        ScaleMeasurement initialWeightMeasurement = OpenScale.getInstance().getLastScaleMeasurement();
+            WeightMeasurementView weightMeasurementView = new WeightMeasurementView(getContext());
+            ScaleMeasurement initialWeightMeasurement = OpenScale.getInstance().getLastScaleMeasurement();
 
-        if (initialWeightMeasurement == null) {
-            initialWeightMeasurement = new ScaleMeasurement();
-        }
+            if (initialWeightMeasurement == null) {
+                initialWeightMeasurement = new ScaleMeasurement();
+            }
 
-        initialWeightMeasurement.setWeight(initialWeightMeasurement.getWeight());
-        weightMeasurementView.loadFrom(initialWeightMeasurement, null);
+            initialWeightMeasurement.setWeight(initialWeightMeasurement.getWeight());
+            weightMeasurementView.loadFrom(initialWeightMeasurement, null);
 
-        SpannableStringBuilder initialWeightValue = new SpannableStringBuilder();
-        initialWeightValue.append(getResources().getString(R.string.label_weight));
-        initialWeightValue.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), 0, initialWeightValue.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        initialWeightValue.append("\n");
-        initialWeightValue.append(weightMeasurementView.getValueAsString(true));
-        initialWeightValue.append(("\n"));
-        int start = initialWeightValue.length();
-        initialWeightValue.append(DateFormat.getDateInstance(DateFormat.MEDIUM).format(initialWeightMeasurement.getDateTime()));
-        initialWeightValue.setSpan(new RelativeSizeSpan(0.8f), start, initialWeightValue.length(),
-                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            SpannableStringBuilder initialWeightValue = new SpannableStringBuilder();
+            initialWeightValue.append(getResources().getString(R.string.label_weight));
+            initialWeightValue.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), 0, initialWeightValue.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            initialWeightValue.append("\n");
+            initialWeightValue.append(weightMeasurementView.getValueAsString(true));
+            initialWeightValue.append(("\n"));
+            int start = initialWeightValue.length();
+            initialWeightValue.append(DateFormat.getDateInstance(DateFormat.MEDIUM).format(initialWeightMeasurement.getDateTime()));
+            initialWeightValue.setSpan(new RelativeSizeSpan(0.8f), start, initialWeightValue.length(),
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-        initialWeightView.setText(initialWeightValue);
+            initialWeightView.setText(initialWeightValue);
 
-        ScaleMeasurement goalWeightMeasurement = new ScaleMeasurement();
-        goalWeightMeasurement.setWeight(currentScaleUser.getGoalWeight());
-        weightMeasurementView.loadFrom(goalWeightMeasurement, null);
+            ScaleMeasurement goalWeightMeasurement = new ScaleMeasurement();
+            goalWeightMeasurement.setWeight(currentScaleUser.getGoalWeight());
+            weightMeasurementView.loadFrom(goalWeightMeasurement, null);
 
-        SpannableStringBuilder goalWeightValue = new SpannableStringBuilder();
-        goalWeightValue.append(getResources().getString(R.string.label_goal_weight));
-        goalWeightValue.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), 0, goalWeightValue.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        goalWeightValue.append("\n");
-        goalWeightValue.append(weightMeasurementView.getValueAsString(true));
-        goalWeightValue.append(("\n"));
-        start = goalWeightValue.length();
-        goalWeightValue.append(DateFormat.getDateInstance(DateFormat.MEDIUM).format(currentScaleUser.getGoalDate()));
-        goalWeightValue.setSpan(new RelativeSizeSpan(0.8f), start, goalWeightValue.length(),
-                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            SpannableStringBuilder goalWeightValue = new SpannableStringBuilder();
+            goalWeightValue.append(getResources().getString(R.string.label_goal_weight));
+            goalWeightValue.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), 0, goalWeightValue.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            goalWeightValue.append("\n");
+            goalWeightValue.append(weightMeasurementView.getValueAsString(true));
+            goalWeightValue.append(("\n"));
+            start = goalWeightValue.length();
+            goalWeightValue.append(DateFormat.getDateInstance(DateFormat.MEDIUM).format(currentScaleUser.getGoalDate()));
+            goalWeightValue.setSpan(new RelativeSizeSpan(0.8f), start, goalWeightValue.length(),
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-        goalWeightView.setText(goalWeightValue);
+            goalWeightView.setText(goalWeightValue);
 
-        ScaleMeasurement differenceWeightMeasurement = new ScaleMeasurement();
-        if (initialWeightMeasurement.getWeight() > goalWeightMeasurement.getWeight()) {
-            differenceWeightMeasurement.setWeight(initialWeightMeasurement.getWeight() -goalWeightMeasurement.getWeight());
+            ScaleMeasurement differenceWeightMeasurement = new ScaleMeasurement();
+            if (initialWeightMeasurement.getWeight() > goalWeightMeasurement.getWeight()) {
+                differenceWeightMeasurement.setWeight(initialWeightMeasurement.getWeight() - goalWeightMeasurement.getWeight());
+            } else {
+                differenceWeightMeasurement.setWeight(goalWeightMeasurement.getWeight() - initialWeightMeasurement.getWeight());
+            }
+            weightMeasurementView.loadFrom(differenceWeightMeasurement, null);
+
+            Calendar initialCalendar = Calendar.getInstance();
+            initialCalendar.setTime(initialWeightMeasurement.getDateTime());
+            Calendar goalCalendar = Calendar.getInstance();
+            goalCalendar.setTime(currentScaleUser.getGoalDate());
+            int daysBetween = Math.max(0, DateTimeHelpers.daysBetween(initialCalendar, goalCalendar));
+
+            SpannableStringBuilder differenceWeightValue = new SpannableStringBuilder();
+            differenceWeightValue.append(getResources().getString(R.string.label_weight_difference));
+            differenceWeightValue.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), 0, differenceWeightValue.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            differenceWeightValue.append("\n");
+            differenceWeightValue.append(weightMeasurementView.getValueAsString(true));
+            differenceWeightValue.append(("\n"));
+            start = differenceWeightValue.length();
+            differenceWeightValue.append(daysBetween + " " + getString(R.string.label_days_left));
+            differenceWeightValue.setSpan(new RelativeSizeSpan(0.8f), start, differenceWeightValue.length(),
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+            differenceWeightView.setText(differenceWeightValue);
         } else {
-            differenceWeightMeasurement.setWeight(goalWeightMeasurement.getWeight() - initialWeightMeasurement.getWeight());
+            rowGoal.setVisibility(View.GONE);
         }
-        weightMeasurementView.loadFrom(differenceWeightMeasurement, null);
-
-        Calendar initialCalendar = Calendar.getInstance();
-        initialCalendar.setTime(initialWeightMeasurement.getDateTime());
-        Calendar goalCalendar = Calendar.getInstance();
-        goalCalendar.setTime(currentScaleUser.getGoalDate());
-        int daysBetween = Math.max(0, DateTimeHelpers.daysBetween(initialCalendar, goalCalendar));
-
-        SpannableStringBuilder differenceWeightValue = new SpannableStringBuilder();
-        differenceWeightValue.append(getResources().getString(R.string.label_weight_difference));
-        differenceWeightValue.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), 0, differenceWeightValue.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        differenceWeightValue.append("\n");
-        differenceWeightValue.append(weightMeasurementView.getValueAsString(true));
-        differenceWeightValue.append(("\n"));
-        start = differenceWeightValue.length();
-        differenceWeightValue.append(daysBetween + " " + getString(R.string.label_days_left));
-        differenceWeightValue.setSpan(new RelativeSizeSpan(0.8f), start, differenceWeightValue.length(),
-                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-        differenceWeightView.setText(differenceWeightValue);
     }
 
     private class onChartSelectedListener implements OnChartValueSelectedListener {

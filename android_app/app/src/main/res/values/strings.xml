@@ -74,6 +74,7 @@
     <string name="label_amputation_right">Amputation right</string>
     <string name="label_male">Male</string>
     <string name="label_female">Female</string>
+    <string name="label_goal_enabled">Goal enabled</string>
     <string name="label_goal_weight">Goal weight</string>
     <string name="label_goal_date">Goal date</string>
     <string name="label_title_user">user</string>
