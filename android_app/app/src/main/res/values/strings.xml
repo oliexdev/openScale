@@ -160,8 +160,6 @@
     <string name="label_importBackup">Import backup</string>
     <string name="label_backup">Backup</string>
     <string name="label_export_dir">Export directory</string>
-    <string name="label_auto_export_test">Test auto backup</string>
-    <string name="summary_auto_export_test">Executes auto backup with current settings</string>
     <string name="label_not_found">not found</string>
     <string name="label_ignoreOutOfRange">Ignore out of range data</string>
     <string name="label_initial_weight">Initial weight</string>

@@ -15,5 +15,4 @@
         android:title="@string/label_auto_backup_schedule"
         app:useSimpleSummaryProvider="true"
         android:defaultValue="Monthly"/>
-    <Preference android:title="@string/label_auto_export_test" android:dependency="autoBackup" android:key="autoBackupTest" android:summary="@string/summary_auto_export_test" android:persistent="false"/>
 </PreferenceScreen>

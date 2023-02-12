@@ -53,7 +53,6 @@ public class BackupPreferences extends PreferenceFragmentCompat implements Share
     private static final String PREFERENCE_KEY_EXPORT_BACKUP = "exportBackup";
     private static final String PREFERENCE_KEY_AUTO_BACKUP = "autoBackup";
     private static final String PREFERENCE_KEY_AUTO_BACKUP_DIR = "exportDir";
-    private static final String PREFERENCE_KEY_AUTO_BACKUP_TEST = "autoBackupTest";
 
     private static final int IMPORT_DATA_REQUEST = 100;
     private static final int EXPORT_DATA_REQUEST = 101;
@@ -61,7 +60,6 @@ public class BackupPreferences extends PreferenceFragmentCompat implements Share
     private Preference importBackup;
     private Preference exportBackup;
     private Preference autoBackupDir;
-    private Preference autoBackupTest;
 
     private CheckBoxPreference autoBackup;
 
@@ -96,9 +94,6 @@ public class BackupPreferences extends PreferenceFragmentCompat implements Share
         // Setting auto backup preference's summary to location or message that none is selected
         String autoBackupDirString = prefs.getString("exportDir", null);
         autoBackupDir.setSummary(autoBackupDirString != null ? Uri.parse(autoBackupDirString).getLastPathSegment() : getString(R.string.label_auto_backup_lacation));
-
-        autoBackupTest = (Preference) findPreference(PREFERENCE_KEY_AUTO_BACKUP_TEST);
-        autoBackupTest.setOnPreferenceClickListener(new onClickListenerAutoBackupTest());
 
         updateBackupPreferences();
     }
@@ -193,18 +188,6 @@ public class BackupPreferences extends PreferenceFragmentCompat implements Share
             }
         }
     });
-
-    /**
-     * Function for "Test auto backup" setting
-     */
-    private class onClickListenerAutoBackupTest implements Preference.OnPreferenceClickListener {
-        @Override
-        public boolean onPreferenceClick(@NonNull Preference preference) {
-            AlarmBackupHandler alarmBackupHandler = new AlarmBackupHandler();
-            alarmBackupHandler.executeBackup(getContext());
-            return true;
-        }
-    }
 
     private class onClickListenerImportBackup implements Preference.OnPreferenceClickListener {
         @Override
