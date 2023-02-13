@@ -283,4 +283,18 @@
     <string name="label_total_weight_lost">Pes perdut en total</string>
     <string name="label_total_weight_lost_weight_reference">Pes de referència:</string>
     <string name="label_is_sticky">Està fixat</string>
+    <string name="label_time_period_all_days">tots els dies</string>
+    <string name="label_time_period_last_30_days">darrers 30 dies</string>
+    <string name="label_time_period_set_reference_day">defineix un dia de referència</string>
+    <string name="label_time_period_set_custom_range">defineix un rang personalitzat</string>
+    <string name="label_abbr_min">mín.</string>
+    <string name="label_abbr_max">màx.</string>
+    <string name="label_abbr_avg">mit.</string>
+    <string name="label_measurements">mesures</string>
+    <string name="label_auto_backup_lacation">No s\'ha seleccionat cap ubicació de còpia de seguretat automàtica</string>
+    <string name="label_time_period">Període de temps</string>
+    <string name="label_time_period_last_7_days">darrers 7 dies</string>
+    <string name="info_select_auto_backup_export_dir">Seleccioneu el directori d\'exportació de la còpia de seguretat automàtica</string>
+    <string name="label_with">amb</string>
+    <string name="label_goal_enabled">Objectiu activat</string>
 </resources>
