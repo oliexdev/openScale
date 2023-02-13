@@ -280,4 +280,7 @@
     <string name="info_select_scale_user">Seleccioneu l\'usuari de la bàscula</string>
     <string name="info_enter_consent_code_for_scale_user">Introduïu el PIN/codi de consentiment per a l\'usuari de la bàscula %s</string>
     <string name="info_create_new_user_on_scale">Creeu un nou usuari a la bàscula.</string>
+    <string name="label_total_weight_lost">Pes perdut en total</string>
+    <string name="label_total_weight_lost_weight_reference">Pes de referència:</string>
+    <string name="label_is_sticky">Està fixat</string>
 </resources>
