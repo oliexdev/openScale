@@ -105,7 +105,7 @@
     <string name="label_exportBackup">Exportar copia de respaldo</string>
     <string name="label_importBackup">Importar copia de respaldo</string>
     <string name="label_backup">Copia de respaldo</string>
-    <string name="label_export_dir">Directorio de exportación</string>
+    <string name="label_export_dir">Exportar el directorio</string>
     <string name="label_ignoreOutOfRange">Ignorar datos fuera de límites</string>
     <string name="label_initial_weight">Peso inicial</string>
     <string name="label_goal_line">Línea del objetivo</string>
@@ -281,4 +281,18 @@
     <string name="info_create_new_user_on_scale">Crea nuevo usuario en la escala.</string>
     <string name="info_select_scale_user">Selecciona usuario</string>
     <string name="label_is_sticky">Fijado</string>
+    <string name="label_time_period_last_30_days">los últimos 30 días</string>
+    <string name="label_time_period_set_reference_day">fijar el día de referencia</string>
+    <string name="label_with">con</string>
+    <string name="label_abbr_max">máx</string>
+    <string name="label_abbr_avg">promedio</string>
+    <string name="label_measurements">medidas</string>
+    <string name="info_select_auto_backup_export_dir">Seleccione el directorio de la exportación de la copia de seguridad automática</string>
+    <string name="label_time_period_last_7_days">los últimos 7 días</string>
+    <string name="label_time_period">Periodo de tiempo</string>
+    <string name="label_time_period_all_days">todos los días</string>
+    <string name="label_time_period_set_custom_range">establecer un rango personalizado</string>
+    <string name="label_abbr_min">mín</string>
+    <string name="label_goal_enabled">Objetivo habilitado</string>
+    <string name="label_auto_backup_lacation">No se ha seleccionado ninguna ubicación para la copia de seguridad automática</string>
 </resources>
