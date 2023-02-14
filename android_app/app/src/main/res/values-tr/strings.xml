@@ -281,4 +281,18 @@
     <string name="info_enter_consent_code_for_scale_user">Tartı kullanıcısı %s için PIN/onay kodunu girin</string>
     <string name="info_create_new_user_on_scale">Tartıda yeni kullanıcı oluşturun.</string>
     <string name="label_is_sticky">Sabitlendi</string>
+    <string name="label_time_period_all_days">tüm günler</string>
+    <string name="label_time_period_last_7_days">son 7 gün</string>
+    <string name="label_time_period_last_30_days">son 30 gün</string>
+    <string name="label_time_period_set_reference_day">referans günü ayarla</string>
+    <string name="label_abbr_min">en düşük</string>
+    <string name="label_abbr_max">en yüksek</string>
+    <string name="label_abbr_avg">ortalama</string>
+    <string name="label_goal_enabled">Hedef etkinleştirildi</string>
+    <string name="info_select_auto_backup_export_dir">Otomatik yedekleme dışa aktarım dizinini seçin</string>
+    <string name="label_with">ile</string>
+    <string name="label_time_period">Zaman aralığı</string>
+    <string name="label_time_period_set_custom_range">özel aralık ayarla</string>
+    <string name="label_measurements">ölçümler</string>
+    <string name="label_auto_backup_lacation">Otomatik yedekleme konumu seçilmedi</string>
 </resources>
