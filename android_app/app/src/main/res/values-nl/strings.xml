@@ -281,4 +281,18 @@
     <string name="info_select_scale_user">Kies een gebruiker</string>
     <string name="info_enter_consent_code_for_scale_user">Voer de pin- of toegangscode in van %s</string>
     <string name="label_is_sticky">Is vastgezet</string>
+    <string name="label_with">met</string>
+    <string name="label_abbr_max">max.</string>
+    <string name="label_abbr_avg">gem.</string>
+    <string name="info_select_auto_backup_export_dir">Kies een exportmap voor automatische back-ups</string>
+    <string name="label_time_period_set_reference_day">referentiedag instellen</string>
+    <string name="label_abbr_min">min.</string>
+    <string name="label_time_period_all_days">alle dagen</string>
+    <string name="label_time_period">Tijdspanne</string>
+    <string name="label_time_period_last_7_days">afgelopen 7 dagen</string>
+    <string name="label_time_period_set_custom_range">eigen bereik instellen</string>
+    <string name="label_goal_enabled">Doel ingeschakeld</string>
+    <string name="label_time_period_last_30_days">afgelopen 30 dagen</string>
+    <string name="label_measurements">metingen</string>
+    <string name="label_auto_backup_lacation">Geen back-uplocatie gekozen</string>
 </resources>
