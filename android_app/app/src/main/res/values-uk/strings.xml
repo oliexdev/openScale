@@ -118,7 +118,7 @@
     <string name="label_exportBackup">Експорт резервної копії</string>
     <string name="label_importBackup">Імпорт резервної копії</string>
     <string name="label_backup">Резервна копія</string>
-    <string name="label_export_dir">Тека експорту</string>
+    <string name="label_export_dir">Каталог експорту</string>
     <string name="label_ignoreOutOfRange">Ігнорувати дані за межами діапазону</string>
     <string name="label_initial_weight">Початкова вага</string>
     <string name="label_goal_line">Лінія мети</string>
@@ -281,4 +281,18 @@
     <string name="info_enter_consent_code_for_scale_user">Введіть код користувача ваг %s</string>
     <string name="info_create_new_user_on_scale">Створити нового користувача ваг.</string>
     <string name="label_is_sticky">Приліплюваний</string>
+    <string name="label_time_period_last_7_days">останні 7 днів</string>
+    <string name="label_time_period_last_30_days">останні 30 днів</string>
+    <string name="label_with">з</string>
+    <string name="label_abbr_min">мін</string>
+    <string name="label_abbr_max">макс</string>
+    <string name="label_abbr_avg">сер</string>
+    <string name="label_time_period">Період часу</string>
+    <string name="label_time_period_all_days">усі дні</string>
+    <string name="label_time_period_set_reference_day">встановити контрольний день</string>
+    <string name="label_time_period_set_custom_range">встановити користувацький діапазон</string>
+    <string name="label_goal_enabled">Мету ввімкнено</string>
+    <string name="info_select_auto_backup_export_dir">Виберіть каталог експорту для автоматичного резервного копіювання</string>
+    <string name="label_measurements">вимірювання</string>
+    <string name="label_auto_backup_lacation">Не вибрано місце автоматичного резервного копіювання</string>
 </resources>
