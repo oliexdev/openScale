@@ -281,4 +281,18 @@
     <string name="info_enter_consent_code_for_scale_user">נא להקליד קוד אישי/הסכמה למשתמש במשקל %s</string>
     <string name="info_create_new_user_on_scale">יצירת משתמש חדש במשקל.</string>
     <string name="label_is_sticky">דביקה</string>
+    <string name="label_time_period">פרק זמן</string>
+    <string name="label_abbr_min">מזערי</string>
+    <string name="label_abbr_max">מרבי</string>
+    <string name="label_abbr_avg">ממוצע</string>
+    <string name="label_goal_enabled">יעד פעיל</string>
+    <string name="label_measurements">מדדים</string>
+    <string name="label_time_period_all_days">כל הימים</string>
+    <string name="label_time_period_last_7_days">השבוע שחלף</string>
+    <string name="label_time_period_last_30_days">החודש שחלף</string>
+    <string name="label_time_period_set_reference_day">הגדרת יום סימוכין</string>
+    <string name="label_time_period_set_custom_range">הגדרת טווח משלך</string>
+    <string name="label_with">עם</string>
+    <string name="info_select_auto_backup_export_dir">נא לבחור תיקיית ייצוא לגיבוי אוטומטי</string>
+    <string name="label_auto_backup_lacation">לא נבחר מקום לגיבוי אוטומטי</string>
 </resources>
