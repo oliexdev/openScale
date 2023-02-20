@@ -93,7 +93,7 @@
     <string name="label_backup">Datensicherung</string>
     <string name="label_exportBackup">Exportiere Datensicherung</string>
     <string name="label_importBackup">Importiere Datensicherung</string>
-    <string name="label_export_dir">Export Ordner</string>
+    <string name="label_export_dir">Export-Ordner</string>
     <string name="label_ignoreOutOfRange">Ignoriere Daten außerhalb des zulässigen Bereiches</string>
     <string name="label_initial_weight">Anfangsgewicht</string>
     <string name="error_initial_weight_required">Anfangsgewicht ist erforderlich</string>
@@ -135,7 +135,7 @@
     <string name="customactivityoncrash_error_activity_error_details_copied">in Zwischenablage kopiert</string>
     <string name="customactivityoncrash_error_activity_error_details_clipboard_label">Fehlerinformationen</string>
     <string name="title_general">Allgemein</string>
-    <string name="label_theme">Theme</string>
+    <string name="label_theme">Farbschema</string>
     <string name="label_share">Teilen</string>
     <string name="label_bluetooth_searching_finished">Suche beendet</string>
     <string name="label_help">Hilfe</string>
@@ -167,8 +167,8 @@
     <string name="label_scale_not_supported">Wird deine Waage nicht unterstützt?</string>
     <string name="label_click_to_help_add_support">Klicke hier, wenn du helfen möchtest</string>
     <string name="label_auto_backup">Automatisches Backup</string>
-    <string name="label_auto_backup_schedule">Backup Zeitplan</string>
-    <string name="label_overwrite_backup">Überschreibe Backup</string>
+    <string name="label_auto_backup_schedule">Sicherungszeitplan</string>
+    <string name="label_overwrite_backup">Sicherungen überschreiben</string>
     <string name="label_daily">täglich</string>
     <string name="label_weekly">wöchentlich</string>
     <string name="label_monthly">monatlich</string>
@@ -294,5 +294,5 @@
     <string name="label_measurements">Messwerten</string>
     <string name="info_select_auto_backup_export_dir">Wähle Auto-Backup Export Verzeichnis</string>
     <string name="label_is_sticky">Ist anheftend</string>
-    <string name="label_auto_backup_lacation">Kein Auto-Backup Verzeichnis ausgewählt</string>
+    <string name="label_auto_backup_lacation">Kein Auto-Sicherungs-Verzeichnis ausgewählt</string>
 </resources>
