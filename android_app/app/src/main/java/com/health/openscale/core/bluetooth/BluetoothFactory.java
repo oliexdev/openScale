@@ -136,6 +136,9 @@ public class BluetoothFactory {
         if (deviceName.equals("CH100")){
             return new BluetoothHuaweiAH100(context);
         }
+        if (deviceName.equals("Yoda1")){
+            return new BluetoothYoda1Scale(context);
+        }
         return null;
     }
 }
