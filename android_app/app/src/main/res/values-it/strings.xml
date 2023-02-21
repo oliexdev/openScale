@@ -280,4 +280,19 @@
     <string name="info_enter_consent_code_for_scale_user">Inserire il NIP/codice di consenso per l\'utente della bilancia %s</string>
     <string name="info_select_scale_user">Seleziona un utente</string>
     <string name="info_create_new_user_on_scale">Crea un nuovo utente sulla bilancia.</string>
+    <string name="label_time_period">Periodo</string>
+    <string name="label_time_period_all_days">tutti i giorni</string>
+    <string name="label_time_period_last_7_days">ultimi 7 giorni</string>
+    <string name="label_time_period_set_reference_day">imposta il giorno di riferimento</string>
+    <string name="label_time_period_set_custom_range">imposta un intervallo personalizzato</string>
+    <string name="label_with">con</string>
+    <string name="label_abbr_avg">med</string>
+    <string name="label_goal_enabled">Obiettivo abilitato</string>
+    <string name="label_measurements">misure</string>
+    <string name="info_select_auto_backup_export_dir">Seleziona la directory di esportazione del backup automatico</string>
+    <string name="label_is_sticky">È appiccicoso</string>
+    <string name="label_time_period_last_30_days">ultimi 7 giorni</string>
+    <string name="label_abbr_min">min</string>
+    <string name="label_abbr_max">max</string>
+    <string name="label_auto_backup_lacation">Nessuna posizione di backup automatico selezionata</string>
 </resources>

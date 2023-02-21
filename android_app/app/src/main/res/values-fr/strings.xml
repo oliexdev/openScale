@@ -281,4 +281,18 @@
     <string name="info_enter_consent_code_for_scale_user">Entrez le NIP/code de consentement de l’utilisateur de la balance %s</string>
     <string name="info_select_scale_user">Sélectionner un utilisateur</string>
     <string name="label_is_sticky">Est collant</string>
+    <string name="label_time_period">Période</string>
+    <string name="label_time_period_all_days">tous les jours</string>
+    <string name="label_time_period_last_7_days">les 7 derniers jours</string>
+    <string name="label_time_period_last_30_days">les 30 derniers jours</string>
+    <string name="label_time_period_set_reference_day">définir le jour de référence</string>
+    <string name="label_time_period_set_custom_range">définir une plage personnalisée</string>
+    <string name="label_with">avec</string>
+    <string name="label_abbr_min">min</string>
+    <string name="label_abbr_max">max</string>
+    <string name="label_abbr_avg">moy</string>
+    <string name="label_goal_enabled">Objectif activé</string>
+    <string name="label_measurements">mesures</string>
+    <string name="info_select_auto_backup_export_dir">Sélectionnez le répertoire d\'exportation de la sauvegarde automatique</string>
+    <string name="label_auto_backup_lacation">Aucun emplacement de sauvegarde automatique sélectionné</string>
 </resources>
