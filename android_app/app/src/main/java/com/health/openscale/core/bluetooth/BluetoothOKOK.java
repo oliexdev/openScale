@@ -22,6 +22,7 @@ import timber.log.Timber;
 public class BluetoothOKOK extends BluetoothCommunication {
     private static final int MANUFACTURER_DATA_ID_V20 = 0x20ca; // 16-bit little endian "header" 0xca 0x20
     private static final int MANUFACTURER_DATA_ID_V11 = 0x11ca; // 16-bit little endian "header" 0xca 0x11
+    private static final int MANUFACTURER_DATA_ID_VF0 = 0xf0ff; // 16-bit little endian "header" 0xff 0xf0
     private static final int IDX_V20_FINAL = 6;
     private static final int IDX_V20_WEIGHT_MSB = 8;
     private static final int IDX_V20_WEIGHT_LSB = 9;
@@ -34,12 +35,15 @@ public class BluetoothOKOK extends BluetoothCommunication {
     private static final int IDX_V11_BODY_PROPERTIES = 9;
     private static final int IDX_V11_CHECKSUM = 16;
 
+    private static final int IDX_VF0_WEIGHT_MSB = 3;
+    private static final int IDX_VF0_WEIGHT_LSB = 2;
+
     private BluetoothCentralManager central;
     private final BluetoothCentralManagerCallback btCallback = new BluetoothCentralManagerCallback() {
         @Override
         public void onDiscoveredPeripheral(@NotNull BluetoothPeripheral peripheral, @NotNull ScanResult scanResult) {
-        SparseArray<byte[]> manufacturerSpecificData = scanResult.getScanRecord().getManufacturerSpecificData();
-	    if (manufacturerSpecificData.indexOfKey(MANUFACTURER_DATA_ID_V20) > -1) {
+            SparseArray<byte[]> manufacturerSpecificData = scanResult.getScanRecord().getManufacturerSpecificData();
+            if (manufacturerSpecificData.indexOfKey(MANUFACTURER_DATA_ID_V20) > -1) {
                 byte[] data = manufacturerSpecificData.get(MANUFACTURER_DATA_ID_V20);
                 float divider = 10.0f;
                 byte checksum = 0x20; // Version field is part of the checksum, but not in array
@@ -113,6 +117,16 @@ public class BluetoothOKOK extends BluetoothCommunication {
                 Timber.d("Got weight: %f", weight / divider);
                 ScaleMeasurement entry = new ScaleMeasurement();
                 entry.setWeight(extraWeight + weight / divider);
+                addScaleMeasurement(entry);
+                disconnect();
+            } else if (manufacturerSpecificData.indexOfKey(MANUFACTURER_DATA_ID_VF0) > -1) {
+                byte[] data = manufacturerSpecificData.get(MANUFACTURER_DATA_ID_VF0);
+                float divider = 10.0f;
+                int weight = data[IDX_VF0_WEIGHT_MSB] & 0xff;
+                weight = weight << 8 | (data[IDX_VF0_WEIGHT_LSB] & 0xff);
+                Timber.d("Got weight: %f", weight / divider);
+                ScaleMeasurement entry = new ScaleMeasurement();
+                entry.setWeight(weight / divider);
                 addScaleMeasurement(entry);
                 disconnect();
             }
