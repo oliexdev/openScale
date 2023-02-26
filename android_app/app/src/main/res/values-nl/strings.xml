@@ -295,4 +295,5 @@
     <string name="label_time_period_last_30_days">afgelopen 30 dagen</string>
     <string name="label_measurements">metingen</string>
     <string name="label_auto_backup_lacation">Geen back-uplocatie gekozen</string>
+    <string name="permission_notification_info">Het meldingsrecht is vereist om meldingen te kunnen tonen</string>
 </resources>
