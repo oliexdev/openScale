@@ -15,14 +15,22 @@
 */
 package com.health.openscale.gui.preferences;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.ComponentName;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Pair;
 import android.view.Menu;
 import android.view.MenuInflater;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.fragment.app.DialogFragment;
 import androidx.preference.CheckBoxPreference;
 import androidx.preference.MultiSelectListPreference;
@@ -111,27 +119,85 @@ public class ReminderPreferences extends PreferenceFragmentCompat
 
     private void updateAlarmPreferences()
     {
+        if (reminderEnable.isChecked()) {
+            if (Build.VERSION.SDK_INT >= 33) {
+                requestPermissionNotificationLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS);
+            } else {
+                enableAlarmReminder();
+            }
+        }
+        else {
+            disableAlarmReminder();
+        }
+    }
+
+    private void enableAlarmReminder() {
         ComponentName receiver = new ComponentName(getActivity().getApplicationContext(), ReminderBootReceiver.class);
         PackageManager pm = getActivity().getApplicationContext().getPackageManager();
 
         AlarmHandler alarmHandler = new AlarmHandler();
-        if (reminderEnable.isChecked()) {
-            alarmHandler.scheduleAlarms(getActivity());
 
-            pm.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-                    PackageManager.DONT_KILL_APP);
-        }
-        else {
-            alarmHandler.disableAllAlarms(getActivity());
+        alarmHandler.scheduleAlarms(getActivity());
 
-            pm.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-                    PackageManager.DONT_KILL_APP);
-            }
+        pm.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                PackageManager.DONT_KILL_APP);
+    }
+
+    private void disableAlarmReminder() {
+        ComponentName receiver = new ComponentName(getActivity().getApplicationContext(), ReminderBootReceiver.class);
+        PackageManager pm = getActivity().getApplicationContext().getPackageManager();
+
+        AlarmHandler alarmHandler = new AlarmHandler();
+
+        alarmHandler.disableAllAlarms(getActivity());
+
+        pm.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                PackageManager.DONT_KILL_APP);
     }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         menu.clear();
     }
+
+    private ActivityResultLauncher<String> requestPermissionNotificationLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (!isGranted) {
+                    if (Build.VERSION.SDK_INT >= 33) {
+                        if (shouldShowRequestPermissionRationale(android.Manifest.permission.POST_NOTIFICATIONS)) {
+                            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                            builder.setTitle(R.string.permission_bluetooth_info_title);
+                            builder.setIcon(R.drawable.ic_preferences_about);
+                            builder.setMessage(R.string.permission_notification_info);
+                            builder.setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    requestPermissionNotificationLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS);
+                                }
+                            });
+
+                            Dialog alertDialog = builder.create();
+                            alertDialog.setCanceledOnTouchOutside(false);
+                            alertDialog.show();
+                        } else {
+                            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                            builder.setTitle(R.string.permission_bluetooth_info_title);
+                            builder.setIcon(R.drawable.ic_preferences_about);
+                            builder.setMessage(R.string.permission_notification_info);
+                            builder.setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                    getContext().startActivity(intent);
+                                }
+                            });
+
+                            Dialog alertDialog = builder.create();
+                            alertDialog.setCanceledOnTouchOutside(false);
+                            alertDialog.show();
+                        }
+                    }
+                } else {
+                    enableAlarmReminder();
+                }
+            });
 }
 
