@@ -91,16 +91,16 @@ public class AlarmBackupHandler
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
-        // Extra check that there is a exportDir saved in settings
-        String exportDirString = prefs.getString("exportDir", null);
-        if (exportDirString == null) {
+        // Extra check that there is a backupDir saved in settings
+        String backupDirString = prefs.getString("backupDir", null);
+        if (backupDirString == null) {
             return;
         }
 
-        DocumentFile exportDir = DocumentFile.fromTreeUri(context, Uri.parse(exportDirString));
+        DocumentFile backupDir = DocumentFile.fromTreeUri(context, Uri.parse(backupDirString));
         // Check if it is possible to read and write to auto export dir
         // If it is not possible auto backup function will be disabled
-        if (!exportDir.canRead() || !exportDir.canWrite()) {
+        if (!backupDir.canRead() || !backupDir.canWrite()) {
             SharedPreferences.Editor editor = prefs.edit();
             editor.putBoolean("autoBackup", false);
             editor.apply();
@@ -112,9 +112,9 @@ public class AlarmBackupHandler
             databaseName = dateFormat.format(new Date()) + "_" + databaseName;
         }
 
-        DocumentFile exportFile = exportDir.findFile(databaseName);
+        DocumentFile exportFile = backupDir.findFile(databaseName);
         if (exportFile == null) {
-            exportFile = exportDir.createFile("application/x-sqlite3", databaseName);
+            exportFile = backupDir.createFile("application/x-sqlite3", databaseName);
         }
 
         try {

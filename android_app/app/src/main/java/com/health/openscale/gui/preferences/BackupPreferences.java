@@ -52,7 +52,7 @@ public class BackupPreferences extends PreferenceFragmentCompat implements Share
     private static final String PREFERENCE_KEY_IMPORT_BACKUP = "importBackup";
     private static final String PREFERENCE_KEY_EXPORT_BACKUP = "exportBackup";
     private static final String PREFERENCE_KEY_AUTO_BACKUP = "autoBackup";
-    private static final String PREFERENCE_KEY_AUTO_BACKUP_DIR = "exportDir";
+    private static final String PREFERENCE_KEY_AUTO_BACKUP_DIR = "backupDir";
 
     private static final int IMPORT_DATA_REQUEST = 100;
     private static final int EXPORT_DATA_REQUEST = 101;
@@ -92,7 +92,7 @@ public class BackupPreferences extends PreferenceFragmentCompat implements Share
         autoBackupDir = (Preference) findPreference(PREFERENCE_KEY_AUTO_BACKUP_DIR);
         autoBackupDir.setOnPreferenceClickListener(new onClickListenerAutoBackupDir());
         // Setting auto backup preference's summary to location or message that none is selected
-        String autoBackupDirString = prefs.getString("exportDir", null);
+        String autoBackupDirString = prefs.getString("backupDir", null);
         autoBackupDir.setSummary(autoBackupDirString != null ? Uri.parse(autoBackupDirString).getLastPathSegment() : getString(R.string.label_auto_backup_lacation));
 
         updateBackupPreferences();
@@ -147,8 +147,8 @@ public class BackupPreferences extends PreferenceFragmentCompat implements Share
         public boolean onPreferenceClick(Preference preference) {
             if (autoBackup.isChecked()) {
                 autoBackup.setChecked(true);
-                // If exportDir location already saved user won't be prompted to select a new location
-                if (prefs.getString("exportDir", null) == null) {
+                // If backupDir location already saved user won't be prompted to select a new location
+                if (prefs.getString("backupDir", null) == null) {
                     Toast.makeText(getContext(), R.string.info_select_auto_backup_export_dir, Toast.LENGTH_SHORT).show();
                     selectAutoBackupDir.launch(null);
                 }
@@ -180,10 +180,10 @@ public class BackupPreferences extends PreferenceFragmentCompat implements Share
             getActivity().getContentResolver().takePersistableUriPermission(result, Intent.FLAG_GRANT_READ_URI_PERMISSION|Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
             autoBackupDir.setSummary(result.getLastPathSegment());
             SharedPreferences.Editor editor = prefs.edit();
-            editor.putString("exportDir", result.toString());
+            editor.putString("backupDir", result.toString());
             editor.commit();
         } else {
-            if (prefs.getString("exportDir", null) == null) {
+            if (prefs.getString("backupDir", null) == null) {
                 this.autoBackup.setChecked(false);
             }
         }
