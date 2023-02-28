@@ -295,4 +295,5 @@
     <string name="label_time_period_set_custom_range">özel aralık ayarla</string>
     <string name="label_measurements">ölçümler</string>
     <string name="label_auto_backup_lacation">Otomatik yedekleme konumu seçilmedi</string>
+    <string name="permission_notification_info">Bildirim göstermek için bildirim izni gereklidir</string>
 </resources>

@@ -280,5 +280,20 @@
     <string name="info_enter_consent_code_for_scale_user">Wprowadź kod PIN/kod zgody dla użytkownika wagi %s</string>
     <string name="info_create_new_user_on_scale">Utwórz nowego użytkownika wagi.</string>
     <string name="info_select_scale_user">Wybierz użytkownika wagi</string>
-    <string name="label_is_sticky">Jest lepki</string>
+    <string name="label_is_sticky">Dołączony</string>
+    <string name="label_auto_backup_lacation">Nie wybrano lokalizacji automatycznej kopii zapasowej</string>
+    <string name="permission_notification_info">Do wyświetlania powiadomień, wymagane jest udzielenie pozwolenia na wyświetlanie powiadomień</string>
+    <string name="label_time_period_last_7_days">ostatnie 7 dni</string>
+    <string name="label_time_period">Okres czasu</string>
+    <string name="label_time_period_all_days">wszystkie dni</string>
+    <string name="label_time_period_last_30_days">ostatnie 30 dni</string>
+    <string name="label_time_period_set_custom_range">ustaw niestandardowy zakres</string>
+    <string name="label_with">z</string>
+    <string name="label_time_period_set_reference_day">ustaw dzień odniesienia</string>
+    <string name="label_abbr_min">min.</string>
+    <string name="label_abbr_max">maks.</string>
+    <string name="label_goal_enabled">Cel włączony</string>
+    <string name="label_abbr_avg">śr.</string>
+    <string name="label_measurements">pomiary</string>
+    <string name="info_select_auto_backup_export_dir">Wybierz katalog do eksportowania automatycznej kopii zapasowej</string>
 </resources>
