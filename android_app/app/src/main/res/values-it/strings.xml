@@ -295,4 +295,5 @@
     <string name="label_abbr_min">min</string>
     <string name="label_abbr_max">max</string>
     <string name="label_auto_backup_lacation">Nessuna posizione di backup automatico selezionata</string>
+    <string name="permission_notification_info">Autorizzazione alle notifiche richiesto, per mostrare le notifiche</string>
 </resources>
