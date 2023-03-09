@@ -241,7 +241,7 @@
 \n 
 \nMożesz znaleźć pełny kod źródłowy na <a href="https://github.com/oliexdev/openScale">GitHub</a>. Przekonaj się o openScale, przeglądając go.</string>
     <string name="label_slide_bluetooth_top_text">Obsługiwane są różne wagi Bluetooth różnych producentów.</string>
-    <string name="label_slide_bluetooth_main_text">openScale ma wbudowaną obsługę wielu wagi Bluetooth różnych producentów.
+    <string name="label_slide_bluetooth_main_text">openScale ma wbudowaną obsługę wielu wag Bluetooth różnych producentów.
 \n
 \nStale doskonalimy i rozszerzamy zestaw obsługiwanych wag. Możesz znaleźć pełną listę i poziom wsparcia dla każdej wagę na <a href="https://github.com/oliexdev/openScale/wiki/Supported-scales-in-openScale">GitHub</a>.</string>
     <string name="label_slide_metrics_top_text">Śledź i analizuj dane swojego ciała.</string>
@@ -257,7 +257,7 @@
 \n
 \nYour support and positive feedback is highly appreciated. Thank you.</string>
     <string name="app_intro_skip_button">Pomiń</string>
-    <string name="app_intro_next_button">Kolejny</string>
+    <string name="app_intro_next_button">Dalej</string>
     <string name="app_intro_back_button">Powrót</string>
     <string name="app_intro_done_button">Gotowe</string>
     <string name="info_assisted_weighing_old_reference_measurement">Uwaga: poprzedni pomiar jest starszy niż dzień</string>
