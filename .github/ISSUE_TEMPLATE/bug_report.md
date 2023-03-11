@@ -17,7 +17,7 @@ Steps to reproduce the behavior:
 3. Scroll down to '....'
 4. See error
 
-Reproduced with [latest dev version](https://github.com/oliexdev/openScale/releases/tag/travis-dev-build): ???
+Reproduced with [latest dev version](https://github.com/oliexdev/openScale/releases/tag/dev-build): ???
 
 **Expected behavior**
 A clear and concise description of what you expected to happen.
