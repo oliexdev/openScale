@@ -176,7 +176,7 @@
     <string name="permission_bluetooth_info">Для поиска устройства Bluetooth требуется разрешение доступа к местоположению. После обнаружения устройства доступ можно снова заблокировать.</string>
     <string name="permission_read_write_data_description">Чтение данных openScale, включая информацию о пользователе и все сохраненные измерения</string>
     <string name="permission_read_write_data_label">Чтение данных openScale</string>
-    <string name="label_long_press_drag_reorder">Нажмите, удерживайте и перетащите измерения, чтобы изменить порядок отображения</string>
+    <string name="label_long_press_drag_reorder">Нажмите, удерживайте и перетащите метрику, чтобы изменить порядок отображения</string>
     <string name="label_export_overwrite">Сохранить поверх предыдущего \"%s\"\?</string>
     <string name="label_estimate_measurement">Оценочное измерение</string>
     <string name="label_estimation_formula">Формула для оценочных измерений</string>
@@ -211,11 +211,11 @@
     <string name="info_step_on_scale">Пожалуйста, встаньте голыми ступнями на весы</string>
     <string name="info_bluetooth_no_device_retrying">Не удается подключиться, пробуем снова…</string>
     <string name="info_bluetooth_connection_disconnected">Bluetooth соединение закрыто</string>
-    <string name="permission_location_service_info">Предоставьте доступ к местоположению в настройках Android для нахождения устройств Bluetooth. После соединения доступ может быть отозван.</string>
+    <string name="permission_location_service_info">Предоставьте доступ к местоположению в настройках Android для поиска Bluetooth-устройств. Можете отозвать разрешение после соединения.</string>
     <string name="label_enable_legend">Легенда графика</string>
     <string name="label_day_view">За день</string>
     <string name="label_year_view">За год</string>
-    <string name="label_measurement_bar">Отображение измерений</string>
+    <string name="label_measurement_bar">Панель метрик</string>
     <string name="label_is_on_right_axis">на правой оси</string>
     <string name="label_upgrade_to_openScale_pro">Пожалуйста, обновите до openScale Pro для подддержки Bluetooth</string>
     <string name="action_donation">Пожертвование</string>
@@ -237,7 +237,7 @@
     <string name="info_bluetooth_connection_error_scale_offline">Не удалось подключиться к весам, проверьте, что они включены.</string>
     <string name="info_scale_low_battery">Низкий заряд батарей (%d%%), пожалуйста, замените или зарядите батареи в весах</string>
     <string name="label_age">Возраст</string>
-    <string name="label_empty">Пусто</string>
+    <string name="label_empty">пусто</string>
     <string name="amputation_level_none">Нет ампутаций</string>
     <string name="label_amputation_right">Ампутации справа</string>
     <string name="label_amputation_left">Ампутации слева</string>
@@ -280,4 +280,19 @@
     <string name="info_select_scale_user">Выберите пользователя весов</string>
     <string name="info_enter_consent_code_for_scale_user">Введите PIN-код для пользователя весов %s</string>
     <string name="info_create_new_user_on_scale">Создайте нового пользователя весов.</string>
+    <string name="permission_notification_info">Требуется право на уведомления, для показа уведомлений</string>
+    <string name="label_auto_backup_lacation">Не выбрано место для автоматического резервного копирования</string>
+    <string name="label_time_period">Период времени</string>
+    <string name="label_time_period_last_30_days">30 последних дней</string>
+    <string name="label_time_period_set_reference_day">задать опорный день</string>
+    <string name="label_time_period_set_custom_range">задать произвольный период</string>
+    <string name="label_with">с</string>
+    <string name="label_abbr_min">наименьшее</string>
+    <string name="label_abbr_avg">среднее</string>
+    <string name="label_goal_enabled">Цель активна</string>
+    <string name="label_measurements">измерения</string>
+    <string name="info_select_auto_backup_export_dir">Выбрать каталог для выгрузки резервных копий</string>
+    <string name="label_time_period_all_days">все дни</string>
+    <string name="label_abbr_max">наибольшее</string>
+    <string name="label_time_period_last_7_days">7 последних дней</string>
 </resources>
