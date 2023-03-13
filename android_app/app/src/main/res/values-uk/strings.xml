@@ -217,7 +217,7 @@
     <string name="activity_level_extreme">Екстремальний</string>
     <string name="label_upgrade_to_openScale_pro">Оновіться до openScale pro версії для підтримки Bluetooth</string>
     <string name="action_donation">Підтримати</string>
-    <string name="label_measurement_bar">Шкала вимірювань</string>
+    <string name="label_measurement_bar">Панель вимірювань</string>
     <string name="label_is_on_right_axis">На вісі праворуч</string>
     <string name="info_scale_low_battery">Низький заряд батарей вагів (%d%%), зарядіть або замініть їх</string>
     <string name="info_bluetooth_connection_error_scale_offline">Не вдалося під\'єднатись до вагів, переконайтеся що вони увімкнені.</string>
