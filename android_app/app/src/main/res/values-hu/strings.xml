@@ -20,18 +20,18 @@
     <string name="label_share">Megosztás</string>
     <string name="label_share_subject">openScale adat exportálás (%s)</string>
     <string name="label_weight">Súly</string>
-    <string name="label_bmi">Test tömeg index (BMI)</string>
-    <string name="label_fat">Test zsír</string>
+    <string name="label_bmi">Testtömegindex (BMI)</string>
+    <string name="label_fat">Testzsír</string>
     <string name="label_water">Testvíz</string>
     <string name="label_muscle">Izom</string>
     <string name="label_waist">Derék kerülete</string>
-    <string name="label_hip">Csípő kerület</string>
+    <string name="label_hip">Csípő kerülete</string>
     <string name="label_comment">Megjegyzés</string>
     <string name="label_whtr">Derék-magasság arány</string>
     <string name="label_whr">Derék-csipő arány</string>
-    <string name="label_bone">Csont tömeg</string>
+    <string name="label_bone">Csonttömeg</string>
     <string name="label_smartUserAssign">Okos felhasználó összerendelés</string>
-    <string name="label_weight_difference">Súly különbség</string>
+    <string name="label_weight_difference">Súlykülönbség</string>
     <string name="label_days_left">Fennmaradó napok</string>
     <string name="label_date">Dátum</string>
     <string name="label_time">Idő</string>
@@ -47,19 +47,19 @@
     <string name="label_title_user">felhasználó</string>
     <string name="label_import">Importálás</string>
     <string name="label_export">Exportálás</string>
-    <string name="label_delete_all">Töröld mind</string>
+    <string name="label_delete_all">Összes törlése</string>
     <string name="error_value_required">Érték szükséges</string>
     <string name="error_value_range">Érték tartományon kívül</string>
-    <string name="error_exporting">Nem sikerült exportálni</string>
-    <string name="error_importing">Nem sikerült importálni</string>
+    <string name="error_exporting">Sikertelen exportálás</string>
+    <string name="error_importing">Sikertelen importálás</string>
     <string name="error_user_name_required">Név szükséges</string>
     <string name="error_height_required">Magasság szükséges</string>
     <string name="error_initial_weight_required">Kezdő súly szükséges</string>
     <string name="error_goal_weight_required">Cél súly szükséges</string>
     <string name="info_data_deleted">Bejegyzés törölve</string>
     <string name="info_data_all_deleted">Minden bejegyzés törölve</string>
-    <string name="info_data_exported">Exportálva ide</string>
-    <string name="info_data_imported">Importálva innen</string>
+    <string name="info_data_exported">Exportálva ide:</string>
+    <string name="info_data_imported">Importálva innen:</string>
     <string name="info_enter_comment">Opcionális megjegyzés</string>
     <string name="info_is_visible">látható</string>
     <string name="info_is_enable">engedélyezve</string>
@@ -72,7 +72,7 @@
     <string name="info_bluetooth_connection_successful">Kapcsolódva</string>
     <string name="info_bluetooth_init">Bluetooth eszköz inicializálása</string>
     <string name="info_bluetooth_connection_error">Váratlan Bluetooth hiba</string>
-    <string name="info_new_data_added">%1$.2f%2$s [%3$s] ide %4$s hozzáadva</string>
+    <string name="info_new_data_added">%1$.2f%2$s [%3$s] hozzáadva ide: %4$s</string>
     <string name="info_new_data_duplicated">mérés azonos dátummal és idővel már létezik</string>
     <string name="info_enter_user_name">Az Ön neve</string>
     <string name="info_no_selected_user">Nincs felhasználó. Kérem, hozzon létre egyet a beállításokban.</string>
@@ -105,7 +105,7 @@
     <string name="Saturday">Szombat</string>
     <string name="Sunday">Vasárnap</string>
     <string name="label_bt_device_no_support">eszköz nincs támogatva</string>
-    <string name="label_exportBackup">Biztonsági másolat exportálása</string>
+    <string name="label_exportBackup">Biztonsági mentés exportálása</string>
     <string name="label_importBackup">Biztonsági mentés importálása</string>
     <string name="label_backup">Biztonsági mentés</string>
     <string name="label_export_dir">Export könyvtár</string>
@@ -139,7 +139,7 @@
     <string name="permission_bluetooth_info_title">Infó</string>
     <string name="label_next">Következő</string>
     <string name="label_set_default_order">Alap sorrend beállítása</string>
-    <string name="label_export_overwrite">Felülírja az előző exportot \"%s\"\?</string>
+    <string name="label_export_overwrite">Felülírja az előző exportot: \"%s\"\?</string>
     <string name="label_estimation_formula">Becslő formula</string>
     <string name="language_default">Rendszer alapértelmezés</string>
     <string name="label_language">Nyelv</string>
@@ -148,13 +148,13 @@
     <string name="label_contribute_translation">Közreműködés honosításhoz</string>
     <string name="label_percent">Százalék</string>
     <string name="label_estimated">Becsült</string>
-    <string name="label_auto_backup">Auto backup</string>
+    <string name="label_auto_backup">Automatikus mentés</string>
     <string name="label_auto_backup_schedule">Biztonsági mentés ütemezése</string>
-    <string name="label_overwrite_backup">Felül írja az előző backup-ot</string>
+    <string name="label_overwrite_backup">Felülírja az előző mentést</string>
     <string name="label_daily">napi</string>
     <string name="label_weekly">heti</string>
     <string name="label_monthly">havi</string>
-    <string name="label_bmr">Bazális metabolikus sebesség (BMR)</string>
+    <string name="label_bmr">Alapanyagcsere-érték (BMR)</string>
     <string name="label_lbm">Zsírmentes testtömeg</string>
     <string name="info_enter_value_in">Értéket beír</string>
     <string name="info_is_not_visible">nem látható</string>
@@ -208,15 +208,15 @@
     <string name="activity_level_extreme">Extrém</string>
     <string name="label_tdee">Teljes napi energiafelhasználás (TDEE)</string>
     <string name="label_calories">Kalória</string>
-    <string name="info_bluetooth_no_device_retrying">Kapcsolat nem hozható létre, újra…</string>
+    <string name="info_bluetooth_no_device_retrying">Kapcsolat nem hozható létre, újrapróbálkozás…</string>
     <string name="info_bluetooth_connection_disconnected">Bluetooth kapcsolat lezárva</string>
-    <string name="info_step_on_scale_for_reference">Kérem mindig csupasz lábbal álljon a mérlegre az ismételhetőség végett</string>
+    <string name="info_step_on_scale_for_reference">Kérem mindig csupasz lábbal álljon a mérlegre a referenciamérések során</string>
     <string name="permission_location_service_info">Adja meg a tartózkodási hely hozzáférést az Android beállításokban a Bluetooth eszközök kereséséhez. Később visszavonhatja.</string>
     <string name="label_enable_legend">Jelmagyarázat</string>
     <string name="label_day_view">Napi nézet</string>
     <string name="label_year_view">Éves nézet</string>
     <string name="label_measurement_bar">Mérési sáv</string>
-    <string name="label_is_on_right_axis">a jobb oldali tengelyen</string>
+    <string name="label_is_on_right_axis">A jobb oldali tengelyen</string>
     <string name="label_upgrade_to_openScale_pro">Kérem frissítsen az openScale Pro-ra a Bluetooth támogatáshoz</string>
     <string name="action_donation">Támogatás</string>
     <string name="label_empty">üres</string>
@@ -271,13 +271,29 @@
     <string name="label_slide_opensource_top_text">Ez egy nyílt forráskódú szoftver, amely nagyfokú átláthatósággal rendelkezik.</string>
     <string name="label_slide_metrics_top_text">Kövesse nyomon és elemezze testének mérőszámait.</string>
     <string name="info_assisted_weighing_old_reference_measurement">Figyelmeztetés: az utolsó referenciamérés egy napnál régebbi</string>
-    <string name="info_assisted_weighing_no_reference_user">Nincs referencia felhasználó, kérjük, hozzon létre egyet</string>
+    <string name="info_assisted_weighing_no_reference_user">Nincs referenciafelhasználó, kérjük, hozzon létre egyet</string>
     <string name="info_assisted_weighing_choose_reference_user">Válassza ki a referenciafelhasználót, akitől a súlyt levonják</string>
-    <string name="info_assisted_weighing_no_reference_measurements">A referencia felhasználónak nincsenek mérései</string>
+    <string name="info_assisted_weighing_no_reference_measurements">A referenciafelhasználónak nincsenek mérései</string>
     <string name="label_assisted_weighing">Rásegítéses tömegmérés</string>
     <string name="label_slide_support_main_text">Az openScale-nek szüksége van Önre. Jelezzen problémát a <a href="https://github.com/oliexdev/openScale/issues">címen</a>, ha hibát talált, ötlete vagy kérdése van, vagy segíteni szeretne a Bluetooth mérlegelés támogatásában.
 \n
 \nMotiválja a projekt létrehozóját a további fejlesztésben és a folyamatos karbantartásban azzal, hogy pozitív értékelést ad az openScale-nek a <a href="http://play.google.com/store/apps/details?id=com.health.openscale.pro">GooglePlay</a> oldalon, vagy csillagot a <a href="https://github.com/oliexdev/openScale">GitHub</a> oldalon.
 \n
 \nTámogatását és pozitív visszajelzését nagyra értékeljük. Köszönjük.</string>
+    <string name="label_is_sticky">Rögzített</string>
+    <string name="permission_notification_info">Az értesítések megjelenítéséhez engedélyeznie kell az értesítéseket</string>
+    <string name="label_auto_backup_lacation">Automatikus mentés helye nincs megadva</string>
+    <string name="label_time_period">Időszak</string>
+    <string name="label_time_period_all_days">minden nap</string>
+    <string name="label_time_period_last_7_days">előző 7 nap</string>
+    <string name="label_time_period_last_30_days">előző 30 nap</string>
+    <string name="label_time_period_set_reference_day">referencianap beállítása</string>
+    <string name="label_time_period_set_custom_range">egyéni tartomány beállítása</string>
+    <string name="label_abbr_max">max.</string>
+    <string name="label_abbr_min">min.</string>
+    <string name="label_abbr_avg">átl.</string>
+    <string name="label_with">a következővel:</string>
+    <string name="label_measurements">mérések</string>
+    <string name="label_goal_enabled">Cél engedélyezve</string>
+    <string name="info_select_auto_backup_export_dir">Automatikus mentés export könyvtárának kiválasztása</string>
 </resources>
