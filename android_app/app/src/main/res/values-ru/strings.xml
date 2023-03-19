@@ -295,4 +295,5 @@
     <string name="label_time_period_all_days">все дни</string>
     <string name="label_abbr_max">наибольшее</string>
     <string name="label_time_period_last_7_days">7 последних дней</string>
+    <string name="label_is_sticky">Закреплено</string>
 </resources>
