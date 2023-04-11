@@ -289,10 +289,11 @@
     <string name="label_with">mit</string>
     <string name="label_abbr_min">min</string>
     <string name="label_abbr_max">max</string>
-    <string name="label_abbr_avg">avg</string>
+    <string name="label_abbr_avg">MW</string>
     <string name="label_goal_enabled">Ziel eingeschaltet</string>
     <string name="label_measurements">Messwerten</string>
     <string name="info_select_auto_backup_export_dir">Wähle Auto-Backup Export Verzeichnis</string>
     <string name="label_is_sticky">Ist anheftend</string>
     <string name="label_auto_backup_lacation">Kein Auto-Sicherungs-Verzeichnis ausgewählt</string>
+    <string name="permission_notification_info">Benachrichtigungserlaubnis erforderlich, um Benachrichtigung anzuzeigen</string>
 </resources>
