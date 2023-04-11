@@ -295,4 +295,5 @@
     <string name="label_measurements">mesures</string>
     <string name="info_select_auto_backup_export_dir">Sélectionnez le répertoire d\'exportation de la sauvegarde automatique</string>
     <string name="label_auto_backup_lacation">Aucun emplacement de sauvegarde automatique sélectionné</string>
+    <string name="permission_notification_info">L\'autorisation des notifications est requise pour afficher la notification</string>
 </resources>
