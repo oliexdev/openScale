@@ -190,7 +190,7 @@
     <string name="label_scale_not_supported">Ваші ваги не підтримуються\?</string>
     <string name="label_click_to_help_add_support">Натисніть тут, щоб допомогти нам додати підтримку для них</string>
     <string name="label_development">Розробка</string>
-    <string name="label_debug_log">Зберегти звіт зневадження до файлу</string>
+    <string name="label_debug_log">Зберегти журнал налагодження у файл</string>
     <string name="label_your_bluetooth_scale">Ваші Bluetooth ваги</string>
     <string name="label_select_measurement">Оберіть вимірювання</string>
     <string name="label_select_user">Оберіть користувача</string>
