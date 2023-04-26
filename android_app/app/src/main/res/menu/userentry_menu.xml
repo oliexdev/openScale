@@ -6,7 +6,7 @@
         android:id="@+id/deleteButton"
         android:title="@string/label_delete"
         android:icon="@drawable/ic_delete"
-        android:iconTint="#FF4444"
+        android:iconTint="#A40000"
         app:showAsAction="ifRoom" />
 
     <item
