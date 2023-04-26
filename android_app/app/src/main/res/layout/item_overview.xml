@@ -50,7 +50,7 @@
                 app:layout_constraintEnd_toStartOf="@+id/showEntry"
                 app:layout_constraintTop_toTopOf="parent"
                 app:srcCompat="@drawable/ic_editable"
-                app:tint="#99CC00" />
+                app:tint="#4e9a06" />
 
             <ImageView
                 android:id="@+id/deleteEntry"
@@ -61,7 +61,7 @@
                 app:layout_constraintEnd_toStartOf="@+id/editEntry"
                 app:layout_constraintTop_toTopOf="parent"
                 app:srcCompat="@drawable/ic_delete"
-                app:tint="#FF4444" />
+                app:tint="#A40000" />
 
             <TableLayout
                 android:id="@+id/measurementHighlightViews"
