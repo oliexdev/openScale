@@ -54,8 +54,8 @@
             android:pathData="M79.047,305.33h199.064v97.59h-199.064z"
             android:strokeLineJoin="bevel"
             android:strokeWidth="7.37556124"
-            android:fillColor="#99cc00"
-            android:strokeColor="#99cc00"
+            android:fillColor="#4e9a06"
+            android:strokeColor="#4e9a06"
             android:strokeLineCap="round"/>
         <path
             android:pathData="M87.832,321.199L100.884,321.199L100.884,377.928L87.832,377.928Z"
