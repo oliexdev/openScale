@@ -5,7 +5,7 @@
         <item name="colorOnPrimary">@color/primaryLightColor</item>
         <item name="colorPrimaryDark">@color/primaryDarkColor</item>
         <item name="colorAccent">@color/primaryLightColor</item>
-        <item name="android:datePickerStyle">@style/DatePickerStyle</item>
+        <item name="materialCalendarTheme">@style/MaterialCalendarTheme</item>
     </style>
 
     <style name="AppTheme_Dark" parent="Theme.MaterialComponents.NoActionBar">
@@ -13,7 +13,7 @@
         <item name="colorOnPrimary">@color/primaryLightColor</item>
         <item name="colorPrimaryDark">@color/primaryDarkColor</item>
         <item name="colorAccent">@color/primaryLightColor</item>
-        <item name="android:datePickerStyle">@style/DatePickerStyle</item>
+        <item name="materialCalendarTheme">@style/MaterialCalendarTheme</item>
     </style>
 
     <style name="AppTheme.NoActionBar">
@@ -21,8 +21,17 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="DatePickerStyle" parent="@android:style/Widget.Material.Light.DatePicker">
-        <item name="android:datePickerMode">spinner</item>
+    <style name="MaterialCalendarTheme" parent="ThemeOverlay.MaterialComponents.MaterialCalendar">
+        <item name="buttonBarPositiveButtonStyle">@style/CalendarPositiveButtonStyle</item>
+        <item name="buttonBarNegativeButtonStyle">@style/CalendarNegativeButtonStyle</item>
+    </style>
+
+    <style name="CalendarPositiveButtonStyle" parent="@style/Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/primaryLightColor</item>
+    </style>
+
+    <style name="CalendarNegativeButtonStyle" parent="@style/Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/primaryLightColor</item>
     </style>
 
     <!-- Style for an Preference Entry -->
