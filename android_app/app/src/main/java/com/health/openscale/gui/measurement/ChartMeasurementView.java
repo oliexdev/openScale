@@ -550,7 +550,7 @@ public class ChartMeasurementView extends LineChart {
                     continue;
                 }
 
-                // calculate the trendline from the non-zero scale measurement list with interpolated missing days
+                // calculate the trendline from the non-zero scale measurement list
                 List<ScaleMeasurement> scaleMeasurementsAsTrendlineList = getScaleMeasurementsAsTrendline(nonZeroScaleMeasurementList);
 
                 final List<Entry> lineEntries = convertMeasurementsToLineEntries(measurementView, scaleMeasurementsAsTrendlineList);
@@ -594,7 +594,7 @@ public class ChartMeasurementView extends LineChart {
                     continue;
                 }
 
-                // calculate the simple moving average from the non-zero scale measurement list with interpolated missing days
+                // calculate the simple moving average from the non-zero scale measurement list
                 List<ScaleMeasurement> scaleMeasurementsAsMovingAverageList = getMovingAverageOfScaleMeasurements(nonZeroScaleMeasurementList);
 
                 final List<Entry> lineEntries = convertMeasurementsToLineEntries(measurementView, scaleMeasurementsAsMovingAverageList);
