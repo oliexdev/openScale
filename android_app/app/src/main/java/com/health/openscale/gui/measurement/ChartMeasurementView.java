@@ -452,7 +452,7 @@ public class ChartMeasurementView extends LineChart {
         measurementLine.setDrawCircles(prefs.getBoolean("pointsEnable", true));
         measurementLine.setDrawValues(prefs.getBoolean("labelsEnable", false));
         measurementLine.setMode(LineDataSet.Mode.HORIZONTAL_BEZIER);
-        if (prefs.getBoolean("trendLine", false) || prefs.getBoolean("simpleMovingAverage", false)) {
+        if (prefs.getBoolean("trendLine", false)) {
             // show only data points if trend line or simple moving average is enabled
             measurementLine.enableDashedLine(0, 1, 0);
         }
