@@ -16,6 +16,7 @@
 
 package com.health.openscale.gui.measurement;
 
+import static com.health.openscale.gui.preferences.utils.TrendlineComputationMethod.*;
 import static java.time.temporal.ChronoUnit.DAYS;
 
 import android.content.Context;
@@ -43,6 +44,8 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
 import com.health.openscale.core.utils.PolynomialFitter;
+import com.health.openscale.gui.preferences.GraphPreferences;
+import com.health.openscale.gui.preferences.utils.TrendlineComputationMethod;
 import com.health.openscale.gui.utils.ColorUtil;
 
 import java.time.LocalDate;
@@ -77,7 +80,7 @@ public class ChartMeasurementView extends LineChart {
     private ProgressBar progressBar;
 
     private interface TrendlineComputationInterface {
-        public List<ScaleMeasurement> operation(List<ScaleMeasurement> measurementList);
+        public List<ScaleMeasurement> processMeasurements(List<ScaleMeasurement> measurementList);
     }
 
     public ChartMeasurementView(Context context) {
@@ -399,16 +402,17 @@ public class ChartMeasurementView extends LineChart {
         }
 
         if (prefs.getBoolean("trendLine", false)) {
-            switch (prefs.getString("trendlineComputationMethod", "Exponentially Smoothed Moving Average")) {
-                case "Exponentially Smoothed Moving Average":
+            String selectedTrendLineComputationMethod = prefs.getString("trendlineComputationMethod", EXPONENTIALLY_SMOOTHED_MOVING_AVERAGE);
+            switch (selectedTrendLineComputationMethod) {
+                case EXPONENTIALLY_SMOOTHED_MOVING_AVERAGE:
                     addExponentiallySmoothedMovingAverage(lineDataSets);
                     break;
-                case "Simple Moving Average":
+                case SIMPLE_MOVING_AVERAGE:
                     addSimpleMovingAverage(lineDataSets);
                     break;
                 default:
-                    addExponentiallySmoothedMovingAverage(lineDataSets); // by default fall back to exponentially smoothed in case the setting is magically set to something different
-                    break;
+                    addExponentiallySmoothedMovingAverage(lineDataSets);
+                    break; // by default fall back to exponentially smoothed moving average
             }
 
         }
@@ -570,7 +574,7 @@ public class ChartMeasurementView extends LineChart {
                 }
 
                 // calculate the trendline from the non-zero scale measurement list
-                List<ScaleMeasurement> scaleMeasurementsAsTrendlineList = trendlineComputation.operation(nonZeroScaleMeasurementList);
+                List<ScaleMeasurement> scaleMeasurementsAsTrendlineList = trendlineComputation.processMeasurements(nonZeroScaleMeasurementList);
 
                 final List<Entry> lineEntries = convertMeasurementsToLineEntries(measurementView, scaleMeasurementsAsTrendlineList);
 

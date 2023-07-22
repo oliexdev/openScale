@@ -125,7 +125,7 @@
     </string-array>
 
     <string-array name="trendline_computation_methods_values">
-        <item>Simple Moving Average</item>
-        <item>Exponentially Smoothed Moving Average</item>
+        <item>SimpleMovingAverage</item>
+        <item>ExponentiallySmoothedMovingAverage</item>
     </string-array>
 </resources>

@@ -27,6 +27,7 @@ import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.SeekBarPreference;
 
 import com.health.openscale.R;
+import com.health.openscale.gui.preferences.utils.TrendlineComputationMethod;
 
 public class GraphPreferences extends PreferenceFragmentCompat {
     @Override
@@ -38,15 +39,21 @@ public class GraphPreferences extends PreferenceFragmentCompat {
         DropDownPreference trendlinePreference = findPreference("trendlineComputationMethod");
         SeekBarPreference simpleMovingAveragePreference = findPreference("simpleMovingAverageNumDays");
 
-        simpleMovingAveragePreference.setVisible(trendlinePreference.getValue().equals("Simple Moving Average"));
+        simpleMovingAveragePreference.setVisible(
+                trendlinePreference.getValue().equals(
+                        TrendlineComputationMethod.SIMPLE_MOVING_AVERAGE
+                )
+        );
 
         trendlinePreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
                 String selectedValue = (String) newValue;
-                boolean simpleMovingAverageEnabled = selectedValue.equals("Simple Moving Average");
+                boolean simpleMovingAverageEnabled = selectedValue.equals(
+                        TrendlineComputationMethod.SIMPLE_MOVING_AVERAGE
+                );
 
-                // Enable or disable the simpleMovingAveragePreference based on the selected value
+                // hide selector of the number of days when simple moving average is not selected
                 simpleMovingAveragePreference.setVisible(simpleMovingAverageEnabled);
 
                 return true;

@@ -35,6 +35,13 @@
             android:summaryOff="@string/info_is_not_enable"
             android:summaryOn="@string/info_is_enable"
             android:title="@string/label_trend_line" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="trendlineFuture"
+            android:dependency="trendLine"
+            android:summaryOff="@string/info_is_not_enable"
+            android:summaryOn="@string/info_is_enable"
+            android:title="@string/trendline_future" />
         <DropDownPreference
             android:id="@+id/trendlineComputationMethodDropdown"
             android:defaultValue="Exponentially Smoothed Moving Average"
@@ -54,12 +61,5 @@
             app:min="2"
             app:showSeekBarValue="true"
             android:title="@string/label_simple_moving_average_num_days" />
-        <CheckBoxPreference
-            android:defaultValue="true"
-            android:key="trendlineFuture"
-            android:dependency="trendLine"
-            android:summaryOff="@string/info_is_not_enable"
-            android:summaryOn="@string/info_is_enable"
-            android:title="@string/trendline_future" />
     </PreferenceCategory>
 </PreferenceScreen>
