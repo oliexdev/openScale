@@ -284,8 +284,6 @@ public class ChartMeasurementView extends LineChart {
     private void setCustomViewPortOffsets() {
         float offsetLeft = 0f, offsetRight = 0f, offsetTop = 0f, offsetBottom = 0f;
 
-        final float OFFSET_MULTIPLIER = 1.1f;
-
         RectF mOffsetsBuffer = new RectF();
         calculateLegendOffsets(mOffsetsBuffer);
 
