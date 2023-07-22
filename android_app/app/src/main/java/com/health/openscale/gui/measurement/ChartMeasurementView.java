@@ -629,4 +629,5 @@ public class ChartMeasurementView extends LineChart {
             }
         }
     }
+    
 }

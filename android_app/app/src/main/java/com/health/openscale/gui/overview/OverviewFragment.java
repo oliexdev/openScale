@@ -43,7 +43,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.transition.ChangeScroll;
 import androidx.transition.TransitionManager;
 
-import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
@@ -54,7 +53,6 @@ import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.DateTimeHelpers;
 import com.health.openscale.gui.measurement.ChartActionBarView;
 import com.health.openscale.gui.measurement.ChartMeasurementView;
-import com.health.openscale.gui.measurement.FloatMeasurementView;
 import com.health.openscale.gui.measurement.WeightMeasurementView;
 
 import java.text.DateFormat;
