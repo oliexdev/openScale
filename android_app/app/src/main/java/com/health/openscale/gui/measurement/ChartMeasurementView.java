@@ -44,8 +44,6 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
 import com.health.openscale.core.utils.PolynomialFitter;
-import com.health.openscale.gui.preferences.GraphPreferences;
-import com.health.openscale.gui.preferences.utils.TrendlineComputationMethod;
 import com.health.openscale.gui.utils.ColorUtil;
 
 import java.time.LocalDate;
