@@ -43,6 +43,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.transition.ChangeScroll;
 import androidx.transition.TransitionManager;
 
+import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
@@ -243,10 +244,16 @@ public class OverviewFragment extends Fragment {
     }
 
     protected void setYAxisVisibility(boolean visible) {
+        boolean leftAxisVisible = visible;
         boolean rightAxisVisible = visible;
 
-        // disable right Y-axis if there is only one measurement view
-        if (chartView.getNumberOfMeasurementViewsInOverview() < 2) {
+        // autohide left Y-axis if there are no measurement views
+        if (chartView.getNumberOfMeasurementViewsInOverview(YAxis.AxisDependency.LEFT) < 1) {
+            leftAxisVisible = false;
+        }
+
+        // autohide right Y-axis if there are no measurement views
+        if (chartView.getNumberOfMeasurementViewsInOverview(YAxis.AxisDependency.RIGHT) < 1) {
             rightAxisVisible = false;
         }
 
@@ -254,9 +261,9 @@ public class OverviewFragment extends Fragment {
         chartView.getAxisRight().setDrawGridLines(rightAxisVisible);
         chartView.getAxisRight().setDrawAxisLine(rightAxisVisible);
 
-        chartView.getAxisLeft().setDrawGridLines(visible);
-        chartView.getAxisLeft().setDrawLabels(visible);
-        chartView.getAxisLeft().setDrawAxisLine(visible);
+        chartView.getAxisLeft().setDrawGridLines(leftAxisVisible);
+        chartView.getAxisLeft().setDrawLabels(leftAxisVisible);
+        chartView.getAxisLeft().setDrawAxisLine(leftAxisVisible);
 
         chartView.getXAxis().setDrawGridLines(visible);
     }

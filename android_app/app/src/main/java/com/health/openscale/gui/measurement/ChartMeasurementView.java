@@ -630,8 +630,13 @@ public class ChartMeasurementView extends LineChart {
         }
     }
 
-    public long getNumberOfMeasurementViewsInOverview() {
-        return measurementViews.stream().filter(view -> view instanceof FloatMeasurementView && view.isVisible() && view.getSettings().isInOverviewGraph()).count();
+    public long getNumberOfMeasurementViewsInOverview(YAxis.AxisDependency axisDependency) {
+        boolean isOnRight = axisDependency == YAxis.AxisDependency.RIGHT;
+
+        return measurementViews.stream().filter(view -> view instanceof FloatMeasurementView
+                && view.isVisible() && view.getSettings().isInOverviewGraph()
+                && view.getSettings().isOnRightAxis() == isOnRight
+        ).count();
     }
 
 }
