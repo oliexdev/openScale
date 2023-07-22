@@ -296,7 +296,7 @@ public class ChartMeasurementView extends LineChart {
 
         // add one symbol worth of offset to avoid cutting decimal places
         float additionalWidth = (float) Utils.calcTextWidth(mAxisRendererLeft
-                .getPaintAxisLabels(), "1") * 2f;
+                .getPaintAxisLabels(), "1");
 
         if (mAxisLeft.needsOffset()) {
             offsetLeft += mAxisLeft.getRequiredWidthSpace(mAxisRendererLeft
