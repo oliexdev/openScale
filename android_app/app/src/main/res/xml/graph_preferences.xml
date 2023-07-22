@@ -31,11 +31,4 @@
         android:summaryOff="@string/info_is_not_enable"
         android:summaryOn="@string/info_is_enable"
         android:title="@string/label_trend_line" />
-    <ListPreference
-        android:defaultValue="Hidden"
-        android:entries="@array/overview_axis_entries"
-        android:entryValues="@array/overview_axis_values"
-        android:key="overviewAxis"
-        app:useSimpleSummaryProvider="true"
-        android:title="@string/label_overview_axis" />
 </PreferenceScreen>

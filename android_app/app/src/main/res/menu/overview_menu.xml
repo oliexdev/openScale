@@ -7,6 +7,11 @@
         android:title="@string/label_measurement_bar"
         android:checkable="true"
         android:checked="false"/>
+    <item
+        android:id="@+id/enableYAxis"
+        android:title="@string/label_overview_axis"
+        android:checkable="true"
+        android:checked="false"/>
 
     <group android:id="@+id/rangeGroup"
         android:checkableBehavior="single">

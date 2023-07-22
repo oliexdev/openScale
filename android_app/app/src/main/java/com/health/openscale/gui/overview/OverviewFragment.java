@@ -105,21 +105,14 @@ public class OverviewFragment extends Fragment {
         chartView.setIsInGraphKey(false);
         chartView.getLegend().setEnabled(false);
 
-        String yAxisVisibility = prefs.getString("overviewAxis", "Hidden");
-
-        if (!yAxisVisibility.equals("Right") && !yAxisVisibility.equals("Both")) {
+        if (!prefs.getBoolean("enableYAxis", false)) {
             chartView.getAxisRight().setDrawLabels(false);
             chartView.getAxisRight().setDrawGridLines(false);
             chartView.getAxisRight().setDrawAxisLine(false);
-        }
 
-        if (!yAxisVisibility.equals("Left") && !yAxisVisibility.equals("Both")) {
             chartView.getAxisLeft().setDrawGridLines(false);
             chartView.getAxisLeft().setDrawLabels(false);
             chartView.getAxisLeft().setDrawAxisLine(false);
-        }
-
-        if (yAxisVisibility.equals("Hidden")) {
             chartView.getXAxis().setDrawGridLines(false);
         }
 
@@ -158,6 +151,19 @@ public class OverviewFragment extends Fragment {
                             item.setChecked(true);
                             prefs.edit().putBoolean("enableOverviewChartActionBar", true).apply();
                             chartActionBarView.setVisibility(View.VISIBLE);
+                        }
+                        return true;
+                    case R.id.enableYAxis:
+                        if (item.isChecked()) {
+                            item.setChecked(false);
+                            prefs.edit().putBoolean("enableYAxis", false).apply();
+                            setYAxisVisibility(false);
+                            updateChartView();
+                        } else {
+                            item.setChecked(true);
+                            prefs.edit().putBoolean("enableYAxis", true).apply();
+                            setYAxisVisibility(true);
+                            updateChartView();
                         }
                         return true;
                     case R.id.menu_range_day:
@@ -207,6 +213,9 @@ public class OverviewFragment extends Fragment {
             chartActionBarView.setVisibility(View.GONE);
         }
 
+        MenuItem enableYAxis = rangePopupMenu.getMenu().findItem(R.id.enableYAxis);
+        enableYAxis.setChecked(prefs.getBoolean("enableYAxis", false));
+
         recyclerView = overviewView.findViewById(R.id.recyclerView);
         LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
         layoutManager.setInitialPrefetchItemCount(5);
@@ -244,6 +253,18 @@ public class OverviewFragment extends Fragment {
         requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), onBackPressedCallback);
 
         return overviewView;
+    }
+
+    protected void setYAxisVisibility(boolean visible) {
+        chartView.getAxisRight().setDrawLabels(visible);
+        chartView.getAxisRight().setDrawGridLines(visible);
+        chartView.getAxisRight().setDrawAxisLine(visible);
+
+        chartView.getAxisLeft().setDrawGridLines(visible);
+        chartView.getAxisLeft().setDrawLabels(visible);
+        chartView.getAxisLeft().setDrawAxisLine(visible);
+
+        chartView.getXAxis().setDrawGridLines(visible);
     }
 
     public void updateOnView(List<ScaleMeasurement> scaleMeasurementList) {
