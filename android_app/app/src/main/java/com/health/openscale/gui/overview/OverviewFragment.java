@@ -104,13 +104,8 @@ public class OverviewFragment extends Fragment {
         chartView.setProgressBar(overviewView.findViewById(R.id.progressBar));
         chartView.setIsInGraphKey(false);
         chartView.getLegend().setEnabled(false);
-        chartView.getAxisRight().setDrawLabels(false);
-        chartView.getAxisRight().setDrawGridLines(false);
-        chartView.getAxisRight().setDrawAxisLine(false);
-        chartView.getAxisLeft().setDrawGridLines(false);
-        chartView.getAxisLeft().setDrawLabels(false);
-        chartView.getAxisLeft().setDrawAxisLine(false);
-        chartView.getXAxis().setDrawGridLines(false);
+
+        setYAxisVisibility(prefs.getBoolean("enableYAxis", false));
 
         chartActionBarView = overviewView.findViewById(R.id.chartActionBar);
         chartActionBarView.setIsInGraphKey(false);
@@ -148,6 +143,13 @@ public class OverviewFragment extends Fragment {
                             prefs.edit().putBoolean("enableOverviewChartActionBar", true).apply();
                             chartActionBarView.setVisibility(View.VISIBLE);
                         }
+                        return true;
+                    case R.id.enableYAxis:
+                        boolean checked = item.isChecked();
+                        item.setChecked(!checked);
+                        prefs.edit().putBoolean("enableYAxis", !checked).apply();
+                        setYAxisVisibility(!checked);
+                        updateChartView();
                         return true;
                     case R.id.menu_range_day:
                         prefs.edit().putInt("selectRangeMode", ChartMeasurementView.ViewMode.DAY_OF_ALL.ordinal()).commit();
@@ -196,6 +198,9 @@ public class OverviewFragment extends Fragment {
             chartActionBarView.setVisibility(View.GONE);
         }
 
+        MenuItem enableYAxis = rangePopupMenu.getMenu().findItem(R.id.enableYAxis);
+        enableYAxis.setChecked(prefs.getBoolean("enableYAxis", false));
+
         recyclerView = overviewView.findViewById(R.id.recyclerView);
         LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
         layoutManager.setInitialPrefetchItemCount(5);
@@ -233,6 +238,18 @@ public class OverviewFragment extends Fragment {
         requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), onBackPressedCallback);
 
         return overviewView;
+    }
+
+    protected void setYAxisVisibility(boolean visible) {
+        chartView.getAxisRight().setDrawLabels(visible);
+        chartView.getAxisRight().setDrawGridLines(visible);
+        chartView.getAxisRight().setDrawAxisLine(visible);
+
+        chartView.getAxisLeft().setDrawGridLines(visible);
+        chartView.getAxisLeft().setDrawLabels(visible);
+        chartView.getAxisLeft().setDrawAxisLine(visible);
+
+        chartView.getXAxis().setDrawGridLines(visible);
     }
 
     public void updateOnView(List<ScaleMeasurement> scaleMeasurementList) {
