@@ -293,14 +293,19 @@ public class ChartMeasurementView extends LineChart {
         offsetBottom += Math.max(70f, mOffsetsBuffer.bottom);
 
         // offsets for y-labels
+
+        // add one symbol worth of offset to avoid cutting decimal places
+        float additionalWidth = (float) Utils.calcTextWidth(mAxisRendererLeft
+                .getPaintAxisLabels(), "1") * 2f;
+
         if (mAxisLeft.needsOffset()) {
             offsetLeft += mAxisLeft.getRequiredWidthSpace(mAxisRendererLeft
-                    .getPaintAxisLabels());
+                    .getPaintAxisLabels()) + additionalWidth;
         }
 
         if (mAxisRight.needsOffset()) {
             offsetRight += mAxisRight.getRequiredWidthSpace(mAxisRendererRight
-                    .getPaintAxisLabels());
+                    .getPaintAxisLabels()) + additionalWidth;
         }
 
         if (mXAxis.isEnabled() && mXAxis.isDrawLabelsEnabled()) {
