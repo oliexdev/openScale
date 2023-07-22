@@ -199,7 +199,7 @@ public class BluetoothSettingsFragment extends Fragment {
             alertDialog.setCanceledOnTouchOutside(false);
             alertDialog.show();
 
-        } else if (shouldShowRequestPermissionRationale(Manifest.permission.BLUETOOTH_SCAN)) {
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && targetSdkVersion >= Build.VERSION_CODES.S && shouldShowRequestPermissionRationale(Manifest.permission.BLUETOOTH_SCAN)) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         Timber.d("No access Bluetooth scan permission granted");
 
