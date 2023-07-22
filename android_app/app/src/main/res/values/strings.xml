@@ -287,4 +287,9 @@
     <string name="app_intro_back_button">Back</string>
     <string name="app_intro_done_button">Done</string>
     <string name="info_create_new_user_on_scale">Create new user on scale.</string>
+    <string name="overview_no_axis">Hidden</string>
+    <string name="overview_left_axis">Only left</string>
+    <string name="overview_right_axis">Only right</string>
+    <string name="overview_both_axis">Both</string>
+    <string name="label_overview_axis">Overview Y-axis visibility</string>
 </resources>

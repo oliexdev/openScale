@@ -118,4 +118,18 @@
         <item>@string/label_time_period_set_reference_day</item>
         <item>@string/label_time_period_set_custom_range</item>
     </string-array>
+
+    <string-array name="overview_axis_entries">
+        <item>@string/overview_no_axis</item>
+        <item>@string/overview_left_axis</item>
+        <item>@string/overview_right_axis</item>
+        <item>@string/overview_both_axis</item>
+    </string-array>
+
+    <string-array name="overview_axis_values">
+        <item>Hidden</item>
+        <item>Left</item>
+        <item>Right</item>
+        <item>Both</item>
+    </string-array>
 </resources>
