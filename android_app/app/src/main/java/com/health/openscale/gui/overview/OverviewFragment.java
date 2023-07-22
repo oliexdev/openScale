@@ -115,7 +115,6 @@ public class OverviewFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 chartView.refreshMeasurementList();
-                setYAxisVisibility(prefs.getBoolean("enableYAxis", false));
                 updateChartView();
             }
         });
@@ -244,26 +243,13 @@ public class OverviewFragment extends Fragment {
     }
 
     protected void setYAxisVisibility(boolean visible) {
-        boolean leftAxisVisible = visible;
-        boolean rightAxisVisible = visible;
+        chartView.getAxisRight().setDrawLabels(visible);
+        chartView.getAxisRight().setDrawGridLines(visible);
+        chartView.getAxisRight().setDrawAxisLine(visible);
 
-        // autohide left Y-axis if there are no measurement views
-        if (chartView.getNumberOfMeasurementViewsInOverview(YAxis.AxisDependency.LEFT) < 1) {
-            leftAxisVisible = false;
-        }
-
-        // autohide right Y-axis if there are no measurement views
-        if (chartView.getNumberOfMeasurementViewsInOverview(YAxis.AxisDependency.RIGHT) < 1) {
-            rightAxisVisible = false;
-        }
-
-        chartView.getAxisRight().setDrawLabels(rightAxisVisible);
-        chartView.getAxisRight().setDrawGridLines(rightAxisVisible);
-        chartView.getAxisRight().setDrawAxisLine(rightAxisVisible);
-
-        chartView.getAxisLeft().setDrawGridLines(leftAxisVisible);
-        chartView.getAxisLeft().setDrawLabels(leftAxisVisible);
-        chartView.getAxisLeft().setDrawAxisLine(leftAxisVisible);
+        chartView.getAxisLeft().setDrawGridLines(visible);
+        chartView.getAxisLeft().setDrawLabels(visible);
+        chartView.getAxisLeft().setDrawAxisLine(visible);
 
         chartView.getXAxis().setDrawGridLines(visible);
     }
