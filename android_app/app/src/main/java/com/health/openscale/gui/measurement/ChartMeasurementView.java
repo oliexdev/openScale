@@ -76,6 +76,10 @@ public class ChartMeasurementView extends LineChart {
     private boolean isInGraphKey;
     private ProgressBar progressBar;
 
+    private interface TrendlineComputationInterface {
+        public List<ScaleMeasurement> operation(List<ScaleMeasurement> measurementList);
+    }
+
     public ChartMeasurementView(Context context) {
         super(context);
         initChart();
@@ -395,11 +399,18 @@ public class ChartMeasurementView extends LineChart {
         }
 
         if (prefs.getBoolean("trendLine", false)) {
-            addTrendLine(lineDataSets);
-        }
+            switch (prefs.getString("trendlineComputationMethod", "Exponentially Smoothed Moving Average")) {
+                case "Exponentially Smoothed Moving Average":
+                    addExponentiallySmoothedMovingAverage(lineDataSets);
+                    break;
+                case "Simple Moving Average":
+                    addSimpleMovingAverage(lineDataSets);
+                    break;
+                default:
+                    addExponentiallySmoothedMovingAverage(lineDataSets); // by default fall back to exponentially smoothed in case the setting is magically set to something different
+                    break;
+            }
 
-        if (prefs.getBoolean("simpleMovingAverage", false)) {
-            addSimpleMovingAverage(lineDataSets);
         }
 
         if (!lineDataSets.isEmpty()) {
@@ -414,6 +425,14 @@ public class ChartMeasurementView extends LineChart {
         }
 
         progressBar.setVisibility(GONE);
+    }
+
+    private void addExponentiallySmoothedMovingAverage(List<ILineDataSet> lineDataSets) {
+        addTrendLine(lineDataSets, this::getExponentiallySmoothedMovingAverageOfScaleMeasurements);
+    }
+
+    private void addSimpleMovingAverage(List<ILineDataSet> lineDataSets) {
+        addTrendLine(lineDataSets, this::getSimpleMovingAverageOfScaleMeasurements);
     }
 
     private void addMeasurementLine(List<ILineDataSet> lineDataSets, List<Entry> lineEntries, FloatMeasurementView measurementView) {
@@ -472,7 +491,7 @@ public class ChartMeasurementView extends LineChart {
         lineDataSets.add(goalLine);
     }
 
-    private List<ScaleMeasurement> getScaleMeasurementsAsTrendline(List<ScaleMeasurement> measurementList) {
+    private List<ScaleMeasurement> getExponentiallySmoothedMovingAverageOfScaleMeasurements(List<ScaleMeasurement> measurementList) {
         List<ScaleMeasurement> trendlineList = new ArrayList<>();
 
        // exponentially smoothed moving average with 10% smoothing
@@ -492,7 +511,7 @@ public class ChartMeasurementView extends LineChart {
         return trendlineList;
     }
 
-    private List<ScaleMeasurement> getMovingAverageOfScaleMeasurements(List<ScaleMeasurement> measurementList) {
+    private List<ScaleMeasurement> getSimpleMovingAverageOfScaleMeasurements(List<ScaleMeasurement> measurementList) {
         final long NUMBER_OF_MS_IN_A_DAY = 1000 * 60 * 60 * 24;
         List<ScaleMeasurement> movingAverageList = new ArrayList<>();
 
@@ -538,7 +557,7 @@ public class ChartMeasurementView extends LineChart {
         return nonZeroScaleMeasurementList;
     }
 
-    private void addTrendLine(List<ILineDataSet> lineDataSets) {
+    private void addTrendLine(List<ILineDataSet> lineDataSets, TrendlineComputationInterface trendlineComputation) {
 
         for (MeasurementView view : measurementViews) {
             if (view instanceof FloatMeasurementView && view.isVisible()) {
@@ -551,12 +570,16 @@ public class ChartMeasurementView extends LineChart {
                 }
 
                 // calculate the trendline from the non-zero scale measurement list
-                List<ScaleMeasurement> scaleMeasurementsAsTrendlineList = getScaleMeasurementsAsTrendline(nonZeroScaleMeasurementList);
+                List<ScaleMeasurement> scaleMeasurementsAsTrendlineList = trendlineComputation.operation(nonZeroScaleMeasurementList);
 
                 final List<Entry> lineEntries = convertMeasurementsToLineEntries(measurementView, scaleMeasurementsAsTrendlineList);
 
-                addMeasurementLineTrend(lineDataSets, lineEntries, measurementView);
-                addPredictionLine(lineDataSets, lineEntries, measurementView);
+                addMeasurementLineTrend(lineDataSets, lineEntries, measurementView, getContext().getString(R.string.label_trend_line));
+
+                // add the future entries
+                if (prefs.getBoolean("trendlineFuture", true)) {
+                    addPredictionLine(lineDataSets, lineEntries, measurementView);
+                }
             }
         }
     }
@@ -580,28 +603,6 @@ public class ChartMeasurementView extends LineChart {
         }
 
         return lineEntries;
-    }
-
-    private void addSimpleMovingAverage(List<ILineDataSet> lineDataSets) {
-
-        for (MeasurementView view : measurementViews) {
-            if (view instanceof FloatMeasurementView && view.isVisible()) {
-                final FloatMeasurementView measurementView = (FloatMeasurementView) view;
-
-                ArrayList<ScaleMeasurement> nonZeroScaleMeasurementList = getNonZeroScaleMeasurementsList(measurementView);
-                // check if we have some data left otherwise skip the measurement
-                if (nonZeroScaleMeasurementList.isEmpty()) {
-                    continue;
-                }
-
-                // calculate the simple moving average from the non-zero scale measurement list
-                List<ScaleMeasurement> scaleMeasurementsAsMovingAverageList = getMovingAverageOfScaleMeasurements(nonZeroScaleMeasurementList);
-
-                final List<Entry> lineEntries = convertMeasurementsToLineEntries(measurementView, scaleMeasurementsAsMovingAverageList);
-
-                addMeasurementLineSimpleMovingAverage(lineDataSets, lineEntries, measurementView);
-            }
-        }
     }
 
     private void addPredictionLine(List<ILineDataSet> lineDataSets, List<Entry> lineEntries, FloatMeasurementView measurementView) {
@@ -666,39 +667,8 @@ public class ChartMeasurementView extends LineChart {
         }
     }
 
-    private void addMeasurementLineTrend(List<ILineDataSet> lineDataSets, List<Entry> lineEntries, FloatMeasurementView measurementView) {
-        LineDataSet measurementLine = new LineDataSet(lineEntries, measurementView.getName().toString() + "-" + getContext().getString(R.string.label_trend_line));
-        measurementLine.setLineWidth(1.5f);
-        measurementLine.setValueTextSize(10.0f);
-        measurementLine.setColor(measurementView.getColor());
-        measurementLine.setValueTextColor(ColorUtil.getTintColor(getContext()));
-        measurementLine.setCircleColor(measurementView.getColor());
-        measurementLine.setCircleHoleColor(measurementView.getColor());
-        measurementLine.setAxisDependency(measurementView.getSettings().isOnRightAxis() ? YAxis.AxisDependency.RIGHT : YAxis.AxisDependency.LEFT);
-        measurementLine.setHighlightEnabled(true);
-        measurementLine.setDrawHighlightIndicators(true);
-        measurementLine.setHighlightLineWidth(1.5f);
-        measurementLine.setDrawHorizontalHighlightIndicator(false);
-        measurementLine.setHighLightColor(Color.RED);
-        measurementLine.setDrawCircles(false);//prefs.getBoolean("pointsEnable", true));
-        measurementLine.setDrawValues(prefs.getBoolean("labelsEnable", false));
-
-        if (measurementView.isVisible()) {
-            if (isInGraphKey) {
-                if (measurementView.getSettings().isInGraph()) {
-                    lineDataSets.add(measurementLine);
-                }
-            } else {
-                if (measurementView.getSettings().isInOverviewGraph()) {
-                    lineDataSets.add(measurementLine);
-                }
-            }
-        }
-    }
-
-
-    private void addMeasurementLineSimpleMovingAverage(List<ILineDataSet> lineDataSets, List<Entry> lineEntries, FloatMeasurementView measurementView) {
-        LineDataSet measurementLine = new LineDataSet(lineEntries, measurementView.getName().toString() + "-" + getContext().getString(R.string.label_simple_moving_average));
+    private void addMeasurementLineTrend(List<ILineDataSet> lineDataSets, List<Entry> lineEntries, FloatMeasurementView measurementView, String name) {
+        LineDataSet measurementLine = new LineDataSet(lineEntries, measurementView.getName().toString() + "-" + name);
         measurementLine.setLineWidth(1.5f);
         measurementLine.setValueTextSize(10.0f);
         measurementLine.setColor(measurementView.getColor());

@@ -19,7 +19,12 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 
+import androidx.navigation.NavDirections;
+import androidx.navigation.Navigation;
+import androidx.preference.DropDownPreference;
+import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.SeekBarPreference;
 
 import com.health.openscale.R;
 
@@ -29,6 +34,24 @@ public class GraphPreferences extends PreferenceFragmentCompat {
         setPreferencesFromResource(R.xml.graph_preferences, rootKey);
 
         setHasOptionsMenu(true);
+
+        DropDownPreference trendlinePreference = findPreference("trendlineComputationMethod");
+        SeekBarPreference simpleMovingAveragePreference = findPreference("simpleMovingAverageNumDays");
+
+        simpleMovingAveragePreference.setVisible(trendlinePreference.getValue().equals("Simple Moving Average"));
+
+        trendlinePreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                String selectedValue = (String) newValue;
+                boolean simpleMovingAverageEnabled = selectedValue.equals("Simple Moving Average");
+
+                // Enable or disable the simpleMovingAveragePreference based on the selected value
+                simpleMovingAveragePreference.setVisible(simpleMovingAverageEnabled);
+
+                return true;
+            }
+        });
     }
 
     @Override
