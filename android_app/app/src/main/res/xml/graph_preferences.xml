@@ -38,4 +38,18 @@
         android:key="overviewAxis"
         app:useSimpleSummaryProvider="true"
         android:title="@string/label_overview_axis" />
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="simpleMovingAverage"
+        android:summaryOff="@string/info_is_not_enable"
+        android:summaryOn="@string/info_is_enable"
+        android:title="@string/label_simple_moving_average" />
+    <SeekBarPreference
+        android:defaultValue="7"
+        android:key="simpleMovingAverageNumDays"
+        android:dependency="simpleMovingAverage"
+        android:max="30"
+        app:min="2"
+        app:showSeekBarValue="true"
+        android:title="@string/label_simple_moving_average_num_days" />
 </PreferenceScreen>

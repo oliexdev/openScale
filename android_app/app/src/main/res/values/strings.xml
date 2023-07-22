@@ -148,6 +148,8 @@
     <string name="label_initial_weight">Initial weight</string>
     <string name="label_goal_line">Goal line</string>
     <string name="label_trend_line">Trendline</string>
+    <string name="label_simple_moving_average">Simple moving average</string>
+    <string name="label_simple_moving_average_num_days">Number of days for simple moving average</string>
     <string name="label_prediction">Prediction</string>
     <string name="label_trend">Trend</string>
     <string name="label_help">Help</string>
