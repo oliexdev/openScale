@@ -698,7 +698,7 @@ public class ChartMeasurementView extends LineChart {
 
 
     private void addMeasurementLineSimpleMovingAverage(List<ILineDataSet> lineDataSets, List<Entry> lineEntries, FloatMeasurementView measurementView) {
-        LineDataSet measurementLine = new LineDataSet(lineEntries, measurementView.getName().toString() + "-" + getContext().getString(R.string.label_simple_moving_average));
+        LineDataSet measurementLine = new LineDataSet(lineEntries, "");
         measurementLine.setLineWidth(1.5f);
         measurementLine.setValueTextSize(10.0f);
         measurementLine.setColor(measurementView.getColor());
@@ -713,6 +713,7 @@ public class ChartMeasurementView extends LineChart {
         measurementLine.setHighLightColor(Color.RED);
         measurementLine.setDrawCircles(false);//prefs.getBoolean("pointsEnable", true));
         measurementLine.setDrawValues(prefs.getBoolean("labelsEnable", false));
+        measurementLine.setForm(Legend.LegendForm.NONE);
 
         if (measurementView.isVisible()) {
             if (isInGraphKey) {
