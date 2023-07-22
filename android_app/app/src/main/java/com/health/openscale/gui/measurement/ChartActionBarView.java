@@ -28,6 +28,7 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.shape.ShapeAppearanceModel;
 import com.health.openscale.gui.utils.ColorUtil;
 
 import java.util.List;
@@ -103,6 +104,7 @@ public class ChartActionBarView extends HorizontalScrollView {
         actionButton.setImageDrawable(measurementView.getIcon());
         actionButton.setClickable(true);
         actionButton.setSize(FloatingActionButton.SIZE_MINI);
+        actionButton.setShapeAppearanceModel(ShapeAppearanceModel.builder().setAllCornerSizes(1000).build());
         RelativeLayout.LayoutParams lay = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         lay.setMargins(0,5,20,10);
         actionButton.setLayoutParams(lay);

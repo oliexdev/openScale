@@ -34,6 +34,7 @@ import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.shape.ShapeAppearanceModel;
 import com.health.openscale.R;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.gui.measurement.FloatMeasurementView;
@@ -149,6 +150,7 @@ class StatisticAdapter extends RecyclerView.Adapter<StatisticAdapter.ViewHolder>
         endValueText.append(measurementView.getValueAsString(true));
         holder.endValueView.setText(endValueText);
         holder.iconView.setImageDrawable(measurementView.getIcon());
+        holder.iconView.setShapeAppearanceModel(ShapeAppearanceModel.builder().setAllCornerSizes(1000).build());
         holder.iconView.setBackgroundTintList(ColorStateList.valueOf(measurementView.getColor()));
 
         measurementView.loadFrom(firstMeasurement, null);
