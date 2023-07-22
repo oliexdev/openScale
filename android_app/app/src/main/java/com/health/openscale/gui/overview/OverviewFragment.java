@@ -53,6 +53,7 @@ import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.DateTimeHelpers;
 import com.health.openscale.gui.measurement.ChartActionBarView;
 import com.health.openscale.gui.measurement.ChartMeasurementView;
+import com.health.openscale.gui.measurement.FloatMeasurementView;
 import com.health.openscale.gui.measurement.WeightMeasurementView;
 
 import java.text.DateFormat;
@@ -105,16 +106,7 @@ public class OverviewFragment extends Fragment {
         chartView.setIsInGraphKey(false);
         chartView.getLegend().setEnabled(false);
 
-        if (!prefs.getBoolean("enableYAxis", false)) {
-            chartView.getAxisRight().setDrawLabels(false);
-            chartView.getAxisRight().setDrawGridLines(false);
-            chartView.getAxisRight().setDrawAxisLine(false);
-
-            chartView.getAxisLeft().setDrawGridLines(false);
-            chartView.getAxisLeft().setDrawLabels(false);
-            chartView.getAxisLeft().setDrawAxisLine(false);
-            chartView.getXAxis().setDrawGridLines(false);
-        }
+        setYAxisVisibility(prefs.getBoolean("enableYAxis", false));
 
         chartActionBarView = overviewView.findViewById(R.id.chartActionBar);
         chartActionBarView.setIsInGraphKey(false);
@@ -122,6 +114,7 @@ public class OverviewFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 chartView.refreshMeasurementList();
+                setYAxisVisibility(prefs.getBoolean("enableYAxis", false));
                 updateChartView();
             }
         });
@@ -154,17 +147,11 @@ public class OverviewFragment extends Fragment {
                         }
                         return true;
                     case R.id.enableYAxis:
-                        if (item.isChecked()) {
-                            item.setChecked(false);
-                            prefs.edit().putBoolean("enableYAxis", false).apply();
-                            setYAxisVisibility(false);
-                            updateChartView();
-                        } else {
-                            item.setChecked(true);
-                            prefs.edit().putBoolean("enableYAxis", true).apply();
-                            setYAxisVisibility(true);
-                            updateChartView();
-                        }
+                        boolean checked = item.isChecked();
+                        item.setChecked(!checked);
+                        prefs.edit().putBoolean("enableYAxis", !checked).apply();
+                        setYAxisVisibility(!checked);
+                        updateChartView();
                         return true;
                     case R.id.menu_range_day:
                         prefs.edit().putInt("selectRangeMode", ChartMeasurementView.ViewMode.DAY_OF_ALL.ordinal()).commit();
@@ -256,9 +243,16 @@ public class OverviewFragment extends Fragment {
     }
 
     protected void setYAxisVisibility(boolean visible) {
-        chartView.getAxisRight().setDrawLabels(visible);
-        chartView.getAxisRight().setDrawGridLines(visible);
-        chartView.getAxisRight().setDrawAxisLine(visible);
+        boolean rightAxisVisible = visible;
+
+        // disable right Y-axis if there is only one measurement view
+        if (chartView.getNumberOfMeasurementViewsInOverview() < 2) {
+            rightAxisVisible = false;
+        }
+
+        chartView.getAxisRight().setDrawLabels(rightAxisVisible);
+        chartView.getAxisRight().setDrawGridLines(rightAxisVisible);
+        chartView.getAxisRight().setDrawAxisLine(rightAxisVisible);
 
         chartView.getAxisLeft().setDrawGridLines(visible);
         chartView.getAxisLeft().setDrawLabels(visible);

@@ -630,4 +630,8 @@ public class ChartMeasurementView extends LineChart {
         }
     }
 
+    public long getNumberOfMeasurementViewsInOverview() {
+        return measurementViews.stream().filter(view -> view instanceof FloatMeasurementView && view.isVisible() && view.getSettings().isInOverviewGraph()).count();
+    }
+
 }
