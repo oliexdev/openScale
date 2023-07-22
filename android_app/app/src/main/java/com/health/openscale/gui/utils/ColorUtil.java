@@ -33,6 +33,18 @@ public class ColorUtil {
     public static final int COLOR_BLACK = Color.parseColor("#000000");
     public static final int[] COLORS = new int[]{COLOR_BLUE, COLOR_VIOLET, COLOR_GREEN, COLOR_ORANGE, COLOR_RED};
 
+    public static int getPrimaryColor(Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+
+        int nightModeFlags = context.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+
+        if (prefs.getString("app_theme", "Light").equals("Dark") || nightModeFlags == Configuration.UI_MODE_NIGHT_YES) {
+            return context.getResources().getColor(android.R.color.primary_text_dark);
+        }
+
+        return context.getResources().getColor(android.R.color.primary_text_light);
+    }
+
     public static int getTintColor(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 

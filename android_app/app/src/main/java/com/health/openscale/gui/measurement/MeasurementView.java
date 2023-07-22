@@ -20,11 +20,11 @@ import static com.health.openscale.gui.measurement.MeasurementView.MeasurementVi
 import static com.health.openscale.gui.measurement.MeasurementView.MeasurementViewMode.STATISTIC;
 import static com.health.openscale.gui.measurement.MeasurementView.MeasurementViewMode.VIEW;
 
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
@@ -44,11 +44,13 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import androidx.preference.CheckBoxPreference;
 import androidx.preference.PreferenceManager;
 import androidx.preference.PreferenceScreen;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
@@ -454,11 +456,12 @@ public abstract class MeasurementView extends TableLayout {
 
     private void prepareInputDialog(final AlertDialog dialog) {
         dialog.setTitle(getName());
+        getIcon().setColorFilter(ColorUtil.getTintColor(getContext()), PorterDuff.Mode.SRC_IN);
         dialog.setIcon(getIcon());
 
         final View input = getInputView();
 
-        FrameLayout fl = dialog.findViewById(android.R.id.custom);
+        FrameLayout fl = dialog.findViewById(R.id.custom);
         fl.removeAllViews();
         fl.addView(input, new LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT));
@@ -475,10 +478,13 @@ public abstract class MeasurementView extends TableLayout {
         };
 
         dialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener(clickListener);
+        dialog.getButton(DialogInterface.BUTTON_POSITIVE).setTextColor(ColorUtil.getPrimaryColor(getContext()));
         dialog.getButton(DialogInterface.BUTTON_NEGATIVE).setOnClickListener(clickListener);
+        dialog.getButton(DialogInterface.BUTTON_NEGATIVE).setTextColor(ColorUtil.getPrimaryColor(getContext()));
 
         final MeasurementView next = getNextView();
         if (next != null) {
+            dialog.getButton(DialogInterface.BUTTON_NEUTRAL).setTextColor(ColorUtil.getPrimaryColor(getContext()));
             dialog.getButton(DialogInterface.BUTTON_NEUTRAL).setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -494,7 +500,7 @@ public abstract class MeasurementView extends TableLayout {
     }
 
     private void showInputDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getContext());
 
         builder.setTitle(getName());
         builder.setIcon(getIcon());

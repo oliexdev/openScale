@@ -49,6 +49,7 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 import com.health.openscale.core.utils.Converters;
+import com.health.openscale.gui.utils.ColorUtil;
 
 import java.util.Date;
 import java.util.Locale;
@@ -707,10 +708,12 @@ public abstract class FloatMeasurementView extends MeasurementView {
         final Button inc = view.findViewById(R.id.btn_inc);
         inc.setText("\u25b2 +" + formatValue(INC_DEC_DELTA));
         inc.setOnClickListener(onClickListener);
+        inc.setTextColor(ColorUtil.getPrimaryColor(getContext()));
         inc.setOnTouchListener(repeatListener);
 
         final Button dec = view.findViewById(R.id.btn_dec);
         dec.setText("\u25bc -" + formatValue(INC_DEC_DELTA));
+        dec.setTextColor(ColorUtil.getPrimaryColor(getContext()));
         dec.setOnClickListener(onClickListener);
         dec.setOnTouchListener(repeatListener);
 
