@@ -9,7 +9,7 @@
         android:checked="false"/>
     <item
         android:id="@+id/enableYAxis"
-        android:title="@string/label_overview_axis"
+        android:title="@string/label_y_axis"
         android:checkable="true"
         android:checked="false"/>
 
