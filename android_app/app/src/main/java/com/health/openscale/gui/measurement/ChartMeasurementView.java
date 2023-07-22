@@ -284,6 +284,8 @@ public class ChartMeasurementView extends LineChart {
     private void setCustomViewPortOffsets() {
         float offsetLeft = 0f, offsetRight = 0f, offsetTop = 0f, offsetBottom = 0f;
 
+        final float OFFSET_MULTIPLIER = 1.2f;
+
         RectF mOffsetsBuffer = new RectF();
         calculateLegendOffsets(mOffsetsBuffer);
 
@@ -295,12 +297,12 @@ public class ChartMeasurementView extends LineChart {
         // offsets for y-labels
         if (mAxisLeft.needsOffset()) {
             offsetLeft += mAxisLeft.getRequiredWidthSpace(mAxisRendererLeft
-                    .getPaintAxisLabels());
+                    .getPaintAxisLabels()) * OFFSET_MULTIPLIER;
         }
 
         if (mAxisRight.needsOffset()) {
             offsetRight += mAxisRight.getRequiredWidthSpace(mAxisRendererRight
-                    .getPaintAxisLabels());
+                    .getPaintAxisLabels()) * OFFSET_MULTIPLIER;
         }
 
         if (mXAxis.isEnabled() && mXAxis.isDrawLabelsEnabled()) {
