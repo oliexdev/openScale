@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:background="@color/blue_pressed">
+    android:background="@color/seed">
 
     <ImageView
         android:id="@+id/profileImageView"

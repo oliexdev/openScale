@@ -166,7 +166,7 @@ public class MainActivity extends AppCompatActivity
             if (Build.VERSION.SDK_INT >= 29) {
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
             } else {
-                setTheme(R.style.AppTheme_Dark);
+                setTheme(R.style.AppTheme);
             }
         }
 

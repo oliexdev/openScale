@@ -61,7 +61,6 @@ public class ChartActionBarView extends HorizontalScrollView {
 
         actionBarView = new LinearLayout(getContext());
         actionBarView.setOrientation(LinearLayout.HORIZONTAL);
-        actionBarView.setBackgroundColor(ColorUtil.COLOR_BLACK);
 
         measurementViews = MeasurementView.getMeasurementList(
                 getContext(), MeasurementView.DateTimeOrder.NONE);
