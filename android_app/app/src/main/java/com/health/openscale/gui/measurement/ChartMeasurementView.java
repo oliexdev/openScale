@@ -16,7 +16,6 @@
 
 package com.health.openscale.gui.measurement;
 
-import static com.health.openscale.gui.preferences.utils.TrendlineComputationMethod.*;
 import static java.time.temporal.ChronoUnit.DAYS;
 
 import android.content.Context;
@@ -57,6 +56,9 @@ import java.util.List;
 import java.util.Stack;
 
 public class ChartMeasurementView extends LineChart {
+    public static final String COMPUTATION_METHOD_SIMPLE_MOVING_AVERAGE = "SimpleMovingAverage";
+    public static final String COMPUTATION_METHOD_EXPONENTIALLY_SMOOTHED_MOVING_AVERAGE = "ExponentiallySmoothedMovingAverage";
+
     public enum ViewMode {
         DAY_OF_MONTH,
         WEEK_OF_MONTH,
@@ -400,12 +402,12 @@ public class ChartMeasurementView extends LineChart {
         }
 
         if (prefs.getBoolean("trendLine", false)) {
-            String selectedTrendLineComputationMethod = prefs.getString("trendlineComputationMethod", EXPONENTIALLY_SMOOTHED_MOVING_AVERAGE);
+            String selectedTrendLineComputationMethod = prefs.getString("trendlineComputationMethod", COMPUTATION_METHOD_EXPONENTIALLY_SMOOTHED_MOVING_AVERAGE);
             switch (selectedTrendLineComputationMethod) {
-                case EXPONENTIALLY_SMOOTHED_MOVING_AVERAGE:
+                case COMPUTATION_METHOD_EXPONENTIALLY_SMOOTHED_MOVING_AVERAGE:
                     addExponentiallySmoothedMovingAverage(lineDataSets);
                     break;
-                case SIMPLE_MOVING_AVERAGE:
+                case COMPUTATION_METHOD_SIMPLE_MOVING_AVERAGE:
                     addSimpleMovingAverage(lineDataSets);
                     break;
                 default:
