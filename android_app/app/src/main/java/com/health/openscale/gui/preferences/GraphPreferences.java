@@ -53,6 +53,8 @@ public class GraphPreferences extends PreferenceFragmentCompat {
 
                 // hide selector of the number of days when simple moving average is not selected
                 simpleMovingAveragePreference.setVisible(simpleMovingAverageEnabled);
+                // scroll to the bottom to show the new preference to the user
+                getListView().scrollToPosition(getListView().getChildCount());
 
                 return true;
             }
