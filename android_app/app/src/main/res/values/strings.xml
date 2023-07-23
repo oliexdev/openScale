@@ -139,6 +139,10 @@
     <string name="Friday">Friday</string>
     <string name="Saturday">Saturday</string>
     <string name="Sunday">Sunday</string>
+    <string name="label_simple_moving_average">Simple Moving Average</string>
+    <string name="label_exponentially_smoothed_moving_average">Exponentially Smoothed Moving Average</string>
+    <string name="label_trendline_computation_method">Trendline computation method</string>
+    <string name="label_trendline_future">Future trend</string>
     <string name="label_bt_device_no_support">device not supported</string>
     <string name="label_exportBackup">Export backup</string>
     <string name="label_importBackup">Import backup</string>
@@ -148,6 +152,7 @@
     <string name="label_initial_weight">Initial weight</string>
     <string name="label_goal_line">Goal line</string>
     <string name="label_trend_line">Trendline</string>
+    <string name="label_simple_moving_average_num_days">Number of days to average over</string>
     <string name="label_prediction">Prediction</string>
     <string name="label_trend">Trend</string>
     <string name="label_help">Help</string>
