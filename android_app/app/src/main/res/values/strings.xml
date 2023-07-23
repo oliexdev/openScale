@@ -139,6 +139,10 @@
     <string name="Friday">Friday</string>
     <string name="Saturday">Saturday</string>
     <string name="Sunday">Sunday</string>
+    <string name="label_simple_moving_average">Simple Moving Average</string>
+    <string name="label_exponentially_smoothed_moving_average">Exponentially Smoothed Moving Average</string>
+    <string name="label_trendline_computation_method">Trendline computation method</string>
+    <string name="label_trendline_future">Future trend</string>
     <string name="label_bt_device_no_support">device not supported</string>
     <string name="label_exportBackup">Export backup</string>
     <string name="label_importBackup">Import backup</string>
@@ -288,8 +292,4 @@
     <string name="app_intro_back_button">Back</string>
     <string name="app_intro_done_button">Done</string>
     <string name="info_create_new_user_on_scale">Create new user on scale.</string>
-    <string name="simple_moving_average">Simple Moving Average</string>
-    <string name="exponentially_smoothed_moving_average">Exponentially Smoothed Moving Average</string>
-    <string name="label_trendline_computation_method">Trendline computation method</string>
-    <string name="trendline_future">Future trend</string>
 </resources>

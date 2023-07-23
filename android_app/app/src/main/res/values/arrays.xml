@@ -120,8 +120,8 @@
     </string-array>
 
     <string-array name="trendline_computation_methods_entries">
-        <item>@string/simple_moving_average</item>
-        <item>@string/exponentially_smoothed_moving_average</item>
+        <item>@string/label_simple_moving_average</item>
+        <item>@string/label_exponentially_smoothed_moving_average</item>
     </string-array>
 
     <string-array name="trendline_computation_methods_values">

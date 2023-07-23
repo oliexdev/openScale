@@ -41,7 +41,7 @@
             android:dependency="trendLine"
             android:summaryOff="@string/info_is_not_enable"
             android:summaryOn="@string/info_is_enable"
-            android:title="@string/trendline_future" />
+            android:title="@string/label_trendline_future" />
         <DropDownPreference
             android:id="@+id/trendlineComputationMethodDropdown"
             android:defaultValue="Exponentially Smoothed Moving Average"
