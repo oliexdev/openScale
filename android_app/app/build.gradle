@@ -8,8 +8,8 @@ android {
         testApplicationId "com.health.openscale.test"
         minSdkVersion 23
         targetSdkVersion 34
-        versionCode 63
-        versionName "2.5.1"
+        versionCode 64
+        versionName "2.5.2"
 
         manifestPlaceholders = [
                 appIcon: "@drawable/ic_launcher_openscale",
