@@ -31,6 +31,10 @@
         <item name="colorAccent">@color/md_theme_dark_onPrimary</item>
     </style>
 
+    <style name="AppTheme.NavigationBar" parent="Widget.MaterialComponents.BottomNavigationView.Colored">
+        <item name="colorSecondaryContainer">@android:color/transparent</item>
+    </style>
+
     <style name="AppTheme.Dialog" parent="Theme.MaterialComponents.DayNight.Dialog">
         <item name="colorPrimary">@color/md_theme_dark_onBackground</item>
     </style>

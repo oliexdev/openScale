@@ -30,6 +30,10 @@
         <item name="colorAccent">@color/md_theme_light_primary</item>
     </style>
 
+    <style name="AppTheme.NavigationBar" parent="Widget.MaterialComponents.BottomNavigationView.Colored">
+        <item name="colorSecondaryContainer">@android:color/transparent</item>
+    </style>
+    
     <style name="AppTheme.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>

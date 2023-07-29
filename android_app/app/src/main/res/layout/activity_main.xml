@@ -47,6 +47,7 @@
                 android:layout_weight="10"
                 app:labelVisibilityMode="unlabeled"
                 android:background="?attr/colorPrimaryDark"
+                android:theme="@style/AppTheme.NavigationBar"
                 app:itemIconTint="@drawable/nav_item_colors"
                 app:itemTextColor="@android:color/transparent"
                 app:menu="@menu/drawer_bottom_view" />
