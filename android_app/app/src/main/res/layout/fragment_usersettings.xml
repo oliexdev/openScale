@@ -98,12 +98,14 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:checked="true"
+                        android:theme="@style/AppTheme.RadioButton"
                         android:text="@string/label_male" />
 
                     <RadioButton
                         android:id="@+id/btnRadioWoman"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:theme="@style/AppTheme.RadioButton"
                         android:text="@string/label_female" />
                 </RadioGroup>
             </TableRow>
@@ -184,11 +186,13 @@
                         android:layout_height="wrap_content"
                         android:text="cm"
                         android:id="@+id/btnRadioCM"
+                        android:theme="@style/AppTheme.RadioButton"
                         android:checked="true" />
 
                     <RadioButton
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:theme="@style/AppTheme.RadioButton"
                         android:text="in"
                         android:id="@+id/btnRadioINCH" />
                 </RadioGroup>
@@ -216,18 +220,21 @@
                         android:layout_height="wrap_content"
                         android:text="kg"
                         android:id="@+id/btnRadioKG"
+                        android:theme="@style/AppTheme.RadioButton"
                         android:checked="true" />
 
                     <RadioButton
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="lb"
+                        android:theme="@style/AppTheme.RadioButton"
                         android:id="@+id/btnRadioLB" />
 
                     <RadioButton
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="st"
+                        android:theme="@style/AppTheme.RadioButton"
                         android:id="@+id/btnRadioST" />
                 </RadioGroup>
             </TableRow>

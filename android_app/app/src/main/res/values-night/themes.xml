@@ -27,6 +27,16 @@
         <item name="colorOnSurfaceInverse">@color/md_theme_dark_inverseOnSurface</item>
         <item name="colorSurfaceInverse">@color/md_theme_dark_inverseSurface</item>
         <item name="colorPrimaryInverse">@color/md_theme_dark_inversePrimary</item>
+        <item name="alertDialogTheme">@style/AppTheme.Dialog</item>
+        <item name="colorAccent">@color/md_theme_dark_onPrimary</item>
+    </style>
+
+    <style name="AppTheme.Dialog" parent="Theme.MaterialComponents.DayNight.Dialog">
+        <item name="colorPrimary">@color/md_theme_dark_onBackground</item>
+    </style>
+
+    <style name="AppTheme.RadioButton" parent="Widget.Material3.CompoundButton.RadioButton">
+        <item name="colorPrimary">@color/md_theme_dark_onPrimary</item>
     </style>
 
     <style name="AppTheme.NoActionBar">

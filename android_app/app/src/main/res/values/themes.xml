@@ -27,6 +27,7 @@
         <item name="colorOnSurfaceInverse">@color/md_theme_light_inverseOnSurface</item>
         <item name="colorSurfaceInverse">@color/md_theme_light_inverseSurface</item>
         <item name="colorPrimaryInverse">@color/md_theme_light_inversePrimary</item>
+        <item name="colorAccent">@color/md_theme_light_primary</item>
     </style>
 
     <style name="AppTheme.NoActionBar">
