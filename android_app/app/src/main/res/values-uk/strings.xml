@@ -296,4 +296,10 @@
     <string name="label_measurements">вимірювання</string>
     <string name="label_auto_backup_lacation">Не вибрано місце автоматичного резервного копіювання</string>
     <string name="permission_notification_info">Потрібен дозвіл на сповіщення, щоб показувати сповіщення</string>
+    <string name="label_simple_moving_average">Проста змінна середня</string>
+    <string name="label_exponentially_smoothed_moving_average">Експоненціально згладжена змінна середня</string>
+    <string name="label_trendline_future">Майбутній тренд</string>
+    <string name="label_trendline_computation_method">Метод обчислення лінії тренду</string>
+    <string name="label_simple_moving_average_num_days">Кількість днів до середнього показника</string>
+    <string name="label_y_axis">Вісь Y</string>
 </resources>
