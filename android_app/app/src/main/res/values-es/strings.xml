@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="title_overview">General</string>
+    <string name="title_overview">Descripción general</string>
     <string name="title_graph">Gráfica</string>
     <string name="title_table">Tabla</string>
     <string name="title_statistics">Estadísticas</string>
@@ -101,10 +101,10 @@
     <string name="Friday">Viernes</string>
     <string name="Saturday">Sábado</string>
     <string name="Sunday">Domingo</string>
-    <string name="label_bt_device_no_support">dispositivo no admitido</string>
-    <string name="label_exportBackup">Exportar copia de respaldo</string>
-    <string name="label_importBackup">Importar copia de respaldo</string>
-    <string name="label_backup">Copia de respaldo</string>
+    <string name="label_bt_device_no_support">dispositivo no soportado</string>
+    <string name="label_exportBackup">Exportar la copia de seguridad</string>
+    <string name="label_importBackup">Importar la copia de seguridad</string>
+    <string name="label_backup">Copia de seguridad</string>
     <string name="label_export_dir">Exportar el directorio</string>
     <string name="label_ignoreOutOfRange">Ignorar datos fuera de límites</string>
     <string name="label_initial_weight">Peso inicial</string>
@@ -296,4 +296,10 @@
     <string name="label_goal_enabled">Objetivo habilitado</string>
     <string name="label_auto_backup_lacation">No se ha seleccionado ninguna ubicación para la copia de seguridad automática</string>
     <string name="permission_notification_info">Se requiere un permiso de notificación, para mostrar la notificación</string>
+    <string name="label_trendline_computation_method">Método del cálculo de la línea de tendencia</string>
+    <string name="label_simple_moving_average_num_days">Número de días para calcular la media</string>
+    <string name="label_trendline_future">Tendencia futura</string>
+    <string name="label_simple_moving_average">Media móvil simple</string>
+    <string name="label_exponentially_smoothed_moving_average">Media móvil suavizada exponencialmente</string>
+    <string name="label_y_axis">Eje y</string>
 </resources>
