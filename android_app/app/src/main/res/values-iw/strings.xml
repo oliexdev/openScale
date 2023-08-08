@@ -296,4 +296,10 @@
     <string name="info_select_auto_backup_export_dir">נא לבחור תיקיית ייצוא לגיבוי אוטומטי</string>
     <string name="label_auto_backup_lacation">לא נבחר מקום לגיבוי אוטומטי</string>
     <string name="permission_notification_info">נדרשת הרשאה להתראות, כדי להציג אותן</string>
+    <string name="label_trendline_computation_method">שיטת חישוב קו מגמה</string>
+    <string name="label_trendline_future">מגמה עתידית</string>
+    <string name="label_simple_moving_average_num_days">מספר הימים לאגירת ממוצע</string>
+    <string name="label_simple_moving_average">ממוצע נע פשוט</string>
+    <string name="label_exponentially_smoothed_moving_average">ממוצע נע מוחלק מעריכית</string>
+    <string name="label_y_axis">ציר Y</string>
 </resources>
