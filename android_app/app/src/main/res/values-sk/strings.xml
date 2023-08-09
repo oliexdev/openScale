@@ -45,16 +45,16 @@
     <string name="label_export">Export</string>
     <string name="label_delete_all">Vymazať všetko</string>
     <string name="error_value_required">Povinná hodnota</string>
-    <string name="error_value_range">Hodnota mimo rozsah</string>
+    <string name="error_value_range">Hodnota mimo rozsahu</string>
     <string name="error_exporting">Nepodarilo sa exportovať</string>
     <string name="error_importing">Nepodarilo sa importovať</string>
     <string name="error_user_name_required">Meno je povinné</string>
     <string name="error_height_required">Výška je povinná</string>
     <string name="error_initial_weight_required">Počiatočná hmotnosť je povinná</string>
     <string name="error_goal_weight_required">Cieľová hmotnosť je povinná</string>
-    <string name="info_data_deleted">Položka bola vymazaná</string>
-    <string name="info_data_all_deleted">Všetky položky boli vymazané</string>
-    <string name="info_data_exported">Exportované do</string>
+    <string name="info_data_deleted">Položka vymazaná</string>
+    <string name="info_data_all_deleted">Všetky položky vymazané</string>
+    <string name="info_data_exported">Údaje exportované do</string>
     <string name="info_data_imported">Importované z</string>
     <string name="info_enter_value_in">Zadajte hodnotu v</string>
     <string name="info_enter_comment">Voliteľný komentár</string>
@@ -108,7 +108,7 @@
     <string name="title_about">O aplikácii</string>
     <string name="title_general">Všeobecné</string>
     <string name="label_share">Zdieľať</string>
-    <string name="label_share_subject">Export údajov do CSV súboru (%s)</string>
+    <string name="label_share_subject">CSV export údajov (%s)</string>
     <string name="info_bluetooth_no_device_set">Zvoľte zariadenie bluetooth</string>
     <string name="info_new_data_duplicated">meranie s rovnakým dátumom a časom už existuje</string>
     <string name="label_mergeWithLastMeasurement">Zlúčiť s posledným meraním</string>
@@ -156,7 +156,7 @@
     <string name="label_contribute_translation">Pomôžte s prekladom</string>
     <string name="label_add_measurement">Pridať meranie</string>
     <string name="label_tdee">Celkový denný výdaj energie</string>
-    <string name="label_lbm">asa</string>
+    <string name="label_lbm">Čistá svalová hmota</string>
     <string name="toggle_expand">Rozbaliť</string>
     <string name="label_measurement_in_percent">Meranie v %</string>
     <string name="label_estimate_measurement">Odhad merania</string>
@@ -223,4 +223,13 @@
     <string name="activity_level_heavy">Vysoký</string>
     <string name="permission_read_write_data_label">Čítanie/Zápis dát openScale</string>
     <string name="permission_location_service_info">Pre vyhľadanie Bluetooth zariadení prosím udeľte oprávnenie prístupu k polohe v nastaveniach Androidu. Potom ho môžete zase odobrať.</string>
+    <string name="amputation_level_arm">Rameno</string>
+    <string name="label_slide_bluetooth_top_text">Sú podporované viaceré Bluetooth váhy od rôznych výrobcov.</string>
+    <string name="label_prediction">Predpoveď</string>
+    <string name="amputation_level_hand">Ruka</string>
+    <string name="label_time_period_last_7_days">posledných 7 dní</string>
+    <string name="label_time_period_last_30_days">posledných 30 dní</string>
+    <string name="label_with">s</string>
+    <string name="label_measurements">merania</string>
+    <string name="permission_read_write_data_description">čítať / zapisovať údaje openScale vrátane informácií o používateľovi a všetkých uložených meraní</string>
 </resources>
