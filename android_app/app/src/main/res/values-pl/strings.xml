@@ -296,4 +296,10 @@
     <string name="label_abbr_avg">śr.</string>
     <string name="label_measurements">pomiary</string>
     <string name="info_select_auto_backup_export_dir">Wybierz katalog do eksportowania automatycznej kopii zapasowej</string>
+    <string name="label_simple_moving_average">Prosta średnia ruchoma</string>
+    <string name="label_y_axis">Oś Y</string>
+    <string name="label_exponentially_smoothed_moving_average">Wygładzona wykładniczo średnia ruchoma</string>
+    <string name="label_trendline_computation_method">Metoda obliczania linii trendu</string>
+    <string name="label_trendline_future">Przyszły trend</string>
+    <string name="label_simple_moving_average_num_days">Liczba dni do uśrednienia</string>
 </resources>
