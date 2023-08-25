@@ -117,7 +117,7 @@
     <string name="label_export_dir">Mapa izvoza</string>
     <string name="label_ignoreOutOfRange">Zanemari podatke izvan granica</string>
     <string name="label_initial_weight">Početna težina</string>
-    <string name="label_goal_line">Smjer cilja</string>
+    <string name="label_goal_line">Linija cilja</string>
     <string name="label_help">Pomoć</string>
     <string name="label_feedback_message_enjoying">Sviđa ti se openScale\?</string>
     <string name="label_feedback_message_rate_app">Kako bi bilo, da ocijeniš program na Google Play-u ili GitHub-u\?</string>
@@ -237,7 +237,7 @@
 \nopenScale</string>
     <string name="label_upgrade_to_openScale_pro">Nadogradi na „openScale pro” za Bluetooth podršku</string>
     <string name="label_calories">Kalorije</string>
-    <string name="label_is_on_right_axis">Je na desnoj osi</string>
+    <string name="label_is_on_right_axis">Na desnoj osi</string>
     <string name="permission_read_write_data_label">Čitaj/zapiši openScale podatke</string>
     <string name="permission_read_write_data_description">čitaj/zapiši openScale podatke, uključujući korisničke podatke i sva spremljena mjerenja</string>
     <string name="permission_location_service_info">Dozvoli pristup lokaciji u Androidovim postavkama za traženje Bluetooth uređaja. Opcionalno zabrani pristup nakon toga.</string>
@@ -274,7 +274,7 @@
     <string name="label_amputation_right">Amputacija desno</string>
     <string name="label_amputation_left">Amputacija lijevo</string>
     <string name="label_assisted_weighing">Potpomognuto vaganje</string>
-    <string name="label_trend_line">Smjer trenda</string>
+    <string name="label_trend_line">Linija trenda</string>
     <string name="label_trend">Trend</string>
     <string name="label_prediction">Predviđanje</string>
     <string name="info_create_new_user_on_scale">Kreiraj novog korisnika vage.</string>
@@ -296,4 +296,10 @@
     <string name="label_measurements">mjerenja</string>
     <string name="label_auto_backup_lacation">Nijedno mjesto nije odabrano za izvoz automatske sigurnosne kopije</string>
     <string name="permission_notification_info">Za prikaz obavijesti potrebna je dozvola za obavijesti</string>
+    <string name="label_simple_moving_average">Jednostavan pomični prosjek</string>
+    <string name="label_trendline_computation_method">Način računanja linije trenda</string>
+    <string name="label_exponentially_smoothed_moving_average">Eksponencijalan pomični prosjek</string>
+    <string name="label_trendline_future">Trend budućnosti</string>
+    <string name="label_simple_moving_average_num_days">Broj dana za računanje prosjeka</string>
+    <string name="label_y_axis">Os y</string>
 </resources>
