@@ -296,4 +296,9 @@
     <string name="label_abbr_max">max</string>
     <string name="label_auto_backup_lacation">Nessuna posizione di backup automatico selezionata</string>
     <string name="permission_notification_info">Autorizzazione alle notifiche richiesto, per mostrare le notifiche</string>
+    <string name="label_simple_moving_average">Media mobile semplice</string>
+    <string name="label_exponentially_smoothed_moving_average">Media mobile esponenziale</string>
+    <string name="label_trendline_computation_method">Metodo di calcolo della tendenza</string>
+    <string name="label_trendline_future">Tendenza futura</string>
+    <string name="label_y_axis">Asse y</string>
 </resources>
