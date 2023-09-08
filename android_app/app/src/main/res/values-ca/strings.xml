@@ -296,4 +296,10 @@
     <string name="label_with">amb</string>
     <string name="label_goal_enabled">Objectiu activat</string>
     <string name="permission_notification_info">Cal el permís de notificacions per a mostrar la notificació</string>
+    <string name="label_y_axis">Eix Y</string>
+    <string name="label_simple_moving_average">Mitjana mòbil simple</string>
+    <string name="label_trendline_computation_method">Mètode del càlcul de la línia de tendència</string>
+    <string name="label_exponentially_smoothed_moving_average">Mitjana mòbil suavitzada exponencialment</string>
+    <string name="label_trendline_future">Tendència futura</string>
+    <string name="label_simple_moving_average_num_days">Nombre de dies a utilitzar per a la mitjana</string>
 </resources>
