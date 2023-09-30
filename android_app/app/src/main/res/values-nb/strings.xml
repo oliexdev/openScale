@@ -280,4 +280,17 @@
     <string name="info_select_scale_user">Velg vektbruker</string>
     <string name="info_enter_consent_code_for_scale_user">Skriv inn PIN/samtykkekode for vektbruker %s</string>
     <string name="info_create_new_user_on_scale">Lag ny vektbruker.</string>
+    <string name="label_time_period_all_days">alle dager</string>
+    <string name="label_abbr_min">min</string>
+    <string name="label_time_period_last_7_days">siste 7 dager</string>
+    <string name="label_time_period_last_30_days">liste 30 dager</string>
+    <string name="label_goal_enabled">Mål aktivert</string>
+    <string name="label_time_period_set_reference_day">sett referansedag</string>
+    <string name="label_abbr_max">maks</string>
+    <string name="label_time_period">Tidsperiode</string>
+    <string name="label_y_axis">Y-akse</string>
+    <string name="label_simple_moving_average">Enkelt bevegelig gjennomsnitt</string>
+    <string name="label_with">med</string>
+    <string name="label_exponentially_smoothed_moving_average">Eksponensielt utglattet bevegelig gjennomsnitt</string>
+    <string name="label_measurements">målinger</string>
 </resources>
