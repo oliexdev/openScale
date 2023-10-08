@@ -293,4 +293,13 @@
     <string name="label_with">med</string>
     <string name="label_exponentially_smoothed_moving_average">Eksponensielt utglattet bevegelig gjennomsnitt</string>
     <string name="label_measurements">målinger</string>
+    <string name="label_is_sticky">Er klebelig</string>
+    <string name="info_select_auto_backup_export_dir">Velg katalog for automatisk sikkerhetseksport</string>
+    <string name="label_abbr_avg">gj.snitt.</string>
+    <string name="label_time_period_set_custom_range">sett brukerdefinert tidsrom</string>
+    <string name="label_trendline_computation_method">Trendlinjeberegningsmetode</string>
+    <string name="permission_notification_info">Varslingstillatelse kreves for å vise melding</string>
+    <string name="label_auto_backup_lacation">Intet sted for automatisk sikkerhetskopiering valgt</string>
+    <string name="label_trendline_future">Fremtidig trend</string>
+    <string name="label_simple_moving_average_num_days">Antall dager å ta gjennomsnittet over</string>
 </resources>
