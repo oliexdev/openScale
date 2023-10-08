@@ -280,7 +280,7 @@
     <string name="info_enter_consent_code_for_scale_user">Wprowadź kod PIN/kod zgody dla użytkownika wagi %s</string>
     <string name="info_create_new_user_on_scale">Utwórz nowego użytkownika wagi.</string>
     <string name="info_select_scale_user">Wybierz użytkownika wagi</string>
-    <string name="label_is_sticky">Dołączony</string>
+    <string name="label_is_sticky">Dołączone</string>
     <string name="label_auto_backup_lacation">Nie wybrano lokalizacji automatycznej kopii zapasowej</string>
     <string name="permission_notification_info">Do wyświetlania powiadomień, wymagane jest udzielenie pozwolenia na wyświetlanie powiadomień</string>
     <string name="label_time_period_last_7_days">ostatnie 7 dni</string>
