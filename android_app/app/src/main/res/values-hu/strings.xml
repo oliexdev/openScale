@@ -296,4 +296,10 @@
     <string name="label_measurements">mérések</string>
     <string name="label_goal_enabled">Cél engedélyezve</string>
     <string name="info_select_auto_backup_export_dir">Automatikus mentés export könyvtárának kiválasztása</string>
+    <string name="label_y_axis">Y tengely</string>
+    <string name="label_simple_moving_average">Egyszerű mozgó átlag</string>
+    <string name="label_trendline_computation_method">Trendvonal számítási módszer</string>
+    <string name="label_exponentially_smoothed_moving_average">Exponenciálisan simított mozgó átlag</string>
+    <string name="label_trendline_future">Jövőbeni trend</string>
+    <string name="label_simple_moving_average_num_days">Átlagolt napok száma</string>
 </resources>
