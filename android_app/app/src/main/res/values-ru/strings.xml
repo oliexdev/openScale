@@ -296,4 +296,10 @@
     <string name="label_abbr_max">наибольшее</string>
     <string name="label_time_period_last_7_days">7 последних дней</string>
     <string name="label_is_sticky">Закреплено</string>
+    <string name="label_y_axis">Ось ординат</string>
+    <string name="label_simple_moving_average">Простое скользящее среднее</string>
+    <string name="label_trendline_computation_method">Способ вычисления линии тренда</string>
+    <string name="label_exponentially_smoothed_moving_average">Экспоненциальное скользящее среднее</string>
+    <string name="label_trendline_future">Прогнозировать тренд</string>
+    <string name="label_simple_moving_average_num_days">Количество дней для усреднения</string>
 </resources>
