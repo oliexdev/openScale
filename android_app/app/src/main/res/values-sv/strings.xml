@@ -105,7 +105,7 @@
     <string name="label_bt_device_no_support">enheten stödjs inte</string>
     <string name="label_exportBackup">Exportera säkerhetskopia</string>
     <string name="label_importBackup">Importera säkerhetskopia</string>
-    <string name="label_export_dir">Exportkatalog</string>
+    <string name="label_export_dir">Exportera katalog</string>
     <string name="label_ignoreOutOfRange">Ignorera data utanför intervall</string>
     <string name="label_initial_weight">Startvikt</string>
     <string name="label_goal_line">Mållinje</string>
@@ -281,4 +281,25 @@
     <string name="label_is_sticky">Är klibbig</string>
     <string name="label_slide_welcome_main_text">Vikt och kroppsmätare med öppen källkod, med stöd för Bluetooth-våg.</string>
     <string name="label_measurement_bar">Måttstång</string>
+    <string name="label_time_period_all_days">alla dagar</string>
+    <string name="label_abbr_min">min</string>
+    <string name="label_time_period_last_7_days">senaste 7 dagarna</string>
+    <string name="label_time_period_last_30_days">senaste 30 dagarna</string>
+    <string name="label_goal_enabled">Mål aktiverat</string>
+    <string name="label_time_period_set_reference_day">ställ in referensdag</string>
+    <string name="info_select_auto_backup_export_dir">Välj exportkatalog för automatisk säkerhetskopiering</string>
+    <string name="label_abbr_avg">snitt</string>
+    <string name="label_abbr_max">max</string>
+    <string name="label_time_period">Tidsperiod</string>
+    <string name="label_time_period_set_custom_range">ställ in anpassat intervall</string>
+    <string name="label_y_axis">Y-axel</string>
+    <string name="label_simple_moving_average">Enkelt glidande medelvärde</string>
+    <string name="label_with">med</string>
+    <string name="label_trendline_computation_method">Trendlinjeberäkningsmetod</string>
+    <string name="label_exponentially_smoothed_moving_average">Exponentiellt jämnat glidande medelvärde</string>
+    <string name="permission_notification_info">Aviseringstillstånd krävs för att visa avisering</string>
+    <string name="label_auto_backup_lacation">Ingen plats för automatisk säkerhetskopiering har valts</string>
+    <string name="label_trendline_future">Framtida trend</string>
+    <string name="label_simple_moving_average_num_days">Antal dagar att snitta över</string>
+    <string name="label_measurements">mätningar</string>
 </resources>
