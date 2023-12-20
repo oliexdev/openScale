@@ -142,7 +142,7 @@
     <string name="label_weight">Peso</string>
     <string name="label_share_subject">Exportar dados do openScale (%s)</string>
     <string name="label_share">Partilhar</string>
-    <string name="label_add_user">Adicionar usuário</string>
+    <string name="label_add_user">Adicionar utilizador</string>
     <string name="label_delete">Apagar</string>
     <string name="label_no">Não</string>
     <string name="label_yes">Sim</string>
@@ -236,10 +236,10 @@
 \nSe quiser realmente sincronizar o seu peso com o GoogleFit ou usando MQTT, pode instalar <a href="https://play.google.com/store/apps/details?id=com.health.openscale.sync">openScale sync</a>.</string>
     <string name="label_tdee">Gasto energético diário total (TDEE)</string>
     <string name="label_neck">Circunferência do pescoço</string>
-    <string name="info_select_scale_user">Selecione o usuário da balança</string>
+    <string name="info_select_scale_user">Selecione o utilizador da balança</string>
     <string name="info_enter_consent_code_for_scale_user">Introduza o código PIN/consentimento para o utilizador da balança %s</string>
     <string name="label_click_to_help_add_support">Clique aqui para ajudar a adicionar apoio para o mesmo</string>
-    <string name="label_select_user">Selecione o usuário</string>
+    <string name="label_select_user">Selecione o utilizador</string>
     <string name="label_configure_widget">Configurar widget</string>
     <string name="label_visceral_fat">Gordura visceral</string>
     <string name="label_chest">Circunferência do peito</string>
@@ -300,4 +300,6 @@
     <string name="label_trendline_future">Tendência futura</string>
     <string name="permission_notification_info">A permissão de notificações é necessária, para mostrar notificações</string>
     <string name="label_y_axis">Eixo-Y</string>
+    <string name="label_is_sticky">É pegajoso</string>
+    <string name="label_simple_moving_average_num_days">Número de dias para calcular a média</string>
 </resources>
