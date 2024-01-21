@@ -241,7 +241,7 @@
     <string name="app_intro_skip_button">Atla</string>
     <string name="app_intro_next_button">Sonraki</string>
     <string name="app_intro_back_button">Geri</string>
-    <string name="app_intro_done_button">Tamam</string>
+    <string name="app_intro_done_button">Bitti</string>
     <string name="label_slide_metrics_main_text">openScale 22\'den fazla vücut ölçüsünü desteklemektedir.
 \n
 \nSizin için önemli olanları gösterecek şekilde yapılandırın.
@@ -296,4 +296,10 @@
     <string name="label_measurements">ölçümler</string>
     <string name="label_auto_backup_lacation">Otomatik yedekleme konumu seçilmedi</string>
     <string name="permission_notification_info">Bildirim göstermek için bildirim izni gereklidir</string>
+    <string name="label_trendline_future">Gelecekteki eğilim</string>
+    <string name="label_y_axis">Y ekseni</string>
+    <string name="label_simple_moving_average">Basit Hareketli Ortalama</string>
+    <string name="label_exponentially_smoothed_moving_average">Katsayısal Düzeltilen Hareketli Ortalama</string>
+    <string name="label_trendline_computation_method">Eğilim çizgisi hesaplama yöntemi</string>
+    <string name="label_simple_moving_average_num_days">Ortalaması alınacak gün sayısı</string>
 </resources>
