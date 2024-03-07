@@ -1,5 +1,6 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<resources><string name="title_overview">Pregled</string>
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title_overview">Pregled</string>
     <string name="title_graph">Diagram</string>
     <string name="title_table">Tabela</string>
     <string name="title_statistics">Statistika</string>
@@ -7,10 +8,8 @@
     <string name="title_measurements">Meritve</string>
     <string name="title_about">Informacije</string>
     <string name="title_general">Splošno</string>
-
     <string name="action_settings">Nastavitve</string>
     <string name="action_bluetooth_status">Bluetooth nastavitve</string>
-
     <string name="label_cancel">Prekliči</string>
     <string name="label_ok">OK</string>
     <string name="label_yes">Da</string>
@@ -20,7 +19,6 @@
     <string name="label_add_measurement">Dodaj meritev</string>
     <string name="label_share">Deli</string>
     <string name="label_share_subject">CSV izvoz podatkov (%s)</string>
-
     <string name="label_weight">Teža</string>
     <string name="label_bmi">Indeks telesne mase (ITM)</string>
     <string name="label_bmr">Bazalni metabolizem (BM)</string>
@@ -35,10 +33,8 @@
     <string name="label_whr">Razmerje trebuh - boki</string>
     <string name="label_bone">Masa kosti</string>
     <string name="label_smartUserAssign">Pametna določitev uporabnika</string>
-
     <string name="label_weight_difference">Razlika teže</string>
     <string name="label_days_left">Preostali dnevi</string>
-
     <string name="label_date">Datum</string>
     <string name="label_time">Čas</string>
     <string name="label_birthday">Rojstni dan</string>
@@ -50,13 +46,10 @@
     <string name="label_female">Ženski</string>
     <string name="label_goal_weight">Ciljna teža</string>
     <string name="label_goal_date">Ciljni datum</string>
-
     <string name="label_title_user">uporabnik</string>
-
     <string name="label_import">Uvozi</string>
     <string name="label_export">Izvozi</string>
     <string name="label_delete_all">Izbriši vse</string>
-
     <string name="error_value_required">Zahtevana vrednost</string>
     <string name="error_value_range">Vrednost je zunaj meje</string>
     <string name="error_exporting">Napaka pri izvozu</string>
@@ -65,7 +58,6 @@
     <string name="error_height_required">Napaka: Višina zahtevana</string>
     <string name="error_initial_weight_required">Napaka: Začetna teža zahtevana</string>
     <string name="error_goal_weight_required">Napaka: Ciljna teža zahtevana</string>
-
     <string name="info_data_deleted">Vnos je izbrisan</string>
     <string name="info_data_all_deleted">Vsi vnosi so izbrisani</string>
     <string name="info_data_exported">Izvozi v</string>
@@ -86,42 +78,31 @@
     <string name="info_bluetooth_connection_error">Nepričakovana Bluetooth napaka</string>
     <string name="info_new_data_added">%1$.2f%2$s [%3$s] to %4$s dodan</string>
     <string name="info_new_data_duplicated">meritev z istim datumom in časom že obstaja</string>
-
     <string name="info_enter_user_name">Tvoje ime</string>
     <string name="info_no_selected_user">Trenutno še ne obstaja noben uporabnik. Prosim, ustvarite ga v nastavitvah.</string>
     <string name="info_no_evaluation_available">Vrednosti ni bilo mogoče določiti</string>
-
     <string name="question_really_delete">Želite izbrisati vnos?</string>
     <string name="question_really_delete_all">Želite izbrisati vse vnose vseh uporabnikov?</string>
     <string name="question_really_delete_user">Izbriši uporabnika?</string>
-
     <string name="label_bluetooth_title">Bluetooth</string>
     <string name="label_bluetooth_enable">Poveži se s tehtnico ob zagonu aplikacije</string>
     <string name="label_mergeWithLastMeasurement">Združi z zadnjimi meritvami</string>
     <string name="label_bluetooth_searching">Iščem Bluetooth tehtnico</string>
     <string name="label_bluetooth_searching_finished">Iskanje končano</string>
-
     <string name="label_enable_labels">Podatkovna oznaka</string>
     <string name="label_enable_points">Podatek</string>
-
     <string name="label_delete_confirmation">Izbriši potrditev</string>
-
     <string name="label_category_measurement_database">Baza meritev</string>
-
     <string name="label_maintainer">Vzdrževalec</string>
     <string name="label_website">Spletna stran</string>
     <string name="label_license">Licenca</string>
-
     <string name="label_automatic">Avtomatsko</string>
-
     <string name="label_theme">Tema</string>
-
     <string name="label_reminder">Opomnik</string>
     <string name="label_reminder_weekdays">Dnevi</string>
     <string name="label_reminder_time">Čas</string>
     <string name="label_reminder_notify_text">Besedilo obvestila</string>
     <string name="default_value_reminder_notify_text">Čas za tehtanje</string>
-
     <string name="Monday">ponedeljek</string>
     <string name="Tuesday">torek</string>
     <string name="Wednesday">sreda</string>
@@ -138,7 +119,6 @@
     <string name="label_initial_weight">Začetna teža</string>
     <string name="label_goal_line">Ciljna krivulja</string>
     <string name="label_help">Pomoč</string>
-
     <string name="label_feedback_message_enjoying">Vam je všeč openScale?</string>
     <string name="label_feedback_message_rate_app">Bi želeli podati oceno na Google Play ali GitHub?</string>
     <string name="label_feedback_message_issue">Bi nam radi priskrbeli povratno mnenje?</string>
@@ -146,11 +126,9 @@
     <string name="label_feedback_message_no">Ne zares</string>
     <string name="label_feedback_message_positive">OK</string>
     <string name="label_feedback_message_negative">Ne, hvala</string>
-
     <string name="error_max_scale_users">Doseženo je bilo maksimalno število sočasnih uporabnikov tehtnice</string>
     <string name="info_step_on_scale_for_reference">Prosim, stopite bosi na tehtnico za referenčno meritev</string>
     <string name="info_measuring">Izmerjena teža: %.2f</string>
-
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">Zgodila se je nepričakovana napaka.
 \n
 \nProsim, ustvarite novo težavo(issue) vključno s podatki o napaki na:
@@ -166,10 +144,8 @@
     <string name="toggle_expand">Spremeni v razširjen pogled</string>
     <string name="edit">Uredi</string>
     <string name="save">Shrani</string>
-
     <string name="label_month_view">Mesečni pogled</string>
     <string name="label_weeks_view">Tedenski pogled</string>
-
     <string name="permission_not_granted">Dovoljenja niso bila pridobljena</string>
     <string name="permission_bluetooth_info">Dovoljenje je potrebno za približno določanje lokacije Bluetooth naprave. Dovoljenje je lahko odvzeto takoj po tem, ko je naprava najdena.</string>
     <string name="permission_bluetooth_info_title">Informacije</string>
@@ -222,4 +198,8 @@
     <string name="activity_level_moderate">Zmeren</string>
     <string name="activity_level_heavy">Hud</string>
     <string name="activity_level_extreme">Ekstremna</string>
+    <string name="label_calories">Kalorije</string>
+    <string name="action_donation">Donacija</string>
+    <string name="info_select_scale_user">Izberite uporabnika tehtnice</string>
+    <string name="label_empty">prazno</string>
 </resources>
