@@ -489,13 +489,13 @@ public class ChartMeasurementView extends LineChart {
         valuesGoalLine.add(new Entry(getXChartMax(), goalWeight));
 
         LineDataSet goalLine = new LineDataSet(valuesGoalLine, getContext().getString(R.string.label_goal_line));
-        goalLine.setLineWidth(1.5f);
+        goalLine.setLineWidth(5.5f);
         goalLine.setColor(ColorUtil.COLOR_GREEN);
         goalLine.setAxisDependency(prefs.getBoolean("weightOnRightAxis", true) ? YAxis.AxisDependency.RIGHT : YAxis.AxisDependency.LEFT);
         goalLine.setDrawValues(false);
         goalLine.setDrawCircles(false);
         goalLine.setHighlightEnabled(false);
-        goalLine.enableDashedLine(10, 30, 0);
+        goalLine.enableDashedLine(40, 30, 0);
 
         lineDataSets.add(goalLine);
     }
