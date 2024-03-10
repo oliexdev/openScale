@@ -70,6 +70,11 @@ public class BluetoothYunmaiSE_Mini extends BluetoothCommunication {
                 user_add_or_query[user_add_or_query.length - 1] =
                         xorChecksum(user_add_or_query, 1, user_add_or_query.length - 1);
                 writeBytes(WEIGHT_CMD_SERVICE, WEIGHT_CMD_CHARACTERISTIC, user_add_or_query);
+                try {
+                    Thread.sleep(300);
+                }
+                catch (InterruptedException e)
+                {}
                 break;
             case 1:
                 byte[] unixTime = Converters.toInt32Be(new Date().getTime() / 1000);
