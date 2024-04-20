@@ -80,6 +80,10 @@ public abstract class BluetoothCommunication {
         this.central = new BluetoothCentralManager(context, bluetoothCentralCallback, new Handler(Looper.getMainLooper()));
     }
 
+    public BluetoothCommunication() {
+
+    }
+
     protected boolean needReConnect() {
         if (callbackBtHandler == null) {
             return true;
