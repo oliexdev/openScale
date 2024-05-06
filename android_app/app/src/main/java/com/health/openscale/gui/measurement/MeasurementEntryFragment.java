@@ -42,6 +42,7 @@ import androidx.navigation.Navigation;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
+import com.health.openscale.gui.utils.ColorUtil;
 
 import java.text.DateFormat;
 import java.util.Date;
@@ -159,13 +160,13 @@ public class MeasurementEntryFragment extends Fragment {
             final Drawable wrapped = DrawableCompat.wrap(drawable.mutate());
 
             if (item.getItemId() == R.id.saveButton) {
-                DrawableCompat.setTint(wrapped, Color.parseColor("#FFFFFF"));
+                DrawableCompat.setTint(wrapped, ColorUtil.getPrimaryColor(context));
             } else if (item.getItemId() == R.id.editButton) {
-                DrawableCompat.setTint(wrapped, Color.parseColor("#99CC00"));
+                DrawableCompat.setTint(wrapped, ColorUtil.COLOR_GREEN);
             } else if (item.getItemId() == R.id.expandButton) {
-                DrawableCompat.setTint(wrapped, Color.parseColor("#FFBB33"));
+                DrawableCompat.setTint(wrapped, ColorUtil.COLOR_ORANGE);
             } else if (item.getItemId() == R.id.deleteButton) {
-                DrawableCompat.setTint(wrapped, Color.parseColor("#FF4444"));
+                DrawableCompat.setTint(wrapped, ColorUtil.COLOR_RED);
             }
 
             item.setIcon(wrapped);
