@@ -102,7 +102,7 @@ public class MeasurementPreferences extends PreferenceFragmentCompat {
         @Override
         public boolean onPreferenceClick(Preference preference) {
 
-            AlertDialog.Builder deleteAllDialog = new AlertDialog.Builder(getActivity());
+            AlertDialog.Builder deleteAllDialog = new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog);
 
             deleteAllDialog.setMessage(getResources().getString(R.string.question_really_delete_all));
 

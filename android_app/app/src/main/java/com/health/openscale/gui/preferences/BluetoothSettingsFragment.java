@@ -142,7 +142,7 @@ public class BluetoothSettingsFragment extends Fragment {
         if (!(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))) {
             Timber.d("No GPS or Network location service is enabled, ask user for permission");
 
-            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            AlertDialog.Builder builder = new AlertDialog.Builder(context, R.style.AppTheme_Dialog);
             builder.setTitle(R.string.permission_bluetooth_info_title);
             builder.setIcon(R.drawable.ic_preferences_about);
             builder.setMessage(R.string.permission_location_service_info);
@@ -182,7 +182,7 @@ public class BluetoothSettingsFragment extends Fragment {
         if (hasPermissions(requiredPermissions)) {
             startBluetoothDiscovery();
         } else if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            AlertDialog.Builder builder = new AlertDialog.Builder(context, R.style.AppTheme_Dialog);
             Timber.d("No access fine location permission granted");
 
             builder.setMessage(R.string.permission_bluetooth_info)
@@ -200,7 +200,7 @@ public class BluetoothSettingsFragment extends Fragment {
             alertDialog.show();
 
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && targetSdkVersion >= Build.VERSION_CODES.S && shouldShowRequestPermissionRationale(Manifest.permission.BLUETOOTH_SCAN)) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        AlertDialog.Builder builder = new AlertDialog.Builder(context, R.style.AppTheme_Dialog);
         Timber.d("No access Bluetooth scan permission granted");
 
         builder.setMessage(R.string.permission_bluetooth_info)
@@ -352,7 +352,7 @@ public class BluetoothSettingsFragment extends Fragment {
     }
 
     private void getDebugInfo(final BluetoothDevice device) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext(), R.style.AppTheme_Dialog);
         builder.setTitle("Fetching info")
                 .setMessage("Please wait while we fetch extended info from your scale...")
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {

@@ -357,7 +357,7 @@ public class MeasurementEntryFragment extends Fragment {
         boolean deleteConfirmationEnable = prefs.getBoolean("deleteConfirmationEnable", true);
 
         if (deleteConfirmationEnable) {
-            AlertDialog.Builder deleteAllDialog = new AlertDialog.Builder(context);
+            AlertDialog.Builder deleteAllDialog = new AlertDialog.Builder(context, R.style.AppTheme_Dialog);
             deleteAllDialog.setMessage(getResources().getString(R.string.question_really_delete));
 
             deleteAllDialog.setPositiveButton(getResources().getString(R.string.label_yes), new DialogInterface.OnClickListener() {

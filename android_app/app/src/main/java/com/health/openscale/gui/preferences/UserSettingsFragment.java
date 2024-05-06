@@ -391,7 +391,7 @@ public class UserSettingsFragment extends Fragment {
     };
 
     private void deleteUser() {
-        AlertDialog.Builder deleteAllDialog = new AlertDialog.Builder(context);
+        AlertDialog.Builder deleteAllDialog = new AlertDialog.Builder(context, R.style.AppTheme_Dialog);
 
         deleteAllDialog.setMessage(getResources().getString(R.string.question_really_delete_user));
 
