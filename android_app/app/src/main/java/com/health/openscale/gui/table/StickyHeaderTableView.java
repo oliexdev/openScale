@@ -608,7 +608,8 @@ public class StickyHeaderTableView extends View implements NestedScrollingChild 
                         if (str.indexOf("\n") != -1) {
                             String[] split = str.split("\n");
 
-                            if (split[0].length() >= split[1].length()) {
+                            // split.length == 1 handle the case when str has only 1 \n and it is at the end.
+                            if (split.length == 1 || split[0].length() >= split[1].length()) {
                                 str = split[0];
                             } else {
                                 str = split[1];
