@@ -147,4 +147,15 @@
     <string name="label_upgrade_to_openScale_pro">Silakan upgrade ke openScale pro untuk dukungan Bluetooth</string>
     <string name="activity_level_mild">Ringan</string>
     <string name="activity_level_moderate">Sedang</string>
+    <string name="label_smartUserAssign">Penugasan Pengguna Cerdas</string>
+    <string name="label_time_period">Periode waktu</string>
+    <string name="label_time_period_all_days">Semua hari</string>
+    <string name="label_time_period_last_7_days">7 hari terakhir</string>
+    <string name="label_time_period_last_30_days">30 hari terakhir</string>
+    <string name="label_with">dengan</string>
+    <string name="label_time_period_set_reference_day">Atur hari referensi</string>
+    <string name="label_abbr_min">min</string>
+    <string name="label_time_period_set_custom_range">atur rentang khusus</string>
+    <string name="label_abbr_max">maks</string>
+    <string name="label_abbr_avg">rat</string>
 </resources>

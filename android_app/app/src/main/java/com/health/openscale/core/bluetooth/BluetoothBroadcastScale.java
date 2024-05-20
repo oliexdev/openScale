@@ -52,6 +52,7 @@ public class BluetoothBroadcastScale extends BluetoothCommunication {
 
     public BluetoothBroadcastScale(Context context)
     {
+        super(context);
         this.context = context;
         this.central = new BluetoothCentralManager(context, bluetoothCentralCallback, new Handler(Looper.getMainLooper()));
     }
