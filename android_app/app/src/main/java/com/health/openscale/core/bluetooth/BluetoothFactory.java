@@ -139,7 +139,7 @@ public class BluetoothFactory {
         if (deviceName.equals("Yoda1")){
             return new BluetoothYoda1Scale(context);
         }
-        if (deviceName.equals("AAA002")){
+        if (deviceName.equals("AAA002") || deviceName.equals("AAA007")){
             return new BluetoothBroadcastScale(context);
         }
         return null;
