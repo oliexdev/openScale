@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="title_graph">图标</string>
+    <string name="title_graph">图表</string>
     <string name="title_overview">概览</string>
     <string name="label_measurement_bar">测量杆</string>
     <string name="label_bluetooth_searching">正在搜索你的蓝牙磅秤</string>
@@ -256,7 +256,7 @@
     <string name="label_weight">重量</string>
     <string name="label_share_subject">openScale 数据导出(%s)</string>
     <string name="label_share">分享</string>
-    <string name="label_add_measurement">添加量度</string>
+    <string name="label_add_measurement">添加测量值</string>
     <string name="label_add_user">添加用户</string>
     <string name="label_empty">空白</string>
     <string name="label_delete">删除</string>
@@ -281,4 +281,14 @@
     <string name="info_enter_consent_code_for_scale_user">输入 scale 用户 %s 的 PIN/同意码</string>
     <string name="info_create_new_user_on_scale">创建 scale 新用户。</string>
     <string name="label_is_sticky">粘性标签</string>
+    <string name="label_time_period">时间间隔</string>
+    <string name="label_time_period_all_days">所有时间</string>
+    <string name="label_time_period_last_7_days">最近7天</string>
+    <string name="label_time_period_last_30_days">最近30天</string>
+    <string name="label_with">和</string>
+    <string name="label_abbr_min">最小值</string>
+    <string name="label_abbr_max">最大值</string>
+    <string name="label_abbr_avg">平均值</string>
+    <string name="label_measurements">测量值</string>
+    <string name="label_time_period_set_custom_range">设置自定义范围</string>
 </resources>
