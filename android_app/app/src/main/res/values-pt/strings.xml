@@ -157,7 +157,7 @@
     <string name="title_statistics">Estatísticas</string>
     <string name="title_table">Tabela</string>
     <string name="title_graph">Gráfico</string>
-    <string name="title_overview">Visão geral</string>
+    <string name="title_overview">Visão Geral</string>
     <string name="app_intro_next_button">Próximo</string>
     <string name="permission_bluetooth_info">Permissão de Localização necessária para buscar aparelhos Bluetooth. Pode ser revogada após encontrar aparelho.</string>
     <string name="customactivityoncrash_error_activity_error_occurred_explanation">Um erro inesperado ocorreu.
@@ -281,17 +281,17 @@
 \n
 \nMelhoramos constantemente e alargamos o conjunto de balanças suportadas. Pode encontrar a lista completa e o nível de apoio para cada uma em <a href="https://github.com/oliexdev/openScale/wiki/Supported-scales-in-openScale">GitHub</a>.</string>
     <string name="label_simple_moving_average">Média Móvel Simples</string>
-    <string name="label_time_period_set_custom_range">definir intervalo personalizado</string>
+    <string name="label_time_period_set_custom_range">Definir intervalo personalizado</string>
     <string name="label_with">com</string>
     <string name="label_abbr_min">min.</string>
     <string name="label_abbr_max">máx.</string>
     <string name="label_time_period">Período de tempo</string>
-    <string name="label_time_period_all_days">todos os dias</string>
-    <string name="label_time_period_last_7_days">últimos 7 dias</string>
-    <string name="label_time_period_last_30_days">últimos 30 dias</string>
-    <string name="label_time_period_set_reference_day">definir dia de referência</string>
+    <string name="label_time_period_all_days">Todos os dias</string>
+    <string name="label_time_period_last_7_days">Últimos 7 dias</string>
+    <string name="label_time_period_last_30_days">Últimos 30 dias</string>
+    <string name="label_time_period_set_reference_day">Definir dia de referência</string>
     <string name="label_abbr_avg">méd.</string>
-    <string name="label_goal_enabled">Meta definida</string>
+    <string name="label_goal_enabled">Objetivo definido</string>
     <string name="label_measurements">medidas</string>
     <string name="label_exponentially_smoothed_moving_average">Média Móvel Exponencial</string>
     <string name="info_select_auto_backup_export_dir">Escolher pasta de exportação do backup automático</string>
