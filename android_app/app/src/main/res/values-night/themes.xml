@@ -37,6 +37,17 @@
 
     <style name="AppTheme.Dialog" parent="Theme.MaterialComponents.DayNight.Dialog">
         <item name="colorPrimary">@color/md_theme_dark_onBackground</item>
+        <item name="colorAccent">@color/md_theme_dark_onPrimary</item>
+        <item name="android:background">@color/md_theme_dark_background</item>
+        <item name="android:buttonBarNegativeButtonStyle">@style/NegativeButtonStyle</item>
+        <item name="android:buttonBarPositiveButtonStyle">@style/PositiveButtonStyle</item>
+    </style>
+    <style name="NegativeButtonStyle" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/md_theme_dark_error</item>
+    </style>
+
+    <style name="PositiveButtonStyle" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/md_theme_dark_onBackground</item>
     </style>
 
     <style name="AppTheme.RadioButton" parent="Widget.Material3.CompoundButton.RadioButton">

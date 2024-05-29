@@ -62,7 +62,7 @@ class OverviewAdapter extends RecyclerView.Adapter<OverviewAdapter.ViewHolder> {
         boolean deleteConfirmationEnable = prefs.getBoolean("deleteConfirmationEnable", true);
 
         if (deleteConfirmationEnable) {
-            AlertDialog.Builder deleteAllDialog = new AlertDialog.Builder(activity);
+            AlertDialog.Builder deleteAllDialog = new AlertDialog.Builder(activity, R.style.AppTheme_Dialog);
             deleteAllDialog.setMessage(activity.getResources().getString(R.string.question_really_delete));
 
             deleteAllDialog.setPositiveButton(activity.getResources().getString(R.string.label_yes), new DialogInterface.OnClickListener() {
