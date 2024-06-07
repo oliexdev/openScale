@@ -60,12 +60,16 @@ public class BluetoothMiScale extends BluetoothCommunication {
             int currentYear = Calendar.getInstance().get(Calendar.YEAR);
             int currentMonth = Calendar.getInstance().get(Calendar.MONTH) + 1;
             int currentDay = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
+            int currentHour = Calendar.getInstance().get(Calendar.HOUR);
+            int currentMin = Calendar.getInstance().get(Calendar.MINUTE);
             int scaleYear = ((data[1] & 0xFF) << 8) | (data[0] & 0xFF);
             int scaleMonth = (int) data[2];
             int scaleDay = (int) data[3];
+            int scaleHour = (int) data[4];
+            int scaleMin = (int) data[5];
 
-            if (!(currentYear == scaleYear && currentMonth == scaleMonth && currentDay == scaleDay)) {
-                Timber.d("Current year and scale year is different");
+            if (!(currentYear == scaleYear && currentMonth == scaleMonth && currentDay == scaleDay && currentHour == scaleHour && currentMin == scaleMin)) {
+                Timber.d("Current time and scale time is different");
 
                 // set current time
                 Calendar currentDateTime = Calendar.getInstance();
