@@ -291,4 +291,15 @@
     <string name="label_abbr_avg">平均值</string>
     <string name="label_measurements">测量值</string>
     <string name="label_time_period_set_custom_range">设置自定义范围</string>
+    <string name="label_exponentially_smoothed_moving_average">指数平滑移动均线</string>
+    <string name="label_trendline_computation_method">趋势线计算方式</string>
+    <string name="label_trendline_future">未来趋势</string>
+    <string name="label_simple_moving_average_num_days">用于计算均值的天数</string>
+    <string name="label_simple_moving_average">简单移动均线</string>
+    <string name="permission_notification_info">要显示通知，通知权限是必需的</string>
+    <string name="label_y_axis">Y 轴</string>
+    <string name="label_time_period_set_reference_day">设置参照日</string>
+    <string name="label_goal_enabled">启用了目标</string>
+    <string name="info_select_auto_backup_export_dir">选择自动备份导出目录</string>
+    <string name="label_auto_backup_lacation">未选择自动备份位置</string>
 </resources>
