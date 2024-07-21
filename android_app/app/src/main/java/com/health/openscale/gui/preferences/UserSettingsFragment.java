@@ -48,6 +48,7 @@ import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleUser;
 import com.health.openscale.core.utils.Converters;
+import com.health.openscale.gui.utils.ColorUtil;
 
 import java.text.DateFormat;
 import java.util.Calendar;
@@ -105,9 +106,9 @@ public class UserSettingsFragment extends Fragment {
                     final Drawable wrapped = DrawableCompat.wrap(drawable.mutate());
 
                     if (item.getItemId() == R.id.saveButton) {
-                        DrawableCompat.setTint(wrapped, Color.parseColor("#FFFFFF"));
+                        DrawableCompat.setTint(wrapped, ColorUtil.getPrimaryColor(context));
                     } else if (item.getItemId() == R.id.deleteButton) {
-                        DrawableCompat.setTint(wrapped, Color.parseColor("#FF4444"));
+                        DrawableCompat.setTint(wrapped, ColorUtil.getTintColor(context));
                     }
 
                     item.setIcon(wrapped);
@@ -390,7 +391,7 @@ public class UserSettingsFragment extends Fragment {
     };
 
     private void deleteUser() {
-        AlertDialog.Builder deleteAllDialog = new AlertDialog.Builder(context);
+        AlertDialog.Builder deleteAllDialog = new AlertDialog.Builder(context, R.style.AppTheme_Dialog);
 
         deleteAllDialog.setMessage(getResources().getString(R.string.question_really_delete_user));
 

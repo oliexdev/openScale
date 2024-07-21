@@ -273,7 +273,7 @@ public class MainActivity extends AppCompatActivity
 
                 // ask the user once for feedback on the 15th app launch
                 if(launchCount == 15){
-                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.AppTheme_Dialog);
 
                     builder.setMessage(R.string.label_feedback_message_enjoying)
                             .setPositiveButton(R.string.label_feedback_message_yes, new DialogInterface.OnClickListener() {
@@ -324,7 +324,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void positiveFeedbackDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.AppTheme_Dialog);
 
         builder.setMessage(R.string.label_feedback_message_rate_app)
                 .setPositiveButton(R.string.label_feedback_message_positive, new DialogInterface.OnClickListener() {
@@ -355,7 +355,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void negativeFeedbackDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.AppTheme_Dialog);
 
         builder.setMessage(R.string.label_feedback_message_issue)
                 .setPositiveButton(R.string.label_feedback_message_positive, new DialogInterface.OnClickListener() {
@@ -375,7 +375,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void showNoSelectedUserDialog() {
-        AlertDialog.Builder infoDialog = new AlertDialog.Builder(this);
+        AlertDialog.Builder infoDialog = new AlertDialog.Builder(this, R.style.AppTheme_Dialog);
 
         infoDialog.setMessage(getResources().getString(R.string.info_no_selected_user));
         infoDialog.setPositiveButton(getResources().getString(R.string.label_ok), null);
@@ -435,7 +435,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void showAssistedWeighingDialog(boolean manuelEntry) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.AppTheme_Dialog);
 
         LinearLayout linearLayout = new LinearLayout(this);
         linearLayout.setOrientation(LinearLayout.VERTICAL);
@@ -556,7 +556,7 @@ public class MainActivity extends AppCompatActivity
 
     private void invokeConnectToBluetoothDevice() {
         if (BuildConfig.BUILD_TYPE == "light") {
-            AlertDialog infoDialog = new AlertDialog.Builder(this)
+            AlertDialog infoDialog = new AlertDialog.Builder(this, R.style.AppTheme_Dialog)
                 .setMessage(Html.fromHtml(getResources().getString(R.string.label_upgrade_to_openScale_pro) + "<br><br> <a href=\"https://play.google.com/store/apps/details?id=com.health.openscale.pro\">Install openScale pro version</a>"))
                 .setPositiveButton(getResources().getString(R.string.label_ok), null)
                 .setIcon(R.drawable.ic_launcher_openscale_light)
@@ -605,7 +605,7 @@ public class MainActivity extends AppCompatActivity
         if (!(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))) {
             Timber.d("No GPS or Network location service is enabled, ask user for permission");
 
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.AppTheme_Dialog);
             builder.setTitle(R.string.permission_bluetooth_info_title);
             builder.setIcon(R.drawable.ic_preferences_about);
             builder.setMessage(R.string.permission_location_service_info);
@@ -652,7 +652,7 @@ public class MainActivity extends AppCompatActivity
         if (hasPermissions(requiredPermissions)) {
             connectToBluetooth();
         } else if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.AppTheme_Dialog);
             Timber.d("No access fine location permission granted");
 
             builder.setMessage(R.string.permission_bluetooth_info)
@@ -669,7 +669,7 @@ public class MainActivity extends AppCompatActivity
             alertDialog.setCanceledOnTouchOutside(false);
             alertDialog.show();
         } else if (shouldShowRequestPermissionRationale(Manifest.permission.BLUETOOTH_SCAN)) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.AppTheme_Dialog);
             Timber.d("No access Bluetooth scan permission granted");
 
             builder.setMessage(R.string.permission_bluetooth_info)
@@ -782,7 +782,7 @@ public class MainActivity extends AppCompatActivity
     };
 
     private void chooseScaleUser(Message msg) {
-        AlertDialog.Builder mBuilder = new AlertDialog.Builder(MainActivity.this);
+        AlertDialog.Builder mBuilder = new AlertDialog.Builder(MainActivity.this, R.style.AppTheme_Dialog);
         Pair<CharSequence[], int[]> choices = (Pair<CharSequence[], int[]>)msg.obj;
 
         mBuilder.setTitle(getResources().getString(R.string.info_select_scale_user));
@@ -808,7 +808,7 @@ public class MainActivity extends AppCompatActivity
         final int scaleUserIndex = msg.arg2;
         final int[] consentCode = {-1};
 
-        AlertDialog.Builder mBuilder = new AlertDialog.Builder(MainActivity.this);
+        AlertDialog.Builder mBuilder = new AlertDialog.Builder(MainActivity.this, R.style.AppTheme_Dialog);
         mBuilder.setTitle(getResources().getString(R.string.info_enter_consent_code_for_scale_user, Integer.toString(scaleUserIndex)));
 
         final EditText input = new EditText(this);
@@ -866,7 +866,7 @@ public class MainActivity extends AppCompatActivity
         int selectedUserId = OpenScale.getInstance().getSelectedScaleUserId();
 
         if (selectedUserId == -1) {
-            AlertDialog.Builder infoDialog = new AlertDialog.Builder(this);
+            AlertDialog.Builder infoDialog = new AlertDialog.Builder(this, R.style.AppTheme_Dialog);
 
             infoDialog.setMessage(getResources().getString(R.string.info_no_selected_user));
             infoDialog.setPositiveButton(getResources().getString(R.string.label_ok), null);
@@ -938,7 +938,7 @@ public class MainActivity extends AppCompatActivity
             return;
         }
 
-        AlertDialog.Builder exportDialog = new AlertDialog.Builder(this);
+        AlertDialog.Builder exportDialog = new AlertDialog.Builder(this, R.style.AppTheme_Dialog);
         exportDialog.setTitle(R.string.label_export);
         exportDialog.setMessage(getResources().getString(R.string.label_export_overwrite,
                 openScale.getFilenameFromUri(uri)));
