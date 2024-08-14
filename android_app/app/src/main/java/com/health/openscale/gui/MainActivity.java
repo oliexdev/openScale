@@ -600,31 +600,6 @@ public class MainActivity extends AppCompatActivity
             return;
         }
 
-        // Check if GPS or Network location service is enabled
-        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        if (!(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))) {
-            Timber.d("No GPS or Network location service is enabled, ask user for permission");
-
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle(R.string.permission_bluetooth_info_title);
-            builder.setIcon(R.drawable.ic_preferences_about);
-            builder.setMessage(R.string.permission_location_service_info);
-            builder.setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    // Show location settings when the user acknowledges the alert dialog
-                    Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                    startActivity(intent);
-                }
-            });
-
-            Dialog alertDialog = builder.create();
-            alertDialog.setCanceledOnTouchOutside(false);
-            alertDialog.show();
-
-            setBluetoothStatusIcon(R.drawable.ic_bluetooth_disabled);
-            return;
-        }
-
         String deviceName = prefs.getString(
                 BluetoothSettingsFragment.PREFERENCE_KEY_BLUETOOTH_DEVICE_NAME, "");
         String hwAddress = prefs.getString(
@@ -641,11 +616,32 @@ public class MainActivity extends AppCompatActivity
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && targetSdkVersion >= Build.VERSION_CODES.S) {
             Timber.d("SDK >= 31 request for Bluetooth Scan and Bluetooth connect permissions");
             requiredPermissions = new String[]{Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT};
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && targetSdkVersion >= Build.VERSION_CODES.Q) {
-            Timber.d("SDK >= 29 request for Access fine location permission");
-            requiredPermissions = new String[]{Manifest.permission.ACCESS_FINE_LOCATION};
         } else {
             Timber.d("SDK < 29 request for coarse location permission");
+            // Check if GPS or Network location service is enabled
+            LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+            if (!(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))) {
+                Timber.d("No GPS or Network location service is enabled, ask user for permission");
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle(R.string.permission_bluetooth_info_title);
+                builder.setIcon(R.drawable.ic_preferences_about);
+                builder.setMessage(R.string.permission_location_service_info);
+                builder.setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        // Show location settings when the user acknowledges the alert dialog
+                        Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                        startActivity(intent);
+                    }
+                });
+
+                Dialog alertDialog = builder.create();
+                alertDialog.setCanceledOnTouchOutside(false);
+                alertDialog.show();
+
+                setBluetoothStatusIcon(R.drawable.ic_bluetooth_disabled);
+                return;
+            }
             requiredPermissions = new String[]{Manifest.permission.ACCESS_FINE_LOCATION};
         }
 
