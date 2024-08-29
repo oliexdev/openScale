@@ -255,4 +255,6 @@
     <string name="amputation_level_forearm_hand">前腕と脚</string>
     <string name="amputation_level_hand">手</string>
     <string name="amputation_level_none">切断なし</string>
+    <string name="label_empty">空</string>
+    <string name="label_time_period">期間</string>
 </resources>
