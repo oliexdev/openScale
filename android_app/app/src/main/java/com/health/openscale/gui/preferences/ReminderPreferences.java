@@ -165,7 +165,7 @@ public class ReminderPreferences extends PreferenceFragmentCompat
                 if (!isGranted) {
                     if (Build.VERSION.SDK_INT >= 33) {
                         if (shouldShowRequestPermissionRationale(android.Manifest.permission.POST_NOTIFICATIONS)) {
-                            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                            AlertDialog.Builder builder = new AlertDialog.Builder(getContext(), R.style.AppTheme_Dialog);
                             builder.setTitle(R.string.permission_bluetooth_info_title);
                             builder.setIcon(R.drawable.ic_preferences_about);
                             builder.setMessage(R.string.permission_notification_info);
@@ -179,7 +179,7 @@ public class ReminderPreferences extends PreferenceFragmentCompat
                             alertDialog.setCanceledOnTouchOutside(false);
                             alertDialog.show();
                         } else {
-                            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                            AlertDialog.Builder builder = new AlertDialog.Builder(getContext(), R.style.AppTheme_Dialog);
                             builder.setTitle(R.string.permission_bluetooth_info_title);
                             builder.setIcon(R.drawable.ic_preferences_about);
                             builder.setMessage(R.string.permission_notification_info);

@@ -74,7 +74,7 @@ public class StatisticsFragment extends Fragment {
         datePickerView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), R.style.AppTheme_Dialog);
                     builder.setTitle(R.string.label_time_period)
                             .setItems(R.array.range_options_entries, new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int which) {
