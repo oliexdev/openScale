@@ -82,7 +82,7 @@ public class BluetoothFactory {
         if (name.equals("Health Scale".toLowerCase(Locale.US))) {
             return new BluetoothOneByone(context);
         }
-        if(name.equals("1byone scale".toLowerCase(Locale.US))){
+        if(name.equals("1byone scale".toLowerCase(Locale.US))) {
             return new BluetoothOneByoneNew(context);
         }
 
@@ -114,9 +114,12 @@ public class BluetoothFactory {
         }
         if (deviceName.equals("Hoffen BS-8107")) {
             return new BluetoothHoffenBBS8107(context);
-	}
+        }
         if (deviceName.equals("ADV") || deviceName.equals("Chipsea-BLE")) {
             return new BluetoothOKOK(context);
+        }
+        if (deviceName.isEmpty()) {
+            return new BluetoothOKOK2(context);
         }
         if (deviceName.equals("BF105") || deviceName.equals("BF720")) {
             return new BluetoothBeurerBF105(context);
@@ -130,16 +133,16 @@ public class BluetoothFactory {
         if (deviceName.equals("SBF72") || deviceName.equals("BF915") || deviceName.equals("SBF73")) {
             return new BluetoothSanitasSBF72(context, deviceName);
         }
-        if (deviceName.equals("Weight Scale")){
+        if (deviceName.equals("Weight Scale")) {
             return new BluetoothSinocare(context);
         }
-        if (deviceName.equals("CH100")){
+        if (deviceName.equals("CH100")) {
             return new BluetoothHuaweiAH100(context);
         }
-        if (deviceName.equals("Yoda1")){
+        if (deviceName.equals("Yoda1")) {
             return new BluetoothYoda1Scale(context);
         }
-        if (deviceName.equals("AAA002") || deviceName.equals("AAA007")){
+        if (deviceName.equals("AAA002") || deviceName.equals("AAA007")) {
             return new BluetoothBroadcastScale(context);
         }
         return null;

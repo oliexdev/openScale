@@ -17,6 +17,7 @@ package com.health.openscale.gui.preferences;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -41,6 +42,9 @@ public class BluetoothPreferences extends PreferenceFragmentCompat {
     private Preference btScanner;
 
     private static final String formatDeviceName(String name, String address) {
+        if (TextUtils.isEmpty(name) && !address.isEmpty()) {
+            return String.format("[%s]", address);
+        }
         if (name.isEmpty() || address.isEmpty()) {
             return "-";
         }
