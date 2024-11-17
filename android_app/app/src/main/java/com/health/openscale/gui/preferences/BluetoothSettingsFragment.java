@@ -42,7 +42,6 @@ import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
-import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.RelativeSizeSpan;
 import android.view.Gravity;
@@ -229,9 +228,6 @@ public class BluetoothSettingsFragment extends Fragment {
     }
 
     private static final String formatDeviceName(String name, String address) {
-        if (TextUtils.isEmpty(name) && !address.isEmpty()) {
-            return String.format("[%s]", address);
-        }
         if (name.isEmpty() || address.isEmpty()) {
             return "-";
         }
@@ -318,15 +314,14 @@ public class BluetoothSettingsFragment extends Fragment {
         BluetoothDevice device = bleScanResult.getDevice();
         Context context = getContext();
 
-        if (foundDevices.containsKey(device.getAddress()) || context == null) {
+        if (device.getName() == null || foundDevices.containsKey(device.getAddress()) || context == null) {
             return;
         }
 
         BluetoothDeviceView deviceView = new BluetoothDeviceView(context);
         deviceView.setDeviceName(formatDeviceName(bleScanResult.getDevice()));
 
-        String name = device.getName() != null ? device.getName() : "";
-        BluetoothCommunication btDevice = BluetoothFactory.createDeviceDriver(context, name);
+        BluetoothCommunication btDevice = BluetoothFactory.createDeviceDriver(context, device.getName());
         if (btDevice != null) {
             Timber.d("Found supported device %s (driver: %s)",
                     formatDeviceName(device), btDevice.driverName());
