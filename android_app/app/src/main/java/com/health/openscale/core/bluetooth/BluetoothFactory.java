@@ -114,7 +114,7 @@ public class BluetoothFactory {
         }
         if (deviceName.equals("Hoffen BS-8107")) {
             return new BluetoothHoffenBBS8107(context);
-	}
+	      }
         if (deviceName.equals("ADV") || deviceName.equals("Chipsea-BLE")) {
             return new BluetoothOKOK(context);
         }
@@ -135,6 +135,9 @@ public class BluetoothFactory {
         }
         if (deviceName.equals("CH100")){
             return new BluetoothHuaweiAH100(context);
+        }
+        if (deviceName.equals("ES-26BB-B")){
+            return new BluetoothES26BBB(context);
         }
         if (deviceName.equals("Yoda1")){
             return new BluetoothYoda1Scale(context);
