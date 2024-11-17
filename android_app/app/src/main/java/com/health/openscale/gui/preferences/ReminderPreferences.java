@@ -22,6 +22,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -185,7 +186,7 @@ public class ReminderPreferences extends PreferenceFragmentCompat
                             builder.setMessage(R.string.permission_notification_info);
                             builder.setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialogInterface, int i) {
-                                    Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                    Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getContext().getPackageName()));
                                     getContext().startActivity(intent);
                                 }
                             });
