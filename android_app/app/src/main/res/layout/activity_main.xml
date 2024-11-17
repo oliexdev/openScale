@@ -18,20 +18,20 @@
             <com.google.android.material.appbar.AppBarLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:theme="@style/AppTheme.AppBarOverlay">
+                android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar">
 
                 <androidx.appcompat.widget.Toolbar
                     android:id="@+id/toolbar"
                     android:layout_width="match_parent"
                     android:layout_height="?attr/actionBarSize"
                     android:background="?attr/colorPrimary"
-                    app:popupTheme="@style/AppTheme.PopupOverlay" />
+                    app:popupTheme="@style/ThemeOverlay.MaterialComponents.Dark" />
 
             </com.google.android.material.appbar.AppBarLayout>
 
             <!-- action_menumain content view where fragments are loaded -->
 
-            <fragment
+            <androidx.fragment.app.FragmentContainerView
                 android:id="@+id/nav_host_fragment"
                 android:name="androidx.navigation.fragment.NavHostFragment"
                 android:layout_width="match_parent"
@@ -47,6 +47,7 @@
                 android:layout_weight="10"
                 app:labelVisibilityMode="unlabeled"
                 android:background="?attr/colorPrimaryDark"
+                android:theme="@style/AppTheme.NavigationBar"
                 app:itemIconTint="@drawable/nav_item_colors"
                 app:itemTextColor="@android:color/transparent"
                 app:menu="@menu/drawer_bottom_view" />

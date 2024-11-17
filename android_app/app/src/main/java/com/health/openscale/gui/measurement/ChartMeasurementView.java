@@ -16,6 +16,8 @@
 
 package com.health.openscale.gui.measurement;
 
+import static java.time.temporal.ChronoUnit.DAYS;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -53,9 +55,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Stack;
 
-import static java.time.temporal.ChronoUnit.DAYS;
-
 public class ChartMeasurementView extends LineChart {
+    public static final String COMPUTATION_METHOD_SIMPLE_MOVING_AVERAGE = "SimpleMovingAverage";
+    public static final String COMPUTATION_METHOD_EXPONENTIALLY_SMOOTHED_MOVING_AVERAGE = "ExponentiallySmoothedMovingAverage";
+
     public enum ViewMode {
         DAY_OF_MONTH,
         WEEK_OF_MONTH,
@@ -75,6 +78,10 @@ public class ChartMeasurementView extends LineChart {
     private ViewMode viewMode;
     private boolean isInGraphKey;
     private ProgressBar progressBar;
+
+    private interface TrendlineComputationInterface {
+        public List<ScaleMeasurement> processMeasurements(List<ScaleMeasurement> measurementList);
+    }
 
     public ChartMeasurementView(Context context) {
         super(context);
@@ -195,6 +202,10 @@ public class ChartMeasurementView extends LineChart {
     }
 
     private void initChart() {
+        if (isInEditMode()) {
+            return;
+        }
+
         prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
         openScale = OpenScale.getInstance();
         measurementViews = MeasurementView.getMeasurementList(getContext(), MeasurementView.DateTimeOrder.NONE);
@@ -289,14 +300,19 @@ public class ChartMeasurementView extends LineChart {
         offsetBottom += Math.max(70f, mOffsetsBuffer.bottom);
 
         // offsets for y-labels
+
+        // add one symbol worth of offset to avoid cutting decimal places
+        float additionalWidth = (float) Utils.calcTextWidth(mAxisRendererLeft
+                .getPaintAxisLabels(), "1");
+
         if (mAxisLeft.needsOffset()) {
             offsetLeft += mAxisLeft.getRequiredWidthSpace(mAxisRendererLeft
-                    .getPaintAxisLabels());
+                    .getPaintAxisLabels()) + additionalWidth;
         }
 
         if (mAxisRight.needsOffset()) {
             offsetRight += mAxisRight.getRequiredWidthSpace(mAxisRendererRight
-                    .getPaintAxisLabels());
+                    .getPaintAxisLabels()) + additionalWidth;
         }
 
         if (mXAxis.isEnabled() && mXAxis.isDrawLabelsEnabled()) {
@@ -391,7 +407,19 @@ public class ChartMeasurementView extends LineChart {
         }
 
         if (prefs.getBoolean("trendLine", false)) {
-            addTrendLine(lineDataSets);
+            String selectedTrendLineComputationMethod = prefs.getString("trendlineComputationMethod", COMPUTATION_METHOD_EXPONENTIALLY_SMOOTHED_MOVING_AVERAGE);
+            switch (selectedTrendLineComputationMethod) {
+                case COMPUTATION_METHOD_EXPONENTIALLY_SMOOTHED_MOVING_AVERAGE:
+                    addExponentiallySmoothedMovingAverage(lineDataSets);
+                    break;
+                case COMPUTATION_METHOD_SIMPLE_MOVING_AVERAGE:
+                    addSimpleMovingAverage(lineDataSets);
+                    break;
+                default:
+                    addExponentiallySmoothedMovingAverage(lineDataSets);
+                    break; // by default fall back to exponentially smoothed moving average
+            }
+
         }
 
         if (!lineDataSets.isEmpty()) {
@@ -406,6 +434,14 @@ public class ChartMeasurementView extends LineChart {
         }
 
         progressBar.setVisibility(GONE);
+    }
+
+    private void addExponentiallySmoothedMovingAverage(List<ILineDataSet> lineDataSets) {
+        addTrendLine(lineDataSets, this::getExponentiallySmoothedMovingAverageOfScaleMeasurements);
+    }
+
+    private void addSimpleMovingAverage(List<ILineDataSet> lineDataSets) {
+        addTrendLine(lineDataSets, this::getSimpleMovingAverageOfScaleMeasurements);
     }
 
     private void addMeasurementLine(List<ILineDataSet> lineDataSets, List<Entry> lineEntries, FloatMeasurementView measurementView) {
@@ -426,7 +462,7 @@ public class ChartMeasurementView extends LineChart {
         measurementLine.setDrawValues(prefs.getBoolean("labelsEnable", false));
         measurementLine.setMode(LineDataSet.Mode.HORIZONTAL_BEZIER);
         if (prefs.getBoolean("trendLine", false)) {
-            // show only data point if trend line is enabled
+            // show only data points if trend line or simple moving average is enabled
             measurementLine.enableDashedLine(0, 1, 0);
         }
 
@@ -464,7 +500,7 @@ public class ChartMeasurementView extends LineChart {
         lineDataSets.add(goalLine);
     }
 
-    private List<ScaleMeasurement> getScaleMeasurementsAsTrendline(List<ScaleMeasurement> measurementList) {
+    private List<ScaleMeasurement> getExponentiallySmoothedMovingAverageOfScaleMeasurements(List<ScaleMeasurement> measurementList) {
         List<ScaleMeasurement> trendlineList = new ArrayList<>();
 
        // exponentially smoothed moving average with 10% smoothing
@@ -484,54 +520,98 @@ public class ChartMeasurementView extends LineChart {
         return trendlineList;
     }
 
-    private void addTrendLine(List<ILineDataSet> lineDataSets) {
+    private List<ScaleMeasurement> getSimpleMovingAverageOfScaleMeasurements(List<ScaleMeasurement> measurementList) {
+        final long NUMBER_OF_MS_IN_A_DAY = 1000 * 60 * 60 * 24;
+        List<ScaleMeasurement> movingAverageList = new ArrayList<>();
+
+        int samplingWidth = prefs.getInt("simpleMovingAverageNumDays", 7);
+
+        // simple moving average of the last samplingWidth days
+        movingAverageList.add(measurementList.get(0));
+
+        for (int i = 1; i < measurementList.size(); i++) {
+            ScaleMeasurement entry = measurementList.get(i).clone();
+            int numberOfMeasurementsToAverageOut = 0;
+
+            for (int k = i-1; k >= 0; k--){
+                ScaleMeasurement previousMeasurement = measurementList.get(i - k - 1);
+
+                if (entry.getDateTime().getTime() - previousMeasurement.getDateTime().getTime() < samplingWidth * NUMBER_OF_MS_IN_A_DAY) {
+                    numberOfMeasurementsToAverageOut += 1;
+                    entry.add(previousMeasurement);
+                }
+            }
+
+            entry.multiply(1.0f/(numberOfMeasurementsToAverageOut+1));
+
+            movingAverageList.add(entry);
+        }
+
+        return movingAverageList;
+    }
+
+    private ArrayList<ScaleMeasurement> getNonZeroScaleMeasurementsList(FloatMeasurementView measurementView) {
+        ArrayList<ScaleMeasurement> nonZeroScaleMeasurementList = new ArrayList<>();
+
+        // filter first all zero measurements out, so that the follow-up trendline calculations are not based on them
+        for (int i=0; i<scaleMeasurementList.size(); i++) {
+            ScaleMeasurement measurement = scaleMeasurementList.get(i);
+            float value = measurementView.getMeasurementValue(measurement);
+
+            if (value != 0.0f) {
+                nonZeroScaleMeasurementList.add(measurement);
+            }
+        }
+
+        return nonZeroScaleMeasurementList;
+    }
+
+    private void addTrendLine(List<ILineDataSet> lineDataSets, TrendlineComputationInterface trendlineComputation) {
 
         for (MeasurementView view : measurementViews) {
             if (view instanceof FloatMeasurementView && view.isVisible()) {
                 final FloatMeasurementView measurementView = (FloatMeasurementView) view;
 
-                final List<Entry> lineEntries = new ArrayList<>();
-
-                ArrayList<ScaleMeasurement> nonZeroScaleMeasurementList = new ArrayList<>();
-
-                // filter first all zero measurements out, so that the follow-up trendline calculations are not based on them
-                for (int i=0; i<scaleMeasurementList.size(); i++) {
-                    ScaleMeasurement measurement = scaleMeasurementList.get(i);
-                    float value = measurementView.getMeasurementValue(measurement);
-
-                    if (value != 0.0f) {
-                        nonZeroScaleMeasurementList.add(measurement);
-                    }
-                }
-
+                ArrayList<ScaleMeasurement> nonZeroScaleMeasurementList = getNonZeroScaleMeasurementsList(measurementView);
                 // check if we have some data left otherwise skip the measurement
                 if (nonZeroScaleMeasurementList.isEmpty()) {
                     continue;
                 }
 
                 // calculate the trendline from the non-zero scale measurement list
-                List<ScaleMeasurement> scaleMeasurementsAsTrendlineList = getScaleMeasurementsAsTrendline(nonZeroScaleMeasurementList);
+                List<ScaleMeasurement> scaleMeasurementsAsTrendlineList = trendlineComputation.processMeasurements(nonZeroScaleMeasurementList);
 
-                for (int i=0; i<scaleMeasurementsAsTrendlineList.size(); i++) {
-                    ScaleMeasurement measurement = scaleMeasurementsAsTrendlineList.get(i);
-                    float value = measurementView.getConvertedMeasurementValue(measurement);
+                final List<Entry> lineEntries = convertMeasurementsToLineEntries(measurementView, scaleMeasurementsAsTrendlineList);
 
-                    Entry entry = new Entry();
-                    entry.setX(convertDateToInt(measurement.getDateTime()));
-                    entry.setY(value);
-                    Object[] extraData = new Object[3];
-                    extraData[0] = measurement;
-                    extraData[1] = (i == 0) ? null : scaleMeasurementsAsTrendlineList.get(i-1);
-                    extraData[2] = measurementView;
-                    entry.setData(extraData);
+                addMeasurementLineTrend(lineDataSets, lineEntries, measurementView, getContext().getString(R.string.label_trend_line));
 
-                    lineEntries.add(entry);
+                // add the future entries
+                if (prefs.getBoolean("trendlineFuture", true)) {
+                    addPredictionLine(lineDataSets, lineEntries, measurementView);
                 }
-
-                addMeasurementLineTrend(lineDataSets, lineEntries, measurementView);
-                addPredictionLine(lineDataSets, lineEntries, measurementView);
             }
         }
+    }
+
+    private List<Entry> convertMeasurementsToLineEntries(FloatMeasurementView measurementView, List<ScaleMeasurement> measurementsList) {
+        List<Entry> lineEntries = new ArrayList<>();
+        for (int i = 0; i< measurementsList.size(); i++) {
+            ScaleMeasurement measurement = measurementsList.get(i);
+            float value = measurementView.getConvertedMeasurementValue(measurement);
+
+            Entry entry = new Entry();
+            entry.setX(convertDateToInt(measurement.getDateTime()));
+            entry.setY(value);
+            Object[] extraData = new Object[3];
+            extraData[0] = measurement;
+            extraData[1] = (i == 0) ? null : measurementsList.get(i-1);
+            extraData[2] = measurementView;
+            entry.setData(extraData);
+
+            lineEntries.add(entry);
+        }
+
+        return lineEntries;
     }
 
     private void addPredictionLine(List<ILineDataSet> lineDataSets, List<Entry> lineEntries, FloatMeasurementView measurementView) {
@@ -596,8 +676,8 @@ public class ChartMeasurementView extends LineChart {
         }
     }
 
-    private void addMeasurementLineTrend(List<ILineDataSet> lineDataSets, List<Entry> lineEntries, FloatMeasurementView measurementView) {
-        LineDataSet measurementLine = new LineDataSet(lineEntries, measurementView.getName().toString() + "-" + getContext().getString(R.string.label_trend_line));
+    private void addMeasurementLineTrend(List<ILineDataSet> lineDataSets, List<Entry> lineEntries, FloatMeasurementView measurementView, String name) {
+        LineDataSet measurementLine = new LineDataSet(lineEntries, measurementView.getName().toString() + "-" + name);
         measurementLine.setLineWidth(1.5f);
         measurementLine.setValueTextSize(10.0f);
         measurementLine.setColor(measurementView.getColor());
@@ -625,5 +705,4 @@ public class ChartMeasurementView extends LineChart {
             }
         }
     }
-
 }

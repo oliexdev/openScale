@@ -98,12 +98,14 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:checked="true"
+                        android:theme="@style/AppTheme.RadioButton"
                         android:text="@string/label_male" />
 
                     <RadioButton
                         android:id="@+id/btnRadioWoman"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:theme="@style/AppTheme.RadioButton"
                         android:text="@string/label_female" />
                 </RadioGroup>
             </TableRow>
@@ -184,11 +186,13 @@
                         android:layout_height="wrap_content"
                         android:text="cm"
                         android:id="@+id/btnRadioCM"
+                        android:theme="@style/AppTheme.RadioButton"
                         android:checked="true" />
 
                     <RadioButton
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:theme="@style/AppTheme.RadioButton"
                         android:text="in"
                         android:id="@+id/btnRadioINCH" />
                 </RadioGroup>
@@ -216,18 +220,21 @@
                         android:layout_height="wrap_content"
                         android:text="kg"
                         android:id="@+id/btnRadioKG"
+                        android:theme="@style/AppTheme.RadioButton"
                         android:checked="true" />
 
                     <RadioButton
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="lb"
+                        android:theme="@style/AppTheme.RadioButton"
                         android:id="@+id/btnRadioLB" />
 
                     <RadioButton
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="st"
+                        android:theme="@style/AppTheme.RadioButton"
                         android:id="@+id/btnRadioST" />
                 </RadioGroup>
             </TableRow>
@@ -271,7 +278,26 @@
             </TableRow>
 
             <TableRow
+                android:id="@+id/rowGoalEnabled"
+                android:layout_weight="1"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/lblGoalEnabled"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_goal_enabled" />
+
+                <CheckBox
+                    android:id="@+id/chkGoalEnabled"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ems="10" />
+            </TableRow>
+
+            <TableRow
                 android:id="@+id/rowGoalWeight"
+                android:visibility="gone"
                 android:layout_weight="1"
                 android:gravity="center_vertical">
 
@@ -292,6 +318,7 @@
             <TableRow
                 android:id="@+id/rowGoalDate"
                 android:layout_weight="1"
+                android:visibility="gone"
                 android:gravity="center_vertical">
 
                 <TextView

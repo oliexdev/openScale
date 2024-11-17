@@ -12,5 +12,4 @@
         <item>Monthly</item>
     </string-array>
 
-    <string-array name="auto_backup_default"/>
 </resources>

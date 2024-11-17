@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="label_weight_difference">ওজনের পার্থক্য</string>
-    <string name="label_last_month">গত মাসের গড়</string>
-    <string name="label_last_week">আগের সপ্তাহের গড়</string>
-    <plurals name="label_days">
-        <item quantity="one">দিন %d</item>
-        <item quantity="other">দিনসমূহ %d</item>
-    </plurals>
     <string name="label_smartUserAssign">চটপটে ব্যবহারকারীর কাজ</string>
     <string name="label_age">বয়স</string>
     <string name="label_bone">অস্থির ভর</string>
@@ -37,8 +31,6 @@
     <string name="label_no">না</string>
     <string name="label_yes">হ্যাঁ</string>
     <string name="label_cancel">বাতিল</string>
-    <string name="close_drawer">বন্ধ</string>
-    <string name="open_drawer">খুলো</string>
     <string name="action_donation">দান</string>
     <string name="action_bluetooth_status">ব্লুটুথ অবস্থা</string>
     <string name="action_settings">নিয়ম বিন্যাস</string>
@@ -89,8 +81,6 @@
     <string name="error_value_required">মান প্রয়োজন</string>
     <string name="label_delete_all">সব মুছে ফেলুন</string>
     <string name="label_import">আমদানি</string>
-    <string name="label_title_goal">লক্ষ্য</string>
-    <string name="label_title_last_measurement">শেষ পরিমাপ</string>
     <string name="label_title_user">ব্যবহারকারী</string>
     <string name="label_goal_date">লক্ষ্য অর্জনের সময়</string>
     <string name="label_goal_weight">ওজনের লক্ষ্য</string>
@@ -100,7 +90,6 @@
     <string name="label_time">সময়</string>
     <string name="label_date">তারিখ</string>
     <string name="label_days_left">দিন বাকি</string>
-    <string name="label_goal_date_is">লক্ষ্য তারিখ:</string>
     <string name="permission_bluetooth_info_title">তথ্য</string>
     <string name="permission_location_service_info">ব্লুটুথ ডিভাইসগুলি অনুসন্ধান করতে অ্যান্ড্রয়েড সেটিংসে অবস্থান পাওয়ারঅনুমতি দিন। ঐচ্ছিকভাবে এটি পরে বাতিল করুন।</string>
     <string name="permission_bluetooth_info">ব্লুটুথ ডিভাইসগুলি অনুসন্ধান করার জন্য অবস্থানের অনুমতি প্রয়োজন। ডিভাইসটি খুঁজে পাওয়ার পরে এটি প্রত্যাহার করা যায়।</string>
@@ -146,7 +135,6 @@
     <string name="label_goal_line">লক্ষ্য রেখা</string>
     <string name="label_initial_weight">প্রাথমিক ওজন</string>
     <string name="label_ignoreOutOfRange">সীমার বাইরের তথ্য উপেক্ষা করুন</string>
-    <string name="label_not_found">পাওয়া যায়নি</string>
     <string name="label_export_dir">ডাইরেক্টরি রপ্তানি করুন</string>
     <string name="label_backup">ব্যাকআপ</string>
     <string name="label_importBackup">ব্যাকআপ আমদানি করুন</string>
@@ -159,7 +147,6 @@
     <string name="Wednesday">বুধবার</string>
     <string name="Tuesday">মঙ্গলবার</string>
     <string name="Monday">সোমবার</string>
-    <string name="info_on_date">চালু</string>
     <string name="default_value_reminder_notify_text">ওজন করার সময়</string>
     <string name="label_reminder_notify_text">নোটিফিকেশনের লেখা</string>
     <string name="label_reminder_time">সময়</string>
@@ -174,7 +161,6 @@
     <string name="label_delete_confirmation">নিশ্চিতকরণ বাতিল করুন</string>
     <string name="label_enable_points">তথ্য বিন্দু</string>
     <string name="label_enable_labels">ডাটা লেবেল</string>
-    <string name="label_enable_yaxis">কোটি-অক্ষ</string>
     <string name="label_enable_legend">গ্রাফ লেজেন্ড</string>
     <string name="label_bluetooth_searching_finished">অনুসন্ধান শেষ</string>
     <string name="label_bluetooth_searching">ব্লুটুথ স্কেলের জন্য অনুসন্ধান হচ্ছে</string>

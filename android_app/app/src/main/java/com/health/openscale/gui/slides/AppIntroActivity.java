@@ -28,7 +28,7 @@ public class AppIntroActivity extends AppIntro {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setBarColor(getResources().getColor(R.color.blue_normal));
+        setBarColor(getResources().getColor(R.color.seed));
 
         setSkipButtonEnabled(true);
 

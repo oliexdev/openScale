@@ -15,12 +15,14 @@
 */
 package com.health.openscale.gui.overview;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
+import android.text.style.RelativeSizeSpan;
+import android.text.style.StyleSpan;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -28,16 +30,18 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.Spinner;
-import android.widget.TableLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
-import androidx.navigation.Navigation;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.transition.ChangeScroll;
+import androidx.transition.TransitionManager;
 
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.highlight.Highlight;
@@ -46,13 +50,14 @@ import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.datatypes.ScaleUser;
+import com.health.openscale.core.utils.DateTimeHelpers;
 import com.health.openscale.gui.measurement.ChartActionBarView;
 import com.health.openscale.gui.measurement.ChartMeasurementView;
-import com.health.openscale.gui.measurement.MeasurementEntryFragment;
-import com.health.openscale.gui.measurement.MeasurementView;
-import com.health.openscale.gui.utils.ColorUtil;
+import com.health.openscale.gui.measurement.WeightMeasurementView;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 public class OverviewFragment extends Fragment {
@@ -60,8 +65,8 @@ public class OverviewFragment extends Fragment {
 
     private TextView txtTitleUser;
 
-    private List<MeasurementView> lastMeasurementViews;
-
+    private RecyclerView recyclerView;
+    private OverviewAdapter overviewAdapter;
     private ChartMeasurementView chartView;
     private ChartActionBarView chartActionBarView;
 
@@ -69,9 +74,10 @@ public class OverviewFragment extends Fragment {
 
     private PopupMenu rangePopupMenu;
 
-    private ImageView showEntry;
-    private ImageView editEntry;
-    private ImageView deleteEntry;
+    private LinearLayout rowGoal;
+    private TextView differenceWeightView;
+    private TextView initialWeightView;
+    private TextView goalWeightView;
 
     private ScaleUser currentScaleUser;
 
@@ -79,6 +85,7 @@ public class OverviewFragment extends Fragment {
 
     private SharedPreferences prefs;
 
+    private List<ScaleMeasurement> scaleMeasurementList;
     private ScaleMeasurement markedMeasurement;
 
     @Override
@@ -87,12 +94,18 @@ public class OverviewFragment extends Fragment {
 
         prefs = PreferenceManager.getDefaultSharedPreferences(overviewView.getContext());
 
-        txtTitleUser = overviewView.findViewById(R.id.txtTitleUser);
+        rowGoal = overviewView.findViewById(R.id.rowGoal);
+        differenceWeightView = overviewView.findViewById(R.id.differenceWeightView);
+        initialWeightView = overviewView.findViewById(R.id.initialWeightView);
+        goalWeightView = overviewView.findViewById(R.id.goalWeightView);
 
         chartView = overviewView.findViewById(R.id.chartView);
         chartView.setOnChartValueSelectedListener(new onChartSelectedListener());
         chartView.setProgressBar(overviewView.findViewById(R.id.progressBar));
         chartView.setIsInGraphKey(false);
+        chartView.getLegend().setEnabled(false);
+
+        setYAxisVisibility(prefs.getBoolean("enableYAxis", false));
 
         chartActionBarView = overviewView.findViewById(R.id.chartActionBar);
         chartActionBarView.setIsInGraphKey(false);
@@ -130,6 +143,13 @@ public class OverviewFragment extends Fragment {
                             prefs.edit().putBoolean("enableOverviewChartActionBar", true).apply();
                             chartActionBarView.setVisibility(View.VISIBLE);
                         }
+                        return true;
+                    case R.id.enableYAxis:
+                        boolean checked = item.isChecked();
+                        item.setChecked(!checked);
+                        prefs.edit().putBoolean("enableYAxis", !checked).apply();
+                        setYAxisVisibility(!checked);
+                        updateChartView();
                         return true;
                     case R.id.menu_range_day:
                         prefs.edit().putInt("selectRangeMode", ChartMeasurementView.ViewMode.DAY_OF_ALL.ordinal()).commit();
@@ -178,14 +198,15 @@ public class OverviewFragment extends Fragment {
             chartActionBarView.setVisibility(View.GONE);
         }
 
-        lastMeasurementViews = MeasurementView.getMeasurementList(
-                getContext(), MeasurementView.DateTimeOrder.LAST);
+        MenuItem enableYAxis = rangePopupMenu.getMenu().findItem(R.id.enableYAxis);
+        enableYAxis.setChecked(prefs.getBoolean("enableYAxis", false));
 
-        TableLayout tableOverviewLayout = overviewView.findViewById(R.id.tableLayoutMeasurements);
-
-        for (MeasurementView measurement : lastMeasurementViews) {
-            tableOverviewLayout.addView(measurement);
-        }
+        recyclerView = overviewView.findViewById(R.id.recyclerView);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
+        layoutManager.setInitialPrefetchItemCount(5);
+        layoutManager.setReverseLayout(true);
+        layoutManager.setStackFromEnd(true);
+        recyclerView.setLayoutManager(layoutManager);
 
         spinUserAdapter = new ArrayAdapter<>(overviewView.getContext(), R.layout.spinner_item, new ArrayList<String>());
         spinUser.setAdapter(spinUserAdapter);
@@ -197,39 +218,6 @@ public class OverviewFragment extends Fragment {
                 updateUserSelection();
             }
         });
-
-        showEntry = overviewView.findViewById(R.id.showEntry);
-        showEntry.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                OverviewFragmentDirections.ActionNavOverviewToNavDataentry action = OverviewFragmentDirections.actionNavOverviewToNavDataentry();
-                action.setMeasurementId(markedMeasurement.getId());
-                action.setMode(MeasurementEntryFragment.DATA_ENTRY_MODE.VIEW);
-                Navigation.findNavController(getActivity(), R.id.nav_host_fragment).navigate(action);
-            }
-        });
-
-        editEntry = overviewView.findViewById(R.id.editEntry);
-        editEntry.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                OverviewFragmentDirections.ActionNavOverviewToNavDataentry action = OverviewFragmentDirections.actionNavOverviewToNavDataentry();
-                action.setMeasurementId(markedMeasurement.getId());
-                action.setMode(MeasurementEntryFragment.DATA_ENTRY_MODE.EDIT);
-                Navigation.findNavController(getActivity(), R.id.nav_host_fragment).navigate(action);
-            }
-        });
-        deleteEntry = overviewView.findViewById(R.id.deleteEntry);
-        deleteEntry.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                deleteMeasurement();
-            }
-        });
-
-        showEntry.setEnabled(false);
-        editEntry.setEnabled(false);
-        deleteEntry.setEnabled(false);
 
         chartView.animateY(700);
 
@@ -252,15 +240,25 @@ public class OverviewFragment extends Fragment {
         return overviewView;
     }
 
+    protected void setYAxisVisibility(boolean visible) {
+        chartView.getAxisRight().setDrawLabels(visible);
+        chartView.getAxisRight().setDrawGridLines(visible);
+        chartView.getAxisRight().setDrawAxisLine(visible);
+
+        chartView.getAxisLeft().setDrawGridLines(visible);
+        chartView.getAxisLeft().setDrawLabels(visible);
+        chartView.getAxisLeft().setDrawAxisLine(visible);
+
+        chartView.getXAxis().setDrawGridLines(visible);
+    }
+
     public void updateOnView(List<ScaleMeasurement> scaleMeasurementList) {
-        if (scaleMeasurementList.isEmpty()) {
-            markedMeasurement = new ScaleMeasurement();
-        } else {
-            markedMeasurement = scaleMeasurementList.get(0);
-        }
+        this.scaleMeasurementList = scaleMeasurementList;
+
+        overviewAdapter = new OverviewAdapter(getActivity(), scaleMeasurementList);
+        recyclerView.setAdapter(overviewAdapter);
 
         updateUserSelection();
-        updateMesurementViews(markedMeasurement);
         chartView.updateMeasurementList(scaleMeasurementList);
         updateChartView();
     }
@@ -270,17 +268,7 @@ public class OverviewFragment extends Fragment {
         chartView.setViewRange(selectedRangeMode);
     }
 
-    private void updateMesurementViews(ScaleMeasurement selectedMeasurement) {
-        ScaleMeasurement[] tupleScaleData = OpenScale.getInstance().getTupleOfScaleMeasurement(selectedMeasurement.getId());
-        ScaleMeasurement prevScaleMeasurement = tupleScaleData[0];
-
-        for (MeasurementView measurement : lastMeasurementViews) {
-            measurement.loadFrom(selectedMeasurement, prevScaleMeasurement);
-        }
-    }
-
     private void updateUserSelection() {
-
         currentScaleUser = OpenScale.getInstance().getSelectedScaleUser();
 
         spinUserAdapter.clear();
@@ -300,8 +288,80 @@ public class OverviewFragment extends Fragment {
 
         // Hide user selector when there is only one user
         int visibility = spinUserAdapter.getCount() < 2 ? View.GONE : View.VISIBLE;
-        txtTitleUser.setVisibility(visibility);
         spinUser.setVisibility(visibility);
+
+        if (currentScaleUser.isGoalEnabled()) {
+            rowGoal.setVisibility(View.VISIBLE);
+
+            WeightMeasurementView weightMeasurementView = new WeightMeasurementView(getContext());
+            ScaleMeasurement initialWeightMeasurement = OpenScale.getInstance().getLastScaleMeasurement();
+
+            if (initialWeightMeasurement == null) {
+                initialWeightMeasurement = new ScaleMeasurement();
+            }
+
+            initialWeightMeasurement.setWeight(initialWeightMeasurement.getWeight());
+            weightMeasurementView.loadFrom(initialWeightMeasurement, null);
+
+            SpannableStringBuilder initialWeightValue = new SpannableStringBuilder();
+            initialWeightValue.append(getResources().getString(R.string.label_weight));
+            initialWeightValue.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), 0, initialWeightValue.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            initialWeightValue.append("\n");
+            initialWeightValue.append(weightMeasurementView.getValueAsString(true));
+            initialWeightValue.append(("\n"));
+            int start = initialWeightValue.length();
+            initialWeightValue.append(DateFormat.getDateInstance(DateFormat.MEDIUM).format(initialWeightMeasurement.getDateTime()));
+            initialWeightValue.setSpan(new RelativeSizeSpan(0.8f), start, initialWeightValue.length(),
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+            initialWeightView.setText(initialWeightValue);
+
+            ScaleMeasurement goalWeightMeasurement = new ScaleMeasurement();
+            goalWeightMeasurement.setWeight(currentScaleUser.getGoalWeight());
+            weightMeasurementView.loadFrom(goalWeightMeasurement, null);
+
+            SpannableStringBuilder goalWeightValue = new SpannableStringBuilder();
+            goalWeightValue.append(getResources().getString(R.string.label_goal_weight));
+            goalWeightValue.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), 0, goalWeightValue.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            goalWeightValue.append("\n");
+            goalWeightValue.append(weightMeasurementView.getValueAsString(true));
+            goalWeightValue.append(("\n"));
+            start = goalWeightValue.length();
+            goalWeightValue.append(DateFormat.getDateInstance(DateFormat.MEDIUM).format(currentScaleUser.getGoalDate()));
+            goalWeightValue.setSpan(new RelativeSizeSpan(0.8f), start, goalWeightValue.length(),
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+            goalWeightView.setText(goalWeightValue);
+
+            ScaleMeasurement differenceWeightMeasurement = new ScaleMeasurement();
+            if (initialWeightMeasurement.getWeight() > goalWeightMeasurement.getWeight()) {
+                differenceWeightMeasurement.setWeight(initialWeightMeasurement.getWeight() - goalWeightMeasurement.getWeight());
+            } else {
+                differenceWeightMeasurement.setWeight(goalWeightMeasurement.getWeight() - initialWeightMeasurement.getWeight());
+            }
+            weightMeasurementView.loadFrom(differenceWeightMeasurement, null);
+
+            Calendar initialCalendar = Calendar.getInstance();
+            initialCalendar.setTime(initialWeightMeasurement.getDateTime());
+            Calendar goalCalendar = Calendar.getInstance();
+            goalCalendar.setTime(currentScaleUser.getGoalDate());
+            int daysBetween = Math.max(0, DateTimeHelpers.daysBetween(initialCalendar, goalCalendar));
+
+            SpannableStringBuilder differenceWeightValue = new SpannableStringBuilder();
+            differenceWeightValue.append(getResources().getString(R.string.label_weight_difference));
+            differenceWeightValue.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), 0, differenceWeightValue.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            differenceWeightValue.append("\n");
+            differenceWeightValue.append(weightMeasurementView.getValueAsString(true));
+            differenceWeightValue.append(("\n"));
+            start = differenceWeightValue.length();
+            differenceWeightValue.append(daysBetween + " " + getString(R.string.label_days_left));
+            differenceWeightValue.setSpan(new RelativeSizeSpan(0.8f), start, differenceWeightValue.length(),
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+            differenceWeightView.setText(differenceWeightValue);
+        } else {
+            rowGoal.setVisibility(View.GONE);
+        }
     }
 
     private class onChartSelectedListener implements OnChartValueSelectedListener {
@@ -313,26 +373,15 @@ public class OverviewFragment extends Fragment {
             markedMeasurement = (ScaleMeasurement)extraData[0];
             //MeasurementView measurementView = (MeasurementView)extraData[1];
 
-            showEntry.setEnabled(true);
-            editEntry.setEnabled(true);
-            deleteEntry.setEnabled(true);
-
-            showEntry.setColorFilter(ColorUtil.COLOR_BLUE);
-            editEntry.setColorFilter(ColorUtil.COLOR_GREEN);
-            deleteEntry.setColorFilter(ColorUtil.COLOR_RED);
-
-            updateMesurementViews(markedMeasurement);
+            if (scaleMeasurementList.contains(markedMeasurement)) {
+                TransitionManager.beginDelayedTransition(recyclerView, new ChangeScroll());
+                recyclerView.scrollToPosition(scaleMeasurementList.indexOf(markedMeasurement));
+            }
         }
 
         @Override
         public void onNothingSelected() {
-            showEntry.setEnabled(false);
-            editEntry.setEnabled(false);
-            deleteEntry.setEnabled(false);
-
-            showEntry.setColorFilter(ColorUtil.COLOR_GRAY);
-            editEntry.setColorFilter(ColorUtil.COLOR_GRAY);
-            deleteEntry.setColorFilter(ColorUtil.COLOR_GRAY);
+            // empty
         }
     }
 
@@ -357,45 +406,5 @@ public class OverviewFragment extends Fragment {
         public void onNothingSelected(AdapterView<?> parent) {
 
         }
-    }
-
-    private void deleteMeasurement() {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(overviewView.getContext());
-        boolean deleteConfirmationEnable = prefs.getBoolean("deleteConfirmationEnable", true);
-
-        if (deleteConfirmationEnable) {
-            AlertDialog.Builder deleteAllDialog = new AlertDialog.Builder(overviewView.getContext());
-            deleteAllDialog.setMessage(getResources().getString(R.string.question_really_delete));
-
-            deleteAllDialog.setPositiveButton(getResources().getString(R.string.label_yes), new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-                    doDeleteMeasurement();
-                }
-            });
-
-            deleteAllDialog.setNegativeButton(getResources().getString(R.string.label_no), new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-                    dialog.dismiss();
-                }
-            });
-
-            deleteAllDialog.show();
-        }
-        else {
-            doDeleteMeasurement();
-        }
-    }
-
-    private void doDeleteMeasurement() {
-        OpenScale.getInstance().deleteScaleMeasurement(markedMeasurement.getId());
-        Toast.makeText(overviewView.getContext(), getResources().getString(R.string.info_data_deleted), Toast.LENGTH_SHORT).show();
-
-        showEntry.setEnabled(false);
-        editEntry.setEnabled(false);
-        deleteEntry.setEnabled(false);
-
-        showEntry.setColorFilter(ColorUtil.COLOR_GRAY);
-        editEntry.setColorFilter(ColorUtil.COLOR_GRAY);
-        deleteEntry.setColorFilter(ColorUtil.COLOR_GRAY);
     }
 }

@@ -131,7 +131,7 @@ public class OpenScale {
                         db.setForeignKeyConstraintsEnabled(true);
                     }
                 })
-                .addMigrations(AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3, AppDatabase.MIGRATION_3_4, AppDatabase.MIGRATION_4_5)
+                .addMigrations(AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3, AppDatabase.MIGRATION_3_4, AppDatabase.MIGRATION_4_5, AppDatabase.MIGRATION_5_6)
                 .build();
         measurementDAO = appDB.measurementDAO();
         userDAO = appDB.userDAO();
@@ -572,6 +572,19 @@ public class OpenScale {
         Calendar endCalender = Calendar.getInstance();
 
         startCalender.set(year, month, day, 0, 0, 0);
+
+        return measurementDAO.getAllInRange(startCalender.getTime(), endCalender.getTime(), selectedUserId);
+    }
+
+    public List<ScaleMeasurement> getScaleMeasurementOfRangeDates(int startYear, int startMonth, int startDay, int endYear, int endMonth, int endDay) {
+        int selectedUserId = getSelectedScaleUserId();
+
+        Calendar startCalender = Calendar.getInstance();
+        Calendar endCalender = Calendar.getInstance();
+
+        startCalender.set(startYear, startMonth, startDay, 0, 0, 0);
+        endCalender.set(endYear, endMonth, endDay, 0, 0, 0);
+        endCalender.add(Calendar.DAY_OF_MONTH, 1);
 
         return measurementDAO.getAllInRange(startCalender.getTime(), endCalender.getTime(), selectedUserId);
     }

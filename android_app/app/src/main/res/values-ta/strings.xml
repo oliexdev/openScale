@@ -6,7 +6,6 @@
     <string name="label_bmi">உடலெடைச் சுட்டெண் (பி.எம்.ஐ)</string>
     <string name="label_add_measurement">ஒரு அளவினைச் சேர்</string>
     <string name="action_bluetooth_status">புளூடூத் நிலை</string>
-    <string name="open_drawer">திற</string>
     <string name="title_measurements">அளவுகள்</string>
     <string name="title_about">மேலும்</string>
     <string name="label_slide_welcome_top_text">openScale
@@ -38,7 +37,6 @@
     <string name="customactivityoncrash_error_activity_error_details_close">மூடு</string>
     <string name="label_feedback_message_no">இல்லை</string>
     <string name="label_feedback_message_yes">ஆம்</string>
-    <string name="label_not_found">கிடைக்கவில்லை</string>
     <string name="Wednesday">புதன்கிழமை</string>
     <string name="Tuesday">செவ்வாய்க்கிழமை</string>
     <string name="Monday">திங்கட்கிழமை</string>
@@ -59,7 +57,6 @@
     <string name="label_yes">ஆம்</string>
     <string name="label_ok">சரி</string>
     <string name="label_cancel">இரத்துசெய்</string>
-    <string name="close_drawer">மூடு</string>
     <string name="action_donation">நன்கொடை</string>
     <string name="action_settings">அமைப்புகள்</string>
     <string name="title_general">பொது</string>

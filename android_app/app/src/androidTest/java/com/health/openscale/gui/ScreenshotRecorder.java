@@ -15,7 +15,18 @@
 */
 package com.health.openscale.gui;
 
-import android.Manifest;
+import static android.os.Environment.DIRECTORY_PICTURES;
+import static android.os.Environment.getExternalStoragePublicDirectory;
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.Espresso.pressBack;
+import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.contrib.DrawerActions.close;
+import static androidx.test.espresso.contrib.DrawerActions.open;
+import static androidx.test.espresso.contrib.DrawerMatchers.isClosed;
+import static androidx.test.espresso.contrib.NavigationViewActions.navigateTo;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -26,7 +37,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ActivityTestRule;
-import androidx.test.rule.GrantPermissionRule;
 import androidx.test.runner.screenshot.BasicScreenCaptureProcessor;
 import androidx.test.runner.screenshot.ScreenCapture;
 import androidx.test.runner.screenshot.Screenshot;
@@ -54,18 +64,6 @@ import java.util.Locale;
 
 import timber.log.Timber;
 
-import static android.os.Environment.DIRECTORY_PICTURES;
-import static android.os.Environment.getExternalStoragePublicDirectory;
-import static androidx.test.espresso.Espresso.onView;
-import static androidx.test.espresso.Espresso.pressBack;
-import static androidx.test.espresso.action.ViewActions.click;
-import static androidx.test.espresso.assertion.ViewAssertions.matches;
-import static androidx.test.espresso.contrib.DrawerActions.close;
-import static androidx.test.espresso.contrib.DrawerActions.open;
-import static androidx.test.espresso.contrib.DrawerMatchers.isClosed;
-import static androidx.test.espresso.contrib.NavigationViewActions.navigateTo;
-import static androidx.test.espresso.matcher.ViewMatchers.withId;
-
 @LargeTest
 @RunWith(AndroidJUnit4.class)
 public class ScreenshotRecorder {
@@ -75,9 +73,6 @@ public class ScreenshotRecorder {
 
     @Rule
     public ActivityTestRule<MainActivity> mActivityTestRule = new ActivityTestRule<>(MainActivity.class, false , false);
-
-    @Rule
-    public GrantPermissionRule permissionRule = GrantPermissionRule.grant(Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
     @Before
     public void initRecorder() {
@@ -155,54 +150,54 @@ public class ScreenshotRecorder {
         List<ScaleMeasurement> scaleMeasurementList = new ArrayList<>();
 
         String data = "\"dateTime\",\"weight\",\"fat\",\"water\",\"muscle\",\"lbm\",\"bone\",\"waist\",\"hip\",\"comment\"\n" +
-                        "04.08.2015 08:08,89.7,21.2,58.0,41.5\n" +
-                        "03.08.2015 05:17,89.0,26.4,54.6,41.6\n" +
-                        "02.08.2015 07:32,88.8,25.0,55.6,41.7\n" +
-                        "31.07.2015 04:39,89.1,29.2,52.8,41.6\n" +
-                        "18.07.2015 07:54,91.3,22.1,57.4,41.2\n" +
-                        "12.07.2015 07:14,91.1,21.9,57.6,41.3\n" +
-                        "16.06.2015 05:16,89.5,25.3,55.4,41.5\n" +
-                        "15.06.2015 05:34,90.1,26.3,54.7,41.4\n" +
-                        "12.06.2015 05:36,90.3,26.4,54.6,41.4\n" +
-                        "10.06.2015 04:22,90.8,22.3,57.3,41.3\n" +
-                        "07.06.2015 10:17,90.0,22.6,57.1,41.4\n" +
-                        "06.06.2015 06:36,91.0,21.6,57.8,41.3\n" +
-                        "05.06.2015 06:57,91.6,21.7,57.7,41.2\n" +
-                        "04.06.2015 06:35,90.4,23.5,56.5,41.4\n" +
-                        "25.05.2015 10:25,89.5,21.6,57.8,41.5\n" +
-                        "17.05.2015 09:55,92.5,21.9,57.6,41.0\n" +
-                        "09.05.2015 09:30,89.0,21.6,57.8,41.6\n" +
-                        "29.04.2015 08:25,89.2,21.0,58.2,41.4\n" +
-                        "13.04.2015 04:54,87.6,32.7,50.6,41.9\n" +
-                        "11.04.2015 07:41,86.8,20.9,58.3,42.0\n" +
-                        "10.04.2015 05:27,86.4,24.0,56.3,42.1\n" +
-                        "06.04.2015 06:45,87.6,24.4,56.0,41.9\n" +
-                        "01.04.2015 05:03,88.6,25.6,55.2,41.7\n" +
-                        "28.03.2015 07:06,87.1,23.5,56.6,42.2\n" +
-                        "21.03.2015 18:21,88.1,20.7,58.5,42.0\n" +
-                        "15.03.2015 20:56,90.3,22.6,57.1,41.6\n" +
-                        "14.03.2015 07:37,87.2,25.3,55.5,42.1\n" +
-                        "13.03.2015 06:11,85.6,27.4,54.1,42.4\n" +
-                        "17.02.2015 10:32,86.6,20.6,58.5,42.2\n" +
-                        "16.02.2015 07:59,87.5,27.6,53.9,42.1\n" +
-                        "15.02.2015 10:38,86.4,23.4,56.7,42.3\n" +
-                        "14.02.2015 09:18,87.5,20.5,58.6,42.1\n" +
-                        "08.02.2015 07:05,85.5,26.6,54.6,42.4\n" +
-                        "06.02.2015 06:09,85.8,30.3,52.2,42.4\n" +
-                        "05.02.2015 06:16,86.5,31.2,51.6,42.3\n" +
-                        "04.02.2015 06:10,86.7,28.3,53.5,42.2\n" +
-                        "01.02.2015 08:59,87.4,22.2,57.5,42.1\n" +
-                        "24.01.2015 09:55,85.1,24.1,56.2,42.5\n" +
-                        "18.01.2015 11:11,86.1,20.1,58.9,42.3\n" +
-                        "14.01.2015 06:11,86.9,26.3,54.8,42.2\n" +
-                        "07.01.2015 07:08,85.6,20.3,58.7,42.4\n" +
-                        "06.01.2015 10:34,85.5,19.7,59.1,42.4\n" +
-                        "05.01.2015 08:25,85.6,26.1,54.9,42.4\n" +
-                        "02.01.2015 18:06,86.3,19.8,59.1,42.3\n" +
-                        "13.12.2014 13:16,85.2,19.3,59.4,42.5\n" +
-                        "09.12.2014 19:36,86.9,20.3,58.7,42.2\n" +
-                        "08.12.2014 20:28,86.8,19.9,59.0,42.2\n" +
-                        "05.12.2014 18:21,86.7,20.3,58.7,42.2\n";
+                        "04.08.2023 08:08,89.7,21.2,58.0,41.5\n" +
+                        "03.08.2023 05:17,89.0,26.4,54.6,41.6\n" +
+                        "02.08.2023 07:32,88.8,25.0,55.6,41.7\n" +
+                        "31.07.2023 04:39,89.1,29.2,52.8,41.6\n" +
+                        "18.07.2023 07:54,91.3,22.1,57.4,41.2\n" +
+                        "12.07.2023 07:14,91.1,21.9,57.6,41.3\n" +
+                        "16.06.2023 05:16,89.5,25.3,55.4,41.5\n" +
+                        "15.06.2023 05:34,90.1,26.3,54.7,41.4\n" +
+                        "12.06.2023 05:36,90.3,26.4,54.6,41.4\n" +
+                        "10.06.2023 04:22,90.8,22.3,57.3,41.3\n" +
+                        "07.06.2023 10:17,90.0,22.6,57.1,41.4\n" +
+                        "06.06.2023 06:36,91.0,21.6,57.8,41.3\n" +
+                        "05.06.2023 06:57,91.6,21.7,57.7,41.2\n" +
+                        "04.06.2023 06:35,90.4,23.5,56.5,41.4\n" +
+                        "25.05.2023 10:25,89.5,21.6,57.8,41.5\n" +
+                        "17.05.2023 09:55,92.5,21.9,57.6,41.0\n" +
+                        "09.05.2023 09:30,89.0,21.6,57.8,41.6\n" +
+                        "29.04.2023 08:25,89.2,21.0,58.2,41.4\n" +
+                        "13.04.2023 04:54,87.6,32.7,50.6,41.9\n" +
+                        "11.04.2023 07:41,86.8,20.9,58.3,42.0\n" +
+                        "10.04.2023 05:27,86.4,24.0,56.3,42.1\n" +
+                        "06.04.2023 06:45,87.6,24.4,56.0,41.9\n" +
+                        "01.04.2023 05:03,88.6,25.6,55.2,41.7\n" +
+                        "28.03.2023 07:06,87.1,23.5,56.6,42.2\n" +
+                        "21.03.2023 18:21,88.1,20.7,58.5,42.0\n" +
+                        "15.03.2023 20:56,90.3,22.6,57.1,41.6\n" +
+                        "14.03.2023 07:37,87.2,25.3,55.5,42.1\n" +
+                        "13.03.2023 06:11,85.6,27.4,54.1,42.4\n" +
+                        "17.02.2023 10:32,86.6,20.6,58.5,42.2\n" +
+                        "16.02.2023 07:59,87.5,27.6,53.9,42.1\n" +
+                        "15.02.2023 10:38,86.4,23.4,56.7,42.3\n" +
+                        "14.02.2023 09:18,87.5,20.5,58.6,42.1\n" +
+                        "08.02.2023 07:05,85.5,26.6,54.6,42.4\n" +
+                        "06.02.2023 06:09,85.8,30.3,52.2,42.4\n" +
+                        "05.02.2023 06:16,86.5,31.2,51.6,42.3\n" +
+                        "04.02.2023 06:10,86.7,28.3,53.5,42.2\n" +
+                        "01.02.2023 08:59,87.4,22.2,57.5,42.1\n" +
+                        "24.01.2023 09:55,85.1,24.1,56.2,42.5\n" +
+                        "18.01.2023 11:11,86.1,20.1,58.9,42.3\n" +
+                        "14.01.2023 06:11,86.9,26.3,54.8,42.2\n" +
+                        "07.01.2023 07:08,85.6,20.3,58.7,42.4\n" +
+                        "06.01.2023 10:34,85.5,19.7,59.1,42.4\n" +
+                        "05.01.2023 08:25,85.6,26.1,54.9,42.4\n" +
+                        "02.01.2023 18:06,86.3,19.8,59.1,42.3\n" +
+                        "13.12.2022 13:16,85.2,19.3,59.4,42.5\n" +
+                        "09.12.2022 19:36,86.9,20.3,58.7,42.2\n" +
+                        "08.12.2022 20:28,86.8,19.9,59.0,42.2\n" +
+                        "05.12.2022 18:21,86.7,20.3,58.7,42.2\n";
 
         try {
             scaleMeasurementList = CsvHelper.importFrom(new BufferedReader(new StringReader(data)));
@@ -313,7 +308,7 @@ public class ScreenshotRecorder {
             if (!folder.exists()) {
                 folder.mkdir();
             }
-
+            Timber.d("Saved to " + getExternalStoragePublicDirectory(DIRECTORY_PICTURES) + "/screenshots/" + filename);
             File from = new File(getExternalStoragePublicDirectory(DIRECTORY_PICTURES) + "/screenshots/" + filename);
             File to = new File(getExternalStoragePublicDirectory(DIRECTORY_PICTURES) +  "/screenshots/openScale_" + Locale.getDefault().getLanguage() + "/screen_" + name + ".png");
             from.renameTo(to);

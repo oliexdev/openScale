@@ -10,8 +10,6 @@
     <string name="title_general">Tổng quan chung</string>
     <string name="action_settings">Cài đặt</string>
     <string name="action_bluetooth_status">Tình trạng Bluetooth</string>
-    <string name="open_drawer">mở</string>
-    <string name="close_drawer">đóng</string>
     <string name="label_cancel">Hủy</string>
     <string name="label_ok">OK</string>
     <string name="label_yes">Đồng ý</string>
@@ -35,13 +33,7 @@
     <string name="label_whr">Tỉ số eo/hông</string>
     <string name="label_bone">Trọng lượng xương</string>
     <string name="label_smartUserAssign">Tự chọn người dùng</string>
-    <plurals name="label_days">
-        <item quantity="other">%d ngày</item>
-    </plurals>
-    <string name="label_last_week">Trung bình tuần trước</string>
-    <string name="label_last_month">Trung bình tháng trước</string>
     <string name="label_weight_difference">Trọng lượng thay đổi</string>
-    <string name="label_goal_date_is">Ngày đạt mục tiêu:</string>
     <string name="label_days_left">Số ngày còn lại</string>
     <string name="label_date">Ngày</string>
     <string name="label_time">Giờ</string>
@@ -55,8 +47,6 @@
     <string name="label_goal_weight">Trọng lượng mục tiêu</string>
     <string name="label_goal_date">Ngày đạt mục tiêu</string>
     <string name="label_title_user">người sử dụng</string>
-    <string name="label_title_last_measurement">số đo lần trước</string>
-    <string name="label_title_goal">Mục tiêu</string>
     <string name="label_import">Nhập</string>
     <string name="label_export">Xuất</string>
     <string name="label_delete_all">Xóa tất cả</string>
@@ -113,7 +103,6 @@
     <string name="label_reminder_time">Giờ</string>
     <string name="label_reminder_notify_text">Văn bản thông báo</string>
     <string name="default_value_reminder_notify_text">Đến giờ cân</string>
-    <string name="info_on_date">vào ngày</string>
     <string name="Monday">Thứ Hai</string>
     <string name="Tuesday">Thứ Ba</string>
     <string name="Wednesday">Thứ Tư</string>
@@ -126,7 +115,6 @@
     <string name="label_importBackup">Nhập bản sao lưu</string>
     <string name="label_backup">Sao lưu</string>
     <string name="label_export_dir">Thư mục xuất</string>
-    <string name="label_not_found">không tìm thấy</string>
     <string name="label_ignoreOutOfRange">Bỏ qua dữ liệu ngoài phạm vi</string>
     <string name="label_initial_weight">Trọng lượng ban đầu</string>
     <string name="label_goal_line">Đường thẳng mục tiêu</string>

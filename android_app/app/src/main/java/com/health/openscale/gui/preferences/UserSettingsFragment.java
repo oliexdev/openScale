@@ -1,22 +1,21 @@
 /* Copyright (C) 2014  olie.xdev <olie.xdev@googlemail.com>
-*
-*    This program is free software: you can redistribute it and/or modify
-*    it under the terms of the GNU General Public License as published by
-*    the Free Software Foundation, either version 3 of the License, or
-*    (at your option) any later version.
-*
-*    This program is distributed in the hope that it will be useful,
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*    GNU General Public License for more details.
-*
-*    You should have received a copy of the GNU General Public License
-*    along with this program.  If not, see <http://www.gnu.org/licenses/>
-*/
+ *
+ *    This program is free software: you can redistribute it and/or modify
+ *    it under the terms of the GNU General Public License as published by
+ *    the Free Software Foundation, either version 3 of the License, or
+ *    (at your option) any later version.
+ *
+ *    This program is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU General Public License for more details.
+ *
+ *    You should have received a copy of the GNU General Public License
+ *    along with this program.  If not, see <http://www.gnu.org/licenses/>
+ */
 package com.health.openscale.gui.preferences;
 
 import android.app.AlertDialog;
-import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
@@ -29,16 +28,22 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
-import android.widget.DatePicker;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
+import android.widget.TableRow;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.core.graphics.drawable.DrawableCompat;
+import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Lifecycle;
 import androidx.navigation.Navigation;
 
+import com.google.android.material.datepicker.MaterialDatePicker;
+import com.google.android.material.datepicker.MaterialPickerOnPositiveButtonClickListener;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleUser;
@@ -61,6 +66,7 @@ public class UserSettingsFragment extends Fragment {
     private EditText txtBodyHeight;
     private EditText txtBirthday;
     private EditText txtInitialWeight;
+    private CheckBox chkGoalEnabled;
     private EditText txtGoalWeight;
     private EditText txtGoalDate;
     private RadioGroup radioScaleUnit;
@@ -70,6 +76,8 @@ public class UserSettingsFragment extends Fragment {
     private Spinner spinnerActivityLevel;
     private Spinner spinnerLeftAmputationLevel;
     private Spinner spinnerRightAmputationLevel;
+    private TableRow rowGoalWeight;
+    private TableRow rowGoalDate;
 
     private final DateFormat dateFormat = DateFormat.getDateInstance();
 
@@ -80,7 +88,65 @@ public class UserSettingsFragment extends Fragment {
         View root = inflater.inflate(R.layout.fragment_usersettings, container, false);
         context = getContext();
 
-        setHasOptionsMenu(true);
+        requireActivity().addMenuProvider(new MenuProvider() {
+            @Override
+            public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
+                menu.clear();
+                menuInflater.inflate(R.menu.userentry_menu, menu);
+
+                // Apply a tint to all icons in the toolbar
+                for (int i = 0; i < menu.size(); ++i) {
+                    MenuItem item = menu.getItem(i);
+                    final Drawable drawable = item.getIcon();
+                    if (drawable == null) {
+                        continue;
+                    }
+
+                    final Drawable wrapped = DrawableCompat.wrap(drawable.mutate());
+
+                    if (item.getItemId() == R.id.saveButton) {
+                        DrawableCompat.setTint(wrapped, Color.parseColor("#FFFFFF"));
+                    } else if (item.getItemId() == R.id.deleteButton) {
+                        DrawableCompat.setTint(wrapped, Color.parseColor("#FF4444"));
+                    }
+
+                    item.setIcon(wrapped);
+                }
+
+                MenuItem deleteButton = menu.findItem(R.id.deleteButton);
+
+                switch (mode)  {
+                    case ADD:
+                        deleteButton.setVisible(false);
+                        break;
+                    case EDIT:
+                        deleteButton.setVisible(true);
+                        break;
+                }
+            }
+
+            @Override
+            public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
+                switch (menuItem.getItemId()) {
+                    case R.id.saveButton:
+                        if (saveUserData()) {
+                            if (getActivity().findViewById(R.id.nav_host_fragment) != null){
+                                Navigation.findNavController(getActivity(), R.id.nav_host_fragment).getPreviousBackStackEntry().getSavedStateHandle().set("update", true);
+                                Navigation.findNavController(getActivity(), R.id.nav_host_fragment).navigateUp();
+                            } else {
+                                getActivity().finish();
+                            }
+                        }
+                        return true;
+
+                    case R.id.deleteButton:
+                        deleteUser();
+                        return true;
+                }
+
+                return false;
+            }
+        }, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
 
         if (getArguments() != null) {
             mode = UserSettingsFragmentArgs.fromBundle(getArguments()).getMode();
@@ -98,10 +164,13 @@ public class UserSettingsFragment extends Fragment {
         spinnerLeftAmputationLevel = root.findViewById(R.id.spinnerLeftAmputationLevel);
         spinnerRightAmputationLevel = root.findViewById(R.id.spinnerRightAmputationLevel);
         txtInitialWeight = root.findViewById(R.id.txtInitialWeight);
+        chkGoalEnabled = root.findViewById(R.id.chkGoalEnabled);
         txtGoalWeight = root.findViewById(R.id.txtGoalWeight);
+        txtGoalDate = root.findViewById(R.id.txtGoalDate);
+        rowGoalWeight = root.findViewById(R.id.rowGoalWeight);
+        rowGoalDate = root.findViewById(R.id.rowGoalDate);
 
         txtBirthday = root.findViewById(R.id.txtBirthday);
-        txtGoalDate = root.findViewById(R.id.txtGoalDate);
 
         txtBodyHeight.setHint(getResources().getString(R.string.info_enter_value_in) + " " + Converters.MeasureUnit.CM.toString());
         txtInitialWeight.setHint(getResources().getString(R.string.info_enter_value_in) + " " + Converters.WeightUnit.KG.toString());
@@ -121,26 +190,41 @@ public class UserSettingsFragment extends Fragment {
         txtGoalDate.setText(dateFormat.format(goal_date));
 
         txtBirthday.setOnClickListener(new View.OnClickListener() {
-             @Override
-             public void onClick(View v) {
-                 Calendar cal = Calendar.getInstance();
-                 cal.setTime(birthday);
-                 DatePickerDialog datePicker = new DatePickerDialog(
-                     context, birthdayPickerListener, cal.get(Calendar.YEAR),
-                     cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
-                 datePicker.show();
-             }
+            @Override
+            public void onClick(View v) {
+                MaterialDatePicker<Long> datePicker = MaterialDatePicker.Builder
+                        .datePicker()
+                        .setSelection(birthday.getTime())
+                        .build();
+
+                datePicker.addOnPositiveButtonClickListener(birthdayPickerListener);
+                datePicker.show(requireActivity().getSupportFragmentManager(), "Birthday_DatePicker");
+            }
+        });
+
+        chkGoalEnabled.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if (b) {
+                    rowGoalDate.setVisibility(View.VISIBLE);
+                    rowGoalWeight.setVisibility(View.VISIBLE);
+                } else {
+                    rowGoalDate.setVisibility(View.GONE);
+                    rowGoalWeight.setVisibility(View.GONE);
+                }
+            }
         });
 
         txtGoalDate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Calendar cal = Calendar.getInstance();
-                cal.setTime(goal_date);
-                DatePickerDialog datePicker = new DatePickerDialog(
-                    context, goalDatePickerListener, cal.get(Calendar.YEAR),
-                    cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
-                datePicker.show();
+                MaterialDatePicker<Long> datePicker = MaterialDatePicker.Builder
+                        .datePicker()
+                        .setSelection(goal_date.getTime())
+                        .build();
+
+                datePicker.addOnPositiveButtonClickListener(goalDatePickerListener);
+                datePicker.show(getActivity().getSupportFragmentManager(), "Goal_DatePicker");
             }
         });
 
@@ -184,68 +268,11 @@ public class UserSettingsFragment extends Fragment {
             }
         });
 
+        if (mode == USER_SETTING_MODE.EDIT) {
+            editMode();
+        }
+
         return root;
-    }
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        menu.clear();
-        inflater.inflate(R.menu.userentry_menu, menu);
-
-        // Apply a tint to all icons in the toolbar
-        for (int i = 0; i < menu.size(); ++i) {
-            MenuItem item = menu.getItem(i);
-            final Drawable drawable = item.getIcon();
-            if (drawable == null) {
-                continue;
-            }
-
-            final Drawable wrapped = DrawableCompat.wrap(drawable.mutate());
-
-            if (item.getItemId() == R.id.saveButton) {
-                DrawableCompat.setTint(wrapped, Color.parseColor("#FFFFFF"));
-            } else if (item.getItemId() == R.id.deleteButton) {
-                DrawableCompat.setTint(wrapped, Color.parseColor("#FF4444"));
-            }
-
-            item.setIcon(wrapped);
-        }
-
-        MenuItem deleteButton = menu.findItem(R.id.deleteButton);
-
-        switch (mode)  {
-            case ADD:
-                deleteButton.setVisible(false);
-                break;
-            case EDIT:
-                editMode();
-                deleteButton.setVisible(true);
-                break;
-        }
-
-        super.onCreateOptionsMenu(menu, inflater);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.saveButton:
-                if (saveUserData()) {
-                    if (getActivity().findViewById(R.id.nav_host_fragment) != null){
-                        Navigation.findNavController(getActivity(), R.id.nav_host_fragment).getPreviousBackStackEntry().getSavedStateHandle().set("update", true);
-                        Navigation.findNavController(getActivity(), R.id.nav_host_fragment).navigateUp();
-                    } else {
-                         getActivity().finish();
-                    }
-                }
-                return true;
-
-            case R.id.deleteButton:
-                deleteUser();
-                return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 
     private void editMode()
@@ -301,7 +328,16 @@ public class UserSettingsFragment extends Fragment {
                 break;
         }
 
+        chkGoalEnabled.setChecked(scaleUser.isGoalEnabled());
         assistedWeighing.setChecked(scaleUser.isAssistedWeighing());
+
+        if (chkGoalEnabled.isChecked()) {
+            rowGoalDate.setVisibility(View.VISIBLE);
+            rowGoalWeight.setVisibility(View.VISIBLE);
+        } else {
+            rowGoalDate.setVisibility(View.GONE);
+            rowGoalWeight.setVisibility(View.GONE);
+        }
 
         spinnerActivityLevel.setSelection(scaleUser.getActivityLevel().toInt());
         spinnerLeftAmputationLevel.setSelection(scaleUser.getLeftAmputationLevel().toInt());
@@ -327,32 +363,28 @@ public class UserSettingsFragment extends Fragment {
             validate = false;
         }
 
-        if (txtGoalWeight.getText().toString().length() == 0) {
-            txtGoalWeight.setError(getResources().getString(R.string.error_goal_weight_required));
-            validate = false;
+        if (chkGoalEnabled.isChecked()) {
+            if (txtGoalWeight.getText().toString().length() == 0) {
+                txtGoalWeight.setError(getResources().getString(R.string.error_goal_weight_required));
+                validate = false;
+            }
         }
 
         return validate;
     }
 
-   private final DatePickerDialog.OnDateSetListener birthdayPickerListener = new DatePickerDialog.OnDateSetListener() {
+    private final MaterialPickerOnPositiveButtonClickListener<Long> birthdayPickerListener = new MaterialPickerOnPositiveButtonClickListener<Long>() {
         @Override
-        public void onDateSet(DatePicker view, int selectedYear, int selectedMonth, int selectedDay) {
-            Calendar cal = Calendar.getInstance();
-            cal.set(selectedYear, selectedMonth, selectedDay, 0, 0, 0);
-            cal.set(Calendar.MILLISECOND, 0);
-            birthday = cal.getTime();
+        public void onPositiveButtonClick(Long selection) {
+            birthday = new Date(selection);
             txtBirthday.setText(dateFormat.format(birthday));
-           }
-        };
+        }
+    };
 
-    private final DatePickerDialog.OnDateSetListener goalDatePickerListener = new DatePickerDialog.OnDateSetListener() {
+    private final MaterialPickerOnPositiveButtonClickListener<Long> goalDatePickerListener = new MaterialPickerOnPositiveButtonClickListener<Long>() {
         @Override
-        public void onDateSet(DatePicker view, int selectedYear, int selectedMonth, int selectedDay) {
-            Calendar cal = Calendar.getInstance();
-            cal.set(selectedYear, selectedMonth, selectedDay, 0, 0, 0);
-            cal.set(Calendar.MILLISECOND, 0);
-            goal_date = cal.getTime();
+        public void onPositiveButtonClick(Long selection) {
+            goal_date = new Date(selection);
             txtGoalDate.setText(dateFormat.format(goal_date));
         }
     };
@@ -405,7 +437,6 @@ public class UserSettingsFragment extends Fragment {
                 String name = txtUserName.getText().toString();
                 float body_height = Float.valueOf(txtBodyHeight.getText().toString());
                 float initial_weight = Float.valueOf(txtInitialWeight.getText().toString());
-                float goal_weight = Float.valueOf(txtGoalWeight.getText().toString());
 
                 Converters.MeasureUnit measure_unit = Converters.MeasureUnit.CM;
 
@@ -456,8 +487,12 @@ public class UserSettingsFragment extends Fragment {
                 scaleUser.setGender(gender);
                 scaleUser.setAssistedWeighing(assistedWeighing.isChecked());
                 scaleUser.setInitialWeight(Converters.toKilogram(initial_weight, scale_unit));
-                scaleUser.setGoalWeight(Converters.toKilogram(goal_weight, scale_unit));
-                scaleUser.setGoalDate(goal_date);
+                scaleUser.setGoalEnabled(chkGoalEnabled.isChecked());
+                if (chkGoalEnabled.isChecked()) {
+                    float goal_weight = Float.valueOf(txtGoalWeight.getText().toString());
+                    scaleUser.setGoalWeight(Converters.toKilogram(goal_weight, scale_unit));
+                    scaleUser.setGoalDate(goal_date);
+                }
 
                 switch (mode) {
                     case ADD:

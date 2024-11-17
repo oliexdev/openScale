@@ -16,7 +16,6 @@
     <string name="info_is_visible">ist sichtbar</string>
     <string name="info_is_not_available">nicht verfügbar</string>
     <string name="info_no_selected_user">Kein Benutzer vorhanden. Bitte erzeugen Sie einen neuen Benutzer in den Einstellungen.</string>
-    <string name="info_on_date">am</string>
     <string name="label_birthday">Geburtstag</string>
     <string name="label_bluetooth_enable">Verbinde mit Waage beim Start</string>
     <string name="label_bluetooth_title">Bluetooth</string>
@@ -24,10 +23,6 @@
     <string name="label_height">Körpergröße</string>
     <string name="label_comment">Kommentar</string>
     <string name="label_date">Datum</string>
-    <plurals name="label_days">
-        <item quantity="one">%d Tag</item>
-        <item quantity="other">%d Tage</item>
-    </plurals>
     <string name="label_days_left">Tage übrig</string>
     <string name="label_delete">Löschen</string>
     <string name="label_delete_all">Alles löschen</string>
@@ -36,19 +31,14 @@
     <string name="label_fat">Körperfett</string>
     <string name="label_gender">Geschlecht</string>
     <string name="label_goal_date">Zieldatum</string>
-    <string name="label_goal_date_is">Zieldatum:</string>
     <string name="label_goal_weight">Zielgewicht</string>
     <string name="label_import">Importieren</string>
-    <string name="label_last_month">Monatsdurchschnitt</string>
-    <string name="label_last_week">Wochendurchschnitt</string>
     <string name="label_male">Männlich</string>
     <string name="label_muscle">Muskelmasse</string>
     <string name="label_no">Nein</string>
     <string name="label_ok">OK</string>
     <string name="label_scale_unit">Einheit</string>
     <string name="label_time">Zeit</string>
-    <string name="label_title_goal">Ziel</string>
-    <string name="label_title_last_measurement">Letzte Messung</string>
     <string name="label_title_user">Benutzer</string>
     <string name="label_user_name">Name</string>
     <string name="label_water">Wassergehalt</string>
@@ -78,7 +68,7 @@
     <string name="info_bluetooth_connection_successful">Verbunden</string>
     <string name="info_bluetooth_no_device">Kein Bluetooth Gerät gefunden</string>
     <string name="info_bluetooth_try_connection">Verbinde mit:</string>
-    <string name="info_bluetooth_init">Initializiere Bluetooth Gerät</string>
+    <string name="info_bluetooth_init">Initialisiere Bluetooth-Gerät</string>
     <string name="label_smartUserAssign">Intelligente Benutzer-Zuweisung</string>
     <string name="default_value_reminder_notify_text">Zeit zum Wiegen</string>
     <string name="label_reminder">Erinnerung</string>
@@ -103,8 +93,7 @@
     <string name="label_backup">Datensicherung</string>
     <string name="label_exportBackup">Exportiere Datensicherung</string>
     <string name="label_importBackup">Importiere Datensicherung</string>
-    <string name="label_export_dir">Export Ordner</string>
-    <string name="label_not_found">nicht gefunden</string>
+    <string name="label_export_dir">Export-Ordner</string>
     <string name="label_ignoreOutOfRange">Ignoriere Daten außerhalb des zulässigen Bereiches</string>
     <string name="label_initial_weight">Anfangsgewicht</string>
     <string name="error_initial_weight_required">Anfangsgewicht ist erforderlich</string>
@@ -124,8 +113,6 @@
     <string name="label_maintainer">Hauptentwickler</string>
     <string name="label_website">Webseite</string>
     <string name="title_about">Über</string>
-    <string name="open_drawer">öffnen</string>
-    <string name="close_drawer">schließen</string>
     <string name="info_bluetooth_no_device_set">Wählen Sie ein Bluetooth-Gerät aus</string>
     <string name="info_new_data_duplicated">Messung mit gleichen Datum und Uhrzeit existiert bereits</string>
     <string name="label_feedback_message_enjoying">Gefällt Dir openScale?</string>
@@ -148,7 +135,7 @@
     <string name="customactivityoncrash_error_activity_error_details_copied">in Zwischenablage kopiert</string>
     <string name="customactivityoncrash_error_activity_error_details_clipboard_label">Fehlerinformationen</string>
     <string name="title_general">Allgemein</string>
-    <string name="label_theme">Theme</string>
+    <string name="label_theme">Farbschema</string>
     <string name="label_share">Teilen</string>
     <string name="label_bluetooth_searching_finished">Suche beendet</string>
     <string name="label_help">Hilfe</string>
@@ -161,7 +148,7 @@
     <string name="permission_bluetooth_info">Erlaubnis für Standort Zugriff benötigt, um nach Bluetooth-Geräten zu suchen. Sobald das Gerät gefunden wurde kann diese widerrufen werden.</string>
     <string name="permission_bluetooth_info_title">Information</string>
     <string name="label_next">Weiter</string>
-    <string name="label_set_default_order">Default Reihenfolge wiederherstellen</string>
+    <string name="label_set_default_order">Standardreihenfolge wiederherstellen</string>
     <string name="label_share_subject">openScale datenexport (%s)</string>
     <string name="label_mergeWithLastMeasurement">Zusammenführen mit der letzten Messung</string>
     <string name="label_export_overwrite">Vorherigen Export überschreiben %s?</string>
@@ -180,8 +167,8 @@
     <string name="label_scale_not_supported">Wird deine Waage nicht unterstützt?</string>
     <string name="label_click_to_help_add_support">Klicke hier, wenn du helfen möchtest</string>
     <string name="label_auto_backup">Automatisches Backup</string>
-    <string name="label_auto_backup_schedule">Backup Zeitplan</string>
-    <string name="label_overwrite_backup">Überschreibe Backup</string>
+    <string name="label_auto_backup_schedule">Sicherungszeitplan</string>
+    <string name="label_overwrite_backup">Sicherungen überschreiben</string>
     <string name="label_daily">täglich</string>
     <string name="label_weekly">wöchentlich</string>
     <string name="label_monthly">monatlich</string>
@@ -219,13 +206,12 @@
     <string name="trisa_scale_pairing_succeeded">Die Kopplung ist erfolgreich!
 \n
 \nWieder verbinden, um Messdaten abzurufen.</string>
-    <string name="info_bluetooth_no_device_retrying">Kann keine Verbindung herstellen; versuche erneut …</string>
+    <string name="info_bluetooth_no_device_retrying">Kann keine Verbindung herstellen; versuche erneut…</string>
     <string name="label_tdee">Gesamttagesenergieumsatz (TDEE)</string>
     <string name="label_calories">Kalorien</string>
     <string name="info_bluetooth_connection_disconnected">Bluetooth Verbindung getrennt</string>
     <string name="info_step_on_scale">Bitte Barfuß auf die Wage stellen</string>
     <string name="label_enable_legend">Diagrammlegende</string>
-    <string name="label_enable_yaxis">Y-Achse</string>
     <string name="label_day_view">Tagesansicht</string>
     <string name="label_year_view">Jahresansicht</string>
     <string name="label_measurement_bar">Messwertanzeige</string>
@@ -284,15 +270,36 @@
     <string name="info_assisted_weighing_choose_reference_user">Wählen Sie den Referenz Benutzer, von dem das Gewicht subtrahiert wird</string>
     <string name="info_assisted_weighing_no_reference_user">Kein Referenz Benutzer verfügbar, bitte erstellen sie einen</string>
     <string name="info_assisted_weighing_old_reference_measurement">Warnung: letzte Messung ist älter als ein Tag</string>
-    <string name="info_assisted_weighing_no_reference_measurements">Referenz Benutzer hat keine Messwerte</string>
+    <string name="info_assisted_weighing_no_reference_measurements">Referenz-Benutzer hat keine Messwerte</string>
     <string name="label_amputation_right">Amputation rechts</string>
     <string name="label_amputation_left">Amputation links</string>
-    <string name="label_amputation">Amputation</string>
     <string name="label_assisted_weighing">Assistiertes Wiegen</string>
     <string name="label_trend">Tendenz</string>
     <string name="label_prediction">Prognose</string>
     <string name="label_trend_line">Trendlinie</string>
-    <string name="info_select_scale_user">Benutzer auswählen</string>
+    <string name="info_select_scale_user">Waagen-Benutzer auswählen</string>
     <string name="info_enter_consent_code_for_scale_user">PIN/Zustimmungscode eingeben für Benutzer %s</string>
     <string name="info_create_new_user_on_scale">Neuen Benutzer auf der Waage erstellen.</string>
+    <string name="label_time_period">Zeitraum</string>
+    <string name="label_time_period_all_days">alle Tage</string>
+    <string name="label_time_period_last_7_days">letzten 7 Tage</string>
+    <string name="label_time_period_last_30_days">letzten 30 Tage</string>
+    <string name="label_time_period_set_reference_day">setze Referenztag</string>
+    <string name="label_time_period_set_custom_range">setze benutzerdefinierten Zeitraum</string>
+    <string name="label_with">mit</string>
+    <string name="label_abbr_min">min</string>
+    <string name="label_abbr_max">max</string>
+    <string name="label_abbr_avg">MW</string>
+    <string name="label_goal_enabled">Ziel eingeschaltet</string>
+    <string name="label_measurements">Messwerten</string>
+    <string name="info_select_auto_backup_export_dir">Wähle Auto-Backup Export Verzeichnis</string>
+    <string name="label_is_sticky">In der Übersicht Angeheftet</string>
+    <string name="label_auto_backup_lacation">Kein Auto-Sicherungs-Verzeichnis ausgewählt</string>
+    <string name="permission_notification_info">Benachrichtigungserlaubnis erforderlich, um Benachrichtigung anzuzeigen</string>
+    <string name="label_y_axis">Y-Achse</string>
+    <string name="label_simple_moving_average">Einfacher gleitender Durchschnitt</string>
+    <string name="label_trendline_computation_method">Methode zur Berechnung der Trendlinie</string>
+    <string name="label_exponentially_smoothed_moving_average">Exponentiell geglätteter gleitender Durchschnitt</string>
+    <string name="label_trendline_future">Zukunftstrend</string>
+    <string name="label_simple_moving_average_num_days">Anzahl der Tage, über die gemittelt werden soll</string>
 </resources>

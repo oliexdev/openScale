@@ -10,8 +10,6 @@
     <string name="title_general">總覽</string>
     <string name="action_settings">設定</string>
     <string name="action_bluetooth_status">藍芽狀況</string>
-    <string name="open_drawer">開啟</string>
-    <string name="close_drawer">關閉</string>
     <string name="label_cancel">取消</string>
     <string name="label_ok">決定</string>
     <string name="label_yes">是</string>
@@ -34,13 +32,7 @@
     <string name="label_whr">腰臀比例</string>
     <string name="label_bone">骨量</string>
     <string name="label_smartUserAssign">用戶自動配對</string>
-    <plurals name="label_days">
-        <item quantity="other">日 %d</item>
-    </plurals>
-    <string name="label_last_week">平均過去一週</string>
-    <string name="label_last_month">平均過去一個月</string>
     <string name="label_weight_difference">體重差距</string>
-    <string name="label_goal_date_is">目標日期：</string>
     <string name="label_days_left">剩餘日數</string>
     <string name="label_date">日期</string>
     <string name="label_time">時間</string>
@@ -54,8 +46,6 @@
     <string name="label_goal_weight">目標體重</string>
     <string name="label_goal_date">目標日期</string>
     <string name="label_title_user">用戶</string>
-    <string name="label_title_last_measurement">最新的量度數值</string>
-    <string name="label_title_goal">目標</string>
     <string name="label_import">滙入</string>
     <string name="label_export">滙出</string>
     <string name="label_delete_all">全取消</string>
@@ -112,7 +102,6 @@
     <string name="label_reminder_time">時間</string>
     <string name="label_reminder_notify_text">提示文字</string>
     <string name="default_value_reminder_notify_text">到期量體重了</string>
-    <string name="info_on_date">在</string>
     <string name="Monday">星期一</string>
     <string name="Tuesday">星期二</string>
     <string name="Wednesday">星期三</string>
@@ -125,7 +114,6 @@
     <string name="label_importBackup">備份滙入</string>
     <string name="label_backup">備份</string>
     <string name="label_export_dir">滙出資料夾</string>
-    <string name="label_not_found">尋找不到</string>
     <string name="label_ignoreOutOfRange">忽略超出範圍的資料</string>
     <string name="label_initial_weight">初始體重</string>
     <string name="label_goal_line">目標線</string>
@@ -190,7 +178,6 @@
     <string name="info_bluetooth_no_device_retrying">無法建立連接，重試中…</string>
     <string name="info_bluetooth_connection_disconnected">藍牙連接已關閉</string>
     <string name="label_enable_legend">圖例</string>
-    <string name="label_enable_yaxis">Y軸</string>
     <string name="info_step_on_scale">請赤腳踏上體重計</string>
     <string name="trisa_scale_not_paired">這個體重計還未配對！
 \n
@@ -225,7 +212,6 @@
     <string name="label_amputation_left">左截肢</string>
     <string name="label_amputation_right">右截肢</string>
     <string name="label_assisted_weighing">輔助稱重</string>
-    <string name="label_amputation">截肢</string>
     <string name="label_age">年齡</string>
     <string name="info_create_new_user_on_scale">在秤上建立新用戶。</string>
 </resources>

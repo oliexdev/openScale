@@ -24,6 +24,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.service.notification.StatusBarNotification;
 
@@ -170,7 +171,8 @@ public class AlarmHandler
             notificationManager.createNotificationChannel(channel);
         }
 
-        Notification notification = mBuilder.setSmallIcon(R.drawable.ic_launcher_openscale)
+        Notification notification = mBuilder.setSmallIcon(R.drawable.ic_notification_openscale_monochrome)
+                                            .setLargeIcon(BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_launcher_openscale))
                                             .setContentTitle(context.getString(R.string.app_name))
                                             .setContentText(notifyText)
                                             .setAutoCancel(true)
@@ -184,16 +186,10 @@ public class AlarmHandler
     private void cancelAlarmNotification(Context context)
     {
         NotificationManager mNotifyMgr = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-        {
-            StatusBarNotification[] activeNotifications = mNotifyMgr.getActiveNotifications();
-            for (StatusBarNotification notification : activeNotifications)
-            {
-                if (notification.getId() == ALARM_NOTIFICATION_ID) mNotifyMgr.cancel(ALARM_NOTIFICATION_ID);
-            }
+
+        StatusBarNotification[] activeNotifications = mNotifyMgr.getActiveNotifications();
+        for (StatusBarNotification notification : activeNotifications) {
+            if (notification.getId() == ALARM_NOTIFICATION_ID) mNotifyMgr.cancel(ALARM_NOTIFICATION_ID);
         }
-        else mNotifyMgr.cancel(ALARM_NOTIFICATION_ID);
     }
-
-
 }

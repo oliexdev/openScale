@@ -16,134 +16,109 @@
 
 package com.health.openscale.gui.statistic;
 
+import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Parcel;
 import android.preference.PreferenceManager;
-import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-import com.github.mikephil.charting.charts.RadarChart;
-import com.github.mikephil.charting.components.Legend;
-import com.github.mikephil.charting.components.LegendEntry;
-import com.github.mikephil.charting.components.MarkerView;
-import com.github.mikephil.charting.data.RadarData;
-import com.github.mikephil.charting.data.RadarDataSet;
-import com.github.mikephil.charting.data.RadarEntry;
-import com.github.mikephil.charting.formatter.ValueFormatter;
-import com.github.mikephil.charting.interfaces.datasets.IRadarDataSet;
+import com.google.android.material.datepicker.CalendarConstraints;
+import com.google.android.material.datepicker.CompositeDateValidator;
+import com.google.android.material.datepicker.DateValidatorPointBackward;
+import com.google.android.material.datepicker.DateValidatorPointForward;
+import com.google.android.material.datepicker.MaterialDatePicker;
+import com.google.android.material.datepicker.MaterialPickerOnPositiveButtonClickListener;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
-import com.health.openscale.core.datatypes.ScaleUser;
-import com.health.openscale.core.utils.Converters;
-import com.health.openscale.core.utils.DateTimeHelpers;
-import com.health.openscale.gui.measurement.BMIMeasurementView;
-import com.health.openscale.gui.measurement.BoneMeasurementView;
-import com.health.openscale.gui.measurement.ChartMarkerView;
-import com.health.openscale.gui.measurement.FatMeasurementView;
-import com.health.openscale.gui.measurement.FloatMeasurementView;
-import com.health.openscale.gui.measurement.MeasurementView;
-import com.health.openscale.gui.measurement.MeasurementViewSettings;
-import com.health.openscale.gui.measurement.MuscleMeasurementView;
-import com.health.openscale.gui.measurement.WaterMeasurementView;
-import com.health.openscale.gui.measurement.WeightMeasurementView;
-import com.health.openscale.gui.utils.ColorUtil;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 public class StatisticsFragment extends Fragment {
-
-    private View statisticsView;
-
-    private TextView txtGoalWeight;
-    private TextView txtGoalDiff;
-    private TextView txtGoalDayLeft;
-
-    private TextView txtLabelGoalWeight;
-    private TextView txtLabelGoalDiff;
-    private TextView txtLabelDayLeft;
-
-    private RadarChart radarChartWeek;
-    private RadarChart radarChartMonth;
-
-    private ScaleUser currentScaleUser;
-    private ScaleMeasurement lastScaleMeasurement;
-
-    private ArrayList <MeasurementView> viewMeasurementsStatistics;
+    private RecyclerView compareRecyclerView;
+    private TextView diffDateTextView;
+    private TextView countMeasurementTextView;
+    private ImageView datePickerView;
+    private StatisticAdapter statisticAdapter;
+    private List<ScaleMeasurement> scaleMeasurementList;
+    private SharedPreferences prefs;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        statisticsView = inflater.inflate(R.layout.fragment_statistics, container, false);
+        View statisticsView = inflater.inflate(R.layout.fragment_statistics, container, false);
 
-        txtGoalWeight = statisticsView.findViewById(R.id.txtGoalWeight);
-        txtGoalWeight.setTextColor(ColorUtil.getTintColor(statisticsView.getContext()));
-        txtGoalDiff = statisticsView.findViewById(R.id.txtGoalDiff);
-        txtGoalDiff.setTextColor(ColorUtil.getTintColor(statisticsView.getContext()));
-        txtGoalDayLeft = statisticsView.findViewById(R.id.txtGoalDayLeft);
-        txtGoalDayLeft.setTextColor(ColorUtil.getTintColor(statisticsView.getContext()));
+        prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+        compareRecyclerView = statisticsView.findViewById(R.id.compareRecyclerView);
+        diffDateTextView = statisticsView.findViewById(R.id.diffDateTextView);
+        countMeasurementTextView = statisticsView.findViewById(R.id.countMeasurementTextView);
+        datePickerView = statisticsView.findViewById(R.id.datePickerView);
 
-        txtLabelGoalWeight = statisticsView.findViewById(R.id.txtLabelGoalWeight);
-        txtLabelGoalWeight.setTextColor(ColorUtil.getTintColor(statisticsView.getContext()));
-        txtLabelGoalDiff = statisticsView.findViewById(R.id.txtLabelGoalDiff);
-        txtLabelGoalDiff.setTextColor(ColorUtil.getTintColor(statisticsView.getContext()));
-        txtLabelDayLeft = statisticsView.findViewById(R.id.txtLabelDayLeft);
-        txtLabelDayLeft.setTextColor(ColorUtil.getTintColor(statisticsView.getContext()));
+        datePickerView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                    builder.setTitle(R.string.label_time_period)
+                            .setItems(R.array.range_options_entries, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    switch (which) {
+                                        case 0: // all days
+                                            setAllDaysRange();
+                                            break;
+                                        case 1: // last 7 days
+                                            setLast7DaysRange();
+                                            break;
+                                        case 2: // last 30 days
+                                            setLast30DaysRange();
+                                            break;
+                                        case 3: // set reference day
+                                            MaterialDatePicker materialDatePicker = MaterialDatePicker.Builder.datePicker().setCalendarConstraints(getCalendarConstraints()).build();
+                                            materialDatePicker.show(getActivity().getSupportFragmentManager(), "MATERIAL_DATE_PICKER");
 
-        viewMeasurementsStatistics = new ArrayList<>();
+                                            materialDatePicker.addOnPositiveButtonClickListener(new MaterialPickerOnPositiveButtonClickListener<Long>() {
+                                                @Override
+                                                public void onPositiveButtonClick(Long selection) {
+                                                    setReferenceDay(new Date(selection));
+                                                }
+                                            });
+                                            break;
+                                        case 4: // custom range
+                                            MaterialDatePicker<Pair<Long, Long>> materialDateRangePicker = MaterialDatePicker.Builder.dateRangePicker().setCalendarConstraints(getCalendarConstraints()).build();
+                                            materialDateRangePicker.show(getActivity().getSupportFragmentManager(), "MATERIAL_DATE_RANGE_PICKER");
 
-        viewMeasurementsStatistics.add(new WeightMeasurementView(statisticsView.getContext()));
-        viewMeasurementsStatistics.add(new WaterMeasurementView(statisticsView.getContext()));
-        viewMeasurementsStatistics.add(new MuscleMeasurementView(statisticsView.getContext()));
-        viewMeasurementsStatistics.add(new FatMeasurementView(statisticsView.getContext()));
-        viewMeasurementsStatistics.add(new BoneMeasurementView(statisticsView.getContext()));
-        viewMeasurementsStatistics.add(new BMIMeasurementView(statisticsView.getContext()));
+                                            materialDateRangePicker.addOnPositiveButtonClickListener(new MaterialPickerOnPositiveButtonClickListener<Pair<Long, Long>>() {
+                                                @Override public void onPositiveButtonClick(Pair<Long,Long> selection) {
+                                                    setCustomRange(new Date(selection.first), new Date(selection.second));
+                                                }
+                                            });
+                                            break;
+                                    }
+                                }
+                            });
+                    builder.create();
+                    builder.show();
+            }
+        });
 
-        ArrayList<LegendEntry> legendEntriesWeek = new ArrayList<>();
-
-        for (int i = 0; i< viewMeasurementsStatistics.size(); i++) {
-            LegendEntry legendEntry = new LegendEntry();
-            legendEntry.label = i + " - " + viewMeasurementsStatistics.get(i).getName().toString();
-            legendEntriesWeek.add(legendEntry);
-        }
-
-        MarkerView mv = new ChartMarkerView(statisticsView.getContext(), R.layout.chart_markerview);
-
-        radarChartWeek = statisticsView.findViewById(R.id.radarPastWeek);
-        radarChartWeek.getXAxis().setTextColor(ColorUtil.getTintColor(statisticsView.getContext()));
-        radarChartWeek.getDescription().setEnabled(false);
-        radarChartWeek.getYAxis().setEnabled(false);
-        radarChartWeek.setExtraTopOffset(10);
-        radarChartWeek.setRotationEnabled(false);
-        Legend weekLegend = radarChartWeek.getLegend();
-        weekLegend.setTextColor(ColorUtil.getTintColor(statisticsView.getContext()));
-        weekLegend.setWordWrapEnabled(true);
-        weekLegend.setExtra(legendEntriesWeek);
-        weekLegend.setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
-        mv.setChartView(radarChartWeek);
-        radarChartWeek.setMarker(mv);
-
-        radarChartMonth = statisticsView.findViewById(R.id.radarPastMonth);
-        radarChartMonth.getXAxis().setTextColor(ColorUtil.getTintColor(statisticsView.getContext()));
-        radarChartMonth.getDescription().setEnabled(false);
-        radarChartMonth.getYAxis().setEnabled(false);
-        radarChartMonth.setExtraTopOffset(10);
-        radarChartMonth.setRotationEnabled(false);
-        Legend monthLegend = radarChartMonth.getLegend();
-        monthLegend.setTextColor(ColorUtil.getTintColor(statisticsView.getContext()));
-        monthLegend.setWordWrapEnabled(true);
-        monthLegend.setExtra(legendEntriesWeek);
-        monthLegend.setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
-        mv.setChartView(radarChartMonth);
-        radarChartMonth.setMarker(mv);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
+        compareRecyclerView.setLayoutManager(layoutManager);
 
         OpenScale.getInstance().getScaleMeasurementsLiveData().observe(getViewLifecycleOwner(), new Observer<List<ScaleMeasurement>>() {
             @Override
@@ -164,192 +139,152 @@ public class StatisticsFragment extends Fragment {
         return statisticsView;
     }
 
+    public void updateStatistic(List<ScaleMeasurement> rangeScaleMeasurementList) {
+        compareRecyclerView.setVisibility(View.VISIBLE);
+        statisticAdapter = new StatisticAdapter(getActivity(), rangeScaleMeasurementList);
+        compareRecyclerView.setAdapter(statisticAdapter);
+
+        countMeasurementTextView.setText(rangeScaleMeasurementList.size() + " " + getResources().getString(R.string.label_measurements));
+    }
+
+    public void setDiffDateText(Date firstDate, Date secondDate) {
+        String diffDateText = DateFormat.getDateInstance(DateFormat.MEDIUM).format(firstDate) + " - " +
+                DateFormat.getDateInstance(DateFormat.MEDIUM).format(secondDate);
+
+        diffDateTextView.setText(diffDateText);
+    }
+
     public void updateOnView(List<ScaleMeasurement> scaleMeasurementList) {
-        currentScaleUser = OpenScale.getInstance().getSelectedScaleUser();
+        this.scaleMeasurementList = scaleMeasurementList;
 
-        if (scaleMeasurementList.isEmpty()) {
-            lastScaleMeasurement = new ScaleMeasurement();
-            lastScaleMeasurement.setUserId(currentScaleUser.getId());
-            lastScaleMeasurement.setWeight(currentScaleUser.getInitialWeight());
+        Long prefStartDate = prefs.getLong("statistic_range_start_date", -1);
+        Long prefEndDate = prefs.getLong("statistic_range_end_date", -1);
+
+        if (prefStartDate == -1) {
+            setAllDaysRange();
+        } else if (prefStartDate == -7) {
+            setLast7DaysRange();
+        } else if (prefStartDate == -30) {
+            setLast30DaysRange();
+        } else if (prefEndDate == -1 && prefStartDate > 0) {
+            setReferenceDay(new Date(prefStartDate));
+        }else if (prefEndDate > 0 && prefStartDate > 0) {
+            setCustomRange(new Date(prefStartDate), new Date(prefEndDate));
+        }
+    }
+
+    private void setAllDaysRange() {
+        diffDateTextView.setText(getResources().getString(R.string.label_time_period_all_days));
+        prefs.edit().putLong("statistic_range_start_date", -1).commit();
+        updateStatistic(scaleMeasurementList);
+    }
+
+    private void setLast7DaysRange() {
+        Calendar startCalendar = Calendar.getInstance();
+        startCalendar.setTime(new Date());
+        startCalendar.add(Calendar.DAY_OF_YEAR, -7);
+
+        prefs.edit().putLong("statistic_range_start_date", -7).commit();
+        diffDateTextView.setText(getResources().getString(R.string.label_time_period_last_7_days));
+
+        List<ScaleMeasurement> rangeScaleMeasurementList = OpenScale.getInstance().getScaleMeasurementOfStartDate(startCalendar.get(Calendar.YEAR), startCalendar.get(Calendar.MONTH), startCalendar.get(Calendar.DAY_OF_MONTH));
+
+        updateStatistic(rangeScaleMeasurementList);
+    }
+
+    private void setLast30DaysRange() {
+        Calendar startCalendar = Calendar.getInstance();
+        startCalendar.setTime(new Date());
+        startCalendar.add(Calendar.DAY_OF_YEAR, -30);
+
+        prefs.edit().putLong("statistic_range_start_date", -30).commit();
+        diffDateTextView.setText(getResources().getString(R.string.label_time_period_last_30_days));
+
+        List<ScaleMeasurement> rangeScaleMeasurementList = OpenScale.getInstance().getScaleMeasurementOfStartDate(startCalendar.get(Calendar.YEAR), startCalendar.get(Calendar.MONTH), startCalendar.get(Calendar.DAY_OF_MONTH));
+
+        updateStatistic(rangeScaleMeasurementList);
+    }
+
+    private void setReferenceDay(Date selectionDate) {
+        Calendar startCalendar = Calendar.getInstance();
+        startCalendar.setTime(selectionDate);
+        List<ScaleMeasurement> rangeScaleMeasurementList = OpenScale.getInstance().getScaleMeasurementOfStartDate(startCalendar.get(Calendar.YEAR), startCalendar.get(Calendar.MONTH), startCalendar.get(Calendar.DAY_OF_MONTH));
+
+        prefs.edit().putLong("statistic_range_start_date", startCalendar.getTime().getTime()).commit();
+        prefs.edit().putLong("statistic_range_end_date", -1).commit();
+
+        diffDateTextView.setText(DateFormat.getDateInstance(DateFormat.MEDIUM).format(startCalendar.getTime()));
+
+        updateStatistic(rangeScaleMeasurementList);
+    }
+
+    private void setCustomRange(Date begin, Date end) {
+        Calendar startCalendar = Calendar.getInstance();
+        startCalendar.setTime(begin);
+        Calendar endCalendar = Calendar.getInstance();
+        endCalendar.setTime(end);
+
+        setDiffDateText(startCalendar.getTime(), endCalendar.getTime());
+
+        List<ScaleMeasurement> rangeScaleMeasurementList = OpenScale.getInstance().getScaleMeasurementOfRangeDates(startCalendar.get(Calendar.YEAR), startCalendar.get(Calendar.MONTH), startCalendar.get(Calendar.DAY_OF_MONTH),
+                endCalendar.get(Calendar.YEAR), endCalendar.get(Calendar.MONTH), endCalendar.get(Calendar.DAY_OF_MONTH));
+
+        prefs.edit().putLong("statistic_range_start_date", startCalendar.getTime().getTime()).commit();
+        prefs.edit().putLong("statistic_range_end_date", endCalendar.getTime().getTime()).commit();
+
+        ScaleMeasurement firstMeasurement;
+        ScaleMeasurement lastMeasurement;
+
+        if (rangeScaleMeasurementList.isEmpty()) {
+            firstMeasurement = new ScaleMeasurement();
+            lastMeasurement = new ScaleMeasurement();
+        } else if (rangeScaleMeasurementList.size() == 1) {
+            firstMeasurement = rangeScaleMeasurementList.get(0);
+            lastMeasurement = rangeScaleMeasurementList.get(0);
         } else {
-            lastScaleMeasurement = scaleMeasurementList.get(0);
+            firstMeasurement = rangeScaleMeasurementList.get(rangeScaleMeasurementList.size() - 1);
+            lastMeasurement = rangeScaleMeasurementList.get(0);
         }
 
-        updateStatistics(scaleMeasurementList);
-        updateGoal();
+        setDiffDateText(firstMeasurement.getDateTime(), lastMeasurement.getDateTime());
+
+        updateStatistic(rangeScaleMeasurementList);
     }
 
-    private void updateGoal() {
-        final Converters.WeightUnit unit = currentScaleUser.getScaleUnit();
+    private final CalendarConstraints getCalendarConstraints() {
+        List<CalendarConstraints.DateValidator> dateValidatorList = new ArrayList<>();
 
-        ScaleMeasurement goalScaleMeasurement = new ScaleMeasurement();
-        goalScaleMeasurement.setUserId(currentScaleUser.getId());
-        goalScaleMeasurement.setWeight(currentScaleUser.getGoalWeight());
-
-        txtGoalWeight.setText(String.format("%.1f %s",
-                Converters.fromKilogram(goalScaleMeasurement.getWeight(), unit),
-                unit.toString()));
-
-        txtGoalDiff.setText(String.format("%.1f %s",
-                Converters.fromKilogram(goalScaleMeasurement.getWeight() - lastScaleMeasurement.getWeight(), unit),
-                unit.toString()));
-
-        Calendar goalCalendar = Calendar.getInstance();
-        goalCalendar.setTime(currentScaleUser.getGoalDate());
-        int days = Math.max(0, DateTimeHelpers.daysBetween(Calendar.getInstance(), goalCalendar));
-        txtGoalDayLeft.setText(getResources().getQuantityString(R.plurals.label_days, days, days));
-
-        boolean isBmiEnabled = new MeasurementViewSettings(
-                PreferenceManager.getDefaultSharedPreferences(getActivity()), BMIMeasurementView.KEY)
-                .isEnabled();
-        final float goalBmi = goalScaleMeasurement.getBMI(currentScaleUser.getBodyHeight());
-
-        txtLabelGoalWeight.setText(
-                isBmiEnabled
-                        ? Html.fromHtml(String.format(
-                                "%s<br><font color='grey'><small>%s: %.1f</small></font>",
-                                getResources().getString(R.string.label_goal_weight),
-                                getResources().getString(R.string.label_bmi),
-                                goalBmi))
-                        : getResources().getString(R.string.label_goal_weight));
-
-        txtLabelGoalDiff.setText(
-                isBmiEnabled
-                        ? Html.fromHtml(String.format(
-                                "%s<br><font color='grey'><small>%s: %.1f</small></font>",
-                                getResources().getString(R.string.label_weight_difference),
-                                getResources().getString(R.string.label_bmi),
-                                lastScaleMeasurement.getBMI(currentScaleUser.getBodyHeight()) - goalBmi))
-                        : getResources().getString(R.string.label_weight_difference));
-
-        txtLabelDayLeft.setText(
-                Html.fromHtml(String.format(
-                        "%s<br><font color='grey'><small>%s %s</small></font>",
-                        getResources().getString(R.string.label_days_left),
-                        getResources().getString(R.string.label_goal_date_is),
-                        DateFormat.getDateInstance(DateFormat.LONG).format(currentScaleUser.getGoalDate()))));
-    }
-
-    private void updateStatistics(List<ScaleMeasurement> scaleMeasurementList) {
-        radarChartWeek.clear();
-        radarChartMonth.clear();
-
-        Calendar histDate = Calendar.getInstance();
-        Calendar weekPastDate = Calendar.getInstance();
-        Calendar monthPastDate = Calendar.getInstance();
-
-        weekPastDate.setTime(lastScaleMeasurement.getDateTime());
-        weekPastDate.add(Calendar.DATE, -7);
-
-        monthPastDate.setTime(lastScaleMeasurement.getDateTime());
-        monthPastDate.add(Calendar.DATE, -30);
-
-        ScaleMeasurement averageWeek = new ScaleMeasurement();
-        ScaleMeasurement averageMonth = new ScaleMeasurement();
-
-        ArrayList<RadarEntry> entriesLastMeasurement = new ArrayList<>();
-        ArrayList<RadarEntry> entriesAvgWeek = new ArrayList<>();
-        ArrayList<RadarEntry> entriesAvgMonth = new ArrayList<>();
-
-        for (ScaleMeasurement measurement : scaleMeasurementList) {
-            histDate.setTime(measurement.getDateTime());
-
-            if (weekPastDate.before(histDate)) {
-                averageWeek.add(measurement);
-            }
-
-            if (monthPastDate.before(histDate)) {
-                averageMonth.add(measurement);
-            }
-        }
-
-        averageWeek.divide(averageWeek.count());
-        averageMonth.divide(averageMonth.count());
-
-        for (MeasurementView view : viewMeasurementsStatistics) {
-            final FloatMeasurementView measurementView = (FloatMeasurementView) view;
-
-            Object[] extraData = new Object[3];
-            extraData[0] = null; // not needed
-            extraData[1] = null; // not needed
-            extraData[2] = measurementView;
-
-            measurementView.loadFrom(averageMonth, null);
-            entriesAvgMonth.add(new RadarEntry(measurementView.getValue(), extraData));
-
-            measurementView.loadFrom(averageWeek, null);
-            entriesAvgWeek.add(new RadarEntry(measurementView.getValue(), extraData));
-
-            measurementView.loadFrom(lastScaleMeasurement, null);
-            entriesLastMeasurement.add(new RadarEntry(measurementView.getValue(), extraData));
-        }
-
-        RadarDataSet setLastMeasurement = new RadarDataSet(entriesLastMeasurement, getString(R.string.label_title_last_measurement));
-        setLastMeasurement.setColor(ColorUtil.COLOR_BLUE);
-        setLastMeasurement.setFillColor(ColorUtil.COLOR_BLUE);
-        setLastMeasurement.setDrawFilled(true);
-        setLastMeasurement.setFillAlpha(180);
-        setLastMeasurement.setLineWidth(2f);
-        setLastMeasurement.setDrawHighlightCircleEnabled(true);
-        setLastMeasurement.setDrawHighlightIndicators(false);
-
-        RadarDataSet setAvgWeek = new RadarDataSet(entriesAvgWeek, getString(R.string.label_last_week));
-        setAvgWeek.setColor(ColorUtil.COLOR_GREEN);
-        setAvgWeek.setFillColor(ColorUtil.COLOR_GREEN);
-        setAvgWeek.setDrawFilled(true);
-        setAvgWeek.setFillAlpha(180);
-        setAvgWeek.setLineWidth(2f);
-        setAvgWeek.setDrawHighlightCircleEnabled(true);
-        setAvgWeek.setDrawHighlightIndicators(false);
-
-        RadarDataSet setAvgMonth = new RadarDataSet(entriesAvgMonth, getString(R.string.label_last_month));
-        setAvgMonth.setColor(ColorUtil.COLOR_GREEN);
-        setAvgMonth.setFillColor(ColorUtil.COLOR_GREEN);
-        setAvgMonth.setDrawFilled(true);
-        setAvgMonth.setFillAlpha(180);
-        setAvgMonth.setLineWidth(2f);
-        setAvgMonth.setDrawHighlightCircleEnabled(true);
-        setAvgMonth.setDrawHighlightIndicators(false);
-
-        ArrayList<IRadarDataSet> setsAvgWeek = new ArrayList<>();
-        setsAvgWeek.add(setAvgWeek);
-        setsAvgWeek.add(setLastMeasurement);
-
-        ArrayList<IRadarDataSet> setsAvgMonth = new ArrayList<>();
-        setsAvgMonth.add(setAvgMonth);
-        setsAvgMonth.add(setLastMeasurement);
-
-        RadarData dataAvgWeek = new RadarData(setsAvgWeek);
-        dataAvgWeek.setValueTextSize(8f);
-        dataAvgWeek.setDrawValues(false);
-        dataAvgWeek.setValueFormatter(new ValueFormatter() {
+        CalendarConstraints.DateValidator selectedDateValidator = new CalendarConstraints.DateValidator() {
             @Override
-            public String getRadarLabel(RadarEntry radarEntry) {
-                FloatMeasurementView measurementView = (FloatMeasurementView) radarEntry.getData();
+            public boolean isValid(long date) {
+                Calendar dateCalendar = Calendar.getInstance();
+                dateCalendar.setTime(new Date(date));
 
-                return measurementView.getValueAsString(true);
+                List<ScaleMeasurement> dateScaleMeasurementList = OpenScale.getInstance().getScaleMeasurementOfDay(dateCalendar.get(Calendar.YEAR), dateCalendar.get(Calendar.MONTH), dateCalendar.get(Calendar.DAY_OF_MONTH));
+
+                if (!dateScaleMeasurementList.isEmpty()) {
+                    return true;
+                }
+
+                return false;
             }
-        });
 
-        RadarData dataAvgMonth = new RadarData(setsAvgMonth);
-        dataAvgMonth.setValueTextSize(8f);
-        dataAvgMonth.setDrawValues(false);
-        dataAvgMonth.setValueFormatter(new ValueFormatter() {
             @Override
-            public String getRadarLabel(RadarEntry radarEntry) {
-                FloatMeasurementView measurementView = (FloatMeasurementView) radarEntry.getData();
-
-                return measurementView.getValueAsString(true);
+            public int describeContents() {
+                return 0;
             }
-        });
 
-        radarChartWeek.setData(dataAvgWeek);
-        radarChartMonth.setData(dataAvgMonth);
+            @Override
+            public void writeToParcel(@NonNull Parcel parcel, int i) {
 
-        radarChartWeek.animateXY(1000, 1000);
-        radarChartMonth.animateXY(1000, 1000);
+            }
+        };
+        dateValidatorList.add(DateValidatorPointForward.from(scaleMeasurementList.get(scaleMeasurementList.size()-1).getDateTime().getTime()));
+        dateValidatorList.add(DateValidatorPointBackward.before(scaleMeasurementList.get(0).getDateTime().getTime()));
+        dateValidatorList.add(selectedDateValidator);
 
-        radarChartWeek.invalidate();
-        radarChartMonth.invalidate();
+        CalendarConstraints constraintsBuilderRange = new CalendarConstraints.Builder().setValidator(CompositeDateValidator.allOf(dateValidatorList)).build();
+
+        return constraintsBuilderRange;
     }
 }

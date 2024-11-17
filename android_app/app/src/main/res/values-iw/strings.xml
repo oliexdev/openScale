@@ -10,8 +10,6 @@
     <string name="title_general">כללי</string>
     <string name="action_settings">הגדרות</string>
     <string name="action_bluetooth_status">סטטיסטיקת Bluetooth</string>
-    <string name="open_drawer">פתיחה</string>
-    <string name="close_drawer">סגירה</string>
     <string name="label_cancel">ביטול</string>
     <string name="label_ok">אישור</string>
     <string name="label_yes">כן</string>
@@ -35,16 +33,7 @@
     <string name="label_whr">יחס מותניים לאגן</string>
     <string name="label_bone">מסת עצמות</string>
     <string name="label_smartUserAssign">הקצאת משתמש חכמה</string>
-    <plurals name="label_days">
-        <item quantity="one">יום</item>
-        <item quantity="two">יומיים</item>
-        <item quantity="many">%d ימים</item>
-        <item quantity="other">%d ימים</item>
-    </plurals>
-    <string name="label_last_week">ממוצע בשבוע הקודם</string>
-    <string name="label_last_month">ממוצע בחודש הקודם</string>
     <string name="label_weight_difference">הבדל בגובה</string>
-    <string name="label_goal_date_is">תאריך היעד:</string>
     <string name="label_days_left">ימים שנותרו</string>
     <string name="label_date">תאריך</string>
     <string name="label_time">שעה</string>
@@ -58,8 +47,6 @@
     <string name="label_goal_weight">משקל יעד</string>
     <string name="label_goal_date">תאריך יעד</string>
     <string name="label_title_user">משתמש</string>
-    <string name="label_title_last_measurement">מדידה אחרונה</string>
-    <string name="label_title_goal">יעד</string>
     <string name="label_import">ייבוא</string>
     <string name="label_export">ייצוא</string>
     <string name="label_delete_all">מחיקת הכול</string>
@@ -115,7 +102,6 @@
     <string name="label_reminder_time">שעה</string>
     <string name="label_reminder_notify_text">טקסט התראה</string>
     <string name="default_value_reminder_notify_text">הגיע הזמן לשקילה</string>
-    <string name="info_on_date">ב</string>
     <string name="Monday">יום שני</string>
     <string name="Tuesday">יום שלישי</string>
     <string name="Wednesday">יום רביעי</string>
@@ -128,7 +114,6 @@
     <string name="label_importBackup">ייבוא גיבוי</string>
     <string name="label_backup">גיבוי</string>
     <string name="label_export_dir">תיקיית ייצוא</string>
-    <string name="label_not_found">לא נמצא</string>
     <string name="label_ignoreOutOfRange">התעלמות מנתונים מחוץ לטווח</string>
     <string name="label_initial_weight">משקל ראשוני</string>
     <string name="label_goal_line">קו יעד</string>
@@ -228,7 +213,6 @@
     <string name="label_calories">קלוריות</string>
     <string name="permission_location_service_info">יש להעניק גישה למיקום בהגדרות Android כדי לחפש התקני Bluetooth. אפשר לכבות את ההרשאה הזאת לאחר החיפוש.</string>
     <string name="label_enable_legend">מקרא תרשים</string>
-    <string name="label_enable_yaxis">ציר Y</string>
     <string name="label_day_view">תצוגה יומית</string>
     <string name="label_year_view">תצוגה שנתית</string>
     <string name="label_measurement_bar">סרגל מדידה</string>
@@ -289,7 +273,6 @@
     <string name="info_assisted_weighing_no_reference_measurements">למשתמש המופנה אין מדדים</string>
     <string name="label_amputation_right">קטיעה ימנית</string>
     <string name="label_amputation_left">קטיעה שמאלית</string>
-    <string name="label_amputation">קטיעה</string>
     <string name="label_assisted_weighing">שקילה נתמכת</string>
     <string name="label_trend">מגמה</string>
     <string name="label_prediction">חיזוי</string>
@@ -297,4 +280,26 @@
     <string name="info_select_scale_user">בחירת משתמש במשקל</string>
     <string name="info_enter_consent_code_for_scale_user">נא להקליד קוד אישי/הסכמה למשתמש במשקל %s</string>
     <string name="info_create_new_user_on_scale">יצירת משתמש חדש במשקל.</string>
+    <string name="label_is_sticky">דביקה</string>
+    <string name="label_time_period">פרק זמן</string>
+    <string name="label_abbr_min">מזערי</string>
+    <string name="label_abbr_max">מרבי</string>
+    <string name="label_abbr_avg">ממוצע</string>
+    <string name="label_goal_enabled">יעד פעיל</string>
+    <string name="label_measurements">מדדים</string>
+    <string name="label_time_period_all_days">כל הימים</string>
+    <string name="label_time_period_last_7_days">השבוע שחלף</string>
+    <string name="label_time_period_last_30_days">החודש שחלף</string>
+    <string name="label_time_period_set_reference_day">הגדרת יום סימוכין</string>
+    <string name="label_time_period_set_custom_range">הגדרת טווח משלך</string>
+    <string name="label_with">עם</string>
+    <string name="info_select_auto_backup_export_dir">נא לבחור תיקיית ייצוא לגיבוי אוטומטי</string>
+    <string name="label_auto_backup_lacation">לא נבחר מקום לגיבוי אוטומטי</string>
+    <string name="permission_notification_info">נדרשת הרשאה להתראות, כדי להציג אותן</string>
+    <string name="label_trendline_computation_method">שיטת חישוב קו מגמה</string>
+    <string name="label_trendline_future">מגמה עתידית</string>
+    <string name="label_simple_moving_average_num_days">מספר הימים לאגירת ממוצע</string>
+    <string name="label_simple_moving_average">ממוצע נע פשוט</string>
+    <string name="label_exponentially_smoothed_moving_average">ממוצע נע מוחלק מעריכית</string>
+    <string name="label_y_axis">ציר Y</string>
 </resources>

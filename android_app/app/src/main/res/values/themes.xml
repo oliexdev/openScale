@@ -1,0 +1,74 @@
+
+<resources>
+    <style name="AppTheme" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/md_theme_light_primary</item>
+        <item name="colorOnPrimary">@color/md_theme_light_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/md_theme_light_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/md_theme_light_onPrimaryContainer</item>
+        <item name="colorSecondary">@color/md_theme_light_secondary</item>
+        <item name="colorOnSecondary">@color/md_theme_light_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/md_theme_light_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/md_theme_light_onSecondaryContainer</item>
+        <item name="colorTertiary">@color/md_theme_light_tertiary</item>
+        <item name="colorOnTertiary">@color/md_theme_light_onTertiary</item>
+        <item name="colorTertiaryContainer">@color/md_theme_light_tertiaryContainer</item>
+        <item name="colorOnTertiaryContainer">@color/md_theme_light_onTertiaryContainer</item>
+        <item name="colorError">@color/md_theme_light_error</item>
+        <item name="colorErrorContainer">@color/md_theme_light_errorContainer</item>
+        <item name="colorOnError">@color/md_theme_light_onError</item>
+        <item name="colorOnErrorContainer">@color/md_theme_light_onErrorContainer</item>
+        <item name="android:colorBackground">@color/md_theme_light_background</item>
+        <item name="colorOnBackground">@color/md_theme_light_onBackground</item>
+        <item name="colorSurface">@color/md_theme_light_surface</item>
+        <item name="colorOnSurface">@color/md_theme_light_onSurface</item>
+        <item name="colorSurfaceVariant">@color/md_theme_light_surfaceVariant</item>
+        <item name="colorOnSurfaceVariant">@color/md_theme_light_onSurfaceVariant</item>
+        <item name="colorOutline">@color/md_theme_light_outline</item>
+        <item name="colorOnSurfaceInverse">@color/md_theme_light_inverseOnSurface</item>
+        <item name="colorSurfaceInverse">@color/md_theme_light_inverseSurface</item>
+        <item name="colorPrimaryInverse">@color/md_theme_light_inversePrimary</item>
+        <item name="colorAccent">@color/md_theme_light_primary</item>
+    </style>
+
+    <style name="AppTheme.NavigationBar" parent="Widget.MaterialComponents.BottomNavigationView.Colored">
+        <item name="colorSecondaryContainer">@android:color/transparent</item>
+    </style>
+    
+    <style name="AppTheme.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <!-- Style for an Preference Entry -->
+    <style name="AppPreference">
+        <item name="android:layout">@layout/preference_material</item>
+    </style>
+
+    <!-- Style for a DialogPreference Entry -->
+    <style name="AppPreference.DialogPreference">
+        <item name="positiveButtonText">@android:string/ok</item>
+        <item name="negativeButtonText">@android:string/cancel</item>
+    </style>
+
+    <declare-styleable name="StickyHeaderTableView">
+        <attr name="shtv_textLabelColor" format="color" />
+        <attr name="shtv_textLabelSize" format="dimension" />
+
+        <attr name="shtv_textHeaderColor" format="color" />
+        <attr name="shtv_textHeaderSize" format="dimension" />
+
+        <attr name="shtv_dividerColor" format="dimension" />
+        <attr name="shtv_dividerThickness" format="dimension" />
+
+        <attr name="shtv_contentCellFillColor" format="color" />
+        <attr name="shtv_headerCellFillColor" format="color" />
+        <attr name="shtv_cellPadding" format="dimension" />
+
+        <attr name="shtv_isDisplayLeftHeadersVertically" format="boolean" />
+        <attr name="shtv_isWrapHeightOfEachRow" format="boolean" />
+        <attr name="shtv_isWrapWidthOfEachColumn" format="boolean" />
+
+        <attr name="shtv_is2DScrollEnabled" format="boolean" />
+
+    </declare-styleable>
+</resources>

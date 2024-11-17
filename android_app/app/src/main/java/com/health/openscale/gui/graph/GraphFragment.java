@@ -50,6 +50,7 @@ import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.shape.ShapeAppearanceModel;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
@@ -249,6 +250,7 @@ public class GraphFragment extends Fragment {
         }
 
         showMenu = graphView.findViewById(R.id.showMenu);
+        showMenu.setShapeAppearanceModel(ShapeAppearanceModel.builder().setAllCornerSizes(1000).build());
         showMenu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -260,6 +262,7 @@ public class GraphFragment extends Fragment {
         });
 
         editMenu = graphView.findViewById(R.id.editMenu);
+        editMenu.setShapeAppearanceModel(ShapeAppearanceModel.builder().setAllCornerSizes(1000).build());
         editMenu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -270,6 +273,7 @@ public class GraphFragment extends Fragment {
             }
         });
         deleteMenu = graphView.findViewById(R.id.deleteMenu);
+        deleteMenu.setShapeAppearanceModel(ShapeAppearanceModel.builder().setAllCornerSizes(1000).build());
         deleteMenu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

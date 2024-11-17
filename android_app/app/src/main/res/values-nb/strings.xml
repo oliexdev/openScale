@@ -10,8 +10,6 @@
     <string name="title_general">Allment</string>
     <string name="action_settings">Innstillinger</string>
     <string name="action_bluetooth_status">Blåtannsstatus</string>
-    <string name="open_drawer">åpne</string>
-    <string name="close_drawer">lukk</string>
     <string name="label_cancel">Avbryt</string>
     <string name="label_ok">OK</string>
     <string name="label_yes">Ja</string>
@@ -35,14 +33,7 @@
     <string name="label_whtr">Midje-til-høyde -forhold</string>
     <string name="label_whr">Midje-til-hofte -forhold</string>
     <string name="label_smartUserAssign">Smart brukertildeling</string>
-    <plurals name="label_days">
-        <item quantity="one">%d dag</item>
-        <item quantity="other">%d dager</item>
-    </plurals>
-    <string name="label_last_week">Gjennomsnitt siste uke</string>
-    <string name="label_last_month">Gjennomsnitt den siste måneden</string>
     <string name="label_weight_difference">Vektforskjell</string>
-    <string name="label_goal_date_is">Måldato:</string>
     <string name="label_days_left">Dager igjen</string>
     <string name="label_date">Dato</string>
     <string name="label_time">Tid</string>
@@ -56,8 +47,6 @@
     <string name="label_goal_weight">Målvekt</string>
     <string name="label_goal_date">Måldato</string>
     <string name="label_title_user">bruker</string>
-    <string name="label_title_last_measurement">siste måling</string>
-    <string name="label_title_goal">Mål</string>
     <string name="label_import">Import</string>
     <string name="label_export">Eksport</string>
     <string name="label_delete_all">Slett alle</string>
@@ -114,7 +103,6 @@
     <string name="label_reminder_time">Tid</string>
     <string name="label_reminder_notify_text">Merknadstekst</string>
     <string name="default_value_reminder_notify_text">På tide med innveiing</string>
-    <string name="info_on_date">på</string>
     <string name="Monday">Mandag</string>
     <string name="Tuesday">Tirsdag</string>
     <string name="Wednesday">Onsdag</string>
@@ -127,7 +115,6 @@
     <string name="label_importBackup">Importer sikkerhetskopi</string>
     <string name="label_backup">Sikkerhetskopi</string>
     <string name="label_export_dir">Eksporteringsmappe</string>
-    <string name="label_not_found">ikke funnet</string>
     <string name="label_ignoreOutOfRange">Ignorer data utenfor rekkevidde</string>
     <string name="label_initial_weight">Startvekt</string>
     <string name="label_goal_line">Mållinje</string>
@@ -226,7 +213,6 @@
     <string name="info_step_on_scale">Tre opp på vekta barfot</string>
     <string name="permission_location_service_info">Innvilg posisjonstilgang for å søke etter Blåtannsenheter. Du kan skru den av etterpå.</string>
     <string name="label_enable_legend">Graf-forklaring</string>
-    <string name="label_enable_yaxis">Y-akse</string>
     <string name="label_day_view">Dagsvisning</string>
     <string name="label_year_view">Årsvisning</string>
     <string name="label_measurement_bar">Målestav</string>
@@ -287,7 +273,6 @@
     <string name="info_assisted_weighing_no_reference_measurements">Referansebruker har ingen målinger</string>
     <string name="label_amputation_right">Amputasjon høyre</string>
     <string name="label_amputation_left">Amputasjon venstre</string>
-    <string name="label_amputation">Amputasjon</string>
     <string name="label_assisted_weighing">Assistert veiing</string>
     <string name="label_trend_line">Tendenslinje</string>
     <string name="label_trend">Tendens</string>
@@ -295,4 +280,26 @@
     <string name="info_select_scale_user">Velg vektbruker</string>
     <string name="info_enter_consent_code_for_scale_user">Skriv inn PIN/samtykkekode for vektbruker %s</string>
     <string name="info_create_new_user_on_scale">Lag ny vektbruker.</string>
+    <string name="label_time_period_all_days">alle dager</string>
+    <string name="label_abbr_min">min</string>
+    <string name="label_time_period_last_7_days">siste 7 dager</string>
+    <string name="label_time_period_last_30_days">liste 30 dager</string>
+    <string name="label_goal_enabled">Mål aktivert</string>
+    <string name="label_time_period_set_reference_day">sett referansedag</string>
+    <string name="label_abbr_max">maks</string>
+    <string name="label_time_period">Tidsperiode</string>
+    <string name="label_y_axis">Y-akse</string>
+    <string name="label_simple_moving_average">Enkelt bevegelig gjennomsnitt</string>
+    <string name="label_with">med</string>
+    <string name="label_exponentially_smoothed_moving_average">Eksponensielt utglattet bevegelig gjennomsnitt</string>
+    <string name="label_measurements">målinger</string>
+    <string name="label_is_sticky">Er klebelig</string>
+    <string name="info_select_auto_backup_export_dir">Velg katalog for automatisk sikkerhetseksport</string>
+    <string name="label_abbr_avg">gj.snitt.</string>
+    <string name="label_time_period_set_custom_range">sett brukerdefinert tidsrom</string>
+    <string name="label_trendline_computation_method">Trendlinjeberegningsmetode</string>
+    <string name="permission_notification_info">Varslingstillatelse kreves for å vise melding</string>
+    <string name="label_auto_backup_lacation">Intet sted for automatisk sikkerhetskopiering valgt</string>
+    <string name="label_trendline_future">Fremtidig trend</string>
+    <string name="label_simple_moving_average_num_days">Antall dager å ta gjennomsnittet over</string>
 </resources>

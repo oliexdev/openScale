@@ -40,8 +40,6 @@
     <string name="label_goal_weight">Målvikt</string>
     <string name="label_goal_date">Måldatum</string>
     <string name="label_title_user">användare</string>
-    <string name="label_title_last_measurement">senaste mätning</string>
-    <string name="label_title_goal">Mål</string>
     <string name="label_date">Datum</string>
     <string name="label_time">Tid</string>
     <string name="label_birthday">Födelsedag</string>
@@ -49,14 +47,7 @@
     <string name="label_height">Längd</string>
     <string name="label_scale_unit">Viktenhet</string>
     <string name="label_days_left">Dagar kvar</string>
-    <string name="label_goal_date_is">Måldatum:</string>
     <string name="label_weight_difference">Viktskillnad</string>
-    <plurals name="label_days">
-        <item quantity="one">dag %d</item>
-        <item quantity="other">dagar %d</item>
-    </plurals>
-    <string name="label_last_week">Medelvärde senaste veckan</string>
-    <string name="label_last_month">Medelvärde senaste månaden</string>
     <string name="label_muscle">Muskler</string>
     <string name="label_lbm">Fettfri kroppsvikt</string>
     <string name="label_waist">Midjemått</string>
@@ -111,20 +102,16 @@
     <string name="label_automatic">auto</string>
     <string name="label_reminder">Påminnelse</string>
     <string name="label_reminder_notify_text">Meddelandetext</string>
-    <string name="info_on_date">på</string>
     <string name="label_bt_device_no_support">enheten stödjs inte</string>
     <string name="label_exportBackup">Exportera säkerhetskopia</string>
     <string name="label_importBackup">Importera säkerhetskopia</string>
-    <string name="label_export_dir">Exportkatalog</string>
-    <string name="label_not_found">hittades inte</string>
+    <string name="label_export_dir">Exportera katalog</string>
     <string name="label_ignoreOutOfRange">Ignorera data utanför intervall</string>
     <string name="label_initial_weight">Startvikt</string>
     <string name="label_goal_line">Mållinje</string>
     <string name="error_max_scale_users">Max antal samtidiga våganvändare nått</string>
     <string name="info_step_on_scale_for_reference">Kliv upp barfota på vågen för referensmätningar</string>
     <string name="info_measuring">Mäter vikt: %.2f</string>
-    <string name="open_drawer">öppna</string>
-    <string name="close_drawer">stäng</string>
     <string name="info_bluetooth_no_device_set">Välj Bluetooth-enhet</string>
     <string name="info_new_data_duplicated">mätning med samma datum och tid existerar redan</string>
     <string name="title_general">Allmänt</string>
@@ -251,7 +238,6 @@
 \nMotivera skaparen av det här projektet till fortsatt utveckling och fortlöpande underhåll genom att ge openScale ett positivt omdöme på <a href="http://play.google.com/store/apps/details?id=com.health.openscale.pro">GooglePlay</a> eller stjärnmärk det på <a href="https://github.com/oliexdev/openScale">GitHub</a>.
 \n
 \nDitt stöd och positiva återkoppling är varmt uppskattade. Stort tack.</string>
-    <string name="label_enable_yaxis">Y-axel</string>
     <string name="info_bluetooth_connection_disconnected">Bluetoothanslutning avslutad</string>
     <string name="info_bluetooth_connection_error_scale_offline">Kunde inte ansluta till vågen, var god kontrollera att den är på.</string>
     <string name="info_bluetooth_no_device_retrying">Kunde inte upprätta en anslutning, försöker igen…</string>
@@ -260,7 +246,6 @@
     <string name="info_assisted_weighing_no_reference_measurements">Referensanvändaren har inga mätvärden</string>
     <string name="label_amputation_left">Amputation vänster</string>
     <string name="label_amputation_right">Amputation höger</string>
-    <string name="label_amputation">Amputation</string>
     <string name="label_day_view">Dagsöversikt</string>
     <string name="amputation_level_forearm_hand">Underarm och ben</string>
     <string name="amputation_level_arm">Arm</string>
@@ -293,4 +278,28 @@
     <string name="label_enable_legend">Graflegend</string>
     <string name="info_assisted_weighing_choose_reference_user">Välj referensanvändaren som vikten dras av</string>
     <string name="info_enter_consent_code_for_scale_user">Ange PIN/samtyckeskod för våganvändaren %s</string>
+    <string name="label_is_sticky">Är klibbig</string>
+    <string name="label_slide_welcome_main_text">Vikt och kroppsmätare med öppen källkod, med stöd för Bluetooth-våg.</string>
+    <string name="label_measurement_bar">Måttstång</string>
+    <string name="label_time_period_all_days">alla dagar</string>
+    <string name="label_abbr_min">min</string>
+    <string name="label_time_period_last_7_days">senaste 7 dagarna</string>
+    <string name="label_time_period_last_30_days">senaste 30 dagarna</string>
+    <string name="label_goal_enabled">Mål aktiverat</string>
+    <string name="label_time_period_set_reference_day">ställ in referensdag</string>
+    <string name="info_select_auto_backup_export_dir">Välj exportkatalog för automatisk säkerhetskopiering</string>
+    <string name="label_abbr_avg">snitt</string>
+    <string name="label_abbr_max">max</string>
+    <string name="label_time_period">Tidsperiod</string>
+    <string name="label_time_period_set_custom_range">ställ in anpassat intervall</string>
+    <string name="label_y_axis">Y-axel</string>
+    <string name="label_simple_moving_average">Enkelt glidande medelvärde</string>
+    <string name="label_with">med</string>
+    <string name="label_trendline_computation_method">Trendlinjeberäkningsmetod</string>
+    <string name="label_exponentially_smoothed_moving_average">Exponentiellt jämnat glidande medelvärde</string>
+    <string name="permission_notification_info">Aviseringstillstånd krävs för att visa avisering</string>
+    <string name="label_auto_backup_lacation">Ingen plats för automatisk säkerhetskopiering har valts</string>
+    <string name="label_trendline_future">Framtida trend</string>
+    <string name="label_simple_moving_average_num_days">Antal dagar att snitta över</string>
+    <string name="label_measurements">mätningar</string>
 </resources>

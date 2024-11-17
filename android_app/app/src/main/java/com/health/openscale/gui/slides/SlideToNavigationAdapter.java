@@ -20,8 +20,9 @@ import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.navigation.NavController;
 import androidx.navigation.NavDirections;
-import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
 
 import com.health.openscale.R;
 import com.health.openscale.SlideNavigationDirections;
@@ -67,7 +68,9 @@ public class SlideToNavigationAdapter extends AppCompatActivity {
         }
 
         if (action != null) {
-            Navigation.findNavController(this, R.id.nav_slide_navigation).navigate(action);
+            NavController navController = ((NavHostFragment)getSupportFragmentManager().findFragmentById(R.id.nav_slide_navigation)).getNavController();
+
+            navController.navigate(action);
         }
     }
 }

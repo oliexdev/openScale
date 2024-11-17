@@ -12,11 +12,11 @@
         android:layout_height="wrap_content"
         android:fitsSystemWindows="true"
         android:minHeight="?attr/actionBarSize"
-        app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
         android:background="?attr/colorPrimaryDark">
     </androidx.appcompat.widget.Toolbar>
 
-    <fragment
+    <androidx.fragment.app.FragmentContainerView
         android:name="androidx.navigation.fragment.NavHostFragment"
         app:navGraph="@navigation/slide_navigation"
         app:defaultNavHost="false"

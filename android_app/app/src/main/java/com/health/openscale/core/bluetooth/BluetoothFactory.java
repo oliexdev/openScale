@@ -114,7 +114,7 @@ public class BluetoothFactory {
         }
         if (deviceName.equals("Hoffen BS-8107")) {
             return new BluetoothHoffenBBS8107(context);
-	}
+	      }
         if (deviceName.equals("ADV") || deviceName.equals("Chipsea-BLE")) {
             return new BluetoothOKOK(context);
         }
@@ -127,8 +127,8 @@ public class BluetoothFactory {
         if (deviceName.equals("SBF77") || deviceName.equals("SBF76") || deviceName.equals("BF950")) {
             return new BluetoothBeurerBF950(context, deviceName);
         }
-        if (deviceName.equals("SBF72")) {
-            return new BluetoothSanitasSBF72(context);
+        if (deviceName.equals("SBF72") || deviceName.equals("BF915") || deviceName.equals("SBF73")) {
+            return new BluetoothSanitasSBF72(context, deviceName);
         }
         if (deviceName.equals("Weight Scale")){
             return new BluetoothSinocare(context);
@@ -138,6 +138,12 @@ public class BluetoothFactory {
         }
         if (deviceName.equals("ES-26BB-B")){
             return new BluetoothES26BBB(context);
+        }
+        if (deviceName.equals("Yoda1")){
+            return new BluetoothYoda1Scale(context);
+        }
+        if (deviceName.equals("AAA002") || deviceName.equals("AAA007")){
+            return new BluetoothBroadcastScale(context);
         }
         return null;
     }

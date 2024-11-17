@@ -2,14 +2,14 @@ apply plugin: 'com.android.application'
 apply plugin: "androidx.navigation.safeargs"
 
 android {
-    compileSdkVersion 31
+    compileSdk 34
     defaultConfig {
         applicationId "com.health.openscale"
         testApplicationId "com.health.openscale.test"
         minSdkVersion 23
-        targetSdkVersion 31
-        versionCode 61
-        versionName "2.4.6"
+        targetSdkVersion 34
+        versionCode 64
+        versionName "2.5.2"
 
         manifestPlaceholders = [
                 appIcon: "@drawable/ic_launcher_openscale",
@@ -22,13 +22,14 @@ android {
             }
         }
 
+        buildFeatures {
+            buildConfig = true
+        }
+
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     sourceSets {
         androidTest.assets.srcDirs += files("$projectDir/schemas".toString())
-    }
-    lintOptions {
-        abortOnError false
     }
 
     signingConfigs {
@@ -134,47 +135,51 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    namespace 'com.health.openscale'
+    lint {
+        abortOnError false
+    }
 }
 
 dependencies {
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.5'
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.3'
 
-    implementation 'com.google.android.material:material:1.6.0-beta01'
+    implementation 'com.google.android.material:material:1.12.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'androidx.appcompat:appcompat:1.4.1'
-    implementation 'androidx.recyclerview:recyclerview:1.2.1'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.3'
-    implementation 'androidx.preference:preference:1.2.0'
-    implementation 'androidx.navigation:navigation-fragment:2.4.2'
-    implementation 'androidx.navigation:navigation-ui:2.4.2'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.recyclerview:recyclerview:1.3.2'
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.0'
+    implementation 'androidx.preference:preference:1.2.1'
+    implementation 'androidx.navigation:navigation-fragment:2.8.4'
+    implementation 'androidx.navigation:navigation-ui:2.8.4'
     implementation "android.arch.lifecycle:extensions:1.1.1"
-    annotationProcessor "androidx.lifecycle:lifecycle-common-java8:2.4.1"
+    annotationProcessor "androidx.lifecycle:lifecycle-common-java8:2.8.7"
 
     // MPAndroidChart
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
     // Simple CSV
     implementation 'com.j256.simplecsv:simplecsv:2.6'
     // Blessed Android
-    implementation 'com.github.weliem:blessed-android:2.2.0'
+    implementation 'com.github.weliem:blessed-android:2.5.0'
     // CustomActivityOnCrash
     implementation 'cat.ereza:customactivityoncrash:2.3.0'
     // AppIntro
-    implementation 'com.github.AppIntro:AppIntro:6.0.0'
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.4.32'
+    implementation 'com.github.AppIntro:AppIntro:6.2.0'
+   // implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.8.20'
     // Room
-    implementation 'androidx.room:room-runtime:2.3.0'
-    annotationProcessor 'androidx.room:room-compiler:2.3.0'
-    androidTestImplementation 'androidx.room:room-testing:2.3.0'
+    implementation 'androidx.room:room-runtime:2.6.1'
+    annotationProcessor 'androidx.room:room-compiler:2.6.1'
+    androidTestImplementation 'androidx.room:room-testing:2.6.1'
     // Timber
     implementation 'com.jakewharton.timber:timber:5.0.1'
     // Local unit tests
-    testImplementation 'junit:junit:4.13.1'
+    testImplementation 'junit:junit:4.13.2'
     // Instrumented unit tests
-    androidTestImplementation 'androidx.annotation:annotation:1.3.0'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
-    androidTestImplementation 'androidx.test:rules:1.4.0'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
-    androidTestImplementation 'androidx.test.espresso:espresso-contrib:3.4.0'
+    implementation 'androidx.annotation:annotation:1.9.1'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+    androidTestImplementation 'androidx.test:rules:1.6.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-contrib:3.6.1'
 }
 
 tasks.withType(Test) {

@@ -22,8 +22,6 @@
     <string name="label_delete_all">Hapus semua</string>
     <string name="label_export">Ekspor</string>
     <string name="label_import">Impor</string>
-    <string name="label_title_goal">Target</string>
-    <string name="label_title_last_measurement">pengukuran terakhir</string>
     <string name="label_title_user">pengguna</string>
     <string name="label_goal_date">Target tanggal</string>
     <string name="label_goal_weight">Target berat</string>
@@ -37,13 +35,7 @@
     <string name="label_time">Waktu</string>
     <string name="label_date">Tanggal</string>
     <string name="label_days_left">Hari tersisa</string>
-    <string name="label_goal_date_is">Tanggal target:</string>
     <string name="label_weight_difference">Perbedaan berat</string>
-    <string name="label_last_month">Rata-rata bulan lalu</string>
-    <string name="label_last_week">Rata-rata minggu lalu</string>
-    <plurals name="label_days">
-        <item quantity="other">hari %d</item>
-    </plurals>
     <string name="label_age">Usia</string>
     <string name="label_bone">Massa tulang</string>
     <string name="label_whr">Rasio pinggang-pinggul</string>
@@ -69,8 +61,6 @@
     <string name="label_yes">Ya</string>
     <string name="label_ok">OK</string>
     <string name="label_cancel">Batal</string>
-    <string name="close_drawer">tutup</string>
-    <string name="open_drawer">buka</string>
     <string name="action_donation">Donasi</string>
     <string name="action_bluetooth_status">Status Bluetooth</string>
     <string name="action_settings">Pengaturan</string>
@@ -122,7 +112,6 @@
     <string name="label_slide_bluetooth_main_text">openScale memiliki dukungan bawaan untuk sejumlah timbangan Bluetooth dari berbagai produsen.
 \n
 \nKami terus meningkatkan dan memperluas rangkaian timbangan yang didukung. Anda dapat menemukan daftar lengkap dan tingkat dukungan untuk setiap skala di <a href="https://github.com/oliexdev/openScale/wiki/Supported-scales-in-openScale">GitHub</a>.</string>
-    <string name="label_amputation">Amputasi</string>
     <string name="label_slide_opensource_main_text">openScale dilisensikan di bawah <a href="https://github.com/oliexdev/openScale/blob/master/LICENSE">GPLv3 </a>.
 \n
 \nSemua perhitungan tubuh transparan dan tidak ada fungsi transfer data tersembunyi atau identifikasi pengguna yang dilakukan.
@@ -158,4 +147,15 @@
     <string name="label_upgrade_to_openScale_pro">Silakan upgrade ke openScale pro untuk dukungan Bluetooth</string>
     <string name="activity_level_mild">Ringan</string>
     <string name="activity_level_moderate">Sedang</string>
+    <string name="label_smartUserAssign">Penugasan Pengguna Cerdas</string>
+    <string name="label_time_period">Periode waktu</string>
+    <string name="label_time_period_all_days">Semua hari</string>
+    <string name="label_time_period_last_7_days">7 hari terakhir</string>
+    <string name="label_time_period_last_30_days">30 hari terakhir</string>
+    <string name="label_with">dengan</string>
+    <string name="label_time_period_set_reference_day">Atur hari referensi</string>
+    <string name="label_abbr_min">min</string>
+    <string name="label_time_period_set_custom_range">atur rentang khusus</string>
+    <string name="label_abbr_max">maks</string>
+    <string name="label_abbr_avg">rat</string>
 </resources>

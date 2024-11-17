@@ -28,6 +28,7 @@ import androidx.annotation.Nullable;
 import androidx.lifecycle.Observer;
 import androidx.navigation.NavDirections;
 import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
@@ -79,14 +80,15 @@ public class BluetoothPreferences extends PreferenceFragmentCompat {
 
         View view = super.onCreateView(inflater, container, savedInstanceState);
 
-        Navigation.findNavController(requireActivity(), R.id.nav_host_fragment).getCurrentBackStackEntry().getSavedStateHandle().getLiveData("update", false).observe(getViewLifecycleOwner(), new Observer<Boolean>() {
-            @Override
-            public void onChanged(Boolean aBoolean) {
-                if (aBoolean) {
-                    btScanner.setSummary(getCurrentDeviceName());
+        NavHostFragment navHostFragment = (NavHostFragment) getActivity().getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
+        navHostFragment.getNavController().getCurrentBackStackEntry().getSavedStateHandle().getLiveData("update", false).observe(getViewLifecycleOwner(), new Observer<Boolean>() {
+                @Override
+                public void onChanged(Boolean aBoolean) {
+                    if (aBoolean) {
+                        btScanner.setSummary(getCurrentDeviceName());
+                    }
                 }
-            }
-        });
+            });
 
         return view;
     }

@@ -79,13 +79,12 @@
 
         <Button
             android:id="@+id/btnSearchScale"
+            style="@style/Widget.MaterialComponents.Button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/flat_selector"
             android:paddingLeft="10dp"
             android:paddingRight="10dp"
             android:text="Add Bluetooth scale"
-            android:textColor="@android:color/white"
             android:textSize="14sp" />
 
         <TextView

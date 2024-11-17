@@ -32,7 +32,7 @@ import timber.log.Timber;
 import static com.welie.blessed.BluetoothBytesParser.FORMAT_UINT8;
 
 public class BluetoothSanitasSBF72 extends BluetoothStandardWeightProfile {
-    private String deviceName = "SBF72";
+    private String deviceName;
 
     private static final UUID SERVICE_SBF72_CUSTOM = BluetoothGattUuid.fromShortCode(0xffff);
 
@@ -42,8 +42,9 @@ public class BluetoothSanitasSBF72 extends BluetoothStandardWeightProfile {
     private static final UUID CHARACTERISTIC_REFER_WEIGHT_BF = BluetoothGattUuid.fromShortCode(0x000b);
     private static final UUID CHARACTERISTIC_TAKE_MEASUREMENT = BluetoothGattUuid.fromShortCode(0x0006);
 
-    public BluetoothSanitasSBF72(Context context) {
+    public BluetoothSanitasSBF72(Context context, String name) {
         super(context);
+        deviceName = name;
     }
 
     @Override

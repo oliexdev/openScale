@@ -15,11 +15,16 @@
 */
 package com.health.openscale.gui.measurement;
 
-import android.app.AlertDialog;
+import static com.health.openscale.gui.measurement.MeasurementView.MeasurementViewMode.ADD;
+import static com.health.openscale.gui.measurement.MeasurementView.MeasurementViewMode.EDIT;
+import static com.health.openscale.gui.measurement.MeasurementView.MeasurementViewMode.STATISTIC;
+import static com.health.openscale.gui.measurement.MeasurementView.MeasurementViewMode.VIEW;
+
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
@@ -39,10 +44,13 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
+import androidx.preference.CheckBoxPreference;
 import androidx.preference.PreferenceManager;
 import androidx.preference.PreferenceScreen;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.health.openscale.R;
 import com.health.openscale.core.OpenScale;
 import com.health.openscale.core.datatypes.ScaleMeasurement;
@@ -52,11 +60,6 @@ import com.health.openscale.gui.utils.ColorUtil;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.health.openscale.gui.measurement.MeasurementView.MeasurementViewMode.ADD;
-import static com.health.openscale.gui.measurement.MeasurementView.MeasurementViewMode.EDIT;
-import static com.health.openscale.gui.measurement.MeasurementView.MeasurementViewMode.STATISTIC;
-import static com.health.openscale.gui.measurement.MeasurementView.MeasurementViewMode.VIEW;
 
 public abstract class MeasurementView extends TableLayout {
     public enum MeasurementViewMode {VIEW, EDIT, ADD, STATISTIC}
@@ -207,7 +210,7 @@ public abstract class MeasurementView extends TableLayout {
 
         iconView.setImageResource(iconId);
         iconView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-        iconView.setPadding(25,25,25,25);
+        iconView.setPadding(15,15,15,15);
 
         iconView.setColorFilter(ColorUtil.COLOR_BLACK);
         iconView.setBackground(iconViewBackground);
@@ -285,7 +288,8 @@ public abstract class MeasurementView extends TableLayout {
 
     public CharSequence getName() { return nameView.getText(); }
     public abstract String getValueAsString(boolean withUnit);
-    public void appendDiffValue(SpannableStringBuilder builder, boolean newLine) { }
+    public void appendDiffValue(final SpannableStringBuilder builder, boolean newLine, boolean isEvalOn) { }
+    public void appendDiffValue(final SpannableStringBuilder builder, boolean newLine) { }
     public Drawable getIcon() { return iconView.getDrawable(); }
     public int getIconResource() { return iconId; }
     public void setBackgroundIconColor(int color) {
@@ -357,6 +361,8 @@ public abstract class MeasurementView extends TableLayout {
         return background.getColor();
     }
 
+    abstract public int getColor();
+
     protected void showEvaluatorRow(boolean show) {
         if (show) {
             evaluatorRow.setVisibility(View.VISIBLE);
@@ -423,8 +429,16 @@ public abstract class MeasurementView extends TableLayout {
     }
 
     public String getPreferenceSummary() { return ""; }
-    public boolean hasExtraPreferences() { return false; }
-    public void prepareExtraPreferencesScreen(PreferenceScreen screen) { }
+    public void prepareExtraPreferencesScreen(PreferenceScreen screen) {
+        MeasurementViewSettings settings = getSettings();
+
+        CheckBoxPreference isSticky = new CheckBoxPreference(screen.getContext());
+        isSticky.setKey(settings.getIsStickyGraphKey());
+        isSticky.setTitle(R.string.label_is_sticky);
+        isSticky.setPersistent(true);
+        isSticky.setDefaultValue(settings.isSticky());
+        screen.addPreference(isSticky);
+    }
 
     protected abstract View getInputView();
     protected abstract boolean validateAndSetInput(View view);
@@ -442,11 +456,12 @@ public abstract class MeasurementView extends TableLayout {
 
     private void prepareInputDialog(final AlertDialog dialog) {
         dialog.setTitle(getName());
+        getIcon().setColorFilter(ColorUtil.getTintColor(getContext()), PorterDuff.Mode.SRC_IN);
         dialog.setIcon(getIcon());
 
         final View input = getInputView();
 
-        FrameLayout fl = dialog.findViewById(android.R.id.custom);
+        FrameLayout fl = dialog.findViewById(R.id.custom);
         fl.removeAllViews();
         fl.addView(input, new LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT));
@@ -463,10 +478,13 @@ public abstract class MeasurementView extends TableLayout {
         };
 
         dialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener(clickListener);
+        dialog.getButton(DialogInterface.BUTTON_POSITIVE).setTextColor(ColorUtil.getPrimaryColor(getContext()));
         dialog.getButton(DialogInterface.BUTTON_NEGATIVE).setOnClickListener(clickListener);
+        dialog.getButton(DialogInterface.BUTTON_NEGATIVE).setTextColor(ColorUtil.getPrimaryColor(getContext()));
 
         final MeasurementView next = getNextView();
         if (next != null) {
+            dialog.getButton(DialogInterface.BUTTON_NEUTRAL).setTextColor(ColorUtil.getPrimaryColor(getContext()));
             dialog.getButton(DialogInterface.BUTTON_NEUTRAL).setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -482,7 +500,7 @@ public abstract class MeasurementView extends TableLayout {
     }
 
     private void showInputDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getContext());
 
         builder.setTitle(getName());
         builder.setIcon(getIcon());

@@ -49,6 +49,7 @@ import com.health.openscale.core.datatypes.ScaleMeasurement;
 import com.health.openscale.core.evaluation.EvaluationResult;
 import com.health.openscale.core.evaluation.EvaluationSheet;
 import com.health.openscale.core.utils.Converters;
+import com.health.openscale.gui.utils.ColorUtil;
 
 import java.util.Date;
 import java.util.Locale;
@@ -228,7 +229,7 @@ public abstract class FloatMeasurementView extends MeasurementView {
         setValue(clampValue(value - INC_DEC_DELTA), previousValue, true);
     }
 
-    private String formatValue(float value, boolean withUnit) {
+    public String formatValue(float value, boolean withUnit) {
         final String format = String.format(Locale.getDefault(), "%%.%df%s",
                 getDecimalPlaces(), withUnit && !getUnit().isEmpty() ? " %s" : "");
         return String.format(Locale.getDefault(), format, value, getUnit());
@@ -426,7 +427,7 @@ public abstract class FloatMeasurementView extends MeasurementView {
     }
 
     @Override
-    public void appendDiffValue(SpannableStringBuilder text, boolean newLine) {
+    public void appendDiffValue(final SpannableStringBuilder text, boolean newLine, boolean isEvalOn) {
         if (previousValue < 0.0f) {
             return;
         }
@@ -446,31 +447,34 @@ public abstract class FloatMeasurementView extends MeasurementView {
             color = Color.GRAY;
         }
 
-        // change color depending on if you are going towards or away from your weight goal
-        if (this instanceof WeightMeasurementView) {
-            if (diff> 0.0f) {
-                color = (value > getScaleUser().getGoalWeight()) ? Color.RED : Color.GREEN;
-            } else if (diff < 0.0f) {
-                color = (value < getScaleUser().getGoalWeight()) ? Color.RED : Color.GREEN;
+        // skip evaluation to speed the calculation up (e.g. not needed for table view)
+        if (isEvalOn) {
+            // change color depending on if you are going towards or away from your weight goal
+            if (this instanceof WeightMeasurementView) {
+                if (diff > 0.0f) {
+                    color = (value > getScaleUser().getGoalWeight()) ? Color.RED : Color.GREEN;
+                } else if (diff < 0.0f) {
+                    color = (value < getScaleUser().getGoalWeight()) ? Color.RED : Color.GREEN;
+                }
             }
-        }
 
-        final float evalValue = maybeConvertToOriginalValue(value);
+            final float evalValue = maybeConvertToOriginalValue(value);
 
-        EvaluationSheet evalSheet = new EvaluationSheet(getScaleUser(), dateTime);
-        evaluationResult = evaluateSheet(evalSheet, evalValue);
+            EvaluationSheet evalSheet = new EvaluationSheet(getScaleUser(), dateTime);
+            evaluationResult = evaluateSheet(evalSheet, evalValue);
 
-        if (evaluationResult != null) {
-            switch (evaluationResult.eval_state) {
-                case LOW:
-                    color = (diff > 0.0f) ? Color.GREEN : Color.RED;
-                    break;
-                case HIGH:
-                    color = (diff < 0.0f) ? Color.GREEN : Color.RED;
-                    break;
-                case NORMAL:
-                    color = Color.GREEN;
-                    break;
+            if (evaluationResult != null) {
+                switch (evaluationResult.eval_state) {
+                    case LOW:
+                        color = (diff > 0.0f) ? Color.GREEN : Color.RED;
+                        break;
+                    case HIGH:
+                        color = (diff < 0.0f) ? Color.GREEN : Color.RED;
+                        break;
+                    case NORMAL:
+                        color = Color.GREEN;
+                        break;
+                }
             }
         }
 
@@ -488,6 +492,12 @@ public abstract class FloatMeasurementView extends MeasurementView {
         text.append(formatValue(diff));
         text.setSpan(new RelativeSizeSpan(0.8f), start, text.length(),
                 Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+    }
+
+
+    @Override
+    public void appendDiffValue(final SpannableStringBuilder text, boolean newLine) {
+        appendDiffValue(text, newLine, true);
     }
 
     @Override
@@ -539,9 +549,6 @@ public abstract class FloatMeasurementView extends MeasurementView {
         return "";
     }
 
-    @Override
-    public boolean hasExtraPreferences() { return true; }
-
     private class ListPreferenceWithNeutralButton extends ListPreference {
         ListPreferenceWithNeutralButton(Context context) {
             super(context);
@@ -568,6 +575,7 @@ public abstract class FloatMeasurementView extends MeasurementView {
 
     @Override
     public void prepareExtraPreferencesScreen(PreferenceScreen screen) {
+        super.prepareExtraPreferencesScreen(screen);
         MeasurementViewSettings settings = getSettings();
 
         CheckBoxPreference rightAxis = new CheckBoxPreference(screen.getContext());
@@ -700,10 +708,12 @@ public abstract class FloatMeasurementView extends MeasurementView {
         final Button inc = view.findViewById(R.id.btn_inc);
         inc.setText("\u25b2 +" + formatValue(INC_DEC_DELTA));
         inc.setOnClickListener(onClickListener);
+        inc.setTextColor(ColorUtil.getPrimaryColor(getContext()));
         inc.setOnTouchListener(repeatListener);
 
         final Button dec = view.findViewById(R.id.btn_dec);
         dec.setText("\u25bc -" + formatValue(INC_DEC_DELTA));
+        dec.setTextColor(ColorUtil.getPrimaryColor(getContext()));
         dec.setOnClickListener(onClickListener);
         dec.setOnTouchListener(repeatListener);
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="title_overview">General</string>
+    <string name="title_overview">Descripción general</string>
     <string name="title_graph">Gráfica</string>
     <string name="title_table">Tabla</string>
     <string name="title_statistics">Estadísticas</string>
@@ -29,14 +29,7 @@
     <string name="label_whr">Proporción cintura-cadera</string>
     <string name="label_bone">Masa ósea</string>
     <string name="label_smartUserAssign">Asignación inteligente de usuario</string>
-    <plurals name="label_days">
-        <item quantity="one">%d día</item>
-        <item quantity="other">%d días</item>
-    </plurals>
-    <string name="label_last_week">Promedio de la semana pasada</string>
-    <string name="label_last_month">Promedio del mes pasado</string>
     <string name="label_weight_difference">Diferencia de peso</string>
-    <string name="label_goal_date_is">Fecha objetivo:</string>
     <string name="label_days_left">Días restantes</string>
     <string name="label_date">Fecha</string>
     <string name="label_time">Hora</string>
@@ -50,8 +43,6 @@
     <string name="label_goal_weight">Peso objetivo</string>
     <string name="label_goal_date">Fecha objetivo</string>
     <string name="label_title_user">usuario</string>
-    <string name="label_title_last_measurement">última medición</string>
-    <string name="label_title_goal">Objetivo</string>
     <string name="label_import">Importar</string>
     <string name="label_export">Exportar</string>
     <string name="label_delete_all">Eliminar todo</string>
@@ -103,7 +94,6 @@
     <string name="label_reminder_time">Hora</string>
     <string name="label_reminder_notify_text">Texto de la notificación</string>
     <string name="default_value_reminder_notify_text">Es hora de pesarse</string>
-    <string name="info_on_date">el</string>
     <string name="Monday">Lunes</string>
     <string name="Tuesday">Martes</string>
     <string name="Wednesday">Miércoles</string>
@@ -111,12 +101,11 @@
     <string name="Friday">Viernes</string>
     <string name="Saturday">Sábado</string>
     <string name="Sunday">Domingo</string>
-    <string name="label_bt_device_no_support">dispositivo no admitido</string>
-    <string name="label_exportBackup">Exportar copia de respaldo</string>
-    <string name="label_importBackup">Importar copia de respaldo</string>
-    <string name="label_backup">Copia de respaldo</string>
-    <string name="label_export_dir">Directorio de exportación</string>
-    <string name="label_not_found">no encontrado</string>
+    <string name="label_bt_device_no_support">dispositivo no soportado</string>
+    <string name="label_exportBackup">Exportar la copia de seguridad</string>
+    <string name="label_importBackup">Importar la copia de seguridad</string>
+    <string name="label_backup">Copia de seguridad</string>
+    <string name="label_export_dir">Exportar el directorio</string>
     <string name="label_ignoreOutOfRange">Ignorar datos fuera de límites</string>
     <string name="label_initial_weight">Peso inicial</string>
     <string name="label_goal_line">Línea del objetivo</string>
@@ -124,8 +113,6 @@
     <string name="info_step_on_scale_for_reference">Párese con los pies descalzos en la báscula para tomar medidas de referencia</string>
     <string name="info_measuring">Medición de peso: %.2f</string>
     <string name="title_general">General</string>
-    <string name="open_drawer">abrir</string>
-    <string name="close_drawer">cerrar</string>
     <string name="label_share">Compartir</string>
     <string name="info_bluetooth_no_device_set">Seleccione un dispositivo Bluetooth</string>
     <string name="info_new_data_duplicated">ya existe una medición con la misma fecha y hora</string>
@@ -223,7 +210,6 @@
     <string name="info_bluetooth_no_device_retrying">No se pudo establecer la conexión; reintentando…</string>
     <string name="info_bluetooth_connection_disconnected">Conexión Bluetooth cerrada</string>
     <string name="label_enable_legend">Leyenda del gráfico</string>
-    <string name="label_enable_yaxis">Eje Y</string>
     <string name="info_step_on_scale">Por favor, párese descalzo en la balanza</string>
     <string name="label_day_view">Vista diaria</string>
     <string name="label_year_view">Vista anual</string>
@@ -287,7 +273,6 @@
     <string name="info_assisted_weighing_no_reference_measurements">El usuario de referencia no tiene medidas</string>
     <string name="label_amputation_right">Amputación derecha</string>
     <string name="label_amputation_left">Amputación izquierda</string>
-    <string name="label_amputation">Amputación</string>
     <string name="label_assisted_weighing">Pesaje asistido</string>
     <string name="label_trend">Tendencia</string>
     <string name="label_prediction">Proyección</string>
@@ -295,4 +280,26 @@
     <string name="info_enter_consent_code_for_scale_user">Introduce PIN/código de consentimiento para el usuario %s</string>
     <string name="info_create_new_user_on_scale">Crea nuevo usuario en la escala.</string>
     <string name="info_select_scale_user">Selecciona usuario</string>
+    <string name="label_is_sticky">Fijado</string>
+    <string name="label_time_period_last_30_days">los últimos 30 días</string>
+    <string name="label_time_period_set_reference_day">fijar el día de referencia</string>
+    <string name="label_with">con</string>
+    <string name="label_abbr_max">máx</string>
+    <string name="label_abbr_avg">promedio</string>
+    <string name="label_measurements">medidas</string>
+    <string name="info_select_auto_backup_export_dir">Seleccione el directorio de la exportación de la copia de seguridad automática</string>
+    <string name="label_time_period_last_7_days">los últimos 7 días</string>
+    <string name="label_time_period">Periodo de tiempo</string>
+    <string name="label_time_period_all_days">todos los días</string>
+    <string name="label_time_period_set_custom_range">establecer un rango personalizado</string>
+    <string name="label_abbr_min">mín</string>
+    <string name="label_goal_enabled">Objetivo habilitado</string>
+    <string name="label_auto_backup_lacation">No se ha seleccionado ninguna ubicación para la copia de seguridad automática</string>
+    <string name="permission_notification_info">Se requiere un permiso de notificación, para mostrar la notificación</string>
+    <string name="label_trendline_computation_method">Método del cálculo de la línea de tendencia</string>
+    <string name="label_simple_moving_average_num_days">Número de días para calcular la media</string>
+    <string name="label_trendline_future">Tendencia futura</string>
+    <string name="label_simple_moving_average">Media móvil simple</string>
+    <string name="label_exponentially_smoothed_moving_average">Media móvil suavizada exponencialmente</string>
+    <string name="label_y_axis">Eje y</string>
 </resources>

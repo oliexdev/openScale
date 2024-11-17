@@ -10,8 +10,6 @@
     <string name="title_general">Opće</string>
     <string name="action_settings">Postavke</string>
     <string name="action_bluetooth_status">Bluetooth stanje</string>
-    <string name="open_drawer">otvori</string>
-    <string name="close_drawer">zatvori</string>
     <string name="label_cancel">Odustani</string>
     <string name="label_ok">U redu</string>
     <string name="label_yes">Da</string>
@@ -35,19 +33,11 @@
     <string name="label_whr">Omjer struka i kukova</string>
     <string name="label_bone">Masa kostiju</string>
     <string name="label_smartUserAssign">Pametna dodjela korisnika</string>
-    <plurals name="label_days">
-        <item quantity="one">%d dan</item>
-        <item quantity="few">%d dana</item>
-        <item quantity="other">%d dana</item>
-    </plurals>
-    <string name="label_last_week">Prosjek prošlog tjedna</string>
-    <string name="label_last_month">Prosjek prošlog mjeseca</string>
     <string name="label_weight_difference">Razlika težine</string>
-    <string name="label_goal_date_is">Ciljani datum:</string>
     <string name="label_days_left">Preostalo dana</string>
     <string name="label_date">Datum</string>
     <string name="label_time">Vrijeme</string>
-    <string name="label_birthday">Datum rođenja</string>
+    <string name="label_birthday">Rođendan</string>
     <string name="label_user_name">Ime</string>
     <string name="label_height">Visina</string>
     <string name="label_scale_unit">Mjerna jedinica</string>
@@ -57,8 +47,6 @@
     <string name="label_goal_weight">Ciljana težina</string>
     <string name="label_goal_date">Ciljani datum</string>
     <string name="label_title_user">korisnik</string>
-    <string name="label_title_last_measurement">zadnje mjerenje</string>
-    <string name="label_title_goal">Cilj</string>
     <string name="label_import">Uvoz</string>
     <string name="label_export">Izvoz</string>
     <string name="label_delete_all">Izbriši sve</string>
@@ -115,7 +103,6 @@
     <string name="label_reminder_time">Vrijeme</string>
     <string name="label_reminder_notify_text">Tekst obavijesti</string>
     <string name="default_value_reminder_notify_text">Vrijeme za vaganje u</string>
-    <string name="info_on_date">na dan</string>
     <string name="Monday">Ponedjeljak</string>
     <string name="Tuesday">Utorak</string>
     <string name="Wednesday">Srijeda</string>
@@ -127,11 +114,10 @@
     <string name="label_exportBackup">Izvoz sigurnosne kopije</string>
     <string name="label_importBackup">Uvoz sigurnosne kopije</string>
     <string name="label_backup">Sigurnosna kopija</string>
-    <string name="label_export_dir">Mapa za izvoz</string>
-    <string name="label_not_found">nije pronađeno</string>
+    <string name="label_export_dir">Mapa izvoza</string>
     <string name="label_ignoreOutOfRange">Zanemari podatke izvan granica</string>
     <string name="label_initial_weight">Početna težina</string>
-    <string name="label_goal_line">Smjer cilja</string>
+    <string name="label_goal_line">Linija cilja</string>
     <string name="label_help">Pomoć</string>
     <string name="label_feedback_message_enjoying">Sviđa ti se openScale\?</string>
     <string name="label_feedback_message_rate_app">Kako bi bilo, da ocijeniš program na Google Play-u ili GitHub-u\?</string>
@@ -251,7 +237,7 @@
 \nopenScale</string>
     <string name="label_upgrade_to_openScale_pro">Nadogradi na „openScale pro” za Bluetooth podršku</string>
     <string name="label_calories">Kalorije</string>
-    <string name="label_is_on_right_axis">Je na desnoj osi</string>
+    <string name="label_is_on_right_axis">Na desnoj osi</string>
     <string name="permission_read_write_data_label">Čitaj/zapiši openScale podatke</string>
     <string name="permission_read_write_data_description">čitaj/zapiši openScale podatke, uključujući korisničke podatke i sva spremljena mjerenja</string>
     <string name="permission_location_service_info">Dozvoli pristup lokaciji u Androidovim postavkama za traženje Bluetooth uređaja. Opcionalno zabrani pristup nakon toga.</string>
@@ -265,7 +251,6 @@
 \n
 \nDrži gumb na dnu vage pritisnutim za prebacivanje na modus uparivanja, a zatim se ponovo poveži za dobivanje lozinke uređaja.</string>
     <string name="info_step_on_scale">Stani bez cipela na vagu</string>
-    <string name="label_enable_yaxis">os y</string>
     <string name="label_enable_legend">Legenda dijagrama</string>
     <string name="info_bluetooth_connection_disconnected">Bluetooth veza je zatvorena</string>
     <string name="info_bluetooth_connection_error_scale_offline">Neuspjelo povezivanje s vagom, provjeri je li uključena.</string>
@@ -288,12 +273,33 @@
     <string name="info_assisted_weighing_no_reference_measurements">Referentni korisnik nema mjerenja</string>
     <string name="label_amputation_right">Amputacija desno</string>
     <string name="label_amputation_left">Amputacija lijevo</string>
-    <string name="label_amputation">Amputacija</string>
     <string name="label_assisted_weighing">Potpomognuto vaganje</string>
-    <string name="label_trend_line">Smjer trenda</string>
+    <string name="label_trend_line">Linija trenda</string>
     <string name="label_trend">Trend</string>
     <string name="label_prediction">Predviđanje</string>
     <string name="info_create_new_user_on_scale">Kreiraj novog korisnika vage.</string>
     <string name="info_select_scale_user">Odaberi korisnika vage</string>
     <string name="info_enter_consent_code_for_scale_user">Upiši PIN/kod za korisnika vage %s</string>
+    <string name="label_is_sticky">Prikvačeno</string>
+    <string name="info_select_auto_backup_export_dir">Odaberi direktorij za izvoz automatske sigurnosne kopije</string>
+    <string name="label_time_period">Razdoblje</string>
+    <string name="label_goal_enabled">Cilj aktiviran</string>
+    <string name="label_time_period_all_days">svi dani</string>
+    <string name="label_abbr_min">min.</string>
+    <string name="label_abbr_avg">prosjek</string>
+    <string name="label_time_period_last_7_days">zadnjih 7 dana</string>
+    <string name="label_time_period_last_30_days">zadnjih 30 dana</string>
+    <string name="label_time_period_set_reference_day">postavi referentni dan</string>
+    <string name="label_time_period_set_custom_range">postavi referentni raspon</string>
+    <string name="label_with">sa</string>
+    <string name="label_abbr_max">maks.</string>
+    <string name="label_measurements">mjerenja</string>
+    <string name="label_auto_backup_lacation">Nijedno mjesto nije odabrano za izvoz automatske sigurnosne kopije</string>
+    <string name="permission_notification_info">Za prikaz obavijesti potrebna je dozvola za obavijesti</string>
+    <string name="label_simple_moving_average">Jednostavan pomični prosjek</string>
+    <string name="label_trendline_computation_method">Način računanja linije trenda</string>
+    <string name="label_exponentially_smoothed_moving_average">Eksponencijalan pomični prosjek</string>
+    <string name="label_trendline_future">Trend budućnosti</string>
+    <string name="label_simple_moving_average_num_days">Broj dana za računanje prosjeka</string>
+    <string name="label_y_axis">Os y</string>
 </resources>

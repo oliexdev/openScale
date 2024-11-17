@@ -110,4 +110,22 @@
         <item>@string/amputation_level_lower_leg_foot</item>
         <item>@string/amputation_level_leg</item>
     </string-array>
+
+    <string-array name="range_options_entries">
+        <item>@string/label_time_period_all_days</item>
+        <item>@string/label_time_period_last_7_days</item>
+        <item>@string/label_time_period_last_30_days</item>
+        <item>@string/label_time_period_set_reference_day</item>
+        <item>@string/label_time_period_set_custom_range</item>
+    </string-array>
+
+    <string-array name="trendline_computation_methods_entries">
+        <item>@string/label_simple_moving_average</item>
+        <item>@string/label_exponentially_smoothed_moving_average</item>
+    </string-array>
+
+    <string-array name="trendline_computation_methods_values">
+        <item>SimpleMovingAverage</item>
+        <item>ExponentiallySmoothedMovingAverage</item>
+    </string-array>
 </resources>
