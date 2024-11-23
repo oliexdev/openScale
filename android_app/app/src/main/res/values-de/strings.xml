@@ -68,7 +68,7 @@
     <string name="info_bluetooth_connection_successful">Verbunden</string>
     <string name="info_bluetooth_no_device">Kein Bluetooth Gerät gefunden</string>
     <string name="info_bluetooth_try_connection">Verbinde mit:</string>
-    <string name="info_bluetooth_init">Initializiere Bluetooth Gerät</string>
+    <string name="info_bluetooth_init">Initialisiere Bluetooth-Gerät</string>
     <string name="label_smartUserAssign">Intelligente Benutzer-Zuweisung</string>
     <string name="default_value_reminder_notify_text">Zeit zum Wiegen</string>
     <string name="label_reminder">Erinnerung</string>
@@ -206,7 +206,7 @@
     <string name="trisa_scale_pairing_succeeded">Die Kopplung ist erfolgreich!
 \n
 \nWieder verbinden, um Messdaten abzurufen.</string>
-    <string name="info_bluetooth_no_device_retrying">Kann keine Verbindung herstellen; versuche erneut …</string>
+    <string name="info_bluetooth_no_device_retrying">Kann keine Verbindung herstellen; versuche erneut…</string>
     <string name="label_tdee">Gesamttagesenergieumsatz (TDEE)</string>
     <string name="label_calories">Kalorien</string>
     <string name="info_bluetooth_connection_disconnected">Bluetooth Verbindung getrennt</string>

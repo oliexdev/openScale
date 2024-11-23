@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="Friday">Sexta</string>
-    <string name="Monday">Segunda</string>
+    <string name="Friday">Sexta-feira</string>
+    <string name="Monday">Segunda-feira</string>
     <string name="Saturday">Sábado</string>
     <string name="Sunday">Domingo</string>
-    <string name="Thursday">Quinta</string>
-    <string name="Tuesday">Terça</string>
-    <string name="Wednesday">Quarta</string>
+    <string name="Thursday">Quinta-feira</string>
+    <string name="Tuesday">Terça-feira</string>
+    <string name="Wednesday">Quarta-feira</string>
     <string name="action_bluetooth_status">Estado do Bluetooth</string>
     <string name="action_settings">Configurações</string>
-    <string name="default_value_reminder_notify_text">Hora de pesar-se</string>
-    <string name="error_height_required">Altura requerida</string>
-    <string name="error_exporting">Erro ao exportar</string>
+    <string name="default_value_reminder_notify_text">Hora de se pesar</string>
+    <string name="error_height_required">Altura obrigatória</string>
+    <string name="error_exporting">Não foi possível exportar</string>
     <string name="error_goal_weight_required">Meta de peso requerida</string>
-    <string name="error_importing">Erro ao importar</string>
-    <string name="error_initial_weight_required">Peso inicial requerido</string>
+    <string name="error_importing">Não foi possível importar</string>
+    <string name="error_initial_weight_required">Obrigatório peso inicial</string>
     <string name="error_max_scale_users">Quantidade máxima de utilizadores concurrentes atingidos</string>
-    <string name="error_user_name_required">Nome requerido</string>
+    <string name="error_user_name_required">Nome obrigatório</string>
     <string name="error_value_range">Valor fora do intervalo</string>
     <string name="error_value_required">Valor é obrigatório</string>
     <string name="info_bluetooth_connection_error">Ocorreu um erro inesperado com o Bluetooth</string>
@@ -58,8 +58,8 @@
     <string name="label_enable_labels">Nome do dado</string>
     <string name="label_enable_points">Pontos do dado</string>
     <string name="label_export">Exportar</string>
-    <string name="label_exportBackup">Exportar Backup</string>
-    <string name="label_export_dir">Pasta de exportação</string>
+    <string name="label_exportBackup">Exportar backup</string>
+    <string name="label_export_dir">Diretório para exportação</string>
     <string name="label_fat">Gordura corporal</string>
     <string name="label_gender">Sexo</string>
     <string name="label_goal_date">Data do objetivo</string>
@@ -84,10 +84,10 @@
     <string name="label_title_user">utilizador</string>
     <string name="label_user_name">Nome</string>
     <string name="label_waist">Perimetro abdominal</string>
-    <string name="label_water">Água corporal total</string>
+    <string name="label_water">Total de água corporal</string>
     <string name="label_weight">Peso</string>
     <string name="label_weight_difference">Diferença de peso</string>
-    <string name="label_whr">Relação anca-cintura</string>
+    <string name="label_whr">Relação quadril-cintura</string>
     <string name="label_whtr">Relação cintura-altura</string>
     <string name="label_female">Femino</string>
     <string name="label_yes">Sim</string>
@@ -103,7 +103,7 @@
     <string name="title_about">Sobre</string>
     <string name="title_general">Menu</string>
     <string name="label_share">Partilhar</string>
-    <string name="label_share_subject">Exportar dados para CSV (%s)</string>
+    <string name="label_share_subject">Exportar dados (%s)</string>
     <string name="label_bmr">Taxa Metabólica Basal (TMB)</string>
     <string name="label_lbm">Massa Magra</string>
     <string name="label_bone">Massa óssea</string>
@@ -164,8 +164,8 @@
     <string name="label_estimated">Estimada</string>
     <string name="label_estimate_measurement_summary">Baseado no peso, altura, idade, sexo, etc.</string>
     <string name="label_add_measurement">Adicionar medição</string>
-    <string name="label_tdee">Energia Diária Consumida Total</string>
-    <string name="info_bluetooth_no_device_retrying">Não é possível estabelecer ligação, tentando novamente…</string>
+    <string name="label_tdee">Gasto energético diário total</string>
+    <string name="info_bluetooth_no_device_retrying">Não é possível estabelecer conexão, tentando novamente…</string>
     <string name="info_bluetooth_connection_disconnected">Conexão Bluetooth terminada</string>
     <string name="info_step_on_scale">Por favor suba descalço para a balança</string>
     <string name="label_enable_legend">Legenda</string>
@@ -198,4 +198,108 @@
     <string name="info_select_scale_user">Selecione a balança para utilização</string>
     <string name="info_enter_consent_code_for_scale_user">Entre com PIN/Código de Consentimento do usuário %s</string>
     <string name="permission_read_write_data_label">Ler/Escrever dados do openScale</string>
+    <string name="label_monthly">mensalmente</string>
+    <string name="label_weekly">semanalmente</string>
+    <string name="label_chest">Circunferência torácica</string>
+    <string name="label_caliper1_male">Dobra cutânea do peito</string>
+    <string name="activity_level_heavy">Intenso</string>
+    <string name="activity_level_extreme">Extremo</string>
+    <string name="amputation_level_none">Sem amputação</string>
+    <string name="amputation_level_hand">Mão</string>
+    <string name="label_slide_privacy_top_text">Proteja seus dados pessoais de saúde.</string>
+    <string name="label_simple_moving_average">Média Móvel Simples</string>
+    <string name="label_exponentially_smoothed_moving_average">Média Móvel Exponencial</string>
+    <string name="label_trendline_computation_method">Método de cálculo da linha de tendência</string>
+    <string name="label_trendline_future">Tendência futura</string>
+    <string name="label_simple_moving_average_num_days">Número de dias para a média</string>
+    <string name="label_auto_backup_schedule">Programar backup</string>
+    <string name="label_overwrite_backup">Substituir o backup anterior</string>
+    <string name="label_is_sticky">Está fixado</string>
+    <string name="label_scale_not_supported">Sua balança não é compatível?</string>
+    <string name="label_click_to_help_add_support">Clique aqui para ajudar a adicionar suporte</string>
+    <string name="label_debug_log">Salvar o log de depuração em um arquivo</string>
+    <string name="label_your_bluetooth_scale">Sua balança Bluetooth</string>
+    <string name="label_visceral_fat">Gordura visceral</string>
+    <string name="label_thigh">Circunferência da coxa</string>
+    <string name="label_biceps">circunferência do bíceps</string>
+    <string name="label_fat_caliper">Adipômetro</string>
+    <string name="label_caliper2_female">Dobra cutânea abdominal</string>
+    <string name="label_caliper1_female">Dobra cutânea do tríceps</string>
+    <string name="label_caliper3_male">Dobra cutânea da coxa</string>
+    <string name="label_caliper2_male">Dobra cutânea abdominais</string>
+    <string name="amputation_level_lower_leg_foot">Perna e pé</string>
+    <string name="amputation_level_leg">Perna</string>
+    <string name="label_upgrade_to_openScale_pro">Para utilizar a função Bluetooth, por favor, atualize para a versão openScale pro</string>
+    <string name="app_intro_skip_button">Pular</string>
+    <string name="app_intro_next_button">Próximo</string>
+    <string name="app_intro_back_button">Voltar</string>
+    <string name="label_y_axis">Eixo-Y</string>
+    <string name="permission_location_service_info">Conceda acesso à localização nas configurações do Android para buscar dispositivos Bluetooth. Você pode revogá-lo posteriormente, se desejar.</string>
+    <string name="label_auto_backup">Backup automático</string>
+    <string name="label_development">Desenvolvimento</string>
+    <string name="label_select_measurement">Selecionar medida</string>
+    <string name="label_select_user">Selecionar usuário</string>
+    <string name="label_configure_widget">Configurar widget</string>
+    <string name="label_neck">Circunferência do pescoço</string>
+    <string name="label_calories">Calorias</string>
+    <string name="label_activity_level">Nível de atividade</string>
+    <string name="activity_level_sedentary">Sedentário</string>
+    <string name="label_slide_welcome_top_text">Bem vindo
+\nopenScale</string>
+    <string name="amputation_level_foot">Pé</string>
+    <string name="permission_notification_info">É necessária a permissão de Notificação para mostrar a notificação</string>
+    <string name="label_caliper3_female">Dobra cutânea do quadril</string>
+    <string name="label_measure_unit">Unidade de medida</string>
+    <string name="activity_level_moderate">Moderado</string>
+    <string name="activity_level_mild">Baixo</string>
+    <string name="amputation_level_forearm_hand">Antebraço e perna</string>
+    <string name="amputation_level_arm">Braço</string>
+    <string name="label_slide_welcome_main_text">Software de código aberto para rastreamento de peso e métricas corporais, com suporte a balanças Bluetooth.</string>
+    <string name="label_slide_privacy_main_text">openScale não envia nenhum dado para a nuvem e não ter permissão para acessar a internet é uma forte garantia disso.
+\n
+\nSe você realmente deseja sincronizar seu peso com o Google Fit ou com o MQTT, você pode instalar <a href="https://play.google.com/store/apps/details?id=com.health.openscale.sync">openScale sync</a>.</string>
+    <string name="label_slide_opensource_top_text">É um software de código aberto com um alto grau de transparência.</string>
+    <string name="label_slide_user_main_text">O openScale não exige que você crie uma conta online.
+\n
+\nAs métricas corporais são calculadas a partir das medições.</string>
+    <string name="label_slide_bluetooth_top_text">São suportadas diversas balanças Bluetooth de diferentes fabricantes.</string>
+    <string name="label_slide_bluetooth_main_text">O openScale possui suporte integrado para diversas balanças Bluetooth de diferentes fabricantes.
+\n
+\nConstantemente aprimoramos e ampliamos o conjunto de balanças suportadas. Você pode encontrar a lista completa e o nível de suporte para cada escala em <a href="https://github.com/oliexdev/openScale/wiki/Supported-scales-in-openScale">GitHub</a>.</string>
+    <string name="label_slide_metrics_top_text">Monitore e analise suas métricas corporais.</string>
+    <string name="label_slide_metrics_main_text">O openScale suporta mais de 22 métricas corporais.
+\n
+\nConfigure-o para mostrar aquelas que você se importa.
+\n
+\nSe a gordura corporal, a água corporal e a massa magra estiverem faltando, elas podem ser estimadas com base em <a href="https://github.com/oliexdev/openScale/wiki/Body-metric-estimations">publicações científicas</a>.</string>
+    <string name="app_intro_done_button">Concluído</string>
+    <string name="info_create_new_user_on_scale">Criar novo usuário para a balança.</string>
+    <string name="label_time_period">Período</string>
+    <string name="label_time_period_all_days">todos os dias</string>
+    <string name="label_time_period_last_7_days">últimos 7 dias</string>
+    <string name="label_time_period_last_30_days">últimos 30 dias</string>
+    <string name="label_time_period_set_reference_day">definir dia de referência</string>
+    <string name="label_time_period_set_custom_range">definir intervalo personalizado</string>
+    <string name="label_with">com</string>
+    <string name="label_abbr_min">mínimo</string>
+    <string name="label_abbr_avg">média</string>
+    <string name="label_abbr_max">máximo</string>
+    <string name="label_goal_enabled">Objetivo ativado</string>
+    <string name="label_measurements">medidas</string>
+    <string name="info_select_auto_backup_export_dir">Selecione o diretório de exportação de backup automático</string>
+    <string name="label_is_on_right_axis">Está no eixo direito</string>
+    <string name="label_auto_backup_lacation">Nenhum local para backup automático selecionado</string>
+    <string name="label_slide_support_top_text">Ajude a melhorar o openScale.</string>
+    <string name="label_slide_support_main_text">openScale precisa da sua ajuda. Crie um <a href="https://github.com/oliexdev/openScale/issues">novo problema</a> se você encontrou um bug, tem uma ideia, pergunta ou deseja ajudar a dar suporte a sua balança Bluetooth.
+\n
+\nIncentive o criador deste projeto a continuar desenvolvendo e mantendo o openScale, dando uma avaliação positiva no <a href="http://play.google.com/store/apps/details?id=com.health.openscale.pro">Google Play</a> ou uma estrela no <a href="https://github.com/oliexdev/openScale">GitHub</a>.
+\n
+\nSeu apoio e feedback positivo são muito apreciados. Obrigado.</string>
+    <string name="label_daily">diariamente</string>
+    <string name="label_slide_user_top_text">Suporte a múltiplos usuários.</string>
+    <string name="label_slide_opensource_main_text">openScale está sob a licença <a href="https://github.com/oliexdev/openScale/blob/master/LICENSE">GPLv3</a>.
+\n
+\nTodos os cálculos corporais são transparentes e não há função oculta de transferência de dados ou identificação do usuário.
+\n
+\nVocê pode encontrar o código-fonte completo em <a href="https://github.com/oliexdev/openScale">GitHub</a>. Confirme a eficácia do openScale realizando uma análise.</string>
 </resources>

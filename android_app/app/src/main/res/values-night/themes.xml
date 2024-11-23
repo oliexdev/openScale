@@ -27,7 +27,10 @@
         <item name="colorOnSurfaceInverse">@color/md_theme_dark_inverseOnSurface</item>
         <item name="colorSurfaceInverse">@color/md_theme_dark_inverseSurface</item>
         <item name="colorPrimaryInverse">@color/md_theme_dark_inversePrimary</item>
-        <item name="alertDialogTheme">@style/AppTheme.Dialog</item>
+        <item name="android:alertDialogTheme">@style/AppTheme.Dialog</item> <!-- for material 3 dialog button color -->
+        <item name="alertDialogTheme">@style/AppTheme.Dialog</item> <!-- for preference dialog button color -->
+        <item name="materialCalendarTheme">@style/MaterialCalendarTheme</item> <!-- for material calendar button color -->
+        <item name="preferenceTheme">@style/MaterialPreferenceTheme</item>
         <item name="colorAccent">@color/md_theme_dark_onPrimary</item>
     </style>
 
@@ -35,8 +38,29 @@
         <item name="colorSecondaryContainer">@android:color/transparent</item>
     </style>
 
-    <style name="AppTheme.Dialog" parent="Theme.MaterialComponents.DayNight.Dialog">
+    <style name="MaterialPreferenceTheme" parent="PreferenceThemeOverlay">
+        <item name="buttonBarPositiveButtonStyle">@style/PositiveButtonStyle</item>
+        <item name="buttonBarNegativeButtonStyle">@style/NegativeButtonStyle</item>
+    </style>
+
+    <style name="MaterialCalendarTheme" parent="ThemeOverlay.MaterialComponents.MaterialCalendar">
+        <item name="buttonBarPositiveButtonStyle">@style/PositiveButtonStyle</item>
+        <item name="buttonBarNegativeButtonStyle">@style/NegativeButtonStyle</item>
+    </style>
+
+    <style name="AppTheme.Dialog" parent="ThemeOverlay.Material3.Dialog">
         <item name="colorPrimary">@color/md_theme_dark_onBackground</item>
+        <item name="android:buttonBarNegativeButtonStyle">@style/NegativeButtonStyle</item>
+        <item name="android:buttonBarPositiveButtonStyle">@style/PositiveButtonStyle</item>
+        <item name="android:buttonBarNeutralButtonStyle">@style/PositiveButtonStyle</item>
+    </style>
+
+    <style name="NegativeButtonStyle" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/md_theme_dark_onBackground</item>
+    </style>
+
+    <style name="PositiveButtonStyle" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/md_theme_dark_onBackground</item>
     </style>
 
     <style name="AppTheme.RadioButton" parent="Widget.Material3.CompoundButton.RadioButton">

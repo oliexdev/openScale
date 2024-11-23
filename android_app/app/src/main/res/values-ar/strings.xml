@@ -116,7 +116,7 @@
     <string name="label_exportBackup">تصدير النسخة الاحتياطية</string>
     <string name="label_importBackup">استيراد النسخة الاحتياطية</string>
     <string name="label_backup">نسخة إحتياطية</string>
-    <string name="label_export_dir">تصدير الملف</string>
+    <string name="label_export_dir">ملف التصدير</string>
     <string name="label_ignoreOutOfRange">تجاهل خارج نطاق البيانات</string>
     <string name="label_initial_weight">الوزن البدائي</string>
     <string name="label_goal_line">خط الهدف</string>
@@ -208,7 +208,7 @@
     <string name="label_activity_level">مستوى النشاط</string>
     <string name="activity_level_sedentary">كثير الجلوس</string>
     <string name="activity_level_mild">معتدل</string>
-    <string name="activity_level_moderate">معتدل</string>
+    <string name="activity_level_moderate">متوسط</string>
     <string name="activity_level_heavy">كثيف</string>
     <string name="activity_level_extreme">شديد</string>
     <string name="label_prediction">التنبؤ</string>
@@ -277,8 +277,29 @@
     <string name="info_create_new_user_on_scale">إنشاء مستخدم جديد على الميزان.</string>
     <string name="label_slide_metrics_main_text">يدعم اوبن سكيل أكثر من 22 مقياسا للجسم.
 \n
-\nقم بتكوينه لإظهار تلك التي تهتم بها.
+\nقم بإعداده لإظهار المقاييس التي تهتم بها.
 \n
-\n
-\nإذا كانت الدهون في الجسم والماء وكتلة الجسم الخالية من الدهون مفقودة ، فيمكن تقديرها بناء على <a href="https://github.com/oliexdev/openScale/wiki/Body-metric-estimations">المنشورات العلمية </a>.</string>
+\nإذا كانت قيمة الدهون في الجسم، وكمية الماء فيه، وكتلة الجسم الخالية من الدهون غير متوفرة، فيمكن تقديرها بناء على <a href="https://github.com/oliexdev/openScale/wiki/Body-metric-estimations">المنشورات العلمية </a>.</string>
+    <string name="label_trendline_computation_method">طريقة حساب خط الاتجاه</string>
+    <string name="label_trendline_future">الاتجاه المستقبلي</string>
+    <string name="label_simple_moving_average_num_days">عدد الأيام لحساب المتوسط</string>
+    <string name="info_select_auto_backup_export_dir">حدد مجلد تصدير النسخ الاحتياطي التلقائي</string>
+    <string name="label_is_sticky">دبق</string>
+    <string name="label_simple_moving_average">المتوسط المتحرك البسيط</string>
+    <string name="label_exponentially_smoothed_moving_average">المتوسط المتحرك السلس الأسي</string>
+    <string name="label_y_axis">المحور ص</string>
+    <string name="permission_notification_info">إذن الإشعار مطلوب لإظهار الإشعار</string>
+    <string name="label_auto_backup_lacation">لم يتم تحديد موقع النسخ الاحتياطي التلقائي</string>
+    <string name="label_time_period">الفترة الزمنية</string>
+    <string name="label_time_period_all_days">كل الأيام</string>
+    <string name="label_time_period_last_7_days">آخر 7 أيام</string>
+    <string name="label_time_period_last_30_days">آخر 30 يومًا</string>
+    <string name="label_time_period_set_reference_day">تحديد اليوم المرجعي</string>
+    <string name="label_time_period_set_custom_range">تعيين النطاق المخصص</string>
+    <string name="label_with">مع</string>
+    <string name="label_abbr_min">الحد الأدنى</string>
+    <string name="label_abbr_max">الحد الأقصى</string>
+    <string name="label_abbr_avg">المتوسط</string>
+    <string name="label_goal_enabled">تم تفعيل الهدف</string>
+    <string name="label_measurements">القياسات</string>
 </resources>
