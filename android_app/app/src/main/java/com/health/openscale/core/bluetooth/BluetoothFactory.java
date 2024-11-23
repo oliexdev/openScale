@@ -142,6 +142,9 @@ public class BluetoothFactory {
         if (deviceName.equals("AAA002") || deviceName.equals("AAA007")){
             return new BluetoothBroadcastScale(context);
         }
+        if (deviceName.equals("AE BS-06")) {
+            return new BluetoothActiveEraBF06(context);
+        }
         return null;
     }
 }
