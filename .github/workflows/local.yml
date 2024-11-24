@@ -1,7 +1,7 @@
 # This is a workflow intended to be run locally using `act` and `docker` to
 # build locally
 
-name: local-build
+name: local
 
 # Controls when the workflow will run
 on:
@@ -28,7 +28,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: "zulu" # See 'Supported distributions' for available options
-          java-version: "11"
+          java-version: "17"
       - name: Setup Android SDK
         uses: android-actions/setup-android@v2.0.10
       - name: Build APK
