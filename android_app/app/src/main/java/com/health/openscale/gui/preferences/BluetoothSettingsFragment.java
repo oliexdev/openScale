@@ -325,8 +325,12 @@ public class BluetoothSettingsFragment extends Fragment {
         BluetoothDeviceView deviceView = new BluetoothDeviceView(context);
         deviceView.setDeviceName(formatDeviceName(bleScanResult.getDevice()));
 
-        String name = device.getName() != null ? device.getName() : "";
-        BluetoothCommunication btDevice = BluetoothFactory.createDeviceDriver(context, name);
+        String deviceName = device.getName();
+        if (deviceName == null) {
+            deviceName = BluetoothFactory.convertNoNameToDeviceName(bleScanResult.getScanRecord().getManufacturerSpecificData());
+        }
+
+        BluetoothCommunication btDevice = BluetoothFactory.createDeviceDriver(context, deviceName);
         if (btDevice != null) {
             Timber.d("Found supported device %s (driver: %s)",
                     formatDeviceName(device), btDevice.driverName());
