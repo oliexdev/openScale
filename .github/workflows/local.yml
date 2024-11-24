@@ -1,0 +1,40 @@
+# This is a workflow intended to be run locally using `act` and `docker` to
+# build locally
+
+name: local-build
+
+# Controls when the workflow will run
+on:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  local-build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: android_app
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: "zulu" # See 'Supported distributions' for available options
+          java-version: "11"
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2.0.10
+      - name: Build APK
+        run: ./gradlew assembleDebug
+      - name: Upload Release Build to Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+           name: release-artifacts
+           path: android_app/app/build/outputs/apk/
