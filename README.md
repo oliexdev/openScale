@@ -20,6 +20,8 @@ It is possible to build an apk locally for development purposes using [act](http
 act -j local-build --artifact-server-path ~/Downloads/artifacts
 ```
 
+Once run there will be a zipped artefact in `~/Downloads/artifacts` which you can unzip to see the generated apk file.
+
 # Summary :clipboard:
 
 Monitor and track your weight, BMI, body fat, body water, muscle and other body metrics in an open source app that:
