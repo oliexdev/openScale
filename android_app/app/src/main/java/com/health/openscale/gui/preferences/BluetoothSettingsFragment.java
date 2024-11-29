@@ -322,13 +322,17 @@ public class BluetoothSettingsFragment extends Fragment {
             return;
         }
 
-        BluetoothDeviceView deviceView = new BluetoothDeviceView(context);
-        deviceView.setDeviceName(formatDeviceName(bleScanResult.getDevice()));
-
         String deviceName = device.getName();
         if (deviceName == null) {
             deviceName = BluetoothFactory.convertNoNameToDeviceName(bleScanResult.getScanRecord().getManufacturerSpecificData());
+          }
+       if (deviceName == null) {
+           return;
         }
+
+        BluetoothDeviceView deviceView = new BluetoothDeviceView(context);
+        deviceView.setDeviceName(formatDeviceName(deviceName, device.getAddress()));
+        deviceView.setAlias(deviceName);
 
         BluetoothCommunication btDevice = BluetoothFactory.createDeviceDriver(context, deviceName);
         if (btDevice != null) {
@@ -398,6 +402,7 @@ public class BluetoothSettingsFragment extends Fragment {
         private TextView deviceName;
         private ImageView deviceIcon;
         private String deviceAddress;
+        private String deviceAlias;
 
         public BluetoothDeviceView(Context context) {
             super(context);
@@ -425,6 +430,14 @@ public class BluetoothSettingsFragment extends Fragment {
 
             addView(deviceIcon);
             addView(deviceName);
+        }
+
+        public void setAlias(String alias) {
+            deviceAlias = alias;
+        }
+
+        public String getAlias() {
+            return deviceAlias;
         }
 
         public void setDeviceAddress(String address) {
@@ -485,10 +498,10 @@ public class BluetoothSettingsFragment extends Fragment {
 
             prefs.edit()
                     .putString(PREFERENCE_KEY_BLUETOOTH_HW_ADDRESS, device.getAddress())
-                    .putString(PREFERENCE_KEY_BLUETOOTH_DEVICE_NAME, device.getName())
+                    .putString(PREFERENCE_KEY_BLUETOOTH_DEVICE_NAME, getAlias())
                     .apply();
 
-            Timber.d("Saved Bluetooth device " + device.getName() + " with address " + device.getAddress());
+            Timber.d("Saved Bluetooth device " + getAlias() + " with address " + device.getAddress());
 
             stopBluetoothDiscovery();
 
