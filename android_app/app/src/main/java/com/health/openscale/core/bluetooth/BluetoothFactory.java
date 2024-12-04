@@ -17,6 +17,7 @@
 package com.health.openscale.core.bluetooth;
 
 import android.content.Context;
+import android.util.SparseArray;
 
 import java.util.Locale;
 
@@ -118,7 +119,7 @@ public class BluetoothFactory {
         if (deviceName.equals("ADV") || deviceName.equals("Chipsea-BLE")) {
             return new BluetoothOKOK(context);
         }
-        if (deviceName.isEmpty()) {
+        if (deviceName.equals("NoName OkOk")) {
             return new BluetoothOKOK2(context);
         }
         if (deviceName.equals("BF105") || deviceName.equals("BF720")) {
@@ -152,5 +153,12 @@ public class BluetoothFactory {
             return new BluetoothActiveEraBF06(context);
         }
         return null;
+    }
+
+    public static String convertNoNameToDeviceName(SparseArray<byte[]> manufacturerSpecificData) {
+        String deviceName = null;
+        deviceName = BluetoothOKOK2.convertNoNameToDeviceName(manufacturerSpecificData);
+
+        return deviceName;
     }
 }

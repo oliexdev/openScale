@@ -15,6 +15,9 @@
  */
 package com.health.openscale.core.bluetooth;
 
+import static com.health.openscale.core.utils.Converters.WeightUnit.LB;
+import static com.health.openscale.core.utils.Converters.WeightUnit.ST;
+
 import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanResult;
 import android.content.Context;
@@ -34,9 +37,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import timber.log.Timber;
-
-import static com.health.openscale.core.utils.Converters.WeightUnit.LB;
-import static com.health.openscale.core.utils.Converters.WeightUnit.ST;
 
 public class BluetoothOKOK2 extends BluetoothCommunication {
     private static final int IDX_WEIGHT_MSB = 0;
@@ -64,6 +64,21 @@ public class BluetoothOKOK2 extends BluetoothCommunication {
     public BluetoothOKOK2(Context context) {
         super(context);
         central = new BluetoothCentralManager(context, btCallback, new Handler(Looper.getMainLooper()));
+    }
+
+    static String convertNoNameToDeviceName(SparseArray<byte[]> manufacturerSpecificData) {
+        int vendorIndex = -1;
+        for (int i = 0; i < manufacturerSpecificData.size(); i++) {
+            int vendorId = manufacturerSpecificData.keyAt(i);
+            if ((vendorId & 0xff) == 0xc0) { // 0x00c0-->0xffc0
+                vendorIndex = vendorId;
+            }
+        }
+        if (vendorIndex == -1) {
+            return null;
+        }
+
+        return "NoName OkOk";
     }
 
     private final BluetoothCentralManagerCallback btCallback = new BluetoothCentralManagerCallback() {
@@ -157,8 +172,6 @@ public class BluetoothOKOK2 extends BluetoothCommunication {
         byte[] mask = new byte[13];
         mask[IDX_MAC_1] = mask[IDX_MAC_2] = mask[IDX_MAC_3] = mask[IDX_MAC_4] = mask[IDX_MAC_5] = mask[IDX_MAC_6] = (byte) 0xff;
 
-        // TODO: verify setAdvertisingDataTypeWithData on API33+
-        // b.setAdvertisingDataTypeWithData(ScanRecord.DATA_TYPE_MANUFACTURER_SPECIFIC_DATA, data, mask);
         for (int i = 0x00; i <= 0xff; i++) {
             ScanFilter.Builder b = new ScanFilter.Builder();
             b.setDeviceAddress(macAddress);
