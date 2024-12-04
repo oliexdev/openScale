@@ -172,8 +172,6 @@ public class BluetoothOKOK2 extends BluetoothCommunication {
         byte[] mask = new byte[13];
         mask[IDX_MAC_1] = mask[IDX_MAC_2] = mask[IDX_MAC_3] = mask[IDX_MAC_4] = mask[IDX_MAC_5] = mask[IDX_MAC_6] = (byte) 0xff;
 
-        // TODO: verify setAdvertisingDataTypeWithData on API33+
-        // b.setAdvertisingDataTypeWithData(ScanRecord.DATA_TYPE_MANUFACTURER_SPECIFIC_DATA, data, mask);
         for (int i = 0x00; i <= 0xff; i++) {
             ScanFilter.Builder b = new ScanFilter.Builder();
             b.setDeviceAddress(macAddress);
