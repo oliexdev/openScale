@@ -53,6 +53,14 @@ public class BluetoothQNScale extends BluetoothCommunication {
     private final UUID CUSTOM5_MEASUREMENT_CHARACTERISTIC = UUID.fromString("0000ffe5-0000-1000-8000-00805f9b34fb"); // write-only
     /////////////
 
+    // 2nd Type Service and Characteristics (2nd Type doesn't need to indicate, and 4th characteristic is shared with 3rd.)
+    private final UUID WEIGHT_MEASUREMENT_SERVICE_ALTERNATIVE = UUID.fromString("0000fff0-0000-1000-8000-00805f9b34fb");
+    private final UUID CUSTOM1_MEASUREMENT_CHARACTERISTIC_ALTERNATIVE = UUID.fromString("0000fff1-0000-1000-8000-00805f9b34fb"); // notify, read-only
+    private final UUID CUSTOM3_MEASUREMENT_CHARACTERISTIC_ALTERNATIVE = UUID.fromString("0000fff2-0000-1000-8000-00805f9b34fb"); // write-only
+
+    private boolean useFirstType = true;
+
+
     /** API
      connectDevice(device, "userId", 170, 1, birthday, new new QNBleCallback(){
      void onConnectStart(QNBleDevice bleDevice);
@@ -87,12 +95,29 @@ public class BluetoothQNScale extends BluetoothCommunication {
     protected boolean onNextStep(int stepNr) {
         switch (stepNr) {
             case 0:
+                // Try writing bytes to 0xffe4 to check whether to use 1st or 2nd type
+                try {
+                    long timestamp = new Date().getTime() / 1000;
+                    timestamp -= SCALE_UNIX_TIMESTAMP_OFFSET;
+                    byte[] date = new byte[4];
+                    Converters.toInt32Le(date, 0, timestamp);
+                    writeBytes(WEIGHT_MEASUREMENT_SERVICE, CUSTOM4_MEASUREMENT_CHARACTERISTIC, new byte[]{(byte) 0x02, date[0], date[1], date[2], date[3]});
+                } catch (NullPointerException e) {
+                    useFirstType = false;
+                }
+
                 // set notification on for custom characteristic 1 (weight, time, and others)
-                setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, CUSTOM1_MEASUREMENT_CHARACTERISTIC);
+                if (useFirstType) {
+                    setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, CUSTOM1_MEASUREMENT_CHARACTERISTIC);
+                } else {
+                    setNotificationOn(WEIGHT_MEASUREMENT_SERVICE_ALTERNATIVE, CUSTOM1_MEASUREMENT_CHARACTERISTIC_ALTERNATIVE);
+                }
                 break;
             case 1:
                 // set indication on for weight measurement
-                setIndicationOn(WEIGHT_MEASUREMENT_SERVICE, CUSTOM2_MEASUREMENT_CHARACTERISTIC);
+                if (useFirstType) {
+                    setIndicationOn(WEIGHT_MEASUREMENT_SERVICE, CUSTOM2_MEASUREMENT_CHARACTERISTIC);
+                }
                 break;
             case 2:
                 final ScaleUser scaleUser = OpenScale.getInstance().getSelectedScaleUser();
@@ -108,7 +133,12 @@ public class BluetoothQNScale extends BluetoothCommunication {
                 byte[] ffe3magicBytes = new byte[]{(byte) 0x13, (byte) 0x09, (byte) 0x15, weightUnitByte, (byte) 0x10, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00};
                 // Set last byte to be checksum
                 ffe3magicBytes[ffe3magicBytes.length -1] = sumChecksum(ffe3magicBytes, 0, ffe3magicBytes.length - 1);
-                writeBytes(WEIGHT_MEASUREMENT_SERVICE, CUSTOM3_MEASUREMENT_CHARACTERISTIC, ffe3magicBytes);
+
+                if (useFirstType) {
+                    writeBytes(WEIGHT_MEASUREMENT_SERVICE, CUSTOM3_MEASUREMENT_CHARACTERISTIC, ffe3magicBytes);
+                } else {
+                    writeBytes(WEIGHT_MEASUREMENT_SERVICE_ALTERNATIVE, CUSTOM3_MEASUREMENT_CHARACTERISTIC_ALTERNATIVE, ffe3magicBytes);
+                }
                 break;
             case 3:
                 // send time magic number to receive weight data
@@ -117,7 +147,12 @@ public class BluetoothQNScale extends BluetoothCommunication {
                 byte[] date = new byte[4];
                 Converters.toInt32Le(date, 0, timestamp);
                 byte[] timeMagicBytes = new byte[]{(byte) 0x02, date[0], date[1], date[2], date[3]};
-                writeBytes(WEIGHT_MEASUREMENT_SERVICE, CUSTOM4_MEASUREMENT_CHARACTERISTIC, timeMagicBytes);
+
+                if (useFirstType) {
+                    writeBytes(WEIGHT_MEASUREMENT_SERVICE, CUSTOM4_MEASUREMENT_CHARACTERISTIC, timeMagicBytes);
+                } else {
+                    writeBytes(WEIGHT_MEASUREMENT_SERVICE_ALTERNATIVE, CUSTOM3_MEASUREMENT_CHARACTERISTIC_ALTERNATIVE, timeMagicBytes);
+                }
                 break;
             case 4:
                 sendMessage(R.string.info_step_on_scale, 0);
@@ -137,7 +172,7 @@ public class BluetoothQNScale extends BluetoothCommunication {
     public void onBluetoothNotify(UUID characteristic, byte[] value) {
         final byte[] data = value;
 
-        if (characteristic.equals(CUSTOM1_MEASUREMENT_CHARACTERISTIC)) {
+        if (characteristic.equals(CUSTOM1_MEASUREMENT_CHARACTERISTIC) || characteristic.equals(CUSTOM1_MEASUREMENT_CHARACTERISTIC_ALTERNATIVE)) {
             parseCustom1Data(data);
         }
     }
@@ -162,6 +197,12 @@ public class BluetoothQNScale extends BluetoothCommunication {
                     if (!this.hasReceived) {
                         this.hasReceived = true;
                         weightKg = decodeWeight(data[3], data[4]);
+                        
+                        // Weight needs to be divided by 10 if 2nd type
+                        if (!useFirstType) {
+                            weightKg /= 10;
+                        }
+
                         int weightByteOne = data[3] & 0xFF;
                         int weightByteTwo = data[4] & 0xFF;
 
