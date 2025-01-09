@@ -127,12 +127,12 @@
     <string name="label_date">Data</string>
     <string name="label_days_left">Dias restantes</string>
     <string name="label_weight_difference">Diferença de peso</string>
-    <string name="label_smartUserAssign">Identificação inteligente de utilizador</string>
+    <string name="label_smartUserAssign">Identificação inteligente de usuário</string>
     <string name="label_bone">Massa óssea</string>
     <string name="label_whr">Relação anca-cintura</string>
     <string name="label_whtr">Relação cintura-altura</string>
     <string name="label_comment">Comentário</string>
-    <string name="label_hip">Perimetro da anca</string>
+    <string name="label_hip">Perímetro do quadril</string>
     <string name="label_waist">Perimetro abdominal</string>
     <string name="label_lbm">Massa Magra</string>
     <string name="label_muscle">Massa muscular</string>
@@ -141,8 +141,8 @@
     <string name="label_bmi">Índice de Massa Corporal (IMC)</string>
     <string name="label_weight">Peso</string>
     <string name="label_share_subject">Exportar dados do openScale (%s)</string>
-    <string name="label_share">Partilhar</string>
-    <string name="label_add_user">Adicionar utilizador</string>
+    <string name="label_share">Compartilhar</string>
+    <string name="label_add_user">Adicionar usuário</string>
     <string name="label_delete">Apagar</string>
     <string name="label_no">Não</string>
     <string name="label_yes">Sim</string>
@@ -153,7 +153,7 @@
     <string name="title_general">Menu</string>
     <string name="title_about">Sobre</string>
     <string name="title_measurements">Medidas</string>
-    <string name="title_users">Utilizadores</string>
+    <string name="title_users">Usuários</string>
     <string name="title_statistics">Estatísticas</string>
     <string name="title_table">Tabela</string>
     <string name="title_graph">Gráfico</string>
