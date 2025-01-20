@@ -713,6 +713,9 @@ public class OpenScale {
         intent.putExtra("mode", "insert");
         intent.putExtra("userId", scaleMeasurement.getUserId());
         intent.putExtra("weight", scaleMeasurement.getWeight());
+        intent.putExtra("fat", scaleMeasurement.getFat());
+        intent.putExtra("water", scaleMeasurement.getWater());
+        intent.putExtra("muscle", scaleMeasurement.getMuscle());
         intent.putExtra("date", scaleMeasurement.getDateTime().getTime());
         ContextCompat.startForegroundService(context, intent);
     }
@@ -723,6 +726,9 @@ public class OpenScale {
         intent.putExtra("mode", "update");
         intent.putExtra("userId", scaleMeasurement.getUserId());
         intent.putExtra("weight", scaleMeasurement.getWeight());
+        intent.putExtra("fat", scaleMeasurement.getFat());
+        intent.putExtra("water", scaleMeasurement.getWater());
+        intent.putExtra("muscle", scaleMeasurement.getMuscle());
         intent.putExtra("date", scaleMeasurement.getDateTime().getTime());
         ContextCompat.startForegroundService(context, intent);
     }
