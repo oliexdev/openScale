@@ -152,6 +152,13 @@ public class BluetoothFactory {
         if (deviceName.equals("AE BS-06")) {
             return new BluetoothActiveEraBF06(context);
         }
+        if (deviceName.equals("Renpho-Scale")) {
+            /* Driver for Renpho ES-WBE28, which has device name of "Renpho-Scale".
+               "Renpho-Scale" is quite generic, not sure if other Renpho scales with different
+               protocol match this name.
+             */
+            return new BluetoothRenphoScale(context);
+        }
         return null;
     }
 
