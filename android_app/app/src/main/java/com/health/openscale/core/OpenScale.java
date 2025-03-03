@@ -461,6 +461,10 @@ public class OpenScale {
         File tmpExportFile = context.getApplicationContext().getDatabasePath("openScale_tmp.db");
 
         try {
+            if (appDB != null) {
+                appDB.close();
+            }
+
             copyFile(Uri.fromFile(exportFile), Uri.fromFile(tmpExportFile));
             copyFile(importFile, Uri.fromFile(exportFile));
 
