@@ -105,18 +105,14 @@ public class BluetoothQNScale extends BluetoothCommunication {
                 } catch (NullPointerException e) {
                     useFirstType = false;
                 }
-
-                // set notification on for custom characteristic 1 (weight, time, and others)
-                if (useFirstType) {
-                    setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, CUSTOM1_MEASUREMENT_CHARACTERISTIC);
-                } else {
-                    setNotificationOn(WEIGHT_MEASUREMENT_SERVICE_ALTERNATIVE, CUSTOM1_MEASUREMENT_CHARACTERISTIC_ALTERNATIVE);
-                }
                 break;
             case 1:
-                // set indication on for weight measurement
+                // set indication on for weight measurement and for custom characteristic 1 (weight, time, and others)
                 if (useFirstType) {
+                    setNotificationOn(WEIGHT_MEASUREMENT_SERVICE, CUSTOM1_MEASUREMENT_CHARACTERISTIC);
                     setIndicationOn(WEIGHT_MEASUREMENT_SERVICE, CUSTOM2_MEASUREMENT_CHARACTERISTIC);
+                } else {
+                    setNotificationOn(WEIGHT_MEASUREMENT_SERVICE_ALTERNATIVE, CUSTOM1_MEASUREMENT_CHARACTERISTIC_ALTERNATIVE);
                 }
                 break;
             case 2:
