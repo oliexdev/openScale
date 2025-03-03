@@ -97,6 +97,7 @@ android {
                     }
                 }
             }
+            applicationIdSuffix '.debug'
         }
         release {
             archivesBaseName = "openScale-"+defaultConfig.versionName
