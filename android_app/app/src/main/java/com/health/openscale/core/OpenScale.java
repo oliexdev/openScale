@@ -470,11 +470,17 @@ public class OpenScale {
 
             reopenDatabase(false);
 
+            getScaleUserList().get(0); // call it to test if the imported database works otherwise a runtime exception is thrown
+
             if (!getScaleUserList().isEmpty()) {
                 selectScaleUser(getScaleUserList().get(0).getId());
             }
-        } catch (SQLiteDatabaseCorruptException e) {
-            copyFile(Uri.fromFile(tmpExportFile), Uri.fromFile(exportFile));
+        } catch (RuntimeException e) {
+            Timber.d("import database corrupted, restore old database");
+            File restoreExportFile = context.getApplicationContext().getDatabasePath("openScale_restore.db");
+            copyFile(Uri.fromFile(tmpExportFile), Uri.fromFile(restoreExportFile));
+            importDatabase(Uri.fromFile(restoreExportFile));
+            restoreExportFile.delete();
             throw new IOException(e.getMessage());
         } finally {
             tmpExportFile.delete();
