@@ -35,6 +35,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.text.Editable;
@@ -115,6 +117,7 @@ public class MainActivity extends AppCompatActivity
     private NavController navController;
     private NavigationView navigationView;
     private BottomNavigationView navigationBottomView;
+
 
     private boolean settingsActivityRunning = false;
 
@@ -715,13 +718,29 @@ public class MainActivity extends AppCompatActivity
                 case RETRIEVE_SCALE_DATA:
                     setBluetoothStatusIcon(R.drawable.ic_bluetooth_connection_success);
                     ScaleMeasurement scaleBtData = (ScaleMeasurement) msg.obj;
-
+                    Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_retrieve_data_successful), Toast.LENGTH_SHORT).show();
                     OpenScale openScale = OpenScale.getInstance();
 
                     if (prefs.getBoolean("mergeWithLastMeasurement", true)) {
                         if (!openScale.isScaleMeasurementListEmpty()) {
                             ScaleMeasurement lastMeasurement = openScale.getLastScaleMeasurement();
                             scaleBtData.merge(lastMeasurement);
+                        }
+                    }
+
+
+                    if (prefs.getBoolean("vibrateOnMeasurement", true)) {
+                        Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+                        if (vibrator != null && vibrator.hasVibrator()) {
+                            // Check Android version
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                // New vibrate method for API 26 and above
+                                VibrationEffect effect = VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE);
+                                vibrator.vibrate(effect);
+                            } else {
+                                // Deprecated vibrate method for API 25 and below
+                                vibrator.vibrate(500);
+                            }
                         }
                     }
 
