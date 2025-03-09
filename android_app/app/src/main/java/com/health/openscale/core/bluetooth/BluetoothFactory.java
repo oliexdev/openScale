@@ -162,6 +162,9 @@ public class BluetoothFactory {
              */
             return new BluetoothRenphoScale(context);
         }
+        if(deviceName.equals("ES-CS20M")){
+            return new BluetoothESCS20M(context);
+        }
         return null;
     }
 
