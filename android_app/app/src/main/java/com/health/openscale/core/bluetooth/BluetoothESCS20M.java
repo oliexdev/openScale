@@ -35,6 +35,9 @@ public class BluetoothESCS20M extends BluetoothCommunication {
     private static final byte[] MAGIC_BYTES_START_MEASUREMENT = new byte[]{
             (byte) 0x55, (byte) 0xaa, (byte) 0x90, (byte) 0x00, (byte) 0x04, (byte) 0x01, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x94
     };
+    private static final byte[] MAGIC_BYTES_DELETE_HISTORY_DATA = new byte[]{
+            (byte)0x55, (byte) 0xaa, (byte) 0x95, (byte)0x00, (byte)0x01, (byte)0x01,(byte) 0x96
+    };
 
     private List<byte[]> rawMeasurements = new ArrayList<>();
     private final ScaleMeasurement scaleMeasurement = new ScaleMeasurement();
@@ -61,6 +64,7 @@ public class BluetoothESCS20M extends BluetoothCommunication {
                 break;
             case 2:
                 writeBytes(SERV_CUR_TIME, CHAR_CUR_TIME, MAGIC_BYTES_START_MEASUREMENT);
+                writeBytes(SERV_CUR_TIME, CHAR_CUR_TIME, MAGIC_BYTES_DELETE_HISTORY_DATA);
                 stopMachineState();
                 break;
             case 3:
