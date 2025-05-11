@@ -344,7 +344,8 @@ public class OpenScale {
                 runUiToastMsg(infoText);
             }
 
-            syncInsertMeasurement(scaleMeasurement);
+            syncInsertMeasurement(scaleMeasurement, "com.health.openscale.sync");
+            syncInsertMeasurement(scaleMeasurement, "com.health.openscale.sync.oss");
             alarmHandler.entryChanged(context, scaleMeasurement);
             triggerWidgetUpdate();
         } else {
@@ -415,13 +416,16 @@ public class OpenScale {
         Timber.d("Update measurement: %s", scaleMeasurement);
         measurementDAO.update(scaleMeasurement);
         alarmHandler.entryChanged(context, scaleMeasurement);
-        syncUpdateMeasurement(scaleMeasurement);
+        syncUpdateMeasurement(scaleMeasurement, "com.health.openscale.sync");
+        syncUpdateMeasurement(scaleMeasurement, "com.health.openscale.sync.oss");
 
         triggerWidgetUpdate();
     }
 
     public void deleteScaleMeasurement(int id) {
-        syncDeleteMeasurement(measurementDAO.get(id).getDateTime());
+        syncDeleteMeasurement(measurementDAO.get(id).getDateTime(), "com.health.openscale.sync");
+        syncDeleteMeasurement(measurementDAO.get(id).getDateTime(), "com.health.openscale.sync.oss");
+
         measurementDAO.delete(id);
     }
 
@@ -552,7 +556,9 @@ public class OpenScale {
     public void clearScaleMeasurements(int userId) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         prefs.edit().putInt("uniqueNumber", 0x00).apply();
-        syncClearMeasurements();
+        syncClearMeasurements("com.health.openscale.sync");
+        syncClearMeasurements("com.health.openscale.sync.oss");
+
         measurementDAO.deleteAll(userId);
     }
 
@@ -717,9 +723,9 @@ public class OpenScale {
         });
     }
 
-    private void syncInsertMeasurement(ScaleMeasurement scaleMeasurement) {
+    private void syncInsertMeasurement(ScaleMeasurement scaleMeasurement, String pkgName) {
         Intent intent = new Intent();
-        intent.setComponent(new ComponentName("com.health.openscale.sync", "com.health.openscale.sync.core.service.SyncService"));
+        intent.setComponent(new ComponentName(pkgName, pkgName + ".core.service.SyncService"));
         intent.putExtra("mode", "insert");
         intent.putExtra("userId", scaleMeasurement.getUserId());
         intent.putExtra("weight", scaleMeasurement.getWeight());
@@ -730,9 +736,9 @@ public class OpenScale {
         ContextCompat.startForegroundService(context, intent);
     }
 
-    private void syncUpdateMeasurement(ScaleMeasurement scaleMeasurement) {
+    private void syncUpdateMeasurement(ScaleMeasurement scaleMeasurement, String pkgName) {
         Intent intent = new Intent();
-        intent.setComponent(new ComponentName("com.health.openscale.sync", "com.health.openscale.sync.core.service.SyncService"));
+        intent.setComponent(new ComponentName(pkgName, pkgName + ".core.service.SyncService"));
         intent.putExtra("mode", "update");
         intent.putExtra("userId", scaleMeasurement.getUserId());
         intent.putExtra("weight", scaleMeasurement.getWeight());
@@ -743,17 +749,17 @@ public class OpenScale {
         ContextCompat.startForegroundService(context, intent);
     }
 
-    private void syncDeleteMeasurement(Date date) {
+    private void syncDeleteMeasurement(Date date, String pkgName) {
         Intent intent = new Intent();
-        intent.setComponent(new ComponentName("com.health.openscale.sync", "com.health.openscale.sync.core.service.SyncService"));
+        intent.setComponent(new ComponentName(pkgName, pkgName + ".core.service.SyncService"));
         intent.putExtra("mode", "delete");
         intent.putExtra("date", date.getTime());
         ContextCompat.startForegroundService(context, intent);
     }
 
-    private void syncClearMeasurements() {
+    private void syncClearMeasurements(String pkgName) {
         Intent intent = new Intent();
-        intent.setComponent(new ComponentName("com.health.openscale.sync", "com.health.openscale.sync.core.service.SyncService"));
+        intent.setComponent(new ComponentName(pkgName, pkgName + ".core.service.SyncService"));
         intent.putExtra("mode", "clear");
         ContextCompat.startForegroundService(context, intent);
     }
