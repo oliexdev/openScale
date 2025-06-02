@@ -203,7 +203,7 @@
     <string name="label_measurement_in_percent">Měření v %</string>
     <string name="label_export_overwrite">Přepsat předchozí export \"%s\"\?</string>
     <string name="permission_read_write_data_description">číst/zapisovat openScale data, včetně uživatelských informací a všech uložených měření</string>
-    <string name="default_value_reminder_notify_text">Čas příštího vážení</string>
+    <string name="default_value_reminder_notify_text">Čas se zvážit</string>
     <string name="info_assisted_weighing_old_reference_measurement">Varování: poslední referenční měření je starší než jeden den</string>
     <string name="label_activity_level">Úroveň aktivity</string>
     <string name="label_assisted_weighing">Asistované vážení</string>
