@@ -46,6 +46,9 @@ public class BluetoothFactory {
         if (name.equals("openScale".toLowerCase(Locale.US))) {
             return new BluetoothCustomOpenScale(context);
         }
+        if (name.equals("Cult Smart Scale Pro".toLowerCase(Locale.US))) {
+            return new BluetoothCultSmartScalePro(context);
+        }
         if (name.equals("Mengii".toLowerCase(Locale.US))) {
             return new BluetoothDigooDGSO38H(context);
         }
