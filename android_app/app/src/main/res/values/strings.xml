@@ -98,6 +98,7 @@
     <string name="info_bluetooth_connection_lost">Bluetooth connection lost</string>
     <string name="info_bluetooth_no_device">No Bluetooth device found</string>
     <string name="info_bluetooth_no_device_retrying">Could not establish connection, retrying…</string>
+    <string name="info_bluetooth_retrieve_data_successful">Successfully retrieved data from scale</string>">
     <string name="info_bluetooth_no_device_set">Select a Bluetooth device</string>
     <string name="info_bluetooth_connection_successful">Connected</string>
     <string name="info_bluetooth_init">Initialize Bluetooth device</string>
@@ -114,6 +115,7 @@
     <string name="question_really_delete_user">Delete user?</string>
     <string name="label_bluetooth_title">Bluetooth</string>
     <string name="label_bluetooth_enable">Connect to scale on startup</string>
+    <string name="label_vibrate_on_measurement">Vibrate on Measurement</string>
     <string name="label_mergeWithLastMeasurement">Merge with last measurement</string>
     <string name="label_bluetooth_searching">Searching for your Bluetooth scale</string>
     <string name="label_bluetooth_searching_finished">Search finished</string>
