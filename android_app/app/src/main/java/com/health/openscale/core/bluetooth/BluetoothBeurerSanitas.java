@@ -174,7 +174,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
             case BEURER_BF710:
                 return "Beurer BF710";
             case SANITAS_SBF70_70:
-                return "Sanitas SBF70/SilverCrest SBF75";
+                return "Sanitas SBF70/SilverCrest SBF75/Crane";
         }
 
         return "Unknown device type";
