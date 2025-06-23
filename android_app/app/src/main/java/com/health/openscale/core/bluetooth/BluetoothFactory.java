@@ -90,7 +90,7 @@ public class BluetoothFactory {
         if (name.equals("SENSSUN FAT".toLowerCase(Locale.US))) {
             return new BluetoothSenssun(context);
         }
-        if (name.startsWith("SANITAS SBF70".toLowerCase(Locale.US)) || name.startsWith("sbf75") || name.startsWith("AICDSCALE1")) {
+        if (name.startsWith("SANITAS SBF70".toLowerCase(Locale.US)) || name.startsWith("sbf75") || name.startsWith("AICDSCALE1".toLowerCase(Locale.US))) {
             return new BluetoothBeurerSanitas(context, BluetoothBeurerSanitas.DeviceType.SANITAS_SBF70_70);
         }
         if (deviceName.startsWith("YUNMAI-SIGNAL") || deviceName.startsWith("YUNMAI-ISM")) {
