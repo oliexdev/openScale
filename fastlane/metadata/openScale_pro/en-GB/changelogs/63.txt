@@ -1,5 +1,0 @@
-- support for Huawei HiLink body scale
-- additional support for OKOK/Chipsea-BLE based scale
-- add notification permission support for Android 13
-- add support Android 13 custom backup folder (after an openScale update the backup folder needs to be set again!)
-- fixed minor bugs

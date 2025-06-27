@@ -212,7 +212,6 @@
     <string name="label_slide_welcome_main_text">Un programa de código aberto para o control de peso e medidas corporais, compatible con básculas Bluetooth.</string>
     <string name="label_slide_welcome_top_text">Benvido a
 \nopenScale</string>
-    <string name="label_upgrade_to_openScale_pro">Por favor actualice a openScale pro para ter soporte para Bluetooth</string>
     <string name="activity_level_extreme">Extremo</string>
     <string name="activity_level_heavy">Intenso</string>
     <string name="activity_level_moderate">Moderado</string>

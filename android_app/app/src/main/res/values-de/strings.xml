@@ -217,7 +217,6 @@
     <string name="label_measurement_bar">Messwertanzeige</string>
     <string name="permission_location_service_info">Gewährleisten Sie den Standortzugriff in den Android-Einstellungen, um nach Bluetooth-Geräten zu suchen. Sie können es anschließend wieder widerrufen.</string>
     <string name="label_is_on_right_axis">Auf der rechten Achse</string>
-    <string name="label_upgrade_to_openScale_pro">Bitte upgraden Sie auf openScale pro für Bluetooth-Unterstützung</string>
     <string name="action_donation">Spende</string>
     <string name="info_scale_low_battery">Niedriger Batteriestand (%d%%), bitte aufladen oder Batterien der Waage austauschen</string>
     <string name="info_bluetooth_connection_error_scale_offline">Keine Verbindung zur Waage, bitte prüfen Sie, ob Ihre Waage eingeschaltet ist.</string>

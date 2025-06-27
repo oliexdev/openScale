@@ -217,7 +217,6 @@
     <string name="permission_location_service_info">Otorgue acceso a la ubicación en la configuración de Android para buscar dispositivos Bluetooth. Opcionalmente puede revocarlo después.</string>
     <string name="label_is_on_right_axis">Está en el eje derecho</string>
     <string name="label_calories">Calorías</string>
-    <string name="label_upgrade_to_openScale_pro">Cambie a la versión Pro de openScale para obtener la prestación de Bluetooth</string>
     <string name="action_donation">Donación</string>
     <string name="info_scale_low_battery">Queda poca energía (%d%%); recargue o sustituya las baterías de la báscula</string>
     <string name="info_bluetooth_connection_error_scale_offline">No se pudo conectar con la báscula; asegúrese de que está encendida.</string>

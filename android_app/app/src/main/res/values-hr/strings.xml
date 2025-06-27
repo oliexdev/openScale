@@ -235,7 +235,6 @@
     <string name="label_slide_welcome_main_text">Softver otvorenog koda za praćenje težine i tjelesne metrike, s Bluetooth podrškom za vagu.</string>
     <string name="label_slide_welcome_top_text">Dobro došli u
 \nopenScale</string>
-    <string name="label_upgrade_to_openScale_pro">Nadogradi na „openScale pro” za Bluetooth podršku</string>
     <string name="label_calories">Kalorije</string>
     <string name="label_is_on_right_axis">Na desnoj osi</string>
     <string name="permission_read_write_data_label">Čitaj/zapiši openScale podatke</string>

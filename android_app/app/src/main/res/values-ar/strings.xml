@@ -227,7 +227,6 @@
     <string name="permission_location_service_info">امنح الوصول إلى الموقع الجغرافي في إعدادات أندرويد للبحث عن أجهزة بلوتوث. يمكنك الإلغائ بعد ذلك.</string>
     <string name="amputation_level_none">لا بتر</string>
     <string name="amputation_level_foot">قدم</string>
-    <string name="label_upgrade_to_openScale_pro">يرجى الترقية إلى أوبن سكيل برو لدعم البلوتوث</string>
     <string name="label_slide_privacy_main_text">لا يرسل openScale أي بيانات إلى سحابة وعدم وجود إذن للوصول إلى الإنترنت هو ضمان قوي لذلك.
 \n
 \nإذا كنت تريد حقا مزامنة وزنك مع GoogleFit أو مع MQTT ، فيمكنك تثبيت <a href="https://play.google.com/store/apps/details?id=com.health.openscale.sync"> openScale sync </a>.</string>

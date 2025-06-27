@@ -28,7 +28,6 @@
     <string name="label_slide_privacy_top_text">Suojaa henkilökohtaiset terveystietosi.</string>
     <string name="label_slide_welcome_top_text">Tervetuloa
 \nopenScaleen</string>
-    <string name="label_upgrade_to_openScale_pro">Ole hyvä ja päivitä openScale pro-versioon saadaksesi Bluetoorh-tuen</string>
     <string name="activity_level_extreme">Äärimmäinen</string>
     <string name="activity_level_mild">Vähäinen</string>
     <string name="activity_level_moderate">Keskiverto</string>

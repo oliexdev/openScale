@@ -217,7 +217,6 @@
     <string name="label_year_view">За год</string>
     <string name="label_measurement_bar">Панель метрик</string>
     <string name="label_is_on_right_axis">на правой оси</string>
-    <string name="label_upgrade_to_openScale_pro">Пожалуйста, обновите до openScale Pro для подддержки Bluetooth</string>
     <string name="action_donation">Пожертвование</string>
     <string name="app_intro_done_button">Готово</string>
     <string name="app_intro_back_button">Назад</string>

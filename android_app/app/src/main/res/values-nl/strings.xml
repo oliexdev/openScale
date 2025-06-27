@@ -217,7 +217,6 @@
     <string name="label_measurement_bar">Meetlat</string>
     <string name="permission_location_service_info">Verleen toegang tot je locatie in de Android-instellingen om te zoeken naar Bluetooth-apparaten. Dit kun je achteraf evt. weer intrekken.</string>
     <string name="label_is_on_right_axis">Staat op de rechteras</string>
-    <string name="label_upgrade_to_openScale_pro">Upgrade naar openScale Pro om Bluetooth-ondersteuning toe te voegen</string>
     <string name="action_donation">Doneren</string>
     <string name="info_scale_low_battery">Laag batterijniveau (%d%%) - verwissel de batterijen</string>
     <string name="info_bluetooth_connection_error_scale_offline">Kan niet verbinden met de weegschaal. Controleer of deze aanstaat.</string>

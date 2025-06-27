@@ -1,7 +1,0 @@
-- redesign overview, table and statistic fragements
-- overview shows every measurements in a recycler view
-- table has fix column and header and is vertical/horizontal scrollable
-- statistic fragment shows each measurement as a graph with average, minimum, maximum values depending on the last 7/30 days, all days, custom reference date or custom time range
-- goal can be disabled or enabled
-- support Sinocare CW286, Beurer BF915 bluetooth bathroom scale
-- fixed minor bugs

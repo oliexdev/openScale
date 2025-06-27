@@ -242,16 +242,6 @@ public class MainActivity extends AppCompatActivity
 
         navigationBottomView.setSelectedItemId(prefs.getInt("lastFragmentId", R.id.nav_overview));
 
-        if (BuildConfig.BUILD_TYPE == "light") {
-            ImageView launcherIcon = navigationView.getHeaderView(0).findViewById(R.id.profileImageView);
-            launcherIcon.setImageResource(R.drawable.ic_launcher_openscale_light);
-            navigationView.getMenu().findItem(R.id.nav_donation).setVisible(false);
-        } else if (BuildConfig.BUILD_TYPE == "pro") {
-            ImageView launcherIcon = navigationView.getHeaderView(0).findViewById(R.id.profileImageView);
-            launcherIcon.setImageResource(R.drawable.ic_launcher_openscale_pro);
-            navigationView.getMenu().findItem(R.id.nav_donation).setVisible(false);
-        }
-
         if (prefs.getBoolean("firstStart", true)) {
             Intent appIntroIntent = new Intent(this, AppIntroActivity.class);
             startActivityForResult(appIntroIntent, APPINTRO_REQUEST);
@@ -555,21 +545,6 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void invokeConnectToBluetoothDevice() {
-        if (BuildConfig.BUILD_TYPE == "light") {
-            AlertDialog infoDialog = new AlertDialog.Builder(this)
-                .setMessage(Html.fromHtml(getResources().getString(R.string.label_upgrade_to_openScale_pro) + "<br><br> <a href=\"https://play.google.com/store/apps/details?id=com.health.openscale.pro\">Install openScale pro version</a>"))
-                .setPositiveButton(getResources().getString(R.string.label_ok), null)
-                .setIcon(R.drawable.ic_launcher_openscale_light)
-                .setTitle("openScale " + BuildConfig.VERSION_NAME)
-                .create();
-
-            infoDialog.show();
-
-            ((TextView)infoDialog.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
-
-            return;
-        }
-
         final OpenScale openScale = OpenScale.getInstance();
 
         if (openScale.getSelectedScaleUserId() == -1) {

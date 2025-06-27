@@ -221,7 +221,6 @@
     <string name="label_calories">Calorie</string>
     <string name="activity_level_extreme">Estremo</string>
     <string name="activity_level_heavy">Importante</string>
-    <string name="label_upgrade_to_openScale_pro">Passa alla versione pro se vuoi utilizzare il protocollo Bluetooth</string>
     <string name="label_slide_privacy_top_text">Proteggi i tuoi dati sanitari personali.</string>
     <string name="label_slide_welcome_main_text">Software open-source per la rilevazione del peso e delle metriche corporee, con supporto per la bilancia Bluetooth.</string>
     <string name="label_slide_welcome_top_text">Benvenuti su

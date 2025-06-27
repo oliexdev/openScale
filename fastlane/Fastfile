@@ -44,8 +44,8 @@ platform :android do
         )
     end
 
-    desc "Generate openScale light version"
-    lane :light do |options|
+    desc "Generate openScale oss version"
+    lane :oss do |options|
         gradle(
             task: "clean", 
             project_dir: 'android_app/'
@@ -53,12 +53,12 @@ platform :android do
         gradle(
             task: "assemble",
             project_dir: 'android_app/',
-            build_type: "Light"
+            build_type: "oss"
         )
     end
 
-    desc "Generate openScale pro version"
-    lane :pro do |options|
+    desc "Deploy a new openScale oss version to Google Play"
+    lane :deployOSS do
         gradle(
             task: "clean", 
             project_dir: 'android_app/'
@@ -66,47 +66,16 @@ platform :android do
         gradle(
             task: "assemble",
             project_dir: 'android_app/',
-            build_type: "Pro"
-        )
-    end
-
-    desc "Deploy a new openScale light version to Google Play"
-    lane :deployLight do
-        gradle(
-            task: "clean", 
-            project_dir: 'android_app/'
-        )
-        gradle(
-            task: "assemble",
-            project_dir: 'android_app/',
-            build_type: "Light"
+            build_type: "oss"
         )
         upload_to_play_store(
-            package_name: "com.health.openscale.light",
+            package_name: "com.health.openscale.oss",
             track: "production",
-            metadata_path: "fastlane/metadata/openScale_light/",
-            apk: "android_app/app/build/outputs/apk/light/openScale-#{versionName}-light.apk"
+            metadata_path: "fastlane/metadata/android/",
+            apk: "android_app/app/build/outputs/apk/oss/openScale-#{versionName}-oss.apk"
         )
     end
 
-    desc "Deploy a new openScale pro version to Google Play"
-    lane :deployPro do
-        gradle(
-            task: "clean", 
-            project_dir: 'android_app/'
-        )
-        gradle(
-            task: "assemble",
-            project_dir: 'android_app/',
-            build_type: "Pro"
-        )
-        upload_to_play_store(
-            package_name: "com.health.openscale.pro",
-            track: "production",
-            metadata_path: "fastlane/metadata/openScale_pro/",
-            apk: "android_app/app/build/outputs/apk/pro/openScale-#{versionName}-pro.apk"
-        )
-    end
 
     desc "Deploy a new version to GitHub"
     lane :deployGitHubRelease do

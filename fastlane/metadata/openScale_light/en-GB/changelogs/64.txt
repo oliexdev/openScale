@@ -1,3 +1,0 @@
-- switch to Material 3 theme
-- fixed some color issues
-- added simple moving average option

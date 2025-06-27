@@ -1,5 +1,0 @@
-- initial support for icomon bluetooth scale
-- support for nameless OKOK scales (Myria MY4836)
-- support for ES-26BB-B scale
-- support for AE-BS06 scale
-- fixed some button color issues

@@ -235,7 +235,6 @@
     <string name="label_enable_legend">Legenda grafa</string>
     <string name="info_step_on_scale">Prosim, stopi bos/-a na tehtnico</string>
     <string name="permission_location_service_info">Za iskanje naprav Bluetooth v nastavitvah sistema Android omogoči dostop do lokacije. Po želji ga nato lahko prekličeš.</string>
-    <string name="label_upgrade_to_openScale_pro">Za podporo Bluetooth nadgradi na openScale pro</string>
     <string name="label_slide_opensource_top_text">Gre za odprtokodno programsko opremo z visoko stopnjo preglednosti.</string>
     <string name="label_slide_metrics_main_text">openScale podpira več kot 22 telesnih podatkov.\n\nNastavi ga tako, da prikazuje tiste, ki te zanimajo.\n\nČe manjka telesna maščoba, vsebnost vode in čvrsta telesna masa, jih lahko oceniš na podlagi <a href="https://github.com/oliexdev/openScale/wiki/Body-metric-estimations">znanstvenih publikacij</a>.</string>
     <string name="permission_read_write_data_label">Branje/pisanje podatkov openScale</string>

@@ -217,7 +217,6 @@
     <string name="label_measurement_bar">Barre des mesures</string>
     <string name="permission_location_service_info">Autoriser l’accès à la location pour rechercher des dispositifs Bluetooth. Cette permissions peut être révoquée par la suite.</string>
     <string name="label_is_on_right_axis">Est sur l’axe de droite</string>
-    <string name="label_upgrade_to_openScale_pro">Veuillez mettre à niveau vers openScale pro pour la prise en charge du Bluetooth</string>
     <string name="action_donation">Don</string>
     <string name="app_intro_back_button">Précédent</string>
     <string name="app_intro_next_button">Suivant</string>

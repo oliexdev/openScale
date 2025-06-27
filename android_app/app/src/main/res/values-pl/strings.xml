@@ -217,7 +217,6 @@
     <string name="permission_location_service_info">Zezwól na dostęp do lokalizacji w ustawieniach Androida, aby wyszukać urządzenia Bluetooth. Możesz je potem wyłączyć.</string>
     <string name="label_measurement_bar">Pasek pomiarowy</string>
     <string name="label_is_on_right_axis">Jest na prawej osi</string>
-    <string name="label_upgrade_to_openScale_pro">Zaktualizuj system do openScale pro w celu obsługi Bluetooth</string>
     <string name="action_donation">Wspomóż</string>
     <string name="info_scale_low_battery">Niski poziom baterii (%d%%), naładuj lub wymień baterie wagi</string>
     <string name="info_bluetooth_connection_error_scale_offline">Nie można połączyć się z wagą, upewnij się, że jest włączona.</string>

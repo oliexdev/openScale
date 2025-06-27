@@ -215,7 +215,6 @@
     <string name="activity_level_moderate">Середній</string>
     <string name="activity_level_heavy">Інтенсивний</string>
     <string name="activity_level_extreme">Екстремальний</string>
-    <string name="label_upgrade_to_openScale_pro">Оновіться до openScale pro версії для підтримки Bluetooth</string>
     <string name="action_donation">Підтримати</string>
     <string name="label_measurement_bar">Панель вимірювань</string>
     <string name="label_is_on_right_axis">На вісі праворуч</string>

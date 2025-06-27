@@ -217,7 +217,6 @@
     <string name="label_year_view">Éves nézet</string>
     <string name="label_measurement_bar">Mérési sáv</string>
     <string name="label_is_on_right_axis">A jobb oldali tengelyen</string>
-    <string name="label_upgrade_to_openScale_pro">Kérem frissítsen az openScale Pro-ra a Bluetooth támogatáshoz</string>
     <string name="action_donation">Támogatás</string>
     <string name="label_empty">üres</string>
     <string name="label_slide_welcome_main_text">Nyílt forráskódú szoftver, súly- és testmérések nyomon követése, Bluetooth mérleg támogatással.</string>

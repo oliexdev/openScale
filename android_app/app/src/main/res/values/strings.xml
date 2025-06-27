@@ -256,7 +256,6 @@
     <string name="amputation_level_foot">Foot</string>
     <string name="amputation_level_lower_leg_foot">Lower leg and foot</string>
     <string name="amputation_level_leg">Leg</string>
-    <string name="label_upgrade_to_openScale_pro">Please upgrade to openScale pro for Bluetooth support</string>
     <string name="label_slide_welcome_top_text">Welcome to\nopenScale</string>
     <string name="label_slide_welcome_main_text">Open-source software weight and body metrics tracker, with Bluetooth scale support.</string>
     <string name="label_slide_privacy_top_text">Protect your personal health data.</string>

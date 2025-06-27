@@ -126,7 +126,6 @@
     <string name="label_bluetooth_searching">உங்கள் ப்ளூடூத் அளவானை தேடுகிறது</string>
     <string name="label_bluetooth_searching_finished">தேடல் முடிந்தது</string>
     <string name="label_contribute_translation">மொழியாக்கத்தில் பங்கேற்க</string>
-    <string name="label_upgrade_to_openScale_pro">ஊடலை ஆதரவுக்காக ஓபன்ச்கேல் புரோவுக்கு மேம்படுத்தவும்</string>
     <string name="app_intro_skip_button">தவிர்</string>
     <string name="label_share_subject">ஓபன்ச்கேல் தரவு ஏற்றுமதி (%s)</string>
     <string name="error_max_scale_users">அதிகபட்சம். ஒரே நேரத்தில் அளவிலான பயனர்களின் எண்ணிக்கை</string>

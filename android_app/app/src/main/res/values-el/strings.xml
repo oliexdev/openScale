@@ -217,7 +217,6 @@
     <string name="label_measurement_bar">Μπάρα μέτρησης</string>
     <string name="permission_location_service_info">Χορηγήστε πρόσβαση τοποθεσίας στις ρυθμίσεις του Android για να ψάχνει συσκευές Bluetooth. Προαιρετικά ανακαλέστε το μεταγενέστερα.</string>
     <string name="label_is_on_right_axis">Είναι στον δεξιό άξονα</string>
-    <string name="label_upgrade_to_openScale_pro">Παρακαλώ αναβαθμίστε σε openScale pro για υποστήριξη Bluetooth</string>
     <string name="action_donation">Δωρεά</string>
     <string name="info_scale_low_battery">Χαμηλό επίπεδο μπαταρίας (%d%%), παρακαλώ φορτίστε ή αλλάξτε τις μπαταρίες της ζυγαριάς</string>
     <string name="info_bluetooth_connection_error_scale_offline">Δεν μπορεί να γίνει σύνδεση με την ζυγαριά, παρακαλώ σιγουρευτείτε ότι είναι αναμμένη.</string>

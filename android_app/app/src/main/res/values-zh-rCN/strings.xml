@@ -44,7 +44,6 @@
     <string name="label_slide_welcome_main_text">带蓝牙秤支持的开源体重和身体指标跟踪软件。</string>
     <string name="label_slide_welcome_top_text">欢迎来到
 \nopenScale</string>
-    <string name="label_upgrade_to_openScale_pro">要获取蓝牙支持功能，请升级到openScale pro</string>
     <string name="amputation_level_leg">腿</string>
     <string name="amputation_level_lower_leg_foot">小腿和足</string>
     <string name="amputation_level_foot">脚</string>

@@ -8,8 +8,8 @@ android {
         testApplicationId "com.health.openscale.test"
         minSdkVersion 23
         targetSdkVersion 34
-        versionCode 65
-        versionName "2.5.3"
+        versionCode 66
+        versionName "2.5.4"
 
         manifestPlaceholders = [
                 appIcon: "@drawable/ic_launcher_openscale",
@@ -50,39 +50,21 @@ android {
             }
         }
 
-        light {
-            def keystoreLightPropertiesFile = rootProject.file("../../openScale_light.keystore")
-            def keystoreLightProperties = new Properties()
+        oss {
+            def keystoreOSSPropertiesFile = rootProject.file("../../openScale_oss.keystore")
+            def keystoreOSSProperties = new Properties()
             try {
-                keystoreLightProperties.load(new FileInputStream(keystoreLightPropertiesFile))
+                keystoreOSSProperties.load(new FileInputStream(keystoreOSSPropertiesFile))
             }
             catch (FileNotFoundException e) {
-                keystoreLightProperties = null;
+                keystoreOSSProperties = null;
             }
 
-            if (keystoreLightProperties != null) {
-                storeFile file(rootDir.getCanonicalPath() + '/' + keystoreLightProperties['releaseKeyStore'])
-                keyAlias keystoreLightProperties['releaseKeyAlias']
-                keyPassword keystoreLightProperties['releaseKeyPassword']
-                storePassword keystoreLightProperties['releaseStorePassword']
-            }
-        }
-
-        pro {
-            def keystoreProPropertiesFile = rootProject.file("../../openScale_pro.keystore")
-            def keystoreProProperties = new Properties()
-            try {
-                keystoreProProperties.load(new FileInputStream(keystoreProPropertiesFile))
-            }
-            catch (FileNotFoundException e) {
-                keystoreProProperties = null;
-            }
-
-            if (keystoreProProperties != null) {
-                storeFile file(rootDir.getCanonicalPath() + '/' + keystoreProProperties['releaseKeyStore'])
-                keyAlias keystoreProProperties['releaseKeyAlias']
-                keyPassword keystoreProProperties['releaseKeyPassword']
-                storePassword keystoreProProperties['releaseStorePassword']
+            if (keystoreOSSProperties != null) {
+                storeFile file(rootDir.getCanonicalPath() + '/' + keystoreOSSProperties['releaseKeyStore'])
+                keyAlias keystoreOSSProperties['releaseKeyAlias']
+                keyPassword keystoreOSSProperties['releaseKeyPassword']
+                storePassword keystoreOSSProperties['releaseStorePassword']
             }
         }
     }
@@ -104,29 +86,13 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
             signingConfig signingConfigs.release
         }
-        light {
+        oss {
             archivesBaseName = "openScale-"+defaultConfig.versionName
-            manifestPlaceholders = [
-                    appIcon: "@drawable/ic_launcher_openscale_light",
-                    appIconRound: "@mipmap/ic_launcher_openscale_light_round"
-            ]
-            applicationIdSuffix ".light"
-            versionNameSuffix "-light"
+            applicationIdSuffix ".oss"
+            versionNameSuffix "-oss"
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
-            signingConfig signingConfigs.light
-        }
-        pro {
-            archivesBaseName = "openScale-"+defaultConfig.versionName
-            manifestPlaceholders = [
-                    appIcon: "@drawable/ic_launcher_openscale_pro",
-                    appIconRound: "@mipmap/ic_launcher_openscale_pro_round"
-            ]
-            applicationIdSuffix ".pro"
-            versionNameSuffix "-pro"
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
-            signingConfig signingConfigs.pro
+            signingConfig signingConfigs.oss
         }
     }
     compileOptions {

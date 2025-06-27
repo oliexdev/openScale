@@ -218,7 +218,6 @@
     <string name="label_year_view">年表示</string>
     <string name="label_measurement_bar">測定バー</string>
     <string name="label_is_on_right_axis">右軸上に</string>
-    <string name="label_upgrade_to_openScale_pro">Bluetooth に対応するには、openScale pro にアップグレードしてください</string>
     <string name="info_scale_low_battery">電池の残量が少なくなっています (%d%%)、体重計の電池を充電または交換してください</string>
     <string name="info_bluetooth_connection_error_scale_offline">体重計に接続できませんでした。オンになっていることを確認してください。</string>
     <string name="label_age">年齢</string>

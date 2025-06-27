@@ -210,7 +210,6 @@
     <string name="label_development">Desenvolvimento</string>
     <string name="label_debug_log">Guardar registo de depuração para um ficheiro</string>
     <string name="amputation_level_arm">Braço</string>
-    <string name="label_upgrade_to_openScale_pro">Por favor, atualize para openScale pro para suporte a Bluetooth</string>
     <string name="amputation_level_foot">Pé</string>
     <string name="label_slide_welcome_top_text">Bem-vindo ao
 \nopenScale</string>
