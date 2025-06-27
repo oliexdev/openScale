@@ -69,7 +69,7 @@ This app has no ads and requests no unnecessary permissions. The location permis
 
 openScale doesn't send any data to a cloud and not having permission to access the internet is a strong guarantee of that.
 
-<!-- If you want to synchronize your openScale measurements with external services, you can install [openScale sync](https://github.com/oliexdev/openScale/wiki/openScale-sync) from [GooglePlay](https://play.google.com/store/apps/details?id=com.health.openscale.sync).-->
+If you want to synchronize your openScale measurements with external services, you can install [openScale sync](https://github.com/oliexdev/openScale-sync).
 
 # Questions & Issues :thinking:
 
