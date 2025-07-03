@@ -296,4 +296,10 @@
     <string name="label_measurements">metingen</string>
     <string name="label_auto_backup_lacation">Geen back-uplocatie gekozen</string>
     <string name="permission_notification_info">Het meldingsrecht is vereist om meldingen te kunnen tonen</string>
+    <string name="label_simple_moving_average">Simpel Voortschrijdend Gemiddelde</string>
+    <string name="label_exponentially_smoothed_moving_average">Exponentieel Voortschrijdend Gemiddelde</string>
+    <string name="label_trendline_computation_method">Berekeningsmethode voor trendlijn</string>
+    <string name="label_trendline_future">Toekomstige trend</string>
+    <string name="label_simple_moving_average_num_days">Aantal dagen voor gemiddelde</string>
+    <string name="label_y_axis">Y-as</string>
 </resources>
