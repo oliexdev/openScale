@@ -134,7 +134,7 @@
     <string name="label_click_to_help_add_support">அதற்கான ஆதரவைச் சேர்க்க இங்கே சொடுக்கு செய்க</string>
     <string name="label_development">வளர்ச்சி</string>
     <string name="label_debug_log">பிழைத்திருத்த பதிவை கோப்பில் சேமிக்கவும்</string>
-    <string name="label_slide_user_main_text">நிகழ்நிலை கணக்கை உருவாக்க ஓபன்ச்கேல் உங்களுக்குத் தேவையில்லை.\n\n உடல் அளவீடுகள் அளவீடுகளிலிருந்து கணக்கிடப்படுகின்றன.</string>
+    <string name="label_slide_user_main_text">நிகழ்நிலை கணக்கை உருவாக்க ஓபன்ச்கேல் உங்களுக்குத் தேவையில்லை.\n\nஉடல் அளவீடுகள் அளவீடுகளிலிருந்து கணக்கிடப்படுகின்றன.</string>
     <string name="label_slide_support_top_text">ஓபன்ச்கேலை மேம்படுத்த உதவுங்கள்.</string>
     <string name="label_y_axis">Y- அச்சு</string>
     <string name="label_automatic">தானி</string>
@@ -218,7 +218,7 @@
     <string name="label_activity_level">செயல்பாட்டு நிலை</string>
     <string name="amputation_level_none">ஊனமுற்றோர் இல்லை</string>
     <string name="label_slide_user_top_text">பல பயனர்கள் ஆதரிக்கப்படுகிறார்கள்.</string>
-    <string name="label_slide_privacy_main_text">ஓபன்ச்கேல் எந்த தரவையும் ஒரு மேகக்கணிக்கு அனுப்பாது, இணையத்தை அணுக இசைவு இல்லாதது அதற்கு வலுவான உத்தரவாதமாகும்.\n\n உங்கள் எடையை GoogleFit அல்லது MQTT உடன் ஒத்திசைக்க விரும்பினால், நீங்கள் &lt;a href = \"https://play.google.com/store/apps/details?id=com.health.openscale.sync\" ஒத்திசைவு &lt;/a&gt;.</string>
+    <string name="label_slide_privacy_main_text">ஓபன்ச்கேல் எந்தத் தரவையும் ஒரு மேகக்கணிக்கு அனுப்பாது, இணையத்தை அணுக இசைவு இல்லாதது அதற்கு வலுவான உத்தரவாதமாகும்.\n\nஉங்கள் எடையை GoogleFit அல்லது MQTT உடன் ஒத்திசைக்க விரும்பினால், நீங்கள் &lt;a href = \"https://play.google.com/store/apps/details?id=com.health.openscale.sync\" ஒத்திசைவு &lt;/a&gt;.</string>
     <string name="label_days_left">நாட்கள் மிச்சம்</string>
     <string name="label_assisted_weighing">எடை எடையுள்ள</string>
     <string name="label_amputation_left">ஊனமுற்றது</string>
@@ -264,7 +264,7 @@
     <string name="info_assisted_weighing_no_reference_user">குறிப்பு பயனர் எதுவும் கிடைக்கவில்லை, தயவுசெய்து ஒன்றை உருவாக்கவும்</string>
     <string name="info_bluetooth_try_connection">இதனுடன் இணைகிறது:</string>
     <string name="info_bluetooth_connection_error_scale_offline">அளவோடு இணைக்க முடியவில்லை, தயவுசெய்து அது இயங்குவதை உறுதிசெய்க.</string>
-    <string name="info_new_data_added">%1 $ .2f%2$s [%3$s]%4 $ s இல் சேர்க்கப்பட்டுள்ளது</string>
+    <string name="info_new_data_added">%1$.2f%2$s [%3$s] %4$s இல் சேர்க்கப்பட்டுள்ளது</string>
     <string name="info_no_selected_user">பயனர் இல்லை. அமைப்புகளில் ஒன்றை உருவாக்கவும்.</string>
     <string name="info_no_evaluation_available">மதிப்பை மதிப்பீடு செய்ய முடியவில்லை</string>
     <string name="label_enable_legend">வரைபட புராணக்கதை</string>
@@ -275,5 +275,5 @@
     <string name="label_slide_bluetooth_top_text">வெவ்வேறு உற்பத்தியாளர்களிடமிருந்து பல்வேறு ஊடலை செதில்கள் ஆதரிக்கப்படுகின்றன.</string>
     <string name="label_slide_bluetooth_main_text">வெவ்வேறு உற்பத்தியாளர்களிடமிருந்து பல ஊடலை அளவீடுகளுக்கு ஓபன்ச்கேல் ஒரு உள்ளமைக்கப்பட்ட ஆதரவைக் கொண்டுள்ளது.\n\n உதவி அளவீடுகளின் தொகுப்பை நாங்கள் தொடர்ந்து மேம்படுத்தி நீட்டிக்கிறோம். &lt;A href = \"https://github.com/oliexdev/openscale/wiki/supported-scales-in-openscale\"&gt; github &lt;/a&gt; இல் ஒவ்வொரு அளவிற்கும் முழு பட்டியலையும் ஆதரவின் அளவையும் நீங்கள் காணலாம்.</string>
     <string name="label_slide_metrics_main_text">ஓபன்ச்கேல் 22 உடல் அளவீடுகளை ஆதரிக்கிறது.\n\n நீங்கள் அக்கறை கொண்டவற்றைக் காட்ட அதை உள்ளமைக்கவும்.\n\n உடல் கொழுப்பு, உடல் நீர் மற்றும் மெலிந்த உடல் நிறை காணவில்லை எனில், <a href="https://github.com/oliexdev/openscale/wiki/body-metric- மதிப்பீடுகள்"> அறிவியல் வெளியீடுகள் </a>.</string>
-    <string name="label_slide_support_main_text">ஓபன்ச்கேல் உங்களுக்கு தேவை. ஒரு &lt;a href = \"https://github.com/oliexdev/openscale/issues\"&gt; புதிய சிக்கலை உருவாக்கவும் &lt;/a&gt; நீங்கள் ஒரு பிழையைக் கண்டால், ஒரு சிந்தனை, கேள்வி அல்லது உங்கள் ஊடலை அளவை ஆதரிக்க உதவ விரும்பினால்.\n\n இந்த திட்டத்தின் படைப்பாளரை மேலும் மேம்பாடு மற்றும் தொடர்ச்சியான பராமரிப்பில் ஊக்குவிக்கவும் &gt; GooglePlay &lt;/a&gt; அல்லது ஒரு விண்மீன் &lt;a href = \"https://github.com/oliexdev/openscale\"&gt; github &lt;/a&gt;.\n\n உங்கள் உதவி மற்றும் நேர்மறையான பின்னூட்டங்கள் மிகவும் பாராட்டப்படுகின்றன. நன்றி.</string>
+    <string name="label_slide_support_main_text">ஓபன்ச்கேல் உங்களுக்குத் தேவை. ஒரு &lt;a href = \"https://github.com/oliexdev/openscale/issues\"&gt; புதிய சிக்கலை உருவாக்கவும் &lt;/a&gt; நீங்கள் ஒரு பிழையைக் கண்டால், ஒரு சிந்தனை, கேள்வி அல்லது உங்கள் ஊடலை அளவை ஆதரிக்க உதவ விரும்பினால்.\n\nஇந்தத் திட்டத்தின் படைப்பாளரை மேலும் மேம்பாடு மற்றும் தொடர்ச்சியான பராமரிப்பில் ஊக்குவிக்கவும் &gt; GooglePlay &lt;/a&gt; அல்லது ஒரு விண்மீன் &lt;a href = \"https://github.com/oliexdev/openscale\"&gt; github &lt;/a&gt;.\n\nஉங்கள் உதவி மற்றும் நேர்மறையான பின்னூட்டங்கள் மிகவும் பாராட்டப்படுகின்றன. நன்றி.</string>
 </resources>
