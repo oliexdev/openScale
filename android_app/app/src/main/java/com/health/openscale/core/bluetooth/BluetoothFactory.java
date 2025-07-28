@@ -107,9 +107,6 @@ public class BluetoothFactory {
                 || deviceName.equals("042FatScale01")) {
             return new BluetoothInlife(context);
         }
-        if (deviceName.startsWith("QN-Scale")) {
-            return new BluetoothQNScale(context);
-        }
         if (deviceName.startsWith("Shape200") || deviceName.startsWith("Shape100") || deviceName.startsWith("Shape50") || deviceName.startsWith("Style100")) {
             return new BluetoothSoehnle(context);
         }
@@ -155,13 +152,16 @@ public class BluetoothFactory {
         if (deviceName.equals("AE BS-06")) {
             return new BluetoothActiveEraBF06(context);
         }
-        if (deviceName.equals("Renpho-Scale")) {
-            /* Driver for Renpho ES-WBE28, which has device name of "Renpho-Scale".
-               "Renpho-Scale" is quite generic, not sure if other Renpho scales with different
-               protocol match this name.
-             */
-            return new BluetoothRenphoScale(context);
+        if (deviceName.startsWith("QN-Scale") || deviceName.equals("Renpho-Scale")) {
+            return new BluetoothQNScale(context);
         }
+        // if (deviceName.equals("Renpho-Scale")) {
+        //     /* Driver for Renpho ES-WBE28, which has device name of "Renpho-Scale".
+        //        "Renpho-Scale" is quite generic, not sure if other Renpho scales with different
+        //        protocol match this name.
+        //      */
+        //     return new BluetoothRenphoScale(context);
+        // }
         if(deviceName.equals("ES-CS20M")){
             return new BluetoothESCS20M(context);
         }
