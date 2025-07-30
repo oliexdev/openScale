@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 
 import timber.log.Timber;
 
-public class BluetoothRenphoScale extends BluetoothCommunication {
+public class BluetoothESWBE28 extends BluetoothCommunication {
 
     private static final UUID SERV_BODY_COMP    = BluetoothGattUuid.fromShortCode(0x181b);
     private static final UUID SERV_USER_DATA    = BluetoothGattUuid.fromShortCode(0x181c);
@@ -63,7 +63,7 @@ public class BluetoothRenphoScale extends BluetoothCommunication {
 
     private ScaleUser user;
 
-    public BluetoothRenphoScale(Context context) {
+    public BluetoothESWBE28(Context context) {
         super(context);
     }
 

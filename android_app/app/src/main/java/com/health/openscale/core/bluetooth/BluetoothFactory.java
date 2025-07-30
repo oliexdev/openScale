@@ -160,7 +160,7 @@ public class BluetoothFactory {
                "Renpho-Scale" is quite generic, not sure if other Renpho scales with different
                protocol match this name.
              */
-            return new BluetoothRenphoScale(context);
+            return new BluetoothESWBE28(context);
         }
         if(deviceName.equals("ES-CS20M")){
             return new BluetoothESCS20M(context);
