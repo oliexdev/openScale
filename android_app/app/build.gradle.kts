@@ -36,6 +36,17 @@ android {
             manifestPlaceholders["appRoundIcon"] = "@mipmap/ic_launcher_beta_round"
         }
     }
+
+    applicationVariants.all {
+        val variant = this
+        outputs.all {
+            val output = this
+            if (output is com.android.build.gradle.internal.api.BaseVariantOutputImpl) {
+                output.outputFileName = "openScale-${variant.buildType.name}.apk"
+            }
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21

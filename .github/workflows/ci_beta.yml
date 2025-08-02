@@ -1,13 +1,9 @@
-# This is a basic workflow to help you get started with Actions
+name: CI beta
 
-name: CI
-
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the master branch
   push:
-
-  # Allows you to run this workflow manually from the Actions tab
+    branches:
+      - openScale-3.0
   workflow_dispatch:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
@@ -30,14 +26,14 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: "zulu" # See 'Supported distributions' for available options
-          java-version: "17"
+          java-version: "21"
       - name: Build APK
-        run: ./gradlew assembleDebug
+        run: ./gradlew assembleBeta
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "dev-build"
+          automatic_release_tag: "beta-build"
           prerelease: true
-          title: "openScale development build"
+          title: "openScale 3.0 beta build"
           files: |
-            android_app/app/build/outputs/apk/debug/openScale-debug.apk
+            android_app/app/build/outputs/apk/beta/openScale-beta.apk
