@@ -14,18 +14,26 @@ android {
         minSdk = 31
         targetSdk = 36
         versionCode = 67
-        versionName = "3.0 beta"
+        versionName = "3.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        manifestPlaceholders["appName"] = "openScale"
+        manifestPlaceholders["appIcon"] = "@mipmap/ic_launcher"
+        manifestPlaceholders["appRoundIcon"] = "@mipmap/ic_launcher_round"
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
+        }
+
+        create("beta") {
+            initWith(getByName("debug"))
+            applicationIdSuffix = ".beta"
+            versionNameSuffix = "-beta"
+            manifestPlaceholders["appName"] = "openScale beta"
+            manifestPlaceholders["appIcon"] = "@mipmap/ic_launcher_beta"
+            manifestPlaceholders["appRoundIcon"] = "@mipmap/ic_launcher_beta_round"
         }
     }
     compileOptions {

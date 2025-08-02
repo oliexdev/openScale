@@ -87,6 +87,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.health.openscale.BuildConfig
 import com.health.openscale.R
 import com.health.openscale.core.data.User
 import com.health.openscale.ui.navigation.Routes.getIconForRoute
@@ -235,7 +236,7 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
                         .fillMaxWidth()
                 ) {
                     Image(
-                        painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                        painter = if (BuildConfig.BUILD_TYPE == "beta") painterResource(id = R.drawable.ic_launcher_beta_foreground) else painterResource(id = R.drawable.ic_launcher_foreground) ,
                         contentDescription = stringResource(R.string.app_logo_content_description),
                         modifier = Modifier.size(64.dp)
                     )
