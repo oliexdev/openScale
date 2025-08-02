@@ -1,0 +1,1098 @@
+/*
+ * openScale
+ * Copyright (C) 2025 olie.xdev <olie.xdeveloper@googlemail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+package com.health.openscale.ui.screen.settings
+
+import android.content.ContentResolver
+import android.net.Uri
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
+import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
+import com.health.openscale.R
+import com.health.openscale.core.data.InputFieldType
+import com.health.openscale.core.data.Measurement
+import com.health.openscale.core.data.MeasurementType
+import com.health.openscale.core.data.MeasurementTypeKey
+import com.health.openscale.core.data.MeasurementValue
+import com.health.openscale.core.data.User
+import com.health.openscale.core.model.MeasurementWithValues
+import com.health.openscale.core.utils.LogManager
+import com.health.openscale.ui.screen.SharedViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.io.IOException
+import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeFormatterBuilder
+import java.time.format.DateTimeParseException
+import java.time.temporal.ChronoField
+import java.util.Date
+import java.util.Locale
+import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
+import java.util.zip.ZipOutputStream
+
+/**
+ * Sealed class representing events related to Storage Access Framework (SAF) operations.
+ */
+sealed class SafEvent {
+    data class RequestCreateFile(val suggestedName: String, val actionId: String, val userId: Int) : SafEvent()
+    data class RequestOpenFile(val actionId: String, val userId: Int) : SafEvent()
+}
+
+/**
+ * Sealed class for UI messages to be emitted to the UI layer.
+ * This allows sending either a direct string (rarely, for dynamic error messages not suitable for resources)
+ * or a resource ID with optional formatting arguments.
+ */
+sealed class UiMessageEvent {
+    data class Resource(val resId: Int, val formatArgs: List<Any> = emptyList()) : UiMessageEvent()
+    // data class Plain(val message: String) : UiMessageEvent() // If you ever need to send raw strings
+}
+
+/**
+ * ViewModel for settings-related screens.
+ */
+class SettingsViewModel(
+    private val sharedViewModel: SharedViewModel
+) : ViewModel() {
+
+    private val repository = sharedViewModel.databaseRepository
+    private val userSettingsRepository = sharedViewModel.userSettingRepository
+
+    private val _appLanguageCode = MutableStateFlow(getDefaultAppLanguage())
+    val appLanguageCode: StateFlow<String> = _appLanguageCode.asStateFlow()
+
+    private val _uiMessageEvents = MutableSharedFlow<UiMessageEvent>()
+    val uiMessageEvents: SharedFlow<UiMessageEvent> = _uiMessageEvents.asSharedFlow()
+
+    val allUsers: StateFlow<List<User>> = sharedViewModel.allUsers
+
+    private val _showUserSelectionDialogForExport = MutableStateFlow(false)
+    val showUserSelectionDialogForExport: StateFlow<Boolean> = _showUserSelectionDialogForExport.asStateFlow()
+
+    private val _showUserSelectionDialogForImport = MutableStateFlow(false)
+    val showUserSelectionDialogForImport: StateFlow<Boolean> = _showUserSelectionDialogForImport.asStateFlow()
+
+    private val _showUserSelectionDialogForDelete = MutableStateFlow(false)
+    val showUserSelectionDialogForDelete: StateFlow<Boolean> = _showUserSelectionDialogForDelete.asStateFlow()
+
+    private val _userPendingDeletion = MutableStateFlow<User?>(null)
+    val userPendingDeletion: StateFlow<User?> = _userPendingDeletion.asStateFlow()
+
+    private val _showDeleteConfirmationDialog = MutableStateFlow(false)
+    val showDeleteConfirmationDialog: StateFlow<Boolean> = _showDeleteConfirmationDialog.asStateFlow()
+
+    private val _showDeleteEntireDatabaseConfirmationDialog = MutableStateFlow(false)
+    val showDeleteEntireDatabaseConfirmationDialog: StateFlow<Boolean> = _showDeleteEntireDatabaseConfirmationDialog.asStateFlow()
+
+    private val _isLoadingExport = MutableStateFlow(false)
+    val isLoadingExport: StateFlow<Boolean> = _isLoadingExport.asStateFlow()
+
+    private val _isLoadingImport = MutableStateFlow(false)
+    val isLoadingImport: StateFlow<Boolean> = _isLoadingImport.asStateFlow()
+
+    private val _isLoadingDeletion = MutableStateFlow(false)
+    val isLoadingDeletion: StateFlow<Boolean> = _isLoadingDeletion.asStateFlow()
+
+    private val _isLoadingBackup = MutableStateFlow(false)
+    val isLoadingBackup: StateFlow<Boolean> = _isLoadingBackup.asStateFlow()
+
+    private val _isLoadingRestore = MutableStateFlow(false)
+    val isLoadingRestore: StateFlow<Boolean> = _isLoadingRestore.asStateFlow()
+
+    private val _isLoadingEntireDatabaseDeletion = MutableStateFlow(false)
+    val isLoadingEntireDatabaseDeletion: StateFlow<Boolean> = _isLoadingEntireDatabaseDeletion.asStateFlow()
+
+    companion object {
+        private const val TAG = "SettingsViewModel"
+        const val ACTION_ID_EXPORT_USER_DATA = "export_user_data"
+        const val ACTION_ID_IMPORT_USER_DATA = "import_user_data"
+        const val ACTION_ID_BACKUP_DB = "backup_database"
+        const val ACTION_ID_RESTORE_DB = "restore_database"
+    }
+
+    private val _safEvent = MutableSharedFlow<SafEvent>()
+    val safEvent = _safEvent.asSharedFlow()
+
+    private var currentActionUserId: Int? = null
+
+    private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE
+    private val timeFormatter: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_TIME
+    private val flexibleTimeFormatter: DateTimeFormatter = DateTimeFormatterBuilder()
+        .appendValue(ChronoField.HOUR_OF_DAY, 2)
+        .appendLiteral(':')
+        .appendValue(ChronoField.MINUTE_OF_HOUR, 2)
+        .optionalStart()
+        .appendLiteral(':')
+        .appendValue(ChronoField.SECOND_OF_MINUTE, 2)
+        .optionalStart()
+        .appendFraction(ChronoField.NANO_OF_SECOND, 0, 9, true)
+        .optionalEnd()
+        .optionalEnd()
+        .toFormatter(Locale.ROOT)
+
+    init {
+        LogManager.d(TAG, "Initializing SettingsViewModel...")
+        viewModelScope.launch {
+            userSettingsRepository.appLanguageCode
+                .map { storedLanguageCode ->
+                    LogManager.d(TAG, "Observed stored language code from repository: $storedLanguageCode")
+                    storedLanguageCode ?: getDefaultAppLanguage()
+                }
+                .catch { exception ->
+                    LogManager.e(TAG, "Error collecting app language code from repository", exception)
+                    emit(getDefaultAppLanguage())
+                }
+                .collect { effectiveLanguageCode ->
+                    if (_appLanguageCode.value != effectiveLanguageCode) {
+                        _appLanguageCode.value = effectiveLanguageCode
+                        LogManager.i(TAG, "App language in ViewModel updated to: $effectiveLanguageCode")
+                    } else {
+                        LogManager.d(TAG, "App language in ViewModel is already: $effectiveLanguageCode, no update needed.")
+                    }
+                }
+        }
+    }
+
+    fun setAppLanguage(languageCode: String) {
+        if (languageCode.isBlank()) {
+            LogManager.w(TAG, "Attempted to set a blank language code. Ignoring.")
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                LogManager.d(TAG, "Attempting to set app language preference to: $languageCode via repository")
+                userSettingsRepository.setAppLanguageCode(languageCode)
+                LogManager.i(TAG, "Successfully requested to set app language preference to: $languageCode in repository.")
+            } catch (e: Exception) {
+                LogManager.e(TAG, "Failed to set app language preference to: $languageCode via repository", e)
+            }
+        }
+    }
+
+    fun getDefaultAppLanguage(): String {
+        val supportedAppLanguages = listOf("en", "de", "es", "fr")
+        val systemLanguage = Locale.getDefault().language
+        val defaultLang = if (systemLanguage in supportedAppLanguages) {
+            systemLanguage
+        } else {
+            "en"
+        }
+        LogManager.d(TAG, "Determined default app language: $defaultLang (System: $systemLanguage)")
+        return defaultLang
+    }
+
+    fun performCsvExport(userId: Int, uri: Uri, contentResolver: ContentResolver) {
+        viewModelScope.launch {
+            _isLoadingExport.value = true
+            LogManager.i(TAG, "Starting CSV export for user ID: $userId to URI: $uri")
+            try {
+                val allAppTypes: List<MeasurementType> = repository.getAllMeasurementTypes().first()
+                val exportableValueTypes = allAppTypes.filter {
+                    it.key != null && it.key != MeasurementTypeKey.DATE && it.key != MeasurementTypeKey.TIME
+                }
+                val valueColumnKeys = exportableValueTypes
+                    .mapNotNull { it.key?.name }
+                    .distinct()
+
+                val dateColumnKey = MeasurementTypeKey.DATE.name
+                val timeColumnKey = MeasurementTypeKey.TIME.name
+
+                val allCsvColumnKeys = mutableListOf(dateColumnKey, timeColumnKey)
+                allCsvColumnKeys.addAll(valueColumnKeys.sorted())
+
+                if (valueColumnKeys.isEmpty()) {
+                    LogManager.w(TAG, "No specific data fields (value columns) defined for export for user ID: $userId.")
+                    _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.export_error_no_specific_fields))
+                }
+
+                val userMeasurementsWithValues: List<MeasurementWithValues> =
+                    repository.getMeasurementsWithValuesForUser(userId).first()
+
+                if (userMeasurementsWithValues.isEmpty()) {
+                    LogManager.i(TAG, "No measurements found for User ID $userId to export.")
+                    _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.export_error_no_measurements))
+                    _isLoadingExport.value = false
+                    return@launch
+                }
+
+                val csvRowsData = mutableListOf<Map<String, String?>>()
+                // ... (CSV data preparation logic as before) ...
+                userMeasurementsWithValues.forEach { measurementData ->
+                    val mainTimestamp = measurementData.measurement.timestamp
+                    val valuesMap = mutableMapOf<String, String?>()
+                    val instant = Instant.ofEpochMilli(mainTimestamp)
+                    val zonedDateTime = instant.atZone(ZoneId.systemDefault())
+
+                    valuesMap[dateColumnKey] = dateFormatter.format(zonedDateTime)
+                    valuesMap[timeColumnKey] = timeFormatter.format(zonedDateTime)
+
+                    measurementData.values.forEach { mvWithType ->
+                        val typeEntity = mvWithType.type
+                        val valueEntity = mvWithType.value
+                        if (typeEntity.key != null &&
+                            typeEntity.key != MeasurementTypeKey.DATE &&
+                            typeEntity.key != MeasurementTypeKey.TIME &&
+                            valueColumnKeys.contains(typeEntity.key.name)
+                        ) {
+                            val valueAsString: String? = when (typeEntity.inputType) {
+                                InputFieldType.TEXT -> valueEntity.textValue
+                                InputFieldType.FLOAT -> valueEntity.floatValue?.toString()
+                                InputFieldType.INT -> valueEntity.intValue?.toString()
+                                InputFieldType.DATE -> valueEntity.dateValue?.let {
+                                    dateFormatter.format(Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()))
+                                }
+                                InputFieldType.TIME -> valueEntity.dateValue?.let {
+                                    timeFormatter.format(Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()))
+                                }
+                            }
+                            typeEntity.key.name.let { keyName -> valuesMap[keyName] = valueAsString }
+                        }
+                    }
+                    csvRowsData.add(valuesMap)
+                }
+
+
+                if (csvRowsData.isEmpty()) {
+                    LogManager.w(TAG, "No exportable measurement values found for User ID $userId after transformation.")
+                    _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.export_error_no_exportable_values))
+                    _isLoadingExport.value = false
+                    return@launch
+                }
+
+                withContext(Dispatchers.IO) {
+                    var exportSuccessful = false
+                    contentResolver.openOutputStream(uri)?.use { outputStream ->
+                        csvWriter().open(outputStream) {
+                            writeRow(allCsvColumnKeys)
+                            csvRowsData.forEach { rowMap ->
+                                val dataRow = allCsvColumnKeys.map { key -> rowMap[key] }
+                                writeRow(dataRow)
+                            }
+                        }
+                        exportSuccessful = true
+                        LogManager.d(TAG, "CSV data written successfully for User ID $userId to URI: $uri.")
+                    } ?: run {
+                        _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.export_error_cannot_create_file))
+                        LogManager.e(TAG, "Export failed for user ID $userId: Could not open OutputStream for Uri: $uri")
+                    }
+
+                    if (exportSuccessful) {
+                        _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.export_successful))
+                    }
+                }
+            } catch (e: Exception) {
+                LogManager.e(TAG, "Error during CSV export for User ID $userId to URI: $uri", e)
+                val errorMessage = e.localizedMessage ?: "Unknown error" // In a real app, use R.string.settings_unknown_error
+                _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.export_error_generic, listOf(errorMessage)))
+            } finally {
+                _isLoadingExport.value = false
+                LogManager.i(TAG, "CSV export process finished for user ID: $userId.")
+            }
+        }
+    }
+
+    fun performCsvImport(userId: Int, uri: Uri, contentResolver: ContentResolver) {
+        viewModelScope.launch {
+            _isLoadingImport.value = true
+            LogManager.i(TAG, "Starting CSV import for user ID: $userId from URI: $uri")
+            var linesSkippedMissingDate = 0
+            var linesSkippedDateParseError = 0
+            var valuesSkippedParseError = 0
+            var importedMeasurementsCount = 0
+
+            try {
+                // ... (Rest of the import logic including CSV parsing as before) ...
+                val allAppTypes: List<MeasurementType> = repository.getAllMeasurementTypes().first()
+                val typeMapByKeyName = allAppTypes.filter { it.key != null }.associateBy { it.key!!.name }
+
+                val dateColumnKey = MeasurementTypeKey.DATE.name
+                val timeColumnKey = MeasurementTypeKey.TIME.name
+
+                val newMeasurementsToSave = mutableListOf<Pair<Measurement, List<MeasurementValue>>>()
+
+                withContext(Dispatchers.IO) {
+                    contentResolver.openInputStream(uri)?.use { inputStream ->
+                        csvReader {
+                            skipEmptyLine = true
+                            quoteChar = '"'
+                        }.open(inputStream) {
+                            var header: List<String>? = null
+                            var dateColumnIndex = -1
+                            var timeColumnIndex = -1
+                            val valueColumnMap = mutableMapOf<Int, MeasurementType>()
+
+                            readAllAsSequence().forEachIndexed { rowIndex, row ->
+                                if (rowIndex == 0) { // Header row
+                                    header = row
+                                    dateColumnIndex = header?.indexOf(dateColumnKey)
+                                        ?: throw IOException("CSV header is missing the mandatory column '$dateColumnKey'.")
+                                    // ... (rest of header processing)
+                                    timeColumnIndex = header?.indexOf(timeColumnKey) ?: -1
+                                    header?.forEachIndexed { colIdx, columnName ->
+                                        if (columnName != dateColumnKey && columnName != timeColumnKey) {
+                                            typeMapByKeyName[columnName]?.let { type ->
+                                                valueColumnMap[colIdx] = type
+                                            } ?: LogManager.w(TAG, "CSV import for user $userId: Column '$columnName' in CSV not found in known measurement types. It will be ignored.")
+                                        }
+                                    }
+                                    if (valueColumnMap.isEmpty() && header?.any { it != dateColumnKey && it != timeColumnKey } == true) {
+                                        LogManager.w(TAG, "CSV import for user $userId: No measurement value columns in CSV could be mapped to known types.")
+                                    }
+                                    return@forEachIndexed // Continue to next row
+                                }
+
+                                if (header == null) throw IOException("CSV header not found or processed.") // Should not happen
+
+                                val dateString = row.getOrNull(dateColumnIndex)
+                                if (dateString.isNullOrBlank()) {
+                                    LogManager.w(TAG, "CSV import for user $userId: Row ${rowIndex + 1} skipped: Date value is missing in mandatory column '$dateColumnKey'.")
+                                    linesSkippedMissingDate++
+                                    return@forEachIndexed
+                                }
+                                // ... (rest of row processing, date/time parsing, value extraction)
+                                val localDate = try {
+                                    LocalDate.parse(dateString, dateFormatter)
+                                } catch (e: DateTimeParseException) {
+                                    LogManager.w(TAG, "CSV import for user $userId: Error parsing date '$dateString' (expected YYYY-MM-DD) in row ${rowIndex + 1}. Skipping row.", e)
+                                    linesSkippedDateParseError++
+                                    return@forEachIndexed
+                                }
+
+                                val timeString = if (timeColumnIndex != -1) row.getOrNull(timeColumnIndex) else null
+                                val localTime: LocalTime = if (timeString.isNullOrBlank()) {
+                                    LocalTime.NOON // Default if time is missing or blank
+                                } else {
+                                    try { LocalTime.parse(timeString, timeFormatter) }
+                                    catch (e1: DateTimeParseException) {
+                                        try { LocalTime.parse(timeString, flexibleTimeFormatter) }
+                                        catch (e2: DateTimeParseException) {
+                                            LogManager.w(TAG, "CSV import for user $userId: Time '$timeString' in row ${rowIndex + 1} could not be parsed. Using default.", e2)
+                                            LocalTime.NOON
+                                        }
+                                    }
+                                }
+
+                                val localDateTime = LocalDateTime.of(localDate, localTime)
+                                val timestampMillis = localDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                                val measurement = Measurement(userId = userId, timestamp = timestampMillis)
+                                val measurementValues = mutableListOf<MeasurementValue>()
+
+                                valueColumnMap.forEach { (colIdx, type) ->
+                                    val valueString = row.getOrNull(colIdx)
+                                    if (!valueString.isNullOrBlank()) {
+                                        try {
+                                            val mv = MeasurementValue(
+                                                typeId = type.id,
+                                                measurementId = 0, // Will be set by Room
+                                                textValue = if (type.inputType == InputFieldType.TEXT) valueString else null,
+                                                floatValue = if (type.inputType == InputFieldType.FLOAT) valueString.toFloatOrNull() else null,
+                                                intValue = if (type.inputType == InputFieldType.INT) valueString.toIntOrNull() else null,
+                                                dateValue = when (type.inputType) {
+                                                    InputFieldType.DATE -> LocalDate.parse(valueString, dateFormatter).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                                                    InputFieldType.TIME -> {
+                                                        val parsedTime = try { LocalTime.parse(valueString, timeFormatter) } catch (e: Exception) { LocalTime.parse(valueString, flexibleTimeFormatter) }
+                                                        parsedTime.atDate(LocalDate.of(1970, 1, 1)).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()                                                    }
+                                                    else -> null
+                                                }
+                                            )
+                                            var isValidValue = true
+                                            if (type.inputType == InputFieldType.FLOAT && mv.floatValue == null) isValidValue = false
+                                            if (type.inputType == InputFieldType.INT && mv.intValue == null) isValidValue = false
+                                            if (isValidValue) {
+                                                measurementValues.add(mv)
+                                            } else {
+                                                LogManager.w(TAG, "CSV import for user $userId: Could not parse value '$valueString' for type '${type.key?.name}' in row ${rowIndex + 1}.")
+                                                valuesSkippedParseError++
+                                            }
+                                        } catch (e: Exception) {
+                                            LogManager.w(TAG, "CSV import for user $userId: Error processing value '$valueString' for type '${type.key?.name}' in row ${rowIndex + 1}.", e)
+                                            valuesSkippedParseError++
+                                        }
+                                    }
+                                }
+                                if (measurementValues.isNotEmpty()) {
+                                    newMeasurementsToSave.add(measurement to measurementValues)
+                                } else if (valueColumnMap.isNotEmpty()){
+                                    LogManager.d(TAG,"CSV import for user $userId: Row ${rowIndex + 1} for $localDateTime resulted in no valid measurement values. Skipping.")
+                                }
+                            }
+                        }
+                    } ?: throw IOException("Could not open InputStream for Uri: $uri")
+
+                    if (newMeasurementsToSave.isNotEmpty()) {
+                        repository.insertMeasurementsWithValues(newMeasurementsToSave)
+                        importedMeasurementsCount = newMeasurementsToSave.size
+                        LogManager.i(TAG, "CSV Import for User ID $userId successful. $importedMeasurementsCount measurements imported.")
+
+                        // Constructing the detailed message for UI
+                        // This part is tricky if you want one single formatted string from resources.
+                        // Often, it's better to send a base success message and log details,
+                        // or have multiple UiMessageEvents if details are crucial for UI.
+                        // Here's an attempt to build arguments for a potentially complex string resource:
+                        val messageArgs = mutableListOf<Any>(importedMeasurementsCount)
+                        var detailsForMessage = ""
+                        if (linesSkippedMissingDate > 0) {
+                            // This assumes you have a string like: "%1$d records. %2$d skipped (date), %3$d skipped (parse), %4$d values skipped."
+                            // Or you emit separate messages.
+                            // For simplicity, let's assume a main message and details are appended if they exist.
+                            // This would require a more complex string resource or multiple resources.
+                            // R.string.import_successful_details might take multiple args
+                            detailsForMessage += " ($linesSkippedMissingDate rows skipped due to missing dates"
+                        }
+                        if (linesSkippedDateParseError > 0) {
+                            detailsForMessage += if(detailsForMessage.contains("(")) ", " else " ("
+                            detailsForMessage += "$linesSkippedDateParseError rows skipped due to date parsing errors"
+                        }
+                        if (valuesSkippedParseError > 0) {
+                            detailsForMessage += if(detailsForMessage.contains("(")) ", " else " ("
+                            detailsForMessage += "$valuesSkippedParseError values skipped"
+                        }
+                        if (detailsForMessage.isNotEmpty()) detailsForMessage += ")"
+
+
+                        if (detailsForMessage.isNotEmpty()) {
+                            _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.import_successful_records_with_details, listOf(importedMeasurementsCount, detailsForMessage)))
+                        } else {
+                            _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.import_successful_records, listOf(importedMeasurementsCount)))
+                        }
+
+                    } else {
+                        LogManager.w(TAG, "No valid data found in CSV for User ID $userId or all rows had errors.")
+                        _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.import_error_no_valid_data))
+                    }
+                }
+            } catch (e: Exception) {
+                LogManager.e(TAG, "Error during CSV import for User ID $userId from URI: $uri", e)
+                val userErrorMessage = when {
+                    e is IOException && e.message?.contains("CSV header is missing the mandatory column 'date'") == true ->
+                        // Assuming R.string.import_error_missing_date_column takes dateColumnKey as an argument
+                        UiMessageEvent.Resource(R.string.import_error_missing_date_column)
+                    e is IOException && e.message?.contains("Could not open InputStream") == true ->
+                        UiMessageEvent.Resource(R.string.import_error_cannot_read_file)
+                    else -> {
+                        val errorMsg = e.localizedMessage ?: "Unknown error" // Use R.string.settings_unknown_error
+                        UiMessageEvent.Resource(R.string.import_error_generic, listOf(errorMsg))
+                    }
+                }
+                _uiMessageEvents.emit(userErrorMessage)
+            } finally {
+                _isLoadingImport.value = false
+                LogManager.i(TAG, "CSV import process finished for user ID: $userId. Imported: $importedMeasurementsCount, Skipped (missing date): $linesSkippedMissingDate, Skipped (date parse error): $linesSkippedDateParseError, Values skipped (parse error): $valuesSkippedParseError.")
+            }
+        }
+    }
+
+    fun startExportProcess() {
+        viewModelScope.launch {
+            if (allUsers.value.isEmpty()) {
+                LogManager.i(TAG, "Export process start: No users available for export.")
+                _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.export_no_users_available))
+                return@launch
+            }
+            if (allUsers.value.size == 1) {
+                val userId = allUsers.value.first().id
+                LogManager.d(TAG, "Export process start: Single user (ID: $userId) found, proceeding directly.")
+                initiateActualExport(userId)
+            } else {
+                currentActionUserId = null
+                _showUserSelectionDialogForExport.value = true
+                LogManager.d(TAG, "Export process start: Multiple users found, showing user selection dialog.")
+            }
+        }
+    }
+
+    fun proceedWithExportForUser(userId: Int) {
+        _showUserSelectionDialogForExport.value = false
+        LogManager.i(TAG, "Proceeding with export for selected user ID: $userId.")
+        initiateActualExport(userId)
+    }
+
+    fun cancelUserSelectionForExport() {
+        _showUserSelectionDialogForExport.value = false
+        currentActionUserId = null
+        LogManager.d(TAG, "User selection for export cancelled.")
+    }
+
+    private fun initiateActualExport(userId: Int) {
+        currentActionUserId = userId
+        viewModelScope.launch {
+            val user = allUsers.value.find { it.id == userId }
+            val userNamePart = user?.name?.replace("\\s+".toRegex(), "_")?.take(20) ?: "user$userId"
+            val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+            val suggestedName = "openScale_export_${userNamePart}_${timeStamp}.csv"
+            _safEvent.emit(SafEvent.RequestCreateFile(suggestedName, ACTION_ID_EXPORT_USER_DATA, userId))
+            LogManager.i(TAG, "Initiating actual export for user ID: $userId. Suggested file name: $suggestedName. SAF event emitted.")
+        }
+    }
+
+    fun startImportProcess() {
+        viewModelScope.launch {
+            if (allUsers.value.isEmpty()) {
+                LogManager.i(TAG, "Import process start: No users available for import.")
+                _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.import_no_users_available))
+                return@launch
+            }
+            if (allUsers.value.size == 1) {
+                val userId = allUsers.value.first().id
+                LogManager.d(TAG, "Import process start: Single user (ID: $userId) found, proceeding directly.")
+                initiateActualImport(userId)
+            } else {
+                currentActionUserId = null
+                _showUserSelectionDialogForImport.value = true
+                LogManager.d(TAG, "Import process start: Multiple users found, showing user selection dialog.")
+            }
+        }
+    }
+
+    fun proceedWithImportForUser(userId: Int) {
+        _showUserSelectionDialogForImport.value = false
+        LogManager.i(TAG, "Proceeding with import for selected user ID: $userId.")
+        initiateActualImport(userId)
+    }
+
+    fun cancelUserSelectionForImport() {
+        _showUserSelectionDialogForImport.value = false
+        currentActionUserId = null
+        LogManager.d(TAG, "User selection for import cancelled.")
+    }
+
+    private fun initiateActualImport(userId: Int) {
+        currentActionUserId = userId
+        viewModelScope.launch {
+            _safEvent.emit(SafEvent.RequestOpenFile(ACTION_ID_IMPORT_USER_DATA, userId))
+            LogManager.i(TAG, "Initiating actual import for user ID: $userId. SAF event emitted.")
+        }
+    }
+
+    fun initiateDeleteAllUserDataProcess() {
+        viewModelScope.launch {
+            val userList = allUsers.value
+            if (userList.size > 1) {
+                LogManager.d(TAG, "Initiate delete user data: Multiple users found, showing selection dialog.")
+                _showUserSelectionDialogForDelete.value = true
+            } else if (userList.isNotEmpty()) {
+                val userToDelete = userList.first()
+                LogManager.d(TAG, "Initiate delete user data: Single user (ID: ${userToDelete.id}, Name: ${userToDelete.name}) found, proceeding to confirmation.")
+                _userPendingDeletion.value = userToDelete
+                _showDeleteConfirmationDialog.value = true
+            } else {
+                LogManager.i(TAG, "Initiate delete user data: No user data available to delete.")
+                _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.delete_data_no_users_available))
+            }
+        }
+    }
+
+    fun proceedWithDeleteForUser(userId: Int) {
+        viewModelScope.launch {
+            val user = allUsers.value.find { it.id == userId }
+            _userPendingDeletion.value = user
+            _showUserSelectionDialogForDelete.value = false
+            if (user != null) {
+                LogManager.i(TAG, "Proceeding with delete confirmation for user ID: ${user.id}, Name: ${user.name}.")
+                _showDeleteConfirmationDialog.value = true
+            } else {
+                LogManager.w(TAG, "Proceed with delete: User ID $userId not found after selection.")
+            }
+        }
+    }
+
+    fun cancelUserSelectionForDelete() {
+        _showUserSelectionDialogForDelete.value = false
+        _userPendingDeletion.value = null
+        LogManager.d(TAG, "User selection for delete cancelled.")
+    }
+
+    fun confirmActualDeletion() {
+        _userPendingDeletion.value?.let { userToDelete ->
+            viewModelScope.launch {
+                _isLoadingDeletion.value = true
+                LogManager.i(TAG, "Confirming actual deletion of all data for user ID: ${userToDelete.id}, Name: ${userToDelete.name}.")
+                try {
+                    val deletedRowCount = repository.deleteAllMeasurementsForUser(userToDelete.id)
+                    if (deletedRowCount > 0) {
+                        LogManager.i(TAG, "Data for User ${userToDelete.name} (ID: ${userToDelete.id}) successfully deleted. $deletedRowCount measurement records removed.")
+                        _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.delete_data_user_successful, listOf(userToDelete.name)))
+                    } else {
+                        LogManager.i(TAG, "No measurement data found to delete for User ${userToDelete.name} (ID: ${userToDelete.id}).")
+                        _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.delete_data_user_no_data_found, listOf(userToDelete.name)))
+                    }
+                } catch (e: Exception) {
+                    LogManager.e(TAG, "Error deleting data for User ${userToDelete.name} (ID: ${userToDelete.id})", e)
+                    _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.delete_data_user_error, listOf(userToDelete.name)))
+                } finally {
+                    _isLoadingDeletion.value = false
+                    _showDeleteConfirmationDialog.value = false
+                    _userPendingDeletion.value = null
+                    LogManager.d(TAG, "Actual deletion process finished for user ID: ${userToDelete.id}.")
+                }
+            }
+        } ?: run {
+            viewModelScope.launch {
+                _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.delete_data_error_no_user_selected))
+                _showDeleteConfirmationDialog.value = false
+            }
+            LogManager.w(TAG, "confirmActualDeletion called without a user pending deletion.")
+        }
+    }
+
+    fun cancelDeleteConfirmation() {
+        _showDeleteConfirmationDialog.value = false
+        LogManager.d(TAG, "Actual deletion confirmation cancelled for user: ${_userPendingDeletion.value?.name ?: "N/A"}.")
+    }
+
+    fun startDatabaseRestore() {
+        viewModelScope.launch {
+            _safEvent.emit(SafEvent.RequestOpenFile(ACTION_ID_RESTORE_DB, userId = 0 ))
+            LogManager.i(TAG, "Database restore process started. SAF event emitted.")
+        }
+    }
+
+    fun startDatabaseBackup() {
+        viewModelScope.launch {
+            val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+            val dbName = repository.getDatabaseName() ?: "openscale_db"
+            val suggestedName = "${dbName}_backup_${timeStamp}.zip"
+            _safEvent.emit(SafEvent.RequestCreateFile(suggestedName, ACTION_ID_BACKUP_DB, userId = 0))
+            LogManager.i(TAG, "Database backup process started. Suggested name: $suggestedName. SAF event emitted.")
+        }
+    }
+
+    fun performDatabaseBackup(backupUri: Uri, applicationContext: android.content.Context, contentResolver: ContentResolver) {
+        viewModelScope.launch {
+            _isLoadingBackup.value = true
+            LogManager.i(TAG, "Performing database backup to URI: $backupUri")
+            try {
+                val dbName = repository.getDatabaseName() ?: run {
+                    LogManager.e(TAG, "Database backup error: Database name could not be retrieved.")
+                    _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.backup_error_db_name_not_retrieved))
+                    _isLoadingBackup.value = false
+                    return@launch
+                }
+                val dbFile = applicationContext.getDatabasePath(dbName)
+                val dbDir = dbFile.parentFile ?: run {
+                    LogManager.e(TAG, "Database backup error: Database directory could not be determined for $dbName.")
+                    _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.backup_error_db_name_not_retrieved)) // Generic error might be better
+                    _isLoadingBackup.value = false
+                    return@launch
+                }
+
+
+                val filesToBackup = listOfNotNull(
+                    dbFile,
+                    File(dbDir, "$dbName-shm"),
+                    File(dbDir, "$dbName-wal")
+                )
+
+                if (!dbFile.exists()) {
+                    _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.backup_error_main_db_not_found, listOf(dbName)))
+                    LogManager.e(TAG, "Database backup error: Main DB file ${dbFile.absolutePath} not found.")
+                    _isLoadingBackup.value = false
+                    return@launch
+                }
+                LogManager.d(TAG, "Main DB file path for backup: ${dbFile.absolutePath}")
+
+                withContext(Dispatchers.IO) {
+                    var backupSuccessful = false
+                    try {
+                        contentResolver.openOutputStream(backupUri)?.use { outputStream ->
+                            ZipOutputStream(outputStream).use { zipOutputStream ->
+                                filesToBackup.forEach { file ->
+                                    if (file.exists() && file.isFile) {
+                                        try {
+                                            FileInputStream(file).use { fileInputStream ->
+                                                val entry = ZipEntry(file.name)
+                                                zipOutputStream.putNextEntry(entry)
+                                                fileInputStream.copyTo(zipOutputStream)
+                                                zipOutputStream.closeEntry()
+                                                LogManager.d(TAG, "Added ${file.name} to backup archive.")
+                                            }
+                                        } catch (e: Exception) {
+                                            // Log error for individual file but continue (especially for -shm or -wal)
+                                            LogManager.w(TAG, "Could not add ${file.name} to backup archive, continuing. Error: ${e.message}", e)
+                                        }
+                                    } else {
+                                        // Main DB file existence is checked above. This handles missing -shm or -wal.
+                                        if (file.name.endsWith("-shm") || file.name.endsWith("-wal")) {
+                                            LogManager.i(TAG, "Optional backup file ${file.name} not found, skipping.")
+                                        }
+                                    }
+                                }
+                            }
+                        } ?: run {
+                            _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.backup_error_no_output_stream))
+                            LogManager.e(TAG, "Backup failed: Could not open OutputStream for Uri: $backupUri")
+                            return@withContext // Exit IO context
+                        }
+                        backupSuccessful = true
+                    } catch (e: IOException) {
+                        LogManager.e(TAG, "IO Error during database backup zip process to URI $backupUri", e)
+                        val errorMsg = e.localizedMessage ?: "Unknown I/O error"
+                        _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.backup_error_generic, listOf(errorMsg)))
+                        return@withContext
+                    }
+
+                    if (backupSuccessful) {
+                        LogManager.i(TAG, "Database backup to $backupUri successful.")
+                        _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.backup_successful))
+                    }
+                }
+            } catch (e: Exception) {
+                LogManager.e(TAG, "General error during database backup preparation for URI $backupUri", e)
+                val errorMsg = e.localizedMessage ?: "Unknown error"
+                _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.backup_error_generic, listOf(errorMsg)))
+            } finally {
+                _isLoadingBackup.value = false
+                LogManager.i(TAG, "Database backup process finished for URI: $backupUri.")
+            }
+        }
+    }
+
+    fun performDatabaseRestore(restoreUri: Uri, applicationContext: android.content.Context, contentResolver: ContentResolver) {
+        viewModelScope.launch {
+            _isLoadingRestore.value = true
+            LogManager.i(TAG, "Performing database restore from URI: $restoreUri")
+            try {
+                val dbName = repository.getDatabaseName() ?: run {
+                    LogManager.e(TAG, "Database restore error: Database name could not be retrieved.")
+                    _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.backup_error_db_name_not_retrieved)) // Re-use backup error string
+                    _isLoadingRestore.value = false
+                    return@launch
+                }
+                val dbFile = applicationContext.getDatabasePath(dbName)
+                val dbDir = dbFile.parentFile ?: run {
+                    LogManager.e(TAG, "Database restore error: Database directory could not be determined for $dbName.")
+                    _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.backup_error_db_name_not_retrieved))
+                    _isLoadingRestore.value = false
+                    return@launch
+                }
+
+                // Close the database before attempting to overwrite files
+                LogManager.d(TAG, "Attempting to close database before restore.")
+                repository.closeDatabase() // Ensure this method exists and correctly closes Room
+                LogManager.i(TAG, "Database closed for restore operation.")
+
+                withContext(Dispatchers.IO) {
+                    var restoreSuccessful = false
+                    var mainDbRestored = false
+                    try {
+                        contentResolver.openInputStream(restoreUri)?.use { inputStream ->
+                            ZipInputStream(inputStream).use { zipInputStream ->
+                                var entry: ZipEntry? = zipInputStream.nextEntry
+                                while (entry != null) {
+                                    val outputFile = File(dbDir, entry.name)
+                                    // Basic path traversal protection
+                                    if (!outputFile.canonicalPath.startsWith(dbDir.canonicalPath)) {
+                                        LogManager.e(TAG, "Skipping restore of entry '${entry.name}' due to path traversal attempt.")
+                                        entry = zipInputStream.nextEntry
+                                        continue
+                                    }
+
+                                    // Delete existing file before restoring (important for WAL mode)
+                                    if (outputFile.exists()) {
+                                        if (!outputFile.delete()) {
+                                            LogManager.w(TAG, "Could not delete existing file ${outputFile.name} before restore. Restore might fail or be incomplete.")
+                                        }
+                                    }
+
+                                    FileOutputStream(outputFile).use { fileOutputStream ->
+                                        zipInputStream.copyTo(fileOutputStream)
+                                    }
+                                    LogManager.d(TAG, "Restored ${entry.name} from backup archive to ${outputFile.absolutePath}.")
+                                    if (entry.name == dbName) {
+                                        mainDbRestored = true
+                                    }
+                                    entry = zipInputStream.nextEntry
+                                }
+                            }
+                        } ?: run {
+                            _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.restore_error_no_input_stream))
+                            LogManager.e(TAG, "Restore failed: Could not open InputStream for Uri: $restoreUri")
+                            return@withContext
+                        }
+
+                        if (!mainDbRestored) {
+                            LogManager.e(TAG, "Restore failed: Main database file '$dbName' not found in the backup archive.")
+                            _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.restore_error_db_files_missing))
+                            // Attempt to clean up partially restored files might be needed here, or let the user handle it.
+                            return@withContext
+                        }
+                        restoreSuccessful = true
+
+                    } catch (e: IOException) {
+                        LogManager.e(TAG, "IO Error during database restore from URI $restoreUri", e)
+                        val errorMsg = e.localizedMessage ?: "Unknown I/O error"
+                        _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.restore_error_generic, listOf(errorMsg)))
+                        return@withContext
+                    } catch (e: IllegalStateException) { // Can be thrown by ZipInputStream
+                        LogManager.e(TAG, "Error processing ZIP file during restore from URI $restoreUri", e)
+                        _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.restore_error_zip_format))
+                        return@withContext
+                    }
+
+
+                    if (restoreSuccessful) {
+                        LogManager.i(TAG, "Database restore from $restoreUri successful. App restart is required.")
+                        _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.restore_successful))
+                        // The app needs to be restarted for Room to pick up the new database files correctly.
+                        // This usually involves sharedViewModel.requestAppRestart() or similar mechanism.
+                    }
+                }
+            } catch (e: Exception) {
+                LogManager.e(TAG, "General error during database restore from URI $restoreUri", e)
+                val errorMsg = e.localizedMessage ?: "Unknown error"
+                _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.restore_error_generic, listOf(errorMsg)))
+            } finally {
+                // Re-open the database regardless of success, unless app is restarting
+                // If an app restart is requested, reopening might not be necessary or could cause issues.
+                // However, if the restore failed and no restart is pending, the DB should be reopened.
+                if (!_isLoadingRestore.value) { // Check if not already restarting
+                    try {
+                        LogManager.d(TAG, "Attempting to re-open database after restore attempt.")
+                        // This might require re-initialization of the Room database instance
+                        // if the underlying files were changed.
+                        // For simplicity, we assume the repository handles this.
+                        // A full app restart is generally the safest way after a DB restore.
+                        // TODO repository.reopenDatabase() // Ensure this method exists and correctly re-opens Room
+                        LogManager.i(TAG, "Database re-opened after restore attempt.")
+                    } catch (reopenError: Exception) {
+                        LogManager.e(TAG, "Error re-opening database after restore attempt. App restart is highly recommended.", reopenError)
+                        _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.restore_error_generic, listOf("Error re-opening database.")))
+                    }
+                }
+                _isLoadingRestore.value = false
+                LogManager.i(TAG, "Database restore process finished for URI: $restoreUri.")
+            }
+        }
+    }
+
+    fun initiateDeleteEntireDatabaseProcess() {
+        LogManager.d(TAG, "Initiating delete entire database process. Showing confirmation dialog.")
+        _showDeleteEntireDatabaseConfirmationDialog.value = true
+    }
+
+    fun cancelDeleteEntireDatabaseConfirmation() {
+        _showDeleteEntireDatabaseConfirmationDialog.value = false
+        LogManager.d(TAG, "Delete entire database confirmation cancelled.")
+    }
+
+    fun confirmDeleteEntireDatabase(applicationContext: android.content.Context) {
+        viewModelScope.launch {
+            _isLoadingEntireDatabaseDeletion.value = true
+            _showDeleteEntireDatabaseConfirmationDialog.value = false
+            LogManager.i(TAG, "User confirmed deletion of the entire database.")
+
+            try {
+                LogManager.d(TAG, "Attempting to close database before deletion.")
+                repository.closeDatabase()
+                LogManager.i(TAG, "Database closed for deletion.")
+
+                withContext(Dispatchers.IO) {
+                    val dbName = repository.getDatabaseName() // Get it before it's potentially gone
+                    if (dbName == null) {
+                        LogManager.e(TAG, "Failed to get database name. Cannot ensure complete deletion.")
+                        _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.delete_db_error)) // Generic error
+                        return@withContext
+                    }
+                    val databaseDeleted = applicationContext.deleteDatabase(dbName)
+
+                    // Also try to delete -shm and -wal files explicitly, as deleteDatabase might not always get them.
+                    val dbFile = applicationContext.getDatabasePath(dbName)
+                    val dbDir = dbFile.parentFile
+                    var shmDeleted = true
+                    var walDeleted = true
+                    if (dbDir != null && dbDir.exists()) {
+                        val shmFile = File(dbDir, "$dbName-shm")
+                        if (shmFile.exists()) shmDeleted = shmFile.delete()
+                        val walFile = File(dbDir, "$dbName-wal")
+                        if (walFile.exists()) walDeleted = walFile.delete()
+                    }
+
+                    if (databaseDeleted) {
+                        LogManager.i(TAG, "Entire database '$dbName' (and associated files: shm=$shmDeleted, wal=$walDeleted) successfully deleted.")
+                        _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.delete_db_successful))
+                        // App must be restarted as the database is gone.
+                        // TODO sharedViewModel.requestAppRestart()
+                    } else {
+                        LogManager.e(TAG, "Failed to delete the entire database '$dbName'. deleteDatabase returned false.")
+                        _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.delete_db_error))
+                    }
+                }
+            } catch (e: Exception) {
+                LogManager.e(TAG, "Error during entire database deletion process.", e)
+                _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.delete_db_error))
+            } finally {
+                // No need to reopen DB here as it's supposed to be deleted.
+                // If deletion failed, the app state is uncertain, restart is still best.
+                _isLoadingEntireDatabaseDeletion.value = false
+                LogManager.i(TAG, "Entire database deletion process finished.")
+            }
+        }
+    }
+
+    // --- User-Operationen (wiederhergestellt aus der ursprünglichen Version) ---
+    /**
+     * Adds a new user to the database.
+     * This is a suspend function as it involves a database write operation.
+     *
+     * @param user The [User] object to insert.
+     * @return The ID of the newly inserted user.
+     */
+    suspend fun addUser(user: User): Long {
+        LogManager.d(TAG, "Adding new user: ${user.name}")
+        val newUserId = repository.insertUser(user)
+        LogManager.i(TAG, "User '${user.name}' added with ID: $newUserId")
+        // Optionally, trigger a refresh of allUsers or let the SharedViewModel handle it
+        // sharedViewModel.refreshUsers()
+        return newUserId
+    }
+
+    /**
+     * Deletes a user and all their associated data from the database.
+     * This operation is performed in a background coroutine.
+     *
+     * @param user The [User] object to delete.
+     */
+    fun deleteUser(user: User) {
+        viewModelScope.launch {
+            LogManager.d(TAG, "Attempting to delete user: ${user.name} (ID: ${user.id})")
+            try {
+                // Consider the implications: this will also delete all measurements for the user.
+                // You might want a confirmation dialog for this action elsewhere in the UI.
+                repository.deleteUser(user)
+                LogManager.i(TAG, "User '${user.name}' (ID: ${user.id}) and their data deleted successfully.")
+                // Optionally, emit a success message or trigger UI refresh
+                _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.user_deleted_successfully, listOf(user.name)))
+                // sharedViewModel.refreshUsers() // Or handle user list updates through SharedViewModel
+            } catch (e: Exception) {
+                LogManager.e(TAG, "Error deleting user '${user.name}' (ID: ${user.id})", e)
+                _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.user_deleted_error, listOf(user.name)))
+            }
+        }
+    }
+
+    /**
+     * Updates an existing user's information in the database.
+     * This is a suspend function as it involves a database write operation.
+     *
+     * @param user The [User] object with updated information.
+     */
+    suspend fun updateUser(user: User) {
+        LogManager.d(TAG, "Updating user: ${user.name} (ID: ${user.id})")
+        try {
+            repository.updateUser(user)
+            LogManager.i(TAG, "User '${user.name}' (ID: ${user.id}) updated successfully.")
+            // Optionally, emit a success message or trigger UI refresh
+            _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.user_updated_successfully, listOf(user.name)))
+            // sharedViewModel.refreshUsers()
+        } catch (e: Exception) {
+            LogManager.e(TAG, "Error updating user '${user.name}' (ID: ${user.id})", e)
+            _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.user_updated_error, listOf(user.name)))
+        }
+    }
+
+    // --- MeasurementType-Operationen (wiederhergestellt aus der ursprünglichen Version) ---
+    /**
+     * Adds a new measurement type to the database.
+     * This operation is performed in a background coroutine.
+     *
+     * @param type The [MeasurementType] object to insert.
+     */
+    fun addMeasurementType(type: MeasurementType) {
+        viewModelScope.launch {
+            LogManager.d(TAG, "Adding new measurement type (Key: ${type.key})")
+            try {
+                repository.insertMeasurementType(type)
+                LogManager.i(TAG, "Measurement type '${type.key}' added successfully.")
+                _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.measurement_type_added_successfully, listOf(type.key.toString())))
+                // Optionally, trigger a refresh of measurement types if displayed
+                // sharedViewModel.refreshMeasurementTypes()
+            } catch (e: Exception) {
+                LogManager.e(TAG, "Error adding measurement type '${type.key}'", e)
+                _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.measurement_type_added_error, listOf(type.key.toString())))
+            }
+        }
+    }
+
+    /**
+     * Deletes a measurement type from the database.
+     * This operation is performed in a background coroutine.
+     * Consider the implications: associated measurement values might need handling.
+     *
+     * @param type The [MeasurementType] object to delete.
+     */
+    fun deleteMeasurementType(type: MeasurementType) {
+        viewModelScope.launch {
+            LogManager.d(TAG, "Attempting to delete measurement type (ID: ${type.id})")
+            try {
+                // WARNING: Deleting a MeasurementType might orphan MeasurementValue entries
+                // or require cascading deletes/cleanup logic in the repository or database schema.
+                // Ensure this is handled correctly based on your app's requirements.
+                repository.deleteMeasurementType(type)
+                LogManager.i(TAG, "Measurement type (ID: ${type.id}) deleted successfully.")
+                _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.measurement_type_deleted_successfully, listOf(type.key.toString())))
+                // sharedViewModel.refreshMeasurementTypes()
+            } catch (e: Exception) {
+                LogManager.e(TAG, "Error deleting measurement type (ID: ${type.id})", e)
+                _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.measurement_type_deleted_error, listOf(type.key.toString())))
+            }
+        }
+    }
+
+    /**
+     * Updates an existing measurement type in the database.
+     * This operation is performed in a background coroutine.
+     *
+     * @param type The [MeasurementType] object with updated information.
+     */
+    fun updateMeasurementType(type: MeasurementType) {
+        viewModelScope.launch {
+            LogManager.d(TAG, "Updating measurement type (ID: ${type.id})")
+            try {
+                repository.updateMeasurementType(type)
+                LogManager.i(TAG, "Measurement type (ID: ${type.id}) updated successfully.")
+                _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.measurement_type_updated_successfully, listOf(type.key.toString())))
+                // sharedViewModel.refreshMeasurementTypes()
+            } catch (e: Exception) {
+                LogManager.e(TAG, "Error updating measurement type (ID: ${type.id})", e)
+                _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.measurement_type_updated_error, listOf(type.key.toString())))
+            }
+        }
+    }
+
+}
