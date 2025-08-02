@@ -257,7 +257,7 @@ fun MeasurementTypeDetailScreen(
                 expanded = expandedUnit,
                 onDismissRequest = { expandedUnit = false }
             ) {
-                UnitType.values().forEach { unit ->
+                UnitType.entries.forEach { unit ->
                     DropdownMenuItem(
                         text = { Text(unit.name.lowercase().replaceFirstChar { it.uppercase() }) },
                         onClick = {
@@ -293,7 +293,7 @@ fun MeasurementTypeDetailScreen(
                 expanded = expandedInputType,
                 onDismissRequest = { expandedInputType = false }
             ) {
-                InputFieldType.values().forEach { type ->
+                InputFieldType.entries.forEach { type ->
                     DropdownMenuItem(
                         text = { Text(type.name.lowercase().replaceFirstChar { it.uppercase() }) },
                         onClick = {
@@ -328,7 +328,6 @@ fun MeasurementTypeDetailScreen(
     // Icon Picker Dialog
     if (showIconPicker) {
         IconPickerDialog(
-            currentIcon = selectedIcon,
             onIconSelected = {
                 selectedIcon = it
                 showIconPicker = false // Close picker after selection

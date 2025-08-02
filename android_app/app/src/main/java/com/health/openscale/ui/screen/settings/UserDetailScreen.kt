@@ -36,6 +36,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
@@ -198,7 +199,7 @@ fun UserDetailScreen(
 
         Text(stringResource(id = R.string.user_detail_label_gender)) // "Gender"
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            GenderType.values().forEach { option ->
+            GenderType.entries.forEach { option ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
@@ -230,7 +231,7 @@ fun UserDetailScreen(
                     ExposedDropdownMenuDefaults.TrailingIcon(expanded = activityLevelExpanded)
                 },
                 modifier = Modifier
-                    .menuAnchor() // Anchors the dropdown menu to this text field
+                    .menuAnchor(type = MenuAnchorType.PrimaryNotEditable) // Anchors the dropdown menu to this text field
                     .fillMaxWidth()
             )
 
@@ -238,7 +239,7 @@ fun UserDetailScreen(
                 expanded = activityLevelExpanded,
                 onDismissRequest = { activityLevelExpanded = false }
             ) {
-                ActivityLevel.values().forEach { selectionOption ->
+                ActivityLevel.entries.forEach { selectionOption ->
                     DropdownMenuItem(
                         text = { Text(selectionOption.name.lowercase().replaceFirstChar { it.uppercaseChar().toString() }) },
                         onClick = {

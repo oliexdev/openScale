@@ -439,7 +439,6 @@ fun DeviceCardItem(
     isCurrentlySaved: Boolean,
     onClick: () -> Unit
 ) {
-    val context = LocalContext.current
     val supportColor = if (deviceInfo.isSupported) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
     val unknownDeviceName = stringResource(R.string.unknown_device_placeholder)
 

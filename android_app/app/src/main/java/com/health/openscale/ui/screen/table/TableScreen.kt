@@ -269,7 +269,7 @@ fun TableScreen(
                     .fillMaxSize()
                     .padding(16.dp), Alignment.Center
             ) { Text(noColumnsSelectedMessage) }
-        } else if (tableData.isEmpty() && enrichedMeasurements.isNotEmpty() && displayedTypes.isNotEmpty()) {
+        } else if (tableData.isEmpty()) {
             // This case implies data exists, but not for the currently selected combination of columns.
             Box(
                 Modifier
@@ -458,7 +458,7 @@ fun TableDataCellInternal(
                             else -> null
                         }
 
-                        if (trendIconVector != null && trendContentDescription != null) {
+                        if (trendIconVector != null) {
                             Icon(
                                 imageVector = trendIconVector,
                                 contentDescription = trendContentDescription,

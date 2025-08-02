@@ -83,28 +83,28 @@ enum class WeightUnit {
 
     override fun toString(): String {
         when (this) {
-            WeightUnit.LB -> return "lb"
-            WeightUnit.ST -> return "st"
-            WeightUnit.KG -> return "kg"
+            LB -> return "lb"
+            ST -> return "st"
+            KG -> return "kg"
         }
 
     }
 
     fun toInt(): Int {
         when (this) {
-            WeightUnit.LB -> return 1
-            WeightUnit.ST -> return 2
-            WeightUnit.KG -> return 0
+            LB -> return 1
+            ST -> return 2
+            KG -> return 0
         }
     }
 
     companion object {
         fun fromInt(unit: Int): WeightUnit {
             when (unit) {
-                1 -> return WeightUnit.LB
-                2 -> return WeightUnit.ST
+                1 -> return LB
+                2 -> return ST
             }
-            return WeightUnit.KG
+            return KG
         }
     }
 }

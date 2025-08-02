@@ -92,12 +92,6 @@ sealed class DataManagementSettingListItem {
 }
 
 /**
- * Represents a header item in a list, used for section titles.
- * @param title The text of the header.
- */
-data class HeaderItem(val title: String) : DataManagementSettingListItem() // While not used in the provided snippet, it's good practice to document all parts of a sealed class if they exist.
-
-/**
  * Composable screen for managing application data, including import/export of measurements,
  * database backup/restore, and deletion of user data or the entire database.
  *
@@ -133,7 +127,6 @@ fun DataManagementSettingsScreen(
 
     val context = LocalContext.current
     var activeSafActionUserId by remember { mutableStateOf<Int?>(null) } // Stores user ID for SAF actions like CSV export/import
-    var activeSafActionId by remember { mutableStateOf<String?>(null) } // Stores action ID for distinguishing SAF operations
 
     // --- ActivityResultLauncher for CSV Export ---
     val exportCsvLauncher = rememberLauncherForActivityResult(
@@ -143,7 +136,6 @@ fun DataManagementSettingsScreen(
                 activeSafActionUserId?.let { userId ->
                     settingsViewModel.performCsvExport(userId, fileUri, context.contentResolver)
                     activeSafActionUserId = null // Reset after use
-                    activeSafActionId = null
                 }
             }
         }
@@ -157,7 +149,6 @@ fun DataManagementSettingsScreen(
                 activeSafActionUserId?.let { userId ->
                     settingsViewModel.performCsvImport(userId, fileUri, context.contentResolver)
                     activeSafActionUserId = null // Reset after use
-                    activeSafActionId = null
                 }
             }
         }
@@ -170,7 +161,6 @@ fun DataManagementSettingsScreen(
             uri?.let { fileUri ->
                 // activeSafActionUserId is not relevant here as it's a global backup.
                 settingsViewModel.performDatabaseBackup(fileUri, context.applicationContext, context.contentResolver)
-                activeSafActionId = null // Reset
             }
         }
     )
@@ -182,7 +172,6 @@ fun DataManagementSettingsScreen(
             uri?.let { fileUri ->
                 // activeSafActionUserId is not relevant here.
                 settingsViewModel.performDatabaseRestore(fileUri, context.applicationContext, context.contentResolver)
-                activeSafActionId = null // Reset
             }
         }
     )
@@ -193,7 +182,6 @@ fun DataManagementSettingsScreen(
             when (event) {
                 is SafEvent.RequestCreateFile -> {
                     activeSafActionUserId = event.userId // Retain for CSV export if applicable
-                    activeSafActionId = event.actionId
                     if (event.actionId == SettingsViewModel.ACTION_ID_BACKUP_DB) {
                         backupDbLauncher.launch(event.suggestedName)
                     } else { // Assumption: other CreateFile is CSV export
@@ -202,7 +190,6 @@ fun DataManagementSettingsScreen(
                 }
                 is SafEvent.RequestOpenFile -> {
                     activeSafActionUserId = event.userId // Retain for CSV import if applicable
-                    activeSafActionId = event.actionId
                     if (event.actionId == SettingsViewModel.ACTION_ID_RESTORE_DB) {
                         // For DB Restore, we might expect specific MIME types,
                         // e.g., "application/octet-stream" or "application/x-sqlite3" for .db,
@@ -305,7 +292,7 @@ fun DataManagementSettingsScreen(
     ) {
         // Regular Actions
         items(regularDataManagementItems.size) { index ->
-            val item = regularDataManagementItems[index] as DataManagementSettingListItem.ActionItem // Safe cast
+            val item = regularDataManagementItems[index]
             SettingsCardItem(
                 label = item.label,
                 icon = item.icon,
@@ -334,7 +321,7 @@ fun DataManagementSettingsScreen(
             }
 
             items(destructiveDataManagementItems.size) { index ->
-                val item = destructiveDataManagementItems[index] as DataManagementSettingListItem.ActionItem // Safe cast
+                val item = destructiveDataManagementItems[index]
                 SettingsCardItem(
                     label = item.label,
                     icon = item.icon,

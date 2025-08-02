@@ -71,7 +71,7 @@ abstract class AppDatabase : RoomDatabase() {
 
     companion object {
         private const val TAG = "AppDatabase"
-        const val DATABASE_NAME = "openScaleDB.db"
+        const val DATABASE_NAME = "openScale.db"
 
         @Volatile
         private var INSTANCE: AppDatabase? = null

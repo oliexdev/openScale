@@ -72,7 +72,6 @@ fun getIconResIdByName(name: String): Int {
 
 @Composable
 fun IconPickerDialog(
-    currentIcon: String,
     onIconSelected: (String) -> Unit,
     onDismiss: () -> Unit
 ) {

@@ -107,7 +107,7 @@ interface UserSettingsRepository {
 /**
  * Implementation of [UserSettingsRepository] using Jetpack DataStore.
  */
-class UserSettingsRepositoryImpl(private val context: Context) : UserSettingsRepository {
+class UserSettingsRepositoryImpl(context: Context) : UserSettingsRepository {
     private val dataStore: DataStore<Preferences> = context.userSettingsDataStore
     private val TAG = "UserSettingsRepository" // Tag for logging
 
@@ -315,7 +315,7 @@ class UserSettingsRepositoryImpl(private val context: Context) : UserSettingsRep
                         }
                     }
                     else -> {
-                        val errorMsg = "Unsupported type for preference: $keyName (Type: ${value!!::class.java.name})"
+                        val errorMsg = "Unsupported type for preference: $keyName (Type: ${value::class.java.name})"
                         LogManager.e(TAG, errorMsg)
                         throw IllegalArgumentException(errorMsg) // This will be caught by the outer try-catch
                     }

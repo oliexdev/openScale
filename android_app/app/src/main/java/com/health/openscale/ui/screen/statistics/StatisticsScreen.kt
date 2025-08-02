@@ -154,7 +154,7 @@ fun StatisticsScreen(sharedViewModel: SharedViewModel) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
-        } else if (measurementsForStatistics.isEmpty() && !isLoadingData && relevantTypesForStatsDisplay.isEmpty()) {
+        } else if (measurementsForStatistics.isEmpty() && relevantTypesForStatsDisplay.isEmpty()) {
             // Show a message if no relevant measurement types are configured or no data is present.
             // This condition is refined to also check relevantTypesForStatsDisplay.
             Box(

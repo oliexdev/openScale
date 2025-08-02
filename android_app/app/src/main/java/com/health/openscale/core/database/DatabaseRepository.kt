@@ -354,7 +354,7 @@ class DatabaseRepository(
 
         if (weightKg == null || weightKg <= 0f ||
             heightCm == null || heightCm <= 0f ||
-            birthDateTimestamp <= 0L || gender == null
+            birthDateTimestamp <= 0L
         ) {
             LogManager.d(CALC_PROCESS_TAG, "BMR calculation skipped: Missing or invalid weight, height, birthdate, or gender.")
             return null
@@ -367,10 +367,6 @@ class DatabaseRepository(
             when (gender) {
                 GenderType.MALE -> (10.0f * weightKg) + (6.25f * heightCm) - (5.0f * ageYears) + 5.0f
                 GenderType.FEMALE -> (10.0f * weightKg) + (6.25f * heightCm) - (5.0f * ageYears) - 161.0f
-                else -> {
-                    LogManager.w(CALC_PROCESS_TAG, "BMR calculation not supported for gender: '$gender'. User ID: ${user.id}")
-                    null
-                }
             }
         } else {
             LogManager.w(CALC_PROCESS_TAG, "Invalid age for BMR calculation: $ageYears years. User ID: ${user.id}")
@@ -414,7 +410,7 @@ class DatabaseRepository(
         val gender = user.gender
         val ageYears = CalculationUtil.dateToAge(user.birthDate)
 
-        if (gender == null || ageYears <= 0) {
+        if (ageYears <= 0) {
             LogManager.w(CALC_PROCESS_TAG, "Fat Caliper calculation skipped: Invalid gender ($gender) or age ($ageYears years). User ID: ${user.id}")
             return null
         }
@@ -440,10 +436,6 @@ class DatabaseRepository(
                 k1 = 0.0009929f
                 k2 = 0.0000023f
                 ka = 0.0001392f
-            }
-            else -> {
-                LogManager.w(CALC_PROCESS_TAG, "Fat Caliper calculation not supported for gender: '$gender'. User ID: ${user.id}")
-                return null
             }
         }
 

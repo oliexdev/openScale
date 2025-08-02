@@ -99,7 +99,7 @@ class LegacyScaleAdapter(
         override fun handleMessage(msg: Message) {
             val adapter = adapterRef.get() ?: return // Adapter instance might have been garbage collected
 
-            val status = BluetoothCommunication.BT_STATUS.values().getOrNull(msg.what)
+            val status = BluetoothCommunication.BT_STATUS.entries.getOrNull(msg.what)
             val eventData = msg.obj
             val arg1 = msg.arg1
             val arg2 = msg.arg2
@@ -219,43 +219,43 @@ class LegacyScaleAdapter(
         }
     }
 
-    override fun connect(deviceAddress: String, uiScaleUser: ScaleUser?, appUserId: Int?) {
+    override fun connect(address: String, scaleUser: ScaleUser?, appUserId: Int?) {
         adapterScope.launch {
             val currentDeviceName = currentTargetAddress ?: bluetoothDriverInstance.driverName()
             if (_isConnected.value || _isConnecting.value) {
-                LogManager.w(TAG, "connect: Already connected/connecting to $currentDeviceName. Ignoring request for $deviceAddress.")
-                if (currentTargetAddress != deviceAddress && currentTargetAddress != null) {
+                LogManager.w(TAG, "connect: Already connected/connecting to $currentDeviceName. Ignoring request for $address.")
+                if (currentTargetAddress != address && currentTargetAddress != null) {
                     val message = applicationContext.getString(R.string.legacy_adapter_connect_busy, currentTargetAddress)
-                    _eventsFlow.tryEmit(BluetoothEvent.ConnectionFailed(deviceAddress, message))
+                    _eventsFlow.tryEmit(BluetoothEvent.ConnectionFailed(address, message))
                 } else if (currentTargetAddress == null) {
                     // This case implies isConnecting is true but currentTargetAddress is null,
                     // which might indicate a race condition or an incomplete previous cleanup.
                     // Allow proceeding with the new connection attempt.
-                    LogManager.d(TAG, "connect: Retrying connection for $deviceAddress to ${bluetoothDriverInstance.driverName()} while isConnecting=true but currentTargetAddress=null")
+                    LogManager.d(TAG, "connect: Retrying connection for $address to ${bluetoothDriverInstance.driverName()} while isConnecting=true but currentTargetAddress=null")
                 } else {
                     // Already connecting to or connected to the same deviceAddress
                     return@launch
                 }
             }
 
-            LogManager.i(TAG, "connect: REQUEST for address $deviceAddress to driver ${bluetoothDriverInstance.driverName()}, UI ScaleUser ID: ${uiScaleUser?.id}, AppUserID: $appUserId")
+            LogManager.i(TAG, "connect: REQUEST for address $address to driver ${bluetoothDriverInstance.driverName()}, UI ScaleUser ID: ${scaleUser?.id}, AppUserID: $appUserId")
             _isConnecting.value = true
             _isConnected.value = false
-            currentTargetAddress = deviceAddress // Store the address being connected to
-            currentInternalUser = uiScaleUser
+            currentTargetAddress = address // Store the address being connected to
+            currentInternalUser = scaleUser
 
             LogManager.d(TAG, "connect: Internal user for connection: ${currentInternalUser?.id}, AppUserID: $appUserId")
 
             currentInternalUser?.let { bluetoothDriverInstance.setSelectedScaleUser(it) }
             appUserId?.let { bluetoothDriverInstance.setSelectedScaleUserId(it) }
 
-            LogManager.d(TAG, "connect: Calling connect() on Java driver instance (${bluetoothDriverInstance.driverName()}) for $deviceAddress.")
+            LogManager.d(TAG, "connect: Calling connect() on Java driver instance (${bluetoothDriverInstance.driverName()}) for $address.")
             try {
-                bluetoothDriverInstance.connect(deviceAddress)
+                bluetoothDriverInstance.connect(address)
             } catch (e: Exception) {
-                LogManager.e(TAG, "connect: Exception while calling bluetoothDriverInstance.connect() for $deviceAddress to ${bluetoothDriverInstance.driverName()}", e)
+                LogManager.e(TAG, "connect: Exception while calling bluetoothDriverInstance.connect() for $address to ${bluetoothDriverInstance.driverName()}", e)
                 val message = applicationContext.getString(R.string.legacy_adapter_connect_exception, bluetoothDriverInstance.driverName(), e.message)
-                _eventsFlow.tryEmit(BluetoothEvent.ConnectionFailed(deviceAddress, message))
+                _eventsFlow.tryEmit(BluetoothEvent.ConnectionFailed(address, message))
                 cleanupAfterDisconnect() // Ensure state is reset
             }
         }

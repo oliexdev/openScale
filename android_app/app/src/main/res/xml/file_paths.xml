@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<paths xmlns:android="http://schemas.android.com/apk/res/android">
+<paths>
     <!--
         This path allows sharing files from the "logs" subdirectory
         within your app's specific directory on external storage.
@@ -8,16 +8,4 @@
     <external-files-path
         name="log_files"
         path="logs/" />
-
-    <!--
-        Consider if LogManager might also use internal storage in some cases or for old logs.
-        If your LogManager.getOldLogFile() could potentially point to
-        context.getFilesDir() + "/logs/", you might need this too.
-        If you are *only* using getExternalFilesDir("logs"), then the entry above is sufficient.
-    -->
-    <!--
-    <files-path
-        name="internal_log_files"
-        path="logs/" />
-    -->
 </paths>

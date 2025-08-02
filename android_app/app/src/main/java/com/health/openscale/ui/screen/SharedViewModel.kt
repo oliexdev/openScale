@@ -395,7 +395,7 @@ class SharedViewModel(
                 return@combine emptyList<EnrichedMeasurement>()
             }
 
-            if (globalTypes.isEmpty() && measurements.isNotEmpty()) {
+            if (globalTypes.isEmpty()) {
                 LogManager.w(TAG, "Global measurement types are empty during enrichment. Trend calculation will be limited or inaccurate. (Data Enrichment Warning)")
                 return@combine measurements.map { currentMeasurement ->
                     val trendValuesUnsorted = currentMeasurement.values.map { currentValueWithType ->
@@ -472,7 +472,7 @@ class SharedViewModel(
                     TimeRangeFilter.LAST_7_DAYS -> calendar.add(Calendar.DAY_OF_YEAR, -7)
                     TimeRangeFilter.LAST_30_DAYS -> calendar.add(Calendar.DAY_OF_YEAR, -30)
                     TimeRangeFilter.LAST_365_DAYS -> calendar.add(Calendar.DAY_OF_YEAR, -365)
-                    TimeRangeFilter.ALL_DAYS -> { /* Handled */ }
+                    else -> { /* Handled */ }
                 }
                 calendar.set(Calendar.HOUR_OF_DAY, 0)
                 calendar.set(Calendar.MINUTE, 0)

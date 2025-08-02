@@ -38,6 +38,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.util.UUID
+import androidx.core.util.isNotEmpty
 
 /**
  * Data class to hold information about a scanned Bluetooth LE device.
@@ -294,7 +295,7 @@ class BluetoothScannerManager(
                 if (newDevice.isSupported ||
                     !newDevice.name.isNullOrEmpty() ||
                     newDevice.serviceUuids.isNotEmpty() ||
-                    (newDevice.manufacturerData != null && newDevice.manufacturerData.size() > 0)
+                    (newDevice.manufacturerData != null && newDevice.manufacturerData.isNotEmpty())
                 ) {
                     deviceMap[newDevice.address] = newDevice
                     listShouldBeUpdated = true
@@ -323,23 +324,4 @@ class BluetoothScannerManager(
         }
     }
 
-    /**
-     * Extension function for content-based comparison of two `SparseArray<ByteArray>?` instances.
-     * The standard `equals` on `SparseArray` only checks for reference equality.
-     */
-    private fun SparseArray<ByteArray>?.contentEquals(other: SparseArray<ByteArray>?): Boolean {
-        if (this === other) return true
-        if (this == null || other == null) return false
-        if (this.size() != other.size()) return false
-
-        for (i in 0 until this.size()) {
-            val key = this.keyAt(i)
-            val valueThis = this.valueAt(i)
-            val valueOther = other.get(key)
-            if (valueOther == null || !valueThis.contentEquals(valueOther)) {
-                return false
-            }
-        }
-        return true
-    }
 }

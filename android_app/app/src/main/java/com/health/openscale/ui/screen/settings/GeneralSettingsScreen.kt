@@ -38,6 +38,7 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
@@ -64,7 +65,6 @@ import com.health.openscale.core.utils.LogManager
 import com.health.openscale.ui.screen.SharedViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -75,7 +75,6 @@ fun GeneralSettingsScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val currentAppDisplayLocale = Locale.getDefault()
 
     // Get supported languages (enum instances)
     val supportedLanguagesEnumEntries = remember {
@@ -190,7 +189,7 @@ fun GeneralSettingsScreen(
                     ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedLanguageMenu)
                 },
                 modifier = Modifier
-                    .menuAnchor()
+                    .menuAnchor(type = MenuAnchorType.PrimaryNotEditable)
                     .fillMaxWidth()
             )
 

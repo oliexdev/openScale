@@ -19,10 +19,9 @@ package com.health.openscale.core.bluetooth.data;
 
 import java.util.Date;
 
-public class ScaleMeasurement implements Cloneable {
+public class ScaleMeasurement {
     private int id;
     private int userId;
-    private boolean enabled;
     private Date dateTime;
     private float weight;
     private float fat;
@@ -34,7 +33,6 @@ public class ScaleMeasurement implements Cloneable {
 
     public ScaleMeasurement() {
         userId = -1;
-        enabled = true;
         dateTime = new Date();
         weight = 0.0f;
         fat = 0.0f;

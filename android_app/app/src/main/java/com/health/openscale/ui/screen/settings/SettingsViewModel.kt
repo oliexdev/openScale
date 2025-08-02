@@ -224,10 +224,10 @@ class SettingsViewModel(
             try {
                 val allAppTypes: List<MeasurementType> = repository.getAllMeasurementTypes().first()
                 val exportableValueTypes = allAppTypes.filter {
-                    it.key != null && it.key != MeasurementTypeKey.DATE && it.key != MeasurementTypeKey.TIME
+                    it.key != MeasurementTypeKey.DATE && it.key != MeasurementTypeKey.TIME
                 }
                 val valueColumnKeys = exportableValueTypes
-                    .mapNotNull { it.key?.name }
+                    .map { it.key.name }
                     .distinct()
 
                 val dateColumnKey = MeasurementTypeKey.DATE.name
@@ -265,10 +265,7 @@ class SettingsViewModel(
                     measurementData.values.forEach { mvWithType ->
                         val typeEntity = mvWithType.type
                         val valueEntity = mvWithType.value
-                        if (typeEntity.key != null &&
-                            typeEntity.key != MeasurementTypeKey.DATE &&
-                            typeEntity.key != MeasurementTypeKey.TIME &&
-                            valueColumnKeys.contains(typeEntity.key.name)
+                        if (typeEntity.key != MeasurementTypeKey.DATE && typeEntity.key != MeasurementTypeKey.TIME && valueColumnKeys.contains(typeEntity.key.name)
                         ) {
                             val valueAsString: String? = when (typeEntity.inputType) {
                                 InputFieldType.TEXT -> valueEntity.textValue
@@ -339,7 +336,7 @@ class SettingsViewModel(
             try {
                 // ... (Rest of the import logic including CSV parsing as before) ...
                 val allAppTypes: List<MeasurementType> = repository.getAllMeasurementTypes().first()
-                val typeMapByKeyName = allAppTypes.filter { it.key != null }.associateBy { it.key!!.name }
+                val typeMapByKeyName = allAppTypes.associateBy { it.key.name }
 
                 val dateColumnKey = MeasurementTypeKey.DATE.name
                 val timeColumnKey = MeasurementTypeKey.TIME.name
@@ -360,18 +357,17 @@ class SettingsViewModel(
                             readAllAsSequence().forEachIndexed { rowIndex, row ->
                                 if (rowIndex == 0) { // Header row
                                     header = row
-                                    dateColumnIndex = header?.indexOf(dateColumnKey)
-                                        ?: throw IOException("CSV header is missing the mandatory column '$dateColumnKey'.")
+                                    dateColumnIndex = header.indexOf(dateColumnKey)
                                     // ... (rest of header processing)
-                                    timeColumnIndex = header?.indexOf(timeColumnKey) ?: -1
-                                    header?.forEachIndexed { colIdx, columnName ->
+                                    timeColumnIndex = header.indexOf(timeColumnKey)
+                                    header.forEachIndexed { colIdx, columnName ->
                                         if (columnName != dateColumnKey && columnName != timeColumnKey) {
                                             typeMapByKeyName[columnName]?.let { type ->
                                                 valueColumnMap[colIdx] = type
                                             } ?: LogManager.w(TAG, "CSV import for user $userId: Column '$columnName' in CSV not found in known measurement types. It will be ignored.")
                                         }
                                     }
-                                    if (valueColumnMap.isEmpty() && header?.any { it != dateColumnKey && it != timeColumnKey } == true) {
+                                    if (valueColumnMap.isEmpty() && header.any { it != dateColumnKey && it != timeColumnKey }) {
                                         LogManager.w(TAG, "CSV import for user $userId: No measurement value columns in CSV could be mapped to known types.")
                                     }
                                     return@forEachIndexed // Continue to next row
@@ -437,11 +433,11 @@ class SettingsViewModel(
                                             if (isValidValue) {
                                                 measurementValues.add(mv)
                                             } else {
-                                                LogManager.w(TAG, "CSV import for user $userId: Could not parse value '$valueString' for type '${type.key?.name}' in row ${rowIndex + 1}.")
+                                                LogManager.w(TAG, "CSV import for user $userId: Could not parse value '$valueString' for type '${type.key.name}' in row ${rowIndex + 1}.")
                                                 valuesSkippedParseError++
                                             }
                                         } catch (e: Exception) {
-                                            LogManager.w(TAG, "CSV import for user $userId: Error processing value '$valueString' for type '${type.key?.name}' in row ${rowIndex + 1}.", e)
+                                            LogManager.w(TAG, "CSV import for user $userId: Error processing value '$valueString' for type '${type.key.name}' in row ${rowIndex + 1}.", e)
                                             valuesSkippedParseError++
                                         }
                                     }
@@ -460,19 +456,8 @@ class SettingsViewModel(
                         importedMeasurementsCount = newMeasurementsToSave.size
                         LogManager.i(TAG, "CSV Import for User ID $userId successful. $importedMeasurementsCount measurements imported.")
 
-                        // Constructing the detailed message for UI
-                        // This part is tricky if you want one single formatted string from resources.
-                        // Often, it's better to send a base success message and log details,
-                        // or have multiple UiMessageEvents if details are crucial for UI.
-                        // Here's an attempt to build arguments for a potentially complex string resource:
-                        val messageArgs = mutableListOf<Any>(importedMeasurementsCount)
                         var detailsForMessage = ""
                         if (linesSkippedMissingDate > 0) {
-                            // This assumes you have a string like: "%1$d records. %2$d skipped (date), %3$d skipped (parse), %4$d values skipped."
-                            // Or you emit separate messages.
-                            // For simplicity, let's assume a main message and details are appended if they exist.
-                            // This would require a more complex string resource or multiple resources.
-                            // R.string.import_successful_details might take multiple args
                             detailsForMessage += " ($linesSkippedMissingDate rows skipped due to missing dates"
                         }
                         if (linesSkippedDateParseError > 0) {
@@ -686,7 +671,7 @@ class SettingsViewModel(
     fun startDatabaseBackup() {
         viewModelScope.launch {
             val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-            val dbName = repository.getDatabaseName() ?: "openscale_db"
+            val dbName = repository.getDatabaseName()
             val suggestedName = "${dbName}_backup_${timeStamp}.zip"
             _safEvent.emit(SafEvent.RequestCreateFile(suggestedName, ACTION_ID_BACKUP_DB, userId = 0))
             LogManager.i(TAG, "Database backup process started. Suggested name: $suggestedName. SAF event emitted.")
@@ -698,12 +683,7 @@ class SettingsViewModel(
             _isLoadingBackup.value = true
             LogManager.i(TAG, "Performing database backup to URI: $backupUri")
             try {
-                val dbName = repository.getDatabaseName() ?: run {
-                    LogManager.e(TAG, "Database backup error: Database name could not be retrieved.")
-                    _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.backup_error_db_name_not_retrieved))
-                    _isLoadingBackup.value = false
-                    return@launch
-                }
+                val dbName = repository.getDatabaseName()
                 val dbFile = applicationContext.getDatabasePath(dbName)
                 val dbDir = dbFile.parentFile ?: run {
                     LogManager.e(TAG, "Database backup error: Database directory could not be determined for $dbName.")
@@ -788,12 +768,7 @@ class SettingsViewModel(
             _isLoadingRestore.value = true
             LogManager.i(TAG, "Performing database restore from URI: $restoreUri")
             try {
-                val dbName = repository.getDatabaseName() ?: run {
-                    LogManager.e(TAG, "Database restore error: Database name could not be retrieved.")
-                    _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.backup_error_db_name_not_retrieved)) // Re-use backup error string
-                    _isLoadingRestore.value = false
-                    return@launch
-                }
+                val dbName = repository.getDatabaseName()
                 val dbFile = applicationContext.getDatabasePath(dbName)
                 val dbDir = dbFile.parentFile ?: run {
                     LogManager.e(TAG, "Database restore error: Database directory could not be determined for $dbName.")
@@ -923,12 +898,7 @@ class SettingsViewModel(
                 LogManager.i(TAG, "Database closed for deletion.")
 
                 withContext(Dispatchers.IO) {
-                    val dbName = repository.getDatabaseName() // Get it before it's potentially gone
-                    if (dbName == null) {
-                        LogManager.e(TAG, "Failed to get database name. Cannot ensure complete deletion.")
-                        _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.delete_db_error)) // Generic error
-                        return@withContext
-                    }
+                    val dbName = repository.getDatabaseName()
                     val databaseDeleted = applicationContext.deleteDatabase(dbName)
 
                     // Also try to delete -shm and -wal files explicitly, as deleteDatabase might not always get them.

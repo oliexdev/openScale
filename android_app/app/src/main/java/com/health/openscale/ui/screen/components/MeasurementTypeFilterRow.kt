@@ -111,7 +111,7 @@ fun MeasurementTypeFilterRow(
         if (selectableTypes.isNotEmpty()) {
             if (savedTypeIdsSet.isNotEmpty()) {
                 // Filter saved IDs to include only those present in the current selectableTypes
-                var validPersistedIds = savedTypeIdsSet
+                val validPersistedIds = savedTypeIdsSet
                     .mapNotNull { it.toIntOrNull() }
                     .filter { id -> selectableTypes.any { type -> type.id == id } }
 
@@ -145,7 +145,6 @@ fun MeasurementTypeFilterRow(
             }
         } else {
             // No selectable types are available
-            initialIdsToDisplay = emptyList()
             if (displayedSelectedIds.isNotEmpty() || savedTypeIdsSet.isNotEmpty()) {
                 // Clear any previous selection if types become unavailable
                 displayedSelectedIds = emptyList()

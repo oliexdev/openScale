@@ -59,8 +59,6 @@ enum class ConnectionStatus {
     NONE,
     /** Bluetooth adapter is present and enabled, but not actively scanning or connected. */
     IDLE,
-    /** Actively scanning for Bluetooth devices. */
-    SCANNING,
     /** No active connection to a device. */
     DISCONNECTED,
     /** Attempting to establish a connection to a device. */
@@ -142,8 +140,6 @@ class BluetoothViewModel(
     val scanError: StateFlow<String?> = bluetoothScannerManager.scanError
 
     // --- Connection State Flows (from BluetoothConnectionManager) ---
-    /** Emits the name of the currently connected device, or null if not connected. */
-    val connectedDeviceName: StateFlow<String?> = bluetoothConnectionManager.connectedDeviceName
     /** Emits the MAC address of the currently connected device, or null if not connected. */
     val connectedDeviceAddress: StateFlow<String?> = bluetoothConnectionManager.connectedDeviceAddress
     /** Emits the current [ConnectionStatus] of the Bluetooth device. */
@@ -253,7 +249,7 @@ class BluetoothViewModel(
             id = appUser.id
             userName = appUser.name
             birthday = Date(appUser.birthDate) // Ensure birthDate is in millis
-            bodyHeight = appUser.heightCm?.toFloat() ?: 0f // Default to 0f if height is null
+            bodyHeight = appUser.heightCm ?: 0f // Default to 0f if height is null
             gender = appUser.gender
         }
     }

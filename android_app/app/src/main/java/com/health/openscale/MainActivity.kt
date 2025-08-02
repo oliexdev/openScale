@@ -17,7 +17,6 @@
  */
 package com.health.openscale
 
-import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -57,7 +56,7 @@ import kotlinx.coroutines.launch
  * @param context The context used to access string resources.
  * @return A list of [MeasurementType] objects.
  */
-fun getDefaultMeasurementTypes(context: Context): List<MeasurementType> {
+fun getDefaultMeasurementTypes(): List<MeasurementType> {
     return listOf(
         MeasurementType(key = MeasurementTypeKey.WEIGHT, unit = UnitType.KG, color = 0xFFEF2929.toInt(), icon = "ic_weight", isPinned = true, isEnabled = true),
         MeasurementType(key = MeasurementTypeKey.BMI, color = 0xFFF57900.toInt(), icon = "ic_bmi", isDerived = true, isPinned = true, isEnabled = true),
@@ -152,7 +151,7 @@ class MainActivity : ComponentActivity() {
             LogManager.d(TAG, "Checking for first app start. isFirstAppStart: $isActuallyFirstStart")
             if (isActuallyFirstStart) {
                 LogManager.i(TAG, "First app start detected. Inserting default measurement types...")
-                val defaultTypesToInsert = getDefaultMeasurementTypes(this@MainActivity)
+                val defaultTypesToInsert = getDefaultMeasurementTypes()
                 db.measurementTypeDao().insertAll(defaultTypesToInsert)
                 userSettingsRepository.setFirstAppStartCompleted(false)
                 LogManager.i(TAG, "Default measurement types inserted and first start marked as completed.")
