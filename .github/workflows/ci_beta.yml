@@ -1,0 +1,39 @@
+name: CI beta
+
+on:
+  push:
+    branches:
+      - openScale-3.0
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: android_app
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: "zulu" # See 'Supported distributions' for available options
+          java-version: "21"
+      - name: Build APK
+        run: ./gradlew assembleBeta
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "beta-build"
+          prerelease: true
+          title: "openScale 3.0 beta build"
+          files: |
+            android_app/app/build/outputs/apk/beta/openScale-beta.apk
