@@ -21,7 +21,41 @@ import android.content.Context
 import android.util.SparseArray
 import com.health.openscale.core.bluetooth.scales.DummyScaleHandler
 import com.health.openscale.core.bluetooth.scales.ScaleDeviceHandler
+import com.health.openscale.core.bluetooth.scalesJava.BluetoothActiveEraBF06
+import com.health.openscale.core.bluetooth.scalesJava.BluetoothBeurerBF105
+import com.health.openscale.core.bluetooth.scalesJava.BluetoothBeurerBF500
+import com.health.openscale.core.bluetooth.scalesJava.BluetoothBeurerBF600
+import com.health.openscale.core.bluetooth.scalesJava.BluetoothBeurerBF950
+import com.health.openscale.core.bluetooth.scalesJava.BluetoothBeurerSanitas
+import com.health.openscale.core.bluetooth.scalesJava.BluetoothBroadcastScale
 import com.health.openscale.core.bluetooth.scalesJava.BluetoothCommunication
+import com.health.openscale.core.bluetooth.scalesJava.BluetoothCustomOpenScale
+import com.health.openscale.core.bluetooth.scalesJava.BluetoothDigooDGSO38H
+import com.health.openscale.core.bluetooth.scalesJava.BluetoothES26BBB
+import com.health.openscale.core.bluetooth.scalesJava.BluetoothESCS20M
+import com.health.openscale.core.bluetooth.scalesJava.BluetoothExcelvanCF36xBLE
+import com.health.openscale.core.bluetooth.scalesJava.BluetoothExingtechY1
+import com.health.openscale.core.bluetooth.scalesJava.BluetoothHesley
+import com.health.openscale.core.bluetooth.scalesJava.BluetoothHoffenBBS8107
+import com.health.openscale.core.bluetooth.scalesJava.BluetoothHuaweiAH100
+import com.health.openscale.core.bluetooth.scalesJava.BluetoothIhealthHS3
+import com.health.openscale.core.bluetooth.scalesJava.BluetoothInlife
+import com.health.openscale.core.bluetooth.scalesJava.BluetoothMGB
+import com.health.openscale.core.bluetooth.scalesJava.BluetoothMedisanaBS44x
+import com.health.openscale.core.bluetooth.scalesJava.BluetoothMiScale
+import com.health.openscale.core.bluetooth.scalesJava.BluetoothMiScale2
+import com.health.openscale.core.bluetooth.scalesJava.BluetoothOKOK
+import com.health.openscale.core.bluetooth.scalesJava.BluetoothOKOK2
+import com.health.openscale.core.bluetooth.scalesJava.BluetoothOneByone
+import com.health.openscale.core.bluetooth.scalesJava.BluetoothOneByoneNew
+import com.health.openscale.core.bluetooth.scalesJava.BluetoothQNScale
+import com.health.openscale.core.bluetooth.scalesJava.BluetoothRenphoScale
+import com.health.openscale.core.bluetooth.scalesJava.BluetoothSanitasSBF72
+import com.health.openscale.core.bluetooth.scalesJava.BluetoothSenssun
+import com.health.openscale.core.bluetooth.scalesJava.BluetoothSinocare
+import com.health.openscale.core.bluetooth.scalesJava.BluetoothSoehnle
+import com.health.openscale.core.bluetooth.scalesJava.BluetoothTrisaBodyAnalyze
+import com.health.openscale.core.bluetooth.scalesJava.BluetoothYoda1Scale
 import com.health.openscale.core.bluetooth.scalesJava.BluetoothYunmaiSE_Mini
 import com.health.openscale.core.bluetooth.scalesJava.LegacyScaleAdapter
 import com.health.openscale.core.database.DatabaseRepository
@@ -57,21 +91,164 @@ class ScaleFactory(
      * @return A [BluetoothCommunication] instance if a matching driver is found, otherwise null.
      */
     private fun createLegacyJavaDriver(context: Context?, deviceName: String): BluetoothCommunication? {
-        // val name = deviceName.lowercase() // deviceName is already used directly below, toLowerCase is not strictly needed if comparisons handle case.
+        val name = deviceName.lowercase()
 
-        // Currently, only Yunmai drivers are active examples.
-        // The extensive list of commented-out drivers can be re-enabled or migrated as needed.
+        if (name.startsWith("BEURER BF700".lowercase())
+            || name.startsWith("BEURER BF800".lowercase())
+            || name.startsWith("BF-800".lowercase())
+            || name.startsWith("BF-700".lowercase())
+            || name.startsWith("RT-Libra-B".lowercase())
+            || name.startsWith("RT-Libra-W".lowercase())
+            || name.startsWith("Libra-B".lowercase())
+            || name.startsWith("Libra-W".lowercase())
+        ) {
+            return BluetoothBeurerSanitas(
+                context,
+                BluetoothBeurerSanitas.DeviceType.BEURER_BF700_800_RT_LIBRA
+            )
+        }
+        if (name.startsWith("BEURER BF710".lowercase())
+            || name == "BF700".lowercase()
+        ) {
+            return BluetoothBeurerSanitas(context, BluetoothBeurerSanitas.DeviceType.BEURER_BF710)
+        }
+        if (name == "openScale".lowercase()) {
+            return BluetoothCustomOpenScale(context)
+        }
+        if (name == "Mengii".lowercase()) {
+            return BluetoothDigooDGSO38H(context)
+        }
+        if (name == "Electronic Scale".lowercase()) {
+            return BluetoothExcelvanCF36xBLE(context)
+        }
+        if (name == "VScale".lowercase()) {
+            return BluetoothExingtechY1(context)
+        }
+        if (name == "YunChen".lowercase()) {
+            return BluetoothHesley(context)
+        }
+        if (deviceName.startsWith("iHealth HS3")) {
+            return BluetoothIhealthHS3(context)
+        }
+
+        // BS444 || BS440
+        if (deviceName.startsWith("013197") || deviceName.startsWith("013198") || deviceName.startsWith(
+                "0202B6"
+            )
+        ) {
+            return BluetoothMedisanaBS44x(context, true)
+        }
+
+        //BS430
+        if (deviceName.startsWith("0203B")) {
+            return BluetoothMedisanaBS44x(context, false)
+        }
+
+        if (deviceName.startsWith("SWAN") || name == "icomon".lowercase() || name == "YG".lowercase()) {
+            return BluetoothMGB(context)
+        }
+        if (name == "MI_SCALE".lowercase() || name == "MI SCALE2".lowercase()) {
+            return BluetoothMiScale(context)
+        }
+        if (name == "MIBCS".lowercase() || name == "MIBFS".lowercase()) {
+            return BluetoothMiScale2(context)
+        }
+        if (name == "Health Scale".lowercase()) {
+            return BluetoothOneByone(context)
+        }
+        if (name == "1byone scale".lowercase()) {
+            return BluetoothOneByoneNew(context)
+        }
+
+        if (name == "SENSSUN FAT".lowercase()) {
+            return BluetoothSenssun(context)
+        }
+        if (name.startsWith("SANITAS SBF70".lowercase()) || name.startsWith("sbf75") || name.startsWith(
+                "AICDSCALE1".lowercase()
+            )
+        ) {
+            return BluetoothBeurerSanitas(
+                context,
+                BluetoothBeurerSanitas.DeviceType.SANITAS_SBF70_70
+            )
+        }
         if (deviceName.startsWith("YUNMAI-SIGNAL") || deviceName.startsWith("YUNMAI-ISM")) {
             return BluetoothYunmaiSE_Mini(context, true)
         }
         if (deviceName.startsWith("YUNMAI-ISSE")) {
             return BluetoothYunmaiSE_Mini(context, false)
         }
-        // Add other legacy driver instantiations here based on deviceName.
-        // Example:
-        // if (name.startsWith("some_legacy_device")) {
-        //     return SomeLegacyDeviceDriver(context)
-        // }
+        if (deviceName.startsWith("01257B") || deviceName.startsWith("11257B")) {
+            // Trisa Body Analyze 4.0, aka Transtek GBF-1257-B
+            return BluetoothTrisaBodyAnalyze(context)
+        }
+        if (deviceName == "000FatScale01" || deviceName == "000FatScale02"
+            || deviceName == "042FatScale01"
+        ) {
+            return BluetoothInlife(context)
+        }
+        if (deviceName.startsWith("QN-Scale")) {
+            return BluetoothQNScale(context)
+        }
+        if (deviceName.startsWith("Shape200") || deviceName.startsWith("Shape100") || deviceName.startsWith(
+                "Shape50"
+            ) || deviceName.startsWith("Style100")
+        ) {
+            return BluetoothSoehnle(context)
+        }
+        if (deviceName == "Hoffen BS-8107") {
+            return BluetoothHoffenBBS8107(context)
+        }
+        if (deviceName == "ADV" || deviceName == "Chipsea-BLE") {
+            return BluetoothOKOK(context)
+        }
+        if (deviceName == "NoName OkOk") {
+            return BluetoothOKOK2(context)
+        }
+        if (deviceName == "BF105" || deviceName == "BF720") {
+            return BluetoothBeurerBF105(context)
+        }
+        if (deviceName == "BF500") {
+            return BluetoothBeurerBF500(context, deviceName)
+        }
+        if (deviceName == "BF600" || deviceName == "BF850") {
+            return BluetoothBeurerBF600(context, deviceName)
+        }
+        if (deviceName == "SBF77" || deviceName == "SBF76" || deviceName == "BF950") {
+            return BluetoothBeurerBF950(context, deviceName)
+        }
+        if (deviceName == "SBF72" || deviceName == "BF915" || deviceName == "SBF73") {
+            return BluetoothSanitasSBF72(context, deviceName)
+        }
+        if (deviceName == "Weight Scale") {
+            return BluetoothSinocare(context)
+        }
+        if (deviceName == "CH100") {
+            return BluetoothHuaweiAH100(context)
+        }
+        if (deviceName == "ES-26BB-B") {
+            return BluetoothES26BBB(context)
+        }
+        if (deviceName == "Yoda1") {
+            return BluetoothYoda1Scale(context)
+        }
+        if (deviceName == "AAA002" || deviceName == "AAA007" || deviceName == "AAA013") {
+            return BluetoothBroadcastScale(context)
+        }
+        if (deviceName == "AE BS-06") {
+            return BluetoothActiveEraBF06(context)
+        }
+        if (deviceName == "Renpho-Scale") {
+            /* Driver for Renpho ES-WBE28, which has device name of "Renpho-Scale".
+               "Renpho-Scale" is quite generic, not sure if other Renpho scales with different
+               protocol match this name.
+             */
+            return BluetoothRenphoScale(context)
+        }
+        if (deviceName == "ES-CS20M") {
+            return BluetoothESCS20M(context)
+        }
+
         return null
     }
 

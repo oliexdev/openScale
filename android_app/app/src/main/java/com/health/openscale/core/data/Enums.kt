@@ -65,6 +65,7 @@ enum class ActivityLevel {
     }
 
     companion object {
+        @JvmStatic
         fun fromInt(unit: Int): ActivityLevel {
             when (unit) {
                 0 -> return SEDENTARY
@@ -105,6 +106,38 @@ enum class WeightUnit {
                 2 -> return ST
             }
             return KG
+        }
+    }
+}
+
+enum class MeasureUnit {
+    CM, INCH;
+
+    override fun toString(): String {
+        when (this) {
+            CM -> return "cm"
+            INCH -> return "in"
+        }
+
+        return ""
+    }
+
+    fun toInt(): Int {
+        when (this) {
+            CM -> return 0
+            INCH -> return 1
+        }
+
+        return 0
+    }
+
+    companion object {
+        fun fromInt(unit: Int): MeasureUnit {
+            when (unit) {
+                0 -> return CM
+                1 -> return INCH
+            }
+            return CM
         }
     }
 }

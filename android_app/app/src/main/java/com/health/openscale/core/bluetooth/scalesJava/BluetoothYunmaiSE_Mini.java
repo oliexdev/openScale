@@ -36,6 +36,7 @@ import java.util.Random;
 import java.util.UUID;
 
 public class BluetoothYunmaiSE_Mini extends BluetoothCommunication {
+    private final String TAG = "BluetoothYunmaiSE_Mini";
     private final UUID WEIGHT_MEASUREMENT_SERVICE = BluetoothGattUuid.fromShortCode(0xffe0);
     private final UUID WEIGHT_MEASUREMENT_CHARACTERISTIC = BluetoothGattUuid.fromShortCode(0xffe4);
     private final UUID WEIGHT_CMD_SERVICE = BluetoothGattUuid.fromShortCode(0xffe5);
@@ -141,10 +142,10 @@ public class BluetoothYunmaiSE_Mini extends BluetoothCommunication {
             float bodyFat;
             int resistance = Converters.fromUnsignedInt16Be(weightBytes, 15);
             if (weightBytes[1] >= (byte)0x1E) {
-                LogManager.d("BluetoothYunmaiSE_Mini","Extract the fat value from received bytes");
+                LogManager.d(TAG,"Extract the fat value from received bytes");
                 bodyFat = Converters.fromUnsignedInt16Be(weightBytes, 17) / 100.0f;
             } else {
-                LogManager.d("BluetoothYunmaiSE_Mini","Calculate the fat value using the Yunmai lib");
+                LogManager.d(TAG,"Calculate the fat value using the Yunmai lib");
                 bodyFat = yunmaiLib.getFat(scaleUser.getAge(), weight, resistance);
             }
 
@@ -156,14 +157,14 @@ public class BluetoothYunmaiSE_Mini extends BluetoothCommunication {
                 scaleBtData.setLbm(yunmaiLib.getLeanBodyMass(weight, bodyFat));
                 scaleBtData.setVisceralFat(yunmaiLib.getVisceralFat(bodyFat, scaleUser.getAge()));
             } else {
-                LogManager.e("BluetoothYunmaiSE_Mini","body fat is zero", null);
+                LogManager.e(TAG,"body fat is zero", null);
             }
 
-            LogManager.d("BluetoothYunmaiSE_Mini", "received bytes [" + byteInHex(weightBytes) + "]");
+            LogManager.d(TAG, "received bytes [" + byteInHex(weightBytes) + "]");
             String decryptedBytesLog = String.format(Locale.US, "received decrypted bytes [weight: %.2f, fat: %.2f, resistance: %d]", weight, bodyFat, resistance);
-            LogManager.d("BluetoothYunmaiSE_Mini", decryptedBytesLog);
-            LogManager.d("BluetoothYunmaiSE_Mini", "user [" + scaleUser + "]");
-            LogManager.d("BluetoothYunmaiSE_Mini", "scale measurement [" + scaleBtData + "]");
+            LogManager.d(TAG, decryptedBytesLog);
+            LogManager.d(TAG, "user [" + scaleUser + "]");
+            LogManager.d(TAG, "scale measurement [" + scaleBtData + "]");
         }
 
         addScaleMeasurement(scaleBtData);

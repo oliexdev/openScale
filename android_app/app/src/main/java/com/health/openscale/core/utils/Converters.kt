@@ -17,7 +17,49 @@
  */
 package com.health.openscale.core.utils
 
+import com.health.openscale.core.data.MeasureUnit
+import com.health.openscale.core.data.WeightUnit
+
+
+
 object Converters {
+    private const val KG_LB: Float = 2.20462f
+    private const val KG_ST: Float = 0.157473f
+    private const val CM_IN: Float = 0.393701f
+    @JvmStatic
+    fun toKilogram(value: Float, unit: WeightUnit): Float {
+        when (unit) {
+            WeightUnit.LB -> return value / KG_LB
+            WeightUnit.ST -> return value / KG_ST
+            WeightUnit.KG -> return value
+        }
+    }
+
+    @JvmStatic
+    fun fromKilogram(kg: Float, unit: WeightUnit): Float {
+        when (unit) {
+            WeightUnit.LB -> return kg * KG_LB
+            WeightUnit.ST -> return kg * KG_ST
+            WeightUnit.KG -> return kg
+        }
+    }
+
+    @JvmStatic
+    fun toCentimeter(value: Float, unit: MeasureUnit): Float {
+        when (unit) {
+            MeasureUnit.INCH -> return value / CM_IN
+            MeasureUnit.CM -> return value
+        }
+    }
+
+    @JvmStatic
+    fun fromCentimeter(cm: Float, unit: MeasureUnit): Float {
+        when (unit) {
+            MeasureUnit.INCH -> return cm * CM_IN
+            MeasureUnit.CM -> return cm
+        }
+    }
+
     @JvmStatic
     fun fromSignedInt16Le(data: ByteArray, offset: Int): Int {
         var value = data[offset + 1].toInt() shl 8

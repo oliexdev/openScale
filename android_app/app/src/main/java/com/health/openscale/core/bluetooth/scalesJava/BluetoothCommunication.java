@@ -45,6 +45,7 @@ import com.welie.blessed.GattStatus;
 import com.welie.blessed.HciStatus;
 import com.welie.blessed.WriteType;
 
+import java.util.List;
 import java.util.UUID;
 
 public abstract class BluetoothCommunication {
@@ -95,6 +96,8 @@ public abstract class BluetoothCommunication {
         return selectedScaleUser;
     }
 
+    public List<ScaleUser> getScaleUserList() { return null; } // TODO Not implemented
+
     public void setSelectedScaleUserId(int userId) {
         selectedScaleUserId = userId;
     }
@@ -102,6 +105,13 @@ public abstract class BluetoothCommunication {
         return selectedScaleUserId;
     }
 
+    public void updateScaleUser(ScaleUser user) {} // TODO Not implemented
+
+    public int getAssignableUser(float weight) { return 0; } // TODO Not implemented
+
+    public ScaleUser getScaleUser(int userId) { return null; } // TODO Not implemented
+
+    public ScaleMeasurement getLastScaleMeasurement(int userId) { return null; } // TODO Not implemented
     public BluetoothPeripheral getBtPeripheral() {
         return btPeripheral;
     }

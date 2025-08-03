@@ -19,6 +19,7 @@ package com.health.openscale.core.bluetooth.data;
 
 import com.health.openscale.core.data.ActivityLevel;
 import com.health.openscale.core.data.GenderType;
+import com.health.openscale.core.data.MeasureUnit;
 import com.health.openscale.core.data.WeightUnit;
 
 import java.util.Calendar;
@@ -27,7 +28,6 @@ import java.util.Date;
 public class ScaleUser {
     private int id;
 
-
     private String userName;
     private Date birthday;
 
@@ -35,7 +35,13 @@ public class ScaleUser {
 
     private GenderType gender;
 
-    private WeightUnit scaleUnit;
+    private float initialWeight; // TODO implement in GUI
+
+    private float goalWeight; // TODO implement in GUI
+
+    private WeightUnit scaleUnit; // TODO implement in GUI
+
+    private MeasureUnit measureUnit; // TODO implement in GUI
 
     private ActivityLevel activityLevel;
 
@@ -44,6 +50,10 @@ public class ScaleUser {
         birthday = new Date();
         bodyHeight = -1;
         gender = GenderType.MALE;
+        initialWeight = 0f;
+        goalWeight = 0f;
+        scaleUnit = WeightUnit.KG;
+        measureUnit = MeasureUnit.CM;
         activityLevel = ActivityLevel.SEDENTARY;
     }
 
@@ -103,6 +113,14 @@ public class ScaleUser {
         this.scaleUnit = scaleUnit;
     }
 
+    public void setMeasureUnit(MeasureUnit unit) {
+        measureUnit = unit;
+    }
+
+    public MeasureUnit getMeasureUnit() {
+        return measureUnit;
+    }
+
     public void setActivityLevel(ActivityLevel level) {
         activityLevel = level;
     }
@@ -130,5 +148,21 @@ public class ScaleUser {
 
     public void setGender(GenderType gender) {
         this.gender = gender;
+    }
+
+    public float getGoalWeight() {
+        return goalWeight;
+    }
+
+    public void setGoalWeight(float goalWeight) {
+        this.goalWeight = goalWeight;
+    }
+
+    public void setInitialWeight(float weight) {
+        this.initialWeight = weight;
+    }
+
+    public float getInitialWeight() {
+        return initialWeight;
     }
 }
