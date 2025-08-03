@@ -636,10 +636,10 @@ private fun createLineSpec(color: Color, statisticsMode : Boolean): LineCartesia
         // Points on the line are shown unless in statistics mode
         pointProvider = if (!statisticsMode) {
             LineCartesianLayer.PointProvider.single(
-                LineCartesianLayer.point(ShapeComponent(fill(color), CorneredShape.Pill))
-            ) } else null
-        // dataLabel = null,          // Keine Datenbeschriftungen an den Punkten
-        //pointConnector = LineCartesianLayer.PointConnector.cubic() // Standard, kann explizit sein
+                LineCartesianLayer.point(ShapeComponent(fill(color.copy(alpha = 0.7f)), CorneredShape.Pill), 6.dp)
+            ) } else null,
+        // dataLabel = null,         // No data labels on points
+        pointConnector = LineCartesianLayer.PointConnector.cubic()
     )
 }
 
