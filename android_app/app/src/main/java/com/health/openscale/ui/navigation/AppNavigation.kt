@@ -181,7 +181,7 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
             scope.launch {
                 val messageText: String = if (event.messageResId != Routes.NO_TITLE_RESOURCE_ID) {
                     try {
-                        resources.getString(event.messageResId, *(event.messageFormatArgs ?: emptyArray()))
+                        resources.getString(event.messageResId, *event.messageFormatArgs.toTypedArray())
                     } catch (e: Resources.NotFoundException) {
                         // Log this error or handle it, then fallback
                         event.message // Fallback to raw message if resource ID is invalid

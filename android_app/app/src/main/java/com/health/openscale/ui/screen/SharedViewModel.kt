@@ -76,7 +76,7 @@ private const val TAG = "SharedViewModel"
 data class SnackbarEvent(
     @StringRes val messageResId: Int = 0,
     val message: String = "",
-    val messageFormatArgs: Array<Any>? = null,
+    val messageFormatArgs: List<Any> = emptyList(),
     val duration: SnackbarDuration = SnackbarDuration.Short,
     @StringRes val actionLabelResId: Int? = null,
     val actionLabel: String? = null,
@@ -183,7 +183,7 @@ class SharedViewModel(
 
     fun showSnackbar(
         @StringRes messageResId: Int,
-        formatArgs: Array<Any>? = null,
+        formatArgs: List<Any> = emptyList(),
         duration: SnackbarDuration = SnackbarDuration.Short,
         @StringRes actionLabelResId: Int? = null,
         actionLabel: String? = null,

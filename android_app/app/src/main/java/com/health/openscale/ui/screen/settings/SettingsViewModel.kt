@@ -36,7 +36,6 @@ import com.health.openscale.ui.screen.SharedViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -74,16 +73,6 @@ sealed class SafEvent {
 }
 
 /**
- * Sealed class for UI messages to be emitted to the UI layer.
- * This allows sending either a direct string (rarely, for dynamic error messages not suitable for resources)
- * or a resource ID with optional formatting arguments.
- */
-sealed class UiMessageEvent {
-    data class Resource(val resId: Int, val formatArgs: List<Any> = emptyList()) : UiMessageEvent()
-    // data class Plain(val message: String) : UiMessageEvent() // If you ever need to send raw strings
-}
-
-/**
  * ViewModel for settings-related screens.
  */
 class SettingsViewModel(
@@ -95,9 +84,6 @@ class SettingsViewModel(
 
     private val _appLanguageCode = MutableStateFlow(getDefaultAppLanguage())
     val appLanguageCode: StateFlow<String> = _appLanguageCode.asStateFlow()
-
-    private val _uiMessageEvents = MutableSharedFlow<UiMessageEvent>()
-    val uiMessageEvents: SharedFlow<UiMessageEvent> = _uiMessageEvents.asSharedFlow()
 
     val allUsers: StateFlow<List<User>> = sharedViewModel.allUsers
 
@@ -238,7 +224,7 @@ class SettingsViewModel(
 
                 if (valueColumnKeys.isEmpty()) {
                     LogManager.w(TAG, "No specific data fields (value columns) defined for export for user ID: $userId.")
-                    _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.export_error_no_specific_fields))
+                    sharedViewModel.showSnackbar(R.string.export_error_no_specific_fields)
                 }
 
                 val userMeasurementsWithValues: List<MeasurementWithValues> =
@@ -246,7 +232,7 @@ class SettingsViewModel(
 
                 if (userMeasurementsWithValues.isEmpty()) {
                     LogManager.i(TAG, "No measurements found for User ID $userId to export.")
-                    _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.export_error_no_measurements))
+                    sharedViewModel.showSnackbar(R.string.export_error_no_measurements)
                     _isLoadingExport.value = false
                     return@launch
                 }
@@ -287,7 +273,7 @@ class SettingsViewModel(
 
                 if (csvRowsData.isEmpty()) {
                     LogManager.w(TAG, "No exportable measurement values found for User ID $userId after transformation.")
-                    _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.export_error_no_exportable_values))
+                    sharedViewModel.showSnackbar(R.string.export_error_no_exportable_values)
                     _isLoadingExport.value = false
                     return@launch
                 }
@@ -305,18 +291,18 @@ class SettingsViewModel(
                         exportSuccessful = true
                         LogManager.d(TAG, "CSV data written successfully for User ID $userId to URI: $uri.")
                     } ?: run {
-                        _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.export_error_cannot_create_file))
+                        sharedViewModel.showSnackbar(R.string.export_error_cannot_create_file)
                         LogManager.e(TAG, "Export failed for user ID $userId: Could not open OutputStream for Uri: $uri")
                     }
 
                     if (exportSuccessful) {
-                        _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.export_successful))
+                        sharedViewModel.showSnackbar(R.string.export_successful)
                     }
                 }
             } catch (e: Exception) {
                 LogManager.e(TAG, "Error during CSV export for User ID $userId to URI: $uri", e)
                 val errorMessage = e.localizedMessage ?: "Unknown error" // In a real app, use R.string.settings_unknown_error
-                _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.export_error_generic, listOf(errorMessage)))
+                sharedViewModel.showSnackbar(R.string.export_error_generic, listOf(errorMessage))
             } finally {
                 _isLoadingExport.value = false
                 LogManager.i(TAG, "CSV export process finished for user ID: $userId.")
@@ -472,14 +458,14 @@ class SettingsViewModel(
 
 
                         if (detailsForMessage.isNotEmpty()) {
-                            _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.import_successful_records_with_details, listOf(importedMeasurementsCount, detailsForMessage)))
+                            sharedViewModel.showSnackbar(R.string.import_successful_records_with_details, listOf(importedMeasurementsCount, detailsForMessage))
                         } else {
-                            _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.import_successful_records, listOf(importedMeasurementsCount)))
+                            sharedViewModel.showSnackbar(R.string.import_successful_records, listOf(importedMeasurementsCount))
                         }
 
                     } else {
                         LogManager.w(TAG, "No valid data found in CSV for User ID $userId or all rows had errors.")
-                        _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.import_error_no_valid_data))
+                        sharedViewModel.showSnackbar(R.string.import_error_no_valid_data)
                     }
                 }
             } catch (e: Exception) {
@@ -487,15 +473,14 @@ class SettingsViewModel(
                 val userErrorMessage = when {
                     e is IOException && e.message?.contains("CSV header is missing the mandatory column 'date'") == true ->
                         // Assuming R.string.import_error_missing_date_column takes dateColumnKey as an argument
-                        UiMessageEvent.Resource(R.string.import_error_missing_date_column)
+                        sharedViewModel.showSnackbar(R.string.import_error_missing_date_column)
                     e is IOException && e.message?.contains("Could not open InputStream") == true ->
-                        UiMessageEvent.Resource(R.string.import_error_cannot_read_file)
+                        sharedViewModel.showSnackbar(R.string.import_error_cannot_read_file)
                     else -> {
                         val errorMsg = e.localizedMessage ?: "Unknown error" // Use R.string.settings_unknown_error
-                        UiMessageEvent.Resource(R.string.import_error_generic, listOf(errorMsg))
+                        sharedViewModel.showSnackbar(R.string.import_error_generic, listOf(errorMsg))
                     }
                 }
-                _uiMessageEvents.emit(userErrorMessage)
             } finally {
                 _isLoadingImport.value = false
                 LogManager.i(TAG, "CSV import process finished for user ID: $userId. Imported: $importedMeasurementsCount, Skipped (missing date): $linesSkippedMissingDate, Skipped (date parse error): $linesSkippedDateParseError, Values skipped (parse error): $valuesSkippedParseError.")
@@ -507,7 +492,7 @@ class SettingsViewModel(
         viewModelScope.launch {
             if (allUsers.value.isEmpty()) {
                 LogManager.i(TAG, "Export process start: No users available for export.")
-                _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.export_no_users_available))
+                sharedViewModel.showSnackbar(R.string.export_no_users_available)
                 return@launch
             }
             if (allUsers.value.size == 1) {
@@ -550,7 +535,7 @@ class SettingsViewModel(
         viewModelScope.launch {
             if (allUsers.value.isEmpty()) {
                 LogManager.i(TAG, "Import process start: No users available for import.")
-                _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.import_no_users_available))
+                sharedViewModel.showSnackbar(R.string.import_no_users_available)
                 return@launch
             }
             if (allUsers.value.size == 1) {
@@ -598,7 +583,7 @@ class SettingsViewModel(
                 _showDeleteConfirmationDialog.value = true
             } else {
                 LogManager.i(TAG, "Initiate delete user data: No user data available to delete.")
-                _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.delete_data_no_users_available))
+                sharedViewModel.showSnackbar(R.string.delete_data_no_users_available)
             }
         }
     }
@@ -632,14 +617,14 @@ class SettingsViewModel(
                     val deletedRowCount = repository.deleteAllMeasurementsForUser(userToDelete.id)
                     if (deletedRowCount > 0) {
                         LogManager.i(TAG, "Data for User ${userToDelete.name} (ID: ${userToDelete.id}) successfully deleted. $deletedRowCount measurement records removed.")
-                        _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.delete_data_user_successful, listOf(userToDelete.name)))
+                        sharedViewModel.showSnackbar(R.string.delete_data_user_successful, listOf(userToDelete.name))
                     } else {
                         LogManager.i(TAG, "No measurement data found to delete for User ${userToDelete.name} (ID: ${userToDelete.id}).")
-                        _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.delete_data_user_no_data_found, listOf(userToDelete.name)))
+                        sharedViewModel.showSnackbar(R.string.delete_data_user_no_data_found, listOf(userToDelete.name))
                     }
                 } catch (e: Exception) {
                     LogManager.e(TAG, "Error deleting data for User ${userToDelete.name} (ID: ${userToDelete.id})", e)
-                    _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.delete_data_user_error, listOf(userToDelete.name)))
+                    sharedViewModel.showSnackbar(R.string.delete_data_user_error, listOf(userToDelete.name))
                 } finally {
                     _isLoadingDeletion.value = false
                     _showDeleteConfirmationDialog.value = false
@@ -649,7 +634,7 @@ class SettingsViewModel(
             }
         } ?: run {
             viewModelScope.launch {
-                _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.delete_data_error_no_user_selected))
+                sharedViewModel.showSnackbar(R.string.delete_data_error_no_user_selected)
                 _showDeleteConfirmationDialog.value = false
             }
             LogManager.w(TAG, "confirmActualDeletion called without a user pending deletion.")
@@ -687,7 +672,7 @@ class SettingsViewModel(
                 val dbFile = applicationContext.getDatabasePath(dbName)
                 val dbDir = dbFile.parentFile ?: run {
                     LogManager.e(TAG, "Database backup error: Database directory could not be determined for $dbName.")
-                    _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.backup_error_db_name_not_retrieved)) // Generic error might be better
+                    sharedViewModel.showSnackbar(R.string.backup_error_db_name_not_retrieved) // Generic error might be better
                     _isLoadingBackup.value = false
                     return@launch
                 }
@@ -700,7 +685,7 @@ class SettingsViewModel(
                 )
 
                 if (!dbFile.exists()) {
-                    _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.backup_error_main_db_not_found, listOf(dbName)))
+                    sharedViewModel.showSnackbar(R.string.backup_error_main_db_not_found, listOf(dbName))
                     LogManager.e(TAG, "Database backup error: Main DB file ${dbFile.absolutePath} not found.")
                     _isLoadingBackup.value = false
                     return@launch
@@ -735,7 +720,7 @@ class SettingsViewModel(
                                 }
                             }
                         } ?: run {
-                            _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.backup_error_no_output_stream))
+                            sharedViewModel.showSnackbar(R.string.backup_error_no_output_stream)
                             LogManager.e(TAG, "Backup failed: Could not open OutputStream for Uri: $backupUri")
                             return@withContext // Exit IO context
                         }
@@ -743,19 +728,19 @@ class SettingsViewModel(
                     } catch (e: IOException) {
                         LogManager.e(TAG, "IO Error during database backup zip process to URI $backupUri", e)
                         val errorMsg = e.localizedMessage ?: "Unknown I/O error"
-                        _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.backup_error_generic, listOf(errorMsg)))
+                        sharedViewModel.showSnackbar(R.string.backup_error_generic, listOf(errorMsg))
                         return@withContext
                     }
 
                     if (backupSuccessful) {
                         LogManager.i(TAG, "Database backup to $backupUri successful.")
-                        _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.backup_successful))
+                        sharedViewModel.showSnackbar(R.string.backup_successful)
                     }
                 }
             } catch (e: Exception) {
                 LogManager.e(TAG, "General error during database backup preparation for URI $backupUri", e)
                 val errorMsg = e.localizedMessage ?: "Unknown error"
-                _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.backup_error_generic, listOf(errorMsg)))
+                sharedViewModel.showSnackbar(R.string.backup_error_generic, listOf(errorMsg))
             } finally {
                 _isLoadingBackup.value = false
                 LogManager.i(TAG, "Database backup process finished for URI: $backupUri.")
@@ -772,7 +757,7 @@ class SettingsViewModel(
                 val dbFile = applicationContext.getDatabasePath(dbName)
                 val dbDir = dbFile.parentFile ?: run {
                     LogManager.e(TAG, "Database restore error: Database directory could not be determined for $dbName.")
-                    _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.backup_error_db_name_not_retrieved))
+                    sharedViewModel.showSnackbar(R.string.backup_error_db_name_not_retrieved)
                     _isLoadingRestore.value = false
                     return@launch
                 }
@@ -816,14 +801,14 @@ class SettingsViewModel(
                                 }
                             }
                         } ?: run {
-                            _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.restore_error_no_input_stream))
+                            sharedViewModel.showSnackbar(R.string.restore_error_no_input_stream)
                             LogManager.e(TAG, "Restore failed: Could not open InputStream for Uri: $restoreUri")
                             return@withContext
                         }
 
                         if (!mainDbRestored) {
                             LogManager.e(TAG, "Restore failed: Main database file '$dbName' not found in the backup archive.")
-                            _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.restore_error_db_files_missing))
+                            sharedViewModel.showSnackbar(R.string.restore_error_db_files_missing)
                             // Attempt to clean up partially restored files might be needed here, or let the user handle it.
                             return@withContext
                         }
@@ -832,18 +817,18 @@ class SettingsViewModel(
                     } catch (e: IOException) {
                         LogManager.e(TAG, "IO Error during database restore from URI $restoreUri", e)
                         val errorMsg = e.localizedMessage ?: "Unknown I/O error"
-                        _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.restore_error_generic, listOf(errorMsg)))
+                        sharedViewModel.showSnackbar(R.string.restore_error_generic, listOf(errorMsg))
                         return@withContext
                     } catch (e: IllegalStateException) { // Can be thrown by ZipInputStream
                         LogManager.e(TAG, "Error processing ZIP file during restore from URI $restoreUri", e)
-                        _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.restore_error_zip_format))
+                        sharedViewModel.showSnackbar(R.string.restore_error_zip_format)
                         return@withContext
                     }
 
 
                     if (restoreSuccessful) {
                         LogManager.i(TAG, "Database restore from $restoreUri successful. App restart is required.")
-                        _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.restore_successful))
+                        sharedViewModel.showSnackbar(R.string.restore_successful)
                         // The app needs to be restarted for Room to pick up the new database files correctly.
                         // This usually involves sharedViewModel.requestAppRestart() or similar mechanism.
                     }
@@ -851,7 +836,7 @@ class SettingsViewModel(
             } catch (e: Exception) {
                 LogManager.e(TAG, "General error during database restore from URI $restoreUri", e)
                 val errorMsg = e.localizedMessage ?: "Unknown error"
-                _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.restore_error_generic, listOf(errorMsg)))
+                sharedViewModel.showSnackbar(R.string.restore_error_generic, listOf(errorMsg))
             } finally {
                 // Re-open the database regardless of success, unless app is restarting
                 // If an app restart is requested, reopening might not be necessary or could cause issues.
@@ -867,7 +852,7 @@ class SettingsViewModel(
                         LogManager.i(TAG, "Database re-opened after restore attempt.")
                     } catch (reopenError: Exception) {
                         LogManager.e(TAG, "Error re-opening database after restore attempt. App restart is highly recommended.", reopenError)
-                        _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.restore_error_generic, listOf("Error re-opening database.")))
+                        sharedViewModel.showSnackbar(R.string.restore_error_generic, listOf("Error re-opening database."))
                     }
                 }
                 _isLoadingRestore.value = false
@@ -915,17 +900,17 @@ class SettingsViewModel(
 
                     if (databaseDeleted) {
                         LogManager.i(TAG, "Entire database '$dbName' (and associated files: shm=$shmDeleted, wal=$walDeleted) successfully deleted.")
-                        _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.delete_db_successful))
+                        sharedViewModel.showSnackbar(R.string.delete_db_successful)
                         // App must be restarted as the database is gone.
                         // TODO sharedViewModel.requestAppRestart()
                     } else {
                         LogManager.e(TAG, "Failed to delete the entire database '$dbName'. deleteDatabase returned false.")
-                        _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.delete_db_error))
+                        sharedViewModel.showSnackbar(R.string.delete_db_error)
                     }
                 }
             } catch (e: Exception) {
                 LogManager.e(TAG, "Error during entire database deletion process.", e)
-                _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.delete_db_error))
+                sharedViewModel.showSnackbar(R.string.delete_db_error)
             } finally {
                 // No need to reopen DB here as it's supposed to be deleted.
                 // If deletion failed, the app state is uncertain, restart is still best.
@@ -967,11 +952,11 @@ class SettingsViewModel(
                 repository.deleteUser(user)
                 LogManager.i(TAG, "User '${user.name}' (ID: ${user.id}) and their data deleted successfully.")
                 // Optionally, emit a success message or trigger UI refresh
-                _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.user_deleted_successfully, listOf(user.name)))
+                sharedViewModel.showSnackbar(R.string.user_deleted_successfully, listOf(user.name))
                 // sharedViewModel.refreshUsers() // Or handle user list updates through SharedViewModel
             } catch (e: Exception) {
                 LogManager.e(TAG, "Error deleting user '${user.name}' (ID: ${user.id})", e)
-                _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.user_deleted_error, listOf(user.name)))
+                sharedViewModel.showSnackbar(R.string.user_deleted_error, listOf(user.name))
             }
         }
     }
@@ -988,11 +973,11 @@ class SettingsViewModel(
             repository.updateUser(user)
             LogManager.i(TAG, "User '${user.name}' (ID: ${user.id}) updated successfully.")
             // Optionally, emit a success message or trigger UI refresh
-            _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.user_updated_successfully, listOf(user.name)))
+            sharedViewModel.showSnackbar(R.string.user_updated_successfully, listOf(user.name))
             // sharedViewModel.refreshUsers()
         } catch (e: Exception) {
             LogManager.e(TAG, "Error updating user '${user.name}' (ID: ${user.id})", e)
-            _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.user_updated_error, listOf(user.name)))
+            sharedViewModel.showSnackbar(R.string.user_updated_error, listOf(user.name))
         }
     }
 
@@ -1009,12 +994,12 @@ class SettingsViewModel(
             try {
                 repository.insertMeasurementType(type)
                 LogManager.i(TAG, "Measurement type '${type.key}' added successfully.")
-                _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.measurement_type_added_successfully, listOf(type.key.toString())))
+                sharedViewModel.showSnackbar(R.string.measurement_type_added_successfully, listOf(type.key.toString()))
                 // Optionally, trigger a refresh of measurement types if displayed
                 // sharedViewModel.refreshMeasurementTypes()
             } catch (e: Exception) {
                 LogManager.e(TAG, "Error adding measurement type '${type.key}'", e)
-                _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.measurement_type_added_error, listOf(type.key.toString())))
+                sharedViewModel.showSnackbar(R.string.measurement_type_added_error, listOf(type.key.toString()))
             }
         }
     }
@@ -1035,11 +1020,11 @@ class SettingsViewModel(
                 // Ensure this is handled correctly based on your app's requirements.
                 repository.deleteMeasurementType(type)
                 LogManager.i(TAG, "Measurement type (ID: ${type.id}) deleted successfully.")
-                _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.measurement_type_deleted_successfully, listOf(type.key.toString())))
+                sharedViewModel.showSnackbar(R.string.measurement_type_deleted_successfully, listOf(type.key.toString()))
                 // sharedViewModel.refreshMeasurementTypes()
             } catch (e: Exception) {
                 LogManager.e(TAG, "Error deleting measurement type (ID: ${type.id})", e)
-                _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.measurement_type_deleted_error, listOf(type.key.toString())))
+                sharedViewModel.showSnackbar(R.string.measurement_type_deleted_error, listOf(type.key.toString()))
             }
         }
     }
@@ -1056,11 +1041,11 @@ class SettingsViewModel(
             try {
                 repository.updateMeasurementType(type)
                 LogManager.i(TAG, "Measurement type (ID: ${type.id}) updated successfully.")
-                _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.measurement_type_updated_successfully, listOf(type.key.toString())))
+                sharedViewModel.showSnackbar(R.string.measurement_type_updated_successfully, listOf(type.key.toString()))
                 // sharedViewModel.refreshMeasurementTypes()
             } catch (e: Exception) {
                 LogManager.e(TAG, "Error updating measurement type (ID: ${type.id})", e)
-                _uiMessageEvents.emit(UiMessageEvent.Resource(R.string.measurement_type_updated_error, listOf(type.key.toString())))
+                sharedViewModel.showSnackbar(R.string.measurement_type_updated_error, listOf(type.key.toString()))
             }
         }
     }
