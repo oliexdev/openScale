@@ -322,7 +322,6 @@ class SettingsViewModel(
             try {
                 // ... (Rest of the import logic including CSV parsing as before) ...
                 val allAppTypes: List<MeasurementType> = repository.getAllMeasurementTypes().first()
-                val typeMapByKeyName = allAppTypes.associateBy { it.key.name }
 
                 val dateColumnKey = MeasurementTypeKey.DATE.name
                 val timeColumnKey = MeasurementTypeKey.TIME.name
@@ -343,18 +342,54 @@ class SettingsViewModel(
                             readAllAsSequence().forEachIndexed { rowIndex, row ->
                                 if (rowIndex == 0) { // Header row
                                     header = row
-                                    dateColumnIndex = header.indexOf(dateColumnKey)
-                                    // ... (rest of header processing)
-                                    timeColumnIndex = header.indexOf(timeColumnKey)
-                                    header.forEachIndexed { colIdx, columnName ->
-                                        if (columnName != dateColumnKey && columnName != timeColumnKey) {
-                                            typeMapByKeyName[columnName]?.let { type ->
-                                                valueColumnMap[colIdx] = type
-                                            } ?: LogManager.w(TAG, "CSV import for user $userId: Column '$columnName' in CSV not found in known measurement types. It will be ignored.")
+                                    dateColumnIndex = header.indexOfFirst { it.equals(dateColumnKey, ignoreCase = true) }
+                                    timeColumnIndex = header.indexOfFirst { it.equals(timeColumnKey, ignoreCase = true) }
+
+                                    if (dateColumnIndex == -1) {
+                                        LogManager.e(TAG, "CSV import for user $userId: Mandatory date column (expected: '$dateColumnKey') not found in header: $header. Aborting import.")
+                                        sharedViewModel.showSnackbar(R.string.import_error_missing_date_column, listOf(dateColumnKey))
+                                        _isLoadingImport.value = false
+                                        return@forEachIndexed // Exit the coroutine
+                                    }
+
+
+                                    header.forEachIndexed { colIdx, csvColumnName ->
+                                        // Skip date and time columns as they are handled separately
+                                        if (colIdx == dateColumnIndex || colIdx == timeColumnIndex) {
+                                            return@forEachIndexed
+                                        }
+
+                                        // Attempt to find a matching MeasurementType
+                                        // 1. Check against MeasurementTypeKey.name (for predefined types like WEIGHT, FAT, etc.)
+                                        var matchedType = allAppTypes.find { type ->
+                                            type.key.name.equals(csvColumnName, ignoreCase = true) &&
+                                                    type.key != MeasurementTypeKey.DATE && // Ensure we don't try to map DATE/TIME as value columns here
+                                                    type.key != MeasurementTypeKey.TIME
+                                        }
+
+                                        // 2. If not found, check against MeasurementType.name for CUSTOM types
+                                        if (matchedType == null) {
+                                            matchedType = allAppTypes.find { type ->
+                                                type.key == MeasurementTypeKey.CUSTOM &&
+                                                        type.name.equals(csvColumnName, ignoreCase = true)
+                                            }
+                                        }
+
+                                        if (matchedType != null) {
+                                            if (matchedType.isEnabled) { // Only map enabled types
+                                                valueColumnMap[colIdx] = matchedType
+                                                LogManager.d(TAG, "CSV import for user $userId: Column '$csvColumnName' (idx: $colIdx) mapped to existing type: ${matchedType.key.name} (ID: ${matchedType.id}, Custom Name: ${matchedType.name ?: "N/A"})")
+                                            } else {
+                                                LogManager.w(TAG, "CSV import for user $userId: Column '$csvColumnName' matches disabled type '${matchedType.key.name}'. It will be ignored.")
+                                            }
+                                        } else {
+                                            LogManager.w(TAG, "CSV import for user $userId: Column '$csvColumnName' (idx: $colIdx) in CSV not found or couldn't be mapped to any known/custom enabled measurement types. It will be ignored.")
                                         }
                                     }
-                                    if (valueColumnMap.isEmpty() && header.any { it != dateColumnKey && it != timeColumnKey }) {
-                                        LogManager.w(TAG, "CSV import for user $userId: No measurement value columns in CSV could be mapped to known types.")
+
+                                    if (valueColumnMap.isEmpty()) {
+                                        LogManager.w(TAG, "CSV import for user $userId: No measurement value columns in CSV could be mapped to known types after processing header. CSV Header: $header")
+                                        // Decide if you want to abort here or continue (might result in no data imported)
                                     }
                                     return@forEachIndexed // Continue to next row
                                 }
