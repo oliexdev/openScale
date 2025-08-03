@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+
     <ListPreference
         android:defaultValue="default"
         android:entries="@array/language_entries"
@@ -8,11 +9,15 @@
         android:key="language"
         app:useSimpleSummaryProvider="true"
         android:title="@string/label_language" />
-    <Preference android:title="@string/label_contribute_translation"
+
+    <Preference
+        android:title="@string/label_contribute_translation"
         android:summary="@string/label_add_or_fix_translation">
-        <intent android:action="android.intent.action.VIEW"
+        <intent
+            android:action="android.intent.action.VIEW"
             android:data="https://hosted.weblate.org/engage/openscale/" />
     </Preference>
+
     <ListPreference
         android:defaultValue="Light"
         android:entries="@array/theme_entries"
@@ -20,10 +25,21 @@
         android:key="app_theme"
         app:useSimpleSummaryProvider="true"
         android:title="@string/label_theme" />
+
     <CheckBoxPreference
         android:defaultValue="true"
         android:key="deleteConfirmationEnable"
         android:summaryOff="@string/info_is_not_enable"
         android:summaryOn="@string/info_is_enable"
         android:title="@string/label_delete_confirmation" />
+
+    <!-- ✅ NEW ENERGY UNIT OPTION -->
+    <ListPreference
+        android:key="energy_unit"
+        android:title="Energy Unit"
+        android:summary="Choose how energy values are displayed (kcal, kJ, or W)"
+        android:entries="@array/energy_unit_entries"
+        android:entryValues="@array/energy_unit_values"
+        android:defaultValue="kcal"
+        app:useSimpleSummaryProvider="true" />
 </PreferenceScreen>

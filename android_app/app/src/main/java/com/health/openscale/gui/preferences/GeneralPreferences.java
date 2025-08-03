@@ -54,6 +54,19 @@ public class GeneralPreferences extends PreferenceFragmentCompat {
                 return true;
             }
         });
+
+        // ✅ NEW: Energy Unit Preference Listener
+        final ListPreference prefEnergyUnit = findPreference("energy_unit");
+        if (prefEnergyUnit != null) {
+            prefEnergyUnit.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+                @Override
+                public boolean onPreferenceChange(Preference preference, Object newValue) {
+                    // You can add logic here if you want to respond to changes
+                    // For now, just return true to persist the selection
+                    return true;
+                }
+            });
+        }
     }
 
     @Override

@@ -128,4 +128,17 @@
         <item>SimpleMovingAverage</item>
         <item>ExponentiallySmoothedMovingAverage</item>
     </string-array>
+
+    <!-- ✅ New energy unit selection -->
+    <string-array name="energy_unit_entries">
+        <item>kcal/day</item>
+        <item>kJ/day</item>
+        <item>W</item>
+    </string-array>
+
+    <string-array name="energy_unit_values">
+        <item>kcal</item>
+        <item>kj</item>
+        <item>w</item>
+    </string-array>
 </resources>
