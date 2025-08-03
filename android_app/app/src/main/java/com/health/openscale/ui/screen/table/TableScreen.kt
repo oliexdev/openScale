@@ -63,6 +63,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.health.openscale.R
 import com.health.openscale.core.data.InputFieldType
+import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.Trend
 import com.health.openscale.ui.navigation.Routes
 import com.health.openscale.ui.screen.SharedViewModel
@@ -230,9 +231,19 @@ fun TableScreen(
                 allTypes.filter { it.isEnabled }
             },
             // Logic to determine which types are selected by default.
-            // Example: enabled types that are also marked as default for table view.
             defaultSelectionLogic = { availableFilteredTypes ->
-                availableFilteredTypes.filter { it.isEnabled }.map { it.id }
+                val defaultDesiredTypeIds = listOf(
+                    MeasurementTypeKey.WEIGHT.id,
+                    MeasurementTypeKey.BMI.id,
+                    MeasurementTypeKey.BODY_FAT.id,
+                    MeasurementTypeKey.WATER.id,
+                    MeasurementTypeKey.MUSCLE.id,
+                    MeasurementTypeKey.COMMENT.id
+                )
+
+                availableFilteredTypes
+                    .filter { type -> type.id in defaultDesiredTypeIds && type.isEnabled }
+                    .map { it.id }
             },
             onSelectionChanged = { newSelectedIds ->
                 selectedColumnIdsFromFilter.clear()

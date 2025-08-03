@@ -153,8 +153,14 @@ fun LineChart(
         if (targetMeasurementTypeId != null) {
             setOf(targetMeasurementTypeId.toString()) // If a specific type is targeted, that's the default.
         } else {
-            // Default selection for the general line chart (uses String IDs for settings).
-            setOf(MeasurementTypeKey.WEIGHT.id.toString(), MeasurementTypeKey.BODY_FAT.id.toString())
+            setOf(
+                MeasurementTypeKey.WEIGHT.id.toString(),
+                MeasurementTypeKey.BMI.id.toString(),
+                MeasurementTypeKey.BODY_FAT.id.toString(),
+                MeasurementTypeKey.WATER.id.toString(),
+                MeasurementTypeKey.MUSCLE.id.toString(),
+                MeasurementTypeKey.COMMENT.id.toString()
+            )
         }
     }
     val currentSelectedTypeIdsStrings by rememberContextualSelectedTypeIds(
