@@ -137,21 +137,25 @@ class DatabaseRepository(
     }
 
     /**
-     * Inserts a list of measurements, each with its associated values.
+     * Inserts a list of measurements, each with its associated values,
+     * and returns the IDs of the newly inserted main Measurement records.
      */
-    suspend fun insertMeasurementsWithValues(measurementsData: List<Pair<Measurement, List<MeasurementValue>>>) {
+    suspend fun insertMeasurementsWithValues(measurementsData: List<Pair<Measurement, List<MeasurementValue>>>) : List<Long>  {
+        val insertedIds = mutableListOf<Long>()
         LogManager.i(TAG, "Attempting to insert ${measurementsData.size} measurements with their values.")
         withContext(Dispatchers.IO) {
             measurementsData.forEachIndexed { index, (measurement, values) ->
                 try {
                     LogManager.d(TAG, "Inserting measurement ${index + 1}/${measurementsData.size}, userId: ${measurement.userId}, with ${values.size} values.")
-                    measurementDao.insertSingleMeasurementWithItsValues(measurement, values)
+                    val newMeasurementId = measurementDao.insertSingleMeasurementWithItsValues(measurement, values)
+                    insertedIds.add(newMeasurementId)
                 } catch (e: Exception) {
                     LogManager.e(TAG, "Failed to insert measurement (userId: ${measurement.userId}, timestamp: ${measurement.timestamp}) and its values. Error: ${e.message}", e)
                 }
             }
         }
-        LogManager.i(TAG, "Finished inserting measurements with values.")
+        LogManager.i(TAG, "Finished inserting measurements. ${insertedIds.size} measurements successfully inserted.")
+        return insertedIds
     }
 
     suspend fun deleteMeasurementValueById(valueId: Int) {
@@ -204,7 +208,7 @@ class DatabaseRepository(
      *
      * @param measurementId The ID of the measurement for which to recalculate derived values.
      */
-    private suspend fun recalculateDerivedValuesForMeasurement(measurementId: Int) {
+    suspend fun recalculateDerivedValuesForMeasurement(measurementId: Int) {
         LogManager.i(DERIVED_VALUES_TAG, "Starting recalculation of derived values for measurementId: $measurementId")
 
         val measurement = measurementDao.getMeasurementById(measurementId) ?: run {

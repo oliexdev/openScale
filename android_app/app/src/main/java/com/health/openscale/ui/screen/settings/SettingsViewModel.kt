@@ -473,9 +473,21 @@ class SettingsViewModel(
                     } ?: throw IOException("Could not open InputStream for Uri: $uri")
 
                     if (newMeasurementsToSave.isNotEmpty()) {
-                        repository.insertMeasurementsWithValues(newMeasurementsToSave)
-                        importedMeasurementsCount = newMeasurementsToSave.size
+                        val insertedMeasurementIds = repository.insertMeasurementsWithValues(newMeasurementsToSave)
+                        importedMeasurementsCount = insertedMeasurementIds.size
                         LogManager.i(TAG, "CSV Import for User ID $userId successful. $importedMeasurementsCount measurements imported.")
+
+                        if (insertedMeasurementIds.isNotEmpty()) {
+                            LogManager.d(TAG, "Starting derived value recalculation for ${insertedMeasurementIds.size} imported measurements.")
+                            insertedMeasurementIds.forEach { measurementId ->
+                                try {
+                                    repository.recalculateDerivedValuesForMeasurement(measurementId.toInt())
+                                } catch (e: Exception) {
+                                    LogManager.e(TAG, "Error recalculating derived values for measurement ID $measurementId post-import.", e)
+                                }
+                            }
+                            LogManager.i(TAG, "Derived value recalculation for ${insertedMeasurementIds.size} imported measurements completed.")
+                        }
 
                         var detailsForMessage = ""
                         if (linesSkippedMissingDate > 0) {
@@ -1070,13 +1082,20 @@ class SettingsViewModel(
      *
      * @param type The [MeasurementType] object with updated information.
      */
-    fun updateMeasurementType(type: MeasurementType) {
+    fun updateMeasurementType(type: MeasurementType, showSnackbar: Boolean = true) {
         viewModelScope.launch {
-            LogManager.d(TAG, "Updating measurement type (ID: ${type.id})")
+            if (showSnackbar) {
+                LogManager.d(TAG, "Updating measurement type (ID: ${type.id})")
+            }
             try {
                 repository.updateMeasurementType(type)
                 LogManager.i(TAG, "Measurement type (ID: ${type.id}) updated successfully.")
-                sharedViewModel.showSnackbar(R.string.measurement_type_updated_successfully, listOf(type.key.toString()))
+                if (showSnackbar) {
+                    sharedViewModel.showSnackbar(
+                        R.string.measurement_type_updated_successfully,
+                        listOf(type.key.toString())
+                    )
+                }
                 // sharedViewModel.refreshMeasurementTypes()
             } catch (e: Exception) {
                 LogManager.e(TAG, "Error updating measurement type (ID: ${type.id})", e)

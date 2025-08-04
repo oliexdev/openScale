@@ -61,9 +61,10 @@ interface MeasurementDao {
      *
      * @param measurement The measurement to insert.
      * @param values The list of associated measurement values.
+     * @return The row ID of the newly inserted measurement.
      */
     @Transaction
-    suspend fun insertSingleMeasurementWithItsValues(measurement: Measurement, values: List<MeasurementValue>) {
+    suspend fun insertSingleMeasurementWithItsValues(measurement: Measurement, values: List<MeasurementValue>) : Long {
         val measurementId = insert(measurement) // Insert the main measurement to get its ID
 
         // Update each MeasurementValue with the correct measurementId
@@ -75,6 +76,8 @@ interface MeasurementDao {
         if (updatedValues.isNotEmpty()) {
             insertMeasurementValues(updatedValues) // Insert the updated measurement values
         }
+
+        return measurementId
     }
 
     /**

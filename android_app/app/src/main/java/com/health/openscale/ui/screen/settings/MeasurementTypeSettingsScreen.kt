@@ -96,7 +96,7 @@ fun MeasurementTypeSettingsScreen(
             }.also { updatedList ->
                 // Persist the new display order for each type in the updated list
                 updatedList.forEachIndexed { index, type ->
-                    settingsViewModel.updateMeasurementType(type.copy(displayOrder = index))
+                    settingsViewModel.updateMeasurementType(type.copy(displayOrder = index), showSnackbar = false)
                 }
             }
         }

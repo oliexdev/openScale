@@ -72,7 +72,7 @@ interface UserSettingsRepository {
     suspend fun setFileLoggingEnabled(enabled: Boolean)
 
     val isFirstAppStart: Flow<Boolean>
-    suspend fun setFirstAppStartCompleted(completed: Boolean) // Renamed for clarity
+    suspend fun setFirstAppStartCompleted(completed: Boolean)
 
     val appLanguageCode: Flow<String?>
     suspend fun setAppLanguageCode(languageCode: String?)
@@ -134,7 +134,7 @@ class UserSettingsRepositoryImpl(context: Context) : UserSettingsRepository {
 
     override suspend fun setFirstAppStartCompleted(completed: Boolean) {
         LogManager.d(TAG, "Setting first app start completed to: $completed")
-        saveSetting(UserPreferenceKeys.IS_FIRST_APP_START.name, !completed)
+        saveSetting(UserPreferenceKeys.IS_FIRST_APP_START.name, completed)
     }
 
     override val appLanguageCode: Flow<String?> = dataStore.data
