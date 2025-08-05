@@ -128,7 +128,7 @@ public class BluetoothInlife extends BluetoothCommunication {
             case (byte) 0xd8:
                 float weight = Converters.fromUnsignedInt16Be(data, 2) / 10.0f;
                 LogManager.d(TAG, String.format("Current weight %.2f kg", weight));
-                //TODO sendMessage(R.string.info_measuring, weight);
+                sendMessage(R.string.bluetooth_scale_info_measuring_weight, weight);
                 break;
             case (byte) 0xdd:
                 if (data[11] == (byte) 0x80 || data[11] == (byte) 0x81) {

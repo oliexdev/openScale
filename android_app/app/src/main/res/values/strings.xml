@@ -364,4 +364,14 @@
     <!-- Entire Database Deletion Messages -->
     <string name="delete_db_successful">Entire database has been deleted.</string>
     <string name="delete_db_error">Error deleting entire database.</string>
+
+    <!-- Bluetooth Scales Messages -->
+    <string name="bluetooth_scale_trisa_message_not_paired_instruction">This scale has not been paired!\n\nHold the button on the bottom of the scale to switch it to pairing mode, and then reconnect to retrieve the device password.</string>
+    <string name="bluetooth_scale_trisa_success_pairing">Pairing succeeded!\n\nReconnect to retrieve measurement data.</string>
+    <string name="bluetooth_scale_info_create_user_instruction">Create new user on scale.</string>
+    <string name="bluetooth_scale_warning_low_battery">Low battery level (%d%%), please recharge or replace scale batteries</string>
+    <string name="bluetooth_scale_info_step_on_for_reference">Please step barefoot on the scale for reference measurements</string>
+    <string name="bluetooth_scale_info_measuring_weight">Measuring weight: %.2f</string>
+    <string name="bluetooth_scale_error_max_users_reached">Max. number of concurrent scale users reached</string>
+
 </resources>

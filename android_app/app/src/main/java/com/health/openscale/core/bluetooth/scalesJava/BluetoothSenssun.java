@@ -128,7 +128,7 @@ public class BluetoothSenssun extends BluetoothCommunication {
 
                 if (weightStabilized) {
                     values |= 1;
-                    //TODO sendMessage(R.string.info_measuring, lastWeight / 10.0f);
+                    sendMessage(R.string.bluetooth_scale_info_measuring_weight, lastWeight / 10.0f);
                     synchroniseUser();
                 }
                 break;

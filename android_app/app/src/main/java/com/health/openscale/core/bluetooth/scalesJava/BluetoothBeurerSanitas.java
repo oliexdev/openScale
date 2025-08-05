@@ -540,7 +540,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
 
         if (!stableMeasurement) {
             LogManager.d(TAG, String.format("Active measurement, weight: %.2f", weight));
-           //TODO  sendMessage(R.string.info_measuring, weight);
+           sendMessage(R.string.bluetooth_scale_info_measuring_weight, weight);
             return;
         }
 
@@ -636,7 +636,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                         userReferWeightExists, userMeasurementExist, scaleVersion));
 
                 if (batteryLevel <= 10) {
-                    //TODO sendMessage(R.string.info_scale_low_battery, batteryLevel);
+                    sendMessage(R.string.bluetooth_scale_warning_low_battery, batteryLevel);
                 }
 
                 byte requestedUnit = (byte) currentUnit;
@@ -819,7 +819,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                     // Try to start a measurement to make the scale learn the reference weight to recognize the user next time.
                     // If we already have data, this will most likely run into time-out and the scale switches off before finishing.
                     LogManager.d(TAG, "New user successfully added; time to step on scale");
-                    //TODO sendMessage(R.string.info_step_on_scale_for_reference, 0);
+                    sendMessage(R.string.bluetooth_scale_info_step_on_for_reference, 0);
                     LogManager.d(TAG, "Sending command: CMD_DO_MEASUREMENT");
                     sendCommand(CMD_DO_MEASUREMENT, encodeUserId(currentRemoteUser));
                     // We send a new command, so make sure we wait
@@ -828,7 +828,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                 }
 
                 LogManager.d(TAG, String.format("Cannot create additional scale user (error 0x%02x)", data[3]));
-                //TODO sendMessage(R.string.error_max_scale_users, 0);
+                sendMessage(R.string.bluetooth_scale_error_max_users_reached, 0);
                 // Force disconnect
                 LogManager.d(TAG, "Terminating state machine.");
                 jumpNextToStepNr( 9 );

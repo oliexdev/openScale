@@ -193,7 +193,7 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
             saveDevicePassword(context, deviceId, password);
         }
 
-        // TODO sendMessage(R.string.trisa_scale_pairing_succeeded, null);
+        sendMessage(R.string.bluetooth_scale_trisa_success_pairing, null);
 
         // To complete the pairing process, we must set the scale's broadcast id, and then
         // disconnect. The writeCommand() call below will trigger the next state machine transition,
@@ -209,7 +209,7 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
         }
         if (password == null) {
             LogManager.w(TAG, "Received challenge, but password is unknown.", null);
-            // TODO sendMessage(R.string.trisa_scale_not_paired, null);
+            sendMessage(R.string.bluetooth_scale_trisa_message_not_paired_instruction, null);
             disconnect();
             return;
         }

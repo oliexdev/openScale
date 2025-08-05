@@ -363,4 +363,13 @@
     <!-- Nachrichten zur Löschung der gesamten Datenbank -->
     <string name="delete_db_successful">Gesamte Datenbank wurde gelöscht.</string>
     <string name="delete_db_error">Fehler beim Löschen der gesamten Datenbank.</string>
+
+    <!-- Bluetooth Waagen Nachrichten -->
+    <string name="bluetooth_scale_trisa_message_not_paired_instruction">Diese Waage wurde nicht gekoppelt!\n\nHalten Sie die Taste an der Unterseite der Waage gedrückt, um sie in den Kopplungsmodus zu versetzen, und verbinden Sie sich dann erneut, um das Gerätepasswort abzurufen.</string>
+    <string name="bluetooth_scale_trisa_success_pairing">Kopplung erfolgreich!\n\nVerbinden Sie sich erneut, um Messdaten abzurufen.</string>
+    <string name="bluetooth_scale_info_create_user_instruction">Neuen Benutzer auf der Waage erstellen.</string>
+    <string name="bluetooth_scale_warning_low_battery">Niedriger Batteriestand (%d%%), bitte Batterien der Waage aufladen oder ersetzen.</string>
+    <string name="bluetooth_scale_info_step_on_for_reference">Bitte stellen Sie sich barfuß auf die Waage für Referenzmessungen.</string>
+    <string name="bluetooth_scale_info_measuring_weight">Gewichtsmessung: %.2f</string>
+    <string name="bluetooth_scale_error_max_users_reached">Maximale Anzahl gleichzeitiger Waagenbenutzer erreicht.</string>
 </resources>

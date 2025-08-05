@@ -192,7 +192,7 @@ public abstract class BluetoothCommunication {
      * @param msg the string id to be send
      * @param value the value to be used
      */
-    protected void sendMessage(int msg, Object value) {
+    protected void sendMessage(int msg, Object value) { // TODO implement in openScale 3.0
         if (callbackBtHandler != null) {
             callbackBtHandler.obtainMessage(
                     BT_STATUS.SCALE_MESSAGE.ordinal(), msg, 0, value).sendToTarget();

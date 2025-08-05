@@ -166,7 +166,7 @@ public class BluetoothHoffenBBS8107 extends BluetoothCommunication {
     private ScaleMeasurement parseFinalMeasurement(byte[] value) {
         float weight = Converters.fromUnsignedInt16Le(value, 3) / 10.0f;
         LogManager.d(TAG, String.format("Got final weight: %.1f %s", weight, user.getScaleUnit().toString()));
-        // TODO sendMessage(R.string.info_measuring, weight);
+        sendMessage(R.string.bluetooth_scale_info_measuring_weight, weight);
 
         if (user.getScaleUnit() != WeightUnit.KG) {
             // For lb and st this scale will always return result in lb

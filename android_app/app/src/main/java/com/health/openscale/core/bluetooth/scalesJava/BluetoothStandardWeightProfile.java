@@ -204,7 +204,7 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
                 if (registerNewUser) {
                     requestMeasurement();
                     stopMachineState();
-                    // TODO sendMessage(R.string.info_step_on_scale_for_reference, 0);
+                    sendMessage(R.string.bluetooth_scale_info_step_on_for_reference, 0);
                 }
                 break;
             default:
@@ -241,7 +241,7 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
             int batteryLevel = parser.getIntValue(FORMAT_UINT8);
             LogManager.d(TAG, String.format("Received battery level %d%%", batteryLevel));
             if (batteryLevel <= 10) {
-                // TODO sendMessage(R.string.info_scale_low_battery, batteryLevel);
+                sendMessage(R.string.bluetooth_scale_warning_low_battery, batteryLevel);
             }
         }
         else if(characteristic.equals(BluetoothGattUuid.CHARACTERISTIC_MANUFACTURER_NAME_STRING)) {
@@ -829,15 +829,15 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
         for (int i = 0; i < userList.size(); ++i) {
             ScaleUser u = userList.get(i);
             String name = u.getUserName();
-            /* TODO choiceStrings[i] = (name.length() > 0 ? name : String.format("P%02d", u.getId()))
-                    + " " + context.getString(u.getGender().isMale() ? R.string.label_male : R.string.label_female).toLowerCase()
-                    + " " + context.getString(R.string.label_height).toLowerCase() + ":" + u.getBodyHeight()
-                    + " " + context.getString(R.string.label_birthday).toLowerCase() + ":" + dateFormat.format(u.getBirthday())
-                    + " " + context.getString(R.string.label_activity_level).toLowerCase() + ":" + (u.getActivityLevel().toInt() + 1);*/
+            choiceStrings[i] = (name.length() > 0 ? name : String.format("P%02d", u.getId()))
+                    + " " + (u.getGender().isMale() ? "male" : "female").toLowerCase()
+                    + " " + "height" + ":" + u.getBodyHeight()
+                    + " " + "birthday" + ":" + dateFormat.format(u.getBirthday())
+                    + " " + "activityLevel" + ":" + (u.getActivityLevel().toInt() + 1);
             indexArray[i] = u.getId();
         }
         if (userList.size() < getVendorSpecificMaxUserCount()) {
-            // TODO choiceStrings[userList.size()] = context.getString(R.string.info_create_new_user_on_scale);
+            choiceStrings[userList.size()] = context.getString(R.string.bluetooth_scale_info_create_user_instruction);
             indexArray[userList.size()] = -1;
         }
         Pair<CharSequence[], int[]> choices = new Pair(choiceStrings, indexArray);

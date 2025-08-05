@@ -152,7 +152,7 @@ public class BluetoothSoehnle extends BluetoothCommunication {
 
             LogManager.d(TAG, "Soehnle scale battery level is " + batteryLevel);
             if (batteryLevel <= 10) {
-                //TODO sendMessage(R.string.info_scale_low_battery, batteryLevel);
+                sendMessage(R.string.bluetooth_scale_warning_low_battery, batteryLevel);
             }
         }
     }
@@ -170,7 +170,7 @@ public class BluetoothSoehnle extends BluetoothCommunication {
                     LogManager.d(TAG, "User control point index is " + soehnleUserIndex + " for user id " + userId);
 
                     prefs.edit().putInt("userScaleIndex" + soehnleUserIndex, userId).apply();
-                    //TODO sendMessage(R.string.info_step_on_scale_for_reference, 0);
+                    sendMessage(R.string.bluetooth_scale_info_step_on_for_reference, 0);
                 } else {
                     LogManager.e(TAG, "Error creating new Sohnle user", null);
                 }
