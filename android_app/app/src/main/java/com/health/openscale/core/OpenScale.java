@@ -725,7 +725,7 @@ public class OpenScale {
 
     private void syncInsertMeasurement(ScaleMeasurement scaleMeasurement, String pkgName) {
         Intent intent = new Intent();
-        intent.setComponent(new ComponentName(pkgName, pkgName + ".core.service.SyncService"));
+        intent.setComponent(new ComponentName(pkgName, "com.health.openscale.sync.core.service.SyncService"));
         intent.putExtra("mode", "insert");
         intent.putExtra("userId", scaleMeasurement.getUserId());
         intent.putExtra("weight", scaleMeasurement.getWeight());
@@ -738,7 +738,7 @@ public class OpenScale {
 
     private void syncUpdateMeasurement(ScaleMeasurement scaleMeasurement, String pkgName) {
         Intent intent = new Intent();
-        intent.setComponent(new ComponentName(pkgName, pkgName + ".core.service.SyncService"));
+        intent.setComponent(new ComponentName(pkgName, "com.health.openscale.sync.core.service.SyncService"));
         intent.putExtra("mode", "update");
         intent.putExtra("userId", scaleMeasurement.getUserId());
         intent.putExtra("weight", scaleMeasurement.getWeight());
@@ -751,7 +751,7 @@ public class OpenScale {
 
     private void syncDeleteMeasurement(Date date, String pkgName) {
         Intent intent = new Intent();
-        intent.setComponent(new ComponentName(pkgName, pkgName + ".core.service.SyncService"));
+        intent.setComponent(new ComponentName(pkgName, "com.health.openscale.sync.core.service.SyncService"));
         intent.putExtra("mode", "delete");
         intent.putExtra("date", date.getTime());
         ContextCompat.startForegroundService(context, intent);
@@ -759,7 +759,7 @@ public class OpenScale {
 
     private void syncClearMeasurements(String pkgName) {
         Intent intent = new Intent();
-        intent.setComponent(new ComponentName(pkgName, pkgName + ".core.service.SyncService"));
+        intent.setComponent(new ComponentName(pkgName, "com.health.openscale.sync.core.service.SyncService"));
         intent.putExtra("mode", "clear");
         ContextCompat.startForegroundService(context, intent);
     }
