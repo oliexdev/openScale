@@ -17,6 +17,7 @@
  */
 package com.health.openscale.ui.screen.settings
 
+import android.R.attr.contentDescription
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -91,7 +92,7 @@ fun AboutScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Image(
-                painter = if (BuildConfig.BUILD_TYPE == "beta") painterResource(id = R.drawable.ic_launcher_beta_foreground) else painterResource(id = R.drawable.ic_launcher_foreground) ,
+                painter = if (BuildConfig.BUILD_TYPE == "beta" || BuildConfig.BUILD_TYPE == "oss") painterResource(id = R.drawable.ic_launcher_beta_foreground) else painterResource(id = R.drawable.ic_launcher_foreground) ,
                 contentDescription = stringResource(R.string.app_logo_content_description),
                 modifier = Modifier
                     .size(128.dp)

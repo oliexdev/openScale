@@ -236,7 +236,7 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
                         .fillMaxWidth()
                 ) {
                     Image(
-                        painter = if (BuildConfig.BUILD_TYPE == "beta") painterResource(id = R.drawable.ic_launcher_beta_foreground) else painterResource(id = R.drawable.ic_launcher_foreground) ,
+                        painter = if (BuildConfig.BUILD_TYPE == "beta" || BuildConfig.BUILD_TYPE == "oss") painterResource(id = R.drawable.ic_launcher_beta_foreground) else painterResource(id = R.drawable.ic_launcher_foreground) ,
                         contentDescription = stringResource(R.string.app_logo_content_description),
                         modifier = Modifier.size(64.dp)
                     )
