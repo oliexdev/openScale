@@ -17,6 +17,7 @@
  */
 package com.health.openscale
 
+import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -165,7 +166,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             OpenScaleTheme {
                 val sharedViewModel: SharedViewModel = viewModel(
-                    factory = provideSharedViewModelFactory(databaseRepository, userSettingsRepository)
+                    factory = provideSharedViewModelFactory(application, databaseRepository, userSettingsRepository)
                 )
 
                 val view = LocalView.current
@@ -193,13 +194,14 @@ class MainActivity : ComponentActivity() {
  * @return A [ViewModelProvider.Factory] for [SharedViewModel].
  */
 private fun provideSharedViewModelFactory(
+    application : Application,
     databaseRepository: DatabaseRepository,
     userSettingsRepository: UserSettingsRepository
 ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(SharedViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return SharedViewModel(databaseRepository, userSettingsRepository) as T
+            return SharedViewModel(application, databaseRepository, userSettingsRepository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
     }

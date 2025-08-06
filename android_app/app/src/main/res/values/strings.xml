@@ -374,4 +374,7 @@
     <string name="bluetooth_scale_info_measuring_weight">Measuring weight: %.2f</string>
     <string name="bluetooth_scale_error_max_users_reached">Max. number of concurrent scale users reached</string>
 
+    <string name="permission_read_write_data_description">read/write openScale data, including user information and all saved measurements</string>
+    <string name="permission_read_write_data_label">Read and Write openScale data</string>
+
 </resources>

@@ -3,7 +3,20 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
-    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation" tools:targetApi="s"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation" />
+
+    <permission
+        android:name="${applicationId}.READ_WRITE_DATA"
+        android:description="@string/permission_read_write_data_description"
+        android:label="@string/permission_read_write_data_label"
+        android:protectionLevel="dangerous" />
+
+    <uses-feature android:name="android.hardware.bluetooth_le" android:required="false"/>
+
+    <queries>
+        <package android:name="com.health.openscale.sync.oss" />
+        <package android:name="com.health.openscale.sync" />
+    </queries>
 
     <application
         android:allowBackup="true"
@@ -27,13 +40,20 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.provider"
+            android:authorities="${applicationId}.file_provider"
             android:exported="false"
             android:grantUriPermissions="true">
         <meta-data
             android:name="android.support.FILE_PROVIDER_PATHS"
             android:resource="@xml/file_paths" />
-    </provider>
+        </provider>
+        <provider
+            android:name=".core.database.DatabaseProvider"
+            android:authorities="${applicationId}.provider"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="${applicationId}.READ_WRITE_DATA">
+        </provider>
     </application>
 
 </manifest>

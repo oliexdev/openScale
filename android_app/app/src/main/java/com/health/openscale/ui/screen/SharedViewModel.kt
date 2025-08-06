@@ -17,17 +17,25 @@
  */
 package com.health.openscale.ui.screen
 
+import android.app.Application
+import android.content.ComponentName
+import android.content.Intent
 import androidx.annotation.StringRes
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.values
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
 import com.health.openscale.R
+import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementType
+import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.data.TimeRangeFilter
 import com.health.openscale.core.data.Trend
@@ -57,6 +65,7 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.util.Calendar
+import java.util.Date
 
 private const val TAG = "SharedViewModel"
 
@@ -121,6 +130,7 @@ data class EnrichedMeasurement(
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class SharedViewModel(
+    private val application: Application,
     val databaseRepository: DatabaseRepository,
     val userSettingRepository: UserSettingsRepository
 ) : ViewModel() {
@@ -313,6 +323,9 @@ class SharedViewModel(
                             databaseRepository.insertMeasurementValue(value.copy(measurementId = measurementToSave.id))
                         }
                     }
+
+                    triggerSyncUpdateMeasurement(measurementToSave, valuesToSave, "com.health.openscale.sync")
+                    triggerSyncUpdateMeasurement(measurementToSave, valuesToSave,"com.health.openscale.sync.oss")
                     LogManager.i(TAG, "Measurement ID ${measurementToSave.id} and its values update process completed by ViewModel. (ViewModel Result)")
                     showSnackbar(messageResId = R.string.success_measurement_updated)
                 } else {
@@ -321,6 +334,8 @@ class SharedViewModel(
                     valuesToSave.forEach { value ->
                         databaseRepository.insertMeasurementValue(value.copy(measurementId = newMeasurementId))
                     }
+                    triggerSyncInsertMeasurement(measurementToSave, valuesToSave,"com.health.openscale.sync")
+                    triggerSyncInsertMeasurement(measurementToSave, valuesToSave,"com.health.openscale.sync.oss")
                     LogManager.i(TAG, "New measurement insertion process completed by ViewModel with ID: $newMeasurementId. (ViewModel Result)")
                     showSnackbar(messageResId = R.string.success_measurement_saved)
                 }
@@ -337,6 +352,8 @@ class SharedViewModel(
             try {
                 LogManager.d(TAG, "Preparing to delete measurement ID: ${measurement.id}. (ViewModel Logic)")
                 databaseRepository.deleteMeasurement(measurement)
+                triggerSyncDeleteMeasurement(Date(measurement.timestamp), "com.health.openscale.sync")
+                triggerSyncDeleteMeasurement(Date(measurement.timestamp), "com.health.openscale.sync.oss")
                 LogManager.i(TAG, "Measurement ID ${measurement.id} deletion process completed by ViewModel. (ViewModel Result)")
                 showSnackbar(messageResId = R.string.success_measurement_deleted)
                 if (_currentMeasurementId.value == measurement.id) {
@@ -599,6 +616,130 @@ class SharedViewModel(
             }
         }
         LogManager.i(TAG, "ViewModel initialization complete. (Lifecycle Event)")
+    }
+
+    private fun triggerSyncInsertMeasurement(
+        measurementToSave: Measurement,
+        valuesToSave: List<MeasurementValue>,
+        pkgName: String
+    ) {
+        val intent = Intent()
+        intent.setComponent(
+            ComponentName(
+                pkgName,
+                "com.health.openscale.sync.core.service.SyncService"
+            )
+        )
+
+        intent.putExtra("mode", "insert")
+        intent.putExtra("userId", measurementToSave.userId)
+        intent.putExtra("date", measurementToSave.timestamp)
+
+        var weightValue: Float? = null
+        var fatValue: Float? = null
+        var waterValue: Float? = null
+        var muscleValue: Float? = null
+
+        val idToTypeKeyMap = MeasurementTypeKey.values().associateBy { it.id }
+
+        for (valueEntry in valuesToSave) {
+            when (idToTypeKeyMap[valueEntry.typeId]) {
+                MeasurementTypeKey.WEIGHT -> weightValue = valueEntry.floatValue
+                MeasurementTypeKey.BODY_FAT -> fatValue = valueEntry.floatValue
+                MeasurementTypeKey.WATER -> waterValue = valueEntry.floatValue
+                MeasurementTypeKey.MUSCLE -> muscleValue = valueEntry.floatValue
+                else -> { }
+            }
+        }
+
+        weightValue?.let { intent.putExtra("weight", it) }
+        fatValue?.let { intent.putExtra("fat", it) }
+        waterValue?.let { intent.putExtra("water", it) }
+        muscleValue?.let { intent.putExtra("muscle", it) }
+
+        LogManager.d(
+            TAG, "SyncService for INSERT started for pkg: $pkgName. " +
+                    "UserId: ${measurementToSave.userId}, Date: ${measurementToSave.timestamp}, " +
+                    "Weight: $weightValue, Fat: $fatValue, Water: $waterValue, Muscle: $muscleValue"
+        )
+
+        ContextCompat.startForegroundService(application.applicationContext, intent)
+    }
+
+    private fun triggerSyncUpdateMeasurement(
+        measurementToSave: Measurement,
+        valuesToSave: List<MeasurementValue>,
+        pkgName: String
+    ) {
+        val intent = Intent()
+        intent.setComponent(
+            ComponentName(
+                pkgName,
+                "com.health.openscale.sync.core.service.SyncService"
+            )
+        )
+
+        intent.putExtra("mode", "update")
+        intent.putExtra("userId", measurementToSave.userId)
+        intent.putExtra("date", measurementToSave.timestamp)
+
+        var weightValue: Float? = null
+        var fatValue: Float? = null
+        var waterValue: Float? = null
+        var muscleValue: Float? = null
+
+        val idToTypeKeyMap = MeasurementTypeKey.values().associateBy { it.id }
+
+        for (valueEntry in valuesToSave) {
+            when (idToTypeKeyMap[valueEntry.typeId]) {
+                MeasurementTypeKey.WEIGHT -> weightValue = valueEntry.floatValue
+                MeasurementTypeKey.BODY_FAT -> fatValue = valueEntry.floatValue
+                MeasurementTypeKey.WATER -> waterValue = valueEntry.floatValue
+                MeasurementTypeKey.MUSCLE -> muscleValue = valueEntry.floatValue
+                else -> { }
+            }
+        }
+
+        weightValue?.let { intent.putExtra("weight", it) }
+        fatValue?.let { intent.putExtra("fat", it) }
+        waterValue?.let { intent.putExtra("water", it) }
+        muscleValue?.let { intent.putExtra("muscle", it) }
+
+        LogManager.d(
+            TAG, "SyncService for UPDATE started for pkg: $pkgName. " +
+                    "UserId: ${measurementToSave.userId}, Date: ${measurementToSave.timestamp}, " +
+                    "Weight: $weightValue, Fat: $fatValue, Water: $waterValue, Muscle: $muscleValue"
+        )
+
+        ContextCompat.startForegroundService(application.applicationContext, intent)
+    }
+
+
+    private fun triggerSyncDeleteMeasurement(date: Date, pkgName: String) {
+        val intent = Intent()
+        intent.setComponent(
+            ComponentName(
+                pkgName,
+                "com.health.openscale.sync.core.service.SyncService"
+            )
+        )
+        intent.putExtra("mode", "delete")
+        intent.putExtra("date", date.getTime())
+        ContextCompat.startForegroundService(application.applicationContext, intent)
+        LogManager.d(TAG, "SyncService for DELETE started for pkg: $pkgName")
+    }
+
+    private fun triggerSyncClearMeasurements(pkgName: String) {
+        val intent = Intent()
+        intent.setComponent(
+            ComponentName(
+                pkgName,
+                "com.health.openscale.sync.core.service.SyncService"
+            )
+        )
+        intent.putExtra("mode", "clear")
+        ContextCompat.startForegroundService(application.applicationContext, intent)
+        LogManager.d(TAG, "SyncService for CLEAR started for pkg: $pkgName")
     }
 }
 

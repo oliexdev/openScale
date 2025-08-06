@@ -372,4 +372,7 @@
     <string name="bluetooth_scale_info_step_on_for_reference">Bitte stellen Sie sich barfuß auf die Waage für Referenzmessungen.</string>
     <string name="bluetooth_scale_info_measuring_weight">Gewichtsmessung: %.2f</string>
     <string name="bluetooth_scale_error_max_users_reached">Maximale Anzahl gleichzeitiger Waagenbenutzer erreicht.</string>
+
+    <string name="permission_read_write_data_description">Auslesen der openScale Daten, inkl. Benutzerinformationen und aller gespeicherten Messungen</string>
+    <string name="permission_read_write_data_label">Lese- und Schreibzugriff auf openScale Daten</string>
 </resources>

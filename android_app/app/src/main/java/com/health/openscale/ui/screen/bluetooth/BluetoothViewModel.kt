@@ -79,12 +79,12 @@ enum class ConnectionStatus {
  * This ViewModel also manages user context relevant to Bluetooth operations and exposes
  * StateFlows for UI observation.
  *
- * @param context The application context.
+ * @param application The application context.
  * @param sharedViewModel A [SharedViewModel] instance for accessing shared resources like
  *                        repositories and for displaying global UI messages (e.g., Snackbars).
  */
 class BluetoothViewModel(
-    private val context: Application,
+    private val application: Application,
     val sharedViewModel: SharedViewModel
 ) : ViewModel() {
 
@@ -103,14 +103,14 @@ class BluetoothViewModel(
     private var currentAppUserId: Int = 0
 
     // --- Dependencies (ScaleFactory is passed to managers) ---
-    private val scaleFactory = ScaleFactory(context.applicationContext, databaseRepository)
+    private val scaleFactory = ScaleFactory(application.applicationContext, databaseRepository)
 
     // --- BluetoothScannerManager (manages device scanning) ---
-    private val bluetoothScannerManager = BluetoothScannerManager(context, viewModelScope, scaleFactory)
+    private val bluetoothScannerManager = BluetoothScannerManager(application, viewModelScope, scaleFactory)
 
     // --- BluetoothConnectionManager (manages device connection and data events) ---
     private val bluetoothConnectionManager = BluetoothConnectionManager(
-        context = context.applicationContext,
+        context = application.applicationContext,
         scope = viewModelScope,
         scaleFactory = scaleFactory,
         databaseRepository = databaseRepository,
@@ -483,13 +483,13 @@ class BluetoothViewModel(
      */
     private fun checkInitialPermissions(): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED &&
-                    ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
+            ContextCompat.checkSelfPermission(application, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED &&
+                    ContextCompat.checkSelfPermission(application, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
         } else {
             // For older Android versions (below S)
-            ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH) == PackageManager.PERMISSION_GRANTED &&
-                    ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_ADMIN) == PackageManager.PERMISSION_GRANTED &&
-                    ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+            ContextCompat.checkSelfPermission(application, Manifest.permission.BLUETOOTH) == PackageManager.PERMISSION_GRANTED &&
+                    ContextCompat.checkSelfPermission(application, Manifest.permission.BLUETOOTH_ADMIN) == PackageManager.PERMISSION_GRANTED &&
+                    ContextCompat.checkSelfPermission(application, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
         }
     }
 
@@ -510,7 +510,7 @@ class BluetoothViewModel(
      * @return `true` if Bluetooth is enabled, `false` otherwise.
      */
     fun isBluetoothEnabled(): Boolean {
-        val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager?
+        val bluetoothManager = application.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager?
         val isEnabled = bluetoothManager?.adapter?.isEnabled ?: false
         // LogManager.v(TAG, "Bluetooth enabled status check: $isEnabled") // Potentially too verbose for frequent checks
         return isEnabled
