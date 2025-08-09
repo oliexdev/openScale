@@ -17,15 +17,20 @@
  */
 package com.health.openscale.core.bluetooth.scalesJava
 
+import android.R.attr.description
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
+import androidx.compose.foundation.layout.size
+import androidx.core.graphics.values
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.BluetoothEvent
 import com.health.openscale.core.bluetooth.ScaleCommunicator
+import com.health.openscale.core.bluetooth.BluetoothEvent.UserInteractionType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
+import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.database.DatabaseRepository
 import com.health.openscale.core.utils.LogManager
 import kotlinx.coroutines.CoroutineName
@@ -40,8 +45,13 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
+import java.util.Date
+import kotlin.text.find
+import kotlin.text.toDouble
 
 /**
  * Adapter that adapts a legacy `BluetoothCommunication` (Java driver) instance
@@ -87,6 +97,75 @@ class LegacyScaleAdapter(
     init {
         LogManager.i(TAG, "CONSTRUCTOR with driver instance: ${bluetoothDriverInstance.javaClass.name} (${bluetoothDriverInstance.driverName()})")
         bluetoothDriverInstance.registerCallbackHandler(driverEventHandler)
+    }
+
+    private suspend fun provideUserDataToLegacyDriver() {
+        try {
+            LogManager.d(TAG, "Attempting to load user data for legacy driver: ${bluetoothDriverInstance.driverName()}")
+            val userListFromDb = databaseRepository.getAllUsers().first()
+
+            val legacyScaleUserList = userListFromDb.map { kotlinUser ->
+                 ScaleUser().apply {
+                     setId(kotlinUser.id)
+                     setUserName(kotlinUser.name)
+                     setBirthday(Date(kotlinUser.birthDate))
+                     setBodyHeight(if (kotlinUser.heightCm == null) 0f else kotlinUser.heightCm)
+                     setGender(kotlinUser.gender)
+                     setActivityLevel(kotlinUser.activityLevel)
+
+                     // TODO setInitialWeight(kotlinUser.initialWeight)
+                     // TODO setGoalWeight(kotlinUser.goalWeight)
+                     // TODO usw.
+                 }
+            }
+
+            bluetoothDriverInstance.setScaleUserList(legacyScaleUserList)
+
+            LogManager.i(TAG, "Successfully provided ${userListFromDb.size} users to legacy driver ${bluetoothDriverInstance.driverName()}.")
+
+            this.currentInternalUser?.let { userId ->
+                if (userId.id != -1) {
+                LogManager.d(TAG, "Attempting to load last measurement for user ID: $userId using existing repository methods.")
+                    val lastMeasurementWithValues: com.health.openscale.core.model.MeasurementWithValues? =
+                        databaseRepository.getMeasurementsWithValuesForUser(userId.id)
+                            .map { measurements ->
+                                measurements.maxByOrNull { it.measurement.timestamp }
+                            }
+                            .first()
+
+                    if (lastMeasurementWithValues != null) {
+                        val legacyScaleMeasurement = ScaleMeasurement().apply {
+                            setDateTime(Date(lastMeasurementWithValues.measurement.timestamp))
+                            setUserId(lastMeasurementWithValues.measurement.userId)
+                            setWeight(lastMeasurementWithValues.values.find { it.type.key == MeasurementTypeKey.WEIGHT }?.value?.floatValue ?: 0.0f)
+                            setFat(lastMeasurementWithValues.values.find { it.type.key == MeasurementTypeKey.BODY_FAT }?.value?.floatValue ?: 0.0f)
+                            setWater(lastMeasurementWithValues.values.find { it.type.key == MeasurementTypeKey.WATER }?.value?.floatValue ?: 0.0f)
+                            setMuscle(lastMeasurementWithValues.values.find { it.type.key == MeasurementTypeKey.MUSCLE }?.value?.floatValue ?: 0.0f)
+                            setBone(lastMeasurementWithValues.values.find { it.type.key == MeasurementTypeKey.BONE }?.value?.floatValue ?: 0.0f)
+                            setVisceralFat(lastMeasurementWithValues.values.find { it.type.key == MeasurementTypeKey.VISCERAL_FAT }?.value?.floatValue ?: 0.0f)
+                            setLbm(lastMeasurementWithValues.values.find { it.type.key == MeasurementTypeKey.LBM }?.value?.floatValue ?: 0.0f)
+                        }
+                        bluetoothDriverInstance.setCachedLastMeasurementForSelectedUser(legacyScaleMeasurement)
+                        LogManager.i(TAG, "Successfully provided last measurement for user $userId to legacy driver.")
+                    } else {
+                        bluetoothDriverInstance.setCachedLastMeasurementForSelectedUser(null)
+                        LogManager.d(TAG, "No last measurement found for user $userId.")
+                    }
+                } else {
+                    bluetoothDriverInstance.setCachedLastMeasurementForSelectedUser(null)
+                }
+            } ?: run {
+                bluetoothDriverInstance.setCachedLastMeasurementForSelectedUser(null)
+                LogManager.d(TAG, "No current app user ID set, cannot load last measurement.")
+            }
+        } catch (e: Exception) {
+            LogManager.e(TAG, "Error providing user data to legacy driver ${bluetoothDriverInstance.driverName()}", e)
+            _eventsFlow.tryEmit(BluetoothEvent.DeviceMessage("Fehler beim Laden der Benutzerdaten für ${bluetoothDriverInstance.driverName()}",
+                bluetoothDriverInstance.scaleMacAddress.toString()
+            ))
+            bluetoothDriverInstance.setCachedLastMeasurementForSelectedUser(null)
+            LogManager.d(TAG, "No current app user ID set, cannot load last measurement.")
+        }
     }
 
     /**
@@ -182,31 +261,29 @@ class LegacyScaleAdapter(
                         adapter._eventsFlow.tryEmit(BluetoothEvent.DeviceMessage(fallbackMessage, deviceIdentifier))
                     }
                 }
-                BluetoothCommunication.BT_STATUS.CHOOSE_SCALE_USER -> {
-                    LogManager.d(TAG, "CHOOSE_SCALE_USER for $deviceIdentifier: Data: $eventData")
-                    var userListDescription = applicationContext.getString(R.string.legacy_adapter_event_user_selection_required)
-                    if (eventData is List<*>) {
-                        val stringList = eventData.mapNotNull { item ->
-                            if (item is ScaleUser) {
-                                applicationContext.getString(R.string.legacy_adapter_event_user_details, item.id, item.age, item.bodyHeight)
-                            } else {
-                                item.toString()
-                            }
-                        }
-                        if (stringList.isNotEmpty()) {
-                            userListDescription = stringList.joinToString(separator = "\n")
-                        }
-                    } else if (eventData != null) {
-                        userListDescription = eventData.toString()
+                BluetoothCommunication.BT_STATUS.USER_INTERACTION_REQUIRED -> {
+                    val rawPayload = msg.obj
+                    if (rawPayload is Array<*> && rawPayload.size == 2 && rawPayload[0] is UserInteractionType) {
+                        val interactionType = rawPayload[0] as UserInteractionType
+                        val eventDataForUi = rawPayload[1]
+
+                        LogManager.d(TAG, "USER_INTERACTION_REQUIRED ($interactionType) for $deviceIdentifier. Forwarding data: $eventDataForUi")
+
+                        adapter._eventsFlow.tryEmit(
+                            BluetoothEvent.UserInteractionRequired(
+                                deviceIdentifier = deviceIdentifier,
+                                data = eventDataForUi,
+                                interactionType = interactionType
+                            )
+                        )
+
+                    } else {
+                        LogManager.w(TAG, "Received USER_INTERACTION_REQUIRED with invalid or incomplete payload structure: $rawPayload")
+                        adapter._eventsFlow.tryEmit(BluetoothEvent.DeviceMessage(
+                            applicationContext.getString(R.string.legacy_adapter_event_invalid_interaction_payload),
+                            deviceIdentifier
+                        ))
                     }
-                    adapter._eventsFlow.tryEmit(BluetoothEvent.UserSelectionRequired(userListDescription, deviceIdentifier, eventData))
-                }
-                BluetoothCommunication.BT_STATUS.ENTER_SCALE_USER_CONSENT -> {
-                    val appScaleUserId = arg1
-                    val scaleUserIndex = arg2
-                    LogManager.d(TAG, "ENTER_SCALE_USER_CONSENT for $deviceIdentifier: AppUserID: $appScaleUserId, ScaleUserIndex: $scaleUserIndex. Data: $eventData")
-                    val message = applicationContext.getString(R.string.legacy_adapter_event_user_consent_required, appScaleUserId, scaleUserIndex)
-                    adapter._eventsFlow.tryEmit(BluetoothEvent.DeviceMessage(message, deviceIdentifier))
                 }
                 else -> {
                     LogManager.w(TAG, "Unknown BT_STATUS ($status) or message (what=${msg.what}) from driver ${adapter.bluetoothDriverInstance.driverName()} received.")
@@ -219,7 +296,7 @@ class LegacyScaleAdapter(
         }
     }
 
-    override fun connect(address: String, scaleUser: ScaleUser?, appUserId: Int?) {
+    override fun connect(address: String, scaleUser: ScaleUser?) {
         adapterScope.launch {
             val currentDeviceName = currentTargetAddress ?: bluetoothDriverInstance.driverName()
             if (_isConnected.value || _isConnecting.value) {
@@ -238,16 +315,17 @@ class LegacyScaleAdapter(
                 }
             }
 
-            LogManager.i(TAG, "connect: REQUEST for address $address to driver ${bluetoothDriverInstance.driverName()}, UI ScaleUser ID: ${scaleUser?.id}, AppUserID: $appUserId")
+            LogManager.i(TAG, "connect: REQUEST for address $address to driver ${bluetoothDriverInstance.driverName()}")
             _isConnecting.value = true
             _isConnected.value = false
             currentTargetAddress = address // Store the address being connected to
             currentInternalUser = scaleUser
 
-            LogManager.d(TAG, "connect: Internal user for connection: ${currentInternalUser?.id}, AppUserID: $appUserId")
+            LogManager.d(TAG, "connect: Internal user for connection: ${currentInternalUser?.id}")
+
+            provideUserDataToLegacyDriver()
 
             currentInternalUser?.let { bluetoothDriverInstance.setSelectedScaleUser(it) }
-            appUserId?.let { bluetoothDriverInstance.setSelectedScaleUserId(it) }
 
             LogManager.d(TAG, "connect: Calling connect() on Java driver instance (${bluetoothDriverInstance.driverName()}) for $address.")
             try {
@@ -331,34 +409,6 @@ class LegacyScaleAdapter(
     }
 
     /**
-     * Informs the legacy driver about the user's selection for a scale user.
-     * This is typically called in response to a [BluetoothEvent.UserSelectionRequired] event.
-     *
-     * @param appUserId The application-specific user ID.
-     * @param scaleUserIndex The index of the user on the scale.
-     */
-    fun selectLegacyScaleUserIndex(appUserId: Int, scaleUserIndex: Int) {
-        adapterScope.launch {
-            LogManager.i(TAG, "selectLegacyScaleUserIndex for ${bluetoothDriverInstance.driverName()}: AppUserID: $appUserId, ScaleUserIndex: $scaleUserIndex")
-            bluetoothDriverInstance.selectScaleUserIndexForAppUserId(appUserId, scaleUserIndex, driverEventHandler)
-        }
-    }
-
-    /**
-     * Sends the user's consent value to the legacy scale driver.
-     * This is typically called after the scale requests user consent.
-     *
-     * @param appUserId The application-specific user ID.
-     * @param consentValue The consent value (specific to the driver's protocol).
-     */
-    fun setLegacyScaleUserConsent(appUserId: Int, consentValue: Int) {
-        adapterScope.launch {
-            LogManager.i(TAG, "setLegacyScaleUserConsent for ${bluetoothDriverInstance.driverName()}: AppUserID: $appUserId, ConsentValue: $consentValue")
-            bluetoothDriverInstance.setScaleUserConsent(appUserId, consentValue, driverEventHandler)
-        }
-    }
-
-    /**
      * Retrieves the name of the managed Bluetooth driver/device.
      * Can be used externally if the name is needed and only a reference to the adapter is available.
      *
@@ -375,5 +425,14 @@ class LegacyScaleAdapter(
 
     override fun getEventsFlow(): SharedFlow<BluetoothEvent> {
         return events
+    }
+
+    override fun processUserInteractionFeedback(
+        interactionType: UserInteractionType,
+        appUserId: Int,
+        feedbackData: Any,
+        uiHandler: Handler
+    ) {
+        bluetoothDriverInstance.processUserInteractionFeedback(interactionType, appUserId, feedbackData, uiHandler)
     }
 }

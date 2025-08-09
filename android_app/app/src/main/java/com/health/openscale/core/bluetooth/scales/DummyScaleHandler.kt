@@ -61,32 +61,4 @@ class DummyScaleHandler(private val driverName: String) : ScaleDeviceHandler {
         println("DummyScaleHandler: disconnect called")
         // Add actual disconnection logic here
     }
-
-    override suspend fun provideUserSelection(
-        selectedUser: ScaleUserListItem,
-        requestContext: Any?
-    ): Boolean {
-        // Dummy implementation
-        println("DummyScaleHandler: provideUserSelection called for user ${selectedUser.displayData}")
-        return true // Or false based on logic
-    }
-
-    override suspend fun provideUserConsent(
-        consentType: String,
-        consented: Boolean,
-        details: Map<String, Any>?
-    ): Boolean {
-        // Dummy implementation
-        println("DummyScaleHandler: provideUserConsent called for $consentType, consented: $consented")
-        return true // Or false
-    }
-
-    override suspend fun provideUserAttributes(
-        attributes: Map<String, Any>,
-        scaleUserIdentifier: Any?
-    ): Boolean {
-        // Dummy implementation
-        println("DummyScaleHandler: provideUserAttributes called with $attributes")
-        return true // Or false
-    }
 }

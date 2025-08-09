@@ -17,6 +17,7 @@
  */
 package com.health.openscale.core.bluetooth
 
+import android.os.Handler
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import kotlinx.coroutines.flow.SharedFlow
@@ -26,6 +27,11 @@ import kotlinx.coroutines.flow.StateFlow
  * Defines the events that can be emitted by a [ScaleCommunicator].
  */
 sealed class BluetoothEvent {
+    enum class UserInteractionType {
+        CHOOSE_USER,
+        ENTER_CONSENT
+    }
+
     /**
      * Event triggered when a connection to a device has been successfully established.
      * @param deviceName The name of the connected device.
@@ -76,15 +82,14 @@ sealed class BluetoothEvent {
      * Event triggered when user interaction is required to select a user on the scale.
      * This is often used when a scale supports multiple users and the app needs to clarify
      * which app user corresponds to the scale user.
-     * @param description A message describing why user selection is needed.
      * @param deviceIdentifier The identifier (e.g., MAC address) of the device requiring user selection.
-     * @param userData Optional data associated with the event, potentially containing information about users on the scale.
+     * @param data Optional data associated with the event, potentially containing information about users on the scale.
      *                 The exact type should be defined by the communicator implementation if more specific data is available.
      */
-    data class UserSelectionRequired(
-        val description: String,
+    data class UserInteractionRequired(
         val deviceIdentifier: String,
-        val userData: Any? // Consider a more specific type if the structure of eventData is known.
+        val data: Any?,
+        val interactionType: UserInteractionType,
     ) : BluetoothEvent()
 }
 
@@ -110,9 +115,8 @@ interface ScaleCommunicator {
      * Initiates a connection attempt to the device with the specified MAC address.
      * @param address The MAC address of the target device.
      * @param scaleUser The user to be selected or used on the scale (optional).
-     * @param appUserId The ID of the user in the application (optional, can be used for context).
      */
-    fun connect(address: String, scaleUser: ScaleUser?, appUserId: Int?)
+    fun connect(address: String, scaleUser: ScaleUser?)
 
     /**
      * Disconnects the existing connection to the currently connected device.
@@ -132,4 +136,14 @@ interface ScaleCommunicator {
      * @return A [SharedFlow] of [BluetoothEvent]s.
      */
     fun getEventsFlow(): SharedFlow<BluetoothEvent>
+
+    /**
+     * Processes feedback received from the user for a previously requested interaction.
+     */
+    fun processUserInteractionFeedback(
+        interactionType: BluetoothEvent.UserInteractionType,
+        appUserId: Int,
+        feedbackData: Any,
+        uiHandler: Handler
+    )
 }

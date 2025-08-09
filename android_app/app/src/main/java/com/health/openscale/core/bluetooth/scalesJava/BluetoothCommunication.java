@@ -28,13 +28,16 @@ import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Message;
 
 import androidx.core.content.ContextCompat;
 
 
 import com.health.openscale.R;
+import com.health.openscale.core.bluetooth.BluetoothEvent.UserInteractionType;
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement;
 import com.health.openscale.core.bluetooth.data.ScaleUser;
+import com.health.openscale.core.data.User;
 import com.health.openscale.core.utils.LogManager;
 import com.welie.blessed.BluetoothCentralManager;
 import com.welie.blessed.BluetoothCentralManagerCallback;
@@ -45,10 +48,12 @@ import com.welie.blessed.GattStatus;
 import com.welie.blessed.HciStatus;
 import com.welie.blessed.WriteType;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
 public abstract class BluetoothCommunication {
+    private final String TAG = "BluetoothCommunication";
     public enum BT_STATUS {
         RETRIEVE_SCALE_DATA,
         INIT_PROCESS,
@@ -59,8 +64,7 @@ public abstract class BluetoothCommunication {
         NO_DEVICE_FOUND,
         UNEXPECTED_ERROR,
         SCALE_MESSAGE,
-        CHOOSE_SCALE_USER,
-        ENTER_SCALE_USER_CONSENT,
+        USER_INTERACTION_REQUIRED
     }
 
     private int stepNr;
@@ -75,7 +79,9 @@ public abstract class BluetoothCommunication {
     private BluetoothPeripheral btPeripheral;
 
     private ScaleUser selectedScaleUser;
-    private int selectedScaleUserId;
+
+    private List<ScaleUser> cachedAppUserList;
+    protected ScaleMeasurement cachedLastMeasurementForSelectedUser;
 
     public BluetoothCommunication(Context context)
     {
@@ -85,7 +91,6 @@ public abstract class BluetoothCommunication {
         this.stopped = false;
         this.central = new BluetoothCentralManager(context, bluetoothCentralCallback, new Handler(Looper.getMainLooper()));
         this.selectedScaleUser = new ScaleUser();
-        this.selectedScaleUserId = 0;
     }
 
     public void setSelectedScaleUser(ScaleUser user) {
@@ -96,24 +101,60 @@ public abstract class BluetoothCommunication {
         return selectedScaleUser;
     }
 
-    public List<ScaleUser> getScaleUserList() { return null; } // TODO Not implemented
-
-    public void setSelectedScaleUserId(int userId) {
-        selectedScaleUserId = userId;
-    }
-    public int getSelectedScaleUserId() {
-        return selectedScaleUserId;
+    public void setScaleUserList(List<ScaleUser> userList) {
+        cachedAppUserList = userList;
     }
 
-    public void updateScaleUser(ScaleUser user) {} // TODO Not implemented
+    public List<ScaleUser> getScaleUserList() { return cachedAppUserList; }
 
-    public int getAssignableUser(float weight) { return 0; } // TODO Not implemented
+    public void setCachedLastMeasurementForSelectedUser(ScaleMeasurement measurement) {
+        this.cachedLastMeasurementForSelectedUser = measurement;
+        if (measurement != null) {
+            LogManager.d(TAG, "Cached last measurement for selected user (ID: " + getSelectedScaleUser().getId() + ") set.");
+        } else {
+            LogManager.d(TAG, "Cached last measurement for selected user (ID: " + getSelectedScaleUser().getId() + ") cleared.");
+        }
+    }
+    public ScaleMeasurement getLastScaleMeasurement(int userId) {
+        if (getSelectedScaleUser().getId() == userId && this.cachedLastMeasurementForSelectedUser != null) {
+            LogManager.d(TAG, "Returning cached last measurement for user ID: " + userId);
+            return this.cachedLastMeasurementForSelectedUser;
+        }
+        if (getSelectedScaleUser().getId() != userId) {
+            LogManager.w(TAG, "Requested last measurement for user ID " + userId +
+                    ", but cached data is for selected user ID " + getSelectedScaleUser().getId() + ". Returning null.", null);
+        } else { // cachedLastMeasurementForSelectedUser is null
+            LogManager.d(TAG, "No cached last measurement available for user ID: " + userId + ". Returning null.");
+        }
+        return null;
+    }
 
-    public ScaleUser getScaleUser(int userId) { return null; } // TODO Not implemented
+    protected void requestUserInteraction(UserInteractionType interactionType, Object data) {
+        if (callbackBtHandler != null) {
+            Message msg = callbackBtHandler.obtainMessage(BT_STATUS.USER_INTERACTION_REQUIRED.ordinal());
 
-    public ScaleMeasurement getLastScaleMeasurement(int userId) { return null; } // TODO Not implemented
-    public BluetoothPeripheral getBtPeripheral() {
-        return btPeripheral;
+            Object[] payload = new Object[]{interactionType, data};
+            msg.obj = payload;
+
+            LogManager.d(TAG, "Sending USER_INTERACTION_REQUIRED (" + interactionType + ") to handler. Data: " + (data != null ? data.toString() : "null"));
+            msg.sendToTarget();
+        }
+    }
+
+    /**
+     * Processes feedback received from the user in response to a requestUserInteraction call.
+     * The specific implementation in subclasses will handle the data based on the original interaction type.
+     *
+     * @param interactionType The type of interaction this feedback corresponds to.
+     * @param appUserId The ID of the application user this feedback is for.
+     * @param feedbackData Data provided by the user (e.g., selected scaleUserIndex, entered consent code).
+     *                     The type and structure depend on the interactionType.
+     *                     For CHOOSE_USER, this would be the selected scaleUserIndex (Integer).
+     *                     For ENTER_CONSENT, this would be the consent code (Integer).
+     * @param uiHandler Handler for potential further UI updates or operations within the communicator.
+     */
+    public void processUserInteractionFeedback(UserInteractionType interactionType, int appUserId, Object feedbackData, Handler uiHandler) {
+        LogManager.d(TAG, "processUserInteractionFeedback for " + interactionType + " not implemented in base class. AppUserId: " + appUserId);
     }
 
     protected boolean needReConnect() {
@@ -172,27 +213,13 @@ public abstract class BluetoothCommunication {
         }
     }
 
-    protected void chooseScaleUserUi(Object userList) {
-        if (callbackBtHandler != null) {
-            callbackBtHandler.obtainMessage(
-                    BT_STATUS.CHOOSE_SCALE_USER.ordinal(), userList).sendToTarget();
-        }
-    }
-
-    protected void enterScaleUserConsentUi(int appScaleUserId, int scaleUserIndex) {
-        if (callbackBtHandler != null) {
-            callbackBtHandler.obtainMessage(
-                    BT_STATUS.ENTER_SCALE_USER_CONSENT.ordinal(), appScaleUserId, scaleUserIndex).sendToTarget();
-        }
-    }
-
     /**
      * Send message to openScale user
      *
      * @param msg the string id to be send
      * @param value the value to be used
      */
-    protected void sendMessage(int msg, Object value) { // TODO implement in openScale 3.0
+    protected void sendMessage(int msg, Object value) {
         if (callbackBtHandler != null) {
             callbackBtHandler.obtainMessage(
                     BT_STATUS.SCALE_MESSAGE.ordinal(), msg, 0, value).sendToTarget();
@@ -412,15 +439,6 @@ public abstract class BluetoothCommunication {
         disconnectHandler.removeCallbacksAndMessages(null);
     }
 
-    public void selectScaleUserIndexForAppUserId(int appUserId, int scaleUserIndex, Handler uiHandler) {
-        LogManager.d("BluetoothCommunication","Set scale user index for app user id: Not implemented!");
-    }
-
-    public void setScaleUserConsent(int appUserId, int scaleUserConsent, Handler uiHandler) {
-        LogManager.d("BluetoothCommunication","Set scale user consent for app user id: Not implemented!");
-    }
-
-    // +++
     public byte[] getScaleMacAddress() {
         String[] mac = btPeripheral.getAddress().split(":");
         byte[] macAddress = new byte[6];

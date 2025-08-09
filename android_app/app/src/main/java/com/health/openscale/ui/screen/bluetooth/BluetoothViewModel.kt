@@ -24,6 +24,8 @@ import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import androidx.compose.material3.SnackbarDuration // Keep if used directly, otherwise remove
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
@@ -31,8 +33,10 @@ import androidx.lifecycle.viewModelScope
 import com.health.openscale.core.bluetooth.BluetoothEvent
 // ScaleCommunicator no longer needed directly here
 import com.health.openscale.core.bluetooth.ScaleFactory
+import com.health.openscale.core.bluetooth.BluetoothEvent.UserInteractionType
 // ScaleMeasurement no longer needed directly here for saveMeasurementFromEvent
 import com.health.openscale.core.bluetooth.data.ScaleUser
+import com.health.openscale.core.bluetooth.scalesJava.BluetoothCommunication
 // Measurement, MeasurementTypeKey, MeasurementValue no longer needed directly here
 import com.health.openscale.core.data.User
 import com.health.openscale.core.utils.LogManager
@@ -116,11 +120,6 @@ class BluetoothViewModel(
         databaseRepository = databaseRepository,
         sharedViewModel = sharedViewModel,
         getCurrentScaleUser = { currentBtScaleUser },
-        getCurrentAppUserId = { currentAppUserId },
-        onUserSelectionRequired = { event ->
-            // Update internal state when ConnectionManager requires user selection.
-            _showUserSelectionDialogFromManager.value = event
-        },
         onSavePreferredDevice = { address, name ->
             // Save preferred device when ConnectionManager successfully connects and indicates to do so.
             // Snackbar for user feedback can be shown here or in ConnectionManager; here is fine.
@@ -162,13 +161,8 @@ class BluetoothViewModel(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), null)
 
     // --- UI Interaction for User Selection (triggered by ConnectionManager callback) ---
-    private val _showUserSelectionDialogFromManager = MutableStateFlow<BluetoothEvent.UserSelectionRequired?>(null)
-    /**
-     * Emits a [BluetoothEvent.UserSelectionRequired] when the connected scale needs user interaction
-     * (e.g., selecting a user profile on the scale). The UI should observe this to show a dialog.
-     * Emits null when the dialog should be dismissed or is not needed.
-     */
-    val showUserSelectionDialog: StateFlow<BluetoothEvent.UserSelectionRequired?> = _showUserSelectionDialogFromManager.asStateFlow()
+    val pendingUserInteractionEvent: StateFlow<BluetoothEvent.UserInteractionRequired?> =
+        bluetoothConnectionManager.userInteractionRequiredEvent
 
     init {
         LogManager.i(TAG, "ViewModel initialized. Setting up user observation.")
@@ -446,17 +440,34 @@ class BluetoothViewModel(
         bluetoothConnectionManager.clearConnectionError()
     }
 
-    /**
-     * Clears the user selection dialog state. This should be called by the UI
-     * after the user has made a selection or dismissed the dialog.
-     */
-    fun clearUserSelectionDialog() {
-        LogManager.d(TAG, "Clearing user selection dialog.")
-        _showUserSelectionDialogFromManager.value = null
-        // If BluetoothConnectionManager held its own state for this event (beyond the callback),
-        // a method like `bluetoothConnectionManager.userSelectionActionCompleted()` might be called here.
+    fun clearPendingUserInteraction() {
+        LogManager.d(TAG, "Requesting to clear pending user interaction event.")
+        bluetoothConnectionManager.clearUserInteractionEvent()
     }
 
+    fun processUserInteraction(interactionType: UserInteractionType, feedbackData: Any) {
+        viewModelScope.launch {
+            val currentAppUser = sharedViewModel.selectedUser.value
+            if (currentAppUser == null || currentAppUser.id == 0) {
+                sharedViewModel.showSnackbar("Fehler: Kein App-Benutzer ausgewählt.")
+                bluetoothConnectionManager.clearUserInteractionEvent()
+                return@launch
+            }
+            val appUserId = currentAppUser.id
+
+            clearPendingUserInteraction()
+            val uiHandler = Handler(Looper.getMainLooper())
+
+            bluetoothConnectionManager.provideUserInteractionFeedback(
+                interactionType,
+                appUserId,
+                feedbackData,
+                uiHandler
+            )
+
+            sharedViewModel.showSnackbar("Benutzereingabe verarbeitet.", SnackbarDuration.Short)
+        }
+    }
 
     // --- Device Preferences ---
 

@@ -184,7 +184,7 @@ public class BluetoothYunmaiSE_Mini extends BluetoothCommunication {
             prefs.edit().putInt("uniqueNumber", uniqueNumber).apply();
         }
 
-        int userId = getSelectedScaleUserId();
+        int userId = getSelectedScaleUser().getId();
 
         return uniqueNumber + userId;
     }

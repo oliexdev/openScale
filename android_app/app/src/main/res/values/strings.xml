@@ -9,6 +9,7 @@
     <!-- Generic UI Elements & Actions -->
     <string name="enable_button">Enable</string>
     <string name="cancel_button">Cancel</string>
+    <string name="confirm_button">Confirm</string>
     <string name="dialog_ok">OK</string>
     <string name="open_link_content_description">Open link</string>
     <string name="content_desc_warning_icon">Warning Icon</string>
@@ -218,6 +219,10 @@
     <string name="legacy_adapter_connect_exception">Error starting connection process to %1$s: %2$s</string>
     <string name="legacy_adapter_request_measurement_not_connected">Not connected for measurement request.</string>
     <string name="legacy_adapter_request_measurement_auto">Measurement should start automatically (Legacy driver).</string>
+    <string name="legacy_adapter_event_missing_user_data">Error: Missing user data for selection.</string>
+    <string name="legacy_adapter_event_invalid_consent_data">Error: Invalid data received for consent.</string>
+    <string name="legacy_adapter_event_missing_consent_data">Error: Missing data required for consent.</string>
+    <string name="legacy_adapter_event_invalid_interaction_payload">Error: Invalid data payload received for user interaction.</string>
 
     <!-- Charts (LineChart) -->
     <string name="content_description_time_range_icon">Time range icon</string>
@@ -376,5 +381,17 @@
 
     <string name="permission_read_write_data_description">read/write openScale data, including user information and all saved measurements</string>
     <string name="permission_read_write_data_label">Read and Write openScale data</string>
+
+    <string name="dialog_bt_interaction_title_choose_user">Select User on Scale</string>
+    <string name="dialog_bt_interaction_desc_choose_user_default">Select your user from the list or create a new one.</string>
+    <string name="dialog_bt_icon_desc_choose_user">User Selection</string>
+    <string name="dialog_bt_interaction_title_enter_consent">Enter Confirmation Code</string>
+    <string name="dialog_bt_interaction_desc_enter_consent_default">Please enter the code displayed on your scale.</string>
+    <string name="dialog_bt_icon_desc_enter_consent">Code Entry</string>
+    <string name="dialog_bt_label_consent_code">Confirmation Code</string>
+    <string name="dialog_bt_error_loading_user_list_empty">User list is empty or corrupted.</string>
+    <string name="dialog_bt_error_loading_user_list_format">Error: User data could not be loaded correctly.</string>
+    <string name="dialog_bt_select_user_prompt">Please select a user.</string>
+    <string name="dialog_bt_enter_valid_code_prompt">Please enter a valid code.</string>
 
 </resources>

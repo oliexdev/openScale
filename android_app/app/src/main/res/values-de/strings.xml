@@ -8,6 +8,7 @@
     <!-- Generische UI-Elemente & Aktionen -->
     <string name="enable_button">Aktivieren</string>
     <string name="cancel_button">Abbrechen</string>
+    <string name="confirm_button">Bestätigen</string>
     <string name="dialog_ok">OK</string>
     <string name="open_link_content_description">Link öffnen</string>
     <string name="content_desc_warning_icon">Warnsymbol</string>
@@ -217,6 +218,10 @@
     <string name="legacy_adapter_connect_exception">Fehler beim Starten des Verbindungsprozesses zu %1$s: %2$s</string>
     <string name="legacy_adapter_request_measurement_not_connected">Nicht verbunden für Messanforderung.</string>
     <string name="legacy_adapter_request_measurement_auto">Messung sollte automatisch starten (Legacy-Treiber).</string>
+    <string name="legacy_adapter_event_missing_user_data">Fehler: Fehlende Benutzerdaten für Auswahl.</string>
+    <string name="legacy_adapter_event_invalid_consent_data">Fehler: Ungültige Daten für Zustimmung empfangen.</string>
+    <string name="legacy_adapter_event_missing_consent_data">Fehler: Fehlende Daten für Zustimmung erforderlich.</string>
+    <string name="legacy_adapter_event_invalid_interaction_payload">Fehler: Ungültige Daten-Nutzlast für Benutzerinteraktion empfangen.</string>
 
     <!-- Diagramme (LineChart) -->
     <string name="content_description_time_range_icon">Zeitraumsymbol</string>
@@ -375,4 +380,19 @@
 
     <string name="permission_read_write_data_description">Auslesen der openScale Daten, inkl. Benutzerinformationen und aller gespeicherten Messungen</string>
     <string name="permission_read_write_data_label">Lese- und Schreibzugriff auf openScale Daten</string>
+
+    <string name="dialog_bt_interaction_title_choose_user">Benutzer auf Waage auswählen</string>
+    <string name="dialog_bt_interaction_desc_choose_user_default">Wählen Sie Ihren Benutzer aus der Liste oder erstellen Sie einen neuen.</string>
+    <string name="dialog_bt_icon_desc_choose_user">Benutzerauswahl</string>
+
+    <string name="dialog_bt_interaction_title_enter_consent">Bestätigungscode eingeben</string>
+    <string name="dialog_bt_interaction_desc_enter_consent_default">Bitte geben Sie den auf Ihrer Waage angezeigten Code ein.</string>
+    <string name="dialog_bt_icon_desc_enter_consent">Code-Eingabe</string>
+
+    <string name="dialog_bt_label_consent_code">Bestätigungscode</string>
+
+    <string name="dialog_bt_error_loading_user_list_empty">Benutzerliste ist leer oder fehlerhaft.</string>
+    <string name="dialog_bt_error_loading_user_list_format">Fehler: Benutzerdaten konnten nicht korrekt geladen werden.</string>
+    <string name="dialog_bt_select_user_prompt">Bitte einen Benutzer auswählen.</string>
+    <string name="dialog_bt_enter_valid_code_prompt">Bitte einen gültigen Code eingeben.</string>
 </resources>

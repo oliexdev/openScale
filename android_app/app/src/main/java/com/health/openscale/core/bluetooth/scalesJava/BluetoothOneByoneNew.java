@@ -73,7 +73,7 @@ public class BluetoothOneByoneNew extends BluetoothCommunication{
                 impedance = Converters.fromUnsignedInt16Be(data, 15);
 
                 ScaleMeasurement historicMeasurement = new ScaleMeasurement();
-                int assignableUserId = getAssignableUser(weight);
+                int assignableUserId = getSelectedScaleUser().getId(); // TODO old implementation was getAssignableUser(weight);
                 if(assignableUserId == -1){
                     LogManager.i(TAG, "Discarding historic measurement: no user found with intelligent user recognition");
                     break;
@@ -117,10 +117,9 @@ public class BluetoothOneByoneNew extends BluetoothCommunication{
             LogManager.e(TAG, "Discarding measurement population since invalid user", null);
             return;
         }
-        ScaleUser user = getScaleUser(userId);
+        ScaleUser user = getSelectedScaleUser();
         float cmHeight = Converters.fromCentimeter(user.getBodyHeight(), user.getMeasureUnit());
         OneByoneNewLib onebyoneLib = new OneByoneNewLib(getUserGender(user), user.getAge(), cmHeight, user.getActivityLevel().toInt());
-        measurement.setUserId(userId);
         measurement.setWeight(weight);
         measurement.setDateTime(Calendar.getInstance().getTime());
         measurement.setFat(onebyoneLib.getBodyFatPercentage(weight, impedance));
@@ -156,7 +155,7 @@ public class BluetoothOneByoneNew extends BluetoothCommunication{
                 break;
             case 2:
                 // After the measurement took place, we store the data and send back to the scale
-                sendUsersHistory(getSelectedScaleUserId());
+                sendUsersHistory(getSelectedScaleUser().getId());
                 break;
             default:
                 return false;

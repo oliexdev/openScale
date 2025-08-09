@@ -28,8 +28,11 @@ import android.os.Looper
 import androidx.core.content.ContextCompat
 import com.health.openscale.core.bluetooth.BluetoothEvent
 import com.health.openscale.core.bluetooth.ScaleCommunicator
+import com.health.openscale.core.bluetooth.BluetoothEvent.UserInteractionType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
+import com.health.openscale.core.bluetooth.scalesJava.BluetoothCommunication
+import com.health.openscale.core.bluetooth.scalesJava.LegacyScaleAdapter
 import com.health.openscale.core.utils.LogManager
 import com.welie.blessed.BluetoothCentralManager
 import com.welie.blessed.BluetoothCentralManagerCallback
@@ -73,6 +76,7 @@ object ScaleGattAttributes {
 class ModernScaleAdapter(
     private val context: Context
 ) : ScaleCommunicator {
+    private val TAG = "ModernScaleAdapter"
 
     private companion object {
         const val TAG = "ModernScaleAdapter"
@@ -89,6 +93,14 @@ class ModernScaleAdapter(
 
     private val _eventsFlow = MutableSharedFlow<BluetoothEvent>(replay = 1, extraBufferCapacity = 5)
     override fun getEventsFlow(): SharedFlow<BluetoothEvent> = _eventsFlow.asSharedFlow()
+    override fun processUserInteractionFeedback(
+        interactionType: UserInteractionType,
+        appUserId: Int,
+        feedbackData: Any,
+        uiHandler: Handler
+    ) {
+        LogManager.w(TAG, "Error not implemented processUserInteractionFeedback received: Type=$interactionType, UserID=$appUserId, Data=$feedbackData", null)
+    }
 
     private val _isConnecting = MutableStateFlow(false)
     override val isConnecting: StateFlow<Boolean> = _isConnecting.asStateFlow()
@@ -183,7 +195,7 @@ class ModernScaleAdapter(
         }
     }
 
-    override fun connect(address: String, scaleUser: ScaleUser?, appUserId: Int?) {
+    override fun connect(address: String, scaleUser: ScaleUser?) {
         adapterScope.launch {
             if (!::central.isInitialized) {
                 LogManager.e(TAG, "BluetoothCentralManager nicht initialisiert, wahrscheinlich aufgrund fehlender Berechtigungen.")
@@ -209,9 +221,8 @@ class ModernScaleAdapter(
             _isConnected.value = false
             targetAddress = address
             currentScaleUser = scaleUser
-            currentAppUserId = appUserId
 
-            LogManager.i(TAG, "Verbindungsversuch zu $address mit Benutzer: ${scaleUser?.id}, AppUserID: $appUserId")
+            LogManager.i(TAG, "Verbindungsversuch zu $address mit Benutzer: ${scaleUser?.id}")
 
             // Stoppe vorherige Scans, falls vorhanden
             central.stopScan()

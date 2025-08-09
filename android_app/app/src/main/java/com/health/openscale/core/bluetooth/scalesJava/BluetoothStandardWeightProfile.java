@@ -30,6 +30,7 @@ import android.preference.PreferenceManager;
 import android.util.Pair;
 
 import com.health.openscale.R;
+import com.health.openscale.core.bluetooth.BluetoothEvent.UserInteractionType;
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement;
 import com.health.openscale.core.bluetooth.data.ScaleUser;
 import com.health.openscale.core.data.ActivityLevel;
@@ -295,7 +296,7 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
                         resumeMachineState();
                     } else if (value[2] == UDS_CP_RESP_USER_NOT_AUTHORIZED) {
                         LogManager.e(TAG, "UDS_CP_CONSENT: Not authorized", null);
-                        enterScaleUserConsentUi(this.selectedUser.getId(), getUserScaleIndex(this.selectedUser.getId()));
+                        requestScaleUserConsent(selectedUser.getId(), getUserScaleIndex(selectedUser.getId()));
                     }
                     else {
                         LogManager.e(TAG, "UDS_CP_CONSENT: unhandled, code: " + value[2], null);
@@ -355,12 +356,6 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
             }
 
             if (registerNewUser) {
-                LogManager.d(TAG, String.format(prefix + "Setting initial weight for user %s to: %s and registerNewUser to false", userID,
-                        weightValue));
-                if (selectedUser.getId() == userID) {
-                    this.selectedUser.setInitialWeight(weightValue);
-                    updateScaleUser(selectedUser);
-                }
                 registerNewUser = false;
                 resumeMachineState();
             }
@@ -721,32 +716,50 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
         resumeMachineState();
     }
 
-    @Override
-    public void selectScaleUserIndexForAppUserId(int appUserId, int scaleUserIndex, Handler uiHandler) {
-        LogManager.d(TAG, "Select scale user index from UI: user id: " + appUserId + ", scale user index: " + scaleUserIndex);
-        if (scaleUserIndex == -1) {
-            reconnectOrSetSmState(SM_STEPS.REGISTER_NEW_SCALE_USER, SM_STEPS.REGISTER_NEW_SCALE_USER, uiHandler);
-        }
-        else {
-            storeUserScaleIndex(appUserId, scaleUserIndex);
-            if (getUserScaleConsent(appUserId) == -1) {
-                enterScaleUserConsentUi(appUserId, scaleUserIndex);
-            }
-            else {
-                reconnectOrSetSmState(SM_STEPS.SELECT_SCALE_USER, SM_STEPS.REQUEST_VENDOR_SPECIFIC_USER_LIST, uiHandler);
-            }
-        }
+    protected void requestScaleUserConsent(int appScaleUserId, int scaleUserIndex) {
+        Object[] consentRequestData = new Object[]{appScaleUserId, scaleUserIndex};
+        requestUserInteraction(UserInteractionType.ENTER_CONSENT, consentRequestData);
     }
 
-    @Override
-    public void setScaleUserConsent(int appUserId, int scaleUserConsent, Handler uiHandler) {
-        LogManager.d(TAG, "set scale user consent from UI: user id: " + appUserId + ", scale user consent: " + scaleUserConsent);
-        storeUserScaleConsentCode(appUserId, scaleUserConsent);
-        if (scaleUserConsent == -1) {
-            reconnectOrSetSmState(SM_STEPS.REQUEST_VENDOR_SPECIFIC_USER_LIST, SM_STEPS.REQUEST_VENDOR_SPECIFIC_USER_LIST, uiHandler);
-        }
-        else {
-            reconnectOrSetSmState(SM_STEPS.SELECT_SCALE_USER, SM_STEPS.REQUEST_VENDOR_SPECIFIC_USER_LIST, uiHandler);
+        @Override
+    public void processUserInteractionFeedback(UserInteractionType interactionType, int appUserId, Object feedbackData, Handler uiHandler) {
+        LogManager.d(TAG, "Processing UserInteractionFeedback: " + interactionType + " for appUserId: " + appUserId);
+        switch (interactionType) {
+            case CHOOSE_USER:
+                if (feedbackData instanceof Integer) {
+                    int scaleUserIndex = (Integer) feedbackData;
+                    LogManager.d(TAG, "CHOOSE_USER Feedback: scaleUserIndex = " + scaleUserIndex);
+                    if (scaleUserIndex == -1) { // User wants to create a new user
+                        reconnectOrSetSmState(SM_STEPS.REGISTER_NEW_SCALE_USER, SM_STEPS.REGISTER_NEW_SCALE_USER, uiHandler);
+                    } else { // User selected an existing scale user
+                        storeUserScaleIndex(appUserId, scaleUserIndex);
+                        if (getUserScaleConsent(appUserId) == -1) {
+                            requestScaleUserConsent(appUserId, scaleUserIndex);
+                        } else {
+                            reconnectOrSetSmState(SM_STEPS.SELECT_SCALE_USER, SM_STEPS.REQUEST_VENDOR_SPECIFIC_USER_LIST, uiHandler);
+                        }
+                    }
+                } else {
+                    LogManager.e(TAG, "CHOOSE_USER feedbackData is not an Integer: " + feedbackData, null);
+                }
+                break;
+            case ENTER_CONSENT:
+                if (feedbackData instanceof Integer) {
+                    int scaleUserConsent = (Integer) feedbackData;
+                    LogManager.d(TAG, "ENTER_CONSENT Feedback: scaleUserConsent = " + scaleUserConsent);
+                    storeUserScaleConsentCode(appUserId, scaleUserConsent);
+                    if (scaleUserConsent == -1) { // User cancelled or denied consent
+                        reconnectOrSetSmState(SM_STEPS.REQUEST_VENDOR_SPECIFIC_USER_LIST, SM_STEPS.REQUEST_VENDOR_SPECIFIC_USER_LIST, uiHandler);
+                    } else { // User provided consent
+                        reconnectOrSetSmState(SM_STEPS.SELECT_SCALE_USER, SM_STEPS.REQUEST_VENDOR_SPECIFIC_USER_LIST, uiHandler);
+                    }
+                } else {
+                    LogManager.e(TAG, "ENTER_CONSENT feedbackData is not an Integer: " + feedbackData, null);
+                }
+                break;
+            default:
+                LogManager.w(TAG, "Unhandled UserInteractionType in processUserInteractionFeedback: " + interactionType, null);
+                break;
         }
     }
 
@@ -841,7 +854,7 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
             indexArray[userList.size()] = -1;
         }
         Pair<CharSequence[], int[]> choices = new Pair(choiceStrings, indexArray);
-        chooseScaleUserUi(choices);
+        requestUserInteraction(UserInteractionType.CHOOSE_USER, choices);
     }
 
     protected String getInitials(String fullName) {

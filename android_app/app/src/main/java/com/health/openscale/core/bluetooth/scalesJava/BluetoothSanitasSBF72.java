@@ -58,7 +58,7 @@ public class BluetoothSanitasSBF72 extends BluetoothStandardWeightProfile {
     }
 
     @Override
-    protected void enterScaleUserConsentUi(int appScaleUserId, int scaleUserIndex) {
+    protected void requestScaleUserConsent(int appScaleUserId, int scaleUserIndex) {
         //Requests the scale to display the pin for the user in it's display.
         //As parameter we need to send a pin-index to the custom user-list characteristic.
         //For user with index 1 the pin-index is 0x11, for user with index 2 it is 0x12 and so on.
@@ -68,7 +68,7 @@ public class BluetoothSanitasSBF72 extends BluetoothStandardWeightProfile {
         writeBytes(SERVICE_SBF72_CUSTOM, CHARACTERISTIC_USER_LIST, parser.getValue());
 
         //opens the input screen for the pin in the app
-        super.enterScaleUserConsentUi(appScaleUserId, scaleUserIndex);
+        super.requestScaleUserConsent(appScaleUserId, scaleUserIndex);
     }
 
     @Override

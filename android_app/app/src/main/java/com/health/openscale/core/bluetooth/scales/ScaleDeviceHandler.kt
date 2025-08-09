@@ -18,6 +18,8 @@
 package com.health.openscale.core.bluetooth.scales
 
 import android.util.SparseArray
+import com.health.openscale.core.bluetooth.BluetoothEvent.UserInteractionType
+import com.health.openscale.core.bluetooth.scalesJava.BluetoothCommunication
 import com.health.openscale.core.data.MeasurementTypeKey // Required for DeviceValue
 import kotlinx.coroutines.flow.Flow
 import java.util.UUID
@@ -134,40 +136,10 @@ sealed class ScaleDeviceEvent {
         val payload: Any? = null // For optionally more structured info data
     ) : ScaleDeviceEvent()
 
-    /**
-     * Emitted when the scale requires the user to be selected on the device.
-     * The UI should present this list to the user. The response is provided via [ScaleDeviceHandler.provideUserSelection].
-     * @param userList A list of [ScaleUserListItem] objects representing the user profiles available on the scale.
-     * @param requestContext An optional context object that the handler can send to correlate the response later.
-     */
-    data class UserSelectionRequired(val userList: List<ScaleUserListItem>, val requestContext: Any? = null) : ScaleDeviceEvent()
-
-    /**
-     * Emitted when the scale requires user consent (e.g., in the app) to perform an action
-     * (e.g., user profile synchronization, data assignment, registration).
-     * The response is provided via [ScaleDeviceHandler.provideUserConsent].
-     * @param consentType An identifier for the type of consent requested (handler-specific, e.g., "register_new_user").
-     * @param messageToUser A user-readable message explaining the reason for the consent.
-     * @param details Optional additional details or data relevant to the consent
-     *                (e.g., proposed scaleUserIndex if registering a new user: `mapOf("scaleUserIndexProposal" -> 3)`).
-     */
-    data class UserConsentRequired(
-        val consentType: String, // e.g., "register_new_user", "confirm_user_match"
-        val messageToUser: String,
-        val details: Map<String, Any>? = null // e.g., mapOf("appUserId" -> 1, "scaleUserIndexProposal" -> 3)
-    ) : ScaleDeviceEvent()
-
-    /**
-     * Emitted when the handler needs specific attributes of the app user to interact with the scale
-     * (e.g., to create or update a user on the scale).
-     * The response is provided via [ScaleDeviceHandler.provideUserAttributes].
-     * @param requestedAttributes A list of keys indicating which attributes are needed (e.g., "height", "birthdate", "gender").
-     *                            Example: `listOf("height_cm", "birth_date_epoch_ms", "gender_string")`
-     * @param scaleUserIdentifier The identifier of the scale user for whom the attributes are needed (if applicable).
-     */
-    data class UserAttributesRequired(
-        val requestedAttributes: List<String>, // e.g., listOf("height_cm", "birth_date_epoch_ms", "gender_string")
-        val scaleUserIdentifier: Any? = null
+    data class UserInteractionRequired(
+        val interactionType: UserInteractionType,
+        val data: Any? = null, // Daten vom Handler an die UI
+        val requestContext: Any? = null
     ) : ScaleDeviceEvent()
 }
 
@@ -234,37 +206,6 @@ interface ScaleDeviceHandler {
      * Disconnects from the currently connected device and cleans up resources.
      */
     suspend fun disconnect()
-
-    /**
-     * Called by the application to provide the user's selection in response to a
-     * [ScaleDeviceEvent.UserSelectionRequired] event.
-     *
-     * @param selectedUser The [ScaleUserListItem] object selected by the user.
-     * @param requestContext The context that was sent with the original `UserSelectionRequired` event.
-     * @return `true` if the selection was processed successfully, `false` otherwise.
-     */
-    suspend fun provideUserSelection(selectedUser: ScaleUserListItem, requestContext: Any? = null): Boolean
-
-    /**
-     * Called by the application to provide the user's consent (or denial) in response to a
-     * [ScaleDeviceEvent.UserConsentRequired] event.
-     *
-     * @param consentType The type of consent, as specified in the original event.
-     * @param consented `true` if the user consented, `false` otherwise.
-     * @param details Additional details that were sent with the original `UserConsentRequired` event.
-     * @return `true` if the consent was processed successfully, `false` otherwise.
-     */
-    suspend fun provideUserConsent(consentType: String, consented: Boolean, details: Map<String, Any>? = null): Boolean
-
-    /**
-     * Called by the application to provide the requested user attributes in response to a
-     * [ScaleDeviceEvent.UserAttributesRequired] event.
-     *
-     * @param attributes A map of the provided attributes (keys as requested in the event).
-     * @param scaleUserIdentifier The identifier of the scale user, as requested in the event.
-     * @return `true` if the attributes were processed successfully, `false` otherwise.
-     */
-    suspend fun provideUserAttributes(attributes: Map<String, Any>, scaleUserIdentifier: Any? = null): Boolean
 
     /**
      * Sends a device-specific command to the scale.

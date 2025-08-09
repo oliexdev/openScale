@@ -88,8 +88,8 @@ android {
         }
 
         create("beta") {
-            initWith(getByName("release"))
-            signingConfig = signingConfigs.getByName("release")
+            initWith(getByName("debug"))
+            signingConfig = signingConfigs.getByName("debug")
             applicationIdSuffix = ".beta"
             versionNameSuffix = "-beta"
             manifestPlaceholders["appName"] = "openScale beta"

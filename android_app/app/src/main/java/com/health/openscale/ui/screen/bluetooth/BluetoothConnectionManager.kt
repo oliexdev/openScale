@@ -19,12 +19,15 @@ package com.health.openscale.ui.screen.bluetooth
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.os.Handler
 import androidx.compose.material3.SnackbarDuration
 import com.health.openscale.core.bluetooth.BluetoothEvent
 import com.health.openscale.core.bluetooth.ScaleCommunicator
 import com.health.openscale.core.bluetooth.ScaleFactory
+import com.health.openscale.core.bluetooth.BluetoothEvent.UserInteractionType
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
+import com.health.openscale.core.bluetooth.scalesJava.BluetoothCommunication
 import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.MeasurementValue
@@ -68,8 +71,6 @@ class BluetoothConnectionManager(
     private val databaseRepository: DatabaseRepository,
     private val sharedViewModel: SharedViewModel,
     private val getCurrentScaleUser: () -> ScaleUser?,
-    private val getCurrentAppUserId: () -> Int,
-    private val onUserSelectionRequired: (BluetoothEvent.UserSelectionRequired) -> Unit,
     private val onSavePreferredDevice: suspend (address: String, name: String) -> Unit
 ) : AutoCloseable {
 
@@ -94,13 +95,8 @@ class BluetoothConnectionManager(
     /** Emits an error message if a connection or operational error occurs, null otherwise. */
     val connectionError: StateFlow<String?> = _connectionError.asStateFlow()
 
-    private val _showUserSelectionDialog = MutableStateFlow<BluetoothEvent.UserSelectionRequired?>(null)
-    /**
-     * Emits a [BluetoothEvent.UserSelectionRequired] event when the connected scale requires
-     * user interaction (e.g., selecting a user profile on the scale).
-     * The UI should observe this and display an appropriate dialog.
-     */
-    val showUserSelectionDialog: StateFlow<BluetoothEvent.UserSelectionRequired?> = _showUserSelectionDialog.asStateFlow()
+    private val _userInteractionRequiredEvent = MutableStateFlow<BluetoothEvent.UserInteractionRequired?>(null)
+    val userInteractionRequiredEvent: StateFlow<BluetoothEvent.UserInteractionRequired?> = _userInteractionRequiredEvent.asStateFlow()
 
     private var activeCommunicator: ScaleCommunicator? = null
     private var communicatorJob: Job? = null // Job for observing events from the activeCommunicator.
@@ -121,16 +117,11 @@ class BluetoothConnectionManager(
             val deviceDisplayName = deviceInfo.name ?: deviceInfo.address
             LogManager.i(TAG, "Attempting to connect to $deviceDisplayName")
 
-            // Basic validation logic (adapted from ViewModel).
-            // Permissions and Bluetooth status should be checked BEFORE calling this method
-            // in the ViewModel, as the manager cannot display UI for it.
-            // Here only a fundamental check.
-            val currentAppUserId = getCurrentAppUserId()
             // Some legacy or specific openScale handlers might require a valid user.
             val needsUserCheck = deviceInfo.determinedHandlerDisplayName?.contains("legacy", ignoreCase = true) == true ||
                     deviceInfo.determinedHandlerDisplayName?.startsWith("com.health.openscale") == true
 
-            if (needsUserCheck && currentAppUserId == 0) {
+            if (needsUserCheck && getCurrentScaleUser()?.id == 0) {
                 LogManager.e(TAG, "User ID is 0, which might be problematic for handler '${deviceInfo.determinedHandlerDisplayName}'. Connection ABORTED.")
                 _connectionError.value = "No user selected. Connection to $deviceDisplayName not possible."
                 _connectionStatus.value = ConnectionStatus.FAILED
@@ -165,7 +156,7 @@ class BluetoothConnectionManager(
 
             LogManager.i(TAG, "ActiveCommunicator successfully created: ${activeCommunicator!!.javaClass.simpleName}. Starting observation job...")
             observeActiveCommunicatorEvents(deviceInfo)
-            activeCommunicator?.connect(deviceInfo.address, getCurrentScaleUser(), currentAppUserId)
+            activeCommunicator?.connect(deviceInfo.address, getCurrentScaleUser())
         }
     }
 
@@ -293,15 +284,34 @@ class BluetoothConnectionManager(
                 // Consider setting status to FAILED if it's a critical error
                 // that impacts/loses the connection.
             }
-            is BluetoothEvent.UserSelectionRequired -> {
-                LogManager.i(TAG, "Event: UserSelectionRequired for ${event.deviceIdentifier}. Description: ${event.description}.")
-                _showUserSelectionDialog.value = event // For the ViewModel to observe and show a dialog.
-                onUserSelectionRequired(event) // Direct callback to ViewModel if it needs to react immediately.
-                sharedViewModel.showSnackbar(
-                    "Action required on $deviceDisplayName: ${event.description.take(50)}...",
-                    SnackbarDuration.Long
-                )
+
+            is BluetoothEvent.UserInteractionRequired -> {
+                val actualDeviceIdentifier = event.deviceIdentifier
+                LogManager.i(TAG, "Event: UserInteractionRequired (${event.interactionType}) for $actualDeviceIdentifier. Data: ${event.data}")
+                _userInteractionRequiredEvent.value = event
             }
+        }
+    }
+
+    /**
+     * Forwards the user's feedback from an interaction to the active [ScaleCommunicator].
+     *
+     * @param interactionType The type of interaction this feedback corresponds to.
+     * @param appUserId The ID of the current application user.
+     * @param feedbackData Data provided by the user.
+     * @param uiHandler A [Handler] required by the underlying communicator.
+     */
+    fun provideUserInteractionFeedback(
+        interactionType: UserInteractionType,
+        appUserId: Int,
+        feedbackData: Any,
+        uiHandler: Handler
+    ) {
+        scope.launch {
+            activeCommunicator?.let { comm ->
+                LogManager.d(TAG, "Forwarding user interaction feedback to communicator: type=$interactionType, appUserId=$appUserId")
+                comm.processUserInteractionFeedback(interactionType, appUserId, feedbackData, uiHandler)
+            } ?: LogManager.w(TAG, "provideUserInteractionFeedback called but no active communicator.")
         }
     }
 
@@ -314,7 +324,7 @@ class BluetoothConnectionManager(
      * @param deviceName The name of the device.
      */
     private suspend fun saveMeasurementFromEvent(measurementData: ScaleMeasurement, deviceAddress: String, deviceName: String) {
-        val currentAppUserId = getCurrentAppUserId()
+        val currentAppUserId = getCurrentScaleUser()?.id
         if (currentAppUserId == 0) {
             LogManager.e(TAG, "($deviceName): No App User ID to save measurement.")
             sharedViewModel.showSnackbar("Measurement from $deviceName cannot be assigned to a user.", SnackbarDuration.Long)
@@ -326,7 +336,7 @@ class BluetoothConnectionManager(
         // potentially be moved entirely into a dedicated MeasurementRepository or similar service.
         scope.launch(Dispatchers.IO) { // Perform database operations on IO dispatcher.
             val newDbMeasurement = Measurement(
-                userId = currentAppUserId,
+                userId = currentAppUserId ?: 0,
                 timestamp = measurementData.dateTime?.time ?: System.currentTimeMillis()
             )
 
@@ -485,6 +495,12 @@ class BluetoothConnectionManager(
     fun clearConnectionError() {
         if (_connectionError.value != null) {
             _connectionError.value = null
+        }
+    }
+
+    fun clearUserInteractionEvent() {
+        if (_userInteractionRequiredEvent.value != null) {
+            _userInteractionRequiredEvent.value = null
         }
     }
 
