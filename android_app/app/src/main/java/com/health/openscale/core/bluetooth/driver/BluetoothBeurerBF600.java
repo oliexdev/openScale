@@ -43,9 +43,9 @@ public class BluetoothBeurerBF600 extends BluetoothStandardWeightProfile {
 
     private String deviceName;
 
-    public BluetoothBeurerBF600(Context context, String name) {
-        super(context);
-        deviceName = name;
+    public BluetoothBeurerBF600(Context context, String deviceName) {
+        super(context, deviceName);
+        this.deviceName = deviceName;
     }
 
     @Override

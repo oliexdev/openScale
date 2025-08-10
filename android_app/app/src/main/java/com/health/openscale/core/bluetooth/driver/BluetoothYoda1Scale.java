@@ -72,9 +72,10 @@ public class BluetoothYoda1Scale extends BluetoothCommunication {
         }
     };
 
-    public BluetoothYoda1Scale(Context context) {
-        super(context);
+    public BluetoothYoda1Scale(Context context, String deviceName) {
+        super(context, deviceName);
         central = new BluetoothCentralManager(context, btCallback, new Handler(Looper.getMainLooper()));
+
     }
 
     @Override

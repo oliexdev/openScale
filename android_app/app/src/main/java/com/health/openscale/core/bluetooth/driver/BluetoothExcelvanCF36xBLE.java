@@ -36,8 +36,8 @@ public class BluetoothExcelvanCF36xBLE extends BluetoothCommunication {
 
     private byte[] receivedData = new byte[]{};
 
-    public BluetoothExcelvanCF36xBLE(Context context) {
-        super(context);
+    public BluetoothExcelvanCF36xBLE(Context context, String deviceName) {
+        super(context, deviceName);
     }
 
     @Override

@@ -40,11 +40,17 @@ public class BluetoothMedisanaBS44x extends BluetoothCommunication {
     // Scale time is in seconds since 2010-01-01
     private static final long SCALE_UNIX_TIMESTAMP_OFFSET = 1262304000;
 
+    public BluetoothMedisanaBS44x(Context context, String deviceName) {
+        super(context, deviceName);
 
-    public BluetoothMedisanaBS44x(Context context, boolean applyOffset) {
-        super(context);
         btScaleMeasurement = new ScaleMeasurement();
-        this.applyOffset = applyOffset;
+        // BS430
+        if (deviceName.startsWith("0203B")) {
+            this.applyOffset = false;
+        // BS444, BS440
+        } else {
+            this.applyOffset = true;
+        }
     }
 
     @Override

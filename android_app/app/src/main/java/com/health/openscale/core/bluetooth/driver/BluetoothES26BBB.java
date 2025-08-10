@@ -29,8 +29,8 @@ public class BluetoothES26BBB extends BluetoothCommunication {
      */
     private static final UUID WRITE_MEASUREMENT_CHARACTERISTIC = BluetoothGattUuid.fromShortCode(0x2a11);
 
-    public BluetoothES26BBB(Context context) {
-        super(context);
+    public BluetoothES26BBB(Context context, String deviceName) {
+        super(context, deviceName);
     }
 
     @Override

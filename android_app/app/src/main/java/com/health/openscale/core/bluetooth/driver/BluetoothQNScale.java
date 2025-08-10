@@ -86,9 +86,8 @@ public class BluetoothQNScale extends BluetoothCommunication {
     // Last seen protocol type, used in reply packets
     private int seenProtocolType = 0;
 
-
-    public BluetoothQNScale(Context context) {
-        super(context);
+    public BluetoothQNScale(Context context, String deviceName) {
+        super(context, deviceName);
     }
 
     // Includes FITINDEX ES-26M

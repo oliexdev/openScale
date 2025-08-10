@@ -35,8 +35,8 @@ public class BluetoothCustomOpenScale extends BluetoothCommunication {
 
     private String string_data = new String();
 
-    public BluetoothCustomOpenScale(Context context) {
-        super(context);
+    public BluetoothCustomOpenScale(Context context, String deviceName) {
+        super(context, deviceName);
     }
 
     @Override

@@ -43,9 +43,14 @@ public class BluetoothYunmaiSE_Mini extends BluetoothCommunication {
 
     private boolean isMini;
 
-    public BluetoothYunmaiSE_Mini(Context context, boolean isMini) {
-        super(context);
-        this.isMini = isMini;
+    public BluetoothYunmaiSE_Mini(Context context, String deviceName) {
+        super(context, deviceName);
+
+        if (deviceName.startsWith("YUNMAI-ISSE")) {
+            this.isMini = false;
+        } else {
+            this.isMini = true;
+        }
     }
 
     @Override

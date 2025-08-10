@@ -74,8 +74,10 @@ public class BluetoothMGB extends BluetoothCommunication {
     }
 
 
-    public BluetoothMGB(Context context) {
-        super(context);
+    
+
+    public BluetoothMGB(Context context, String deviceName) {
+        super(context, deviceName);
     }
 
     @Override

@@ -37,6 +37,11 @@ public class BluetoothSinocare extends BluetoothCommunication {
     private static int last_seen_weight = 0;
     private static int last_wait_repeat_count = 0;
 
+    public BluetoothSinocare(Context context, String deviceName) {
+        super(context, deviceName);
+        central = new BluetoothCentralManager(context, btCallback, new Handler(Looper.getMainLooper()));
+    }
+
     private BluetoothCentralManager central;
     private final BluetoothCentralManagerCallback btCallback = new BluetoothCentralManagerCallback() {
         @Override
@@ -80,11 +85,7 @@ public class BluetoothSinocare extends BluetoothCommunication {
         }
     };
 
-    public BluetoothSinocare(Context context)
-    {
-        super(context);
-        central = new BluetoothCentralManager(context, btCallback, new Handler(Looper.getMainLooper()));
-    }
+    
 
     @Override
     public String driverName() {

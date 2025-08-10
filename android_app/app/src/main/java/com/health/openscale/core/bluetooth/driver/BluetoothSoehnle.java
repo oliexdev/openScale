@@ -47,8 +47,8 @@ public class BluetoothSoehnle extends BluetoothCommunication {
 
     SharedPreferences prefs;
 
-    public BluetoothSoehnle(Context context) {
-        super(context);
+    public BluetoothSoehnle(Context context, String deviceName) {
+        super(context, deviceName);
         prefs = PreferenceManager.getDefaultSharedPreferences(context);
     }
 

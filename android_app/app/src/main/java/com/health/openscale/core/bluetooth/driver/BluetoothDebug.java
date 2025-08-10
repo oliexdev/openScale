@@ -32,8 +32,8 @@ import timber.log.Timber;
 public class BluetoothDebug extends BluetoothCommunication {
     HashMap<Integer, String> propertyString;
 
-    BluetoothDebug(Context context) {
-        super(context);
+    public BluetoothDebug(Context context, String deviceName) {
+        super(context, deviceName);
 
         propertyString = new HashMap<>();
         propertyString.put(BluetoothGattCharacteristic.PROPERTY_BROADCAST, "BROADCAST");

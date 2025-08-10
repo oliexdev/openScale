@@ -31,8 +31,8 @@ public class BluetoothHesley extends BluetoothCommunication {
     private final UUID WEIGHT_MEASUREMENT_CHARACTERISTIC = BluetoothGattUuid.fromShortCode(0xfff4); // read, notify
     private final UUID CMD_MEASUREMENT_CHARACTERISTIC = BluetoothGattUuid.fromShortCode(0xfff1); // write only
 
-    public BluetoothHesley(Context context) {
-        super(context);
+    public BluetoothHesley(Context context, String deviceName) {
+        super(context, deviceName);
     }
 
     @Override

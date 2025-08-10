@@ -54,9 +54,8 @@ public class BluetoothBeurerBF105 extends BluetoothStandardWeightProfile {
     private static final UUID CHARACTERISTIC_IMG_IDENTIFY = BluetoothGattUuid.fromShortCode(0xffc1);
     private static final UUID CHARACTERISTIC_IMG_BLOCK = BluetoothGattUuid.fromShortCode(0xffc2);
 
-
-    public BluetoothBeurerBF105(Context context) {
-        super(context);
+    public BluetoothBeurerBF105(Context context, String deviceName) {
+        super(context, deviceName);
     }
 
     @Override

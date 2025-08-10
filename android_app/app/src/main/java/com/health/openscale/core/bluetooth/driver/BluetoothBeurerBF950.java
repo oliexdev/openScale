@@ -29,9 +29,9 @@ import timber.log.Timber;
 public class BluetoothBeurerBF950 extends BluetoothBeurerBF105 {
     private String deviceName;
 
-    public BluetoothBeurerBF950(Context context, String name) {
-        super(context);
-        deviceName = name;
+    public BluetoothBeurerBF950(Context context, String deviceName) {
+        super(context, deviceName);
+        this.deviceName = deviceName;
     }
 
     @Override

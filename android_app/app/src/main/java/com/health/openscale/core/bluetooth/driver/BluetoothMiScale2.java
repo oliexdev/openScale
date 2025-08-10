@@ -45,8 +45,8 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
     private final UUID WEIGHT_CUSTOM_SERVICE = UUID.fromString("00001530-0000-3512-2118-0009af100700");
     private final UUID WEIGHT_CUSTOM_CONFIG = UUID.fromString("00001542-0000-3512-2118-0009af100700");
 
-    public BluetoothMiScale2(Context context) {
-        super(context);
+    public BluetoothMiScale2(Context context, String deviceName) {
+        super(context, deviceName);
     }
 
     @Override

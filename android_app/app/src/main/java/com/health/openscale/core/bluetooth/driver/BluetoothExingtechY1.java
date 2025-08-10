@@ -34,8 +34,8 @@ public class BluetoothExingtechY1 extends BluetoothCommunication {
     private final UUID WEIGHT_MEASUREMENT_CHARACTERISTIC = UUID.fromString("1a2ea400-75b9-11e2-be05-0002a5d5c51b"); // read, notify
     private final UUID CMD_MEASUREMENT_CHARACTERISTIC = UUID.fromString("29f11080-75b9-11e2-8bf6-0002a5d5c51b"); // write only
 
-    public BluetoothExingtechY1(Context context) {
-        super(context);
+    public BluetoothExingtechY1(Context context, String deviceName) {
+        super(context, deviceName);
     }
 
     @Override

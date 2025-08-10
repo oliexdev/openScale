@@ -27,7 +27,7 @@ import com.health.openscale.core.bluetooth.driver.*;
 
 public class BluetoothFactory {
     public static BluetoothCommunication createDebugDriver(Context context) {
-        return new BluetoothDebug(context);
+        return new BluetoothDebug(context, "debug");
     }
 
     public static String getDriverIdFromDeviceName(String deviceName, List<ParcelUuid> serviceUuids) {
@@ -168,118 +168,112 @@ public class BluetoothFactory {
 
         // Check each driver class by calling their static driverId() method
         if (targetDriverId.equals(BluetoothActiveEraBF06.driverId())) {
-            return new BluetoothActiveEraBF06(context);
+            return new BluetoothActiveEraBF06(context, deviceName);
         }
         if (targetDriverId.equals(BluetoothBeurerBF105.driverId())) {
-            return new BluetoothBeurerBF105(context);
+            return new BluetoothBeurerBF105(context, deviceName);
         }
         if (targetDriverId.equals(BluetoothBeurerBF500.driverId())) {
-            return new BluetoothBeurerBF500(context, "BF500");
+            return new BluetoothBeurerBF500(context, deviceName);
         }
         if (targetDriverId.equals(BluetoothBeurerBF600.driverId())) {
-            return new BluetoothBeurerBF600(context, "BF600");
+            return new BluetoothBeurerBF600(context, deviceName);
         }
         if (targetDriverId.equals(BluetoothBeurerBF950.driverId())) {
-            return new BluetoothBeurerBF950(context, "BF950");
+            return new BluetoothBeurerBF950(context, deviceName);
         }
         if (targetDriverId.equals(BluetoothBeurerSanitas.driverId())) {
-            // Note: This driver requires DeviceType parameter - using default for now
-            return new BluetoothBeurerSanitas(context, BluetoothBeurerSanitas.DeviceType.BEURER_BF700_800_RT_LIBRA);
+            return new BluetoothBeurerSanitas(context, deviceName);
         }
         if (targetDriverId.equals(BluetoothBroadcastScale.driverId())) {
-            return new BluetoothBroadcastScale(context);
+            return new BluetoothBroadcastScale(context, deviceName);
         }
         if (targetDriverId.equals(BluetoothCustomOpenScale.driverId())) {
-            return new BluetoothCustomOpenScale(context);
+            return new BluetoothCustomOpenScale(context, deviceName);
         }
         if (targetDriverId.equals(BluetoothDebug.driverId())) {
-            return new BluetoothDebug(context);
+            return new BluetoothDebug(context, deviceName);
         }
         if (targetDriverId.equals(BluetoothDigooDGSO38H.driverId())) {
-            return new BluetoothDigooDGSO38H(context);
+            return new BluetoothDigooDGSO38H(context, deviceName);
         }
         if (targetDriverId.equals(BluetoothES26BBB.driverId())) {
-            return new BluetoothES26BBB(context);
+            return new BluetoothES26BBB(context, deviceName);
         }
         if (targetDriverId.equals(BluetoothESCS20M.driverId())) {
-            return new BluetoothESCS20M(context);
+            return new BluetoothESCS20M(context, deviceName);
         }
         if (targetDriverId.equals(BluetoothESWBE28.driverId())) {
-            return new BluetoothESWBE28(context);
+            return new BluetoothESWBE28(context, deviceName);
         }
         if (targetDriverId.equals(BluetoothExcelvanCF36xBLE.driverId())) {
-            return new BluetoothExcelvanCF36xBLE(context);
+            return new BluetoothExcelvanCF36xBLE(context, deviceName);
         }
         if (targetDriverId.equals(BluetoothExingtechY1.driverId())) {
-            return new BluetoothExingtechY1(context);
+            return new BluetoothExingtechY1(context, deviceName);
         }
         if (targetDriverId.equals(BluetoothHesley.driverId())) {
-            return new BluetoothHesley(context);
+            return new BluetoothHesley(context, deviceName);
         }
         if (targetDriverId.equals(BluetoothHoffenBBS8107.driverId())) {
-            return new BluetoothHoffenBBS8107(context);
+            return new BluetoothHoffenBBS8107(context, deviceName);
         }
         if (targetDriverId.equals(BluetoothHuaweiAH100.driverId())) {
-            return new BluetoothHuaweiAH100(context);
+            return new BluetoothHuaweiAH100(context, deviceName);
         }
         if (targetDriverId.equals(BluetoothIhealthHS3.driverId())) {
-            return new BluetoothIhealthHS3(context);
+            return new BluetoothIhealthHS3(context, deviceName);
         }
         if (targetDriverId.equals(BluetoothInlife.driverId())) {
-            return new BluetoothInlife(context);
+            return new BluetoothInlife(context, deviceName);
         }
         if (targetDriverId.equals(BluetoothMGB.driverId())) {
-            return new BluetoothMGB(context);
+            return new BluetoothMGB(context, deviceName);
         }
         if (targetDriverId.equals(BluetoothMedisanaBS44x.driverId())) {
-            // Note: This driver requires boolean parameter - using default for now
-            return new BluetoothMedisanaBS44x(context, true);
+            return new BluetoothMedisanaBS44x(context, deviceName);
         }
         if (targetDriverId.equals(BluetoothMiScale.driverId())) {
-            return new BluetoothMiScale(context);
+            return new BluetoothMiScale(context, deviceName);
         }
         if (targetDriverId.equals(BluetoothMiScale2.driverId())) {
-            return new BluetoothMiScale2(context);
+            return new BluetoothMiScale2(context, deviceName);
         }
         if (targetDriverId.equals(BluetoothOKOK.driverId())) {
-            return new BluetoothOKOK(context);
+            return new BluetoothOKOK(context, deviceName);
         }
         if (targetDriverId.equals(BluetoothOKOK2.driverId())) {
-            return new BluetoothOKOK2(context);
+            return new BluetoothOKOK2(context, deviceName);
         }
         if (targetDriverId.equals(BluetoothOneByone.driverId())) {
-            return new BluetoothOneByone(context);
+            return new BluetoothOneByone(context, deviceName);
         }
         if (targetDriverId.equals(BluetoothOneByoneNew.driverId())) {
-            return new BluetoothOneByoneNew(context);
+            return new BluetoothOneByoneNew(context, deviceName);
         }
         if (targetDriverId.equals(BluetoothQNScale.driverId())) {
-            return new BluetoothQNScale(context);
+            return new BluetoothQNScale(context, deviceName);
         }
         if (targetDriverId.equals(BluetoothSanitasSBF72.driverId())) {
-            return new BluetoothSanitasSBF72(context, "SBF72");
+            return new BluetoothSanitasSBF72(context, deviceName);
         }
         if (targetDriverId.equals(BluetoothSenssun.driverId())) {
-            return new BluetoothSenssun(context);
+            return new BluetoothSenssun(context, deviceName);
         }
         if (targetDriverId.equals(BluetoothSinocare.driverId())) {
-            return new BluetoothSinocare(context);
+            return new BluetoothSinocare(context, deviceName);
         }
         if (targetDriverId.equals(BluetoothSoehnle.driverId())) {
-            return new BluetoothSoehnle(context);
-        }
-        if (targetDriverId.equals(BluetoothStandardWeightProfile.driverId())) {
-            return new BluetoothStandardWeightProfile(context);
+            return new BluetoothSoehnle(context, deviceName);
         }
         if (targetDriverId.equals(BluetoothTrisaBodyAnalyze.driverId())) {
-            return new BluetoothTrisaBodyAnalyze(context);
+            return new BluetoothTrisaBodyAnalyze(context, deviceName);
         }
         if (targetDriverId.equals(BluetoothYoda1Scale.driverId())) {
-            return new BluetoothYoda1Scale(context);
+            return new BluetoothYoda1Scale(context, deviceName);
         }
         if (targetDriverId.equals(BluetoothYunmaiSE_Mini.driverId())) {
-            // Note: This driver requires boolean parameter - using default for now
-            return new BluetoothYunmaiSE_Mini(context, true);
+            return new BluetoothYunmaiSE_Mini(context, deviceName);
         }
 
         return null;

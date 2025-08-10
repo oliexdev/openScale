@@ -49,7 +49,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
     private static final UUID CUSTOM_SERVICE_1 = BluetoothGattUuid.fromShortCode(0xffe0);
     private static final UUID CUSTOM_CHARACTERISTIC_WEIGHT = BluetoothGattUuid.fromShortCode(0xffe1);
 
-    private final DeviceType deviceType;
+    private DeviceType deviceType;
     private byte startByte;
 
     private class RemoteUser {
@@ -153,10 +153,10 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
         return normalized.toUpperCase(Locale.US);
     }
 
-    public BluetoothBeurerSanitas(Context context, DeviceType deviceType) {
-        super(context);
+    public BluetoothBeurerSanitas(Context context, String deviceName) {
+        super(context, deviceName);
 
-        this.deviceType = deviceType;
+        this.setDeviceType(deviceName);
         switch (deviceType) {
             case BEURER_BF700_800_RT_LIBRA:
                 startByte = (byte) (0xf0 | ID_START_NIBBLE_CMD);
@@ -165,6 +165,28 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
             case SANITAS_SBF70_70:
                 startByte = (byte) (0xe0 | ID_START_NIBBLE_CMD);
                 break;
+        }
+    }
+
+    private void setDeviceType(String deviceName) {
+        if (deviceName.startsWith("BEURER BF700".toLowerCase(Locale.US))
+                || deviceName.startsWith("BEURER BF800".toLowerCase(Locale.US))
+                || deviceName.startsWith("BF-800".toLowerCase(Locale.US))
+                || deviceName.startsWith("BF-700".toLowerCase(Locale.US))
+                || deviceName.startsWith("RT-Libra-B".toLowerCase(Locale.US))
+                || deviceName.startsWith("RT-Libra-W".toLowerCase(Locale.US))
+                || deviceName.startsWith("Libra-B".toLowerCase(Locale.US))
+                || deviceName.startsWith("Libra-W".toLowerCase(Locale.US))) {
+            this.deviceType = BluetoothBeurerSanitas.DeviceType.BEURER_BF700_800_RT_LIBRA;
+        }
+        if (deviceName.startsWith("BEURER BF710".toLowerCase(Locale.US))
+                || deviceName.equals("BF700".toLowerCase(Locale.US))) {
+            this.deviceType = BluetoothBeurerSanitas.DeviceType.BEURER_BF710;
+        }
+        if (deviceName.startsWith("SANITAS SBF70".toLowerCase(Locale.US))
+                || deviceName.startsWith("sbf75")
+                || deviceName.startsWith("AICDSCALE1".toLowerCase(Locale.US))) {
+            this.deviceType = BluetoothBeurerSanitas.DeviceType.SANITAS_SBF70_70;
         }
     }
 

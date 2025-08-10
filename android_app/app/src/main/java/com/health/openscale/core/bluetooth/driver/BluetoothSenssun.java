@@ -49,8 +49,8 @@ public class BluetoothSenssun extends BluetoothCommunication {
 
     private int values;
 
-    public BluetoothSenssun(Context context) {
-        super(context);
+    public BluetoothSenssun(Context context, String deviceName) {
+        super(context, deviceName);
     }
 
     @Override

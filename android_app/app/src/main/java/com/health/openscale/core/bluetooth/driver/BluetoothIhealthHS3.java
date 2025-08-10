@@ -48,8 +48,8 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
     private final long maxTimeDiff = 60000;   // maximum time interval we will consider two identical
                                              // weight readings to be the same and hence ignored - 60 seconds in milliseconds
 
-    public BluetoothIhealthHS3(Context context) {
-        super(context);
+    public BluetoothIhealthHS3(Context context, String deviceName) {
+        super(context, deviceName);
     }
 
     @Override

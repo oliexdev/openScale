@@ -44,9 +44,9 @@ public class BluetoothSanitasSBF72 extends BluetoothStandardWeightProfile {
     private static final UUID CHARACTERISTIC_REFER_WEIGHT_BF = BluetoothGattUuid.fromShortCode(0x000b);
     private static final UUID CHARACTERISTIC_TAKE_MEASUREMENT = BluetoothGattUuid.fromShortCode(0x0006);
 
-    public BluetoothSanitasSBF72(Context context, String name) {
-        super(context);
-        deviceName = name;
+    public BluetoothSanitasSBF72(Context context, String deviceName) {
+        super(context, deviceName);
+        this.deviceName = deviceName;
     }
 
     @Override

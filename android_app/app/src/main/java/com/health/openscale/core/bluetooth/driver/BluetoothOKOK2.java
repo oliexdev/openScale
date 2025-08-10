@@ -63,12 +63,12 @@ public class BluetoothOKOK2 extends BluetoothCommunication {
     private String mMacAddress;
     private float mLastWeight = 0f;
 
-    public BluetoothOKOK2(Context context) {
-        super(context);
+    public BluetoothOKOK2(Context context, String deviceName) {
+        super(context, deviceName);
         central = new BluetoothCentralManager(context, btCallback, new Handler(Looper.getMainLooper()));
     }
 
-    static String convertNoNameToDeviceName(SparseArray<byte[]> manufacturerSpecificData) {
+    public static String convertNoNameToDeviceName(SparseArray<byte[]> manufacturerSpecificData) {
         int vendorIndex = -1;
         for (int i = 0; i < manufacturerSpecificData.size(); i++) {
             int vendorId = manufacturerSpecificData.keyAt(i);

@@ -65,8 +65,8 @@ public class BluetoothActiveEraBF06 extends BluetoothCommunication {
 
     private ScaleMeasurement scaleData;
 
-    public BluetoothActiveEraBF06(Context context) {
-        super(context);
+    public BluetoothActiveEraBF06(Context context, String deviceName) {
+        super(context, deviceName);
     }
 
     private byte[] getConfigurationPacket() {

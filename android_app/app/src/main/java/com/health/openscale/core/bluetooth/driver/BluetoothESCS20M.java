@@ -44,8 +44,8 @@ public class BluetoothESCS20M extends BluetoothCommunication {
     private List<byte[]> rawMeasurements = new ArrayList<>();
     private final ScaleMeasurement scaleMeasurement = new ScaleMeasurement();
 
-    public BluetoothESCS20M(Context context) {
-        super(context);
+    public BluetoothESCS20M(Context context, String deviceName) {
+        super(context, deviceName);
     }
 
     @Override

@@ -31,8 +31,8 @@ public class BluetoothOneByoneNew extends BluetoothCommunication{
 
     private ScaleMeasurement currentMeasurement;
 
-    public BluetoothOneByoneNew(Context context) {
-        super(context);
+    public BluetoothOneByoneNew(Context context, String deviceName) {
+        super(context, deviceName);
     }
 
     @Override

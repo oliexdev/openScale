@@ -73,8 +73,8 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
     protected boolean haveBatteryService;
     protected Vector<ScaleUser> scaleUserList;
 
-    public BluetoothStandardWeightProfile(Context context) {
-        super(context);
+    public BluetoothStandardWeightProfile(Context context, String deviceName) {
+        super(context, deviceName);
         this.prefs = PreferenceManager.getDefaultSharedPreferences(context);
         this.selectedUser = OpenScale.getInstance().getSelectedScaleUser();
         this.registerNewUser = false;

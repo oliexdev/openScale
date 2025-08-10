@@ -133,15 +133,14 @@ public class BluetoothHuaweiAH100 extends BluetoothCommunication {
 
     private Handler beatHandler;
 
+    public BluetoothHuaweiAH100(Context context, String deviceName) {
+        super(context, deviceName);
 
-    public BluetoothHuaweiAH100(Context context) {
-        super(context);
         this.context = context;
         this.beatHandler = new Handler();
         authCode = getUserID();
         initialKey = hexToByteArray("3D A2 78 4A FB 87 B1 2A 98 0F DE 34 56 73 21 56");
         initialValue = hexToByteArray("4E F7 64 32 2F DA 76 32 12 3D EB 87 90 FE A2 19");
-
     }
 
     @Override

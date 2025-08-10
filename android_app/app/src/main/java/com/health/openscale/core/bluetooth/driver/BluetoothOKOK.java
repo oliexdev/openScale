@@ -40,6 +40,11 @@ public class BluetoothOKOK extends BluetoothCommunication {
     private static final int IDX_VF0_WEIGHT_MSB = 3;
     private static final int IDX_VF0_WEIGHT_LSB = 2;
 
+    public BluetoothOKOK(Context context, String deviceName) {
+        super(context, deviceName);
+        central = new BluetoothCentralManager(context, btCallback, new Handler(Looper.getMainLooper()));
+    }
+
     private BluetoothCentralManager central;
     private final BluetoothCentralManagerCallback btCallback = new BluetoothCentralManagerCallback() {
         @Override
@@ -135,11 +140,7 @@ public class BluetoothOKOK extends BluetoothCommunication {
         }
     };
 
-    public BluetoothOKOK(Context context)
-    {
-        super(context);
-        central = new BluetoothCentralManager(context, btCallback, new Handler(Looper.getMainLooper()));
-    }
+    
 
     @Override
     public String driverName() {

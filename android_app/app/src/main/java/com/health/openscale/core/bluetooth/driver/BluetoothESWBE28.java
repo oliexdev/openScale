@@ -65,8 +65,8 @@ public class BluetoothESWBE28 extends BluetoothCommunication {
 
     private ScaleUser user;
 
-    public BluetoothESWBE28(Context context) {
-        super(context);
+    public BluetoothESWBE28(Context context, String deviceName) {
+        super(context, deviceName);
     }
 
     @Override

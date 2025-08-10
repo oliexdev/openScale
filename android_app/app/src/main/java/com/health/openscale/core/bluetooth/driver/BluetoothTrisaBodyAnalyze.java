@@ -104,8 +104,10 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
      */
     private static final long TIMESTAMP_OFFSET_SECONDS = 1262304000L;
 
-    public BluetoothTrisaBodyAnalyze(Context context) {
-        super(context);
+    
+
+    public BluetoothTrisaBodyAnalyze(Context context, String deviceName) {
+        super(context, deviceName);
     }
 
     @Override

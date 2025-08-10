@@ -35,8 +35,8 @@ public class BluetoothDigooDGSO38H extends BluetoothCommunication {
     private final UUID WEIGHT_MEASUREMENT_CHARACTERISTIC = BluetoothGattUuid.fromShortCode(0xfff1);
     private final UUID EXTRA_MEASUREMENT_CHARACTERISTIC = BluetoothGattUuid.fromShortCode(0xfff2);
 
-    public BluetoothDigooDGSO38H(Context context) {
-        super(context);
+    public BluetoothDigooDGSO38H(Context context, String deviceName) {
+        super(context, deviceName);
     }
 
     @Override

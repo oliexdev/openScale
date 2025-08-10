@@ -43,8 +43,8 @@ public class BluetoothMiScale extends BluetoothCommunication {
     private final UUID WEIGHT_MEASUREMENT_SERVICE = UUID.fromString("0000181d-0000-1000-8000-00805f9b34fb");
     private final UUID WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC = UUID.fromString("00002a2f-0000-3512-2118-0009af100700");
 
-    public BluetoothMiScale(Context context) {
-        super(context);
+    public BluetoothMiScale(Context context, String deviceName) {
+        super(context, deviceName);
     }
 
     @Override
@@ -55,7 +55,6 @@ public class BluetoothMiScale extends BluetoothCommunication {
     public static String driverId() {
         return "mi_scale";
     }
-
 
     @Override
     public void onBluetoothNotify(UUID characteristic, byte[] value) {

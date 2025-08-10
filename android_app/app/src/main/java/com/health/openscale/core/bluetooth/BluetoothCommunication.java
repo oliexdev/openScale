@@ -71,13 +71,18 @@ public abstract class BluetoothCommunication {
     private BluetoothCentralManager central;
     private BluetoothPeripheral btPeripheral;
 
-    public BluetoothCommunication(Context context)
+    public BluetoothCommunication(Context context, String deviceName)
     {
         this.context = context;
         this.disconnectHandler = new Handler();
         this.stepNr = 0;
         this.stopped = false;
         this.central = new BluetoothCentralManager(context, bluetoothCentralCallback, new Handler(Looper.getMainLooper()));
+    }
+
+    public BluetoothCommunication(Context context)
+    {
+        this(context, "");
     }
 
     protected boolean needReConnect() {
@@ -310,7 +315,7 @@ public abstract class BluetoothCommunication {
      * @note onBluetoothRead() will be triggered if read command was successful. nextMachineStep() needs to manually called!
      *@param characteristic the Bluetooth UUID characteristic
      */
-    void readBytes(UUID service, UUID characteristic) {
+    protected void readBytes(UUID service, UUID characteristic) {
         Timber.d("Invoke read bytes on " + BluetoothGattUuid.prettyPrint(characteristic));
 
         btPeripheral.readCharacteristic(btPeripheral.getCharacteristic(service, characteristic));

@@ -49,8 +49,8 @@ public class BluetoothHoffenBBS8107 extends BluetoothCommunication {
 
     private ScaleUser user;
 
-    public BluetoothHoffenBBS8107(Context context) {
-        super(context);
+    public BluetoothHoffenBBS8107(Context context, String deviceName) {
+        super(context, deviceName);
     }
 
     @Override

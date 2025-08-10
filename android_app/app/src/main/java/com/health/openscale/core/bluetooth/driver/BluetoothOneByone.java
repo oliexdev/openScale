@@ -47,8 +47,9 @@ public class BluetoothOneByone extends BluetoothCommunication {
     private Calendar  lastDateTime;
     private final int DATE_TIME_THRESHOLD = 3000;
 
-    public BluetoothOneByone(Context context) {
-        super(context);
+    public BluetoothOneByone(Context context, String deviceName) {
+        super(context, deviceName);
+
         lastDateTime = Calendar.getInstance();
         lastDateTime.set(2000, 1, 1);
     }
