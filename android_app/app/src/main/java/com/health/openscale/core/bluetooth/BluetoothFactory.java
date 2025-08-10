@@ -37,11 +37,11 @@ public class BluetoothFactory {
                 || name.startsWith("RT-Libra-W".toLowerCase(Locale.US))
                 || name.startsWith("Libra-B".toLowerCase(Locale.US))
                 || name.startsWith("Libra-W".toLowerCase(Locale.US))) {
-            return new BluetoothBeurerSanitas(context, BluetoothBeurerSanitas.DeviceType.BEURER_BF700_800_RT_LIBRA);
+            return new BluetoothBeurerSanitas(context, deviceName);
         }
         if (name.startsWith("BEURER BF710".toLowerCase(Locale.US))
                 || name.equals("BF700".toLowerCase(Locale.US))) {
-            return new BluetoothBeurerSanitas(context, BluetoothBeurerSanitas.DeviceType.BEURER_BF710);
+            return new BluetoothBeurerSanitas(context, deviceName);
         }
         if (name.equals("openScale".toLowerCase(Locale.US))) {
             return new BluetoothCustomOpenScale(context);
@@ -63,12 +63,12 @@ public class BluetoothFactory {
         }
         // BS444 || BS440
         if (deviceName.startsWith("013197") || deviceName.startsWith("013198") || deviceName.startsWith("0202B6")) {
-            return new BluetoothMedisanaBS44x(context, true);
+            return new BluetoothMedisanaBS44x(context, deviceName);
         }
 
         //BS430
         if (deviceName.startsWith("0203B")) {
-            return new BluetoothMedisanaBS44x(context, false);
+            return new BluetoothMedisanaBS44x(context, deviceName);
         }
 
         if (deviceName.startsWith("SWAN") || name.equals("icomon".toLowerCase(Locale.US)) || name.equals("YG".toLowerCase(Locale.US))) {
@@ -91,13 +91,13 @@ public class BluetoothFactory {
             return new BluetoothSenssun(context);
         }
         if (name.startsWith("SANITAS SBF70".toLowerCase(Locale.US)) || name.startsWith("sbf75") || name.startsWith("AICDSCALE1".toLowerCase(Locale.US))) {
-            return new BluetoothBeurerSanitas(context, BluetoothBeurerSanitas.DeviceType.SANITAS_SBF70_70);
+            return new BluetoothBeurerSanitas(context, deviceName);
         }
         if (deviceName.startsWith("YUNMAI-SIGNAL") || deviceName.startsWith("YUNMAI-ISM")) {
-            return new BluetoothYunmaiSE_Mini(context, true);
+            return new BluetoothYunmaiSE_Mini(context, deviceName);
         }
         if (deviceName.startsWith("YUNMAI-ISSE")) {
-            return new BluetoothYunmaiSE_Mini(context, false);
+            return new BluetoothYunmaiSE_Mini(context, deviceName);
         }
         if (deviceName.startsWith("01257B") || deviceName.startsWith("11257B")) {
             // Trisa Body Analyze 4.0, aka Transtek GBF-1257-B
