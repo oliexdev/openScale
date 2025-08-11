@@ -39,8 +39,8 @@ import com.health.openscale.core.utils.LogManager
         MeasurementValue::class,
         MeasurementType::class
     ],
-    version = 1, // TODO Increment this on schema changes
-    exportSchema = false // TODO Consider setting to true for production apps to keep schema history
+    version = 1,
+    exportSchema = true
 )
 @TypeConverters(DatabaseConverters::class)
 abstract class AppDatabase : RoomDatabase() {
@@ -106,8 +106,6 @@ abstract class AppDatabase : RoomDatabase() {
                 AppDatabase::class.java,
                 DATABASE_NAME
             )
-                // TODO Destroys and re-creates the database if a migration is needed and not provided. For production, define proper migrations instead.
-                .fallbackToDestructiveMigration()
                 // TODO Add any other configurations like .addCallback(), .setQueryExecutor(), etc. here if needed.
                 .build()
         }
