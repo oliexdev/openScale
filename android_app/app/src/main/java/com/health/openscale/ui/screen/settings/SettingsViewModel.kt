@@ -58,6 +58,7 @@ import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeFormatterBuilder
 import java.time.format.DateTimeParseException
 import java.time.temporal.ChronoField
+import java.time.temporal.TemporalQueries.localDate
 import java.util.Date
 import java.util.Locale
 import java.util.zip.ZipEntry
@@ -325,6 +326,8 @@ class SettingsViewModel(
 
                 val dateColumnKey = MeasurementTypeKey.DATE.name
                 val timeColumnKey = MeasurementTypeKey.TIME.name
+                val dateTimeColumnKey = "dateTime"
+                val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
 
                 val newMeasurementsToSave = mutableListOf<Pair<Measurement, List<MeasurementValue>>>()
 
@@ -337,6 +340,7 @@ class SettingsViewModel(
                             var header: List<String>? = null
                             var dateColumnIndex = -1
                             var timeColumnIndex = -1
+                            var dateTimeColumnIndex = -1
                             val valueColumnMap = mutableMapOf<Int, MeasurementType>()
 
                             readAllAsSequence().forEachIndexed { rowIndex, row ->
@@ -344,9 +348,10 @@ class SettingsViewModel(
                                     header = row
                                     dateColumnIndex = header.indexOfFirst { it.equals(dateColumnKey, ignoreCase = true) }
                                     timeColumnIndex = header.indexOfFirst { it.equals(timeColumnKey, ignoreCase = true) }
+                                    dateTimeColumnIndex = header.indexOfFirst { it.equals(dateTimeColumnKey, ignoreCase = true) }
 
-                                    if (dateColumnIndex == -1) {
-                                        LogManager.e(TAG, "CSV import for user $userId: Mandatory date column (expected: '$dateColumnKey') not found in header: $header. Aborting import.")
+                                    if (dateColumnIndex == -1 && dateTimeColumnIndex == -1) {
+                                        LogManager.e(TAG, "CSV import for user $userId: Mandatory date information (expected '$dateColumnKey' or '$dateTimeColumnKey') not found in header: $header. Aborting import.")
                                         sharedViewModel.showSnackbar(R.string.import_error_missing_date_column, listOf(dateColumnKey))
                                         _isLoadingImport.value = false
                                         return@forEachIndexed // Exit the coroutine
@@ -355,7 +360,7 @@ class SettingsViewModel(
 
                                     header.forEachIndexed { colIdx, csvColumnName ->
                                         // Skip date and time columns as they are handled separately
-                                        if (colIdx == dateColumnIndex || colIdx == timeColumnIndex) {
+                                        if (colIdx == dateColumnIndex || colIdx == timeColumnIndex || colIdx == dateTimeColumnIndex) {
                                             return@forEachIndexed
                                         }
 
@@ -396,36 +401,51 @@ class SettingsViewModel(
 
                                 if (header == null) throw IOException("CSV header not found or processed.") // Should not happen
 
-                                val dateString = row.getOrNull(dateColumnIndex)
-                                if (dateString.isNullOrBlank()) {
-                                    LogManager.w(TAG, "CSV import for user $userId: Row ${rowIndex + 1} skipped: Date value is missing in mandatory column '$dateColumnKey'.")
-                                    linesSkippedMissingDate++
-                                    return@forEachIndexed
-                                }
-                                // ... (rest of row processing, date/time parsing, value extraction)
-                                val localDate = try {
-                                    LocalDate.parse(dateString, dateFormatter)
-                                } catch (e: DateTimeParseException) {
-                                    LogManager.w(TAG, "CSV import for user $userId: Error parsing date '$dateString' (expected YYYY-MM-DD) in row ${rowIndex + 1}. Skipping row.", e)
-                                    linesSkippedDateParseError++
-                                    return@forEachIndexed
-                                }
+                                var parsedLocalDate: LocalDate? = null
+                                var parsedLocalTime: LocalTime? = null
+                                val dateTimeString = if (dateTimeColumnIndex != -1) row.getOrNull(dateTimeColumnIndex) else null
+                                val dateString = if (dateColumnIndex != -1) row.getOrNull(dateColumnIndex) else null
+                                val timeStringFromColumn = if (timeColumnIndex != -1) row.getOrNull(timeColumnIndex) else null
 
-                                val timeString = if (timeColumnIndex != -1) row.getOrNull(timeColumnIndex) else null
-                                val localTime: LocalTime = if (timeString.isNullOrBlank()) {
-                                    LocalTime.NOON // Default if time is missing or blank
-                                } else {
-                                    try { LocalTime.parse(timeString, timeFormatter) }
-                                    catch (e1: DateTimeParseException) {
-                                        try { LocalTime.parse(timeString, flexibleTimeFormatter) }
-                                        catch (e2: DateTimeParseException) {
-                                            LogManager.w(TAG, "CSV import for user $userId: Time '$timeString' in row ${rowIndex + 1} could not be parsed. Using default.", e2)
-                                            LocalTime.NOON
-                                        }
+                                if (!dateTimeString.isNullOrBlank()) {
+                                    try {
+                                        val tempDateTime = LocalDateTime.parse(dateTimeString, dateTimeFormatter)
+                                        parsedLocalDate = tempDateTime.toLocalDate()
+                                        parsedLocalTime = tempDateTime.toLocalTime()
+                                        LogManager.d(TAG, "CSV import for user $userId: Row ${rowIndex + 1} parsed dateTime: $dateTimeString -> Date: $parsedLocalDate, Time: $parsedLocalTime")
+                                    } catch (e: DateTimeParseException) {
+                                        LogManager.w(TAG, "CSV import for user $userId: Error parsing dateTime '$dateTimeString' (expected YYYY-MM-DD HH:mm) in row ${rowIndex + 1}. Trying separate date/time columns or skipping.", e)
                                     }
                                 }
 
-                                val localDateTime = LocalDateTime.of(localDate, localTime)
+                                if (parsedLocalDate == null && !dateString.isNullOrBlank()) {
+                                    try {
+                                        parsedLocalDate = LocalDate.parse(dateString, dateFormatter)
+                                        LogManager.d(TAG, "CSV import for user $userId: Row ${rowIndex + 1} parsed dateString: $dateString -> Date: $parsedLocalDate")
+                                    } catch (e: DateTimeParseException) {
+                                        LogManager.w(TAG, "CSV import for user $userId: Error parsing date '$dateString' (expected YYYY-MM-DD) in row ${rowIndex + 1}. Skipping row.", e)
+                                        linesSkippedDateParseError++
+                                        return@forEachIndexed
+                                    }
+                                }
+
+                                if (parsedLocalTime == null) {
+                                    parsedLocalTime = if (timeStringFromColumn.isNullOrBlank()) {
+                                        LocalTime.NOON
+                                    } else {
+                                        try { LocalTime.parse(timeStringFromColumn, timeFormatter) }
+                                        catch (e1: DateTimeParseException) {
+                                            try { LocalTime.parse(timeStringFromColumn, flexibleTimeFormatter) }
+                                            catch (e2: DateTimeParseException) {
+                                                LogManager.w(TAG, "CSV import for user $userId: Time '$timeStringFromColumn' in row ${rowIndex + 1} could not be parsed. Using default.", e2)
+                                                LocalTime.NOON
+                                            }
+                                        }
+                                    }
+                                    LogManager.d(TAG, "CSV import for user $userId: Row ${rowIndex + 1} parsed timeString: $timeStringFromColumn -> Time: $parsedLocalTime")
+                                }
+
+                                val localDateTime = LocalDateTime.of(parsedLocalDate, parsedLocalTime)
                                 val timestampMillis = localDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
                                 val measurement = Measurement(userId = userId, timestamp = timestampMillis)
                                 val measurementValues = mutableListOf<MeasurementValue>()
@@ -434,28 +454,73 @@ class SettingsViewModel(
                                     val valueString = row.getOrNull(colIdx)
                                     if (!valueString.isNullOrBlank()) {
                                         try {
-                                            val mv = MeasurementValue(
-                                                typeId = type.id,
-                                                measurementId = 0, // Will be set by Room
-                                                textValue = if (type.inputType == InputFieldType.TEXT) valueString else null,
-                                                floatValue = if (type.inputType == InputFieldType.FLOAT) valueString.toFloatOrNull() else null,
-                                                intValue = if (type.inputType == InputFieldType.INT) valueString.toIntOrNull() else null,
-                                                dateValue = when (type.inputType) {
-                                                    InputFieldType.DATE -> LocalDate.parse(valueString, dateFormatter).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-                                                    InputFieldType.TIME -> {
-                                                        val parsedTime = try { LocalTime.parse(valueString, timeFormatter) } catch (e: Exception) { LocalTime.parse(valueString, flexibleTimeFormatter) }
-                                                        parsedTime.atDate(LocalDate.of(1970, 1, 1)).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()                                                    }
-                                                    else -> null
+                                            var skipThisValue = false
+
+                                            val floatVal = if (type.inputType == InputFieldType.FLOAT) valueString.toFloatOrNull() else null
+                                            val intVal = if (type.inputType == InputFieldType.INT) valueString.toIntOrNull() else null
+
+                                            if (type.inputType == InputFieldType.FLOAT && floatVal == 0.0f) {
+                                                LogManager.d(TAG, "CSV import for user $userId: Skipping value '0' for FLOAT type '${type.key.name}' in row ${rowIndex + 1}.")
+                                                skipThisValue = true
+                                            }
+                                            if (type.inputType == InputFieldType.INT && intVal == 0) {
+                                                LogManager.d(TAG, "CSV import for user $userId: Skipping value '0' for INT type '${type.key.name}' in row ${rowIndex + 1}.")
+                                                skipThisValue = true
+                                            }
+
+                                            if (!skipThisValue) {
+                                                val mv = MeasurementValue(
+                                                    typeId = type.id,
+                                                    measurementId = 0, // Will be set by Room
+                                                    textValue = if (type.inputType == InputFieldType.TEXT) valueString else null,
+                                                    floatValue = if (type.inputType == InputFieldType.FLOAT) valueString.toFloatOrNull() else null,
+                                                    intValue = if (type.inputType == InputFieldType.INT) valueString.toIntOrNull() else null,
+                                                    dateValue = when (type.inputType) {
+                                                        InputFieldType.DATE -> LocalDate.parse(
+                                                            valueString,
+                                                            dateFormatter
+                                                        ).atStartOfDay(ZoneId.systemDefault())
+                                                            .toInstant().toEpochMilli()
+
+                                                        InputFieldType.TIME -> {
+                                                            val parsedTime = try {
+                                                                LocalTime.parse(
+                                                                    valueString,
+                                                                    timeFormatter
+                                                                )
+                                                            } catch (e: Exception) {
+                                                                LocalTime.parse(
+                                                                    valueString,
+                                                                    flexibleTimeFormatter
+                                                                )
+                                                            }
+                                                            parsedTime.atDate(
+                                                                LocalDate.of(
+                                                                    1970,
+                                                                    1,
+                                                                    1
+                                                                )
+                                                            ).atZone(ZoneId.systemDefault())
+                                                                .toInstant().toEpochMilli()
+                                                        }
+
+                                                        else -> null
+                                                    }
+                                                )
+                                                var isValidValue = true
+                                                if (type.inputType == InputFieldType.FLOAT && mv.floatValue == null) isValidValue =
+                                                    false
+                                                if (type.inputType == InputFieldType.INT && mv.intValue == null) isValidValue =
+                                                    false
+                                                if (isValidValue) {
+                                                    measurementValues.add(mv)
+                                                } else {
+                                                    LogManager.w(
+                                                        TAG,
+                                                        "CSV import for user $userId: Could not parse value '$valueString' for type '${type.key.name}' in row ${rowIndex + 1}."
+                                                    )
+                                                    valuesSkippedParseError++
                                                 }
-                                            )
-                                            var isValidValue = true
-                                            if (type.inputType == InputFieldType.FLOAT && mv.floatValue == null) isValidValue = false
-                                            if (type.inputType == InputFieldType.INT && mv.intValue == null) isValidValue = false
-                                            if (isValidValue) {
-                                                measurementValues.add(mv)
-                                            } else {
-                                                LogManager.w(TAG, "CSV import for user $userId: Could not parse value '$valueString' for type '${type.key.name}' in row ${rowIndex + 1}.")
-                                                valuesSkippedParseError++
                                             }
                                         } catch (e: Exception) {
                                             LogManager.w(TAG, "CSV import for user $userId: Error processing value '$valueString' for type '${type.key.name}' in row ${rowIndex + 1}.", e)
