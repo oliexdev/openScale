@@ -22,6 +22,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -59,10 +60,13 @@ import androidx.navigation.NavController
 import com.health.openscale.R
 import com.health.openscale.core.data.ActivityLevel
 import com.health.openscale.core.data.GenderType
+import com.health.openscale.core.data.MeasureUnit
 import com.health.openscale.core.data.User
+import com.health.openscale.core.data.WeightUnit
 import com.health.openscale.ui.screen.SharedViewModel
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
@@ -94,17 +98,29 @@ fun UserDetailScreen(
     }
 
     var name by remember { mutableStateOf(user?.name.orEmpty()) }
-    var birthDate by remember { mutableStateOf(user?.birthDate ?: System.currentTimeMillis()) }
+    var birthDate by remember {
+        val initialBirthDate = user?.birthDate
+        if (initialBirthDate != null) {
+            mutableStateOf(initialBirthDate)
+        } else {
+            val calendar = Calendar.getInstance()
+            calendar.add(Calendar.YEAR, -18)
+            mutableStateOf(calendar.timeInMillis)
+        }
+    }
     var gender by remember { mutableStateOf(user?.gender ?: GenderType.MALE) }
     var height by remember { mutableStateOf(user?.heightCm?.toString().orEmpty()) }
     var activityLevel by remember { mutableStateOf(user?.activityLevel ?: ActivityLevel.SEDENTARY) }
+    var scaleUnit by remember { mutableStateOf(user?.scaleUnit ?: WeightUnit.KG) }
+    var measureUnit by remember { mutableStateOf(user?.measureUnit ?: MeasureUnit.CM) }
 
     val context = LocalContext.current
-    // Date formatter for displaying the birth date. Consider device locale.
     val dateFormatter = remember { SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()) }
     val datePickerState = rememberDatePickerState(initialSelectedDateMillis = birthDate)
     var showDatePicker by remember { mutableStateOf(false) }
     var activityLevelExpanded by remember { mutableStateOf(false) }
+    var scaleUnitExpanded by remember { mutableStateOf(false) }
+    var measureUnitExpanded by remember { mutableStateOf(false) }
 
     if (showDatePicker) {
         DatePickerDialog(
@@ -149,7 +165,9 @@ fun UserDetailScreen(
                         birthDate = birthDate,
                         gender = gender,
                         heightCm = validHeight,
-                        activityLevel = activityLevel
+                        activityLevel = activityLevel,
+                        scaleUnit = scaleUnit,
+                        measureUnit = measureUnit
                     )
                     settingsViewModel.viewModelScope.launch {
                         if (isEdit) {
@@ -216,7 +234,6 @@ fun UserDetailScreen(
             }
         }
 
-        Text(stringResource(id = R.string.user_detail_label_activity_level)) // "Activity Level"
         ExposedDropdownMenuBox(
             expanded = activityLevelExpanded,
             onExpandedChange = { activityLevelExpanded = !activityLevelExpanded },
@@ -226,7 +243,7 @@ fun UserDetailScreen(
                 value = activityLevel.name.lowercase().replaceFirstChar { it.uppercaseChar().toString() },
                 onValueChange = {}, // Input is read-only, selection via dropdown
                 readOnly = true,
-                label = { Text(stringResource(id = R.string.user_detail_label_select_level)) }, // "Select Level"
+                label = { Text(stringResource(id = R.string.user_detail_label_activity_level)) },
                 trailingIcon = {
                     ExposedDropdownMenuDefaults.TrailingIcon(expanded = activityLevelExpanded)
                 },
@@ -245,6 +262,74 @@ fun UserDetailScreen(
                         onClick = {
                             activityLevel = selectionOption
                             activityLevelExpanded = false
+                        },
+                        contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                    )
+                }
+            }
+        }
+
+        ExposedDropdownMenuBox(
+            expanded = scaleUnitExpanded,
+            onExpandedChange = { scaleUnitExpanded = !scaleUnitExpanded },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            OutlinedTextField(
+                value = scaleUnit.toString(),
+                onValueChange = {},
+                readOnly = true,
+                label = { Text(stringResource(id = R.string.user_detail_label_scale_unit)) },
+                trailingIcon = {
+                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = scaleUnitExpanded)
+                },
+                modifier = Modifier
+                    .menuAnchor(type = MenuAnchorType.PrimaryNotEditable)
+                    .fillMaxWidth()
+            )
+            ExposedDropdownMenu(
+                expanded = scaleUnitExpanded,
+                onDismissRequest = { scaleUnitExpanded = false }
+            ) {
+                WeightUnit.entries.forEach { selectionOption ->
+                    DropdownMenuItem(
+                        text = { Text(selectionOption.toString()) },
+                        onClick = {
+                            scaleUnit = selectionOption
+                            scaleUnitExpanded = false
+                        },
+                        contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                    )
+                }
+            }
+        }
+
+        ExposedDropdownMenuBox(
+            expanded = measureUnitExpanded,
+            onExpandedChange = { measureUnitExpanded = !measureUnitExpanded },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            OutlinedTextField(
+                value = measureUnit.toString(),
+                onValueChange = {},
+                readOnly = true,
+                label = { Text(stringResource(id = R.string.user_detail_label_measure_unit)) },
+                trailingIcon = {
+                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = measureUnitExpanded)
+                },
+                modifier = Modifier
+                    .menuAnchor(type = MenuAnchorType.PrimaryNotEditable)
+                    .fillMaxWidth()
+            )
+            ExposedDropdownMenu(
+                expanded = measureUnitExpanded,
+                onDismissRequest = { measureUnitExpanded = false }
+            ) {
+                MeasureUnit.entries.forEach { selectionOption ->
+                    DropdownMenuItem(
+                        text = { Text(selectionOption.toString()) },
+                        onClick = {
+                            measureUnit = selectionOption
+                            measureUnitExpanded = false
                         },
                         contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
                     )

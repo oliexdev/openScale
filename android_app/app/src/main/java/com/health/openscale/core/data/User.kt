@@ -26,6 +26,8 @@ data class User(
     val name: String,
     val birthDate: Long,
     val gender: GenderType,
-    val heightCm: Float? = null,
-    val activityLevel: ActivityLevel
+    val heightCm: Float,
+    val activityLevel: ActivityLevel,
+    var scaleUnit: WeightUnit,
+    var measureUnit: MeasureUnit
 )

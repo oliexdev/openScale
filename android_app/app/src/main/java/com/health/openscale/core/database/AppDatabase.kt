@@ -39,7 +39,7 @@ import com.health.openscale.core.utils.LogManager
         MeasurementValue::class,
         MeasurementType::class
     ],
-    version = 1,
+    version = 7,
     exportSchema = true
 )
 @TypeConverters(DatabaseConverters::class)

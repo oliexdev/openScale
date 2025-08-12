@@ -1,12 +1,12 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 1,
-    "identityHash": "e9e1b3a9fbc321cf52bf869c01f5be21",
+    "version": 7,
+    "identityHash": "d539026586245a45a135ae5bf3aaf73c",
     "entities": [
       {
         "tableName": "User",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `birthDate` INTEGER NOT NULL, `gender` TEXT NOT NULL, `heightCm` REAL, `activityLevel` TEXT NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `birthDate` INTEGER NOT NULL, `gender` TEXT NOT NULL, `heightCm` REAL NOT NULL, `activityLevel` TEXT NOT NULL, `scaleUnit` TEXT NOT NULL, `measureUnit` TEXT NOT NULL)",
         "fields": [
           {
             "fieldPath": "id",
@@ -35,11 +35,24 @@
           {
             "fieldPath": "heightCm",
             "columnName": "heightCm",
-            "affinity": "REAL"
+            "affinity": "REAL",
+            "notNull": true
           },
           {
             "fieldPath": "activityLevel",
             "columnName": "activityLevel",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "scaleUnit",
+            "columnName": "scaleUnit",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "measureUnit",
+            "columnName": "measureUnit",
             "affinity": "TEXT",
             "notNull": true
           }
@@ -279,7 +292,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'e9e1b3a9fbc321cf52bf869c01f5be21')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd539026586245a45a135ae5bf3aaf73c')"
     ]
   }
 }
