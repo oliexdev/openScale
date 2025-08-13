@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 7,
-    "identityHash": "d539026586245a45a135ae5bf3aaf73c",
+    "identityHash": "877ad250be34067d136497a388177415",
     "entities": [
       {
         "tableName": "User",
@@ -214,7 +214,7 @@
       },
       {
         "tableName": "MeasurementType",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `key` TEXT NOT NULL, `name` TEXT, `color` INTEGER NOT NULL, `icon` TEXT NOT NULL, `unit` TEXT NOT NULL, `inputType` TEXT NOT NULL, `displayOrder` INTEGER NOT NULL, `isDerived` INTEGER NOT NULL, `isEnabled` INTEGER NOT NULL, `isPinned` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `key` TEXT NOT NULL, `name` TEXT, `color` INTEGER NOT NULL, `icon` TEXT NOT NULL, `unit` TEXT NOT NULL, `inputType` TEXT NOT NULL, `displayOrder` INTEGER NOT NULL, `isDerived` INTEGER NOT NULL, `isEnabled` INTEGER NOT NULL, `isPinned` INTEGER NOT NULL, `isOnRightYAxis` INTEGER NOT NULL)",
         "fields": [
           {
             "fieldPath": "id",
@@ -280,6 +280,12 @@
             "columnName": "isPinned",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "isOnRightYAxis",
+            "columnName": "isOnRightYAxis",
+            "affinity": "INTEGER",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -292,7 +298,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd539026586245a45a135ae5bf3aaf73c')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '877ad250be34067d136497a388177415')"
     ]
   }
 }

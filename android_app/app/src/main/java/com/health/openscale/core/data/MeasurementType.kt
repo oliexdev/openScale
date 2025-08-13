@@ -34,7 +34,8 @@ data class MeasurementType(
     val displayOrder: Int = 0,
     val isDerived: Boolean = false,
     val isEnabled : Boolean = true,
-    val isPinned : Boolean = false
+    val isPinned : Boolean = false,
+    val isOnRightYAxis : Boolean = false
 ){
     /**
      * Gets the appropriate display name for UI purposes.

@@ -59,7 +59,7 @@ import kotlinx.coroutines.launch
  */
 fun getDefaultMeasurementTypes(): List<MeasurementType> {
     return listOf(
-        MeasurementType(key = MeasurementTypeKey.WEIGHT, unit = UnitType.KG, color = 0xFFEF2929.toInt(), icon = "ic_weight", isPinned = true, isEnabled = true),
+        MeasurementType(key = MeasurementTypeKey.WEIGHT, unit = UnitType.KG, color = 0xFFEF2929.toInt(), icon = "ic_weight", isPinned = true, isEnabled = true, isOnRightYAxis = true),
         MeasurementType(key = MeasurementTypeKey.BMI, color = 0xFFF57900.toInt(), icon = "ic_bmi", isDerived = true, isPinned = true, isEnabled = true),
         MeasurementType(key = MeasurementTypeKey.BODY_FAT, color = 0xFFFFCE44.toInt(), icon = "ic_fat", isPinned = true, isEnabled = true),
         MeasurementType(key = MeasurementTypeKey.WATER, color = 0xFF8AE234.toInt(), icon = "ic_water", isPinned = true, isEnabled = true),

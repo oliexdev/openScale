@@ -141,6 +141,7 @@
     <string name="measurement_type_label_unit">Einheit</string>
     <string name="measurement_type_label_input_type">Eingabetyp</string>
     <string name="measurement_type_label_pinned">Angeheftet</string>
+    <string name="measurement_type_label_on_right_y_axis">Auf rechter Y-Achse</string>
     <string name="content_desc_selected_icon_preview">Vorschau des ausgewählten Symbols</string>
     <string name="content_desc_drag_handle_sort">Sortieren</string>
     <string name="content_desc_edit_type">Bearbeiten</string>

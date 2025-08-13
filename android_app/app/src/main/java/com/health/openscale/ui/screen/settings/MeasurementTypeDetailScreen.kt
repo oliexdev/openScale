@@ -110,6 +110,7 @@ fun MeasurementTypeDetailScreen(
     var selectedIcon by remember { mutableStateOf(existingType?.icon ?: "ic_weight") } // Default icon
     var isEnabled by remember { mutableStateOf(existingType?.isEnabled ?: true) } // Default to true for new types
     var isPinned by remember { mutableStateOf(existingType?.isPinned ?: false) } // Default to false for new types
+    var isOnRightYAxis by remember { mutableStateOf(existingType?.isOnRightYAxis ?: false) }
 
     var expandedUnit by remember { mutableStateOf(false) }
     var expandedInputType by remember { mutableStateOf(false) }
@@ -138,7 +139,8 @@ fun MeasurementTypeDetailScreen(
                         isEnabled = isEnabled,
                         isPinned = isPinned,
                         key = existingType?.key ?: MeasurementTypeKey.CUSTOM, // New types are custom
-                        isDerived = existingType?.isDerived ?: false // New types are not derived by default
+                        isDerived = existingType?.isDerived ?: false, // New types are not derived by default
+                        isOnRightYAxis = isOnRightYAxis
                     )
 
                     if (isEdit) {
@@ -309,6 +311,13 @@ fun MeasurementTypeDetailScreen(
             Switch(
                 checked = isPinned,
                 onCheckedChange = { isPinned = it }
+            )
+        }
+
+        OutlinedSettingRow(label = stringResource(R.string.measurement_type_label_on_right_y_axis)) {
+            Switch(
+                checked = isOnRightYAxis,
+                onCheckedChange = { isOnRightYAxis = it }
             )
         }
     }

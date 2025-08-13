@@ -142,6 +142,7 @@
     <string name="measurement_type_label_unit">Unit</string>
     <string name="measurement_type_label_input_type">Input Type</string>
     <string name="measurement_type_label_pinned">Pinned</string>
+    <string name="measurement_type_label_on_right_y_axis">On right Y-axis</string>
     <string name="content_desc_selected_icon_preview">Selected icon preview</string>
     <string name="content_desc_drag_handle_sort">Sort</string>
     <string name="content_desc_edit_type">Edit</string>

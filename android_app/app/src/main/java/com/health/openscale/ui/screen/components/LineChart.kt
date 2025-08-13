@@ -18,6 +18,7 @@
 package com.health.openscale.ui.screen.components
 
 import android.text.Layout
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -66,6 +67,7 @@ import com.health.openscale.ui.screen.SharedViewModel
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberAxisGuidelineComponent
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberBottom
+import com.patrykandpatrick.vico.compose.cartesian.axis.rememberEnd
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberStart
 import com.patrykandpatrick.vico.compose.cartesian.layer.point
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLineCartesianLayer
@@ -80,9 +82,12 @@ import com.patrykandpatrick.vico.compose.common.fill
 import com.patrykandpatrick.vico.compose.common.insets
 import com.patrykandpatrick.vico.compose.common.shape.markerCorneredShape
 import com.patrykandpatrick.vico.core.cartesian.Zoom
+import com.patrykandpatrick.vico.core.cartesian.axis.Axis
 import com.patrykandpatrick.vico.core.cartesian.axis.HorizontalAxis
 import com.patrykandpatrick.vico.core.cartesian.axis.VerticalAxis
+import com.patrykandpatrick.vico.core.cartesian.axis.VerticalAxis.ItemPlacer.Companion.count
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
+import com.patrykandpatrick.vico.core.cartesian.data.CartesianLayerRangeProvider
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianValueFormatter
 import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
 import com.patrykandpatrick.vico.core.cartesian.layer.LineCartesianLayer
@@ -99,6 +104,8 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import kotlin.math.ceil
+import kotlin.math.floor
 
 internal val DATE_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("d MMM")
 internal val X_TO_DATE_MAP_KEY = ExtraStore.Key<Map<Float, LocalDate>>() // Key for storing date mapping in chart model
@@ -390,34 +397,62 @@ fun LineChart(
             return@Column // Exits the Column Composable early
         }
 
-        // Determine colors for each series, using type's predefined color or gray as fallback.
-        val typeColors = remember(seriesEntries) {
-            seriesEntries.map { (type, _) -> // Index not used here
+        val seriesEntriesForStartAxis = remember(seriesEntries) {
+            seriesEntries.filter { (type, _) ->
+                !type.isOnRightYAxis
+            }
+        }
+        val typeColorsForStartAxis = remember(seriesEntriesForStartAxis) {
+            seriesEntriesForStartAxis.map { (type, _) ->
+                if (type.color != 0) Color(type.color) else Color.Gray
+            }
+        }
+
+        val seriesEntriesForEndAxis = remember(seriesEntries) {
+            seriesEntries.filter { (type, _) ->
+                type.isOnRightYAxis
+            }
+        }
+        val typeColorsForEndAxis = remember(seriesEntriesForEndAxis) {
+            seriesEntriesForEndAxis.map { (type, _) ->
                 if (type.color != 0) Color(type.color) else Color.Gray
             }
         }
 
         val modelProducer = remember { CartesianChartModelProducer() }
 
-        // Update the chart model when series data or the date map changes.
-        LaunchedEffect(seriesEntries, xToDatesMapForStore) {
-            if (seriesEntries.isNotEmpty()) {
+        LaunchedEffect(seriesEntriesForStartAxis, seriesEntriesForEndAxis, xToDatesMapForStore) {
+            if (seriesEntriesForStartAxis.isNotEmpty() || seriesEntriesForEndAxis.isNotEmpty()) {
                 modelProducer.runTransaction {
-                    lineSeries { // Vico's DSL for defining line series
-                        seriesEntries.forEach { (_, sortedDateValuePairs) ->
-                            val xValues = sortedDateValuePairs.map { it.first.toEpochDay().toFloat() }
-                            val yValues = sortedDateValuePairs.map { it.second }
-                            if (xValues.isNotEmpty()) {
-                                series(x = xValues, y = yValues)
+                    if (seriesEntriesForStartAxis.isNotEmpty()) {
+                        lineSeries {
+                            seriesEntriesForStartAxis.forEach { (_, sortedDateValuePairs) ->
+                                val xValues = sortedDateValuePairs.map { it.first.toEpochDay().toFloat() }
+                                val yValues = sortedDateValuePairs.map { it.second }
+                                if (xValues.isNotEmpty()) {
+                                    series(x = xValues, y = yValues)
+                                }
                             }
                         }
                     }
-                    extras { it[X_TO_DATE_MAP_KEY] = xToDatesMapForStore } // Store date map in model extras
+
+                    if (seriesEntriesForEndAxis.isNotEmpty()) {
+                        lineSeries {
+                            seriesEntriesForEndAxis.forEach { (_, sortedDateValuePairs) ->
+                                val xValues = sortedDateValuePairs.map { it.first.toEpochDay().toFloat() }
+                                val yValues = sortedDateValuePairs.map { it.second }
+                                if (xValues.isNotEmpty()) {
+                                    series(x = xValues, y = yValues)
+                                }
+                            }
+                        }
+                    }
+                    extras { it[X_TO_DATE_MAP_KEY] = xToDatesMapForStore }
                 }
             } else {
-                // Clear the model if there are no series
                 modelProducer.runTransaction {
-                    lineSeries {} // Empty series
+                    lineSeries {}
+                    lineSeries {}
                     extras { it.remove(X_TO_DATE_MAP_KEY) }
                 }
             }
@@ -442,31 +477,75 @@ fun LineChart(
             null // Hide X-axis when showing a single, targeted measurement type
         }
 
+        val rangeProvider = remember {
+            object : CartesianLayerRangeProvider {
+                override fun getMinY(minY: Double, maxY: Double, extraStore: ExtraStore): Double {
+                    val r = maxY - minY
+                    return if (r == 0.0) minY - 1.0 else floor(minY - 0.1 * r)
+                }
+                override fun getMaxY(minY: Double, maxY: Double, extraStore: ExtraStore): Double {
+                    val r = maxY - minY
+                    return if (r == 0.0) maxY + 1.0 else ceil(maxY + 0.1 * r)
+                }
+            }
+        }
+
         // Conditionally create Y-axis.
-        val yAxis = if (showYAxis) {
-            VerticalAxis.rememberStart(
-                valueFormatter = yAxisValueFormatter,
-                // guideline = rememberAxisGuidelineComponent(), // Optionally add Y-axis guidelines
+        val startYAxis = if (showYAxis) {
+            VerticalAxis.rememberStart(valueFormatter = yAxisValueFormatter)
+        } else { null }
+
+        val endYAxis = if (showYAxis) {
+            VerticalAxis.rememberEnd(valueFormatter = yAxisValueFormatter)
+        } else { null }
+
+        val lineProviderForStartAxis = remember(seriesEntriesForStartAxis, typeColorsForStartAxis) {
+            LineCartesianLayer.LineProvider.series(
+                seriesEntriesForStartAxis.mapIndexedNotNull { index, _ ->
+                    if (index < typeColorsForStartAxis.size) {
+                        createLineSpec(typeColorsForStartAxis[index], statisticsMode = targetMeasurementTypeId != null)
+                    } else null
+                }
+            )
+        }
+        val lineLayerForStartAxis = if (seriesEntriesForStartAxis.isNotEmpty()) {
+            rememberLineCartesianLayer(
+                lineProvider = lineProviderForStartAxis,
+                verticalAxisPosition = Axis.Position.Vertical.Start,
+                rangeProvider = rangeProvider
             )
         } else {
             null
         }
 
-        // Define how lines are drawn (color, thickness, etc.)
-        val lineProvider = remember(seriesEntries, typeColors) {
+        val lineProviderForEndAxis = remember(seriesEntriesForEndAxis, typeColorsForEndAxis) {
             LineCartesianLayer.LineProvider.series(
-                seriesEntries.mapIndexedNotNull { index, _ ->
-                    if (index < typeColors.size) createLineSpec(typeColors[index], statisticsMode = targetMeasurementTypeId != null) else null
+                seriesEntriesForEndAxis.mapIndexedNotNull { index, _ ->
+                    if (index < typeColorsForEndAxis.size) {
+                        createLineSpec(typeColorsForEndAxis[index], statisticsMode = targetMeasurementTypeId != null)
+                    } else null
                 }
             )
         }
+        val lineLayerForEndAxis = if (seriesEntriesForEndAxis.isNotEmpty()) {
+            rememberLineCartesianLayer(
+                lineProvider = lineProviderForEndAxis,
+                verticalAxisPosition = Axis.Position.Vertical.End,
+                rangeProvider = rangeProvider
+                )
+        } else {
+            null
+        }
 
-        val lineLayer = rememberLineCartesianLayer(lineProvider = lineProvider)
+        val layers : List<LineCartesianLayer> = remember(lineLayerForStartAxis, lineLayerForEndAxis) {
+            listOfNotNull(lineLayerForStartAxis, lineLayerForEndAxis)
+        }
 
         val chart = rememberCartesianChart(
-            lineLayer,
-            startAxis = yAxis,   // Y-axis
+            layers = layers.toTypedArray(),
+            startAxis = startYAxis, // left Y-axis
             bottomAxis = xAxis,  // X-axis
+            endAxis = endYAxis, // right Y-axis
             marker = rememberMarker() // Interactive marker for data points
         )
 
