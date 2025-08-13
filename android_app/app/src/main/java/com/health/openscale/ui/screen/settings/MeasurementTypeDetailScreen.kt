@@ -54,6 +54,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -80,16 +81,6 @@ import com.health.openscale.ui.screen.dialog.IconPickerDialog
 import com.health.openscale.ui.screen.dialog.getIconResIdByName
 import kotlin.text.lowercase
 
-/**
- * Composable screen for creating or editing a [MeasurementType].
- * It allows users to define the name, unit, input type, color, icon,
- * and enabled/pinned status for a measurement type.
- *
- * @param navController NavController for navigating back after saving or cancelling.
- * @param typeId The ID of the [MeasurementType] to edit. If -1, a new type is being created.
- * @param sharedViewModel The [SharedViewModel] for accessing shared app state like existing measurement types and setting top bar properties.
- * @param settingsViewModel The [SettingsViewModel] for performing add or update operations on measurement types.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MeasurementTypeDetailScreen(
@@ -101,19 +92,44 @@ fun MeasurementTypeDetailScreen(
     val context = LocalContext.current
 
     val measurementTypes by sharedViewModel.measurementTypes.collectAsState()
-    val existingType = remember(measurementTypes, typeId) {
+    // Stores the original state of the measurement type before any UI changes.
+    // Crucial for the conversion logic to have the true original state.
+    val originalExistingType = remember(measurementTypes, typeId) {
         measurementTypes.find { it.id == typeId }
     }
     val isEdit = typeId != -1
 
-    var name by remember { mutableStateOf(existingType?.getDisplayName(context).orEmpty()) }
-    var selectedUnit by remember { mutableStateOf(existingType?.unit ?: UnitType.NONE) }
-    var selectedInputType by remember { mutableStateOf(existingType?.inputType ?: InputFieldType.FLOAT) }
-    var selectedColor by remember { mutableStateOf(existingType?.color ?: 0xFF6200EE.toInt()) } // Default color
-    var selectedIcon by remember { mutableStateOf(existingType?.icon ?: "ic_weight") } // Default icon
-    var isEnabled by remember { mutableStateOf(existingType?.isEnabled ?: true) } // Default to true for new types
-    var isPinned by remember { mutableStateOf(existingType?.isPinned ?: false) } // Default to false for new types
-    var isOnRightYAxis by remember { mutableStateOf(existingType?.isOnRightYAxis ?: false) }
+    // Determine the MeasurementTypeKey for the allowed units logic.
+    // For new types, it's always CUSTOM; for existing types, it's the type's key.
+    val currentMeasurementTypeKey = remember(originalExistingType, isEdit) {
+        if (isEdit) originalExistingType?.key ?: MeasurementTypeKey.CUSTOM
+        else MeasurementTypeKey.CUSTOM
+    }
+
+    // Get the list of allowed units based on the key.
+    val allowedUnitsForKey = remember(currentMeasurementTypeKey) {
+        currentMeasurementTypeKey.allowedUnitTypes
+    }
+
+    var name by remember { mutableStateOf(originalExistingType?.getDisplayName(context).orEmpty()) }
+
+    // Safely set selectedUnit. If the existing unit isn't allowed or if no existing unit,
+    // use the first allowed unit.
+    var selectedUnit by remember {
+        val initialUnit = originalExistingType?.unit
+        if (initialUnit != null && initialUnit in allowedUnitsForKey) {
+            mutableStateOf(initialUnit)
+        } else {
+            mutableStateOf(allowedUnitsForKey.firstOrNull() ?: UnitType.NONE)
+        }
+    }
+
+    var selectedInputType by remember { mutableStateOf(originalExistingType?.inputType ?: InputFieldType.FLOAT) }
+    var selectedColor by remember { mutableStateOf(originalExistingType?.color ?: 0xFF6200EE.toInt()) }
+    var selectedIcon by remember { mutableStateOf(originalExistingType?.icon ?: "ic_weight") }
+    var isEnabled by remember { mutableStateOf(originalExistingType?.isEnabled ?: true) }
+    var isPinned by remember { mutableStateOf(originalExistingType?.isPinned ?: false) }
+    var isOnRightYAxis by remember { mutableStateOf(originalExistingType?.isOnRightYAxis ?: false) }
 
     var expandedUnit by remember { mutableStateOf(false) }
     var expandedInputType by remember { mutableStateOf(false) }
@@ -126,42 +142,64 @@ fun MeasurementTypeDetailScreen(
     val titleEdit = stringResource(R.string.measurement_type_detail_title_edit)
     val titleAdd = stringResource(R.string.measurement_type_detail_title_add)
 
+    // Determines if the unit dropdown should be enabled (i.e., if there's more than one allowed unit).
+    val unitDropdownEnabled by remember(allowedUnitsForKey) {
+        derivedStateOf { allowedUnitsForKey.size > 1 }
+    }
+
+    // Effect to re-evaluate and set selectedUnit if originalExistingType or allowedUnitsForKey change.
+    // This ensures selectedUnit is always valid.
+    LaunchedEffect(originalExistingType, allowedUnitsForKey) {
+        val currentUnitInExistingType = originalExistingType?.unit
+        if (currentUnitInExistingType != null && currentUnitInExistingType in allowedUnitsForKey) {
+            if (selectedUnit != currentUnitInExistingType) { // Only update if different to avoid recomposition loops
+                selectedUnit = currentUnitInExistingType
+            }
+        } else if (allowedUnitsForKey.isNotEmpty() && selectedUnit !in allowedUnitsForKey) {
+            selectedUnit = allowedUnitsForKey.first()
+        } else if (allowedUnitsForKey.isEmpty() && selectedUnit != UnitType.NONE) {
+            // This case should ideally not be reached if keys are well-defined.
+            selectedUnit = UnitType.NONE
+        }
+    }
+
     LaunchedEffect(Unit) {
-        sharedViewModel.setTopBarTitle(
-            if (isEdit) titleEdit
-            else titleAdd
-        )
+        sharedViewModel.setTopBarTitle(if (isEdit) titleEdit else titleAdd)
         sharedViewModel.setTopBarAction(
             SharedViewModel.TopBarAction(icon = Icons.Default.Save, onClick = {
                 if (name.isNotBlank()) {
-                    val updatedType = MeasurementType(
-                        id = existingType?.id ?: 0, // Use 0 for new types, Room will autogenerate
+                    // When creating the updatedType, use the key of the originalExistingType if it's an edit.
+                    // For new types, it's MeasurementTypeKey.CUSTOM.
+                    val finalKey = if (isEdit) originalExistingType?.key ?: MeasurementTypeKey.CUSTOM else MeasurementTypeKey.CUSTOM
+
+                    val currentUpdatedType = MeasurementType(
+                        id = originalExistingType?.id ?: 0,
                         name = name,
                         icon = selectedIcon,
                         color = selectedColor,
                         unit = selectedUnit,
                         inputType = selectedInputType,
-                        displayOrder = existingType?.displayOrder ?: measurementTypes.size,
+                        displayOrder = originalExistingType?.displayOrder ?: measurementTypes.size,
                         isEnabled = isEnabled,
                         isPinned = isPinned,
-                        key = existingType?.key ?: MeasurementTypeKey.CUSTOM, // New types are custom
-                        isDerived = existingType?.isDerived ?: false, // New types are not derived by default
+                        key = finalKey, // Use the correct key
+                        isDerived = originalExistingType?.isDerived ?: false,
                         isOnRightYAxis = isOnRightYAxis
                     )
 
-                    if (isEdit) {
-                        val unitChanged = existingType!!.unit != updatedType.unit
-                        val inputTypesAreFloat = existingType!!.inputType == InputFieldType.FLOAT && updatedType.inputType == InputFieldType.FLOAT
+                    if (isEdit && originalExistingType != null) {
+                        val unitChanged = originalExistingType.unit != currentUpdatedType.unit
+                        val inputTypesAreFloat = originalExistingType.inputType == InputFieldType.FLOAT && currentUpdatedType.inputType == InputFieldType.FLOAT
 
                         if (unitChanged && inputTypesAreFloat) {
-                            pendingUpdatedType = updatedType
+                            pendingUpdatedType = currentUpdatedType
                             showConfirmDialog = true
                         } else {
-                            settingsViewModel.updateMeasurementType(updatedType)
+                            settingsViewModel.updateMeasurementType(currentUpdatedType)
                             navController.popBackStack()
                         }
                     } else {
-                        settingsViewModel.addMeasurementType(updatedType)
+                        settingsViewModel.addMeasurementType(currentUpdatedType)
                         navController.popBackStack()
                     }
                 } else {
@@ -171,7 +209,7 @@ fun MeasurementTypeDetailScreen(
         )
     }
 
-    if (showConfirmDialog && existingType != null && pendingUpdatedType != null) {
+    if (showConfirmDialog && originalExistingType != null && pendingUpdatedType != null) {
         AlertDialog(
             onDismissRequest = { showConfirmDialog = false },
             title = { Text(stringResource(R.string.measurement_type_dialog_confirm_unit_change_title)) },
@@ -179,28 +217,24 @@ fun MeasurementTypeDetailScreen(
                 Text(
                     stringResource(
                         R.string.measurement_type_dialog_confirm_unit_change_message,
-                        existingType!!.getDisplayName(context),
-                        existingType!!.unit.name.lowercase().replaceFirstChar { it.uppercase() },
-                        pendingUpdatedType!!.unit.name.lowercase().replaceFirstChar { it.uppercase() }
+                        originalExistingType.getDisplayName(context),
+                        originalExistingType.unit.displayName.lowercase().replaceFirstChar { it.uppercase() },
+                        pendingUpdatedType!!.unit.displayName.lowercase().replaceFirstChar { it.uppercase() }
                     )
                 )
             },
             confirmButton = {
                 TextButton(onClick = {
                     settingsViewModel.updateMeasurementTypeAndConvertDataViewModelCentric(
-                        originalType = existingType!!,
+                        originalType = originalExistingType,
                         updatedType = pendingUpdatedType!!
                     )
                     showConfirmDialog = false
                     navController.popBackStack()
-                }) {
-                    Text(stringResource(R.string.confirm_button))
-                }
+                }) { Text(stringResource(R.string.confirm_button)) }
             },
             dismissButton = {
-                TextButton(onClick = { showConfirmDialog = false }) {
-                    Text(stringResource(R.string.cancel_button))
-                }
+                TextButton(onClick = { showConfirmDialog = false }) { Text(stringResource(R.string.cancel_button)) }
             }
         )
     }
@@ -222,12 +256,14 @@ fun MeasurementTypeDetailScreen(
             value = name,
             onValueChange = { name = it },
             label = { Text(stringResource(R.string.measurement_type_label_name)) },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            // Name field is editable for new types or existing CUSTOM types.
+            // For predefined types, the name is typically not user-editable.
+            enabled = !isEdit || (originalExistingType?.key == MeasurementTypeKey.CUSTOM)
         )
 
-        // Color Selector
         OutlinedTextField(
-            value = String.format("#%06X", 0xFFFFFF and selectedColor), // Display color hex string
+            value = String.format("#%06X", 0xFFFFFF and selectedColor),
             onValueChange = {}, // Read-only
             label = { Text(stringResource(R.string.measurement_type_label_color)) },
             modifier = Modifier
@@ -241,21 +277,20 @@ fun MeasurementTypeDetailScreen(
                         .size(24.dp)
                         .clip(CircleShape)
                         .background(Color(selectedColor))
-                        .border(1.dp, Color.Gray, CircleShape) // Visually indicate the color
+                        .border(1.dp, Color.Gray, CircleShape)
                 )
             },
-            colors = TextFieldDefaults.colors( // Custom colors to make it look enabled despite being readOnly
+            colors = TextFieldDefaults.colors(
                 disabledTextColor = LocalContentColor.current,
-                disabledIndicatorColor = MaterialTheme.colorScheme.outline, // Standard outline
-                disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant, // Standard label color
+                disabledIndicatorColor = MaterialTheme.colorScheme.outline,
+                disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                disabledContainerColor = Color.Transparent // No background fill
+                disabledContainerColor = Color.Transparent
             )
         )
 
-        // Icon Selector
         OutlinedTextField(
-            value = selectedIcon, // Display selected icon name
+            value = selectedIcon,
             onValueChange = {}, // Read-only
             label = { Text(stringResource(R.string.measurement_type_label_icon)) },
             modifier = Modifier
@@ -268,14 +303,13 @@ fun MeasurementTypeDetailScreen(
                     painter = runCatching {
                         painterResource(id = getIconResIdByName(selectedIcon))
                     }.getOrElse {
-                        // Fallback icon if resource name is invalid or not found
-                        Icons.Filled.QuestionMark
-                    } as Painter, // Cast is safe due to getOrElse structure
+                        Icons.Filled.QuestionMark // Fallback icon
+                    } as Painter,
                     contentDescription = stringResource(R.string.content_desc_selected_icon_preview),
                     modifier = Modifier.size(24.dp)
                 )
             },
-            colors = TextFieldDefaults.colors( // Custom colors for consistent look
+            colors = TextFieldDefaults.colors(
                 disabledTextColor = LocalContentColor.current,
                 disabledIndicatorColor = MaterialTheme.colorScheme.outline,
                 disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -284,38 +318,59 @@ fun MeasurementTypeDetailScreen(
             )
         )
 
-        // UnitType Dropdown
-        ExposedDropdownMenuBox(
-            expanded = expandedUnit,
-            onExpandedChange = { expandedUnit = !expandedUnit }
-        ) {
-            OutlinedTextField(
-                readOnly = true,
-                value = selectedUnit.name.lowercase().replaceFirstChar { it.uppercase() }, // Format for display
-                onValueChange = {},
-                label = { Text(stringResource(R.string.measurement_type_label_unit)) },
-                trailingIcon = {
-                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedUnit)
-                },
-                modifier = Modifier
-                    .menuAnchor( // Required for ExposedDropdownMenu
-                        type = MenuAnchorType.PrimaryNotEditable,
-                        enabled = true
-                    )
-                    .fillMaxWidth()
-            )
-            ExposedDropdownMenu(
-                expanded = expandedUnit,
-                onDismissRequest = { expandedUnit = false }
+        if (unitDropdownEnabled) {
+            // UnitType Dropdown
+            ExposedDropdownMenuBox(
+                expanded = expandedUnit && unitDropdownEnabled,
+                onExpandedChange = {
+                    if (unitDropdownEnabled) expandedUnit = !expandedUnit
+                }
             ) {
-                UnitType.entries.forEach { unit ->
-                    DropdownMenuItem(
-                        text = { Text(unit.name.lowercase().replaceFirstChar { it.uppercase() }) },
-                        onClick = {
-                            selectedUnit = unit
-                            expandedUnit = false
+                OutlinedTextField(
+                    readOnly = true,
+                    value = selectedUnit.displayName.lowercase()
+                        .replaceFirstChar { it.uppercase() },
+                    onValueChange = {},
+                    label = { Text(stringResource(R.string.measurement_type_label_unit)) },
+                    trailingIcon = {
+                        if (unitDropdownEnabled) {
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedUnit)
                         }
-                    )
+                    },
+                    modifier = Modifier
+                        .menuAnchor(
+                            type = MenuAnchorType.PrimaryNotEditable,
+                            enabled = unitDropdownEnabled
+                        )
+                        .fillMaxWidth(),
+                    colors = if (!unitDropdownEnabled) OutlinedTextFieldDefaults.colors(
+                        disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                        disabledBorderColor = MaterialTheme.colorScheme.outline,
+                        disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                            alpha = 0.38f
+                        )
+                    ) else OutlinedTextFieldDefaults.colors()
+                )
+                if (unitDropdownEnabled) {
+                    ExposedDropdownMenu(
+                        expanded = expandedUnit,
+                        onDismissRequest = { expandedUnit = false }
+                    ) {
+                        allowedUnitsForKey.forEach { unit ->
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        unit.displayName.lowercase()
+                                            .replaceFirstChar { it.uppercase() })
+                                },
+                                onClick = {
+                                    selectedUnit = unit
+                                    expandedUnit = false
+                                }
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -327,17 +382,12 @@ fun MeasurementTypeDetailScreen(
         ) {
             OutlinedTextField(
                 readOnly = true,
-                value = selectedInputType.name.lowercase().replaceFirstChar { it.uppercase() }, // Format for display
+                value = selectedInputType.name.lowercase().replaceFirstChar { it.uppercase() },
                 onValueChange = {},
                 label = { Text(stringResource(R.string.measurement_type_label_input_type)) },
-                trailingIcon = {
-                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedInputType)
-                },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedInputType) },
                 modifier = Modifier
-                    .menuAnchor( // Required for ExposedDropdownMenu
-                        type = MenuAnchorType.PrimaryNotEditable,
-                        enabled = true
-                    )
+                    .menuAnchor(type = MenuAnchorType.PrimaryNotEditable, enabled = true)
                     .fillMaxWidth()
             )
             ExposedDropdownMenu(
@@ -371,73 +421,52 @@ fun MeasurementTypeDetailScreen(
         }
     }
 
-    // Color Picker Dialog
     if (showColorPicker) {
         ColorPickerDialog(
             currentColor = Color(selectedColor),
-            onColorSelected = {
-                selectedColor = it.toArgb()
-                // showColorPicker = false // Keep picker open until explicitly dismissed by user
-            },
+            onColorSelected = { selectedColor = it.toArgb() },
             onDismiss = { showColorPicker = false }
         )
     }
 
-    // Icon Picker Dialog
     if (showIconPicker) {
         IconPickerDialog(
             onIconSelected = {
                 selectedIcon = it
-                showIconPicker = false // Close picker after selection
+                showIconPicker = false
             },
             onDismiss = { showIconPicker = false }
         )
     }
 }
 
-/**
- * A private composable function that creates a row styled like an [OutlinedTextField]
- * but designed to hold a label and a custom control (e.g., a [Switch]).
- *
- * @param label The text to display as the label for this setting row.
- * @param modifier Modifier for this composable.
- * @param controlContent A composable lambda that defines the control to be placed on the right side of the row.
- */
 @Composable
 private fun OutlinedSettingRow(
     label: String,
     modifier: Modifier = Modifier,
     controlContent: @Composable () -> Unit
 ) {
-    Surface( // Surface for the border and background, mimicking OutlinedTextField
+    Surface(
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = OutlinedTextFieldDefaults.MinHeight), // Minimum height similar to OutlinedTextField
-        shape = OutlinedTextFieldDefaults.shape, // Shape similar to OutlinedTextField
-        color = MaterialTheme.colorScheme.surface, // Background color (can be customized)
-        border = BorderStroke( // Border
-            width = 1.dp, // OutlinedTextFieldDefaults.UnfocusedBorderThickness is internal, so using 1.dp
-            color = MaterialTheme.colorScheme.outline // Border color similar to OutlinedTextField
-        )
+            .heightIn(min = OutlinedTextFieldDefaults.MinHeight),
+        shape = OutlinedTextFieldDefaults.shape,
+        color = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.outline)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding( // Internal padding similar to OutlinedTextField
-                    start = 16.dp, // Similar to OutlinedTextFieldTokens.InputLeadingPadding
-                    end = 16.dp,   // Similar to OutlinedTextFieldTokens.InputTrailingPadding
-                    top = 8.dp,    // Less top padding as the label is centered vertically
-                    bottom = 8.dp
-                ),
+                .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween // Pushes label to start, control to end
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
                 text = label,
-                style = MaterialTheme.typography.bodyLarge, // Style for the "label"
-                color = MaterialTheme.colorScheme.onSurfaceVariant // Color of the "label"
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            controlContent() // The Switch or other control is placed here
+            controlContent()
         }
     }
 }

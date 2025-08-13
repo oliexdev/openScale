@@ -49,18 +49,17 @@
     <string name="user_updated_successfully">User %1$s updated successfully.</string>
     <string name="user_updated_error">Error updating user %1$s.</string>
     <string name="user_detail_label_name">Name</string>
-    <string name="user_detail_label_height_cm">Height (cm)</string>
+    <string name="user_detail_label_height">Height</string>
     <string name="user_detail_label_gender">Gender</string>
     <string name="user_detail_label_activity_level">Activity Level</string>
     <string name="user_detail_label_birth_date">Birth Date</string>
     <string name="user_detail_error_invalid_data">Please enter valid data</string>
-    <string name="user_detail_label_scale_unit">Scale Unit</string>
-    <string name="user_detail_label_measure_unit">Measure Unit</string>
     <string name="height_value_cm">%.1f cm</string>
     <string name="user_settings_item_details_conditional">Age: %1$d, Height: %2$s</string>
     <string name="user_settings_content_description_edit">Edit user</string>
     <string name="user_settings_content_description_delete">Delete user</string>
     <string name="user_settings_content_description_add_user">Add new user</string>
+    <string name="user_detail_content_description_change_unit">Change unit</string>
 
     <!-- Measurement CRUD & Operations -->
     <string name="success_measurement_updated">Measurement successfully updated</string>

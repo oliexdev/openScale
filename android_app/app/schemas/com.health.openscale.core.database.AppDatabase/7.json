@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 7,
-    "identityHash": "877ad250be34067d136497a388177415",
+    "identityHash": "3eb1fa6c355e18713262b7da7d1ffbdd",
     "entities": [
       {
         "tableName": "User",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `birthDate` INTEGER NOT NULL, `gender` TEXT NOT NULL, `heightCm` REAL NOT NULL, `activityLevel` TEXT NOT NULL, `scaleUnit` TEXT NOT NULL, `measureUnit` TEXT NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `birthDate` INTEGER NOT NULL, `gender` TEXT NOT NULL, `heightCm` REAL NOT NULL, `activityLevel` TEXT NOT NULL)",
         "fields": [
           {
             "fieldPath": "id",
@@ -41,18 +41,6 @@
           {
             "fieldPath": "activityLevel",
             "columnName": "activityLevel",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "scaleUnit",
-            "columnName": "scaleUnit",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "measureUnit",
-            "columnName": "measureUnit",
             "affinity": "TEXT",
             "notNull": true
           }
@@ -298,7 +286,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '877ad250be34067d136497a388177415')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '3eb1fa6c355e18713262b7da7d1ffbdd')"
     ]
   }
 }

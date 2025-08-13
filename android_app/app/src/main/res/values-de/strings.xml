@@ -48,18 +48,17 @@
     <string name="user_updated_successfully">Benutzer %1$s erfolgreich aktualisiert.</string>
     <string name="user_updated_error">Fehler beim Aktualisieren von Benutzer %1$s.</string>
     <string name="user_detail_label_name">Name</string>
-    <string name="user_detail_label_height_cm">Größe (cm)</string>
+    <string name="user_detail_label_height">Größe</string>
     <string name="user_detail_label_gender">Geschlecht</string>
     <string name="user_detail_label_activity_level">Aktivitätslevel</string>
     <string name="user_detail_label_birth_date">Geburtsdatum</string>
     <string name="user_detail_error_invalid_data">Bitte geben Sie gültige Daten ein</string>
-    <string name="user_detail_label_scale_unit">Gewichtseinheit</string>
-    <string name="user_detail_label_measure_unit">Größeneinheit</string>
     <string name="height_value_cm">%.1f cm</string>
     <string name="user_settings_item_details_conditional">Alter: %1$d, Größe: %2$s</string>
     <string name="user_settings_content_description_edit">Benutzer bearbeiten</string>
     <string name="user_settings_content_description_delete">Benutzer löschen</string>
     <string name="user_settings_content_description_add_user">Neuen Benutzer hinzufügen</string>
+    <string name="user_detail_content_description_change_unit">Einheit ändern</string>
 
     <!-- Messung CRUD & Operationen -->
     <string name="success_measurement_updated">Messung erfolgreich aktualisiert</string>

@@ -18,25 +18,34 @@
 package com.health.openscale.ui.screen.settings
 
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.UnfoldMore
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
@@ -53,16 +62,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.health.openscale.R
 import com.health.openscale.core.data.ActivityLevel
 import com.health.openscale.core.data.GenderType
 import com.health.openscale.core.data.MeasureUnit
+import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.data.User
 import com.health.openscale.core.data.WeightUnit
+import com.health.openscale.core.utils.Converters
 import com.health.openscale.ui.screen.SharedViewModel
 import kotlinx.coroutines.launch
 import java.text.DateFormat
@@ -111,10 +124,11 @@ fun UserDetailScreen(
         }
     }
     var gender by remember { mutableStateOf(user?.gender ?: GenderType.MALE) }
-    var height by remember { mutableStateOf(user?.heightCm?.toString().orEmpty()) }
+    var heightInputUnit by remember { mutableStateOf(UnitType.CM) }
+    var heightValueString by remember { mutableStateOf("") }
+    val heightUnitsOptions = listOf(UnitType.CM, UnitType.INCH)
+
     var activityLevel by remember { mutableStateOf(user?.activityLevel ?: ActivityLevel.SEDENTARY) }
-    var scaleUnit by remember { mutableStateOf(user?.scaleUnit ?: WeightUnit.KG) }
-    var measureUnit by remember { mutableStateOf(user?.measureUnit ?: MeasureUnit.CM) }
 
     val context = LocalContext.current
     val dateFormatter = remember {
@@ -125,8 +139,6 @@ fun UserDetailScreen(
     val datePickerState = rememberDatePickerState(initialSelectedDateMillis = birthDate)
     var showDatePicker by remember { mutableStateOf(false) }
     var activityLevelExpanded by remember { mutableStateOf(false) }
-    var scaleUnitExpanded by remember { mutableStateOf(false) }
-    var measureUnitExpanded by remember { mutableStateOf(false) }
 
     if (showDatePicker) {
         DatePickerDialog(
@@ -154,6 +166,24 @@ fun UserDetailScreen(
     val editUserTitle = stringResource(R.string.user_detail_edit_user_title)
     val addUserTitle = stringResource(R.string.user_detail_add_user_title)
 
+    LaunchedEffect(user, heightInputUnit) {
+        user?.heightCm?.let { cmValue -> // user.heightCm ist die in der DB gespeicherte Höhe in CM
+            if (cmValue > 0f) {
+                heightValueString = if (heightInputUnit == UnitType.CM) {
+                    String.format(Locale.US, "%.1f", cmValue)
+                } else { // heightInputUnit == UnitType.INCH
+                    // Konvertiere den CM-Wert aus der DB in Zoll für die Anzeige
+                    val inchesValue = Converters.convertFloatValueUnit(cmValue, UnitType.CM, UnitType.INCH)
+                    String.format(Locale.US, "%.1f", inchesValue)
+                }
+            } else {
+                heightValueString = "" // Wenn keine valide gespeicherte Höhe, Feld leeren
+            }
+        } ?: run {
+            heightValueString = "" // Neuer User, Feld leer
+        }
+    }
+
     // Effect to set the top bar title and save action.
     // This runs when userId changes or the screen is first composed.
     LaunchedEffect(userId) {
@@ -163,17 +193,25 @@ fun UserDetailScreen(
         )
         sharedViewModel.setTopBarAction(
             SharedViewModel.TopBarAction(icon = Icons.Default.Save, onClick = {
-                val validHeight = height.toFloatOrNull()
-                if (name.isNotBlank() && validHeight != null) {
+                val validNumericHeight = heightValueString.toFloatOrNull()
+                var finalHeightCm: Float? = null
+
+                if (validNumericHeight != null && validNumericHeight > 0f) {
+                    finalHeightCm = if (heightInputUnit == UnitType.CM) {
+                        validNumericHeight // Wert ist bereits in CM
+                    } else { // heightInputUnit == UnitType.INCH
+                        // Konvertiere den in Zoll eingegebenen Wert zurück zu CM für die Speicherung
+                        Converters.convertFloatValueUnit(validNumericHeight, UnitType.INCH, UnitType.CM)
+                    }
+                }
+                if (name.isNotBlank() && finalHeightCm != null) {
                     val newUser = User(
                         id = user?.id ?: 0, // Use existing ID if editing, or 0 for Room to auto-generate
                         name = name,
                         birthDate = birthDate,
                         gender = gender,
-                        heightCm = validHeight,
-                        activityLevel = activityLevel,
-                        scaleUnit = scaleUnit,
-                        measureUnit = measureUnit
+                        heightCm = finalHeightCm,
+                        activityLevel = activityLevel
                     )
                     settingsViewModel.viewModelScope.launch {
                         if (isEdit) {
@@ -203,7 +241,7 @@ fun UserDetailScreen(
         modifier = Modifier
             .padding(16.dp)
             .fillMaxSize()
-            .verticalScroll(scrollState), // Make the column scrollable
+            .verticalScroll(scrollState),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         OutlinedTextField(
@@ -213,13 +251,58 @@ fun UserDetailScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
+        Text(stringResource(id = R.string.user_detail_label_height))
         OutlinedTextField(
-            value = height,
-            onValueChange = { height = it },
-            label = { Text(stringResource(id = R.string.user_detail_label_height_cm)) }, // "Height (cm)"
+            value = heightValueString,
+            onValueChange = { newValue ->
+                val filteredValue = newValue.filter { it.isDigit() || it == '.' }
+                if (filteredValue.count { it == '.' } <= 1) {
+                    heightValueString = filteredValue
+                }
+            },
+            label = { Text(stringResource(R.string.user_detail_label_height)) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            trailingIcon = {
+                IconButton(onClick = {
+                    val currentIndex = heightUnitsOptions.indexOf(heightInputUnit)
+                    val nextIndex = (currentIndex + 1) % heightUnitsOptions.size
+                    val newUnit = heightUnitsOptions[nextIndex]
+
+                    val currentNumericValue = heightValueString.toFloatOrNull()
+                    if (currentNumericValue != null && currentNumericValue > 0f) {
+                        val convertedValue = Converters.convertFloatValueUnit(currentNumericValue, heightInputUnit, newUnit)
+                        heightValueString = String.format(Locale.US, "%.1f", convertedValue)
+                    } else {
+                        heightValueString = ""
+                    }
+                    heightInputUnit = newUnit
+                }) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = heightInputUnit.displayName.uppercase(),
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Medium
+                            )
+                        )
+
+                        Icon(
+                            imageVector = Icons.Filled.UnfoldMore,
+                            contentDescription = stringResource(R.string.user_detail_content_description_change_unit),
+                            modifier = Modifier.size(18.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+            }
         )
+
+
 
         Text(stringResource(id = R.string.user_detail_label_gender)) // "Gender"
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -268,74 +351,6 @@ fun UserDetailScreen(
                         onClick = {
                             activityLevel = selectionOption
                             activityLevelExpanded = false
-                        },
-                        contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
-                    )
-                }
-            }
-        }
-
-        ExposedDropdownMenuBox(
-            expanded = scaleUnitExpanded,
-            onExpandedChange = { scaleUnitExpanded = !scaleUnitExpanded },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            OutlinedTextField(
-                value = scaleUnit.toString(),
-                onValueChange = {},
-                readOnly = true,
-                label = { Text(stringResource(id = R.string.user_detail_label_scale_unit)) },
-                trailingIcon = {
-                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = scaleUnitExpanded)
-                },
-                modifier = Modifier
-                    .menuAnchor(type = MenuAnchorType.PrimaryNotEditable)
-                    .fillMaxWidth()
-            )
-            ExposedDropdownMenu(
-                expanded = scaleUnitExpanded,
-                onDismissRequest = { scaleUnitExpanded = false }
-            ) {
-                WeightUnit.entries.forEach { selectionOption ->
-                    DropdownMenuItem(
-                        text = { Text(selectionOption.toString()) },
-                        onClick = {
-                            scaleUnit = selectionOption
-                            scaleUnitExpanded = false
-                        },
-                        contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
-                    )
-                }
-            }
-        }
-
-        ExposedDropdownMenuBox(
-            expanded = measureUnitExpanded,
-            onExpandedChange = { measureUnitExpanded = !measureUnitExpanded },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            OutlinedTextField(
-                value = measureUnit.toString(),
-                onValueChange = {},
-                readOnly = true,
-                label = { Text(stringResource(id = R.string.user_detail_label_measure_unit)) },
-                trailingIcon = {
-                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = measureUnitExpanded)
-                },
-                modifier = Modifier
-                    .menuAnchor(type = MenuAnchorType.PrimaryNotEditable)
-                    .fillMaxWidth()
-            )
-            ExposedDropdownMenu(
-                expanded = measureUnitExpanded,
-                onDismissRequest = { measureUnitExpanded = false }
-            ) {
-                MeasureUnit.entries.forEach { selectionOption ->
-                    DropdownMenuItem(
-                        text = { Text(selectionOption.toString()) },
-                        onClick = {
-                            measureUnit = selectionOption
-                            measureUnitExpanded = false
                         },
                         contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
                     )
