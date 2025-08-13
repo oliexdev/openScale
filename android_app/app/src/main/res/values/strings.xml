@@ -151,8 +151,13 @@
     <string name="measurement_type_added_error">Error adding measurement type \'%1$s\'.</string>
     <string name="measurement_type_deleted_successfully">Measurement type \'%1$s\' deleted successfully.</string>
     <string name="measurement_type_deleted_error">Error deleting measurement type \'%1$s\'.</string>
-    <string name="measurement_type_updated_successfully">Measurement type \'%1$s\' updated successfully.</string>
     <string name="measurement_type_updated_error">Error updating measurement type \'%1$s\'.</string>
+    <string name="measurement_type_updated_successfully">Measurement type \'%1$s\' updated successfully.</string>
+    <string name="measurement_type_updated_and_values_converted_successfully">Type \'%1$s\' updated and %2$s value(s) converted successfully.</string>
+    <string name="measurement_type_update_error_conversion_failed">Error converting values for type \'%1$s\'. The type definition was not updated.</string>
+    <string name="measurement_type_updated_unit_changed_no_values_converted">Type \'%1$s\' updated. Unit changed, but no existing values required conversion.</string>
+    <string name="measurement_type_dialog_confirm_unit_change_title">Confirm Unit Change</string>
+    <string name="measurement_type_dialog_confirm_unit_change_message">Changing the unit for \'%1$s\' from %2$s to %3$s will convert all existing data points. This action may take some time and cannot be easily undone. Do you want to proceed?</string>
 
     <!-- Bluetooth -->
     <string name="info_bluetooth_connection_error_scale_offline">Could not connect to scale, please ensure it is on.</string>

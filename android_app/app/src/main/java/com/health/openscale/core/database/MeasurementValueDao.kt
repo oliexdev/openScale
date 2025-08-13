@@ -40,4 +40,7 @@ interface MeasurementValueDao {
 
     @Query("SELECT * FROM MeasurementValue WHERE measurementId = :measurementId")
     fun getValuesForMeasurement(measurementId: Int): Flow<List<MeasurementValue>>
+
+    @Query("SELECT * FROM MeasurementValue WHERE typeId = :typeId")
+    fun getValuesForType(typeId: Int): Flow<List<MeasurementValue>>
 }

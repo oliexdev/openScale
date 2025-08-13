@@ -35,6 +35,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.QuestionMark
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -48,6 +49,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -76,6 +78,7 @@ import com.health.openscale.ui.screen.SharedViewModel
 import com.health.openscale.ui.screen.dialog.ColorPickerDialog
 import com.health.openscale.ui.screen.dialog.IconPickerDialog
 import com.health.openscale.ui.screen.dialog.getIconResIdByName
+import kotlin.text.lowercase
 
 /**
  * Composable screen for creating or editing a [MeasurementType].
@@ -117,6 +120,9 @@ fun MeasurementTypeDetailScreen(
     var showColorPicker by remember { mutableStateOf(false) }
     var showIconPicker by remember { mutableStateOf(false) }
 
+    var showConfirmDialog by remember { mutableStateOf(false) }
+    var pendingUpdatedType by remember { mutableStateOf<MeasurementType?>(null) }
+
     val titleEdit = stringResource(R.string.measurement_type_detail_title_edit)
     val titleAdd = stringResource(R.string.measurement_type_detail_title_add)
 
@@ -144,15 +150,58 @@ fun MeasurementTypeDetailScreen(
                     )
 
                     if (isEdit) {
-                        settingsViewModel.updateMeasurementType(updatedType)
+                        val unitChanged = existingType!!.unit != updatedType.unit
+                        val inputTypesAreFloat = existingType!!.inputType == InputFieldType.FLOAT && updatedType.inputType == InputFieldType.FLOAT
+
+                        if (unitChanged && inputTypesAreFloat) {
+                            pendingUpdatedType = updatedType
+                            showConfirmDialog = true
+                        } else {
+                            settingsViewModel.updateMeasurementType(updatedType)
+                            navController.popBackStack()
+                        }
                     } else {
                         settingsViewModel.addMeasurementType(updatedType)
+                        navController.popBackStack()
                     }
-                    navController.popBackStack()
                 } else {
                     Toast.makeText(context, R.string.toast_enter_valid_data, Toast.LENGTH_SHORT).show()
                 }
             })
+        )
+    }
+
+    if (showConfirmDialog && existingType != null && pendingUpdatedType != null) {
+        AlertDialog(
+            onDismissRequest = { showConfirmDialog = false },
+            title = { Text(stringResource(R.string.measurement_type_dialog_confirm_unit_change_title)) },
+            text = {
+                Text(
+                    stringResource(
+                        R.string.measurement_type_dialog_confirm_unit_change_message,
+                        existingType!!.getDisplayName(context),
+                        existingType!!.unit.name.lowercase().replaceFirstChar { it.uppercase() },
+                        pendingUpdatedType!!.unit.name.lowercase().replaceFirstChar { it.uppercase() }
+                    )
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    settingsViewModel.updateMeasurementTypeAndConvertDataViewModelCentric(
+                        originalType = existingType!!,
+                        updatedType = pendingUpdatedType!!
+                    )
+                    showConfirmDialog = false
+                    navController.popBackStack()
+                }) {
+                    Text(stringResource(R.string.confirm_button))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showConfirmDialog = false }) {
+                    Text(stringResource(R.string.cancel_button))
+                }
+            }
         )
     }
 

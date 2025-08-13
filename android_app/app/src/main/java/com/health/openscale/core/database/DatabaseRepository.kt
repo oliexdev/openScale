@@ -179,6 +179,9 @@ class DatabaseRepository(
     fun getValuesForMeasurement(measurementId: Int): Flow<List<MeasurementValue>> =
         measurementValueDao.getValuesForMeasurement(measurementId)
 
+    fun getValuesForType(typeId: Int): Flow<List<MeasurementValue>> =
+        measurementValueDao.getValuesForType(typeId)
+
     // --- Measurement Type Operations ---
 
     fun getAllMeasurementTypes(): Flow<List<MeasurementType>> = measurementTypeDao.getAll()

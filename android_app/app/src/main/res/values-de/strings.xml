@@ -152,6 +152,11 @@
     <string name="measurement_type_deleted_error">Fehler beim Löschen der Messart \'%1$s\'.</string>
     <string name="measurement_type_updated_successfully">Messart \'%1$s\' erfolgreich aktualisiert.</string>
     <string name="measurement_type_updated_error">Fehler beim Aktualisieren der Messart \'%1$s\'.</string>
+    <string name="measurement_type_updated_and_values_converted_successfully">Typ \'%1$s\' aktualisiert und %2$s Wert(e) erfolgreich konvertiert.</string>
+    <string name="measurement_type_update_error_conversion_failed">Fehler beim Konvertieren der Werte für Typ \'%1$s\'. Die Typdefinition wurde nicht aktualisiert.</string>
+    <string name="measurement_type_updated_unit_changed_no_values_converted">Typ \'%1$s\' aktualisiert. Einheit geändert, aber es mussten keine vorhandenen Werte konvertiert werden.</string>
+    <string name="measurement_type_dialog_confirm_unit_change_title">Einheitenänderung bestätigen</string>
+    <string name="measurement_type_dialog_confirm_unit_change_message">Wenn Sie die Einheit für \'%1$s\' von %2$s auf %3$s ändern, werden alle vorhandenen Datenpunkte konvertiert. Dieser Vorgang kann einige Zeit dauern und kann nicht einfach rückgängig gemacht werden. Möchten Sie fortfahren?</string>
 
     <!-- Bluetooth -->
     <string name="info_bluetooth_connection_error_scale_offline">Verbindung zur Waage fehlgeschlagen, bitte stellen Sie sicher, dass sie eingeschaltet ist.</string>

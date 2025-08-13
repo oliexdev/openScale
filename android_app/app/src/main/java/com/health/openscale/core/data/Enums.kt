@@ -178,8 +178,11 @@ enum class MeasurementTypeKey(
 
 enum class UnitType(val displayName: String) {
     KG("kg"),
+    LB("lb"),
+    ST("st"),
     PERCENT("%"),
     CM("cm"),
+    INCH("in"),
     KCAL("kcal"),
     NONE("")
 }

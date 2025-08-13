@@ -18,6 +18,7 @@
 package com.health.openscale.core.utils
 
 import com.health.openscale.core.data.MeasureUnit
+import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.data.WeightUnit
 
 
@@ -174,4 +175,64 @@ object Converters {
         toInt32Be(data, 0, value)
         return data
     }
+
+    /**
+     * Converts a Float value from one UnitType to another, if a conversion is defined.
+     * Returns the original value if no conversion is applicable or units are the same.
+     *
+     * @param value The float value to convert.
+     * @param fromUnit The original UnitType of the value.
+     * @param toUnit The target UnitType for the value.
+     * @return The converted float value, or the original value if no conversion is done.
+     */
+    @JvmStatic
+    fun convertFloatValueUnit(value: Float, fromUnit: UnitType, toUnit: UnitType): Float {
+        if (fromUnit == toUnit) return value
+
+        // KG -> Andere Gewichtseinheiten
+        if (fromUnit == UnitType.KG) {
+            return when (toUnit) {
+                UnitType.LB -> fromKilogram(value, WeightUnit.LB)
+                UnitType.ST -> fromKilogram(value, WeightUnit.ST)
+                else -> value // Keine Umrechnung zu anderen Typen von KG aus
+            }
+        }
+        // LB -> Andere Gewichtseinheiten (erst zu KG, dann zum Ziel)
+        if (fromUnit == UnitType.LB) {
+            val kgValue = toKilogram(value, WeightUnit.LB)
+            return when (toUnit) {
+                UnitType.KG -> kgValue
+                UnitType.ST -> fromKilogram(kgValue, WeightUnit.ST)
+                else -> value
+            }
+        }
+        // ST -> Andere Gewichtseinheiten (erst zu KG, dann zum Ziel)
+        if (fromUnit == UnitType.ST) {
+            val kgValue = toKilogram(value, WeightUnit.ST)
+            return when (toUnit) {
+                UnitType.KG -> kgValue
+                UnitType.LB -> fromKilogram(kgValue, WeightUnit.LB)
+                else -> value
+            }
+        }
+
+        // CM -> Andere Längeneinheiten
+        if (fromUnit == UnitType.CM) {
+            return when (toUnit) {
+                UnitType.INCH -> fromCentimeter(value, MeasureUnit.INCH)
+                else -> value
+            }
+        }
+
+        if (fromUnit == UnitType.INCH) {
+            val cmValue = toCentimeter(value, MeasureUnit.INCH)
+            return when (toUnit) {
+                UnitType.CM -> cmValue
+                else -> value
+            }
+        }
+
+        return value
+    }
+
 }
