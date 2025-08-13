@@ -250,22 +250,20 @@ class BluetoothScannerManager(
             val serviceUuids: List<UUID> = scanResult.scanRecord?.serviceUuids?.mapNotNull { it?.uuid } ?: emptyList()
             val manufacturerData: SparseArray<ByteArray>? = scanResult.scanRecord?.manufacturerSpecificData
 
-            val (isSupported, handlerName) = scaleFactory.getSupportingHandlerInfo(
-                deviceName = deviceName,
-                deviceAddress = deviceAddress,
-                serviceUuids = serviceUuids,
-                manufacturerData = manufacturerData
-            )
-
             val newDevice = ScannedDeviceInfo(
                 name = deviceName,
                 address = deviceAddress,
                 rssi = rssi,
                 serviceUuids = serviceUuids,
                 manufacturerData = manufacturerData,
-                isSupported = isSupported,
-                determinedHandlerDisplayName = handlerName
+                isSupported = false, // will be determined in the next getSupportingHandlerInfo
+                determinedHandlerDisplayName = null // // will be determined in the next getSupportingHandlerInfo
             )
+
+            val (isSupported, handlerName) = scaleFactory.getSupportingHandlerInfo(newDevice)
+
+            newDevice.isSupported = isSupported
+            newDevice.determinedHandlerDisplayName = handlerName
 
             val existingDevice = deviceMap[newDevice.address]
             var listShouldBeUpdated = false

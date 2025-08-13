@@ -344,12 +344,6 @@ class BluetoothViewModel(
                 // For a saved device, we need to re-evaluate its support status using ScaleFactory,
                 // as supported handlers might change with app updates.
                 LogManager.d(TAG, "Re-evaluating support for saved device '$name' ($address) using ScaleFactory.")
-                val (isPotentiallySupported, handlerNameFromFactory) = scaleFactory.getSupportingHandlerInfo(
-                    deviceName = name,
-                    deviceAddress = address,
-                    serviceUuids = emptyList(), // Service UUIDs are unknown without a fresh scan.
-                    manufacturerData = null      // Manufacturer data is unknown without a fresh scan.
-                )
 
                 val deviceInfoForConnect = ScannedDeviceInfo(
                     name = name,
@@ -357,9 +351,13 @@ class BluetoothViewModel(
                     rssi = 0, // RSSI is not relevant for a direct connection attempt to a saved device.
                     serviceUuids = emptyList(),
                     manufacturerData = null,
-                    isSupported = isPotentiallySupported, // Use current support assessment.
-                    determinedHandlerDisplayName = handlerNameFromFactory
+                    isSupported = false, // will be determined by getSupportingHandlerInfo
+                    determinedHandlerDisplayName = null // will be determined by getSupportingHandlerInfo
                 )
+
+                val (isPotentiallySupported, handlerNameFromFactory) = scaleFactory.getSupportingHandlerInfo(deviceInfoForConnect)
+                deviceInfoForConnect.isSupported = isPotentiallySupported
+                deviceInfoForConnect.determinedHandlerDisplayName = handlerNameFromFactory
 
                 if (!deviceInfoForConnect.isSupported) {
                     LogManager.w(TAG, "Saved device '$name' ($address) is currently not supported by ScaleFactory. Connection aborted.")

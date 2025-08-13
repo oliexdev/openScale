@@ -17,6 +17,8 @@
  */
 package com.health.openscale.core.bluetooth
 
+import android.R.attr.identifier
+import android.R.attr.name
 import android.content.Context
 import android.util.SparseArray
 import com.health.openscale.core.bluetooth.scales.DummyScaleHandler
@@ -77,9 +79,7 @@ class ScaleFactory(
     // List of modern Kotlin-based device handlers.
     // These are checked first for device compatibility.
     private val modernKotlinHandlers: List<ScaleDeviceHandler> = listOf(
-        DummyScaleHandler("Mi Scale"), // Recognizes devices with "Mi Scale" in their name
-        DummyScaleHandler("Beurer"),   // Recognizes devices with "Beurer" in their name
-        DummyScaleHandler("BF700")     // Recognizes devices with "BF700" in their name
+        DummyScaleHandler("Test")     // Recognizes devices with "Test" in their name
     )
 
     /**
@@ -87,11 +87,20 @@ class ScaleFactory(
      * This method contains the logic to map device names to specific Java driver classes.
      *
      * @param context The application context.
-     * @param deviceName The name of the Bluetooth device.
+     * @param deviceInfo Information about the scanned Bluetooth device.
      * @return A [BluetoothCommunication] instance if a matching driver is found, otherwise null.
      */
-    private fun createLegacyJavaDriver(context: Context?, deviceName: String): BluetoothCommunication? {
-        val name = deviceName.lowercase()
+    private fun createLegacyJavaDriver(context: Context?, deviceInfo: ScannedDeviceInfo): BluetoothCommunication? {
+        val deviceName : String
+        val name : String
+
+        if (deviceInfo.name != null) {
+            deviceName = deviceInfo.name
+            name = deviceInfo.name.lowercase()
+        } else {
+            deviceName = deviceInfo.determinedHandlerDisplayName ?: "UnknownDevice"
+            name = deviceInfo.determinedHandlerDisplayName?.lowercase() ?: "UnknownDevice"
+        }
 
         if (name.startsWith("BEURER BF700".lowercase())
             || name.startsWith("BEURER BF800".lowercase())
@@ -256,11 +265,11 @@ class ScaleFactory(
      * Creates a [ScaleCommunicator] using the legacy Java driver approach.
      * It wraps a [BluetoothCommunication] instance (Java driver) in a [LegacyScaleAdapter].
      *
-     * @param identifier The device name or other identifier used to find a legacy Java driver.
+     * @param deviceInfo The device information used to find a legacy Java driver.
      * @return A [LegacyScaleAdapter] instance if a suitable Java driver is found, otherwise null.
      */
-    private fun createLegacyCommunicator(identifier: String): ScaleCommunicator? {
-        val javaDriverInstance = createLegacyJavaDriver(applicationContext, identifier)
+    private fun createLegacyCommunicator(deviceInfo: ScannedDeviceInfo): ScaleCommunicator? {
+        val javaDriverInstance = createLegacyJavaDriver(applicationContext, deviceInfo)
         return if (javaDriverInstance != null) {
             LogManager.i(TAG, "Creating LegacyScaleAdapter with Java driver '${javaDriverInstance.javaClass.simpleName}'.")
             LegacyScaleAdapter(
@@ -269,7 +278,7 @@ class ScaleFactory(
                 databaseRepository = databaseRepository
             )
         } else {
-            LogManager.w(TAG, "Could not create LegacyScaleAdapter: No Java driver found for '$identifier'.")
+            LogManager.w(TAG, "Could not create LegacyScaleAdapter: No Java driver found for '${deviceInfo.name}'.")
             null
         }
     }
@@ -332,12 +341,10 @@ class ScaleFactory(
         LogManager.d(TAG, "No modern Kotlin handler actively claimed '${primaryIdentifier}' or could create a communicator.")
 
         // 2. Fallback to legacy adapter if no modern handler matched or created a communicator.
-        //    The device name (or a specific legacy handler name, if known from `determinedHandlerDisplayName`) is used.
-        val identifierForLegacy = deviceInfo.determinedHandlerDisplayName ?: primaryIdentifier
-        LogManager.i(TAG, "Attempting fallback to legacy adapter for identifier '${identifierForLegacy}'.")
-        val legacyCommunicator = createLegacyCommunicator(identifierForLegacy)
+        LogManager.i(TAG, "Attempting fallback to legacy adapter for identifier '${deviceInfo.name}'.")
+        val legacyCommunicator = createLegacyCommunicator(deviceInfo)
         if (legacyCommunicator != null) {
-            LogManager.i(TAG, "Legacy communicator '${legacyCommunicator.javaClass.simpleName}' created for device (identifier: '${identifierForLegacy}').")
+            LogManager.i(TAG, "Legacy communicator '${legacyCommunicator.javaClass.simpleName}' created for device ('${deviceInfo.name}').")
             return legacyCommunicator
         }
 
@@ -349,39 +356,26 @@ class ScaleFactory(
      * Checks if any known handler (modern Kotlin or legacy Java-based) can theoretically support the given device.
      * This can be used by the UI to indicate if a device is potentially recognizable.
      *
-     * @param deviceName The name of the Bluetooth device.
-     * @param deviceAddress The MAC address of the device.
-     * @param serviceUuids A list of advertised service UUIDs.
-     * @param manufacturerData Manufacturer-specific data from the advertisement.
+     * @param deviceInfo Information about the scanned Bluetooth device.
      * @return A Pair where `first` is true if a handler is found, and `second` is the name of the handler/driver, or null.
      */
-    fun getSupportingHandlerInfo(
-        deviceName: String?,
-        deviceAddress: String,
-        serviceUuids: List<UUID>,
-        manufacturerData: SparseArray<ByteArray>?
-    ): Pair<Boolean, String?> {
-        val primaryIdentifier = deviceName ?: "UnknownDevice"
-        // LogManager.d(TAG, "getSupportingHandlerInfo for: '$primaryIdentifier', Addr: $deviceAddress, UUIDs: ${serviceUuids.size}, ManuData: ${manufacturerData != null}")
-
+    fun getSupportingHandlerInfo(deviceInfo : ScannedDeviceInfo): Pair<Boolean, String?> {
         // Check modern handlers first
         for (handler in modernKotlinHandlers) {
-            if (handler.canHandleDevice(deviceName, deviceAddress, serviceUuids, manufacturerData)) {
-                // LogManager.d(TAG, "getSupportingHandlerInfo: Modern handler '${handler.getDriverName()}' matches '$primaryIdentifier'.")
+            if (handler.canHandleDevice(deviceInfo.name, deviceInfo.address, deviceInfo.serviceUuids, deviceInfo.manufacturerData)) {
                 return true to handler.getDriverName() // The "driver name" of the modern handler
             }
         }
 
         // Then check if a legacy driver would exist based on the name
-        if (deviceName != null) {
-            val legacyJavaDriver = createLegacyJavaDriver(applicationContext, deviceName)
+        if (deviceInfo.name != null) {
+            val legacyJavaDriver = createLegacyJavaDriver(applicationContext, deviceInfo)
             if (legacyJavaDriver != null) {
-                // LogManager.d(TAG, "getSupportingHandlerInfo: Legacy driver '${legacyJavaDriver.javaClass.simpleName}' matches '$deviceName'.")
                 // Return the driver name from the BluetoothCommunication interface if available and meaningful.
                 return true to legacyJavaDriver.driverName() // Assumes BluetoothCommunication has a driverName() method.
             }
         }
-        LogManager.d(TAG, "getSupportingHandlerInfo: No supporting handler found for '$primaryIdentifier'.")
+        LogManager.d(TAG, "getSupportingHandlerInfo: No supporting handler found for ${deviceInfo.name}.")
         return false to null
     }
 }
