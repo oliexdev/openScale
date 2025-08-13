@@ -251,7 +251,6 @@ fun UserDetailScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
-        Text(stringResource(id = R.string.user_detail_label_height))
         OutlinedTextField(
             value = heightValueString,
             onValueChange = { newValue ->
@@ -302,9 +301,6 @@ fun UserDetailScreen(
             }
         )
 
-
-
-        Text(stringResource(id = R.string.user_detail_label_gender)) // "Gender"
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             GenderType.entries.forEach { option ->
                 Row(
@@ -358,9 +354,9 @@ fun UserDetailScreen(
             }
         }
 
-        Text(stringResource(id = R.string.user_detail_label_birth_date)) // "Birth Date"
         OutlinedTextField(
             value = dateFormatter.format(Date(birthDate)),
+            label = { Text(stringResource(R.string.user_detail_label_birth_date)) },
             onValueChange = {}, // Input is read-only, selection via DatePicker
             modifier = Modifier
                 .fillMaxWidth()

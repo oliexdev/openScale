@@ -111,6 +111,10 @@ fun MeasurementTypeDetailScreen(
         currentMeasurementTypeKey.allowedUnitTypes
     }
 
+    val allowedInputTypesForKey = remember(currentMeasurementTypeKey) {
+        currentMeasurementTypeKey.allowedInputType
+    }
+
     var name by remember { mutableStateOf(originalExistingType?.getDisplayName(context).orEmpty()) }
 
     // Safely set selectedUnit. If the existing unit isn't allowed or if no existing unit,
@@ -124,7 +128,14 @@ fun MeasurementTypeDetailScreen(
         }
     }
 
-    var selectedInputType by remember { mutableStateOf(originalExistingType?.inputType ?: InputFieldType.FLOAT) }
+    var selectedInputType by remember {
+        val initialInputType = originalExistingType?.inputType
+        if (initialInputType != null && initialInputType in allowedInputTypesForKey) {
+            mutableStateOf(initialInputType)
+        } else {
+            mutableStateOf(allowedInputTypesForKey.firstOrNull() ?: InputFieldType.FLOAT)
+        }
+    }
     var selectedColor by remember { mutableStateOf(originalExistingType?.color ?: 0xFF6200EE.toInt()) }
     var selectedIcon by remember { mutableStateOf(originalExistingType?.icon ?: "ic_weight") }
     var isEnabled by remember { mutableStateOf(originalExistingType?.isEnabled ?: true) }
@@ -142,13 +153,13 @@ fun MeasurementTypeDetailScreen(
     val titleEdit = stringResource(R.string.measurement_type_detail_title_edit)
     val titleAdd = stringResource(R.string.measurement_type_detail_title_add)
 
-    // Determines if the unit dropdown should be enabled (i.e., if there's more than one allowed unit).
     val unitDropdownEnabled by remember(allowedUnitsForKey) {
         derivedStateOf { allowedUnitsForKey.size > 1 }
     }
+    val inputTypeDropdownEnabled by remember(allowedInputTypesForKey) {
+        derivedStateOf { allowedInputTypesForKey.size > 1 }
+    }
 
-    // Effect to re-evaluate and set selectedUnit if originalExistingType or allowedUnitsForKey change.
-    // This ensures selectedUnit is always valid.
     LaunchedEffect(originalExistingType, allowedUnitsForKey) {
         val currentUnitInExistingType = originalExistingType?.unit
         if (currentUnitInExistingType != null && currentUnitInExistingType in allowedUnitsForKey) {
@@ -160,6 +171,19 @@ fun MeasurementTypeDetailScreen(
         } else if (allowedUnitsForKey.isEmpty() && selectedUnit != UnitType.NONE) {
             // This case should ideally not be reached if keys are well-defined.
             selectedUnit = UnitType.NONE
+        }
+    }
+
+    LaunchedEffect(originalExistingType, allowedInputTypesForKey) {
+        val currentInputTypeInExistingType = originalExistingType?.inputType
+        if (currentInputTypeInExistingType != null && currentInputTypeInExistingType in allowedInputTypesForKey) {
+            if (selectedInputType != currentInputTypeInExistingType) {
+                selectedInputType = currentInputTypeInExistingType
+            }
+        } else if (allowedInputTypesForKey.isNotEmpty() && selectedInputType !in allowedInputTypesForKey) {
+            selectedInputType = allowedInputTypesForKey.first()
+        } else if (allowedInputTypesForKey.isEmpty()) {
+            selectedInputType = InputFieldType.FLOAT
         }
     }
 
@@ -252,15 +276,14 @@ fun MeasurementTypeDetailScreen(
             )
         }
 
-        OutlinedTextField(
-            value = name,
-            onValueChange = { name = it },
-            label = { Text(stringResource(R.string.measurement_type_label_name)) },
-            modifier = Modifier.fillMaxWidth(),
-            // Name field is editable for new types or existing CUSTOM types.
-            // For predefined types, the name is typically not user-editable.
-            enabled = !isEdit || (originalExistingType?.key == MeasurementTypeKey.CUSTOM)
-        )
+        if (!isEdit || (originalExistingType?.key == MeasurementTypeKey.CUSTOM)) {
+            OutlinedTextField(
+                value = name,
+                onValueChange = { name = it },
+                label = { Text(stringResource(R.string.measurement_type_label_name)) },
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
 
         OutlinedTextField(
             value = String.format("#%06X", 0xFFFFFF and selectedColor),
@@ -376,32 +399,37 @@ fun MeasurementTypeDetailScreen(
         }
 
         // InputFieldType Dropdown
-        ExposedDropdownMenuBox(
-            expanded = expandedInputType,
-            onExpandedChange = { expandedInputType = !expandedInputType }
-        ) {
-            OutlinedTextField(
-                readOnly = true,
-                value = selectedInputType.name.lowercase().replaceFirstChar { it.uppercase() },
-                onValueChange = {},
-                label = { Text(stringResource(R.string.measurement_type_label_input_type)) },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedInputType) },
-                modifier = Modifier
-                    .menuAnchor(type = MenuAnchorType.PrimaryNotEditable, enabled = true)
-                    .fillMaxWidth()
-            )
-            ExposedDropdownMenu(
+        if (inputTypeDropdownEnabled) {
+            ExposedDropdownMenuBox(
                 expanded = expandedInputType,
-                onDismissRequest = { expandedInputType = false }
+                onExpandedChange = { expandedInputType = !expandedInputType }
             ) {
-                InputFieldType.entries.forEach { type ->
-                    DropdownMenuItem(
-                        text = { Text(type.name.lowercase().replaceFirstChar { it.uppercase() }) },
-                        onClick = {
-                            selectedInputType = type
-                            expandedInputType = false
-                        }
-                    )
+                OutlinedTextField(
+                    readOnly = true,
+                    value = selectedInputType.name.lowercase().replaceFirstChar { it.uppercase() },
+                    onValueChange = {},
+                    label = { Text(stringResource(R.string.measurement_type_label_input_type)) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedInputType) },
+                    modifier = Modifier
+                        .menuAnchor(type = MenuAnchorType.PrimaryNotEditable, enabled = true)
+                        .fillMaxWidth()
+                )
+                ExposedDropdownMenu(
+                    expanded = expandedInputType,
+                    onDismissRequest = { expandedInputType = false }
+                ) {
+                    allowedInputTypesForKey.forEach { type ->
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    type.name.lowercase().replaceFirstChar { it.uppercase() })
+                            },
+                            onClick = {
+                                selectedInputType = type
+                                expandedInputType = false
+                            }
+                        )
+                    }
                 }
             }
         }
