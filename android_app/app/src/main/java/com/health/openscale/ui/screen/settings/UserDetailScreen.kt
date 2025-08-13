@@ -65,10 +65,12 @@ import com.health.openscale.core.data.User
 import com.health.openscale.core.data.WeightUnit
 import com.health.openscale.ui.screen.SharedViewModel
 import kotlinx.coroutines.launch
+import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 
 /**
  * Composable screen for adding a new user or editing an existing user's details.
@@ -103,7 +105,7 @@ fun UserDetailScreen(
         if (initialBirthDate != null) {
             mutableStateOf(initialBirthDate)
         } else {
-            val calendar = Calendar.getInstance()
+            val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
             calendar.add(Calendar.YEAR, -18)
             mutableStateOf(calendar.timeInMillis)
         }
@@ -115,7 +117,11 @@ fun UserDetailScreen(
     var measureUnit by remember { mutableStateOf(user?.measureUnit ?: MeasureUnit.CM) }
 
     val context = LocalContext.current
-    val dateFormatter = remember { SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()) }
+    val dateFormatter = remember {
+        DateFormat.getDateInstance(DateFormat.DEFAULT, Locale.getDefault()).apply {
+            timeZone = TimeZone.getTimeZone("UTC")
+        }
+    }
     val datePickerState = rememberDatePickerState(initialSelectedDateMillis = birthDate)
     var showDatePicker by remember { mutableStateOf(false) }
     var activityLevelExpanded by remember { mutableStateOf(false) }
