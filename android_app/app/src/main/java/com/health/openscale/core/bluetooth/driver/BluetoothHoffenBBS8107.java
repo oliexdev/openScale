@@ -58,6 +58,10 @@ public class BluetoothHoffenBBS8107 extends BluetoothCommunication {
         return "Hoffen BBS-8107";
     }
 
+    public static String driverId() {
+        return "hoffen_bbs8107";
+    }
+
     @Override
     protected boolean onNextStep(int stepNr) {
         switch (stepNr) {

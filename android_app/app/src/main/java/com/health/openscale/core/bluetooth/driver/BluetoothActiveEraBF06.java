@@ -144,6 +144,10 @@ public class BluetoothActiveEraBF06 extends BluetoothCommunication {
         return "Active Era BF-06";
     }
 
+    public static String driverId() {
+        return "active_era_bf06";
+    }
+
     @Override
     protected boolean onNextStep(int stepNr) {
         switch (stepNr) {

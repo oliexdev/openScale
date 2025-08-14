@@ -44,6 +44,10 @@ public class BluetoothCustomOpenScale extends BluetoothCommunication {
         return "Custom openScale";
     }
 
+    public static String driverId() {
+        return "custom_open_scale";
+    }
+
     @Override
     protected boolean onNextStep(int stepNr) {
         switch (stepNr) {

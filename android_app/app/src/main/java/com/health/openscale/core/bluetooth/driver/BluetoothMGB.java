@@ -83,6 +83,10 @@ public class BluetoothMGB extends BluetoothCommunication {
         return "SWAN";
     }
 
+    public static String driverId() {
+        return "mgb";
+    }
+
     @Override
     protected boolean onNextStep(int stepNr) {
         switch (stepNr) {

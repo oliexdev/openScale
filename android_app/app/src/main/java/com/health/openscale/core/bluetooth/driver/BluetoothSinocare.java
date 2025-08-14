@@ -91,6 +91,10 @@ public class BluetoothSinocare extends BluetoothCommunication {
         return "Sinocare";
     }
 
+    public static String driverId() {
+        return "sinocare";
+    }
+
     @Override
     public void connect(String macAddress) {
         Timber.d("Mac address: %s", macAddress);

@@ -57,6 +57,10 @@ public class BluetoothSoehnle extends BluetoothCommunication {
         return "Soehnle Scale";
     }
 
+    public static String driverId() {
+        return "soehnle";
+    }
+
     @Override
     protected boolean onNextStep(int stepNr) {
         switch (stepNr) {

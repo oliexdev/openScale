@@ -43,6 +43,10 @@ public class BluetoothExingtechY1 extends BluetoothCommunication {
         return "Exingtech Y1";
     }
 
+    public static String driverId() {
+        return "exingtech_y1";
+    }
+
     @Override
     protected boolean onNextStep(int stepNr) {
         switch (stepNr) {

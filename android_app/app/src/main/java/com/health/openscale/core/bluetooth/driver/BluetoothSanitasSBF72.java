@@ -54,6 +54,10 @@ public class BluetoothSanitasSBF72 extends BluetoothStandardWeightProfile {
         return deviceName;
     }
 
+    public static String driverId() {
+        return "sanitas_sbf72";
+    }
+
     @Override
     protected int getVendorSpecificMaxUserCount() {
         return 8;

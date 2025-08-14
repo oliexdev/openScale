@@ -98,6 +98,10 @@ public class BluetoothQNScale extends BluetoothCommunication {
         return "QN Scale";
     }
 
+    public static String driverId() {
+        return "qn_scale";
+    }
+
     @Override
     protected boolean onNextStep(int stepNr) {
         switch (stepNr) {

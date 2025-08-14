@@ -104,6 +104,10 @@ public class BluetoothYoda1Scale extends BluetoothCommunication {
         return "Yoda1 Scale";
     }
 
+    public static String driverId() {
+        return "yoda1_scale";
+    }
+
     @Override
     protected boolean onNextStep(int stepNr) {
         return false;

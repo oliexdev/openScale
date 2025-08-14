@@ -197,6 +197,10 @@ public class BluetoothOKOK2 extends BluetoothCommunication {
         return "OKOK (nameless)";
     }
 
+    public static String driverId() {
+        return "okok2";
+    }
+
     @Override
     protected boolean onNextStep(int stepNr) {
         return false;

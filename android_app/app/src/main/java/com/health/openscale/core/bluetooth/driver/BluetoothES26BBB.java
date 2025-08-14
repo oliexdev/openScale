@@ -39,6 +39,10 @@ public class BluetoothES26BBB extends BluetoothCommunication {
         return "RENPHO ES-26BB-B";
     }
 
+    public static String driverId() {
+        return "es26_bbb";
+    }
+
     @Override
     protected boolean onNextStep(int stepNr) {
         Timber.i("onNextStep(%d)", stepNr);

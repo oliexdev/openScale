@@ -172,6 +172,11 @@ public class BluetoothBroadcastScale extends BluetoothCommunication {
         return "BroadcastScale";
     }
 
+    public static String driverId() {
+        return "broadcast_scale";
+    }
+
+
     @Override
     protected boolean onNextStep(int stepNr) {
         return false;

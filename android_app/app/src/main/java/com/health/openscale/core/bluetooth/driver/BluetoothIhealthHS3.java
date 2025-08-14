@@ -57,6 +57,10 @@ public class BluetoothIhealthHS3 extends BluetoothCommunication {
         return "iHealth HS33FA4A";
     }
 
+    public static String driverId() {
+        return "ihealth_hs3";
+    }
+
     @Override
     protected boolean onNextStep(int stepNr) {
         Timber.w("ihealthHS3 - onNextStep - returning false");

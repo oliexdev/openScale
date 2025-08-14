@@ -146,6 +146,10 @@ public class BluetoothOKOK extends BluetoothCommunication {
         return "OKOK";
     }
 
+    public static String driverId() {
+        return "okok";
+    }
+
     @Override
     public void connect(String macAddress) {
         Timber.d("Mac address: %s", macAddress);

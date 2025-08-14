@@ -53,6 +53,10 @@ public class BluetoothYunmaiSE_Mini extends BluetoothCommunication {
         return isMini ? "Yunmai Mini" : "Yunmai SE";
     }
 
+    public static String driverId() {
+        return "yunmai_se_mini";
+    }
+
     @Override
     protected boolean onNextStep(int stepNr) {
         switch (stepNr) {

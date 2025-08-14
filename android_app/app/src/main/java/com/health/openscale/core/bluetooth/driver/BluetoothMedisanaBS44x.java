@@ -52,6 +52,10 @@ public class BluetoothMedisanaBS44x extends BluetoothCommunication {
         return "Medisana BS44x";
     }
 
+    public static String driverId() {
+        return "medisana_bs44x";
+    }
+
     @Override
     protected boolean onNextStep(int stepNr) {
         switch (stepNr) {

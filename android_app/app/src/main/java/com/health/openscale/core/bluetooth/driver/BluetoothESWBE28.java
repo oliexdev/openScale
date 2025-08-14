@@ -75,6 +75,10 @@ public class BluetoothESWBE28 extends BluetoothCommunication {
         return "RENPHO ES-WBE28";
     }
 
+    public static String driverId() {
+        return "eswbe28";
+    }
+
     @Override
     protected boolean onNextStep(int stepNr) {
         Timber.i("onNextStep(%d)", stepNr);

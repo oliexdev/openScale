@@ -58,6 +58,10 @@ public class BluetoothOneByone extends BluetoothCommunication {
         return "1byone";
     }
 
+    public static String driverId() {
+        return "one_by_one";
+    }
+
     @Override
     protected boolean onNextStep(int stepNr) {
         switch (stepNr) {

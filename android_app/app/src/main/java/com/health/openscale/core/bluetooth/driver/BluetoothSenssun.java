@@ -58,6 +58,10 @@ public class BluetoothSenssun extends BluetoothCommunication {
         return "Senssun Fat";
     }
 
+    public static String driverId() {
+        return "senssun";
+    }
+
     @Override
     protected void onBluetoothDiscovery(BluetoothPeripheral peripheral) {
 

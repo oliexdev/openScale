@@ -182,6 +182,10 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
         return "Unknown device type";
     }
 
+    public static String driverId() {
+        return "beurer_sanitas";
+    }
+
     @Override
     protected boolean onNextStep(int stepNr) {
         switch (stepNr) {

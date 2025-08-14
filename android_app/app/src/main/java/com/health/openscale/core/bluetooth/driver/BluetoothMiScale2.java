@@ -54,6 +54,10 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
         return "Xiaomi Mi Scale v2";
     }
 
+    public static String driverId() {
+        return "mi_scale2";
+    }
+
     @Override
     public void onBluetoothNotify(UUID characteristic, byte[] value) {
         final byte[] data = value;

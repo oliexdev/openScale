@@ -138,6 +138,10 @@ public class BluetoothOneByoneNew extends BluetoothCommunication{
         return "OneByoneNew";
     }
 
+    public static String driverId() {
+        return "one_by_one_new";
+    }
+
     @Override
     protected boolean onNextStep(int stepNr) {
         switch(stepNr){

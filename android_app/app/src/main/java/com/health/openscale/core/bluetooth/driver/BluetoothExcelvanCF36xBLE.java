@@ -45,6 +45,10 @@ public class BluetoothExcelvanCF36xBLE extends BluetoothCommunication {
         return "Excelvan CF36xBLE";
     }
 
+    public static String driverId() {
+        return "excelvan_cf36x_ble";
+    }
+
     @Override
     protected boolean onNextStep(int stepNr) {
         switch (stepNr) {

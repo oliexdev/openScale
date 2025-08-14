@@ -113,6 +113,10 @@ public class BluetoothTrisaBodyAnalyze extends BluetoothCommunication {
         return "Trisa Body Analyze 4.0";
     }
 
+    public static String driverId() {
+        return "trisa_body_analyze";
+    }
+
     @Override
     public void connect(String hwAddress) {
         Timber.i("connect(\"%s\")", hwAddress);

@@ -44,6 +44,10 @@ public class BluetoothDigooDGSO38H extends BluetoothCommunication {
         return "Digoo DG-SO38H";
     }
 
+    public static String driverId() {
+        return "digoo_dgso38_h";
+    }
+
     @Override
     public void onBluetoothNotify(UUID characteristic, byte[] value) {
         final byte[] data = value;

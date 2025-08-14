@@ -39,6 +39,10 @@ public class BluetoothBeurerBF950 extends BluetoothBeurerBF105 {
         return deviceName;
     }
 
+    public static String driverId() {
+        return "beurer_bf950";
+    }
+
     @Override
     protected int getVendorSpecificMaxUserCount() {
         return 8;

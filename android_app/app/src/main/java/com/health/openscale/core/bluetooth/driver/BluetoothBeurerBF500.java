@@ -53,6 +53,10 @@ public class BluetoothBeurerBF500 extends BluetoothStandardWeightProfile {
         return "Beurer " + deviceName;
     }
 
+    public static String driverId() {
+        return "beurer_bf500";
+    }
+
     @Override
     protected int getVendorSpecificMaxUserCount() {
         return 8;

@@ -53,6 +53,10 @@ public class BluetoothESCS20M extends BluetoothCommunication {
         return "ES-CS20M";
     }
 
+    public static String driverId() {
+        return "escs20_m";
+    }
+
     @Override
     protected boolean onNextStep(int stepNr) {
         Timber.i("onNextStep(%d)", stepNr);

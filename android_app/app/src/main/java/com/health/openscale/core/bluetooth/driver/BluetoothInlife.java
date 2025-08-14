@@ -74,6 +74,10 @@ public class BluetoothInlife extends BluetoothCommunication {
         return "Inlinfe";
     }
 
+    public static String driverId() {
+        return "inlife";
+    }
+
     @Override
     protected boolean onNextStep(int stepNr) {
         switch (stepNr) {

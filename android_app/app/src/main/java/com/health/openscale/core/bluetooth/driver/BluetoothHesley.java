@@ -40,6 +40,10 @@ public class BluetoothHesley extends BluetoothCommunication {
         return "Hesley scale";
     }
 
+    public static String driverId() {
+        return "hesley";
+    }
+
     @Override
     protected boolean onNextStep(int stepNr) {
         switch (stepNr) {

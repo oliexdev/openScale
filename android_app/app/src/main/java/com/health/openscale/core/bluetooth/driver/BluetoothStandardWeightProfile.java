@@ -88,6 +88,10 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
         return "Bluetooth Standard Weight Profile";
     }
 
+    public static String driverId() {
+        return "standard_weight_profile";
+    }
+
     protected abstract int getVendorSpecificMaxUserCount();
 
     private enum SM_STEPS {
