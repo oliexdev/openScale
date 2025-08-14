@@ -19,13 +19,17 @@ package com.health.openscale.core.database
 
 import com.health.openscale.core.data.ActivityLevel
 import com.health.openscale.core.data.GenderType
+import com.health.openscale.core.data.MeasureUnit
 import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.MeasurementValue
+import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.data.User
+import com.health.openscale.core.data.WeightUnit
 import com.health.openscale.core.model.MeasurementWithValues
 import com.health.openscale.core.utils.CalculationUtil
+import com.health.openscale.core.utils.Converters
 import com.health.openscale.core.utils.LogManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -220,8 +224,9 @@ class DatabaseRepository(
         }
         val userId = measurement.userId
 
+        // Fetch all current values for this specific measurement and all global MeasurementType definitions
         val currentMeasurementValues = measurementValueDao.getValuesForMeasurement(measurementId).first()
-        val allGlobalTypes = measurementTypeDao.getAll().first()
+        val allGlobalTypes = measurementTypeDao.getAll().first() // These are MeasurementType objects, containing unit info
         val user = userDao.getById(userId).first() ?: run {
             LogManager.w(DERIVED_VALUES_TAG, "User with ID $userId not found for measurement $measurementId. Cannot recalculate derived values.")
             return
@@ -230,16 +235,22 @@ class DatabaseRepository(
         LogManager.d(DERIVED_VALUES_TAG, "Fetched ${currentMeasurementValues.size} current values, " +
                 "${allGlobalTypes.size} global types, and user '${user.name}' for measurement $measurementId.")
 
-        val findValue = { key: MeasurementTypeKey ->
-            val type = allGlobalTypes.find { it.key == key }
-            if (type == null) {
+        // Helper to find a raw value and its unit from the persisted MeasurementValues and MeasurementTypes
+        val findValueAndUnit = { key: MeasurementTypeKey ->
+            val measurementTypeObject = allGlobalTypes.find { it.key == key }
+            if (measurementTypeObject == null) {
                 LogManager.w(DERIVED_VALUES_TAG, "MeasurementType for key '$key' not found in global types list.")
+                Pair(null, null) // Return nulls if the type definition is missing
+            } else {
+                val valueObject = currentMeasurementValues.find { it.typeId == measurementTypeObject.id }
+                val value = valueObject?.floatValue
+                val unit = measurementTypeObject.unit // The unit is defined in the MeasurementType object
+                LogManager.v(DERIVED_VALUES_TAG, "findValueAndUnit for $key (typeId: ${measurementTypeObject.id}, unit: $unit): ${value ?: "not found"}")
+                Pair(value, unit)
             }
-            val value = currentMeasurementValues.find { it.typeId == type?.id }?.floatValue
-            LogManager.v(DERIVED_VALUES_TAG, "findValue for $key (typeId: ${type?.id}): ${value ?: "not found"}")
-            value
         }
 
+        // Helper to save or update a derived measurement value
         val saveOrUpdateDerivedValue: suspend (value: Float?, typeKey: MeasurementTypeKey) -> Unit =
             save@{ derivedValue, derivedValueTypeKey ->
                 val derivedTypeObject = allGlobalTypes.find { it.key == derivedValueTypeKey }
@@ -252,6 +263,7 @@ class DatabaseRepository(
                 val existingDerivedValueObject = currentMeasurementValues.find { it.typeId == derivedTypeObject.id }
 
                 if (derivedValue == null) {
+                    // If derived value is null, delete any existing persisted value for it
                     if (existingDerivedValueObject != null) {
                         measurementValueDao.deleteById(existingDerivedValueObject.id)
                         LogManager.d(DERIVED_VALUES_TAG, "Derived value for key ${derivedTypeObject.key} is null. Deleted existing value (ID: ${existingDerivedValueObject.id}).")
@@ -259,7 +271,8 @@ class DatabaseRepository(
                         LogManager.v(DERIVED_VALUES_TAG, "Derived value for key ${derivedTypeObject.key} is null. No existing value to delete.")
                     }
                 } else {
-                    val roundedValue = roundTo(derivedValue)
+                    // If derived value is not null, insert or update it
+                    val roundedValue = roundTo(derivedValue) // Apply rounding
                     if (existingDerivedValueObject != null) {
                         if (existingDerivedValueObject.floatValue != roundedValue) {
                             measurementValueDao.update(existingDerivedValueObject.copy(floatValue = roundedValue))
@@ -280,20 +293,93 @@ class DatabaseRepository(
                 }
             }
 
-        val weightKg = findValue(MeasurementTypeKey.WEIGHT)
-        val bodyFatPercentage = findValue(MeasurementTypeKey.BODY_FAT)
-        val waistCm = findValue(MeasurementTypeKey.WAIST)
-        val hipsCm = findValue(MeasurementTypeKey.HIPS)
-        val caliper1Cm = findValue(MeasurementTypeKey.CALIPER_1)
-        val caliper2Cm = findValue(MeasurementTypeKey.CALIPER_2)
-        val caliper3Cm = findValue(MeasurementTypeKey.CALIPER_3)
+        // Fetch raw values and their original units
+        val (weightValue, weightUnitType) = findValueAndUnit(MeasurementTypeKey.WEIGHT)
+        val (bodyFatValue, _) = findValueAndUnit(MeasurementTypeKey.BODY_FAT) // Unit usually % (UnitType.PERCENT)
+        val (waistValue, waistUnitType) = findValueAndUnit(MeasurementTypeKey.WAIST)
+        val (hipsValue, hipsUnitType) = findValueAndUnit(MeasurementTypeKey.HIPS)
+        val (caliper1Value, caliper1UnitType) = findValueAndUnit(MeasurementTypeKey.CALIPER_1)
+        val (caliper2Value, caliper2UnitType) = findValueAndUnit(MeasurementTypeKey.CALIPER_2)
+        val (caliper3Value, caliper3UnitType) = findValueAndUnit(MeasurementTypeKey.CALIPER_3)
 
-        processBmiCalculation(weightKg, user.heightCm).also { saveOrUpdateDerivedValue(it, MeasurementTypeKey.BMI) }
+        // --- CONVERT VALUES TO REQUIRED UNITS FOR CALCULATIONS ---
+
+        // Convert weight to Kilograms (KG)
+        val weightKg: Float? = if (weightValue != null && weightUnitType != null) {
+            when (weightUnitType) {
+                UnitType.KG -> weightValue
+                UnitType.LB -> Converters.toKilogram(weightValue, WeightUnit.LB)
+                UnitType.ST -> Converters.toKilogram(weightValue, WeightUnit.ST)
+                else -> {
+                    LogManager.w(DERIVED_VALUES_TAG, "Unsupported unit $weightUnitType for weight conversion. Assuming KG if value present for ${MeasurementTypeKey.WEIGHT}.")
+                    weightValue // Fallback or handle error appropriately
+                }
+            }
+        } else null
+
+        // Body fat is typically already in percentage
+        val bodyFatPercentage: Float? = bodyFatValue
+
+        // Convert waist circumference to Centimeters (CM)
+        val waistCm: Float? = if (waistValue != null && waistUnitType != null) {
+            when (waistUnitType) {
+                UnitType.CM -> waistValue
+                UnitType.INCH -> Converters.toCentimeter(waistValue, MeasureUnit.INCH)
+                else -> {
+                    LogManager.w(DERIVED_VALUES_TAG, "Unsupported unit $waistUnitType for waist conversion. Assuming CM if value present for ${MeasurementTypeKey.WAIST}.")
+                    waistValue
+                }
+            }
+        } else null
+
+        // Convert hips circumference to Centimeters (CM)
+        val hipsCm: Float? = if (hipsValue != null && hipsUnitType != null) {
+            when (hipsUnitType) {
+                UnitType.CM -> hipsValue
+                UnitType.INCH -> Converters.toCentimeter(hipsValue, MeasureUnit.INCH)
+                else -> {
+                    LogManager.w(DERIVED_VALUES_TAG, "Unsupported unit $hipsUnitType for hips conversion. Assuming CM if value present for ${MeasurementTypeKey.HIPS}.")
+                    hipsValue
+                }
+            }
+        } else null
+
+        // Convert caliper measurements to Centimeters (CM)
+        val caliper1Cm: Float? = if (caliper1Value != null && caliper1UnitType != null) {
+            when (caliper1UnitType) {
+                UnitType.CM -> caliper1Value
+                UnitType.INCH -> Converters.toCentimeter(caliper1Value, MeasureUnit.INCH)
+                else -> caliper1Value // Fallback
+            }
+        } else null
+        val caliper2Cm: Float? = if (caliper2Value != null && caliper2UnitType != null) {
+            when (caliper2UnitType) {
+                UnitType.CM -> caliper2Value
+                UnitType.INCH -> Converters.toCentimeter(caliper2Value, MeasureUnit.INCH)
+                else -> caliper2Value
+            }
+        } else null
+        val caliper3Cm: Float? = if (caliper3Value != null && caliper3UnitType != null) {
+            when (caliper3UnitType) {
+                UnitType.CM -> caliper3Value
+                UnitType.INCH -> Converters.toCentimeter(caliper3Value, MeasureUnit.INCH)
+                else -> caliper3Value
+            }
+        } else null
+
+        // User's height is assumed to be stored in CM in the User object
+        val userHeightCm = user.heightCm
+
+        // --- PERFORM DERIVED VALUE CALCULATIONS ---
+        // Pass the converted values (e.g., weightKg, waistCm) to the processing functions
+
+        processBmiCalculation(weightKg, userHeightCm).also { saveOrUpdateDerivedValue(it, MeasurementTypeKey.BMI) }
         processLbmCalculation(weightKg, bodyFatPercentage).also { saveOrUpdateDerivedValue(it, MeasurementTypeKey.LBM) }
         processWhrCalculation(waistCm, hipsCm).also { saveOrUpdateDerivedValue(it, MeasurementTypeKey.WHR) }
-        processWhtrCalculation(waistCm, user.heightCm).also { saveOrUpdateDerivedValue(it, MeasurementTypeKey.WHTR) }
-        processBmrCalculation(weightKg, user).also { bmr ->
+        processWhtrCalculation(waistCm, userHeightCm).also { saveOrUpdateDerivedValue(it, MeasurementTypeKey.WHTR) }
+        processBmrCalculation(weightKg, user).also { bmr -> // user object contains heightCm and other necessary details
             saveOrUpdateDerivedValue(bmr, MeasurementTypeKey.BMR)
+            // TDEE calculation depends on the BMR result
             processTDEECalculation(bmr, user.activityLevel).also { saveOrUpdateDerivedValue(it, MeasurementTypeKey.TDEE) }
         }
         processFatCaliperCalculation(caliper1Cm, caliper2Cm, caliper3Cm, user)

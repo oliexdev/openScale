@@ -1158,7 +1158,7 @@ class SettingsViewModel(
      */
     fun updateMeasurementTypeAndConvertDataViewModelCentric(
         originalType: MeasurementType,
-        updatedType: MeasurementType,
+        updatedType: MeasurementType, // This contains the new unit and other proposed changes from the UI
         showSnackbarMaster: Boolean = true
     ) {
         viewModelScope.launch {
@@ -1170,14 +1170,54 @@ class SettingsViewModel(
             var conversionErrorOccurred = false
             var valuesConvertedCount = 0
 
-            if (originalType.unit != updatedType.unit && originalType.inputType == InputFieldType.FLOAT && updatedType.inputType == InputFieldType.FLOAT) {
+            // 1. First, update the MeasurementType definition in the database.
+            // This ensures that any subsequent recalculations of derived values
+            // will use the correct (new) unit for this type.
+            val finalTypeToUpdate = MeasurementType(
+                id = originalType.id,
+                key = originalType.key, // Key should be immutable for an existing type
+                name = updatedType.name,
+                color = updatedType.color,
+                icon = updatedType.icon,
+                unit = updatedType.unit, // Crucial: The new unit
+                inputType = updatedType.inputType,
+                displayOrder = originalType.displayOrder,
+                isDerived = originalType.isDerived,
+                isEnabled = updatedType.isEnabled,
+                isPinned = updatedType.isPinned,
+                isOnRightYAxis = updatedType.isOnRightYAxis
+            )
+
+            try {
+                repository.updateMeasurementType(finalTypeToUpdate)
                 LogManager.i(
                     TAG,
-                    "Unit changed for FLOAT type ID ${originalType.id} from ${originalType.unit} to ${updatedType.unit}. Converting values."
+                    "MeasurementType (ID: ${originalType.id}) definition updated successfully to new unit '${finalTypeToUpdate.unit}'."
                 )
+            } catch (e: Exception) {
+                LogManager.e(TAG, "Error updating MeasurementType (ID: ${originalType.id}) definition itself", e)
+                sharedViewModel.showSnackbar(
+                    messageResId = R.string.measurement_type_updated_error,
+                    // Consider using context.getString for display names if not available in originalType
+                    formatArgs = listOf(originalType.name ?: originalType.key.toString())
+                )
+                conversionErrorOccurred = true // Prevent further steps if this critical update fails
+            }
 
+            // 2. If the type definition was updated successfully AND the unit has changed for a FLOAT type,
+            //    convert the associated MeasurementValue entries.
+            if (!conversionErrorOccurred &&
+                originalType.unit != updatedType.unit &&
+                originalType.inputType == InputFieldType.FLOAT &&
+                updatedType.inputType == InputFieldType.FLOAT
+            ) {
+                LogManager.i(
+                    TAG,
+                    "Unit changed for FLOAT type ID ${originalType.id}. Converting values AFTER type definition update."
+                )
                 try {
-                    val valuesToConvert = repository.getValuesForType(originalType.id).first() // .first() um den aktuellen Wert des Flows zu erhalten
+                    // Fetch all values belonging to this type
+                    val valuesToConvert = repository.getValuesForType(originalType.id).first()
 
                     if (valuesToConvert.isNotEmpty()) {
                         LogManager.d(TAG, "Found ${valuesToConvert.size} values of type ID ${originalType.id} to potentially convert.")
@@ -1185,13 +1225,14 @@ class SettingsViewModel(
 
                         valuesToConvert.forEach { valueToConvert ->
                             valueToConvert.floatValue?.let { currentFloatVal ->
+                                // Convert from the original unit of the values to the new target unit
                                 val convertedFloat = Converters.convertFloatValueUnit(
                                     value = currentFloatVal,
-                                    fromUnit = originalType.unit,
-                                    toUnit = updatedType.unit
+                                    fromUnit = originalType.unit, // Important: Use the unit the values currently have
+                                    toUnit = updatedType.unit    // The new target unit
                                 )
 
-                                if (convertedFloat != currentFloatVal) {
+                                if (convertedFloat != currentFloatVal) { // Add only if the value actually changes
                                     updatedValuesBatch.add(valueToConvert.copy(floatValue = convertedFloat))
                                     valuesConvertedCount++
                                 }
@@ -1200,9 +1241,8 @@ class SettingsViewModel(
 
                         if (updatedValuesBatch.isNotEmpty()) {
                             LogManager.d(TAG, "Updating ${updatedValuesBatch.size} values in batch for type ID ${originalType.id}.")
-                            // Aktualisiere jeden Wert einzeln. Dein Repository.updateMeasurementValue
-                            // stößt die Neuberechnung der abgeleiteten Werte an.
                             updatedValuesBatch.forEach { repository.updateMeasurementValue(it) }
+                            // Consider a repository.justUpdateMeasurementValueData(it)
                             LogManager.d(TAG, "Batch update of ${updatedValuesBatch.size} values completed for type ID ${originalType.id}.")
                         } else {
                             LogManager.i(TAG, "No values required actual conversion or update for type ID ${originalType.id} after checking.")
@@ -1213,74 +1253,42 @@ class SettingsViewModel(
                 } catch (e: Exception) {
                     LogManager.e(TAG, "Error during value conversion/update for type ID ${originalType.id}", e)
                     conversionErrorOccurred = true
-                    //  Verwende hier getDisplayName vom originalType, da updatedType möglicherweise noch nicht committet wurde.
                     sharedViewModel.showSnackbar(
                         messageResId = R.string.measurement_type_update_error_conversion_failed,
                         formatArgs = listOf(originalType.name ?: originalType.key.toString())
                     )
+                    // Optional: Consider reverting the MeasurementType update if value conversion fails (adds complexity).
                 }
-            } else if (originalType.unit != updatedType.unit) {
+            } else if (!conversionErrorOccurred && originalType.unit != updatedType.unit) {
                 LogManager.i(
                     TAG,
-                    "Unit changed for type ID ${originalType.id}, but InputType is not FLOAT (Original: ${originalType.inputType}, Updated: ${updatedType.inputType}). No value conversion performed."
+                    "Unit changed for type ID ${originalType.id}, but InputType is not FLOAT or previous type update failed. " +
+                            "No direct value conversion, but affected measurements will be flagged for recalculation."
                 )
             }
 
-            if (!conversionErrorOccurred) {
-                try {
-                    val finalTypeToUpdate = MeasurementType(
-                        id = originalType.id,
-                        key = originalType.key,
-                        name = updatedType.name,
-                        color = updatedType.color,
-                        icon = updatedType.icon,
-                        unit = updatedType.unit,
-                        inputType = updatedType.inputType,
-                        displayOrder = originalType.displayOrder,
-                        isDerived = originalType.isDerived,
-                        isEnabled = updatedType.isEnabled,
-                        isPinned = updatedType.isPinned,
-                        isOnRightYAxis = updatedType.isOnRightYAxis
-                    )
-
-                    repository.updateMeasurementType(finalTypeToUpdate)
-                    LogManager.i(
-                        TAG,
-                        "MeasurementType (ID: ${originalType.id}) updated successfully to new unit '${finalTypeToUpdate.unit}'."
-                    )
-
-                    if (showSnackbarMaster) {
-                        if (valuesConvertedCount > 0) {
-                            sharedViewModel.showSnackbar(
-                                messageResId =  R.string.measurement_type_updated_and_values_converted_successfully,
-                                formatArgs = listOf(updatedType.name ?: updatedType.key.toString(), valuesConvertedCount.toString()) // Context für getDisplayName wäre besser
-                            )
-                        } else if (originalType.unit != updatedType.unit && originalType.inputType == InputFieldType.FLOAT) {
-                            sharedViewModel.showSnackbar(
-                                messageResId = R.string.measurement_type_updated_unit_changed_no_values_converted,
-                                formatArgs = listOf(updatedType.name ?: updatedType.key.toString()) // Context für getDisplayName wäre besser
-                            )
-                        }
-                        else {
-                            sharedViewModel.showSnackbar(
-                                messageResId = R.string.measurement_type_updated_successfully,
-                                formatArgs = listOf(updatedType.name ?: updatedType.key.toString()) // Context für getDisplayName wäre besser
-                            )
-                        }
-                    }
-                    // sharedViewModel.refreshMeasurementTypes() // Optional, wenn die Liste sich nicht automatisch aktualisiert
-                } catch (e: Exception) {
-                    LogManager.e(TAG, "Error updating MeasurementType (ID: ${originalType.id}) itself", e)
+            // 3. Show appropriate snackbar message.
+            if (!conversionErrorOccurred && showSnackbarMaster) {
+                if (valuesConvertedCount > 0) {
                     sharedViewModel.showSnackbar(
-                        messageResId = R.string.measurement_type_updated_error,
-                        formatArgs = listOf(originalType.name ?: originalType.key.toString()) // Context für getDisplayName wäre besser
+                        messageResId = R.string.measurement_type_updated_and_values_converted_successfully,
+                        formatArgs = listOf(
+                            updatedType.name ?: updatedType.key.toString(),
+                            valuesConvertedCount.toString()
+                        )
+                    )
+                } else if (originalType.unit != updatedType.unit && (originalType.inputType == InputFieldType.FLOAT)) {
+                    // Also show if unit changed but no values were converted (e.g., none existed or input type wasn't FLOAT but recalculation was still triggered)
+                    sharedViewModel.showSnackbar(
+                        messageResId = R.string.measurement_type_updated_unit_changed_no_values_converted, // Or a more specific message
+                        formatArgs = listOf(updatedType.name ?: updatedType.key.toString())
+                    )
+                } else { // Generic success if no unit change or no conversion needed
+                    sharedViewModel.showSnackbar(
+                        messageResId = R.string.measurement_type_updated_successfully,
+                        formatArgs = listOf(updatedType.name ?: updatedType.key.toString())
                     )
                 }
-            } else {
-                LogManager.w(
-                    TAG,
-                    "Skipped updating MeasurementType definition (ID: ${originalType.id}) due to prior value conversion error."
-                )
             }
         }
     }
