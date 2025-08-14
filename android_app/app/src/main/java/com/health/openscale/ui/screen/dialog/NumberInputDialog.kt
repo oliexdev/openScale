@@ -46,8 +46,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.health.openscale.R
 import com.health.openscale.core.data.InputFieldType
 
 @Composable
@@ -69,12 +71,12 @@ fun NumberInputDialog(
                 onConfirm(value)
                 onDismiss()
             }) {
-                Text("OK")
+                Text(stringResource(R.string.dialog_ok))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Abbrechen")
+                Text(stringResource(R.string.cancel_button))
             }
         },
         title = {
@@ -101,7 +103,7 @@ fun NumberInputDialog(
             OutlinedTextField(
                 value = value,
                 onValueChange = { value = it },
-                label = { Text("Wert eingeben") },
+                label = { Text(stringResource(R.string.dialog_title_input_value)) },
                 keyboardOptions = KeyboardOptions.Default.copy(
                     keyboardType = when (inputType) {
                         InputFieldType.FLOAT -> KeyboardType.Decimal
@@ -114,7 +116,7 @@ fun NumberInputDialog(
                         Column {
                             Icon(
                                 imageVector = Icons.Default.KeyboardArrowUp,
-                                contentDescription = "Erhöhen",
+                                contentDescription = stringResource(R.string.trend_increased_desc),
                                 modifier = Modifier
                                     .size(24.dp)
                                     .clickable {
@@ -123,7 +125,7 @@ fun NumberInputDialog(
                             )
                             Icon(
                                 imageVector = Icons.Default.KeyboardArrowDown,
-                                contentDescription = "Verringern",
+                                contentDescription = stringResource(R.string.trend_decreased_desc),
                                 modifier = Modifier
                                     .size(24.dp)
                                     .clickable {

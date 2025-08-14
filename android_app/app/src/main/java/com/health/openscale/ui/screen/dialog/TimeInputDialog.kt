@@ -47,9 +47,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.health.openscale.R
 import java.util.Calendar
 
 @Composable
@@ -78,12 +80,12 @@ fun TimeInputDialog(
                 onConfirm(updatedCal.timeInMillis)
                 onDismiss()
             }) {
-                Text("OK")
+                Text(stringResource(R.string.dialog_ok))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Abbrechen")
+                Text(stringResource(R.string.cancel_button))
             }
         },
         title = {
@@ -112,14 +114,14 @@ fun TimeInputDialog(
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 TimeField(
-                    label = "Stunde",
+                    label = stringResource(R.string.dialog_title_hour),
                     value = hour,
                     onValueChange = { hour = it.coerceIn(0, 23) },
                     onIncrement = { hour = (hour + 1) % 24 },
                     onDecrement = { hour = (hour + 23) % 24 }
                 )
                 TimeField(
-                    label = "Minute",
+                    label = stringResource(R.string.dialog_title_minute),
                     value = minute,
                     onValueChange = { minute = it.coerceIn(0, 59) },
                     onIncrement = { minute = (minute + 1) % 60 },
@@ -154,10 +156,10 @@ private fun TimeField(
 
         Row {
             IconButton(onClick = onIncrement) {
-                Icon(Icons.Default.KeyboardArrowUp, contentDescription = "Stunde erhöhen")
+                Icon(Icons.Default.KeyboardArrowUp, contentDescription = stringResource(R.string.trend_increased_desc))
             }
             IconButton(onClick = onDecrement) {
-                Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Stunde verringern")
+                Icon(Icons.Default.KeyboardArrowDown, contentDescription = stringResource(R.string.trend_decreased_desc))
             }
         }
     }

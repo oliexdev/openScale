@@ -41,7 +41,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.health.openscale.R
 
 @Composable
 fun TextInputDialog(
@@ -60,10 +62,10 @@ fun TextInputDialog(
             TextButton(onClick = {
                 onConfirm(value)
                 onDismiss()
-            }) { Text("OK") }
+            }) { Text(stringResource(R.string.dialog_ok)) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Abbrechen") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel_button)) }
         },
         title = {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -89,7 +91,7 @@ fun TextInputDialog(
             OutlinedTextField(
                 value = value,
                 onValueChange = { value = it },
-                label = { Text("Text eingeben") },
+                label = { Text(stringResource(R.string.dialog_title_input_text)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )

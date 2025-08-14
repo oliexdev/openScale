@@ -88,6 +88,13 @@
     <string name="dialog_title_edit_value">Edit %1$s</string> <!-- Example: "Edit Weight" -->
     <string name="dialog_title_change_date">Change %1$s</string> <!-- Example: "Change Date" or "Change Measurement Date" -->
     <string name="dialog_title_change_time">Change %1$s</string> <!-- Example: "Change Time" or "Change Measurement Time" -->
+    <string name="dialog_title_select_color">Select color</string>
+    <string name="dialog_title_select_icon">Select icon</string>
+    <string name="dialog_title_input_value">Input value</string>
+    <string name="dialog_title_input_text">Input text</string>
+    <string name="dialog_title_hour">Hour</string>
+    <string name="dialog_title_minute">Minute</string>
+
     <string name="label_date">Date</string>
     <string name="label_time">Time</string>
 

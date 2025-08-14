@@ -38,7 +38,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.health.openscale.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,12 +68,12 @@ fun DateInputDialog(
                     }
                 }
             ) {
-                Text("OK")
+                Text(stringResource(R.string.dialog_ok))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Abbrechen")
+                Text(stringResource(R.string.cancel_button))
             }
         },
         title = {

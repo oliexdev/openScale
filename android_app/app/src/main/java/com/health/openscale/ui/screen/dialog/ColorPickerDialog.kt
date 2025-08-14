@@ -41,8 +41,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.health.openscale.R
 
 val tangoColors = listOf(
     Color(0xFFEF2929), Color(0xFFF57900), Color(0xFFFFCE44), Color(0xFF8AE234),
@@ -70,7 +72,7 @@ fun ColorPickerDialog(
                 .fillMaxWidth()
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text("Farbe auswählen", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.dialog_title_select_color), style = MaterialTheme.typography.titleMedium)
                 Spacer(modifier = Modifier.height(16.dp))
 
                 LazyVerticalGrid(
@@ -108,7 +110,7 @@ fun ColorPickerDialog(
                     horizontalArrangement = Arrangement.End
                 ) {
                     TextButton(onClick = onDismiss) {
-                        Text("Abbrechen")
+                        Text(stringResource(R.string.cancel_button))
                     }
                 }
             }

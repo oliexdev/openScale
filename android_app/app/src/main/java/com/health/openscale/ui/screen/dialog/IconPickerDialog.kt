@@ -35,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.health.openscale.R
 
@@ -83,7 +84,7 @@ fun IconPickerDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Icon auswählen") },
+        title = { Text(stringResource(R.string.dialog_title_select_icon))},
         text = {
             LazyVerticalGrid(
                 columns = GridCells.Fixed(4),
@@ -109,7 +110,7 @@ fun IconPickerDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) { Text("Abbrechen") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel_button)) }
         }
     )
 }
