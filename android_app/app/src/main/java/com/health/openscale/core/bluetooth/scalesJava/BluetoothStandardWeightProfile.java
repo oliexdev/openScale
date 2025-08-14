@@ -853,6 +853,42 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
             choiceStrings[userList.size()] = context.getString(R.string.bluetooth_scale_info_create_user_instruction);
             indexArray[userList.size()] = -1;
         }
+
+        if (choiceStrings != null && indexArray != null) {
+            StringBuilder logMessage = new StringBuilder("Preparing CHOOSE_USER interaction. ");
+            logMessage.append("choiceStrings (length: ").append(choiceStrings.length).append("): [");
+            for (int i = 0; i < choiceStrings.length; i++) {
+                logMessage.append("'").append(choiceStrings[i]).append("'");
+                if (i < choiceStrings.length - 1) {
+                    logMessage.append(", ");
+                }
+            }
+            logMessage.append("]. ");
+
+            logMessage.append("indexArray (length: ").append(indexArray.length).append("): [");
+            for (int i = 0; i < indexArray.length; i++) {
+                logMessage.append(indexArray[i]);
+                if (i < indexArray.length - 1) {
+                    logMessage.append(", ");
+                }
+            }
+            logMessage.append("].");
+            LogManager.d(TAG, logMessage.toString());
+
+            // Check for potential issues that might lead to UI errors
+            if (choiceStrings.length != indexArray.length) {
+                LogManager.w(TAG, "CHOOSE_USER: Mismatch in lengths: choiceStrings (" + choiceStrings.length +
+                        ") vs indexArray (" + indexArray.length + ").", null);
+            }
+            if (choiceStrings.length == 0) {
+                LogManager.w(TAG, "CHOOSE_USER: choiceStrings array is empty. No options will be presented to the user.", null);
+            }
+
+        } else {
+            // This is a critical error state if either array is null
+            LogManager.e(TAG, "CHOOSE_USER: choiceStrings or indexArray is null. Cannot request user interaction.", null);
+        }
+
         Pair<CharSequence[], int[]> choices = new Pair(choiceStrings, indexArray);
         requestUserInteraction(UserInteractionType.CHOOSE_USER, choices);
     }

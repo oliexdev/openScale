@@ -19,6 +19,8 @@ package com.health.openscale.ui.navigation
 
 import android.app.Application
 import android.content.res.Resources
+import android.net.http.SslCertificate.restoreState
+import android.net.http.SslCertificate.saveState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -108,6 +110,7 @@ import com.health.openscale.R
 import com.health.openscale.core.bluetooth.BluetoothEvent.UserInteractionType
 import com.health.openscale.core.bluetooth.scalesJava.BluetoothCommunication
 import com.health.openscale.core.data.User
+import com.health.openscale.core.utils.LogManager
 import com.health.openscale.ui.navigation.Routes.getIconForRoute
 import com.health.openscale.ui.screen.SharedViewModel
 import com.health.openscale.ui.screen.bluetooth.BluetoothViewModel
@@ -146,6 +149,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavigation(sharedViewModel: SharedViewModel) {
+    val TAG = "AppNavigation"
     val context = LocalContext.current
     val resources = context.resources // Get resources for non-composable string access
     val application = context.applicationContext as Application
@@ -294,12 +298,17 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
                     when (interactionEvent.interactionType) {
                         UserInteractionType.CHOOSE_USER -> {
                             val choicesData = interactionEvent.data
-                            // Wir erwarten Pair<Array<String>, IntArray> oder Pair<Array<CharSequence>, IntArray>
+                            LogManager.d(TAG, "CHOOSE_USER interaction received. Data: $choicesData")
+
+                            // Expecting Pair<Array<String>, IntArray> or Pair<Array<CharSequence>, IntArray>
                             if (choicesData is Pair<*, *> && choicesData.first is Array<*> && choicesData.second is IntArray) {
                                 @Suppress("UNCHECKED_CAST")
                                 val choices = choicesData as Pair<Array<CharSequence>, IntArray>
                                 val choiceDisplayNames = choices.first
                                 val choiceIndices = choices.second
+
+                                LogManager.d(TAG, "CHOOSE_USER: DisplayNames (length ${choiceDisplayNames.size}): ${choiceDisplayNames.joinToString { "'$it'" }}")
+                                LogManager.d(TAG, "CHOOSE_USER: Indices (length ${choiceIndices.size}): ${choiceIndices.joinToString()}")
 
                                 if (choiceDisplayNames.isNotEmpty() && choiceDisplayNames.size == choiceIndices.size) {
                                     LazyColumn(modifier = Modifier.padding(top = 8.dp)) {
@@ -309,7 +318,10 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
                                                     .fillMaxWidth()
                                                     .selectable(
                                                         selected = (choiceIndices[itemIndex] == selectedUserIndexState),
-                                                        onClick = { selectedUserIndexState = choiceIndices[itemIndex] }
+                                                        onClick = {
+                                                            selectedUserIndexState =
+                                                                choiceIndices[itemIndex]
+                                                        }
                                                     )
                                                     .padding(vertical = 8.dp),
                                                 verticalAlignment = Alignment.CenterVertically
