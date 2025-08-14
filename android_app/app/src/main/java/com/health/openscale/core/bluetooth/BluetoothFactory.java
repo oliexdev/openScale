@@ -21,6 +21,8 @@ import android.util.SparseArray;
 
 import java.util.Locale;
 
+import com.health.openscale.core.bluetooth.driver.*;
+
 public class BluetoothFactory {
     public static BluetoothCommunication createDebugDriver(Context context) {
         return new BluetoothDebug(context);
