@@ -122,6 +122,10 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
 
         switch (step) {
             case START:
+                pendingUserId = (this.selectedUser != null) ? this.selectedUser.getId() : -1;
+                LogManager.d(TAG, "START: selectedUserId=" + pendingUserId
+                        + " storedIndex=" + getUserScaleIndex(pendingUserId)
+                        + " storedConsent=" + getUserScaleConsent(pendingUserId));
                 break;
             case READ_DEVICE_MANUFACTURER:
                 // Read manufacturer from the Device Information Service
@@ -170,6 +174,11 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
                 break;
             case REQUEST_VENDOR_SPECIFIC_USER_LIST:
                 scaleUserList.clear();
+                int uid = (pendingUserId != -1) ? pendingUserId : (this.selectedUser != null ? this.selectedUser.getId() : -1);
+                int idx = getUserScaleIndex(uid);
+                int cns = getUserScaleConsent(uid);
+                LogManager.d(TAG, "REQUEST_VENDOR_SPECIFIC_USER_LIST for appUserId=" + uid
+                        + " -> index=" + idx + ", consent=" + cns);
                 requestVendorSpecificUserList();
                 stopMachineState();
                 break;
@@ -192,12 +201,9 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
                 break;
             case SELECT_SCALE_USER:
                 int userIdToUse = (pendingUserId != -1) ? pendingUserId : this.selectedUser.getId();
-                if (userIdToUse != this.selectedUser.getId()) {
-                    LogManager.w(TAG, "SELECT_SCALE_USER: Using pendingUserId=" + userIdToUse + " (selectedUserId=" + this.selectedUser.getId() + " differs).", null);
-                } else {
-                    LogManager.d(TAG, "SELECT_SCALE_USER: Using selectedUserId=" + userIdToUse);
-                }
+                LogManager.d(TAG, "SELECT_SCALE_USER using appUserId=" + userIdToUse);
                 setUser(userIdToUse);
+                pendingUserId = -1; // optionaler Cleanup
                 stopMachineState();
                 break;
             case SET_SCALE_USER_DATA:
@@ -833,6 +839,9 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
                     return;
                 }
                 if (getUserScaleIndex(selectedUser.getId()) == -1 || getUserScaleConsent(selectedUser.getId()) == -1)  {
+                    LogManager.d(TAG, "Missing mapping => chooseExisting: index="
+                            + getUserScaleIndex(selectedUser.getId()) + ", consent="
+                            + getUserScaleConsent(selectedUser.getId()));
                     chooseExistingScaleUser(scaleUserList);
                     return;
                 }
