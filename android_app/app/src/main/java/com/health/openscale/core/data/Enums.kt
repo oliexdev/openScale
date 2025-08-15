@@ -42,12 +42,16 @@ enum class SupportedLanguage(val code: String, val nativeDisplayName: String) {
     }
 }
 
-enum class GenderType {
-    MALE,
-    FEMALE;
+enum class GenderType(@StringRes val displayNameResId: Int) {
+    MALE(R.string.gender_male),
+    FEMALE(R.string.gender_female);
 
     fun isMale(): Boolean {
         return this == MALE}
+
+    fun getDisplayName(context: android.content.Context): String {
+        return context.getString(displayNameResId)
+    }
 }
 
 enum class ActivityLevel {

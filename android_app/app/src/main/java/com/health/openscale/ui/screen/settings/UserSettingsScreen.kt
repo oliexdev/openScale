@@ -36,6 +36,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.health.openscale.R
@@ -97,16 +98,11 @@ fun UserSettingsScreen(
             ListItem(
                 headlineContent = { Text(user.name) },
                 supportingContent = {
-                    val heightText = if (user.heightCm != null) {
-                        stringResource(R.string.height_value_cm, user.heightCm)
-                    } else {
-                        stringResource(R.string.not_available)
-                    }
                     Text(
                         stringResource(
                             id = R.string.user_settings_item_details_conditional,
                             age,
-                            heightText
+                            user.gender.getDisplayName(LocalContext.current)
                         )
                     )
                 }

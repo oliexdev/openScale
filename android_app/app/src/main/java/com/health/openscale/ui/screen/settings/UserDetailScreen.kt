@@ -313,8 +313,7 @@ fun UserDetailScreen(
                         selected = gender == option,
                         onClick = { gender = option }
                     )
-                    // Display gender options with first letter capitalized.
-                    Text(option.name.lowercase().replaceFirstChar { it.uppercaseChar().toString() })
+                    Text(option.getDisplayName(LocalContext.current))
                 }
             }
         }
