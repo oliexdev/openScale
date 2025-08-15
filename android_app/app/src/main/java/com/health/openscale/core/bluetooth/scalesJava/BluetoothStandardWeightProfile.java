@@ -68,6 +68,7 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
     SharedPreferences prefs;
     protected boolean registerNewUser;
     ScaleUser selectedUser;
+    private int pendingUserId = -1;
     ScaleMeasurement previousMeasurement;
     protected boolean haveBatteryService;
     protected Vector<ScaleUser> scaleUserList;
@@ -174,8 +175,10 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
                 break;
             case REGISTER_NEW_SCALE_USER:
                 int userId = this.selectedUser.getId();
+                pendingUserId = userId;
                 int consentCode = getUserScaleConsent(userId);
                 int userIndex = getUserScaleIndex(userId);
+                LogManager.d(TAG, "Step register new scale user, userId: " + userId + ", consentCode: " + consentCode + ", userIndex: " + userIndex);
                 if (consentCode == -1 || userIndex == -1) {
                     registerNewUser = true;
                 }
@@ -188,8 +191,13 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
                 }
                 break;
             case SELECT_SCALE_USER:
-                LogManager.d(TAG, "Select user on scale!");
-                setUser(this.selectedUser.getId());
+                int userIdToUse = (pendingUserId != -1) ? pendingUserId : this.selectedUser.getId();
+                if (userIdToUse != this.selectedUser.getId()) {
+                    LogManager.w(TAG, "SELECT_SCALE_USER: Using pendingUserId=" + userIdToUse + " (selectedUserId=" + this.selectedUser.getId() + " differs).", null);
+                } else {
+                    LogManager.d(TAG, "SELECT_SCALE_USER: Using selectedUserId=" + userIdToUse);
+                }
+                setUser(userIdToUse);
                 stopMachineState();
                 break;
             case SET_SCALE_USER_DATA:
@@ -293,6 +301,7 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
                     }
                     if (value[2] == UDS_CP_RESP_VALUE_SUCCESS) {
                         LogManager.d(TAG, "UDS_CP_CONSENT: Success user consent");
+                        pendingUserId = -1;
                         resumeMachineState();
                     } else if (value[2] == UDS_CP_RESP_USER_NOT_AUTHORIZED) {
                         LogManager.e(TAG, "UDS_CP_CONSENT: Not authorized", null);
@@ -599,7 +608,22 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
     protected synchronized void setUser(int userId) {
         int userIndex = getUserScaleIndex(userId);
         int consentCode = getUserScaleConsent(userId);
-        LogManager.d(TAG, String.format("setting: userId %d, userIndex: %d, consent Code: %d ", userId, userIndex, consentCode));
+        LogManager.d(TAG, "setUser(appUserId=" + userId + ") with index=" + userIndex + " consent=" + consentCode
+                + " (selectedUserId=" + (this.selectedUser != null ? this.selectedUser.getId() : -1)
+                + ", pendingUserId=" + pendingUserId + ")");
+
+        if (userIndex == -1) {
+            LogManager.w(TAG, "setUser: no scale index for appUserId=" + userId + ". Requesting vendor-specific user list.", null);
+            jumpNextToStepNr(SM_STEPS.REQUEST_VENDOR_SPECIFIC_USER_LIST.ordinal());
+            stopMachineState();
+            requestVendorSpecificUserList();
+            return;
+        }
+        if (consentCode == -1) {
+            LogManager.w(TAG, "setUser: missing consent for appUserId=" + userId + " (index=" + userIndex + "). Requesting consent.", null);
+            requestScaleUserConsent(userId, userIndex);
+            return;
+        }
         setUser(userIndex, consentCode);
     }
 
@@ -678,6 +702,7 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
 
     protected synchronized void storeUserScaleConsentCode(int userId, int consentCode) {
         prefs.edit().putInt("userConsentCode" + userId, consentCode).apply();
+        LogManager.d(TAG, "storeUserScaleConsentCode: userId=" + userId + " now=" + getUserScaleConsent(userId));
     }
 
     protected synchronized int getUserScaleConsent(int userId) {
@@ -687,12 +712,13 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
     protected synchronized void storeUserScaleIndex(int userId, int userIndex) {
         int currentUserIndex = getUserScaleIndex(userId);
         if (currentUserIndex != -1) {
-            prefs.edit().putInt("userIdFromUserScaleIndex" + currentUserIndex, -1);
+            prefs.edit().putInt("userIdFromUserScaleIndex" + currentUserIndex, -1).apply();
         }
         prefs.edit().putInt("userScaleIndex" + userId, userIndex).apply();
         if (userIndex != -1) {
             prefs.edit().putInt("userIdFromUserScaleIndex" + userIndex, userId).apply();
         }
+        LogManager.d(TAG, "storeUserScaleIndex: userId=" + userId + " now=" + getUserScaleIndex(userId));
     }
 
     protected synchronized int getUserIdFromScaleIndex(int userScaleIndex) {
@@ -717,13 +743,17 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
     }
 
     protected void requestScaleUserConsent(int appScaleUserId, int scaleUserIndex) {
+        pendingUserId = appScaleUserId;
+        LogManager.d(TAG, "requestScaleUserConsent(appUserId=" + appScaleUserId + ", scaleIndex=" + scaleUserIndex + "), pendingUserId=" + pendingUserId);
         Object[] consentRequestData = new Object[]{appScaleUserId, scaleUserIndex};
         requestUserInteraction(UserInteractionType.ENTER_CONSENT, consentRequestData);
     }
 
         @Override
     public void processUserInteractionFeedback(UserInteractionType interactionType, int appUserId, Object feedbackData, Handler uiHandler) {
-        LogManager.d(TAG, "Processing UserInteractionFeedback: " + interactionType + " for appUserId: " + appUserId);
+        pendingUserId = appUserId;
+        LogManager.d(TAG, "Processing UserInteractionFeedback: " + interactionType + " for appUserId=" + appUserId + " (pendingUserId set)");
+
         switch (interactionType) {
             case CHOOSE_USER:
                 if (feedbackData instanceof Integer) {
@@ -748,6 +778,8 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
                     int scaleUserConsent = (Integer) feedbackData;
                     LogManager.d(TAG, "ENTER_CONSENT Feedback: scaleUserConsent = " + scaleUserConsent);
                     storeUserScaleConsentCode(appUserId, scaleUserConsent);
+                    LogManager.d(TAG, "after_enter_consent_store: appUserId=" + appUserId + ", pendingUserId=" + pendingUserId
+                            + ", selectedUserId=" + (this.selectedUser != null ? this.selectedUser.getId() : -1));
                     if (scaleUserConsent == -1) { // User cancelled or denied consent
                         reconnectOrSetSmState(SM_STEPS.REQUEST_VENDOR_SPECIFIC_USER_LIST, SM_STEPS.REQUEST_VENDOR_SPECIFIC_USER_LIST, uiHandler);
                     } else { // User provided consent
@@ -769,8 +801,20 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
             int userListStatus = parser.getIntValue(FORMAT_UINT8);
             if (userListStatus == 2) {
                 LogManager.d(TAG, "scale have no users!");
-                storeUserScaleConsentCode(selectedUser.getId(), -1);
-                storeUserScaleIndex(selectedUser.getId(), -1);
+                int uid = selectedUser.getId();
+
+                int oldConsent = getUserScaleConsent(uid);
+                if (oldConsent != -1) {
+                    LogManager.w(TAG, "Status=2 -> resetting consent for userId=" + uid + " from " + oldConsent + " to -1", null);
+                    storeUserScaleConsentCode(uid, -1);
+                }
+
+                int oldIndex = getUserScaleIndex(uid);
+                if (oldIndex != -1) {
+                    LogManager.w(TAG, "Status=2 -> resetting index for userId=" + uid + " from " + oldIndex + " to -1", null);
+                    storeUserScaleIndex(uid, -1);
+                }
+
                 jumpNextToStepNr(SM_STEPS.REGISTER_NEW_SCALE_USER.ordinal());
                 resumeMachineState();
                 return;
@@ -782,9 +826,8 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
                     }
                     LogManager.d(TAG, "\n" + (i + 1) + ". " + scaleUserList.get(i));
                 }
-                if ((scaleUserList.size() == 0)) {
-                    storeUserScaleConsentCode(selectedUser.getId(), -1);
-                    storeUserScaleIndex(selectedUser.getId(), -1);
+                if (scaleUserList.size() == 0) {
+                    LogManager.w(TAG, "status=1 but user list empty; skipping forced reset of consent/index.", null);
                     jumpNextToStepNr(SM_STEPS.REGISTER_NEW_SCALE_USER.ordinal());
                     resumeMachineState();
                     return;
@@ -889,7 +932,7 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
             LogManager.e(TAG, "CHOOSE_USER: choiceStrings or indexArray is null. Cannot request user interaction.", null);
         }
 
-        Pair<CharSequence[], int[]> choices = new Pair(choiceStrings, indexArray);
+        Pair<CharSequence[], int[]> choices = new Pair<>(choiceStrings, indexArray);
         requestUserInteraction(UserInteractionType.CHOOSE_USER, choices);
     }
 

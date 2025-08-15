@@ -247,25 +247,17 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
         val dialogTitle: String
         val dialogIcon: @Composable (() -> Unit)
 
-        var consentCodeInput by rememberSaveable { mutableStateOf("") }
-        var selectedUserIndexState by rememberSaveable { mutableIntStateOf(Int.MIN_VALUE) }
+        var consentCodeInput by rememberSaveable(interactionEvent.interactionType) { mutableStateOf("") }
+        var selectedUserIndexState by rememberSaveable(interactionEvent.interactionType) { mutableIntStateOf(Int.MIN_VALUE) }
 
         when (interactionEvent.interactionType) {
             UserInteractionType.CHOOSE_USER -> {
                 dialogTitle = stringResource(R.string.dialog_bt_interaction_title_choose_user)
                 dialogIcon = { Icon(Icons.Filled.People, contentDescription = stringResource(R.string.dialog_bt_icon_desc_choose_user)) }
-                // Reset state when dialog becomes visible for CHOOSE_USER
-                if (interactionEvent.interactionType == UserInteractionType.CHOOSE_USER) {
-                    selectedUserIndexState = Int.MIN_VALUE
-                }
             }
             UserInteractionType.ENTER_CONSENT -> {
                 dialogTitle = stringResource(R.string.dialog_bt_interaction_title_enter_consent)
                 dialogIcon = { Icon(Icons.Filled.HowToReg, contentDescription = stringResource(R.string.dialog_bt_icon_desc_enter_consent)) }
-                // Reset state when dialog becomes visible for ENTER_CONSENT
-                if (interactionEvent.interactionType == UserInteractionType.ENTER_CONSENT) {
-                    consentCodeInput = ""
-                }
             }
             // else -> { /* Handle unknown types or provide defaults */ } // Optional
         }
@@ -276,9 +268,6 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
 
         AlertDialog(
             onDismissRequest = {
-                if (interactionEvent.interactionType == UserInteractionType.ENTER_CONSENT) {
-                    bluetoothViewModel.processUserInteraction(interactionEvent.interactionType, -1) // -1 abort signal
-                }
                 bluetoothViewModel.clearPendingUserInteraction()
             },
             icon = dialogIcon,
@@ -301,9 +290,9 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
                             LogManager.d(TAG, "CHOOSE_USER interaction received. Data: $choicesData")
 
                             // Expecting Pair<Array<String>, IntArray> or Pair<Array<CharSequence>, IntArray>
-                            if (choicesData is Pair<*, *> && choicesData.first is Array<*> && choicesData.second is IntArray) {
+                            if (choicesData is android.util.Pair<*, *> && choicesData.first is Array<*> && choicesData.second is IntArray) {
                                 @Suppress("UNCHECKED_CAST")
-                                val choices = choicesData as Pair<Array<CharSequence>, IntArray>
+                                val choices = choicesData as android.util.Pair<Array<CharSequence>, IntArray>
                                 val choiceDisplayNames = choices.first
                                 val choiceIndices = choices.second
 
@@ -395,11 +384,7 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
             dismissButton = {
                 TextButton(
                     onClick = {
-                        if (interactionEvent.interactionType == UserInteractionType.ENTER_CONSENT) {
-                            bluetoothViewModel.processUserInteraction(interactionEvent.interactionType, -1) // -1 for abort signal
-                        } else {
-                            bluetoothViewModel.clearPendingUserInteraction()
-                        }
+                        bluetoothViewModel.clearPendingUserInteraction()
                     }
                 ) {
                     Text(stringResource(R.string.cancel_button))

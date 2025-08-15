@@ -381,6 +381,27 @@
     <string name="delete_db_successful">Gesamte Datenbank wurde gelöscht.</string>
     <string name="delete_db_error">Fehler beim Löschen der gesamten Datenbank.</string>
 
+    <!-- BluetoothViewModel Snackbar Messages -->
+    <string name="bt_snackbar_permissions_required_to_scan">Bluetooth-Berechtigungen werden zum Scannen von Geräten benötigt.</string>
+    <string name="bt_snackbar_bluetooth_disabled_to_scan">Bluetooth ist deaktiviert. Bitte aktiviere es, um nach Geräten zu scannen.</string>
+
+    <string name="bt_snackbar_permissions_required_to_connect">Bluetooth-Berechtigungen werden benötigt, um eine Verbindung zu %1$s herzustellen.</string>
+    <string name="bt_snackbar_permissions_required_to_connect_default">Bluetooth-Berechtigungen werden benötigt, um eine Verbindung zum Gerät herzustellen.</string>
+    <string name="bt_snackbar_bluetooth_disabled_to_connect">Bluetooth ist deaktiviert. Bitte aktiviere es, um eine Verbindung zu %1$s herzustellen.</string>
+    <string name="bt_snackbar_bluetooth_disabled_to_connect_default">Bluetooth ist deaktiviert. Bitte aktiviere es, um eine Verbindung zum Gerät herzustellen.</string>
+
+    <string name="bt_snackbar_scale_saved_as_preferred">%1$s als bevorzugte Waage gespeichert.</string>
+    <string name="bt_snackbar_saved_scale_no_longer_supported">Gespeicherte Waage \'%1$s\' wird nicht mehr unterstützt.</string>
+    <string name="bt_snackbar_no_scale_saved">Keine Bluetooth-Waage in den Einstellungen gespeichert.</string>
+
+    <string name="bt_snackbar_error_no_app_user_selected">Fehler: Kein App-Benutzer ausgewählt.</string>
+    <string name="bt_snackbar_user_input_processed">Benutzereingabe verarbeitet.</string>
+
+    <string name="bt_snackbar_operation_successful">Vorgang erfolgreich.</string>
+    <string name="bt_snackbar_operation_failed">Vorgang fehlgeschlagen. Bitte versuche es erneut.</string>
+    <string name="device_placeholder_name">das Gerät</string>
+    <string name="unknown_scale_name">Unbekannte Waage</string>
+
     <!-- Bluetooth Waagen Nachrichten -->
     <string name="bluetooth_scale_trisa_message_not_paired_instruction">Diese Waage wurde nicht gekoppelt!\n\nHalten Sie die Taste an der Unterseite der Waage gedrückt, um sie in den Kopplungsmodus zu versetzen, und verbinden Sie sich dann erneut, um das Gerätepasswort abzurufen.</string>
     <string name="bluetooth_scale_trisa_success_pairing">Kopplung erfolgreich!\n\nVerbinden Sie sich erneut, um Messdaten abzurufen.</string>
