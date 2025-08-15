@@ -17,8 +17,11 @@
  */
 package com.health.openscale.core.utils
 
+import android.app.Activity
+import android.app.Application
 import android.content.Context
 import android.os.Build
+import android.os.Bundle
 import android.util.Log
 import com.health.openscale.BuildConfig
 import kotlinx.coroutines.CoroutineScope
@@ -26,11 +29,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import java.io.File
+import java.io.FileOutputStream
 import java.io.FileWriter
 import java.io.IOException
+import java.io.OutputStreamWriter
+import java.nio.charset.StandardCharsets
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Manages logging for the application, providing methods to log messages
@@ -38,7 +45,7 @@ import java.util.Locale
  */
 object LogManager {
 
-    private const val DEFAULT_TAG = "openScaleLog"
+    private const val TAG = "openScaleLog"
     private const val LOG_SUB_DIRECTORY = "logs"
     private const val CURRENT_LOG_FILE_NAME_BASE = "openScale_current_log"
     private const val LOG_FILE_EXTENSION = ".txt"
@@ -50,6 +57,11 @@ object LogManager {
     private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault())
 
+    // Tracks foreground Activities to detect when the app goes to background.
+    private val startedActivityCount = AtomicInteger(0)
+    @Volatile private var lifecycleCallbacksRegistered = false
+    @Volatile private var isMarkdownBlockOpen = false
+
     /**
      * Initializes the LogManager. Must be called once, typically in Application.onCreate().
      * @param context The application context.
@@ -58,7 +70,7 @@ object LogManager {
     fun init(context: Context, enableLoggingToFile: Boolean) {
         if (isInitialized) {
             // Log a warning if already initialized, but don't re-initialize.
-            Log.w(DEFAULT_TAG, "LogManager already initialized. Ignoring subsequent init call.")
+            Log.w(TAG, "LogManager already initialized. Ignoring subsequent init call.")
             return
         }
 
@@ -66,14 +78,40 @@ object LogManager {
         logToFileEnabled = enableLoggingToFile
         isInitialized = true
 
+        // Register ActivityLifecycleCallbacks to close the markdown block when app goes background.
+        if (!lifecycleCallbacksRegistered && appContext is Application) {
+            (appContext as Application).registerActivityLifecycleCallbacks(object : Application.ActivityLifecycleCallbacks {
+                override fun onActivityStarted(activity: Activity) {
+                    val count = startedActivityCount.incrementAndGet()
+                    if (count == 1) {
+                        // App went to foreground -> open the diff block to keep Markdown well-formed.
+                        openMarkdownBlockIfNeeded()
+                    }
+                }
+                override fun onActivityStopped(activity: Activity) {
+                    if (startedActivityCount.decrementAndGet() == 0) {
+                        // App went to background -> close the diff block to keep Markdown well-formed.
+                        closeMarkdownBlock()
+                    }
+                }
+                // Unused callbacks – keep empty
+                override fun onActivityCreated(a: Activity, b: Bundle?) {}
+                override fun onActivityResumed(a: Activity) {}
+                override fun onActivityPaused(a: Activity) {}
+                override fun onActivitySaveInstanceState(a: Activity, outState: Bundle) {}
+                override fun onActivityDestroyed(a: Activity) {}
+            })
+            lifecycleCallbacksRegistered = true
+        }
+
         // Log initialization status.
         if (logToFileEnabled) {
             coroutineScope.launch {
                 resetLogFileOnStartup()
-                i(DEFAULT_TAG, "LogManager initialized. Logging to file: enabled. Log directory: ${getLogDirectory().absolutePath}")
+                i(TAG, "LogManager initialized. Logging to file: enabled. Log directory: ${getLogDirectory().absolutePath}")
             }
         } else {
-            i(DEFAULT_TAG, "LogManager initialized. Logging to file: disabled.")
+            i(TAG, "LogManager initialized. Logging to file: disabled.")
         }
     }
 
@@ -81,15 +119,15 @@ object LogManager {
      * Deletes the current log file if it exists and writes initial headers.
      * This is called on startup if file logging is enabled.
      */
-    private suspend fun resetLogFileOnStartup() {
+    private fun resetLogFileOnStartup() {
         val logDir = getLogDirectory()
         val currentLogFile = File(logDir, "$CURRENT_LOG_FILE_NAME_BASE$LOG_FILE_EXTENSION")
 
         if (currentLogFile.exists()) {
             if (currentLogFile.delete()) {
-                d(DEFAULT_TAG, "Previous log file deleted on startup: ${currentLogFile.name}")
+                d(TAG, "Previous log file deleted on startup: ${currentLogFile.name}")
             } else {
-                w(DEFAULT_TAG, "Failed to delete previous log file on startup: ${currentLogFile.name}")
+                w(TAG, "Failed to delete previous log file on startup: ${currentLogFile.name}")
             }
         }
         // Always attempt to write headers, ensures file is created if it didn't exist.
@@ -104,16 +142,19 @@ object LogManager {
     fun updateLoggingPreference(enabled: Boolean) {
         val oldState = logToFileEnabled
         if (oldState == enabled) {
-            d(DEFAULT_TAG, "File logging preference is already set to: $enabled. No change.")
+            d(TAG, "File logging preference is already set to: $enabled. No change.")
             return
         }
         logToFileEnabled = enabled
-        i(DEFAULT_TAG, "File logging preference updated to: $logToFileEnabled (was: $oldState)")
+        if (!logToFileEnabled) {
+            closeMarkdownBlock()
+        }
+        i(TAG, "File logging preference updated to: $logToFileEnabled (was: $oldState)")
         if (logToFileEnabled) { // Only act if newly enabled
             coroutineScope.launch {
                 val currentLogFile = File(getLogDirectory(), "$CURRENT_LOG_FILE_NAME_BASE$LOG_FILE_EXTENSION")
                 if (!currentLogFile.exists() || currentLogFile.length() == 0L) {
-                    d(DEFAULT_TAG, "Log file missing or empty after enabling file logging. Writing headers.")
+                    d(TAG, "Log file missing or empty after enabling file logging. Writing headers.")
                     writeInitialLogHeaders(currentLogFile)
                 }
             }
@@ -131,10 +172,10 @@ object LogManager {
         if (externalLogDir != null) {
             if (!externalLogDir.exists()) {
                 if (!externalLogDir.mkdirs()) {
-                    w(DEFAULT_TAG, "Failed to create external log directory: ${externalLogDir.absolutePath}. Attempting internal storage.")
+                    w(TAG, "Failed to create external log directory: ${externalLogDir.absolutePath}. Attempting internal storage.")
                     // Fall through to internal storage if mkdirs fails
                 } else {
-                    d(DEFAULT_TAG, "External log directory created: ${externalLogDir.absolutePath}")
+                    d(TAG, "External log directory created: ${externalLogDir.absolutePath}")
                     return externalLogDir
                 }
             }
@@ -146,14 +187,14 @@ object LogManager {
         if (!internalLogDir.exists()) {
             if (!internalLogDir.mkdirs()) {
                 // If internal storage also fails, this is a more serious issue.
-                e(DEFAULT_TAG, "Failed to create internal log directory: ${internalLogDir.absolutePath}. Logging to file may not work.")
+                e(TAG, "Failed to create internal log directory: ${internalLogDir.absolutePath}. Logging to file may not work.")
             } else {
-                d(DEFAULT_TAG, "Internal log directory created: ${internalLogDir.absolutePath}")
+                d(TAG, "Internal log directory created: ${internalLogDir.absolutePath}")
             }
         }
         // Log this fallback case if externalLogDir was null initially
         if (externalLogDir == null) {
-            w(DEFAULT_TAG, "External storage not available. Using internal storage for logs: ${internalLogDir.absolutePath}")
+            w(TAG, "External storage not available. Using internal storage for logs: ${internalLogDir.absolutePath}")
         }
         return internalLogDir
     }
@@ -180,14 +221,14 @@ object LogManager {
         if (!isInitialized) {
             // Use Android's Log directly if LogManager isn't initialized.
             // This ensures critical early errors or misconfigurations are visible.
-            val initErrorMsg = "LogManager not initialized! Attempted to log: [${tag ?: DEFAULT_TAG}] $message"
+            val initErrorMsg = "LogManager not initialized! Attempted to log: [${tag ?: TAG}] $message"
             Log.e("LogManager_NotInit", initErrorMsg, throwable)
             // Optionally, print to System.err as a last resort if Logcat is also problematic
             // System.err.println("$initErrorMsg ${throwable?.let { Log.getStackTraceString(it) }}")
             return
         }
 
-        val currentTag = tag ?: DEFAULT_TAG
+        val currentTag = tag ?: TAG
 
         // Log to Android's Logcat
         when (priority) {
@@ -214,20 +255,24 @@ object LogManager {
                     // Check if file is missing or empty, then write headers.
                     // This can happen if the file was cleared or logging was just enabled.
                     if (!currentLogFile.exists() || currentLogFile.length() == 0L) {
-                        d(DEFAULT_TAG, "Log file missing or empty, writing headers: ${currentLogFile.absolutePath}")
+                        d(TAG, "Log file missing or empty, writing headers: ${currentLogFile.absolutePath}")
                         writeInitialLogHeaders(currentLogFile) // This will create/overwrite with headers
+                        isMarkdownBlockOpen = true
                     }
 
                     checkAndRotateLog(currentLogFile) // Rotate log if it exceeds max size
 
                     // Append the log message
-                    FileWriter(currentLogFile, true).use { writer ->
+                    OutputStreamWriter(
+                        FileOutputStream(currentLogFile, true),
+                        StandardCharsets.UTF_8
+                    ).use { writer ->
                         writer.append(formattedMessageForFile)
                         writer.append("\n")
                     }
                 } catch (e: IOException) {
                     // Log error related to file writing to Logcat only, to avoid recursive file logging issues.
-                    Log.e(DEFAULT_TAG, "Error writing to log file: ${e.message}", e)
+                    Log.e(TAG, "Error writing to log file: ${e.message}", e)
                 }
             }
         }
@@ -241,41 +286,29 @@ object LogManager {
      */
     private fun writeInitialLogHeaders(logFile: File) {
         try {
-            // Ensure the directory exists before attempting to write.
+            // Ensure directory exists.
             logFile.parentFile?.mkdirs()
-
-            FileWriter(logFile, false).use { writer -> // false for append means overwrite
-                val separator = "============================================================"
+            OutputStreamWriter(FileOutputStream(logFile, false), StandardCharsets.UTF_8).use { writer ->
                 val sessionStartTime = dateFormat.format(Date())
-
-                writer.append("$separator\n")
-                writer.append("  LOG SESSION STARTED\n")
-                writer.append("  -------------------\n")
-                writer.append("  Time             : $sessionStartTime\n")
+                // GitHub-friendly Markdown header; copy-pasteable into issues/PRs.
+                writer.append("| Field | Value |\n")
+                writer.append("|---|---|\n")
+                writer.append("| Time | $sessionStartTime |\n")
+                writer.append("| App | openScale |\n")
+                writer.append("| Version | ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE}) |\n")
+                writer.append("| Package | ${BuildConfig.APPLICATION_ID} |\n")
+                writer.append("| Build Type | ${BuildConfig.BUILD_TYPE} |\n")
+                writer.append("| Device | ${Build.MANUFACTURER} ${Build.MODEL} |\n")
+                writer.append("| Android | ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT}) |\n")
+                writer.append("| Build ID | ${Build.DISPLAY} |\n")
                 writer.append("\n")
-
-                writer.append("  APPLICATION INFO\n")
-                writer.append("  ----------------\n")
-                writer.append("  App Name         : openScale\n") // Consider making this dynamic if needed
-                writer.append("  Version          : ${BuildConfig.VERSION_NAME}\n")
-                writer.append("  Version Code     : ${BuildConfig.VERSION_CODE}\n")
-                writer.append("  Package ID       : ${BuildConfig.APPLICATION_ID}\n")
-                writer.append("  Build Type       : ${BuildConfig.BUILD_TYPE}\n")
-                writer.append("\n")
-
-                writer.append("  DEVICE INFO\n")
-                writer.append("  -----------\n")
-                writer.append("  Manufacturer     : ${Build.MANUFACTURER}\n")
-                writer.append("  Model            : ${Build.MODEL}\n")
-                writer.append("  Android Version  : ${Build.VERSION.RELEASE}\n")
-                writer.append("  API Level        : ${Build.VERSION.SDK_INT}\n")
-                writer.append("  System Build ID  : ${Build.DISPLAY}\n")
-
-                writer.append("$separator\n\n")
+                // Open a ```diff block; subsequent log lines use +/-/!/… prefixes.
+                writer.append("```diff\n")
             }
-            d(DEFAULT_TAG, "Initial log headers written to: ${logFile.absolutePath}")
+            isMarkdownBlockOpen = true
+            d(TAG, "Initial markdown-diff headers written to: ${logFile.absolutePath}")
         } catch (e: IOException) {
-            Log.e(DEFAULT_TAG, "Error writing initial log headers to ${logFile.absolutePath}", e)
+            Log.e(TAG, "Error writing initial log headers to ${logFile.absolutePath}", e)
         }
     }
 
@@ -289,16 +322,27 @@ object LogManager {
      * @return The formatted log string.
      */
     private fun formatMessageForFile(priority: Int, tag: String, message: String, throwable: Throwable?): String {
-        val priorityChar = when (priority) {
-            Log.VERBOSE -> "V"; Log.DEBUG -> "D"; Log.INFO -> "I"; Log.WARN -> "W"; Log.ERROR -> "E"; else -> "?"
+        // GitHub diff mapping: + INFO, ! WARN, - ERROR, ' ' DEBUG, ? VERBOSE
+        val levelChar = when (priority) {
+            Log.VERBOSE -> 'V'
+            Log.DEBUG -> 'D'
+            Log.INFO -> 'I'
+            Log.WARN -> 'W'
+            Log.ERROR -> 'E'
+            else -> '?'
         }
-        val timestamp = dateFormat.format(Date()) // Generate timestamp at the moment of formatting
-        val builder = StringBuilder()
-        builder.append("$timestamp $priorityChar/$tag: $message")
-        throwable?.let {
-            builder.append("\n").append(Log.getStackTraceString(it)) // Append stack trace if present
+        val prefix = when (priority) {
+            Log.ERROR -> "- "
+            Log.WARN  -> "! "
+            Log.INFO  -> "+ "
+            Log.DEBUG -> "? "
+            Log.VERBOSE -> ". "
+            else      -> "  "
         }
-        return builder.toString()
+        val timestamp = dateFormat.format(Date())
+        val base = "$timestamp $levelChar/$tag: $message"
+        val withThrowable = if (throwable != null) "$base\n${Log.getStackTraceString(throwable)}" else base
+        return prefix + withThrowable
     }
 
     /**
@@ -310,19 +354,23 @@ object LogManager {
     private fun checkAndRotateLog(currentLogFile: File) {
         if (currentLogFile.exists() && currentLogFile.length() > MAX_LOG_SIZE_BYTES) {
             val oldFileSize = currentLogFile.length()
-            i(DEFAULT_TAG, "Log file '${currentLogFile.name}' (size: $oldFileSize bytes) exceeds limit ($MAX_LOG_SIZE_BYTES bytes). Rotating.")
+            i(TAG, "Log file '${currentLogFile.name}' (size: $oldFileSize bytes) exceeds limit ($MAX_LOG_SIZE_BYTES bytes). Rotating.")
 
-            // Delete the oversized log file
+            try {
+                OutputStreamWriter(FileOutputStream(currentLogFile, true), StandardCharsets.UTF_8).use {
+                    it.append("\n```").append("\n")
+                }
+                isMarkdownBlockOpen = false
+            } catch (_: IOException) {}
+
+
             if (currentLogFile.delete()) {
-                i(DEFAULT_TAG, "Oversized log file deleted: ${currentLogFile.name}. A new log file will be started with headers.")
-                // The writeInitialLogHeaders will be called to prepare the new (now non-existent or empty) file.
-                // It is important that this happens *before* the next log message is written.
-                // The main log() function's check for existence/emptiness and subsequent call to writeInitialLogHeaders
-                // will handle this. Alternatively, we can explicitly call it here.
-                // For clarity and ensuring headers are written immediately after rotation:
+                i(TAG, "Oversized log file deleted: ${currentLogFile.name}. A new log file will be started with headers.")
+                // Immediately open a new header and start a fresh ```diff block.
                 writeInitialLogHeaders(currentLogFile)
+                isMarkdownBlockOpen = true
             } else {
-                e(DEFAULT_TAG, "Failed to delete oversized log file '${currentLogFile.name}' for rotation. Current log may continue to grow or writes may fail.")
+                e(TAG, "Failed to delete oversized log file '${currentLogFile.name}' for rotation. Current log may continue to grow or writes may fail.")
             }
         }
     }
@@ -334,7 +382,7 @@ object LogManager {
      */
     fun getLogFile(): File? {
         if (!isInitialized) {
-            w(DEFAULT_TAG, "getLogFile() called before LogManager was initialized.")
+            w(TAG, "getLogFile() called before LogManager was initialized.")
             return null
         }
         val logFile = File(getLogDirectory(), "$CURRENT_LOG_FILE_NAME_BASE$LOG_FILE_EXTENSION")
@@ -342,7 +390,7 @@ object LogManager {
             logFile
         } else {
             // Log file might not exist if logging to file is disabled or no logs written yet.
-            d(DEFAULT_TAG, "Queried log file does not currently exist at path: ${logFile.absolutePath}")
+            d(TAG, "Queried log file does not currently exist at path: ${logFile.absolutePath}")
             null
         }
     }
@@ -353,7 +401,7 @@ object LogManager {
      */
     fun clearLogFiles() {
         if (!isInitialized) {
-            w(DEFAULT_TAG, "clearLogFiles() called before LogManager was initialized.")
+            w(TAG, "clearLogFiles() called before LogManager was initialized.")
             return
         }
         coroutineScope.launch {
@@ -362,26 +410,70 @@ object LogManager {
 
             try {
                 if (currentLogFile.exists()) {
+                    try {
+                        OutputStreamWriter(FileOutputStream(currentLogFile, true), StandardCharsets.UTF_8).use {
+                            it.append("\n```").append("\n")
+                        }
+                        isMarkdownBlockOpen = false
+                    } catch (_: Exception) {}
+
                     if (currentLogFile.delete()) {
-                        i(DEFAULT_TAG, "Log file cleared: ${currentLogFile.absolutePath}")
+                        i(TAG, "Log file cleared: ${currentLogFile.absolutePath}")
                     } else {
-                        e(DEFAULT_TAG, "Failed to clear log file: ${currentLogFile.absolutePath}")
+                        e(TAG, "Failed to clear log file: ${currentLogFile.absolutePath}")
                         // If deletion fails, do not proceed to write headers to a potentially problematic file.
                         return@launch
                     }
                 } else {
-                    i(DEFAULT_TAG, "Log file already cleared or did not exist: ${currentLogFile.absolutePath}")
+                    i(TAG, "Log file already cleared or did not exist: ${currentLogFile.absolutePath}")
                 }
 
                 // If file logging is enabled, a new log session effectively starts, so write headers.
                 if (logToFileEnabled) {
-                    d(DEFAULT_TAG, "File logging is enabled, writing initial headers after clearing.")
-                    writeInitialLogHeaders(currentLogFile)
+                    d(TAG, "File logging is enabled, writing initial headers after clearing.")
+                    writeInitialLogHeaders(currentLogFile) // starts new ```diff block
+                    isMarkdownBlockOpen = true
                 }
             } catch (e: Exception) {
                 // Catch any unexpected exception during file operations.
-                Log.e(DEFAULT_TAG, "Error during clearLogFiles operation for ${currentLogFile.absolutePath}", e)
+                Log.e(TAG, "Error during clearLogFiles operation for ${currentLogFile.absolutePath}", e)
             }
+        }
+    }
+
+    /**
+     * Closes the ```diff code block at the end of the current log file (if any).
+     * Safe to call multiple times; appends a fence only if the file exists.
+     */
+    @JvmStatic
+    fun closeMarkdownBlock() {
+        if (!isInitialized) return
+        val logFile = File(getLogDirectory(), "$CURRENT_LOG_FILE_NAME_BASE$LOG_FILE_EXTENSION")
+        if (!logFile.exists() || !isMarkdownBlockOpen) return
+        try {
+            OutputStreamWriter(FileOutputStream(logFile, true), StandardCharsets.UTF_8).use {
+                it.append("\n```").append("\n")
+            }
+            isMarkdownBlockOpen = false
+            d(TAG, "Markdown diff block closed.")
+        } catch (e: IOException) {
+            Log.e(TAG, "Error closing markdown diff block", e)
+        }
+    }
+
+    private fun openMarkdownBlockIfNeeded() {
+        if (!isInitialized || !logToFileEnabled || isMarkdownBlockOpen) return
+        val logFile = File(getLogDirectory(), "$CURRENT_LOG_FILE_NAME_BASE$LOG_FILE_EXTENSION")
+        try {
+            // Falls Datei frisch oder leer ist, wird ohnehin beim nächsten Write der Header erzeugt.
+            if (!logFile.exists() || logFile.length() == 0L) return
+            OutputStreamWriter(FileOutputStream(logFile, true), StandardCharsets.UTF_8).use {
+                it.append("```diff\n")
+            }
+            isMarkdownBlockOpen = true
+            d(TAG, "Markdown diff block reopened after app foreground.")
+        } catch (e: IOException) {
+            Log.e(TAG, "Error reopening markdown diff block", e)
         }
     }
 }

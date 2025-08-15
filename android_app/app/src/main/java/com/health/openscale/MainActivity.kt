@@ -107,7 +107,8 @@ class MainActivity : ComponentActivity() {
 
         // --- LogManager initializing ---
         lifecycleScope.launch {
-            val isFileLoggingEnabled = userSettingsRepository.isFileLoggingEnabled.first()
+            val isFileLoggingEnabled = runCatching { userSettingsRepository.isFileLoggingEnabled.first() }
+                .getOrElse { false }
             LogManager.init(applicationContext, isFileLoggingEnabled)
             LogManager.d(TAG, "LogManager initialized. File logging enabled: $isFileLoggingEnabled")
         }
