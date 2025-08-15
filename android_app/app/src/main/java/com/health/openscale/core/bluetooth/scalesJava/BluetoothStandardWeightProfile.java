@@ -111,6 +111,13 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
     }
 
     @Override
+    public void setSelectedScaleUser(ScaleUser user) {
+        super.setSelectedScaleUser(user);
+        this.selectedUser = user;
+        LogManager.d(TAG, "setSelectedScaleUser: id=" + (user != null ? user.getId() : -1));
+    }
+
+    @Override
     protected boolean onNextStep(int stepNr) {
 
         if (stepNr > SM_STEPS.MAX_STEP.ordinal()) {
@@ -746,7 +753,7 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
     }
 
     protected synchronized void storeUserScaleConsentCode(int userId, int consentCode) {
-        prefs.edit().putInt("userConsentCode" + userId, consentCode).apply();
+        prefs.edit().putInt("userConsentCode" + userId, consentCode).commit();
         LogManager.d(TAG, "storeUserScaleConsentCode: userId=" + userId + " now=" + getUserScaleConsent(userId));
     }
 
@@ -757,11 +764,11 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
     protected synchronized void storeUserScaleIndex(int userId, int userIndex) {
         int currentUserIndex = getUserScaleIndex(userId);
         if (currentUserIndex != -1) {
-            prefs.edit().putInt("userIdFromUserScaleIndex" + currentUserIndex, -1).apply();
+            prefs.edit().putInt("userIdFromUserScaleIndex" + currentUserIndex, -1).commit();
         }
-        prefs.edit().putInt("userScaleIndex" + userId, userIndex).apply();
+        prefs.edit().putInt("userScaleIndex" + userId, userIndex).commit();
         if (userIndex != -1) {
-            prefs.edit().putInt("userIdFromUserScaleIndex" + userIndex, userId).apply();
+            prefs.edit().putInt("userIdFromUserScaleIndex" + userIndex, userId).commit();
         }
         LogManager.d(TAG, "storeUserScaleIndex: userId=" + userId + " now=" + getUserScaleIndex(userId));
     }

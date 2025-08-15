@@ -101,6 +101,8 @@ class LegacyScaleAdapter(
 
     private suspend fun provideUserDataToLegacyDriver() {
         try {
+            currentInternalUser?.let { bluetoothDriverInstance.setSelectedScaleUser(it) }
+
             LogManager.d(TAG, "Attempting to load user data for legacy driver: ${bluetoothDriverInstance.driverName()}")
             val userListFromDb = databaseRepository.getAllUsers().first()
 
@@ -324,8 +326,6 @@ class LegacyScaleAdapter(
             LogManager.d(TAG, "connect: Internal user for connection: ${currentInternalUser?.id}")
 
             provideUserDataToLegacyDriver()
-
-            currentInternalUser?.let { bluetoothDriverInstance.setSelectedScaleUser(it) }
 
             LogManager.d(TAG, "connect: Calling connect() on Java driver instance (${bluetoothDriverInstance.driverName()}) for $address.")
             try {
