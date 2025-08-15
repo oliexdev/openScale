@@ -24,6 +24,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.ScanResult;
+import android.os.ParcelUuid;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -38,6 +39,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+
+import java.util.List;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.text.SpannableStringBuilder;
@@ -80,6 +83,7 @@ import timber.log.Timber;
 public class BluetoothSettingsFragment extends Fragment {
     public static final String PREFERENCE_KEY_BLUETOOTH_DEVICE_NAME = "btDeviceName";
     public static final String PREFERENCE_KEY_BLUETOOTH_HW_ADDRESS = "btHwAddress";
+    public static final String PREFERENCE_KEY_BLUETOOTH_DRIVER_ID = "btDriverId";
 
     private Map<String, BluetoothDevice> foundDevices = new HashMap<>();
 
@@ -325,20 +329,29 @@ public class BluetoothSettingsFragment extends Fragment {
         String deviceName = device.getName();
         if (deviceName == null) {
             deviceName = BluetoothFactory.convertNoNameToDeviceName(bleScanResult.getScanRecord().getManufacturerSpecificData());
-          }
-       if (deviceName == null) {
-           return;
+        }
+        if (deviceName == null) {
+            return;
+        }
+
+        // Extract service UUIDs from scan result
+        List<ParcelUuid> serviceUuids = null;
+        if (bleScanResult.getScanRecord() != null) {
+            serviceUuids = bleScanResult.getScanRecord().getServiceUuids();
         }
 
         BluetoothDeviceView deviceView = new BluetoothDeviceView(context);
         deviceView.setDeviceName(formatDeviceName(deviceName, device.getAddress()));
         deviceView.setAlias(deviceName);
 
-        BluetoothCommunication btDevice = BluetoothFactory.createDeviceDriver(context, deviceName);
+        // Get driverId for this device
+        String driverId = BluetoothFactory.getDriverIdFromDeviceName(deviceName, serviceUuids);
+        BluetoothCommunication btDevice = BluetoothFactory.createDeviceDriver(context, deviceName, serviceUuids);
         if (btDevice != null) {
             Timber.d("Found supported device %s (driver: %s)",
                     formatDeviceName(device), btDevice.driverName());
             deviceView.setDeviceAddress(device.getAddress());
+            deviceView.setDriverId(driverId);
             deviceView.setIcon(R.drawable.ic_bluetooth_device_supported);
             deviceView.setSummaryText(btDevice.driverName());
         }
@@ -403,6 +416,7 @@ public class BluetoothSettingsFragment extends Fragment {
         private ImageView deviceIcon;
         private String deviceAddress;
         private String deviceAlias;
+        private String driverId;
 
         public BluetoothDeviceView(Context context) {
             super(context);
@@ -446,6 +460,14 @@ public class BluetoothSettingsFragment extends Fragment {
 
         public String getDeviceAddress() {
             return deviceAddress;
+        }
+
+        public void setDriverId(String driverId) {
+            this.driverId = driverId;
+        }
+
+        public String getDriverId() {
+            return driverId;
         }
 
         public void setDeviceName(String name) {
@@ -499,9 +521,10 @@ public class BluetoothSettingsFragment extends Fragment {
             prefs.edit()
                     .putString(PREFERENCE_KEY_BLUETOOTH_HW_ADDRESS, device.getAddress())
                     .putString(PREFERENCE_KEY_BLUETOOTH_DEVICE_NAME, getAlias())
+                    .putString(PREFERENCE_KEY_BLUETOOTH_DRIVER_ID, getDriverId())
                     .apply();
 
-            Timber.d("Saved Bluetooth device " + getAlias() + " with address " + device.getAddress());
+            Timber.d("Saved Bluetooth device " + getAlias() + " with address " + device.getAddress() + " and driver ID " + getDriverId());
 
             stopBluetoothDiscovery();
 

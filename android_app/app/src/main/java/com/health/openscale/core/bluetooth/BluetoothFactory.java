@@ -17,8 +17,10 @@
 package com.health.openscale.core.bluetooth;
 
 import android.content.Context;
+import android.os.ParcelUuid;
 import android.util.SparseArray;
 
+import java.util.List;
 import java.util.Locale;
 
 import com.health.openscale.core.bluetooth.driver.*;
@@ -28,7 +30,7 @@ public class BluetoothFactory {
         return new BluetoothDebug(context);
     }
 
-    public static String getDriverIdFromDeviceName(String deviceName) {
+    public static String getDriverIdFromDeviceName(String deviceName, List<ParcelUuid> serviceUuids) {
         final String name = deviceName.toLowerCase(Locale.US);
 
         if (name.startsWith("BEURER BF700".toLowerCase(Locale.US))
@@ -161,9 +163,9 @@ public class BluetoothFactory {
         return null;
     }
 
-    public static BluetoothCommunication createDriverById(Context context, String targetDriverId) {
+    public static BluetoothCommunication createDriverById(Context context, String deviceName, String targetDriverId) {
         if (targetDriverId == null) return null;
-        
+
         // Check each driver class by calling their static driverId() method
         if (targetDriverId.equals(BluetoothActiveEraBF06.driverId())) {
             return new BluetoothActiveEraBF06(context);
@@ -279,14 +281,20 @@ public class BluetoothFactory {
             // Note: This driver requires boolean parameter - using default for now
             return new BluetoothYunmaiSE_Mini(context, true);
         }
-        
+
         return null;
     }
 
     public static BluetoothCommunication createDeviceDriver(Context context, String deviceName) {
-        String driverId = getDriverIdFromDeviceName(deviceName);
+        String driverId = getDriverIdFromDeviceName(deviceName, null);
         if (driverId == null) return null;
-        return createDriverById(context, driverId);
+        return createDriverById(context, deviceName, driverId);
+    }
+
+    public static BluetoothCommunication createDeviceDriver(Context context, String deviceName, List<ParcelUuid> serviceUuids) {
+        String driverId = getDriverIdFromDeviceName(deviceName, serviceUuids);
+        if (driverId == null) return null;
+        return createDriverById(context, deviceName, driverId);
     }
 
     public static String convertNoNameToDeviceName(SparseArray<byte[]> manufacturerSpecificData) {

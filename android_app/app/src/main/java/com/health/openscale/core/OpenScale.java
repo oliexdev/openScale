@@ -653,12 +653,13 @@ public class OpenScale {
         btDeviceDriver.connect(hwAddress);
     }
 
-    public boolean connectToBluetoothDevice(String deviceName, String hwAddress, Handler callbackBtHandler) {
-        Timber.d("Trying to connect to bluetooth device [%s] (%s)", hwAddress, deviceName);
+    public boolean connectToBluetoothDevice(String deviceName, String hwAddress, String driverId, Handler callbackBtHandler) {
+        Timber.d("Trying to connect to bluetooth device [%s] (%s) with driver ID: %s", hwAddress, deviceName, driverId);
 
         disconnectFromBluetoothDevice();
 
-        btDeviceDriver = BluetoothFactory.createDeviceDriver(context, deviceName);
+        btDeviceDriver = BluetoothFactory.createDriverById(context, deviceName, driverId);
+
         if (btDeviceDriver == null) {
             return false;
         }

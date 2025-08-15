@@ -670,11 +670,12 @@ public class MainActivity extends AppCompatActivity
                 BluetoothSettingsFragment.PREFERENCE_KEY_BLUETOOTH_DEVICE_NAME, "");
         String hwAddress = prefs.getString(
                 BluetoothSettingsFragment.PREFERENCE_KEY_BLUETOOTH_HW_ADDRESS, "");
+        String driverId = prefs.getString(BluetoothSettingsFragment.PREFERENCE_KEY_BLUETOOTH_DRIVER_ID, null);
 
         Toast.makeText(getApplicationContext(), getResources().getString(R.string.info_bluetooth_try_connection) + " " + deviceName, Toast.LENGTH_SHORT).show();
         setBluetoothStatusIcon(R.drawable.ic_bluetooth_searching);
 
-        if (!OpenScale.getInstance().connectToBluetoothDevice(deviceName, hwAddress, callbackBtHandler)) {
+        if (!OpenScale.getInstance().connectToBluetoothDevice(deviceName, hwAddress, driverId, callbackBtHandler)) {
             setBluetoothStatusIcon(R.drawable.ic_bluetooth_connection_lost);
             Toast.makeText(getApplicationContext(), deviceName + " " + getResources().getString(R.string.label_bt_device_no_support), Toast.LENGTH_SHORT).show();
         }
