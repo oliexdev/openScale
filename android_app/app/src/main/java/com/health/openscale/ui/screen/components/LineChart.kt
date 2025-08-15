@@ -271,7 +271,7 @@ fun LineChart(
                 Text(
                     text = stringResource(
                         R.string.line_chart_filter_title_template,
-                        uiSelectedTimeRange.displayName,
+                        uiSelectedTimeRange.getDisplayName(LocalContext.current),
                         measurementsWithValues.size
                     ),
                     style = MaterialTheme.typography.bodyMedium,
@@ -612,14 +612,14 @@ fun provideFilterTopBarAction(
             // Time Range Options
             TimeRangeFilter.entries.forEach { timeRange ->
                 DropdownMenuItem(
-                    text = { Text(timeRange.displayName) },
+                    text = { Text(timeRange.getDisplayName(LocalContext.current)) },
                     leadingIcon = {
                         if (activeTimeRange == timeRange) {
                             Icon(
                                 imageVector = Icons.Default.Check,
                                 contentDescription = stringResource(
                                     R.string.content_description_time_range_selected,
-                                    timeRange.displayName // Same i18n consideration as above
+                                    timeRange.getDisplayName(LocalContext.current) // Same i18n consideration as above
                                 )
                             )
                         } else {

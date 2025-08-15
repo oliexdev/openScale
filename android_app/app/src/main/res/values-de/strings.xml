@@ -242,6 +242,10 @@
     <string name="content_description_measurement_filter_visible">Messfilter ist sichtbar</string>
     <string name="content_description_measurement_filter_hidden">Messfilter ist ausgeblendet</string>
     <string name="line_chart_filter_title_template">%1$s (%2$d Einträge)</string> <!-- Beispiel: "Letzte 30 Tage (15 Einträge)" -->
+    <string name="time_range_all_days">Alle Tage</string>
+    <string name="time_range_last_7_days">Letzte 7 Tage</string>
+    <string name="time_range_last_30_days">Letzte 30 Tage</string>
+    <string name="time_range_last_365_days">Letzte 365 Tage</string>
     <string name="line_chart_no_plottable_types">Keine darstellbaren Diagrammtypen verfügbar.</string>
     <string name="line_chart_no_data_to_display">Keine Daten zum Anzeigen.</string>
     <string name="line_chart_no_data_for_type_in_range">Keine Daten für %1$s im ausgewählten Bereich.</string>

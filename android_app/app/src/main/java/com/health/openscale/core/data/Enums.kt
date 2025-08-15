@@ -24,9 +24,7 @@ import java.util.Locale
 
 enum class SupportedLanguage(val code: String, val nativeDisplayName: String) {
     ENGLISH("en", "English"),
-    GERMAN("de", "Deutsch"),
-    SPANISH("es", "Español"),
-    FRENCH("fr", "Français");
+    GERMAN("de", "Deutsch");
 
     fun toLocale(): Locale {
         return Locale.Builder().setLanguage(code).build()
@@ -202,9 +200,13 @@ enum class Trend {
     UP, DOWN, NONE, NOT_APPLICABLE
 }
 
-enum class TimeRangeFilter(val displayName: String) {
-    ALL_DAYS("Alle Tage"),
-    LAST_7_DAYS("Letzte 7 Tage"),
-    LAST_30_DAYS("Letzte 30 Tage"),
-    LAST_365_DAYS("Letzte 365 Tage")
+enum class TimeRangeFilter(@StringRes val displayNameResId: Int) {
+    ALL_DAYS(R.string.time_range_all_days),
+    LAST_7_DAYS(R.string.time_range_last_7_days),
+    LAST_30_DAYS(R.string.time_range_last_30_days),
+    LAST_365_DAYS(R.string.time_range_last_365_days);
+
+    fun getDisplayName(context: android.content.Context): String {
+        return context.getString(displayNameResId)
+    }
 }
