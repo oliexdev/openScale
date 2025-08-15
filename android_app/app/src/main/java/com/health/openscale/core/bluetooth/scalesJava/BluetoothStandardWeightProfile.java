@@ -174,11 +174,21 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
                 break;
             case REQUEST_VENDOR_SPECIFIC_USER_LIST:
                 scaleUserList.clear();
-                int uid = (pendingUserId != -1) ? pendingUserId : (this.selectedUser != null ? this.selectedUser.getId() : -1);
+                int uid = (pendingUserId != -1) ? pendingUserId
+                        : (this.selectedUser != null ? this.selectedUser.getId() : -1);
                 int idx = getUserScaleIndex(uid);
                 int cns = getUserScaleConsent(uid);
+
                 LogManager.d(TAG, "REQUEST_VENDOR_SPECIFIC_USER_LIST for appUserId=" + uid
                         + " -> index=" + idx + ", consent=" + cns);
+
+                if (uid != -1 && idx != -1 && cns != -1) {
+                    LogManager.d(TAG, "Mapping present -> skipping user list; jumping to SELECT_SCALE_USER");
+                    jumpNextToStepNr(SM_STEPS.SELECT_SCALE_USER.ordinal());
+                    resumeMachineState();
+                    break;
+                }
+
                 requestVendorSpecificUserList();
                 stopMachineState();
                 break;
