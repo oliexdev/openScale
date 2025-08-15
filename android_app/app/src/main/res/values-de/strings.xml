@@ -281,12 +281,16 @@
     <string name="settings_item_user">Benutzer</string>
     <string name="settings_item_measurement_types">Messarten</string>
     <string name="settings_item_bluetooth">Bluetooth</string>
+    <string name="settings_item_chart">Diagramm</string>
     <string name="settings_item_data_management">Datenverwaltung</string>
     <string name="settings_item_about">Über</string>
 
     <!-- Allgemeine Einstellungen -->
     <string name="settings_general_title">Allgemeine Einstellungen</string>
     <string name="settings_language_label">Sprache</string>
+
+    <!-- Diagramm Einstellungen -->
+    <string name="setting_show_chart_points">Datenpunkte anzeigen</string>
 
     <!-- Über-Bildschirm & Diagnose -->
     <string name="version_info">Version: %1$s (%2$s)</string>

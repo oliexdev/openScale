@@ -63,6 +63,7 @@ import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.TimeRangeFilter
 import com.health.openscale.core.database.UserPreferenceKeys
 import com.health.openscale.core.database.UserSettingsRepository
+import com.health.openscale.core.database.UserSettingsRepositoryImpl
 import com.health.openscale.ui.screen.SharedViewModel
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberAxisGuidelineComponent
@@ -141,6 +142,8 @@ fun LineChart(
 ) {
     val scope = rememberCoroutineScope()
     val userSettingsRepository = sharedViewModel.userSettingRepository
+
+    val showDataPointsSetting by userSettingsRepository.showChartDataPoints.collectAsState(initial = true)
 
     val uiSelectedTimeRange by rememberContextualTimeRangeFilter(
         screenContextName = screenContextName,
@@ -503,7 +506,11 @@ fun LineChart(
             LineCartesianLayer.LineProvider.series(
                 seriesEntriesForStartAxis.mapIndexedNotNull { index, _ ->
                     if (index < typeColorsForStartAxis.size) {
-                        createLineSpec(typeColorsForStartAxis[index], statisticsMode = targetMeasurementTypeId != null)
+                        createLineSpec(
+                            color = typeColorsForStartAxis[index],
+                            statisticsMode = targetMeasurementTypeId != null,
+                            showPoints = showDataPointsSetting
+                        )
                     } else null
                 }
             )
@@ -522,7 +529,11 @@ fun LineChart(
             LineCartesianLayer.LineProvider.series(
                 seriesEntriesForEndAxis.mapIndexedNotNull { index, _ ->
                     if (index < typeColorsForEndAxis.size) {
-                        createLineSpec(typeColorsForEndAxis[index], statisticsMode = targetMeasurementTypeId != null)
+                        createLineSpec(
+                            color = typeColorsForEndAxis[index],
+                            statisticsMode = targetMeasurementTypeId != null,
+                            showPoints = showDataPointsSetting
+                        )
                     } else null
                 }
             )
@@ -702,9 +713,10 @@ private fun rememberXAxisValueFormatter(
  * @param color The color of the line and points.
  * @param statisticsMode If true, an area fill is added below the line, and points are hidden.
  *                       This is typically used when `targetMeasurementTypeId` is set.
+ * @param showPoints If true, points are displayed on the line (unless in statisticsMode).
  * @return A configured [LineCartesianLayer.Line].
  */
-private fun createLineSpec(color: Color, statisticsMode : Boolean): LineCartesianLayer.Line {
+private fun createLineSpec(color: Color, statisticsMode : Boolean, showPoints: Boolean): LineCartesianLayer.Line {
     val lineStroke = LineCartesianLayer.LineStroke.Continuous(
         thicknessDp = 2f,
     )
@@ -719,10 +731,11 @@ private fun createLineSpec(color: Color, statisticsMode : Boolean): LineCartesia
         // Area fill is shown in statistics mode (e.g., when a single type is focused)
         areaFill = if (statisticsMode) LineCartesianLayer.AreaFill.single(Fill(color.copy(alpha = 0.2f).toArgb())) else null,
         // Points on the line are shown unless in statistics mode
-        pointProvider = if (!statisticsMode) {
+        pointProvider = if (showPoints && !statisticsMode) {
             LineCartesianLayer.PointProvider.single(
                 LineCartesianLayer.point(ShapeComponent(fill(color.copy(alpha = 0.7f)), CorneredShape.Pill), 6.dp)
-            ) } else null,
+            )
+        } else null,
         // dataLabel = null,         // No data labels on points
         pointConnector = LineCartesianLayer.PointConnector.cubic()
     )

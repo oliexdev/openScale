@@ -57,6 +57,9 @@ object UserPreferenceKeys {
     val SAVED_BLUETOOTH_SCALE_ADDRESS = stringPreferencesKey("saved_bluetooth_scale_address")
     val SAVED_BLUETOOTH_SCALE_NAME = stringPreferencesKey("saved_bluetooth_scale_name")
 
+    // Settings for chart
+    val SHOW_CHART_DATA_POINTS = booleanPreferencesKey("show_chart_data_points")
+
     // Context strings for screen-specific settings (can be used as prefixes for dynamic keys)
     const val OVERVIEW_SCREEN_CONTEXT = "overview_screen"
     const val GRAPH_SCREEN_CONTEXT = "graph_screen"
@@ -89,6 +92,9 @@ interface UserSettingsRepository {
     val savedBluetoothScaleName: Flow<String?>
     suspend fun saveBluetoothScale(address: String, name: String?)
     suspend fun clearSavedBluetoothScale()
+
+    val showChartDataPoints: Flow<Boolean>
+    suspend fun setShowChartDataPoints(show: Boolean)
 
     // Generic Settings Accessors
     /**
@@ -246,6 +252,19 @@ class UserSettingsRepositoryImpl(context: Context) : UserSettingsRepository {
             preferences.remove(UserPreferenceKeys.SAVED_BLUETOOTH_SCALE_ADDRESS)
             preferences.remove(UserPreferenceKeys.SAVED_BLUETOOTH_SCALE_NAME)
         }
+    }
+
+    override val showChartDataPoints: Flow<Boolean> = observeSetting(
+        UserPreferenceKeys.SHOW_CHART_DATA_POINTS.name,
+        true
+    ).catch { exception ->
+        LogManager.e(TAG, "Error observing showChartDataPoints", exception)
+        emit(true)
+    }
+
+    override suspend fun setShowChartDataPoints(show: Boolean) {
+        LogManager.d(TAG, "Setting showChartDataPoints to: $show")
+        saveSetting(UserPreferenceKeys.SHOW_CHART_DATA_POINTS.name, show)
     }
 
     @Suppress("UNCHECKED_CAST")
