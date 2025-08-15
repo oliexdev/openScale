@@ -505,9 +505,11 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
         }
         else {
             if (previousMeasurement != null) {
-                weightValue = previousMeasurement.getWeight();
-                if (weightValue > 0) {
+                float w = previousMeasurement.getWeight();
+                if (w > 0) {
                     weightPresent = true;
+                    weightValue = w;
+                    scaleMeasurement.setWeight(w);
                 }
             }
         }
@@ -554,29 +556,56 @@ public abstract class BluetoothStandardWeightProfile extends BluetoothCommunicat
         if (previousMeasurement == null) {
             if (newMeasurement.getUserId() == -1) {
                 addScaleMeasurement(newMeasurement);
-            }
-            else {
+            } else {
                 previousMeasurement = newMeasurement;
             }
+            return;
+        }
+
+        if (newMeasurement.getUserId() == -1 && previousMeasurement.getUserId() != -1) {
+            newMeasurement.setUserId(previousMeasurement.getUserId());
+            newMeasurement.setDateTime(previousMeasurement.getDateTime());
+            if (newMeasurement.getWeight() <= 0 && previousMeasurement.getWeight() > 0) {
+                newMeasurement.setWeight(previousMeasurement.getWeight());
+            }
+
+            LogManager.d(TAG, "merge: storing MERGED measurement (weight+bodycomp) for userId=" + newMeasurement.getUserId());
+            addScaleMeasurement(newMeasurement);
+            previousMeasurement = null;
+            return;
         }
         else {
-            if ((newMeasurement.getUserId() == -1) && (previousMeasurement.getUserId() != -1)) {
-                // previousMeasurement.merge(newMeasurement); --> change to start
-                newMeasurement.setUserId(previousMeasurement.getUserId());
-                newMeasurement.setDateTime(previousMeasurement.getDateTime());
-                // change end
-                addScaleMeasurement(previousMeasurement);
+            // Both measurements have a userId
+            if (previousMeasurement.getUserId() != -1 &&
+                    newMeasurement.getUserId()     != -1 &&
+                    previousMeasurement.getUserId() == newMeasurement.getUserId()) {
+
+                // Optional: If the BodyComp packet has no timestamp, use the one from the previous measurement
+                if (newMeasurement.getDateTime() == null && previousMeasurement.getDateTime() != null) {
+                    newMeasurement.setDateTime(previousMeasurement.getDateTime());
+                }
+
+                // If BodyComp packet has no weight (or 0), take it from the previous weight measurement
+                if ((newMeasurement.getWeight() <= 0) && (previousMeasurement.getWeight() > 0)) {
+                    newMeasurement.setWeight(previousMeasurement.getWeight());
+                }
+
+                // Body composition fields (fat, muscle, water, lbm, bone, etc.) are already set in newMeasurement
+                // If you want to carry over additional fields from the previous measurement, add that here.
+
+                LogManager.d(TAG, "merge: storing MERGED measurement (both had userId) for userId=" + newMeasurement.getUserId());
+                addScaleMeasurement(newMeasurement);
                 previousMeasurement = null;
+                return;
             }
-            else {
-                addScaleMeasurement(previousMeasurement);
-                if (newMeasurement.getUserId() == -1) {
-                    addScaleMeasurement(newMeasurement);
-                    previousMeasurement = null;
-                }
-                else {
-                    previousMeasurement = newMeasurement;
-                }
+
+            // Fallback: no merge – store the previous measurement, and keep the new one as previousMeasurement
+            addScaleMeasurement(previousMeasurement);
+            if (newMeasurement.getUserId() == -1) {
+                addScaleMeasurement(newMeasurement);
+                previousMeasurement = null;
+            } else {
+                previousMeasurement = newMeasurement;
             }
         }
     }
