@@ -295,8 +295,8 @@
     <!-- Über-Bildschirm & Diagnose -->
     <string name="version_info">Version: %1$s (%2$s)</string>
     <string name="project_information_title">Projektinformationen</string>
-    <string name="maintainer_label">Betreuer</string>
-    <string name="maintainer_icon_content_description">Betreuer-Symbol</string>
+    <string name="maintainer_label">Hauptentwickler</string>
+    <string name="maintainer_icon_content_description">Hauptentwickler-Symbol</string>
     <string name="project_homepage_display">Projekt auf GitHub</string>
     <string name="official_project_page_label">Offizielle Projektseite</string>
     <string name="homepage_icon_content_description">Homepage-Symbol</string>
