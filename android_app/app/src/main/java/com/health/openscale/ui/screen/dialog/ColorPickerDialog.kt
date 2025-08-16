@@ -79,8 +79,7 @@ fun ColorPickerDialog(
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(4),
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(240.dp),
+                        .fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center,
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
@@ -92,8 +91,8 @@ fun ColorPickerDialog(
                                 .clip(CircleShape)
                                 .background(color)
                                 .border(
-                                    width = if (color == currentColor) 3.dp else 1.dp,
-                                    color = if (color == currentColor) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.outlineVariant,
+                                    width = if (color == currentColor) 3.dp else 0.dp,
+                                    color = if (color == currentColor) MaterialTheme.colorScheme.onSurface else Color.Transparent,
                                     shape = CircleShape
                                 )
                                 .clickable {

@@ -52,6 +52,7 @@ import androidx.compose.material.icons.filled.NightsStay
 import androidx.compose.material.icons.filled.OilBarrel
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PieChart
+import androidx.compose.material.icons.filled.QuestionMark
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material.icons.filled.RemoveCircleOutline
 import androidx.compose.material.icons.filled.Schedule
@@ -191,7 +192,7 @@ enum class MeasureUnit {
 }
 
 enum class MeasurementTypeIcon(val resource: IconResource) {
-    IC_DEFAULT(IconResource.VectorResource(Icons.Filled.RadioButtonUnchecked)),
+    IC_DEFAULT(IconResource.VectorResource(Icons.Filled.QuestionMark)),
     IC_WEIGHT(IconResource.PainterResource(R.drawable.ic_weight)),
     IC_BMI(IconResource.PainterResource(R.drawable.ic_bmi)),
     IC_BODY_FAT(IconResource.PainterResource(R.drawable.ic_fat)),

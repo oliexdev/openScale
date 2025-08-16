@@ -141,8 +141,8 @@ fun MeasurementTypeDetailScreen(
             mutableStateOf(allowedInputTypesForKey.firstOrNull() ?: InputFieldType.FLOAT)
         }
     }
-    var selectedColor by remember { mutableStateOf(originalExistingType?.color ?: 0xFF6200EE.toInt()) }
-    var selectedIcon by remember { mutableStateOf(originalExistingType?.icon ?: MeasurementTypeIcon.IC_WEIGHT) }
+    var selectedColor by remember { mutableStateOf(originalExistingType?.color ?: 0xFFFFA726.toInt()) }
+    var selectedIcon by remember { mutableStateOf(originalExistingType?.icon ?: MeasurementTypeIcon.IC_DEFAULT) }
     var isEnabled by remember { mutableStateOf(originalExistingType?.isEnabled ?: true) }
     var isPinned by remember { mutableStateOf(originalExistingType?.isPinned ?: false) }
     var isOnRightYAxis by remember { mutableStateOf(originalExistingType?.isOnRightYAxis ?: false) }
