@@ -17,19 +17,14 @@
  */
 package com.health.openscale.ui.screen.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -40,15 +35,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.health.openscale.R
 import com.health.openscale.core.data.MeasurementType
+import com.health.openscale.ui.components.RoundMeasurementIcon
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.firstOrNull
@@ -194,8 +186,8 @@ fun MeasurementTypeFilterRow(
     ) {
         selectableTypes.forEach { type ->
             val isSelected = type.id in displayedSelectedIds
-            val backgroundColor = if (isSelected) Color(type.color) else MaterialTheme.colorScheme.surfaceVariant
-            val contentColor = if (isSelected) Color.Black else MaterialTheme.colorScheme.onSurfaceVariant // Consider MaterialTheme.colorScheme.onPrimary for selected state if type.color is primary-like
+            val iconBackgroundColor = if (isSelected) Color(type.color) else MaterialTheme.colorScheme.surfaceVariant
+            val iconColor = if (isSelected) Color.Black else MaterialTheme.colorScheme.onSurfaceVariant // Consider MaterialTheme.colorScheme.onPrimary for selected state if type.color is primary-like
 
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -231,36 +223,11 @@ fun MeasurementTypeFilterRow(
                         }
                     }
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(iconBoxSize)
-                        .clip(CircleShape)
-                        .background(backgroundColor)
-                        .padding((iconBoxSize - iconSize) / 2), // Center icon within the box
-                    contentAlignment = Alignment.Center
-                ) {
-                    val iconResId = remember(type.icon, context) {
-                        if (type.icon.isNotBlank()) {
-                            // It's generally safer to handle potential ResourceNotFoundException if icon names might be invalid
-                            try {
-                                context.resources.getIdentifier(type.icon, "drawable", context.packageName)
-                            } catch (e: Exception) {
-                                // Log error or handle missing icon gracefully
-                                0 // Return 0 if icon not found
-                            }
-                        } else 0
-                    }
-                    if (iconResId != 0) {
-                        Icon(
-                            painter = painterResource(id = iconResId),
-                            contentDescription = stringResource(R.string.content_desc_measurement_type_icon, type.getDisplayName(LocalContext.current)),
-                            tint = contentColor,
-                            modifier = Modifier.size(iconSize)
-                        )
-                    }
-                }
-                // Optionally, add a Text Composable here to display type.name below the icon
-                // Text(text = type.name, style = MaterialTheme.typography.labelSmall, color = contentColor)
+                RoundMeasurementIcon(
+                    icon = type.icon,
+                    backgroundTint = iconBackgroundColor,
+                    iconTint = iconColor
+                )
             }
         }
     }

@@ -52,14 +52,16 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.health.openscale.R
+import com.health.openscale.core.data.MeasurementTypeIcon
+import com.health.openscale.ui.components.RoundMeasurementIcon
 import java.util.Calendar
 
 @Composable
 fun TimeInputDialog(
     title: String,
     initialTimestamp: Long,
-    iconRes: Int,
-    color: Color,
+    measurementIcon: MeasurementTypeIcon,
+    iconBackgroundColor: Color,
     onDismiss: () -> Unit,
     onConfirm: (Long) -> Unit
 ) {
@@ -90,20 +92,10 @@ fun TimeInputDialog(
         },
         title = {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(36.dp)
-                        .clip(CircleShape)
-                        .background(color),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        painter = painterResource(id = iconRes),
-                        contentDescription = null,
-                        tint = Color.Black,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
+                RoundMeasurementIcon(
+                    icon = measurementIcon,
+                    backgroundTint = iconBackgroundColor,
+                )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(title, style = MaterialTheme.typography.titleMedium)
             }

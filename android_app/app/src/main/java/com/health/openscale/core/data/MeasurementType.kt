@@ -28,7 +28,7 @@ data class MeasurementType(
     val key: MeasurementTypeKey = MeasurementTypeKey.CUSTOM,
     val name: String? = null,
     val color: Int = 0,
-    val icon : String = "ic_weight",
+    val icon : MeasurementTypeIcon = MeasurementTypeIcon.IC_DEFAULT,
     val unit: UnitType = UnitType.NONE,
     val inputType: InputFieldType = InputFieldType.FLOAT,
     val displayOrder: Int = 0,

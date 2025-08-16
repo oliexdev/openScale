@@ -89,6 +89,7 @@ import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.Trend
 import com.health.openscale.core.model.MeasurementWithValues
 import com.health.openscale.core.database.UserPreferenceKeys
+import com.health.openscale.ui.components.RoundMeasurementIcon
 import com.health.openscale.ui.navigation.Routes
 import com.health.openscale.ui.screen.SharedViewModel
 import com.health.openscale.ui.screen.ValueWithDifference
@@ -775,11 +776,7 @@ fun MeasurementValueRow(valueWithTrend: ValueWithDifference) {
     } ?: "-" // Default to dash if value is null
 
     val context = LocalContext.current
-    val iconId = remember(type.icon) {
-        // Attempt to get the drawable resource ID for the type's icon name
-        // This relies on the icon name string matching a drawable resource name
-        context.resources.getIdentifier(type.icon, "drawable", context.packageName)
-    }
+    val iconMeasurementType = remember(type.icon) {type.icon }
     // Dynamic content description for the icon based on type name
     val iconContentDescription = stringResource(R.string.measurement_type_icon_desc, type.getDisplayName(context))
     // Fallback content description if the icon is not found (e.g. shows question mark)
@@ -795,30 +792,10 @@ fun MeasurementValueRow(valueWithTrend: ValueWithDifference) {
             modifier = Modifier.weight(1f), // Takes available space, pushing value & trend to the right
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(
-                modifier = Modifier
-                    .size(36.dp) // Standardized size for the icon container
-                    .clip(CircleShape)
-                    .background(Color(type.color)),
-                contentAlignment = Alignment.Center
-            ) {
-                if (iconId != 0) { // Check if the resource ID is valid
-                    Icon(
-                        painter = painterResource(id = iconId),
-                        contentDescription = type.getDisplayName(context),
-                        tint = Color.Black,
-                        modifier = Modifier.size(20.dp)
-                    )
-                } else {
-                    // Fallback icon if the specified icon resource is not found
-                    Icon(
-                        imageVector = Icons.Filled.QuestionMark,
-                        contentDescription = unknownTypeContentDescription,
-                        modifier = Modifier.size(20.dp),
-                        tint = Color.Black
-                    )
-                }
-            }
+            RoundMeasurementIcon(
+                icon = iconMeasurementType,
+                backgroundTint = Color(type.color),
+            )
             Spacer(modifier = Modifier.width(12.dp))
             Column(verticalArrangement = Arrangement.Center) {
                 Text(

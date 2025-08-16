@@ -258,7 +258,6 @@
     <string name="line_chart_no_data_or_types_to_select">No data to display or types to select.</string>
     <string name="line_chart_no_data_for_selected_types">No data available for the selected types.</string>
     <string name="menu_item_measurement_filter">Show/Hide Measurement Filter</string>
-    <string name="content_desc_measurement_type_icon">Filter by %1$s</string>
 
     <!-- Table Screen -->
     <string name="table_header_date">Date</string>

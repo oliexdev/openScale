@@ -58,6 +58,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.health.openscale.R
 import com.health.openscale.core.data.MeasurementTypeKey
+import com.health.openscale.ui.components.MeasurementIcon
+import com.health.openscale.ui.components.RoundMeasurementIcon
 import com.health.openscale.ui.screen.SharedViewModel
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
@@ -145,30 +147,15 @@ fun MeasurementTypeSettingsScreen(
                             .padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Display colored circle with icon
-                        Box(
-                            modifier = Modifier
-                                .size(48.dp)
-                                .background(
-                                    Color(type.color).copy(alpha = iconBackgroundAlpha),
-                                    shape = CircleShape
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            val context = LocalContext.current
-                            // Remember the icon resource ID to avoid repeated lookups
-                            val iconId = remember(type.icon) {
-                                context.resources.getIdentifier(type.icon, "drawable", context.packageName)
-                            }
-                            if (iconId != 0) { // Check if icon resource was found
-                                Icon(
-                                    painter = painterResource(id = iconId),
-                                    contentDescription = null, // Decorative icon
-                                    tint = Color.Black.copy(alpha = iconTintAlpha), // Consider a more theme-aware tint
-                                    modifier = Modifier.size(32.dp)
-                                )
-                            }
-                        }
+                        val iconMeasurementType = remember(type.icon) {type.icon }
+
+                        RoundMeasurementIcon(
+                            icon = iconMeasurementType,
+                            iconTint = Color.Black.copy(alpha = iconTintAlpha),
+                            backgroundTint = Color(type.color).copy(alpha = iconBackgroundAlpha),
+                            modifier = Modifier.size(48.dp)
+                        )
+
                         Spacer(Modifier.size(16.dp))
 
                         // Display measurement type name

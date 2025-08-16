@@ -18,7 +18,52 @@
 package com.health.openscale.core.data
 
 import android.text.InputType
+import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.DirectionsWalk
+import androidx.compose.material.icons.automirrored.filled.HelpOutline
+import androidx.compose.material.icons.automirrored.filled.Label
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.automirrored.filled.ShowChart
+import androidx.compose.material.icons.automirrored.filled.TrendingDown
+import androidx.compose.material.icons.automirrored.filled.TrendingFlat
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
+import androidx.compose.material.icons.filled.AddCircleOutline
+import androidx.compose.material.icons.filled.Analytics
+import androidx.compose.material.icons.filled.Bloodtype
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.CheckCircleOutline
+import androidx.compose.material.icons.filled.DeviceThermostat
+import androidx.compose.material.icons.filled.DirectionsWalk
+import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.EditNote
+import androidx.compose.material.icons.filled.Egg
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FitnessCenter
+import androidx.compose.material.icons.filled.Flag
+import androidx.compose.material.icons.filled.Grain
+import androidx.compose.material.icons.filled.Height
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.LocalDining
+import androidx.compose.material.icons.filled.LocalDrink
+import androidx.compose.material.icons.filled.Medication
+import androidx.compose.material.icons.filled.NightsStay
+import androidx.compose.material.icons.filled.OilBarrel
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PieChart
+import androidx.compose.material.icons.filled.RadioButtonUnchecked
+import androidx.compose.material.icons.filled.RemoveCircleOutline
+import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.SentimentSatisfiedAlt
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.ShowChart
+import androidx.compose.material.icons.filled.Speed
+import androidx.compose.material.icons.filled.SquareFoot
+import androidx.compose.material.icons.filled.StackedLineChart
+import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.WarningAmber
+import androidx.compose.ui.graphics.vector.ImageVector
 import com.health.openscale.R
 import java.util.Locale
 
@@ -142,6 +187,82 @@ enum class MeasureUnit {
             }
             return CM
         }
+    }
+}
+
+enum class MeasurementTypeIcon(val resource: IconResource) {
+    IC_DEFAULT(IconResource.VectorResource(Icons.Filled.RadioButtonUnchecked)),
+    IC_WEIGHT(IconResource.PainterResource(R.drawable.ic_weight)),
+    IC_BMI(IconResource.PainterResource(R.drawable.ic_bmi)),
+    IC_BODY_FAT(IconResource.PainterResource(R.drawable.ic_fat)),
+    IC_WATER(IconResource.PainterResource(R.drawable.ic_water)),
+    IC_MUSCLE(IconResource.PainterResource(R.drawable.ic_muscle)),
+    IC_LBM(IconResource.PainterResource(R.drawable.ic_lbm)),
+    IC_BONE(IconResource.PainterResource(R.drawable.ic_bone)),
+    IC_WAIST(IconResource.PainterResource(R.drawable.ic_waist)),
+    IC_WHR(IconResource.PainterResource(R.drawable.ic_whr)),
+    IC_WHTR(IconResource.PainterResource(R.drawable.ic_whtr)),
+    IC_HIPS(IconResource.PainterResource(R.drawable.ic_hip)),
+    IC_VISCERAL_FAT(IconResource.PainterResource(R.drawable.ic_visceral_fat)),
+    IC_CHEST(IconResource.PainterResource(R.drawable.ic_chest)),
+    IC_THIGH(IconResource.PainterResource(R.drawable.ic_thigh)),
+    IC_BICEPS(IconResource.PainterResource(R.drawable.ic_biceps)),
+    IC_NECK(IconResource.PainterResource(R.drawable.ic_neck)),
+    IC_CALIPER1(IconResource.PainterResource(R.drawable.ic_caliper1)),
+    IC_CALIPER2(IconResource.PainterResource(R.drawable.ic_caliper2)),
+    IC_CALIPER3(IconResource.PainterResource(R.drawable.ic_caliper3)),
+    IC_FAT_CALIPER(IconResource.PainterResource(R.drawable.ic_fat_caliper)),
+    IC_BMR(IconResource.PainterResource(R.drawable.ic_bmr)),
+    IC_TDEE(IconResource.PainterResource(R.drawable.ic_tdee)),
+    IC_CALORIES(IconResource.PainterResource(R.drawable.ic_calories)),
+    IC_COMMENT(IconResource.PainterResource(R.drawable.ic_comment)),
+    IC_TIME(IconResource.PainterResource(R.drawable.ic_time)),
+    IC_DATE(IconResource.PainterResource(R.drawable.ic_date)),
+
+    IC_M_HEIGHT(IconResource.VectorResource(Icons.Filled.Height)),
+    IC_M_HEART_RATE(IconResource.VectorResource(Icons.Filled.Favorite)),
+    IC_M_STEPS(IconResource.VectorResource(Icons.AutoMirrored.Filled.DirectionsWalk)),
+    IC_M_SLEEP(IconResource.VectorResource(Icons.Filled.NightsStay)),
+    IC_M_WORKOUT(IconResource.VectorResource(Icons.Filled.FitnessCenter)),
+    IC_M_WATER_INTAKE(IconResource.VectorResource(Icons.Filled.LocalDrink)),
+    IC_M_GOAL(IconResource.VectorResource(Icons.Filled.Flag)),
+    IC_M_NOTES(IconResource.VectorResource(Icons.Filled.EditNote)),
+    IC_M_TEMPERATURE(IconResource.VectorResource(Icons.Filled.DeviceThermostat)),
+    IC_M_BLOOD_PRESSURE(IconResource.VectorResource(Icons.Filled.Bloodtype)),
+    IC_M_GLUCOSE(IconResource.VectorResource(Icons.Filled.Bloodtype)),
+    IC_M_TREND_UP(IconResource.VectorResource(Icons.AutoMirrored.Filled.TrendingUp)),
+    IC_M_TREND_DOWN(IconResource.VectorResource(Icons.AutoMirrored.Filled.TrendingDown)),
+    IC_M_TREND_FLAT(IconResource.VectorResource(Icons.AutoMirrored.Filled.TrendingFlat)),
+    IC_M_CALENDAR(IconResource.VectorResource(Icons.Filled.CalendarMonth)),
+    IC_M_CLOCK(IconResource.VectorResource(Icons.Filled.Schedule)),
+    IC_M_TIMER(IconResource.VectorResource(Icons.Filled.Timer)),
+    IC_M_INFO(IconResource.VectorResource(Icons.Filled.Info)),
+    IC_M_HELP(IconResource.VectorResource(Icons.AutoMirrored.Filled.HelpOutline)),
+    IC_M_SETTINGS(IconResource.VectorResource(Icons.Filled.Settings)),
+    IC_M_ADD(IconResource.VectorResource(Icons.Filled.AddCircleOutline)),
+    IC_M_REMOVE(IconResource.VectorResource(Icons.Filled.RemoveCircleOutline)),
+    IC_M_DONE(IconResource.VectorResource(Icons.Filled.Done)),
+    IC_M_CHECK_CIRCLE(IconResource.VectorResource(Icons.Filled.CheckCircleOutline)),
+    IC_M_WARNING(IconResource.VectorResource(Icons.Filled.WarningAmber)),
+    IC_M_ANALYTICS(IconResource.VectorResource(Icons.Filled.Analytics)),
+    IC_M_CHART_BAR(IconResource.VectorResource(Icons.AutoMirrored.Filled.ShowChart)),
+    IC_M_CHART_LINE(IconResource.VectorResource(Icons.Filled.StackedLineChart)),
+    IC_M_CHART_PIE(IconResource.VectorResource(Icons.Filled.PieChart)),
+    IC_M_NUTRITION(IconResource.VectorResource(Icons.Filled.LocalDining)),
+    IC_M_PROTEIN(IconResource.VectorResource(Icons.Filled.Egg)),
+    IC_M_CARBS(IconResource.VectorResource(Icons.Filled.Grain)),
+    IC_M_FAT_FOOD(IconResource.VectorResource(Icons.Filled.OilBarrel)),
+    IC_M_SPEED(IconResource.VectorResource(Icons.Filled.Speed)),
+    IC_M_DISTANCE(IconResource.VectorResource(Icons.Filled.SquareFoot)),
+    IC_M_MOOD(IconResource.VectorResource(Icons.Filled.SentimentSatisfiedAlt)),
+    IC_M_MEDICATION(IconResource.VectorResource(Icons.Filled.Medication)),
+    IC_M_LIST(IconResource.VectorResource(Icons.AutoMirrored.Filled.List)),
+    IC_M_LABEL(IconResource.VectorResource(Icons.AutoMirrored.Filled.Label)),
+    IC_M_PERSON(IconResource.VectorResource(Icons.Filled.Person));
+
+    sealed class IconResource {
+        data class PainterResource(@DrawableRes val id: Int) : IconResource()
+        data class VectorResource(val imageVector: ImageVector) : IconResource()
     }
 }
 

@@ -64,15 +64,17 @@ import com.health.openscale.R
 import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementType
+import com.health.openscale.core.data.MeasurementTypeIcon
+import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.data.UnitType
+import com.health.openscale.ui.components.RoundMeasurementIcon
 import com.health.openscale.ui.screen.SharedViewModel
 import com.health.openscale.ui.screen.dialog.DateInputDialog
 import com.health.openscale.ui.screen.dialog.NumberInputDialog
 import com.health.openscale.ui.screen.dialog.TextInputDialog
 import com.health.openscale.ui.screen.dialog.TimeInputDialog
 import com.health.openscale.ui.screen.dialog.decrementValue
-import com.health.openscale.ui.screen.dialog.getIconResIdByName
 import com.health.openscale.ui.screen.dialog.incrementValue
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -357,7 +359,7 @@ fun MeasurementDetailScreen(
 
     // --- Dialogs for FLOAT, INT, TEXT based on dialogTargetType ---
     dialogTargetType?.let { currentType ->
-        val typeIconRes = remember(currentType.icon) { getIconResIdByName(currentType.icon) }
+        val measurementTypeIcon = remember(currentType.icon) { currentType.icon }
         val typeColor = remember(currentType.color) { Color(currentType.color) }
         val initialDialogValue = valuesState[currentType.id] ?: when (currentType.inputType) {
             InputFieldType.FLOAT -> "0.0" // Default for empty float
@@ -373,8 +375,8 @@ fun MeasurementDetailScreen(
                     initialValue = initialDialogValue,
                     inputType = currentType.inputType,
                     unit = currentType.unit,
-                    iconRes = typeIconRes,
-                    color = typeColor,
+                    measurementIcon = measurementTypeIcon,
+                    iconBackgroundColor = typeColor,
                     onDismiss = { dialogTargetType = null },
                     onConfirm = { confirmedValue ->
                         val trimmedValue = confirmedValue.trim()
@@ -411,8 +413,8 @@ fun MeasurementDetailScreen(
                 TextInputDialog(
                     title = dialogTitle,
                     initialValue = initialDialogValue,
-                    iconRes = typeIconRes,
-                    color = typeColor,
+                    measurementIcon = measurementTypeIcon,
+                    iconBackgroundColor = typeColor,
                     onDismiss = { dialogTargetType = null },
                     onConfirm = { confirmedValue ->
                         val finalValue = confirmedValue.trim()
@@ -433,13 +435,13 @@ fun MeasurementDetailScreen(
 
     // --- Dialogs for the main measurement timestamp (measurementTimestampState) ---
     if (showDatePickerForMainTimestamp) {
-        val triggeringType = allMeasurementTypes.find { it.inputType == InputFieldType.DATE }
+        val triggeringType = allMeasurementTypes.find { it.key == MeasurementTypeKey.DATE }
         val dateDialogTitle = stringResource(R.string.dialog_title_change_date, triggeringType?.getDisplayName(context) ?: stringResource(R.string.label_date))
         DateInputDialog(
             title = dateDialogTitle,
             initialTimestamp = measurementTimestampState,
-            iconRes = getIconResIdByName(triggeringType?.icon ?: "ic_calendar"),
-            color = triggeringType?.let { Color(it.color) } ?: MaterialTheme.colorScheme.primary,
+            measurementIcon = triggeringType?.icon ?: MeasurementTypeIcon.IC_DATE,
+            iconBackgroundColor = triggeringType?.let { Color(it.color) } ?: MaterialTheme.colorScheme.primary,
             onDismiss = { showDatePickerForMainTimestamp = false },
             onConfirm = { newDateMillis ->
                 val newCal = Calendar.getInstance().apply { timeInMillis = newDateMillis }
@@ -452,13 +454,13 @@ fun MeasurementDetailScreen(
     }
 
     if (showTimePickerForMainTimestamp) {
-        val triggeringType = allMeasurementTypes.find { it.inputType == InputFieldType.TIME }
+        val triggeringType = allMeasurementTypes.find { it.key == MeasurementTypeKey.TIME }
         val timeDialogTitle = stringResource(R.string.dialog_title_change_time, triggeringType?.getDisplayName(context) ?: stringResource(R.string.label_time))
         TimeInputDialog(
             title = timeDialogTitle,
             initialTimestamp = measurementTimestampState,
-            iconRes = getIconResIdByName(triggeringType?.icon ?: "ic_time"),
-            color = triggeringType?.let { Color(it.color) } ?: MaterialTheme.colorScheme.primary,
+            measurementIcon = triggeringType?.icon ?: MeasurementTypeIcon.IC_TIME,
+            iconBackgroundColor = triggeringType?.let { Color(it.color) } ?: MaterialTheme.colorScheme.primary,
             onDismiss = { showTimePickerForMainTimestamp = false },
             onConfirm = { newTimeMillis ->
                 val newCal = Calendar.getInstance().apply { timeInMillis = newTimeMillis }
@@ -501,23 +503,10 @@ fun MeasurementValueEditRow(
             .padding(vertical = 8.dp)
             .clickable(onClick = onEditClick, enabled = !type.isDerived) // Clicking row triggers edit, disabled for derived
     ) {
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(Color(type.color)), // Uses the type's specific color
-            contentAlignment = Alignment.Center
-        ) {
-            val iconId = remember(type.icon) { getIconResIdByName( type.icon) }
-            if (iconId != 0) {
-                Icon(
-                    painter = painterResource(id = iconId),
-                    contentDescription = type.getDisplayName(context), // Type name serves as base content description
-                    tint = Color.Black, // Consider a more adaptive tint based on background color for accessibility
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-        }
+        RoundMeasurementIcon(
+            icon = type.icon,
+            backgroundTint = Color(type.color),
+        )
         Spacer(modifier = Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(text = type.getDisplayName(context), style = MaterialTheme.typography.bodyLarge)

@@ -17,6 +17,8 @@
  */
 package com.health.openscale.ui.screen.settings
 
+import android.R.attr.enabled
+import android.R.attr.label
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -25,12 +27,14 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.QuestionMark
@@ -73,12 +77,13 @@ import androidx.navigation.NavController
 import com.health.openscale.R
 import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.MeasurementType
+import com.health.openscale.core.data.MeasurementTypeIcon
 import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.UnitType
+import com.health.openscale.ui.components.MeasurementIcon
 import com.health.openscale.ui.screen.SharedViewModel
 import com.health.openscale.ui.screen.dialog.ColorPickerDialog
 import com.health.openscale.ui.screen.dialog.IconPickerDialog
-import com.health.openscale.ui.screen.dialog.getIconResIdByName
 import kotlin.text.lowercase
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -137,7 +142,7 @@ fun MeasurementTypeDetailScreen(
         }
     }
     var selectedColor by remember { mutableStateOf(originalExistingType?.color ?: 0xFF6200EE.toInt()) }
-    var selectedIcon by remember { mutableStateOf(originalExistingType?.icon ?: "ic_weight") }
+    var selectedIcon by remember { mutableStateOf(originalExistingType?.icon ?: MeasurementTypeIcon.IC_WEIGHT) }
     var isEnabled by remember { mutableStateOf(originalExistingType?.isEnabled ?: true) }
     var isPinned by remember { mutableStateOf(originalExistingType?.isPinned ?: false) }
     var isOnRightYAxis by remember { mutableStateOf(originalExistingType?.isOnRightYAxis ?: false) }
@@ -286,7 +291,7 @@ fun MeasurementTypeDetailScreen(
         }
 
         OutlinedTextField(
-            value = String.format("#%06X", 0xFFFFFF and selectedColor),
+            value = "",
             onValueChange = {}, // Read-only
             label = { Text(stringResource(R.string.measurement_type_label_color)) },
             modifier = Modifier
@@ -300,7 +305,6 @@ fun MeasurementTypeDetailScreen(
                         .size(24.dp)
                         .clip(CircleShape)
                         .background(Color(selectedColor))
-                        .border(1.dp, Color.Gray, CircleShape)
                 )
             },
             colors = TextFieldDefaults.colors(
@@ -313,7 +317,7 @@ fun MeasurementTypeDetailScreen(
         )
 
         OutlinedTextField(
-            value = selectedIcon,
+            value = "",
             onValueChange = {}, // Read-only
             label = { Text(stringResource(R.string.measurement_type_label_icon)) },
             modifier = Modifier
@@ -322,14 +326,8 @@ fun MeasurementTypeDetailScreen(
             readOnly = true,
             enabled = false, // To make it look like a display field
             trailingIcon = {
-                Icon(
-                    painter = runCatching {
-                        painterResource(id = getIconResIdByName(selectedIcon))
-                    }.getOrElse {
-                        Icons.Filled.QuestionMark // Fallback icon
-                    } as Painter,
-                    contentDescription = stringResource(R.string.content_desc_selected_icon_preview),
-                    modifier = Modifier.size(24.dp)
+                MeasurementIcon(
+                    icon = selectedIcon,
                 )
             },
             colors = TextFieldDefaults.colors(
@@ -342,50 +340,55 @@ fun MeasurementTypeDetailScreen(
         )
 
         if (unitDropdownEnabled) {
-            // UnitType Dropdown
             ExposedDropdownMenuBox(
                 expanded = expandedUnit && unitDropdownEnabled,
                 onExpandedChange = {
                     if (unitDropdownEnabled) expandedUnit = !expandedUnit
-                }
+                },
+                modifier = Modifier.fillMaxWidth()
             ) {
-                OutlinedTextField(
-                    readOnly = true,
-                    value = selectedUnit.displayName.lowercase()
-                        .replaceFirstChar { it.uppercase() },
-                    onValueChange = {},
-                    label = { Text(stringResource(R.string.measurement_type_label_unit)) },
-                    trailingIcon = {
-                        if (unitDropdownEnabled) {
-                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedUnit)
-                        }
-                    },
-                    modifier = Modifier
+                OutlinedSettingRow(
+                    label = stringResource(R.string.measurement_type_label_unit),
+                    surfaceModifier = Modifier
                         .menuAnchor(
                             type = MenuAnchorType.PrimaryNotEditable,
                             enabled = unitDropdownEnabled
                         )
-                        .fillMaxWidth(),
-                    colors = if (!unitDropdownEnabled) OutlinedTextFieldDefaults.colors(
-                        disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                        disabledBorderColor = MaterialTheme.colorScheme.outline,
-                        disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(
-                            alpha = 0.38f
-                        )
-                    ) else OutlinedTextFieldDefaults.colors()
+                        .clickable(enabled = unitDropdownEnabled) {
+                            if (unitDropdownEnabled) expandedUnit = true
+                        },
+                    controlContent = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = selectedUnit.displayName,
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = if (unitDropdownEnabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                            )
+                            if (unitDropdownEnabled) {
+                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedUnit)
+                            }
+                        }
+                    }
                 )
+
                 if (unitDropdownEnabled) {
                     ExposedDropdownMenu(
                         expanded = expandedUnit,
-                        onDismissRequest = { expandedUnit = false }
+                        onDismissRequest = { expandedUnit = false },
+                        modifier = Modifier.exposedDropdownSize(matchTextFieldWidth = true)
                     ) {
                         allowedUnitsForKey.forEach { unit ->
                             DropdownMenuItem(
                                 text = {
-                                    Text(
-                                        unit.displayName.lowercase()
-                                            .replaceFirstChar { it.uppercase() })
+                                    Box(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        contentAlignment = Alignment.CenterEnd
+                                    ) {
+                                        Text(
+                                            text = unit.displayName,
+                                            modifier = Modifier.padding(end = 32.dp)
+                                        )
+                                    }
                                 },
                                 onClick = {
                                     selectedUnit = unit
@@ -459,6 +462,7 @@ fun MeasurementTypeDetailScreen(
 
     if (showIconPicker) {
         IconPickerDialog(
+            iconBackgroundColor = Color(selectedColor),
             onIconSelected = {
                 selectedIcon = it
                 showIconPicker = false
@@ -472,12 +476,14 @@ fun MeasurementTypeDetailScreen(
 private fun OutlinedSettingRow(
     label: String,
     modifier: Modifier = Modifier,
+    surfaceModifier: Modifier = Modifier,
     controlContent: @Composable () -> Unit
 ) {
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = OutlinedTextFieldDefaults.MinHeight),
+            .heightIn(min = OutlinedTextFieldDefaults.MinHeight)
+            .then(surfaceModifier),
         shape = OutlinedTextFieldDefaults.shape,
         color = MaterialTheme.colorScheme.surface,
         border = BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.outline)

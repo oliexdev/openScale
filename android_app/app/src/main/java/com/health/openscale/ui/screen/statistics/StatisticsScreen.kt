@@ -61,12 +61,12 @@ import com.health.openscale.R
 import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.database.UserPreferenceKeys
+import com.health.openscale.ui.components.RoundMeasurementIcon
 import com.health.openscale.ui.screen.EnrichedMeasurement
 import com.health.openscale.ui.screen.SharedViewModel
 import com.health.openscale.ui.screen.components.LineChart
 import com.health.openscale.ui.screen.components.provideFilterTopBarAction
 import com.health.openscale.ui.screen.components.rememberContextualTimeRangeFilter
-import com.health.openscale.ui.screen.dialog.getIconResIdByName
 import java.text.DecimalFormat
 import java.time.Instant
 import java.time.LocalDate
@@ -337,23 +337,12 @@ fun StatisticCard(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.weight(1f)
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(32.dp)
-                            .clip(CircleShape)
-                            .background(Color(measurementType.color)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        val iconId = remember(measurementType.icon) { getIconResIdByName(measurementType.icon) }
-                        if (iconId != 0) {
-                            Icon(
-                                painter = painterResource(id = iconId),
-                                contentDescription = measurementType.getDisplayName(LocalContext.current), // Icon related to measurement type
-                                tint = Color.Black, // Assuming black provides good contrast on the colored background
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
-                    }
+                    val iconMeasurementType = remember(measurementType.icon) { measurementType.icon }
+
+                    RoundMeasurementIcon(
+                        icon = iconMeasurementType,
+                        backgroundTint = Color(measurementType.color),
+                    )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = measurementType.getDisplayName(LocalContext.current),

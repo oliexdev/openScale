@@ -56,7 +56,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.health.openscale.R
 import com.health.openscale.core.data.InputFieldType
+import com.health.openscale.core.data.MeasurementTypeIcon
 import com.health.openscale.core.data.UnitType
+import com.health.openscale.ui.components.RoundMeasurementIcon
 
 @Composable
 fun NumberInputDialog(
@@ -64,8 +66,8 @@ fun NumberInputDialog(
     initialValue: String,
     inputType: InputFieldType,
     unit: UnitType,
-    iconRes: Int,
-    color: Color,
+    measurementIcon: MeasurementTypeIcon,
+    iconBackgroundColor: Color,
     onDismiss: () -> Unit,
     onConfirm: (String) -> Unit
 ) {
@@ -88,20 +90,10 @@ fun NumberInputDialog(
         },
         title = {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clip(CircleShape)
-                        .background(color),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        painter = painterResource(id = iconRes),
-                        contentDescription = null,
-                        tint = Color.Black,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
+                RoundMeasurementIcon(
+                    icon = measurementIcon,
+                    backgroundTint = iconBackgroundColor,
+                )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(title)
             }

@@ -40,21 +40,22 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.health.openscale.R
 
-val tangoColors = listOf(
-    Color(0xFFEF2929), Color(0xFFF57900), Color(0xFFFFCE44), Color(0xFF8AE234),
-    Color(0xFF729FCF), Color(0xFFAD7FA8), Color(0xFFE9B96E), Color(0xFF888A85),
-    Color(0xFF204A87), Color(0xFF3465A4), Color(0xFF4E9A06), Color(0xFF5C3566),
-    Color(0xFFC17D11), Color(0xFFA40000), Color(0xFFCE5C00), Color(0xFFEDD400),
-    Color(0xFF73D216), Color(0xFF11A879), Color(0xFF555753), Color(0xFFBABDB6),
-    Color(0xFFD3D7CF), Color(0xFFEEEEEC), Color(0xFF2E3436), Color(0xFF000000),
-    Color(0xFFFFC0CB), Color(0xFFFFA07A), Color(0xFF87CEEB), Color(0xFF20B2AA),
-    Color(0xFF9370DB), Color(0xFFFFD700), Color(0xFFFF8C00), Color(0xFFB22222)
+val colorPickerPalette: List<Color> = listOf(
+    Color(0xFF7E57C2), Color(0xFFFFCA28), Color(0xFFEF5350), Color(0xFF29B6F6),
+    Color(0xFF66BB6A), Color(0xFF4DBAC0), Color(0xFFBDBDBD), Color(0xFF78909C),
+    Color(0xFFFFA726), Color(0xFFFF7043), Color(0xFF5C6BC0), Color(0xFFD84315),
+    Color(0xFF8E24AA), Color(0xFFA1887F), Color(0xFFEC407A), Color(0xFFB0BEC5),
+    Color(0xFFFFF59D), Color(0xFFFFE082), Color(0xFFFFCC80), Color(0xFFFB8C00),
+    Color(0xFFAB47BC), Color(0xFF26A69A), Color(0xFF4CAF50), Color(0xFFE0E0E0),
+    Color(0xFF9E9E9E), Color(0xFF757575), Color(0xFFF57900), Color(0xFF8AE234),
+    Color(0xFF729FCF), Color(0xFFAD7FA8), Color(0xFF000000), Color(0xFFFFFFFF)
 )
 
 @Composable
@@ -83,16 +84,16 @@ fun ColorPickerDialog(
                     horizontalArrangement = Arrangement.Center,
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(tangoColors) { color ->
+                    items(colorPickerPalette) { color ->
                         Box(
                             modifier = Modifier
-                                .aspectRatio(1f) // stellt sicher, dass Höhe = Breite = Kreis
+                                .aspectRatio(1f)
                                 .padding(4.dp)
                                 .clip(CircleShape)
                                 .background(color)
                                 .border(
                                     width = if (color == currentColor) 3.dp else 1.dp,
-                                    color = if (color == currentColor) Color.Black else Color.Gray,
+                                    color = if (color == currentColor) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.outlineVariant,
                                     shape = CircleShape
                                 )
                                 .clickable {

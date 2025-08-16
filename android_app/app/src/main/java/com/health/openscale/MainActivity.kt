@@ -31,6 +31,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.MeasurementType
+import com.health.openscale.core.data.MeasurementTypeIcon
 import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.SupportedLanguage
 import com.health.openscale.core.data.UnitType
@@ -58,34 +59,34 @@ import kotlinx.coroutines.launch
  * @return A list of [MeasurementType] objects.
  */
 fun getDefaultMeasurementTypes(): List<MeasurementType> {
-      return listOf(
-          MeasurementType(key = MeasurementTypeKey.WEIGHT, unit = UnitType.KG, color = 0xFF7E57C2.toInt(), icon = "ic_weight", isPinned = true, isEnabled = true, isOnRightYAxis = true),
-          MeasurementType(key = MeasurementTypeKey.BMI, unit = UnitType.NONE, color = 0xFFFFCA28.toInt(), icon = "ic_bmi", isDerived = true, isPinned = true, isEnabled = true),
-          MeasurementType(key = MeasurementTypeKey.BODY_FAT, unit = UnitType.PERCENT, color = 0xFFEF5350.toInt(), icon = "ic_fat", isPinned = true, isEnabled = true),
-          MeasurementType(key = MeasurementTypeKey.WATER, unit = UnitType.PERCENT, color = 0xFF29B6F6.toInt(), icon = "ic_water", isPinned = true, isEnabled = true),
-          MeasurementType(key = MeasurementTypeKey.MUSCLE, unit = UnitType.PERCENT, color = 0xFF66BB6A.toInt(), icon = "ic_muscle", isPinned = true, isEnabled = true),
-          MeasurementType(key = MeasurementTypeKey.LBM, unit = UnitType.KG, color = 0xFF4DBAC0.toInt(), icon = "ic_lbm", isEnabled = true),
-          MeasurementType(key = MeasurementTypeKey.BONE, unit = UnitType.KG, color = 0xFFBDBDBD.toInt(), icon = "ic_bone", isEnabled = true),
-          MeasurementType(key = MeasurementTypeKey.WAIST, unit = UnitType.CM, color = 0xFF78909C.toInt(), icon = "ic_waist", isEnabled = true),
-          MeasurementType(key = MeasurementTypeKey.WHR, unit = UnitType.NONE, color = 0xFFFFA726.toInt(), icon = "ic_whr", isDerived = true, isEnabled = true),
-          MeasurementType(key = MeasurementTypeKey.WHTR, unit = UnitType.NONE, color = 0xFFFF7043.toInt(), icon = "ic_whtr", isDerived = true, isEnabled = true),
-          MeasurementType(key = MeasurementTypeKey.HIPS, unit = UnitType.CM, color = 0xFF5C6BC0.toInt(), icon = "ic_hip", isEnabled = true),
-          MeasurementType(key = MeasurementTypeKey.VISCERAL_FAT, unit = UnitType.NONE, color = 0xFFD84315.toInt(), icon = "ic_visceral_fat", isEnabled = true),
-          MeasurementType(key = MeasurementTypeKey.CHEST, unit = UnitType.CM, color = 0xFF8E24AA.toInt(), icon = "ic_chest", isEnabled = true),
-          MeasurementType(key = MeasurementTypeKey.THIGH, unit = UnitType.CM, color = 0xFFA1887F.toInt(), icon = "ic_thigh", isEnabled = true),
-          MeasurementType(key = MeasurementTypeKey.BICEPS, unit = UnitType.CM, color = 0xFFEC407A.toInt(), icon = "ic_biceps", isEnabled = true),
-          MeasurementType(key = MeasurementTypeKey.NECK, unit = UnitType.CM, color = 0xFFB0BEC5.toInt(), icon = "ic_neck", isEnabled = true),
-          MeasurementType(key = MeasurementTypeKey.CALIPER_1, unit = UnitType.CM, color = 0xFFFFF59D.toInt(), icon = "ic_caliper1", isEnabled = true),
-          MeasurementType(key = MeasurementTypeKey.CALIPER_2, unit = UnitType.CM, color = 0xFFFFE082.toInt(), icon = "ic_caliper2", isEnabled = true),
-          MeasurementType(key = MeasurementTypeKey.CALIPER_3, unit = UnitType.CM, color = 0xFFFFCC80.toInt(), icon = "ic_caliper3", isEnabled = true),
-          MeasurementType(key = MeasurementTypeKey.CALIPER, unit = UnitType.PERCENT, color = 0xFFFB8C00.toInt(), icon = "ic_fat_caliper", isDerived = true, isEnabled = true),
-          MeasurementType(key = MeasurementTypeKey.BMR, unit = UnitType.KCAL, color = 0xFFAB47BC.toInt(), icon = "ic_bmr", isDerived = true, isEnabled = true),
-          MeasurementType(key = MeasurementTypeKey.TDEE, unit = UnitType.KCAL, color = 0xFF26A69A.toInt(), icon = "ic_tdee", isDerived = true, isEnabled = true),
-          MeasurementType(key = MeasurementTypeKey.CALORIES, unit = UnitType.KCAL, color = 0xFF4CAF50.toInt(), icon = "ic_calories", isEnabled = true),
-          MeasurementType(key = MeasurementTypeKey.COMMENT, inputType = InputFieldType.TEXT, unit = UnitType.NONE, color = 0xFFE0E0E0.toInt(), icon = "ic_comment", isPinned = true, isEnabled = true),
-          MeasurementType(key = MeasurementTypeKey.DATE, inputType = InputFieldType.DATE, unit = UnitType.NONE, color = 0xFF9E9E9E.toInt(), icon = "ic_date", isEnabled = true),
-          MeasurementType(key = MeasurementTypeKey.TIME, inputType = InputFieldType.TIME, unit = UnitType.NONE, color = 0xFF757575.toInt(), icon = "ic_time", isEnabled = true)
-      )
+    return listOf(
+        MeasurementType(key = MeasurementTypeKey.WEIGHT, unit = UnitType.KG, color = 0xFF7E57C2.toInt(), icon = MeasurementTypeIcon.IC_WEIGHT, isPinned = true, isEnabled = true, isOnRightYAxis = true),
+        MeasurementType(key = MeasurementTypeKey.BMI, unit = UnitType.NONE, color = 0xFFFFCA28.toInt(), icon = MeasurementTypeIcon.IC_BMI, isDerived = true, isPinned = true, isEnabled = true),
+        MeasurementType(key = MeasurementTypeKey.BODY_FAT, unit = UnitType.PERCENT, color = 0xFFEF5350.toInt(), icon = MeasurementTypeIcon.IC_BODY_FAT, isPinned = true, isEnabled = true),
+        MeasurementType(key = MeasurementTypeKey.WATER, unit = UnitType.PERCENT, color = 0xFF29B6F6.toInt(), icon = MeasurementTypeIcon.IC_WATER, isPinned = true, isEnabled = true),
+        MeasurementType(key = MeasurementTypeKey.MUSCLE, unit = UnitType.PERCENT, color = 0xFF66BB6A.toInt(), icon = MeasurementTypeIcon.IC_MUSCLE, isPinned = true, isEnabled = true),
+        MeasurementType(key = MeasurementTypeKey.LBM, unit = UnitType.KG, color = 0xFF4DBAC0.toInt(), icon = MeasurementTypeIcon.IC_LBM, isEnabled = true),
+        MeasurementType(key = MeasurementTypeKey.BONE, unit = UnitType.KG, color = 0xFFBDBDBD.toInt(), icon = MeasurementTypeIcon.IC_BONE, isEnabled = true),
+        MeasurementType(key = MeasurementTypeKey.WAIST, unit = UnitType.CM, color = 0xFF78909C.toInt(), icon = MeasurementTypeIcon.IC_WAIST, isEnabled = true),
+        MeasurementType(key = MeasurementTypeKey.WHR, unit = UnitType.NONE, color = 0xFFFFA726.toInt(), icon = MeasurementTypeIcon.IC_WHR, isDerived = true, isEnabled = true),
+        MeasurementType(key = MeasurementTypeKey.WHTR, unit = UnitType.NONE, color = 0xFFFF7043.toInt(), icon = MeasurementTypeIcon.IC_WHTR, isDerived = true, isEnabled = true),
+        MeasurementType(key = MeasurementTypeKey.HIPS, unit = UnitType.CM, color = 0xFF5C6BC0.toInt(), icon = MeasurementTypeIcon.IC_HIPS, isEnabled = true),
+        MeasurementType(key = MeasurementTypeKey.VISCERAL_FAT, unit = UnitType.NONE, color = 0xFFD84315.toInt(), icon = MeasurementTypeIcon.IC_VISCERAL_FAT, isEnabled = true),
+        MeasurementType(key = MeasurementTypeKey.CHEST, unit = UnitType.CM, color = 0xFF8E24AA.toInt(), icon = MeasurementTypeIcon.IC_CHEST, isEnabled = true),
+        MeasurementType(key = MeasurementTypeKey.THIGH, unit = UnitType.CM, color = 0xFFA1887F.toInt(), icon = MeasurementTypeIcon.IC_THIGH, isEnabled = true),
+        MeasurementType(key = MeasurementTypeKey.BICEPS, unit = UnitType.CM, color = 0xFFEC407A.toInt(), icon = MeasurementTypeIcon.IC_BICEPS, isEnabled = true),
+        MeasurementType(key = MeasurementTypeKey.NECK, unit = UnitType.CM, color = 0xFFB0BEC5.toInt(), icon = MeasurementTypeIcon.IC_NECK, isEnabled = true),
+        MeasurementType(key = MeasurementTypeKey.CALIPER_1, unit = UnitType.CM, color = 0xFFFFF59D.toInt(), icon = MeasurementTypeIcon.IC_CALIPER1, isEnabled = true),
+        MeasurementType(key = MeasurementTypeKey.CALIPER_2, unit = UnitType.CM, color = 0xFFFFE082.toInt(), icon = MeasurementTypeIcon.IC_CALIPER2, isEnabled = true),
+        MeasurementType(key = MeasurementTypeKey.CALIPER_3, unit = UnitType.CM, color = 0xFFFFCC80.toInt(), icon = MeasurementTypeIcon.IC_CALIPER3, isEnabled = true),
+        MeasurementType(key = MeasurementTypeKey.CALIPER, unit = UnitType.PERCENT, color = 0xFFFB8C00.toInt(), icon = MeasurementTypeIcon.IC_FAT_CALIPER, isDerived = true, isEnabled = true),
+        MeasurementType(key = MeasurementTypeKey.BMR, unit = UnitType.KCAL, color = 0xFFAB47BC.toInt(), icon = MeasurementTypeIcon.IC_BMR, isDerived = true, isEnabled = true),
+        MeasurementType(key = MeasurementTypeKey.TDEE, unit = UnitType.KCAL, color = 0xFF26A69A.toInt(), icon = MeasurementTypeIcon.IC_TDEE, isDerived = true, isEnabled = true),
+        MeasurementType(key = MeasurementTypeKey.CALORIES, unit = UnitType.KCAL, color = 0xFF4CAF50.toInt(), icon = MeasurementTypeIcon.IC_CALORIES, isEnabled = true),
+        MeasurementType(key = MeasurementTypeKey.COMMENT, inputType = InputFieldType.TEXT, unit = UnitType.NONE, color = 0xFFE0E0E0.toInt(), icon = MeasurementTypeIcon.IC_COMMENT, isPinned = true, isEnabled = true),
+        MeasurementType(key = MeasurementTypeKey.DATE, inputType = InputFieldType.DATE, unit = UnitType.NONE, color = 0xFF9E9E9E.toInt(), icon = MeasurementTypeIcon.IC_DATE, isEnabled = true),
+        MeasurementType(key = MeasurementTypeKey.TIME, inputType = InputFieldType.TIME, unit = UnitType.NONE, color = 0xFF757575.toInt(), icon = MeasurementTypeIcon.IC_TIME, isEnabled = true)
+    )
 }
 
 /**
