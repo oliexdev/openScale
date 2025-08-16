@@ -39,6 +39,13 @@ object CalculationUtil {
 
         return Period.between(birthDate, today).years
     }
+
+    /**
+     * Rounds a float value to two decimal places.
+     */
+    fun roundTo(value: Float): Float {
+        return (value * 100).toInt() / 100.0f
+    }
 }
 
 /**

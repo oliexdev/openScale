@@ -272,7 +272,7 @@ class DatabaseRepository(
                     }
                 } else {
                     // If derived value is not null, insert or update it
-                    val roundedValue = roundTo(derivedValue) // Apply rounding
+                    val roundedValue = CalculationUtil.roundTo(derivedValue) // Apply rounding
                     if (existingDerivedValueObject != null) {
                         if (existingDerivedValueObject.floatValue != roundedValue) {
                             measurementValueDao.update(existingDerivedValueObject.copy(floatValue = roundedValue))
@@ -549,13 +549,6 @@ class DatabaseRepository(
             LogManager.w(CALC_PROCESS_TAG, "Calculated Fat Percentage ($fatPercentage%) is outside the expected physiological range (1-70%). User ID: ${user.id}")
             fatPercentage
         }
-    }
-
-    /**
-     * Rounds a float value to two decimal places.
-     */
-    private fun roundTo(value: Float): Float {
-        return (value * 100).toInt() / 100.0f
     }
 }
 

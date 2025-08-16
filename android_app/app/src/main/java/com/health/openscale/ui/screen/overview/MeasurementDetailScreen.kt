@@ -372,6 +372,7 @@ fun MeasurementDetailScreen(
                     title = dialogTitle,
                     initialValue = initialDialogValue,
                     inputType = currentType.inputType,
+                    unit = currentType.unit,
                     iconRes = typeIconRes,
                     color = typeColor,
                     onDismiss = { dialogTargetType = null },

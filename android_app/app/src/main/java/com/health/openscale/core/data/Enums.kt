@@ -153,9 +153,9 @@ enum class MeasurementTypeKey(
 ) {
     WEIGHT(1, R.string.measurement_type_weight, listOf(UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
     BMI(2, R.string.measurement_type_bmi, listOf(UnitType.NONE), listOf(InputFieldType.FLOAT)),
-    BODY_FAT(3, R.string.measurement_type_body_fat, listOf(UnitType.PERCENT), listOf(InputFieldType.FLOAT)),
-    WATER(4, R.string.measurement_type_water, listOf(UnitType.PERCENT), listOf(InputFieldType.FLOAT)),
-    MUSCLE(5, R.string.measurement_type_muscle, listOf(UnitType.PERCENT), listOf(InputFieldType.FLOAT)),
+    BODY_FAT(3, R.string.measurement_type_body_fat, listOf(UnitType.PERCENT, UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
+    WATER(4, R.string.measurement_type_water, listOf(UnitType.PERCENT, UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
+    MUSCLE(5, R.string.measurement_type_muscle, listOf(UnitType.PERCENT, UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
     LBM(6, R.string.measurement_type_lbm, listOf(UnitType.KG, UnitType.LB, UnitType.ST), listOf(InputFieldType.FLOAT)),
     BONE(7, R.string.measurement_type_bone, listOf(UnitType.KG, UnitType.LB), listOf(InputFieldType.FLOAT)),
     WAIST(8, R.string.measurement_type_waist, listOf(UnitType.CM, UnitType.INCH), listOf(InputFieldType.FLOAT)),
@@ -189,7 +189,11 @@ enum class UnitType(val displayName: String) {
     CM("cm"),
     INCH("in"),
     KCAL("kcal"),
-    NONE("")
+    NONE("");
+
+    fun isWeightUnit(): Boolean {
+        return this == KG || this == LB || this == ST
+    }
 }
 
 enum class InputFieldType {

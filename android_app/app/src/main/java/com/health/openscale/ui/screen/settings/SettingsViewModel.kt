@@ -30,8 +30,11 @@ import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.MeasurementValue
+import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.data.User
+import com.health.openscale.core.data.WeightUnit
 import com.health.openscale.core.model.MeasurementWithValues
+import com.health.openscale.core.utils.CalculationUtil
 import com.health.openscale.core.utils.Converters
 import com.health.openscale.core.utils.LogManager
 import com.health.openscale.ui.screen.SharedViewModel
@@ -1158,28 +1161,31 @@ class SettingsViewModel(
      */
     fun updateMeasurementTypeAndConvertDataViewModelCentric(
         originalType: MeasurementType,
-        updatedType: MeasurementType, // This contains the new unit and other proposed changes from the UI
+        updatedType: MeasurementType, // Contains the new unit and other proposed changes from the UI
         showSnackbarMaster: Boolean = true
     ) {
         viewModelScope.launch {
+            val typeKey = originalType.key
+            val oldUnit = originalType.unit
+            val newUnit = updatedType.unit
+
             LogManager.i(
                 TAG,
-                "ViewModelCentric Update: Type ID ${originalType.id}. Original Unit: ${originalType.unit}, New Unit: ${updatedType.unit}"
+                "ViewModelCentric Update for $typeKey (ID ${originalType.id}). From Unit: $oldUnit, To Unit: $newUnit"
             )
 
-            var conversionErrorOccurred = false
-            var valuesConvertedCount = 0
+            var mainOperationErrorOccurred = false
+            var conversionProcessAttempted = false
+            var valuesSuccessfullyConvertedCount = 0
 
-            // 1. First, update the MeasurementType definition in the database.
-            // This ensures that any subsequent recalculations of derived values
-            // will use the correct (new) unit for this type.
+            // 1. Update the MeasurementType definition in the database.
             val finalTypeToUpdate = MeasurementType(
                 id = originalType.id,
-                key = originalType.key, // Key should be immutable for an existing type
+                key = typeKey,
                 name = updatedType.name,
                 color = updatedType.color,
                 icon = updatedType.icon,
-                unit = updatedType.unit, // Crucial: The new unit
+                unit = newUnit, // Apply the new unit
                 inputType = updatedType.inputType,
                 displayOrder = originalType.displayOrder,
                 isDerived = originalType.isDerived,
@@ -1192,101 +1198,162 @@ class SettingsViewModel(
                 repository.updateMeasurementType(finalTypeToUpdate)
                 LogManager.i(
                     TAG,
-                    "MeasurementType (ID: ${originalType.id}) definition updated successfully to new unit '${finalTypeToUpdate.unit}'."
+                    "MeasurementType $typeKey (ID: ${originalType.id}) definition updated successfully to new unit '$newUnit'."
                 )
             } catch (e: Exception) {
-                LogManager.e(TAG, "Error updating MeasurementType (ID: ${originalType.id}) definition itself", e)
+                LogManager.e(TAG, "Error updating MeasurementType $typeKey (ID: ${originalType.id}) definition itself", e)
                 sharedViewModel.showSnackbar(
                     messageResId = R.string.measurement_type_updated_error,
-                    // Consider using context.getString for display names if not available in originalType
-                    formatArgs = listOf(originalType.name ?: originalType.key.toString())
+                    formatArgs = listOf(originalType.name ?: typeKey.toString())
                 )
-                conversionErrorOccurred = true // Prevent further steps if this critical update fails
+                mainOperationErrorOccurred = true
             }
 
-            // 2. If the type definition was updated successfully AND the unit has changed for a FLOAT type,
-            //    convert the associated MeasurementValue entries.
-            if (!conversionErrorOccurred &&
-                originalType.unit != updatedType.unit &&
-                originalType.inputType == InputFieldType.FLOAT &&
-                updatedType.inputType == InputFieldType.FLOAT
-            ) {
+            // 2. If the type definition was updated successfully AND the unit has changed,
+            //    convert associated MeasurementValue entries.
+            //    The repository.updateMeasurementValue() method will trigger derived value recalculations.
+            if (!mainOperationErrorOccurred && oldUnit != newUnit) {
+                conversionProcessAttempted = true
                 LogManager.i(
                     TAG,
-                    "Unit changed for FLOAT type ID ${originalType.id}. Converting values AFTER type definition update."
+                    "Unit changed for $typeKey (ID ${originalType.id}). Attempting to convert values."
                 )
                 try {
-                    // Fetch all values belonging to this type
-                    val valuesToConvert = repository.getValuesForType(originalType.id).first()
+                    // Fetch all current values for this type to process them.
+                    val allValuesForThisType = repository.getValuesForType(originalType.id).first()
 
-                    if (valuesToConvert.isNotEmpty()) {
-                        LogManager.d(TAG, "Found ${valuesToConvert.size} values of type ID ${originalType.id} to potentially convert.")
-                        val updatedValuesBatch = mutableListOf<MeasurementValue>()
+                    if (allValuesForThisType.isNotEmpty()) {
+                        LogManager.d(TAG, "Found ${allValuesForThisType.size} values of type $typeKey to potentially convert.")
 
-                        valuesToConvert.forEach { valueToConvert ->
-                            valueToConvert.floatValue?.let { currentFloatVal ->
-                                // Convert from the original unit of the values to the new target unit
-                                val convertedFloat = Converters.convertFloatValueUnit(
-                                    value = currentFloatVal,
-                                    fromUnit = originalType.unit, // Important: Use the unit the values currently have
-                                    toUnit = updatedType.unit    // The new target unit
-                                )
+                        for (valueToConvert in allValuesForThisType) {
+                            val currentValue = valueToConvert.floatValue ?: continue // Skip if no float value
+                            var convertedValue: Float? = null
 
-                                if (convertedFloat != currentFloatVal) { // Add only if the value actually changes
-                                    updatedValuesBatch.add(valueToConvert.copy(floatValue = convertedFloat))
-                                    valuesConvertedCount++
+                            // --- Special handling for types like BODY_FAT, WATER, MUSCLE (Percent <-> Absolute Mass) ---
+                            if (typeKey == MeasurementTypeKey.BODY_FAT ||
+                                typeKey == MeasurementTypeKey.WATER ||
+                                typeKey == MeasurementTypeKey.MUSCLE
+                            ) {
+                                // Fetch the global MeasurementType for WEIGHT to get its ID and current unit
+                                val weightMeasurementTypeEntity = repository.getAllMeasurementTypes().first()
+                                    .find { it.key == MeasurementTypeKey.WEIGHT }
+
+                                // Fetch the specific MeasurementValue for WEIGHT for the current measurement being processed
+                                val weightValueObject = if (weightMeasurementTypeEntity != null) {
+                                    repository.getValuesForMeasurement(valueToConvert.measurementId).first()
+                                        .find { it.typeId == weightMeasurementTypeEntity.id }
+                                } else { null }
+
+                                if (weightValueObject?.floatValue == null || weightMeasurementTypeEntity == null) {
+                                    LogManager.w(TAG, "Weight data not found for measurement ${valueToConvert.measurementId}. Skipping PERCENT conversion for $typeKey (ID: ${valueToConvert.id}) value '${currentValue}'.")
+                                    continue // Skip conversion for this specific item
+                                }
+
+                                val totalWeightRaw = weightValueObject.floatValue
+                                val totalWeightUnitGlobal = weightMeasurementTypeEntity.unit // Current global unit of WEIGHT type
+
+                                // Case 1: From PERCENT to an absolute weight unit (KG, LB, ST)
+                                if (oldUnit == UnitType.PERCENT && newUnit.isWeightUnit()) {
+                                    val weightInKg = when(totalWeightUnitGlobal) {
+                                        UnitType.KG -> totalWeightRaw
+                                        UnitType.LB -> Converters.toKilogram(totalWeightRaw, WeightUnit.LB)
+                                        UnitType.ST -> Converters.toKilogram(totalWeightRaw, WeightUnit.ST)
+                                        else -> { LogManager.e(TAG, "Unsupported weight unit '$totalWeightUnitGlobal' for WEIGHT type."); null }
+                                    }
+                                    if (weightInKg != null) {
+                                        val absoluteValueInKg = (currentValue / 100.0f) * weightInKg
+                                        convertedValue = Converters.convertFloatValueUnit(absoluteValueInKg, UnitType.KG, newUnit)
+                                    }
+                                }
+                                // Case 2: From an absolute weight unit (KG, LB, ST) to PERCENT
+                                else if (oldUnit.isWeightUnit() && newUnit == UnitType.PERCENT) {
+                                    val currentAbsoluteValueInKg = Converters.convertFloatValueUnit(currentValue, oldUnit, UnitType.KG)
+                                    val totalWeightInKg = when(totalWeightUnitGlobal) {
+                                        UnitType.KG -> totalWeightRaw
+                                        UnitType.LB -> Converters.toKilogram(totalWeightRaw, WeightUnit.LB)
+                                        UnitType.ST -> Converters.toKilogram(totalWeightRaw, WeightUnit.ST)
+                                        else -> { LogManager.e(TAG, "Unsupported weight unit '$totalWeightUnitGlobal' for WEIGHT type."); null }
+                                    }
+                                    if (currentAbsoluteValueInKg != null && totalWeightInKg != null && totalWeightInKg != 0.0f) {
+                                        convertedValue = (currentAbsoluteValueInKg / totalWeightInKg) * 100.0f
+                                    } else if (totalWeightInKg == 0.0f) {
+                                        LogManager.w(TAG, "Total weight is 0 for measurement ${valueToConvert.measurementId}. Cannot calculate $typeKey as PERCENT.")
+                                        convertedValue = 0.0f // Or null, or specific error handling
+                                    }
+                                }
+                                // Case 3: Between two absolute weight units (e.g. KG <-> LB for BODY_FAT itself if it was stored as absolute)
+                                else if (oldUnit.isWeightUnit() && newUnit.isWeightUnit()) {
+                                    convertedValue = Converters.convertFloatValueUnit(currentValue, oldUnit, newUnit)
+                                }
+                                // Fallback for unhandled specific conversions for these types
+                                else {
+                                    LogManager.w(TAG, "Unsupported unit conversion for $typeKey (ID: ${valueToConvert.id}) from $oldUnit to $newUnit. Value not changed.")
+                                    convertedValue = currentValue // Keep original value
                                 }
                             }
-                        }
+                            // --- Standard conversion for other types (e.g., WEIGHT itself, WAIST, HIPS) ---
+                            else {
+                                convertedValue = Converters.convertFloatValueUnit(currentValue, oldUnit, newUnit)
+                            }
 
-                        if (updatedValuesBatch.isNotEmpty()) {
-                            LogManager.d(TAG, "Updating ${updatedValuesBatch.size} values in batch for type ID ${originalType.id}.")
-                            updatedValuesBatch.forEach { repository.updateMeasurementValue(it) }
-                            // Consider a repository.justUpdateMeasurementValueData(it)
-                            LogManager.d(TAG, "Batch update of ${updatedValuesBatch.size} values completed for type ID ${originalType.id}.")
-                        } else {
-                            LogManager.i(TAG, "No values required actual conversion or update for type ID ${originalType.id} after checking.")
-                        }
+                            // If value changed, update it. Repository's updateMeasurementValue will trigger recalculations.
+                            if (convertedValue != null && CalculationUtil.roundTo(convertedValue) != CalculationUtil.roundTo(currentValue)) {
+                                try {
+                                    repository.updateMeasurementValue(valueToConvert.copy(floatValue = CalculationUtil.roundTo(convertedValue)))
+                                    valuesSuccessfullyConvertedCount++
+                                } catch (e: Exception) {
+                                    LogManager.e(TAG, "Error updating MeasurementValue (ID: ${valueToConvert.id}) for $typeKey.", e)
+                                    // Individual update error; loop continues.
+                                }
+                            } else if (convertedValue == null && oldUnit != newUnit) {
+                                // Log if conversion was expected but resulted in null (e.g., unsupported path or missing prerequisites)
+                                LogManager.e(TAG, "Conversion for $typeKey (ID: ${valueToConvert.id}) from $oldUnit to $newUnit resulted in null or was skipped. Original value '$currentValue' not changed.")
+                            }
+                        } // End forEach valueToConvert
+
+                        LogManager.d(TAG, "$valuesSuccessfullyConvertedCount values successfully converted/updated for $typeKey (ID ${originalType.id}). Recalculation automatically triggered by repository for updated items.")
+
                     } else {
-                        LogManager.i(TAG, "No values found for type ID ${originalType.id} to convert.")
+                        LogManager.i(TAG, "No values found for $typeKey (ID ${originalType.id}) to convert.")
                     }
                 } catch (e: Exception) {
-                    LogManager.e(TAG, "Error during value conversion/update for type ID ${originalType.id}", e)
-                    conversionErrorOccurred = true
-                    sharedViewModel.showSnackbar(
-                        messageResId = R.string.measurement_type_update_error_conversion_failed,
-                        formatArgs = listOf(originalType.name ?: originalType.key.toString())
-                    )
-                    // Optional: Consider reverting the MeasurementType update if value conversion fails (adds complexity).
+                    // Catch errors during the overall value fetching/processing logic (e.g., .first() on Flow fails)
+                    LogManager.e(TAG, "Error during value conversion process for $typeKey (ID ${originalType.id})", e)
                 }
-            } else if (!conversionErrorOccurred && originalType.unit != updatedType.unit) {
+            } else if (!mainOperationErrorOccurred && oldUnit != newUnit) {
+                // This block is for when unit changed, but the main conversion block wasn't entered.
+                // e.g., inputType is not FLOAT (though this is unlikely for types with units that change often).
+                // Recalculation for derived values in this scenario relies on other triggers or manual user actions.
                 LogManager.i(
                     TAG,
-                    "Unit changed for type ID ${originalType.id}, but InputType is not FLOAT or previous type update failed. " +
-                            "No direct value conversion, but affected measurements will be flagged for recalculation."
+                    "Unit changed for $typeKey (ID ${originalType.id}), but no direct value conversion was performed in the main block. " +
+                            "Any necessary derived value recalculations depend on updates to their specific input values."
                 )
             }
 
             // 3. Show appropriate snackbar message.
-            if (!conversionErrorOccurred && showSnackbarMaster) {
-                if (valuesConvertedCount > 0) {
-                    sharedViewModel.showSnackbar(
-                        messageResId = R.string.measurement_type_updated_and_values_converted_successfully,
-                        formatArgs = listOf(
-                            updatedType.name ?: updatedType.key.toString(),
-                            valuesConvertedCount.toString()
+            if (!mainOperationErrorOccurred && showSnackbarMaster) {
+                if (conversionProcessAttempted) { // If conversion was relevant and attempted
+                    if (valuesSuccessfullyConvertedCount > 0) {
+                        sharedViewModel.showSnackbar(
+                            messageResId = R.string.measurement_type_updated_and_values_converted_successfully,
+                            formatArgs = listOf(
+                                finalTypeToUpdate.name ?: finalTypeToUpdate.key.toString(),
+                                valuesSuccessfullyConvertedCount.toString()
+                            )
                         )
-                    )
-                } else if (originalType.unit != updatedType.unit && (originalType.inputType == InputFieldType.FLOAT)) {
-                    // Also show if unit changed but no values were converted (e.g., none existed or input type wasn't FLOAT but recalculation was still triggered)
+                    } else { // Conversion attempted, but no values were actually changed/updated (e.g., all were same after conversion)
+                        sharedViewModel.showSnackbar(
+                            messageResId = R.string.measurement_type_updated_unit_changed_no_values_converted,
+                            formatArgs = listOf(finalTypeToUpdate.name ?: finalTypeToUpdate.key.toString())
+                        )
+                    }
+                } else if (oldUnit == newUnit && !mainOperationErrorOccurred) {
+                    // Case: Type updated (e.g. name, color changed) but unit was the same.
+                    // Or unit changed but mainOperationErrorOccurred previously (though this snackbar won't show then).
                     sharedViewModel.showSnackbar(
-                        messageResId = R.string.measurement_type_updated_unit_changed_no_values_converted, // Or a more specific message
-                        formatArgs = listOf(updatedType.name ?: updatedType.key.toString())
-                    )
-                } else { // Generic success if no unit change or no conversion needed
-                    sharedViewModel.showSnackbar(
-                        messageResId = R.string.measurement_type_updated_successfully,
-                        formatArgs = listOf(updatedType.name ?: updatedType.key.toString())
+                        messageResId = R.string.measurement_type_updated_successfully, // Generic success for type definition update
+                        formatArgs = listOf(finalTypeToUpdate.name ?: finalTypeToUpdate.key.toString())
                     )
                 }
             }

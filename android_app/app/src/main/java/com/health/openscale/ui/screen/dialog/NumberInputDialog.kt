@@ -17,13 +17,16 @@
  */
 package com.health.openscale.ui.screen.dialog
 
+import androidx.compose.animation.core.copy
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
@@ -33,6 +36,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -49,14 +53,17 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.health.openscale.R
 import com.health.openscale.core.data.InputFieldType
+import com.health.openscale.core.data.UnitType
 
 @Composable
 fun NumberInputDialog(
     title: String,
     initialValue: String,
     inputType: InputFieldType,
+    unit: UnitType,
     iconRes: Int,
     color: Color,
     onDismiss: () -> Unit,
@@ -112,26 +119,36 @@ fun NumberInputDialog(
                     }
                 ),
                 trailingIcon = {
-                    if (inputType == InputFieldType.INT || inputType == InputFieldType.FLOAT) {
-                        Column {
-                            Icon(
-                                imageVector = Icons.Default.KeyboardArrowUp,
-                                contentDescription = stringResource(R.string.trend_increased_desc),
-                                modifier = Modifier
-                                    .size(24.dp)
-                                    .clickable {
-                                        value = incrementValue(value, inputType)
-                                    }
-                            )
-                            Icon(
-                                imageVector = Icons.Default.KeyboardArrowDown,
-                                contentDescription = stringResource(R.string.trend_decreased_desc),
-                                modifier = Modifier
-                                    .size(24.dp)
-                                    .clickable {
-                                        value = decrementValue(value, inputType)
-                                    }
-                            )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        Text(
+                            text = unit.displayName,
+                            modifier = Modifier.padding(end = 8.dp),
+                            style = LocalTextStyle.current.copy(fontSize = 14.sp)
+                        )
+                        if (inputType == InputFieldType.INT || inputType == InputFieldType.FLOAT) {
+                            Column {
+                                Icon(
+                                    imageVector = Icons.Default.KeyboardArrowUp,
+                                    contentDescription = stringResource(R.string.trend_increased_desc),
+                                    modifier = Modifier
+                                        .size(24.dp)
+                                        .clickable {
+                                            value = incrementValue(value, inputType)
+                                        }
+                                )
+                                Icon(
+                                    imageVector = Icons.Default.KeyboardArrowDown,
+                                    contentDescription = stringResource(R.string.trend_decreased_desc),
+                                    modifier = Modifier
+                                        .size(24.dp)
+                                        .clickable {
+                                            value = decrementValue(value, inputType)
+                                        }
+                                )
+                            }
                         }
                     }
                 },
