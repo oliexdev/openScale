@@ -339,6 +339,9 @@ public class BluetoothSettingsFragment extends Fragment {
         if (bleScanResult.getScanRecord() != null) {
             serviceUuids = bleScanResult.getScanRecord().getServiceUuids();
         }
+        if (serviceUuids == null) {
+            return;
+        }
 
         BluetoothDeviceView deviceView = new BluetoothDeviceView(context);
         deviceView.setDeviceName(formatDeviceName(deviceName, device.getAddress()));
