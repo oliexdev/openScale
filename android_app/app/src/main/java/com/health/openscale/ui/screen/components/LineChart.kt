@@ -56,6 +56,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.health.openscale.R
 import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.MeasurementType
@@ -100,6 +101,7 @@ import com.patrykandpatrick.vico.core.common.component.ShapeComponent
 import com.patrykandpatrick.vico.core.common.component.TextComponent
 import com.patrykandpatrick.vico.core.common.data.ExtraStore
 import com.patrykandpatrick.vico.core.common.shape.CorneredShape
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDate
@@ -182,11 +184,25 @@ fun LineChart(
         currentSelectedTypeIdsStrings.mapNotNull { stringId: String -> stringId.toIntOrNull() }.toSet()
     }
 
-    val timeFilteredData by sharedViewModel.getTimeFilteredEnrichedMeasurements(uiSelectedTimeRange)
-        .collectAsState(initial = emptyList())
+    val timeRangeFlow = remember { MutableStateFlow(uiSelectedTimeRange) }
+    LaunchedEffect(uiSelectedTimeRange) {
+        timeRangeFlow.value = uiSelectedTimeRange
+    }
 
-    val fullyFilteredEnrichedMeasurements = remember(timeFilteredData, currentSelectedTypeIntIds) {
-        sharedViewModel.filterEnrichedMeasurementsByTypes(timeFilteredData, currentSelectedTypeIntIds)
+    val typesToSmoothFlow = remember { MutableStateFlow(currentSelectedTypeIntIds) }
+    LaunchedEffect(currentSelectedTypeIntIds) {
+        typesToSmoothFlow.value = currentSelectedTypeIntIds
+    }
+
+    val smoothedData by sharedViewModel
+        .getSmoothedEnrichedMeasurements(
+            timeRangeFlow = timeRangeFlow,
+            typesToSmoothAndDisplayFlow = typesToSmoothFlow
+        )
+        .collectAsStateWithLifecycle(initialValue = emptyList())
+
+    val fullyFilteredEnrichedMeasurements = remember(smoothedData, currentSelectedTypeIntIds) {
+        sharedViewModel.filterEnrichedMeasurementsByTypes(smoothedData, currentSelectedTypeIntIds)
     }
 
     // Extracting measurements with their values for plotting.

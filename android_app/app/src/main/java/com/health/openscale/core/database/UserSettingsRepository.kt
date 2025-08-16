@@ -30,6 +30,7 @@ import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.health.openscale.core.data.SmoothingAlgorithm
 import com.health.openscale.core.utils.LogManager
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -58,7 +59,10 @@ object UserPreferenceKeys {
     val SAVED_BLUETOOTH_SCALE_NAME = stringPreferencesKey("saved_bluetooth_scale_name")
 
     // Settings for chart
-    val SHOW_CHART_DATA_POINTS = booleanPreferencesKey("show_chart_data_points")
+    val CHART_SHOW_DATA_POINTS = booleanPreferencesKey("chart_show_data_points")
+    val CHART_SMOOTHING_ALGORITHM = stringPreferencesKey("chart_smoothing_algorithm")
+    val CHART_SMOOTHING_ALPHA = floatPreferencesKey("chart_smoothing_alpha")
+    val CHART_SMOOTHING_WINDOW_SIZE = intPreferencesKey("chart_smoothing_window_size")
 
     // Context strings for screen-specific settings (can be used as prefixes for dynamic keys)
     const val OVERVIEW_SCREEN_CONTEXT = "overview_screen"
@@ -95,6 +99,15 @@ interface UserSettingsRepository {
 
     val showChartDataPoints: Flow<Boolean>
     suspend fun setShowChartDataPoints(show: Boolean)
+
+    val chartSmoothingAlgorithm: Flow<SmoothingAlgorithm>
+    suspend fun setChartSmoothingAlgorithm(algorithm: SmoothingAlgorithm)
+
+    val chartSmoothingAlpha: Flow<Float>
+    suspend fun setChartSmoothingAlpha(alpha: Float)
+
+    val chartSmoothingWindowSize: Flow<Int>
+    suspend fun setChartSmoothingWindowSize(windowSize: Int)
 
     // Generic Settings Accessors
     /**
@@ -255,7 +268,7 @@ class UserSettingsRepositoryImpl(context: Context) : UserSettingsRepository {
     }
 
     override val showChartDataPoints: Flow<Boolean> = observeSetting(
-        UserPreferenceKeys.SHOW_CHART_DATA_POINTS.name,
+        UserPreferenceKeys.CHART_SHOW_DATA_POINTS.name,
         true
     ).catch { exception ->
         LogManager.e(TAG, "Error observing showChartDataPoints", exception)
@@ -264,7 +277,60 @@ class UserSettingsRepositoryImpl(context: Context) : UserSettingsRepository {
 
     override suspend fun setShowChartDataPoints(show: Boolean) {
         LogManager.d(TAG, "Setting showChartDataPoints to: $show")
-        saveSetting(UserPreferenceKeys.SHOW_CHART_DATA_POINTS.name, show)
+        saveSetting(UserPreferenceKeys.CHART_SHOW_DATA_POINTS.name, show)
+    }
+
+    override val chartSmoothingAlgorithm: Flow<SmoothingAlgorithm> = dataStore.data
+        .catch { exception ->
+            LogManager.e(TAG, "Error reading chartSmoothingAlgorithm from DataStore.", exception)
+            if (exception is IOException) {
+                emit(emptyPreferences())
+            } else {
+                throw exception
+            }
+        }
+        .map { preferences ->
+            val algorithmName = preferences[UserPreferenceKeys.CHART_SMOOTHING_ALGORITHM]
+            try {
+                algorithmName?.let { SmoothingAlgorithm.valueOf(it) } ?: SmoothingAlgorithm.NONE
+            } catch (e: IllegalArgumentException) {
+                LogManager.w(TAG, "Invalid smoothing algorithm name '$algorithmName' in DataStore. Defaulting to NONE.", e)
+                SmoothingAlgorithm.NONE
+            }
+        }
+        .distinctUntilChanged()
+
+    override suspend fun setChartSmoothingAlgorithm(algorithm: SmoothingAlgorithm) {
+        LogManager.d(TAG, "Setting chart smoothing algorithm to: ${algorithm.name}")
+        saveSetting(UserPreferenceKeys.CHART_SMOOTHING_ALGORITHM.name, algorithm.name)
+    }
+
+    override val chartSmoothingAlpha: Flow<Float> = observeSetting(
+        UserPreferenceKeys.CHART_SMOOTHING_ALPHA.name,
+        0.5f
+    ).catch { exception ->
+        LogManager.e(TAG, "Error observing chartSmoothingAlpha", exception)
+        emit(0.5f)
+    }
+
+    override suspend fun setChartSmoothingAlpha(alpha: Float) {
+        val validAlpha = alpha.coerceIn(0.01f, 0.99f)
+        LogManager.d(TAG, "Setting chart smoothing alpha to: $validAlpha (raw input: $alpha)")
+        saveSetting(UserPreferenceKeys.CHART_SMOOTHING_ALPHA.name, validAlpha)
+    }
+
+    override val chartSmoothingWindowSize: Flow<Int> = observeSetting(
+        UserPreferenceKeys.CHART_SMOOTHING_WINDOW_SIZE.name,
+        5
+    ).catch { exception ->
+        LogManager.e(TAG, "Error observing chartSmoothingWindowSize", exception)
+        emit(5)
+    }
+
+    override suspend fun setChartSmoothingWindowSize(windowSize: Int) {
+        val validWindowSize = windowSize.coerceIn(2, 50)
+        LogManager.d(TAG, "Setting chart smoothing window size to: $validWindowSize (raw input: $windowSize)")
+        saveSetting(UserPreferenceKeys.CHART_SMOOTHING_WINDOW_SIZE.name, validWindowSize)
     }
 
     @Suppress("UNCHECKED_CAST")

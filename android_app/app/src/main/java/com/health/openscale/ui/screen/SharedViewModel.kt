@@ -20,10 +20,16 @@ package com.health.openscale.ui.screen
 import android.app.Application
 import android.content.ComponentName
 import android.content.Intent
+import android.util.Log
 import androidx.annotation.StringRes
+import androidx.compose.animation.core.copy
+import androidx.compose.foundation.gestures.forEach
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.geometry.isEmpty
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.key.type
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.values
 import androidx.lifecycle.ViewModel
@@ -37,6 +43,7 @@ import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.MeasurementValue
+import com.health.openscale.core.data.SmoothingAlgorithm
 import com.health.openscale.core.data.TimeRangeFilter
 import com.health.openscale.core.data.Trend
 import com.health.openscale.core.data.User
@@ -45,6 +52,7 @@ import com.health.openscale.core.model.MeasurementValueWithType
 import com.health.openscale.core.model.MeasurementWithValues
 import com.health.openscale.core.utils.LogManager
 import com.health.openscale.core.database.UserSettingsRepository
+import com.health.openscale.core.utils.CalculationUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -66,6 +74,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.Date
+import kotlin.math.roundToInt
 
 private const val TAG = "SharedViewModel"
 
@@ -472,6 +481,142 @@ class SharedViewModel(
             ).also {
                 LogManager.v(TAG, "enrichedMeasurementsFlow initialized. (Data Enrichment Flow)")
             }
+
+
+    // --- Smoothing Settings (from UserSettingsRepository) ---
+
+    val selectedSmoothingAlgorithm: StateFlow<SmoothingAlgorithm> =
+        userSettingRepository.chartSmoothingAlgorithm
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000L),
+                initialValue = SmoothingAlgorithm.NONE
+            ).also {
+                LogManager.v(TAG, "selectedSmoothingAlgorithm flow initialized from repository.")
+            }
+
+    val smoothingAlpha: StateFlow<Float> =
+        userSettingRepository.chartSmoothingAlpha
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000L),
+                initialValue = 0.5f
+            ).also {
+                LogManager.v(TAG, "smoothingAlpha flow initialized from repository.")
+            }
+
+    val smoothingWindowSize: StateFlow<Int> =
+        userSettingRepository.chartSmoothingWindowSize
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000L),
+                initialValue = 5 // Default from UserSettingsRepositoryImpl (was 5, I had 3 before, use your actual default)
+            ).also {
+                LogManager.v(TAG, "smoothingWindowSize flow initialized from repository.")
+            }
+
+
+    fun getSmoothedEnrichedMeasurements(
+        timeRangeFlow: StateFlow<TimeRangeFilter>,
+        typesToSmoothAndDisplayFlow: StateFlow<Set<Int>>
+    ): Flow<List<EnrichedMeasurement>> {
+
+        // 1) Basisdaten je nach Zeitfenster
+        val baseEnrichedFlow = timeRangeFlow.flatMapLatest { timeRange ->
+            getTimeFilteredEnrichedMeasurements(timeRange)
+        }
+
+        // 2) Settings in einem Flow bündeln -> nur noch 1 Flow für alle Glättungs-Parameter
+        data class SmoothingConfig(
+            val algorithm: SmoothingAlgorithm,
+            val alpha: Float,
+            val window: Int
+        )
+        val smoothingConfigFlow: Flow<SmoothingConfig> =
+            combine(selectedSmoothingAlgorithm, smoothingAlpha, smoothingWindowSize) { algo, alpha, window ->
+                SmoothingConfig(algo, alpha, window)
+            }
+
+        // 3) Jetzt nur noch 4 Flows kombinieren
+        return combine(
+            baseEnrichedFlow,                 // Flow<List<EnrichedMeasurement>>
+            typesToSmoothAndDisplayFlow,      // Flow<Set<Int>>
+            measurementTypes,                 // Flow<List<MeasurementType>>
+            smoothingConfigFlow               // Flow<SmoothingConfig>
+        ) { measurements, typesToSmooth, globalTypes, cfg ->
+
+            if (cfg.algorithm == SmoothingAlgorithm.NONE || measurements.isEmpty() || typesToSmooth.isEmpty()) {
+                return@combine measurements
+            }
+
+            // Roh-Serien pro Typ sammeln
+            val rawSeries = mutableMapOf<Int, MutableList<Pair<Long, Float>>>()
+            typesToSmooth.forEach { typeId ->
+                globalTypes.find { it.id == typeId }?.takeIf {
+                    it.isEnabled && it.inputType in listOf(InputFieldType.FLOAT, InputFieldType.INT)
+                }?.let { rawSeries[typeId] = mutableListOf() }
+            }
+
+            measurements.forEach { m ->
+                val ts = m.measurementWithValues.measurement.timestamp
+                m.measurementWithValues.values.forEach { v ->
+                    rawSeries[v.type.id]?.let { list ->
+                        val value = when (v.type.inputType) {
+                            InputFieldType.FLOAT -> v.value.floatValue
+                            InputFieldType.INT   -> v.value.intValue?.toFloat()
+                            else                 -> null
+                        }
+                        value?.let { list.add(ts to it) }
+                    }
+                }
+            }
+            rawSeries.values.forEach { it.sortBy { p -> p.first } }
+
+            // Glätten & auf Timestamps mappen (SMA rechtsbündig auf Fenster)
+            val smoothedMap: Map<Int, Map<Long, Float>> = rawSeries.mapValues { (_, series) ->
+                val values = series.map { it.second }
+                val smoothed = when (cfg.algorithm) {
+                    SmoothingAlgorithm.EXPONENTIAL_SMOOTHING ->
+                        CalculationUtil.applyExponentialSmoothing(values, cfg.alpha)
+                    SmoothingAlgorithm.SIMPLE_MOVING_AVERAGE ->
+                        CalculationUtil.applySimpleMovingAverage(values, cfg.window)
+                    else -> values
+                }
+
+                if (cfg.algorithm == SmoothingAlgorithm.SIMPLE_MOVING_AVERAGE && smoothed.size < series.size) {
+                    val offset = series.size - smoothed.size // == window-1
+                    smoothed.indices.associate { i ->
+                        series[i + offset].first to smoothed[i]
+                    }
+                } else {
+                    // EMA oder gleiche Länge
+                    series.indices.zip(smoothed).associate { (i, v) -> series[i].first to v }
+                }
+            }
+
+            // Geglättete Werte in die Measurements übernehmen
+            measurements.map { orig ->
+                var modified = false
+                val ts = orig.measurementWithValues.measurement.timestamp
+                val newValues = orig.measurementWithValues.values.map { v ->
+                    smoothedMap[v.type.id]?.get(ts)?.let { smoothed ->
+                        modified = true
+                        v.copy(
+                            value = v.value.copy(
+                                floatValue = smoothed,
+                                intValue = if (v.type.inputType == InputFieldType.INT) smoothed.roundToInt() else v.value.intValue
+                            )
+                        )
+                    } ?: v
+                }
+                if (modified) {
+                    orig.copy(measurementWithValues = orig.measurementWithValues.copy(values = newValues))
+                } else {
+                    orig
+                }
+            }
+        }.flowOn(Dispatchers.Default)
+    }
 
     fun getTimeFilteredEnrichedMeasurements(
         selectedTimeRange: TimeRangeFilter

@@ -290,6 +290,12 @@
 
     <!-- Diagramm Einstellungen -->
     <string name="setting_show_chart_points">Datenpunkte anzeigen</string>
+    <string name="setting_smoothing_algorithm">Glättungsalgorithmus</string>
+    <string name="setting_smoothing_alpha">Alpha</string>
+    <string name="setting_smoothing_window_size">Fenstergröße</string>
+    <string name="smoothing_algorithm_none">Keine Glättung</string>
+    <string name="smoothing_algorithm_sma">Gleitender Durchschnitt</string>
+    <string name="smoothing_algorithm_ses">Exponentielle Glättung</string>
 
     <!-- Über-Bildschirm & Diagnose -->
     <string name="version_info">Version: %1$s (%2$s)</string>

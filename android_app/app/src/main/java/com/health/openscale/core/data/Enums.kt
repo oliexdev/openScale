@@ -340,3 +340,13 @@ enum class TimeRangeFilter(@StringRes val displayNameResId: Int) {
         return context.getString(displayNameResId)
     }
 }
+
+enum class SmoothingAlgorithm(@StringRes val displayNameResId: Int) {
+    NONE(R.string.smoothing_algorithm_none),
+    SIMPLE_MOVING_AVERAGE(R.string.smoothing_algorithm_sma),
+    EXPONENTIAL_SMOOTHING(R.string.smoothing_algorithm_ses);
+
+    fun getDisplayName(context: android.content.Context): String {
+        return context.getString(displayNameResId)
+    }
+}
