@@ -30,6 +30,7 @@ import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.health.openscale.core.data.BackupInterval
 import com.health.openscale.core.data.SmoothingAlgorithm
 import com.health.openscale.core.utils.LogManager
 import kotlinx.coroutines.flow.Flow
@@ -63,6 +64,13 @@ object UserPreferenceKeys {
     val CHART_SMOOTHING_ALGORITHM = stringPreferencesKey("chart_smoothing_algorithm")
     val CHART_SMOOTHING_ALPHA = floatPreferencesKey("chart_smoothing_alpha")
     val CHART_SMOOTHING_WINDOW_SIZE = intPreferencesKey("chart_smoothing_window_size")
+
+    // --- Settings for Automatic Backups ---
+    val AUTO_BACKUP_ENABLED_GLOBALLY = booleanPreferencesKey("auto_backup_enabled_globally")
+    val AUTO_BACKUP_LOCATION_URI = stringPreferencesKey("auto_backup_location_uri")
+    val AUTO_BACKUP_INTERVAL = stringPreferencesKey("auto_backup_interval")
+    val AUTO_BACKUP_CREATE_NEW_FILE = booleanPreferencesKey("auto_backup_create_new_file")
+    val AUTO_BACKUP_LAST_SUCCESSFUL_TIMESTAMP = longPreferencesKey("auto_backup_last_successful_timestamp")
 
     // Context strings for screen-specific settings (can be used as prefixes for dynamic keys)
     const val OVERVIEW_SCREEN_CONTEXT = "overview_screen"
@@ -108,6 +116,22 @@ interface UserSettingsRepository {
 
     val chartSmoothingWindowSize: Flow<Int>
     suspend fun setChartSmoothingWindowSize(windowSize: Int)
+
+    // --- Automatic Backup Settings ---
+    val autoBackupEnabledGlobally: Flow<Boolean>
+    suspend fun setAutoBackupEnabledGlobally(enabled: Boolean)
+
+    val autoBackupLocationUri: Flow<String?>
+    suspend fun setAutoBackupLocationUri(uri: String?)
+
+    val autoBackupInterval: Flow<BackupInterval>
+    suspend fun setAutoBackupInterval(interval: BackupInterval)
+
+    val autoBackupCreateNewFile: Flow<Boolean>
+    suspend fun setAutoBackupCreateNewFile(createNew: Boolean)
+
+    val autoBackupLastSuccessfulTimestamp: Flow<Long>
+    suspend fun setAutoBackupLastSuccessfulTimestamp(timestamp: Long)
 
     // Generic Settings Accessors
     /**
@@ -331,6 +355,96 @@ class UserSettingsRepositoryImpl(context: Context) : UserSettingsRepository {
         val validWindowSize = windowSize.coerceIn(2, 50)
         LogManager.d(TAG, "Setting chart smoothing window size to: $validWindowSize (raw input: $windowSize)")
         saveSetting(UserPreferenceKeys.CHART_SMOOTHING_WINDOW_SIZE.name, validWindowSize)
+    }
+
+    override val autoBackupEnabledGlobally: Flow<Boolean> = observeSetting(
+        UserPreferenceKeys.AUTO_BACKUP_ENABLED_GLOBALLY.name,
+        false // Standardmäßig deaktiviert
+    ).catch { exception ->
+        LogManager.e(TAG, "Error observing autoBackupEnabledGlobally", exception)
+        emit(false)
+    }
+
+    override suspend fun setAutoBackupEnabledGlobally(enabled: Boolean) {
+        LogManager.d(TAG, "Setting autoBackupEnabledGlobally to: $enabled")
+        saveSetting(UserPreferenceKeys.AUTO_BACKUP_ENABLED_GLOBALLY.name, enabled)
+    }
+
+    override val autoBackupLocationUri: Flow<String?> = dataStore.data
+        .catch { exception ->
+            LogManager.e(TAG, "Error reading autoBackupLocationUri from DataStore.", exception)
+            if (exception is IOException) {
+                emit(emptyPreferences())
+            } else {
+                throw exception
+            }
+        }
+        .map { preferences ->
+            preferences[UserPreferenceKeys.AUTO_BACKUP_LOCATION_URI]
+        }
+        .distinctUntilChanged()
+
+    override suspend fun setAutoBackupLocationUri(uri: String?) {
+        LogManager.d(TAG, "Setting autoBackupLocationUri to: $uri")
+        dataStore.edit { preferences ->
+            if (uri != null) {
+                preferences[UserPreferenceKeys.AUTO_BACKUP_LOCATION_URI] = uri
+            } else {
+                preferences.remove(UserPreferenceKeys.AUTO_BACKUP_LOCATION_URI)
+            }
+        }
+    }
+
+    override val autoBackupInterval: Flow<BackupInterval> = dataStore.data
+        .catch { exception ->
+            LogManager.e(TAG, "Error reading autoBackupInterval from DataStore.", exception)
+            if (exception is IOException) {
+                emit(emptyPreferences())
+            } else {
+                throw exception
+            }
+        }
+        .map { preferences ->
+            val intervalName = preferences[UserPreferenceKeys.AUTO_BACKUP_INTERVAL]
+            try {
+                intervalName?.let { BackupInterval.valueOf(it) } ?: BackupInterval.WEEKLY
+            } catch (e: IllegalArgumentException) {
+                LogManager.w(TAG, "Invalid BackupInterval name '$intervalName' in DataStore. Defaulting to WEEKLY.", e)
+                BackupInterval.WEEKLY
+            }
+        }
+        .distinctUntilChanged()
+
+    override suspend fun setAutoBackupInterval(interval: BackupInterval) {
+        LogManager.d(TAG, "Setting autoBackupInterval to: ${interval.name}")
+        saveSetting(UserPreferenceKeys.AUTO_BACKUP_INTERVAL.name, interval.name)
+    }
+
+
+    override val autoBackupCreateNewFile: Flow<Boolean> = observeSetting(
+        UserPreferenceKeys.AUTO_BACKUP_CREATE_NEW_FILE.name,
+        false
+    ).catch { exception ->
+        LogManager.e(TAG, "Error observing autoBackupCreateNewFile", exception)
+        emit(false)
+    }
+
+    override suspend fun setAutoBackupCreateNewFile(createNew: Boolean) {
+        LogManager.d(TAG, "Setting autoBackupCreateNewFile to: $createNew")
+        saveSetting(UserPreferenceKeys.AUTO_BACKUP_CREATE_NEW_FILE.name, createNew)
+    }
+
+    override val autoBackupLastSuccessfulTimestamp: Flow<Long> = observeSetting(
+        UserPreferenceKeys.AUTO_BACKUP_LAST_SUCCESSFUL_TIMESTAMP.name,
+        0L
+    ).catch { exception ->
+        LogManager.e(TAG, "Error observing autoBackupLastSuccessfulTimestamp", exception)
+        emit(0L) // Fallback
+    }
+
+    override suspend fun setAutoBackupLastSuccessfulTimestamp(timestamp: Long) {
+        LogManager.d(TAG, "Setting autoBackupLastSuccessfulTimestamp to: $timestamp")
+        saveSetting(UserPreferenceKeys.AUTO_BACKUP_LAST_SUCCESSFUL_TIMESTAMP.name, timestamp)
     }
 
     @Suppress("UNCHECKED_CAST")

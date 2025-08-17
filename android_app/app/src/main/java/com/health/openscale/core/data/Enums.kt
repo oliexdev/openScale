@@ -17,6 +17,7 @@
  */
 package com.health.openscale.core.data
 
+import android.content.Context
 import android.text.InputType
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
@@ -348,5 +349,19 @@ enum class SmoothingAlgorithm(@StringRes val displayNameResId: Int) {
 
     fun getDisplayName(context: android.content.Context): String {
         return context.getString(displayNameResId)
+    }
+}
+
+enum class BackupInterval {
+    DAILY,
+    WEEKLY,
+    MONTHLY;
+
+    fun getDisplayName(context: Context): String {
+         return when (this) {
+             DAILY -> context.getString(R.string.interval_daily)
+             WEEKLY -> context.getString(R.string.interval_weekly)
+             MONTHLY -> context.getString(R.string.interval_monthly)
+         }
     }
 }

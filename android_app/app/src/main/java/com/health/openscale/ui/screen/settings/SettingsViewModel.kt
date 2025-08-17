@@ -17,14 +17,23 @@
  */
 package com.health.openscale.ui.screen.settings
 
+import android.app.Application
 import android.content.ContentResolver
+import android.content.Context
 import android.net.Uri
 import androidx.compose.material3.SnackbarDuration
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
+import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import com.health.openscale.R
+import com.health.openscale.core.data.BackupInterval
 import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementType
@@ -37,16 +46,19 @@ import com.health.openscale.core.model.MeasurementWithValues
 import com.health.openscale.core.utils.CalculationUtil
 import com.health.openscale.core.utils.Converters
 import com.health.openscale.core.utils.LogManager
+import com.health.openscale.core.worker.BackupWorker
 import com.health.openscale.ui.screen.SharedViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -66,6 +78,7 @@ import java.time.temporal.ChronoField
 import java.time.temporal.TemporalQueries.localDate
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.TimeUnit
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
@@ -128,6 +141,22 @@ class SettingsViewModel(
 
     private val _isLoadingEntireDatabaseDeletion = MutableStateFlow(false)
     val isLoadingEntireDatabaseDeletion: StateFlow<Boolean> = _isLoadingEntireDatabaseDeletion.asStateFlow()
+
+    val autoBackupEnabledGlobally: StateFlow<Boolean> = userSettingsRepository.autoBackupEnabledGlobally
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    val autoBackupLocationUri: StateFlow<String?> = userSettingsRepository.autoBackupLocationUri
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+    val autoBackupInterval: StateFlow<BackupInterval> = userSettingsRepository.autoBackupInterval
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), BackupInterval.WEEKLY)
+
+    val autoBackupCreateNewFile: StateFlow<Boolean> = userSettingsRepository.autoBackupCreateNewFile
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+
+    val autoBackupLastSuccessfulTimestamp: StateFlow<Long> = userSettingsRepository.autoBackupLastSuccessfulTimestamp
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0L)
+
 
     companion object {
         private const val TAG = "SettingsViewModel"
@@ -207,6 +236,76 @@ class SettingsViewModel(
         }
         LogManager.d(TAG, "Determined default app language: $defaultLang (System: $systemLanguage)")
         return defaultLang
+    }
+
+    suspend fun setAutoBackupEnabledGlobally(context : Context, enabled: Boolean) {
+        LogManager.d(TAG, "Setting auto backup globally enabled to: $enabled")
+        userSettingsRepository.setAutoBackupEnabledGlobally(enabled)
+        scheduleOrCancelAutoBackupWorker(context.applicationContext)
+    }
+
+    suspend fun setAutoBackupLocationUri(context : Context, uriString: String?) {
+        LogManager.d(TAG, "Setting auto backup location URI to: $uriString")
+        userSettingsRepository.setAutoBackupLocationUri(uriString)
+        if (uriString != null && !autoBackupEnabledGlobally.value) {
+            setAutoBackupEnabledGlobally(context, true)
+        } else if (uriString == null) {
+             setAutoBackupEnabledGlobally(context,false)
+        }
+    }
+
+    suspend fun setAutoBackupInterval(context : Context, interval: BackupInterval) {
+        LogManager.d(TAG, "Setting auto backup interval to: ${interval.name}")
+        userSettingsRepository.setAutoBackupInterval(interval)
+        scheduleOrCancelAutoBackupWorker(context.applicationContext)
+    }
+
+    suspend fun setAutoBackupCreateNewFile(createNew: Boolean) {
+        LogManager.d(TAG, "Setting auto backup create new file to: $createNew")
+        userSettingsRepository.setAutoBackupCreateNewFile(createNew)
+    }
+
+    private fun scheduleOrCancelAutoBackupWorker(context: Context) {
+        viewModelScope.launch {
+            val isEnabled = userSettingsRepository.autoBackupEnabledGlobally.first()
+            val intervalSetting = userSettingsRepository.autoBackupInterval.first()
+            val locationUri = userSettingsRepository.autoBackupLocationUri.first()
+
+            val workManager = WorkManager.getInstance(context.applicationContext)
+
+            if (isEnabled && locationUri != null) {
+                val repeatIntervalMillis = when (intervalSetting) {
+                    BackupInterval.DAILY -> 24 * 60 * 60 * 1000L
+                    BackupInterval.WEEKLY -> 7 * 24 * 60 * 60 * 1000L
+                    BackupInterval.MONTHLY -> 30 * 24 * 60 * 60 * 1000L
+                }
+
+                val flexMillis = repeatIntervalMillis / 8
+
+                val constraints = Constraints.Builder()
+                    .setRequiredNetworkType(NetworkType.NOT_REQUIRED)
+                    .setRequiresStorageNotLow(true)
+                    .build()
+
+                val backupWorkRequest = PeriodicWorkRequestBuilder<BackupWorker>(
+                    repeatIntervalMillis, TimeUnit.MILLISECONDS,
+                    flexMillis, TimeUnit.MILLISECONDS
+                )
+                    .setConstraints(constraints)
+                    .addTag(BackupWorker.TAG)
+                    .build()
+
+                workManager.enqueueUniquePeriodicWork(
+                    BackupWorker.WORK_NAME,
+                    ExistingPeriodicWorkPolicy.REPLACE,
+                    backupWorkRequest
+                )
+                LogManager.i(TAG, "Scheduled auto backup worker with interval: $intervalSetting")
+            } else {
+                workManager.cancelUniqueWork(BackupWorker.WORK_NAME)
+                LogManager.i(TAG, "Cancelled auto backup worker.")
+            }
+        }
     }
 
     fun performCsvExport(userId: Int, uri: Uri, contentResolver: ContentResolver) {
@@ -865,7 +964,7 @@ class SettingsViewModel(
         }
     }
 
-    fun performDatabaseRestore(restoreUri: Uri, applicationContext: android.content.Context, contentResolver: ContentResolver) {
+    fun performDatabaseRestore(restoreUri: Uri, applicationContext: Context, contentResolver: ContentResolver) {
         viewModelScope.launch {
             _isLoadingRestore.value = true
             LogManager.i(TAG, "Performing database restore from URI: $restoreUri")
@@ -988,7 +1087,7 @@ class SettingsViewModel(
         LogManager.d(TAG, "Delete entire database confirmation cancelled.")
     }
 
-    fun confirmDeleteEntireDatabase(applicationContext: android.content.Context) {
+    fun confirmDeleteEntireDatabase(applicationContext: Context) {
         viewModelScope.launch {
             _isLoadingEntireDatabaseDeletion.value = true
             _showDeleteEntireDatabaseConfirmationDialog.value = false

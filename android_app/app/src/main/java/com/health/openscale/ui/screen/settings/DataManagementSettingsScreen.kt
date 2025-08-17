@@ -17,11 +17,17 @@
  */
 package com.health.openscale.ui.screen.settings
 
+import android.content.ActivityNotFoundException
+import android.content.Intent
 import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -29,12 +35,21 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.DeleteForever
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.FileUpload
+import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.FolderOpen
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
@@ -43,8 +58,11 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -53,6 +71,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -62,24 +81,24 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.documentfile.provider.DocumentFile
 import androidx.navigation.NavController
 import com.health.openscale.R
+import com.health.openscale.core.data.BackupInterval
 import com.health.openscale.core.data.User
+import kotlinx.coroutines.launch
+import java.text.DateFormat
+import java.util.Date
+import java.util.Locale
+import androidx.core.net.toUri
 
 
 /**
  * Represents items in the data management settings list.
- * Can be an action item or a header.
  */
 sealed class DataManagementSettingListItem {
     /**
      * Represents an actionable item in the settings list.
-     * @param label The text label for the item.
-     * @param icon The icon for the item.
-     * @param onClick The lambda to execute when the item is clicked.
-     * @param enabled Whether the item is clickable and interactive.
-     * @param isDestructive If true, indicates a potentially dangerous action, often styled differently (e.g., with error colors).
-     * @param isLoading If true, shows a loading indicator instead of the icon, and the item might be disabled.
      */
     data class ActionItem(
         val label: String,
@@ -92,16 +111,14 @@ sealed class DataManagementSettingListItem {
 }
 
 /**
- * Composable screen for managing application data, including import/export of measurements,
- * database backup/restore, and deletion of user data or the entire database.
- *
- * @param navController The NavController for navigation purposes (currently not used in this specific screen's internal logic but good for context).
- * @param settingsViewModel The ViewModel that handles the business logic for data management operations.
+ * Composable screen for managing application data.
+ * Allows users to export/import data, backup/restore the database,
+ * and manage automatic backup settings.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DataManagementSettingsScreen(
-    navController: NavController, // Not directly used in this composable's logic but passed for potential future use or consistency
+    navController: NavController,
     settingsViewModel: SettingsViewModel
 ) {
     val users by settingsViewModel.allUsers.collectAsState()
@@ -119,90 +136,178 @@ fun DataManagementSettingsScreen(
     val isAnyOperationLoading = isLoadingExport || isLoadingImport || isLoadingDeletion ||
             isLoadingBackup || isLoadingRestore || isLoadingEntireDatabaseDeletion
 
-    // States for the deletion process
     val showUserSelectionDialogForDelete by settingsViewModel.showUserSelectionDialogForDelete.collectAsState()
     val userPendingDeletion by settingsViewModel.userPendingDeletion.collectAsState()
     val showDeleteConfirmationDialog by settingsViewModel.showDeleteConfirmationDialog.collectAsState()
     var showRestoreConfirmationDialog by rememberSaveable { mutableStateOf(false) }
 
     val context = LocalContext.current
-    var activeSafActionUserId by remember { mutableStateOf<Int?>(null) } // Stores user ID for SAF actions like CSV export/import
+    val coroutineScope = rememberCoroutineScope()
 
-    // --- ActivityResultLauncher for CSV Export ---
+    // --- Automatic Backup Settings from ViewModel ---
+    val autoBackupGloballyEnabled by settingsViewModel.autoBackupEnabledGlobally.collectAsState()
+    val autoBackupLocationUriString by settingsViewModel.autoBackupLocationUri.collectAsState()
+    val autoBackupInterval by settingsViewModel.autoBackupInterval.collectAsState()
+    val autoBackupCreateNewFile by settingsViewModel.autoBackupCreateNewFile.collectAsState()
+    val autoBackupLastSuccessfulTimestamp by settingsViewModel.autoBackupLastSuccessfulTimestamp.collectAsState()
+    val isAutoBackupLocationConfigured = autoBackupLocationUriString != null
+
+    // Effective state: global switch is on AND a location is configured.
+    val isAutoBackupEffectivelyEnabled by remember(autoBackupGloballyEnabled, isAutoBackupLocationConfigured) {
+        mutableStateOf(autoBackupGloballyEnabled && isAutoBackupLocationConfigured)
+    }
+
+
+    val lastBackupStatusText by remember(
+        isAutoBackupEffectivelyEnabled,
+        autoBackupLocationUriString,
+        autoBackupGloballyEnabled,
+        autoBackupLastSuccessfulTimestamp,
+        context
+    ) {
+        mutableStateOf(
+            if (isAutoBackupEffectivelyEnabled) {
+                if (autoBackupLastSuccessfulTimestamp > 0L) {
+                    val timestamp = autoBackupLastSuccessfulTimestamp
+                    val date = Date(timestamp)
+                    val dateFormat = DateFormat.getDateTimeInstance(
+                        DateFormat.MEDIUM,
+                        DateFormat.SHORT,
+                        Locale.getDefault()
+                    )
+                    val formattedTime = dateFormat.format(date)
+                    context.getString(R.string.settings_last_backup_status_successful, formattedTime)
+                } else {
+                    context.getString(R.string.settings_last_backup_status_never)
+                }
+            } else if (autoBackupGloballyEnabled && !isAutoBackupLocationConfigured) {
+                context.getString(R.string.settings_backup_location_not_configured_for_auto)
+            } else {
+                context.getString(R.string.settings_auto_backups_disabled)
+            }
+        )
+    }
+
+    val selectedBackupIntervalDisplay = remember(autoBackupInterval, context) {
+        autoBackupInterval.getDisplayName(context)
+    }
+    var showBackupIntervalDialog by remember { mutableStateOf(false) }
+
+    val backupBehaviorSupportingText by remember(autoBackupCreateNewFile, context) {
+        mutableStateOf(
+            if (autoBackupCreateNewFile) context.getString(R.string.settings_backup_behavior_new_file)
+            else context.getString(R.string.settings_backup_behavior_overwrite)
+        )
+    }
+
+    val currentBackupLocationUserDisplay by remember(autoBackupLocationUriString, context) {
+        mutableStateOf(
+            if (autoBackupLocationUriString != null) {
+                try {
+                    DocumentFile.fromTreeUri(context, Uri.parse(autoBackupLocationUriString!!))?.name
+                        ?: context.getString(R.string.settings_backup_location_selected_folder)
+                } catch (e: Exception) {
+                    context.getString(R.string.settings_backup_location_error_accessing)
+                }
+            } else {
+                context.getString(R.string.settings_backup_location_not_configured)
+            }
+        )
+    }
+
+    val canOpenSelectedBackupLocation by remember(autoBackupLocationUriString) {
+        mutableStateOf(autoBackupLocationUriString != null)
+    }
+
+    var activeSafActionUserId by remember { mutableStateOf<Int?>(null) }
+
     val exportCsvLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("text/csv"),
         onResult = { uri: Uri? ->
             uri?.let { fileUri ->
                 activeSafActionUserId?.let { userId ->
                     settingsViewModel.performCsvExport(userId, fileUri, context.contentResolver)
-                    activeSafActionUserId = null // Reset after use
+                    activeSafActionUserId = null
                 }
             }
         }
     )
 
-    // --- ActivityResultLauncher for CSV Import ---
     val importCsvLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
         onResult = { uri: Uri? ->
             uri?.let { fileUri ->
                 activeSafActionUserId?.let { userId ->
                     settingsViewModel.performCsvImport(userId, fileUri, context.contentResolver)
-                    activeSafActionUserId = null // Reset after use
+                    activeSafActionUserId = null
                 }
             }
         }
     )
 
-    // --- ActivityResultLauncher for DB Backup ---
-    val backupDbLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.CreateDocument("*/*"), // Allow any file type as we suggest the name
+    val manualBackupDbLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("*/*"), // Using generic MIME type for DB backup
         onResult = { uri: Uri? ->
             uri?.let { fileUri ->
-                // activeSafActionUserId is not relevant here as it's a global backup.
                 settingsViewModel.performDatabaseBackup(fileUri, context.applicationContext, context.contentResolver)
             }
         }
     )
 
-    // --- ActivityResultLauncher for DB Restore ---
     val restoreDbLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
         onResult = { uri: Uri? ->
             uri?.let { fileUri ->
-                // activeSafActionUserId is not relevant here.
+                // Confirmation dialog is shown before launching, restore directly
                 settingsViewModel.performDatabaseRestore(fileUri, context.applicationContext, context.contentResolver)
             }
         }
     )
 
-    // Collect SAF events from ViewModel to trigger file pickers
+    val selectAutoBackupDirectoryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocumentTree(),
+        onResult = { uri: Uri? ->
+            if (uri != null) {
+                coroutineScope.launch {
+                    val takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                    context.contentResolver.takePersistableUriPermission(uri, takeFlags)
+                    settingsViewModel.setAutoBackupLocationUri(context.applicationContext,uri.toString())
+                    // If user selects a folder, enable auto backups globally if not already.
+                    if (!autoBackupGloballyEnabled) {
+                        settingsViewModel.setAutoBackupEnabledGlobally(context.applicationContext,true)
+                    }
+                }
+                Toast.makeText(context, context.getString(R.string.settings_backup_location_selected_toast,
+                    DocumentFile.fromTreeUri(context, uri)?.name ?: "Selected folder"), Toast.LENGTH_SHORT).show()
+            } else {
+                // User cancelled or no folder selected
+                if (!isAutoBackupLocationConfigured) { // Only if no location was configured before
+                    coroutineScope.launch { settingsViewModel.setAutoBackupEnabledGlobally(context.applicationContext,false) }
+                }
+                Toast.makeText(context, R.string.settings_backup_location_selection_cancelled, Toast.LENGTH_SHORT).show()
+            }
+        }
+    )
+
     LaunchedEffect(key1 = settingsViewModel) {
         settingsViewModel.safEvent.collect { event ->
             when (event) {
                 is SafEvent.RequestCreateFile -> {
-                    activeSafActionUserId = event.userId // Retain for CSV export if applicable
+                    activeSafActionUserId = event.userId
                     if (event.actionId == SettingsViewModel.ACTION_ID_BACKUP_DB) {
-                        backupDbLauncher.launch(event.suggestedName)
-                    } else { // Assumption: other CreateFile is CSV export
+                        manualBackupDbLauncher.launch(event.suggestedName)
+                    } else {
                         exportCsvLauncher.launch(event.suggestedName)
                     }
                 }
                 is SafEvent.RequestOpenFile -> {
-                    activeSafActionUserId = event.userId // Retain for CSV import if applicable
+                    activeSafActionUserId = event.userId
                     if (event.actionId == SettingsViewModel.ACTION_ID_RESTORE_DB) {
-                        // For DB Restore, we might expect specific MIME types,
-                        // e.g., "application/octet-stream" or "application/x-sqlite3" for .db,
-                        // or "application/zip" if using ZIPs.
-                        // Using a general type for now:
-                        restoreDbLauncher.launch(arrayOf("*/*"))
-                    } else { // Assumption: other OpenFile is CSV import
-                        val mimeTypes = arrayOf(
-                            "text/csv",
-                            "text/comma-separated-values",
-                            "application/csv",
-                            "text/plain"
-                        )
+                        // For DB restore, we show a confirmation dialog first.
+                        // The actual launch happens after confirmation. This SAF event is for when that's confirmed.
+                        restoreDbLauncher.launch(arrayOf("*/*")) // Generic MIME type for DB files
+                    } else {
+                        val mimeTypes = arrayOf("text/csv", "text/comma-separated-values", "application/csv", "text/plain")
                         importCsvLauncher.launch(mimeTypes)
                     }
                 }
@@ -210,79 +315,20 @@ fun DataManagementSettingsScreen(
         }
     }
 
-    val regularDataManagementItems = buildList {
-        add(
-            DataManagementSettingListItem.ActionItem(
-                label = stringResource(R.string.settings_export_measurements_csv),
-                icon = Icons.Default.FileDownload,
-                onClick = {
-                    if (!isAnyOperationLoading) settingsViewModel.startExportProcess()
-                },
-                enabled = users.isNotEmpty() && !isAnyOperationLoading,
-                isLoading = isLoadingExport
-            )
-        )
-        add(
-            DataManagementSettingListItem.ActionItem(
-                label = stringResource(R.string.settings_import_measurements_csv),
-                icon = Icons.Default.FileUpload,
-                onClick = {
-                    if (!isAnyOperationLoading) settingsViewModel.startImportProcess()
-                },
-                enabled = users.isNotEmpty() && !isAnyOperationLoading,
-                isLoading = isLoadingImport
-            )
-        )
-        add(
-            DataManagementSettingListItem.ActionItem(
-                label = stringResource(R.string.settings_backup_database),
-                icon = Icons.Default.CloudDownload,
-                onClick = {
-                    if (!isAnyOperationLoading) settingsViewModel.startDatabaseBackup()
-                },
-                enabled = !isAnyOperationLoading, // Always enabled if no other operation is loading
-                isLoading = isLoadingBackup
-            )
-        )
-        add(
-            DataManagementSettingListItem.ActionItem(
-                label = stringResource(R.string.settings_restore_database),
-                icon = Icons.Filled.CloudUpload,
-                onClick = {
-                    if (!isAnyOperationLoading) showRestoreConfirmationDialog = true
-                },
-                enabled = !isAnyOperationLoading, // Always enabled if no other operation is loading
-                isLoading = isLoadingRestore
-            )
-        )
+    val regularDataManagementItems = remember(users, isAnyOperationLoading, isLoadingExport, isLoadingImport, isLoadingBackup, isLoadingRestore, context) {
+        buildList {
+            add(DataManagementSettingListItem.ActionItem(context.getString(R.string.settings_export_measurements_csv), Icons.Default.FileDownload, { if (!isAnyOperationLoading) settingsViewModel.startExportProcess() }, users.isNotEmpty() && !isAnyOperationLoading, isLoading = isLoadingExport))
+            add(DataManagementSettingListItem.ActionItem(context.getString(R.string.settings_import_measurements_csv), Icons.Default.FileUpload, { if (!isAnyOperationLoading) settingsViewModel.startImportProcess() }, users.isNotEmpty() && !isAnyOperationLoading, isLoading = isLoadingImport))
+            add(DataManagementSettingListItem.ActionItem(context.getString(R.string.settings_backup_database_manual), Icons.Default.CloudDownload, { if (!isAnyOperationLoading) settingsViewModel.startDatabaseBackup() }, !isAnyOperationLoading, isLoading = isLoadingBackup))
+            add(DataManagementSettingListItem.ActionItem(context.getString(R.string.settings_restore_database), Icons.Filled.CloudUpload, { if (!isAnyOperationLoading) showRestoreConfirmationDialog = true }, !isAnyOperationLoading, isLoading = isLoadingRestore))
+        }
     }
 
-    val destructiveDataManagementItems = buildList {
-        add(
-            DataManagementSettingListItem.ActionItem(
-                label = stringResource(R.string.settings_delete_all_measurement_data),
-                icon = Icons.Default.DeleteForever,
-                onClick = {
-                    if (!isAnyOperationLoading) settingsViewModel.initiateDeleteAllUserDataProcess()
-                },
-                enabled = users.isNotEmpty() && !isAnyOperationLoading, // Disable if no users or other operation loading
-                isDestructive = true,
-                isLoading = isLoadingDeletion
-            )
-        )
-
-        add(
-            DataManagementSettingListItem.ActionItem(
-                label = stringResource(R.string.settings_delete_entire_database),
-                icon = Icons.Default.WarningAmber, // Or another appropriate icon
-                onClick = {
-                    if (!isAnyOperationLoading) settingsViewModel.initiateDeleteEntireDatabaseProcess()
-                },
-                enabled = !isAnyOperationLoading, // Always enable if no other operation is loading
-                isDestructive = true,
-                isLoading = isLoadingEntireDatabaseDeletion
-            )
-        )
+    val destructiveDataManagementItems = remember(users, isAnyOperationLoading, isLoadingDeletion, isLoadingEntireDatabaseDeletion, context) {
+        buildList {
+            add(DataManagementSettingListItem.ActionItem(context.getString(R.string.settings_delete_all_measurement_data), Icons.Default.DeleteForever, { if (!isAnyOperationLoading) settingsViewModel.initiateDeleteAllUserDataProcess() }, users.isNotEmpty() && !isAnyOperationLoading, true, isLoadingDeletion))
+            add(DataManagementSettingListItem.ActionItem(context.getString(R.string.settings_delete_entire_database), Icons.Default.WarningAmber, { if (!isAnyOperationLoading) settingsViewModel.initiateDeleteEntireDatabaseProcess() }, !isAnyOperationLoading, true, isLoadingEntireDatabaseDeletion))
+        }
     }
 
     LazyColumn(
@@ -290,304 +336,325 @@ fun DataManagementSettingsScreen(
             .fillMaxSize()
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
-        // Regular Actions
         items(regularDataManagementItems.size) { index ->
             val item = regularDataManagementItems[index]
+            SettingsCardItem(item.label, icon = item.icon, onClick = item.onClick, enabled = item.enabled, isDestructive = item.isDestructive, isLoading = item.isLoading)
+        }
+
+        item {
+            Spacer(modifier = Modifier.height(24.dp))
+            Text(stringResource(R.string.settings_auto_backup_title), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 8.dp))
+            HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        // 1. Enable/Disable Automatic Backups (Toggle)
+        item {
             SettingsCardItem(
-                label = item.label,
-                icon = item.icon,
-                onClick = item.onClick,
-                enabled = item.enabled,
-                isDestructive = item.isDestructive, // Will be false here
-                isLoading = item.isLoading
+                label = stringResource(R.string.settings_enable_auto_backups),
+                onClick = {
+                    if (!isAnyOperationLoading) {
+                        val newCheckedState = !autoBackupGloballyEnabled
+                        if (newCheckedState && !isAutoBackupLocationConfigured) {
+                            selectAutoBackupDirectoryLauncher.launch(null) // URI (null) means "pick a new folder"
+                        } else {
+                            coroutineScope.launch { settingsViewModel.setAutoBackupEnabledGlobally(context.applicationContext,newCheckedState) }
+                        }
+                    }
+                },
+                enabled = !isAnyOperationLoading,
+                customLeadingContent = {
+                    Icon(
+                        Icons.Filled.Schedule,
+                        contentDescription = stringResource(R.string.content_desc_auto_backups_toggle),
+                        tint = if (isAutoBackupEffectivelyEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                },
+                trailingContent = {
+                    Switch(
+                        checked = autoBackupGloballyEnabled,
+                        onCheckedChange = { newCheckedState ->
+                            if (!isAnyOperationLoading) {
+                                if (newCheckedState && !isAutoBackupLocationConfigured) {
+                                    selectAutoBackupDirectoryLauncher.launch(null)
+                                } else {
+                                    coroutineScope.launch { settingsViewModel.setAutoBackupEnabledGlobally(context.applicationContext,newCheckedState) }
+                                }
+                            }
+                        },
+                        enabled = !isAnyOperationLoading
+                    )
+                }
             )
+        }
+
+        // 2. Backup Location Configuration (only visible if global switch is on)
+        if (autoBackupGloballyEnabled) {
+            item {
+                SettingsCardItem(
+                    label = stringResource(R.string.settings_backup_location_label),
+                    supportingText = currentBackupLocationUserDisplay,
+                    onClick = {
+                        if (!isAnyOperationLoading) {
+                            selectAutoBackupDirectoryLauncher.launch(null) // Allow changing/re-selecting
+                        }
+                    },
+                    enabled = !isAnyOperationLoading,
+                    customLeadingContent = { Icon(Icons.Filled.Folder, contentDescription = stringResource(R.string.content_desc_backup_location_icon)) },
+                    trailingContent = {
+                        Row(horizontalArrangement = Arrangement.End) {
+                            if (canOpenSelectedBackupLocation && autoBackupLocationUriString != null) {
+                                IconButton(
+                                    onClick = {
+                                        if (!isAnyOperationLoading) {
+                                            try {
+                                                val intent = Intent(Intent.ACTION_VIEW)
+                                                intent.setDataAndType(autoBackupLocationUriString!!.toUri(), "vnd.android.document/directory")
+                                                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                                context.startActivity(intent)
+                                            } catch (e: ActivityNotFoundException) {
+                                                Toast.makeText(context, R.string.settings_backup_location_open_error_no_app, Toast.LENGTH_SHORT).show()
+                                            } catch (e: Exception) {
+                                                Toast.makeText(context, R.string.settings_backup_location_open_error, Toast.LENGTH_SHORT).show()
+                                            }
+                                        }
+                                    },
+                                    enabled = !isAnyOperationLoading
+                                ) {
+                                    Icon(Icons.Filled.FolderOpen, contentDescription = stringResource(R.string.content_desc_open_backup_location_icon))
+                                }
+                            }
+                            IconButton(
+                                onClick = {
+                                    if (!isAnyOperationLoading) {
+                                        selectAutoBackupDirectoryLauncher.launch(null)
+                                    }
+                                },
+                                enabled = !isAnyOperationLoading
+                            ) {
+                                Icon(Icons.Filled.Edit, contentDescription = stringResource(R.string.content_desc_change_backup_location_icon))
+                            }
+                        }
+                    }
+                )
+            }
+        }
+
+        // 3. Further Auto-Backup settings (only visible if *effectively* enabled)
+        if (isAutoBackupEffectivelyEnabled) {
+            item {
+                SettingsCardItem(
+                    label = stringResource(R.string.settings_last_backup_status_label),
+                    supportingText = lastBackupStatusText,
+                    onClick = { /* Could show more details or trigger a manual sync if needed */ },
+                    enabled = !isAnyOperationLoading,
+                    customLeadingContent = { Icon(Icons.Filled.Info, contentDescription = stringResource(R.string.content_desc_backup_status_icon)) }
+                )
+            }
+            item {
+                SettingsCardItem(
+                    label = stringResource(R.string.settings_backup_interval_label),
+                    supportingText = selectedBackupIntervalDisplay,
+                    onClick = { if (!isAnyOperationLoading) showBackupIntervalDialog = true },
+                    enabled = !isAnyOperationLoading,
+                    customLeadingContent = { Icon(Icons.Filled.Schedule, contentDescription = stringResource(R.string.content_desc_backup_interval_icon)) },
+                    trailingContent = { Icon(Icons.Filled.ArrowDropDown, contentDescription = stringResource(R.string.content_desc_change_interval_icon)) }
+                )
+            }
+            item {
+                SettingsCardItem(
+                    label = stringResource(R.string.settings_backup_behavior_label),
+                    supportingText = backupBehaviorSupportingText,
+                    onClick = { if (!isAnyOperationLoading) {
+                        coroutineScope.launch { settingsViewModel.setAutoBackupCreateNewFile(!autoBackupCreateNewFile) }
+                    }},
+                    enabled = !isAnyOperationLoading,
+                    customLeadingContent = { Icon(Icons.Filled.SwapHoriz, contentDescription = stringResource(R.string.content_desc_backup_behavior_icon)) },
+                    trailingContent = {
+                        Switch(
+                            checked = autoBackupCreateNewFile,
+                            onCheckedChange = { isChecked ->
+                                if (!isAnyOperationLoading) {
+                                    coroutineScope.launch { settingsViewModel.setAutoBackupCreateNewFile(isChecked) }
+                                }
+                            },
+                            enabled = !isAnyOperationLoading
+                        )
+                    }
+                )
+            }
         }
 
         if (destructiveDataManagementItems.isNotEmpty()) {
             item {
                 Spacer(modifier = Modifier.height(24.dp))
-                Text(
-                    text = stringResource(R.string.settings_danger_zone),
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-                HorizontalDivider(
-                    thickness = 1.dp,
-                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
-                )
+                Text(stringResource(R.string.settings_danger_zone), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(bottom = 8.dp))
+                HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
                 Spacer(modifier = Modifier.height(8.dp))
             }
-
             items(destructiveDataManagementItems.size) { index ->
                 val item = destructiveDataManagementItems[index]
-                SettingsCardItem(
-                    label = item.label,
-                    icon = item.icon,
-                    onClick = item.onClick,
-                    enabled = item.enabled,
-                    isDestructive = item.isDestructive,
-                    isLoading = item.isLoading // Pass isLoading to the item
-                )
+                SettingsCardItem(item.label, icon = item.icon, onClick = item.onClick, enabled = item.enabled, isDestructive = item.isDestructive, isLoading = item.isLoading)
             }
         }
     }
 
-    // UserSelectionDialog for Export
+    if (showBackupIntervalDialog) {
+        val intervalEnumValues = remember { BackupInterval.entries.toList() }
+        SelectionDialogEnum(
+            title = stringResource(R.string.dialog_title_select_backup_interval),
+            options = intervalEnumValues,
+            selectedOption = autoBackupInterval,
+            onOptionSelected = { selectedEnumInterval ->
+                coroutineScope.launch { settingsViewModel.setAutoBackupInterval(context.applicationContext,selectedEnumInterval) }
+            },
+            optionToDisplayName = { it.getDisplayName(context) },
+            onDismissRequest = { showBackupIntervalDialog = false }
+        )
+    }
+
+    if (showDeleteEntireDatabaseConfirmationDialog) {
+        AlertDialog(
+            onDismissRequest = { if (!isLoadingEntireDatabaseDeletion) settingsViewModel.cancelDeleteEntireDatabaseConfirmation() },
+            icon = { Icon(Icons.Filled.WarningAmber, contentDescription = stringResource(R.string.content_desc_warning_icon), tint = MaterialTheme.colorScheme.error) },
+            title = { Text(stringResource(R.string.dialog_title_delete_entire_database_confirmation), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error) },
+            text = { Text(stringResource(R.string.dialog_message_delete_entire_database_confirmation)) },
+            confirmButton = { TextButton({ settingsViewModel.confirmDeleteEntireDatabase(context.applicationContext) }, colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error), enabled = !isLoadingEntireDatabaseDeletion) { if (isLoadingEntireDatabaseDeletion) CircularProgressIndicator(Modifier.size(ButtonDefaults.IconSize), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.error) else Text(stringResource(R.string.button_yes_delete_all)) } },
+            dismissButton = { TextButton({ settingsViewModel.cancelDeleteEntireDatabaseConfirmation() }, enabled = !isLoadingEntireDatabaseDeletion) { Text(stringResource(R.string.cancel_button)) } }
+        )
+    }
+
     if (showUserSelectionDialogForExport) {
-        UserSelectionDialog(
-            users = users,
-            onUserSelected = { userId -> settingsViewModel.proceedWithExportForUser(userId) },
-            onDismiss = { if (!isLoadingExport) settingsViewModel.cancelUserSelectionForExport() },
-            title = stringResource(R.string.dialog_title_export_select_user),
-            confirmButtonEnabled = !isLoadingExport,
-            itemClickEnabled = !isLoadingExport
-        )
+        UserSelectionDialog(users, { settingsViewModel.proceedWithExportForUser(it) }, { if (!isLoadingExport) settingsViewModel.cancelUserSelectionForExport() }, stringResource(R.string.dialog_title_export_select_user), !isLoadingExport, !isLoadingExport)
     }
 
-    // UserSelectionDialog for Import
     if (showUserSelectionDialogForImport) {
-        UserSelectionDialog(
-            users = users,
-            onUserSelected = { userId -> settingsViewModel.proceedWithImportForUser(userId) },
-            onDismiss = { if (!isLoadingImport) settingsViewModel.cancelUserSelectionForImport() },
-            title = stringResource(R.string.dialog_title_import_select_user),
-            confirmButtonEnabled = !isLoadingImport,
-            itemClickEnabled = !isLoadingImport
-        )
+        UserSelectionDialog(users, { settingsViewModel.proceedWithImportForUser(it) }, { if (!isLoadingImport) settingsViewModel.cancelUserSelectionForImport() }, stringResource(R.string.dialog_title_import_select_user), !isLoadingImport, !isLoadingImport)
     }
 
-    // UserSelectionDialog for Delete User Data
     if (showUserSelectionDialogForDelete) {
-        UserSelectionDialog(
-            users = users,
-            onUserSelected = { userId -> settingsViewModel.proceedWithDeleteForUser(userId) },
-            onDismiss = { if (!isLoadingDeletion) settingsViewModel.cancelUserSelectionForDelete() },
-            title = stringResource(R.string.dialog_title_delete_select_user),
-            confirmButtonEnabled = !isLoadingDeletion,
-            itemClickEnabled = !isLoadingDeletion
-        )
+        UserSelectionDialog(users, { settingsViewModel.proceedWithDeleteForUser(it) }, { if (!isLoadingDeletion) settingsViewModel.cancelUserSelectionForDelete() }, stringResource(R.string.dialog_title_delete_select_user), !isLoadingDeletion, !isLoadingDeletion)
     }
 
-    // Confirmation dialog for deleting a specific user's data (shown AFTER a user is selected)
     if (showDeleteConfirmationDialog) {
-        userPendingDeletion?.let { userToDelete -> // Use the user stored in the ViewModel
+        userPendingDeletion?.let { user ->
             AlertDialog(
                 onDismissRequest = { if (!isLoadingDeletion) settingsViewModel.cancelDeleteConfirmation() },
+                icon = { Icon(Icons.Filled.DeleteForever, contentDescription = stringResource(R.string.content_desc_delete_icon), tint = MaterialTheme.colorScheme.error) },
                 title = { Text(stringResource(R.string.dialog_title_delete_user_data_confirmation), fontWeight = FontWeight.Bold) },
-                text = {
-                    Text(
-                        stringResource(R.string.dialog_message_delete_user_data_confirmation, userToDelete.name),
-                        color = MaterialTheme.colorScheme.error
-                    )
-                },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            settingsViewModel.confirmActualDeletion()
-                        },
-                        colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
-                        enabled = !isLoadingDeletion
-                    ) {
-                        if (isLoadingDeletion) {
-                            CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.error)
-                        } else {
-                            Text(stringResource(R.string.button_yes_delete_all))
-                        }
-                    }
-                },
-                dismissButton = {
-                    TextButton(
-                        onClick = { settingsViewModel.cancelDeleteConfirmation() },
-                        enabled = !isLoadingDeletion
-                    ) {
-                        Text(stringResource(R.string.cancel_button))
-                    }
-                }
+                text = { Text(stringResource(R.string.dialog_message_delete_user_data_confirmation, user.name)) },
+                confirmButton = { TextButton({ settingsViewModel.confirmActualDeletion() }, colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error), enabled = !isLoadingDeletion) { if (isLoadingDeletion) CircularProgressIndicator(Modifier.size(ButtonDefaults.IconSize), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.error) else Text(stringResource(R.string.button_yes_delete_all)) } },
+                dismissButton = { TextButton({ settingsViewModel.cancelDeleteConfirmation() }, enabled = !isLoadingDeletion) { Text(stringResource(R.string.cancel_button)) } }
             )
         }
     }
 
-    // Confirmation dialog for deleting the entire database
-    if (showDeleteEntireDatabaseConfirmationDialog) {
-        AlertDialog(
-            onDismissRequest = {
-                if (!isLoadingEntireDatabaseDeletion) { // Only allow closing if not currently deleting
-                    settingsViewModel.cancelDeleteEntireDatabaseConfirmation()
-                }
-            },
-            icon = { Icon(Icons.Filled.WarningAmber, contentDescription = stringResource(R.string.content_desc_warning_icon), tint = MaterialTheme.colorScheme.error) },
-            title = {
-                Text(stringResource(R.string.dialog_title_delete_entire_database_confirmation), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
-            },
-            text = {
-                Text(stringResource(R.string.dialog_message_delete_entire_database_confirmation))
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        settingsViewModel.confirmDeleteEntireDatabase(context.applicationContext)
-                    },
-                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
-                    enabled = !isLoadingEntireDatabaseDeletion
-                ) {
-                    if (isLoadingEntireDatabaseDeletion) {
-                        CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.error)
-                    } else {
-                        Text(stringResource(R.string.button_yes_delete_all))
-                    }
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = { settingsViewModel.cancelDeleteEntireDatabaseConfirmation() },
-                    enabled = !isLoadingEntireDatabaseDeletion
-                ) {
-                    Text(stringResource(R.string.cancel_button))
-                }
-            }
-        )
-    }
-
-    // Confirmation dialog for restoring the database
     if (showRestoreConfirmationDialog) {
         AlertDialog(
-            onDismissRequest = {
-                if (!isLoadingRestore) showRestoreConfirmationDialog = false // Only dismiss if not loading
-            },
+            onDismissRequest = { if (!isLoadingRestore) showRestoreConfirmationDialog = false },
             icon = { Icon(Icons.Filled.CloudUpload, contentDescription = stringResource(R.string.content_desc_restore_icon)) },
-            title = {
-                Text(stringResource(R.string.dialog_title_restore_database_confirmation), fontWeight = FontWeight.Bold)
-            },
-            text = {
-                Text(stringResource(R.string.dialog_message_restore_database_confirmation))
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        showRestoreConfirmationDialog = false
-                        settingsViewModel.startDatabaseRestore() // This will trigger the SAF event
-                    },
-                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error), // Destructive action
-                    enabled = !isLoadingRestore
-                ) {
-                    if (isLoadingRestore) {
-                        CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.error)
-                    } else {
-                        Text(stringResource(R.string.button_yes_restore))
-                    }
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        showRestoreConfirmationDialog = false
-                    },
-                    enabled = !isLoadingRestore
-                ) {
-                    Text(stringResource(R.string.cancel_button))
-                }
-            }
+            title = { Text(stringResource(R.string.dialog_title_restore_database_confirmation), fontWeight = FontWeight.Bold) },
+            text = { Text(stringResource(R.string.dialog_message_restore_database_confirmation)) },
+            confirmButton = { TextButton({ showRestoreConfirmationDialog = false; settingsViewModel.startDatabaseRestore() /* This now triggers SAF event */ }, colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error), enabled = !isLoadingRestore) { if (isLoadingRestore) CircularProgressIndicator(Modifier.size(ButtonDefaults.IconSize), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.error) else Text(stringResource(R.string.button_yes_restore)) } },
+            dismissButton = { TextButton({ showRestoreConfirmationDialog = false }, enabled = !isLoadingRestore) { Text(stringResource(R.string.cancel_button)) } }
         )
     }
 }
 
-/**
- * Composable item for displaying a setting in a card layout.
- * It includes a label, an icon (or a loading indicator), and handles click actions.
- *
- * @param label The text label for the setting.
- * @param icon The icon to display for the setting.
- * @param onClick The lambda to execute when the item is clicked.
- * @param enabled Whether the item is clickable and interactive. Defaults to true.
- * @param isDestructive If true, indicates a potentially dangerous action, styled with error colors. Defaults to false.
- * @param isLoading If true, shows a loading indicator instead of the icon and disables clicks. Defaults to false.
- */
 @Composable
 fun SettingsCardItem(
     label: String,
-    icon: ImageVector,
+    supportingText: String? = null,
+    icon: ImageVector? = null,
     onClick: () -> Unit,
     enabled: Boolean = true,
     isDestructive: Boolean = false,
-    isLoading: Boolean = false
+    isLoading: Boolean = false,
+    customLeadingContent: (@Composable () -> Unit)? = null,
+    trailingContent: (@Composable () -> Unit)? = null
 ) {
-    // Clickability is determined by both 'enabled' and not 'isLoading'
     val currentClickable = enabled && !isLoading
-
-    val baseTextColor = if (isDestructive) {
-        MaterialTheme.colorScheme.error
-    } else {
-        MaterialTheme.colorScheme.onSurface // Or onBackground / onSurfaceVariant as per your theme
-    }
-
-    val baseIconColor = if (isDestructive) {
-        MaterialTheme.colorScheme.error
-    } else {
-        MaterialTheme.colorScheme.primary // Or onSurfaceVariant etc. depending on design
-    }
-
-    // Text color adjusted for enabled state (ignoring isLoading for visual disabled state)
-    val textColor = if (!enabled) {
-        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
-    } else {
-        baseTextColor
-    }
-
-    // Icon color adjusted for enabled state
-    val iconColor = if (!enabled) {
-        baseIconColor.copy(alpha = 0.38f) // Use the base color (primary or error) and reduce alpha
-    } else {
-        baseIconColor
-    }
+    val baseTextColor = if (isDestructive) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+    val textColor = if (!enabled) baseTextColor.copy(alpha = 0.38f) else baseTextColor
+    val baseIconColor = if (isDestructive) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+    val iconColorToUse = if (!enabled) baseIconColor.copy(alpha = 0.38f) else baseIconColor
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 6.dp)
-            .clickable(enabled = currentClickable, onClick = onClick) // Clickability controlled here
+            .padding(vertical = 6.dp) // Consistent padding
+            .clickable(enabled = currentClickable, onClick = onClick)
     ) {
         ListItem(
-            headlineContent = {
-                Text(
-                    text = label,
-                    style = MaterialTheme.typography.bodyMedium, // Consider titleSmall or bodyLarge based on importance
-                    color = textColor
-                )
-            },
-            leadingContent = {
-                Box(contentAlignment = Alignment.Center, modifier = Modifier.size(24.dp)) { // Box for consistent icon/loader size
-                    if (isLoading) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp), // Slightly smaller than the box for padding
-                            strokeWidth = 2.dp,
-                            color = if (isDestructive) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
-                        )
-                    } else {
-                        Icon(
-                            imageVector = icon,
-                            contentDescription = label, // Basic content description
-                            tint = iconColor
-                        )
+            headlineContent = { Text(label, style = MaterialTheme.typography.bodyLarge, color = textColor) },
+            supportingContent = supportingText?.let { { Text(it, style = MaterialTheme.typography.bodyMedium, color = if (enabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)) } },
+            leadingContent = customLeadingContent ?: icon?.let {
+                {
+                    Box(contentAlignment = Alignment.Center, modifier = Modifier.size(24.dp)) { // Ensure icon and progress indicator are same size
+                        if (isLoading) CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp, color = if (isDestructive) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary)
+                        else Icon(it, contentDescription = label, tint = iconColorToUse)
                     }
                 }
-            }
-            // No trailing content in this design, but can be added if needed.
+            },
+            trailingContent = trailingContent
         )
     }
 }
 
 /**
- * Composable dialog for selecting a user from a list.
- *
- * @param users The list of [User] objects to display for selection.
- * @param onUserSelected Lambda called with the selected user's ID.
- * @param onDismiss Lambda called when the dialog is dismissed (e.g., by clicking the cancel button or outside the dialog).
- * @param title The title of the dialog.
- * @param confirmButtonEnabled Controls the enabled state of the dismiss ("Cancel") button. Defaults to true.
- * @param itemClickEnabled Controls whether the user list items are clickable. Defaults to true.
+ * A generic selection dialog for Enums or any list of items
+ * where each item needs a display name.
  */
+@Composable
+fun <T> SelectionDialogEnum(
+    title: String,
+    options: List<T>,
+    selectedOption: T,
+    onOptionSelected: (T) -> Unit,
+    optionToDisplayName: (T) -> String,
+    onDismissRequest: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        title = { Text(title) },
+        text = {
+            Column(Modifier.selectableGroup()) {
+                options.forEach { option ->
+                    val displayName = optionToDisplayName(option)
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .selectable(
+                                selected = (option == selectedOption),
+                                onClick = {
+                                    onOptionSelected(option)
+                                    onDismissRequest() // Dismiss after selection
+                                }
+                            )
+                            .padding(vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(
+                            selected = (option == selectedOption),
+                            onClick = null // RadioButton is controlled by Row's selectable
+                        )
+                        Text(
+                            text = displayName,
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(start = 16.dp)
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismissRequest) {
+                Text(stringResource(R.string.cancel_button))
+            }
+        }
+    )
+}
+
 @Composable
 fun UserSelectionDialog(
     users: List<User>,
@@ -598,49 +665,30 @@ fun UserSelectionDialog(
     itemClickEnabled: Boolean = true
 ) {
     if (users.isEmpty()) {
-        // If the dialog is shown with no users, dismiss it immediately.
-        // It's better to prevent opening the dialog if users list is empty (logic in ViewModel).
-        LaunchedEffect(Unit) { // Ensure onDismiss is called within a composition
-            onDismiss()
-        }
+        LaunchedEffect(Unit) { onDismiss() }
         return
     }
-
     AlertDialog(
-        onDismissRequest = { if (confirmButtonEnabled) onDismiss() }, // Allow dismiss only if not blocked
-        title = { Text(text = title, style = MaterialTheme.typography.titleLarge) }, // Or headlineSmall
+        onDismissRequest = { if (confirmButtonEnabled) onDismiss() },
+        title = { Text(title, style = MaterialTheme.typography.titleLarge) },
         text = {
             LazyColumn {
                 items(users.size) { index ->
                     val user = users[index]
-                    val textColor = if (itemClickEnabled) MaterialTheme.colorScheme.onSurface
-                    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                    val textColor = if (itemClickEnabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
                     Text(
-                        text = user.name,
-                        style = MaterialTheme.typography.bodyLarge, // Or subtitle1
+                        user.name,
+                        style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable(enabled = itemClickEnabled) { // Control item clickability
-                                onUserSelected(user.id)
-                            }
+                            .clickable(enabled = itemClickEnabled) { onUserSelected(user.id) }
                             .padding(vertical = 12.dp),
                         color = textColor
                     )
-                    if (index < users.size - 1) {
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp)) // Added vertical padding
-                    }
+                    if (index < users.size - 1) HorizontalDivider(Modifier.padding(vertical = 8.dp))
                 }
             }
         },
-        confirmButton = { // In this dialog, the AlertDialog's "confirmButton" acts as our "Cancel" button.
-            TextButton(
-                onClick = onDismiss,
-                enabled = confirmButtonEnabled // Control enabled state of the "Cancel" button
-            ) {
-                Text(stringResource(R.string.cancel_button))
-            }
-        }
-        // No dismissButton is explicitly defined here as the confirmButton serves as "Cancel".
-        // Tapping outside or back press is handled by onDismissRequest.
+        confirmButton = { TextButton(onDismiss, enabled = confirmButtonEnabled) { Text(stringResource(R.string.cancel_button)) } }
     )
 }

@@ -188,6 +188,10 @@ class DatabaseRepository(
 
     // --- Measurement Type Operations ---
 
+    suspend fun insertAllMeasurementTypes(types: List<MeasurementType>) {
+        measurementTypeDao.insertAll(types)
+    }
+
     fun getAllMeasurementTypes(): Flow<List<MeasurementType>> = measurementTypeDao.getAll()
 
     suspend fun insertMeasurementType(type: MeasurementType): Long {
