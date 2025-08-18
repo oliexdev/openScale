@@ -94,6 +94,7 @@ import com.patrykandpatrick.vico.core.cartesian.data.CartesianValueFormatter
 import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
 import com.patrykandpatrick.vico.core.cartesian.layer.LineCartesianLayer
 import com.patrykandpatrick.vico.core.cartesian.marker.CartesianMarker
+import com.patrykandpatrick.vico.core.cartesian.marker.CartesianMarkerVisibilityListener
 import com.patrykandpatrick.vico.core.cartesian.marker.DefaultCartesianMarker
 import com.patrykandpatrick.vico.core.common.Fill
 import com.patrykandpatrick.vico.core.common.LayeredComponent
@@ -140,7 +141,8 @@ fun LineChart(
     showFilterControls: Boolean,
     showFilterTitle: Boolean = false,
     showYAxis: Boolean = true,
-    targetMeasurementTypeId: Int? = null
+    targetMeasurementTypeId: Int? = null,
+    onPointSelected: (timestamp: Long) -> Unit = {}
 ) {
     val scope = rememberCoroutineScope()
     val userSettingsRepository = sharedViewModel.userSettingRepository
@@ -568,12 +570,32 @@ fun LineChart(
             listOfNotNull(lineLayerForStartAxis, lineLayerForEndAxis)
         }
 
+        val lastX = remember { mutableStateOf<Float?>(null) }
+
+        val markerVisibilityListener = remember(xToDatesMapForStore) {
+            object : CartesianMarkerVisibilityListener {
+                override fun onShown(marker: CartesianMarker, targets: List<CartesianMarker.Target>) {
+                    lastX.value = targets.lastOrNull()?.x?.toFloat()
+                }
+                override fun onUpdated(marker: CartesianMarker, targets: List<CartesianMarker.Target>) {
+                    lastX.value = targets.lastOrNull()?.x?.toFloat()
+                }
+                override fun onHidden(marker: CartesianMarker) {
+                    val x = lastX.value ?: return
+                    val date = xToDatesMapForStore[x] ?: LocalDate.ofEpochDay(x.toLong())
+                    val timestamp = date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                    onPointSelected(timestamp)
+                }
+            }
+        }
+
         val chart = rememberCartesianChart(
             layers = layers.toTypedArray(),
             startAxis = startYAxis, // left Y-axis
             bottomAxis = xAxis,  // X-axis
             endAxis = endYAxis, // right Y-axis
-            marker = rememberMarker() // Interactive marker for data points
+            marker = rememberMarker(), // Interactive marker for data points
+            markerVisibilityListener = markerVisibilityListener
         )
 
         CartesianChartHost(

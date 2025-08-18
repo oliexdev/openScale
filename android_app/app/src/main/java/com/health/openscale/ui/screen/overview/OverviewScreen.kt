@@ -17,9 +17,13 @@
  */
 package com.health.openscale.ui.screen.overview
 
+import android.R.attr.targetId
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -34,6 +38,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.BluetoothSearching
@@ -72,6 +77,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -97,7 +103,11 @@ import com.health.openscale.ui.screen.bluetooth.BluetoothViewModel
 import com.health.openscale.ui.screen.bluetooth.ConnectionStatus
 import com.health.openscale.ui.screen.components.LineChart
 import com.health.openscale.ui.screen.components.provideFilterTopBarAction
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.ZoneId
 import java.util.Date
 import java.util.Locale
 
@@ -281,6 +291,10 @@ fun OverviewScreen(
     val selectedUserId by sharedViewModel.selectedUserId.collectAsState()
     val context = LocalContext.current // Used for Toasts and string resources
 
+    val listState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
+    var highlightedMeasurementId by rememberSaveable { mutableStateOf<Int?>(null) }
+
     // Time filter action for the top bar, specific to this screen's context
     val timeFilterAction = provideFilterTopBarAction(
         sharedViewModel = sharedViewModel,
@@ -400,7 +414,20 @@ fun OverviewScreen(
                             .fillMaxWidth()
                             .height(200.dp)
                             .padding(bottom = 8.dp),
-                        showYAxis = false
+                        showYAxis = false,
+                        onPointSelected = { selectedTs ->
+                            val items = enrichedMeasurements.map { it.measurementWithValues }
+                            val targetIndex = findIndexForTimestamp(selectedTs, items)
+                            if (targetIndex >= 0) {
+                                val targetId = items[targetIndex].measurement.id
+                                scope.launch {
+                                    listState.animateScrollToItem(index = targetIndex, scrollOffset = 0)
+                                    highlightedMeasurementId = targetId
+                                    delay(600)
+                                    if (highlightedMeasurementId == targetId) highlightedMeasurementId = null
+                                }
+                            }
+                        }
                     )
                 }
             }
@@ -422,6 +449,7 @@ fun OverviewScreen(
                 } else if (enrichedMeasurements.isNotEmpty()) {
                     // Display the list of measurements
                     LazyColumn(
+                        state = listState,
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(horizontal = 16.dp, vertical = 8.dp),
@@ -444,7 +472,8 @@ fun OverviewScreen(
                                 },
                                 onDelete = {
                                     sharedViewModel.deleteMeasurement(enrichedItem.measurementWithValues.measurement)
-                                }
+                                },
+                                isHighlighted = (highlightedMeasurementId == enrichedItem.measurementWithValues.measurement.id)
                             )
                         }
                     }
@@ -453,6 +482,32 @@ fun OverviewScreen(
         }
     }
 }
+
+private fun findIndexForTimestamp(
+    selectedTimestamp: Long,
+    items: List<MeasurementWithValues>
+): Int {
+    if (items.isEmpty()) return -1
+
+    val zone = ZoneId.systemDefault()
+    val selectedDate = Instant.ofEpochMilli(selectedTimestamp).atZone(zone).toLocalDate()
+
+    val sameDay = items.withIndex()
+        .filter { (_, mwv) ->
+            Instant.ofEpochMilli(mwv.measurement.timestamp).atZone(zone).toLocalDate() == selectedDate
+        }
+
+    if (sameDay.isNotEmpty()) {
+        return sameDay.minBy { (_, mwv) ->
+            kotlin.math.abs(mwv.measurement.timestamp - selectedTimestamp)
+        }.index
+    }
+
+    return items.withIndex().minByOrNull { (_, mwv) ->
+        kotlin.math.abs(mwv.measurement.timestamp - selectedTimestamp)
+    }?.index ?: -1
+}
+
 
 /**
  * A Composable card displayed when no user is currently selected/active.
@@ -599,8 +654,12 @@ fun MeasurementCard(
     measurementWithValues: MeasurementWithValues,
     processedValuesForDisplay: List<ValueWithDifference>,
     onEdit: () -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    isHighlighted: Boolean = false
 ) {
+    val highlightColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+    val highlightBorder = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
+
     val dateFormatted = remember(measurementWithValues.measurement.timestamp) {
         SimpleDateFormat("E, dd.MM.yyyy HH:mm", Locale.getDefault())
             .format(Date(measurementWithValues.measurement.timestamp))
@@ -623,6 +682,12 @@ fun MeasurementCard(
 
     Card(
         modifier = Modifier.fillMaxWidth(),
+        border = if (isHighlighted) highlightBorder else null,
+        colors = if (isHighlighted) {
+            CardDefaults.cardColors(containerColor = highlightColor)
+        } else {
+            CardDefaults.cardColors()
+        },
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column {
@@ -777,11 +842,6 @@ fun MeasurementValueRow(valueWithTrend: ValueWithDifference) {
 
     val context = LocalContext.current
     val iconMeasurementType = remember(type.icon) {type.icon }
-    // Dynamic content description for the icon based on type name
-    val iconContentDescription = stringResource(R.string.measurement_type_icon_desc, type.getDisplayName(context))
-    // Fallback content description if the icon is not found (e.g. shows question mark)
-    val unknownTypeContentDescription = stringResource(R.string.measurement_type_icon_unknown_desc, type.getDisplayName(context))
-
 
     Row(
         modifier = Modifier.fillMaxWidth(),

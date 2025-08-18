@@ -76,6 +76,7 @@ import com.health.openscale.ui.screen.dialog.TextInputDialog
 import com.health.openscale.ui.screen.dialog.TimeInputDialog
 import com.health.openscale.ui.screen.dialog.decrementValue
 import com.health.openscale.ui.screen.dialog.incrementValue
+import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -117,8 +118,8 @@ fun MeasurementDetailScreen(
     val lastMeasurementToPreloadFrom by sharedViewModel.lastMeasurementOfSelectedUser.collectAsState()
     val loadedData by sharedViewModel.currentMeasurementWithValues.collectAsState()
 
-    val dateFormat = remember { SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()) }
-    val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
+    val dateFormat = remember { DateFormat.getDateInstance(DateFormat.DEFAULT, Locale.getDefault()) }
+    val timeFormat = remember { DateFormat.getTimeInstance(DateFormat.SHORT, Locale.getDefault()) }
 
     // Show a loading indicator if navigation is pending (e.g., after saving).
     if (isPendingNavigation) {
