@@ -72,6 +72,8 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.time.Instant
+import java.time.ZoneId
 import java.util.Calendar
 import java.util.Date
 import kotlin.math.roundToInt
@@ -809,6 +811,34 @@ class SharedViewModel(
         )
 
         ContextCompat.startForegroundService(application.applicationContext, intent)
+    }
+
+    fun findClosestMeasurement(
+        selectedTimestamp: Long,
+        items: List<MeasurementWithValues>
+    ): Pair<Int, MeasurementWithValues>? {
+        if (items.isEmpty()) return null
+
+        val zone = ZoneId.systemDefault()
+        val selectedDate = Instant.ofEpochMilli(selectedTimestamp).atZone(zone).toLocalDate()
+
+        // Kandidaten am selben Tag
+        val sameDay = items.withIndex().filter { (_, mwv) ->
+            Instant.ofEpochMilli(mwv.measurement.timestamp).atZone(zone).toLocalDate() == selectedDate
+        }
+
+        // Auswahl treffen
+        val best = if (sameDay.isNotEmpty()) {
+            sameDay.minBy { (_, mwv) ->
+                kotlin.math.abs(mwv.measurement.timestamp - selectedTimestamp)
+            }
+        } else {
+            items.withIndex().minByOrNull { (_, mwv) ->
+                kotlin.math.abs(mwv.measurement.timestamp - selectedTimestamp)
+            }
+        }
+
+        return best?.let { it.index to it.value }
     }
 
     private fun triggerSyncUpdateMeasurement(

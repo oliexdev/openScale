@@ -583,7 +583,10 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
                         )
                     }
                     composable(Routes.GRAPH) {
-                        GraphScreen(sharedViewModel)
+                        GraphScreen(
+                            navController = navController,
+                            sharedViewModel = sharedViewModel
+                        )
                     }
                     composable(Routes.TABLE) {
                         TableScreen(

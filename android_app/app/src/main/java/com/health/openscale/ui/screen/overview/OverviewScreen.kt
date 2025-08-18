@@ -417,16 +417,17 @@ fun OverviewScreen(
                         showYAxis = false,
                         onPointSelected = { selectedTs ->
                             val items = enrichedMeasurements.map { it.measurementWithValues }
-                            val targetIndex = findIndexForTimestamp(selectedTs, items)
-                            if (targetIndex >= 0) {
-                                val targetId = items[targetIndex].measurement.id
-                                scope.launch {
-                                    listState.animateScrollToItem(index = targetIndex, scrollOffset = 0)
-                                    highlightedMeasurementId = targetId
-                                    delay(600)
-                                    if (highlightedMeasurementId == targetId) highlightedMeasurementId = null
+
+                            sharedViewModel.findClosestMeasurement(selectedTs, items)
+                                ?.let { (targetIndex, mwv) ->
+                                    val targetId = mwv.measurement.id
+                                    scope.launch {
+                                        listState.animateScrollToItem(index = targetIndex, scrollOffset = 0)
+                                        highlightedMeasurementId = targetId
+                                        delay(600)
+                                        if (highlightedMeasurementId == targetId) highlightedMeasurementId = null
+                                    }
                                 }
-                            }
                         }
                     )
                 }
@@ -482,32 +483,6 @@ fun OverviewScreen(
         }
     }
 }
-
-private fun findIndexForTimestamp(
-    selectedTimestamp: Long,
-    items: List<MeasurementWithValues>
-): Int {
-    if (items.isEmpty()) return -1
-
-    val zone = ZoneId.systemDefault()
-    val selectedDate = Instant.ofEpochMilli(selectedTimestamp).atZone(zone).toLocalDate()
-
-    val sameDay = items.withIndex()
-        .filter { (_, mwv) ->
-            Instant.ofEpochMilli(mwv.measurement.timestamp).atZone(zone).toLocalDate() == selectedDate
-        }
-
-    if (sameDay.isNotEmpty()) {
-        return sameDay.minBy { (_, mwv) ->
-            kotlin.math.abs(mwv.measurement.timestamp - selectedTimestamp)
-        }.index
-    }
-
-    return items.withIndex().minByOrNull { (_, mwv) ->
-        kotlin.math.abs(mwv.measurement.timestamp - selectedTimestamp)
-    }?.index ?: -1
-}
-
 
 /**
  * A Composable card displayed when no user is currently selected/active.
