@@ -91,7 +91,6 @@ import androidx.navigation.NavController
 import com.health.openscale.R
 import com.health.openscale.core.data.EvaluationState
 import com.health.openscale.core.data.InputFieldType
-import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.Trend
 import com.health.openscale.core.model.MeasurementWithValues
 import com.health.openscale.core.database.UserPreferenceKeys
@@ -880,7 +879,7 @@ fun MeasurementValueRow(
     val noAgeBand: Boolean = evalResult?.let { it.lowLimit < 0f || it.highLimit < 0f } ?: false
 
     // Flag 2: percent outside a plausible range (0..100)
-    val plausible = plausiblePercentRangeFor(type.key)
+    val plausible = MeasurementEvaluator.plausiblePercentRangeFor(type.key)
     val outOfPlausibleRange =
         if (numeric == null) {
             false
@@ -1027,27 +1026,6 @@ private fun EvaluationErrorBanner(message: String) {
     }
 }
 
-
-/**
- * Returns a broad **plausible** percentage range for selected measurement types.
- *
- * This is **not** a clinical reference band. It’s only used to catch obviously
- * incorrect values (e.g., sensor glitches, unit mix-ups) before attempting
- * a proper evaluation. The ranges are intentionally wide.
- *
- * @param typeKey The measurement type to check.
- * @return A closed percent range [min .. max] if the metric is percentage-based and supported,
- *         or `null` if no generic plausibility range is defined for this type.
- */
-private fun plausiblePercentRangeFor(typeKey: MeasurementTypeKey): ClosedFloatingPointRange<Float>? =
-    when (typeKey) {
-        MeasurementTypeKey.WATER      -> 35f..75f
-        MeasurementTypeKey.BODY_FAT   -> 3f..70f
-        MeasurementTypeKey.MUSCLE     -> 15f..60f
-        else -> null
-    }
-
-
 /**
  * One measurement row that can expand to show a gauge or an info banner.
  *
@@ -1101,7 +1079,7 @@ fun MeasurementRowExpandable(
 
     // 2) Implausible value for percentage-based metrics
     val unitName = type.unit.displayName
-    val plausible = plausiblePercentRangeFor(type.key)
+    val plausible = MeasurementEvaluator.plausiblePercentRangeFor(type.key)
     val outOfPlausibleRange =
         if (numeric == null) {
             false
@@ -1144,7 +1122,7 @@ fun MeasurementRowExpandable(
                     )
                 }
                 outOfPlausibleRange -> {
-                    val plausible = plausiblePercentRangeFor(type.key) ?: (0f..100f)
+                    val plausible = MeasurementEvaluator.plausiblePercentRangeFor(type.key) ?: (0f..100f)
                     EvaluationErrorBanner(
                         message = stringResource(
                             R.string.eval_out_of_plausible_range_percent,
