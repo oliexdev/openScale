@@ -67,6 +67,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -82,6 +83,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -638,7 +641,12 @@ fun MeasurementCard(
     onDelete: () -> Unit,
     isHighlighted: Boolean = false
 ) {
-    val highlightColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+    val surfaceAtElevation = MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp)
+    val isLightSurface = surfaceAtElevation.luminance() > 0.5f
+    val tintAlpha = if (isLightSurface) 0.16f else 0.12f
+    val highlightColor = MaterialTheme.colorScheme.primary.copy(alpha = tintAlpha)
+        .compositeOver(surfaceAtElevation)
+
     val highlightBorder = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
 
     val measuredAtMillis = measurementWithValues.measurement.timestamp
