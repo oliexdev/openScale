@@ -30,14 +30,10 @@ import java.time.ZoneId
 import java.util.Locale
 
 object CalculationUtil {
-    fun dateToAge(birthDateMillis: Long): Int {
-        val birthDate = Instant.ofEpochMilli(birthDateMillis)
-            .atZone(ZoneId.systemDefault())
-            .toLocalDate()
-
-        val today = LocalDate.now()
-
-        return Period.between(birthDate, today).years
+    fun ageOn(dateMillis: Long, birthDateMillis: Long): Int {
+        val birth = Instant.ofEpochMilli(birthDateMillis).atZone(ZoneId.systemDefault()).toLocalDate()
+        val onDate = Instant.ofEpochMilli(dateMillis).atZone(ZoneId.systemDefault()).toLocalDate()
+        return Period.between(birth, onDate).years.coerceAtLeast(0)
     }
 
     /**

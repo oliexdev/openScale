@@ -17,14 +17,12 @@
  */
 package com.health.openscale.ui.screen.graph
 
-import android.content.Context
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.SheetValue
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.*
@@ -38,7 +36,6 @@ import androidx.navigation.NavController
 import com.health.openscale.R
 import com.health.openscale.core.data.Trend
 import com.health.openscale.core.database.UserPreferenceKeys
-import com.health.openscale.core.model.MeasurementWithValues
 import com.health.openscale.ui.navigation.Routes
 import com.health.openscale.ui.screen.SharedViewModel
 import com.health.openscale.ui.screen.ValueWithDifference
@@ -46,9 +43,6 @@ import com.health.openscale.ui.screen.components.LineChart
 import com.health.openscale.ui.screen.components.provideFilterTopBarAction
 import com.health.openscale.ui.screen.overview.MeasurementValueRow
 import java.text.DateFormat
-import java.text.SimpleDateFormat
-import java.time.Instant
-import java.time.ZoneId
 import java.util.Date
 import java.util.Locale
 
@@ -62,6 +56,7 @@ fun GraphScreen(
     val isLoading by sharedViewModel.isBaseDataLoading.collectAsState()
     val allMeasurementsWithValues by sharedViewModel.allMeasurementsForSelectedUser.collectAsState()
     val selectedUserId by sharedViewModel.selectedUserId.collectAsState()
+    val userEvalContext by sharedViewModel.userEvaluationContext.collectAsState()
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
     var sheetMeasurementId by rememberSaveable { mutableStateOf<Int?>(null) }
@@ -180,11 +175,13 @@ fun GraphScreen(
 
                 visibleValues.forEach { v ->
                     MeasurementValueRow(
-                        ValueWithDifference(
+                        valueWithTrend = ValueWithDifference(
                             currentValue = v,
                             difference = null,
                             trend = Trend.NOT_APPLICABLE
-                        )
+                        ),
+                        userEvaluationContext = userEvalContext,
+                        measuredAtMillis = mwv.measurement.timestamp
                     )
                 }
             }

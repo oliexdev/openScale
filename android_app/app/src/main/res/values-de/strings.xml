@@ -434,6 +434,10 @@
     <string name="delete_db_successful">Gesamte Datenbank wurde gelöscht.</string>
     <string name="delete_db_error">Fehler beim Löschen der gesamten Datenbank.</string>
 
+    <!-- Evaluation Nachrichten -->
+    <string name="eval_no_age_band">Keine Bewertung möglich: Kein passender Altersbereich zum Messzeitpunkt.</string>
+    <string name="eval_out_of_plausible_range_percent">Auffälliger Wert: außerhalb des plausiblen Bereichs (%1$.0f–%2$.0f%%).</string>
+
     <!-- BluetoothViewModel Snackbar Messages -->
     <string name="bt_snackbar_permissions_required_to_scan">Bluetooth-Berechtigungen werden zum Scannen von Geräten benötigt.</string>
     <string name="bt_snackbar_bluetooth_disabled_to_scan">Bluetooth ist deaktiviert. Bitte aktiviere es, um nach Geräten zu scannen.</string>

@@ -436,6 +436,10 @@
     <string name="delete_db_successful">Entire database has been deleted.</string>
     <string name="delete_db_error">Error deleting entire database.</string>
 
+    <!-- Evaluation Messages -->
+    <string name="eval_no_age_band">No evaluation possible: No matching age band at the time of measurement.</string>
+    <string name="eval_out_of_plausible_range_percent">Unusual value: outside the plausible range (%1$.0f–%2$.0f%%).</string>
+
     <!-- BluetoothViewModel Snackbar Messages -->
     <string name="bt_snackbar_permissions_required_to_scan">Bluetooth permissions are required to scan for devices.</string>
     <string name="bt_snackbar_bluetooth_disabled_to_scan">Bluetooth is disabled. Please enable it to scan for devices.</string>

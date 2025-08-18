@@ -92,7 +92,7 @@ fun UserSettingsScreen(
         items(users) { user ->
             // Calculate age. This will be recalculated if user.birthDate changes.
             val age = remember(user.birthDate) {
-                CalculationUtil.dateToAge(user.birthDate)
+                CalculationUtil.ageOn(System.currentTimeMillis(), user.birthDate)
             }
 
             ListItem(

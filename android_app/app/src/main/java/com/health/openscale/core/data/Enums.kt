@@ -65,6 +65,7 @@ import androidx.compose.material.icons.filled.SquareFoot
 import androidx.compose.material.icons.filled.StackedLineChart
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.WarningAmber
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.health.openscale.R
 import java.util.Locale
@@ -363,5 +364,19 @@ enum class BackupInterval {
              WEEKLY -> context.getString(R.string.interval_weekly)
              MONTHLY -> context.getString(R.string.interval_monthly)
          }
+    }
+}
+
+enum class EvaluationState {
+    LOW,
+    NORMAL,
+    HIGH,
+    UNDEFINED;
+
+    fun toColor(): Color = when (this) {
+        LOW       -> Color(0xFFEF5350) // Red 400
+        NORMAL    -> Color(0xFF66BB6A) // Green 400
+        HIGH      -> Color(0xFFFFA726) // Orange 400
+        UNDEFINED -> Color(0xFFBDBDBD) // Grey 400
     }
 }

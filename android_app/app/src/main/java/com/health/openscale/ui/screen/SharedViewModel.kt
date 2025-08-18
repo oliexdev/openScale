@@ -20,24 +20,16 @@ package com.health.openscale.ui.screen
 import android.app.Application
 import android.content.ComponentName
 import android.content.Intent
-import android.util.Log
 import androidx.annotation.StringRes
-import androidx.compose.animation.core.copy
-import androidx.compose.foundation.gestures.forEach
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.geometry.isEmpty
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.key.type
 import androidx.core.content.ContextCompat
-import androidx.core.graphics.values
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
 import com.health.openscale.R
-import com.health.openscale.core.bluetooth.data.ScaleMeasurement
+import com.health.openscale.core.data.GenderType
 import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementType
@@ -129,6 +121,12 @@ data class ValueWithDifference(
 data class EnrichedMeasurement(
     val measurementWithValues: MeasurementWithValues,
     val valuesWithTrend: List<ValueWithDifference>
+)
+
+data class UserEvaluationContext(
+    val gender: GenderType,
+    val heightCm: Float,
+    val birthDateMillis: Long
 )
 
 /**
@@ -303,6 +301,17 @@ class SharedViewModel(
         _currentMeasurementId.value = measurementId
         LogManager.d(TAG, "Current measurement ID set to: $measurementId (UI/Navigation Action)")
     }
+
+    val userEvaluationContext: StateFlow<UserEvaluationContext?> =
+        selectedUser.map { u ->
+            u?.let {
+                UserEvaluationContext(
+                    gender = if (it.gender.isMale()) GenderType.MALE else GenderType.FEMALE,
+                    heightCm = it.heightCm,
+                    birthDateMillis = it.birthDate
+                )
+            }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), null)
 
     // --- Measurement CRUD Operations ---
 

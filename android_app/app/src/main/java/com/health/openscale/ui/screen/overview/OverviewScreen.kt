@@ -17,17 +17,16 @@
  */
 package com.health.openscale.ui.screen.overview
 
-import android.R.attr.targetId
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -39,7 +38,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.BluetoothSearching
 import androidx.compose.material.icons.filled.Add
@@ -56,7 +54,6 @@ import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.PersonSearch
-import androidx.compose.material.icons.filled.QuestionMark
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -75,6 +72,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -85,19 +83,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.health.openscale.R
+import com.health.openscale.core.data.EvaluationState
 import com.health.openscale.core.data.InputFieldType
+import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.Trend
 import com.health.openscale.core.model.MeasurementWithValues
 import com.health.openscale.core.database.UserPreferenceKeys
+import com.health.openscale.core.eval.MeasurementEvaluator
+import com.health.openscale.ui.components.LinearGauge
 import com.health.openscale.ui.components.RoundMeasurementIcon
 import com.health.openscale.ui.navigation.Routes
 import com.health.openscale.ui.screen.SharedViewModel
+import com.health.openscale.ui.screen.UserEvaluationContext
 import com.health.openscale.ui.screen.ValueWithDifference
 import com.health.openscale.ui.screen.bluetooth.BluetoothViewModel
 import com.health.openscale.ui.screen.bluetooth.ConnectionStatus
@@ -105,9 +108,8 @@ import com.health.openscale.ui.screen.components.LineChart
 import com.health.openscale.ui.screen.components.provideFilterTopBarAction
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.text.DateFormat
 import java.text.SimpleDateFormat
-import java.time.Instant
-import java.time.ZoneId
 import java.util.Date
 import java.util.Locale
 
@@ -316,6 +318,9 @@ fun OverviewScreen(
                     (type.inputType == InputFieldType.FLOAT || type.inputType == InputFieldType.INT) // Ensure it's a plottable type
         }
     }
+
+    val userEvalContext by sharedViewModel.userEvaluationContext.collectAsState()
+
     // --- End of reverted chart selection logic ---
 
     val savedDeviceAddress by bluetoothViewModel.savedScaleAddress.collectAsState()
@@ -463,7 +468,8 @@ fun OverviewScreen(
                             MeasurementCard(
                                 measurementWithValues = enrichedItem.measurementWithValues,
                                 processedValuesForDisplay = enrichedItem.valuesWithTrend,
-                                onEdit = {
+                                userEvaluationContext = userEvalContext,
+                                        onEdit = {
                                     navController.navigate(
                                         Routes.measurementDetail(
                                             enrichedItem.measurementWithValues.measurement.id,
@@ -628,12 +634,16 @@ fun NoMeasurementsCard(navController: NavController, selectedUserId: Int?) {
 fun MeasurementCard(
     measurementWithValues: MeasurementWithValues,
     processedValuesForDisplay: List<ValueWithDifference>,
+    userEvaluationContext: UserEvaluationContext?,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
     isHighlighted: Boolean = false
 ) {
     val highlightColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
     val highlightBorder = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
+
+    val measuredAtMillis = measurementWithValues.measurement.timestamp
+    val expandedTypeIds = remember { mutableStateMapOf<Int, Boolean>() }
 
     val dateFormatted = remember(measurementWithValues.measurement.timestamp) {
         SimpleDateFormat("E, dd.MM.yyyy HH:mm", Locale.getDefault())
@@ -653,8 +663,6 @@ fun MeasurementCard(
     val allActiveProcessedValues = remember(processedValuesForDisplay) {
         processedValuesForDisplay.filter { it.currentValue.type.isEnabled }
     }
-
-
     Card(
         modifier = Modifier.fillMaxWidth(),
         border = if (isHighlighted) highlightBorder else null,
@@ -679,19 +687,26 @@ fun MeasurementCard(
                     modifier = Modifier.weight(1f) // Date takes available space
                 )
                 val iconButtonSize = 36.dp // Standard size for action icons
-                val actionIconColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                val actionIconColor =
+                    MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
 
                 IconButton(onClick = onEdit, modifier = Modifier.size(iconButtonSize)) {
                     Icon(
                         Icons.Default.Edit,
-                        contentDescription = stringResource(R.string.action_edit_measurement_desc, dateFormatted),
+                        contentDescription = stringResource(
+                            R.string.action_edit_measurement_desc,
+                            dateFormatted
+                        ),
                         tint = actionIconColor
                     )
                 }
                 IconButton(onClick = onDelete, modifier = Modifier.size(iconButtonSize)) {
                     Icon(
                         Icons.Default.Delete,
-                        contentDescription = stringResource(R.string.action_delete_measurement_desc, dateFormatted),
+                        contentDescription = stringResource(
+                            R.string.action_delete_measurement_desc,
+                            dateFormatted
+                        ),
                         tint = actionIconColor
                     )
                 }
@@ -699,7 +714,10 @@ fun MeasurementCard(
                 // Conditional expand/collapse icon button for non-pinned values,
                 // only shown if there are non-pinned values and no pinned values (to avoid duplicate expand button logic)
                 if (nonPinnedValues.isNotEmpty() && pinnedValues.isEmpty()) {
-                    IconButton(onClick = { isExpanded = !isExpanded }, modifier = Modifier.size(iconButtonSize)) {
+                    IconButton(
+                        onClick = { isExpanded = !isExpanded },
+                        modifier = Modifier.size(iconButtonSize)
+                    ) {
                         Icon(
                             imageVector = if (isExpanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
                             contentDescription = stringResource(if (isExpanded) R.string.action_show_less_desc else R.string.action_show_more_desc)
@@ -717,41 +735,51 @@ fun MeasurementCard(
                 )
             ) {
                 if (pinnedValues.isNotEmpty()) {
-                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
                         pinnedValues.forEach { valueWithTrend ->
-                            MeasurementValueRow(valueWithTrend)
+                            MeasurementRowExpandable(
+                                valueWithTrend = valueWithTrend,
+                                userEvaluationContext = userEvaluationContext,
+                                measuredAtMillis = measuredAtMillis,
+                                expandedTypeIds = expandedTypeIds
+                            )
                         }
                     }
                 }
             }
+
 
             // Animated section for non-pinned measurement values (collapsible)
             if (nonPinnedValues.isNotEmpty()) {
                 AnimatedVisibility(visible = isExpanded || pinnedValues.isEmpty()) { // Also visible if no pinned values and not expanded (default state)
                     Column(
-                        modifier = Modifier.padding(
-                            start = 16.dp, end = 16.dp,
-                            top = if (pinnedValues.isNotEmpty()) 12.dp else 8.dp, // Smaller top padding if no pinned values
-                            bottom = 8.dp
-                        ),
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                        modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 0.dp, bottom = 0.dp),
+                        verticalArrangement = Arrangement.spacedBy(0.dp)
                     ) {
                         nonPinnedValues.forEach { valueWithTrend ->
-                            MeasurementValueRow(valueWithTrend)
+                            MeasurementRowExpandable(
+                                valueWithTrend = valueWithTrend,
+                                userEvaluationContext = userEvaluationContext,
+                                measuredAtMillis = measuredAtMillis,
+                                expandedTypeIds = expandedTypeIds
+                            )
                         }
                     }
                 }
             }
 
+
             // Footer: Expand/Collapse TextButton (only if there are non-pinned values and also pinned values,
             // or if there are non-pinned values and it's not the default expanded state for only non-pinned).
-            if (nonPinnedValues.isNotEmpty() && (pinnedValues.isNotEmpty() || !isExpanded) ) {
+            if (nonPinnedValues.isNotEmpty() && (pinnedValues.isNotEmpty() || !isExpanded)) {
                 // Show divider if the expandable section is visible or if pinned items are present (button will always be there)
                 if (isExpanded || pinnedValues.isNotEmpty()) {
-                    HorizontalDivider(modifier = Modifier.padding(
-                        top = if (isExpanded && nonPinnedValues.isNotEmpty()) 4.dp else if (pinnedValues.isNotEmpty()) 8.dp else 0.dp,
-                        bottom = 0.dp
-                    ))
+                    HorizontalDivider(
+                        modifier = Modifier.padding(
+                            top = if (isExpanded && nonPinnedValues.isNotEmpty()) 4.dp else if (pinnedValues.isNotEmpty()) 8.dp else 0.dp,
+                            bottom = 0.dp
+                        )
+                    )
                 }
 
                 TextButton(
@@ -790,69 +818,141 @@ fun MeasurementCard(
 }
 
 /**
- * A row Composable that displays a single measurement value, including its type icon,
- * name, value, unit, and trend indicator if applicable.
+ * Displays one measurement row: icon + name + (optional) trend on the left,
+ * value and an evaluation symbol on the right.
  *
- * @param valueWithTrend The [ValueWithDifference] object containing the current value,
- *                       type information, difference from a previous value, and trend.
+ * Symbol rules:
+ *  - ▲ / ▼ / ●: based on the evaluation state (HIGH / LOW / NORMAL/UNDEFINED)
+ *  - ! (error color): shown if there is no matching age band at measurement time
+ *    OR if a percentage value is outside a plausible range (0–100%).
+ *
+ * Note:
+ *  - Non-numeric types (TEXT/DATE/TIME) are not evaluated (show ● if not flagged).
  */
 @Composable
-fun MeasurementValueRow(valueWithTrend: ValueWithDifference) {
+fun MeasurementValueRow(
+    valueWithTrend: ValueWithDifference,
+    userEvaluationContext: UserEvaluationContext?,
+    measuredAtMillis: Long
+) {
     val type = valueWithTrend.currentValue.type
-    val originalValue = valueWithTrend.currentValue.value // This is Measurement.Value object
+    val originalValue = valueWithTrend.currentValue.value
     val difference = valueWithTrend.difference
     val trend = valueWithTrend.trend
+    val unitName = type.unit.displayName
 
+    // Localized display value for each input type
     val displayValue = when (type.inputType) {
         InputFieldType.FLOAT -> originalValue.floatValue?.let { "%.1f".format(Locale.getDefault(), it) }
-        InputFieldType.INT -> originalValue.intValue?.toString()
-        InputFieldType.TEXT -> originalValue.textValue
-        InputFieldType.DATE -> originalValue.dateValue?.let {
-            SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(Date(it))
+        InputFieldType.INT   -> originalValue.intValue?.toString()
+        InputFieldType.TEXT  -> originalValue.textValue
+        InputFieldType.DATE  -> originalValue.dateValue?.let {
+            DateFormat.getDateInstance(DateFormat.SHORT, Locale.getDefault()).format(Date(it))
         }
-        InputFieldType.TIME -> originalValue.dateValue?.let {
-            SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(it))
+        InputFieldType.TIME  -> originalValue.dateValue?.let {
+            DateFormat.getTimeInstance(DateFormat.SHORT, Locale.getDefault()).format(Date(it))
         }
-    } ?: "-" // Default to dash if value is null
+    } ?: "-"
 
     val context = LocalContext.current
-    val iconMeasurementType = remember(type.icon) {type.icon }
+    val iconMeasurementType = remember(type.icon) { type.icon }
+
+    // Extract numeric value only for evaluable numeric types
+    val numeric: Float? = when (type.inputType) {
+        InputFieldType.FLOAT -> originalValue.floatValue
+        InputFieldType.INT   -> originalValue.intValue?.toFloat()
+        else                 -> null
+    }
+
+    // Compute evaluation if possible
+    val evalResult = remember(valueWithTrend, userEvaluationContext, measuredAtMillis) {
+        if (userEvaluationContext != null && numeric != null) {
+            MeasurementEvaluator.evaluate(
+                typeKey = type.key,
+                value = numeric,
+                userEvaluationContext = userEvaluationContext,
+                measuredAtMillis = measuredAtMillis
+            )
+        } else null
+    }
+
+    // Flag 1: no matching age band (limits are negative)
+    val noAgeBand: Boolean = evalResult?.let { it.lowLimit < 0f || it.highLimit < 0f } ?: false
+
+    // Flag 2: percent outside a plausible range (0..100)
+    val plausible = plausiblePercentRangeFor(type.key)
+    val outOfPlausibleRange =
+        if (numeric == null) {
+            false
+        } else {
+            plausible?.let { numeric < it.start || numeric > it.endInclusive }
+                ?: (unitName == "%" && (numeric < 0f || numeric > 100f)) // Fallback
+        }
+
+    val flagged = noAgeBand || outOfPlausibleRange
+
+    // Base evaluation state (falls back to UNDEFINED when not evaluable)
+    val evalState = evalResult?.state ?: EvaluationState.UNDEFINED
+
+    // Symbol selection
+    val evalSymbol = if (flagged) {
+        "!"
+    } else {
+        when (evalState) {
+            EvaluationState.LOW       -> "▼"
+            EvaluationState.NORMAL    -> "●"
+            EvaluationState.HIGH      -> "▲"
+            EvaluationState.UNDEFINED -> "●"
+        }
+    }
+
+    // Symbol color: error for "!", otherwise mapped from eval state
+    val evalColor = if (flagged) {
+        MaterialTheme.colorScheme.error
+    } else {
+        evalState.toColor()
+    }
 
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(IntrinsicSize.Min)
+            .padding(vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Left part: Icon and Type Name
+        // Left side: icon + labels
         Row(
-            modifier = Modifier.weight(1f), // Takes available space, pushing value & trend to the right
+            modifier = Modifier.weight(1f),
             verticalAlignment = Alignment.CenterVertically
         ) {
             RoundMeasurementIcon(
                 icon = iconMeasurementType,
-                backgroundTint = Color(type.color),
+                backgroundTint = Color(type.color)
             )
             Spacer(modifier = Modifier.width(12.dp))
             Column(verticalArrangement = Arrangement.Center) {
                 Text(
                     text = type.getDisplayName(context),
                     style = MaterialTheme.typography.titleSmall,
-                    maxLines = 1,
+                    maxLines = 1
                 )
+
+                // Show trend only for numeric types with a difference
                 if (difference != null && trend != Trend.NOT_APPLICABLE) {
                     Spacer(modifier = Modifier.height(1.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         val trendIconVector = when (trend) {
-                            Trend.UP -> Icons.Filled.ArrowUpward
+                            Trend.UP   -> Icons.Filled.ArrowUpward
                             Trend.DOWN -> Icons.Filled.ArrowDownward
                             Trend.NONE -> null
-                            else -> null
+                            else       -> null
                         }
-                        val subtleGrayColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                        val subtle = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                         if (trendIconVector != null) {
                             Icon(
                                 imageVector = trendIconVector,
                                 contentDescription = trend.name,
-                                tint = subtleGrayColor,
+                                tint = subtle,
                                 modifier = Modifier.size(12.dp)
                             )
                             Spacer(modifier = Modifier.width(3.dp))
@@ -861,23 +961,218 @@ fun MeasurementValueRow(valueWithTrend: ValueWithDifference) {
                             text = (if (difference > 0 && trend != Trend.NONE) "+" else "") +
                                     when (type.inputType) {
                                         InputFieldType.FLOAT -> "%.1f".format(Locale.getDefault(), difference)
-                                        InputFieldType.INT -> difference.toInt().toString()
-                                        else -> ""
-                                    } + " ${type.unit.displayName}",
+                                        InputFieldType.INT   -> difference.toInt().toString()
+                                        else                 -> ""
+                                    } + " $unitName",
                             style = MaterialTheme.typography.bodySmall,
-                            color = subtleGrayColor
+                            color = subtle
                         )
                     }
                 } else if (type.inputType == InputFieldType.FLOAT || type.inputType == InputFieldType.INT) {
+                    // Keep vertical spacing consistent when no trend is shown
                     Spacer(modifier = Modifier.height((MaterialTheme.typography.bodySmall.fontSize.value + 2).dp))
                 }
             }
         }
-        Text(
-            text = "$displayValue ${type.unit.displayName}",
-            style = MaterialTheme.typography.bodyLarge,
-            textAlign = TextAlign.End,
+
+        // Right side: value + evaluation symbol
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(start = 8.dp)
-        )
+        ) {
+            Text(
+                text = "$displayValue $unitName",
+                style = MaterialTheme.typography.bodyLarge,
+                textAlign = TextAlign.End
+            )
+            Spacer(Modifier.width(6.dp))
+            Text(
+                text = evalSymbol,
+                color = evalColor,
+                style = MaterialTheme.typography.bodyLarge
+            )
+        }
     }
 }
+
+
+/**
+ * Small, prominent banner for evaluation problems (e.g., no age band or implausible value).
+ *
+ * @param message Localized message to display inside the banner.
+ */
+@Composable
+private fun EvaluationErrorBanner(message: String) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .clip(MaterialTheme.shapes.medium)
+            .background(MaterialTheme.colorScheme.errorContainer)
+            .padding(12.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                imageVector = Icons.Filled.Error,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onErrorContainer
+            )
+            Spacer(Modifier.width(8.dp))
+            Text(
+                text = message,
+                color = MaterialTheme.colorScheme.onErrorContainer,
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
+    }
+}
+
+
+/**
+ * Returns a broad **plausible** percentage range for selected measurement types.
+ *
+ * This is **not** a clinical reference band. It’s only used to catch obviously
+ * incorrect values (e.g., sensor glitches, unit mix-ups) before attempting
+ * a proper evaluation. The ranges are intentionally wide.
+ *
+ * @param typeKey The measurement type to check.
+ * @return A closed percent range [min .. max] if the metric is percentage-based and supported,
+ *         or `null` if no generic plausibility range is defined for this type.
+ */
+private fun plausiblePercentRangeFor(typeKey: MeasurementTypeKey): ClosedFloatingPointRange<Float>? =
+    when (typeKey) {
+        MeasurementTypeKey.WATER      -> 35f..75f
+        MeasurementTypeKey.BODY_FAT   -> 3f..70f
+        MeasurementTypeKey.MUSCLE     -> 15f..60f
+        else -> null
+    }
+
+
+/**
+ * One measurement row that can expand to show a gauge or an info banner.
+ *
+ * Behavior:
+ * - If a normal evaluation is possible, the row expands to a LinearGauge.
+ * - If no age band exists or the value is outside a plausible range, the row expands to an info banner.
+ * - The clickable state of the row follows the above rules (only clickable when there is something meaningful to show).
+ *
+ * @param valueWithTrend The value and meta info for this row.
+ * @param userEvaluationContext The context needed to evaluate the value (gender, age, etc.); can be null.
+ * @param measuredAtMillis Timestamp of the measurement (used by the evaluator).
+ * @param expandedTypeIds State map holding expand/collapse flags per measurement type id.
+ * @param modifier Optional modifier for the container column.
+ * @param gaugeHeightDp Height of the gauge when shown.
+ */
+@Composable
+fun MeasurementRowExpandable(
+    valueWithTrend: ValueWithDifference,
+    userEvaluationContext: UserEvaluationContext?,
+    measuredAtMillis: Long,
+    expandedTypeIds: MutableMap<Int, Boolean>,
+    modifier: Modifier = Modifier,
+    gaugeHeightDp: Dp = 80.dp,
+) {
+    val type = valueWithTrend.currentValue.type
+
+    // Extract numeric value for evaluation / plausibility checks
+    val numeric: Float? = when (type.inputType) {
+        InputFieldType.FLOAT -> valueWithTrend.currentValue.value.floatValue
+        InputFieldType.INT   -> valueWithTrend.currentValue.value.intValue?.toFloat()
+        else                 -> null
+    }
+
+    // Run evaluation (or keep null when not possible)
+    val evalResult = remember(valueWithTrend, userEvaluationContext, measuredAtMillis) {
+        if (userEvaluationContext == null || numeric == null) {
+            null
+        } else {
+            MeasurementEvaluator.evaluate(
+                typeKey = type.key,
+                value = numeric,
+                userEvaluationContext = userEvaluationContext,
+                measuredAtMillis = measuredAtMillis
+            )
+        }
+    }
+
+    // Special cases:
+    // 1) No age band available -> evaluator returns negative limits
+    val noAgeBand = evalResult?.let { it.lowLimit < 0f || it.highLimit < 0f } ?: false
+
+    // 2) Implausible value for percentage-based metrics
+    val unitName = type.unit.displayName
+    val plausible = plausiblePercentRangeFor(type.key)
+    val outOfPlausibleRange =
+        if (numeric == null) {
+            false
+        } else {
+            plausible?.let { numeric < it.start || numeric > it.endInclusive }
+                ?: (unitName == "%" && (numeric < 0f || numeric > 100f))
+        }
+
+    // Expand is allowed when:
+    // - a normal evaluation exists (valid limits), OR
+    // - we have one of the special cases (to show the info banner)
+    val canExpand = (evalResult != null && !noAgeBand) || noAgeBand || outOfPlausibleRange
+
+    Column(modifier) {
+        // The main row – clickable only when `canExpand` is true.
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(enabled = canExpand) {
+                    val cur = expandedTypeIds[type.id] ?: false
+                    expandedTypeIds[type.id] = !cur
+                }
+        ) {
+            // Uses your existing row (with ●/▲/▼ or ! logic inside).
+            MeasurementValueRow(
+                valueWithTrend = valueWithTrend,
+                userEvaluationContext = userEvaluationContext,
+                measuredAtMillis = measuredAtMillis
+            )
+        }
+
+        val unit = type.unit.displayName
+
+        // Expanded content:
+        AnimatedVisibility(visible = canExpand && (expandedTypeIds[type.id] == true)) {
+            when {
+                noAgeBand -> {
+                    EvaluationErrorBanner(
+                        message = stringResource(R.string.eval_no_age_band)
+                    )
+                }
+                outOfPlausibleRange -> {
+                    val plausible = plausiblePercentRangeFor(type.key) ?: (0f..100f)
+                    EvaluationErrorBanner(
+                        message = stringResource(
+                            R.string.eval_out_of_plausible_range_percent,
+                            plausible.start,
+                            plausible.endInclusive
+                        )
+                    )
+                }
+                // Normal evaluation → show gauge
+                evalResult != null -> {
+                    Column(
+                        Modifier.padding(start = 16.dp, end = 16.dp, top = 6.dp, bottom = 2.dp)
+                    ) {
+                        LinearGauge(
+                            value = evalResult.value,
+                            lowLimit = if (evalResult.lowLimit < 0f) null else evalResult.lowLimit,
+                            highLimit = evalResult.highLimit,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(gaugeHeightDp),
+                            labelProvider = { v ->
+                                String.format(Locale.getDefault(), "%,.1f %s", v, unit)
+                            }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+

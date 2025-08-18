@@ -374,6 +374,11 @@ class DatabaseRepository(
         // User's height is assumed to be stored in CM in the User object
         val userHeightCm = user.heightCm
 
+        val ageAtMeasurementYears = CalculationUtil.ageOn(
+            dateMillis = measurement.timestamp,
+            birthDateMillis = user.birthDate
+        )
+
         // --- PERFORM DERIVED VALUE CALCULATIONS ---
         // Pass the converted values (e.g., weightKg, waistCm) to the processing functions
 
@@ -381,13 +386,23 @@ class DatabaseRepository(
         processLbmCalculation(weightKg, bodyFatPercentage).also { saveOrUpdateDerivedValue(it, MeasurementTypeKey.LBM) }
         processWhrCalculation(waistCm, hipsCm).also { saveOrUpdateDerivedValue(it, MeasurementTypeKey.WHR) }
         processWhtrCalculation(waistCm, userHeightCm).also { saveOrUpdateDerivedValue(it, MeasurementTypeKey.WHTR) }
-        processBmrCalculation(weightKg, user).also { bmr -> // user object contains heightCm and other necessary details
+        processBmrCalculation(
+            weightKg = weightKg,
+            heightCm = user.heightCm,
+            ageYears = ageAtMeasurementYears,
+            gender = user.gender
+        ).also { bmr ->
             saveOrUpdateDerivedValue(bmr, MeasurementTypeKey.BMR)
-            // TDEE calculation depends on the BMR result
             processTDEECalculation(bmr, user.activityLevel).also { saveOrUpdateDerivedValue(it, MeasurementTypeKey.TDEE) }
         }
-        processFatCaliperCalculation(caliper1Cm, caliper2Cm, caliper3Cm, user)
-            .also { saveOrUpdateDerivedValue(it, MeasurementTypeKey.CALIPER) }
+
+        processFatCaliperCalculation(
+            caliper1Cm = caliper1Cm,
+            caliper2Cm = caliper2Cm,
+            caliper3Cm = caliper3Cm,
+            ageYears = ageAtMeasurementYears,
+            gender = user.gender
+        ).also { saveOrUpdateDerivedValue(it, MeasurementTypeKey.CALIPER) }
 
         LogManager.i(DERIVED_VALUES_TAG, "Finished recalculation of derived values for measurementId: $measurementId")
     }
@@ -443,31 +458,25 @@ class DatabaseRepository(
         }
     }
 
-    private fun processBmrCalculation(weightKg: Float?, user: User): Float? {
-        LogManager.v(CALC_PROCESS_TAG, "Processing BMR for user ${user.id}: weight=$weightKg kg")
-        val heightCm = user.heightCm
-        val birthDateTimestamp = user.birthDate
-        val gender = user.gender
+    private fun processBmrCalculation(
+        weightKg: Float?,
+        heightCm: Float?,
+        ageYears: Int,
+        gender: GenderType
+    ): Float? {
+        LogManager.v(CALC_PROCESS_TAG, "Processing BMR: weight=$weightKg kg, height=$heightCm cm, age=$ageYears, gender=$gender")
 
         if (weightKg == null || weightKg <= 0f ||
             heightCm == null || heightCm <= 0f ||
-            birthDateTimestamp <= 0L
+            ageYears !in 1..120
         ) {
-            LogManager.d(CALC_PROCESS_TAG, "BMR calculation skipped: Missing or invalid weight, height, birthdate, or gender.")
+            LogManager.d(CALC_PROCESS_TAG, "BMR calculation skipped: Missing/invalid weight, height or age ($ageYears).")
             return null
         }
 
-        val ageYears = CalculationUtil.dateToAge(birthDateTimestamp)
-        LogManager.v(CALC_PROCESS_TAG, "Calculated age for BMR: $ageYears years")
-
-        return if (ageYears in 1..120) {
-            when (gender) {
-                GenderType.MALE -> (10.0f * weightKg) + (6.25f * heightCm) - (5.0f * ageYears) + 5.0f
-                GenderType.FEMALE -> (10.0f * weightKg) + (6.25f * heightCm) - (5.0f * ageYears) - 161.0f
-            }
-        } else {
-            LogManager.w(CALC_PROCESS_TAG, "Invalid age for BMR calculation: $ageYears years. User ID: ${user.id}")
-            null
+        return when (gender) {
+            GenderType.MALE   -> (10.0f * weightKg) + (6.25f * heightCm) - (5.0f * ageYears) + 5.0f
+            GenderType.FEMALE -> (10.0f * weightKg) + (6.25f * heightCm) - (5.0f * ageYears) - 161.0f
         }
     }
 
@@ -488,13 +497,18 @@ class DatabaseRepository(
         return bmr * activityFactor
     }
 
+
     private fun processFatCaliperCalculation(
         caliper1Cm: Float?,
         caliper2Cm: Float?,
         caliper3Cm: Float?,
-        user: User
+        ageYears: Int,
+        gender: GenderType
     ): Float? {
-        LogManager.v(CALC_PROCESS_TAG, "Processing Fat Caliper: c1=$caliper1Cm cm, c2=$caliper2Cm cm, c3=$caliper3Cm cm for user ${user.id}")
+        LogManager.v(
+            CALC_PROCESS_TAG,
+            "Processing Fat Caliper: c1=$caliper1Cm cm, c2=$caliper2Cm cm, c3=$caliper3Cm cm, age=$ageYears, gender=$gender"
+        )
 
         if (caliper1Cm == null || caliper1Cm <= 0f ||
             caliper2Cm == null || caliper2Cm <= 0f ||
@@ -504,18 +518,16 @@ class DatabaseRepository(
             return null
         }
 
-        val gender = user.gender
-        val ageYears = CalculationUtil.dateToAge(user.birthDate)
-
         if (ageYears <= 0) {
-            LogManager.w(CALC_PROCESS_TAG, "Fat Caliper calculation skipped: Invalid gender ($gender) or age ($ageYears years). User ID: ${user.id}")
+            LogManager.w(CALC_PROCESS_TAG, "Fat Caliper calculation skipped: Invalid age ($ageYears).")
             return null
         }
-        LogManager.v(CALC_PROCESS_TAG, "Calculated age for Fat Caliper: $ageYears years")
 
+        // Sum of skinfolds in millimeters
         val sumSkinfoldsMm = (caliper1Cm + caliper2Cm + caliper3Cm) * 10.0f
         LogManager.v(CALC_PROCESS_TAG, "Sum of skinfolds (S): $sumSkinfoldsMm mm")
 
+        // Choose constants based on gender
         val k0: Float
         val k1: Float
         val k2: Float
@@ -536,21 +548,20 @@ class DatabaseRepository(
             }
         }
 
-        val bodyDensity = k0 - (k1 * sumSkinfoldsMm) + (k2 * sumSkinfoldsMm * sumSkinfoldsMm) - (ka * ageYears)
+        val bodyDensity =
+            k0 - (k1 * sumSkinfoldsMm) + (k2 * sumSkinfoldsMm * sumSkinfoldsMm) - (ka * ageYears)
         LogManager.v(CALC_PROCESS_TAG, "Calculated Body Density (BD): $bodyDensity")
 
         if (bodyDensity <= 0f) {
-            LogManager.w(CALC_PROCESS_TAG, "Invalid Body Density calculated: $bodyDensity. Caliper values might be outside the formula's valid range. User ID: ${user.id}")
+            LogManager.w(CALC_PROCESS_TAG, "Invalid Body Density calculated: $bodyDensity.")
             return null
         }
 
         val fatPercentage = (4.95f / bodyDensity - 4.5f) * 100.0f
         LogManager.v(CALC_PROCESS_TAG, "Calculated Fat Percentage from BD: $fatPercentage %")
 
-        return if (fatPercentage in 1.0f..70.0f) {
-            fatPercentage
-        } else {
-            LogManager.w(CALC_PROCESS_TAG, "Calculated Fat Percentage ($fatPercentage%) is outside the expected physiological range (1-70%). User ID: ${user.id}")
+        return fatPercentage.takeIf { it in 1.0f..70.0f } ?: run {
+            LogManager.w(CALC_PROCESS_TAG, "Calculated Fat Percentage ($fatPercentage%) is outside the expected physiological range (1–70%).")
             fatPercentage
         }
     }
