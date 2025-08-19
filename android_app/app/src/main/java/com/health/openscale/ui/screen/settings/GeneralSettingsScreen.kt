@@ -106,24 +106,26 @@ fun GeneralSettingsScreen(
                 if (logFileToCopy != null && logFileToCopy.exists()) {
                     scope.launch(Dispatchers.IO) {
                         try {
+                            LogManager.closeMarkdownBlock()
+
                             context.contentResolver.openOutputStream(uri)?.use { outputStream ->
                                 logFileToCopy.inputStream().use { inputStream ->
                                     inputStream.copyTo(outputStream)
                                 }
                             }
+
+                            LogManager.ensureMarkdownBlockOpen()
+
                             scope.launch {
                                 sharedViewModel.showSnackbar(context.getString(R.string.log_export_success))
                             }
                         } catch (e: Exception) {
                             LogManager.e("GeneralSettingsScreen", "Error exporting log file", e)
+                            LogManager.ensureMarkdownBlockOpen()
                             scope.launch {
                                 sharedViewModel.showSnackbar(context.getString(R.string.log_export_error))
                             }
                         }
-                    }
-                } else {
-                    scope.launch {
-                        sharedViewModel.showSnackbar(context.getString(R.string.log_export_no_file))
                     }
                 }
             }
