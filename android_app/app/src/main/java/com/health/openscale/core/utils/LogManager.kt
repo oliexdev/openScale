@@ -20,6 +20,7 @@ package com.health.openscale.core.utils
 import android.app.Activity
 import android.app.Application
 import android.content.Context
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -27,7 +28,10 @@ import com.health.openscale.BuildConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.io.File
 import java.io.FileOutputStream
 import java.io.FileWriter
@@ -49,7 +53,9 @@ object LogManager {
     private const val LOG_SUB_DIRECTORY = "logs"
     private const val CURRENT_LOG_FILE_NAME_BASE = "openScale_current_log"
     private const val LOG_FILE_EXTENSION = ".txt"
-    private const val MAX_LOG_SIZE_BYTES = 5 * 1024 * 1024 // 5 MB
+    private const val MAX_LOG_SIZE_BYTES = 10 * 1024 * 1024 // 10 MiB
+
+    private val fileMutex = Mutex()
 
     private var isInitialized = false
     private var logToFileEnabled = false
@@ -249,41 +255,31 @@ object LogManager {
 
         // Log to file if enabled
         if (logToFileEnabled) {
-            val formattedMessageForFile =
-                formatMessageForFile(priority, currentTag, message, throwable)
+            val formatted = formatMessageForFile(priority, currentTag, message, throwable)
             coroutineScope.launch {
-                try {
-                    val currentLogFile =
-                        File(getLogDirectory(), "$CURRENT_LOG_FILE_NAME_BASE$LOG_FILE_EXTENSION")
+                fileMutex.withLock {
+                    try {
+                        val currentLogFile = File(getLogDirectory(), "$CURRENT_LOG_FILE_NAME_BASE$LOG_FILE_EXTENSION")
 
-                    // Ensure the log file's parent directory exists.
-                    // This is a safeguard, though getLogDirectory should handle it.
-                    currentLogFile.parentFile?.mkdirs()
+                        currentLogFile.parentFile?.mkdirs()
 
-                    // Check if file is missing or empty, then write headers.
-                    // This can happen if the file was cleared or logging was just enabled.
-                    if (!currentLogFile.exists() || currentLogFile.length() == 0L) {
-                        d(
-                            TAG,
-                            "Log file missing or empty, writing headers: ${currentLogFile.absolutePath}"
-                        )
-                        writeInitialLogHeaders(currentLogFile) // This will create/overwrite with headers
-                        isMarkdownBlockOpen = true
+                        if (!currentLogFile.exists() || currentLogFile.length() == 0L) {
+                            writeInitialLogHeaders(currentLogFile)
+                            isMarkdownBlockOpen = true
+                        }
+
+                        checkAndRotateLog(currentLogFile)
+
+                        OutputStreamWriter(
+                            FileOutputStream(currentLogFile, true),
+                            StandardCharsets.UTF_8
+                        ).use { w ->
+                            w.append(formatted)
+                            w.append("\n")
+                        }
+                    } catch (e: IOException) {
+                        Log.e(TAG, "Error writing to log file: ${e.message}", e)
                     }
-
-                    checkAndRotateLog(currentLogFile) // Rotate log if it exceeds max size
-
-                    // Append the log message
-                    OutputStreamWriter(
-                        FileOutputStream(currentLogFile, true),
-                        StandardCharsets.UTF_8
-                    ).use { writer ->
-                        writer.append(formattedMessageForFile)
-                        writer.append("\n")
-                    }
-                } catch (e: IOException) {
-                    // Log error related to file writing to Logcat only, to avoid recursive file logging issues.
-                    Log.e(TAG, "Error writing to log file: ${e.message}", e)
                 }
             }
         }
@@ -377,36 +373,23 @@ object LogManager {
     private fun checkAndRotateLog(currentLogFile: File) {
         if (currentLogFile.exists() && currentLogFile.length() > MAX_LOG_SIZE_BYTES) {
             val oldFileSize = currentLogFile.length()
-            i(
-                TAG,
-                "Log file '${currentLogFile.name}' (size: $oldFileSize bytes) exceeds limit ($MAX_LOG_SIZE_BYTES bytes). Rotating."
-            )
+            i(TAG, "Log file '${currentLogFile.name}' (size: $oldFileSize bytes) exceeds limit ($MAX_LOG_SIZE_BYTES bytes). Rotating.")
 
             try {
-                OutputStreamWriter(
-                    FileOutputStream(currentLogFile, true),
-                    StandardCharsets.UTF_8
-                ).use {
-                    it.append("\n```").append("\n")
+                if (isMarkdownBlockOpen) {
+                    OutputStreamWriter(FileOutputStream(currentLogFile, true), StandardCharsets.UTF_8).use {
+                        it.append("\n```").append("\n")
+                    }
+                    isMarkdownBlockOpen = false
                 }
-                isMarkdownBlockOpen = false
-            } catch (_: IOException) {
-            }
-
+            } catch (_: IOException) {}
 
             if (currentLogFile.delete()) {
-                i(
-                    TAG,
-                    "Oversized log file deleted: ${currentLogFile.name}. A new log file will be started with headers."
-                )
-                // Immediately open a new header and start a fresh ```diff block.
+                i(TAG, "Oversized log file deleted: ${currentLogFile.name}. A new log file will be started with headers.")
                 writeInitialLogHeaders(currentLogFile)
                 isMarkdownBlockOpen = true
             } else {
-                e(
-                    TAG,
-                    "Failed to delete oversized log file '${currentLogFile.name}' for rotation. Current log may continue to grow or writes may fail."
-                )
+                e(TAG, "Failed to delete oversized log file '${currentLogFile.name}' for rotation.")
             }
         }
     }
@@ -497,14 +480,19 @@ object LogManager {
         if (!isInitialized) return
         val logFile = File(getLogDirectory(), "$CURRENT_LOG_FILE_NAME_BASE$LOG_FILE_EXTENSION")
         if (!logFile.exists() || !isMarkdownBlockOpen) return
-        try {
-            OutputStreamWriter(FileOutputStream(logFile, true), StandardCharsets.UTF_8).use {
-                it.append("\n```").append("\n")
+
+        coroutineScope.launch {
+            fileMutex.withLock {
+                try {
+                    OutputStreamWriter(FileOutputStream(logFile, true), StandardCharsets.UTF_8).use {
+                        it.append("\n```").append("\n")
+                    }
+                    isMarkdownBlockOpen = false
+                    d(TAG, "Markdown diff block closed.")
+                } catch (e: IOException) {
+                    Log.e(TAG, "Error closing markdown diff block", e)
+                }
             }
-            isMarkdownBlockOpen = false
-            d(TAG, "Markdown diff block closed.")
-        } catch (e: IOException) {
-            Log.e(TAG, "Error closing markdown diff block", e)
         }
     }
 
@@ -512,15 +500,62 @@ object LogManager {
     fun ensureMarkdownBlockOpen() {
         if (!isInitialized || !logToFileEnabled || isMarkdownBlockOpen) return
         val logFile = File(getLogDirectory(), "$CURRENT_LOG_FILE_NAME_BASE$LOG_FILE_EXTENSION")
-        try {
-            if (!logFile.exists() || logFile.length() == 0L) return
-            OutputStreamWriter(FileOutputStream(logFile, true), StandardCharsets.UTF_8).use {
-                it.append("```diff\n")
+        if (!logFile.exists() || logFile.length() == 0L) return
+
+        coroutineScope.launch {
+            fileMutex.withLock {
+                try {
+                    OutputStreamWriter(FileOutputStream(logFile, true), StandardCharsets.UTF_8).use {
+                        it.append("```diff\n")
+                    }
+                    isMarkdownBlockOpen = true
+                    d(TAG, "Markdown diff block reopened after export.")
+                } catch (e: IOException) {
+                    Log.e(TAG, "Error reopening markdown diff block", e)
+                }
             }
-            isMarkdownBlockOpen = true
-            d(TAG, "Markdown diff block reopened after export.")
-        } catch (e: IOException) {
-            Log.e(TAG, "Error reopening markdown diff block", e)
+        }
+    }
+
+    @JvmStatic
+    suspend fun exportLogToUri(context: Context, targetUri: Uri): Boolean {
+        if (!isInitialized) return false
+
+        return try {
+            fileMutex.withLock {
+                val logFile = File(getLogDirectory(), "$CURRENT_LOG_FILE_NAME_BASE$LOG_FILE_EXTENSION")
+                if (!logFile.exists()) return@withLock false
+
+                if (isMarkdownBlockOpen) {
+                    try {
+                        OutputStreamWriter(FileOutputStream(logFile, true), StandardCharsets.UTF_8).use {
+                            it.append("\n```").append("\n")
+                        }
+                        isMarkdownBlockOpen = false
+                    } catch (e: IOException) {
+                        Log.e(TAG, "Error closing markdown block before export", e)
+                    }
+                }
+
+                context.contentResolver.openOutputStream(targetUri)?.use { out ->
+                    logFile.inputStream().use { it.copyTo(out) }
+                } ?: return@withLock false
+
+                if (logToFileEnabled) {
+                    try {
+                        OutputStreamWriter(FileOutputStream(logFile, true), StandardCharsets.UTF_8).use {
+                            it.append("```diff\n")
+                        }
+                        isMarkdownBlockOpen = true
+                    } catch (e: IOException) {
+                        Log.e(TAG, "Error reopening markdown block after export", e)
+                    }
+                }
+                true
+            }
+        } catch (t: Throwable) {
+            Log.e(TAG, "Error exporting log file", t)
+            false
         }
     }
 }
