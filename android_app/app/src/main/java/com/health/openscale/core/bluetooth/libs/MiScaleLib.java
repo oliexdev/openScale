@@ -57,8 +57,27 @@ public class MiScaleLib {
         return leanBodyMass;
     }
 
+    /**
+     * Skeletal Muscle Mass (kg) using Janssen et al. BIA equation.
+     * If impedance is non-positive, falls back to LBM * ratio.
+     */
     public float getMuscle(float weight, float impedance) {
-        return this.getLBM(weight,impedance); // this is wrong but coherent with MiFit app behaviour
+        if (weight <= 0f) return 0f;
+
+        float smm;
+        if (impedance > 0f) {
+            // Janssen et al. BIA equation for Skeletal Muscle Mass (kg)
+            float h2_over_r = (height * height) / impedance;
+            smm = 0.401f * h2_over_r + 3.825f * sex - 0.071f * age + 5.102f;
+        } else {
+            // Fallback: approximate as fraction of LBM
+            float lbm = getLBM(weight, impedance);
+            float ratio = (sex == 1) ? 0.52f : 0.46f;
+            smm = lbm * ratio;
+        }
+
+        float percent = (smm / weight) * 100f;
+        return clamp(percent, 10f, 60f); // clamp to plausible %
     }
 
     public float getWater(float weight, float impedance) {
@@ -168,6 +187,10 @@ public class MiScaleLib {
         }
 
         return bodyFat;
+    }
+
+    private static float clamp(float v, float lo, float hi) {
+        return Math.max(lo, Math.min(hi, v));
     }
 }
 

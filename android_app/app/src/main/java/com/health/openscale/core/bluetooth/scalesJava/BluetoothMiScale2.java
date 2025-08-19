@@ -1,18 +1,7 @@
-/* Copyright (C) 2014  olie.xdev <olie.xdev@googlemail.com>
-*
-*    This program is free software: you can redistribute it and/or modify
-*    it under the terms of the GNU General Public License as published by
-*    the Free Software Foundation, either version 3 of the License, or
-*    (at your option) any later version.
-*
-*    This program is distributed in the hope that it will be useful,
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*    GNU General Public License for more details.
-*
-*    You should have received a copy of the GNU General Public License
-*    along with this program.  If not, see <http://www.gnu.org/licenses/>
-*/
+/* Copyright (C) 2025  olie.xdev <olie.xdeveloper@googlemail.com>
+ *
+ * This program is free software: GPLv3 or later.
+ */
 
 package com.health.openscale.core.bluetooth.scalesJava;
 
@@ -29,211 +18,342 @@ import com.health.openscale.core.data.GenderType;
 import com.health.openscale.core.utils.Converters;
 import com.health.openscale.core.utils.LogManager;
 
+import java.io.ByteArrayOutputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Random;
 import java.util.UUID;
 
 public class BluetoothMiScale2 extends BluetoothCommunication {
-    private final String TAG = "BluetoothMiScale2";
-    private final UUID WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC = UUID.fromString("00002a2f-0000-3512-2118-0009af100700");
+    private static final String TAG = "BluetoothMiScale2";
 
-    private final UUID WEIGHT_CUSTOM_SERVICE = UUID.fromString("00001530-0000-3512-2118-0009af100700");
-    private final UUID WEIGHT_CUSTOM_CONFIG = UUID.fromString("00001542-0000-3512-2118-0009af100700");
+    // Mi custom history characteristic
+    private static final UUID WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC =
+            UUID.fromString("00002a2f-0000-3512-2118-0009af100700");
 
-    public BluetoothMiScale2(Context context) {
-        super(context);
-    }
+    // Mi custom service + config for unit command
+    private static final UUID WEIGHT_CUSTOM_SERVICE =
+            UUID.fromString("00001530-0000-3512-2118-0009af100700");
+    private static final UUID WEIGHT_CUSTOM_CONFIG =
+            UUID.fromString("00001542-0000-3512-2118-0009af100700");
+
+    // Enable history (helps after battery reset)
+    private static final byte[] ENABLE_HISTORY_MAGIC = new byte[]{0x01, (byte) 0x96, (byte) 0x8a, (byte) 0xbd, 0x62};
+
+    // History reassembly buffer (notifications can fragment)
+    private final ByteArrayOutputStream histBuf = new ByteArrayOutputStream();
+
+    private int pendingHistoryCount = -1;
+    private int importedHistory = 0;
+
+    // warn only once per session if we see "unexpected" flags in history status byte
+    private boolean historyUnexpectedFlagWarned = false;
+
+    public BluetoothMiScale2(Context context) { super(context); }
 
     @Override
-    public String driverName() {
-        return "Xiaomi Mi Scale v2";
-    }
+    public String driverName() { return "Xiaomi Mi Scale v2"; }
 
     @Override
     public void onBluetoothNotify(UUID characteristic, byte[] value) {
-        final byte[] data = value;
+        if (value == null || value.length == 0) return;
 
-        if (data != null && data.length > 0) {
-            LogManager.d(TAG, String.format("DataChange hex data: %s", byteInHex(data)));
+        LogManager.d(TAG, "Notify " + characteristic + " len=" + value.length + " data=" + byteInHex(value));
 
-            // Stop command from mi scale received
-            if (data[0] == 0x03) {
-                LogManager.d(TAG, "Scale stop byte received");
-                // send stop command to mi scale
-                writeBytes(BluetoothGattUuid.SERVICE_BODY_COMPOSITION, WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, new byte[]{0x03});
-                // acknowledge that you received the last history data
-                int uniqueNumber = getUniqueNumber();
-
-                byte[] userIdentifier = new byte[]{(byte)0x04, (byte)0xFF, (byte)0xFF, (byte) ((uniqueNumber & 0xFF00) >> 8), (byte) ((uniqueNumber & 0xFF) >> 0)};
-                writeBytes(BluetoothGattUuid.SERVICE_BODY_COMPOSITION, WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, userIdentifier);
-
-                resumeMachineState();
+        // STOP (end of history transfer)
+        if (value.length == 1 && value[0] == 0x03) {
+            // Check for truncated leftover BEFORE flush (for debug visibility)
+            int leftoverLen = histBuf.size();
+            if (leftoverLen % 10 != 0) {
+                LogManager.w(TAG, "History STOP with truncated fragment: " + leftoverLen + " byte(s) not multiple of 10 (ignored)", null);
             }
 
-            if (data.length == 13) {
-                parseBytes(data);
-            }
+            LogManager.d(TAG, "History STOP received; flush + ACK");
+            flushHistoryBuffer(); // parse any full 10-byte records left
 
+            // ACK stop
+            writeBytes(BluetoothGattUuid.SERVICE_BODY_COMPOSITION, WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, new byte[]{0x03});
+            // 0x04 + uniq acknowledge
+            int uniq = getUniqueNumber();
+            byte[] ack = new byte[]{0x04, (byte) 0xFF, (byte) 0xFF, (byte) ((uniq >> 8) & 0xFF), (byte) (uniq & 0xFF)};
+            writeBytes(BluetoothGattUuid.SERVICE_BODY_COMPOSITION, WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, ack);
+
+            LogManager.i(TAG, "History import done: " + importedHistory + " record(s)");
+            if (pendingHistoryCount == 0) {
+                LogManager.i(TAG, "Scale reported no new history records.");
+            }
+            pendingHistoryCount = -1;
+            importedHistory = 0;
+            histBufReset();
+            // keep connection logic to the state machine
+            resumeMachineState();
+            return;
         }
-    }
 
+        // Live frame (13 bytes)
+        if (value.length == 13) {
+            parseLiveFrame(value);
+            return;
+        }
+
+        // Rare: two live frames combined in one notify (2x13)
+        if (value.length == 26) {
+            LogManager.d(TAG, "26-byte payload -> split into 2x13 live frames");
+            parseLiveFrame(Arrays.copyOfRange(value, 0, 13));
+            parseLiveFrame(Arrays.copyOfRange(value, 13, 26));
+            return;
+        }
+
+        // Response to 0x01 FFFF <uniq>: 0x01 <count> FF FF <uniqHi> <uniqLo> (6..7 bytes)
+        if (value.length >= 6 && value[0] == 0x01 && (value[2] == (byte) 0xFF)) {
+            pendingHistoryCount = (value[1] & 0xFF);
+            LogManager.i(TAG, "History count: " + pendingHistoryCount);
+            return;
+        }
+
+        // Assume history data chunk (may be fragmented/concatenated)
+        appendAndParseHistory(value);
+    }
 
     @Override
     protected boolean onNextStep(int stepNr) {
         switch (stepNr) {
-            case 0:
-                // set scale units
-                final ScaleUser selectedUser = getSelectedScaleUser();
-                byte[] setUnitCmd = new byte[]{(byte)0x06, (byte)0x04, (byte)0x00, (byte) selectedUser.getScaleUnit().toInt()};
+            case 0: { // set unit on the scale
+                final ScaleUser u = getSelectedScaleUser();
+                byte[] setUnitCmd = new byte[]{0x06, 0x04, 0x00, (byte) u.getScaleUnit().toInt()};
                 writeBytes(WEIGHT_CUSTOM_SERVICE, WEIGHT_CUSTOM_CONFIG, setUnitCmd);
+                LogManager.d(TAG, "Unit set cmd: " + byteInHex(setUnitCmd));
                 break;
-            case 1:
-                // set current time
-                Calendar currentDateTime = Calendar.getInstance();
-                int year = currentDateTime.get(Calendar.YEAR);
-                byte month = (byte)(currentDateTime.get(Calendar.MONTH)+1);
-                byte day = (byte)currentDateTime.get(Calendar.DAY_OF_MONTH);
-                byte hour = (byte)currentDateTime.get(Calendar.HOUR_OF_DAY);
-                byte min = (byte)currentDateTime.get(Calendar.MINUTE);
-                byte sec = (byte)currentDateTime.get(Calendar.SECOND);
-
-                byte[] dateTimeByte = {(byte)(year), (byte)(year >> 8), month, day, hour, min, sec, 0x03, 0x00, 0x00};
-
-                writeBytes(BluetoothGattUuid.SERVICE_BODY_COMPOSITION, BluetoothGattUuid.CHARACTERISTIC_CURRENT_TIME, dateTimeByte);
+            }
+            case 1: { // set current time
+                Calendar c = Calendar.getInstance();
+                int year = c.get(Calendar.YEAR);
+                byte[] dateTime = new byte[]{
+                        (byte) (year), (byte) (year >> 8),
+                        (byte) (c.get(Calendar.MONTH) + 1),
+                        (byte) c.get(Calendar.DAY_OF_MONTH),
+                        (byte) c.get(Calendar.HOUR_OF_DAY),
+                        (byte) c.get(Calendar.MINUTE),
+                        (byte) c.get(Calendar.SECOND),
+                        0x03, 0x00, 0x00
+                };
+                writeBytes(BluetoothGattUuid.SERVICE_BODY_COMPOSITION, BluetoothGattUuid.CHARACTERISTIC_CURRENT_TIME, dateTime);
+                LogManager.d(TAG, "Current time written");
                 break;
-            case 2:
-                // set notification on for weight measurement history
+            }
+            case 2: { // enable history notifications + magic
                 setNotificationOn(BluetoothGattUuid.SERVICE_BODY_COMPOSITION, WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC);
+                writeBytes(BluetoothGattUuid.SERVICE_BODY_COMPOSITION, WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, ENABLE_HISTORY_MAGIC);
+                LogManager.d(TAG, "History notify ON + magic sent");
                 break;
-            case 3:
-                // configure scale to get only last measurements
-                int uniqueNumber = getUniqueNumber();
-
-                byte[] userIdentifier = new byte[]{(byte)0x01, (byte)0xFF, (byte)0xFF, (byte) ((uniqueNumber & 0xFF00) >> 8), (byte) ((uniqueNumber & 0xFF) >> 0)};
-                writeBytes(BluetoothGattUuid.SERVICE_BODY_COMPOSITION, WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, userIdentifier);
+            }
+            case 3: { // request "only last" measurements (per-user marker)
+                int uniq = getUniqueNumber();
+                byte[] req = new byte[]{0x01, (byte) 0xFF, (byte) 0xFF, (byte) ((uniq >> 8) & 0xFF), (byte) (uniq & 0xFF)};
+                writeBytes(BluetoothGattUuid.SERVICE_BODY_COMPOSITION, WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, req);
+                LogManager.d(TAG, "History count request: " + byteInHex(req));
                 break;
-            case 4:
-                // invoke receiving history data
+            }
+            case 4: { // trigger history transfer
                 writeBytes(BluetoothGattUuid.SERVICE_BODY_COMPOSITION, WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, new byte[]{0x02});
-                stopMachineState();
+                LogManager.d(TAG, "History transfer triggered (0x02)");
+                stopMachineState(); // wait for notifications
                 break;
+            }
             default:
                 return false;
         }
-
         return true;
     }
 
-    private void parseBytes(byte[] data) {
+    // --- Parsing ---
+
+    private void parseLiveFrame(byte[] data) {
+        // ctrl bytes
+        final byte c0 = data[0];
+        final byte c1 = data[1];
+
+        final boolean isLbs        = isBitSet(c0, 0);
+        final boolean isCatty      = isBitSet(c1, 6); // catty/jin
+        final boolean isStabilized = isBitSet(c1, 5);
+        final boolean isRemoved    = isBitSet(c1, 7);
+        final boolean isImpedance  = isBitSet(c1, 1);
+
+        if (!isStabilized || isRemoved) {
+            LogManager.d(TAG, "Live ignored (unstable/removed)");
+            return;
+        }
+
+        final int year   = ((data[3] & 0xFF) << 8) | (data[4] & 0xFF);
+        final int month  = (data[5] & 0xFF);
+        final int day    = (data[6] & 0xFF);
+        final int hour   = (data[7] & 0xFF);
+        final int minute = (data[8] & 0xFF);
+
+        int weightRaw = ((data[12] & 0xFF) << 8) | (data[11] & 0xFF);
+        float weight  = (isLbs || isCatty) ? (weightRaw / 100.0f) : (weightRaw / 200.0f);
+
+        float impedance = 0.0f;
+        if (isImpedance) {
+            impedance = ((data[10] & 0xFF) << 8) | (data[9] & 0xFF);
+            LogManager.d(TAG, "Impedance: " + impedance + " Ω");
+        }
+
         try {
-            final byte ctrlByte0 = data[0];
-            final byte ctrlByte1 = data[1];
+            Date dt = new SimpleDateFormat("yyyy/MM/dd/HH/mm")
+                    .parse(year + "/" + month + "/" + day + "/" + hour + "/" + minute);
 
-            final boolean isWeightRemoved = isBitSet(ctrlByte1, 7);
-            final boolean isStabilized = isBitSet(ctrlByte1, 5);
-            final boolean isLBSUnit = isBitSet(ctrlByte0, 0);
-            final boolean isCattyUnit = isBitSet(ctrlByte1, 6);
-            final boolean isImpedance = isBitSet(ctrlByte1, 1);
-
-            if (isStabilized && !isWeightRemoved) {
-
-                final int year = ((data[3] & 0xFF) << 8) | (data[2] & 0xFF);
-                final int month = (int) data[4];
-                final int day = (int) data[5];
-                final int hours = (int) data[6];
-                final int min = (int) data[7];
-                final int sec = (int) data[8];
-
-                float weight;
-                float impedance = 0.0f;
-
-                if (isLBSUnit || isCattyUnit) {
-                    weight = (float) (((data[12] & 0xFF) << 8) | (data[11] & 0xFF)) / 100.0f;
-                } else {
-                    weight = (float) (((data[12] & 0xFF) << 8) | (data[11] & 0xFF)) / 200.0f;
-                }
-
-                if (isImpedance) {
-                    impedance = ((data[10] & 0xFF) << 8) | (data[9] & 0xFF);
-                    LogManager.d(TAG, "impedance value is " + impedance);
-                }
-
-                String date_string = year + "/" + month + "/" + day + "/" + hours + "/" + min;
-                Date date_time = new SimpleDateFormat("yyyy/MM/dd/HH/mm").parse(date_string);
-
-                // Is the year plausible? Check if the year is in the range of 20 years...
-                if (validateDate(date_time, 20)) {
-                    final ScaleUser scaleUser = getSelectedScaleUser();
-                    ScaleMeasurement scaleBtData = new ScaleMeasurement();
-
-                    scaleBtData.setWeight(Converters.toKilogram(weight, scaleUser.getScaleUnit()));
-                    scaleBtData.setDateTime(date_time);
-
-                    int sex;
-
-                    if (scaleUser.getGender() == GenderType.MALE) {
-                        sex = 1;
-                    } else {
-                        sex = 0;
-                    }
-
-                    if (impedance != 0.0f) {
-                        MiScaleLib miScaleLib = new MiScaleLib(sex, scaleUser.getAge(), scaleUser.getBodyHeight());
-
-                        scaleBtData.setWater(miScaleLib.getWater(weight, impedance));
-                        scaleBtData.setVisceralFat(miScaleLib.getVisceralFat(weight));
-                        scaleBtData.setFat(miScaleLib.getBodyFat(weight, impedance));
-                        scaleBtData.setMuscle((100.0f / weight) * miScaleLib.getMuscle(weight, impedance)); // convert muscle in kg to percent
-                        scaleBtData.setLbm(miScaleLib.getLBM(weight, impedance));
-                        scaleBtData.setBone(miScaleLib.getBoneMass(weight, impedance));
-                    } else {
-                        LogManager.d(TAG, "Impedance value is zero");
-                    }
-
-                    addScaleMeasurement(scaleBtData);
-                } else {
-                    LogManager.e(TAG,String.format("Invalid Mi scale weight year %d", year), null);
-                }
+            if (!validateDate(dt, 20)) {
+                LogManager.w(TAG, "Live date out of range: " + dt, null);
+                return;
             }
+
+            final ScaleUser user = getSelectedScaleUser();
+            ScaleMeasurement m = new ScaleMeasurement();
+            m.setWeight(Converters.toKilogram(weight, user.getScaleUnit()));
+            m.setDateTime(dt);
+
+            if (impedance > 0.0f) {
+                int sex = (user.getGender() == GenderType.MALE) ? 1 : 0;
+                MiScaleLib lib = new MiScaleLib(sex, user.getAge(), user.getBodyHeight());
+                m.setWater(lib.getWater(weight, impedance));
+                m.setVisceralFat(lib.getVisceralFat(weight));
+                m.setFat(lib.getBodyFat(weight, impedance));
+                m.setMuscle(lib.getMuscle(weight, impedance)); // expects % from MiScaleLib
+                m.setLbm(lib.getLBM(weight, impedance));
+                m.setBone(lib.getBoneMass(weight, impedance));
+            }
+
+            addScaleMeasurement(m);
+            LogManager.i(TAG, "Live saved @ " + dt + " kg=" + m.getWeight());
         } catch (ParseException e) {
-            setBluetoothStatus(UNEXPECTED_ERROR, "Error while decoding bluetooth date string (" + e.getMessage() + ")");
+            setBluetoothStatus(UNEXPECTED_ERROR, "Live date parse error (" + e.getMessage() + ")");
         }
     }
 
-    private boolean validateDate(Date weightDate, int range) {
+    // History record (10 bytes): [status][weightLE(2)][yearLE(2)][mon][day][h][m][s]
+    private boolean parseHistoryRecord10(byte[] data) {
+        if (data.length != 10) return false;
 
-        Calendar currentDatePos = Calendar.getInstance();
-        currentDatePos.add(Calendar.YEAR, range);
+        final byte status = data[0];
+        final boolean isLbs   = (status & 0x01) != 0;
+        final boolean isCatty = (status & 0x10) != 0;
+        final boolean isStab  = (status & 0x20) != 0;
+        final boolean isRem   = (status & 0x80) != 0;
 
-        Calendar currentDateNeg = Calendar.getInstance();
-        currentDateNeg.add(Calendar.YEAR, -range);
-
-        if (weightDate.before(currentDatePos.getTime()) && weightDate.after(currentDateNeg.getTime())) {
-            return true;
+        // detect "unexpected" bits in history status (there is no impedance in 10B format)
+        // bit1 and bit2 are unspecified in most reverse-engineering notes; warn once if we see them.
+        if (!historyUnexpectedFlagWarned) {
+            boolean bit1 = (status & 0x02) != 0; // unknown
+            boolean bit2 = (status & 0x04) != 0; // "partial data" in some docs
+            if (bit1 || bit2) {
+                LogManager.w(TAG, "History status has unexpected flag(s): "
+                        + (bit1 ? "bit1 " : "") + (bit2 ? "bit2 " : "")
+                        + "— ignoring (history carries no impedance)", null);
+                historyUnexpectedFlagWarned = true;
+            }
         }
 
-        return false;
+        if (!isStab || isRem) return false;
+
+        int weightRaw = ((data[2] & 0xFF) << 8) | (data[1] & 0xFF);
+        float weight  = (isLbs || isCatty) ? (weightRaw / 100.0f) : (weightRaw / 200.0f);
+
+        int year   = ((data[4] & 0xFF) << 8) | (data[3] & 0xFF);
+        int month  = data[5] & 0xFF;
+        int day    = data[6] & 0xFF;
+        int hour   = data[7] & 0xFF;
+        int minute = data[8] & 0xFF;
+        // int second = data[9] & 0xFF;
+
+        try {
+            Date dt = new SimpleDateFormat("yyyy/MM/dd/HH/mm")
+                    .parse(year + "/" + month + "/" + day + "/" + hour + "/" + minute);
+
+            if (!validateDate(dt, 20)) {
+                LogManager.w(TAG, "History date out of range: " + dt, null);
+                return false;
+            }
+
+            final ScaleUser user = getSelectedScaleUser();
+            ScaleMeasurement m = new ScaleMeasurement();
+            m.setWeight(Converters.toKilogram(weight, user.getScaleUnit()));
+            m.setDateTime(dt);
+            // No impedance expected in history; BIA fields left empty.
+
+            addScaleMeasurement(m);
+            return true;
+        } catch (ParseException e) {
+            setBluetoothStatus(UNEXPECTED_ERROR, "History date parse error (" + e.getMessage() + ")");
+            return false;
+        }
+    }
+
+    private void appendAndParseHistory(byte[] chunk) {
+        try {
+            histBuf.write(chunk, 0, chunk.length);
+            byte[] buf = histBuf.toByteArray();
+
+            int full = (buf.length / 10) * 10;
+            if (full >= 10) {
+                int ok = 0;
+                for (int off = 0; off < full; off += 10) {
+                    if (parseHistoryRecord10(Arrays.copyOfRange(buf, off, off + 10))) ok++;
+                }
+                if (ok > 0) {
+                    importedHistory += ok;
+                    LogManager.d(TAG, "History parsed: " + ok + " record(s) from " + full + " bytes");
+                }
+                // keep remainder
+                histBufReset();
+                if (buf.length > full) {
+                    histBuf.write(buf, full, buf.length - full);
+                }
+            }
+        } catch (Exception e) {
+            LogManager.e(TAG, "History buffer append failed: " + e.getMessage(), e);
+            histBufReset();
+        }
+    }
+
+    private void flushHistoryBuffer() {
+        byte[] leftover = histBuf.toByteArray();
+        if (leftover.length >= 10 && leftover.length % 10 == 0) {
+            int ok = 0;
+            for (int off = 0; off < leftover.length; off += 10) {
+                if (parseHistoryRecord10(Arrays.copyOfRange(leftover, off, off + 10))) ok++;
+            }
+            if (ok > 0) {
+                importedHistory += ok;
+                LogManager.d(TAG, "History flush parsed: " + ok + " record(s)");
+            }
+        }
+        histBufReset();
+    }
+
+    private void histBufReset() {
+        try { histBuf.reset(); } catch (Exception ignored) {}
+    }
+
+    // --- Utils ---
+
+    private boolean validateDate(Date weightDate, int rangeYears) {
+        Calendar max = Calendar.getInstance(); max.add(Calendar.YEAR, rangeYears);
+        Calendar min = Calendar.getInstance(); min.add(Calendar.YEAR, -rangeYears);
+        return weightDate.before(max.getTime()) && weightDate.after(min.getTime());
     }
 
     private int getUniqueNumber() {
-        int uniqueNumber;
-
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-
-        uniqueNumber = prefs.getInt("uniqueNumber", 0x00);
-
-        if (uniqueNumber == 0x00) {
-            Random r = new Random();
-            uniqueNumber = r.nextInt(65535 - 100 + 1) + 100;
-
-            prefs.edit().putInt("uniqueNumber", uniqueNumber).apply();
+        int n = prefs.getInt("uniqueNumber", 0x00);
+        if (n == 0x00) {
+            n = new Random().nextInt(65535 - 100 + 1) + 100;
+            prefs.edit().putInt("uniqueNumber", n).apply();
         }
-
         int userId = getSelectedScaleUser().getId();
-
-        return uniqueNumber + userId;
+        return n + userId;
     }
 }
