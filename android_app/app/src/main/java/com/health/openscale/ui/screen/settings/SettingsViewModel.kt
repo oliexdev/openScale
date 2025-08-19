@@ -978,75 +978,106 @@ class SettingsViewModel(
                     return@launch
                 }
 
-                // Close the database before attempting to overwrite files
                 LogManager.d(TAG, "Attempting to close database before restore.")
-                repository.closeDatabase() // Ensure this method exists and correctly closes Room
+                repository.closeDatabase()
                 LogManager.i(TAG, "Database closed for restore operation.")
 
                 withContext(Dispatchers.IO) {
+                    // Detect format by checking ZIP magic header
+                    val isZip = contentResolver.openInputStream(restoreUri)?.use { ins ->
+                        val header = ByteArray(4)
+                        val read = ins.read(header)
+                        read == 4 &&
+                                header[0].toInt() == 0x50 &&
+                                header[1].toInt() == 0x4B &&
+                                header[2].toInt() == 0x03 &&
+                                header[3].toInt() == 0x04
+                    } ?: false
+
                     var restoreSuccessful = false
-                    var mainDbRestored = false
+
+                    fun deleteIfExists(file: File) {
+                        if (file.exists() && !file.delete()) {
+                            LogManager.w(TAG, "Could not delete ${file.absolutePath} before restore.")
+                        }
+                    }
+
+                    val shm = File(dbDir, "$dbName-shm")
+                    val wal = File(dbDir, "$dbName-wal")
+
                     try {
-                        contentResolver.openInputStream(restoreUri)?.use { inputStream ->
-                            ZipInputStream(inputStream).use { zipInputStream ->
-                                var entry: ZipEntry? = zipInputStream.nextEntry
-                                while (entry != null) {
-                                    val outputFile = File(dbDir, entry.name)
-                                    // Basic path traversal protection
-                                    if (!outputFile.canonicalPath.startsWith(dbDir.canonicalPath)) {
-                                        LogManager.e(TAG, "Skipping restore of entry '${entry.name}' due to path traversal attempt.")
-                                        entry = zipInputStream.nextEntry
-                                        continue
-                                    }
+                        if (isZip) {
+                            // --- New format: ZIP archive ---
+                            LogManager.i(TAG, "Detected ZIP backup format.")
+                            contentResolver.openInputStream(restoreUri)?.use { inputStream ->
+                                ZipInputStream(inputStream).use { zipInputStream ->
+                                    deleteIfExists(dbFile)
+                                    deleteIfExists(shm)
+                                    deleteIfExists(wal)
 
-                                    // Delete existing file before restoring (important for WAL mode)
-                                    if (outputFile.exists()) {
-                                        if (!outputFile.delete()) {
-                                            LogManager.w(TAG, "Could not delete existing file ${outputFile.name} before restore. Restore might fail or be incomplete.")
+                                    var entry: ZipEntry? = zipInputStream.nextEntry
+                                    var mainDbRestored = false
+                                    while (entry != null) {
+                                        val out = File(dbDir, entry.name)
+                                        if (!out.canonicalPath.startsWith(dbDir.canonicalPath)) {
+                                            LogManager.e(TAG, "Skipping '${entry.name}' due to path traversal.")
+                                            entry = zipInputStream.nextEntry
+                                            continue
                                         }
+                                        deleteIfExists(out)
+                                        FileOutputStream(out).use { zipInputStream.copyTo(it) }
+                                        LogManager.d(TAG, "Restored ${entry.name} to ${out.absolutePath}")
+                                        if (entry.name == dbName) mainDbRestored = true
+                                        entry = zipInputStream.nextEntry
                                     }
-
-                                    FileOutputStream(outputFile).use { fileOutputStream ->
-                                        zipInputStream.copyTo(fileOutputStream)
+                                    if (!mainDbRestored) {
+                                        LogManager.e(TAG, "Main DB file '$dbName' missing in ZIP.")
+                                        sharedViewModel.showSnackbar(R.string.restore_error_db_files_missing)
+                                        return@withContext
                                     }
-                                    LogManager.d(TAG, "Restored ${entry.name} from backup archive to ${outputFile.absolutePath}.")
-                                    if (entry.name == dbName) {
-                                        mainDbRestored = true
-                                    }
-                                    entry = zipInputStream.nextEntry
                                 }
+                            } ?: run {
+                                sharedViewModel.showSnackbar(R.string.restore_error_no_input_stream)
+                                LogManager.e(TAG, "Restore failed: Could not open InputStream for Uri: $restoreUri")
+                                return@withContext
                             }
-                        } ?: run {
-                            sharedViewModel.showSnackbar(R.string.restore_error_no_input_stream)
-                            LogManager.e(TAG, "Restore failed: Could not open InputStream for Uri: $restoreUri")
-                            return@withContext
-                        }
+                            restoreSuccessful = true
+                        } else {
+                            // --- Legacy format: single .db file ---
+                            LogManager.i(TAG, "Detected legacy backup format (.db).")
+                            contentResolver.openInputStream(restoreUri)?.use { inputStream ->
+                                deleteIfExists(dbFile)
+                                deleteIfExists(shm)
+                                deleteIfExists(wal)
 
-                        if (!mainDbRestored) {
-                            LogManager.e(TAG, "Restore failed: Main database file '$dbName' not found in the backup archive.")
-                            sharedViewModel.showSnackbar(R.string.restore_error_db_files_missing)
-                            // Attempt to clean up partially restored files might be needed here, or let the user handle it.
-                            return@withContext
+                                val tmp = File(dbDir, "$dbName.tmp-restore")
+                                FileOutputStream(tmp).use { output -> inputStream.copyTo(output) }
+                                if (!tmp.renameTo(dbFile)) {
+                                    LogManager.w(TAG, "Rename temp restore file failed, using copy as final.")
+                                }
+                                LogManager.d(TAG, "Restored legacy DB file to ${dbFile.absolutePath}")
+                            } ?: run {
+                                sharedViewModel.showSnackbar(R.string.restore_error_no_input_stream)
+                                LogManager.e(TAG, "Restore failed: Could not open InputStream for Uri: $restoreUri")
+                                return@withContext
+                            }
+                            restoreSuccessful = true
                         }
-                        restoreSuccessful = true
-
                     } catch (e: IOException) {
-                        LogManager.e(TAG, "IO Error during database restore from URI $restoreUri", e)
-                        val errorMsg = e.localizedMessage ?: "Unknown I/O error"
-                        sharedViewModel.showSnackbar(R.string.restore_error_generic, listOf(errorMsg))
+                        LogManager.e(TAG, "IO Error during restore from URI $restoreUri", e)
+                        val msg = e.localizedMessage ?: "Unknown I/O error"
+                        sharedViewModel.showSnackbar(R.string.restore_error_generic, listOf(msg))
                         return@withContext
-                    } catch (e: IllegalStateException) { // Can be thrown by ZipInputStream
-                        LogManager.e(TAG, "Error processing ZIP file during restore from URI $restoreUri", e)
+                    } catch (e: IllegalStateException) {
+                        // ZIP stream error (not a valid archive)
+                        LogManager.e(TAG, "ZIP processing error during restore.", e)
                         sharedViewModel.showSnackbar(R.string.restore_error_zip_format)
                         return@withContext
                     }
 
-
                     if (restoreSuccessful) {
-                        LogManager.i(TAG, "Database restore from $restoreUri successful. App restart is required.")
+                        LogManager.i(TAG, "Database restore successful. App restart recommended.")
                         sharedViewModel.showSnackbar(R.string.restore_successful)
-                        // The app needs to be restarted for Room to pick up the new database files correctly.
-                        // This usually involves sharedViewModel.requestAppRestart() or similar mechanism.
                     }
                 }
             } catch (e: Exception) {
@@ -1054,23 +1085,6 @@ class SettingsViewModel(
                 val errorMsg = e.localizedMessage ?: "Unknown error"
                 sharedViewModel.showSnackbar(R.string.restore_error_generic, listOf(errorMsg))
             } finally {
-                // Re-open the database regardless of success, unless app is restarting
-                // If an app restart is requested, reopening might not be necessary or could cause issues.
-                // However, if the restore failed and no restart is pending, the DB should be reopened.
-                if (!_isLoadingRestore.value) { // Check if not already restarting
-                    try {
-                        LogManager.d(TAG, "Attempting to re-open database after restore attempt.")
-                        // This might require re-initialization of the Room database instance
-                        // if the underlying files were changed.
-                        // For simplicity, we assume the repository handles this.
-                        // A full app restart is generally the safest way after a DB restore.
-                        // TODO repository.reopenDatabase() // Ensure this method exists and correctly re-opens Room
-                        LogManager.i(TAG, "Database re-opened after restore attempt.")
-                    } catch (reopenError: Exception) {
-                        LogManager.e(TAG, "Error re-opening database after restore attempt. App restart is highly recommended.", reopenError)
-                        sharedViewModel.showSnackbar(R.string.restore_error_generic, listOf("Error re-opening database."))
-                    }
-                }
                 _isLoadingRestore.value = false
                 LogManager.i(TAG, "Database restore process finished for URI: $restoreUri.")
             }

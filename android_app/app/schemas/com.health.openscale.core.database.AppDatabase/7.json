@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 7,
-    "identityHash": "3eb1fa6c355e18713262b7da7d1ffbdd",
+    "identityHash": "6ae361e9bd8dbaaa952bdfdb45272187",
     "entities": [
       {
         "tableName": "User",
@@ -281,12 +281,23 @@
           "columnNames": [
             "id"
           ]
-        }
+        },
+        "indices": [
+          {
+            "name": "index_MeasurementType_key",
+            "unique": true,
+            "columnNames": [
+              "key"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_MeasurementType_key` ON `${TABLE_NAME}` (`key`)"
+          }
+        ]
       }
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '3eb1fa6c355e18713262b7da7d1ffbdd')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '6ae361e9bd8dbaaa952bdfdb45272187')"
     ]
   }
 }

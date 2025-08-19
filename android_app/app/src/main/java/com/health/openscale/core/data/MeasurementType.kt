@@ -20,9 +20,12 @@ package com.health.openscale.core.data
 import android.content.Context
 import androidx.room.Entity
 import androidx.room.Ignore
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity
+@Entity(
+    indices = [Index(value = ["key"], unique = true)]
+)
 data class MeasurementType(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val key: MeasurementTypeKey = MeasurementTypeKey.CUSTOM,

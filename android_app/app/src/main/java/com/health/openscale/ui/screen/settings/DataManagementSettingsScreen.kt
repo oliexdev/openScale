@@ -319,7 +319,7 @@ fun DataManagementSettingsScreen(
         buildList {
             add(DataManagementSettingListItem.ActionItem(context.getString(R.string.settings_export_measurements_csv), Icons.Default.FileDownload, { if (!isAnyOperationLoading) settingsViewModel.startExportProcess() }, users.isNotEmpty() && !isAnyOperationLoading, isLoading = isLoadingExport))
             add(DataManagementSettingListItem.ActionItem(context.getString(R.string.settings_import_measurements_csv), Icons.Default.FileUpload, { if (!isAnyOperationLoading) settingsViewModel.startImportProcess() }, users.isNotEmpty() && !isAnyOperationLoading, isLoading = isLoadingImport))
-            add(DataManagementSettingListItem.ActionItem(context.getString(R.string.settings_backup_database_manual), Icons.Default.CloudDownload, { if (!isAnyOperationLoading) settingsViewModel.startDatabaseBackup() }, !isAnyOperationLoading, isLoading = isLoadingBackup))
+            add(DataManagementSettingListItem.ActionItem(context.getString(R.string.settings_backup_database), Icons.Default.CloudDownload, { if (!isAnyOperationLoading) settingsViewModel.startDatabaseBackup() }, !isAnyOperationLoading, isLoading = isLoadingBackup))
             add(DataManagementSettingListItem.ActionItem(context.getString(R.string.settings_restore_database), Icons.Filled.CloudUpload, { if (!isAnyOperationLoading) showRestoreConfirmationDialog = true }, !isAnyOperationLoading, isLoading = isLoadingRestore))
         }
     }

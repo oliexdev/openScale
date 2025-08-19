@@ -355,7 +355,6 @@
     <string name="settings_backup_location_not_configured">Sicherungsort nicht konfiguriert</string>
     <string name="settings_backup_location_not_configured_for_auto">Ort nicht konfiguriert. Automatische Sicherungen pausiert.</string>
     <string name="settings_backup_location_error_accessing">Fehler beim Zugriff auf Sicherungsort</string>
-    <string name="settings_backup_database_manual">Datenbank sichern (Manuell)</string>
     <string name="content_desc_delete_icon">Löschen-Symbol</string>
     <string name="dialog_title_select_backup_directory">Sicherungsverzeichnis auswählen</string>
     <string name="settings_backup_location_select_action">Sicherungsort auswählen</string>

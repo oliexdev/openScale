@@ -768,11 +768,27 @@ class SharedViewModel(
                     userSettingRepository.setCurrentUserId(null)
                 }
             } else {
-                LogManager.i(TAG, "Init: No user ID found in settings. No user auto-selected. (Initialization Logic)")
+                LogManager.i(TAG, "Init: No user ID found in settings. Attempting auto-selection. (Initialization Logic)")
+
+                // --- Auto-selection logic if no user ID was saved ---
+                val users = databaseRepository.getAllUsers().first()
+
+                if (users.isNotEmpty()) {
+                    // Case A: user exists -> select automatically
+                    val only = users.first()
+                    _selectedUserId.value = only.id
+                    userSettingRepository.setCurrentUserId(only.id)
+                    LogManager.i(TAG, "Init: Auto-selected only user ${only.id}. (Initialization Result)")
+                } else {
+                    // Case B: No users at all -> leave selection empty
+                    LogManager.i(TAG, "Init: No users found in DB. Leaving selection null. (Initialization Logic)")
+                }
             }
         }
+
         LogManager.i(TAG, "ViewModel initialization complete. (Lifecycle Event)")
     }
+
 
     private fun triggerSyncInsertMeasurement(
         measurementToSave: Measurement,
