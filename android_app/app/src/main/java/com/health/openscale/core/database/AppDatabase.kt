@@ -29,6 +29,7 @@ import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.data.User
 import com.health.openscale.core.utils.LogManager
+import com.health.openscale.getDefaultMeasurementTypes
 
 /**
  * Main Room database for the application.
@@ -179,56 +180,34 @@ val MIGRATION_6_7 = object : Migration(6, 7) {
         db.execSQL("CREATE INDEX IF NOT EXISTS `index_MeasurementValue_typeId` ON `MeasurementValue` (`typeId`)")
 
         // --- Create measurement type idempotent (INSERT OR IGNORE, used UNIQUE-Index) ---
-        fun ensureType(
-            key: String,
-            unit: String,
-            color: Int,
-            icon: String,
-            inputType: String = "FLOAT",
-            displayOrder: Int,
-            isDerived: Int = 0,
-            isEnabled: Int = 1,
-            isPinned: Int = 0,
-            isOnRightYAxis: Int = 0
-        ) {
+        fun ensureType(db: SupportSQLiteDatabase, type: MeasurementType, displayOrder: Int) {
             db.execSQL(
                 """
-                INSERT OR IGNORE INTO MeasurementType
-                    (`key`,`name`,`color`,`icon`,`unit`,`inputType`,`displayOrder`,
-                     `isDerived`,`isEnabled`,`isPinned`,`isOnRightYAxis`)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?)
-                """.trimIndent(),
-                arrayOf(key, null, color, icon, unit, inputType, displayOrder, isDerived, isEnabled, isPinned, isOnRightYAxis)
+                    INSERT OR IGNORE INTO MeasurementType
+                        (`key`,`name`,`color`,`icon`,`unit`,`inputType`,`displayOrder`,
+                         `isDerived`,`isEnabled`,`isPinned`,`isOnRightYAxis`)
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?)
+                    """.trimIndent(),
+                arrayOf<Any?>(
+                    type.key.name,
+                    null,
+                    type.color,
+                    type.icon.name,
+                    type.unit.name,
+                    type.inputType.name,
+                    displayOrder,
+                    if (type.isDerived) 1 else 0,
+                    if (type.isEnabled) 1 else 0,
+                    if (type.isPinned) 1 else 0,
+                    if (type.isOnRightYAxis) 1 else 0
+                )
             )
         }
 
         var order = 1
-        ensureType("WEIGHT",   "KG",      0xFF7E57C2.toInt(), "IC_WEIGHT",       displayOrder = order++, isPinned = 1, isOnRightYAxis = 1)
-        ensureType("BMI",      "NONE",    0xFFFFCA28.toInt(), "IC_BMI",          displayOrder = order++, isDerived = 1, isPinned = 1)
-        ensureType("BODY_FAT", "PERCENT", 0xFFEF5350.toInt(), "IC_BODY_FAT",     displayOrder = order++, isPinned = 1)
-        ensureType("WATER",    "PERCENT", 0xFF29B6F6.toInt(), "IC_WATER",        displayOrder = order++, isPinned = 1)
-        ensureType("MUSCLE",   "PERCENT", 0xFF66BB6A.toInt(), "IC_MUSCLE",       displayOrder = order++, isPinned = 1)
-        ensureType("LBM",      "KG",      0xFF4DBAC0.toInt(), "IC_LBM",          displayOrder = order++)
-        ensureType("BONE",     "KG",      0xFFBDBDBD.toInt(), "IC_BONE",         displayOrder = order++)
-        ensureType("WAIST",    "CM",      0xFF78909C.toInt(), "IC_WAIST",        displayOrder = order++)
-        ensureType("WHR",      "NONE",    0xFFFFA726.toInt(), "IC_WHR",          displayOrder = order++, isDerived = 1)
-        ensureType("WHTR",     "NONE",    0xFFFF7043.toInt(), "IC_WHTR",         displayOrder = order++, isDerived = 1)
-        ensureType("HIPS",     "CM",      0xFF5C6BC0.toInt(), "IC_HIPS",         displayOrder = order++)
-        ensureType("VISCERAL_FAT","NONE", 0xFFD84315.toInt(), "IC_VISCERAL_FAT", displayOrder = order++)
-        ensureType("CHEST",    "CM",      0xFF8E24AA.toInt(), "IC_CHEST",        displayOrder = order++)
-        ensureType("THIGH",    "CM",      0xFFA1887F.toInt(), "IC_THIGH",        displayOrder = order++)
-        ensureType("BICEPS",   "CM",      0xFFEC407A.toInt(), "IC_BICEPS",       displayOrder = order++)
-        ensureType("NECK",     "CM",      0xFFB0BEC5.toInt(), "IC_NECK",         displayOrder = order++)
-        ensureType("CALIPER_1","CM",      0xFFFFF59D.toInt(), "IC_CALIPER1",     displayOrder = order++)
-        ensureType("CALIPER_2","CM",      0xFFFFE082.toInt(), "IC_CALIPER2",     displayOrder = order++)
-        ensureType("CALIPER_3","CM",      0xFFFFCC80.toInt(), "IC_CALIPER3",     displayOrder = order++)
-        ensureType("CALIPER",  "PERCENT", 0xFFFB8C00.toInt(), "IC_FAT_CALIPER",  displayOrder = order++, isDerived = 1)
-        ensureType("BMR",      "KCAL",    0xFFAB47BC.toInt(), "IC_BMR",          displayOrder = order++, isDerived = 1)
-        ensureType("TDEE",     "KCAL",    0xFF26A69A.toInt(), "IC_TDEE",         displayOrder = order++, isDerived = 1)
-        ensureType("CALORIES", "KCAL",    0xFF4CAF50.toInt(), "IC_CALORIES",     displayOrder = order++)
-        ensureType("COMMENT",  "NONE",    0xFFE0E0E0.toInt(), "IC_COMMENT",      inputType = "TEXT", displayOrder = order++, isPinned = 1)
-        ensureType("DATE",     "NONE",    0xFF9E9E9E.toInt(), "IC_DATE",         inputType = "DATE", displayOrder = order++)
-        ensureType("TIME",     "NONE",    0xFF757575.toInt(), "IC_TIME",         inputType = "TIME", displayOrder = order++)
+        for (type in getDefaultMeasurementTypes()) {
+            ensureType(db, type, order++)
+        }
 
         // --- Migrate users ---
         db.execSQL("""
