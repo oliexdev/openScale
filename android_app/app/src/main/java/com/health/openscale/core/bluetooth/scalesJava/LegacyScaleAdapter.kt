@@ -32,6 +32,8 @@ import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.database.DatabaseRepository
+import com.health.openscale.core.database.UserSettingsRepository
+import com.health.openscale.core.database.provideUserSettingsRepository
 import com.health.openscale.core.utils.LogManager
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
@@ -50,6 +52,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 import java.util.Date
+import kotlin.random.Random
 import kotlin.text.find
 import kotlin.text.toDouble
 
@@ -125,6 +128,18 @@ class LegacyScaleAdapter(
 
             LogManager.i(TAG, "Successfully provided ${userListFromDb.size} users to legacy driver ${bluetoothDriverInstance.driverName()}.")
 
+            val userSettingsRepository = provideUserSettingsRepository(applicationContext)
+            val keyName = "unique_number_base"
+            var base: Int = userSettingsRepository.observeSetting(keyName, 0).first()
+            if (base == 0) {
+                base = Random.nextInt(100, 65535)
+                userSettingsRepository.saveSetting(keyName, base)
+                LogManager.i(TAG, "Generated and saved unique_number_base=$base in DataStore")
+            } else {
+                LogManager.d(TAG, "Loaded unique_number_base=$base from DataStore")
+            }
+
+            bluetoothDriverInstance.setUniqueNumber(base)
             this.currentInternalUser?.let { userId ->
                 if (userId.id != -1) {
                 LogManager.d(TAG, "Attempting to load last measurement for user ID: $userId using existing repository methods.")

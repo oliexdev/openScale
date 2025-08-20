@@ -169,23 +169,4 @@ public class BluetoothYunmaiSE_Mini extends BluetoothCommunication {
 
         addScaleMeasurement(scaleBtData);
     }
-
-    private int getUniqueNumber() {
-        int uniqueNumber;
-
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-
-        uniqueNumber = prefs.getInt("uniqueNumber", 0x00);
-
-        if (uniqueNumber == 0x00) {
-            Random r = new Random();
-            uniqueNumber = r.nextInt(65535 - 100 + 1) + 100;
-
-            prefs.edit().putInt("uniqueNumber", uniqueNumber).apply();
-        }
-
-        int userId = getSelectedScaleUser().getId();
-
-        return uniqueNumber + userId;
-    }
 }

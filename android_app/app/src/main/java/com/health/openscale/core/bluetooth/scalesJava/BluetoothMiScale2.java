@@ -49,6 +49,8 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
     private int pendingHistoryCount = -1;
     private int importedHistory = 0;
 
+    private boolean historyMode = false;
+
     // warn only once per session if we see "unexpected" flags in history status byte
     private boolean historyUnexpectedFlagWarned = false;
 
@@ -65,6 +67,8 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
 
         // STOP (end of history transfer)
         if (value.length == 1 && value[0] == 0x03) {
+            historyMode = false;
+
             // Check for truncated leftover BEFORE flush (for debug visibility)
             int leftoverLen = histBuf.size();
             if (leftoverLen % 10 != 0) {
@@ -95,15 +99,27 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
 
         // Live frame (13 bytes)
         if (value.length == 13) {
-            parseLiveFrame(value);
-            return;
+            if (historyMode) {
+                if (parseLiveFrame(value)) {
+                    importedHistory++;
+                    LogManager.d(TAG, "History (13B) parsed");
+                }
+                return;
+            } else {
+                parseLiveFrame(value);
+                return;
+            }
         }
 
         // Rare: two live frames combined in one notify (2x13)
         if (value.length == 26) {
             LogManager.d(TAG, "26-byte payload -> split into 2x13 live frames");
-            parseLiveFrame(Arrays.copyOfRange(value, 0, 13));
-            parseLiveFrame(Arrays.copyOfRange(value, 13, 26));
+            boolean s1 = parseLiveFrame(Arrays.copyOfRange(value, 0, 13));
+            boolean s2 = parseLiveFrame(Arrays.copyOfRange(value, 13, 26));
+            if (historyMode) {
+                int inc = (s1 ? 1 : 0) + (s2 ? 1 : 0);
+                if (inc > 0) importedHistory += inc;
+            }
             return;
         }
 
@@ -160,6 +176,7 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
             case 4: { // trigger history transfer
                 writeBytes(BluetoothGattUuid.SERVICE_BODY_COMPOSITION, WEIGHT_MEASUREMENT_HISTORY_CHARACTERISTIC, new byte[]{0x02});
                 LogManager.d(TAG, "History transfer triggered (0x02)");
+                historyMode = true;
                 stopMachineState(); // wait for notifications
                 break;
             }
@@ -171,27 +188,22 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
 
     // --- Parsing ---
 
-    private void parseLiveFrame(byte[] data) {
-        // ctrl bytes
-        final byte c0 = data[0];
-        final byte c1 = data[1];
-
-        final boolean isLbs        = isBitSet(c0, 0);
-        final boolean isCatty      = isBitSet(c1, 6); // catty/jin
-        final boolean isStabilized = isBitSet(c1, 5);
-        final boolean isRemoved    = isBitSet(c1, 7);
-        final boolean isImpedance  = isBitSet(c1, 1);
+    private boolean parseLiveFrame(byte[] data) {
+        final byte c0 = data[0], c1 = data[1];
+        final boolean isLbs = isBitSet(c0,0), isCatty = isBitSet(c1,6),
+                isStabilized = isBitSet(c1,5), isRemoved = isBitSet(c1,7),
+                isImpedance = isBitSet(c1,1);
 
         if (!isStabilized || isRemoved) {
             LogManager.d(TAG, "Live ignored (unstable/removed)");
-            return;
+            return false;
         }
 
-        final int year   = ((data[3] & 0xFF) << 8) | (data[4] & 0xFF);
-        final int month  = (data[5] & 0xFF);
-        final int day    = (data[6] & 0xFF);
-        final int hour   = (data[7] & 0xFF);
-        final int minute = (data[8] & 0xFF);
+        final int year   = ((data[3] & 0xFF) << 8) | (data[2] & 0xFF);
+        final int month  = (data[4] & 0xFF);
+        final int day    = (data[5] & 0xFF);
+        final int hour   = (data[6] & 0xFF);
+        final int minute = (data[7] & 0xFF);
 
         int weightRaw = ((data[12] & 0xFF) << 8) | (data[11] & 0xFF);
         float weight  = (isLbs || isCatty) ? (weightRaw / 100.0f) : (weightRaw / 200.0f);
@@ -199,7 +211,7 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
         float impedance = 0.0f;
         if (isImpedance) {
             impedance = ((data[10] & 0xFF) << 8) | (data[9] & 0xFF);
-            LogManager.d(TAG, "Impedance: " + impedance + " Ω");
+            LogManager.d(TAG, "Impedance: " + impedance + " Ohm");
         }
 
         try {
@@ -208,7 +220,7 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
 
             if (!validateDate(dt, 20)) {
                 LogManager.w(TAG, "Live date out of range: " + dt, null);
-                return;
+                return false;
             }
 
             final ScaleUser user = getSelectedScaleUser();
@@ -222,15 +234,17 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
                 m.setWater(lib.getWater(weight, impedance));
                 m.setVisceralFat(lib.getVisceralFat(weight));
                 m.setFat(lib.getBodyFat(weight, impedance));
-                m.setMuscle(lib.getMuscle(weight, impedance)); // expects % from MiScaleLib
+                m.setMuscle(lib.getMuscle(weight, impedance));
                 m.setLbm(lib.getLBM(weight, impedance));
                 m.setBone(lib.getBoneMass(weight, impedance));
             }
 
             addScaleMeasurement(m);
             LogManager.i(TAG, "Live saved @ " + dt + " kg=" + m.getWeight());
+            return true;
         } catch (ParseException e) {
             setBluetoothStatus(UNEXPECTED_ERROR, "Live date parse error (" + e.getMessage() + ")");
+            return false;
         }
     }
 
@@ -262,11 +276,11 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
         int weightRaw = ((data[2] & 0xFF) << 8) | (data[1] & 0xFF);
         float weight  = (isLbs || isCatty) ? (weightRaw / 100.0f) : (weightRaw / 200.0f);
 
-        int year   = ((data[4] & 0xFF) << 8) | (data[3] & 0xFF);
-        int month  = data[5] & 0xFF;
-        int day    = data[6] & 0xFF;
-        int hour   = data[7] & 0xFF;
-        int minute = data[8] & 0xFF;
+        final int year   = ((data[4] & 0xFF) << 8) | (data[3] & 0xFF);
+        final int month  = (data[5] & 0xFF);
+        final int day    = (data[6] & 0xFF);
+        final int hour   = (data[7] & 0xFF);
+        final int minute = (data[8] & 0xFF);
         // int second = data[9] & 0xFF;
 
         try {
@@ -294,20 +308,35 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
 
     private void appendAndParseHistory(byte[] chunk) {
         try {
+            // Ignore 13-byte frames when in historyMode (they get parsed separately)
+            if (historyMode && (chunk.length == 13)) {
+                return;
+            }
+            // Ignore control/short frames
+            if (chunk.length < 10) {
+                return;
+            }
+
+            // Append raw chunk to buffer
             histBuf.write(chunk, 0, chunk.length);
             byte[] buf = histBuf.toByteArray();
 
+            // Process all complete 10-byte records in buffer
             int full = (buf.length / 10) * 10;
             if (full >= 10) {
                 int ok = 0;
                 for (int off = 0; off < full; off += 10) {
-                    if (parseHistoryRecord10(Arrays.copyOfRange(buf, off, off + 10))) ok++;
+                    byte[] rec = Arrays.copyOfRange(buf, off, off + 10);
+                    if (parseHistoryRecord10(rec)) {
+                        ok++;
+                    }
                 }
                 if (ok > 0) {
                     importedHistory += ok;
                     LogManager.d(TAG, "History parsed: " + ok + " record(s) from " + full + " bytes");
                 }
-                // keep remainder
+
+                // Reset buffer and keep any remainder
                 histBufReset();
                 if (buf.length > full) {
                     histBuf.write(buf, full, buf.length - full);
@@ -344,16 +373,5 @@ public class BluetoothMiScale2 extends BluetoothCommunication {
         Calendar max = Calendar.getInstance(); max.add(Calendar.YEAR, rangeYears);
         Calendar min = Calendar.getInstance(); min.add(Calendar.YEAR, -rangeYears);
         return weightDate.before(max.getTime()) && weightDate.after(min.getTime());
-    }
-
-    private int getUniqueNumber() {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        int n = prefs.getInt("uniqueNumber", 0x00);
-        if (n == 0x00) {
-            n = new Random().nextInt(65535 - 100 + 1) + 100;
-            prefs.edit().putInt("uniqueNumber", n).apply();
-        }
-        int userId = getSelectedScaleUser().getId();
-        return n + userId;
     }
 }

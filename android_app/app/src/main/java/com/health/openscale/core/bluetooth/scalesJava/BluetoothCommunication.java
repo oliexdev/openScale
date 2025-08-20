@@ -83,6 +83,8 @@ public abstract class BluetoothCommunication {
     private List<ScaleUser> cachedAppUserList;
     protected ScaleMeasurement cachedLastMeasurementForSelectedUser;
 
+    private int uniqueBase = -1;
+
     public BluetoothCommunication(Context context)
     {
         this.context = context;
@@ -127,6 +129,21 @@ public abstract class BluetoothCommunication {
             LogManager.d(TAG, "No cached last measurement available for user ID: " + userId + ". Returning null.");
         }
         return null;
+    }
+
+    public void setUniqueNumber(int base) {
+        this.uniqueBase = base;
+    }
+
+    protected int getUniqueNumber() {
+        if (uniqueBase == -1) {
+            LogManager.w(TAG, "(Unique number base not set! Call setUniqueNumber() first.", null);
+            uniqueBase = 99;
+        }
+        int userId = getSelectedScaleUser().getId();
+        int finalUnique = uniqueBase + userId;
+        LogManager.d(TAG, "Returning unique number " + finalUnique + " (base=" + uniqueBase + " + userId=" + userId + ")");
+        return finalUnique;
     }
 
     protected void requestUserInteraction(UserInteractionType interactionType, Object data) {
