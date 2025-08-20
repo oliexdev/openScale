@@ -190,7 +190,6 @@
     <string name="bluetooth_must_be_enabled_for_scan">Bluetooth muss aktiviert sein, um nach Waagen zu suchen.</string>
     <string name="saved_scale_label">Gespeicherte Waage:</string>
     <string name="unknown_device">Unbekannt</string>
-    <string name="unknown_device_placeholder">Unbekanntes Gerät</string>
     <string name="stop_scan_button">Scan stoppen</string>
     <string name="search_for_scales_button">Nach Waagen suchen</string>
     <string name="search_for_scales_button_desc">Schaltfläche "Nach Waagen suchen"</string>

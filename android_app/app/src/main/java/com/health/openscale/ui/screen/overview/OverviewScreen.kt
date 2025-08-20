@@ -17,8 +17,16 @@
  */
 package com.health.openscale.ui.screen.overview
 
+import android.Manifest
+import android.app.Activity
+import android.bluetooth.BluetoothAdapter
 import android.content.Context
+import android.content.Intent
 import android.widget.Toast
+import androidx.activity.compose.ManagedActivityResultLauncher
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -137,31 +145,47 @@ fun determineBluetoothTopBarAction(
     currentNavController: NavController,
     bluetoothViewModel: BluetoothViewModel,
     sharedViewModel: SharedViewModel,
-    currentDeviceName: String?
+    currentDeviceName: String?,
+    permissionsLauncher: ManagedActivityResultLauncher<Array<String>, Map<String, @JvmSuppressWildcards Boolean>>,
+    enableBluetoothLauncher: ManagedActivityResultLauncher<Intent, ActivityResult>
 ): SharedViewModel.TopBarAction? {
-    // Logic to determine if a connection or disconnection process is currently active
-    val btConnectingOrDisconnecting = savedAddr != null &&
-            (connStatusEnum == ConnectionStatus.CONNECTING || connStatusEnum == ConnectionStatus.DISCONNECTING) &&
-            // When connecting, connectedDevice might be null or the address being connected to.
-            // When disconnecting, connectedDevice should be the address of the device being disconnected.
-            (connectedDevice == savedAddr || connStatusEnum == ConnectionStatus.CONNECTING || (connStatusEnum == ConnectionStatus.DISCONNECTING && connectedDevice == savedAddr))
 
     val deviceNameForMessage = currentDeviceName ?: context.getString(R.string.fallback_device_name_saved_scale)
 
+    // Busy while connecting/disconnecting to the currently saved device
+    val isBusy = savedAddr != null &&
+            (connStatusEnum == ConnectionStatus.CONNECTING || connStatusEnum == ConnectionStatus.DISCONNECTING) &&
+            (connectedDevice == savedAddr || connStatusEnum == ConnectionStatus.CONNECTING ||
+                    (connStatusEnum == ConnectionStatus.DISCONNECTING && connectedDevice == savedAddr))
+
+    // Helper to request enabling Bluetooth (actual connect is done in onActivityResult when OK)
+    val requestEnableBluetooth = {
+        val intent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+        enableBluetoothLauncher.launch(intent)
+    }
+
+    // Helper to request runtime permissions (actual connect is done in onResult when granted)
+    val requestBtPermissions = {
+        permissionsLauncher.launch(
+            arrayOf(
+                Manifest.permission.BLUETOOTH_SCAN,
+                Manifest.permission.BLUETOOTH_CONNECT
+            )
+        )
+    }
+
     return when {
-        // Case 1: Connection or disconnection process is actively running
-        btConnectingOrDisconnecting -> SharedViewModel.TopBarAction(
-            icon = Icons.AutoMirrored.Filled.BluetoothSearching, // Icon for "searching" or "working"
+        // 1) Show non-interactive feedback while a user-initiated operation is ongoing
+        isBusy -> SharedViewModel.TopBarAction(
+            icon = Icons.AutoMirrored.Filled.BluetoothSearching,
             contentDescription = context.getString(R.string.bluetooth_action_connecting_disconnecting_desc),
             onClick = {
-                // Typically, the button is not interactive during this time,
-                // but a Snackbar can confirm the ongoing process.
                 sharedViewModel.showSnackbar(
                     message = context.getString(
                         when (connStatusEnum) {
-                            ConnectionStatus.CONNECTING -> R.string.snackbar_bluetooth_connecting_to
+                            ConnectionStatus.CONNECTING    -> R.string.snackbar_bluetooth_connecting_to
                             ConnectionStatus.DISCONNECTING -> R.string.snackbar_bluetooth_disconnecting_from
-                            else -> R.string.snackbar_bluetooth_processing_with // Fallback
+                            else                           -> R.string.snackbar_bluetooth_processing_with
                         },
                         deviceNameForMessage
                     ),
@@ -170,9 +194,9 @@ fun determineBluetoothTopBarAction(
             }
         )
 
-        // Case 2: No Bluetooth scale is saved
+        // 2) No saved device → navigate to Bluetooth settings
         savedAddr == null -> SharedViewModel.TopBarAction(
-            icon = Icons.Default.Bluetooth, // Default Bluetooth icon
+            icon = Icons.Default.Bluetooth,
             contentDescription = context.getString(R.string.bluetooth_action_no_scale_saved_desc),
             onClick = {
                 sharedViewModel.showSnackbar(
@@ -183,52 +207,40 @@ fun determineBluetoothTopBarAction(
             }
         )
 
-        // Case 3: Successfully connected to the saved scale
+        // 3) Connected → offer disconnect
         savedAddr == connectedDevice && connStatusEnum == ConnectionStatus.CONNECTED -> SharedViewModel.TopBarAction(
-            icon = Icons.Filled.BluetoothConnected, // Icon for "connected"
+            icon = Icons.Filled.BluetoothConnected,
             contentDescription = context.getString(R.string.bluetooth_action_disconnect_desc, deviceNameForMessage),
             onClick = {
-                // Trigger the action first, then show the Snackbar
-                bluetoothViewModel.disconnectDevice() // IMPORTANT: Trigger disconnection here!
+                bluetoothViewModel.disconnectDevice()
                 sharedViewModel.showSnackbar(
-                    message = context.getString(R.string.snackbar_bluetooth_disconnecting_from, deviceNameForMessage), // Adjusted message
+                    message = context.getString(R.string.snackbar_bluetooth_disconnecting_from, deviceNameForMessage),
                     duration = SnackbarDuration.Short
                 )
             }
         )
 
-        // Case 4: Connection error, and an address is saved
-        connStatusEnum == ConnectionStatus.FAILED && savedAddr != null -> SharedViewModel.TopBarAction(
-            icon = Icons.Filled.Error, // Error icon
-            contentDescription = context.getString(R.string.bluetooth_action_retry_connection_desc, deviceNameForMessage),
-            onClick = {
-                sharedViewModel.showSnackbar(
-                    message = context.getString(R.string.snackbar_bluetooth_retry_connection, deviceNameForMessage),
-                    duration = SnackbarDuration.Short
-                )
-                bluetoothViewModel.connectToSavedDevice()
-            }
-        )
-
-        // Case 5: Connection error, and NO address is saved
-        connStatusEnum == ConnectionStatus.FAILED && savedAddr == null -> SharedViewModel.TopBarAction(
-            icon = Icons.Filled.Error, // Error icon
-            contentDescription = context.getString(R.string.bluetooth_action_error_check_settings_desc),
-            onClick = {
-                sharedViewModel.showSnackbar(
-                    message = context.getString(R.string.snackbar_bluetooth_error_check_settings),
-                    duration = SnackbarDuration.Short
-                )
-                currentNavController.navigate(Routes.BLUETOOTH_SETTINGS)
-            }
-        )
-
-        // Case 6: Saved device exists but is not connected (disconnected, idle, etc.)
-        // This case also covers if connStatusEnum = DISCONNECTED, IDLE, or NONE.
-        savedAddr != null && (connStatusEnum == ConnectionStatus.DISCONNECTED || connStatusEnum == ConnectionStatus.IDLE || connStatusEnum == ConnectionStatus.NONE) -> SharedViewModel.TopBarAction(
-            icon = Icons.Filled.BluetoothDisabled, // Icon for "disconnected" or "ready to connect"
+        // 4) Disconnected / Idle / None / Failed → guarded connect (request first, connect later via callbacks)
+        savedAddr != null && (
+                connStatusEnum == ConnectionStatus.DISCONNECTED ||
+                        connStatusEnum == ConnectionStatus.IDLE ||
+                        connStatusEnum == ConnectionStatus.NONE ||
+                        connStatusEnum == ConnectionStatus.FAILED
+                ) -> SharedViewModel.TopBarAction(
+            icon = Icons.Filled.BluetoothDisabled,
             contentDescription = context.getString(R.string.bluetooth_action_connect_to_desc, deviceNameForMessage),
-            onClick = {
+            onClick = onClick@{
+                // a) Ask for permissions if missing (do NOT connect here; wait for onResult)
+                if (!bluetoothViewModel.permissionsGranted.value) {
+                    requestBtPermissions()
+                    return@onClick
+                }
+                // b) Ask to enable BT if off (do NOT connect here; wait for onActivityResult)
+                if (!bluetoothViewModel.isBluetoothEnabled()) {
+                    requestEnableBluetooth()
+                    return@onClick
+                }
+                // c) All good → connect now (explicit user tap; no autoconn)
                 sharedViewModel.showSnackbar(
                     message = context.getString(R.string.snackbar_bluetooth_attempting_connection, deviceNameForMessage),
                     duration = SnackbarDuration.Short
@@ -237,43 +249,18 @@ fun determineBluetoothTopBarAction(
             }
         )
 
-        // Fallback: If an address is saved, but the state was not specifically covered above,
-        // offer to connect. Ideally, this shouldn't be hit often if the logic above is complete.
-        // If no device is saved and there's no error/connection attempt,
-        // this was already covered by 'savedAddr == null' (leads to settings).
-        else -> {
-            if (savedAddr != null) {
-                // This serves as a generic "Connect" button if a rare state occurs
-                SharedViewModel.TopBarAction(
-                    icon = Icons.Filled.BluetoothDisabled,
-                    contentDescription = context.getString(R.string.bluetooth_action_connect_to_desc, deviceNameForMessage),
-                    onClick = {
-                        sharedViewModel.showSnackbar(
-                            message = context.getString(R.string.snackbar_bluetooth_attempting_connection, deviceNameForMessage),
-                            duration = SnackbarDuration.Short
-                        )
-                        bluetoothViewModel.connectToSavedDevice()
-                    }
+        // 5) Fallback
+        else -> SharedViewModel.TopBarAction(
+            icon = Icons.Default.Bluetooth,
+            contentDescription = context.getString(R.string.bluetooth_action_check_settings_desc),
+            onClick = {
+                sharedViewModel.showSnackbar(
+                    message = context.getString(R.string.snackbar_bluetooth_check_settings),
+                    duration = SnackbarDuration.Short
                 )
-            } else {
-                // If really no other condition applies and no device is saved,
-                // and the above cases haven't been met, "Go to settings" is a safe default.
-                // This will likely only be hit if connStatusEnum has an unexpected value
-                // and savedAddr is null, but that should already be covered by "Case 2".
-                // For safety, nonetheless:
-                SharedViewModel.TopBarAction(
-                    icon = Icons.Default.Bluetooth,
-                    contentDescription = context.getString(R.string.bluetooth_action_check_settings_desc),
-                    onClick = {
-                        sharedViewModel.showSnackbar(
-                            message = context.getString(R.string.snackbar_bluetooth_check_settings),
-                            duration = SnackbarDuration.Short
-                        )
-                        currentNavController.navigate(Routes.BLUETOOTH_SETTINGS)
-                    }
-                )
+                currentNavController.navigate(Routes.BLUETOOTH_SETTINGS)
             }
-        }
+        )
     }
 }
 
@@ -330,6 +317,51 @@ fun OverviewScreen(
     val connectedDeviceAddr by bluetoothViewModel.connectedDeviceAddress.collectAsState()
     val savedDeviceNameString by bluetoothViewModel.savedScaleName.collectAsState()
 
+    val enableBluetoothLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        bluetoothViewModel.refreshPermissionsStatus()
+        if (result.resultCode == Activity.RESULT_OK) {
+            if (bluetoothViewModel.permissionsGranted.value) {
+                // Permissions and BT are fine → safe to connect now
+                bluetoothViewModel.connectToSavedDevice()
+            } else {
+                scope.launch {
+                    sharedViewModel.showSnackbar(
+                        message = context.getString(R.string.bluetooth_enabled_permissions_missing),
+                        duration = SnackbarDuration.Long
+                    )
+                }
+            }
+        } else {
+            scope.launch {
+                sharedViewModel.showSnackbar(
+                    message = context.getString(R.string.bt_snackbar_bluetooth_disabled_to_connect_default),
+                    duration = SnackbarDuration.Long
+                )
+            }
+        }
+    }
+
+    val permissionsLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { result ->
+        bluetoothViewModel.refreshPermissionsStatus()
+        val allGranted = result.values.all { it }
+        if (allGranted) {
+            if (bluetoothViewModel.isBluetoothEnabled()) {
+                bluetoothViewModel.connectToSavedDevice()
+            } else {
+                val intent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                enableBluetoothLauncher.launch(intent)
+            }
+        } else {
+            sharedViewModel.showSnackbar(R.string.bt_snackbar_permissions_required_to_connect_default)
+        }
+    }
+
+
+
     // Determine the Bluetooth action for the top bar
     val bluetoothTopBarAction = determineBluetoothTopBarAction(
         context = context,
@@ -339,7 +371,9 @@ fun OverviewScreen(
         currentNavController = navController,
         bluetoothViewModel = bluetoothViewModel,
         sharedViewModel = sharedViewModel,
-        currentDeviceName = savedDeviceNameString
+        currentDeviceName = savedDeviceNameString,
+        permissionsLauncher = permissionsLauncher,
+        enableBluetoothLauncher = enableBluetoothLauncher
     )
 
     // LaunchedEffect to configure the top bar based on the current state

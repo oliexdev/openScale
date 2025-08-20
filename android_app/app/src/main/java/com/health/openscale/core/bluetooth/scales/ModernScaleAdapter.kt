@@ -78,10 +78,6 @@ class ModernScaleAdapter(
 ) : ScaleCommunicator {
     private val TAG = "ModernScaleAdapter"
 
-    private companion object {
-        const val TAG = "ModernScaleAdapter"
-    }
-
     private val adapterScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     private val mainHandler = Handler(Looper.getMainLooper())
     private lateinit var central: BluetoothCentralManager // Initialisiert in init
@@ -185,35 +181,53 @@ class ModernScaleAdapter(
     }
 
     private fun hasRequiredBluetoothPermissions(): Boolean {
-        val requiredPermissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            listOf(Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT)
-        } else {
-            listOf(Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN, Manifest.permission.ACCESS_FINE_LOCATION)
-        }
-        return requiredPermissions.all {
-            ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
-        }
+        val required = listOf(
+            Manifest.permission.BLUETOOTH_SCAN,
+            Manifest.permission.BLUETOOTH_CONNECT
+        )
+        return required.all { ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED }
     }
+
+    // Call this after runtime grant or lazily before first connect
+    private fun ensureCentralReady(): Boolean {
+        if (!::central.isInitialized) {
+            val hasScan = ContextCompat.checkSelfPermission(
+                context, Manifest.permission.BLUETOOTH_SCAN
+            ) == PackageManager.PERMISSION_GRANTED
+            val hasConnect = ContextCompat.checkSelfPermission(
+                context, Manifest.permission.BLUETOOTH_CONNECT
+            ) == PackageManager.PERMISSION_GRANTED
+            if (!(hasScan || hasConnect)) return false // at least one check; we hard-fail later if CONNECT is missing
+            central = BluetoothCentralManager(context, bluetoothCentralManagerCallback, mainHandler)
+            LogManager.d(TAG, "BluetoothCentralManager initialized")
+        }
+        return true
+    }
+
 
     override fun connect(address: String, scaleUser: ScaleUser?) {
         adapterScope.launch {
-            if (!::central.isInitialized) {
-                LogManager.e(TAG, "BluetoothCentralManager nicht initialisiert, wahrscheinlich aufgrund fehlender Berechtigungen.")
-                _eventsFlow.tryEmit(BluetoothEvent.ConnectionFailed(address, "Bluetooth nicht initialisiert (Berechtigungen?)"))
+            // Ensure central exists (may be created after runtime grant)
+            if (!ensureCentralReady()) {
+                _eventsFlow.tryEmit(
+                    BluetoothEvent.ConnectionFailed(address, "Bluetooth permissions missing (SCAN/CONNECT)")
+                )
                 return@launch
             }
 
+            // Ignore duplicate connects
             if (_isConnecting.value || (_isConnected.value && targetAddress == address)) {
-                LogManager.d(TAG, "Verbindungsanfrage für $address ignoriert: Bereits verbunden oder Verbindungsaufbau läuft.")
+                LogManager.d(TAG, "connect($address) ignored: already connecting/connected")
                 if (_isConnected.value && targetAddress == address) {
-                    val deviceName = currentPeripheral?.name ?: "Unbekanntes Gerät"
+                    val deviceName = currentPeripheral?.name ?: "Unknown"
                     _eventsFlow.tryEmit(BluetoothEvent.Connected(deviceName, address))
                 }
                 return@launch
             }
 
+            // Switch target: tear down old connection attempt
             if ((_isConnected.value || _isConnecting.value) && targetAddress != address) {
-                LogManager.d(TAG, "Bestehende Verbindung/Versuch zu $targetAddress wird für neue Verbindung zu $address getrennt.")
+                LogManager.d(TAG, "Switching from $targetAddress to $address")
                 disconnectLogic()
             }
 
@@ -222,25 +236,53 @@ class ModernScaleAdapter(
             targetAddress = address
             currentScaleUser = scaleUser
 
-            LogManager.i(TAG, "Verbindungsversuch zu $address mit Benutzer: ${scaleUser?.id}")
+            LogManager.i(TAG, "Connecting to $address (user=${scaleUser?.id})")
 
-            // Stoppe vorherige Scans, falls vorhanden
-            central.stopScan()
+            // Stop any previous scans
+            runCatching { central.stopScan() }
+
+            val hasScan = ContextCompat.checkSelfPermission(
+                context, Manifest.permission.BLUETOOTH_SCAN
+            ) == PackageManager.PERMISSION_GRANTED
+
+            val hasConnect = ContextCompat.checkSelfPermission(
+                context, Manifest.permission.BLUETOOTH_CONNECT
+            ) == PackageManager.PERMISSION_GRANTED
+
+            if (!hasConnect) {
+                // Without CONNECT we can't perform GATT ops reliably
+                LogManager.e(TAG, "Missing BLUETOOTH_CONNECT")
+                _eventsFlow.tryEmit(
+                    BluetoothEvent.ConnectionFailed(address, "Missing BLUETOOTH_CONNECT permission")
+                )
+                _isConnecting.value = false
+                targetAddress = null
+                return@launch
+            }
 
             try {
-                // Versuche, direkt ein Peripheral-Objekt zu bekommen, falls die Adresse bekannt ist.
-                //Blessed erlaubt auch das Scannen nach Adresse, was oft robuster ist.
-                //central.getPeripheral(address) ist eine Option, aber scanForPeripheralsWithAddresses ist oft besser.
-                central.scanForPeripheralsWithAddresses(arrayOf(address))
-                LogManager.d(TAG, "Scan gestartet für Adresse: $address")
+                if (hasScan) {
+                    // Preferred path on 12+: short pre-scan by address
+                    central.scanForPeripheralsWithAddresses(arrayOf(address))
+                    LogManager.d(TAG, "Pre-scan started for $address")
+                    // onDiscoveredPeripheral will stop scan and connect
+                } else {
+                    // Fallback: connect without pre-scan (may be less reliable on some OEMs)
+                    LogManager.w(TAG, "BLUETOOTH_SCAN not granted → connecting without pre-scan")
+                    val p = central.getPeripheral(address)
+                    central.connectPeripheral(p, peripheralCallback)
+                }
             } catch (e: Exception) {
-                LogManager.e(TAG, "Fehler beim Starten des Scans für $address", e)
-                _eventsFlow.tryEmit(BluetoothEvent.ConnectionFailed(address, "Scan konnte nicht gestartet werden: ${e.message}"))
+                LogManager.e(TAG, "Failed to start connect/scan for $address", e)
+                _eventsFlow.tryEmit(
+                    BluetoothEvent.ConnectionFailed(address, "Failed to start scan/connect: ${e.message}")
+                )
                 _isConnecting.value = false
                 targetAddress = null
             }
         }
     }
+
 
     private val peripheralCallback: BluetoothPeripheralCallback =
         object : BluetoothPeripheralCallback() {

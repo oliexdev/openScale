@@ -18,14 +18,12 @@
 package com.health.openscale.core.bluetooth.scalesJava;
 
 import static android.bluetooth.BluetoothGatt.GATT_SUCCESS;
-import static android.content.Context.LOCATION_SERVICE;
 
 import android.Manifest;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.le.ScanResult;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.location.LocationManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -88,7 +86,7 @@ public abstract class BluetoothCommunication {
     public BluetoothCommunication(Context context)
     {
         this.context = context;
-        this.disconnectHandler = new Handler();
+        this.disconnectHandler = new Handler(Looper.getMainLooper());
         this.stepNr = 0;
         this.stopped = false;
         this.central = new BluetoothCentralManager(context, bluetoothCentralCallback, new Handler(Looper.getMainLooper()));
@@ -609,27 +607,49 @@ public abstract class BluetoothCommunication {
      * @param macAddress the Bluetooth address to connect to
      */
     public void connect(String macAddress) {
-        // Running an LE scan during connect improves connectivity on some phones
-        // (e.g. Sony Xperia Z5 compact, Android 7.1.1). For some scales (e.g. Medisana BS444)
-        // it seems to be a requirement that the scale is discovered before connecting to it.
-        // Otherwise the connection almost never succeeds.
-        LocationManager locationManager = (LocationManager)context.getSystemService(LOCATION_SERVICE);
+        // Android 12+ (API 31+): SCAN needed for scanning, CONNECT needed for connect/GATT.
+        final boolean isSPlus = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S;
 
-        if ((ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)  == PackageManager.PERMISSION_GRANTED) ||
-            (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED ) &&
-            (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
-            (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)))
-        ) {
-            LogManager.d("BluetoothCommunication","Do LE scan before connecting to device");
-            central.scanForPeripheralsWithAddresses(new String[]{macAddress});
-            stopMachineState();
+        if (isSPlus) {
+            boolean canConnect = ContextCompat.checkSelfPermission(
+                    context, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED;
+            boolean canScan = ContextCompat.checkSelfPermission(
+                    context, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED;
+
+            if (!canConnect) {
+                LogManager.e("BluetoothCommunication",
+                        "API≥31: Missing BLUETOOTH_CONNECT → cannot connect/GATT. Aborting.", null);
+                setBluetoothStatus(BT_STATUS.UNEXPECTED_ERROR);
+                sendMessage(R.string.info_bluetooth_connection_error_scale_offline, 0);
+                return;
+            }
+
+            // Pre-scan improves connect reliability on some devices/scales
+            if (canScan) {
+                LogManager.d("BluetoothCommunication",
+                        "API≥31: Do LE scan before connecting (no location needed)");
+                central.scanForPeripheralsWithAddresses(new String[]{macAddress});
+                stopMachineState(); // wait for onDiscoveredPeripheral → connect
+                return;
+            } else {
+                LogManager.w("BluetoothCommunication",
+                        "API≥31: BLUETOOTH_SCAN not granted → connecting without pre-scan (may be less reliable)", null);
+                BluetoothPeripheral peripheral = central.getPeripheral(macAddress);
+                try {
+                    connectToDevice(peripheral);
+                } catch (SecurityException se) {
+                    LogManager.e("BluetoothCommunication",
+                            "SecurityException during connect (missing CONNECT?): " + se.getMessage(), se);
+                    setBluetoothStatus(BT_STATUS.UNEXPECTED_ERROR);
+                }
+                return;
+            }
         }
-        else {
-            LogManager.d("BluetoothCommunication","No location permission, connecting without LE scan");
-            BluetoothPeripheral peripheral = central.getPeripheral(macAddress);
-            connectToDevice(peripheral);
-        }
+
+        // Defensive fallback (won't run with minSdk=31, but good for clarity)
+        LogManager.w("BluetoothCommunication","connect() called on API<31 path; no legacy handling active.", null);
     }
+
 
     private void connectToDevice(BluetoothPeripheral peripheral) {
 

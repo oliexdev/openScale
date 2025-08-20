@@ -56,9 +56,13 @@ import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -94,31 +98,15 @@ fun BluetoothScreen(
     val scanError by bluetoothViewModel.scanError.collectAsState()
     val connectionError by bluetoothViewModel.connectionError.collectAsState()
     val hasPermissions by bluetoothViewModel.permissionsGranted.collectAsState()
+    var pendingScan by remember { mutableStateOf(false) }
 
     val savedDeviceAddress by bluetoothViewModel.savedScaleAddress.collectAsState()
     val savedDeviceName by bluetoothViewModel.savedScaleName.collectAsState()
 
-    val permissionsLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestMultiplePermissions()
-    ) { permissionsMap ->
-        bluetoothViewModel.refreshPermissionsStatus()
-        val allGranted = permissionsMap.values.all { it }
-        if (allGranted) {
-            if (!bluetoothViewModel.isBluetoothEnabled()) {
-                scope.launch {
-                    sharedViewModel.showSnackbar(
-                        message = context.getString(R.string.bluetooth_enable_for_scan),
-                        duration = SnackbarDuration.Short
-                    )
-                }
-            }
-        } else {
-            scope.launch {
-                sharedViewModel.showSnackbar(
-                    message = context.getString(R.string.bluetooth_permissions_required_for_scan),
-                    duration = SnackbarDuration.Long
-                )
-            }
+    DisposableEffect(Unit) {
+        onDispose {
+            pendingScan = false
+            bluetoothViewModel.requestStopDeviceScan()
         }
     }
 
@@ -127,7 +115,19 @@ fun BluetoothScreen(
     ) { result ->
         bluetoothViewModel.refreshPermissionsStatus()
         if (result.resultCode == Activity.RESULT_OK) {
-            if (!bluetoothViewModel.permissionsGranted.value) {
+            if (bluetoothViewModel.permissionsGranted.value) {
+                if (pendingScan) {
+                    bluetoothViewModel.clearAllErrors()
+                    if (!bluetoothViewModel.isScanning.value) {
+                        bluetoothViewModel.requestStartDeviceScan()
+                    }
+                    try {
+                        pendingScan = false
+                    } catch (e: Exception) {
+                        TODO("Not yet implemented")
+                    }
+                }
+            } else {
                 scope.launch {
                     sharedViewModel.showSnackbar(
                         message = context.getString(R.string.bluetooth_enabled_permissions_missing),
@@ -145,6 +145,36 @@ fun BluetoothScreen(
         }
     }
 
+    val permissionsLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissionsMap ->
+        bluetoothViewModel.refreshPermissionsStatus()
+        val allGranted = permissionsMap.values.all { it }
+        if (allGranted) {
+            if (bluetoothViewModel.isBluetoothEnabled()) {
+                if (pendingScan) {
+                    bluetoothViewModel.clearAllErrors()
+                    if (!bluetoothViewModel.isScanning.value) {
+                        bluetoothViewModel.requestStartDeviceScan()
+                    }
+                    pendingScan = false
+                }
+            } else {
+                val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                enableBluetoothLauncher.launch(enableBtIntent)
+            }
+        } else {
+            pendingScan = false
+            scope.launch {
+                sharedViewModel.showSnackbar(
+                    message = context.getString(R.string.bluetooth_permissions_required_for_scan),
+                    duration = SnackbarDuration.Long
+                )
+            }
+        }
+    }
+
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -156,6 +186,7 @@ fun BluetoothScreen(
         // Status and action area (Scan button or info cards)
         if (!hasPermissions) {
             PermissionRequestCard(onGrantPermissions = {
+                pendingScan = true
                 permissionsLauncher.launch(
                     arrayOf(Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT)
                 )
@@ -203,8 +234,26 @@ fun BluetoothScreen(
                     if (isScanning) {
                         bluetoothViewModel.requestStopDeviceScan()
                     } else {
-                        bluetoothViewModel.clearAllErrors() // Clear previous errors before starting a new scan
-                        bluetoothViewModel.requestStartDeviceScan()
+                        pendingScan = true
+                        bluetoothViewModel.clearAllErrors()
+                        when {
+                            !bluetoothViewModel.permissionsGranted.value -> {
+                                permissionsLauncher.launch(
+                                    arrayOf(
+                                        Manifest.permission.BLUETOOTH_SCAN,
+                                        Manifest.permission.BLUETOOTH_CONNECT
+                                    )
+                                )
+                            }
+                            !bluetoothViewModel.isBluetoothEnabled() -> {
+                                val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                                enableBluetoothLauncher.launch(enableBtIntent)
+                            }
+                            else -> {
+                                bluetoothViewModel.requestStartDeviceScan()
+                                pendingScan = false
+                            }
+                        }
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
@@ -440,7 +489,7 @@ fun DeviceCardItem(
     onClick: () -> Unit
 ) {
     val supportColor = if (deviceInfo.isSupported) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-    val unknownDeviceName = stringResource(R.string.unknown_device_placeholder)
+    val unknownDeviceName = stringResource(R.string.unknown_device)
 
     ElevatedCard(
         onClick = onClick,

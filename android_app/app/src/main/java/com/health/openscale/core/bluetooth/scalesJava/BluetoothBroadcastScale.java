@@ -17,14 +17,11 @@
 
 package com.health.openscale.core.bluetooth.scalesJava;
 
-import static android.content.Context.LOCATION_SERVICE;
-
 import android.Manifest;
 import android.bluetooth.le.ScanRecord;
 import android.bluetooth.le.ScanResult;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.location.LocationManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.SparseArray;
@@ -136,19 +133,25 @@ public class BluetoothBroadcastScale extends BluetoothCommunication {
 
     @Override
     public void connect(String macAddress) {
+        // Android 12+ (minSdk=31): scanning requires BLUETOOTH_SCAN, no location needed.
+        boolean canScan = ContextCompat.checkSelfPermission(
+                context, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED;
 
-        LocationManager locationManager = (LocationManager)context.getSystemService(LOCATION_SERVICE);
-
-        if ((ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)  == PackageManager.PERMISSION_GRANTED) ||
-                (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED ) &&
-                        (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
-                                (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)))
-        ) {
-            LogManager.d(TAG, "Do LE scan before connecting to device");
-            central.scanForPeripheralsWithAddresses(new String[]{macAddress});
+        if (!canScan) {
+            LogManager.e(TAG, "Missing BLUETOOTH_SCAN → cannot start LE scan for broadcast data.", null);
+            setBluetoothStatus(BT_STATUS.UNEXPECTED_ERROR);
+            // choose a better string if you have one, this is just a visible hint:
+            sendMessage(com.health.openscale.R.string.info_bluetooth_connection_error_scale_offline, 0);
+            return;
         }
-        else {
-            LogManager.e(TAG,"No location permission, can't do anything", null);
+
+        try {
+            LogManager.d(TAG, "Starting LE scan for broadcast scale (no location required)");
+            // We scan by address; when advertising is seen, onDiscoveredPeripheral parses manufacturer data.
+            central.scanForPeripheralsWithAddresses(new String[]{ macAddress });
+        } catch (Exception e) {
+            LogManager.e(TAG, "Failed to start LE scan: " + e.getMessage(), e);
+            setBluetoothStatus(BT_STATUS.UNEXPECTED_ERROR);
         }
     }
 

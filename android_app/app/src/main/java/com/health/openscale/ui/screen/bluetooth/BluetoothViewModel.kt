@@ -23,7 +23,6 @@ import android.app.Application
 import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import androidx.compose.material3.SnackbarDuration
@@ -281,36 +280,6 @@ class BluetoothViewModel(
     // --- Connection Control ---
 
     /**
-     * Initiates a connection attempt to the specified Bluetooth device.
-     * If a scan is active, it will be stopped first.
-     * Prerequisites like permissions and Bluetooth status are validated.
-     *
-     * @param deviceInfo The [ScannedDeviceInfo] of the device to connect to.
-     */
-    @SuppressLint("MissingPermission") // Permissions are checked by validateConnectionPrerequisites.
-    fun connectToDevice(deviceInfo: ScannedDeviceInfo) {
-        val deviceDisplayName = deviceInfo.name ?: deviceInfo.address
-        LogManager.i(TAG, "User requested to connect to device: $deviceDisplayName")
-
-        if (isScanning.value) {
-            LogManager.d(TAG, "Scan is active, stopping it before initiating connection to $deviceDisplayName.")
-            requestStopDeviceScan()
-            // Optional: A small delay could be added here if needed to ensure scan stop completes,
-            // but usually the managers handle sequential operations gracefully.
-            // viewModelScope.launch { delay(200) }
-        }
-
-        if (!validateConnectionPrerequisites(deviceDisplayName, isManualConnect = true)) {
-            // validateConnectionPrerequisites logs and shows Snackbar/sets error for ConnectionManager.
-            return
-        }
-
-        LogManager.d(TAG, "Prerequisites for connecting to $deviceDisplayName met. Delegating to BluetoothConnectionManager.")
-        bluetoothConnectionManager.connectToDevice(deviceInfo)
-    }
-
-
-    /**
      * Attempts to connect to the saved preferred Bluetooth scale.
      * Retrieves device info from [userSettingsRepository] and then delegates
      * to [BluetoothConnectionManager]. It also re-evaluates device support via [ScaleFactory].
@@ -511,20 +480,34 @@ class BluetoothViewModel(
 
     /**
      * Checks if the necessary Bluetooth permissions are currently granted.
-     * Handles different permission sets for Android S (API 31) and above vs. older versions.
+     * Handles different permission sets for Android S (API 31) and above.
      * @return `true` if permissions are granted, `false` otherwise.
      */
     private fun checkInitialPermissions(): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            // Android 12 (API 31) and above require BLUETOOTH_SCAN and BLUETOOTH_CONNECT
-            ContextCompat.checkSelfPermission(application, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED &&
-                    ContextCompat.checkSelfPermission(application, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
-        } else {
-            // For older Android versions (below S / API 31)
-            ContextCompat.checkSelfPermission(application, Manifest.permission.BLUETOOTH) == PackageManager.PERMISSION_GRANTED &&
-                    ContextCompat.checkSelfPermission(application, Manifest.permission.BLUETOOTH_ADMIN) == PackageManager.PERMISSION_GRANTED &&
-                    ContextCompat.checkSelfPermission(application, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        val hasConnect = ContextCompat.checkSelfPermission(
+            application, Manifest.permission.BLUETOOTH_CONNECT
+        ) == PackageManager.PERMISSION_GRANTED
+
+        val hasScan = ContextCompat.checkSelfPermission(
+            application, Manifest.permission.BLUETOOTH_SCAN
+        ) == PackageManager.PERMISSION_GRANTED
+
+        when {
+            !hasConnect && !hasScan -> {
+                LogManager.w(TAG, "Missing permissions: BLUETOOTH_CONNECT & BLUETOOTH_SCAN → BLE disabled (no connect, no scan).")
+            }
+            !hasConnect -> {
+                LogManager.w(TAG, "Missing permission: BLUETOOTH_CONNECT → cannot perform GATT ops (connect/read/write).")
+            }
+            !hasScan -> {
+                LogManager.w(TAG, "Missing permission: BLUETOOTH_SCAN → cannot scan/pre-scan (no discovery, less reliable connect).")
+            }
+            else -> {
+                LogManager.d(TAG, "All required Bluetooth permissions granted (SCAN & CONNECT).")
+            }
         }
+
+        return hasConnect && hasScan
     }
 
     /**

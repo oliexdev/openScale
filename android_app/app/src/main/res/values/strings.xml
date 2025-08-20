@@ -192,7 +192,6 @@
     <string name="bluetooth_must_be_enabled_for_scan">Bluetooth must be enabled to search for scales.</string>
     <string name="saved_scale_label">Saved Scale:</string>
     <string name="unknown_device">Unknown</string>
-    <string name="unknown_device_placeholder">Unknown Device</string>
     <string name="stop_scan_button">Stop Scan</string>
     <string name="search_for_scales_button">Search for Scales</string>
     <string name="search_for_scales_button_desc">Search for scales button</string>
