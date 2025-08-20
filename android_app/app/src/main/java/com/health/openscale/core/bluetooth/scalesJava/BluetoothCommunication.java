@@ -71,7 +71,11 @@ public abstract class BluetoothCommunication {
     protected Context context;
 
     private Handler callbackBtHandler;
-    private Handler disconnectHandler;
+
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
+    private Runnable preScanTimeout;
+    private Runnable disconnectTimeout;
+    private Runnable connectDelay;
 
     private BluetoothCentralManager central;
     private BluetoothPeripheral btPeripheral;
@@ -86,10 +90,9 @@ public abstract class BluetoothCommunication {
     public BluetoothCommunication(Context context)
     {
         this.context = context;
-        this.disconnectHandler = new Handler(Looper.getMainLooper());
         this.stepNr = 0;
         this.stopped = false;
-        this.central = new BluetoothCentralManager(context, bluetoothCentralCallback, new Handler(Looper.getMainLooper()));
+        this.central = new BluetoothCentralManager(context, bluetoothCentralCallback, mainHandler);
         this.selectedScaleUser = new ScaleUser();
     }
 
@@ -441,17 +444,18 @@ public abstract class BluetoothCommunication {
     public void disconnect() {
         LogManager.d("BluetoothCommunication","Bluetooth disconnect");
         setBluetoothStatus(BT_STATUS.CONNECTION_DISCONNECT);
-        try {
-            central.stopScan();
-        } catch (Exception ex) {
-            LogManager.e("BluetoothCommunication", "Error on Bluetooth disconnecting " + ex.getMessage(), ex);
+        try { central.stopScan(); } catch (Exception ex) {
+            LogManager.e(TAG, "Error on Bluetooth disconnecting " + ex.getMessage(), ex);
         }
+
+        if (preScanTimeout != null) { mainHandler.removeCallbacks(preScanTimeout); preScanTimeout = null; }
+        if (disconnectTimeout != null) { mainHandler.removeCallbacks(disconnectTimeout); disconnectTimeout = null; }
+        if (connectDelay != null) { mainHandler.removeCallbacks(connectDelay); connectDelay = null; }
 
         if (btPeripheral != null) {
             central.cancelConnection(btPeripheral);
         }
         callbackBtHandler = null;
-        disconnectHandler.removeCallbacksAndMessages(null);
     }
 
     public byte[] getScaleMacAddress() {
@@ -594,6 +598,8 @@ public abstract class BluetoothCommunication {
         @Override
         public void onDiscoveredPeripheral(BluetoothPeripheral peripheral, ScanResult scanResult) {
             LogManager.d("BluetoothCommunication",String.format("Found peripheral '%s'", peripheral.getName()));
+            if (preScanTimeout != null) { mainHandler.removeCallbacks(preScanTimeout); preScanTimeout = null; }
+            btPeripheral = peripheral;
             central.stopScan();
             connectToDevice(peripheral);
         }
@@ -634,14 +640,16 @@ public abstract class BluetoothCommunication {
                 LogManager.d("BluetoothCommunication",
                         "API≥31: Do LE scan before connecting (no location needed)");
                 central.scanForPeripheralsWithAddresses(new String[]{macAddress});
-                new Handler(Looper.getMainLooper()).postDelayed(() -> { // wait for onDiscoveredPeripheral → connect
+                stopMachineState();
+
+                preScanTimeout = () -> {
                     if (btPeripheral == null || btPeripheral.getState() == ConnectionState.DISCONNECTED) {
                         try { central.stopScan(); } catch (Exception ignore) {}
                         setBluetoothStatus(BT_STATUS.NO_DEVICE_FOUND);
                         sendMessage(R.string.info_bluetooth_connection_error_scale_offline, 0);
-                        resumeMachineState();
                     }
-                }, 10_000);
+                };
+                mainHandler.postDelayed(preScanTimeout, 10_000);
                 return;
             } else {
                 LogManager.w("BluetoothCommunication",
@@ -664,11 +672,13 @@ public abstract class BluetoothCommunication {
 
 
     private void connectToDevice(BluetoothPeripheral peripheral) {
-        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+        if (connectDelay != null) mainHandler.removeCallbacks(connectDelay);
+        connectDelay = () -> {
             LogManager.d("BluetoothCommunication","Try to connect to BLE device " + peripheral.getAddress());
             stepNr = 0;
             central.connectPeripheral(peripheral, peripheralCallback);
-        }, 1000);
+        };
+        mainHandler.postDelayed(connectDelay, 1_000);
     }
 
     protected boolean reConnectPreviousPeripheral(Handler uiHandler) {
@@ -686,18 +696,28 @@ public abstract class BluetoothCommunication {
     }
 
     private void resetDisconnectTimer() {
-        disconnectHandler.removeCallbacksAndMessages(null);
-        disconnectWithDelay();
+        if (disconnectTimeout != null) {
+            mainHandler.removeCallbacks(disconnectTimeout);
+        }
+        scheduleDisconnect();
+    }
+
+    private void scheduleDisconnect() {
+        disconnectTimeout = () -> {
+            LogManager.d("BluetoothCommunication","Timeout Bluetooth disconnect");
+            disconnect();
+        };
+        mainHandler.postDelayed(disconnectTimeout, 60_000); // 60 s
     }
 
     private void disconnectWithDelay() {
-        disconnectHandler.postDelayed(new Runnable() {
+        mainHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 LogManager.d("BluetoothCommunication","Timeout Bluetooth disconnect");
                 disconnect();
             }
-        }, 60000); // 60s timeout
+        }, 60_000); // 60s timeout
     }
 
     private synchronized void nextMachineStep() {
