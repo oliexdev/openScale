@@ -17,6 +17,8 @@
     <string name="content_desc_open_menu">Menü öffnen</string>
     <string name="content_desc_back">Zurück</string>
     <string name="content_desc_selected">Ausgewählt</string>
+    <string name="derived_backfill_start">Berechne abgeleitete Werte …</string>
+    <string name="derived_backfill_done">Abgeleitete Werte wurden erfolgreich aktualisiert.</string>
 
     <!-- Routen- & Bildschirmtitel -->
     <string name="route_title_overview">Übersicht</string>

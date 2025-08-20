@@ -17,9 +17,11 @@
  */
 package com.health.openscale.ui.screen
 
+import android.R.attr.duration
 import android.app.Application
 import android.content.ComponentName
 import android.content.Intent
+import androidx.annotation.IntegerRes
 import androidx.annotation.StringRes
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.runtime.Composable
@@ -68,6 +70,7 @@ import java.time.Instant
 import java.time.ZoneId
 import java.util.Calendar
 import java.util.Date
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.roundToInt
 
 private const val TAG = "SharedViewModel"
@@ -421,8 +424,88 @@ class SharedViewModel(
             LogManager.v(TAG, "lastMeasurementOfSelectedUser flow initialized. (Derived Data Flow)")
         }
 
+    private val didRunDerivedBackfill = AtomicBoolean(false)
     private val _isBaseDataLoading = MutableStateFlow(false)
     val isBaseDataLoading: StateFlow<Boolean> = _isBaseDataLoading.asStateFlow()
+
+    /**
+     * Ensures that all derived measurement values (e.g., BMI, LBM, WHR) are present
+     * for all users in the database.
+     *
+     * This method runs only once per app session (guarded by [didRunDerivedBackfill]).
+     * It iterates over all users, checks if at least one valid BMI value exists, and if not,
+     * triggers a recalculation of all derived values for every measurement of that user.
+     *
+     * Typical use case:
+     * - After database migration when derived values were not persisted in older versions.
+     * - After restoring a backup where derived values may be missing.
+     */
+    fun maybeBackfillDerivedValues() {
+        if (!didRunDerivedBackfill.compareAndSet(false, true)) return
+
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val types = databaseRepository.getAllMeasurementTypes().first()
+                val bmiType = types.firstOrNull { it.key == MeasurementTypeKey.BMI } ?: run {
+                    LogManager.w(TAG, "Backfill skip: BMI type not found.")
+                    return@launch
+                }
+
+                val allUsers = databaseRepository.getAllUsers().first()
+                if (allUsers.isEmpty()) {
+                    LogManager.d(TAG, "Backfill skip: no users.")
+                    return@launch
+                }
+
+                var totalMeasurements = 0
+                var ok = 0
+                var usersAffected = 0
+
+                allUsers.forEach { user ->
+                    val all = databaseRepository.getMeasurementsWithValuesForUser(user.id).first()
+                    if (all.isEmpty()) {
+                        LogManager.d(TAG, "Backfill skip: no measurements for userId=${user.id}.")
+                        return@forEach
+                    }
+
+                    val hasAnyBmi = all.any { mwv ->
+                        mwv.values.any { v ->
+                            v.type.id == bmiType.id && (v.value.floatValue ?: 0f) > 0f
+                        }
+                    }
+
+                    if (hasAnyBmi) {
+                        LogManager.d(TAG, "Backfill not needed for userId=${user.id}: at least one BMI>0 exists.")
+                        return@forEach
+                    }
+
+                    usersAffected++
+                    totalMeasurements += all.size
+                    LogManager.i(TAG, "No BMI for userId=${user.id} -> recalculating derived values for all ${all.size} measurements…")
+
+                    showSnackbar(messageResId = R.string.derived_backfill_start, duration = SnackbarDuration.Short)
+
+                    all.forEach { mwv ->
+                        try {
+                            databaseRepository.recalculateDerivedValuesForMeasurement(mwv.measurement.id)
+                            ok++
+                        } catch (e: Exception) {
+                            LogManager.e(TAG, "Recalc failed for measurementId=${mwv.measurement.id}", e)
+                        }
+                    }
+                }
+
+                if (usersAffected == 0) {
+                    LogManager.i(TAG, "Derived backfill not needed for any user.")
+                } else {
+                    LogManager.i(TAG, "Derived backfill done: $ok/$totalMeasurements measurements processed across $usersAffected users.")
+                    showSnackbar(messageResId = R.string.derived_backfill_done, duration = SnackbarDuration.Short)
+                }
+            } catch (e: Exception) {
+                LogManager.e(TAG, "Derived backfill fatal error", e)
+            }
+        }
+    }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val enrichedMeasurementsFlow: StateFlow<List<EnrichedMeasurement>> =
@@ -784,6 +867,13 @@ class SharedViewModel(
                     LogManager.i(TAG, "Init: No users found in DB. Leaving selection null. (Initialization Logic)")
                 }
             }
+        }
+
+        // Ensure derived values are backfilled once after users and types are loaded
+        viewModelScope.launch {
+            allUsers.first()
+            measurementTypes.first()
+            maybeBackfillDerivedValues()
         }
 
         LogManager.i(TAG, "ViewModel initialization complete. (Lifecycle Event)")

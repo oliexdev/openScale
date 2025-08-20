@@ -18,6 +18,8 @@
     <string name="content_desc_open_menu">Open menu</string>
     <string name="content_desc_back">Back</string>
     <string name="content_desc_selected">Selected</string>
+    <string name="derived_backfill_start">Calculating derived values …</string>
+    <string name="derived_backfill_done">Derived values successfully updated.</string>
 
     <!-- Route & Screen Titles -->
     <string name="route_title_overview">Overview</string>
