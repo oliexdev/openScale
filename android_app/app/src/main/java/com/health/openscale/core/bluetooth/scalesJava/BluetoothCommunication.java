@@ -135,7 +135,7 @@ public abstract class BluetoothCommunication {
 
     protected int getUniqueNumber() {
         if (uniqueBase == -1) {
-            LogManager.w(TAG, "(Unique number base not set! Call setUniqueNumber() first.", null);
+            LogManager.w(TAG, "Unique number base not set! Call setUniqueNumber() first.", null);
             uniqueBase = 99;
         }
         int userId = getSelectedScaleUser().getId();
@@ -588,6 +588,7 @@ public abstract class BluetoothCommunication {
         @Override
         public void onDisconnectedPeripheral(final BluetoothPeripheral peripheral, HciStatus status) {
             LogManager.d("BluetoothCommunication",String.format("disconnected '%s' with status %d", peripheral.getName(), status.value));
+            setBluetoothStatus(BT_STATUS.CONNECTION_DISCONNECT);
         }
 
         @Override
@@ -625,11 +626,22 @@ public abstract class BluetoothCommunication {
             }
 
             // Pre-scan improves connect reliability on some devices/scales
+            // Running an LE scan during connect improves connectivity on some phones
+            // (e.g. Sony Xperia Z5 compact, Android 7.1.1). For some scales (e.g. Medisana BS444)
+            // it seems to be a requirement that the scale is discovered before connecting to it.
+            // Otherwise the connection almost never succeeds.
             if (canScan) {
                 LogManager.d("BluetoothCommunication",
                         "API≥31: Do LE scan before connecting (no location needed)");
                 central.scanForPeripheralsWithAddresses(new String[]{macAddress});
-                stopMachineState(); // wait for onDiscoveredPeripheral → connect
+                new Handler(Looper.getMainLooper()).postDelayed(() -> { // wait for onDiscoveredPeripheral → connect
+                    if (btPeripheral == null || btPeripheral.getState() == ConnectionState.DISCONNECTED) {
+                        try { central.stopScan(); } catch (Exception ignore) {}
+                        setBluetoothStatus(BT_STATUS.NO_DEVICE_FOUND);
+                        sendMessage(R.string.info_bluetooth_connection_error_scale_offline, 0);
+                        resumeMachineState();
+                    }
+                }, 10_000);
                 return;
             } else {
                 LogManager.w("BluetoothCommunication",
@@ -652,17 +664,10 @@ public abstract class BluetoothCommunication {
 
 
     private void connectToDevice(BluetoothPeripheral peripheral) {
-
-        Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                LogManager.d("BluetoothCommunication","Try to connect to BLE device " + peripheral.getAddress());
-
-                stepNr = 0;
-
-                central.connectPeripheral(peripheral, peripheralCallback);
-            }
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            LogManager.d("BluetoothCommunication","Try to connect to BLE device " + peripheral.getAddress());
+            stepNr = 0;
+            central.connectPeripheral(peripheral, peripheralCallback);
         }, 1000);
     }
 
