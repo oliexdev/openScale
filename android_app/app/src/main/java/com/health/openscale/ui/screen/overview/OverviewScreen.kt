@@ -22,6 +22,7 @@ import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.widget.Toast
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -98,30 +99,33 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import com.health.openscale.R
+import com.health.openscale.core.data.ConnectionStatus
 import com.health.openscale.core.data.EvaluationState
 import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.Trend
 import com.health.openscale.core.model.MeasurementWithValues
-import com.health.openscale.core.database.UserPreferenceKeys
-import com.health.openscale.core.eval.MeasurementEvaluator
+import com.health.openscale.core.facade.SettingsPreferenceKeys
+import com.health.openscale.core.service.MeasurementEvaluator
+import com.health.openscale.core.model.UserEvaluationContext
+import com.health.openscale.core.model.ValueWithDifference
 import com.health.openscale.ui.components.LinearGauge
 import com.health.openscale.ui.components.RoundMeasurementIcon
 import com.health.openscale.ui.navigation.Routes
-import com.health.openscale.ui.screen.SharedViewModel
-import com.health.openscale.ui.screen.UserEvaluationContext
-import com.health.openscale.ui.screen.ValueWithDifference
-import com.health.openscale.ui.screen.bluetooth.BluetoothViewModel
-import com.health.openscale.ui.screen.bluetooth.ConnectionStatus
+import com.health.openscale.ui.shared.SharedViewModel
+import com.health.openscale.ui.screen.settings.BluetoothViewModel
 import com.health.openscale.ui.screen.components.LineChart
 import com.health.openscale.ui.screen.components.provideFilterTopBarAction
+import com.health.openscale.ui.shared.TopBarAction
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlin.collections.filter
 
 /**
  * Determines the appropriate top bar action based on the Bluetooth connection status.
@@ -148,7 +152,7 @@ fun determineBluetoothTopBarAction(
     currentDeviceName: String?,
     permissionsLauncher: ManagedActivityResultLauncher<Array<String>, Map<String, @JvmSuppressWildcards Boolean>>,
     enableBluetoothLauncher: ManagedActivityResultLauncher<Intent, ActivityResult>
-): SharedViewModel.TopBarAction? {
+): TopBarAction? {
 
     val deviceNameForMessage = currentDeviceName ?: context.getString(R.string.fallback_device_name_saved_scale)
 
@@ -176,7 +180,7 @@ fun determineBluetoothTopBarAction(
 
     return when {
         // 1) Show non-interactive feedback while a user-initiated operation is ongoing
-        isBusy -> SharedViewModel.TopBarAction(
+        isBusy -> TopBarAction(
             icon = Icons.AutoMirrored.Filled.BluetoothSearching,
             contentDescription = context.getString(R.string.bluetooth_action_connecting_disconnecting_desc),
             onClick = {
@@ -195,7 +199,7 @@ fun determineBluetoothTopBarAction(
         )
 
         // 2) No saved device → navigate to Bluetooth settings
-        savedAddr == null -> SharedViewModel.TopBarAction(
+        savedAddr == null -> TopBarAction(
             icon = Icons.Default.Bluetooth,
             contentDescription = context.getString(R.string.bluetooth_action_no_scale_saved_desc),
             onClick = {
@@ -208,7 +212,7 @@ fun determineBluetoothTopBarAction(
         )
 
         // 3) Connected → offer disconnect
-        savedAddr == connectedDevice && connStatusEnum == ConnectionStatus.CONNECTED -> SharedViewModel.TopBarAction(
+        savedAddr == connectedDevice && connStatusEnum == ConnectionStatus.CONNECTED -> TopBarAction(
             icon = Icons.Filled.BluetoothConnected,
             contentDescription = context.getString(R.string.bluetooth_action_disconnect_desc, deviceNameForMessage),
             onClick = {
@@ -226,21 +230,23 @@ fun determineBluetoothTopBarAction(
                         connStatusEnum == ConnectionStatus.IDLE ||
                         connStatusEnum == ConnectionStatus.NONE ||
                         connStatusEnum == ConnectionStatus.FAILED
-                ) -> SharedViewModel.TopBarAction(
+                ) -> TopBarAction(
             icon = Icons.Filled.BluetoothDisabled,
             contentDescription = context.getString(R.string.bluetooth_action_connect_to_desc, deviceNameForMessage),
             onClick = onClick@{
-                // a) Ask for permissions if missing (do NOT connect here; wait for onResult)
-                if (!bluetoothViewModel.permissionsGranted.value) {
+                val hasPermissions =
+                    ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED &&
+                            ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
+
+                if (!hasPermissions) {
                     requestBtPermissions()
                     return@onClick
                 }
-                // b) Ask to enable BT if off (do NOT connect here; wait for onActivityResult)
                 if (!bluetoothViewModel.isBluetoothEnabled()) {
                     requestEnableBluetooth()
                     return@onClick
                 }
-                // c) All good → connect now (explicit user tap; no autoconn)
+
                 sharedViewModel.showSnackbar(
                     message = context.getString(R.string.snackbar_bluetooth_attempting_connection, deviceNameForMessage),
                     duration = SnackbarDuration.Short
@@ -250,7 +256,7 @@ fun determineBluetoothTopBarAction(
         )
 
         // 5) Fallback
-        else -> SharedViewModel.TopBarAction(
+        else -> TopBarAction(
             icon = Icons.Default.Bluetooth,
             contentDescription = context.getString(R.string.bluetooth_action_check_settings_desc),
             onClick = {
@@ -289,10 +295,10 @@ fun OverviewScreen(
     // Time filter action for the top bar, specific to this screen's context
     val timeFilterAction = provideFilterTopBarAction(
         sharedViewModel = sharedViewModel,
-        screenContextName = UserPreferenceKeys.OVERVIEW_SCREEN_CONTEXT
+        screenContextName = SettingsPreferenceKeys.OVERVIEW_SCREEN_CONTEXT
     )
-    val enrichedMeasurements by sharedViewModel.enrichedMeasurementsFlow.collectAsState()
-    val isLoading by sharedViewModel.isBaseDataLoading.collectAsState()
+    val overviewState by sharedViewModel.overviewUiState.collectAsState()
+    val hasData = (overviewState as? SharedViewModel.UiState.Success)?.data?.isNotEmpty() == true
 
     // --- Chart selection logic reverted to local state management ---
     val allMeasurementTypes by sharedViewModel.measurementTypes.collectAsState()
@@ -320,33 +326,30 @@ fun OverviewScreen(
     val enableBluetoothLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        bluetoothViewModel.refreshPermissionsStatus()
         if (result.resultCode == Activity.RESULT_OK) {
-            if (bluetoothViewModel.permissionsGranted.value) {
-                // Permissions and BT are fine → safe to connect now
+            val hasPermissions =
+                ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED &&
+                        ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
+
+            if (hasPermissions) {
                 bluetoothViewModel.connectToSavedDevice()
             } else {
-                scope.launch {
-                    sharedViewModel.showSnackbar(
-                        message = context.getString(R.string.bluetooth_enabled_permissions_missing),
-                        duration = SnackbarDuration.Long
-                    )
-                }
-            }
-        } else {
-            scope.launch {
                 sharedViewModel.showSnackbar(
-                    message = context.getString(R.string.bt_snackbar_bluetooth_disabled_to_connect_default),
+                    message = context.getString(R.string.bluetooth_enabled_permissions_missing),
                     duration = SnackbarDuration.Long
                 )
             }
+        } else {
+            sharedViewModel.showSnackbar(
+                message = context.getString(R.string.bt_snackbar_bluetooth_disabled_to_connect_default),
+                duration = SnackbarDuration.Long
+            )
         }
     }
 
     val permissionsLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { result ->
-        bluetoothViewModel.refreshPermissionsStatus()
         val allGranted = result.values.all { it }
         if (allGranted) {
             if (bluetoothViewModel.isBluetoothEnabled()) {
@@ -356,7 +359,9 @@ fun OverviewScreen(
                 enableBluetoothLauncher.launch(intent)
             }
         } else {
-            sharedViewModel.showSnackbar(R.string.bt_snackbar_permissions_required_to_connect_default)
+            sharedViewModel.showSnackbar(
+                messageResId = R.string.bt_snackbar_permissions_required_to_connect_default
+            )
         }
     }
 
@@ -379,8 +384,7 @@ fun OverviewScreen(
     // LaunchedEffect to configure the top bar based on the current state
     LaunchedEffect(
         selectedUserId,
-        isLoading,
-        enrichedMeasurements.isNotEmpty(),
+        hasData,
         bluetoothTopBarAction,
         selectedLineTypesForOverviewChart.isNotEmpty(),
         timeFilterAction,
@@ -389,7 +393,7 @@ fun OverviewScreen(
         connectedDeviceAddr
     ) {
         sharedViewModel.setTopBarTitle(context.getString(R.string.route_title_overview))
-        val actions = mutableListOf<SharedViewModel.TopBarAction>()
+        val actions = mutableListOf<TopBarAction>()
 
         // 0. Add Bluetooth action (if determined) at the beginning
         bluetoothTopBarAction?.let { btAction ->
@@ -398,7 +402,7 @@ fun OverviewScreen(
 
         // 1. Add "Add Measurement" icon
         actions.add(
-            SharedViewModel.TopBarAction(
+            TopBarAction(
                 icon = Icons.Default.Add,
                 contentDescription = context.getString(R.string.action_add_measurement_desc),
                 onClick = {
@@ -411,19 +415,12 @@ fun OverviewScreen(
             )
         )
 
-        // Condition for showing filter icons
-        if (selectedUserId != null && (!isLoading || enrichedMeasurements.isNotEmpty())) {
-            // Show time filter if the chart is visible (i.e., types are selected locally) or if not loading
-            if (selectedLineTypesForOverviewChart.isNotEmpty() || !isLoading) {
-                timeFilterAction?.let { actions.add(it) }
-            }
-        }
+        timeFilterAction?.let { actions.add(it) }
         sharedViewModel.setTopBarActions(actions)
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
         if (selectedUserId == null) {
-            // Display a card prompting user selection if no user is active
             Box(
                 modifier = Modifier
                     .weight(1f)
@@ -432,80 +429,99 @@ fun OverviewScreen(
             ) {
                 NoUserSelectedCard(navController = navController)
             }
-        } else {
-            // Display content for the selected user
+            return@Column
+        }
 
-            // Loading state for the chart (if data is loading and measurements are empty)
-            if (isLoading && enrichedMeasurements.isEmpty()) {
+        when (val state = overviewState) {
+            SharedViewModel.UiState.Loading -> {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(200.dp), // Height of the chart area
+                        .height(200.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator()
                 }
-            } else if (!isLoading) { // Show chart if not loading
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    LineChart(
-                        sharedViewModel = sharedViewModel, // Still useful for other chart data if needed
-                        screenContextName = UserPreferenceKeys.OVERVIEW_SCREEN_CONTEXT, // Still useful for context
-                        showFilterControls = true, // Allow user to select types to display on chart
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(200.dp)
-                            .padding(bottom = 8.dp),
-                        showYAxis = false,
-                        onPointSelected = { selectedTs ->
-                            val items = enrichedMeasurements.map { it.measurementWithValues }
+            }
 
-                            sharedViewModel.findClosestMeasurement(selectedTs, items)
-                                ?.let { (targetIndex, mwv) ->
-                                    val targetId = mwv.measurement.id
-                                    scope.launch {
-                                        listState.animateScrollToItem(index = targetIndex, scrollOffset = 0)
-                                        highlightedMeasurementId = targetId
-                                        delay(600)
-                                        if (highlightedMeasurementId == targetId) highlightedMeasurementId = null
-                                    }
-                                }
-                        }
-                    )
+            is SharedViewModel.UiState.Error -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(state.message ?: stringResource(R.string.error_loading_data))
                 }
             }
 
-            // Divider: shown if measurements exist OR if no chart types are selected (list shown directly)
-            if (enrichedMeasurements.isNotEmpty() || selectedLineTypesForOverviewChart.isEmpty()) { // << USE LOCAL STATE
-                HorizontalDivider()
-            }
+            is SharedViewModel.UiState.Success -> {
+                val items = state.data
 
-            Box(modifier = Modifier.weight(1f)) {
-                if (isLoading && enrichedMeasurements.isEmpty()) {
-                    // Loading is handled by the CircularProgressIndicator above
-                } else if (!isLoading && enrichedMeasurements.isEmpty() && selectedUserId != null) {
-                    // If not loading, and there are no measurements for the selected user
-                    NoMeasurementsCard(
-                        navController = navController,
-                        selectedUserId = selectedUserId
-                    )
-                } else if (enrichedMeasurements.isNotEmpty()) {
-                    // Display the list of measurements
+                if (items.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        NoMeasurementsCard(
+                            navController = navController,
+                            selectedUserId = selectedUserId
+                        )
+                    }
+                } else {
+                    // Chart
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        LineChart(
+                            sharedViewModel = sharedViewModel,
+                            screenContextName = SettingsPreferenceKeys.OVERVIEW_SCREEN_CONTEXT,
+                            showFilterControls = true,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp)
+                                .padding(bottom = 8.dp),
+                            showYAxis = false,
+                            onPointSelected = { selectedTs ->
+                                val listForFind = items.map { it.measurementWithValues }
+                                sharedViewModel.findClosestMeasurement(selectedTs, listForFind)
+                                    ?.let { (targetIndex, mwv) ->
+                                        val targetId = mwv.measurement.id
+                                        scope.launch {
+                                            listState.animateScrollToItem(
+                                                index = targetIndex,
+                                                scrollOffset = 0
+                                            )
+                                            highlightedMeasurementId = targetId
+                                            delay(600)
+                                            if (highlightedMeasurementId == targetId) highlightedMeasurementId =
+                                                null
+                                        }
+                                    }
+                            }
+                        )
+                    }
+
+                    HorizontalDivider()
+
                     LazyColumn(
                         state = listState,
                         modifier = Modifier
+                            .weight(1f)
                             .fillMaxSize()
                             .padding(horizontal = 16.dp, vertical = 8.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         itemsIndexed(
-                            items = enrichedMeasurements,
+                            items = items,
                             key = { _, item -> item.measurementWithValues.measurement.id }
                         ) { _, enrichedItem ->
                             MeasurementCard(
+                                sharedViewModel = sharedViewModel,
                                 measurementWithValues = enrichedItem.measurementWithValues,
                                 processedValuesForDisplay = enrichedItem.valuesWithTrend,
                                 userEvaluationContext = userEvalContext,
-                                        onEdit = {
+                                onEdit = {
                                     navController.navigate(
                                         Routes.measurementDetail(
                                             enrichedItem.measurementWithValues.measurement.id,
@@ -668,6 +684,7 @@ fun NoMeasurementsCard(navController: NavController, selectedUserId: Int?) {
  */
 @Composable
 fun MeasurementCard(
+    sharedViewModel : SharedViewModel,
     measurementWithValues: MeasurementWithValues,
     processedValuesForDisplay: List<ValueWithDifference>,
     userEvaluationContext: UserEvaluationContext?,
@@ -779,6 +796,7 @@ fun MeasurementCard(
                     Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
                         pinnedValues.forEach { valueWithTrend ->
                             MeasurementRowExpandable(
+                                sharedViewModel = sharedViewModel,
                                 valueWithTrend = valueWithTrend,
                                 userEvaluationContext = userEvaluationContext,
                                 measuredAtMillis = measuredAtMillis,
@@ -799,6 +817,7 @@ fun MeasurementCard(
                     ) {
                         nonPinnedValues.forEach { valueWithTrend ->
                             MeasurementRowExpandable(
+                                sharedViewModel = sharedViewModel,
                                 valueWithTrend = valueWithTrend,
                                 userEvaluationContext = userEvaluationContext,
                                 measuredAtMillis = measuredAtMillis,
@@ -872,6 +891,7 @@ fun MeasurementCard(
  */
 @Composable
 fun MeasurementValueRow(
+    sharedViewModel: SharedViewModel,
     valueWithTrend: ValueWithDifference,
     userEvaluationContext: UserEvaluationContext?,
     measuredAtMillis: Long
@@ -908,7 +928,7 @@ fun MeasurementValueRow(
     // Compute evaluation if possible
     val evalResult = remember(valueWithTrend, userEvaluationContext, measuredAtMillis) {
         if (userEvaluationContext != null && numeric != null) {
-            MeasurementEvaluator.evaluate(
+            sharedViewModel.evaluateMeasurement(
                 typeKey = type.key,
                 value = numeric,
                 userEvaluationContext = userEvaluationContext,
@@ -921,7 +941,7 @@ fun MeasurementValueRow(
     val noAgeBand: Boolean = evalResult?.let { it.lowLimit < 0f || it.highLimit < 0f } ?: false
 
     // Flag 2: percent outside a plausible range (0..100)
-    val plausible = MeasurementEvaluator.plausiblePercentRangeFor(type.key)
+    val plausible = sharedViewModel.getPlausiblePercentRange(type.key)
     val outOfPlausibleRange =
         if (numeric == null) {
             false
@@ -1085,6 +1105,7 @@ private fun EvaluationErrorBanner(message: String) {
  */
 @Composable
 fun MeasurementRowExpandable(
+    sharedViewModel: SharedViewModel,
     valueWithTrend: ValueWithDifference,
     userEvaluationContext: UserEvaluationContext?,
     measuredAtMillis: Long,
@@ -1106,7 +1127,7 @@ fun MeasurementRowExpandable(
         if (userEvaluationContext == null || numeric == null) {
             null
         } else {
-            MeasurementEvaluator.evaluate(
+            sharedViewModel.evaluateMeasurement(
                 typeKey = type.key,
                 value = numeric,
                 userEvaluationContext = userEvaluationContext,
@@ -1121,7 +1142,7 @@ fun MeasurementRowExpandable(
 
     // 2) Implausible value for percentage-based metrics
     val unitName = type.unit.displayName
-    val plausible = MeasurementEvaluator.plausiblePercentRangeFor(type.key)
+    val plausible = sharedViewModel.getPlausiblePercentRange(type.key)
     val outOfPlausibleRange =
         if (numeric == null) {
             false
@@ -1147,6 +1168,7 @@ fun MeasurementRowExpandable(
         ) {
             // Uses your existing row (with ●/▲/▼ or ! logic inside).
             MeasurementValueRow(
+                sharedViewModel = sharedViewModel,
                 valueWithTrend = valueWithTrend,
                 userEvaluationContext = userEvaluationContext,
                 measuredAtMillis = measuredAtMillis
@@ -1164,7 +1186,7 @@ fun MeasurementRowExpandable(
                     )
                 }
                 outOfPlausibleRange -> {
-                    val plausible = MeasurementEvaluator.plausiblePercentRangeFor(type.key) ?: (0f..100f)
+                    val plausible = sharedViewModel.getPlausiblePercentRange(type.key) ?: (0f..100f)
                     EvaluationErrorBanner(
                         message = stringResource(
                             R.string.eval_out_of_plausible_range_percent,

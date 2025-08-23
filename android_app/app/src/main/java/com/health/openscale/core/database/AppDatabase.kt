@@ -30,6 +30,33 @@ import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.data.User
 import com.health.openscale.core.utils.LogManager
 import com.health.openscale.getDefaultMeasurementTypes
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
+
+@Module
+@InstallIn(SingletonComponent::class)
+object DatabaseModule {
+
+    @Provides
+    @Singleton
+    fun provideDatabase(@ApplicationContext ctx: Context): AppDatabase =
+        Room.databaseBuilder(ctx, AppDatabase::class.java, AppDatabase.Companion.DATABASE_NAME)
+            .addMigrations(MIGRATION_6_7)
+            .build()
+
+    @Provides
+    fun provideUserDao(db: AppDatabase): UserDao = db.userDao()
+    @Provides
+    fun provideMeasurementDao(db: AppDatabase): MeasurementDao = db.measurementDao()
+    @Provides
+    fun provideMeasurementValueDao(db: AppDatabase): MeasurementValueDao = db.measurementValueDao()
+    @Provides
+    fun provideMeasurementTypeDao(db: AppDatabase): MeasurementTypeDao = db.measurementTypeDao()
+}
 
 /**
  * Main Room database for the application.
@@ -62,7 +89,6 @@ abstract class AppDatabase : RoomDatabase() {
         if (isOpen) {
             try {
                 super.close() // Call RoomDatabase's close method
-                INSTANCE = null
                 LogManager.i(TAG, "Database connection closed and INSTANCE reset.")
             } catch (e: Exception) {
                 LogManager.e(TAG, "Error closing database connection.", e)
@@ -75,26 +101,6 @@ abstract class AppDatabase : RoomDatabase() {
     companion object {
         private const val TAG = "AppDatabase"
         const val DATABASE_NAME = "openScale.db"
-
-        @Volatile
-        private var INSTANCE: AppDatabase? = null
-
-        /**
-         * Gets the singleton instance of the [AppDatabase].
-         * Uses double-checked locking to ensure thread safety.
-         *
-         * @param context The application context.
-         * @return The singleton [AppDatabase] instance.
-         */
-        fun getInstance(context: Context): AppDatabase {
-            // Double-checked locking pattern
-            return INSTANCE ?: synchronized(this) {
-                INSTANCE ?: buildDatabase(context.applicationContext).also {
-                    LogManager.i(TAG, "Database instance created or retrieved.")
-                    INSTANCE = it
-                }
-            }
-        }
 
         /**
          * Builds the Room database instance.

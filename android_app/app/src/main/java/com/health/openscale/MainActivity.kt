@@ -17,7 +17,6 @@
  */
 package com.health.openscale
 
-import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -25,30 +24,19 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.health.openscale.core.data.InputFieldType
-import com.health.openscale.core.data.MeasurementType
-import com.health.openscale.core.data.MeasurementTypeIcon
-import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.SupportedLanguage
-import com.health.openscale.core.data.UnitType
-import com.health.openscale.core.database.AppDatabase
-import com.health.openscale.core.database.DatabaseRepository
-import com.health.openscale.core.utils.LanguageUtil
 import com.health.openscale.core.utils.LogManager
-import com.health.openscale.core.database.UserSettingsRepository
-import com.health.openscale.core.database.provideUserSettingsRepository
+import com.health.openscale.core.facade.SettingsFacade
+import com.health.openscale.core.utils.LocaleUtils
 import com.health.openscale.ui.navigation.AppNavigation
-import com.health.openscale.ui.screen.SharedViewModel
+import com.health.openscale.ui.shared.SharedViewModel
 import com.health.openscale.ui.theme.OpenScaleTheme
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 
 /**
@@ -56,21 +44,21 @@ import kotlinx.coroutines.launch
  * This activity hosts the Jetpack Compose UI and initializes essential components
  * like the database, repositories, and ViewModels.
  */
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     companion object {
         private const val TAG = "MainActivity"
     }
 
-    private val appInstance: OpenScaleApp by lazy { application as OpenScaleApp }
-    private val userSettingsRepository: UserSettingsRepository by lazy { appInstance.userSettingsRepository }
-    private val databaseRepository: DatabaseRepository by lazy { appInstance.databaseRepository }
+    @Inject
+    lateinit var settingsFacade: SettingsFacade
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         // --- Language initializing ---
         lifecycleScope.launch {
-            userSettingsRepository.appLanguageCode.collectLatest { languageCode ->
+            settingsFacade.appLanguageCode.collectLatest { languageCode ->
                 val currentActivityLocale = resources.configuration.locales.get(0).language
                 val targetLanguage = languageCode ?: SupportedLanguage.getDefault().code
 
@@ -78,7 +66,7 @@ class MainActivity : ComponentActivity() {
 
                 if (currentActivityLocale != targetLanguage) {
                     LogManager.i(TAG, "Language changed or first load. Applying locale: $targetLanguage and recreating activity.")
-                    LanguageUtil.updateAppLocale(this@MainActivity, targetLanguage)
+                    LocaleUtils.updateAppLocale(this@MainActivity, targetLanguage)
 
                     if (!isFinishing) {
                         recreate()
@@ -98,9 +86,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             OpenScaleTheme {
-                val sharedViewModel: SharedViewModel = viewModel(
-                    factory = provideSharedViewModelFactory(application, databaseRepository, userSettingsRepository)
-                )
+                val sharedViewModel: SharedViewModel = hiltViewModel()
 
                 val view = LocalView.current
                 if (!view.isInEditMode) {
@@ -115,27 +101,5 @@ class MainActivity : ComponentActivity() {
                 AppNavigation(sharedViewModel)
             }
         }
-    }
-}
-
-/**
- * Provides a [ViewModelProvider.Factory] for creating [SharedViewModel] instances.
- * This allows for dependency injection into the ViewModel.
- *
- * @param databaseRepository The repository for accessing database operations.
- * @param userSettingsRepository The repository for accessing user preferences.
- * @return A [ViewModelProvider.Factory] for [SharedViewModel].
- */
-private fun provideSharedViewModelFactory(
-    application : Application,
-    databaseRepository: DatabaseRepository,
-    userSettingsRepository: UserSettingsRepository
-): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(SharedViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return SharedViewModel(application, databaseRepository, userSettingsRepository) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
     }
 }

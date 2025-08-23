@@ -20,6 +20,16 @@
     <string name="derived_backfill_start">Berechne abgeleitete Werte …</string>
     <string name="derived_backfill_done">Abgeleitete Werte wurden erfolgreich aktualisiert.</string>
 
+    <!-- Allgemeine Fehlermeldungen -->
+    <string name="error_generic">Es ist ein Fehler aufgetreten.</string>
+    <string name="error_loading_data">Daten konnten nicht geladen werden.</string>
+    <string name="error_try_again">Bitte versuchen Sie es erneut.</string>
+
+    <!-- Keine Daten verfügbar -->
+    <string name="no_data_available">Keine Daten verfügbar.</string>
+    <string name="no_measurements_found">Keine Messungen gefunden.</string>
+    <string name="no_entries_found">Keine Einträge vorhanden.</string>
+
     <!-- Routen- & Bildschirmtitel -->
     <string name="route_title_overview">Übersicht</string>
     <string name="route_title_graph">Diagramme</string>
@@ -40,6 +50,7 @@
     <string name="manage_users">Benutzer verwalten</string>
     <string name="content_desc_switch_user">Benutzer wechseln. Ausgewählt: %1$s</string>
     <string name="content_desc_selected_user_indicator">Indikator für ausgewählten Benutzer</string>
+    <string name="error_selecting_user">Benutzer konnte nicht ausgewählt werden.</string>
     <string name="action_add_user">Benutzer hinzufügen</string>
     <string name="toast_no_user_selected">Kein Benutzer ausgewählt.</string>
     <string name="toast_select_user_first">Bitte wählen Sie zuerst einen Benutzer aus.</string>
@@ -261,7 +272,6 @@
     <!-- Tabellen-Bildschirm -->
     <string name="table_header_date">Datum</string>
     <string name="table_message_no_columns_or_measurements">Keine Spalten ausgewählt oder keine Messungen verfügbar.</string>
-    <string name="table_message_no_measurements">Keine Messungen verfügbar.</string>
     <string name="table_message_no_columns_selected">Keine Spalten zur Anzeige ausgewählt.</string>
     <string name="table_message_no_data_for_selection">Keine Daten für die aktuelle Spaltenauswahl verfügbar.</string>
     <string name="table_trend_up">Trend steigend</string>

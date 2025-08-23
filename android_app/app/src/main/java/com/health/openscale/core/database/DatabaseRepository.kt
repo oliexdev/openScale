@@ -28,19 +28,22 @@ import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.data.User
 import com.health.openscale.core.data.WeightUnit
 import com.health.openscale.core.model.MeasurementWithValues
-import com.health.openscale.core.utils.CalculationUtil
-import com.health.openscale.core.utils.Converters
+import com.health.openscale.core.utils.CalculationUtils
+import com.health.openscale.core.utils.ConverterUtils
 import com.health.openscale.core.utils.LogManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Repository class for accessing and managing data in the application's database.
  * It abstracts the data sources (DAOs) and provides a clean API for data operations.
  */
-class DatabaseRepository(
+@Singleton
+class DatabaseRepository @Inject constructor(
     private val database: AppDatabase,
     private val userDao: UserDao,
     private val measurementDao: MeasurementDao,
@@ -63,7 +66,7 @@ class DatabaseRepository(
      */
     fun closeDatabase() {
         LogManager.i(TAG, "Attempting to close database connection.")
-        database.closeConnection()
+        database.close()
     }
 
     // --- User Operations ---
@@ -276,7 +279,7 @@ class DatabaseRepository(
                     }
                 } else {
                     // If derived value is not null, insert or update it
-                    val roundedValue = CalculationUtil.roundTo(derivedValue) // Apply rounding
+                    val roundedValue = CalculationUtils.roundTo(derivedValue) // Apply rounding
                     if (existingDerivedValueObject != null) {
                         if (existingDerivedValueObject.floatValue != roundedValue) {
                             measurementValueDao.update(existingDerivedValueObject.copy(floatValue = roundedValue))
@@ -312,8 +315,8 @@ class DatabaseRepository(
         val weightKg: Float? = if (weightValue != null && weightUnitType != null) {
             when (weightUnitType) {
                 UnitType.KG -> weightValue
-                UnitType.LB -> Converters.toKilogram(weightValue, WeightUnit.LB)
-                UnitType.ST -> Converters.toKilogram(weightValue, WeightUnit.ST)
+                UnitType.LB -> ConverterUtils.toKilogram(weightValue, WeightUnit.LB)
+                UnitType.ST -> ConverterUtils.toKilogram(weightValue, WeightUnit.ST)
                 else -> {
                     LogManager.w(DERIVED_VALUES_TAG, "Unsupported unit $weightUnitType for weight conversion. Assuming KG if value present for ${MeasurementTypeKey.WEIGHT}.")
                     weightValue // Fallback or handle error appropriately
@@ -328,7 +331,7 @@ class DatabaseRepository(
         val waistCm: Float? = if (waistValue != null && waistUnitType != null) {
             when (waistUnitType) {
                 UnitType.CM -> waistValue
-                UnitType.INCH -> Converters.toCentimeter(waistValue, MeasureUnit.INCH)
+                UnitType.INCH -> ConverterUtils.toCentimeter(waistValue, MeasureUnit.INCH)
                 else -> {
                     LogManager.w(DERIVED_VALUES_TAG, "Unsupported unit $waistUnitType for waist conversion. Assuming CM if value present for ${MeasurementTypeKey.WAIST}.")
                     waistValue
@@ -340,7 +343,7 @@ class DatabaseRepository(
         val hipsCm: Float? = if (hipsValue != null && hipsUnitType != null) {
             when (hipsUnitType) {
                 UnitType.CM -> hipsValue
-                UnitType.INCH -> Converters.toCentimeter(hipsValue, MeasureUnit.INCH)
+                UnitType.INCH -> ConverterUtils.toCentimeter(hipsValue, MeasureUnit.INCH)
                 else -> {
                     LogManager.w(DERIVED_VALUES_TAG, "Unsupported unit $hipsUnitType for hips conversion. Assuming CM if value present for ${MeasurementTypeKey.HIPS}.")
                     hipsValue
@@ -352,21 +355,21 @@ class DatabaseRepository(
         val caliper1Cm: Float? = if (caliper1Value != null && caliper1UnitType != null) {
             when (caliper1UnitType) {
                 UnitType.CM -> caliper1Value
-                UnitType.INCH -> Converters.toCentimeter(caliper1Value, MeasureUnit.INCH)
+                UnitType.INCH -> ConverterUtils.toCentimeter(caliper1Value, MeasureUnit.INCH)
                 else -> caliper1Value // Fallback
             }
         } else null
         val caliper2Cm: Float? = if (caliper2Value != null && caliper2UnitType != null) {
             when (caliper2UnitType) {
                 UnitType.CM -> caliper2Value
-                UnitType.INCH -> Converters.toCentimeter(caliper2Value, MeasureUnit.INCH)
+                UnitType.INCH -> ConverterUtils.toCentimeter(caliper2Value, MeasureUnit.INCH)
                 else -> caliper2Value
             }
         } else null
         val caliper3Cm: Float? = if (caliper3Value != null && caliper3UnitType != null) {
             when (caliper3UnitType) {
                 UnitType.CM -> caliper3Value
-                UnitType.INCH -> Converters.toCentimeter(caliper3Value, MeasureUnit.INCH)
+                UnitType.INCH -> ConverterUtils.toCentimeter(caliper3Value, MeasureUnit.INCH)
                 else -> caliper3Value
             }
         } else null
@@ -374,7 +377,7 @@ class DatabaseRepository(
         // User's height is assumed to be stored in CM in the User object
         val userHeightCm = user.heightCm
 
-        val ageAtMeasurementYears = CalculationUtil.ageOn(
+        val ageAtMeasurementYears = CalculationUtils.ageOn(
             dateMillis = measurement.timestamp,
             birthDateMillis = user.birthDate
         )

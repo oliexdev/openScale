@@ -81,9 +81,10 @@ import com.health.openscale.core.data.MeasurementTypeIcon
 import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.UnitType
 import com.health.openscale.ui.components.MeasurementIcon
-import com.health.openscale.ui.screen.SharedViewModel
+import com.health.openscale.ui.shared.SharedViewModel
 import com.health.openscale.ui.screen.dialog.ColorPickerDialog
 import com.health.openscale.ui.screen.dialog.IconPickerDialog
+import com.health.openscale.ui.shared.TopBarAction
 import kotlin.text.lowercase
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -195,7 +196,7 @@ fun MeasurementTypeDetailScreen(
     LaunchedEffect(Unit) {
         sharedViewModel.setTopBarTitle(if (isEdit) titleEdit else titleAdd)
         sharedViewModel.setTopBarAction(
-            SharedViewModel.TopBarAction(icon = Icons.Default.Save, onClick = {
+            TopBarAction(icon = Icons.Default.Save, onClick = {
                 if (name.isNotBlank()) {
                     // When creating the updatedType, use the key of the originalExistingType if it's an edit.
                     // For new types, it's MeasurementTypeKey.CUSTOM.
@@ -218,7 +219,8 @@ fun MeasurementTypeDetailScreen(
 
                     if (isEdit && originalExistingType != null) {
                         val unitChanged = originalExistingType.unit != currentUpdatedType.unit
-                        val inputTypesAreFloat = originalExistingType.inputType == InputFieldType.FLOAT && currentUpdatedType.inputType == InputFieldType.FLOAT
+                        val inputTypesAreFloat =
+                            originalExistingType.inputType == InputFieldType.FLOAT && currentUpdatedType.inputType == InputFieldType.FLOAT
 
                         if (unitChanged && inputTypesAreFloat) {
                             pendingUpdatedType = currentUpdatedType
@@ -232,7 +234,8 @@ fun MeasurementTypeDetailScreen(
                         navController.popBackStack()
                     }
                 } else {
-                    Toast.makeText(context, R.string.toast_enter_valid_data, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.toast_enter_valid_data, Toast.LENGTH_SHORT)
+                        .show()
                 }
             })
         )
@@ -254,7 +257,7 @@ fun MeasurementTypeDetailScreen(
             },
             confirmButton = {
                 TextButton(onClick = {
-                    settingsViewModel.updateMeasurementTypeAndConvertDataViewModelCentric(
+                    settingsViewModel.updateMeasurementTypeWithConversion(
                         originalType = originalExistingType,
                         updatedType = pendingUpdatedType!!
                     )

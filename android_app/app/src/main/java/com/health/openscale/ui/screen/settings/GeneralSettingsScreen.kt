@@ -62,7 +62,7 @@ import androidx.navigation.NavController
 import com.health.openscale.R
 import com.health.openscale.core.data.SupportedLanguage
 import com.health.openscale.core.utils.LogManager
-import com.health.openscale.ui.screen.SharedViewModel
+import com.health.openscale.ui.shared.SharedViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -76,25 +76,19 @@ fun GeneralSettingsScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
-    // Get supported languages (enum instances)
-    val supportedLanguagesEnumEntries = remember {
-        SupportedLanguage.entries
-    }
+    val supportedLanguagesEnumEntries = remember { SupportedLanguage.entries }
 
-    val currentLanguageCode by settingsViewModel.appLanguageCode.collectAsState()
+    val currentLanguageCode by sharedViewModel.appLanguageCode.collectAsState(initial = null)
     var expandedLanguageMenu by remember { mutableStateOf(false) }
 
     val selectedLanguage: SupportedLanguage = remember(currentLanguageCode, supportedLanguagesEnumEntries) {
-        val defaultSystemLangCode = SupportedLanguage.getDefault().code
+        val systemDefault = SupportedLanguage.getDefault().code
         supportedLanguagesEnumEntries.find { it.code == currentLanguageCode }
-            ?: supportedLanguagesEnumEntries.firstOrNull { it.code == settingsViewModel.getDefaultAppLanguage() }
-            ?: supportedLanguagesEnumEntries.firstOrNull { it.code == defaultSystemLangCode }
+            ?: supportedLanguagesEnumEntries.firstOrNull { it.code == systemDefault }
             ?: SupportedLanguage.getDefault()
     }
 
-    val isFileLoggingEnabled by sharedViewModel.userSettingRepository.isFileLoggingEnabled.collectAsState(
-        initial = false
-    )
+    val isFileLoggingEnabled by sharedViewModel.isFileLoggingEnabled.collectAsState(initial = false)
     var showLoggingActivationDialog by remember { mutableStateOf(false) }
 
     val createFileLauncher = rememberLauncherForActivityResult(
@@ -132,7 +126,7 @@ fun GeneralSettingsScreen(
                 TextButton(
                     onClick = {
                         scope.launch {
-                            sharedViewModel.userSettingRepository.setFileLoggingEnabled(true)
+                            sharedViewModel.setFileLoggingEnabled(true)
                             LogManager.updateLoggingPreference(true)
                             sharedViewModel.showSnackbar(
                                 context.getString(R.string.file_logging_enabled_snackbar)
@@ -143,9 +137,9 @@ fun GeneralSettingsScreen(
                 ) { Text(stringResource(R.string.enable_button)) }
             },
             dismissButton = {
-                TextButton(
-                    onClick = { showLoggingActivationDialog = false }
-                ) { Text(stringResource(R.string.cancel_button)) }
+                TextButton(onClick = { showLoggingActivationDialog = false }) {
+                    Text(stringResource(R.string.cancel_button))
+                }
             }
         )
     }
@@ -157,7 +151,7 @@ fun GeneralSettingsScreen(
     Column(
         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
-        // --- Language Settings Section ---
+        // --- Language Settings ---
         ExposedDropdownMenuBox(
             expanded = expandedLanguageMenu,
             onExpandedChange = { expandedLanguageMenu = !expandedLanguageMenu },
@@ -165,7 +159,7 @@ fun GeneralSettingsScreen(
         ) {
             OutlinedTextField(
                 value = selectedLanguage.nativeDisplayName,
-                onValueChange = {}, // Read-only
+                onValueChange = {}, // read-only
                 readOnly = true,
                 label = { Text(stringResource(id = R.string.settings_language_label)) },
                 leadingIcon = {
@@ -174,9 +168,7 @@ fun GeneralSettingsScreen(
                         contentDescription = stringResource(id = R.string.settings_language_label)
                     )
                 },
-                trailingIcon = {
-                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedLanguageMenu)
-                },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedLanguageMenu) },
                 modifier = Modifier
                     .menuAnchor(type = MenuAnchorType.PrimaryNotEditable)
                     .fillMaxWidth()
@@ -189,12 +181,12 @@ fun GeneralSettingsScreen(
             ) {
                 SupportedLanguage.entries.forEach { langEnumEntry ->
                     DropdownMenuItem(
-                        text = {
-                            Text(langEnumEntry.nativeDisplayName)
-                        },
+                        text = { Text(langEnumEntry.nativeDisplayName) },
                         onClick = {
-                            if (settingsViewModel.appLanguageCode.value != langEnumEntry.code) {
-                                settingsViewModel.setAppLanguage(langEnumEntry.code)
+                            if (currentLanguageCode != langEnumEntry.code) {
+                                scope.launch {
+                                    sharedViewModel.setAppLanguageCode(langEnumEntry.code)
+                                }
                             }
                             expandedLanguageMenu = false
                         },
@@ -204,7 +196,7 @@ fun GeneralSettingsScreen(
             }
         }
 
-        // --- Diagnostics Sub-Section ---
+        // --- Diagnostics ---
         Text(
             text = stringResource(R.string.diagnostics_title),
             style = MaterialTheme.typography.titleSmall,
@@ -242,7 +234,7 @@ fun GeneralSettingsScreen(
                         showLoggingActivationDialog = true
                     } else {
                         scope.launch {
-                            sharedViewModel.userSettingRepository.setFileLoggingEnabled(false)
+                            sharedViewModel.setFileLoggingEnabled(false)
                             LogManager.updateLoggingPreference(false)
                             sharedViewModel.showSnackbar(
                                 context.getString(R.string.file_logging_disabled_snackbar)
@@ -281,12 +273,10 @@ fun GeneralSettingsScreen(
                         }
                     }
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Text(stringResource(R.string.export_log_file_button))
             }
         }
     }
 }
-

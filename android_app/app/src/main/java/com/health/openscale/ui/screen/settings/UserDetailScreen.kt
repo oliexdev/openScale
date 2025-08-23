@@ -18,25 +18,20 @@
 package com.health.openscale.ui.screen.settings
 
 import android.widget.Toast
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.UnfoldMore
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenuItem
@@ -65,21 +60,18 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.health.openscale.R
 import com.health.openscale.core.data.ActivityLevel
 import com.health.openscale.core.data.GenderType
-import com.health.openscale.core.data.MeasureUnit
 import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.data.User
-import com.health.openscale.core.data.WeightUnit
-import com.health.openscale.core.utils.Converters
-import com.health.openscale.ui.screen.SharedViewModel
+import com.health.openscale.core.utils.ConverterUtils
+import com.health.openscale.ui.shared.SharedViewModel
+import com.health.openscale.ui.shared.TopBarAction
 import kotlinx.coroutines.launch
 import java.text.DateFormat
-import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -173,7 +165,7 @@ fun UserDetailScreen(
                     String.format(Locale.US, "%.1f", cmValue)
                 } else { // heightInputUnit == UnitType.INCH
                     // Konvertiere den CM-Wert aus der DB in Zoll für die Anzeige
-                    val inchesValue = Converters.convertFloatValueUnit(cmValue, UnitType.CM, UnitType.INCH)
+                    val inchesValue = ConverterUtils.convertFloatValueUnit(cmValue, UnitType.CM, UnitType.INCH)
                     String.format(Locale.US, "%.1f", inchesValue)
                 }
             } else {
@@ -192,7 +184,7 @@ fun UserDetailScreen(
             else addUserTitle
         )
         sharedViewModel.setTopBarAction(
-            SharedViewModel.TopBarAction(icon = Icons.Default.Save, onClick = {
+            TopBarAction(icon = Icons.Default.Save, onClick = {
                 val validNumericHeight = heightValueString.toFloatOrNull()
                 var finalHeightCm: Float? = null
 
@@ -201,12 +193,17 @@ fun UserDetailScreen(
                         validNumericHeight // Wert ist bereits in CM
                     } else { // heightInputUnit == UnitType.INCH
                         // Konvertiere den in Zoll eingegebenen Wert zurück zu CM für die Speicherung
-                        Converters.convertFloatValueUnit(validNumericHeight, UnitType.INCH, UnitType.CM)
+                        ConverterUtils.convertFloatValueUnit(
+                            validNumericHeight,
+                            UnitType.INCH,
+                            UnitType.CM
+                        )
                     }
                 }
                 if (name.isNotBlank() && finalHeightCm != null) {
                     val newUser = User(
-                        id = user?.id ?: 0, // Use existing ID if editing, or 0 for Room to auto-generate
+                        id = user?.id
+                            ?: 0, // Use existing ID if editing, or 0 for Room to auto-generate
                         name = name,
                         birthDate = birthDate,
                         gender = gender,
@@ -271,7 +268,7 @@ fun UserDetailScreen(
 
                     val currentNumericValue = heightValueString.toFloatOrNull()
                     if (currentNumericValue != null && currentNumericValue > 0f) {
-                        val convertedValue = Converters.convertFloatValueUnit(currentNumericValue, heightInputUnit, newUnit)
+                        val convertedValue = ConverterUtils.convertFloatValueUnit(currentNumericValue, heightInputUnit, newUnit)
                         heightValueString = String.format(Locale.US, "%.1f", convertedValue)
                     } else {
                         heightValueString = ""

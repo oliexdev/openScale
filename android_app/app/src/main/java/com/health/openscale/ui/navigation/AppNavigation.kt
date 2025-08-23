@@ -17,10 +17,7 @@
  */
 package com.health.openscale.ui.navigation
 
-import android.app.Application
-import android.content.res.Resources
-import android.net.http.SslCertificate.restoreState
-import android.net.http.SslCertificate.saveState
+import android.util.Pair
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -43,9 +40,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.BluetoothSearching
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.BluetoothSearching
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.HowToReg
 import androidx.compose.material.icons.filled.Info
@@ -81,7 +76,6 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -98,7 +92,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -108,14 +105,12 @@ import androidx.navigation.navArgument
 import com.health.openscale.BuildConfig
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.BluetoothEvent.UserInteractionType
-import com.health.openscale.core.bluetooth.scalesJava.BluetoothCommunication
 import com.health.openscale.core.data.User
 import com.health.openscale.core.utils.LogManager
 import com.health.openscale.ui.navigation.Routes.getIconForRoute
-import com.health.openscale.ui.screen.SharedViewModel
-import com.health.openscale.ui.screen.bluetooth.BluetoothViewModel
+import com.health.openscale.ui.shared.SharedViewModel
+import com.health.openscale.ui.screen.settings.BluetoothViewModel
 import com.health.openscale.ui.screen.components.TableScreen
-import com.health.openscale.ui.screen.createViewModelFactory
 import com.health.openscale.ui.screen.graph.GraphScreen
 import com.health.openscale.ui.screen.overview.MeasurementDetailScreen
 import com.health.openscale.ui.screen.overview.OverviewScreen
@@ -152,21 +147,16 @@ import kotlinx.coroutines.launch
 fun AppNavigation(sharedViewModel: SharedViewModel) {
     val TAG = "AppNavigation"
     val context = LocalContext.current
-    val resources = context.resources // Get resources for non-composable string access
-    val application = context.applicationContext as Application
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    val lifecycleOwner = LocalLifecycleOwner.current
 
     // Initialize ViewModels that might be needed by screens within this navigation structure
-    val settingsViewModel: SettingsViewModel = viewModel(
-        factory = createViewModelFactory { SettingsViewModel(sharedViewModel) }
-    )
+    val settingsViewModel: SettingsViewModel = hiltViewModel()
 
-    val bluetoothViewModel: BluetoothViewModel = viewModel(
-        factory = createViewModelFactory { BluetoothViewModel(application, sharedViewModel) }
-    )
+    val bluetoothViewModel: BluetoothViewModel = hiltViewModel()
 
     // Observe the current navigation route
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
@@ -195,51 +185,32 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
         else -> "" // Default to empty string if title data is null or unexpected type
     }
 
-    // Listen for snackbar events emitted by the SharedViewModel.
-    // This LaunchedEffect runs once when AppNavigation is composed.
-    LaunchedEffect(sharedViewModel.snackbarChannel) {
-        sharedViewModel.snackbarChannel.collect { event ->
-            // Launch a new coroutine for each snackbar event to handle its display.
-            // This allows multiple snackbars to be queued and shown sequentially.
-            scope.launch {
-                val messageText: String = if (event.messageResId != Routes.NO_TITLE_RESOURCE_ID) {
-                    try {
-                        resources.getString(event.messageResId, *event.messageFormatArgs.toTypedArray())
-                    } catch (e: Resources.NotFoundException) {
-                        // Log this error or handle it, then fallback
-                        event.message // Fallback to raw message if resource ID is invalid
-                    }
-                } else {
-                    event.message
-                }
-
-                val actionLabelText: String? = if (event.actionLabelResId != null && event.actionLabelResId != Routes.NO_TITLE_RESOURCE_ID) {
-                    try {
-                        resources.getString(event.actionLabelResId)
-                    } catch (e: Resources.NotFoundException) {
-                        // Log this error or handle it, then fallback
-                        event.actionLabel // Fallback to raw label if resource ID is invalid
-                    }
-                } else {
-                    event.actionLabel
-                }
-
-                val result = snackbarHostState.showSnackbar(
-                    message = messageText,
-                    duration = event.duration,
-                    actionLabel = actionLabelText
-                )
-                if (result == SnackbarResult.ActionPerformed) {
-                    event.onAction?.invoke()
-                }
-            }
-        }
-    }
-
     // Reset top bar actions when the current route changes.
     // This prevents actions from a previous screen from lingering on the new screen.
     LaunchedEffect(currentRoute) {
         sharedViewModel.setTopBarAction(null)
+    }
+
+    LaunchedEffect(snackbarHostState, sharedViewModel, settingsViewModel, bluetoothViewModel) {
+        lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            kotlinx.coroutines.flow.merge(
+                sharedViewModel.snackbarEvents,
+                settingsViewModel.snackbarEvents,
+                bluetoothViewModel.snackbarEvents
+            ).collect { evt ->
+                val msg = evt.message ?: context.getString(
+                    requireNotNull(evt.messageResId),
+                    *evt.messageFormatArgs.toTypedArray()
+                )
+                val action = evt.actionLabel ?: evt.actionLabelResId?.let { context.getString(it) }
+                val res = snackbarHostState.showSnackbar(
+                    message = msg,
+                    actionLabel = action,
+                    duration = evt.duration
+                )
+                if (res == SnackbarResult.ActionPerformed) evt.onAction?.invoke()
+            }
+        }
     }
 
     val pendingInteractionEvent by bluetoothViewModel.pendingUserInteractionEvent.collectAsState()
@@ -291,9 +262,9 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
                             LogManager.d(TAG, "CHOOSE_USER interaction received. Data: $choicesData")
 
                             // Expecting Pair<Array<String>, IntArray> or Pair<Array<CharSequence>, IntArray>
-                            if (choicesData is android.util.Pair<*, *> && choicesData.first is Array<*> && choicesData.second is IntArray) {
+                            if (choicesData is Pair<*, *> && choicesData.first is Array<*> && choicesData.second is IntArray) {
                                 @Suppress("UNCHECKED_CAST")
-                                val choices = choicesData as android.util.Pair<Array<CharSequence>, IntArray>
+                                val choices = choicesData as Pair<Array<CharSequence>, IntArray>
                                 val choiceDisplayNames = choices.first
                                 val choiceIndices = choices.second
 
@@ -357,21 +328,21 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
                                 if (selectedUserIndexState != Int.MIN_VALUE) {
                                     feedbackData = selectedUserIndexState // Ist ein Int
                                 } else {
-                                    sharedViewModel.showSnackbar(R.string.dialog_bt_select_user_prompt)
+                                    sharedViewModel.showSnackbar(messageResId = R.string.dialog_bt_select_user_prompt)
                                 }
                             }
                             UserInteractionType.ENTER_CONSENT -> {
                                 if (isConsentInputValid) {
                                     feedbackData = consentCodeInput.toInt()
                                 } else {
-                                    sharedViewModel.showSnackbar(R.string.dialog_bt_enter_valid_code_prompt)
+                                    sharedViewModel.showSnackbar(messageResId = R.string.dialog_bt_enter_valid_code_prompt)
                                 }
                             }
                             // else -> { /* Handle unknown types or provide defaults */ } // Optional
                         }
 
-                        if (feedbackData != null) {
-                            bluetoothViewModel.processUserInteraction(interactionType, feedbackData)
+                        feedbackData?.let { data ->
+                            bluetoothViewModel.provideUserInteractionFeedback(interactionType, data)
                         }
                     },
                     enabled = when (interactionEvent.interactionType) {

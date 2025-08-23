@@ -29,8 +29,19 @@ import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.utils.LogManager
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+
+@EntryPoint
+@InstallIn(SingletonComponent::class)
+interface DatabaseProviderEntryPoint {
+    fun databaseRepository(): DatabaseRepository
+   // fun userSettingsRepository(): UserSettingsRepository // not needed
+}
 
 /**
  * Exposes the user and measurement data from openScale via
@@ -60,14 +71,13 @@ class DatabaseProvider : ContentProvider() {
         val appContext = context!!.applicationContext
         return try {
             LogManager.init(appContext, false)
-            val appDbInstance = AppDatabase.getInstance(appContext)
-            databaseRepository = DatabaseRepository(
-                database = appDbInstance,
-                userDao = appDbInstance.userDao(),
-                measurementDao = appDbInstance.measurementDao(),
-                measurementTypeDao = appDbInstance.measurementTypeDao(),
-                measurementValueDao = appDbInstance.measurementValueDao()
+
+            val entryPoint = EntryPointAccessors.fromApplication(
+                appContext,
+                DatabaseProviderEntryPoint::class.java
             )
+            databaseRepository = entryPoint.databaseRepository()
+
             LogManager.i(TAG, "DatabaseProvider initialized successfully.")
             true
         } catch (e: Exception) {

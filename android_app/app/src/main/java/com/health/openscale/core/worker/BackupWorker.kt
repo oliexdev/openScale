@@ -20,11 +20,14 @@ package com.health.openscale.core.worker
 import android.content.Context
 import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
+import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.health.openscale.core.database.DatabaseRepository
-import com.health.openscale.core.database.UserSettingsRepository
+import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.core.utils.LogManager
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.first
 import java.io.File
 import java.io.FileInputStream
@@ -34,11 +37,11 @@ import java.util.Locale
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
-
-class BackupWorker(
-    appContext: Context,
-    workerParams: WorkerParameters,
-    private val userSettingsRepository: UserSettingsRepository,
+@HiltWorker
+class BackupWorker @AssistedInject constructor(
+    @Assisted appContext: Context,
+    @Assisted workerParams: WorkerParameters,
+    private val settingsFacade: SettingsFacade,
     private val databaseRepository: DatabaseRepository
 ) : CoroutineWorker(appContext, workerParams) {
     companion object {
@@ -49,9 +52,9 @@ class BackupWorker(
     override suspend fun doWork(): Result {
         LogManager.i(TAG, "Automatic backup worker started.")
 
-        val isEnabled = userSettingsRepository.autoBackupEnabledGlobally.first()
-        val locationUriString = userSettingsRepository.autoBackupLocationUri.first()
-        val createNewFile = userSettingsRepository.autoBackupCreateNewFile.first()
+        val isEnabled = settingsFacade.autoBackupEnabledGlobally.first()
+        val locationUriString = settingsFacade.autoBackupLocationUri.first()
+        val createNewFile = settingsFacade.autoBackupCreateNewFile.first()
 
         if (!isEnabled || locationUriString == null) {
             LogManager.i(TAG, "Auto backup is disabled or location not set. Worker finishing.")
@@ -63,7 +66,7 @@ class BackupWorker(
 
         if (parentDocumentFile == null || !parentDocumentFile.canWrite()) {
             LogManager.e(TAG, "Cannot write to backup location: $locationUriString. Permissions might be lost or URI invalid.")
-            userSettingsRepository.setAutoBackupLastSuccessfulTimestamp(0L)
+            settingsFacade.setAutoBackupLastSuccessfulTimestamp(0L)
             return Result.failure()
         }
 
@@ -120,12 +123,12 @@ class BackupWorker(
             } ?: return Result.failure()
 
             LogManager.i(TAG, "Automatic backup successful to: ${backupDocumentFile.uri}")
-            userSettingsRepository.setAutoBackupLastSuccessfulTimestamp(System.currentTimeMillis())
+            settingsFacade.setAutoBackupLastSuccessfulTimestamp(System.currentTimeMillis())
             return Result.success()
 
         } catch (e: Exception) {
             LogManager.e(TAG, "Error during automatic backup", e)
-            userSettingsRepository.setAutoBackupLastSuccessfulTimestamp(0L)
+            settingsFacade.setAutoBackupLastSuccessfulTimestamp(0L)
             return Result.failure()
         }
     }

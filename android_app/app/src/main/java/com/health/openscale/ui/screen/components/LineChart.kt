@@ -18,7 +18,6 @@
 package com.health.openscale.ui.screen.components
 
 import android.text.Layout
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -62,10 +61,11 @@ import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.TimeRangeFilter
-import com.health.openscale.core.database.UserPreferenceKeys
-import com.health.openscale.core.database.UserSettingsRepository
-import com.health.openscale.core.database.UserSettingsRepositoryImpl
-import com.health.openscale.ui.screen.SharedViewModel
+import com.health.openscale.core.facade.SettingsPreferenceKeys
+import com.health.openscale.core.facade.SettingsFacade
+import com.health.openscale.core.model.EnrichedMeasurement
+import com.health.openscale.ui.shared.SharedViewModel
+import com.health.openscale.ui.shared.TopBarAction
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberAxisGuidelineComponent
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberBottom
@@ -87,7 +87,6 @@ import com.patrykandpatrick.vico.core.cartesian.Zoom
 import com.patrykandpatrick.vico.core.cartesian.axis.Axis
 import com.patrykandpatrick.vico.core.cartesian.axis.HorizontalAxis
 import com.patrykandpatrick.vico.core.cartesian.axis.VerticalAxis
-import com.patrykandpatrick.vico.core.cartesian.axis.VerticalAxis.ItemPlacer.Companion.count
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianLayerRangeProvider
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianValueFormatter
@@ -145,20 +144,14 @@ fun LineChart(
     onPointSelected: (timestamp: Long) -> Unit = {}
 ) {
     val scope = rememberCoroutineScope()
-    val userSettingsRepository = sharedViewModel.userSettingRepository
 
-    val showDataPointsSetting by userSettingsRepository.showChartDataPoints.collectAsState(initial = true)
-
-    val uiSelectedTimeRange by rememberContextualTimeRangeFilter(
-        screenContextName = screenContextName,
-        userSettingsRepository = userSettingsRepository
-    )
     val showTypeFilterRowSetting by rememberContextualBooleanSetting(
         screenContextName = screenContextName,
         settingSuffix = SHOW_TYPE_FILTER_ROW_SUFFIX,
-        userSettingsRepository = userSettingsRepository,
-        defaultValue = showFilterControls // Initial default based on what the caller suggests
+        observeBoolean = { key, default -> sharedViewModel.observeSetting(key, default) },
+        defaultValue = showFilterControls
     )
+
     // The measurement type filter row is only shown if not targeting a specific type.
     val effectiveShowTypeFilterRow = if (targetMeasurementTypeId != null) false else showTypeFilterRowSetting
 
@@ -177,11 +170,22 @@ fun LineChart(
             )
         }
     }
+
+    val showDataPointsSetting by sharedViewModel
+        .showChartDataPoints
+        .collectAsStateWithLifecycle(initialValue = true)
+
+    val uiSelectedTimeRange by rememberContextualTimeRangeFilter(
+        screenContextName = screenContextName,
+        observeString = { key, default -> sharedViewModel.observeSetting(key, default) }
+    )
+
     val currentSelectedTypeIdsStrings by rememberContextualSelectedTypeIds(
         screenContextName = screenContextName,
-        userSettingsRepository = userSettingsRepository,
+        observeStringSet = { key, default -> sharedViewModel.observeSetting(key, default) },
         defaultSelectedTypeIds = defaultSelectedTypesValue
     )
+
     val currentSelectedTypeIntIds: Set<Int> = remember(currentSelectedTypeIdsStrings) {
         currentSelectedTypeIdsStrings.mapNotNull { stringId: String -> stringId.toIntOrNull() }.toSet()
     }
@@ -197,11 +201,11 @@ fun LineChart(
     }
 
     val smoothedData by sharedViewModel
-        .getSmoothedEnrichedMeasurements(
+        .smoothedEnrichedMeasurements(
             timeRangeFlow = timeRangeFlow,
             typesToSmoothAndDisplayFlow = typesToSmoothFlow
         )
-        .collectAsStateWithLifecycle(initialValue = emptyList())
+        .collectAsStateWithLifecycle(initialValue = emptyList<EnrichedMeasurement>())
 
     val fullyFilteredEnrichedMeasurements = remember(smoothedData, currentSelectedTypeIntIds) {
         sharedViewModel.filterEnrichedMeasurementsByTypes(smoothedData, currentSelectedTypeIntIds)
@@ -230,14 +234,14 @@ fun LineChart(
             MeasurementTypeFilterRow(
                 allMeasurementTypesProvider = { allAvailableMeasurementTypes },
                 selectedTypeIdsFlowProvider = {
-                    userSettingsRepository.observeSetting(
+                    sharedViewModel.observeSetting(
                         "${screenContextName}${SELECTED_TYPES_SUFFIX}",
-                        defaultSelectedTypesValue // This is the Set<String> for the FilterRow state
+                        defaultSelectedTypesValue
                     )
                 },
                 onPersistSelectedTypeIds = { newIdsSetToPersist ->
                     scope.launch {
-                        userSettingsRepository.saveSetting(
+                        sharedViewModel.saveSetting(
                             "${screenContextName}${SELECTED_TYPES_SUFFIX}",
                             newIdsSetToPersist
                         )
@@ -623,17 +627,17 @@ fun LineChart(
 fun provideFilterTopBarAction(
     sharedViewModel: SharedViewModel,
     screenContextName: String?
-): SharedViewModel.TopBarAction? {
+): TopBarAction? {
 
     if (screenContextName == null) return null // Context name is essential for settings persistence
 
-    val userSettingsRepository = sharedViewModel.userSettingRepository
     val scope = rememberCoroutineScope()
 
     // --- Time Range Setting ---
     val targetTimeRangeKeyName = "${screenContextName}${TIME_RANGE_SUFFIX}"
     val defaultTimeRangeValue = TimeRangeFilter.ALL_DAYS.name // Default if no setting found
-    val currentPersistedTimeRangeName by userSettingsRepository.observeSetting(targetTimeRangeKeyName, defaultTimeRangeValue)
+    val currentPersistedTimeRangeName by sharedViewModel
+        .observeSetting(targetTimeRangeKeyName, defaultTimeRangeValue)
         .collectAsState(initial = defaultTimeRangeValue)
     val activeTimeRange = remember(currentPersistedTimeRangeName) {
         TimeRangeFilter.entries.find { it.name == currentPersistedTimeRangeName } ?: TimeRangeFilter.ALL_DAYS
@@ -644,12 +648,13 @@ fun provideFilterTopBarAction(
     // The default value here is for the TopBarAction's initial state if no setting exists.
     // LineChart itself uses `showFilterControls` passed to it as its initial display default.
     val defaultShowFilterRowForTopBar = true
-    val currentShowFilterRowSetting by userSettingsRepository.observeSetting(targetShowFilterRowKeyName, defaultShowFilterRowForTopBar)
+    val currentShowFilterRowSetting by sharedViewModel
+        .observeSetting(targetShowFilterRowKeyName, defaultShowFilterRowForTopBar)
         .collectAsState(initial = defaultShowFilterRowForTopBar)
 
     var showMenuState by remember { mutableStateOf(false) } // Controls dropdown menu visibility
 
-    return SharedViewModel.TopBarAction(
+    return TopBarAction(
         icon = Icons.Default.FilterList,
         contentDescription = stringResource(R.string.content_description_filter_chart_data), // Accessibility
         onClick = { showMenuState = !showMenuState }
@@ -677,9 +682,8 @@ fun provideFilterTopBarAction(
                         }
                     },
                     onClick = {
-                        scope.launch {
-                            userSettingsRepository.saveSetting(targetTimeRangeKeyName, timeRange.name)
-                        }
+                        scope.launch { sharedViewModel.saveSetting(targetTimeRangeKeyName, timeRange.name) }
+
                         showMenuState = false // Close menu after selection
                     }
                 )
@@ -687,7 +691,7 @@ fun provideFilterTopBarAction(
 
             // The option to toggle the measurement type filter row is not shown for the Statistics screen,
             // as it has its own dedicated type selection mechanism.
-            if (screenContextName != UserPreferenceKeys.STATISTICS_SCREEN_CONTEXT) {
+            if (screenContextName != SettingsPreferenceKeys.STATISTICS_SCREEN_CONTEXT) {
                 HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 
                 // Toggle MeasurementTypeFilterRow Option
@@ -708,9 +712,9 @@ fun provideFilterTopBarAction(
                     },
                     onClick = {
                         scope.launch {
-                            userSettingsRepository.saveSetting(
+                            sharedViewModel.saveSetting(
                                 targetShowFilterRowKeyName,
-                                !currentShowFilterRowSetting // Toggle the setting
+                                !currentShowFilterRowSetting
                             )
                         }
                         showMenuState = false // Close menu after selection
@@ -843,61 +847,53 @@ fun rememberMarker(
 }
 
 /**
- * Remembers a [TimeRangeFilter] value that is persisted in [UserSettingsRepository]
+ * Remembers a [TimeRangeFilter] value that is persisted in [SettingsFacade]
  * based on the provided [screenContextName].
  *
  * @param screenContextName The unique context name for this setting.
- * @param userSettingsRepository The repository to observe and save the setting.
+ * @param settingsFacade The repository to observe and save the setting.
  * @param defaultFilter The default [TimeRangeFilter] to use if no setting is found.
  * @return A [State] holding the current [TimeRangeFilter].
  */
 @Composable
 fun rememberContextualTimeRangeFilter(
     screenContextName: String,
-    userSettingsRepository: UserSettingsRepository,
+    observeString: (key: String, default: String) -> kotlinx.coroutines.flow.Flow<String>,
     defaultFilter: TimeRangeFilter = TimeRangeFilter.ALL_DAYS
 ): State<TimeRangeFilter> {
-    val timeRangeKeyName = remember(screenContextName) { "${screenContextName}${TIME_RANGE_SUFFIX}" }
-    val persistedTimeRangeName by userSettingsRepository.observeSetting(timeRangeKeyName, defaultFilter.name)
-        .collectAsState(initial = defaultFilter.name)
-
-    // Using `derivedStateOf` might be slightly more optimal if TimeRangeFilter.entries could change,
-    // but for enums, `remember` with `persistedTimeRangeName` as key is fine.
-    return remember(persistedTimeRangeName) {
-        mutableStateOf(
-            TimeRangeFilter.entries.find { it.name == persistedTimeRangeName } ?: defaultFilter
-        )
+    val key = remember(screenContextName) { "${screenContextName}_time_range" }
+    val persisted by observeString(key, defaultFilter.name).collectAsState(initial = defaultFilter.name)
+    return remember(persisted) {
+        mutableStateOf(TimeRangeFilter.entries.find { it.name == persisted } ?: defaultFilter)
     }
 }
 
 /**
  * Remembers a set of selected measurement type IDs (as strings) that is persisted
- * in [UserSettingsRepository] based on the provided [screenContextName].
+ * in [SettingsFacade] based on the provided [screenContextName].
  *
  * @param screenContextName The unique context name for this setting.
- * @param userSettingsRepository The repository to observe and save the setting.
+ * @param settingsFacade The repository to observe and save the setting.
  * @param defaultSelectedTypeIds The default set of type IDs to use if no setting is found.
  * @return A [State] holding the current [Set] of selected type IDs (strings).
  */
 @Composable
 fun rememberContextualSelectedTypeIds(
     screenContextName: String,
-    userSettingsRepository: UserSettingsRepository,
+    observeStringSet: (key: String, default: Set<String>) -> kotlinx.coroutines.flow.Flow<Set<String>>,
     defaultSelectedTypeIds: Set<String> = emptySet()
 ): State<Set<String>> {
-    val selectedTypesKeyName = remember(screenContextName) { "${screenContextName}${SELECTED_TYPES_SUFFIX}" }
-    // Directly collect the flow as state.
-    return userSettingsRepository.observeSetting(selectedTypesKeyName, defaultSelectedTypeIds)
-        .collectAsState(initial = defaultSelectedTypeIds)
+    val key = remember(screenContextName) { "${screenContextName}_selected_types" }
+    return observeStringSet(key, defaultSelectedTypeIds).collectAsState(initial = defaultSelectedTypeIds)
 }
 
 /**
- * Remembers a boolean setting value that is persisted in [UserSettingsRepository]
+ * Remembers a boolean setting value that is persisted in [SettingsFacade]
  * based on the provided [screenContextName] and [settingSuffix].
  *
  * @param screenContextName The unique context name for this setting.
  * @param settingSuffix The specific suffix for this boolean setting (e.g., "_show_filter").
- * @param userSettingsRepository The repository to observe and save the setting.
+ * @param settingsFacade The repository to observe and save the setting.
  * @param defaultValue The default boolean value to use if no setting is found.
  * @return A [State] holding the current boolean value.
  */
@@ -905,11 +901,9 @@ fun rememberContextualSelectedTypeIds(
 fun rememberContextualBooleanSetting(
     screenContextName: String,
     settingSuffix: String,
-    userSettingsRepository: UserSettingsRepository,
+    observeBoolean: (key: String, default: Boolean) -> kotlinx.coroutines.flow.Flow<Boolean>,
     defaultValue: Boolean
 ): State<Boolean> {
-    val keyName = remember(screenContextName, settingSuffix) { "${screenContextName}${settingSuffix}" }
-    // Directly collect the flow as state.
-    return userSettingsRepository.observeSetting(keyName, defaultValue)
-        .collectAsState(initial = defaultValue)
+    val key = remember(screenContextName, settingSuffix) { "${screenContextName}${settingSuffix}" }
+    return observeBoolean(key, defaultValue).collectAsState(initial = defaultValue)
 }

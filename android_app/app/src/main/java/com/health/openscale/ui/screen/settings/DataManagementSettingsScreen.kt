@@ -38,11 +38,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Face3
+import androidx.compose.material.icons.filled.Face6
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.material.icons.filled.Folder
@@ -91,6 +94,8 @@ import java.text.DateFormat
 import java.util.Date
 import java.util.Locale
 import androidx.core.net.toUri
+import com.health.openscale.core.data.GenderType
+import com.health.openscale.core.utils.CalculationUtils
 
 
 /**
@@ -145,7 +150,7 @@ fun DataManagementSettingsScreen(
     val coroutineScope = rememberCoroutineScope()
 
     // --- Automatic Backup Settings from ViewModel ---
-    val autoBackupGloballyEnabled by settingsViewModel.autoBackupEnabledGlobally.collectAsState()
+    val autoBackupGloballyEnabled by settingsViewModel.autoBackupEnabled.collectAsState()
     val autoBackupLocationUriString by settingsViewModel.autoBackupLocationUri.collectAsState()
     val autoBackupInterval by settingsViewModel.autoBackupInterval.collectAsState()
     val autoBackupCreateNewFile by settingsViewModel.autoBackupCreateNewFile.collectAsState()
@@ -249,7 +254,7 @@ fun DataManagementSettingsScreen(
         contract = ActivityResultContracts.CreateDocument("*/*"), // Using generic MIME type for DB backup
         onResult = { uri: Uri? ->
             uri?.let { fileUri ->
-                settingsViewModel.performDatabaseBackup(fileUri, context.applicationContext, context.contentResolver)
+                settingsViewModel.performDatabaseBackup(fileUri, context.contentResolver)
             }
         }
     )
@@ -259,7 +264,7 @@ fun DataManagementSettingsScreen(
         onResult = { uri: Uri? ->
             uri?.let { fileUri ->
                 // Confirmation dialog is shown before launching, restore directly
-                settingsViewModel.performDatabaseRestore(fileUri, context.applicationContext, context.contentResolver)
+                settingsViewModel.performDatabaseRestore(fileUri, context.contentResolver)
             }
         }
     )
@@ -271,10 +276,10 @@ fun DataManagementSettingsScreen(
                 coroutineScope.launch {
                     val takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                     context.contentResolver.takePersistableUriPermission(uri, takeFlags)
-                    settingsViewModel.setAutoBackupLocationUri(context.applicationContext,uri.toString())
+                    settingsViewModel.setAutoBackupLocationUri(uri.toString())
                     // If user selects a folder, enable auto backups globally if not already.
                     if (!autoBackupGloballyEnabled) {
-                        settingsViewModel.setAutoBackupEnabledGlobally(context.applicationContext,true)
+                        settingsViewModel.setAutoBackupEnabled(true)
                     }
                 }
                 Toast.makeText(context, context.getString(R.string.settings_backup_location_selected_toast,
@@ -282,7 +287,7 @@ fun DataManagementSettingsScreen(
             } else {
                 // User cancelled or no folder selected
                 if (!isAutoBackupLocationConfigured) { // Only if no location was configured before
-                    coroutineScope.launch { settingsViewModel.setAutoBackupEnabledGlobally(context.applicationContext,false) }
+                    coroutineScope.launch { settingsViewModel.setAutoBackupEnabled(false) }
                 }
                 Toast.makeText(context, R.string.settings_backup_location_selection_cancelled, Toast.LENGTH_SHORT).show()
             }
@@ -292,7 +297,7 @@ fun DataManagementSettingsScreen(
     LaunchedEffect(key1 = settingsViewModel) {
         settingsViewModel.safEvent.collect { event ->
             when (event) {
-                is SafEvent.RequestCreateFile -> {
+                is SettingsViewModel.SafEvent.RequestCreateFile -> {
                     activeSafActionUserId = event.userId
                     if (event.actionId == SettingsViewModel.ACTION_ID_BACKUP_DB) {
                         manualBackupDbLauncher.launch(event.suggestedName)
@@ -300,7 +305,7 @@ fun DataManagementSettingsScreen(
                         exportCsvLauncher.launch(event.suggestedName)
                     }
                 }
-                is SafEvent.RequestOpenFile -> {
+                is SettingsViewModel.SafEvent.RequestOpenFile -> {
                     activeSafActionUserId = event.userId
                     if (event.actionId == SettingsViewModel.ACTION_ID_RESTORE_DB) {
                         // For DB restore, we show a confirmation dialog first.
@@ -358,7 +363,7 @@ fun DataManagementSettingsScreen(
                         if (newCheckedState && !isAutoBackupLocationConfigured) {
                             selectAutoBackupDirectoryLauncher.launch(null) // URI (null) means "pick a new folder"
                         } else {
-                            coroutineScope.launch { settingsViewModel.setAutoBackupEnabledGlobally(context.applicationContext,newCheckedState) }
+                            coroutineScope.launch { settingsViewModel.setAutoBackupEnabled(newCheckedState) }
                         }
                     }
                 },
@@ -378,7 +383,7 @@ fun DataManagementSettingsScreen(
                                 if (newCheckedState && !isAutoBackupLocationConfigured) {
                                     selectAutoBackupDirectoryLauncher.launch(null)
                                 } else {
-                                    coroutineScope.launch { settingsViewModel.setAutoBackupEnabledGlobally(context.applicationContext,newCheckedState) }
+                                    coroutineScope.launch { settingsViewModel.setAutoBackupEnabled(newCheckedState) }
                                 }
                             }
                         },
@@ -506,7 +511,7 @@ fun DataManagementSettingsScreen(
             options = intervalEnumValues,
             selectedOption = autoBackupInterval,
             onOptionSelected = { selectedEnumInterval ->
-                coroutineScope.launch { settingsViewModel.setAutoBackupInterval(context.applicationContext,selectedEnumInterval) }
+                coroutineScope.launch { settingsViewModel.setAutoBackupInterval(selectedEnumInterval) }
             },
             optionToDisplayName = { it.getDisplayName(context) },
             onDismissRequest = { showBackupIntervalDialog = false }
@@ -519,7 +524,7 @@ fun DataManagementSettingsScreen(
             icon = { Icon(Icons.Filled.WarningAmber, contentDescription = stringResource(R.string.content_desc_warning_icon), tint = MaterialTheme.colorScheme.error) },
             title = { Text(stringResource(R.string.dialog_title_delete_entire_database_confirmation), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error) },
             text = { Text(stringResource(R.string.dialog_message_delete_entire_database_confirmation)) },
-            confirmButton = { TextButton({ settingsViewModel.confirmDeleteEntireDatabase(context.applicationContext) }, colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error), enabled = !isLoadingEntireDatabaseDeletion) { if (isLoadingEntireDatabaseDeletion) CircularProgressIndicator(Modifier.size(ButtonDefaults.IconSize), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.error) else Text(stringResource(R.string.button_yes_delete_all)) } },
+            confirmButton = { TextButton({ settingsViewModel.confirmDeleteEntireDatabase() }, colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error), enabled = !isLoadingEntireDatabaseDeletion) { if (isLoadingEntireDatabaseDeletion) CircularProgressIndicator(Modifier.size(ButtonDefaults.IconSize), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.error) else Text(stringResource(R.string.button_yes_delete_all)) } },
             dismissButton = { TextButton({ settingsViewModel.cancelDeleteEntireDatabaseConfirmation() }, enabled = !isLoadingEntireDatabaseDeletion) { Text(stringResource(R.string.cancel_button)) } }
         )
     }
@@ -668,6 +673,9 @@ fun UserSelectionDialog(
         LaunchedEffect(Unit) { onDismiss() }
         return
     }
+
+    val context = LocalContext.current
+
     AlertDialog(
         onDismissRequest = { if (confirmButtonEnabled) onDismiss() },
         title = { Text(title, style = MaterialTheme.typography.titleLarge) },
@@ -675,20 +683,68 @@ fun UserSelectionDialog(
             LazyColumn {
                 items(users.size) { index ->
                     val user = users[index]
-                    val textColor = if (itemClickEnabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
-                    Text(
-                        user.name,
-                        style = MaterialTheme.typography.bodyLarge,
+
+                    val age = remember(user.birthDate) {
+                        CalculationUtils.ageOn(System.currentTimeMillis(), user.birthDate)
+                    }
+
+                    val (icon, tint) = when (user.gender) {
+                        GenderType.MALE ->
+                            Icons.Default.Face6 to MaterialTheme.colorScheme.primary
+                        GenderType.FEMALE ->
+                            Icons.Default.Face3 to MaterialTheme.colorScheme.secondary
+                        else ->
+                            Icons.Filled.AccountCircle to MaterialTheme.colorScheme.onSurfaceVariant
+                    }
+
+                    val textColor =
+                        if (itemClickEnabled) MaterialTheme.colorScheme.onSurface
+                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                    val iconTint =
+                        if (itemClickEnabled) tint
+                        else tint.copy(alpha = 0.38f)
+
+                    ListItem(
+                        headlineContent = {
+                            Text(user.name, color = textColor)
+                        },
+                        supportingContent = {
+                            val genderName = user.gender.getDisplayName(context)
+                            Text(
+                                text = "${context.getString(R.string.user_settings_item_details_conditional, age, genderName)}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        },
+                        leadingContent = {
+                            Icon(
+                                icon,
+                                contentDescription = icon.name,
+                                tint = iconTint
+                            )
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable(enabled = itemClickEnabled) { onUserSelected(user.id) }
-                            .padding(vertical = 12.dp),
-                        color = textColor
+                            .clickable(enabled = itemClickEnabled) {
+                                onUserSelected(user.id)
+                            }
+                            .padding(vertical = 2.dp)
                     )
-                    if (index < users.size - 1) HorizontalDivider(Modifier.padding(vertical = 8.dp))
+
+                    if (index < users.size - 1) {
+                        HorizontalDivider(
+                            modifier = Modifier.padding(horizontal = 12.dp),
+                            thickness = 1.dp,
+                            color = MaterialTheme.colorScheme.outlineVariant
+                        )
+                    }
                 }
             }
         },
-        confirmButton = { TextButton(onDismiss, enabled = confirmButtonEnabled) { Text(stringResource(R.string.cancel_button)) } }
+        confirmButton = {
+            TextButton(onClick = onDismiss, enabled = confirmButtonEnabled) {
+                Text(stringResource(R.string.cancel_button))
+            }
+        }
     )
 }

@@ -1,30 +1,68 @@
+/*
+ * openScale
+ * Copyright (C) 2025 olie.xdev <olie.xdeveloper@googlemail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
 package com.health.openscale.ui.screen.settings
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MenuAnchorType
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.health.openscale.R
 import com.health.openscale.core.data.SmoothingAlgorithm
-import com.health.openscale.ui.screen.SharedViewModel
+import com.health.openscale.ui.shared.SharedViewModel
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun ChartSettingsScreen(
     navController: NavController,
@@ -36,13 +74,25 @@ fun ChartSettingsScreen(
         sharedViewModel.setTopBarTitle(chartSettingsScreenTitle)
     }
 
-    val coroutineScope = rememberCoroutineScope()
+    val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
-    val showDataPoints by sharedViewModel.userSettingRepository.showChartDataPoints.collectAsState(true)
-    val selectedAlgorithm by sharedViewModel.userSettingRepository.chartSmoothingAlgorithm.collectAsState(SmoothingAlgorithm.NONE)
-    val currentAlphaState by sharedViewModel.userSettingRepository.chartSmoothingAlpha.collectAsState(0.5f)
-    val currentWindowSizeState by sharedViewModel.userSettingRepository.chartSmoothingWindowSize.collectAsState(5)
+    // --- READ settings via SharedViewModel (delegiert an SettingsFacade) ---
+    val showDataPoints by sharedViewModel
+        .showChartDataPoints
+        .collectAsStateWithLifecycle(initialValue = true)
+
+    val selectedAlgorithm by sharedViewModel
+        .selectedSmoothingAlgorithm
+        .collectAsStateWithLifecycle(initialValue = SmoothingAlgorithm.NONE)
+
+    val currentAlphaState by sharedViewModel
+        .smoothingAlpha
+        .collectAsStateWithLifecycle(initialValue = 0.5f)
+
+    val currentWindowSizeState by sharedViewModel
+        .smoothingWindowSize
+        .collectAsStateWithLifecycle(initialValue = 5)
 
     val availableAlgorithms = remember { SmoothingAlgorithm.values().toList() }
     var algorithmDropdownExpanded by remember { mutableStateOf(false) }
@@ -66,8 +116,8 @@ fun ChartSettingsScreen(
             Switch(
                 checked = showDataPoints,
                 onCheckedChange = { newValue ->
-                    coroutineScope.launch {
-                        sharedViewModel.userSettingRepository.setShowChartDataPoints(newValue)
+                    scope.launch {
+                        sharedViewModel.setShowChartDataPoints(newValue)
                     }
                 }
             )
@@ -81,7 +131,7 @@ fun ChartSettingsScreen(
         ) {
             OutlinedTextField(
                 value = selectedAlgorithm.getDisplayName(context),
-                onValueChange = { /* Read-only */ },
+                onValueChange = { /* read-only */ },
                 readOnly = true,
                 label = { Text(stringResource(R.string.setting_smoothing_algorithm)) },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = algorithmDropdownExpanded) },
@@ -105,8 +155,8 @@ fun ChartSettingsScreen(
                     DropdownMenuItem(
                         text = { Text(algorithm.getDisplayName(context)) },
                         onClick = {
-                            coroutineScope.launch {
-                                sharedViewModel.userSettingRepository.setChartSmoothingAlgorithm(algorithm)
+                            scope.launch {
+                                sharedViewModel.setChartSmoothingAlgorithm(algorithm)
                             }
                             algorithmDropdownExpanded = false
                         }
@@ -134,8 +184,8 @@ fun ChartSettingsScreen(
                         value = alphaAsInt,
                         onValueChange = { newIntValue ->
                             val newFloatValue = newIntValue / 10f
-                            coroutineScope.launch {
-                                sharedViewModel.userSettingRepository.setChartSmoothingAlpha(newFloatValue)
+                            scope.launch {
+                                sharedViewModel.setChartSmoothingAlpha(newFloatValue)
                             }
                         },
                         valueRange = alphaStepperRange,
@@ -149,8 +199,8 @@ fun ChartSettingsScreen(
                         label = stringResource(R.string.setting_smoothing_window_size),
                         value = currentWindowSizeState,
                         onValueChange = { newValue ->
-                            coroutineScope.launch {
-                                sharedViewModel.userSettingRepository.setChartSmoothingWindowSize(newValue)
+                            scope.launch {
+                                sharedViewModel.setChartSmoothingWindowSize(newValue)
                             }
                         },
                         valueRange = 2..50,
@@ -164,7 +214,6 @@ fun ChartSettingsScreen(
 
 /**
  * A reusable Composable for an integer input with + and - buttons.
- * (IntegerStepper code remains the same as your provided version)
  */
 @Composable
 private fun IntegerStepper(
@@ -192,9 +241,7 @@ private fun IntegerStepper(
         ) {
             IconButton(
                 onClick = {
-                    if (value > valueRange.first) {
-                        onValueChange(value - 1)
-                    }
+                    if (value > valueRange.first) onValueChange(value - 1)
                 },
                 enabled = value > valueRange.first
             ) {
@@ -211,9 +258,7 @@ private fun IntegerStepper(
             )
             IconButton(
                 onClick = {
-                    if (value < valueRange.last) {
-                        onValueChange(value + 1)
-                    }
+                    if (value < valueRange.last) onValueChange(value + 1)
                 },
                 enabled = value < valueRange.last
             ) {

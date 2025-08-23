@@ -35,13 +35,17 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.health.openscale.R
-import com.health.openscale.core.utils.CalculationUtil
-import com.health.openscale.ui.screen.SharedViewModel
+import com.health.openscale.core.utils.CalculationUtils
+import com.health.openscale.ui.shared.SharedViewModel
+import com.health.openscale.ui.shared.TopBarAction
+import kotlinx.coroutines.launch
+
 // import com.health.openscale.ui.screen.settings.SettingsViewModel // Already imported by IDE based on context
 
 /**
@@ -64,6 +68,7 @@ fun UserSettingsScreen(
     onEditUser: (userId: Int?) -> Unit
 ) {
     val users by sharedViewModel.allUsers.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
 
     // Pre-load strings for LaunchedEffect
     val usersTitle = stringResource(id = R.string.user_settings_title)
@@ -75,7 +80,7 @@ fun UserSettingsScreen(
     LaunchedEffect(Unit, usersTitle) { // Add usersTitle to keys to re-run if it could change (e.g. language change)
         sharedViewModel.setTopBarTitle(usersTitle) // "Users"
         sharedViewModel.setTopBarAction(
-            SharedViewModel.TopBarAction(
+            TopBarAction(
                 icon = Icons.Default.Add,
                 onClick = {
                     onEditUser(null) // null indicates adding a new user
@@ -92,7 +97,7 @@ fun UserSettingsScreen(
         items(users) { user ->
             // Calculate age. This will be recalculated if user.birthDate changes.
             val age = remember(user.birthDate) {
-                CalculationUtil.ageOn(System.currentTimeMillis(), user.birthDate)
+                CalculationUtils.ageOn(System.currentTimeMillis(), user.birthDate)
             }
 
             ListItem(
@@ -115,10 +120,16 @@ fun UserSettingsScreen(
                                 contentDescription = editActionContentDescription // "Edit"
                             )
                         }
-                        IconButton(onClick = { settingsViewModel.deleteUser(user) }) {
+                        IconButton(
+                            onClick = {
+                                coroutineScope.launch {
+                                    settingsViewModel.deleteUser(user)
+                                }
+                            }
+                        ) {
                             Icon(
                                 Icons.Default.Delete,
-                                contentDescription = deleteActionContentDescription // "Delete"
+                                contentDescription = deleteActionContentDescription
                             )
                         }
                     }

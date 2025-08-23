@@ -17,7 +17,6 @@
  */
 package com.health.openscale.ui.screen.statistics
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,7 +30,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
@@ -49,10 +47,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -60,17 +56,19 @@ import androidx.compose.ui.unit.dp
 import com.health.openscale.R
 import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.MeasurementType
-import com.health.openscale.core.database.UserPreferenceKeys
+import com.health.openscale.core.facade.SettingsPreferenceKeys
+import com.health.openscale.core.model.EnrichedMeasurement
 import com.health.openscale.ui.components.RoundMeasurementIcon
-import com.health.openscale.ui.screen.EnrichedMeasurement
-import com.health.openscale.ui.screen.SharedViewModel
+import com.health.openscale.ui.shared.SharedViewModel
 import com.health.openscale.ui.screen.components.LineChart
 import com.health.openscale.ui.screen.components.provideFilterTopBarAction
 import com.health.openscale.ui.screen.components.rememberContextualTimeRangeFilter
+import com.health.openscale.ui.shared.TopBarAction
 import java.text.DecimalFormat
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
+import kotlin.collections.mapNotNull
 
 /**
  * Data class to hold calculated statistics for a specific measurement type.
@@ -111,86 +109,84 @@ data class MeasurementStatistics(
 fun StatisticsScreen(sharedViewModel: SharedViewModel) {
 
     val uiSelectedTimeRange by rememberContextualTimeRangeFilter(
-        screenContextName = UserPreferenceKeys.STATISTICS_SCREEN_CONTEXT,
-        userSettingsRepository = sharedViewModel.userSettingRepository
+        screenContextName = SettingsPreferenceKeys.STATISTICS_SCREEN_CONTEXT,
+        observeString = { key, default -> sharedViewModel.observeSetting(key, default) }
     )
 
-    // Fetch time-filtered data from the ViewModel.
-    val timeFilteredData by sharedViewModel.getTimeFilteredEnrichedMeasurements(uiSelectedTimeRange)
-        .collectAsState(initial = emptyList())
-    // Use the collected time-filtered data for statistics calculation.
-    val measurementsForStatistics = timeFilteredData
+    val statsUiState by remember(uiSelectedTimeRange) {
+        sharedViewModel.statisticsUiState(uiSelectedTimeRange)
+    }.collectAsState(initial = SharedViewModel.UiState.Loading)
 
-    val allAvailableMeasurementTypes by sharedViewModel.measurementTypes.collectAsState()
-    val isLoadingData by sharedViewModel.isBaseDataLoading.collectAsState()
+    val allTypes by sharedViewModel.measurementTypes.collectAsState()
 
-    // Provide the filter action for the top bar. This action changes the filter in UserSettingRepository.
     val filterAction = provideFilterTopBarAction(
         sharedViewModel = sharedViewModel,
-        screenContextName = UserPreferenceKeys.STATISTICS_SCREEN_CONTEXT
+        screenContextName = SettingsPreferenceKeys.STATISTICS_SCREEN_CONTEXT
     )
+    val title = stringResource(R.string.route_title_statistics)
+    val noRelevantTypesMsg = stringResource(R.string.statistics_no_relevant_types)
+    val noDataMsg = stringResource(R.string.no_data_available)
 
-    val statisticsScreenTitle = stringResource(id = R.string.route_title_statistics)
-    val noRelevantMeasurementTypesMessage = stringResource(id = R.string.statistics_no_relevant_types)
-
-
-    LaunchedEffect(filterAction, statisticsScreenTitle) {
-        sharedViewModel.setTopBarTitle(statisticsScreenTitle)
-        val actions = mutableListOf<SharedViewModel.TopBarAction>()
-        filterAction?.let { actions.add(it) }
-        sharedViewModel.setTopBarActions(actions)
+    LaunchedEffect(filterAction, title) {
+        sharedViewModel.setTopBarTitle(title)
+        sharedViewModel.setTopBarActions(listOfNotNull(filterAction))
     }
 
-    // Filter for measurement types that are enabled and have a numeric input type (Float or Int).
-    val relevantTypesForStatsDisplay = remember(allAvailableMeasurementTypes) {
-        allAvailableMeasurementTypes.filter { type ->
-            type.isEnabled && (type.inputType == InputFieldType.FLOAT || type.inputType == InputFieldType.INT)
-        }
+    val relevantTypes = remember(allTypes) {
+        allTypes.filter { it.isEnabled && (it.inputType == InputFieldType.FLOAT || it.inputType == InputFieldType.INT) }
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        if (isLoadingData && measurementsForStatistics.isEmpty()) {
-            // Show a loading indicator if data is loading and no measurements are available yet.
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+    Column(Modifier.fillMaxSize()) {
+        when (val state = statsUiState) {
+            is SharedViewModel.UiState.Loading -> {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
             }
-        } else if (measurementsForStatistics.isEmpty() && relevantTypesForStatsDisplay.isEmpty()) {
-            // Show a message if no relevant measurement types are configured or no data is present.
-            // This condition is refined to also check relevantTypesForStatsDisplay.
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp), contentAlignment = Alignment.Center
-            ) {
-                Text(noRelevantMeasurementTypesMessage)
+            is SharedViewModel.UiState.Error -> {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(state.message ?: stringResource(R.string.error_loading_data), textAlign = TextAlign.Center)
+                }
             }
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 8.dp, vertical = 8.dp)
-            ) {
-                items(relevantTypesForStatsDisplay, key = { it.id }) { measurementType ->
-                    // Filter measurements relevant to the current measurement type.
-                    val measurementsForThisType = remember(measurementsForStatistics, measurementType) {
-                        measurementsForStatistics.filter { enrichedMeasurement ->
-                            enrichedMeasurement.measurementWithValues.values.any { it.type.id == measurementType.id }
+            is SharedViewModel.UiState.Success -> {
+                val data = state.data
+
+                if (data.isEmpty()) {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(noDataMsg, textAlign = TextAlign.Center)
+                    }
+                    return@Column
+                }
+
+                if (relevantTypes.isEmpty()) {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(noRelevantTypesMsg, textAlign = TextAlign.Center)
+                    }
+                    return@Column
+                }
+
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 8.dp, vertical = 8.dp)
+                ) {
+                    items(relevantTypes, key = { it.id }) { type ->
+                        val measurementsForType = remember(data, type) {
+                            data.filter { em ->
+                                em.measurementWithValues.values.any { it.type.id == type.id }
+                            }
                         }
-                    }
-
-                    // Calculate statistics for the current measurement type.
-                    val statistics = remember(measurementsForThisType, measurementType) {
-                        calculateStatisticsForType(measurementsForThisType, measurementType)
-                    }
-
-                    // Display the statistic card if there are measurements for this type.
-                    if (measurementsForThisType.isNotEmpty()) {
-                        StatisticCard(
-                            sharedViewModel = sharedViewModel,
-                            measurementType = measurementType,
-                            statistics = statistics,
-                            screenContextForChart = UserPreferenceKeys.STATISTICS_SCREEN_CONTEXT
-                        )
+                        if (measurementsForType.isNotEmpty()) {
+                            val stats = remember(measurementsForType, type) {
+                                calculateStatisticsForType(measurementsForType, type)
+                            }
+                            StatisticCard(
+                                sharedViewModel = sharedViewModel,
+                                measurementType = type,
+                                statistics = stats,
+                                screenContextForChart = SettingsPreferenceKeys.STATISTICS_SCREEN_CONTEXT
+                            )
+                        }
                     }
                 }
             }

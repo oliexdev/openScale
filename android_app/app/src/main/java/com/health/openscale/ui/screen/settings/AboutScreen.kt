@@ -17,7 +17,6 @@
  */
 package com.health.openscale.ui.screen.settings
 
-import android.R.attr.contentDescription
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -54,7 +53,7 @@ import androidx.navigation.NavController
 import com.health.openscale.BuildConfig
 import com.health.openscale.R
 import com.health.openscale.core.utils.LogManager
-import com.health.openscale.ui.screen.SharedViewModel
+import com.health.openscale.ui.shared.SharedViewModel
 
 /**
  * Composable function for the "About" screen.

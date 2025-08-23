@@ -69,13 +69,14 @@ import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.data.UnitType
 import com.health.openscale.ui.components.RoundMeasurementIcon
-import com.health.openscale.ui.screen.SharedViewModel
+import com.health.openscale.ui.shared.SharedViewModel
 import com.health.openscale.ui.screen.dialog.DateInputDialog
 import com.health.openscale.ui.screen.dialog.NumberInputDialog
 import com.health.openscale.ui.screen.dialog.TextInputDialog
 import com.health.openscale.ui.screen.dialog.TimeInputDialog
 import com.health.openscale.ui.screen.dialog.decrementValue
 import com.health.openscale.ui.screen.dialog.incrementValue
+import com.health.openscale.ui.shared.TopBarAction
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -201,12 +202,13 @@ fun MeasurementDetailScreen(
     // Configure the top bar save action.
     LaunchedEffect(currentUserIdState, measurementTimestampState, valuesState.toMap()) {
         sharedViewModel.setTopBarAction(
-            SharedViewModel.TopBarAction(
+            TopBarAction(
                 icon = Icons.Default.Save,
                 contentDescription = context.getString(R.string.action_save_measurement),
                 onClick = {
                     if (currentUserIdState == -1) { // Ensure a user is selected.
-                        Toast.makeText(context, R.string.toast_no_user_selected, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, R.string.toast_no_user_selected, Toast.LENGTH_SHORT)
+                            .show()
                         return@TopBarAction
                     }
 
@@ -216,7 +218,11 @@ fun MeasurementDetailScreen(
                         lastMeasurementToPreloadFrom!!.measurement.userId == currentUserIdState &&
                         measurementTimestampState == lastMeasurementToPreloadFrom!!.measurement.timestamp
                     ) {
-                        Toast.makeText(context, R.string.toast_duplicate_timestamp, Toast.LENGTH_LONG).show()
+                        Toast.makeText(
+                            context,
+                            R.string.toast_duplicate_timestamp,
+                            Toast.LENGTH_LONG
+                        ).show()
                         return@TopBarAction
                     }
 
@@ -238,7 +244,8 @@ fun MeasurementDetailScreen(
                             if (inputString.isNullOrBlank()) return@forEach // Skip empty values
 
                             val existingValueId = if (measurementId != -1 && measurementId != 0) {
-                                loadedData?.values?.find { v -> v.type.id == type.id }?.value?.id ?: 0
+                                loadedData?.values?.find { v -> v.type.id == type.id }?.value?.id
+                                    ?: 0
                             } else 0
 
                             var floatVal: Float? = null
@@ -249,21 +256,41 @@ fun MeasurementDetailScreen(
                                 InputFieldType.FLOAT -> {
                                     floatVal = inputString.toFloatOrNull()
                                     if (floatVal == null) {
-                                        Toast.makeText(context, context.getString(R.string.toast_invalid_number_format, type.getDisplayName(context), inputString), Toast.LENGTH_LONG).show()
+                                        Toast.makeText(
+                                            context,
+                                            context.getString(
+                                                R.string.toast_invalid_number_format,
+                                                type.getDisplayName(context),
+                                                inputString
+                                            ),
+                                            Toast.LENGTH_LONG
+                                        ).show()
                                         allConversionsOk = false
                                     }
                                 }
+
                                 InputFieldType.INT -> {
                                     intVal = inputString.toIntOrNull()
                                     if (intVal == null) {
-                                        Toast.makeText(context, context.getString(R.string.toast_invalid_integer_format, type.getDisplayName(context), inputString), Toast.LENGTH_LONG).show()
+                                        Toast.makeText(
+                                            context,
+                                            context.getString(
+                                                R.string.toast_invalid_integer_format,
+                                                type.getDisplayName(context),
+                                                inputString
+                                            ),
+                                            Toast.LENGTH_LONG
+                                        ).show()
                                         allConversionsOk = false
                                     }
                                 }
+
                                 InputFieldType.TEXT -> {
                                     textVal = inputString
                                 }
-                                else -> { /* Should not happen due to filters */ }
+
+                                else -> { /* Should not happen due to filters */
+                                }
                             }
 
                             if (!allConversionsOk) return@TopBarAction // Stop processing if a conversion error occurred.

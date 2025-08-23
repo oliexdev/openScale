@@ -21,6 +21,7 @@ import android.Manifest
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.content.Intent
+import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -57,6 +58,7 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -71,10 +73,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import com.health.openscale.R
-import com.health.openscale.ui.screen.SharedViewModel
-import com.health.openscale.ui.screen.bluetooth.BluetoothViewModel
-import com.health.openscale.ui.screen.bluetooth.ScannedDeviceInfo
+import com.health.openscale.ui.shared.SharedViewModel
+import com.health.openscale.ui.screen.settings.BluetoothViewModel
+import com.health.openscale.core.service.ScannedDeviceInfo
 import kotlinx.coroutines.launch
 
 /**
@@ -97,11 +100,15 @@ fun BluetoothScreen(
     val isScanning by bluetoothViewModel.isScanning.collectAsState()
     val scanError by bluetoothViewModel.scanError.collectAsState()
     val connectionError by bluetoothViewModel.connectionError.collectAsState()
-    val hasPermissions by bluetoothViewModel.permissionsGranted.collectAsState()
+    var hasPermissions by remember { mutableStateOf(false) }
     var pendingScan by remember { mutableStateOf(false) }
 
     val savedDeviceAddress by bluetoothViewModel.savedScaleAddress.collectAsState()
     val savedDeviceName by bluetoothViewModel.savedScaleName.collectAsState()
+
+    LaunchedEffect(Unit) {
+        hasPermissions = hasBtPermissions(context)
+    }
 
     DisposableEffect(Unit) {
         onDispose {
@@ -113,19 +120,14 @@ fun BluetoothScreen(
     val enableBluetoothLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        bluetoothViewModel.refreshPermissionsStatus()
         if (result.resultCode == Activity.RESULT_OK) {
-            if (bluetoothViewModel.permissionsGranted.value) {
+            if (hasPermissions) {
                 if (pendingScan) {
                     bluetoothViewModel.clearAllErrors()
-                    if (!bluetoothViewModel.isScanning.value) {
+                    if (!isScanning) {
                         bluetoothViewModel.requestStartDeviceScan()
                     }
-                    try {
-                        pendingScan = false
-                    } catch (e: Exception) {
-                        TODO("Not yet implemented")
-                    }
+                    pendingScan = false
                 }
             } else {
                 scope.launch {
@@ -147,21 +149,18 @@ fun BluetoothScreen(
 
     val permissionsLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
-    ) { permissionsMap ->
-        bluetoothViewModel.refreshPermissionsStatus()
-        val allGranted = permissionsMap.values.all { it }
+    ) { map ->
+        val allGranted = map.values.all { it }
+        hasPermissions = allGranted
         if (allGranted) {
             if (bluetoothViewModel.isBluetoothEnabled()) {
-                if (pendingScan) {
+                if (pendingScan && !isScanning) {
                     bluetoothViewModel.clearAllErrors()
-                    if (!bluetoothViewModel.isScanning.value) {
-                        bluetoothViewModel.requestStartDeviceScan()
-                    }
-                    pendingScan = false
+                    bluetoothViewModel.requestStartDeviceScan()
                 }
+                pendingScan = false
             } else {
-                val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-                enableBluetoothLauncher.launch(enableBtIntent)
+                enableBluetoothLauncher.launch(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
             }
         } else {
             pendingScan = false
@@ -237,17 +236,14 @@ fun BluetoothScreen(
                         pendingScan = true
                         bluetoothViewModel.clearAllErrors()
                         when {
-                            !bluetoothViewModel.permissionsGranted.value -> {
-                                permissionsLauncher.launch(
-                                    arrayOf(
-                                        Manifest.permission.BLUETOOTH_SCAN,
-                                        Manifest.permission.BLUETOOTH_CONNECT
-                                    )
-                                )
+                            !hasPermissions -> {
+                                permissionsLauncher.launch(arrayOf(
+                                    Manifest.permission.BLUETOOTH_SCAN,
+                                    Manifest.permission.BLUETOOTH_CONNECT
+                                ))
                             }
                             !bluetoothViewModel.isBluetoothEnabled() -> {
-                                val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-                                enableBluetoothLauncher.launch(enableBtIntent)
+                                enableBluetoothLauncher.launch(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
                             }
                             else -> {
                                 bluetoothViewModel.requestStartDeviceScan()
@@ -550,4 +546,14 @@ fun DeviceCardItem(
             )
         }
     }
+}
+
+private fun hasBtPermissions(context: android.content.Context): Boolean {
+    val scan = ContextCompat.checkSelfPermission(
+        context, Manifest.permission.BLUETOOTH_SCAN
+    ) == PackageManager.PERMISSION_GRANTED
+    val connect = ContextCompat.checkSelfPermission(
+        context, Manifest.permission.BLUETOOTH_CONNECT
+    ) == PackageManager.PERMISSION_GRANTED
+    return scan && connect
 }

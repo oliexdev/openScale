@@ -380,3 +380,23 @@ enum class EvaluationState {
         UNDEFINED -> Color(0xFFBDBDBD) // Grey 400
     }
 }
+
+/**
+ * High-level connection state for a Bluetooth scale.
+ */
+enum class ConnectionStatus {
+    /** No BT flow started yet. */
+    NONE,
+    /** Ready but not connected; idle state after init or after a clean stop. */
+    IDLE,
+    /** Explicitly not connected (after a disconnect or failure). */
+    DISCONNECTED,
+    /** Connecting handshake is in progress. */
+    CONNECTING,
+    /** Fully connected and ready to exchange data. */
+    CONNECTED,
+    /** A disconnect sequence is in progress. */
+    DISCONNECTING,
+    /** A connection attempt failed or connection broke unexpectedly. */
+    FAILED
+}

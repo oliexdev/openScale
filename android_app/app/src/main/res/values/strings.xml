@@ -21,6 +21,16 @@
     <string name="derived_backfill_start">Calculating derived values …</string>
     <string name="derived_backfill_done">Derived values successfully updated.</string>
 
+    <!-- Generic error messages -->
+    <string name="error_generic">An error has occurred.</string>
+    <string name="error_loading_data">Failed to load data.</string>
+    <string name="error_try_again">Please try again.</string>
+
+    <!-- No data available messages -->
+    <string name="no_data_available">No data available.</string>
+    <string name="no_measurements_found">No measurements found.</string>
+    <string name="no_entries_found">No entries available.</string>
+
     <!-- Route & Screen Titles -->
     <string name="route_title_overview">Overview</string>
     <string name="route_title_graph">Charts</string>
@@ -42,6 +52,7 @@
     <string name="content_desc_switch_user">Switch user. Selected: %1$s</string>
     <string name="content_desc_selected_user_indicator">Selected user indicator</string>
     <string name="action_add_user">Add User</string>
+    <string name="error_selecting_user">Failed to select user.</string>
     <string name="toast_no_user_selected">No user selected.</string>
     <string name="toast_select_user_first">Please select a user first.</string>
     <string name="no_user_selected_title">No User Active</string>
@@ -263,7 +274,6 @@
     <!-- Table Screen -->
     <string name="table_header_date">Date</string>
     <string name="table_message_no_columns_or_measurements">No columns selected or no measurements available.</string>
-    <string name="table_message_no_measurements">No measurements available.</string>
     <string name="table_message_no_columns_selected">No columns selected for display.</string>
     <string name="table_message_no_data_for_selection">No data available for the current column selection.</string>
     <string name="table_trend_up">Trending up</string>

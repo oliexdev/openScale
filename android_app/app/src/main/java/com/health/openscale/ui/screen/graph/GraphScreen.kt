@@ -35,10 +35,11 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.health.openscale.R
 import com.health.openscale.core.data.Trend
-import com.health.openscale.core.database.UserPreferenceKeys
+import com.health.openscale.core.facade.SettingsPreferenceKeys
+import com.health.openscale.core.model.EnrichedMeasurement
+import com.health.openscale.core.model.ValueWithDifference
 import com.health.openscale.ui.navigation.Routes
-import com.health.openscale.ui.screen.SharedViewModel
-import com.health.openscale.ui.screen.ValueWithDifference
+import com.health.openscale.ui.shared.SharedViewModel
 import com.health.openscale.ui.screen.components.LineChart
 import com.health.openscale.ui.screen.components.provideFilterTopBarAction
 import com.health.openscale.ui.screen.overview.MeasurementValueRow
@@ -53,10 +54,18 @@ fun GraphScreen(
     sharedViewModel: SharedViewModel
 ) {
     val context = LocalContext.current
-    val isLoading by sharedViewModel.isBaseDataLoading.collectAsState()
-    val allMeasurementsWithValues by sharedViewModel.allMeasurementsForSelectedUser.collectAsState()
-    val selectedUserId by sharedViewModel.selectedUserId.collectAsState()
+    val graphState by sharedViewModel.graphUiState.collectAsState()
+    val processed by sharedViewModel.processedMeasurementsFlow.collectAsState()
+    val allMeasurementsWithValues = remember(graphState) {
+        when (graphState) {
+            is SharedViewModel.UiState.Success -> (graphState as SharedViewModel.UiState.Success<List<EnrichedMeasurement>>)
+                .data
+                .map { it.measurementWithValues }
+            else -> emptyList()
+        }
+    }
     val userEvalContext by sharedViewModel.userEvaluationContext.collectAsState()
+    val selectedUserId by sharedViewModel.selectedUserId.collectAsState()
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
     var sheetMeasurementId by rememberSaveable { mutableStateOf<Int?>(null) }
@@ -67,7 +76,7 @@ fun GraphScreen(
 
     val timeFilterAction = provideFilterTopBarAction(
         sharedViewModel = sharedViewModel,
-        screenContextName = UserPreferenceKeys.GRAPH_SCREEN_CONTEXT
+        screenContextName = SettingsPreferenceKeys.GRAPH_SCREEN_CONTEXT
     )
 
     LaunchedEffect(timeFilterAction) {
@@ -76,33 +85,47 @@ fun GraphScreen(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        if (isLoading && allMeasurementsWithValues.isEmpty()) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
-        } else {
-            LineChart(
-                modifier = Modifier.fillMaxSize(),
-                sharedViewModel = sharedViewModel,
-                screenContextName = UserPreferenceKeys.GRAPH_SCREEN_CONTEXT,
-                showFilterControls = true,
-                onPointSelected = { selectedTs ->
-                    val result = sharedViewModel.findClosestMeasurement(selectedTs, allMeasurementsWithValues)
-                        ?: return@LineChart
-                    val (idx, mwv) = result
-                    val id = mwv.measurement.id
-                    val now = System.currentTimeMillis()
-
-                    if (lastTapId == id && (now - lastTapAt) <= doubleTapWindowMs) {
-                        sheetMeasurementId = id
-                        lastTapId = null
-                        lastTapAt = 0L
-                    } else {
-                        lastTapId = id
-                        lastTapAt = now
-                    }
+        when (val state = graphState) {
+            SharedViewModel.UiState.Loading -> {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
                 }
-            )
+            }
+            is SharedViewModel.UiState.Error -> {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(state.message ?: stringResource(R.string.error_loading_data))
+                }
+            }
+            is SharedViewModel.UiState.Success -> {
+                if (allMeasurementsWithValues.isEmpty()) {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(stringResource(R.string.no_data_available))
+                    }
+                } else {
+                    LineChart(
+                        modifier = Modifier.fillMaxSize(),
+                        sharedViewModel = sharedViewModel,
+                        screenContextName = SettingsPreferenceKeys.GRAPH_SCREEN_CONTEXT,
+                        showFilterControls = true,
+                        onPointSelected = { selectedTs ->
+                            val result = sharedViewModel.findClosestMeasurement(selectedTs, allMeasurementsWithValues)
+                                ?: return@LineChart
+                            val (idx, mwv) = result
+                            val id = mwv.measurement.id
+                            val now = System.currentTimeMillis()
+
+                            if (lastTapId == id && (now - lastTapAt) <= doubleTapWindowMs) {
+                                sheetMeasurementId = id
+                                lastTapId = null
+                                lastTapAt = 0L
+                            } else {
+                                lastTapId = id
+                                lastTapAt = now
+                            }
+                        }
+                    )
+                }
+            }
         }
     }
 
@@ -175,6 +198,7 @@ fun GraphScreen(
 
                 visibleValues.forEach { v ->
                     MeasurementValueRow(
+                        sharedViewModel = sharedViewModel,
                         valueWithTrend = ValueWithDifference(
                             currentValue = v,
                             difference = null,

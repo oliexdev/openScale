@@ -45,7 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.health.openscale.R
 import com.health.openscale.ui.navigation.Routes
-import com.health.openscale.ui.screen.SharedViewModel
+import com.health.openscale.ui.shared.SharedViewModel
 
 /**
  * Represents an item in the main settings screen.

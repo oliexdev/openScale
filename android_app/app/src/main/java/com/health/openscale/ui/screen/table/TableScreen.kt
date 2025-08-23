@@ -17,7 +17,6 @@
  */
 package com.health.openscale.ui.screen.components
 
-import android.R.attr.type
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -41,7 +40,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -56,7 +54,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -68,10 +65,10 @@ import com.health.openscale.R
 import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.Trend
-import com.health.openscale.core.eval.MeasurementEvaluator
+import com.health.openscale.core.service.MeasurementEvaluator
 import com.health.openscale.core.data.EvaluationState
 import com.health.openscale.ui.navigation.Routes
-import com.health.openscale.ui.screen.SharedViewModel
+import com.health.openscale.ui.shared.SharedViewModel
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -112,7 +109,6 @@ fun TableScreen(
 ) {
     val scope = rememberCoroutineScope()
     val enrichedMeasurements by sharedViewModel.enrichedMeasurementsFlow.collectAsState()
-    val isLoading by sharedViewModel.isBaseDataLoading.collectAsState()
     val allAvailableTypesFromVM by sharedViewModel.measurementTypes.collectAsState()
     val userEvaluationContext by sharedViewModel.userEvaluationContext.collectAsState()
 
@@ -170,7 +166,7 @@ fun TableScreen(
 
                         val ctx = userEvaluationContext
                         val evalResult = if (ctx != null && numeric != null) {
-                            MeasurementEvaluator.evaluate(
+                            sharedViewModel.evaluateMeasurement(
                                 typeKey = actualType.key,
                                 value = numeric,
                                 userEvaluationContext = ctx,
@@ -179,7 +175,7 @@ fun TableScreen(
                         } else null
 
                         val noAgeBand = evalResult?.let { it.lowLimit < 0f || it.highLimit < 0f } ?: false
-                        val plausible = MeasurementEvaluator.plausiblePercentRangeFor(actualType.key)
+                        val plausible = sharedViewModel.getPlausiblePercentRange(actualType.key)
                         val outOfPlausibleRange =
                             if (numeric == null) {
                                 false
@@ -224,7 +220,7 @@ fun TableScreen(
 
     val tableScreenTitle = stringResource(id = R.string.route_title_table)
     val noColumnsOrMeasurementsMessage = stringResource(id = R.string.table_message_no_columns_or_measurements)
-    val noMeasurementsMessage = stringResource(id = R.string.table_message_no_measurements)
+    val noMeasurementsMessage = stringResource(id = R.string.no_data_available)
     val noColumnsSelectedMessage = stringResource(id = R.string.table_message_no_columns_selected)
     val noDataForSelectionMessage = stringResource(id = R.string.table_message_no_data_for_selection)
     val dateColumnHeader = stringResource(id = R.string.table_header_date)
@@ -243,9 +239,13 @@ fun TableScreen(
         // --- FILTER SELECTION ROW ---
         MeasurementTypeFilterRow(
             allMeasurementTypesProvider = { allAvailableTypesFromVM },
-            selectedTypeIdsFlowProvider = { sharedViewModel.userSettingRepository.selectedTableTypeIds },
+            selectedTypeIdsFlowProvider = {
+                sharedViewModel.selectedTableTypeIds
+            },
             onPersistSelectedTypeIds = { idsToSave ->
-                scope.launch { sharedViewModel.userSettingRepository.saveSelectedTableTypeIds(idsToSave) }
+                scope.launch {
+                    sharedViewModel.saveSelectedTableTypeIds(idsToSave)
+                }
             },
             filterLogic = { allTypes -> allTypes.filter { it.isEnabled } },
             defaultSelectionLogic = { availableFilteredTypes ->
@@ -271,14 +271,6 @@ fun TableScreen(
 
         // --- TABLE CONTENT ---
         when {
-            isLoading -> {
-                Box(
-                    Modifier
-                        .fillMaxSize()
-                        .padding(16.dp), Alignment.Center
-                ) { CircularProgressIndicator() }
-            }
-
             enrichedMeasurements.isEmpty() && displayedTypes.isEmpty() -> {
                 Box(
                     Modifier

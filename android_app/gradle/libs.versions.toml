@@ -1,6 +1,6 @@
 [versions]
-agp = "8.11.0"
-kotlin = "2.2.0"
+agp = "8.11.1"
+kotlin = "2.2.10"
 coreKtx = "1.17.0"
 junit = "4.13.2"
 junitVersion = "1.3.0"
@@ -14,8 +14,11 @@ lifecycle = "2.9.2"
 datastore = "1.1.7"
 worker="2.10.3"
 documentfile = "1.1.0"
+hilt = "2.57.1"
+hiltNavCompose = "1.2.0"
+androidxHilt = "1.2.0"
 composeCharts = "2.1.3"
-composeReorderable = "2.5.1"
+composeReorderable = "3.0.0"
 compose-material = "1.7.8"
 constraintlayout-compose = "1.1.1"
 kotlinCsv = "1.10.0"
@@ -44,9 +47,14 @@ androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 androidx-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
-androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version = "lifecycle" }
+androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }
 androidx-worker = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "worker" }
 androidx-documentfile = { group = "androidx.documentfile", name = "documentfile", version.ref = "documentfile" }
+hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
+hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
+hilt-work = { group = "androidx.hilt", name = "hilt-work", version.ref = "androidxHilt" }
+hilt-androidx-compiler = { group = "androidx.hilt", name = "hilt-compiler", version.ref = "androidxHilt" }
+androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavCompose" }
 compose-charts = { group = "com.patrykandpatrick.vico", name = "compose", version.ref = "composeCharts" }
 compose-charts-m3 = { group = "com.patrykandpatrick.vico", name = "compose-m3", version.ref = "composeCharts" }
 compose-reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "composeReorderable" }
@@ -60,4 +68,5 @@ blessed-java = { group = "com.github.weliem", name = "blessed-android", version.
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 

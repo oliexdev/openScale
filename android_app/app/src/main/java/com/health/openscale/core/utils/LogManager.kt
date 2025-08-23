@@ -17,31 +17,25 @@
  */
 package com.health.openscale.core.utils
 
-import android.app.Activity
-import android.app.Application
 import android.content.Context
 import android.net.Uri
 import android.os.Build
-import android.os.Bundle
 import android.util.Log
 import com.health.openscale.BuildConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.File
 import java.io.FileOutputStream
-import java.io.FileWriter
 import java.io.IOException
 import java.io.OutputStreamWriter
 import java.nio.charset.StandardCharsets
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Manages logging for the application, providing methods to log messages

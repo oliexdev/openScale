@@ -60,7 +60,8 @@ import com.health.openscale.R
 import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.ui.components.MeasurementIcon
 import com.health.openscale.ui.components.RoundMeasurementIcon
-import com.health.openscale.ui.screen.SharedViewModel
+import com.health.openscale.ui.shared.SharedViewModel
+import com.health.openscale.ui.shared.TopBarAction
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
@@ -113,7 +114,7 @@ fun MeasurementTypeSettingsScreen(
     LaunchedEffect(Unit) {
         sharedViewModel.setTopBarTitle(screenTitle)
         sharedViewModel.setTopBarAction(
-            SharedViewModel.TopBarAction(icon = Icons.Default.Add, onClick = {
+            TopBarAction(icon = Icons.Default.Add, onClick = {
                 onEditType(null) // Request to add a new type
             })
         )

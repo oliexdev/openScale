@@ -17,62 +17,61 @@
  */
 package com.health.openscale.core.bluetooth
 
-import android.R.attr.identifier
-import android.R.attr.name
 import android.content.Context
-import android.util.SparseArray
-import com.health.openscale.core.bluetooth.scales.DummyScaleHandler
-import com.health.openscale.core.bluetooth.scales.ScaleDeviceHandler
-import com.health.openscale.core.bluetooth.scalesJava.BluetoothActiveEraBF06
-import com.health.openscale.core.bluetooth.scalesJava.BluetoothBeurerBF105
-import com.health.openscale.core.bluetooth.scalesJava.BluetoothBeurerBF500
-import com.health.openscale.core.bluetooth.scalesJava.BluetoothBeurerBF600
-import com.health.openscale.core.bluetooth.scalesJava.BluetoothBeurerBF950
-import com.health.openscale.core.bluetooth.scalesJava.BluetoothBeurerSanitas
-import com.health.openscale.core.bluetooth.scalesJava.BluetoothBroadcastScale
-import com.health.openscale.core.bluetooth.scalesJava.BluetoothCommunication
-import com.health.openscale.core.bluetooth.scalesJava.BluetoothCustomOpenScale
-import com.health.openscale.core.bluetooth.scalesJava.BluetoothDigooDGSO38H
-import com.health.openscale.core.bluetooth.scalesJava.BluetoothES26BBB
-import com.health.openscale.core.bluetooth.scalesJava.BluetoothESCS20M
-import com.health.openscale.core.bluetooth.scalesJava.BluetoothExcelvanCF36xBLE
-import com.health.openscale.core.bluetooth.scalesJava.BluetoothExingtechY1
-import com.health.openscale.core.bluetooth.scalesJava.BluetoothHesley
-import com.health.openscale.core.bluetooth.scalesJava.BluetoothHoffenBBS8107
-import com.health.openscale.core.bluetooth.scalesJava.BluetoothHuaweiAH100
-import com.health.openscale.core.bluetooth.scalesJava.BluetoothIhealthHS3
-import com.health.openscale.core.bluetooth.scalesJava.BluetoothInlife
-import com.health.openscale.core.bluetooth.scalesJava.BluetoothMGB
-import com.health.openscale.core.bluetooth.scalesJava.BluetoothMedisanaBS44x
-import com.health.openscale.core.bluetooth.scalesJava.BluetoothMiScale
-import com.health.openscale.core.bluetooth.scalesJava.BluetoothMiScale2
-import com.health.openscale.core.bluetooth.scalesJava.BluetoothOKOK
-import com.health.openscale.core.bluetooth.scalesJava.BluetoothOKOK2
-import com.health.openscale.core.bluetooth.scalesJava.BluetoothOneByone
-import com.health.openscale.core.bluetooth.scalesJava.BluetoothOneByoneNew
-import com.health.openscale.core.bluetooth.scalesJava.BluetoothQNScale
-import com.health.openscale.core.bluetooth.scalesJava.BluetoothRenphoScale
-import com.health.openscale.core.bluetooth.scalesJava.BluetoothSanitasSBF72
-import com.health.openscale.core.bluetooth.scalesJava.BluetoothSenssun
-import com.health.openscale.core.bluetooth.scalesJava.BluetoothSinocare
-import com.health.openscale.core.bluetooth.scalesJava.BluetoothSoehnle
-import com.health.openscale.core.bluetooth.scalesJava.BluetoothTrisaBodyAnalyze
-import com.health.openscale.core.bluetooth.scalesJava.BluetoothYoda1Scale
-import com.health.openscale.core.bluetooth.scalesJava.BluetoothYunmaiSE_Mini
-import com.health.openscale.core.bluetooth.scalesJava.LegacyScaleAdapter
-import com.health.openscale.core.database.DatabaseRepository
+import com.health.openscale.core.bluetooth.modern.DummyScaleHandler
+import com.health.openscale.core.bluetooth.modern.ScaleDeviceHandler
+import com.health.openscale.core.bluetooth.legacy.BluetoothActiveEraBF06
+import com.health.openscale.core.bluetooth.legacy.BluetoothBeurerBF105
+import com.health.openscale.core.bluetooth.legacy.BluetoothBeurerBF500
+import com.health.openscale.core.bluetooth.legacy.BluetoothBeurerBF600
+import com.health.openscale.core.bluetooth.legacy.BluetoothBeurerBF950
+import com.health.openscale.core.bluetooth.legacy.BluetoothBeurerSanitas
+import com.health.openscale.core.bluetooth.legacy.BluetoothBroadcastScale
+import com.health.openscale.core.bluetooth.legacy.BluetoothCommunication
+import com.health.openscale.core.bluetooth.legacy.BluetoothCustomOpenScale
+import com.health.openscale.core.bluetooth.legacy.BluetoothDigooDGSO38H
+import com.health.openscale.core.bluetooth.legacy.BluetoothES26BBB
+import com.health.openscale.core.bluetooth.legacy.BluetoothESCS20M
+import com.health.openscale.core.bluetooth.legacy.BluetoothExcelvanCF36xBLE
+import com.health.openscale.core.bluetooth.legacy.BluetoothExingtechY1
+import com.health.openscale.core.bluetooth.legacy.BluetoothHesley
+import com.health.openscale.core.bluetooth.legacy.BluetoothHoffenBBS8107
+import com.health.openscale.core.bluetooth.legacy.BluetoothHuaweiAH100
+import com.health.openscale.core.bluetooth.legacy.BluetoothIhealthHS3
+import com.health.openscale.core.bluetooth.legacy.BluetoothInlife
+import com.health.openscale.core.bluetooth.legacy.BluetoothMGB
+import com.health.openscale.core.bluetooth.legacy.BluetoothMedisanaBS44x
+import com.health.openscale.core.bluetooth.legacy.BluetoothMiScale
+import com.health.openscale.core.bluetooth.legacy.BluetoothMiScale2
+import com.health.openscale.core.bluetooth.legacy.BluetoothOKOK
+import com.health.openscale.core.bluetooth.legacy.BluetoothOKOK2
+import com.health.openscale.core.bluetooth.legacy.BluetoothOneByone
+import com.health.openscale.core.bluetooth.legacy.BluetoothOneByoneNew
+import com.health.openscale.core.bluetooth.legacy.BluetoothQNScale
+import com.health.openscale.core.bluetooth.legacy.BluetoothRenphoScale
+import com.health.openscale.core.bluetooth.legacy.BluetoothSanitasSBF72
+import com.health.openscale.core.bluetooth.legacy.BluetoothSenssun
+import com.health.openscale.core.bluetooth.legacy.BluetoothSinocare
+import com.health.openscale.core.bluetooth.legacy.BluetoothSoehnle
+import com.health.openscale.core.bluetooth.legacy.BluetoothTrisaBodyAnalyze
+import com.health.openscale.core.bluetooth.legacy.BluetoothYoda1Scale
+import com.health.openscale.core.bluetooth.legacy.BluetoothYunmaiSE_Mini
+import com.health.openscale.core.bluetooth.legacy.LegacyScaleAdapter
 import com.health.openscale.core.utils.LogManager
-import com.health.openscale.ui.screen.bluetooth.ScannedDeviceInfo
-import java.util.UUID
+import com.health.openscale.core.service.ScannedDeviceInfo
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Factory class responsible for creating appropriate [ScaleCommunicator] instances
  * for different Bluetooth scale devices. It decides whether to use a modern Kotlin-based
  * handler or a legacy Java-based adapter.
  */
-class ScaleFactory(
-    private val applicationContext: Context,
-    private val databaseRepository: DatabaseRepository // Needed for LegacyScaleAdapter
+@Singleton
+class ScaleFactory @Inject constructor(
+    @ApplicationContext private val applicationContext: Context,
+    private val legacyAdapterFactory: LegacyScaleAdapter.Factory
 ) {
     private val TAG = "ScaleHandlerFactory"
 
@@ -271,12 +270,8 @@ class ScaleFactory(
     private fun createLegacyCommunicator(deviceInfo: ScannedDeviceInfo): ScaleCommunicator? {
         val javaDriverInstance = createLegacyJavaDriver(applicationContext, deviceInfo)
         return if (javaDriverInstance != null) {
-            LogManager.i(TAG, "Creating LegacyScaleAdapter with Java driver '${javaDriverInstance.javaClass.simpleName}'.")
-            LegacyScaleAdapter(
-                applicationContext = applicationContext,
-                bluetoothDriverInstance = javaDriverInstance,
-                databaseRepository = databaseRepository
-            )
+            LogManager.i(TAG, "Creating LegacyScaleAdapter via Hilt factory for '${javaDriverInstance.javaClass.simpleName}'.")
+            legacyAdapterFactory.create(javaDriverInstance)
         } else {
             LogManager.w(TAG, "Could not create LegacyScaleAdapter: No Java driver found for '${deviceInfo.name}'.")
             null

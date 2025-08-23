@@ -19,23 +19,23 @@ package com.health.openscale
 
 import android.app.Application
 import android.util.Log
+import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.MeasurementTypeIcon
 import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.UnitType
-import com.health.openscale.core.database.AppDatabase
 import com.health.openscale.core.database.DatabaseRepository
-import com.health.openscale.core.database.UserSettingsRepository
-import com.health.openscale.core.database.provideUserSettingsRepository
+import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.core.utils.LogManager
-import com.health.openscale.core.worker.TaskWorkerFactory
+import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /**
  * Generates a default list of measurement types available in the application,
@@ -76,27 +76,19 @@ fun getDefaultMeasurementTypes(): List<MeasurementType> {
     )
 }
 
+@HiltAndroidApp
 class OpenScaleApp : Application(), Configuration.Provider {
     companion object {
         private const val TAG = "OpenScaleApp"
     }
+    @Inject
+    lateinit var settingsFacade: SettingsFacade
+    @Inject
+    lateinit var databaseRepository: DatabaseRepository
+    @Inject
+    lateinit var workerFactory: HiltWorkerFactory
+
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-
-    val userSettingsRepository: UserSettingsRepository by lazy {
-        provideUserSettingsRepository(applicationContext)
-    }
-
-    val databaseRepository: DatabaseRepository by lazy {
-        val db = AppDatabase.getInstance(applicationContext)
-        DatabaseRepository(
-            database = db,
-            userDao = db.userDao(),
-            measurementDao = db.measurementDao(),
-            measurementValueDao = db.measurementValueDao(),
-            measurementTypeDao = db.measurementTypeDao()
-        )
-    }
-
 
     override fun onCreate() {
         super.onCreate()
@@ -108,7 +100,7 @@ class OpenScaleApp : Application(), Configuration.Provider {
     private fun initializeLogging() {
         applicationScope.launch {
             val isFileLoggingEnabled = try {
-                userSettingsRepository.isFileLoggingEnabled.first()
+                settingsFacade.isFileLoggingEnabled.first()
             } catch (e: Exception) {
                 // Log to standard Android Log if our LogManager or DataStore fails early
                 Log.e(TAG, "Failed to retrieve isFileLoggingEnabled setting", e)
@@ -122,13 +114,13 @@ class OpenScaleApp : Application(), Configuration.Provider {
     private fun initializeDefaultData() {
         applicationScope.launch(Dispatchers.IO) { // Use IO dispatcher for database operations
             try {
-                val isFirstActualStart = userSettingsRepository.isFirstAppStart.first()
+                val isFirstActualStart = settingsFacade.isFirstAppStart.first()
                 LogManager.d(TAG, "Checking for first app start. isFirstAppStart: $isFirstActualStart")
 
                 if (isFirstActualStart) {
                     LogManager.i(TAG, "First app start detected. Inserting default measurement types...")
                     databaseRepository.insertAllMeasurementTypes(getDefaultMeasurementTypes())
-                    userSettingsRepository.setFirstAppStartCompleted(false)
+                    settingsFacade.setFirstAppStartCompleted(false)
                     LogManager.i(TAG, "Default measurement types inserted and first start marked as completed.")
                 } else {
                     LogManager.d(TAG, "Not the first app start. Default data should already exist.")
@@ -141,12 +133,8 @@ class OpenScaleApp : Application(), Configuration.Provider {
 
 
     override val workManagerConfiguration: Configuration by lazy {
-        val factory = TaskWorkerFactory(
-            userSettingsRepository = userSettingsRepository,
-            databaseRepository = databaseRepository
-        )
         Configuration.Builder()
-            .setWorkerFactory(factory)
+            .setWorkerFactory(workerFactory)
             .build()
     }
 }
