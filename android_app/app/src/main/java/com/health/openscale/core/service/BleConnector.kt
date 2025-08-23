@@ -19,7 +19,7 @@ package com.health.openscale.core.service
 
 import android.annotation.SuppressLint
 import android.os.Handler
-import androidx.compose.material3.SnackbarDuration
+import com.health.openscale.R
 import com.health.openscale.core.bluetooth.BluetoothEvent
 import com.health.openscale.core.bluetooth.ScaleCommunicator
 import com.health.openscale.core.bluetooth.ScaleFactory
@@ -31,12 +31,16 @@ import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.database.DatabaseRepository
 import com.health.openscale.core.utils.LogManager
+import com.health.openscale.ui.shared.SnackbarEvent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
@@ -64,14 +68,15 @@ class BleConnector(
     private val scaleFactory: ScaleFactory,
     private val databaseRepository: DatabaseRepository,
     private val getCurrentScaleUser: () -> ScaleUser?,
-    private val onSavePreferredDevice: suspend (address: String, name: String) -> Unit,
-    private val onSnackbarText: (message: String, duration: SnackbarDuration) -> Unit,
     ) : AutoCloseable {
 
     private companion object {
         const val TAG = "BluetoothConnManager"
         const val DISCONNECT_TIMEOUT_MS = 3000L // Timeout for forceful disconnect if no event received.
     }
+
+    private val _snackbarEvents = MutableSharedFlow<SnackbarEvent>(replay = 0, extraBufferCapacity = 1)
+    val snackbarEvents: SharedFlow<SnackbarEvent> = _snackbarEvents.asSharedFlow()
 
     private val _connectedDeviceName = MutableStateFlow<String?>(null)
     /** Emits the name of the currently connected device, or null if not connected. */
@@ -180,8 +185,7 @@ class BleConnector(
                                 // but confirm here for safety.
                                 _connectedDeviceAddress.value = connectedDeviceInfo.address
                                 _connectedDeviceName.value = connectedDeviceInfo.name
-                                onSavePreferredDevice(connectedDeviceInfo.address, connectedDeviceInfo.name ?: "Unknown Scale")
-                                onSnackbarText("Connected to $deviceDisplayName", SnackbarDuration.Short)
+                                _snackbarEvents.tryEmit(SnackbarEvent(messageResId = R.string.bluetooth_connector_connected_to, messageFormatArgs = listOf(deviceDisplayName)))
                                 _connectionError.value = null // Clear any errors on successful connection.
                                 LogManager.i(TAG, "Successfully connected to $deviceDisplayName via adapter's isConnected flow.")
                                 disconnectTimeoutJob?.cancel() // Successfully connected, timeout no longer needed.
@@ -232,8 +236,7 @@ class BleConnector(
                     _connectionStatus.value = ConnectionStatus.CONNECTED
                     _connectedDeviceAddress.value = event.deviceAddress
                     _connectedDeviceName.value = event.deviceName ?: deviceInfo.name // Prefer event name.
-                    onSavePreferredDevice(event.deviceAddress, event.deviceName ?: deviceInfo.name ?: "Unknown Scale")
-                    onSnackbarText("Connected to ${event.deviceName ?: deviceDisplayName}", SnackbarDuration.Short)
+                    _snackbarEvents.tryEmit(SnackbarEvent(messageResId = R.string.bluetooth_connector_connected_to, messageFormatArgs = listOf(event.deviceName ?: deviceDisplayName)))
                     _connectionError.value = null
                 }
             }
@@ -271,7 +274,7 @@ class BleConnector(
             }
             is BluetoothEvent.DeviceMessage -> {
                 LogManager.d(TAG, "Event: Message from $deviceDisplayName: ${event.message}")
-                onSnackbarText("$deviceDisplayName: ${event.message}", SnackbarDuration.Long)
+                _snackbarEvents.tryEmit(SnackbarEvent(messageResId = R.string.bluetooth_connector_device_message, messageFormatArgs = listOf(deviceDisplayName, event.message)))
             }
             is BluetoothEvent.Error -> {
                 LogManager.e(TAG, "Event: Error from $deviceDisplayName: ${event.error}")
@@ -322,7 +325,7 @@ class BleConnector(
         val currentAppUserId = getCurrentScaleUser()?.id
         if (currentAppUserId == 0) {
             LogManager.e(TAG, "($deviceName): No App User ID to save measurement.")
-            onSnackbarText("Measurement from $deviceName cannot be assigned to a user.", SnackbarDuration.Long)
+            _snackbarEvents.tryEmit(SnackbarEvent(messageResId = R.string.bluetooth_connector_measurement_user_missing, messageFormatArgs = listOf(deviceName)))
             return
         }
         LogManager.i(TAG, "($deviceName): Saving measurement for App User ID $currentAppUserId.")
@@ -340,7 +343,7 @@ class BleConnector(
                 databaseRepository.getAllMeasurementTypes().firstOrNull()
                     ?.associate { it.key to it.id } ?: run {
                     LogManager.e(TAG, "Could not load MeasurementTypes from DB for $deviceName.")
-                    onSnackbarText("Error: Measurement types not loaded.", SnackbarDuration.Long)
+                    _snackbarEvents.tryEmit(SnackbarEvent(messageResId = R.string.bluetooth_connector_measurement_types_not_loaded))
                     return@launch
                 }
             fun getTypeIdFromMap(key: MeasurementTypeKey): Int? = typeKeyToIdMap[key]
@@ -416,7 +419,7 @@ class BleConnector(
 
             if (values.isEmpty()) {
                 LogManager.w(TAG, "No valid values from measurement of $deviceName to save.")
-                onSnackbarText("No valid measurement values received from $deviceName.", SnackbarDuration.Long)
+                _snackbarEvents.tryEmit(SnackbarEvent(messageResId = R.string.bluetooth_connector_measurement_no_values, messageFormatArgs = listOf(deviceName)))
                 return@launch
             }
 
@@ -426,10 +429,10 @@ class BleConnector(
                 finalValues.forEach { databaseRepository.insertMeasurementValue(it) }
 
                 LogManager.i(TAG, "Measurement from $deviceName for User $currentAppUserId saved (ID: $measurementId). Values: ${finalValues.size}")
-                onSnackbarText("Measurement (${measurementData.weight} kg) from $deviceName saved.", SnackbarDuration.Short)
+                _snackbarEvents.tryEmit(SnackbarEvent(messageResId = R.string.bluetooth_connector_measurement_saved, messageFormatArgs = listOf(measurementData.weight, deviceName)))
             } catch (e: Exception) {
                 LogManager.e(TAG, "Error saving measurement from $deviceName.", e)
-                onSnackbarText("Error saving measurement from $deviceName.", SnackbarDuration.Long)
+                _snackbarEvents.tryEmit(SnackbarEvent(messageResId = R.string.bluetooth_connector_measurement_save_error, messageFormatArgs = listOf(deviceName)))
             }
         }
     }

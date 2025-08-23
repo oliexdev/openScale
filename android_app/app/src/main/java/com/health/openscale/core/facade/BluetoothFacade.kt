@@ -42,6 +42,7 @@ import javax.inject.Singleton
 import com.health.openscale.core.service.ScannedDeviceInfo
 import com.health.openscale.core.service.BluetoothScannerManager
 import com.health.openscale.core.service.BleConnector
+import com.health.openscale.ui.shared.SnackbarEvent
 
 /**
  * Facade responsible for orchestrating Bluetooth operations.
@@ -71,14 +72,10 @@ class BluetoothFacade @Inject constructor(
         scope = scope,
         scaleFactory = scaleFactory,
         databaseRepository = databaseRepository,
-        getCurrentScaleUser = { currentBtScaleUser.value },
-        onSavePreferredDevice = { address, name ->
-            scope.launch { _oneShotMessages.emit(OneShotMessage(R.string.bt_snackbar_scale_saved_as_preferred, listOf(name))) }
-        },
-        onSnackbarText = { message, duration ->
-            scope.launch { _oneShotText.emit(OneShotText(message, duration)) }
-        }
+        getCurrentScaleUser = { currentBtScaleUser.value }
     )
+
+    val snackbarEventsFromConnector: SharedFlow<SnackbarEvent> = connection.snackbarEvents
 
     // --- Publicly observable state ---
     val scannedDevices: StateFlow<List<ScannedDeviceInfo>> = scanner.scannedDevices
@@ -100,23 +97,6 @@ class BluetoothFacade @Inject constructor(
         settingsFacade.savedBluetoothScaleAddress.stateIn(scope, SharingStarted.WhileSubscribed(5000), null)
     val savedScaleName: StateFlow<String?> =
         settingsFacade.savedBluetoothScaleName.stateIn(scope, SharingStarted.WhileSubscribed(5000), null)
-
-    /**
-     * One-shot message with resource ID, args, and duration.
-     * Used for Snackbar feedback from non-UI layers.
-     */
-    data class OneShotMessage(val resId: Int, val args: List<Any> = emptyList(), val duration: SnackbarDuration = SnackbarDuration.Short)
-
-    /**
-     * One-shot message with plain text.
-     */
-    data class OneShotText(val text: String, val duration: SnackbarDuration = SnackbarDuration.Short)
-
-    private val _oneShotMessages = MutableSharedFlow<OneShotMessage>()
-    val oneShotMessages: SharedFlow<OneShotMessage> = _oneShotMessages.asSharedFlow()
-
-    private val _oneShotText = MutableSharedFlow<OneShotText>()
-    val oneShotText: SharedFlow<OneShotText> = _oneShotText.asSharedFlow()
 
     // --- Current user context ---
     private val currentAppUser = MutableStateFlow<User?>(null)
@@ -160,7 +140,7 @@ class BluetoothFacade @Inject constructor(
     fun connectTo(device: ScannedDeviceInfo) {
         val (supported, handlerName) = scaleFactory.getSupportingHandlerInfo(device)
         if (!supported) {
-            scope.launch { _oneShotMessages.emit(OneShotMessage(R.string.bt_snackbar_saved_scale_no_longer_supported, listOf(device.name ?: "?"))) }
+            LogManager.w(TAG, "Device ${device.name} is not supported by this app")
             return
         }
         device.isSupported = true
@@ -173,7 +153,6 @@ class BluetoothFacade @Inject constructor(
             val address = savedScaleAddress.value
             val name = savedScaleName.value
             if (address == null || name == null) {
-                _oneShotMessages.emit(OneShotMessage(R.string.bt_snackbar_no_scale_saved))
                 return@launch
             }
             val already = (connectionStatus.value == ConnectionStatus.CONNECTED || connectionStatus.value == ConnectionStatus.CONNECTING) &&
@@ -191,20 +170,17 @@ class BluetoothFacade @Inject constructor(
 
     fun saveAsPreferred(device: ScannedDeviceInfo) {
         scope.launch {
-            val display = device.name ?: application.getString(R.string.unknown_scale_name)
+            val display = device.name ?: application.getString(R.string.unknown_device)
             settingsFacade.saveBluetoothScale(device.address, display)
-            _oneShotMessages.emit(OneShotMessage(R.string.bt_snackbar_scale_saved_as_preferred, listOf(display)))
         }
     }
 
     fun provideUserInteractionFeedback(type: BluetoothEvent.UserInteractionType, feedbackData: Any) {
         val user = currentAppUser.value ?: run {
-            scope.launch { _oneShotMessages.emit(OneShotMessage(R.string.bt_snackbar_error_no_app_user_selected)) }
             connection.clearUserInteractionEvent()
             return
         }
         connection.provideUserInteractionFeedback(type, user.id, feedbackData, Handler(Looper.getMainLooper()))
-        scope.launch { _oneShotMessages.emit(OneShotMessage(R.string.bt_snackbar_user_input_processed)) }
         connection.clearUserInteractionEvent()
     }
 

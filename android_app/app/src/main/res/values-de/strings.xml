@@ -217,6 +217,18 @@
     <string name="not_supported_label">Nicht unterstützt</string>
     <string name="rssi_format">%1$d dBm</string>
 
+    <!-- Bluetooth Connector -->
+    <string name="bluetooth_connector_connected_to">Verbunden mit %1$s</string>
+    <string name="bluetooth_connector_connection_failed">Verbindung zu %1$s fehlgeschlagen: %2$s</string>
+    <string name="bluetooth_connector_device_not_supported">%1$s wird nicht unterstützt.</string>
+    <string name="bluetooth_connector_driver_not_found">Treiber für %1$s nicht gefunden oder interner Fehler.</string>
+    <string name="bluetooth_connector_measurement_user_missing">Messung von %1$s kann keinem Benutzer zugeordnet werden.</string>
+    <string name="bluetooth_connector_measurement_types_not_loaded">Fehler: Messtypen konnten nicht geladen werden.</string>
+    <string name="bluetooth_connector_measurement_no_values">Keine gültigen Messwerte von %1$s empfangen.</string>
+    <string name="bluetooth_connector_measurement_saved">Messung (%1$.1f kg) von %2$s gespeichert.</string>
+    <string name="bluetooth_connector_measurement_save_error">Fehler beim Speichern der Messung von %1$s.</string>
+    <string name="bluetooth_connector_device_message">%1$s: %2$s</string>
+
     <!-- Bluetooth Berechtigungen & Aktivierungs-Karten -->
     <string name="permissions_required_icon_desc">Symbol für erforderliche Berechtigungen</string>
     <string name="permissions_required_title">Berechtigungen erforderlich</string>
@@ -447,27 +459,6 @@
     <!-- Evaluation Nachrichten -->
     <string name="eval_no_age_band">Keine Bewertung möglich: Kein passender Altersbereich zum Messzeitpunkt.</string>
     <string name="eval_out_of_plausible_range_percent">Auffälliger Wert: außerhalb des plausiblen Bereichs (%1$.0f–%2$.0f%%).</string>
-
-    <!-- BluetoothViewModel Snackbar Messages -->
-    <string name="bt_snackbar_permissions_required_to_scan">Bluetooth-Berechtigungen werden zum Scannen von Geräten benötigt.</string>
-    <string name="bt_snackbar_bluetooth_disabled_to_scan">Bluetooth ist deaktiviert. Bitte aktiviere es, um nach Geräten zu scannen.</string>
-
-    <string name="bt_snackbar_permissions_required_to_connect">Bluetooth-Berechtigungen werden benötigt, um eine Verbindung zu %1$s herzustellen.</string>
-    <string name="bt_snackbar_permissions_required_to_connect_default">Bluetooth-Berechtigungen werden benötigt, um eine Verbindung zum Gerät herzustellen.</string>
-    <string name="bt_snackbar_bluetooth_disabled_to_connect">Bluetooth ist deaktiviert. Bitte aktiviere es, um eine Verbindung zu %1$s herzustellen.</string>
-    <string name="bt_snackbar_bluetooth_disabled_to_connect_default">Bluetooth ist deaktiviert. Bitte aktiviere es, um eine Verbindung zum Gerät herzustellen.</string>
-
-    <string name="bt_snackbar_scale_saved_as_preferred">%1$s als bevorzugte Waage gespeichert.</string>
-    <string name="bt_snackbar_saved_scale_no_longer_supported">Gespeicherte Waage \'%1$s\' wird nicht mehr unterstützt.</string>
-    <string name="bt_snackbar_no_scale_saved">Keine Bluetooth-Waage in den Einstellungen gespeichert.</string>
-
-    <string name="bt_snackbar_error_no_app_user_selected">Fehler: Kein App-Benutzer ausgewählt.</string>
-    <string name="bt_snackbar_user_input_processed">Benutzereingabe verarbeitet.</string>
-
-    <string name="bt_snackbar_operation_successful">Vorgang erfolgreich.</string>
-    <string name="bt_snackbar_operation_failed">Vorgang fehlgeschlagen. Bitte versuche es erneut.</string>
-    <string name="device_placeholder_name">das Gerät</string>
-    <string name="unknown_scale_name">Unbekannte Waage</string>
 
     <!-- Bluetooth Waagen Nachrichten -->
     <string name="bluetooth_scale_trisa_message_not_paired_instruction">Diese Waage wurde nicht gekoppelt!\n\nHalten Sie die Taste an der Unterseite der Waage gedrückt, um sie in den Kopplungsmodus zu versetzen, und verbinden Sie sich dann erneut, um das Gerätepasswort abzurufen.</string>

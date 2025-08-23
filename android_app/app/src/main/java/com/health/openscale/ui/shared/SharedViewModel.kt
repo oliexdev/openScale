@@ -93,7 +93,7 @@ class SharedViewModel @Inject constructor(
     fun setTopBarActions(actions: List<TopBarAction>) { _topBarActions.value = actions }
 
     // --- Snackbar events ---
-    private val _snackbarEvents = MutableSharedFlow<SnackbarEvent>(replay = 1, extraBufferCapacity = 1)
+    private val _snackbarEvents = MutableSharedFlow<SnackbarEvent>(replay = 0, extraBufferCapacity = 1)
     val snackbarEvents: SharedFlow<SnackbarEvent> = _snackbarEvents.asSharedFlow()
 
     fun showSnackbar(

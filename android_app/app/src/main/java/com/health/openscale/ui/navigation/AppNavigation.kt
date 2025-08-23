@@ -18,6 +18,7 @@
 package com.health.openscale.ui.navigation
 
 import android.util.Pair
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -183,6 +184,10 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
         is String -> titleData
         is Int -> if (titleData != Routes.NO_TITLE_RESOURCE_ID) stringResource(id = titleData) else ""
         else -> "" // Default to empty string if title data is null or unexpected type
+    }
+
+    BackHandler(enabled = drawerState.isOpen) {
+        scope.launch { drawerState.close() }
     }
 
     // Reset top bar actions when the current route changes.

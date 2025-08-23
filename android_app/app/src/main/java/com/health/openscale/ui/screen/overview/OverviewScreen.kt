@@ -341,7 +341,7 @@ fun OverviewScreen(
             }
         } else {
             sharedViewModel.showSnackbar(
-                message = context.getString(R.string.bt_snackbar_bluetooth_disabled_to_connect_default),
+                message = context.getString(R.string.bluetooth_permissions_required_for_scan),
                 duration = SnackbarDuration.Long
             )
         }
@@ -360,7 +360,7 @@ fun OverviewScreen(
             }
         } else {
             sharedViewModel.showSnackbar(
-                messageResId = R.string.bt_snackbar_permissions_required_to_connect_default
+                messageResId = R.string.bluetooth_permissions_required_for_scan
             )
         }
     }

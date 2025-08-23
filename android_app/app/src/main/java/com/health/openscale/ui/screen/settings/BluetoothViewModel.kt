@@ -63,30 +63,13 @@ class BluetoothViewModel @Inject constructor(
     val savedScaleName = bt.savedScaleName
 
     // --- Snackbar events for UI ---
-    private val _snackbarEvents = MutableSharedFlow<SnackbarEvent>(replay = 1, extraBufferCapacity = 1)
+    private val _snackbarEvents = MutableSharedFlow<SnackbarEvent>(replay = 0, extraBufferCapacity = 1)
     val snackbarEvents: SharedFlow<SnackbarEvent> = _snackbarEvents.asSharedFlow()
 
     init {
-        // Translate facade one-shot messages into SnackbarEvents
         viewModelScope.launch {
-            bt.oneShotMessages.collect { msg ->
-                _snackbarEvents.emit(
-                    SnackbarEvent(
-                        messageResId = msg.resId,
-                        messageFormatArgs = msg.args,
-                        duration = msg.duration
-                    )
-                )
-            }
-        }
-        viewModelScope.launch {
-            bt.oneShotText.collect { txt ->
-                _snackbarEvents.emit(
-                    SnackbarEvent(
-                        message = txt.text,
-                        duration = txt.duration
-                    )
-                )
+            bt.snackbarEventsFromConnector.collect { evt ->
+                _snackbarEvents.emit(evt)
             }
         }
     }
@@ -94,7 +77,7 @@ class BluetoothViewModel @Inject constructor(
     // --- Delegated actions ---
     fun requestStartDeviceScan() {
         if (!bt.isBluetoothEnabled()) {
-            emitSnack(R.string.bt_snackbar_bluetooth_disabled_to_scan, SnackbarDuration.Long)
+            emitSnack(R.string.bluetooth_must_be_enabled_for_scan, SnackbarDuration.Long)
             return
         }
         bt.startScan(SCAN_DURATION_MS)

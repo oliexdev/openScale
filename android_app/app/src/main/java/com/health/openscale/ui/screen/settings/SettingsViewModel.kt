@@ -67,7 +67,7 @@ class SettingsViewModel @Inject constructor(
     }
 
     // --- Snackbar ---
-    private val _snackbarEvents = MutableSharedFlow<SnackbarEvent>(replay = 1, extraBufferCapacity = 1)
+    private val _snackbarEvents = MutableSharedFlow<SnackbarEvent>(replay = 0, extraBufferCapacity = 1)
     val snackbarEvents = _snackbarEvents.asSharedFlow()
 
     private suspend fun showSnackbar(
