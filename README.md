@@ -5,11 +5,17 @@
 Open-source weight and body metrics tracker, with support for Bluetooth scales
 
 <a href="https://f-droid.org/repository/browse/?fdid=com.health.openscale" target="_blank">
-<img src="https://f-droid.org/badge/get-it-on.png" alt="Get it on F-Droid" height="80"/></a>
-<!-- <a href="https://play.google.com/store/apps/details?id=com.health.openscale.pro" target="_blank">
- <img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png" alt="Get it on Google Play" height="80"/></a> -->
+  <img src="https://f-droid.org/badge/get-it-on.png" alt="Get it on F-Droid" height="80"/>
+</a>
+<a href="https://play.google.com/store/apps/details?id=com.health.openscale.oss" target="_blank">
+  <img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png" alt="Get it on Google Play (Beta)" title="Beta version only" height="80"/>
+</a>
 
-You can also install either the latest [openScale 2.x dev](https://github.com/oliexdev/openScale/releases/tag/dev-build) build or the [openScale 3.0 beta](https://github.com/oliexdev/openScale/releases/tag/beta-build) build. Please be aware that these are development/beta versions, may contain bugs, and will not receive automatic updates.
+> [!NOTE]
+> On [Google Play](https://play.google.com/store/apps/details?id=com.health.openscale.oss) only the **Beta version (3.0)** is available.  For stable releases, please use [F-Droid](https://f-droid.org/packages/com.health.openscale).
+> 
+> For the latest development state, install either the latest [openScale 2.x dev](https://github.com/oliexdev/openScale/releases/tag/dev-build) build or the [openScale 3.0 beta](https://github.com/oliexdev/openScale/releases/tag/beta-build) build from the [GitHub release page](https://github.com/oliexdev/openScale/releases).
+> Please be aware that these are development/beta versions, may contain bugs, and will not receive automatic updates.
 
 > [!IMPORTANT]
 > **Help to test the openScale 3.0 Beta - Your Feedback is Key!**
@@ -24,7 +30,6 @@ You can also install either the latest [openScale 2.x dev](https://github.com/ol
 > This is an early beta; expect some rough edges. Your active testing and detailed reports will make openScale 3.0 a success!
 >
 > [**Learn More About Beta Testing & Reporting Here**](https://github.com/oliexdev/openScale/issues/1139)
-
 
 # Summary :clipboard:
 
