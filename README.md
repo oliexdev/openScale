@@ -12,7 +12,7 @@ Open-source weight and body metrics tracker, with support for Bluetooth scales
 </a>
 
 > [!NOTE]
-> On [Google Play](https://play.google.com/store/apps/details?id=com.health.openscale.oss) only the **Beta version (3.0)** is available.  For stable releases, please use [F-Droid](https://f-droid.org/packages/com.health.openscale).
+> On [Google Play](https://play.google.com/store/apps/details?id=com.health.openscale.oss) only the **openScale 3.0 beta** version is offered as an open beta.  For stable releases, please use [F-Droid](https://f-droid.org/packages/com.health.openscale).
 > 
 > For the latest development state, install either the latest [openScale 2.x dev](https://github.com/oliexdev/openScale/releases/tag/dev-build) build or the [openScale 3.0 beta](https://github.com/oliexdev/openScale/releases/tag/beta-build) build from the [GitHub release page](https://github.com/oliexdev/openScale/releases).
 > Please be aware that these are development/beta versions, may contain bugs, and will not receive automatic updates.
