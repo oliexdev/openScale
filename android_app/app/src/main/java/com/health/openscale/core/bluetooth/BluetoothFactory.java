@@ -165,7 +165,11 @@ public class BluetoothFactory {
         if(deviceName.equals("ES-CS20M")){
             return new BluetoothESCS20M(context);
         }
+        if(deviceName.equals("Wii Balance Board")){
+            return new BluetoothWiiBalanceBoard(context);//is this right? idk
+        }
         return null;
+
     }
 
     public static String convertNoNameToDeviceName(SparseArray<byte[]> manufacturerSpecificData) {
