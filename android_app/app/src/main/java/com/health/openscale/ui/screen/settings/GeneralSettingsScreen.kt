@@ -89,6 +89,8 @@ fun GeneralSettingsScreen(
     }
 
     val isFileLoggingEnabled by sharedViewModel.isFileLoggingEnabled.collectAsState(initial = false)
+    var hasLogFile by remember { mutableStateOf(false) }
+
     var showLoggingActivationDialog by remember { mutableStateOf(false) }
 
     val createFileLauncher = rememberLauncherForActivityResult(
@@ -142,6 +144,10 @@ fun GeneralSettingsScreen(
                 }
             }
         )
+    }
+
+    LaunchedEffect(isFileLoggingEnabled) {
+        hasLogFile = LogManager.getLogFile()?.exists() == true
     }
 
     LaunchedEffect(Unit) {
@@ -245,7 +251,7 @@ fun GeneralSettingsScreen(
             )
         }
 
-        if (isFileLoggingEnabled) {
+        if (isFileLoggingEnabled || hasLogFile) {
             OutlinedButton(
                 onClick = {
                     val logFile = LogManager.getLogFile()
