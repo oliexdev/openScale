@@ -80,6 +80,13 @@ object SettingsPreferenceKeys {
     val AUTO_BACKUP_CREATE_NEW_FILE = booleanPreferencesKey("auto_backup_create_new_file")
     val AUTO_BACKUP_LAST_SUCCESSFUL_TIMESTAMP = longPreferencesKey("auto_backup_last_successful_timestamp")
 
+    // --- Reminder Settings ---
+    val REMINDER_ENABLED = booleanPreferencesKey("reminder_enabled")
+    val REMINDER_TEXT = stringPreferencesKey("reminder_text")
+    val REMINDER_HOUR = intPreferencesKey("reminder_hour")
+    val REMINDER_MINUTE = intPreferencesKey("reminder_minute")
+    val REMINDER_DAYS = stringSetPreferencesKey("reminder_days")
+
     // Context strings for screen-specific settings (can be used as prefixes for dynamic keys)
     const val OVERVIEW_SCREEN_CONTEXT = "overview_screen"
     const val GRAPH_SCREEN_CONTEXT = "graph_screen"
@@ -162,6 +169,22 @@ interface SettingsFacade {
 
     val autoBackupLastSuccessfulTimestamp: Flow<Long>
     suspend fun setAutoBackupLastSuccessfulTimestamp(timestamp: Long)
+
+    // --- Reminder Settings ---
+    val reminderEnabled: Flow<Boolean>
+    suspend fun setReminderEnabled(enabled: Boolean)
+
+    val reminderText: Flow<String>
+    suspend fun setReminderText(text: String)
+
+    val reminderHour: Flow<Int>
+    suspend fun setReminderHour(hour: Int)
+
+    val reminderMinute: Flow<Int>
+    suspend fun setReminderMinute(minute: Int)
+
+    val reminderDays: Flow<Set<String>>
+    suspend fun setReminderDays(days: Set<String>)
 
     // Generic Settings Accessors
     /**
@@ -477,6 +500,77 @@ class SettingsFacadeImpl @Inject constructor(
     override suspend fun setAutoBackupLastSuccessfulTimestamp(timestamp: Long) {
         LogManager.d(TAG, "Setting autoBackupLastSuccessfulTimestamp to: $timestamp")
         saveSetting(SettingsPreferenceKeys.AUTO_BACKUP_LAST_SUCCESSFUL_TIMESTAMP.name, timestamp)
+    }
+
+    // --- Reminder Settings ---
+    override val reminderEnabled: Flow<Boolean> = observeSetting(
+        SettingsPreferenceKeys.REMINDER_ENABLED.name,
+        false
+    ).catch { exception ->
+        LogManager.e(TAG, "Error observing reminderEnabled", exception)
+        emit(false)
+    }
+
+    override suspend fun setReminderEnabled(enabled: Boolean) {
+        LogManager.d(TAG, "Setting reminderEnabled to: $enabled")
+        saveSetting(SettingsPreferenceKeys.REMINDER_ENABLED.name, enabled)
+    }
+
+    override val reminderText: Flow<String> = observeSetting(
+        SettingsPreferenceKeys.REMINDER_TEXT.name,
+        ""
+    ).catch { exception ->
+        LogManager.e(TAG, "Error observing reminderText", exception)
+        emit("")
+    }
+
+    override suspend fun setReminderText(text: String) {
+        LogManager.d(TAG, "Setting reminderText to: $text")
+        saveSetting(SettingsPreferenceKeys.REMINDER_TEXT.name, text)
+    }
+
+    override val reminderHour: Flow<Int> = observeSetting(
+        SettingsPreferenceKeys.REMINDER_HOUR.name,
+        9
+    ).catch { exception ->
+        LogManager.e(TAG, "Error observing reminderHour", exception)
+        emit(9)
+    }
+
+    override suspend fun setReminderHour(hour: Int) {
+        val h = hour.coerceIn(0, 23)
+        LogManager.d(TAG, "Setting reminderHour to: $h (raw: $hour)")
+        saveSetting(SettingsPreferenceKeys.REMINDER_HOUR.name, h)
+    }
+
+    override val reminderMinute: Flow<Int> = observeSetting(
+        SettingsPreferenceKeys.REMINDER_MINUTE.name,
+        0
+    ).catch { exception ->
+        LogManager.e(TAG, "Error observing reminderMinute", exception)
+        emit(0)
+    }
+
+    override suspend fun setReminderMinute(minute: Int) {
+        val m = minute.coerceIn(0, 59)
+        LogManager.d(TAG, "Setting reminderMinute to: $m (raw: $minute)")
+        saveSetting(SettingsPreferenceKeys.REMINDER_MINUTE.name, m)
+    }
+
+    override val reminderDays: Flow<Set<String>> = observeSetting(
+        SettingsPreferenceKeys.REMINDER_DAYS.name,
+        emptySet<String>()
+    ).catch { exception ->
+        LogManager.e(TAG, "Error observing reminderDays", exception)
+        emit(emptySet())
+    }
+
+    override suspend fun setReminderDays(days: Set<String>) {
+        val safe = days.filter {
+            runCatching { java.time.DayOfWeek.valueOf(it) }.isSuccess
+        }.toSet()
+        LogManager.d(TAG, "Setting reminderDays to: $safe (raw: $days)")
+        saveSetting(SettingsPreferenceKeys.REMINDER_DAYS.name, safe)
     }
 
     @Suppress("UNCHECKED_CAST")

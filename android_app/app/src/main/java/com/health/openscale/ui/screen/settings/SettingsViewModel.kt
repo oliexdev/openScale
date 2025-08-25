@@ -19,7 +19,9 @@ package com.health.openscale.ui.screen.settings
 
 import android.content.ContentResolver
 import android.net.Uri
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.TimePickerState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.health.openscale.R
@@ -30,6 +32,7 @@ import com.health.openscale.core.facade.DataManagementFacade
 import com.health.openscale.core.facade.MeasurementFacade
 import com.health.openscale.core.facade.UserFacade
 import com.health.openscale.core.usecase.ImportReport
+import com.health.openscale.core.usecase.ReminderUseCase
 import com.health.openscale.core.utils.LogManager
 import com.health.openscale.ui.shared.SnackbarEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -54,7 +57,8 @@ import kotlinx.coroutines.launch
 class SettingsViewModel @Inject constructor(
     private val userFacade: UserFacade,
     private val dataManagementFacade: DataManagementFacade,
-    private val measurementFacade: MeasurementFacade
+    private val measurementFacade: MeasurementFacade,
+    private val reminderUseCase: ReminderUseCase
 ) : ViewModel() {
 
     companion object {
@@ -310,6 +314,10 @@ class SettingsViewModel @Inject constructor(
                 _isLoadingRestore.value = false
             }
         }
+    }
+
+    suspend fun requestReminderReschedule() {
+        reminderUseCase.rescheduleNext()
     }
 
     // --- Measurement types (MeasurementFacade) ---

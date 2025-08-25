@@ -310,6 +310,27 @@
     <!-- Allgemeine Einstellungen -->
     <string name="settings_general_title">Allgemeine Einstellungen</string>
     <string name="settings_language_label">Sprache</string>
+    <string name="settings_reminder_title">Erinnerung</string>
+    <string name="settings_reminder_enable_label">Erinnerungsfunktion</string>
+    <string name="settings_reminder_text_label">Erinnerungstext</string>
+    <string name="settings_reminder_text_placeholder">Erinnerungstext bitte hier einfügen</string>
+    <string name="settings_reminder_time_label">Uhrzeit</string>
+    <string name="reminder_enabled_snackbar">Erinnerung aktiviert</string>
+    <string name="reminder_disabled_snackbar">Erinnerung deaktiviert</string>
+    <string name="reminder_default_text">Zeit zum Wiegen</string>
+    <string name="reminder_channel_name">Erinnerungen</string>
+    <string name="reminder_notification_title">openScale</string>
+    <string name="settings_reminder_days_label">Tage</string>
+    <string name="permission_denied">Erinnerungsfunktion-Berechtigungen abgelehnt</string>
+
+    <string name="monday_short">Mo</string>
+    <string name="tuesday_short">Di</string>
+    <string name="wednesday_short">Mi</string>
+    <string name="thursday_short">Do</string>
+    <string name="friday_short">Fr</string>
+    <string name="saturday_short">Sa</string>
+    <string name="sunday_short">So</string>
+    <string name="all">Alle</string>
 
     <!-- Diagramm Einstellungen -->
     <string name="setting_show_chart_points">Datenpunkte anzeigen</string>
@@ -335,6 +356,7 @@
     <string name="file_logging_label">Datei-Protokollierung</string>
     <string name="enable_file_logging_dialog_title">Datei-Protokollierung aktivieren?</string>
     <string name="enable_file_logging_dialog_message">Wenn aktiviert, speichert die App detaillierte Protokolle lokal auf Ihrem Gerät. Diese sind nützlich für die Fehlerbehebung. Die Dateien können vertrauliche Informationen enthalten. Teilen Sie sie nur mit vertrauenswürdigen Personen.</string>
+    <string name="enable_file_logging_dialog_message_warning">Beim Aktivieren wird sofort eine neue Protokollierung gestartet. Dabei wird eine neue Logdatei angelegt und die alte gelöscht.</string>
     <string name="file_logging_enabled_snackbar">Datei-Protokollierung aktiviert</string>
     <string name="file_logging_disabled_snackbar">Datei-Protokollierung deaktiviert</string>
     <string name="log_export_success">Protokolldatei erfolgreich exportiert.</string>

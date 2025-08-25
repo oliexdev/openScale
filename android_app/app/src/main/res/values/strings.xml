@@ -312,6 +312,27 @@
     <!-- General Settings Screen -->
     <string name="settings_general_title">General Settings</string>
     <string name="settings_language_label">Language</string>
+    <string name="settings_reminder_title">Reminder</string>
+    <string name="settings_reminder_enable_label">Reminder function</string>
+    <string name="settings_reminder_text_label">Reminder text</string>
+    <string name="settings_reminder_text_placeholder">Input reminder text here</string>
+    <string name="settings_reminder_time_label">Time</string>
+    <string name="reminder_enabled_snackbar">Reminder enabled</string>
+    <string name="reminder_disabled_snackbar">Reminder disabled</string>
+    <string name="reminder_default_text">Time to weight</string>
+    <string name="reminder_channel_name">Reminders</string>
+    <string name="reminder_notification_title">openScale</string>
+    <string name="settings_reminder_days_label">Days</string>
+    <string name="permission_denied">Notifications permission denied</string>
+
+    <string name="monday_short">Mon</string>
+    <string name="tuesday_short">Tue</string>
+    <string name="wednesday_short">Wed</string>
+    <string name="thursday_short">Thu</string>
+    <string name="friday_short">Fri</string>
+    <string name="saturday_short">Sat</string>
+    <string name="sunday_short">Sun</string>
+    <string name="all">All</string>
 
     <!-- Chart Settings Screen -->
     <string name="setting_show_chart_points">Show data points</string>
@@ -337,6 +358,7 @@
     <string name="file_logging_label">File Logging</string>
     <string name="enable_file_logging_dialog_title">Enable File Logging?</string>
     <string name="enable_file_logging_dialog_message">When enabled, the app will save detailed logs locally on your device. These are useful for troubleshooting. The files may contain sensitive information. Only share them with trusted individuals.</string>
+    <string name="enable_file_logging_dialog_message_warning">Enabling logging will immediately start a new log session. A new log file will be created and the old one will be deleted.</string>
     <string name="file_logging_enabled_snackbar">File logging enabled</string>
     <string name="file_logging_disabled_snackbar">File logging disabled</string>
     <string name="log_export_success">Log file exported successfully.</string>
