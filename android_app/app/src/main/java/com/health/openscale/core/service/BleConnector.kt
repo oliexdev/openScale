@@ -42,8 +42,10 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Manages Bluetooth connections to scale devices, handling the connection lifecycle,
@@ -101,6 +103,38 @@ class BleConnector(
     private var activeCommunicator: ScaleCommunicator? = null
     private var communicatorJob: Job? = null // Job for observing events from the activeCommunicator.
     private var disconnectTimeoutJob: Job? = null // Job for handling disconnect timeouts.
+
+    private val savedBurstSignal = MutableSharedFlow<Unit>(replay = 0, extraBufferCapacity = 64)
+    private val pendingSavedCount = AtomicInteger(0)
+    @Volatile private var lastSavedArgs: List<Any> = emptyList()
+
+    init {
+        scope.launch {
+            savedBurstSignal
+                .debounce(700)
+                .collect {
+                    val count = pendingSavedCount.getAndSet(0)
+                    if (count <= 0) return@collect
+
+                    if (count == 1) {
+                        _snackbarEvents.emit(
+                            SnackbarEvent(
+                                messageResId = R.string.bluetooth_connector_measurement_saved,
+                                messageFormatArgs = lastSavedArgs
+                            )
+                        )
+                    } else {
+                        _snackbarEvents.tryEmit(
+                            SnackbarEvent(
+                                messageResId = R.string.saved_measurements_message,
+                                messageFormatArgs = listOf(count)
+                            )
+                        )
+                    }
+                }
+        }
+    }
+
 
     /**
      * Attempts to connect to the specified Bluetooth device.
@@ -185,7 +219,6 @@ class BleConnector(
                                 // but confirm here for safety.
                                 _connectedDeviceAddress.value = connectedDeviceInfo.address
                                 _connectedDeviceName.value = connectedDeviceInfo.name
-                                _snackbarEvents.tryEmit(SnackbarEvent(messageResId = R.string.bluetooth_connector_connected_to, messageFormatArgs = listOf(deviceDisplayName)))
                                 _connectionError.value = null // Clear any errors on successful connection.
                                 LogManager.i(TAG, "Successfully connected to $deviceDisplayName via adapter's isConnected flow.")
                                 disconnectTimeoutJob?.cancel() // Successfully connected, timeout no longer needed.
@@ -429,7 +462,9 @@ class BleConnector(
                 finalValues.forEach { databaseRepository.insertMeasurementValue(it) }
 
                 LogManager.i(TAG, "Measurement from $deviceName for User $currentAppUserId saved (ID: $measurementId). Values: ${finalValues.size}")
-                _snackbarEvents.tryEmit(SnackbarEvent(messageResId = R.string.bluetooth_connector_measurement_saved, messageFormatArgs = listOf(measurementData.weight, deviceName)))
+                pendingSavedCount.incrementAndGet()
+                lastSavedArgs = listOf(measurementData.weight, deviceName)
+                savedBurstSignal.tryEmit(Unit)
             } catch (e: Exception) {
                 LogManager.e(TAG, "Error saving measurement from $deviceName.", e)
                 _snackbarEvents.tryEmit(SnackbarEvent(messageResId = R.string.bluetooth_connector_measurement_save_error, messageFormatArgs = listOf(deviceName)))

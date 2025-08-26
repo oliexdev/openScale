@@ -130,6 +130,8 @@ import com.health.openscale.ui.screen.statistics.StatisticsScreen
 import com.health.openscale.ui.theme.Black
 import com.health.openscale.ui.theme.Blue
 import com.health.openscale.ui.theme.White
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
 /**
@@ -202,17 +204,25 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
                 sharedViewModel.snackbarEvents,
                 settingsViewModel.snackbarEvents,
                 bluetoothViewModel.snackbarEvents
-            ).collect { evt ->
+            )
+            .distinctUntilChanged { a, b ->
+                    a.messageResId == b.messageResId && a.message == b.message
+            }
+            .debounce(150)
+            .collect { evt ->
                 val msg = evt.message ?: context.getString(
                     requireNotNull(evt.messageResId),
                     *evt.messageFormatArgs.toTypedArray()
                 )
                 val action = evt.actionLabel ?: evt.actionLabelResId?.let { context.getString(it) }
-                val res = snackbarHostState.showSnackbar(
-                    message = msg,
-                    actionLabel = action,
-                    duration = evt.duration
-                )
+                val res = snackbarHostState.run {
+                    currentSnackbarData?.dismiss()
+                    showSnackbar(
+                        message = msg,
+                        actionLabel = action,
+                        duration = evt.duration
+                    )
+                }
                 if (res == SnackbarResult.ActionPerformed) evt.onAction?.invoke()
             }
         }

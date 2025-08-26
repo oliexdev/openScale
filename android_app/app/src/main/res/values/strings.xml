@@ -508,4 +508,7 @@
     <string name="dialog_bt_select_user_prompt">Please select a user.</string>
     <string name="dialog_bt_enter_valid_code_prompt">Please enter a valid code.</string>
 
+    <string name="saved_measurements_message">Saved %1$d measurements</string>
+
+
 </resources>

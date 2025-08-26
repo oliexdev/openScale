@@ -45,6 +45,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
@@ -120,6 +121,10 @@ import com.health.openscale.ui.screen.components.LineChart
 import com.health.openscale.ui.screen.components.provideFilterTopBarAction
 import com.health.openscale.ui.shared.TopBarAction
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import java.text.DateFormat
 import java.text.SimpleDateFormat
@@ -471,6 +476,14 @@ fun OverviewScreen(
                         )
                     }
                 } else {
+                    val topId = items.firstOrNull()?.measurementWithValues?.measurement?.id
+                    LaunchedEffect(topId) {
+                        if (topId != null && !listState.isScrollInProgress) {
+                            delay(60)
+                            listState.smartScrollTo(0)
+                        }
+                    }
+
                     // Chart
                     Box(modifier = Modifier.fillMaxWidth()) {
                         LineChart(
@@ -488,9 +501,8 @@ fun OverviewScreen(
                                     ?.let { (targetIndex, mwv) ->
                                         val targetId = mwv.measurement.id
                                         scope.launch {
-                                            listState.animateScrollToItem(
-                                                index = targetIndex,
-                                                scrollOffset = 0
+                                            listState.smartScrollTo(
+                                                index = targetIndex
                                             )
                                             highlightedMeasurementId = targetId
                                             delay(600)
@@ -540,6 +552,11 @@ fun OverviewScreen(
             }
         }
     }
+}
+
+suspend fun LazyListState.smartScrollTo(index: Int) {
+    val dist = kotlin.math.abs(firstVisibleItemIndex - index)
+    if (dist > 20) scrollToItem(index) else animateScrollToItem(index)
 }
 
 /**

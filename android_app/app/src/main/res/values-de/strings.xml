@@ -508,4 +508,6 @@
     <string name="dialog_bt_error_loading_user_list_format">Fehler: Benutzerdaten konnten nicht korrekt geladen werden.</string>
     <string name="dialog_bt_select_user_prompt">Bitte einen Benutzer auswählen.</string>
     <string name="dialog_bt_enter_valid_code_prompt">Bitte einen gültigen Code eingeben.</string>
+    <string name="saved_measurements_message">%1$d Messungen gespeichert</string>
+
 </resources>

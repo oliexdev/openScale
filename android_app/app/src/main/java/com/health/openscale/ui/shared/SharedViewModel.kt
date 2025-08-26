@@ -105,6 +105,8 @@ class SharedViewModel @Inject constructor(
         actionLabel: String? = null,
         onAction: (() -> Unit)? = null
     ) {
+        if (message == null && messageResId == null) return
+
         viewModelScope.launch {
             _snackbarEvents.emit(
                 SnackbarEvent(
