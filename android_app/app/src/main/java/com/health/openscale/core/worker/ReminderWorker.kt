@@ -24,6 +24,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.BitmapFactory
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -82,8 +83,8 @@ class ReminderWorker @AssistedInject constructor(
         val pendingIntent = PendingIntent.getActivity(appContext, 0, intent, pendingFlags)
 
         val notification = NotificationCompat.Builder(appContext, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_launcher_beta_foreground)
-            .setContentTitle(appContext.getString(R.string.reminder_notification_title))
+            .setSmallIcon(R.drawable.ic_notification_foreground)
+            .setLargeIcon(BitmapFactory.decodeResource(appContext.resources, R.drawable.ic_launcher_foreground))
             .setContentText(content)
             .setStyle(NotificationCompat.BigTextStyle().bigText(content))
             .setContentIntent(pendingIntent)
