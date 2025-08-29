@@ -18,9 +18,13 @@
 package com.health.openscale.core.usecase
 
 import android.content.Context
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
 import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.database.DatabaseRepository
+import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.ui.widget.MeasurementWidget
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -41,8 +45,10 @@ import javax.inject.Singleton
 class MeasurementCrudUseCases @Inject constructor(
     @ApplicationContext private val appContext: Context,
     private val databaseRepository: DatabaseRepository,
-    private val sync: SyncUseCases
+    private val sync: SyncUseCases,
+    private val settingsFacade: SettingsFacade
 ) {
+    private var lastVibrateTime = 0L
 
     /**
      * Inserts or updates a [measurement] and reconciles its [values].
@@ -73,6 +79,8 @@ class MeasurementCrudUseCases @Inject constructor(
             sync.triggerSyncInsert(measurement, values,"com.health.openscale.sync.oss")
 
             MeasurementWidget.refreshAll(appContext)
+
+            maybeVibrateOnMeasurement()
 
             newId
         } else {
@@ -126,5 +134,26 @@ class MeasurementCrudUseCases @Inject constructor(
 
     suspend fun recalculateDerivedValuesForMeasurement(measurementId: Int) {
         databaseRepository.recalculateDerivedValuesForMeasurement(measurementId)
+    }
+
+    private suspend fun maybeVibrateOnMeasurement() {
+        val enabled = runCatching { settingsFacade.hapticOnMeasurement.first() }.getOrDefault(false)
+        if (!enabled) return
+
+        val now = System.currentTimeMillis()
+        if (now - lastVibrateTime < 1500) {
+            return
+        }
+        lastVibrateTime = now
+
+        val vm = appContext.getSystemService(VibratorManager::class.java)
+        val vibrator: Vibrator = vm.defaultVibrator
+        if (!vibrator.hasVibrator()) return
+
+        val effect = VibrationEffect.createOneShot(
+            500L,
+            255
+        )
+        vibrator.vibrate(effect)
     }
 }

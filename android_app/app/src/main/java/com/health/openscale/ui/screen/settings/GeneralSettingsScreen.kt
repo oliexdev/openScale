@@ -44,6 +44,7 @@ import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Vibration
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
@@ -110,6 +111,7 @@ fun GeneralSettingsScreen(
 
     val currentLanguageCode by sharedViewModel.appLanguageCode.collectAsState(initial = null)
     var expandedLanguageMenu by remember { mutableStateOf(false) }
+    val hapticsEnabled by sharedViewModel.hapticOnMeasurement.collectAsState(initial = false)
 
     val selectedLanguage: SupportedLanguage = remember(currentLanguageCode, supportedLanguagesEnumEntries) {
         val systemDefault = SupportedLanguage.getDefault().code
@@ -331,6 +333,34 @@ fun GeneralSettingsScreen(
                 }
             }
         }
+
+        // ---- Haptic section ----
+        SettingsSectionTitle(text = stringResource(R.string.settings_feedback_title))
+
+        SettingsGroup(
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Filled.Vibration,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            },
+            title = stringResource(R.string.settings_haptics_label),
+            checked = hapticsEnabled,
+            onCheckedChange = { enabled ->
+                scope.launch {
+                    sharedViewModel.setHapticOnMeasurement(enabled)
+                    sharedViewModel.showSnackbar(
+                        if (enabled)
+                            context.getString(R.string.settings_haptics_enabled_snackbar)
+                        else
+                            context.getString(R.string.settings_haptics_disabled_snackbar)
+                    )
+                }
+            },
+            content = {
+            }
+        )
 
         // --- Reminder ---
         SettingsSectionTitle(text = stringResource(R.string.settings_reminder_title))
@@ -625,12 +655,11 @@ fun SettingsGroup(
         }
 
         if (checked) {
-            Spacer(Modifier.height(8.dp))
             content()
         }
 
         if (persistentContent != null) {
-            if (!checked) Spacer(Modifier.height(8.dp))
+            if (!checked)
             persistentContent()
         }
     }

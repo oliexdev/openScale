@@ -336,6 +336,11 @@
     <string name="sunday_short">Sun</string>
     <string name="all">All</string>
 
+    <string name="settings_feedback_title">Feedback</string>
+    <string name="settings_haptics_label">Vibration on new measurement</string>
+    <string name="settings_haptics_enabled_snackbar">Vibration on measurements enabled</string>
+    <string name="settings_haptics_disabled_snackbar">Vibration on measurements disabled</string>
+
     <!-- Chart Settings Screen -->
     <string name="setting_show_chart_points">Show data points</string>
     <string name="setting_smoothing_algorithm">Smoothing Algorithm</string>

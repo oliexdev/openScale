@@ -334,6 +334,11 @@
     <string name="sunday_short">So</string>
     <string name="all">Alle</string>
 
+    <string name="settings_feedback_title">Feedback</string>
+    <string name="settings_haptics_label">Vibration bei neuem Messwert</string>
+    <string name="settings_haptics_enabled_snackbar">Vibration bei Messwerten aktiviert</string>
+    <string name="settings_haptics_disabled_snackbar">Vibration bei Messwerten deaktiviert</string>
+
     <!-- Diagramm Einstellungen -->
     <string name="setting_show_chart_points">Datenpunkte anzeigen</string>
     <string name="setting_smoothing_algorithm">Glättungsalgorithmus</string>

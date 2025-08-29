@@ -30,6 +30,7 @@ import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.database.DatabaseRepository
+import com.health.openscale.core.facade.MeasurementFacade
 import com.health.openscale.core.utils.LogManager
 import com.health.openscale.ui.shared.SnackbarEvent
 import kotlinx.coroutines.CoroutineScope
@@ -61,14 +62,11 @@ import java.util.concurrent.atomic.AtomicInteger
  * @param databaseRepository Repository for saving received measurements.
  * @param sharedViewModel ViewModel for showing snackbars and potentially other UI interactions.
  * @param getCurrentScaleUser Callback function to retrieve the current Bluetooth scale user.
- * @param getCurrentAppUserId Callback function to retrieve the ID of the current application user.
- * @param onUserSelectionRequired Callback to notify the UI when user interaction on the device is needed.
- * @param onSavePreferredDevice Callback to save the successfully connected device as preferred.
  */
 class BleConnector(
     private val scope: CoroutineScope,
     private val scaleFactory: ScaleFactory,
-    private val databaseRepository: DatabaseRepository,
+    private val measurementFacade: MeasurementFacade,
     private val getCurrentScaleUser: () -> ScaleUser?,
     ) : AutoCloseable {
 
@@ -373,7 +371,7 @@ class BleConnector(
 
             // Fetch measurement type IDs from the database to map keys to foreign keys.
             val typeKeyToIdMap: Map<MeasurementTypeKey, Int> =
-                databaseRepository.getAllMeasurementTypes().firstOrNull()
+                measurementFacade.getAllMeasurementTypes().firstOrNull()
                     ?.associate { it.key to it.id } ?: run {
                     LogManager.e(TAG, "Could not load MeasurementTypes from DB for $deviceName.")
                     _snackbarEvents.tryEmit(SnackbarEvent(messageResId = R.string.bluetooth_connector_measurement_types_not_loaded))
@@ -457,11 +455,9 @@ class BleConnector(
             }
 
             try {
-                val measurementId = databaseRepository.insertMeasurement(newDbMeasurement)
-                val finalValues = values.map { it.copy(measurementId = measurementId.toInt()) }
-                finalValues.forEach { databaseRepository.insertMeasurementValue(it) }
+                val measurementId = measurementFacade.saveMeasurement(newDbMeasurement, values)
 
-                LogManager.i(TAG, "Measurement from $deviceName for User $currentAppUserId saved (ID: $measurementId). Values: ${finalValues.size}")
+                LogManager.i(TAG, "Measurement from $deviceName for User $currentAppUserId saved (ID: $measurementId). Values: ${values.size}")
                 pendingSavedCount.incrementAndGet()
                 lastSavedArgs = listOf(measurementData.weight, deviceName)
                 savedBurstSignal.tryEmit(Unit)

@@ -60,6 +60,8 @@ object SettingsPreferenceKeys {
     val CURRENT_USER_ID = intPreferencesKey("current_user_id")
     val APP_LANGUAGE_CODE = stringPreferencesKey("app_language_code")
 
+    val HAPTIC_ON_MEASUREMENT = booleanPreferencesKey("haptic_on_measurement")
+
     // Settings for specific UI components
     val SELECTED_TYPES_TABLE = stringSetPreferencesKey("selected_types_table") // IDs of measurement types selected for the data table
 
@@ -128,6 +130,9 @@ interface SettingsFacade {
 
     val appLanguageCode: Flow<String?>
     suspend fun setAppLanguageCode(languageCode: String?)
+
+    val hapticOnMeasurement: Flow<Boolean>
+    suspend fun setHapticOnMeasurement(value: Boolean)
 
     val currentUserId: Flow<Int?>
     suspend fun setCurrentUserId(userId: Int?)
@@ -258,6 +263,19 @@ class SettingsFacadeImpl @Inject constructor(
                 preferences.remove(SettingsPreferenceKeys.APP_LANGUAGE_CODE)
             }
         }
+    }
+
+    override val hapticOnMeasurement: Flow<Boolean> = observeSetting(
+        SettingsPreferenceKeys.HAPTIC_ON_MEASUREMENT.name,
+        false
+    ).catch { exception ->
+        LogManager.e(TAG, "Error observing hapticOnMeasurement", exception)
+        emit(false)
+    }
+
+    override suspend fun setHapticOnMeasurement(value: Boolean) {
+        LogManager.d(TAG, "Setting hapticOnMeasurement to: $value")
+        saveSetting(SettingsPreferenceKeys.HAPTIC_ON_MEASUREMENT.name, value)
     }
 
     override val currentUserId: Flow<Int?> = dataStore.data

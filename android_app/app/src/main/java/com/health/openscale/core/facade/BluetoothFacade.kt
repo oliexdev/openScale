@@ -59,7 +59,8 @@ import com.health.openscale.ui.shared.SnackbarEvent
 class BluetoothFacade @Inject constructor(
     private val application: Application,
     private val scaleFactory: ScaleFactory,
-    private val databaseRepository: DatabaseRepository,
+    private val measurementFacade: MeasurementFacade,
+    private val userFacade: UserFacade,
     private val settingsFacade: SettingsFacade,
 ) {
     private val TAG = "BluetoothFacade"
@@ -71,7 +72,7 @@ class BluetoothFacade @Inject constructor(
     private val connection = BleConnector(
         scope = scope,
         scaleFactory = scaleFactory,
-        databaseRepository = databaseRepository,
+        measurementFacade = measurementFacade,
         getCurrentScaleUser = { currentBtScaleUser.value }
     )
 
@@ -108,10 +109,7 @@ class BluetoothFacade @Inject constructor(
 
     private fun observeCurrentUser() {
         scope.launch {
-            settingsFacade.currentUserId
-                .flatMapLatest { id ->
-                    if (id == null) flowOf(null) else databaseRepository.getUserById(id)
-                }
+            userFacade.observeSelectedUser()
                 .collect { user ->
                     currentAppUser.value = user
                     currentBtScaleUser.value = user?.let { toScaleUser(it) }
