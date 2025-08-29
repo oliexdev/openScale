@@ -31,6 +31,9 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.health.openscale.core.data.BackupInterval
+import com.health.openscale.core.data.BodyFatFormulaOption
+import com.health.openscale.core.data.BodyWaterFormulaOption
+import com.health.openscale.core.data.LbmFormulaOption
 import com.health.openscale.core.data.SmoothingAlgorithm
 import com.health.openscale.core.utils.LogManager
 import dagger.Binds
@@ -88,6 +91,10 @@ object SettingsPreferenceKeys {
     val REMINDER_HOUR = intPreferencesKey("reminder_hour")
     val REMINDER_MINUTE = intPreferencesKey("reminder_minute")
     val REMINDER_DAYS = stringSetPreferencesKey("reminder_days")
+
+    val BODY_FAT_FORMULA_OPTION   = stringPreferencesKey("body_fat_formula_option")
+    val BODY_WATER_FORMULA_OPTION = stringPreferencesKey("body_water_formula_option")
+    val LBM_FORMULA_OPTION        = stringPreferencesKey("lbm_formula_option")
 
     // Context strings for screen-specific settings (can be used as prefixes for dynamic keys)
     const val OVERVIEW_SCREEN_CONTEXT = "overview_screen"
@@ -190,6 +197,15 @@ interface SettingsFacade {
 
     val reminderDays: Flow<Set<String>>
     suspend fun setReminderDays(days: Set<String>)
+
+    val selectedBodyFatFormula: Flow<BodyFatFormulaOption>
+    suspend fun setSelectedBodyFatFormula(option: BodyFatFormulaOption)
+
+    val selectedBodyWaterFormula: Flow<BodyWaterFormulaOption>
+    suspend fun setSelectedBodyWaterFormula(option: BodyWaterFormulaOption)
+
+    val selectedLbmFormula: Flow<LbmFormulaOption>
+    suspend fun setSelectedLbmFormula(option: LbmFormulaOption)
 
     // Generic Settings Accessors
     /**
@@ -589,6 +605,54 @@ class SettingsFacadeImpl @Inject constructor(
         }.toSet()
         LogManager.d(TAG, "Setting reminderDays to: $safe (raw: $days)")
         saveSetting(SettingsPreferenceKeys.REMINDER_DAYS.name, safe)
+    }
+
+    override val selectedBodyFatFormula = dataStore.data
+        .catch { exception ->
+            LogManager.e(TAG, "Error reading BODY_FAT_FORMULA_OPTION", exception)
+            if (exception is IOException) emit(emptyPreferences()) else throw exception
+        }
+        .map { prefs ->
+            val raw = prefs[SettingsPreferenceKeys.BODY_FAT_FORMULA_OPTION] ?: BodyFatFormulaOption.OFF.name
+            runCatching { BodyFatFormulaOption.valueOf(raw) }.getOrDefault(BodyFatFormulaOption.OFF)
+        }
+        .distinctUntilChanged()
+
+    override suspend fun setSelectedBodyFatFormula(option: BodyFatFormulaOption) {
+        LogManager.d(TAG, "Setting BODY_FAT_FORMULA_OPTION to: ${option.name}")
+        saveSetting(SettingsPreferenceKeys.BODY_FAT_FORMULA_OPTION.name, option.name)
+    }
+
+    override val selectedBodyWaterFormula = dataStore.data
+        .catch { exception ->
+            LogManager.e(TAG, "Error reading BODY_WATER_FORMULA_OPTION", exception)
+            if (exception is IOException) emit(emptyPreferences()) else throw exception
+        }
+        .map { prefs ->
+            val raw = prefs[SettingsPreferenceKeys.BODY_WATER_FORMULA_OPTION] ?: BodyWaterFormulaOption.OFF.name
+            runCatching { BodyWaterFormulaOption.valueOf(raw) }.getOrDefault(BodyWaterFormulaOption.OFF)
+        }
+        .distinctUntilChanged()
+
+    override suspend fun setSelectedBodyWaterFormula(option: BodyWaterFormulaOption) {
+        LogManager.d(TAG, "Setting BODY_WATER_FORMULA_OPTION to: ${option.name}")
+        saveSetting(SettingsPreferenceKeys.BODY_WATER_FORMULA_OPTION.name, option.name)
+    }
+
+    override val selectedLbmFormula = dataStore.data
+        .catch { exception ->
+            LogManager.e(TAG, "Error reading LBM_FORMULA_OPTION", exception)
+            if (exception is IOException) emit(emptyPreferences()) else throw exception
+        }
+        .map { prefs ->
+            val raw = prefs[SettingsPreferenceKeys.LBM_FORMULA_OPTION] ?: LbmFormulaOption.OFF.name
+            runCatching { LbmFormulaOption.valueOf(raw) }.getOrDefault(LbmFormulaOption.OFF)
+        }
+        .distinctUntilChanged()
+
+    override suspend fun setSelectedLbmFormula(option: LbmFormulaOption) {
+        LogManager.d(TAG, "Setting LBM_FORMULA_OPTION to: ${option.name}")
+        saveSetting(SettingsPreferenceKeys.LBM_FORMULA_OPTION.name, option.name)
     }
 
     @Suppress("UNCHECKED_CAST")

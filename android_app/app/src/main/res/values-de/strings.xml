@@ -180,6 +180,52 @@
     <string name="measurement_type_dialog_confirm_unit_change_title">Einheitenänderung bestätigen</string>
     <string name="measurement_type_dialog_confirm_unit_change_message">Wenn Sie die Einheit für \'%1$s\' von %2$s auf %3$s ändern, werden alle vorhandenen Datenpunkte konvertiert. Dieser Vorgang kann einige Zeit dauern und kann nicht einfach rückgängig gemacht werden. Möchten Sie fortfahren?</string>
 
+    <string name="formula_label_body_fat">Körperfett-Formel</string>
+    <string name="formula_label_body_water">Körperwasser-Formel</string>
+    <string name="formula_label_lbm">Magermasse-Formel</string>
+    <string name="formula_warning_title">Formelberechnung</string>
+    <string name="formula_warning_message">Diese Messgröße wird schreibgeschützt und automatisch berechnet. Sie aktualisiert sich bei Änderungen der Basiswerte. Gilt für neue oder bearbeitete Messungen; bestehende bleiben unverändert.</string>
+    <string name="formula_off">Aus</string>
+    <string name="formula_bf_deurenberg_1991">Deurenberg (1991)</string>
+    <string name="formula_bf_deurenberg_1992">Deurenberg (1992)</string>
+    <string name="formula_bf_eddy_1976">Eddy et al. (1976)</string>
+    <string name="formula_bf_gallagher_2000_non_asian">Gallagher (2000) – Nicht-asiatisch</string>
+    <string name="formula_bf_gallagher_2000_asian">Gallagher (2000) – Asiatisch</string>
+    <string name="formula_bw_behnke_1963">Behnke et al. (1963)</string>
+    <string name="formula_bw_delwaide_crenier_1973">Delwaide &amp; Crenier (1973)</string>
+    <string name="formula_bw_hume_weyers_1971">Hume &amp; Weyers (1971)</string>
+    <string name="formula_bw_lee_song_kim_2001">Lee, Song &amp; Kim (2001)</string>
+    <string name="formula_lbm_boer_1984">Boer (1984)</string>
+    <string name="formula_lbm_hume_1966">Hume (1966)</string>
+    <string name="formula_lbm_weight_minus_body_fat">Gewicht − Körperfett</string>
+
+    <string name="formula_desc_off_short">Keine automatische Berechnung</string>
+    <string name="formula_desc_off_long">Diese Messgröße wird nicht automatisch berechnet. Werte können manuell eingegeben werden.</string>
+    <string name="bf_deurenberg_1991_short">Klassische Regression (Erw.)</string>
+    <string name="bf_deurenberg_1991_long">Weit verbreitete Bevölkerungsformel von 1991. Für die Allgemeinbevölkerung gedacht; bei sehr schlanken oder sehr muskulösen Personen ggf. ungenauer.</string>
+    <string name="bf_deurenberg_1992_short">Angepasst für Jugend &amp; Erw.</string>
+    <string name="bf_deurenberg_1992_long">Variante mit Anpassung für jüngere Nutzer. Allgemeine Schätzung; sportliche oder atypische Körperbauten können abweichen.</string>
+    <string name="bf_eddy_1976_short">Frühes, geschlechtsspez. Modell</string>
+    <string name="bf_eddy_1976_long">Ältere Regression mit getrennten Koeffizienten für Männer und Frauen. Einfach, aber nicht für Spezialpopulationen optimiert.</string>
+    <string name="bf_gallagher_2000_non_asian_short">Gallagher (Nicht-asiatisch)</string>
+    <string name="bf_gallagher_2000_non_asian_long">Referenzmodell von 2000 für nicht-asiatische Populationen. Nützliche Basis; Genauigkeit variiert je nach Körpertyp.</string>
+    <string name="bf_gallagher_2000_asian_short">Gallagher (Asiatisch)</string>
+    <string name="bf_gallagher_2000_asian_long">Variante für asiatische Populationen. Verwenden, wenn dies besser zum Nutzerhintergrund passt.</string>
+    <string name="bw_behnke_1963_short">Behnke TBW-Schätzung</string>
+    <string name="bw_behnke_1963_long">Klassische Schätzung des Gesamtkörperwassers. Einfach, jedoch nicht für Athleten oder Randfälle individualisiert.</string>
+    <string name="bw_delwaide_crenier_1973_short">Delwaide &amp; Crenier</string>
+    <string name="bw_delwaide_crenier_1973_long">TBW-Formel mit Fokus auf Körpermasse. Gute allgemeine Schätzung; Präzision variiert mit dem Körpertyp.</string>
+    <string name="bw_hume_weyers_1971_short">Hume–Weyers TBW</string>
+    <string name="bw_hume_weyers_1971_long">Weit verbreitetes TBW-Modell mit Körpergröße und Gewicht, geschlechtsspezifisch.</string>
+    <string name="bw_lee_song_kim_2001_short">Lee–Song–Kim</string>
+    <string name="bw_lee_song_kim_2001_long">Neuere TBW-Schätzung, kalibriert an koreanischen Kollektiven. Sinnvoll, wenn dies zum Nutzer passt.</string>
+    <string name="lbm_boer_1984_short">Boer LBM (klinisch)</string>
+    <string name="lbm_boer_1984_long">Fettfreie Masse, häufig in der Klinik genutzt. Geschlechtsspezifische Regression aus Größe und Gewicht.</string>
+    <string name="lbm_hume_1966_short">Hume LBM</string>
+    <string name="lbm_hume_1966_long">Frühes LBM-Modell. Einfach und verbreitet; für sehr sportliche Körpertypen weniger angepasst.</string>
+    <string name="lbm_weight_minus_bf_short">Gewicht − Körperfett</string>
+    <string name="lbm_weight_minus_bf_long">Berechnet LBM als Gesamtgewicht minus Fettmasse aus der gewählten Körperfettformel. Genauigkeit hängt von der BF-Schätzung ab.</string>
+
     <!-- Bluetooth -->
     <string name="info_bluetooth_connection_error_scale_offline">Verbindung zur Waage fehlgeschlagen, bitte stellen Sie sicher, dass sie eingeschaltet ist.</string>
     <string name="info_step_on_scale">Bitte barfuß auf die Waage steigen</string>

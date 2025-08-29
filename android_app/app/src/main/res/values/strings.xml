@@ -182,6 +182,53 @@
     <string name="measurement_type_dialog_confirm_unit_change_title">Confirm Unit Change</string>
     <string name="measurement_type_dialog_confirm_unit_change_message">Changing the unit for \'%1$s\' from %2$s to %3$s will convert all existing data points. This action may take some time and cannot be easily undone. Do you want to proceed?</string>
 
+    <string name="formula_label_body_fat">Body Fat Formula</string>
+    <string name="formula_label_body_water">Body Water Formula</string>
+    <string name="formula_label_lbm">Lean Body Mass Formula</string>
+    <string name="formula_warning_title">Formula Calculation</string>
+    <string name="formula_warning_message">This metric becomes read-only and auto-calculated. It updates when base values change. Applies to new or edited measurements; existing ones stay unchanged.</string>
+
+    <string name="formula_off">Off</string>
+    <string name="formula_bf_deurenberg_1991">Deurenberg (1991)</string>
+    <string name="formula_bf_deurenberg_1992">Deurenberg (1992)</string>
+    <string name="formula_bf_eddy_1976">Eddy et al. (1976)</string>
+    <string name="formula_bf_gallagher_2000_non_asian">Gallagher (2000) – Non-Asian</string>
+    <string name="formula_bf_gallagher_2000_asian">Gallagher (2000) – Asian</string>
+    <string name="formula_bw_behnke_1963">Behnke et al. (1963)</string>
+    <string name="formula_bw_delwaide_crenier_1973">Delwaide &amp; Crenier (1973)</string>
+    <string name="formula_bw_hume_weyers_1971">Hume &amp; Weyers (1971)</string>
+    <string name="formula_bw_lee_song_kim_2001">Lee, Song &amp; Kim (2001)</string>
+    <string name="formula_lbm_boer_1984">Boer (1984)</string>
+    <string name="formula_lbm_hume_1966">Hume (1966)</string>
+    <string name="formula_lbm_weight_minus_body_fat">Weight − Body Fat</string>
+
+    <string name="formula_desc_off_short">No automatic calculation</string>
+    <string name="formula_desc_off_long">This metric is not auto-calculated. You can enter values manually.</string>
+    <string name="bf_deurenberg_1991_short">Classic regression for adults</string>
+    <string name="bf_deurenberg_1991_long">A widely used population formula from 1991. Suited for general adult populations; may be less accurate for very lean or very muscular individuals.</string>
+    <string name="bf_deurenberg_1992_short">Adjusted for teens &amp; adults</string>
+    <string name="bf_deurenberg_1992_long">Variant that adapts for younger users. A general-purpose estimate; athletic or atypical physiques can deviate.</string>
+    <string name="bf_eddy_1976_short">Early sex-specific model</string>
+    <string name="bf_eddy_1976_long">Older regression with separate coefficients for men and women. Simple and fast but not tailored to special populations.</string>
+    <string name="bf_gallagher_2000_non_asian_short">Gallagher (non-Asian)</string>
+    <string name="bf_gallagher_2000_non_asian_long">Reference model from 2000 for non-Asian populations. Useful baseline; accuracy varies across body types.</string>
+    <string name="bf_gallagher_2000_asian_short">Gallagher (Asian)</string>
+    <string name="bf_gallagher_2000_asian_long">Companion model tuned for Asian populations. Use when this better matches the user’s background.</string>
+    <string name="bw_behnke_1963_short">Behnke TBW estimate</string>
+    <string name="bw_behnke_1963_long">Classic total body water estimate. A simple approach; not individualized for athletes or edge cases.</string>
+    <string name="bw_delwaide_crenier_1973_short">Delwaide &amp; Crenier</string>
+    <string name="bw_delwaide_crenier_1973_long">TBW formula emphasizing body mass. Reasonable general estimate; precision varies with physique.</string>
+    <string name="bw_hume_weyers_1971_short">Hume–Weyers TBW</string>
+    <string name="bw_hume_weyers_1971_long">Common TBW model using height and weight, with sex-specific coefficients.</string>
+    <string name="bw_lee_song_kim_2001_short">Lee–Song–Kim</string>
+    <string name="bw_lee_song_kim_2001_long">Later TBW estimate calibrated on Korean cohorts. Consider if that population match applies.</string>
+    <string name="lbm_boer_1984_short">Boer LBM (clinical)</string>
+    <string name="lbm_boer_1984_long">Lean body mass estimate popular in clinical settings. Sex-specific regression from height and weight.</string>
+    <string name="lbm_hume_1966_short">Hume LBM</string>
+    <string name="lbm_hume_1966_long">Early LBM model. Simple and widely used; not tailored to very athletic builds.</string>
+    <string name="lbm_weight_minus_bf_short">Weight − Body Fat</string>
+    <string name="lbm_weight_minus_bf_long">Computes LBM as total weight minus fat mass derived from the chosen body-fat formula. Accuracy depends on the BF estimate.</string>
+
     <!-- Bluetooth -->
     <string name="info_bluetooth_connection_error_scale_offline">Could not connect to scale, please ensure it is on.</string>
     <string name="info_step_on_scale">Please step barefoot on the scale</string>

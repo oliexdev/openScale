@@ -44,10 +44,11 @@ import javax.inject.Singleton
 @Singleton
 class MeasurementCrudUseCases @Inject constructor(
     @ApplicationContext private val appContext: Context,
-    private val databaseRepository: DatabaseRepository,
+    private val settingsFacade: SettingsFacade,
     private val sync: SyncUseCases,
-    private val settingsFacade: SettingsFacade
-) {
+    private val bodyComposition: BodyCompositionUseCases,
+    private val databaseRepository: DatabaseRepository
+    ) {
     private var lastVibrateTime = 0L
 
     /**
@@ -67,17 +68,19 @@ class MeasurementCrudUseCases @Inject constructor(
         measurement: Measurement,
         values: List<MeasurementValue>
     ): Result<Int> = runCatching {
+        val finalValues : List<MeasurementValue> = bodyComposition.applySelectedFormulasForMeasurement(measurement, values)
+
         if (measurement.id == 0) {
             // Insert path
             val newId = databaseRepository.insertMeasurement(measurement).toInt()
 
-            values.forEach { v ->
+            finalValues.forEach { v ->
                 databaseRepository.insertMeasurementValue(v.copy(measurementId = newId))
             }
 
-            sync.triggerSyncInsert(measurement, values,"com.health.openscale.sync")
-            sync.triggerSyncInsert(measurement, values,"com.health.openscale.sync.oss")
-            sync.triggerSyncInsert(measurement, values,"com.health.openscale.sync.debug")
+            sync.triggerSyncInsert(measurement, finalValues,"com.health.openscale.sync")
+            sync.triggerSyncInsert(measurement, finalValues,"com.health.openscale.sync.oss")
+            sync.triggerSyncInsert(measurement, finalValues,"com.health.openscale.sync.debug")
 
             MeasurementWidget.refreshAll(appContext)
 
@@ -89,7 +92,7 @@ class MeasurementCrudUseCases @Inject constructor(
             databaseRepository.updateMeasurement(measurement)
 
             val existing = databaseRepository.getValuesForMeasurement(measurement.id).first()
-            val newSetIds = values.mapNotNull { if (it.id != 0) it.id else null }.toSet()
+            val newSetIds = finalValues.mapNotNull { if (it.id != 0) it.id else null }.toSet()
             val existingIds = existing.map { it.id }.toSet()
 
             // Delete removed values
@@ -97,7 +100,7 @@ class MeasurementCrudUseCases @Inject constructor(
             toDelete.forEach { id -> databaseRepository.deleteMeasurementValueById(id) }
 
             // Update or insert values
-            values.forEach { v ->
+            finalValues.forEach { v ->
                 val exists = existing.any { it.id == v.id && v.id != 0 }
                 if (exists) {
                     databaseRepository.updateMeasurementValue(v.copy(measurementId = measurement.id))
@@ -106,9 +109,9 @@ class MeasurementCrudUseCases @Inject constructor(
                 }
             }
 
-            sync.triggerSyncUpdate(measurement, values, "com.health.openscale.sync")
-            sync.triggerSyncUpdate(measurement, values,"com.health.openscale.sync.oss")
-            sync.triggerSyncUpdate(measurement, values,"com.health.openscale.sync.debug")
+            sync.triggerSyncUpdate(measurement, finalValues, "com.health.openscale.sync")
+            sync.triggerSyncUpdate(measurement, finalValues,"com.health.openscale.sync.oss")
+            sync.triggerSyncUpdate(measurement, finalValues,"com.health.openscale.sync.debug")
 
             MeasurementWidget.refreshAll(appContext)
 

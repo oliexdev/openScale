@@ -400,3 +400,96 @@ enum class ConnectionStatus {
     /** A connection attempt failed or connection broke unexpectedly. */
     FAILED
 }
+
+enum class BodyFatFormulaOption {
+    OFF,
+    DEURENBERG_1991,
+    DEURENBERG_1992,
+    EDDY_1976,
+    GALLAGHER_2000_NON_ASIAN,
+    GALLAGHER_2000_ASIAN;
+
+    fun displayName(context: Context) = when (this) {
+        OFF -> context.getString(R.string.formula_off)
+        DEURENBERG_1991 -> context.getString(R.string.formula_bf_deurenberg_1991)
+        DEURENBERG_1992 -> context.getString(R.string.formula_bf_deurenberg_1992)
+        EDDY_1976 -> context.getString(R.string.formula_bf_eddy_1976)
+        GALLAGHER_2000_NON_ASIAN -> context.getString(R.string.formula_bf_gallagher_2000_non_asian)
+        GALLAGHER_2000_ASIAN -> context.getString(R.string.formula_bf_gallagher_2000_asian)
+    }
+
+    fun shortDescription(ctx: Context) = when (this) {
+        OFF -> ctx.getString(R.string.formula_desc_off_short)
+        DEURENBERG_1991 -> ctx.getString(R.string.bf_deurenberg_1991_short)
+        DEURENBERG_1992 -> ctx.getString(R.string.bf_deurenberg_1992_short)
+        EDDY_1976 -> ctx.getString(R.string.bf_eddy_1976_short)
+        GALLAGHER_2000_NON_ASIAN -> ctx.getString(R.string.bf_gallagher_2000_non_asian_short)
+        GALLAGHER_2000_ASIAN -> ctx.getString(R.string.bf_gallagher_2000_asian_short)
+    }
+    fun longDescription(ctx: Context) = when (this) {
+        OFF -> ctx.getString(R.string.formula_desc_off_long)
+        DEURENBERG_1991 -> ctx.getString(R.string.bf_deurenberg_1991_long)
+        DEURENBERG_1992 -> ctx.getString(R.string.bf_deurenberg_1992_long)
+        EDDY_1976 -> ctx.getString(R.string.bf_eddy_1976_long)
+        GALLAGHER_2000_NON_ASIAN -> ctx.getString(R.string.bf_gallagher_2000_non_asian_long)
+        GALLAGHER_2000_ASIAN -> ctx.getString(R.string.bf_gallagher_2000_asian_long)
+    }
+}
+
+enum class BodyWaterFormulaOption {
+    OFF,
+    BEHNKE_1963,
+    DELWAIDE_CRENIER_1973,
+    HUME_WEYERS_1971,
+    LEE_SONG_KIM_2001;
+
+    fun displayName(context: Context) = when (this) {
+        OFF -> context.getString(R.string.formula_off)
+        BEHNKE_1963 -> context.getString(R.string.formula_bw_behnke_1963)
+        DELWAIDE_CRENIER_1973 -> context.getString(R.string.formula_bw_delwaide_crenier_1973)
+        HUME_WEYERS_1971 -> context.getString(R.string.formula_bw_hume_weyers_1971)
+        LEE_SONG_KIM_2001 -> context.getString(R.string.formula_bw_lee_song_kim_2001)
+    }
+
+    fun shortDescription(ctx: Context) = when (this) {
+        OFF -> ctx.getString(R.string.formula_desc_off_short)
+        BEHNKE_1963 -> ctx.getString(R.string.bw_behnke_1963_short)
+        DELWAIDE_CRENIER_1973 -> ctx.getString(R.string.bw_delwaide_crenier_1973_short)
+        HUME_WEYERS_1971 -> ctx.getString(R.string.bw_hume_weyers_1971_short)
+        LEE_SONG_KIM_2001 -> ctx.getString(R.string.bw_lee_song_kim_2001_short)
+    }
+    fun longDescription(ctx: Context) = when (this) {
+        OFF -> ctx.getString(R.string.formula_desc_off_long)
+        BEHNKE_1963 -> ctx.getString(R.string.bw_behnke_1963_long)
+        DELWAIDE_CRENIER_1973 -> ctx.getString(R.string.bw_delwaide_crenier_1973_long)
+        HUME_WEYERS_1971 -> ctx.getString(R.string.bw_hume_weyers_1971_long)
+        LEE_SONG_KIM_2001 -> ctx.getString(R.string.bw_lee_song_kim_2001_long)
+    }
+}
+
+enum class LbmFormulaOption {
+    OFF,
+    BOER_1984,
+    HUME_1966,
+    WEIGHT_MINUS_BODY_FAT;
+
+    fun displayName(context: Context) = when (this) {
+        OFF -> context.getString(R.string.formula_off)
+        BOER_1984 -> context.getString(R.string.formula_lbm_boer_1984)
+        HUME_1966 -> context.getString(R.string.formula_lbm_hume_1966)
+        WEIGHT_MINUS_BODY_FAT -> context.getString(R.string.formula_lbm_weight_minus_body_fat)
+    }
+
+    fun shortDescription(ctx: Context) = when (this) {
+        OFF -> ctx.getString(R.string.formula_desc_off_short)
+        BOER_1984 -> ctx.getString(R.string.lbm_boer_1984_short)
+        HUME_1966 -> ctx.getString(R.string.lbm_hume_1966_short)
+        WEIGHT_MINUS_BODY_FAT -> ctx.getString(R.string.lbm_weight_minus_bf_short)
+    }
+    fun longDescription(ctx: Context) = when (this) {
+        OFF -> ctx.getString(R.string.formula_desc_off_long)
+        BOER_1984 -> ctx.getString(R.string.lbm_boer_1984_long)
+        HUME_1966 -> ctx.getString(R.string.lbm_hume_1966_long)
+        WEIGHT_MINUS_BODY_FAT -> ctx.getString(R.string.lbm_weight_minus_bf_long)
+    }
+}
