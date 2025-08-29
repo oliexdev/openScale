@@ -77,6 +77,7 @@ class MeasurementCrudUseCases @Inject constructor(
 
             sync.triggerSyncInsert(measurement, values,"com.health.openscale.sync")
             sync.triggerSyncInsert(measurement, values,"com.health.openscale.sync.oss")
+            sync.triggerSyncInsert(measurement, values,"com.health.openscale.sync.debug")
 
             MeasurementWidget.refreshAll(appContext)
 
@@ -107,6 +108,7 @@ class MeasurementCrudUseCases @Inject constructor(
 
             sync.triggerSyncUpdate(measurement, values, "com.health.openscale.sync")
             sync.triggerSyncUpdate(measurement, values,"com.health.openscale.sync.oss")
+            sync.triggerSyncUpdate(measurement, values,"com.health.openscale.sync.debug")
 
             MeasurementWidget.refreshAll(appContext)
 
@@ -128,6 +130,7 @@ class MeasurementCrudUseCases @Inject constructor(
         databaseRepository.deleteMeasurement(measurement)
         sync.triggerSyncDelete(Date(measurement.timestamp), "com.health.openscale.sync")
         sync.triggerSyncDelete(Date(measurement.timestamp), "com.health.openscale.sync.oss")
+        sync.triggerSyncDelete(Date(measurement.timestamp), "com.health.openscale.sync.debug")
 
         MeasurementWidget.refreshAll(appContext)
     }

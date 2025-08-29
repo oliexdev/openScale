@@ -17,6 +17,7 @@
     <uses-feature android:name="android.hardware.bluetooth_le" android:required="false"/>
 
     <queries>
+        <package android:name="com.health.openscale.sync.debug" />
         <package android:name="com.health.openscale.sync.oss" />
         <package android:name="com.health.openscale.sync" />
     </queries>
