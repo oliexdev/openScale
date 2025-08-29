@@ -5,6 +5,8 @@
     <string name="text_none">None</string>
     <string name="not_available">N/A</string>
     <string name="placeholder_empty_value">-</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
 
     <!-- Generic UI Elements & Actions -->
     <string name="enable_button">Enable</string>

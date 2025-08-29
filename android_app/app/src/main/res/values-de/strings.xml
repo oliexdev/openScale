@@ -4,6 +4,8 @@
     <string name="text_none">Keine</string>
     <string name="not_available">N.V.</string> <!-- N.V. = Nicht verfügbar -->
     <string name="placeholder_empty_value">-</string>
+    <string name="theme_light">Hell</string>
+    <string name="theme_dark">Dunkel</string>
 
     <!-- Generische UI-Elemente & Aktionen -->
     <string name="enable_button">Aktivieren</string>

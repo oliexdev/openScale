@@ -17,10 +17,15 @@
  */
 package com.health.openscale.core.usecase
 
+import android.content.Context
 import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.database.DatabaseRepository
+import com.health.openscale.ui.widget.MeasurementWidget
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withContext
 import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -34,6 +39,7 @@ import javax.inject.Singleton
  */
 @Singleton
 class MeasurementCrudUseCases @Inject constructor(
+    @ApplicationContext private val appContext: Context,
     private val databaseRepository: DatabaseRepository,
     private val sync: SyncUseCases
 ) {
@@ -66,6 +72,8 @@ class MeasurementCrudUseCases @Inject constructor(
             sync.triggerSyncInsert(measurement, values,"com.health.openscale.sync")
             sync.triggerSyncInsert(measurement, values,"com.health.openscale.sync.oss")
 
+            MeasurementWidget.refreshAll(appContext)
+
             newId
         } else {
             // Update path
@@ -92,6 +100,8 @@ class MeasurementCrudUseCases @Inject constructor(
             sync.triggerSyncUpdate(measurement, values, "com.health.openscale.sync")
             sync.triggerSyncUpdate(measurement, values,"com.health.openscale.sync.oss")
 
+            MeasurementWidget.refreshAll(appContext)
+
             measurement.id
         }
     }
@@ -110,6 +120,8 @@ class MeasurementCrudUseCases @Inject constructor(
         databaseRepository.deleteMeasurement(measurement)
         sync.triggerSyncDelete(Date(measurement.timestamp), "com.health.openscale.sync")
         sync.triggerSyncDelete(Date(measurement.timestamp), "com.health.openscale.sync.oss")
+
+        MeasurementWidget.refreshAll(appContext)
     }
 
     suspend fun recalculateDerivedValuesForMeasurement(measurementId: Int) {

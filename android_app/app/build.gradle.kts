@@ -186,6 +186,11 @@ dependencies {
     implementation(libs.compose.charts)
     implementation(libs.compose.charts.m3)
 
+    // Glance
+    implementation(libs.androidx.glance)
+    implementation(libs.androidx.glance.appwidget)
+    implementation(libs.androidx.glance.material3)
+
     // Compose reorderable
     implementation(libs.compose.reorderable)
     implementation(libs.compose.material.icons.extended)
