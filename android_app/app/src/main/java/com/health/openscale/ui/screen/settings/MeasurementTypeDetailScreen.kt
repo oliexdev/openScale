@@ -523,8 +523,10 @@ fun MeasurementTypeDetailScreen(
         OutlinedSettingRow(label = stringResource(R.string.measurement_type_label_pinned)) {
             Switch(checked = isPinned, onCheckedChange = { isPinned = it })
         }
-        OutlinedSettingRow(label = stringResource(R.string.measurement_type_label_on_right_y_axis)) {
-            Switch(checked = isOnRightYAxis, onCheckedChange = { isOnRightYAxis = it })
+        if (selectedInputType == InputFieldType.FLOAT || selectedInputType == InputFieldType.INT) {
+            OutlinedSettingRow(label = stringResource(R.string.measurement_type_label_on_right_y_axis)) {
+                Switch(checked = isOnRightYAxis, onCheckedChange = { isOnRightYAxis = it })
+            }
         }
     }
 

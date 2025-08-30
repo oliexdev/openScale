@@ -74,6 +74,7 @@ import com.health.openscale.ui.screen.dialog.DateInputDialog
 import com.health.openscale.ui.screen.dialog.NumberInputDialog
 import com.health.openscale.ui.screen.dialog.TextInputDialog
 import com.health.openscale.ui.screen.dialog.TimeInputDialog
+import com.health.openscale.ui.screen.dialog.UserInputDialog
 import com.health.openscale.ui.screen.dialog.decrementValue
 import com.health.openscale.ui.screen.dialog.incrementValue
 import com.health.openscale.ui.shared.TopBarAction
@@ -122,6 +123,10 @@ fun MeasurementDetailScreen(
     val dateFormat = remember { DateFormat.getDateInstance(DateFormat.DEFAULT, Locale.getDefault()) }
     val timeFormat = remember { DateFormat.getTimeInstance(DateFormat.SHORT, Locale.getDefault()) }
 
+    val allUsers by sharedViewModel.allUsers.collectAsState()
+    var pendingUserId by remember { mutableStateOf<Int?>(null) }
+    var showUserPicker by remember { mutableStateOf(false) }
+
     // Show a loading indicator if navigation is pending (e.g., after saving).
     if (isPendingNavigation) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -146,6 +151,7 @@ fun MeasurementDetailScreen(
                 currentMeasurementDbId = data.measurement.id
                 currentUserIdState = data.measurement.userId // Use UserID from the loaded measurement
                 measurementTimestampState = data.measurement.timestamp
+                pendingUserId = null
                 valuesState.clear()
                 data.values.forEach { mvWithType ->
                     // Populate valuesState for non-date/time, enabled types.
@@ -166,6 +172,7 @@ fun MeasurementDetailScreen(
             currentMeasurementDbId = 0
             currentUserIdState = userId // Use the passed userId for a new measurement
             measurementTimestampState = System.currentTimeMillis() // Always use current timestamp for new
+            pendingUserId = null
             valuesState.clear()
 
             // Preload values from the user's last measurement, if available and types are loaded.
@@ -206,29 +213,25 @@ fun MeasurementDetailScreen(
                 icon = Icons.Default.Save,
                 contentDescription = context.getString(R.string.action_save_measurement),
                 onClick = {
-                    if (currentUserIdState == -1) { // Ensure a user is selected.
-                        Toast.makeText(context, R.string.toast_no_user_selected, Toast.LENGTH_SHORT)
-                            .show()
+                    val effectiveUserIdForSave = pendingUserId ?: currentUserIdState
+
+                    if (effectiveUserIdForSave == -1) {
+                        Toast.makeText(context, R.string.toast_no_user_selected, Toast.LENGTH_SHORT).show()
                         return@TopBarAction
                     }
 
-                    // Prevent saving if it's a new measurement with the exact same timestamp as the user's last one.
                     if (currentMeasurementDbId == 0 &&
                         lastMeasurementToPreloadFrom != null &&
-                        lastMeasurementToPreloadFrom!!.measurement.userId == currentUserIdState &&
+                        lastMeasurementToPreloadFrom!!.measurement.userId == effectiveUserIdForSave &&
                         measurementTimestampState == lastMeasurementToPreloadFrom!!.measurement.timestamp
                     ) {
-                        Toast.makeText(
-                            context,
-                            R.string.toast_duplicate_timestamp,
-                            Toast.LENGTH_LONG
-                        ).show()
+                        Toast.makeText(context, R.string.toast_duplicate_timestamp, Toast.LENGTH_LONG).show()
                         return@TopBarAction
                     }
 
                     val measurementToSave = Measurement(
                         id = currentMeasurementDbId,
-                        userId = currentUserIdState,
+                        userId = effectiveUserIdForSave,
                         timestamp = measurementTimestampState
                     )
 
@@ -310,6 +313,7 @@ fun MeasurementDetailScreen(
 
                     if (allConversionsOk) {
                         sharedViewModel.saveMeasurement(measurementToSave, valueList)
+                        pendingUserId = null
                         isPendingNavigation = true // Trigger loading indicator and navigate back.
                         navController.popBackStack()
                     }
@@ -346,6 +350,16 @@ fun MeasurementDetailScreen(
                             displayValue = timeFormat.format(Date(measurementTimestampState))
                             currentValueForIncrementDecrement = null // Not applicable
                         }
+                        InputFieldType.USER -> {
+                            val effectiveUserId = pendingUserId ?: currentUserIdState
+                            val selectedUserName = allUsers
+                                .firstOrNull { it.id == effectiveUserId }
+                                ?.name
+                                ?: stringResource(R.string.placeholder_empty_value)
+
+                            displayValue = selectedUserName
+                            currentValueForIncrementDecrement = null
+                        }
                         else -> { // For FLOAT, INT, TEXT
                             displayValue = valuesState[type.id] ?: ""
                             currentValueForIncrementDecrement = valuesState[type.id]
@@ -362,6 +376,7 @@ fun MeasurementDetailScreen(
                                 when (type.inputType) {
                                     InputFieldType.DATE -> showDatePickerForMainTimestamp = true
                                     InputFieldType.TIME -> showTimePickerForMainTimestamp = true
+                                    InputFieldType.USER -> showUserPicker = true
                                     else -> dialogTargetType = type // Show generic dialog
                                 }
                             }
@@ -464,7 +479,7 @@ fun MeasurementDetailScreen(
     // --- Dialogs for the main measurement timestamp (measurementTimestampState) ---
     if (showDatePickerForMainTimestamp) {
         val triggeringType = allMeasurementTypes.find { it.key == MeasurementTypeKey.DATE }
-        val dateDialogTitle = stringResource(R.string.dialog_title_change_date, triggeringType?.getDisplayName(context) ?: stringResource(R.string.label_date))
+        val dateDialogTitle = stringResource(R.string.dialog_title_change_value, triggeringType?.getDisplayName(context) ?: stringResource(R.string.label_date))
         DateInputDialog(
             title = dateDialogTitle,
             initialTimestamp = measurementTimestampState,
@@ -483,7 +498,7 @@ fun MeasurementDetailScreen(
 
     if (showTimePickerForMainTimestamp) {
         val triggeringType = allMeasurementTypes.find { it.key == MeasurementTypeKey.TIME }
-        val timeDialogTitle = stringResource(R.string.dialog_title_change_time, triggeringType?.getDisplayName(context) ?: stringResource(R.string.label_time))
+        val timeDialogTitle = stringResource(R.string.dialog_title_change_value, triggeringType?.getDisplayName(context) ?: stringResource(R.string.label_time))
         TimeInputDialog(
             title = timeDialogTitle,
             initialTimestamp = measurementTimestampState,
@@ -497,6 +512,24 @@ fun MeasurementDetailScreen(
                 currentCal.set(Calendar.MINUTE, newCal.get(Calendar.MINUTE))
                 measurementTimestampState = currentCal.timeInMillis
                 showTimePickerForMainTimestamp = false
+            }
+        )
+    }
+
+    if (showUserPicker) {
+        val triggeringType = allMeasurementTypes.find { it.key == MeasurementTypeKey.USER }
+        val userDialogTitle = stringResource(R.string.dialog_title_change_value, triggeringType?.getDisplayName(context) ?: stringResource(R.string.measurement_type_user))
+
+        UserInputDialog(
+            title = userDialogTitle,
+            users = allUsers,
+            initialSelectedId = pendingUserId ?: currentUserIdState,
+            measurementIcon = triggeringType?.icon ?: MeasurementTypeIcon.IC_USER,
+            iconBackgroundColor = triggeringType?.let { Color(it.color) } ?: MaterialTheme.colorScheme.primary,
+            onDismiss = { showUserPicker = false },
+            onConfirm = { id ->
+                pendingUserId = id
+                showUserPicker = false
             }
         )
     }

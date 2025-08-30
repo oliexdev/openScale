@@ -930,6 +930,7 @@ fun MeasurementValueRow(
         InputFieldType.TIME  -> originalValue.dateValue?.let {
             DateFormat.getTimeInstance(DateFormat.SHORT, Locale.getDefault()).format(Date(it))
         }
+        InputFieldType.USER -> null
     } ?: "-"
 
     val context = LocalContext.current

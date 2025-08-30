@@ -102,8 +102,7 @@
 
     <!-- Dialoge (Allgemein & Messwertbearbeitung) -->
     <string name="dialog_title_edit_value">%1$s bearbeiten</string> <!-- Beispiel: "Gewicht bearbeiten" -->
-    <string name="dialog_title_change_date">%1$s ändern</string> <!-- Beispiel: "Datum ändern" oder "Messdatum ändern" -->
-    <string name="dialog_title_change_time">%1$s ändern</string> <!-- Beispiel: "Zeit ändern" oder "Messzeit ändern" -->
+    <string name="dialog_title_change_value">%1$s ändern</string> <!-- Beispiel: "Datum ändern" oder "Messdatum ändern" -->
     <string name="dialog_title_select_color">Farbe auswählen</string>
     <string name="dialog_title_select_icon">Symbol auswählen</string>
     <string name="dialog_title_input_value">Wert eingeben</string>
@@ -153,6 +152,7 @@
     <string name="measurement_type_comment">Kommentar</string>
     <string name="measurement_type_date">Datum</string>
     <string name="measurement_type_time">Uhrzeit</string>
+    <string name="measurement_type_user">Benutzer</string>
     <string name="measurement_type_custom_default_name">Benutzerdefinierter Typ</string>
 
     <!-- Einstellungen für Messarten -->

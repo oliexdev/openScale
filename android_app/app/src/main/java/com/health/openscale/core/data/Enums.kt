@@ -221,6 +221,7 @@ enum class MeasurementTypeIcon(val resource: IconResource) {
     IC_COMMENT(IconResource.PainterResource(R.drawable.ic_comment)),
     IC_TIME(IconResource.PainterResource(R.drawable.ic_time)),
     IC_DATE(IconResource.PainterResource(R.drawable.ic_date)),
+    IC_USER(IconResource.PainterResource(R.drawable.ic_user)),
 
     IC_M_HEIGHT(IconResource.VectorResource(Icons.Filled.Height)),
     IC_M_HEART_RATE(IconResource.VectorResource(Icons.Filled.Favorite)),
@@ -301,6 +302,7 @@ enum class MeasurementTypeKey(
     DATE(24, R.string.measurement_type_date, listOf(UnitType.NONE), listOf(InputFieldType.DATE)),
     TIME(25, R.string.measurement_type_time, listOf(UnitType.NONE), listOf(InputFieldType.TIME)),
     COMMENT(26, R.string.measurement_type_comment, listOf(UnitType.NONE), listOf(InputFieldType.TEXT)),
+    USER(27, R.string.measurement_type_user, listOf(UnitType.NONE), listOf(InputFieldType.USER)),
     CUSTOM(99, R.string.measurement_type_custom_default_name, UnitType.entries.toList(), listOf(InputFieldType.FLOAT, InputFieldType.INT, InputFieldType.TEXT, InputFieldType.DATE, InputFieldType.TIME));
 }
 
@@ -325,7 +327,8 @@ enum class InputFieldType {
     INT,
     TEXT,
     DATE,
-    TIME
+    TIME,
+    USER
 }
 
 enum class Trend {

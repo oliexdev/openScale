@@ -96,7 +96,9 @@ class ImportExportUseCases @Inject constructor(
 
         val allAppTypes: List<MeasurementType> = repository.getAllMeasurementTypes().first()
         val exportableValueTypes = allAppTypes.filter {
-            it.key != MeasurementTypeKey.DATE && it.key != MeasurementTypeKey.TIME
+            it.key != MeasurementTypeKey.DATE &&
+            it.key != MeasurementTypeKey.TIME &&
+            it.key != MeasurementTypeKey.USER
         }
         val valueColumnKeys = exportableValueTypes.map { it.key.name }.distinct()
 
@@ -141,6 +143,7 @@ class ImportExportUseCases @Inject constructor(
                         InputFieldType.TIME  -> value.dateValue?.let {
                             timeFormatter.format(Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()))
                         }
+                        InputFieldType.USER -> null
                     }
                     row[type.key.name] = s
                 }

@@ -102,9 +102,8 @@
     <string name="toast_enter_valid_data">Please enter valid data.</string>
 
     <!-- Dialogs (General & Measurement Edit) -->
-    <string name="dialog_title_edit_value">Edit %1$s</string> <!-- Example: "Edit Weight" -->
-    <string name="dialog_title_change_date">Change %1$s</string> <!-- Example: "Change Date" or "Change Measurement Date" -->
-    <string name="dialog_title_change_time">Change %1$s</string> <!-- Example: "Change Time" or "Change Measurement Time" -->
+    <string name="dialog_title_edit_value">Edit %1$s</string>
+    <string name="dialog_title_change_value">Change %1$s</string>
     <string name="dialog_title_select_color">Select color</string>
     <string name="dialog_title_select_icon">Select icon</string>
     <string name="dialog_title_input_value">Input value</string>
@@ -155,6 +154,7 @@
     <string name="measurement_type_comment">Comment</string>
     <string name="measurement_type_date">Date</string>
     <string name="measurement_type_time">Time</string>
+    <string name="measurement_type_user">User</string>
     <string name="measurement_type_custom_default_name">Custom Type</string>
 
     <!-- Measurement Type Settings -->
