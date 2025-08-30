@@ -161,11 +161,6 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.worker)
     implementation(libs.androidx.documentfile)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
@@ -206,4 +201,13 @@ dependencies {
     // Blessed Kotlin
    // implementation(libs.blessed.kotlin)
     implementation(libs.blessed.java)
+
+    // Test dependencies
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.ui.test.junit4)
+    testImplementation(libs.junit)
+    testImplementation(libs.truth)
 }

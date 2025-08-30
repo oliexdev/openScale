@@ -1,201 +1,207 @@
-package com.health.openscale.core.bluetooth.libs;
+/*
+ * openScale
+ * Copyright (C) 2025 olie.xdev <olie.xdeveloper@googlemail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+package com.health.openscale.core.bluetooth.libs
 
 // This class is similar to OneByoneLib, but the way measures are computer are slightly different
-public class OneByoneNewLib {
-
-    private int sex;
-    private int age;
-    private float height;
-    private int peopleType; // low activity = 0; medium activity = 1; high activity = 2
-
-    public OneByoneNewLib(int sex, int age, float height, int peopleType) {
-        this.sex = sex;
-        this.age = age;
-        this.height = height;
-        this.peopleType = peopleType;
+class OneByoneNewLib(
+    private val sex: Int,
+    private val age: Int,
+    private val height: Float, // low activity = 0; medium activity = 1; high activity = 2
+    private val peopleType: Int
+) {
+    fun getBMI(weight: Float): Float {
+        val bmi = weight / (((height * height) / 100.0f) / 100.0f)
+        return getBounded(bmi, 10f, 90f)
     }
 
-    public float getBMI(float weight) {
-        float bmi = weight / (((height * height) / 100.0f) / 100.0f);
-        return getBounded(bmi, 10, 90);
-    }
-
-    public float getLBM(float weight, int impedance) {
-        float lbmCoeff = height / 100 * height / 100 * 9.058F;
-        lbmCoeff += 12.226;
-        lbmCoeff += weight * 0.32;
-        lbmCoeff -= impedance * 0.0068;
-        lbmCoeff -= age * 0.0542;
-        return lbmCoeff;
+    fun getLBM(weight: Float, impedance: Int): Float {
+        var lbmCoeff = height / 100 * height / 100 * 9.058f
+        lbmCoeff += 12.226.toFloat()
+        lbmCoeff += (weight * 0.32).toFloat()
+        lbmCoeff -= (impedance * 0.0068).toFloat()
+        lbmCoeff -= (age * 0.0542).toFloat()
+        return lbmCoeff
     }
 
 
-
-    public float getBMMRCoeff(float weight){
-        int bmmrCoeff = 20;
-        if(sex == 1){
-            bmmrCoeff = 21;
-            if(age < 0xd){
-                bmmrCoeff = 36;
-            } else if(age < 0x10){
-                bmmrCoeff = 30;
-            } else if(age < 0x12){
-                bmmrCoeff = 26;
-            } else if(age < 0x1e){
-                bmmrCoeff = 23;
-            } else if (age >= 0x32){
-                bmmrCoeff = 20;
+    fun getBMMRCoeff(weight: Float): Float {
+        var bmmrCoeff = 20
+        if (sex == 1) {
+            bmmrCoeff = 21
+            if (age < 0xd) {
+                bmmrCoeff = 36
+            } else if (age < 0x10) {
+                bmmrCoeff = 30
+            } else if (age < 0x12) {
+                bmmrCoeff = 26
+            } else if (age < 0x1e) {
+                bmmrCoeff = 23
+            } else if (age >= 0x32) {
+                bmmrCoeff = 20
             }
         } else {
-            if(age < 0xd){
-                bmmrCoeff = 34;
-            } else if(age < 0x10){
-                bmmrCoeff = 29;
-            } else if(age < 0x12){
-                bmmrCoeff = 24;
-            } else if(age < 0x1e){
-                bmmrCoeff = 22;
-            } else if (age >= 0x32){
-                bmmrCoeff = 19;
+            if (age < 0xd) {
+                bmmrCoeff = 34
+            } else if (age < 0x10) {
+                bmmrCoeff = 29
+            } else if (age < 0x12) {
+                bmmrCoeff = 24
+            } else if (age < 0x1e) {
+                bmmrCoeff = 22
+            } else if (age >= 0x32) {
+                bmmrCoeff = 19
             }
         }
-        return bmmrCoeff;
+        return bmmrCoeff.toFloat()
     }
 
-    public float getBMMR(float weight){
-        float bmmr;
-        if(sex == 1){
-            bmmr = (weight * 14.916F + 877.8F) - height * 0.726F;
-            bmmr -= age * 8.976;
+    fun getBMMR(weight: Float): Float {
+        var bmmr: Float
+        if (sex == 1) {
+            bmmr = (weight * 14.916f + 877.8f) - height * 0.726f
+            bmmr -= (age * 8.976).toFloat()
         } else {
-            bmmr = (weight * 10.2036F + 864.6F) - height * 0.39336F;
-            bmmr -= age * 6.204;
+            bmmr = (weight * 10.2036f + 864.6f) - height * 0.39336f
+            bmmr -= (age * 6.204).toFloat()
         }
 
-        return getBounded(bmmr, 500, 1000);
+        return getBounded(bmmr, 500f, 1000f)
     }
 
-    public float getBodyFatPercentage(float weight, int impedance) {
-        float bodyFat = getLBM(weight, impedance);
+    fun getBodyFatPercentage(weight: Float, impedance: Int): Float {
+        var bodyFat = getLBM(weight, impedance)
 
-        float bodyFatConst;
+        val bodyFatConst: Float
         if (sex == 0) {
             if (age < 0x32) {
-                bodyFatConst = 9.25F;
+                bodyFatConst = 9.25f
             } else {
-                bodyFatConst = 7.25F;
+                bodyFatConst = 7.25f
             }
         } else {
-            bodyFatConst = 0.8F;
+            bodyFatConst = 0.8f
         }
 
-        bodyFat -= bodyFatConst;
+        bodyFat -= bodyFatConst
 
-        if (sex == 0){
-            if (weight < 50){
-                bodyFat *= 1.02;
-            } else if(weight > 60){
-                bodyFat *= 0.96;
+        if (sex == 0) {
+            if (weight < 50) {
+                bodyFat *= 1.02.toFloat()
+            } else if (weight > 60) {
+                bodyFat *= 0.96.toFloat()
             }
 
-            if(height > 160){
-                bodyFat *= 1.03;
+            if (height > 160) {
+                bodyFat *= 1.03.toFloat()
             }
         } else {
-            if (weight < 61){
-                bodyFat *= 0.98;
+            if (weight < 61) {
+                bodyFat *= 0.98.toFloat()
             }
         }
 
-        return 100 * (1 - bodyFat / weight);
+        return 100 * (1 - bodyFat / weight)
     }
 
-    public float getBoneMass(float weight, int impedance){
-        float lbmCoeff = getLBM(weight, impedance);
+    fun getBoneMass(weight: Float, impedance: Int): Float {
+        val lbmCoeff = getLBM(weight, impedance)
 
-        float boneMassConst;
-        if(sex == 1){
-            boneMassConst = 0.18016894F;
+        var boneMassConst: Float
+        if (sex == 1) {
+            boneMassConst = 0.18016894f
         } else {
-            boneMassConst = 0.245691014F;
+            boneMassConst = 0.245691014f
         }
 
-        boneMassConst = lbmCoeff * 0.05158F - boneMassConst;
-        float boneMass;
-        if(boneMassConst <= 2.2){
-            boneMass = boneMassConst - 0.1F;
+        boneMassConst = lbmCoeff * 0.05158f - boneMassConst
+        val boneMass: Float
+        if (boneMassConst <= 2.2) {
+            boneMass = boneMassConst - 0.1f
         } else {
-            boneMass = boneMassConst + 0.1F;
+            boneMass = boneMassConst + 0.1f
         }
 
-        return getBounded(boneMass, 0.5F, 8);
+        return getBounded(boneMass, 0.5f, 8f)
     }
 
-    public float getMuscleMass(float weight, int impedance){
-        float muscleMass = weight - getBodyFatPercentage(weight, impedance) * 0.01F * weight;
-        muscleMass -= getBoneMass(weight, impedance);
-        return getBounded(muscleMass, 10, 120);
+    fun getMuscleMass(weight: Float, impedance: Int): Float {
+        var muscleMass = weight - getBodyFatPercentage(weight, impedance) * 0.01f * weight
+        muscleMass -= getBoneMass(weight, impedance)
+        return getBounded(muscleMass, 10f, 120f)
     }
 
-    public float getSkeletonMusclePercentage(float weight, int impedance){
-        float skeletonMuscleMass = getWaterPercentage(weight, impedance);
-        skeletonMuscleMass *= weight;
-        skeletonMuscleMass *= 0.8422F  * 0.01F;
-        skeletonMuscleMass -= 2.9903;
-        skeletonMuscleMass /= weight;
-        return skeletonMuscleMass * 100;
+    fun getSkeletonMusclePercentage(weight: Float, impedance: Int): Float {
+        var skeletonMuscleMass = getWaterPercentage(weight, impedance)
+        skeletonMuscleMass *= weight
+        skeletonMuscleMass *= 0.8422f * 0.01f
+        skeletonMuscleMass -= 2.9903.toFloat()
+        skeletonMuscleMass /= weight
+        return skeletonMuscleMass * 100
     }
 
-    public float getVisceralFat(float weight){
-        float visceralFat;
+    fun getVisceralFat(weight: Float): Float {
+        val visceralFat: Float
         if (sex == 1) {
             if (height < weight * 1.6 + 63.0) {
                 visceralFat =
-                        age * 0.15F + ((weight * 305.0F) /((height * 0.0826F * height - height * 0.4F) + 48.0F) - 2.9F);
+                    age * 0.15f + ((weight * 305.0f) / ((height * 0.0826f * height - height * 0.4f) + 48.0f) - 2.9f)
+            } else {
+                visceralFat =
+                    age * 0.15f + (weight * (height * -0.0015f + 0.765f) - height * 0.143f) - 5.0f
             }
-            else {
-                visceralFat = age * 0.15F + (weight * (height * -0.0015F + 0.765F) - height * 0.143F) - 5.0F;
-            }
-        }
-        else {
-            if (weight <= height * 0.5 - 13.0) {
-                visceralFat = age * 0.07F + (weight * (height * -0.0024F + 0.691F) - height * 0.027F) - 10.5F;
-            }
-            else {
-                visceralFat = age * 0.07F + ((weight * 500.0F) / ((height * 1.45F + height * 0.1158F * height) - 120.0F) - 6.0F);
-            }
-        }
-
-        return getBounded(visceralFat, 1, 50);
-    }
-
-    public float getWaterPercentage(float weight, int impedance){
-        float waterPercentage = (100 - getBodyFatPercentage(weight, impedance)) * 0.7F;
-        if (waterPercentage > 50){
-            waterPercentage *= 0.98;
         } else {
-            waterPercentage *= 1.02;
+            if (weight <= height * 0.5 - 13.0) {
+                visceralFat =
+                    age * 0.07f + (weight * (height * -0.0024f + 0.691f) - height * 0.027f) - 10.5f
+            } else {
+                visceralFat =
+                    age * 0.07f + ((weight * 500.0f) / ((height * 1.45f + height * 0.1158f * height) - 120.0f) - 6.0f)
+            }
         }
 
-        return getBounded(waterPercentage, 35, 75);
+        return getBounded(visceralFat, 1f, 50f)
     }
 
-    public float getProteinPercentage(float weight, int impedance){
-        return (
-                (100.0F - getBodyFatPercentage(weight, impedance))
-                        - getWaterPercentage(weight, impedance) * 1.08F
+    fun getWaterPercentage(weight: Float, impedance: Int): Float {
+        var waterPercentage = (100 - getBodyFatPercentage(weight, impedance)) * 0.7f
+        if (waterPercentage > 50) {
+            waterPercentage *= 0.98.toFloat()
+        } else {
+            waterPercentage *= 1.02.toFloat()
+        }
+
+        return getBounded(waterPercentage, 35f, 75f)
+    }
+
+    fun getProteinPercentage(weight: Float, impedance: Int): Float {
+        return (((100.0f - getBodyFatPercentage(weight, impedance))
+                - getWaterPercentage(weight, impedance) * 1.08f
                 )
-                    - (getBoneMass(weight, impedance) / weight) * 100.0F;
+                - (getBoneMass(weight, impedance) / weight) * 100.0f)
     }
 
 
-    private float getBounded(float value, float lowerBound, float upperBound){
-        if(value < lowerBound){
-            return lowerBound;
-        } else if (value > upperBound){
-            return upperBound;
+    private fun getBounded(value: Float, lowerBound: Float, upperBound: Float): Float {
+        if (value < lowerBound) {
+            return lowerBound
+        } else if (value > upperBound) {
+            return upperBound
         }
-        return value;
+        return value
     }
-
 }
