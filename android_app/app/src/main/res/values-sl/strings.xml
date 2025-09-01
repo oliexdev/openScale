@@ -214,10 +214,10 @@
     <string name="amputation_level_none">Brez amputacij</string>
     <string name="amputation_level_hand">Roka</string>
     <string name="amputation_level_forearm_hand">Predlaket in noga</string>
-    <string name="label_slide_privacy_main_text">openScale ne pošilja podatkov v oblak in to, da nima dovoljenja za dostop do interneta, je trdno zagotovilo za to.\n\nČe res želiš svojo težo sinhronizirati s programom GoogleFit ali z MQTT, lahko namestiš <a href="https://play.google.com/store/apps/details?id=com.health.openscale.sync">openScale sync</a>.</string>
+    <string name="label_slide_privacy_main_text">openScale ne pošilja podatkov v oblak in to, da nima dovoljenja za dostop do interneta, je trdno zagotovilo za to. \n \nČe res želiš svojo težo sinhronizirati s programom GoogleFit ali z MQTT, lahko namestiš <a href="https://play.google.com/store/apps/details?id=com.health.openscale.sync">openScale sync</a>.</string>
     <string name="label_slide_user_top_text">Podprtih je več uporabnikov.</string>
-    <string name="label_slide_user_main_text">Za aplikacijo openScale ni potrebno ustvariti spletnega računa.\n\nTelesne vrednosti se izračunajo na podlagi meritev.</string>
-    <string name="label_slide_opensource_main_text">OpenScale je licenciran pod licenco <a href="https://github.com/oliexdev/openScale/blob/master/LICENSE">GPLv3</a>.\n\nVsi izračuni so pregledni, pri čemer se ne izvaja nobena skrita funkcija prenosa podatkov ali identifikacije uporabnika.\n\nCelotna izvorna koda je dostopna na spletnem mestu <a href="https://github.com/oliexdev/openScale">GitHub</a>. Prepričaj se o openScale tako, da jo pregledaš.</string>
+    <string name="label_slide_user_main_text">Za aplikacijo openScale ni potrebno ustvariti spletnega računa. \n \nTelesne vrednosti se izračunajo na podlagi meritev.</string>
+    <string name="label_slide_opensource_main_text">OpenScale je licenciran pod licenco <a href="https://github.com/oliexdev/openScale/blob/master/LICENSE">GPLv3</a>. \n \nVsi izračuni so pregledni, pri čemer se ne izvaja nobena skrita funkcija prenosa podatkov ali identifikacije uporabnika.\n \nCelotna izvorna koda je dostopna na spletnem mestu <a href="https://github.com/oliexdev/openScale">GitHub</a>. Prepričaj se o openScale tako, da jo pregledaš.</string>
     <string name="label_slide_support_top_text">Pomagaj izboljšati openScale.</string>
     <string name="app_intro_skip_button">Preskoči</string>
     <string name="app_intro_back_button">Nazaj</string>
@@ -236,9 +236,9 @@
     <string name="info_step_on_scale">Prosim, stopi bos/-a na tehtnico</string>
     <string name="permission_location_service_info">Za iskanje naprav Bluetooth v nastavitvah sistema Android omogoči dostop do lokacije. Po želji ga nato lahko prekličeš.</string>
     <string name="label_slide_opensource_top_text">Gre za odprtokodno programsko opremo z visoko stopnjo preglednosti.</string>
-    <string name="label_slide_metrics_main_text">openScale podpira več kot 22 telesnih podatkov.\n\nNastavi ga tako, da prikazuje tiste, ki te zanimajo.\n\nČe manjka telesna maščoba, vsebnost vode in čvrsta telesna masa, jih lahko oceniš na podlagi <a href="https://github.com/oliexdev/openScale/wiki/Body-metric-estimations">znanstvenih publikacij</a>.</string>
+    <string name="label_slide_metrics_main_text">openScale podpira več kot 22 telesnih podatkov. \n \nNastavi ga tako, da prikazuje tiste, ki te zanimajo. \n \nČe manjka telesna maščoba, vsebnost vode in čvrsta telesna masa, jih lahko oceniš na podlagi <a href="https://github.com/oliexdev/openScale/wiki/Body-metric-estimations">znanstvenih publikacij</a>.</string>
     <string name="permission_read_write_data_label">Branje/pisanje podatkov openScale</string>
-    <string name="amputation_level_arm">Roka</string>
+    <string name="amputation_level_arm">Laket</string>
     <string name="amputation_level_lower_leg_foot">Spodnji del noge in stopalo</string>
     <string name="amputation_level_leg">Noga</string>
     <string name="amputation_level_foot">Stopalo</string>
