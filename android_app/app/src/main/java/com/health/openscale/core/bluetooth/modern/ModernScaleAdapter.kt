@@ -270,13 +270,15 @@ class ModernScaleAdapter(
             peripheral: BluetoothPeripheral,
             scanResult: android.bluetooth.le.ScanResult
         ) {
+            // Only react to the target address
             if (peripheral.address != targetAddress) return
 
+            // Decide link mode using handler.supportFor(...) + scan data; fallback to handler.linkMode
             val linkMode = resolveLinkModeFor(peripheral, scanResult)
             val isBroadcast = linkMode != LinkMode.CONNECT_GATT
 
             if (isBroadcast) {
-                // Attach lazily on first broadcast frame
+                // Broadcast path: attach handler lazily on first matching advertisement
                 if (!broadcastAttached) {
                     val driverSettings = FacadeDriverSettings(
                         facade = settingsFacade,
@@ -286,10 +288,15 @@ class ModernScaleAdapter(
                     )
                     handler.attach(noopTransport, appCallbacks, driverSettings)
                     broadcastAttached = true
+                    // Now we know it's a broadcast flow → inform UI
+                    _events.tryEmit(BluetoothEvent.Listening(peripheral.address))
                 }
 
-                when (handler.onAdvertisement(scanResult, currentUser ?: return)) {
+                // Forward the advertisement to the handler for parsing/aggregation
+                val user = currentUser ?: return
+                when (handler.onAdvertisement(scanResult, user)) {
                     BroadcastAction.IGNORED -> Unit
+
                     BroadcastAction.CONSUMED_KEEP_SCANNING -> {
                         _events.tryEmit(
                             BluetoothEvent.DeviceMessage(
@@ -298,6 +305,7 @@ class ModernScaleAdapter(
                             )
                         )
                     }
+
                     BroadcastAction.CONSUMED_STOP -> {
                         _events.tryEmit(BluetoothEvent.BroadcastComplete(peripheral.address))
                         stopScanInternal()
@@ -308,7 +316,7 @@ class ModernScaleAdapter(
                 return
             }
 
-            // GATT path: stop scan + connect
+            // GATT path: stop scan and connect to the peripheral
             LogManager.i(TAG, "session#$sessionId Found $targetAddress → stop scan + connect")
             central.stopScan()
             scope.launch {
@@ -569,8 +577,8 @@ class ModernScaleAdapter(
 
     /**
      * Start a BLE session to the given MAC and bind the session to [scaleUser].
-     * For broadcast-only devices, we attach the handler immediately with a no-op transport,
-     * emit a Listening event, and start scanning.
+     * The adapter starts scanning; for broadcast-only devices it will lazily attach the handler
+     * on the first matching advertisement and emit a Listening event at that moment.
      */
     override fun connect(address: String, scaleUser: ScaleUser?) {
         scope.launch {
@@ -598,10 +606,12 @@ class ModernScaleAdapter(
                 delay(wait)
             }
 
+            // If currently busy with another device, disconnect first
             if ((_isConnected.value || _isConnecting.value) && targetAddress != address) {
                 disconnect()
             }
 
+            // Initialize session state
             targetAddress = address
             currentUser = scaleUser
             connectAttempts = 0
@@ -609,32 +619,8 @@ class ModernScaleAdapter(
             _isConnected.value = false
             newSession()
 
-            // Stop any previous scan before starting a new one
+            // Always start by scanning; final link mode decision happens in onDiscoveredPeripheral(...)
             runCatching { central.stopScan() }
-
-            // Hint only: final decision still happens in onDiscoveredPeripheral via resolveLinkModeFor(...)
-            val isBroadcastPreferred = handler.linkMode != LinkMode.CONNECT_GATT
-
-            if (isBroadcastPreferred) {
-                // Broadcast path: emit Listening and start scanning.
-                // Handler will be attached lazily on first matching advertisement.
-                _events.tryEmit(BluetoothEvent.Listening(address))
-                try {
-                    central.scanForPeripheralsWithAddresses(arrayOf(address))
-                } catch (e: Exception) {
-                    LogManager.e(TAG, "session#$sessionId Failed to start broadcast scan: ${e.message}", e)
-                    _events.tryEmit(
-                        BluetoothEvent.ConnectionFailed(
-                            address,
-                            e.message ?: context.getString(R.string.bt_error_generic)
-                        )
-                    )
-                    cleanup(address)
-                }
-                return@launch
-            }
-
-            // Classic GATT path: scan and connect on discovery
             try {
                 central.scanForPeripheralsWithAddresses(arrayOf(address))
             } catch (e: Exception) {
@@ -649,6 +635,7 @@ class ModernScaleAdapter(
             }
         }
     }
+
 
 
     /** Gracefully terminate the current BLE session (if any). */
