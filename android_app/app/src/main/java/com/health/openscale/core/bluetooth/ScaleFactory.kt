@@ -57,8 +57,16 @@ import com.health.openscale.core.bluetooth.legacy.BluetoothYoda1Scale
 import com.health.openscale.core.bluetooth.legacy.BluetoothYunmaiSE_Mini
 import com.health.openscale.core.bluetooth.legacy.LegacyScaleAdapter
 import com.health.openscale.core.bluetooth.modern.DeviceSupport
+import com.health.openscale.core.bluetooth.modern.ESCS20mHandler
 import com.health.openscale.core.bluetooth.modern.ModernScaleAdapter
+import com.health.openscale.core.bluetooth.modern.QNHandler
+import com.health.openscale.core.bluetooth.modern.RenphoHandler
+import com.health.openscale.core.bluetooth.modern.SanitasSBF72Handler
+import com.health.openscale.core.bluetooth.modern.SenssunHandler
+import com.health.openscale.core.bluetooth.modern.SinocareHandler
+import com.health.openscale.core.bluetooth.modern.SoehnleHandler
 import com.health.openscale.core.bluetooth.modern.StandardWeightProfileHandler
+import com.health.openscale.core.bluetooth.modern.TrisaBodyAnalyzeHandler
 import com.health.openscale.core.bluetooth.modern.Yoda1Handler
 import com.health.openscale.core.bluetooth.modern.YunmaiHandler
 import com.health.openscale.core.facade.SettingsFacade
@@ -87,7 +95,14 @@ class ScaleFactory @Inject constructor(
         YunmaiHandler(isMini = false),
         YunmaiHandler(isMini = true),
         Yoda1Handler(),
-        StandardWeightProfileHandler()
+        TrisaBodyAnalyzeHandler(),
+        SoehnleHandler(),
+        SinocareHandler(),
+        SenssunHandler(),
+        SanitasSBF72Handler(),
+        RenphoHandler(),
+        ESCS20mHandler(),
+        QNHandler(),
     )
 
     /**

@@ -44,7 +44,7 @@ import kotlin.random.Random
  *    - If list arrives → show CHOOSE_USER with slots (+ “Create new user…”).
  *    - If not supported/empty → show CHOOSE_USER with only “Create new user…”.
  */
-class StandardWeightProfileHandler : ScaleDeviceHandler() {
+open class StandardWeightProfileHandler : ScaleDeviceHandler() {
 
     // ---- Standard services/characteristics (16-bit UUIDs) --------------------
     private val SVC_DEVICE_INFO                = uuid16(0x180A)
@@ -92,6 +92,7 @@ class StandardWeightProfileHandler : ScaleDeviceHandler() {
     private var registeringNewUser = false
     private var pendingAppUserId: Int? = null
     private var pendingConsentForNewUser: Int? = null
+    private var awaitingReferenceAfterRegister = false
 
     /**
      * Identify devices that expose any of the standard scale services.
@@ -117,6 +118,8 @@ class StandardWeightProfileHandler : ScaleDeviceHandler() {
             linkMode = LinkMode.CONNECT_GATT
         )
     }
+
+    protected open fun onRequestMeasurement() { }
 
     // ---- Connection sequencing ------------------------------------------------
 
@@ -169,10 +172,14 @@ class StandardWeightProfileHandler : ScaleDeviceHandler() {
     override fun onDisconnected() {
         previousMeasurement?.let {
             logD("Disconnect: flushing pending measurement without body composition merge")
-            publish(it)
+            publishTransformed(it)
         }
         previousMeasurement = null
     }
+
+    protected open fun transformBeforePublish(m: ScaleMeasurement): ScaleMeasurement = m
+
+    private fun publishTransformed(m: ScaleMeasurement) = publish(transformBeforePublish(m))
 
     // ---- Auto-consent + UDS list ---------------------------------------------
 
@@ -229,7 +236,7 @@ class StandardWeightProfileHandler : ScaleDeviceHandler() {
         val prev = previousMeasurement
 
         if (prev == null) {
-            if (newM.userId == -1) publish(newM) else previousMeasurement = newM
+            if (newM.userId == -1) publishTransformed(newM) else previousMeasurement = newM
             return
         }
 
@@ -238,7 +245,7 @@ class StandardWeightProfileHandler : ScaleDeviceHandler() {
             if ((newM.weight <= 0f) && (prev.weight > 0f)) newM.weight = prev.weight
             newM.userId = prev.userId
             logD("merge: publish MERGED (weight+bodycomp) userId=${newM.userId}")
-            publish(newM)
+            publishTransformed(newM)
             previousMeasurement = null
             return
         }
@@ -247,15 +254,15 @@ class StandardWeightProfileHandler : ScaleDeviceHandler() {
             if (newM.dateTime == null && prev.dateTime != null) newM.dateTime = prev.dateTime
             if ((newM.weight <= 0f) && (prev.weight > 0f)) newM.weight = prev.weight
             logD("merge: publish MERGED (both had userId) userId=${newM.userId}")
-            publish(newM)
+            publishTransformed(newM)
             previousMeasurement = null
             return
         }
 
         // Fallback
-        publish(prev)
+        publishTransformed(prev)
         previousMeasurement = if (newM.userId == -1) {
-            publish(newM); null
+            publishTransformed(newM); null
         } else {
             newM
         }
@@ -455,6 +462,7 @@ class StandardWeightProfileHandler : ScaleDeviceHandler() {
                         }
                     sendConsent(newScaleIndex, consent)
 
+                    awaitingReferenceAfterRegister = true
                     registeringNewUser = false
                     pendingAppUserId = null
                     pendingConsentForNewUser = null
@@ -472,6 +480,12 @@ class StandardWeightProfileHandler : ScaleDeviceHandler() {
                 if (result == UDS_CP_RESP_VALUE_SUCCESS) {
                     logD("UDS CONSENT: success")
                     pendingAppUserId = null
+                    if (awaitingReferenceAfterRegister) {
+                        userInfo(R.string.bluetooth_scale_info_step_on_for_reference)
+                        awaitingReferenceAfterRegister = false
+                    }
+
+                    onRequestMeasurement()
                 } else if (result == UDS_CP_RESP_USER_NOT_AUTHORIZED) {
                     userError(R.string.bt_error_ucp_not_authorized)
                     val appId = pendingAppUserId ?: requireUser().id

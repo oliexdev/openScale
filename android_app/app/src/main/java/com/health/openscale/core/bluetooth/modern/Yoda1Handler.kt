@@ -59,10 +59,6 @@ class Yoda1Handler : ScaleDeviceHandler() {
         )
     }
 
-    // Not used for broadcast-only devices, but must be implemented
-    override fun onConnected(user: ScaleUser) { /* no-op */ }
-    override fun onNotification(characteristic: java.util.UUID, data: ByteArray, user: ScaleUser) { /* no-op */ }
-
     override fun onAdvertisement(result: ScanResult, user: ScaleUser): BroadcastAction {
         val record = result.scanRecord ?: return IGNORED
         val msd: SparseArray<ByteArray> = record.manufacturerSpecificData ?: return IGNORED

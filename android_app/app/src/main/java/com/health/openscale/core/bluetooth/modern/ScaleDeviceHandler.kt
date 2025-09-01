@@ -163,10 +163,10 @@ abstract class ScaleDeviceHandler {
     // --- To be implemented by concrete handlers --------------------------------
 
     /** Called after services are discovered and the link is ready for I/O (GATT devices only). */
-    protected abstract fun onConnected(user: ScaleUser)
+    protected open fun onConnected(user: ScaleUser) = Unit
 
     /** Called for each incoming notification (GATT devices only). */
-    protected abstract fun onNotification(characteristic: UUID, data: ByteArray, user: ScaleUser)
+    protected open fun onNotification(characteristic: UUID, data: ByteArray, user: ScaleUser) = Unit
 
     /** Optional cleanup hook. */
     protected open fun onDisconnected() = Unit
