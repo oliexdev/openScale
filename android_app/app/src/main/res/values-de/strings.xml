@@ -275,6 +275,8 @@
     <string name="bluetooth_connector_measurement_saved">Messung (%1$.1f kg) von %2$s gespeichert.</string>
     <string name="bluetooth_connector_measurement_save_error">Fehler beim Speichern der Messung von %1$s.</string>
     <string name="bluetooth_connector_device_message">%1$s: %2$s</string>
+    <string name="bluetooth_connector_listening_for_device">Suche nach %1$s …</string>
+    <string name="bluetooth_connector_broadcast_complete">Messung von %1$s empfangen.</string>
 
     <!-- Bluetooth Berechtigungen & Aktivierungs-Karten -->
     <string name="permissions_required_icon_desc">Symbol für erforderliche Berechtigungen</string>

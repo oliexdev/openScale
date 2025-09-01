@@ -24,7 +24,12 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 
 /**
- * Defines the events that can be emitted by a [ScaleCommunicator].
+ * Domain events emitted by a [ScaleCommunicator].
+ *
+ * Notes for broadcast-only devices (advertisement parsing, no GATT):
+ * - The adapter emits [Listening] when scanning starts for the target MAC.
+ * - When a final (stabilized) measurement was published and scanning stops, it emits [BroadcastComplete].
+ * - For such devices, [Connected] is typically never emitted and [isConnected] stays `false`.
  */
 sealed class BluetoothEvent {
     enum class UserInteractionType {
@@ -32,60 +37,34 @@ sealed class BluetoothEvent {
         ENTER_CONSENT
     }
 
-    /**
-     * Event triggered when a connection to a device has been successfully established.
-     * @param deviceName The name of the connected device.
-     * @param deviceAddress The MAC address of the connected device.
-     */
+    /** Emitted when scanning starts for a broadcast-only device. */
+    data class Listening(val deviceAddress: String) : BluetoothEvent()
+
+    /** Emitted after a broadcast-only flow has completed (e.g., stabilized measurement parsed). */
+    data class BroadcastComplete(val deviceAddress: String) : BluetoothEvent()
+
+    /** Emitted when a GATT connection has been established. */
     data class Connected(val deviceName: String, val deviceAddress: String) : BluetoothEvent()
 
-    /**
-     * Event triggered when an existing connection to a device has been disconnected.
-     * @param deviceAddress The MAC address of the disconnected device.
-     * @param reason An optional reason for the disconnection (e.g., "Connection lost", "Manually disconnected").
-     */
+    /** Emitted when an existing GATT connection has been disconnected. */
     data class Disconnected(val deviceAddress: String, val reason: String? = null) : BluetoothEvent()
 
-    /**
-     * Event triggered when a connection attempt to a device has failed.
-     * @param deviceAddress The MAC address of the device to which the connection failed.
-     * @param error An error message describing the reason for the failure.
-     */
+    /** Emitted when a connection attempt to a device failed. */
     data class ConnectionFailed(val deviceAddress: String, val error: String) : BluetoothEvent()
 
-    /**
-     * Event triggered when measurement data has been received from the scale.
-     * Uses [ScaleMeasurement] as the common data format.
-     * @param measurement The received [ScaleMeasurement] object.
-     * @param deviceAddress The MAC address of the device from which the measurement originated.
-     */
+    /** Emitted when a parsed measurement is available. */
     data class MeasurementReceived(
         val measurement: ScaleMeasurement,
         val deviceAddress: String
     ) : BluetoothEvent()
 
-    /**
-     * Event triggered when a general error related to a device occurs.
-     * @param deviceAddress The MAC address of the device associated with the error.
-     * @param error An error message describing the issue.
-     */
+    /** Emitted for generic device-related errors. */
     data class Error(val deviceAddress: String, val error: String) : BluetoothEvent()
 
-    /**
-     * Event triggered when a text message (e.g., status or instruction) is received from the device.
-     * @param message The received message.
-     * @param deviceAddress The MAC address of the device from which the message originated.
-     */
+    /** Emitted for miscellaneous device/user-visible messages. */
     data class DeviceMessage(val message: String, val deviceAddress: String) : BluetoothEvent()
 
-    /**
-     * Event triggered when user interaction is required to select a user on the scale.
-     * This is often used when a scale supports multiple users and the app needs to clarify
-     * which app user corresponds to the scale user.
-     * @param deviceIdentifier The identifier (e.g., MAC address) of the device requiring user selection.
-     * @param data Optional data associated with the event, potentially containing information about users on the scale.
-     *                 The exact type should be defined by the communicator implementation if more specific data is available.
-     */
+    /** Emitted when user interaction is required (e.g., pick user, enter consent code). */
     data class UserInteractionRequired(
         val deviceIdentifier: String,
         val data: Any?,
@@ -94,52 +73,30 @@ sealed class BluetoothEvent {
 }
 
 /**
- * A generic interface for communication with a Bluetooth scale.
- * This interface abstracts the specific Bluetooth implementation (e.g., legacy Bluetooth or BLE).
+ * A generic interface for communicating with Bluetooth scales.
+ * Implementations may be GATT-based or broadcast-only (advertisement parsing).
  */
 interface ScaleCommunicator {
 
-    /**
-     * A [StateFlow] indicating whether a connection attempt to a device is currently in progress.
-     * `true` if a connection attempt is active, `false` otherwise.
-     */
+    /** Indicates whether a connection attempt (or scan for broadcast devices) is in progress. */
     val isConnecting: StateFlow<Boolean>
 
-    /**
-     * A [StateFlow] indicating whether an active connection to a device currently exists.
-     * `true` if connected, `false` otherwise.
-     */
+    /** Indicates whether a GATT connection is active. For broadcast-only devices this is always `false`. */
     val isConnected: StateFlow<Boolean>
 
-    /**
-     * Initiates a connection attempt to the device with the specified MAC address.
-     * @param address The MAC address of the target device.
-     * @param scaleUser The user to be selected or used on the scale (optional).
-     */
+    /** Start communicating with a device identified by [address]. Binds the session to [scaleUser]. */
     fun connect(address: String, scaleUser: ScaleUser?)
 
-    /**
-     * Disconnects the existing connection to the currently connected device.
-     */
+    /** Terminate the current session (disconnect or stop scanning). */
     fun disconnect()
 
-    /**
-     * Explicitly requests a new measurement from the connected device.
-     * (Note: Not always supported or required by all scale devices).
-     */
+    /** Request a measurement (if supported; some devices only push asynchronously). */
     fun requestMeasurement()
 
-    /**
-     * Provides a [SharedFlow] that emits [BluetoothEvent]s.
-     * Consumers can collect events from this flow to react to connection changes,
-     * received measurements, errors, and other device-related events.
-     * @return A [SharedFlow] of [BluetoothEvent]s.
-     */
+    /** Stream of [BluetoothEvent] emitted by the communicator. */
     fun getEventsFlow(): SharedFlow<BluetoothEvent>
 
-    /**
-     * Processes feedback received from the user for a previously requested interaction.
-     */
+    /** Deliver feedback for a previously requested user interaction. */
     fun processUserInteractionFeedback(
         interactionType: BluetoothEvent.UserInteractionType,
         appUserId: Int,

@@ -392,6 +392,7 @@ enum class ConnectionStatus {
     NONE,
     /** Ready but not connected; idle state after init or after a clean stop. */
     IDLE,
+    BROADCAST_LISTENING,
     /** Explicitly not connected (after a disconnect or failure). */
     DISCONNECTED,
     /** Connecting handshake is in progress. */

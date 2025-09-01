@@ -1,7 +1,19 @@
 /*
  * openScale
- * Copyright (C) 2025 ...
- * GPLv3+
+ * Copyright (C) 2025 olie.xdev <olie.xdeveloper@googlemail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 package com.health.openscale.core.bluetooth.modern
 
@@ -18,6 +30,7 @@ import com.health.openscale.core.bluetooth.ScaleCommunicator
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.facade.SettingsFacade
+import com.health.openscale.core.service.ScannedDeviceInfo
 import com.health.openscale.core.utils.LogManager
 import com.welie.blessed.*
 import com.welie.blessed.WriteType.WITHOUT_RESPONSE
@@ -178,41 +191,15 @@ class FacadeDriverSettings(
 }
 
 /**
- * ## ModernScaleAdapter
+ * ModernScaleAdapter
+ * ------------------
+ * Bridges a device-specific [ScaleDeviceHandler] to the Blessed BLE stack. It owns scan/connect
+ * lifecycle, handles service discovery and IO pacing, and surfaces events to the app via
+ * [BluetoothEvent].
  *
- * A small “bridge” that wires a device-specific [ScaleDeviceHandler] to the BLE stack
- * via the Blessed library. The adapter owns the Bluetooth session (scan → connect →
- * service discovery → notifications/writes) and exposes a clean, event-driven API to
- * the rest of the app through [ScaleCommunicator].
- *
- * ### What handler authors need to know
- *
- * - **You do NOT manage Bluetooth directly.** Implement a subclass of [ScaleDeviceHandler]
- *   and use its protected helpers:
- *   - `setNotifyOn(service, characteristic)` to subscribe.
- *   - `writeTo(service, characteristic, payload, withResponse)` to send commands.
- *   - `readFrom(service, characteristic)` if the device requires reads.
- *   - `publish(measurement)` when you have a complete result.
- *   - `userInfo("…")` to show human-readable messages (e.g., “Step on the scale…”).
- *
- * - **Lifecycle in your handler:**
- *   - `onConnected(user)` is called after services are discovered and the link is ready.
- *     Enable notifications here and send your init sequence (user/time/unit/etc.).
- *   - `onNotification(uuid, data, user)` is called for each incoming notify packet.
- *     Parse, update state, and call `publish()` for final results.
- *   - `onDisconnected()` is called for cleanup.
- *
- * - **Threading/timing is handled for you.** The adapter serializes BLE I/O with a `Mutex`
- *   and adds small delays between operations to avoid “GATT 133” and write errors.
- *   Don’t add your own blocking sleeps inside the handler; just call the helpers.
- *
- * - **Events to the app:** The adapter surfaces connection state and measurements through
- *   a `SharedFlow<BluetoothEvent>`. You don’t emit those directly—use the handler helpers.
- *
- * ### Responsibilities split
- * - Adapter: scans, connects, discovers services, sets MTU/priority, enforces pacing,
- *   funnels notifications/writes, and reports connection events.
- * - Handler: pure protocol logic for one vendor/model (frame formats, checksums, etc.).
+ * This version additionally supports **broadcast-only** scales (no GATT, advertisement parsing).
+ * For those, the adapter scans, forwards advertisements to the handler, and emits
+ * `BluetoothEvent.Listening` / `BluetoothEvent.BroadcastComplete` around the flow.
  */
 class ModernScaleAdapter(
     private val context: Context,
@@ -223,16 +210,23 @@ class ModernScaleAdapter(
 
     private val TAG = "ModernScaleAdapter"
 
+    // Active timing profile (defaults to Balanced)
     private val tuning: BleTuning = bleTuning ?: BleTuningProfile.Balanced.asTuning()
+    private var broadcastAttached = false
+
+    // Coroutine + Android handlers
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     private val mainHandler = Handler(Looper.getMainLooper())
+
+    // Blessed central manager (lazy)
     private lateinit var central: BluetoothCentralManager
 
+    // Session state
     private var targetAddress: String? = null
     private var currentPeripheral: BluetoothPeripheral? = null
     private var currentUser: ScaleUser? = null
 
-    // Session tracking to correlate logs across reconnects.
+    // Session tracking for log correlation
     private var sessionCounter = 0
     private var sessionId = 0
     private fun newSession() {
@@ -240,7 +234,7 @@ class ModernScaleAdapter(
         LogManager.d(TAG, "session#$sessionId start for $targetAddress")
     }
 
-    // --- I/O pacing (currently internal defaults; see BleTuning above) --------
+    // IO pacing (small gaps reduce GATT 133 and write failures)
     private val ioMutex = Mutex()
     private suspend fun ioGap(ms: Long) { if (ms > 0) delay(ms) }
     private val GAP_BEFORE_NOTIFY = tuning.notifySetupDelayMs
@@ -248,7 +242,7 @@ class ModernScaleAdapter(
     private val GAP_BEFORE_WRITE_NO_RESP = tuning.writeWithoutResponseDelayMs
     private val GAP_AFTER_WRITE = tuning.postWriteDelayMs
 
-    // --- Reconnect smoothing / retry (internal defaults) ----------------------
+    // Reconnect smoothing / retry
     private var lastDisconnectAtMs: Long = 0L
     private var connectAttempts: Int = 0
     private val RECONNECT_COOLDOWN_MS = tuning.reconnectCooldownMs
@@ -257,7 +251,7 @@ class ModernScaleAdapter(
 
     private val connectAfterScanDelayMs = tuning.connectAfterScanDelayMs
 
-    // --- Public streams exposed to the app -----------------------------------
+    // Public streams exposed to the app
     private val _events = MutableSharedFlow<BluetoothEvent>(replay = 1, extraBufferCapacity = 8)
     override fun getEventsFlow(): SharedFlow<BluetoothEvent> = _events.asSharedFlow()
 
@@ -267,17 +261,59 @@ class ModernScaleAdapter(
     private val _isConnected = MutableStateFlow(false)
     override val isConnected: StateFlow<Boolean> = _isConnected.asStateFlow()
 
-    // ---- Blessed callbacks: discovery / link state ---------------------------
+    // --------------------------------------------------------------------------------------------
+    // Blessed callbacks: central / peripheral
+    // --------------------------------------------------------------------------------------------
 
     private val centralCallback = object : BluetoothCentralManagerCallback() {
-        override fun onDiscoveredPeripheral(peripheral: BluetoothPeripheral, scanResult: android.bluetooth.le.ScanResult) {
-            if (peripheral.address == targetAddress) {
-                LogManager.i(TAG, "session#$sessionId Found $targetAddress → stop scan + connect")
-                central.stopScan()
-                scope.launch {
-                    if (connectAfterScanDelayMs > 0) delay(connectAfterScanDelayMs)
-                    central.connectPeripheral(peripheral, peripheralCallback)
+        override fun onDiscoveredPeripheral(
+            peripheral: BluetoothPeripheral,
+            scanResult: android.bluetooth.le.ScanResult
+        ) {
+            if (peripheral.address != targetAddress) return
+
+            val linkMode = resolveLinkModeFor(peripheral, scanResult)
+            val isBroadcast = linkMode != LinkMode.CONNECT_GATT
+
+            if (isBroadcast) {
+                // Attach lazily on first broadcast frame
+                if (!broadcastAttached) {
+                    val driverSettings = FacadeDriverSettings(
+                        facade = settingsFacade,
+                        scope = scope,
+                        deviceAddress = peripheral.address,
+                        handlerNamespace = handler::class.simpleName ?: "Handler"
+                    )
+                    handler.attach(noopTransport, appCallbacks, driverSettings)
+                    broadcastAttached = true
                 }
+
+                when (handler.onAdvertisement(scanResult, currentUser ?: return)) {
+                    BroadcastAction.IGNORED -> Unit
+                    BroadcastAction.CONSUMED_KEEP_SCANNING -> {
+                        _events.tryEmit(
+                            BluetoothEvent.DeviceMessage(
+                                context.getString(R.string.bt_info_waiting_for_measurement),
+                                peripheral.address
+                            )
+                        )
+                    }
+                    BroadcastAction.CONSUMED_STOP -> {
+                        _events.tryEmit(BluetoothEvent.BroadcastComplete(peripheral.address))
+                        stopScanInternal()
+                        cleanup(peripheral.address)
+                        broadcastAttached = false
+                    }
+                }
+                return
+            }
+
+            // GATT path: stop scan + connect
+            LogManager.i(TAG, "session#$sessionId Found $targetAddress → stop scan + connect")
+            central.stopScan()
+            scope.launch {
+                if (connectAfterScanDelayMs > 0) delay(connectAfterScanDelayMs)
+                central.connectPeripheral(peripheral, peripheralCallback)
             }
         }
 
@@ -378,9 +414,8 @@ class ModernScaleAdapter(
             characteristic: android.bluetooth.BluetoothGattCharacteristic,
             status: GattStatus
         ) {
-            if (status == GattStatus.SUCCESS) {
-                LogManager.d(TAG, "session#$sessionId Write OK ${characteristic.uuid}")
-            } else {
+            // Only warn on failure; success is noisy if logged for every packet
+            if (status != GattStatus.SUCCESS) {
                 appCallbacks.onWarn(
                     R.string.bt_warn_write_failed_status,
                     characteristic.uuid.toString(),
@@ -410,8 +445,11 @@ class ModernScaleAdapter(
         }
     }
 
-    // ---- Transport given to ScaleDeviceHandler (serialized + paced) ----------
+    // --------------------------------------------------------------------------------------------
+    // Transport for handlers
+    // --------------------------------------------------------------------------------------------
 
+    // Full transport used by GATT devices
     private val transportImpl = object : ScaleDeviceHandler.Transport {
         override fun setNotifyOn(service: UUID, characteristic: UUID) {
             scope.launch {
@@ -444,12 +482,12 @@ class ModernScaleAdapter(
                         return@withLock
                     }
                     val ch = p.getCharacteristic(service, characteristic)
+                    val type = if (withResponse) WITH_RESPONSE else WITHOUT_RESPONSE
                     if (ch == null) {
                         appCallbacks.onWarn(R.string.bt_warn_characteristic_not_found, characteristic.toString())
                         return@withLock
                     }
-                    val type = if (withResponse) WITH_RESPONSE else WITHOUT_RESPONSE
-                    LogManager.d(TAG, "session#$sessionId Write chr=$characteristic len=${payload.size} type=$type (props=${propsPretty(ch?.properties ?: 0)})")
+                    LogManager.d(TAG, "session#$sessionId Write chr=$characteristic len=${payload.size} type=$type (props=${propsPretty(ch.properties)})")
                     ioGap(if (withResponse) GAP_BEFORE_WRITE_WITH_RESP else GAP_BEFORE_WRITE_NO_RESP)
                     p.writeCharacteristic(service, characteristic, payload, type)
                     ioGap(GAP_AFTER_WRITE)
@@ -476,7 +514,17 @@ class ModernScaleAdapter(
         }
     }
 
-    // ---- App callbacks handed to ScaleDeviceHandler --------------------------
+    // No-op transport used for broadcast-only devices (no GATT operations)
+    private val noopTransport = object : ScaleDeviceHandler.Transport {
+        override fun setNotifyOn(service: UUID, characteristic: UUID) { /* no-op */ }
+        override fun write(service: UUID, characteristic: UUID, payload: ByteArray, withResponse: Boolean) { /* no-op */ }
+        override fun read(service: UUID, characteristic: UUID) { /* no-op */ }
+        override fun disconnect() { stopScanInternal() }
+    }
+
+    // --------------------------------------------------------------------------------------------
+    // App callbacks
+    // --------------------------------------------------------------------------------------------
 
     private val appCallbacks = object : ScaleDeviceHandler.Callbacks {
         override fun onPublish(measurement: ScaleMeasurement) {
@@ -515,12 +563,14 @@ class ModernScaleAdapter(
             context.getString(resId, *args)
     }
 
-    // ---- ScaleCommunicator API (used by the app layer) -----------------------
+    // --------------------------------------------------------------------------------------------
+    // ScaleCommunicator API
+    // --------------------------------------------------------------------------------------------
 
     /**
      * Start a BLE session to the given MAC and bind the session to [scaleUser].
-     * The adapter scans for the exact address, connects when found, and then
-     * delegates protocol work to the bound [ScaleDeviceHandler].
+     * For broadcast-only devices, we attach the handler immediately with a no-op transport,
+     * emit a Listening event, and start scanning.
      */
     override fun connect(address: String, scaleUser: ScaleUser?) {
         scope.launch {
@@ -540,7 +590,7 @@ class ModernScaleAdapter(
             }
             ensureCentral()
 
-            // Cool down between reconnects to avoid Android stack churn.
+            // Cooldown between reconnects to avoid Android stack churn
             val since = SystemClock.elapsedRealtime() - lastDisconnectAtMs
             if (since in 1 until RECONNECT_COOLDOWN_MS) {
                 val wait = RECONNECT_COOLDOWN_MS - since
@@ -559,7 +609,32 @@ class ModernScaleAdapter(
             _isConnected.value = false
             newSession()
 
-            try { central.stopScan() } catch (_: Exception) { /* ignore */ }
+            // Stop any previous scan before starting a new one
+            runCatching { central.stopScan() }
+
+            // Hint only: final decision still happens in onDiscoveredPeripheral via resolveLinkModeFor(...)
+            val isBroadcastPreferred = handler.linkMode != LinkMode.CONNECT_GATT
+
+            if (isBroadcastPreferred) {
+                // Broadcast path: emit Listening and start scanning.
+                // Handler will be attached lazily on first matching advertisement.
+                _events.tryEmit(BluetoothEvent.Listening(address))
+                try {
+                    central.scanForPeripheralsWithAddresses(arrayOf(address))
+                } catch (e: Exception) {
+                    LogManager.e(TAG, "session#$sessionId Failed to start broadcast scan: ${e.message}", e)
+                    _events.tryEmit(
+                        BluetoothEvent.ConnectionFailed(
+                            address,
+                            e.message ?: context.getString(R.string.bt_error_generic)
+                        )
+                    )
+                    cleanup(address)
+                }
+                return@launch
+            }
+
+            // Classic GATT path: scan and connect on discovery
             try {
                 central.scanForPeripheralsWithAddresses(arrayOf(address))
             } catch (e: Exception) {
@@ -575,10 +650,12 @@ class ModernScaleAdapter(
         }
     }
 
+
     /** Gracefully terminate the current BLE session (if any). */
     override fun disconnect() {
         scope.launch {
             currentPeripheral?.let { central.cancelConnection(it) }
+            stopScanInternal()
             cleanup(targetAddress)
         }
     }
@@ -617,7 +694,9 @@ class ModernScaleAdapter(
         }
     }
 
-    // ---- Internals -----------------------------------------------------------
+    // --------------------------------------------------------------------------------------------
+    // Internals
+    // --------------------------------------------------------------------------------------------
 
     private fun ensureCentral() {
         if (!::central.isInitialized) {
@@ -625,11 +704,16 @@ class ModernScaleAdapter(
         }
     }
 
+    private fun stopScanInternal() {
+        runCatching { if (::central.isInitialized) central.stopScan() }
+    }
+
     private fun cleanup(addr: String?) {
         _isConnected.value = false
         _isConnecting.value = false
         currentPeripheral = null
-        // keep targetAddress/currentUser for optional retry
+        broadcastAttached = false
+        // Keep targetAddress/currentUser for optional retry
     }
 
     /** Free resources; should be called when the adapter is no longer needed. */
@@ -652,59 +736,30 @@ class ModernScaleAdapter(
         if ((props and android.bluetooth.BluetoothGattCharacteristic.PROPERTY_EXTENDED_PROPS) != 0) names += "EXTENDED_PROPS"
         return if (names.isEmpty()) props.toString() else names.joinToString("|")
     }
+
+    // --------------------------------------------------------------------------------------------
+    // Helpers
+    // --------------------------------------------------------------------------------------------
+
+    /**
+     * Decide link mode for a discovered peripheral. Uses handler.supportFor() if
+     * the handler exposes it for this device, falling back to handler.linkMode.
+     */
+    private fun resolveLinkModeFor(
+        peripheral: BluetoothPeripheral,
+        scanResult: android.bluetooth.le.ScanResult?
+    ): LinkMode {
+        val record = scanResult?.scanRecord
+        val info = ScannedDeviceInfo(
+            name = peripheral.name,
+            address = peripheral.address,
+            rssi = scanResult?.rssi ?: 0,
+            serviceUuids = record?.serviceUuids?.map { it.uuid } ?: emptyList(),
+            manufacturerData = record?.manufacturerSpecificData,
+            isSupported = false,
+            determinedHandlerDisplayName = null
+        )
+        val support = runCatching { handler.supportFor(info) }.getOrNull()
+        return support?.linkMode ?: handler.linkMode
+    }
 }
-
-/* ---------------------------------------------------------------------------
-   Handler Quick-Start (for implementers)
-   --------------------------------------
-   1) Create a new file: `FooDeviceHandler.kt` extending ScaleDeviceHandler.
-   2) Implement `supportFor(device)` to detect your device by name/advertising.
-   3) In `onConnected(user)`, enable notifications and send your init sequence.
-   4) In `onNotification(uuid, data, user)`, parse frames and call `publish()`.
-   5) Optionally call `userInfo("Step on the scale…")` for UI messages.
-
-   Example skeleton:
-
-   class FooDeviceHandler : ScaleDeviceHandler() {
-       override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
-           val name = device.name ?: return null
-           return if (name.startsWith("FOO-SCALE")) {
-               DeviceSupport(
-                   displayName = "Foo Scale",
-                   capabilities = setOf(DeviceCapability.BODY_COMPOSITION, DeviceCapability.TIME_SYNC),
-                   implemented  = setOf(DeviceCapability.BODY_COMPOSITION)
-               )
-           } else null
-       }
-
-       override fun onConnected(user: ScaleUser) {
-           // Enable NOTIFY on your measurement characteristic
-           val svc = uuid16(0xFFE0)
-           val chr = uuid16(0xFFE4)
-           setNotifyOn(svc, chr)
-
-           // Send any init / user / time commands the device expects
-           val ctrlSvc = uuid16(0xFFE5)
-           val ctrlChr = uuid16(0xFFE9)
-           val cmd = byteArrayOf(/* vendor-specific payload */)
-           writeTo(ctrlSvc, ctrlChr, cmd, withResponse = true)
-
-           userInfo("Step on the scale…")
-       }
-
-       override fun onNotification(characteristic: UUID, data: ByteArray, user: ScaleUser) {
-           // Parse vendor frame(s). When you have a complete result:
-           // val measurement = ScaleMeasurement(...populate...)
-           // publish(measurement)
-       }
-
-       override fun onDisconnected() {
-           // Optional cleanup
-       }
-   }
-
-   Tips:
-   - Do not sleep/block inside the handler; the adapter already sequences and paces I/O.
-   - Prefer small, deterministic parsers per packet type; log unexpected frames.
-   - If your device needs faster/slower pacing, talk to the adapter owner to wire in BleTuning.
---------------------------------------------------------------------------- */

@@ -1,7 +1,19 @@
 /*
  * openScale
- * Copyright (C) 2025 ...
- * GPLv3+
+ * Copyright (C) 2025 olie.xdev <olie.xdeveloper@googlemail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 package com.health.openscale.core.bluetooth.modern
 
@@ -19,7 +31,7 @@ import java.util.UUID
  * Yunmai (SE/Mini) – minimal, event-driven implementation.
  * The base class handles sequencing/IO; this class only knows packets & parsing.
  */
-class YunmaiDeviceHandler(
+class YunmaiHandler(
     private val isMini: Boolean = true // Mini sends fat sometimes inline; SE usually needs calc
 ) : ScaleDeviceHandler() {
 
@@ -49,7 +61,8 @@ class YunmaiDeviceHandler(
         return DeviceSupport(
             displayName = if (isMini) "Yunmai Mini" else "Yunmai SE",
             capabilities = caps,
-            implemented = impl
+            implemented = impl,
+            linkMode = LinkMode.CONNECT_GATT
         )
     }
 

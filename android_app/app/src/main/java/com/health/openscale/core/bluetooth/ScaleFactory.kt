@@ -59,7 +59,8 @@ import com.health.openscale.core.bluetooth.legacy.LegacyScaleAdapter
 import com.health.openscale.core.bluetooth.modern.DeviceSupport
 import com.health.openscale.core.bluetooth.modern.ModernScaleAdapter
 import com.health.openscale.core.bluetooth.modern.StandardWeightProfileHandler
-import com.health.openscale.core.bluetooth.modern.YunmaiDeviceHandler
+import com.health.openscale.core.bluetooth.modern.Yoda1Handler
+import com.health.openscale.core.bluetooth.modern.YunmaiHandler
 import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.core.utils.LogManager
 import com.health.openscale.core.service.ScannedDeviceInfo
@@ -83,8 +84,9 @@ class ScaleFactory @Inject constructor(
     // List of modern Kotlin-based device handlers.
     // These are checked first for device compatibility.
     private val modernKotlinHandlers: List<ScaleDeviceHandler> = listOf(
-        YunmaiDeviceHandler(isMini = false),
-        YunmaiDeviceHandler(isMini = true),
+        YunmaiHandler(isMini = false),
+        YunmaiHandler(isMini = true),
+        Yoda1Handler(),
         StandardWeightProfileHandler()
     )
 

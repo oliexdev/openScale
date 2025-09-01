@@ -260,36 +260,79 @@ class BleConnector(
         LogManager.d(TAG, "BluetoothEvent received: $event for $deviceDisplayName")
 
         when (event) {
-            is BluetoothEvent.Connected -> {
-                LogManager.i(TAG, "Event: Connected to ${event.deviceName ?: deviceDisplayName} (${event.deviceAddress})")
-                disconnectTimeoutJob?.cancel() // Successfully connected, timeout no longer needed.
-                if (_connectionStatus.value != ConnectionStatus.CONNECTED) {
-                    _connectionStatus.value = ConnectionStatus.CONNECTED
-                    _connectedDeviceAddress.value = event.deviceAddress
-                    _connectedDeviceName.value = event.deviceName ?: deviceInfo.name // Prefer event name.
-                    _snackbarEvents.tryEmit(SnackbarEvent(messageResId = R.string.bluetooth_connector_connected_to, messageFormatArgs = listOf(event.deviceName ?: deviceDisplayName)))
-                    _connectionError.value = null
-                }
+            is BluetoothEvent.Listening -> {
+                // Broadcast-only: scan started for target MAC (no GATT connection)
+                LogManager.i(TAG, "Event: Listening for broadcasts from ${event.deviceAddress}")
+                disconnectTimeoutJob?.cancel() // Don't race a connect-timeout while we're listening
+                // Treat 'listening' as connecting so existing UI states keep working
+                _connectionStatus.value = ConnectionStatus.BROADCAST_LISTENING
+                _connectedDeviceAddress.value = event.deviceAddress
+                _connectedDeviceName.value = deviceInfo.name ?: deviceDisplayName
+                _snackbarEvents.tryEmit(
+                    SnackbarEvent(
+                        messageResId = R.string.bluetooth_connector_listening_for_device,
+                        messageFormatArgs = listOf(deviceDisplayName)
+                    )
+                )
             }
-            is BluetoothEvent.Disconnected -> {
-                LogManager.i(TAG, "Event: Disconnected from ${event.deviceAddress}. Reason: ${event.reason}")
-                disconnectTimeoutJob?.cancel() // Disconnect event received, timeout no longer needed.
-                // Only act if this disconnect event is for the currently tracked device or if we are in the process of disconnecting.
-                if (_connectedDeviceAddress.value == event.deviceAddress || _connectionStatus.value == ConnectionStatus.DISCONNECTING) {
+
+            is BluetoothEvent.BroadcastComplete -> {
+                // Broadcast-only: final/stabilized value was processed; adapter stopped scanning
+                LogManager.i(TAG, "Event: BroadcastComplete for ${event.deviceAddress}")
+                disconnectTimeoutJob?.cancel()
+                if (_connectedDeviceAddress.value == event.deviceAddress ||
+                    _connectionStatus.value == ConnectionStatus.CONNECTING) {
                     _connectionStatus.value = ConnectionStatus.DISCONNECTED
                     _connectedDeviceAddress.value = null
                     _connectedDeviceName.value = null
-                    // Optionally: _connectionError.value = "Disconnected: ${event.reason}"
+                    _snackbarEvents.tryEmit(
+                        SnackbarEvent(
+                            messageResId = R.string.bluetooth_connector_broadcast_complete,
+                            messageFormatArgs = listOf(deviceDisplayName)
+                        )
+                    )
+                    releaseActiveCommunicator(logPrefix = "BroadcastComplete: ")
+                } else {
+                    LogManager.w(TAG, "BroadcastComplete for unexpected address ${event.deviceAddress} (state=${_connectionStatus.value})")
+                }
+            }
+
+            is BluetoothEvent.Connected -> {
+                LogManager.i(TAG, "Event: Connected to ${event.deviceName ?: deviceDisplayName} (${event.deviceAddress})")
+                disconnectTimeoutJob?.cancel()
+                if (_connectionStatus.value != ConnectionStatus.CONNECTED) {
+                    _connectionStatus.value = ConnectionStatus.CONNECTED
+                    _connectedDeviceAddress.value = event.deviceAddress
+                    _connectedDeviceName.value = event.deviceName ?: deviceInfo.name
+                    _snackbarEvents.tryEmit(
+                        SnackbarEvent(
+                            messageResId = R.string.bluetooth_connector_connected_to,
+                            messageFormatArgs = listOf(event.deviceName ?: deviceDisplayName)
+                        )
+                    )
+                    _connectionError.value = null
+                }
+            }
+
+            is BluetoothEvent.Disconnected -> {
+                LogManager.i(TAG, "Event: Disconnected from ${event.deviceAddress}. Reason: ${event.reason}")
+                disconnectTimeoutJob?.cancel()
+                if (_connectedDeviceAddress.value == event.deviceAddress ||
+                    _connectionStatus.value == ConnectionStatus.DISCONNECTING) {
+                    _connectionStatus.value = ConnectionStatus.DISCONNECTED
+                    _connectedDeviceAddress.value = null
+                    _connectedDeviceName.value = null
                     releaseActiveCommunicator(logPrefix = "Disconnected event: ")
                 } else {
                     LogManager.w(TAG, "Disconnected event for unexpected address ${event.deviceAddress} or status ${_connectionStatus.value}")
                 }
             }
+
             is BluetoothEvent.ConnectionFailed -> {
                 LogManager.w(TAG, "Event: Connection failed for ${event.deviceAddress}. Reason: ${event.error}")
-                disconnectTimeoutJob?.cancel() // Error, timeout no longer needed.
-                // Check if this error is relevant to the current connection attempt.
-                if (_connectedDeviceAddress.value == event.deviceAddress || _connectionStatus.value == ConnectionStatus.CONNECTING) {
+                disconnectTimeoutJob?.cancel()
+                if (_connectedDeviceAddress.value == event.deviceAddress ||
+                    _connectionStatus.value == ConnectionStatus.CONNECTING) {
                     _connectionStatus.value = ConnectionStatus.FAILED
                     _connectionError.value = "Connection to $deviceDisplayName failed: ${event.error}"
                     _connectedDeviceAddress.value = null
@@ -299,19 +342,26 @@ class BleConnector(
                     LogManager.w(TAG, "ConnectionFailed event for unexpected address ${event.deviceAddress} or status ${_connectionStatus.value}")
                 }
             }
+
             is BluetoothEvent.MeasurementReceived -> {
                 LogManager.i(TAG, "Event: Measurement received from $deviceDisplayName: Weight ${event.measurement.weight}")
                 saveMeasurementFromEvent(event.measurement, event.deviceAddress, deviceDisplayName)
             }
+
             is BluetoothEvent.DeviceMessage -> {
                 LogManager.d(TAG, "Event: Message from $deviceDisplayName: ${event.message}")
-                _snackbarEvents.tryEmit(SnackbarEvent(messageResId = R.string.bluetooth_connector_device_message, messageFormatArgs = listOf(deviceDisplayName, event.message)))
+                _snackbarEvents.tryEmit(
+                    SnackbarEvent(
+                        messageResId = R.string.bluetooth_connector_device_message,
+                        messageFormatArgs = listOf(deviceDisplayName, event.message)
+                    )
+                )
             }
+
             is BluetoothEvent.Error -> {
                 LogManager.e(TAG, "Event: Error from $deviceDisplayName: ${event.error}")
                 _connectionError.value = "Error with $deviceDisplayName: ${event.error}"
-                // Consider setting status to FAILED if it's a critical error
-                // that impacts/loses the connection.
+                // Optional: set status to FAILED if appropriate for your UX.
             }
 
             is BluetoothEvent.UserInteractionRequired -> {
@@ -321,6 +371,7 @@ class BleConnector(
             }
         }
     }
+
 
     /**
      * Forwards the user's feedback from an interaction to the active [ScaleCommunicator].

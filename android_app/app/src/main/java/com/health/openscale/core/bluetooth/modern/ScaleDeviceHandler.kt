@@ -1,10 +1,23 @@
 /*
  * openScale
- * Copyright (C) 2025 ...
- * GPLv3+
+ * Copyright (C) 2025 olie.xdev <olie.xdeveloper@googlemail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 package com.health.openscale.core.bluetooth.modern
 
+import android.bluetooth.le.ScanResult
 import android.os.Handler
 import androidx.annotation.StringRes
 import com.health.openscale.R
@@ -20,16 +33,18 @@ import kotlin.math.min
 /**
  * What a handler declares about a device it supports.
  *
- * @property displayName Human-readable name shown in the UI (“Yunmai Mini”, “Foo SmartScale”).
+ * @property displayName Human-friendly name shown in the UI (e.g., "Yunmai Mini").
  * @property capabilities Features the device *can* support in theory.
  * @property implemented  Features this handler actually implements today (may be a subset).
- * @property bleTuning Optional: suggest link timing/retry preferences for flaky devices. See [BleTuning] in `ModernScaleAdapter`. The adapter may honor this in the future.
+ * @property bleTuning    Optional link timing/retry preferences (see [BleTuning]).
+ * @property linkMode     Whether the device uses GATT or broadcast-only advertisements.
  */
 data class DeviceSupport(
     val displayName: String,
     val capabilities: Set<DeviceCapability>,
     val implemented: Set<DeviceCapability>,
-    val bleTuning: BleTuning? = null
+    val bleTuning: BleTuning? = null,
+    val linkMode: LinkMode = LinkMode.CONNECT_GATT
 )
 
 /** High-level capabilities a scale might offer. */
@@ -44,21 +59,32 @@ enum class DeviceCapability {
 }
 
 /**
+ * Defines whether a device communicates via a GATT connection
+ * or only via broadcast advertisements.
+ */
+enum class LinkMode { CONNECT_GATT, BROADCAST_ONLY, AUTO }
+
+/**
+ * Signals how the handler consumed an advertisement.
+ * - IGNORED: payload not relevant; adapter keeps scanning silently.
+ * - CONSUMED_KEEP_SCANNING: payload processed, but we want to continue scanning (e.g., waiting for stability).
+ * - CONSUMED_STOP: final payload processed; adapter should stop scanning and finish the session.
+ */
+enum class BroadcastAction { IGNORED, CONSUMED_KEEP_SCANNING, CONSUMED_STOP }
+
+/**
  * # ScaleDeviceHandler
  *
  * Minimal base class for a **device-specific** BLE protocol handler.
  *
- * - The app (via `ModernScaleAdapter`) injects a BLE `Transport` and `Callbacks`.
- * - Your subclass implements three core methods:
- *   - [onConnected] – enable notifications, send init/user/time commands.
- *   - [onNotification] – parse frames and call [publish] when you have a complete result.
- *   - [onDisconnected] – optional cleanup.
+ * For GATT devices, the app (via `ModernScaleAdapter`) injects a BLE [Transport] and [Callbacks],
+ * then calls [onConnected] and forwards notifications to [onNotification].
  *
- * > You do **not** talk to Android BLE directly. Use the protected helpers:
- * > [setNotifyOn], [writeTo], [readFrom], [publish], [requestDisconnect], [uuid16].
+ * For broadcast-only devices, the adapter attaches a **no-op** transport and forwards
+ * advertisement frames to [onAdvertisement]. The handler can call [publish] to emit results.
  *
- * Threading: the adapter already serializes and paces BLE I/O. Avoid sleeps or blocking work
- * inside your handler; just call the helpers in the order your protocol requires.
+ * Threading: the adapter serializes and paces BLE I/O. Avoid sleeps or blocking work inside your
+ * handler; just call the helpers in the order your protocol requires.
  */
 abstract class ScaleDeviceHandler {
 
@@ -69,6 +95,12 @@ abstract class ScaleDeviceHandler {
      * Return a [DeviceSupport] description if yes, or `null` if not.
      */
     abstract fun supportFor(device: ScannedDeviceInfo): DeviceSupport?
+
+    /**
+     * Declares the preferred link mode. Concrete handlers can override this, but the adapter may
+     * also choose based on [DeviceSupport.linkMode].
+     */
+    open val linkMode: LinkMode = LinkMode.CONNECT_GATT
 
     // --- Lifecycle entry points called by the adapter -------------------------
 
@@ -96,7 +128,7 @@ abstract class ScaleDeviceHandler {
 
     internal fun handleNotification(characteristic: UUID, data: ByteArray) {
         val u = currentUser ?: return
-        logD("← notify chr=$characteristic len=${data.size} ${data.toHexPreview(24)}")
+        logD("\u2190 notify chr=$characteristic len=${data.size} ${data.toHexPreview(24)}")
         try {
             onNotification(characteristic, data, u)
         } catch (t: Throwable) {
@@ -130,20 +162,26 @@ abstract class ScaleDeviceHandler {
 
     // --- To be implemented by concrete handlers --------------------------------
 
-    /** Called after services are discovered and the link is ready for I/O. */
+    /** Called after services are discovered and the link is ready for I/O (GATT devices only). */
     protected abstract fun onConnected(user: ScaleUser)
 
-    /** Called for every incoming notification. Parse and eventually [publish] a result. */
+    /** Called for each incoming notification (GATT devices only). */
     protected abstract fun onNotification(characteristic: UUID, data: ByteArray, user: ScaleUser)
 
     /** Optional cleanup hook. */
     protected open fun onDisconnected() = Unit
 
+    /**
+     * Called for each advertisement seen for the target device (broadcast-only devices).
+     * Default implementation ignores the advertisement.
+     */
+    open fun onAdvertisement(result: ScanResult, user: ScaleUser): BroadcastAction = BroadcastAction.IGNORED
+
     // --- Protected helper methods (use these from your handler) ----------------
 
     /** Enable notifications for a characteristic. */
     protected fun setNotifyOn(service: UUID, characteristic: UUID) {
-        logD("→ setNotifyOn svc=$service chr=$characteristic")
+        logD("\u2192 setNotifyOn svc=$service chr=$characteristic")
         transport?.setNotifyOn(service, characteristic)
             ?: logW("setNotifyOn called without transport")
     }
@@ -158,28 +196,28 @@ abstract class ScaleDeviceHandler {
         payload: ByteArray,
         withResponse: Boolean = true
     ) {
-        logD("→ write svc=$service chr=$characteristic len=${payload.size} withResp=$withResponse ${payload.toHexPreview(24)}")
+        logD("\u2192 write svc=$service chr=$characteristic len=${payload.size} withResp=$withResponse ${payload.toHexPreview(24)}")
         transport?.write(service, characteristic, payload, withResponse)
             ?: logW("writeTo called without transport")
     }
 
     /** Read a characteristic (rare for scales; most data comes via NOTIFY). */
     protected fun readFrom(service: UUID, characteristic: UUID) {
-        logD("→ read svc=$service chr=$characteristic")
+        logD("\u2192 read svc=$service chr=$characteristic")
         transport?.read(service, characteristic)
             ?: logW("readFrom called without transport")
     }
 
     /** Publish a fully parsed measurement to the app. */
     protected fun publish(measurement: ScaleMeasurement) {
-        logI("← publish measurement")
+        logI("\u2190 publish measurement")
         callbacks?.onPublish(measurement)
             ?: logW("publish called without callbacks")
     }
 
     /** Ask the adapter to terminate the link. */
     protected fun requestDisconnect() {
-        logD("→ requestDisconnect()")
+        logD("\u2192 requestDisconnect()")
         transport?.disconnect()
     }
 
@@ -214,6 +252,8 @@ abstract class ScaleDeviceHandler {
     protected fun loadConsentForScaleIndex(scaleIndex: Int): Int =
         settings.getInt("userMap/consentByIndex/$scaleIndex", -1)
 
+    protected fun settingsGetInt(key: String, default: Int = -1): Int = settings.getInt(key, default)
+    protected fun settingsPutInt(key: String, value: Int) { settings.putInt(key, value) }
 
     // --- Logging shortcuts (route to LogManager under a single TAG) ------------
 
