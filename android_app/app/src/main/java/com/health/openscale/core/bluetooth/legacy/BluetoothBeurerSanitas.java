@@ -863,7 +863,7 @@ public class BluetoothBeurerSanitas extends BluetoothCommunication {
                 }
                 else {
                     LogManager.d(TAG, "Measure command successfully received");
-                    sendMessage(R.string.info_step_on_scale, 0);
+                    sendMessage(R.string.bt_info_step_on_scale, 0);
                     // More data should be incoming, so make sure we wait
                     stopMachineState();
                 }

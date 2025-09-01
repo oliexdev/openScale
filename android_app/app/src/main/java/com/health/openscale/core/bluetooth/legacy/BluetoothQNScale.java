@@ -151,7 +151,7 @@ public class BluetoothQNScale extends BluetoothCommunication {
                 }
                 break;
             case 4:
-                sendMessage(R.string.info_step_on_scale, 0);
+                sendMessage(R.string.bt_info_step_on_scale, 0);
                 break;
             /*case 5:
                 // send stop command to scale (0x1f05151049)

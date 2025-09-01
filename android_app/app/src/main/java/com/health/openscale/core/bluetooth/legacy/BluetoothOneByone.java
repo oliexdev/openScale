@@ -102,7 +102,7 @@ public class BluetoothOneByone extends BluetoothCommunication {
                 // 2-byte notification value f2 00 follows last historic measurement
                 break;
             case 4:
-                sendMessage(R.string.info_step_on_scale, 0);
+                sendMessage(R.string.bt_info_step_on_scale, 0);
                 break;
             default:
                 return false;

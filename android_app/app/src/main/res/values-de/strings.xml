@@ -228,7 +228,6 @@
 
     <!-- Bluetooth -->
     <string name="info_bluetooth_connection_error_scale_offline">Verbindung zur Waage fehlgeschlagen, bitte stellen Sie sicher, dass sie eingeschaltet ist.</string>
-    <string name="info_step_on_scale">Bitte barfuß auf die Waage steigen</string>
     <string name="fallback_device_name_saved_scale">gespeicherte Waage</string>
     <string name="bluetooth_action_connecting_disconnecting_desc">Bluetooth-Verarbeitung</string>
     <string name="bluetooth_action_no_scale_saved_desc">Bluetooth-Waage einrichten</string>
@@ -563,4 +562,46 @@
     <string name="dialog_bt_enter_valid_code_prompt">Bitte einen gültigen Code eingeben.</string>
     <string name="saved_measurements_message">%1$d Messungen gespeichert</string>
 
+    <!-- Allgemeine Infos -->
+    <string name="bt_info_step_on_scale">Bitte barfuß auf die Waage steigen</string>
+
+    <!-- Mapping / Consent -->
+    <string name="bt_info_using_existing_mapping">Bestehende Zuordnung verwenden: App-Benutzer %1$d ↔ Waagen-Slot %2$d.</string>
+    <string name="bt_info_consent_needed">Bitte den Consent-Code für Slot %1$d eingeben.</string>
+    <string name="bt_info_read_only_mode_no_consent">Kein Consent-Code vorhanden. Messungen können gelesen werden, Benutzereinstellungen können jedoch nicht geändert werden.</string>
+    <string name="bt_info_suggest_create_new_user">Für den vollen Funktionsumfang bitte einen neuen Benutzer auf der Waage anlegen.</string>
+    <string name="bt_info_register_new_user_started">Neuen Benutzer auf der Waage anlegen …</string>
+    <string name="bt_info_no_mapping_creating_user">Keine Zuordnung gefunden; neuer Benutzer wird auf der Waage erstellt…</string>
+    <string name="bt_info_waiting_for_measurements">Warte auf Messung über Benachrichtigungen.</string>
+    <string name="bt_info_linked_app_user_to_slot">App-Benutzer %1$d mit Waagen-Slot %2$d verknüpft.</string>
+
+    <!-- Warnungen -->
+    <string name="bt_warn_low_battery">Batterie der Waage ist schwach (%1$d%%).</string>
+    <string name="bt_warn_register_failed_with_code">Benutzeranlage auf der Waage fehlgeschlagen (Code %1$d).</string>
+    <string name="bt_warn_slots_full">Die Waage hat keine freien Benutzerslots. Bitte einen Benutzer auf dem Gerät löschen und erneut versuchen.</string>
+    <string name="bt_warn_notify_failed">Benachrichtigungen für %1$s konnten nicht aktiviert werden.</string>
+    <string name="bt_warn_write_failed">Schreiben auf %1$s fehlgeschlagen.</string>
+    <string name="bt_warn_notify_state_failed">Ändern des Benachrichtigungszustands für %1$s fehlgeschlagen.</string>
+    <string name="bt_warn_consent_wrong_retry">Einwilligungscode wurde nicht akzeptiert. Bitte prüfen und erneut versuchen.</string>
+
+    <!-- Fehler -->
+    <string name="bt_error_ucp_not_authorized">Consent-Code wurde nicht akzeptiert. Bitte prüfen und erneut eingeben.</string>
+    <string name="bt_error_delivery_user_feedback">Fehler beim Übermitteln der Nutzerantwort: %1$s</string>
+    <string name="bt_info_reconnecting_try">Erneuter Verbindungsversuch … (Versuch %1$d/%2$d)</string>
+    <string name="bt_info_waiting_for_measurement">Warte auf Messwerte über Benachrichtigungen.</string>
+
+    <!-- Adapter: warnings/errors -->
+    <string name="bt_warn_no_peripheral_for_setnotify">Kein Gerät für setNotifyOn(%1$s)</string>
+    <string name="bt_warn_characteristic_not_found">Charakteristik %1$s nicht gefunden</string>
+    <string name="bt_warn_no_peripheral_for_write">Kein Gerät für write(%1$s)</string>
+    <string name="bt_warn_no_peripheral_for_read">Kein Gerät für read(%1$s)</string>
+    <string name="bt_warn_write_failed_status">Schreiben auf %1$s fehlgeschlagen: %2$s</string>
+    <string name="bt_warn_notify_state_failed_status">Benachrichtigungsstatus für %1$s fehlgeschlagen: %2$s</string>
+
+    <!-- Adapter: generic errors -->
+    <string name="bt_error_no_user_selected">Kein Benutzer ausgewählt</string>
+    <string name="bt_error_generic">Fehler</string>
+
+    <string name="bt_error_handler_connect_failed">Handler-Fehler beim Verbinden: %1$s</string>
+    <string name="bt_error_handler_parse_error">Handler-Parserfehler für %1$s: %2$s</string>
 </resources>

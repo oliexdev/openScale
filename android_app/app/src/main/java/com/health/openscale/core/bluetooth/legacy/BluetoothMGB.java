@@ -114,7 +114,7 @@ public class BluetoothMGB extends BluetoothCommunication {
                 break;
 
             case 7:
-                sendMessage(R.string.info_step_on_scale, 0);
+                sendMessage(R.string.bt_info_step_on_scale, 0);
                 break;
 
             default:

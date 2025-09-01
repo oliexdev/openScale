@@ -18,7 +18,6 @@
 package com.health.openscale.core.bluetooth
 
 import android.content.Context
-import com.health.openscale.core.bluetooth.modern.DummyScaleHandler
 import com.health.openscale.core.bluetooth.modern.ScaleDeviceHandler
 import com.health.openscale.core.bluetooth.legacy.BluetoothActiveEraBF06
 import com.health.openscale.core.bluetooth.legacy.BluetoothBeurerBF105
@@ -57,6 +56,11 @@ import com.health.openscale.core.bluetooth.legacy.BluetoothTrisaBodyAnalyze
 import com.health.openscale.core.bluetooth.legacy.BluetoothYoda1Scale
 import com.health.openscale.core.bluetooth.legacy.BluetoothYunmaiSE_Mini
 import com.health.openscale.core.bluetooth.legacy.LegacyScaleAdapter
+import com.health.openscale.core.bluetooth.modern.DeviceSupport
+import com.health.openscale.core.bluetooth.modern.ModernScaleAdapter
+import com.health.openscale.core.bluetooth.modern.StandardWeightProfileHandler
+import com.health.openscale.core.bluetooth.modern.YunmaiDeviceHandler
+import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.core.utils.LogManager
 import com.health.openscale.core.service.ScannedDeviceInfo
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -71,6 +75,7 @@ import javax.inject.Singleton
 @Singleton
 class ScaleFactory @Inject constructor(
     @ApplicationContext private val applicationContext: Context,
+    private val settingsFacade: SettingsFacade,
     private val legacyAdapterFactory: LegacyScaleAdapter.Factory
 ) {
     private val TAG = "ScaleHandlerFactory"
@@ -78,7 +83,9 @@ class ScaleFactory @Inject constructor(
     // List of modern Kotlin-based device handlers.
     // These are checked first for device compatibility.
     private val modernKotlinHandlers: List<ScaleDeviceHandler> = listOf(
-        DummyScaleHandler("Test")     // Recognizes devices with "Test" in their name
+        YunmaiDeviceHandler(isMini = false),
+        YunmaiDeviceHandler(isMini = true),
+        StandardWeightProfileHandler()
     )
 
     /**
@@ -287,18 +294,12 @@ class ScaleFactory @Inject constructor(
      * @param handler The [ScaleDeviceHandler] that can handle the device.
      * @return A [ScaleCommunicator] instance if one can be provided by or for the handler, otherwise null.
      */
-    private fun createModernCommunicator(handler: ScaleDeviceHandler): ScaleCommunicator? {
-        LogManager.i(TAG, "Attempting to create modern communicator for handler '${handler.getDriverName()}'.")
-        // If the ScaleDeviceHandler itself is a ScaleCommunicator:
-        if (handler is ScaleCommunicator) {
-            return handler
-        } else {
-            // Placeholder: Logic to wrap the handler in a specific "ModernScaleCommunicator"
-            // if the handler itself isn't a ScaleCommunicator.
-            // e.g., return ModernScaleAdapter(applicationContext, handler, databaseRepository)
-            LogManager.w(TAG, "Modern handler '${handler.getDriverName()}' is not a ScaleCommunicator, and no wrapper is implemented.")
-            return null
-        }
+    private fun createModernCommunicator(
+        handler: ScaleDeviceHandler,
+        support: DeviceSupport
+    ): ScaleCommunicator? {
+        LogManager.i(TAG, "Creating ModernScaleAdapter for handler '${handler.javaClass.simpleName}'.")
+        return ModernScaleAdapter(context = applicationContext, settingsFacade = settingsFacade, handler = handler, bleTuning = support.bleTuning)
     }
 
     /**
@@ -309,31 +310,23 @@ class ScaleFactory @Inject constructor(
      * @return A [ScaleCommunicator] instance if a suitable handler or adapter is found, otherwise null.
      */
     fun createCommunicator(deviceInfo: ScannedDeviceInfo): ScaleCommunicator? {
-        // The `determinedHandlerDisplayName` from ScannedDeviceInfo can be useful here if it was
-        // specifically set by getSupportingHandlerInfo for a known handler.
-        // Otherwise, `deviceInfo.name` is the primary identifier for the logic here.
         val primaryIdentifier = deviceInfo.name ?: "UnknownDevice"
         LogManager.d(TAG, "createCommunicator: Searching for communicator for '${primaryIdentifier}' (${deviceInfo.address}). Handler hint: '${deviceInfo.determinedHandlerDisplayName}'")
 
         // 1. Check if a modern Kotlin handler explicitly supports the device.
         for (handler in modernKotlinHandlers) {
-            if (handler.canHandleDevice(
-                    deviceName = deviceInfo.name,
-                    deviceAddress = deviceInfo.address,
-                    serviceUuids = deviceInfo.serviceUuids,
-                    manufacturerData = deviceInfo.manufacturerData
-                )) {
-                LogManager.i(TAG, "Modern Kotlin handler '${handler.getDriverName()}' claims '${primaryIdentifier}'.")
-                val modernCommunicator = createModernCommunicator(handler)
-                if (modernCommunicator != null) {
-                    LogManager.i(TAG, "Modern communicator '${modernCommunicator.javaClass.simpleName}' created for '${primaryIdentifier}'.")
-                    return modernCommunicator
-                } else {
-                    LogManager.w(TAG, "Modern handler '${handler.getDriverName()}' claimed '${primaryIdentifier}', but failed to create a communicator.")
+            val support = handler.supportFor(deviceInfo)
+            if (support != null) {
+                LogManager.i(TAG, "Modern handler '${support.displayName}' supports '$primaryIdentifier'.")
+                val modern = createModernCommunicator(handler, support)
+                if (modern != null) {
+                    LogManager.i(TAG, "Modern communicator '${modern.javaClass.simpleName}' created for '$primaryIdentifier'.")
+                    return modern
                 }
+                LogManager.w(TAG, "Modern handler '${support.displayName}' supports '$primaryIdentifier', but no communicator is available.")
             }
         }
-        LogManager.d(TAG, "No modern Kotlin handler actively claimed '${primaryIdentifier}' or could create a communicator.")
+        LogManager.d(TAG, "No modern Kotlin handler actively supported '$primaryIdentifier' or could create a communicator.")
 
         // 2. Fallback to legacy adapter if no modern handler matched or created a communicator.
         LogManager.i(TAG, "Attempting fallback to legacy adapter for identifier '${deviceInfo.name}'.")
@@ -357,9 +350,8 @@ class ScaleFactory @Inject constructor(
     fun getSupportingHandlerInfo(deviceInfo : ScannedDeviceInfo): Pair<Boolean, String?> {
         // Check modern handlers first
         for (handler in modernKotlinHandlers) {
-            if (handler.canHandleDevice(deviceInfo.name, deviceInfo.address, deviceInfo.serviceUuids, deviceInfo.manufacturerData)) {
-                return true to handler.getDriverName() // The "driver name" of the modern handler
-            }
+            val support = handler.supportFor(deviceInfo)
+            if (support != null) return true to support.displayName
         }
 
         // Then check if a legacy driver would exist based on the name

@@ -78,7 +78,7 @@ public class BluetoothMedisanaBS44x extends BluetoothCommunication {
                 writeBytes(WEIGHT_MEASUREMENT_SERVICE, CMD_MEASUREMENT_CHARACTERISTIC, magicBytes);
                 break;
             case 4:
-                sendMessage(R.string.info_step_on_scale, 0);
+                sendMessage(R.string.bt_info_step_on_scale, 0);
                 break;
             default:
                 return false;

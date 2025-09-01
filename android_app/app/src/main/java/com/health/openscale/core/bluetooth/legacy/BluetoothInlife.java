@@ -88,7 +88,7 @@ public class BluetoothInlife extends BluetoothCommunication {
                 sendCommand(0xd2, level, sex, userId, age, height);
                 break;
             case 2:
-                sendMessage(R.string.info_step_on_scale, 0);
+                sendMessage(R.string.bt_info_step_on_scale, 0);
                 break;
             default:
                 return false;

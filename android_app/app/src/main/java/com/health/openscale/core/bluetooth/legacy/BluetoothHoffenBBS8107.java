@@ -92,7 +92,7 @@ public class BluetoothHoffenBBS8107 extends BluetoothCommunication {
 
             case 3:
                 // Start measurement
-                sendMessage(R.string.info_step_on_scale, 0);
+                sendMessage(R.string.bt_info_step_on_scale, 0);
 
                 // Wait until measurement is done
                 stopMachineState();

@@ -1,222 +1,304 @@
 /*
  * openScale
- * Copyright (C) 2025 olie.xdev <olie.xdeveloper@googlemail.com>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * Copyright (C) 2025 ...
+ * GPLv3+
  */
 package com.health.openscale.core.bluetooth.modern
 
-import android.util.SparseArray
+import android.os.Handler
+import androidx.annotation.StringRes
+import com.health.openscale.R
+import com.health.openscale.core.bluetooth.BluetoothEvent
 import com.health.openscale.core.bluetooth.BluetoothEvent.UserInteractionType
-import com.health.openscale.core.data.MeasurementTypeKey // Required for DeviceValue
-import kotlinx.coroutines.flow.Flow
+import com.health.openscale.core.bluetooth.data.ScaleMeasurement
+import com.health.openscale.core.bluetooth.data.ScaleUser
+import com.health.openscale.core.service.ScannedDeviceInfo
+import com.health.openscale.core.utils.LogManager
 import java.util.UUID
-
-// ---- Data classes for abstracting measurement data provided by the handler ----
+import kotlin.math.min
 
 /**
- * Represents a single value of a specific measurement type from the device.
- * @param typeKey The key identifying the type of measurement (e.g., weight, body fat).
- * @param value The actual value of the measurement.
+ * What a handler declares about a device it supports.
+ *
+ * @property displayName Human-readable name shown in the UI (“Yunmai Mini”, “Foo SmartScale”).
+ * @property capabilities Features the device *can* support in theory.
+ * @property implemented  Features this handler actually implements today (may be a subset).
+ * @property bleTuning Optional: suggest link timing/retry preferences for flaky devices. See [BleTuning] in `ModernScaleAdapter`. The adapter may honor this in the future.
  */
-data class DeviceValue(
-    val typeKey: MeasurementTypeKey,
-    val value: Any
+data class DeviceSupport(
+    val displayName: String,
+    val capabilities: Set<DeviceCapability>,
+    val implemented: Set<DeviceCapability>,
+    val bleTuning: BleTuning? = null
 )
 
-/**
- * Represents a complete measurement reading from the device.
- * @param timestamp The time the measurement was taken, in milliseconds since epoch. Defaults to current time.
- * @param values A list of [DeviceValue] objects representing the different components of the measurement.
- * @param deviceIdentifier An optional identifier for the device that produced the measurement (e.g., MAC address).
- * @param scaleUserIndex Optional: Indicates if this measurement originates from a specific user profile on the scale.
- *                       The value is the index/ID of the user on the scale, if known.
- *                       Can be useful for later assignment or filtering of measurements.
- * @param isStableMeasurement Optional: Indicates if this measurement is a "stable" or "final" reading.
- *                            Some scales send intermediate values before the final weight is determined.
- *                            Defaults to true if not otherwise specified.
- */
-data class DeviceMeasurement(
-    val timestamp: Long = System.currentTimeMillis(),
-    val values: List<DeviceValue>,
-    val deviceIdentifier: String? = null,
-    val scaleUserIndex: Int? = null,
-    val isStableMeasurement: Boolean = true
-)
-
-// ---- End of data classes for abstraction ----
-
-/**
- * Represents the data provided by a handler for selecting a user on the scale.
- * Handler implementations should derive a more specific data class or use this as a base.
- */
-interface ScaleUserListItem {
-    /** Text to be displayed in the UI for this user item. */
-    val displayData: String
-    /** The internal ID that the handler requires to identify this user on the scale. */
-    val scaleInternalId: Any
+/** High-level capabilities a scale might offer. */
+enum class DeviceCapability {
+    BODY_COMPOSITION,   // fat / water / muscle / bone / ...
+    TIME_SYNC,          // set device clock
+    USER_SYNC,          // create/select users on the scale
+    HISTORY_READ,       // read stored measurements
+    LIVE_WEIGHT_STREAM, // live/unstable weight updates
+    UNIT_CONFIG,        // switch kg/lb/st on device
+    BATTERY_LEVEL       // read battery % / state
 }
 
 /**
- * Example implementation for a generic user list item.
- * @param displayData Text to be displayed in the UI.
- * @param scaleInternalId The internal ID used by the scale/handler.
+ * # ScaleDeviceHandler
+ *
+ * Minimal base class for a **device-specific** BLE protocol handler.
+ *
+ * - The app (via `ModernScaleAdapter`) injects a BLE `Transport` and `Callbacks`.
+ * - Your subclass implements three core methods:
+ *   - [onConnected] – enable notifications, send init/user/time commands.
+ *   - [onNotification] – parse frames and call [publish] when you have a complete result.
+ *   - [onDisconnected] – optional cleanup.
+ *
+ * > You do **not** talk to Android BLE directly. Use the protected helpers:
+ * > [setNotifyOn], [writeTo], [readFrom], [publish], [requestDisconnect], [uuid16].
+ *
+ * Threading: the adapter already serializes and paces BLE I/O. Avoid sleeps or blocking work
+ * inside your handler; just call the helpers in the order your protocol requires.
  */
-data class GenericScaleUserListItem(
-    override val displayData: String,
-    override val scaleInternalId: Any
-) : ScaleUserListItem
+abstract class ScaleDeviceHandler {
 
-
-/**
- * Defines various events that a [ScaleDeviceHandler] can emit to communicate its state
- * and data to the application.
- */
-sealed class ScaleDeviceEvent {
-    /** The handler is starting to search for the device (advertising) or establishing a GATT connection. */
-    data object PreparingConnection : ScaleDeviceEvent() // Renamed from Connecting for more generality
-
-    /** The handler is actively scanning for advertising packets from the device. Only relevant for advertising-based handlers. */
-    data object ScanningForAdvertisement : ScaleDeviceEvent()
+    companion object { const val TAG = "ScaleDeviceHandler" }
 
     /**
-     * A connection to the device has been successfully established.
-     * @param message A descriptive message about the established connection.
+     * Identify whether this handler supports the given scanned device.
+     * Return a [DeviceSupport] description if yes, or `null` if not.
      */
-    data class ConnectionEstablished(val message: String) : ScaleDeviceEvent()
+    abstract fun supportFor(device: ScannedDeviceInfo): DeviceSupport?
+
+    // --- Lifecycle entry points called by the adapter -------------------------
+
+    internal fun attach(transport: Transport, callbacks: Callbacks, settings: DriverSettings) {
+        this.transport = transport
+        this.callbacks = callbacks
+        this.settings = settings
+        logD("attach()")
+    }
+
+    internal fun handleConnected(user: ScaleUser) {
+        currentUser = user
+        logD("handleConnected(userId=${user.id}, height=${user.bodyHeight}, age=${user.age})")
+        try {
+            onConnected(user)
+        } catch (t: Throwable) {
+            logE("onConnected failed: ${t.message}", t)
+            callbacks?.onError(
+                R.string.bt_error_handler_connect_failed,
+                t,
+                t.message ?: "—"
+            )
+        }
+    }
+
+    internal fun handleNotification(characteristic: UUID, data: ByteArray) {
+        val u = currentUser ?: return
+        logD("← notify chr=$characteristic len=${data.size} ${data.toHexPreview(24)}")
+        try {
+            onNotification(characteristic, data, u)
+        } catch (t: Throwable) {
+            logE("onNotification failed for $characteristic: ${t.message}", t)
+            callbacks?.onError(
+                R.string.bt_error_handler_parse_error,
+                t,
+                characteristic.toString(),
+                t.message ?: "—"
+            )
+        }
+    }
+
+    internal fun handleDisconnected() {
+        logD("handleDisconnected()")
+        try {
+            onDisconnected()
+        } catch (t: Throwable) {
+            logW("onDisconnected threw: ${t.message}")
+        } finally {
+            currentUser = null
+        }
+    }
+
+    internal fun detach() {
+        logD("detach()")
+        transport = null
+        callbacks = null
+        currentUser = null
+    }
+
+    // --- To be implemented by concrete handlers --------------------------------
+
+    /** Called after services are discovered and the link is ready for I/O. */
+    protected abstract fun onConnected(user: ScaleUser)
+
+    /** Called for every incoming notification. Parse and eventually [publish] a result. */
+    protected abstract fun onNotification(characteristic: UUID, data: ByteArray, user: ScaleUser)
+
+    /** Optional cleanup hook. */
+    protected open fun onDisconnected() = Unit
+
+    // --- Protected helper methods (use these from your handler) ----------------
+
+    /** Enable notifications for a characteristic. */
+    protected fun setNotifyOn(service: UUID, characteristic: UUID) {
+        logD("→ setNotifyOn svc=$service chr=$characteristic")
+        transport?.setNotifyOn(service, characteristic)
+            ?: logW("setNotifyOn called without transport")
+    }
 
     /**
-     * The device-specific initialization sequence has been successfully completed.
-     * For GATT-based handlers, this usually means notifications are set up and initial checks are done.
-     * For advertising-based handlers, this might not be relevant or could be sent directly after the first data reception.
+     * Write a command to a characteristic.
+     * @param withResponse true for `Write With Response` (default), false for `Write Without Response`.
      */
-    data object InitializationComplete : ScaleDeviceEvent()
+    protected fun writeTo(
+        service: UUID,
+        characteristic: UUID,
+        payload: ByteArray,
+        withResponse: Boolean = true
+    ) {
+        logD("→ write svc=$service chr=$characteristic len=${payload.size} withResp=$withResponse ${payload.toHexPreview(24)}")
+        transport?.write(service, characteristic, payload, withResponse)
+            ?: logW("writeTo called without transport")
+    }
 
-    /** The connection to the device was lost unexpectedly, or the target device was no longer found (during scanning). */
-    data object ConnectionLost : ScaleDeviceEvent()
+    /** Read a characteristic (rare for scales; most data comes via NOTIFY). */
+    protected fun readFrom(service: UUID, characteristic: UUID) {
+        logD("→ read svc=$service chr=$characteristic")
+        transport?.read(service, characteristic)
+            ?: logW("readFrom called without transport")
+    }
 
-    /** The connection to the device was actively disconnected, or the scan was stopped. */
-    data object Disconnected : ScaleDeviceEvent()
+    /** Publish a fully parsed measurement to the app. */
+    protected fun publish(measurement: ScaleMeasurement) {
+        logI("← publish measurement")
+        callbacks?.onPublish(measurement)
+            ?: logW("publish called without callbacks")
+    }
+
+    /** Ask the adapter to terminate the link. */
+    protected fun requestDisconnect() {
+        logD("→ requestDisconnect()")
+        transport?.disconnect()
+    }
+
+    /** Helper to build a 16-bit Bluetooth Base UUID (e.g., `uuid16(0xFFE4)`). */
+    protected fun uuid16(short: Int): UUID =
+        UUID.fromString(String.format("0000%04x-0000-1000-8000-00805f9b34fb", short))
+
+    /** Get the current user or throw if used before [handleConnected]. */
+    protected fun requireUser(): ScaleUser =
+        currentUser ?: error("No current user in handler")
+
+    protected fun resolveString(@StringRes resId: Int, vararg args: Any): String =
+        callbacks?.resolveString(resId, *args) ?: "res:$resId"
+
+    protected fun saveUserIdForScaleIndex(scaleIndex: Int, appUserId: Int) {
+        settings.putInt("userMap/userIdByIndex/$scaleIndex", appUserId)
+    }
+    protected fun loadUserIdForScaleIndex(scaleIndex: Int): Int =
+        settings.getInt("userMap/userIdByIndex/$scaleIndex", -1)
+
+    protected fun loadScaleIndexForAppUser(appUserId: Int): Int =
+        settings.getInt("userMap/scaleIndexByAppUser/$appUserId", -1)
+
+    protected fun saveScaleIndexForAppUser(appUserId: Int, scaleIndex: Int) {
+        settings.putInt("userMap/scaleIndexByAppUser/$appUserId", scaleIndex)
+        settings.putInt("userMap/userIdByIndex/$scaleIndex", appUserId)
+    }
+
+    protected fun saveConsentForScaleIndex(scaleIndex: Int, consent: Int) {
+        settings.putInt("userMap/consentByIndex/$scaleIndex", consent)
+    }
+    protected fun loadConsentForScaleIndex(scaleIndex: Int): Int =
+        settings.getInt("userMap/consentByIndex/$scaleIndex", -1)
+
+
+    // --- Logging shortcuts (route to LogManager under a single TAG) ------------
+
+    protected fun logD(msg: String) = LogManager.d(TAG, msg)
+    protected fun logI(msg: String) = LogManager.i(TAG, msg)
+    protected fun logW(msg: String) = LogManager.w(TAG, msg, null)
+    protected fun logE(msg: String, t: Throwable? = null) = LogManager.e(TAG, msg, t)
+
+    // Human-readable messages for users (e.g., snackbars/toasts)
+    protected fun userInfo(@StringRes resId: Int, vararg args: Any) {
+        callbacks?.onInfo(resId, *args) ?: logD("userInfo dropped: res=$resId")
+    }
+    protected fun userWarn(@StringRes resId: Int, vararg args: Any) {
+        callbacks?.onWarn(resId, *args) ?: logW("userWarn dropped: res=$resId")
+    }
+    protected fun userError(@StringRes resId: Int, vararg args: Any, t: Throwable? = null) {
+        callbacks?.onError(resId, t, *args) ?: logE("userError dropped: res=$resId", t)
+    }
+
+    protected fun requestUserInteraction(
+        interactionType: BluetoothEvent.UserInteractionType,
+        data: Any?
+    ) {
+        callbacks?.onUserInteractionRequired(interactionType, data)
+            ?: logW("requestUserInteraction dropped: $interactionType")
+    }
+
+    open fun onUserInteractionFeedback(
+        interactionType: UserInteractionType,
+        appUserId: Int,
+        feedbackData: Any,
+        uiHandler: Handler) { /* no-op */ }
+
+    // --- Wiring provided by the adapter ---------------------------------------
+
+    private var transport: Transport? = null
+    private var callbacks: Callbacks? = null
+    private var currentUser: ScaleUser? = null
+    private lateinit var settings: DriverSettings
 
     /**
-     * An error occurred during communication or device handling.
-     * @param message A descriptive error message.
-     * @param throwable An optional [Throwable] associated with the error.
-     * @param errorCode An optional, handler-specific error code.
+     * BLE transport the adapter provides. No threading/queueing implied here—
+     * the adapter already serializes and paces I/O.
      */
-    data class Error(val message: String, val throwable: Throwable? = null, val errorCode: Int? = null) : ScaleDeviceEvent()
+    interface Transport {
+        fun setNotifyOn(service: UUID, characteristic: UUID)
+        fun write(service: UUID, characteristic: UUID, payload: ByteArray, withResponse: Boolean = true)
+        fun read(service: UUID, characteristic: UUID)
+        fun disconnect()
+    }
 
-    /**
-     * A new measurement, parsed from the device, is available.
-     * @param measurement The [DeviceMeasurement] containing the data.
-     */
-    data class DeviceMeasurementAvailable(val measurement: DeviceMeasurement) : ScaleDeviceEvent()
+    interface DriverSettings {
+        fun getInt(key: String, default: Int = -1): Int
+        fun putInt(key: String, value: Int)
 
-    /**
-     * An informational message for the user.
-     * @param text The message text (can be null if `stringResId` is used).
-     * @param stringResId An optional string resource ID for localization.
-     * @param payload Optional structured data associated with the info message.
-     */
-    data class InfoMessage(
-        val text: String? = null,
-        val stringResId: Int? = null,
-        val payload: Any? = null // For optionally more structured info data
-    ) : ScaleDeviceEvent()
+        fun getString(key: String, default: String? = null): String?
+        fun putString(key: String, value: String)
 
-    data class UserInteractionRequired(
-        val interactionType: UserInteractionType,
-        val data: Any? = null, // Daten vom Handler an die UI
-        val requestContext: Any? = null
-    ) : ScaleDeviceEvent()
+        fun remove(key: String)
+    }
+
+    /** App callbacks to emit parsed results and user-visible messages. */
+    interface Callbacks {
+        fun onPublish(measurement: ScaleMeasurement)
+        fun onInfo(@StringRes resId: Int, vararg args: Any) { /* optional */ }
+        fun onWarn(@StringRes resId: Int, vararg args: Any) { /* optional */ }
+        fun onError(@StringRes resId: Int, t: Throwable? = null, vararg args: Any) { /* optional */ }
+
+        fun onUserInteractionRequired(interactionType: BluetoothEvent.UserInteractionType, data: Any?) { /* optional */ }
+        fun resolveString(@StringRes resId: Int, vararg args: Any): String
+    }
+
+    // --- Small utils -----------------------------------------------------------
+
+    /** Pretty print a few leading bytes of a payload for logs. */
+    fun ByteArray.toHexPreview(limit: Int): String {
+        if (limit <= 0 || isEmpty()) return "(payload ${size}b)"
+        val show = min(size, limit)
+        val sb = StringBuilder("payload=[")
+        for (i in 0 until show) {
+            if (i > 0) sb.append(' ')
+            sb.append(String.format("%02X", this[i]))
+        }
+        if (size > limit) sb.append(" …(+").append(size - limit).append("b)")
+        sb.append(']')
+        return sb.toString()
+    }
 }
-
-/**
- * Interface for a device-specific handler that manages communication with a Bluetooth scale.
- * It abstracts the low-level Bluetooth operations and provides a standardized way to interact
- * with different types of scales.
- */
-interface ScaleDeviceHandler {
-
-    /**
-     * @return The display name of this scale driver/handler (e.g., "Mi Scale v2 Handler").
-     */
-    fun getDriverName(): String
-
-    /**
-     * A unique ID for this handler type. Can be, for example, the class name.
-     * Important for persistence and later retrieval of the correct handler.
-     */
-    val handlerId: String
-
-    /**
-     * Indicates whether this handler primarily communicates via advertising data (`true`)
-     * or GATT connections (`false`).
-     * This can help the Bluetooth management layer optimize scans and connection attempts.
-     * Defaults to `false` (GATT-based).
-     */
-    val communicatesViaAdvertising: Boolean
-        get() = false // Default is GATT-based
-
-    /**
-     * Checks if this handler can manage communication with the specified device.
-     *
-     * @param deviceName The advertised name of the Bluetooth device.
-     * @param deviceAddress The MAC address of the device.
-     * @param serviceUuids A list of advertised service UUIDs.
-     * @param manufacturerData Manufacturer-specific data from the advertisement.
-     * @return `true` if this handler can handle the device, `false` otherwise.
-     */
-    fun canHandleDevice(
-        deviceName: String?,
-        deviceAddress: String,
-        serviceUuids: List<UUID>,
-        manufacturerData: SparseArray<ByteArray>?
-    ): Boolean
-
-    /**
-     * Prepares communication, potentially scans for advertising data or establishes a GATT connection,
-     * performs the necessary initialization sequence, and starts receiving data.
-     *
-     * @param deviceAddress The MAC address of the Bluetooth device.
-     * @param currentAppUserAttributes Optional attributes of the current app user that the handler might
-     *                                 need for initialization or user synchronization.
-     *                                 The handler should explicitly request what it needs via [ScaleDeviceEvent.UserAttributesRequired]
-     *                                 if these are insufficient or missing.
-     * @return A [Flow] of [ScaleDeviceEvent]s.
-     */
-    fun connectAndReceiveEvents(
-        deviceAddress: String,
-        currentAppUserAttributes: Map<String, Any>? = null
-    ): Flow<ScaleDeviceEvent>
-
-    /**
-     * Disconnects from the currently connected device and cleans up resources.
-     */
-    suspend fun disconnect()
-
-    /**
-     * Sends a device-specific command to the scale.
-     * This is an escape-hatch function for handler-specific actions not covered by
-     * the standard events/methods.
-     * Its use should be minimized to maintain abstraction.
-     *
-     * @param commandId An identifier for the command.
-     * @param commandData Optional data for the command.
-     * @return A result object indicating success/failure and optional response data.
-     */
-    // suspend fun sendRawCommand(commandId: String, commandData: Any? = null): CommandResult // Commented out for now as it increases complexity
-}
-
-// data class CommandResult(val success: Boolean, val responseData: Any? = null) // For sendRawCommand

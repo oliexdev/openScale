@@ -216,7 +216,7 @@ public class BluetoothHuaweiAH100 extends BluetoothCommunication {
             case WAIT_MEASUREMENT:
                 AHcmdGetUserList();
                 LogManager.d(TAG, "AH100::onNextStep  = Do nothing, wait while scale tries disconnect");
-                sendMessage(R.string.info_step_on_scale, 0);
+                sendMessage(R.string.bt_info_step_on_scale, 0);
                 stopMachineState();
                 break;
             case READ_HIST:
@@ -247,7 +247,7 @@ public class BluetoothHuaweiAH100 extends BluetoothCommunication {
             case BIND:
                 LogManager.d(TAG, "AH100::onNextStep  = BIND scale to OpenScale");
                 // Start measurement
-                sendMessage(R.string.info_step_on_scale, 0);
+                sendMessage(R.string.bt_info_step_on_scale, 0);
                 triesToBind++;
                 AHcmdBind();
                 AHcmdBind();

@@ -118,7 +118,7 @@ public class BluetoothSenssun extends BluetoothCommunication {
                     return;
                 }
                 if (!stepMessageDisplayed) {
-                    sendMessage(R.string.info_step_on_scale, 0);
+                    sendMessage(R.string.bt_info_step_on_scale, 0);
                     stepMessageDisplayed = true;
                 }
 

@@ -231,7 +231,6 @@
 
     <!-- Bluetooth -->
     <string name="info_bluetooth_connection_error_scale_offline">Could not connect to scale, please ensure it is on.</string>
-    <string name="info_step_on_scale">Please step barefoot on the scale</string>
     <string name="fallback_device_name_saved_scale">saved scale</string>
     <string name="bluetooth_action_connecting_disconnecting_desc">Bluetooth processing</string>
     <string name="bluetooth_action_no_scale_saved_desc">Setup Bluetooth scale</string>
@@ -564,5 +563,46 @@
 
     <string name="saved_measurements_message">Saved %1$d measurements</string>
 
+    <!-- General info -->
+    <string name="bt_info_step_on_scale">Please step barefoot on the scale</string>
 
+    <!-- Mapping / consent flows -->
+    <string name="bt_info_using_existing_mapping">Using existing mapping: app user %1$d ↔ scale slot %2$d.</string>
+    <string name="bt_info_consent_needed">Please enter the consent code for slot %1$d.</string>
+    <string name="bt_info_read_only_mode_no_consent">No consent code available. Measurements can be read, but user settings cannot be changed.</string>
+    <string name="bt_info_suggest_create_new_user">For full functionality, create a new user on the scale.</string>
+    <string name="bt_info_register_new_user_started">Creating a new user on the scale…</string>
+    <string name="bt_info_no_mapping_creating_user">No user mapping found; creating a new user on the scale…</string>
+    <string name="bt_info_waiting_for_measurements">Waiting for measurement via notifications.</string>
+    <string name="bt_info_linked_app_user_to_slot">Linked app user %1$d to scale slot %2$d.</string>
+
+    <!-- Warnings -->
+    <string name="bt_warn_low_battery">Scale battery is low (%1$d%%).</string>
+    <string name="bt_warn_register_failed_with_code">Creating the user on the scale failed (code %1$d).</string>
+    <string name="bt_warn_slots_full">The scale has no free user slots. Delete a user on the device and try again.</string>
+    <string name="bt_warn_notify_failed">Failed to enable notifications for %1$s.</string>
+    <string name="bt_warn_write_failed">Write to %1$s failed.</string>
+    <string name="bt_warn_notify_state_failed">Changing notify state for %1$s failed.</string>
+    <string name="bt_warn_consent_wrong_retry">Consent code was not accepted. Please check and try again.</string>
+
+    <!-- Errors -->
+    <string name="bt_error_ucp_not_authorized">Consent code not accepted. Please check and try again.</string>
+    <string name="bt_error_delivery_user_feedback">Error delivering user feedback: %1$s</string>
+    <string name="bt_info_reconnecting_try">Reconnecting… (try %1$d/%2$d)</string>
+    <string name="bt_info_waiting_for_measurement">Waiting for measurement via notifications.</string>
+
+    <!-- Adapter: warnings/errors -->
+    <string name="bt_warn_no_peripheral_for_setnotify">No peripheral for setNotifyOn(%1$s)</string>
+    <string name="bt_warn_characteristic_not_found">Characteristic %1$s not found</string>
+    <string name="bt_warn_no_peripheral_for_write">No peripheral for write(%1$s)</string>
+    <string name="bt_warn_no_peripheral_for_read">No peripheral for read(%1$s)</string>
+    <string name="bt_warn_write_failed_status">Write to %1$s failed: %2$s</string>
+    <string name="bt_warn_notify_state_failed_status">Notify state failed for %1$s: %2$s</string>
+
+    <!-- Adapter: generic errors -->
+    <string name="bt_error_no_user_selected">No user selected</string>
+    <string name="bt_error_generic">Error</string>
+
+    <string name="bt_error_handler_connect_failed">Handler failed on connect: %1$s</string>
+    <string name="bt_error_handler_parse_error">Handler parse error for %1$s: %2$s</string>
 </resources>

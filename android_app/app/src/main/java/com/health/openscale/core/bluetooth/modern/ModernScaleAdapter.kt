@@ -1,99 +1,265 @@
 /*
  * openScale
- * Copyright (C) 2025 olie.xdev <olie.xdeveloper@googlemail.com>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * Copyright (C) 2025 ...
+ * GPLv3+
  */
 package com.health.openscale.core.bluetooth.modern
 
-import android.Manifest
-import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.le.ScanResult
+import android.R.attr.type
 import android.content.Context
-import android.content.pm.PackageManager
 import android.os.Handler
 import android.os.Looper
-import androidx.core.content.ContextCompat
+import android.os.SystemClock
+import androidx.annotation.StringRes
+import com.health.openscale.R
 import com.health.openscale.core.bluetooth.BluetoothEvent
-import com.health.openscale.core.bluetooth.ScaleCommunicator
 import com.health.openscale.core.bluetooth.BluetoothEvent.UserInteractionType
+import com.health.openscale.core.bluetooth.ScaleCommunicator
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
+import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.core.utils.LogManager
-import com.welie.blessed.BluetoothCentralManager
-import com.welie.blessed.BluetoothCentralManagerCallback
-import com.welie.blessed.BluetoothPeripheral
-import com.welie.blessed.BluetoothPeripheralCallback
-import com.welie.blessed.GattStatus
-import com.welie.blessed.HciStatus
-import com.welie.blessed.ScanFailure
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
+import com.welie.blessed.*
+import com.welie.blessed.WriteType.WITHOUT_RESPONSE
+import com.welie.blessed.WriteType.WITH_RESPONSE
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
-import java.util.Date
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
+import kotlin.Int
 
-// Beispielhafte UUIDs - DIESE MÜSSEN DURCH DIE KORREKTEN UUIDs IHRER ZIELGERÄTE ERSETZT WERDEN!
-object ScaleGattAttributes {
-    // Beispiel: Body Composition Service
-    val BODY_COMPOSITION_SERVICE_UUID: UUID = UUID.fromString("0000181B-0000-1000-8000-00805F9B34FB")
-    // Beispiel: Body Composition Measurement Characteristic
-    val BODY_COMPOSITION_MEASUREMENT_UUID: UUID = UUID.fromString("00002A9C-0000-1000-8000-00805F9B34FB")
-    // Beispiel: Weight Scale Service
-    val WEIGHT_SCALE_SERVICE_UUID: UUID = UUID.fromString("0000181D-0000-1000-8000-00805F9B34FB")
-    // Beispiel: Weight Measurement Characteristic
-    val WEIGHT_MEASUREMENT_UUID: UUID = UUID.fromString("00002A9D-0000-1000-8000-00805F9B34FB")
-    // Beispiel: Current Time Service (oft für Bonding oder User-Setup verwendet)
-    val CURRENT_TIME_SERVICE_UUID: UUID = UUID.fromString("00001805-0000-1000-8000-00805F9B34FB")
-    val CURRENT_TIME_CHARACTERISTIC_UUID: UUID = UUID.fromString("00002A2B-0000-1000-8000-00805F9B34FB")
-    // Client Characteristic Configuration Descriptor
-    val CCCD_UUID: UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
+/**
+ * Describes BLE link timing and retry behavior used by the adapter when talking to a scale.
+ *
+ * These values are mainly about *pacing* (small delays) and *robustness* (cooldowns/retries).
+ * Some scales/firmware are sensitive to how quickly notifications are enabled or writes are
+ * issued in sequence. Small gaps drastically reduce GATT 133 errors and write failures.
+ *
+ * NOTE: This adapter currently uses internal defaults (see GAP_* and retry constants below).
+ * The [BleTuning] type is provided to make the intent explicit and to allow future wiring
+ * so device handlers can request different timings if needed.
+ */
+data class BleTuning(
+    // I/O pacing (ms)
+    val notifySetupDelayMs: Long,
+    val writeWithResponseDelayMs: Long,
+    val writeWithoutResponseDelayMs: Long,
+    val postWriteDelayMs: Long,
+    // Connect/retry policy
+    val reconnectCooldownMs: Long,
+    val retryBackoffMs: Long,
+    val maxRetries: Int,
+    val connectAfterScanDelayMs: Long,
+    // Link behavior hints
+    val requestHighConnectionPriority: Boolean,
+    val requestMtuBytes: Int
+)
+
+/**
+ * Suggested presets that tend to work across vendors:
+ *
+ * - Balanced: good default for most scales.
+ * - Conservative: more gaps, helpful for flaky radios/older Androids.
+ * - Aggressive: tighter timings, for fast/science-mode devices.
+ *
+ *  NOTE: The adapter consumes values from bleTuning (or Balanced profile if null).
+ */
+sealed class BleTuningProfile {
+    object Balanced : BleTuningProfile()
+    object Conservative : BleTuningProfile()
+    object Aggressive : BleTuningProfile()
 }
 
+/** Convert a preset into concrete numbers. */
+fun BleTuningProfile.asTuning(): BleTuning = when (this) {
+    BleTuningProfile.Balanced -> BleTuning(
+        notifySetupDelayMs = 120,
+        writeWithResponseDelayMs = 80,
+        writeWithoutResponseDelayMs = 35,
+        postWriteDelayMs = 20,
+        reconnectCooldownMs = 2200,
+        retryBackoffMs = 1500,
+        maxRetries = 3,
+        connectAfterScanDelayMs = 650,
+        requestHighConnectionPriority = true,
+        requestMtuBytes = 185
+    )
+    BleTuningProfile.Conservative -> BleTuning(
+        notifySetupDelayMs = 160,
+        writeWithResponseDelayMs = 100,
+        writeWithoutResponseDelayMs = 50,
+        postWriteDelayMs = 30,
+        reconnectCooldownMs = 2500,
+        retryBackoffMs = 1800,
+        maxRetries = 3,
+        connectAfterScanDelayMs = 800,
+        requestHighConnectionPriority = true,
+        requestMtuBytes = 0
+    )
+    BleTuningProfile.Aggressive -> BleTuning(
+        notifySetupDelayMs = 80,
+        writeWithResponseDelayMs = 60,
+        writeWithoutResponseDelayMs = 25,
+        postWriteDelayMs = 15,
+        reconnectCooldownMs = 1200,
+        retryBackoffMs = 1200,
+        maxRetries = 2,
+        connectAfterScanDelayMs = 400,
+        requestHighConnectionPriority = true,
+        requestMtuBytes = 247
+    )
+}
 
+class FacadeDriverSettings(
+    private val facade: SettingsFacade,
+    private val scope: CoroutineScope,
+    deviceAddress: String,
+    handlerNamespace: String
+) : ScaleDeviceHandler.DriverSettings {
+
+    private val prefix = "ble/$handlerNamespace/$deviceAddress/"
+
+    private val mem = ConcurrentHashMap<String, String>()
+
+    override fun getInt(key: String, default: Int): Int {
+        val k = prefix + key
+        mem[k]?.toIntOrNull()?.let { return it }
+
+        val v: Int = runCatching {
+            runBlocking(Dispatchers.IO) {
+                withTimeout(300) { facade.observeSetting(k, default).first() }
+            }
+        }.getOrElse { default }
+
+        mem[k] = v.toString()
+        return v
+    }
+
+    override fun putInt(key: String, value: Int) {
+        val k = prefix + key
+        mem[k] = value.toString()
+        scope.launch { facade.saveSetting(k, value) }
+    }
+
+    override fun getString(key: String, default: String?): String? {
+        val k = prefix + key
+        mem[k]?.let { return it }
+
+        val raw: String = runCatching {
+            runBlocking(Dispatchers.IO) {
+                withTimeout(300) { facade.observeSetting(k, default ?: "").first() }
+            }
+        }.getOrElse { default ?: "" }
+
+        val result = if (raw.isEmpty() && default == null) null else raw
+        result?.let { mem[k] = it }
+        return result
+    }
+
+    override fun putString(key: String, value: String) {
+        val k = prefix + key
+        mem[k] = value
+        scope.launch { facade.saveSetting(k, value) }
+    }
+
+    override fun remove(key: String) {
+        val k = prefix + key
+        mem.remove(k)
+        scope.launch { facade.saveSetting(k, "") }
+    }
+}
+
+/**
+ * ## ModernScaleAdapter
+ *
+ * A small “bridge” that wires a device-specific [ScaleDeviceHandler] to the BLE stack
+ * via the Blessed library. The adapter owns the Bluetooth session (scan → connect →
+ * service discovery → notifications/writes) and exposes a clean, event-driven API to
+ * the rest of the app through [ScaleCommunicator].
+ *
+ * ### What handler authors need to know
+ *
+ * - **You do NOT manage Bluetooth directly.** Implement a subclass of [ScaleDeviceHandler]
+ *   and use its protected helpers:
+ *   - `setNotifyOn(service, characteristic)` to subscribe.
+ *   - `writeTo(service, characteristic, payload, withResponse)` to send commands.
+ *   - `readFrom(service, characteristic)` if the device requires reads.
+ *   - `publish(measurement)` when you have a complete result.
+ *   - `userInfo("…")` to show human-readable messages (e.g., “Step on the scale…”).
+ *
+ * - **Lifecycle in your handler:**
+ *   - `onConnected(user)` is called after services are discovered and the link is ready.
+ *     Enable notifications here and send your init sequence (user/time/unit/etc.).
+ *   - `onNotification(uuid, data, user)` is called for each incoming notify packet.
+ *     Parse, update state, and call `publish()` for final results.
+ *   - `onDisconnected()` is called for cleanup.
+ *
+ * - **Threading/timing is handled for you.** The adapter serializes BLE I/O with a `Mutex`
+ *   and adds small delays between operations to avoid “GATT 133” and write errors.
+ *   Don’t add your own blocking sleeps inside the handler; just call the helpers.
+ *
+ * - **Events to the app:** The adapter surfaces connection state and measurements through
+ *   a `SharedFlow<BluetoothEvent>`. You don’t emit those directly—use the handler helpers.
+ *
+ * ### Responsibilities split
+ * - Adapter: scans, connects, discovers services, sets MTU/priority, enforces pacing,
+ *   funnels notifications/writes, and reports connection events.
+ * - Handler: pure protocol logic for one vendor/model (frame formats, checksums, etc.).
+ */
 class ModernScaleAdapter(
-    private val context: Context
+    private val context: Context,
+    private val settingsFacade: SettingsFacade,
+    private val handler: ScaleDeviceHandler,
+    private val bleTuning: BleTuning? = null
 ) : ScaleCommunicator {
+
     private val TAG = "ModernScaleAdapter"
 
-    private val adapterScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    private val tuning: BleTuning = bleTuning ?: BleTuningProfile.Balanced.asTuning()
+    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     private val mainHandler = Handler(Looper.getMainLooper())
-    private lateinit var central: BluetoothCentralManager // Initialisiert in init
+    private lateinit var central: BluetoothCentralManager
 
-    private var currentPeripheral: BluetoothPeripheral? = null
     private var targetAddress: String? = null
-    private var currentScaleUser: ScaleUser? = null // von der Schnittstelle
-    private var currentAppUserId: Int? = null
+    private var currentPeripheral: BluetoothPeripheral? = null
+    private var currentUser: ScaleUser? = null
 
-    private val _eventsFlow = MutableSharedFlow<BluetoothEvent>(replay = 1, extraBufferCapacity = 5)
-    override fun getEventsFlow(): SharedFlow<BluetoothEvent> = _eventsFlow.asSharedFlow()
-    override fun processUserInteractionFeedback(
-        interactionType: UserInteractionType,
-        appUserId: Int,
-        feedbackData: Any,
-        uiHandler: Handler
-    ) {
-        LogManager.w(TAG, "Error not implemented processUserInteractionFeedback received: Type=$interactionType, UserID=$appUserId, Data=$feedbackData", null)
+    // Session tracking to correlate logs across reconnects.
+    private var sessionCounter = 0
+    private var sessionId = 0
+    private fun newSession() {
+        sessionId = ++sessionCounter
+        LogManager.d(TAG, "session#$sessionId start for $targetAddress")
     }
+
+    // --- I/O pacing (currently internal defaults; see BleTuning above) --------
+    private val ioMutex = Mutex()
+    private suspend fun ioGap(ms: Long) { if (ms > 0) delay(ms) }
+    private val GAP_BEFORE_NOTIFY = tuning.notifySetupDelayMs
+    private val GAP_BEFORE_WRITE_WITH_RESP = tuning.writeWithResponseDelayMs
+    private val GAP_BEFORE_WRITE_NO_RESP = tuning.writeWithoutResponseDelayMs
+    private val GAP_AFTER_WRITE = tuning.postWriteDelayMs
+
+    // --- Reconnect smoothing / retry (internal defaults) ----------------------
+    private var lastDisconnectAtMs: Long = 0L
+    private var connectAttempts: Int = 0
+    private val RECONNECT_COOLDOWN_MS = tuning.reconnectCooldownMs
+    private val RETRY_BACKOFF_MS = tuning.retryBackoffMs
+    private val MAX_RETRY = tuning.maxRetries
+
+    private val connectAfterScanDelayMs = tuning.connectAfterScanDelayMs
+
+    // --- Public streams exposed to the app -----------------------------------
+    private val _events = MutableSharedFlow<BluetoothEvent>(replay = 1, extraBufferCapacity = 8)
+    override fun getEventsFlow(): SharedFlow<BluetoothEvent> = _events.asSharedFlow()
 
     private val _isConnecting = MutableStateFlow(false)
     override val isConnecting: StateFlow<Boolean> = _isConnecting.asStateFlow()
@@ -101,417 +267,444 @@ class ModernScaleAdapter(
     private val _isConnected = MutableStateFlow(false)
     override val isConnected: StateFlow<Boolean> = _isConnected.asStateFlow()
 
-    private val bluetoothCentralManagerCallback: BluetoothCentralManagerCallback =
-        object : BluetoothCentralManagerCallback() {
-            override fun onConnectedPeripheral(peripheral: BluetoothPeripheral) {
-                adapterScope.launch {
-                    LogManager.i(TAG, "Verbunden mit ${peripheral.name} (${peripheral.address})")
-                    currentPeripheral = peripheral
-                    _isConnected.value = true
-                    _isConnecting.value = false
-                    _eventsFlow.tryEmit(BluetoothEvent.Connected(peripheral.name ?: "Unbekannt", peripheral.address))
+    // ---- Blessed callbacks: discovery / link state ---------------------------
 
-                    // Nachdem verbunden, Services entdecken
-                    LogManager.d(TAG, "Starte Service Discovery für ${peripheral.address}")
-                }
-            }
-
-            override fun onConnectionFailed(peripheral: BluetoothPeripheral, status: HciStatus) {
-                adapterScope.launch {
-                    LogManager.e(TAG, "Verbindung zu ${peripheral.address} fehlgeschlagen. Status: $status")
-                    _eventsFlow.tryEmit(BluetoothEvent.ConnectionFailed(peripheral.address, "Verbindung fehlgeschlagen: $status"))
-                    cleanupAfterDisconnect(peripheral.address)
-                }
-            }
-
-            override fun onDisconnectedPeripheral(peripheral: BluetoothPeripheral, status: HciStatus) {
-                adapterScope.launch {
-                    LogManager.i(TAG, "Getrennt von ${peripheral.name} (${peripheral.address}). Status: $status")
-                    val reason = "Getrennt: $status"
-                    // Nur Event senden, wenn es das aktuell verbundene/verbindende Gerät war
-                    if (targetAddress == peripheral.address) {
-                        _eventsFlow.tryEmit(BluetoothEvent.Disconnected(peripheral.address, reason))
-                        cleanupAfterDisconnect(peripheral.address)
-                    } else {
-                        LogManager.w(TAG, "Disconnected Event für nicht-Zielgerät ${peripheral.address} ignoriert (Ziel war $targetAddress).")
-                    }
-                }
-            }
-
-            override fun onDiscoveredPeripheral(peripheral: BluetoothPeripheral, scanResult: ScanResult) {
-                // Wir scannen spezifisch nach Adresse, also sollte dies unser Gerät sein.
-                if (peripheral.address == targetAddress) {
-                    LogManager.i(TAG, "Gerät ${peripheral.name} (${peripheral.address}) gefunden. Stoppe Scan und verbinde.")
-                    central.stopScan()
+    private val centralCallback = object : BluetoothCentralManagerCallback() {
+        override fun onDiscoveredPeripheral(peripheral: BluetoothPeripheral, scanResult: android.bluetooth.le.ScanResult) {
+            if (peripheral.address == targetAddress) {
+                LogManager.i(TAG, "session#$sessionId Found $targetAddress → stop scan + connect")
+                central.stopScan()
+                scope.launch {
+                    if (connectAfterScanDelayMs > 0) delay(connectAfterScanDelayMs)
                     central.connectPeripheral(peripheral, peripheralCallback)
-                    // _isConnecting bleibt true, bis onConnectedPeripheral oder onConnectionFailed aufgerufen wird
-                } else {
-                    LogManager.d(TAG, "Scan hat anderes Gerät gefunden: ${peripheral.address}. Ignoriere.")
-                }
-            }
-
-            override fun onScanFailed(scanFailure: ScanFailure) {
-                adapterScope.launch {
-                    LogManager.e(TAG, "Scan fehlgeschlagen: $scanFailure")
-                    if (targetAddress != null && _isConnecting.value) {
-                        _eventsFlow.tryEmit(BluetoothEvent.ConnectionFailed(targetAddress!!, "Scan fehlgeschlagen: $scanFailure"))
-                        cleanupAfterDisconnect(targetAddress) // targetAddress könnte null sein, wenn connect nie erfolgreich war
-                    }
                 }
             }
         }
 
+        override fun onConnectedPeripheral(peripheral: BluetoothPeripheral) {
+            scope.launch {
+                LogManager.i(TAG, "session#$sessionId Connected ${peripheral.name ?: "Unknown"} (${peripheral.address})")
+                currentPeripheral = peripheral
+                _isConnected.value = true
+                _isConnecting.value = false
+                _events.tryEmit(BluetoothEvent.Connected(peripheral.name ?: "Unknown", peripheral.address))
+            }
+        }
 
-    init {
-        if (!hasRequiredBluetoothPermissions()) {
-            LogManager.e(TAG, "Fehlende Bluetooth-Berechtigungen. Adapter kann nicht initialisiert werden.")
-            // Sende einen Fehler-Event oder werfe eine Exception, um das Problem anzuzeigen.
-            // _eventsFlow.tryEmit(BluetoothEvent.ConnectionFailed("initialization", "Missing Bluetooth permissions"))
-        } else {
-            central = BluetoothCentralManager(
-                context,
-                bluetoothCentralManagerCallback,
-                mainHandler
+        override fun onConnectionFailed(peripheral: BluetoothPeripheral, status: HciStatus) {
+            scope.launch {
+                LogManager.e(TAG, "session#$sessionId Connection failed ${peripheral.address}: $status")
+                if (connectAttempts < MAX_RETRY) {
+                    val nextTry = connectAttempts + 1
+                    _events.tryEmit(
+                        BluetoothEvent.DeviceMessage(
+                            context.getString(R.string.bt_info_reconnecting_try, nextTry, MAX_RETRY),
+                            peripheral.address
+                        )
+                    )
+                    connectAttempts = nextTry
+                    LogManager.w(TAG, "session#$sessionId Retry #$nextTry in ${RETRY_BACKOFF_MS}ms…")
+                    delay(RETRY_BACKOFF_MS)
+
+                    runCatching { central.stopScan() }
+                    central.scanForPeripheralsWithAddresses(arrayOf(peripheral.address))
+                    _isConnecting.value = true
+                } else {
+                    _events.tryEmit(BluetoothEvent.ConnectionFailed(peripheral.address, status.toString()))
+                    cleanup(peripheral.address)
+                }
+            }
+        }
+
+        override fun onDisconnectedPeripheral(peripheral: BluetoothPeripheral, status: HciStatus) {
+            scope.launch {
+                LogManager.i(TAG, "session#$sessionId Disconnected ${peripheral.address}: $status")
+                runCatching { handler.handleDisconnected() }
+                runCatching { handler.detach() }
+                lastDisconnectAtMs = SystemClock.elapsedRealtime()
+                if (peripheral.address == targetAddress) {
+                    _events.tryEmit(BluetoothEvent.Disconnected(peripheral.address, status.toString()))
+                    cleanup(peripheral.address)
+                }
+            }
+        }
+    }
+
+    private val peripheralCallback = object : BluetoothPeripheralCallback() {
+        override fun onServicesDiscovered(peripheral: BluetoothPeripheral) {
+            LogManager.d(TAG, "session#$sessionId Services discovered for ${peripheral.address}")
+            currentPeripheral = peripheral // ensure available to the handler
+
+            if (tuning.requestHighConnectionPriority) runCatching { peripheral.requestConnectionPriority(ConnectionPriority.HIGH) }
+            if (tuning.requestMtuBytes > 23) {
+                runCatching { peripheral.requestMtu(tuning.requestMtuBytes) }
+            }
+            LogManager.d(TAG, "session#$sessionId Link params: highPrio=${tuning.requestHighConnectionPriority}, mtu=${tuning.requestMtuBytes}")
+
+            val user = currentUser ?: run {
+                LogManager.e(TAG, "session#$sessionId No user set before services discovered")
+                central.cancelConnection(peripheral)
+                return
+            }
+
+            val driverSettings = FacadeDriverSettings(
+                facade = settingsFacade,
+                scope = scope,
+                deviceAddress = peripheral.address,
+                handlerNamespace = handler::class.simpleName ?: "Handler"
             )
-            LogManager.d(TAG, "BlessedScaleAdapter instanziiert und BluetoothCentralManager initialisiert.")
-        }
-    }
 
-    private fun hasRequiredBluetoothPermissions(): Boolean {
-        val required = listOf(
-            Manifest.permission.BLUETOOTH_SCAN,
-            Manifest.permission.BLUETOOTH_CONNECT
-        )
-        return required.all { ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED }
-    }
-
-    // Call this after runtime grant or lazily before first connect
-    private fun ensureCentralReady(): Boolean {
-        if (!::central.isInitialized) {
-            val hasScan = ContextCompat.checkSelfPermission(
-                context, Manifest.permission.BLUETOOTH_SCAN
-            ) == PackageManager.PERMISSION_GRANTED
-            val hasConnect = ContextCompat.checkSelfPermission(
-                context, Manifest.permission.BLUETOOTH_CONNECT
-            ) == PackageManager.PERMISSION_GRANTED
-            if (!(hasScan || hasConnect)) return false // at least one check; we hard-fail later if CONNECT is missing
-            central = BluetoothCentralManager(context, bluetoothCentralManagerCallback, mainHandler)
-            LogManager.d(TAG, "BluetoothCentralManager initialized")
-        }
-        return true
-    }
-
-
-    override fun connect(address: String, scaleUser: ScaleUser?) {
-        adapterScope.launch {
-            // Ensure central exists (may be created after runtime grant)
-            if (!ensureCentralReady()) {
-                _eventsFlow.tryEmit(
-                    BluetoothEvent.ConnectionFailed(address, "Bluetooth permissions missing (SCAN/CONNECT)")
-                )
-                return@launch
-            }
-
-            // Ignore duplicate connects
-            if (_isConnecting.value || (_isConnected.value && targetAddress == address)) {
-                LogManager.d(TAG, "connect($address) ignored: already connecting/connected")
-                if (_isConnected.value && targetAddress == address) {
-                    val deviceName = currentPeripheral?.name ?: "Unknown"
-                    _eventsFlow.tryEmit(BluetoothEvent.Connected(deviceName, address))
-                }
-                return@launch
-            }
-
-            // Switch target: tear down old connection attempt
-            if ((_isConnected.value || _isConnecting.value) && targetAddress != address) {
-                LogManager.d(TAG, "Switching from $targetAddress to $address")
-                disconnectLogic()
-            }
-
-            _isConnecting.value = true
-            _isConnected.value = false
-            targetAddress = address
-            currentScaleUser = scaleUser
-
-            LogManager.i(TAG, "Connecting to $address (user=${scaleUser?.id})")
-
-            // Stop any previous scans
-            runCatching { central.stopScan() }
-
-            val hasScan = ContextCompat.checkSelfPermission(
-                context, Manifest.permission.BLUETOOTH_SCAN
-            ) == PackageManager.PERMISSION_GRANTED
-
-            val hasConnect = ContextCompat.checkSelfPermission(
-                context, Manifest.permission.BLUETOOTH_CONNECT
-            ) == PackageManager.PERMISSION_GRANTED
-
-            if (!hasConnect) {
-                // Without CONNECT we can't perform GATT ops reliably
-                LogManager.e(TAG, "Missing BLUETOOTH_CONNECT")
-                _eventsFlow.tryEmit(
-                    BluetoothEvent.ConnectionFailed(address, "Missing BLUETOOTH_CONNECT permission")
-                )
-                _isConnecting.value = false
-                targetAddress = null
-                return@launch
-            }
-
-            try {
-                if (hasScan) {
-                    // Preferred path on 12+: short pre-scan by address
-                    central.scanForPeripheralsWithAddresses(arrayOf(address))
-                    LogManager.d(TAG, "Pre-scan started for $address")
-                    // onDiscoveredPeripheral will stop scan and connect
-                } else {
-                    // Fallback: connect without pre-scan (may be less reliable on some OEMs)
-                    LogManager.w(TAG, "BLUETOOTH_SCAN not granted → connecting without pre-scan")
-                    val p = central.getPeripheral(address)
-                    central.connectPeripheral(p, peripheralCallback)
-                }
-            } catch (e: Exception) {
-                LogManager.e(TAG, "Failed to start connect/scan for $address", e)
-                _eventsFlow.tryEmit(
-                    BluetoothEvent.ConnectionFailed(address, "Failed to start scan/connect: ${e.message}")
-                )
-                _isConnecting.value = false
-                targetAddress = null
-            }
-        }
-    }
-
-
-    private val peripheralCallback: BluetoothPeripheralCallback =
-        object : BluetoothPeripheralCallback() {
-            override fun onServicesDiscovered(peripheral: BluetoothPeripheral) {
-                LogManager.i(TAG, "Services entdeckt für ${peripheral.address}")
-                // HIER kommt die Logik, um die relevanten Characteristics zu abonnieren (Notifications/Indications)
-                // Beispiel für Weight Measurement und Body Composition Measurement:
-                enableNotifications(peripheral, ScaleGattAttributes.WEIGHT_SCALE_SERVICE_UUID, ScaleGattAttributes.WEIGHT_MEASUREMENT_UUID)
-                enableNotifications(peripheral, ScaleGattAttributes.BODY_COMPOSITION_SERVICE_UUID, ScaleGattAttributes.BODY_COMPOSITION_MEASUREMENT_UUID)
-
-                // Optional: Benutzerdaten schreiben oder andere Initialisierungssequenzen
-                // sendUserDataIfNeeded(peripheral)
-            }
-
-            override fun onCharacteristicUpdate(
-                peripheral: BluetoothPeripheral,
-                value: ByteArray,
-                characteristic: BluetoothGattCharacteristic,
-                status: GattStatus
-            ) {
-                if (status == GattStatus.SUCCESS) {
-                    LogManager.d(TAG, "Characteristic ${characteristic.uuid} Update von ${peripheral.address}: ${value.toHexString()}")
-                    // HIER PARSEN SIE DIE `value` (ByteArray) basierend auf der `characteristic.uuid`
-                    // und erstellen ein `com.health.openscale.core.datatypes.ScaleMeasurement`
-                    val measurement = parseMeasurementData(characteristic.uuid, value, peripheral.address)
-                    if (measurement != null) {
-                        adapterScope.launch {
-                            _eventsFlow.tryEmit(BluetoothEvent.MeasurementReceived(measurement, peripheral.address))
-                        }
-                    } else {
-                        LogManager.w(TAG, "Konnte Daten von ${characteristic.uuid} nicht parsen.")
-                        adapterScope.launch {
-                            _eventsFlow.tryEmit(BluetoothEvent.DeviceMessage("Unbekannte Daten empfangen von ${characteristic.uuid}", peripheral.address))
-                        }
-                    }
-                } else {
-                    LogManager.e(TAG, "Characteristic ${characteristic.uuid} Update Fehler: $status von ${peripheral.address}")
-                }
-            }
-
-            override fun onCharacteristicWrite(
-                peripheral: BluetoothPeripheral,
-                value: ByteArray,
-                characteristic: BluetoothGattCharacteristic,
-                status: GattStatus
-            ) {
-                if (status == GattStatus.SUCCESS) {
-                    LogManager.i(TAG, "Erfolgreich auf Characteristic ${characteristic.uuid} geschrieben: ${value.toHexString()}")
-                    // Hier ggf. weitere Logik, falls ein Schreibvorgang Teil einer Sequenz ist
-                } else {
-                    LogManager.e(TAG, "Fehler beim Schreiben auf Characteristic ${characteristic.uuid}: $status")
-                    adapterScope.launch {
-                        _eventsFlow.tryEmit(BluetoothEvent.DeviceMessage("Fehler beim Schreiben (${characteristic.uuid}): $status", peripheral.address))
-                    }
-                }
-            }
-
-            override fun onNotificationStateUpdate(
-                peripheral: BluetoothPeripheral,
-                characteristic: BluetoothGattCharacteristic,
-                status: GattStatus
-            ) {
-                if (status == GattStatus.SUCCESS) {
-                    if (peripheral.isNotifying(characteristic)) {
-                        LogManager.i(TAG, "Notifications erfolgreich aktiviert für ${characteristic.uuid} auf ${peripheral.address}")
-                    } else {
-                        LogManager.i(TAG, "Notifications erfolgreich deaktiviert für ${characteristic.uuid} auf ${peripheral.address}")
-                    }
-                } else {
-                    LogManager.e(TAG, "Fehler beim Aktualisieren des Notification Status für ${characteristic.uuid}: $status")
-                    adapterScope.launch {
-                        _eventsFlow.tryEmit(BluetoothEvent.DeviceMessage("Fehler bei Notif. für ${characteristic.uuid}: $status", peripheral.address))
-                    }
-                }
-            }
+            // From here the handler drives protocol: enable NOTIFY, write commands, parse frames.
+            handler.attach(transportImpl, appCallbacks, driverSettings)
+            handler.handleConnected(user)
         }
 
-    private fun enableNotifications(peripheral: BluetoothPeripheral, serviceUUID: UUID, characteristicUUID: UUID) {
-        val characteristic = peripheral.getCharacteristic(serviceUUID, characteristicUUID)
-        if (characteristic != null) {
-            if (peripheral.setNotify(characteristic, true)) {
-                LogManager.d(TAG, "Versuche Notifications für ${characteristicUUID} zu aktivieren.")
+        override fun onCharacteristicUpdate(
+            peripheral: BluetoothPeripheral,
+            value: ByteArray,
+            characteristic: android.bluetooth.BluetoothGattCharacteristic,
+            status: GattStatus
+        ) {
+            if (status == GattStatus.SUCCESS) {
+                handler.handleNotification(characteristic.uuid, value)
             } else {
-                LogManager.e(TAG, "Fehler beim Versuch, Notifications für ${characteristicUUID} zu aktivieren (setNotify gab false zurück).")
-                adapterScope.launch {
-                    _eventsFlow.tryEmit(BluetoothEvent.DeviceMessage("Konnte Notif. nicht aktivieren für ${characteristic.uuid}", peripheral.address))
-                }
+                LogManager.w(TAG, "session#$sessionId Notify error ${characteristic.uuid}: $status")
             }
-        } else {
-            LogManager.w(TAG, "Characteristic ${characteristicUUID} nicht gefunden im Service ${serviceUUID}.")
+        }
+
+        override fun onCharacteristicWrite(
+            peripheral: BluetoothPeripheral,
+            value: ByteArray,
+            characteristic: android.bluetooth.BluetoothGattCharacteristic,
+            status: GattStatus
+        ) {
+            if (status == GattStatus.SUCCESS) {
+                LogManager.d(TAG, "session#$sessionId Write OK ${characteristic.uuid}")
+            } else {
+                appCallbacks.onWarn(
+                    R.string.bt_warn_write_failed_status,
+                    characteristic.uuid.toString(),
+                    status.toString()
+                )
+            }
+        }
+
+        override fun onNotificationStateUpdate(
+            peripheral: BluetoothPeripheral,
+            characteristic: android.bluetooth.BluetoothGattCharacteristic,
+            status: GattStatus
+        ) {
+            if (status == GattStatus.SUCCESS) {
+                LogManager.d(TAG, "session#$sessionId Notify ${characteristic.uuid} -> ${peripheral.isNotifying(characteristic)}")
+            } else {
+                appCallbacks.onWarn(
+                    R.string.bt_warn_notify_state_failed_status,
+                    characteristic.uuid.toString(),
+                    status.toString()
+                )
+            }
+        }
+
+        override fun onMtuChanged(peripheral: BluetoothPeripheral, mtu: Int, status: GattStatus) {
+            LogManager.d(TAG, "session#$sessionId MTU changed to $mtu (status=$status)")
         }
     }
+
+    // ---- Transport given to ScaleDeviceHandler (serialized + paced) ----------
+
+    private val transportImpl = object : ScaleDeviceHandler.Transport {
+        override fun setNotifyOn(service: UUID, characteristic: UUID) {
+            scope.launch {
+                ioMutex.withLock {
+                    val p = currentPeripheral
+                    if (p == null) {
+                        appCallbacks.onWarn(R.string.bt_warn_no_peripheral_for_setnotify, characteristic.toString())
+                        return@withLock
+                    }
+                    val ch = p.getCharacteristic(service, characteristic)
+                    if (ch == null) {
+                        appCallbacks.onWarn(R.string.bt_warn_characteristic_not_found, characteristic.toString())
+                        return@withLock
+                    }
+                    LogManager.d(TAG, "session#$sessionId Enable NOTIFY for $characteristic (props=${propsPretty(ch.properties)})")
+                    ioGap(GAP_BEFORE_NOTIFY)
+                    if (!p.setNotify(ch, true)) {
+                        appCallbacks.onWarn(R.string.bt_warn_notify_failed, characteristic.toString())
+                    }
+                }
+            }
+        }
+
+        override fun write(service: UUID, characteristic: UUID, payload: ByteArray, withResponse: Boolean) {
+            scope.launch {
+                ioMutex.withLock {
+                    val p = currentPeripheral
+                    if (p == null) {
+                        appCallbacks.onWarn(R.string.bt_warn_no_peripheral_for_write, characteristic.toString())
+                        return@withLock
+                    }
+                    val ch = p.getCharacteristic(service, characteristic)
+                    if (ch == null) {
+                        appCallbacks.onWarn(R.string.bt_warn_characteristic_not_found, characteristic.toString())
+                        return@withLock
+                    }
+                    val type = if (withResponse) WITH_RESPONSE else WITHOUT_RESPONSE
+                    LogManager.d(TAG, "session#$sessionId Write chr=$characteristic len=${payload.size} type=$type (props=${propsPretty(ch?.properties ?: 0)})")
+                    ioGap(if (withResponse) GAP_BEFORE_WRITE_WITH_RESP else GAP_BEFORE_WRITE_NO_RESP)
+                    p.writeCharacteristic(service, characteristic, payload, type)
+                    ioGap(GAP_AFTER_WRITE)
+                }
+            }
+        }
+
+        override fun read(service: UUID, characteristic: UUID) {
+            scope.launch {
+                ioMutex.withLock {
+                    val p = currentPeripheral
+                    if (p == null) {
+                        appCallbacks.onWarn(R.string.bt_warn_no_peripheral_for_read, characteristic.toString())
+                        return@withLock
+                    }
+                    LogManager.d(TAG, "session#$sessionId Read chr=$characteristic")
+                    p.readCharacteristic(service, characteristic)
+                }
+            }
+        }
+
+        override fun disconnect() {
+            currentPeripheral?.let { central.cancelConnection(it) }
+        }
+    }
+
+    // ---- App callbacks handed to ScaleDeviceHandler --------------------------
+
+    private val appCallbacks = object : ScaleDeviceHandler.Callbacks {
+        override fun onPublish(measurement: ScaleMeasurement) {
+            val addr = currentPeripheral?.address ?: targetAddress ?: "unknown"
+            _events.tryEmit(BluetoothEvent.MeasurementReceived(measurement, addr))
+        }
+
+        override fun onInfo(@StringRes resId: Int, vararg args: Any) {
+            val addr = currentPeripheral?.address ?: targetAddress ?: "unknown"
+            val msg = context.getString(resId, *args)
+            _events.tryEmit(BluetoothEvent.DeviceMessage(msg, addr))
+        }
+
+        override fun onWarn(@StringRes resId: Int, vararg args: Any) {
+            val addr = currentPeripheral?.address ?: targetAddress ?: "unknown"
+            val msg = context.getString(resId, *args)
+            _events.tryEmit(BluetoothEvent.DeviceMessage(msg, addr))
+        }
+
+        override fun onError(@StringRes resId: Int, t: Throwable?, vararg args: Any) {
+            val addr = currentPeripheral?.address ?: targetAddress ?: "unknown"
+            val msg = context.getString(resId, *args)
+            LogManager.e(TAG, msg, t)
+            _events.tryEmit(BluetoothEvent.DeviceMessage(msg, addr))
+        }
+
+        override fun onUserInteractionRequired(
+            interactionType: UserInteractionType,
+            data: Any?
+        ) {
+            val addr = currentPeripheral?.address ?: targetAddress ?: "unknown"
+            _events.tryEmit(BluetoothEvent.UserInteractionRequired(addr, data, interactionType))
+        }
+
+        override fun resolveString(@StringRes resId: Int, vararg args: Any): String =
+            context.getString(resId, *args)
+    }
+
+    // ---- ScaleCommunicator API (used by the app layer) -----------------------
 
     /**
-     * Parst die Rohdaten einer BLE Characteristic und konvertiert sie in ein ScaleMeasurement Objekt.
-     * DIES IST EINE SEHR SPEZIFISCHE FUNKTION UND MUSS FÜR JEDE WAAGE/PROTOKOLL IMPLEMENTIERT WERDEN.
-     *
-     * @param characteristicUuid Die UUID der Characteristic, von der die Daten stammen.
-     * @param value Das ByteArray mit den Rohdaten.
-     * @param deviceAddress Die Adresse des Geräts.
-     * @return Ein [ScaleMeasurement] Objekt oder null, wenn das Parsen fehlschlägt.
+     * Start a BLE session to the given MAC and bind the session to [scaleUser].
+     * The adapter scans for the exact address, connects when found, and then
+     * delegates protocol work to the bound [ScaleDeviceHandler].
      */
-    private fun parseMeasurementData(characteristicUuid: UUID, value: ByteArray, deviceAddress: String): ScaleMeasurement? {
-        // Beispielhafte, sehr vereinfachte Parsing-Logik.
-        // Die tatsächliche Implementierung hängt STARK vom jeweiligen Waagenprotokoll ab!
-        val measurement = ScaleMeasurement()
-        measurement.dateTime = Date() // Zeitstempel der App, Waage könnte eigenen haben
-
-        try {
-            when (characteristicUuid) {
-                ScaleGattAttributes.WEIGHT_MEASUREMENT_UUID -> {
-                    // Annahme: Bluetooth SIG Weight Scale Characteristic
-                    // Byte 0: Flags
-                    // Byte 1-2: Gewicht (LSB, MSB)
-                    // ... weitere Felder je nach Flags (Timestamp, UserID, BMI, Height)
-                    val flags = value[0].toInt()
-                    val isImperial = (flags and 0x01) != 0 // Bit 0: 0 für kg/m, 1 für lb/in
-                    val hasTimestamp = (flags and 0x02) != 0 // Bit 1
-                    val hasUserID = (flags and 0x04) != 0    // Bit 2
-
-                    var offset = 1
-                    var weight = ((value[offset++].toInt() and 0xFF) or ((value[offset++].toInt() and 0xFF) shl 8)) / if (isImperial) 100.0f else 200.0f
-                    if (isImperial) {
-                        weight *= 0.453592f // lb in kg umrechnen
-                    }
-                    measurement.weight = weight.takeIf { it.isFinite() } ?: 0.0f
-                    LogManager.d(TAG, "Geparsed Weight: ${measurement.weight} kg")
-
-                    if (hasTimestamp) {
-                        // Hier Timestamp parsen (7 Bytes)
-                        offset += 7
-                    }
-                    if (hasUserID) {
-                        val userId = value[offset].toInt()
-                        // measurement.scaleUserIndex = userId // oder ähnliches Feld
-                        LogManager.d(TAG, "Geparsed UserID from scale: $userId")
-                    }
-                    return measurement
-                }
-                ScaleGattAttributes.BODY_COMPOSITION_MEASUREMENT_UUID -> {
-                    // Annahme: Bluetooth SIG Body Composition Characteristic
-                    // Ähnlich komplex wie Weight, mit vielen optionalen Feldern
-                    // Byte 0-1: Flags
-                    // Byte 2-3: Body Fat Percentage
-                    // ... viele weitere Felder (Timestamp, UserID, Basal Metabolism, Muscle Percentage, etc.)
-                    // Diese Implementierung ist nur ein Platzhalter!
-                    LogManager.d(TAG, "Body Composition Data empfangen, Parsing noch nicht voll implementiert.")
-                    val bodyFatPercentage = ((value[2].toInt() and 0xFF) or ((value[3].toInt() and 0xFF) shl 8)) / 10.0f
-                    measurement.fat = bodyFatPercentage.takeIf { it.isFinite() } ?: 0.0f
-                    // Setze ein beliebiges Gewicht, da Body Comp oft kein Gewicht enthält
-                    // Besser wäre es, Messungen zu kombinieren oder auf eine vorherige Gewichtsmessung zu warten.
-                    if (measurement.weight == 0.0f) measurement.weight = 70.0f // Platzhalter
-                    return measurement
-                }
-                else -> {
-                    LogManager.w(TAG, "Keine Parsing-Logik für UUID: $characteristicUuid")
-                    return null
-                }
-            }
-        } catch (e: Exception) {
-            LogManager.e(TAG, "Fehler beim Parsen der Messdaten für $characteristicUuid: ${value.toHexString()}", e)
-            return null
-        }
-    }
-
-
-    override fun disconnect() {
-        adapterScope.launch {
-            LogManager.i(TAG, "Disconnect aufgerufen für $targetAddress")
-            disconnectLogic()
-        }
-    }
-
-    private fun disconnectLogic() {
-        currentPeripheral?.let {
-            // Notifications deaktivieren, bevor die Verbindung getrennt wird? Optional.
-            // disableNotifications(it, ScaleGattAttributes.WEIGHT_SCALE_SERVICE_UUID, ScaleGattAttributes.WEIGHT_MEASUREMENT_UUID)
-            // disableNotifications(it, ScaleGattAttributes.BODY_COMPOSITION_SERVICE_UUID, ScaleGattAttributes.BODY_COMPOSITION_MEASUREMENT_UUID)
-            central.cancelConnection(it)
-        }
-        // Cleanup wird im onDisconnectedPeripheral Callback oder hier als Fallback gemacht,
-        // falls der Callback aus irgendeinem Grund nicht kommt.
-        val addr = targetAddress
-        if (_isConnected.value || _isConnecting.value) {
-            if (addr != null) {
-                // Event wird in onDisconnectedPeripheral gesendet, aber als Fallback, falls der Callback nicht kommt
-                // _eventsFlow.tryEmit(BluetoothEvent.Disconnected(addr, "Manuell getrennt durch disconnectLogic"))
-            }
-        }
-        cleanupAfterDisconnect(addr) // Rufe cleanup auf, um sicherzustellen, dass die Zustände zurückgesetzt werden.
-    }
-
-    private fun cleanupAfterDisconnect(disconnectedAddress: String?) {
-        // Nur aufräumen, wenn die Adresse mit dem Ziel übereinstimmt oder wenn targetAddress null ist (z.B. nach fehlgeschlagenem Scan)
-        if (targetAddress == null || targetAddress == disconnectedAddress) {
-            _isConnected.value = false
-            _isConnecting.value = false
-            currentPeripheral = null // Referenz auf Peripheral entfernen
-            targetAddress = null
-            currentScaleUser = null
-            currentAppUserId = null
-            LogManager.d(TAG, "Blessed Communicator aufgeräumt für Adresse: $disconnectedAddress.")
-        } else {
-            LogManager.d(TAG, "Cleanup übersprungen: Disconnected Address ($disconnectedAddress) stimmt nicht mit Target ($targetAddress) überein.")
-        }
-    }
-
-    override fun requestMeasurement() {
-        adapterScope.launch {
-            if (!_isConnected.value || currentPeripheral == null) {
-                LogManager.w(TAG, "requestMeasurement: Nicht verbunden oder kein Peripheral.")
-                _eventsFlow.tryEmit(BluetoothEvent.DeviceMessage("Nicht verbunden für Messanfrage.", targetAddress ?: "unbekannt"))
+    override fun connect(address: String, scaleUser: ScaleUser?) {
+        scope.launch {
+            if (scaleUser == null) {
+                _events.tryEmit(
+                    BluetoothEvent.ConnectionFailed(
+                        address,
+                        context.getString(R.string.bt_error_no_user_selected)
+                    )
+                )
                 return@launch
             }
-            // Die meisten BLE-Waagen senden Daten automatisch nach Aktivierung der Notifications.
-            // Eine explizite "Anfrage" ist oft nicht nötig oder nicht standardisiert.
-            // Falls Ihr Gerät eine spezielle Characteristic zum Anfordern von Daten hat,
-            // könnten Sie hier darauf schreiben.
-            LogManager.d(TAG, "requestMeasurement aufgerufen. Für BLE typischerweise keine explizite Aktion nötig, Daten kommen über Notifications.")
-            _eventsFlow.tryEmit(BluetoothEvent.DeviceMessage("Messdaten werden erwartet (BLE Notifications).", targetAddress!!))
+
+            if (targetAddress == address && (_isConnecting.value || _isConnected.value)) {
+                LogManager.d(TAG, "session#$sessionId connect($address) ignored: already connecting/connected")
+                return@launch
+            }
+            ensureCentral()
+
+            // Cool down between reconnects to avoid Android stack churn.
+            val since = SystemClock.elapsedRealtime() - lastDisconnectAtMs
+            if (since in 1 until RECONNECT_COOLDOWN_MS) {
+                val wait = RECONNECT_COOLDOWN_MS - since
+                LogManager.d(TAG, "Cooldown ${wait}ms before reconnect to $address")
+                delay(wait)
+            }
+
+            if ((_isConnected.value || _isConnecting.value) && targetAddress != address) {
+                disconnect()
+            }
+
+            targetAddress = address
+            currentUser = scaleUser
+            connectAttempts = 0
+            _isConnecting.value = true
+            _isConnected.value = false
+            newSession()
+
+            try { central.stopScan() } catch (_: Exception) { /* ignore */ }
+            try {
+                central.scanForPeripheralsWithAddresses(arrayOf(address))
+            } catch (e: Exception) {
+                LogManager.e(TAG, "session#$sessionId Failed to start scan/connect: ${e.message}", e)
+                _events.tryEmit(
+                    BluetoothEvent.ConnectionFailed(
+                        address,
+                        e.message ?: context.getString(R.string.bt_error_generic)
+                    )
+                )
+                cleanup(address)
+            }
         }
     }
 
+    /** Gracefully terminate the current BLE session (if any). */
+    override fun disconnect() {
+        scope.launch {
+            currentPeripheral?.let { central.cancelConnection(it) }
+            cleanup(targetAddress)
+        }
+    }
+
+    /** Some scales only ever push via NOTIFY; we surface a helpful user message. */
+    override fun requestMeasurement() {
+        val addr = targetAddress ?: "unknown"
+        _events.tryEmit(
+            BluetoothEvent.DeviceMessage(
+                context.getString(R.string.bt_info_waiting_for_measurement),
+                addr
+            )
+        )
+    }
+
+    /** Reserved for UI round-trips (rare for scales); currently unused. */
+    override fun processUserInteractionFeedback(
+        interactionType: UserInteractionType,
+        appUserId: Int,
+        feedbackData: Any,
+        uiHandler: Handler
+    ) {
+        scope.launch {
+            runCatching {
+                handler.onUserInteractionFeedback(interactionType, appUserId, feedbackData, uiHandler)
+            }.onFailure { t ->
+                val addr = currentPeripheral?.address ?: targetAddress ?: "unknown"
+                LogManager.e(TAG, "Delivering user feedback failed: ${t.message}", t)
+                _events.tryEmit(
+                    BluetoothEvent.DeviceMessage(
+                        context.getString(R.string.bt_error_delivery_user_feedback, t.message ?: "—"),
+                        addr
+                    )
+                )
+            }
+        }
+    }
+
+    // ---- Internals -----------------------------------------------------------
+
+    private fun ensureCentral() {
+        if (!::central.isInitialized) {
+            central = BluetoothCentralManager(context, centralCallback, mainHandler)
+        }
+    }
+
+    private fun cleanup(addr: String?) {
+        _isConnected.value = false
+        _isConnecting.value = false
+        currentPeripheral = null
+        // keep targetAddress/currentUser for optional retry
+    }
+
+    /** Free resources; should be called when the adapter is no longer needed. */
     fun release() {
-        LogManager.d(TAG, "BlessedScaleAdapter wird freigegeben.")
-        disconnectLogic()
-        // Blessed CentralManager hat keine explizite close() oder release() Methode für sich selbst,
-        // die Verbindungen werden über cancelConnection() verwaltet.
-        // Der Handler wird implizit mit dem Context-Lifecycle verwaltet.
-        adapterScope.cancel()
+        disconnect()
+        scope.cancel()
+        runCatching { if (::central.isInitialized) central.close() }
+    }
+
+    /** Turn a GATT property bitfield into a human-readable string for logs. */
+    private fun propsPretty(props: Int): String {
+        val names = mutableListOf<String>()
+        if ((props and android.bluetooth.BluetoothGattCharacteristic.PROPERTY_READ) != 0) names += "READ"
+        if ((props and android.bluetooth.BluetoothGattCharacteristic.PROPERTY_WRITE) != 0) names += "WRITE"
+        if ((props and android.bluetooth.BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE) != 0) names += "WRITE_NO_RESP"
+        if ((props and android.bluetooth.BluetoothGattCharacteristic.PROPERTY_NOTIFY) != 0) names += "NOTIFY"
+        if ((props and android.bluetooth.BluetoothGattCharacteristic.PROPERTY_INDICATE) != 0) names += "INDICATE"
+        if ((props and android.bluetooth.BluetoothGattCharacteristic.PROPERTY_SIGNED_WRITE) != 0) names += "SIGNED_WRITE"
+        if ((props and android.bluetooth.BluetoothGattCharacteristic.PROPERTY_BROADCAST) != 0) names += "BROADCAST"
+        if ((props and android.bluetooth.BluetoothGattCharacteristic.PROPERTY_EXTENDED_PROPS) != 0) names += "EXTENDED_PROPS"
+        return if (names.isEmpty()) props.toString() else names.joinToString("|")
     }
 }
 
-// Hilfsfunktion zum Konvertieren eines ByteArrays in einen Hex-String (nützlich für Logging)
-fun ByteArray.toHexString(): String = joinToString(separator = " ", prefix = "0x") { String.format("%02X", it) }
+/* ---------------------------------------------------------------------------
+   Handler Quick-Start (for implementers)
+   --------------------------------------
+   1) Create a new file: `FooDeviceHandler.kt` extending ScaleDeviceHandler.
+   2) Implement `supportFor(device)` to detect your device by name/advertising.
+   3) In `onConnected(user)`, enable notifications and send your init sequence.
+   4) In `onNotification(uuid, data, user)`, parse frames and call `publish()`.
+   5) Optionally call `userInfo("Step on the scale…")` for UI messages.
+
+   Example skeleton:
+
+   class FooDeviceHandler : ScaleDeviceHandler() {
+       override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
+           val name = device.name ?: return null
+           return if (name.startsWith("FOO-SCALE")) {
+               DeviceSupport(
+                   displayName = "Foo Scale",
+                   capabilities = setOf(DeviceCapability.BODY_COMPOSITION, DeviceCapability.TIME_SYNC),
+                   implemented  = setOf(DeviceCapability.BODY_COMPOSITION)
+               )
+           } else null
+       }
+
+       override fun onConnected(user: ScaleUser) {
+           // Enable NOTIFY on your measurement characteristic
+           val svc = uuid16(0xFFE0)
+           val chr = uuid16(0xFFE4)
+           setNotifyOn(svc, chr)
+
+           // Send any init / user / time commands the device expects
+           val ctrlSvc = uuid16(0xFFE5)
+           val ctrlChr = uuid16(0xFFE9)
+           val cmd = byteArrayOf(/* vendor-specific payload */)
+           writeTo(ctrlSvc, ctrlChr, cmd, withResponse = true)
+
+           userInfo("Step on the scale…")
+       }
+
+       override fun onNotification(characteristic: UUID, data: ByteArray, user: ScaleUser) {
+           // Parse vendor frame(s). When you have a complete result:
+           // val measurement = ScaleMeasurement(...populate...)
+           // publish(measurement)
+       }
+
+       override fun onDisconnected() {
+           // Optional cleanup
+       }
+   }
+
+   Tips:
+   - Do not sleep/block inside the handler; the adapter already sequences and paces I/O.
+   - Prefer small, deterministic parsers per packet type; log unexpected frames.
+   - If your device needs faster/slower pacing, talk to the adapter owner to wire in BleTuning.
+--------------------------------------------------------------------------- */
