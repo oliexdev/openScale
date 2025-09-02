@@ -270,6 +270,7 @@
     <!-- Bluetooth Connector -->
     <string name="bluetooth_connector_connected_to">Connected to %1$s</string>
     <string name="bluetooth_connector_connection_failed">Connection to %1$s failed: %2$s</string>
+    <string name="bluetooth_connector_device_error">Error with %1$s: %2$s</string>
     <string name="bluetooth_connector_device_not_supported">%1$s is not supported.</string>
     <string name="bluetooth_connector_driver_not_found">Driver for %1$s not found or internal error.</string>
     <string name="bluetooth_connector_measurement_user_missing">Measurement from %1$s cannot be assigned to a user.</string>

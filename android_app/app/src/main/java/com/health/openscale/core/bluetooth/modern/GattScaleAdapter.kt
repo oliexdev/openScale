@@ -246,26 +246,47 @@ class GattScaleAdapter(
     }
 
     override fun doConnect(address: String, selectedUser: ScaleUser) {
+        // Lazily create the central if this is the first connect attempt.
         if (!::central.isInitialized) {
             central = BluetoothCentralManager(context, centralCallback, mainHandler)
         }
 
-        // Cooldown to avoid Android stack churn
-        val since = SystemClock.elapsedRealtime() - lastDisconnectAtMs
-        if (since in 1 until tuning.reconnectCooldownMs) {
-            scope.launch { delay(tuning.reconnectCooldownMs - since) }
-        }
+        // Respect a cooldown between disconnect and next connect attempt to avoid stack churn.
+        val sinceLastDisconnect = SystemClock.elapsedRealtime() - lastDisconnectAtMs
+        val waitMs = (tuning.reconnectCooldownMs - sinceLastDisconnect).coerceAtLeast(0)
 
+        // Reset session-local counters/flags for this attempt.
         connectAttempts = 0
         _isConnected.value = false
-        try {
-            central.scanForPeripheralsWithAddresses(arrayOf(address))
-        } catch (e: Exception) {
-            LogManager.e(TAG, "Failed to start scan/connect: ${e.message}", e)
-            _events.tryEmit(BluetoothEvent.ConnectionFailed(address, e.message ?: context.getString(R.string.bt_error_generic)))
-            cleanup(address)
+        _isConnecting.value = true
+
+        // Ensure no stale scan is running from a previous attempt.
+        runCatching { central.stopScan() }
+
+        // Defer starting the scan/connect until the cooldown has elapsed.
+        scope.launch {
+            if (waitMs > 0) {
+                LogManager.d(TAG, "Reconnect cooldown: waiting ${waitMs} ms before scanning $address")
+                delay(waitMs)
+            }
+
+            try {
+                // Start a directed scan for the target MAC; Blessed will call back to centralCallback.
+                central.scanForPeripheralsWithAddresses(arrayOf(address))
+            } catch (e: Exception) {
+                // If scanning/connecting fails immediately, surface a failure event and clean up state.
+                LogManager.e(TAG, "Failed to start scan/connect: ${e.message}", e)
+                _events.tryEmit(
+                    BluetoothEvent.ConnectionFailed(
+                        address,
+                        e.message ?: context.getString(R.string.bt_error_generic)
+                    )
+                )
+                cleanup(address)
+            }
         }
     }
+
 
     override fun doDisconnect() {
         runCatching { if (::central.isInitialized) central.stopScan() }

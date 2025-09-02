@@ -333,6 +333,12 @@ class BleConnector(
                 disconnectTimeoutJob?.cancel()
                 if (_connectedDeviceAddress.value == event.deviceAddress ||
                     _connectionStatus.value == ConnectionStatus.CONNECTING) {
+                    _snackbarEvents.tryEmit(
+                        SnackbarEvent(
+                            messageResId = R.string.bluetooth_connector_connection_failed,
+                            messageFormatArgs = listOf(deviceDisplayName, event.error ?: "—")
+                        )
+                    )
                     _connectionStatus.value = ConnectionStatus.FAILED
                     _connectionError.value = "Connection to $deviceDisplayName failed: ${event.error}"
                     _connectedDeviceAddress.value = null
@@ -360,8 +366,20 @@ class BleConnector(
 
             is BluetoothEvent.Error -> {
                 LogManager.e(TAG, "Event: Error from $deviceDisplayName: ${event.error}")
+
+                _snackbarEvents.tryEmit(
+                    SnackbarEvent(
+                        messageResId = R.string.bluetooth_connector_device_error,
+                        messageFormatArgs = listOf(deviceDisplayName, event.error ?: "—")
+                    )
+                )
+
                 _connectionError.value = "Error with $deviceDisplayName: ${event.error}"
-                // Optional: set status to FAILED if appropriate for your UX.
+                if (_connectionStatus.value == ConnectionStatus.CONNECTING ||
+                    _connectionStatus.value == ConnectionStatus.BROADCAST_LISTENING
+                ) {
+                    _connectionStatus.value = ConnectionStatus.FAILED
+                }
             }
 
             is BluetoothEvent.UserInteractionRequired -> {
