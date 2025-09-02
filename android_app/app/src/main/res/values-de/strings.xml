@@ -606,4 +606,6 @@
 
     <string name="bt_error_handler_connect_failed">Handler-Fehler beim Verbinden: %1$s</string>
     <string name="bt_error_handler_parse_error">Handler-Parserfehler für %1$s: %2$s</string>
+    <string name="bt_error_no_bluetooth_adapter">Kein Bluetooth-Adapter auf diesem Gerät vorhanden.</string>
+    <string name="bt_error_no_device_found">Gerät nicht gefunden. Bitte sicherstellen, dass es eingeschaltet ist und sich in Reichweite befindet.</string>
 </resources>

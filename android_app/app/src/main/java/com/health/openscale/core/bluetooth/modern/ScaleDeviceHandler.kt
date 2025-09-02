@@ -62,7 +62,7 @@ enum class DeviceCapability {
  * Defines whether a device communicates via a GATT connection
  * or only via broadcast advertisements.
  */
-enum class LinkMode { CONNECT_GATT, BROADCAST_ONLY, AUTO }
+enum class LinkMode { CONNECT_GATT, BROADCAST_ONLY, CLASSIC_SPP }
 
 /**
  * Signals how the handler consumed an advertisement.
@@ -88,8 +88,14 @@ enum class BroadcastAction { IGNORED, CONSUMED_KEEP_SCANNING, CONSUMED_STOP }
  */
 abstract class ScaleDeviceHandler {
 
-    companion object { const val TAG = "ScaleDeviceHandler" }
-
+    companion object {
+        const val TAG = "ScaleDeviceHandler"
+        // Pseudo UUIDs for Classic/SPP
+        val CLASSIC_FAKE_SERVICE: UUID =
+            UUID.fromString("00000000-0000-0000-0000-00000000C1A0")
+        val CLASSIC_DATA_UUID: UUID =
+            UUID.fromString("00000000-0000-0000-0000-00000000C1A5")
+    }
     /**
      * Identify whether this handler supports the given scanned device.
      * Return a [DeviceSupport] description if yes, or `null` if not.

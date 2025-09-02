@@ -607,4 +607,6 @@
 
     <string name="bt_error_handler_connect_failed">Handler failed on connect: %1$s</string>
     <string name="bt_error_handler_parse_error">Handler parse error for %1$s: %2$s</string>
+    <string name="bt_error_no_bluetooth_adapter">No Bluetooth adapter detected on this device.</string>
+    <string name="bt_error_no_device_found">Device not found. Make sure it is powered on and in range.</string>
 </resources>

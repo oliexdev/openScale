@@ -56,9 +56,13 @@ import com.health.openscale.core.bluetooth.legacy.BluetoothTrisaBodyAnalyze
 import com.health.openscale.core.bluetooth.legacy.BluetoothYoda1Scale
 import com.health.openscale.core.bluetooth.legacy.BluetoothYunmaiSE_Mini
 import com.health.openscale.core.bluetooth.legacy.LegacyScaleAdapter
+import com.health.openscale.core.bluetooth.modern.BleTuningProfile
+import com.health.openscale.core.bluetooth.modern.BroadcastScaleAdapter
 import com.health.openscale.core.bluetooth.modern.DeviceSupport
 import com.health.openscale.core.bluetooth.modern.ESCS20mHandler
+import com.health.openscale.core.bluetooth.modern.GattScaleAdapter
 import com.health.openscale.core.bluetooth.modern.InlifeHandler
+import com.health.openscale.core.bluetooth.modern.LinkMode
 import com.health.openscale.core.bluetooth.modern.MGBHandler
 import com.health.openscale.core.bluetooth.modern.MedisanaBs44xHandler
 import com.health.openscale.core.bluetooth.modern.MiScaleHandler
@@ -72,10 +76,12 @@ import com.health.openscale.core.bluetooth.modern.SanitasSBF72Handler
 import com.health.openscale.core.bluetooth.modern.SenssunHandler
 import com.health.openscale.core.bluetooth.modern.SinocareHandler
 import com.health.openscale.core.bluetooth.modern.SoehnleHandler
+import com.health.openscale.core.bluetooth.modern.SppScaleAdapter
 import com.health.openscale.core.bluetooth.modern.StandardWeightProfileHandler
 import com.health.openscale.core.bluetooth.modern.TrisaBodyAnalyzeHandler
 import com.health.openscale.core.bluetooth.modern.Yoda1Handler
 import com.health.openscale.core.bluetooth.modern.YunmaiHandler
+import com.health.openscale.core.bluetooth.modern.asTuning
 import com.health.openscale.core.facade.MeasurementFacade
 import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.core.facade.UserFacade
@@ -332,16 +338,32 @@ class ScaleFactory @Inject constructor(
     private fun createModernCommunicator(
         handler: ScaleDeviceHandler,
         support: DeviceSupport
-    ): ScaleCommunicator? {
-        LogManager.i(TAG, "Creating ModernScaleAdapter for handler '${handler.javaClass.simpleName}'.")
-        return ModernScaleAdapter(
-            context = applicationContext,
-            settingsFacade = settingsFacade,
-            measurementFacade = measurementFacade,
-            userFacade = userFacade,
-            handler = handler,
-            bleTuning = support.bleTuning
-        )
+    ): ScaleCommunicator? = when (support.linkMode) {
+        LinkMode.CONNECT_GATT ->
+            GattScaleAdapter(
+                applicationContext,
+                settingsFacade,
+                measurementFacade,
+                userFacade,
+                handler,
+                support.bleTuning ?: BleTuningProfile.Balanced.asTuning()
+            )
+        LinkMode.BROADCAST_ONLY ->
+            BroadcastScaleAdapter(
+                applicationContext,
+                settingsFacade,
+                measurementFacade,
+                userFacade,
+                handler
+            )
+        LinkMode.CLASSIC_SPP ->
+            SppScaleAdapter(
+                applicationContext,
+                settingsFacade,
+                measurementFacade,
+                userFacade,
+                handler
+            )
     }
 
     /**
