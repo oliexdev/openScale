@@ -29,6 +29,7 @@ import com.health.openscale.core.data.ConnectionStatus
 import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.MeasurementValue
+import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.database.DatabaseRepository
 import com.health.openscale.core.facade.MeasurementFacade
 import com.health.openscale.core.utils.LogManager
@@ -414,128 +415,154 @@ class BleConnector(
     }
 
     /**
-     * Saves a [com.health.openscale.core.bluetooth.data.ScaleMeasurement] received from a device to the database.
-     * This involves creating a [com.health.openscale.core.data.Measurement] entity and associated [com.health.openscale.core.data.MeasurementValue]s.
+     * Saves a [com.health.openscale.core.bluetooth.data.ScaleMeasurement] received from a device to the DB.
      *
-     * @param measurementData The raw measurement data from the scale.
-     * @param deviceAddress The address of the device that sent the measurement.
-     * @param deviceName The name of the device.
+     * ## What this does
+     * 1) Validates that an app user is selected.
+     * 2) Builds a `Measurement` row and associated `MeasurementValue` rows.
+     * 3) **Converts units** from the scale's **raw units** into the **target display units**
+     *    defined by each [`MeasurementType`]'s `unit` field before persisting.
+     *
+     * ### Raw units assumed for ScaleMeasurement
+     * - WEIGHT, BONE, LBM  → **KG**
+     * - BODY_FAT, WATER, MUSCLE, VISCERAL_FAT → **PERCENT**
+     *
+     * Other fields in `ScaleMeasurement` (if added later) should be appended here with the correct raw unit.
+     *
+     * @param measurementData Raw measurement from the scale (weight etc.)
+     * @param deviceAddress   Address of the device that sent the measurement (for logging/UX).
+     * @param deviceName      Human-friendly device name (for snackbar/logging).
      */
-    private suspend fun saveMeasurementFromEvent(measurementData: ScaleMeasurement, deviceAddress: String, deviceName: String) {
+    private suspend fun saveMeasurementFromEvent(
+        measurementData: ScaleMeasurement,
+        deviceAddress: String,
+        deviceName: String
+    ) {
         val currentAppUserId = getCurrentScaleUser()?.id
         if (currentAppUserId == 0) {
             LogManager.e(TAG, "($deviceName): No App User ID to save measurement.")
-            _snackbarEvents.tryEmit(SnackbarEvent(messageResId = R.string.bluetooth_connector_measurement_user_missing, messageFormatArgs = listOf(deviceName)))
+            _snackbarEvents.tryEmit(
+                SnackbarEvent(
+                    messageResId = R.string.bluetooth_connector_measurement_user_missing,
+                    messageFormatArgs = listOf(deviceName)
+                )
+            )
             return
         }
         LogManager.i(TAG, "($deviceName): Saving measurement for App User ID $currentAppUserId.")
 
-        // This logic is largely identical to what might be in a ViewModel and could
-        // potentially be moved entirely into a dedicated MeasurementRepository or similar service.
-        scope.launch(Dispatchers.IO) { // Perform database operations on IO dispatcher.
+        // Perform DB work on IO dispatcher.
+        scope.launch(Dispatchers.IO) {
             val newDbMeasurement = Measurement(
                 userId = currentAppUserId ?: 0,
                 timestamp = measurementData.dateTime?.time ?: System.currentTimeMillis()
             )
 
-            // Fetch measurement type IDs from the database to map keys to foreign keys.
-            val typeKeyToIdMap: Map<MeasurementTypeKey, Int> =
-                measurementFacade.getAllMeasurementTypes().firstOrNull()
-                    ?.associate { it.key to it.id } ?: run {
+            // Load all measurement types to (a) map keys -> IDs and (b) read target units for conversion.
+            val types = measurementFacade.getAllMeasurementTypes().firstOrNull()
+                ?: run {
                     LogManager.e(TAG, "Could not load MeasurementTypes from DB for $deviceName.")
-                    _snackbarEvents.tryEmit(SnackbarEvent(messageResId = R.string.bluetooth_connector_measurement_types_not_loaded))
+                    _snackbarEvents.tryEmit(
+                        SnackbarEvent(
+                            messageResId = R.string.bluetooth_connector_measurement_types_not_loaded
+                        )
+                    )
                     return@launch
                 }
-            fun getTypeIdFromMap(key: MeasurementTypeKey): Int? = typeKeyToIdMap[key]
+
+            val typeKeyToIdMap   = types.associate { it.key to it.id }
+            val typeKeyToUnitMap = types.associate { it.key to it.unit }
+
+            fun getTypeId(key: MeasurementTypeKey) = typeKeyToIdMap[key]
+            fun getTargetUnit(key: MeasurementTypeKey) = typeKeyToUnitMap[key] ?: UnitType.NONE
+
+            // Declare raw units provided by ScaleMeasurement for each key.
+            // Percent-based values will "convert" to themselves (converter returns unchanged value).
+            val rawUnitByKey: Map<MeasurementTypeKey, UnitType> = mapOf(
+                MeasurementTypeKey.WEIGHT       to UnitType.KG,
+                MeasurementTypeKey.BODY_FAT     to UnitType.PERCENT,
+                MeasurementTypeKey.WATER        to UnitType.PERCENT,
+                MeasurementTypeKey.MUSCLE       to UnitType.PERCENT,
+                MeasurementTypeKey.VISCERAL_FAT to UnitType.PERCENT,
+                MeasurementTypeKey.BONE         to UnitType.KG,
+                MeasurementTypeKey.LBM          to UnitType.KG
+            )
 
             val values = mutableListOf<MeasurementValue>()
-            measurementData.weight.takeIf { it.isFinite() && it > 0.0f }?.let {
-                getTypeIdFromMap(MeasurementTypeKey.WEIGHT)?.let { typeId ->
+
+            /**
+             * Adds a converted float value for the given key if present & valid.
+             * - Reads the raw unit for the key (what the device/handler provided).
+             * - Looks up the target unit from MeasurementType.
+             * - Converts using existing ConverterUtils.convertFloatValueUnit.
+             */
+            fun addConvertedIfValid(
+                value: Float?,
+                key: MeasurementTypeKey,
+                isValid: (Float) -> Boolean = { it.isFinite() && it > 0f }
+            ) {
+                val v = value ?: return
+                if (!isValid(v)) return
+
+                val rawUnit = rawUnitByKey[key] ?: UnitType.NONE
+                val target  = getTargetUnit(key)
+
+                val converted = com.health.openscale.core.utils.ConverterUtils.convertFloatValueUnit(
+                    v, rawUnit, target
+                )
+
+                getTypeId(key)?.let { typeId ->
                     values.add(
                         MeasurementValue(
                             measurementId = 0,
                             typeId = typeId,
-                            floatValue = it
+                            floatValue = converted
                         )
                     )
                 }
             }
-            measurementData.fat.takeIf { it.isFinite() && it > 0.0f }?.let {
-                getTypeIdFromMap(MeasurementTypeKey.BODY_FAT)?.let { typeId ->
-                    values.add(
-                        MeasurementValue(
-                            measurementId = 0,
-                            typeId = typeId,
-                            floatValue = it
-                        )
-                    )
-                }
-            }
-            measurementData.water.takeIf { it.isFinite() && it > 0.0f }?.let {
-                getTypeIdFromMap(MeasurementTypeKey.WATER)?.let { typeId ->
-                    values.add(
-                        MeasurementValue(
-                            measurementId = 0,
-                            typeId = typeId,
-                            floatValue = it
-                        )
-                    )
-                }
-            }
-            measurementData.muscle.takeIf { it.isFinite() && it > 0.0f }?.let {
-                getTypeIdFromMap(MeasurementTypeKey.MUSCLE)?.let { typeId ->
-                    values.add(
-                        MeasurementValue(
-                            measurementId = 0,
-                            typeId = typeId,
-                            floatValue = it
-                        )
-                    )
-                }
-            }
-            measurementData.visceralFat.takeIf { it.isFinite() && it >= 0.0f }?.let {
-                getTypeIdFromMap(MeasurementTypeKey.VISCERAL_FAT)?.let { typeId ->
-                    values.add(
-                        MeasurementValue(
-                            measurementId = 0,
-                            typeId = typeId,
-                            floatValue = it
-                        )
-                    )
-                }
-            }
-            measurementData.bone.takeIf { it.isFinite() && it > 0.0f }?.let {
-                getTypeIdFromMap(MeasurementTypeKey.BONE)?.let { typeId ->
-                    values.add(
-                        MeasurementValue(
-                            measurementId = 0,
-                            typeId = typeId,
-                            floatValue = it
-                        )
-                    )
-                }
-            }
-            // Add other values here (BMI, BMR etc. if available from ScaleMeasurement)
+
+            // Collect all supported values from ScaleMeasurement, converting as needed.
+            addConvertedIfValid(measurementData.weight,       MeasurementTypeKey.WEIGHT)
+            addConvertedIfValid(measurementData.fat,          MeasurementTypeKey.BODY_FAT)
+            addConvertedIfValid(measurementData.water,        MeasurementTypeKey.WATER)
+            addConvertedIfValid(measurementData.muscle,       MeasurementTypeKey.MUSCLE)
+            addConvertedIfValid(measurementData.visceralFat,  MeasurementTypeKey.VISCERAL_FAT) { it.isFinite() && it >= 0f }
+            addConvertedIfValid(measurementData.bone,         MeasurementTypeKey.BONE)
+            addConvertedIfValid(measurementData.lbm,          MeasurementTypeKey.LBM)
 
             if (values.isEmpty()) {
                 LogManager.w(TAG, "No valid values from measurement of $deviceName to save.")
-                _snackbarEvents.tryEmit(SnackbarEvent(messageResId = R.string.bluetooth_connector_measurement_no_values, messageFormatArgs = listOf(deviceName)))
+                _snackbarEvents.tryEmit(
+                    SnackbarEvent(
+                        messageResId = R.string.bluetooth_connector_measurement_no_values,
+                        messageFormatArgs = listOf(deviceName)
+                    )
+                )
                 return@launch
             }
 
             try {
                 val measurementId = measurementFacade.saveMeasurement(newDbMeasurement, values)
-
-                LogManager.i(TAG, "Measurement from $deviceName for User $currentAppUserId saved (ID: $measurementId). Values: ${values.size}")
+                LogManager.i(
+                    TAG,
+                    "Measurement from $deviceName for User $currentAppUserId saved (ID: $measurementId). Values: ${values.size}"
+                )
                 pendingSavedCount.incrementAndGet()
                 lastSavedArgs = listOf(measurementData.weight, deviceName)
                 savedBurstSignal.tryEmit(Unit)
             } catch (e: Exception) {
                 LogManager.e(TAG, "Error saving measurement from $deviceName.", e)
-                _snackbarEvents.tryEmit(SnackbarEvent(messageResId = R.string.bluetooth_connector_measurement_save_error, messageFormatArgs = listOf(deviceName)))
+                _snackbarEvents.tryEmit(
+                    SnackbarEvent(
+                        messageResId = R.string.bluetooth_connector_measurement_save_error,
+                        messageFormatArgs = listOf(deviceName)
+                    )
+                )
             }
         }
     }
+
 
     /**
      * Disconnects from the currently connected device, if any.
