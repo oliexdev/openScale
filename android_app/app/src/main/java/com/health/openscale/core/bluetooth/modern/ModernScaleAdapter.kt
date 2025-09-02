@@ -29,7 +29,13 @@ import com.health.openscale.core.bluetooth.BluetoothEvent.UserInteractionType
 import com.health.openscale.core.bluetooth.ScaleCommunicator
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
+import com.health.openscale.core.data.MeasurementTypeKey
+import com.health.openscale.core.data.MeasurementValue
+import com.health.openscale.core.data.User
+import com.health.openscale.core.facade.MeasurementFacade
 import com.health.openscale.core.facade.SettingsFacade
+import com.health.openscale.core.facade.UserFacade
+import com.health.openscale.core.model.MeasurementWithValues
 import com.health.openscale.core.service.ScannedDeviceInfo
 import com.health.openscale.core.utils.LogManager
 import com.welie.blessed.*
@@ -42,9 +48,13 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import java.util.Date
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.Int
@@ -204,6 +214,8 @@ class FacadeDriverSettings(
 class ModernScaleAdapter(
     private val context: Context,
     private val settingsFacade: SettingsFacade,
+    private val measurementFacade: MeasurementFacade,
+    private val userFacade: UserFacade,
     private val handler: ScaleDeviceHandler,
     private val bleTuning: BleTuning? = null
 ) : ScaleCommunicator {
@@ -224,7 +236,10 @@ class ModernScaleAdapter(
     // Session state
     private var targetAddress: String? = null
     private var currentPeripheral: BluetoothPeripheral? = null
-    private var currentUser: ScaleUser? = null
+
+    @Volatile private lateinit var selectedUserSnapshot: ScaleUser
+    @Volatile private var usersSnapshot: List<ScaleUser> = emptyList()
+    @Volatile private var lastSnapshot: Map<Int, ScaleMeasurement> = emptyMap()
 
     // Session tracking for log correlation
     private var sessionCounter = 0
@@ -261,6 +276,37 @@ class ModernScaleAdapter(
     private val _isConnected = MutableStateFlow(false)
     override val isConnected: StateFlow<Boolean> = _isConnected.asStateFlow()
 
+    init {
+        scope.launch {
+            userFacade.observeSelectedUser().collect { u ->
+                if (u != null) {
+                    selectedUserSnapshot = mapUser(u)
+                }
+            }
+        }
+
+        scope.launch {
+            userFacade.observeAllUsers()
+                .flatMapLatest { users ->
+                    usersSnapshot = users.map(::mapUser)
+
+                    if (users.isEmpty()) {
+                        flowOf(emptyMap())
+                    } else {
+                        combine(users.map { u -> measurementFacade.getMeasurementsForUser(u.id) }) { lists ->
+                            val out = HashMap<Int, ScaleMeasurement>(users.size)
+                            users.forEachIndexed { idx, u ->
+                                val newest = lists[idx].maxByOrNull { it.measurement.timestamp }
+                                mapMeasurement(newest)?.let { out[u.id] = it }
+                            }
+                            out
+                        }
+                    }
+                }
+                .collect { latestMap -> lastSnapshot = latestMap }
+        }
+    }
+
     // --------------------------------------------------------------------------------------------
     // Blessed callbacks: central / peripheral
     // --------------------------------------------------------------------------------------------
@@ -286,14 +332,14 @@ class ModernScaleAdapter(
                         deviceAddress = peripheral.address,
                         handlerNamespace = handler::class.simpleName ?: "Handler"
                     )
-                    handler.attach(noopTransport, appCallbacks, driverSettings)
+                    handler.attach(noopTransport, appCallbacks, driverSettings, dataProvider)
                     broadcastAttached = true
                     // Now we know it's a broadcast flow → inform UI
                     _events.tryEmit(BluetoothEvent.Listening(peripheral.address))
                 }
 
                 // Forward the advertisement to the handler for parsing/aggregation
-                val user = currentUser ?: return
+                val user = selectedUserSnapshot
                 when (handler.onAdvertisement(scanResult, user)) {
                     BroadcastAction.IGNORED -> Unit
 
@@ -385,8 +431,10 @@ class ModernScaleAdapter(
             }
             LogManager.d(TAG, "session#$sessionId Link params: highPrio=${tuning.requestHighConnectionPriority}, mtu=${tuning.requestMtuBytes}")
 
-            val user = currentUser ?: run {
-                LogManager.e(TAG, "session#$sessionId No user set before services discovered")
+            val user = if (::selectedUserSnapshot.isInitialized) {
+                selectedUserSnapshot
+            } else {
+                LogManager.e(TAG, "no user selected before services discovered")
                 central.cancelConnection(peripheral)
                 return
             }
@@ -399,7 +447,7 @@ class ModernScaleAdapter(
             )
 
             // From here the handler drives protocol: enable NOTIFY, write commands, parse frames.
-            handler.attach(transportImpl, appCallbacks, driverSettings)
+            handler.attach(transportImpl, appCallbacks, driverSettings, dataProvider)
             handler.handleConnected(user)
         }
 
@@ -522,6 +570,12 @@ class ModernScaleAdapter(
         }
     }
 
+    private val dataProvider = object : ScaleDeviceHandler.DataProvider {
+        override fun currentUser(): ScaleUser = selectedUserSnapshot
+        override fun usersForDevice(): List<ScaleUser> = usersSnapshot
+        override fun lastMeasurementFor(userId: Int): ScaleMeasurement? = lastSnapshot[userId]
+    }
+
     // No-op transport used for broadcast-only devices (no GATT operations)
     private val noopTransport = object : ScaleDeviceHandler.Transport {
         override fun setNotifyOn(service: UUID, characteristic: UUID) { /* no-op */ }
@@ -582,7 +636,7 @@ class ModernScaleAdapter(
      */
     override fun connect(address: String, scaleUser: ScaleUser?) {
         scope.launch {
-            if (scaleUser == null) {
+            if (!ensureSelectedUserSnapshot()) {
                 _events.tryEmit(
                     BluetoothEvent.ConnectionFailed(
                         address,
@@ -613,7 +667,6 @@ class ModernScaleAdapter(
 
             // Initialize session state
             targetAddress = address
-            currentUser = scaleUser
             connectAttempts = 0
             _isConnecting.value = true
             _isConnected.value = false
@@ -722,6 +775,68 @@ class ModernScaleAdapter(
         if ((props and android.bluetooth.BluetoothGattCharacteristic.PROPERTY_BROADCAST) != 0) names += "BROADCAST"
         if ((props and android.bluetooth.BluetoothGattCharacteristic.PROPERTY_EXTENDED_PROPS) != 0) names += "EXTENDED_PROPS"
         return if (names.isEmpty()) props.toString() else names.joinToString("|")
+    }
+
+
+    private suspend fun ensureSelectedUserSnapshot(): Boolean {
+        if (::selectedUserSnapshot.isInitialized) return true
+
+        val u0 = userFacade.observeSelectedUser().first()
+        if (u0 != null) {
+            selectedUserSnapshot = mapUser(u0)
+            return true
+        }
+
+        runCatching { userFacade.restoreOrSelectDefaultUser() }.onFailure { return false }
+
+        val u1 = userFacade.observeSelectedUser().first()
+        return if (u1 != null) {
+            selectedUserSnapshot = mapUser(u1)
+            true
+        } else {
+            false
+        }
+    }
+
+    private fun mapUser(u: User): ScaleUser =
+        ScaleUser().apply {
+            runCatching { setId(u.id) }
+            runCatching { setUserName(u.name) }
+            when (val b = runCatching { u.birthDate }.getOrNull()) {
+                is Date -> setBirthday(b)
+                is Long -> setBirthday(Date(b))
+            }
+            runCatching { setBodyHeight(u.heightCm) }
+            runCatching { setGender(u.gender) }
+            runCatching { setActivityLevel(u.activityLevel) }
+        }
+
+    private fun mapMeasurement(
+        mwv: MeasurementWithValues?
+    ): ScaleMeasurement? {
+        if (mwv == null) return null
+
+        val m = ScaleMeasurement()
+
+        runCatching { m.setId(mwv.measurement.id) }
+        runCatching { m.setUserId(mwv.measurement.userId) }
+        runCatching { m.setDateTime(Date(mwv.measurement.timestamp)) }
+
+        // Helper to pull a float by key from the value list
+        fun valueOf(key: MeasurementTypeKey): MeasurementValue? {
+            val v = mwv.values.firstOrNull { it.type.key == key } ?: return null
+            return v.value
+        }
+
+        valueOf(MeasurementTypeKey.WEIGHT)?.let { m.setWeight(it.floatValue ?: 0f) }
+        valueOf(MeasurementTypeKey.BODY_FAT)?.let { m.setFat(it.floatValue ?: 0f) }
+        valueOf(MeasurementTypeKey.WATER)?.let { m.setWater(it.floatValue ?: 0f) }
+        valueOf(MeasurementTypeKey.MUSCLE)?.let { m.setMuscle(it.floatValue ?: 0f) }
+        valueOf(MeasurementTypeKey.VISCERAL_FAT)?.let { m.setVisceralFat(it.floatValue ?: 0f) }
+        valueOf(MeasurementTypeKey.LBM)?.let { m.setLbm(it.floatValue ?: 0f) }
+        valueOf(MeasurementTypeKey.BONE)?.let { m.setBone(it.floatValue ?: 0f) }
+
+        return m
     }
 
     // --------------------------------------------------------------------------------------------

@@ -226,7 +226,7 @@ class SoehnleHandler : ScaleDeviceHandler() {
 
         // We need user's profile for composition calcs → try to use the currently selected user
         // (This is usually the same as 'openScaleUserId')
-        val u = try { requireUser() } catch (_: Throwable) { null }
+        val u = try { currentAppUser() } catch (_: Throwable) { null }
         val activity = mapActivityLevel(u)
         val isMale = u?.gender?.isMale() ?: true
         val age = u?.age ?: 30

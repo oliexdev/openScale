@@ -104,15 +104,15 @@ abstract class ScaleDeviceHandler {
 
     // --- Lifecycle entry points called by the adapter -------------------------
 
-    internal fun attach(transport: Transport, callbacks: Callbacks, settings: DriverSettings) {
+    internal fun attach(transport: Transport, callbacks: Callbacks, settings: DriverSettings, data: DataProvider) {
         this.transport = transport
         this.callbacks = callbacks
         this.settings = settings
+        this.data = data
         logD("attach()")
     }
 
     internal fun handleConnected(user: ScaleUser) {
-        currentUser = user
         logD("handleConnected(userId=${user.id}, height=${user.bodyHeight}, age=${user.age})")
         try {
             onConnected(user)
@@ -127,7 +127,7 @@ abstract class ScaleDeviceHandler {
     }
 
     internal fun handleNotification(characteristic: UUID, data: ByteArray) {
-        val u = currentUser ?: return
+        val u = currentAppUser() ?: return
         logD("\u2190 notify chr=$characteristic len=${data.size} ${data.toHexPreview(24)}")
         try {
             onNotification(characteristic, data, u)
@@ -149,7 +149,6 @@ abstract class ScaleDeviceHandler {
         } catch (t: Throwable) {
             logW("onDisconnected threw: ${t.message}")
         } finally {
-            currentUser = null
         }
     }
 
@@ -157,7 +156,6 @@ abstract class ScaleDeviceHandler {
         logD("detach()")
         transport = null
         callbacks = null
-        currentUser = null
     }
 
     // --- To be implemented by concrete handlers --------------------------------
@@ -225,10 +223,6 @@ abstract class ScaleDeviceHandler {
     protected fun uuid16(short: Int): UUID =
         UUID.fromString(String.format("0000%04x-0000-1000-8000-00805f9b34fb", short))
 
-    /** Get the current user or throw if used before [handleConnected]. */
-    protected fun requireUser(): ScaleUser =
-        currentUser ?: error("No current user in handler")
-
     protected fun resolveString(@StringRes resId: Int, vararg args: Any): String =
         callbacks?.resolveString(resId, *args) ?: "res:$resId"
 
@@ -254,6 +248,13 @@ abstract class ScaleDeviceHandler {
 
     protected fun settingsGetInt(key: String, default: Int = -1): Int = settings.getInt(key, default)
     protected fun settingsPutInt(key: String, value: Int) { settings.putInt(key, value) }
+
+    protected fun settingsGetString(key: String, default: String? = null): String? = settings.getString(key, default)
+    protected fun settingsPutString(key: String, value: String) { settings.putString(key, value) }
+
+    protected fun currentAppUser(): ScaleUser = data.currentUser()
+    protected fun usersForDevice(): List<ScaleUser> = data.usersForDevice()
+    protected fun lastMeasurementFor(userId: Int): ScaleMeasurement? = data.lastMeasurementFor(userId)
 
     // --- Logging shortcuts (route to LogManager under a single TAG) ------------
 
@@ -291,9 +292,8 @@ abstract class ScaleDeviceHandler {
 
     private var transport: Transport? = null
     private var callbacks: Callbacks? = null
-    private var currentUser: ScaleUser? = null
     private lateinit var settings: DriverSettings
-
+    private lateinit var data: DataProvider
     /**
      * BLE transport the adapter provides. No threading/queueing implied here—
      * the adapter already serializes and paces I/O.
@@ -303,6 +303,18 @@ abstract class ScaleDeviceHandler {
         fun write(service: UUID, characteristic: UUID, payload: ByteArray, withResponse: Boolean = true)
         fun read(service: UUID, characteristic: UUID)
         fun disconnect()
+    }
+
+    // ----- DataProvider: live app data the handler can query -----
+    interface DataProvider {
+        /** Currently selected app user (may be null if none). */
+        fun currentUser(): ScaleUser
+
+        /** Fresh snapshot of app users that are relevant for this device. */
+        fun usersForDevice(): List<ScaleUser>
+
+        /** Latest saved measurement for the given user (or null if none). */
+        fun lastMeasurementFor(userId: Int): ScaleMeasurement?
     }
 
     interface DriverSettings {

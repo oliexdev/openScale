@@ -441,7 +441,7 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
             UDS_CP_REGISTER_NEW_USER -> {
                 if (result == UDS_CP_RESP_VALUE_SUCCESS && value.size >= 4) {
                     val newScaleIndex = value[3].toInt() and 0xFF
-                    val appId = pendingAppUserId ?: requireUser().id
+                    val appId = pendingAppUserId ?: currentAppUser().id
                     logD("UDS REGISTER_NEW_USER: created scaleIndex=$newScaleIndex for appUserId=$appId")
 
                     for (i in 0..255) {
@@ -488,7 +488,7 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
                     onRequestMeasurement()
                 } else if (result == UDS_CP_RESP_USER_NOT_AUTHORIZED) {
                     userError(R.string.bt_error_ucp_not_authorized)
-                    val appId = pendingAppUserId ?: requireUser().id
+                    val appId = pendingAppUserId ?: currentAppUser().id
                     val idx = findKnownScaleIndexForAppUser(appId)
                     idx?.let { userInfo(R.string.bt_info_consent_needed, it) }
                 } else {
@@ -510,7 +510,7 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
                             presentChooseFromIndices(indices)
                         } else {
                             // Success but empty → nur "Create new"
-                            findKnownScaleIndexForAppUser(requireUser().id)?.let { idx ->
+                            findKnownScaleIndexForAppUser(currentAppUser().id)?.let { idx ->
                                 saveUserIdForScaleIndex(idx, -1)
                             }
                             presentCreateOnlyChoice()
@@ -535,7 +535,7 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
      * Write core UDS user data (best effort).
      */
     private fun writeUserDataToScale() {
-        val u = requireUser()
+        val u = currentAppUser()
 
         // Date of Birth: Year(2 LE), Month(1), Day(1)
         val dob = Calendar.getInstance().apply { time = u.birthday }
