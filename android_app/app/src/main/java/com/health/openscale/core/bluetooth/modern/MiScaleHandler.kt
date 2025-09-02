@@ -69,8 +69,6 @@ class MiScaleHandler : ScaleDeviceHandler() {
     private var pendingHistoryCount = -1
     private var warnedHistoryStatusBits = false
 
-    override val linkMode: LinkMode = LinkMode.CONNECT_GATT
-
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         val name = device.name?.uppercase(Locale.ROOT) ?: ""
         val services = device.serviceUuids ?: emptyList()

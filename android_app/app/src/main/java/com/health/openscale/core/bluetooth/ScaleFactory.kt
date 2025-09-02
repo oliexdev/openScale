@@ -56,28 +56,39 @@ import com.health.openscale.core.bluetooth.legacy.BluetoothTrisaBodyAnalyze
 import com.health.openscale.core.bluetooth.legacy.BluetoothYoda1Scale
 import com.health.openscale.core.bluetooth.legacy.BluetoothYunmaiSE_Mini
 import com.health.openscale.core.bluetooth.legacy.LegacyScaleAdapter
+import com.health.openscale.core.bluetooth.modern.AAAxHandler
+import com.health.openscale.core.bluetooth.modern.ActiveEraBF06Handler
+import com.health.openscale.core.bluetooth.modern.BeurerSanitasHandler
 import com.health.openscale.core.bluetooth.modern.BleTuningProfile
 import com.health.openscale.core.bluetooth.modern.BroadcastScaleAdapter
+import com.health.openscale.core.bluetooth.modern.CustomOpenScaleHandler
+import com.health.openscale.core.bluetooth.modern.DebugGattHandler
 import com.health.openscale.core.bluetooth.modern.DeviceSupport
+import com.health.openscale.core.bluetooth.modern.DigooDGSO38HHandler
 import com.health.openscale.core.bluetooth.modern.ESCS20mHandler
+import com.health.openscale.core.bluetooth.modern.ExcelvanCF36xHandler
+import com.health.openscale.core.bluetooth.modern.ExingtechY1Handler
 import com.health.openscale.core.bluetooth.modern.GattScaleAdapter
+import com.health.openscale.core.bluetooth.modern.HesleyHandler
+import com.health.openscale.core.bluetooth.modern.HoffenBbs8107Handler
+import com.health.openscale.core.bluetooth.modern.HuaweiAH100Handler
+import com.health.openscale.core.bluetooth.modern.IHealthHS3Handler
 import com.health.openscale.core.bluetooth.modern.InlifeHandler
 import com.health.openscale.core.bluetooth.modern.LinkMode
 import com.health.openscale.core.bluetooth.modern.MGBHandler
 import com.health.openscale.core.bluetooth.modern.MedisanaBs44xHandler
 import com.health.openscale.core.bluetooth.modern.MiScaleHandler
-import com.health.openscale.core.bluetooth.modern.ModernScaleAdapter
 import com.health.openscale.core.bluetooth.modern.OkOkHandler
 import com.health.openscale.core.bluetooth.modern.OneByoneHandler
 import com.health.openscale.core.bluetooth.modern.OneByoneNewHandler
 import com.health.openscale.core.bluetooth.modern.QNHandler
+import com.health.openscale.core.bluetooth.modern.RenphoES26BBHandler
 import com.health.openscale.core.bluetooth.modern.RenphoHandler
-import com.health.openscale.core.bluetooth.modern.SanitasSBF72Handler
 import com.health.openscale.core.bluetooth.modern.SenssunHandler
 import com.health.openscale.core.bluetooth.modern.SinocareHandler
 import com.health.openscale.core.bluetooth.modern.SoehnleHandler
 import com.health.openscale.core.bluetooth.modern.SppScaleAdapter
-import com.health.openscale.core.bluetooth.modern.StandardWeightProfileHandler
+import com.health.openscale.core.bluetooth.modern.StandardBeurerSanitasHandler
 import com.health.openscale.core.bluetooth.modern.TrisaBodyAnalyzeHandler
 import com.health.openscale.core.bluetooth.modern.Yoda1Handler
 import com.health.openscale.core.bluetooth.modern.YunmaiHandler
@@ -113,12 +124,11 @@ class ScaleFactory @Inject constructor(
         YunmaiHandler(isMini = true),
         Yoda1Handler(),
         TrisaBodyAnalyzeHandler(),
+        StandardBeurerSanitasHandler(),
         SoehnleHandler(),
         SinocareHandler(),
         SenssunHandler(),
-        SanitasSBF72Handler(),
         RenphoHandler(),
-        ESCS20mHandler(),
         QNHandler(),
         OneByoneHandler(),
         OneByoneNewHandler(),
@@ -127,7 +137,21 @@ class ScaleFactory @Inject constructor(
         MGBHandler(),
         MedisanaBs44xHandler(),
         InlifeHandler(),
-    )
+        IHealthHS3Handler(),
+        HuaweiAH100Handler(),
+        HoffenBbs8107Handler(),
+        HesleyHandler(),
+        ExingtechY1Handler(),
+        ExcelvanCF36xHandler(),
+        ESCS20mHandler(),
+        RenphoES26BBHandler(),
+        DigooDGSO38HHandler(),
+        DebugGattHandler(),
+        CustomOpenScaleHandler(),
+        BeurerSanitasHandler(),
+        AAAxHandler(),
+        ActiveEraBF06Handler(),
+        )
 
     /**
      * Attempts to create a legacy Java Bluetooth driver instance based on the device name.
@@ -138,6 +162,9 @@ class ScaleFactory @Inject constructor(
      * @return A [BluetoothCommunication] instance if a matching driver is found, otherwise null.
      */
     private fun createLegacyJavaDriver(context: Context?, deviceInfo: ScannedDeviceInfo): BluetoothCommunication? {
+
+        return null // TODO don't use legacy drivers for now, modern handlers needs to be tested
+
         val deviceName : String
         val name : String
 

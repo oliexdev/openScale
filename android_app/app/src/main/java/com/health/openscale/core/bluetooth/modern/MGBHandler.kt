@@ -60,8 +60,6 @@ class MGBHandler : ScaleDeviceHandler() {
     // Pending measurement until 2nd frame arrives
     private var pending: ScaleMeasurement? = null
 
-    override val linkMode: LinkMode = LinkMode.CONNECT_GATT
-
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         val name = device.name?.lowercase(Locale.ROOT)
         val nameMatch =

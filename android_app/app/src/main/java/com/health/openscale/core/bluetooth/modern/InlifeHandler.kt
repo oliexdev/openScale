@@ -34,8 +34,6 @@ class InlifeHandler : ScaleDeviceHandler() {
     private val CHR_NOTIFY: UUID = uuid16(0xFFF1) // notify
     private val CHR_CMD: UUID    = uuid16(0xFFF2) // write
 
-    override val linkMode: LinkMode = LinkMode.CONNECT_GATT
-
     // ---- Wire format constants ----
     private val START: Byte = 0x02
     private val END: Byte   = 0xAA.toByte()

@@ -37,8 +37,6 @@ import java.util.UUID
  */
 class IHealthHS3Handler : ScaleDeviceHandler() {
 
-    override val linkMode: LinkMode = LinkMode.CLASSIC_SPP
-
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         // iHealth advertises as "iHealth HS3..." in most cases
         val n = device.name?.uppercase() ?: return null

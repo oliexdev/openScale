@@ -102,12 +102,6 @@ abstract class ScaleDeviceHandler {
      */
     abstract fun supportFor(device: ScannedDeviceInfo): DeviceSupport?
 
-    /**
-     * Declares the preferred link mode. Concrete handlers can override this, but the adapter may
-     * also choose based on [DeviceSupport.linkMode].
-     */
-    open val linkMode: LinkMode = LinkMode.CONNECT_GATT
-
     // --- Lifecycle entry points called by the adapter -------------------------
 
     internal fun attach(transport: Transport, callbacks: Callbacks, settings: DriverSettings, data: DataProvider) {

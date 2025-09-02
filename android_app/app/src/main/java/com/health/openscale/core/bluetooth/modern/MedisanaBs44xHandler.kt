@@ -34,8 +34,6 @@ class MedisanaBs44xHandler : ScaleDeviceHandler() {
     private val CHR_CMD: UUID     = uuid16(0x8A81) // Write
     private val CHR_CUSTOM5: UUID = uuid16(0x8A82) // Indicate (optional)
 
-    override val linkMode: LinkMode = LinkMode.CONNECT_GATT
-
     // Epoch detection
     private enum class EpochMode { UNIX, FROM_2010 }
     private val SCALE_EPOCH_OFFSET = 1262304000L // secs since 1970 to 2010-01-01

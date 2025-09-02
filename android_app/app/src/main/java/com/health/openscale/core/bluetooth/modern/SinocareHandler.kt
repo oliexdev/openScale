@@ -20,9 +20,9 @@ package com.health.openscale.core.bluetooth.modern
 import android.bluetooth.le.ScanResult
 import android.util.SparseArray
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
+import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.service.ScannedDeviceInfo
 import com.health.openscale.core.utils.LogManager
-import java.util.UUID
 import kotlin.math.max
 
 /**
@@ -77,8 +77,8 @@ class SinocareHandler : ScaleDeviceHandler() {
     /**
      * Handle a single advertisement; return a BroadcastAction to steer the adapter.
      */
-    override fun onAdvertisement(scanResult: ScanResult, user: com.health.openscale.core.bluetooth.data.ScaleUser): BroadcastAction {
-        val msd: SparseArray<ByteArray> = scanResult.scanRecord?.manufacturerSpecificData ?: return BroadcastAction.IGNORED
+    override fun onAdvertisement(result: ScanResult, user: ScaleUser): BroadcastAction {
+        val msd: SparseArray<ByteArray> = result.scanRecord?.manufacturerSpecificData ?: return BroadcastAction.IGNORED
         val data = msd.get(MANUFACTURER_DATA_ID) ?: return BroadcastAction.IGNORED
 
         // Sanity: need at least up to checksum index

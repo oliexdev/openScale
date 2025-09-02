@@ -67,8 +67,6 @@ class OkOkHandler : ScaleDeviceHandler() {
     private val UNIT_LB   = 2
     private val UNIT_STLB = 3
 
-    override val linkMode: LinkMode = LinkMode.BROADCAST_ONLY
-
     /**
      * Decide support + build a *dynamic* displayName based on manufacturer data present
      * in the advertisement that matched this device.
