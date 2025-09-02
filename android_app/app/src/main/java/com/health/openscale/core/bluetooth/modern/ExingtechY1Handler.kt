@@ -51,7 +51,7 @@ class ExingtechY1Handler : ScaleDeviceHandler() {
         UUID.fromString("29f11080-75b9-11e2-8bf6-0002a5d5c51b")
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
-        val name = device.name?.lowercase(Locale.US)
+        val name = device.name.lowercase(Locale.US)
         val byName = (name == "vscale")
 
         val byService = device.serviceUuids.any {

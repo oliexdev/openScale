@@ -72,8 +72,9 @@ class OneByoneNewHandler : ScaleDeviceHandler() {
     // ---- Capability declaration ---------------------------------------------
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
-        val match = device.serviceUuids.any { it == SVC_FFB0 }
-        if (!match) return null
+        val name = device.name.lowercase()
+        val supports = name.equals("1byone scale".lowercase())
+        if (!supports) return null
 
         val caps = buildSet {
             add(DeviceCapability.BODY_COMPOSITION)

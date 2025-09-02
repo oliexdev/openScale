@@ -52,7 +52,7 @@ class ExcelvanCF36xHandler : ScaleDeviceHandler() {
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         // These scales commonly advertise as "Electronic Scale"
         // (no reliable manufacturer data). Keep it simple and name-match.
-        val name = device.name ?: return null
+        val name = device.name
         if (!name.equals("Electronic Scale", ignoreCase = true)) return null
 
         val theoretical = setOf(

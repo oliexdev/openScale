@@ -74,6 +74,11 @@ class OkOkHandler : ScaleDeviceHandler() {
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         val m = device.manufacturerData ?: return null
 
+        val name = device.name
+
+        val supports = name.equals("NoName OkOk") || name.equals("ADV") || name.equals("Chipsea-BLE")
+        if (!supports) return null
+
         val variantName = when {
             hasKey(m, MANUF_V20) -> "OKOK V20"
             hasKey(m, MANUF_V11) -> "OKOK V11"

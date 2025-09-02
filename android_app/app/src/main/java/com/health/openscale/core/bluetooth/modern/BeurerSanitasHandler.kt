@@ -125,19 +125,19 @@ class BeurerSanitasHandler : ScaleDeviceHandler() {
 
         val type = when {
             // Beurer BF700/BF800/Runtastic Libra variants
-            n.contains("bf700") || n.contains("bf 700") ||
-                    n.contains("bf800") || n.contains("bf 800") ||
-                    n.contains("runtastic libra") || n.contains("rt libra") ->
+            n.contains("bf-700") || n.contains("BEURER BF700".lowercase()) ||
+                    n.contains("bf-800") || n.contains("BEURER BF800".lowercase()) ||
+                    n.contains("RT-Libra-B".lowercase()) || n.contains("RT-Libra-W".lowercase()) ||
+                    n.contains("Libra-B".lowercase()) || n.contains("Libra-W".lowercase()) ->
                 DeviceType.BEURER_BF700_800_RT_LIBRA
 
             // Beurer BF710
-            n.contains("bf710") || n.contains("bf 710") ->
+            n.contains("BF700".lowercase()) || n.contains("BEURER BF710".lowercase()) ->
                 DeviceType.BEURER_BF710
 
             // Sanitas / SilverCrest / Crane
-            n.contains("sbf70") || n.contains("sbf 70") ||
-                    n.contains("sbf75") || n.contains("sbf 75") ||
-                    n.contains("sanitas") || n.contains("crane") || n.contains("silvercrest") ->
+            n.contains("SANITAS SBF70".lowercase()) || n.contains("sbf75") ||
+                    n.contains("AICDSCALE1".lowercase()) ->
                 DeviceType.SANITAS_SBF70_70
 
             else -> null

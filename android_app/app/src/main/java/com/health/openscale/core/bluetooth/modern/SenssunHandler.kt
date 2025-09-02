@@ -65,7 +65,7 @@ class SenssunHandler : ScaleDeviceHandler() {
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         // Legacy mapping used exact name "SENSSUN FAT"
-        val ok = device.name?.equals("SENSSUN FAT", ignoreCase = true) == true
+        val ok = device.name.equals("SENSSUN FAT", ignoreCase = true)
         return if (ok) {
             DeviceSupport(
                 displayName = "Senssun Fat",

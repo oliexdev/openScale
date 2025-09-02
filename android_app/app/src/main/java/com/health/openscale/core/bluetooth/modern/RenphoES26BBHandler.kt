@@ -51,7 +51,7 @@ class RenphoES26BBHandler : ScaleDeviceHandler() {
     )
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
-        val name = device.name ?: return null
+        val name = device.name
         if (!name.equals("ES-26BB-B", ignoreCase = true)) return null
 
         val capabilities = setOf(

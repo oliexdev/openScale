@@ -51,7 +51,7 @@ class DigooDGSO38HHandler : ScaleDeviceHandler() {
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         val name = device.name ?: return null
         // Historically these scales often advertise as "Mengii". Keep both labels.
-        val supported = name.equals("Mengii", true) || name.equals("Digoo DG-SO38H", true)
+        val supported = name.equals("Mengii", true)
         if (!supported) return null
 
         val capabilities = setOf(

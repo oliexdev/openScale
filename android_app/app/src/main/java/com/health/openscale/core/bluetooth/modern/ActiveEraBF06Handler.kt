@@ -70,13 +70,11 @@ class ActiveEraBF06Handler : ScaleDeviceHandler() {
     // --- Capability declaration ----------------------------------------------
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         // Match by name heuristics and/or advertised service UUID
-        val name = device.name?.lowercase() ?: ""
+        val name = device.name.lowercase()
         val hasSvc = device.serviceUuids?.any { it == SERVICE } == true
         if (
             hasSvc ||
-            name.contains("active era") ||
-            name.contains("bf-06") ||
-            name.contains("bs-06")
+            name.contains("AE BS-06".lowercase())
         ) {
             return DeviceSupport(
                 displayName = "Active Era BF-06",

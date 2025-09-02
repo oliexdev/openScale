@@ -96,11 +96,11 @@ class RenphoHandler : ScaleDeviceHandler() {
      * We keep this moderately strict to avoid grabbing unrelated scales.
      */
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
-        val name = (device.name ?: "").lowercase(Locale.ROOT)
+        val name = device.name.lowercase(Locale.ROOT)
         val svc = device.serviceUuids.toSet()
 
         val looksRenpho =
-            name.contains("renpho") ||
+            name.contains("Renpho-Scale".lowercase()) ||
                     (svc.contains(SERV_WEIGHT_SCALE) && svc.contains(SERV_BODY_COMP))
 
         if (!looksRenpho) return null

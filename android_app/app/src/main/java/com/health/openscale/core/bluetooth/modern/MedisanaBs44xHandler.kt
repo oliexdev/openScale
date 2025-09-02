@@ -47,7 +47,7 @@ class MedisanaBs44xHandler : ScaleDeviceHandler() {
 
     // ---------- Support detection ----------
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
-        val name = device.name?.lowercase(Locale.ROOT) ?: ""
+        val name = device.name.lowercase(Locale.ROOT)
         val serviceHint = device.serviceUuids.any { it == SERVICE }
 
         // Legacy mapping heuristics:

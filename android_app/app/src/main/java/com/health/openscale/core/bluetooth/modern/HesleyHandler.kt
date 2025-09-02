@@ -40,9 +40,9 @@ class HesleyHandler : ScaleDeviceHandler() {
     private val CHAR_NOTIFY: UUID = uuid16(0xFFF4) // notify (+read on some firmwares)
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
-        val name = device.name?.lowercase(Locale.US) ?: return null
+        val name = device.name.lowercase(Locale.US)
         // Legacy mapping used exact "YunChen"
-        if (name != "yunchen") return null
+        if (!name.equals("yunchen")) return null
 
         val caps = setOf(DeviceCapability.BODY_COMPOSITION)
         return DeviceSupport(

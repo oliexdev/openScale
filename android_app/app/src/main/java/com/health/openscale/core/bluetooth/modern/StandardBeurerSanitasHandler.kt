@@ -105,11 +105,11 @@ class StandardBeurerSanitasHandler : StandardWeightProfileHandler() {
 
         val model = when {
             "bf105" in name || "bf720" in name -> Model.BEURER_BF105
-            "bf950" in name                    -> Model.BEURER_BF950
+            "bf950" in name || "sbf77" in name || "sbf76" in name || "bf950" in name -> Model.BEURER_BF950
             "bf500" in name                    -> Model.BEURER_BF500
-            "bf600" in name                    -> Model.BEURER_BF600
-            "sbf72" in name || "sanitas" in name || "silvercrest" in name || "crane" in name -> Model.SANITAS_SBF72
-            svcs.contains(uuid16(0xFFF0))      -> Model.BEURER_BF600
+            "bf600" in name || "bf850" in name -> Model.BEURER_BF600
+            "sbf72" in name || "bf915" in name || "sbf73" in name -> Model.SANITAS_SBF72
+            svcs.contains(uuid16(0xFFF0))  -> Model.BEURER_BF600
             else -> return null
         }
 

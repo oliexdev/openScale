@@ -17,6 +17,7 @@
  */
 package com.health.openscale.core.bluetooth.modern
 
+import androidx.compose.ui.text.toLowerCase
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.YunmaiLib
@@ -79,9 +80,9 @@ class ESCS20mHandler : ScaleDeviceHandler() {
      * Identify the device by advertised service 0x1A10 (and optionally by name).
      */
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
-        val name = (device.name ?: "").lowercase(Locale.ROOT)
+        val name = device.name.lowercase(Locale.ROOT)
         val hasSvc = device.serviceUuids.any { it == SVC_MAIN }
-        val looksEscs20m = hasSvc || name.contains("escs20m") || name.contains("yunmai")
+        val looksEscs20m = hasSvc || name.contains("ES-CS20M".lowercase())
 
         if (!looksEscs20m) return null
 

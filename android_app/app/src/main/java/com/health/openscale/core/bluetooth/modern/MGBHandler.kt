@@ -61,11 +61,8 @@ class MGBHandler : ScaleDeviceHandler() {
     private var pending: ScaleMeasurement? = null
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
-        val name = device.name?.lowercase(Locale.ROOT)
-        val nameMatch =
-            (name?.startsWith("swan") == true) ||
-                    (name == "icomon") ||
-                    (name == "yg")
+        val name = device.name.lowercase(Locale.ROOT)
+        val nameMatch = name.startsWith("swan") || (name == "icomon") || (name == "yg")
 
         val serviceMatch = device.serviceUuids.any { it == SERVICE }
 

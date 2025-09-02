@@ -73,9 +73,9 @@ class QNHandler : ScaleDeviceHandler() {
     // ---- Capability discovery --------------------------------------------------
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
-        val uuids = device.serviceUuids ?: emptyList()
+        val uuids = device.serviceUuids
 
-        val supports = uuids.any { it == SVC_T1 || it == SVC_T2 }
+        val supports = device.name.startsWith("QN-Scale") && uuids.any { it == SVC_T1 || it == SVC_T2 }
         if (!supports) return null
 
         // Remember a hint about which flavor we likely have

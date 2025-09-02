@@ -62,7 +62,7 @@ class SinocareHandler : ScaleDeviceHandler() {
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         // Recognize by advertised name and/or manufacturer data presence
         val hasMsd = device.manufacturerData?.get(MANUFACTURER_DATA_ID) != null
-        val nameOk = device.name?.equals("Weight Scale", ignoreCase = true) == true
+        val nameOk = device.name.equals("Weight Scale", ignoreCase = true)
         if (!hasMsd && !nameOk) return null
 
         return DeviceSupport(

@@ -59,7 +59,7 @@ class HuaweiAH100Handler : ScaleDeviceHandler() {
     private var sessionMac: String? = null
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
-        val name = device.name?.uppercase(Locale.US) ?: return null
+        val name = device.name.uppercase(Locale.US)
         // Known advert name for AH100
         if (name != "CH100") return null
 

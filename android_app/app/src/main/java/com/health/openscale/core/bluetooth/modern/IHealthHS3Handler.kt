@@ -39,7 +39,7 @@ class IHealthHS3Handler : ScaleDeviceHandler() {
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         // iHealth advertises as "iHealth HS3..." in most cases
-        val n = device.name?.uppercase() ?: return null
+        val n = device.name.uppercase()
         if (!n.startsWith("IHEALTH HS3")) return null
 
         val caps = setOf(DeviceCapability.LIVE_WEIGHT_STREAM)
