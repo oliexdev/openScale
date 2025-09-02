@@ -132,7 +132,7 @@ class GattScaleAdapter(
                 ConnectionPriority.HIGH) }
             if (tuning.requestMtuBytes > 23) runCatching { peripheral.requestMtu(tuning.requestMtuBytes) }
 
-            val user = ensureSelectedUserOrFail(peripheral.address) ?: run {
+            val user = selectedUserSnapshot ?: run {
                 central.cancelConnection(peripheral); return
             }
 

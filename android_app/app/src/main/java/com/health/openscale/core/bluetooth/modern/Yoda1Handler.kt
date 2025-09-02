@@ -45,10 +45,8 @@ class Yoda1Handler : ScaleDeviceHandler() {
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         // Heuristic: name starts with "Yoda1" OR the MSD payload looks like Yoda1 (>= 7 bytes)
-        val nameMatch = device.name?.startsWith("Yoda1", ignoreCase = true) == true
-        val msd = device.manufacturerData
-        val msdLooksLikeYoda = msd != null && msd.size() > 0 && (msd.valueAt(0)?.size ?: 0) >= 7
-        if (!nameMatch && !msdLooksLikeYoda) return null
+        val nameMatch = device.name.startsWith("Yoda1", ignoreCase = true)
+        if (!nameMatch) return null
 
         return DeviceSupport(
             displayName = "Yoda1 Scale",

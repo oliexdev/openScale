@@ -49,6 +49,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.withTimeoutOrNull
 import java.util.Date
 import java.util.concurrent.ConcurrentHashMap
 
@@ -240,13 +241,43 @@ abstract class ModernScaleAdapter(
 
     /**
      * Template method: base validates input & selected user, then calls [doConnect].
-     * Many handlers expect a selected user from app state; the `scaleUser` parameter is ignored.
+     * Many handlers expect a selected user from app state;
      */
     final override fun connect(address: String, scaleUser: ScaleUser?) {
         targetAddress = address
-        val user = ensureSelectedUserOrFail(address) ?: return
         _isConnecting.value = true
-        doConnect(address, user)
+
+        scope.launch {
+            val user: ScaleUser? =
+                scaleUser
+                    ?: selectedUserSnapshot
+                    ?: withTimeoutOrNull(750) {
+                        userFacade.observeSelectedUser().first()
+                    }?.let(::mapUser)
+
+            if (user == null) {
+                _events.tryEmit(
+                    BluetoothEvent.ConnectionFailed(
+                        address,
+                        context.getString(R.string.bt_error_no_user_selected)
+                    )
+                )
+                _isConnecting.value = false
+                return@launch
+            }
+
+            runCatching {
+                doConnect(address, user)
+            }.onFailure { t ->
+                _events.tryEmit(
+                    BluetoothEvent.ConnectionFailed(
+                        address,
+                        t.message ?: "—"
+                    )
+                )
+                _isConnecting.value = false
+            }
+        }
     }
 
     /**
@@ -343,19 +374,6 @@ abstract class ModernScaleAdapter(
         _isConnected.value = false
         _isConnecting.value = false
         // keep targetAddress to allow higher layer to retry if wanted
-    }
-
-    protected fun ensureSelectedUserOrFail(address: String): ScaleUser? {
-        val u = selectedUserSnapshot
-        if (u == null) {
-            _events.tryEmit(
-                BluetoothEvent.ConnectionFailed(
-                    address,
-                    context.getString(R.string.bt_error_no_user_selected)
-                )
-            )
-        }
-        return u
     }
 
     // ---- mapping helpers (core -> legacy DTOs used by handlers) --------------------------------

@@ -62,7 +62,7 @@ class BroadcastScaleAdapter(
                 _events.tryEmit(BluetoothEvent.Listening(peripheral.address))
             }
 
-            val user = ensureSelectedUserOrFail(peripheral.address) ?: return
+            val user = selectedUserSnapshot ?: return
             when (handler.onAdvertisement(scanResult, user)) {
                 BroadcastAction.IGNORED -> Unit
                 BroadcastAction.CONSUMED_KEEP_SCANNING -> {

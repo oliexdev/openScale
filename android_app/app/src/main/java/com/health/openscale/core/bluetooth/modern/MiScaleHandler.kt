@@ -70,8 +70,15 @@ class MiScaleHandler : ScaleDeviceHandler() {
     private var warnedHistoryStatusBits = false
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
-        val name = device.name?.uppercase(Locale.ROOT) ?: ""
-        val services = device.serviceUuids ?: emptyList()
+        val name = device.name.uppercase(Locale.ROOT)
+        val services = device.serviceUuids
+
+        val isKnownName = when {
+            name.startsWith("MIBCS") || name.startsWith("MIBFS") -> true
+            name == "MI SCALE2" || name.startsWith("MI_SCALE") -> true
+            else -> false
+        }
+        if (!isKnownName) return null
 
         val looksV2 = when {
             services.any { it == SERVICE_MI_CFG } -> true
