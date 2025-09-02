@@ -17,6 +17,7 @@
  */
 package com.health.openscale.core.bluetooth.modern
 
+import android.bluetooth.le.ScanSettings
 import android.os.Handler
 import android.os.Looper
 import androidx.annotation.StringRes
@@ -57,62 +58,100 @@ import java.util.concurrent.ConcurrentHashMap
 // Shared tuning for BLE pacing & retry (used by GATT adapter).
 // -------------------------------------------------------------------------------------------------
 
-data class BleTuning(
-    val notifySetupDelayMs: Long,
-    val writeWithResponseDelayMs: Long,
-    val writeWithoutResponseDelayMs: Long,
-    val postWriteDelayMs: Long,
-    val reconnectCooldownMs: Long,
-    val retryBackoffMs: Long,
-    val maxRetries: Int,
-    val connectAfterScanDelayMs: Long,
-    val requestHighConnectionPriority: Boolean,
-    val requestMtuBytes: Int
+// Common knobs every link can use
+data class CommonTuning(
+    val reconnectCooldownMs: Long = 2000,
+    val retryBackoffMs: Long = 1500,
+    val maxRetries: Int = 3
 )
 
-sealed class BleTuningProfile {
-    object Balanced : BleTuningProfile()
-    object Conservative : BleTuningProfile()
-    object Aggressive : BleTuningProfile()
-}
+// GATT-specific
+data class BleGattTuning(
+    val common: CommonTuning = CommonTuning(),
+    val notifySetupDelayMs: Long = 120,
+    val writeWithResponseDelayMs: Long = 80,
+    val writeWithoutResponseDelayMs: Long = 35,
+    val postWriteDelayMs: Long = 20,
+    val connectAfterScanDelayMs: Long = 650,
+    val requestHighConnectionPriority: Boolean = true,
+    val requestMtuBytes: Int = 185
+)
 
-fun BleTuningProfile.asTuning(): BleTuning = when (this) {
-    BleTuningProfile.Balanced -> BleTuning(
+// Broadcast scanner tuning
+data class BleBroadcastTuning(
+    val common: CommonTuning = CommonTuning(),
+    val scanMode: Int = ScanSettings.SCAN_MODE_LOW_LATENCY,
+    val maxScanMs: Long = 20_000,
+    val restartBackoffMs: Long = 1500,
+    val packetDedupWindowMs: Long = 750,
+    val stabilizeWindowMs: Long = 1200,
+    val minRssiDbm: Int? = null // e.g. -90
+)
+
+// Classic SPP tuning
+data class BtSppTuning(
+    val common: CommonTuning = CommonTuning(),
+    val connectTimeoutMs: Long = 10_000,
+    val readTimeoutMs: Long = 3000,
+    val writeChunkBytes: Int = 256,
+    val interChunkDelayMs: Long = 10,
+    val soKeepAlive: Boolean = true
+)
+
+enum class TuningProfile { Balanced, Conservative, Aggressive }
+
+fun TuningProfile.forGatt(): BleGattTuning = when (this) {
+    TuningProfile.Balanced -> BleGattTuning(
+        common = CommonTuning(2200, 1500, 3),
         notifySetupDelayMs = 120,
         writeWithResponseDelayMs = 80,
         writeWithoutResponseDelayMs = 35,
         postWriteDelayMs = 20,
-        reconnectCooldownMs = 2200,
-        retryBackoffMs = 1500,
-        maxRetries = 3,
         connectAfterScanDelayMs = 650,
         requestHighConnectionPriority = true,
         requestMtuBytes = 185
     )
-    BleTuningProfile.Conservative -> BleTuning(
+    TuningProfile.Conservative -> BleGattTuning(
+        common = CommonTuning(2500, 1800, 3),
         notifySetupDelayMs = 160,
         writeWithResponseDelayMs = 100,
         writeWithoutResponseDelayMs = 50,
         postWriteDelayMs = 30,
-        reconnectCooldownMs = 2500,
-        retryBackoffMs = 1800,
-        maxRetries = 3,
         connectAfterScanDelayMs = 800,
         requestHighConnectionPriority = true,
         requestMtuBytes = 0
     )
-    BleTuningProfile.Aggressive -> BleTuning(
+    TuningProfile.Aggressive -> BleGattTuning(
+        common = CommonTuning(1200, 1200, 2),
         notifySetupDelayMs = 80,
         writeWithResponseDelayMs = 60,
         writeWithoutResponseDelayMs = 25,
         postWriteDelayMs = 15,
-        reconnectCooldownMs = 1200,
-        retryBackoffMs = 1200,
-        maxRetries = 2,
         connectAfterScanDelayMs = 400,
         requestHighConnectionPriority = true,
         requestMtuBytes = 247
     )
+}
+
+fun TuningProfile.forBroadcast(): BleBroadcastTuning = when (this) {
+    TuningProfile.Balanced -> BleBroadcastTuning(common = CommonTuning(2200,1500,3))
+    TuningProfile.Conservative -> BleBroadcastTuning(
+        common = CommonTuning(2500,1800,3),
+        scanMode = android.bluetooth.le.ScanSettings.SCAN_MODE_BALANCED,
+        maxScanMs = 30_000
+    )
+    TuningProfile.Aggressive -> BleBroadcastTuning(
+        common = CommonTuning(1200,1200,2),
+        scanMode = android.bluetooth.le.ScanSettings.SCAN_MODE_LOW_LATENCY,
+        maxScanMs = 15_000,
+        stabilizeWindowMs = 900
+    )
+}
+
+fun TuningProfile.forSpp(): BtSppTuning = when (this) {
+    TuningProfile.Balanced -> BtSppTuning()
+    TuningProfile.Conservative -> BtSppTuning(connectTimeoutMs = 12_000, interChunkDelayMs = 15)
+    TuningProfile.Aggressive -> BtSppTuning(connectTimeoutMs = 8_000, interChunkDelayMs = 5)
 }
 
 // -------------------------------------------------------------------------------------------------

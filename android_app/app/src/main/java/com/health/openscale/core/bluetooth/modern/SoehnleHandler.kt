@@ -73,7 +73,7 @@ class SoehnleHandler : ScaleDeviceHandler() {
                     DeviceCapability.HISTORY_READ,
                     DeviceCapability.BATTERY_LEVEL
                 ),
-                bleTuning = BleTuningProfile.Balanced.asTuning(),
+                tuningProfile = TuningProfile.Balanced,
                 linkMode = LinkMode.CONNECT_GATT
             )
         } else null

@@ -83,7 +83,6 @@ class MGBHandler : ScaleDeviceHandler() {
             displayName = "SWAN / Icomon (MGB)",
             capabilities = caps,
             implemented = caps,
-            bleTuning = null,
             linkMode = LinkMode.CONNECT_GATT
         )
     }

@@ -59,8 +59,10 @@ import com.health.openscale.core.bluetooth.legacy.LegacyScaleAdapter
 import com.health.openscale.core.bluetooth.modern.AAAxHandler
 import com.health.openscale.core.bluetooth.modern.ActiveEraBF06Handler
 import com.health.openscale.core.bluetooth.modern.BeurerSanitasHandler
-import com.health.openscale.core.bluetooth.modern.BleTuningProfile
+import com.health.openscale.core.bluetooth.modern.BleBroadcastTuning
+import com.health.openscale.core.bluetooth.modern.BleGattTuning
 import com.health.openscale.core.bluetooth.modern.BroadcastScaleAdapter
+import com.health.openscale.core.bluetooth.modern.BtSppTuning
 import com.health.openscale.core.bluetooth.modern.CustomOpenScaleHandler
 import com.health.openscale.core.bluetooth.modern.DebugGattHandler
 import com.health.openscale.core.bluetooth.modern.DeviceSupport
@@ -90,9 +92,12 @@ import com.health.openscale.core.bluetooth.modern.SoehnleHandler
 import com.health.openscale.core.bluetooth.modern.SppScaleAdapter
 import com.health.openscale.core.bluetooth.modern.StandardBeurerSanitasHandler
 import com.health.openscale.core.bluetooth.modern.TrisaBodyAnalyzeHandler
+import com.health.openscale.core.bluetooth.modern.TuningProfile
 import com.health.openscale.core.bluetooth.modern.Yoda1Handler
 import com.health.openscale.core.bluetooth.modern.YunmaiHandler
-import com.health.openscale.core.bluetooth.modern.asTuning
+import com.health.openscale.core.bluetooth.modern.forBroadcast
+import com.health.openscale.core.bluetooth.modern.forGatt
+import com.health.openscale.core.bluetooth.modern.forSpp
 import com.health.openscale.core.facade.MeasurementFacade
 import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.core.facade.UserFacade
@@ -373,7 +378,7 @@ class ScaleFactory @Inject constructor(
                 measurementFacade,
                 userFacade,
                 handler,
-                support.bleTuning ?: BleTuningProfile.Balanced.asTuning()
+                support.tuningProfile
             )
         LinkMode.BROADCAST_ONLY ->
             BroadcastScaleAdapter(
@@ -381,7 +386,8 @@ class ScaleFactory @Inject constructor(
                 settingsFacade,
                 measurementFacade,
                 userFacade,
-                handler
+                handler,
+                support.tuningProfile
             )
         LinkMode.CLASSIC_SPP ->
             SppScaleAdapter(
@@ -389,7 +395,8 @@ class ScaleFactory @Inject constructor(
                 settingsFacade,
                 measurementFacade,
                 userFacade,
-                handler
+                handler,
+                support.tuningProfile
             )
     }
 

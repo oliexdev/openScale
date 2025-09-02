@@ -23,6 +23,7 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothSocket
 import android.content.Context
+import android.os.SystemClock
 import androidx.core.content.getSystemService
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.BluetoothEvent
@@ -33,25 +34,26 @@ import com.health.openscale.core.facade.UserFacade
 import com.health.openscale.core.utils.LogManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.io.InputStream
 import java.io.OutputStream
 import java.util.UUID
+import kotlin.math.min
 
 /**
  * SPP (Bluetooth Classic / RFCOMM) adapter that plugs a [ScaleDeviceHandler] into a raw byte stream.
  *
- * Differences vs. GATT:
- * - There are no services/characteristics; we expose a virtual characteristic UUID
- *   ([ScaleDeviceHandler.CLASSIC_DATA_UUID]) to the handler for symmetry.
- * - The stream is "always notifying": reads are forwarded as notifications.
- * - Writes are plain byte writes to the RFCOMM socket.
- *
- * Permissions:
- * - UI layer must request BLUETOOTH_CONNECT/SCAN (Android 12+) beforehand.
- * - We still guard sensitive calls with try/catch (SecurityException) to be robust.
+ * Tuning usage:
+ * - Reconnect cooldown between attempts (common.reconnectCooldownMs)
+ * - Bounded retry on initial connect (common.maxRetries + common.retryBackoffMs)
+ * - Connect timeout (connectTimeoutMs)
+ * - Chunked writes (writeChunkBytes + interChunkDelayMs)
+ * - Small settle delay after connect (derived from interChunkDelayMs)
  */
 class SppScaleAdapter(
     context: Context,
@@ -59,42 +61,32 @@ class SppScaleAdapter(
     measurementFacade: MeasurementFacade,
     userFacade: UserFacade,
     handler: ScaleDeviceHandler,
+    profile: TuningProfile = TuningProfile.Balanced
 ) : ModernScaleAdapter(context, settingsFacade, measurementFacade, userFacade, handler) {
+
+    private val tuning: BtSppTuning = profile.forSpp()
 
     private var sppSocket: BluetoothSocket? = null
     private var sppReaderJob: Job? = null
     private var sppIn: InputStream? = null
     private var sppOut: OutputStream? = null
 
-    /**
-     * Establish an RFCOMM connection and wire the byte stream to the handler.
-     * Uses AndroidX Core-KTX system service helper.
-     */
-    @SuppressLint("MissingPermission") // Permissions are acquired in UI; here we additionally guard with try/catch
+    private val writeMutex = Mutex()
+
+    @SuppressLint("MissingPermission")
     override fun doConnect(address: String, selectedUser: ScaleUser) {
-        // Modern KTX way to obtain the BluetoothManager (no deprecated getDefaultAdapter())
         val btManager: BluetoothManager? = context.getSystemService()
         val adapter: BluetoothAdapter? = btManager?.adapter
 
         if (adapter == null) {
-            _events.tryEmit(
-                BluetoothEvent.ConnectionFailed(
-                    address,
-                    context.getString(R.string.bt_error_no_bluetooth_adapter)
-                )
-            )
+            _events.tryEmit(BluetoothEvent.ConnectionFailed(address, context.getString(R.string.bt_error_no_bluetooth_adapter)))
             return
         }
 
         val device: BluetoothDevice = try {
             adapter.getRemoteDevice(address)
-        } catch (t: Throwable) {
-            _events.tryEmit(
-                BluetoothEvent.ConnectionFailed(
-                    address,
-                    context.getString(R.string.bt_error_no_device_found)
-                )
-            )
+        } catch (_: Throwable) {
+            _events.tryEmit(BluetoothEvent.ConnectionFailed(address, context.getString(R.string.bt_error_no_device_found)))
             return
         }
 
@@ -102,63 +94,132 @@ class SppScaleAdapter(
         _isConnected.value = false
 
         scope.launch(Dispatchers.IO) {
-            try {
-                // Discovery interferes with connects; cancel if running (may throw if permission revoked)
-                safeCancelDiscovery(adapter)
+            // Cooldown between attempts
+            val since = SystemClock.elapsedRealtime() - lastDisconnectAtMs
+            if (since in 1 until tuning.common.reconnectCooldownMs) {
+                delay(tuning.common.reconnectCooldownMs - since)
+            }
 
-                // Create & connect SPP socket (UUID provided by handler contract)
-                val socket = device.createRfcommSocketToServiceRecord(ScaleDeviceHandler.CLASSIC_DATA_UUID)
-                sppSocket = socket
-                socket.connect()
+            safeCancelDiscovery(adapter)
 
-                sppIn = socket.inputStream
-                sppOut = socket.outputStream
+            var attempt = 0
+            while (isActive) {
+                try {
+                    val socket = device.createRfcommSocketToServiceRecord(ScaleDeviceHandler.CLASSIC_DATA_UUID)
+                    sppSocket = socket
 
-                _isConnecting.value = false
-                _isConnected.value = true
-
-                val name = safeDeviceName(device) // avoids SecurityException on Android 12+
-                val addr = safeDeviceAddress(device)
-
-                _events.tryEmit(BluetoothEvent.Connected(name, addr))
-
-                // Hand off to the device handler
-                val driverSettings = FacadeDriverSettings(
-                    facade = settingsFacade,
-                    scope = scope,
-                    deviceAddress = addr,
-                    handlerNamespace = handler::class.simpleName ?: "Handler"
-                )
-                handler.attach(sppTransport, appCallbacks, driverSettings, dataProvider)
-                handler.handleConnected(selectedUser)
-
-                // Reader loop: forward bytes as "notifications" on CLASSIC_DATA_UUID
-                sppReaderJob = launch(Dispatchers.IO) {
-                    val buf = ByteArray(1024)
-                    try {
-                        while (isActive) {
-                            val n = sppIn?.read(buf) ?: -1
-                            if (n <= 0) break
-                            handler.handleNotification(ScaleDeviceHandler.CLASSIC_DATA_UUID, buf.copyOf(n))
-                        }
-                    } catch (t: Throwable) {
-                        LogManager.w(TAG, "SPP read error: ${t.message}", null)
-                    } finally {
-                        withContext(Dispatchers.Main) {
-                            _events.tryEmit(BluetoothEvent.Disconnected(addr, "SPP stream closed"))
-                            cleanup(addr)
-                            doDisconnect()
+                    // --- Connect with manual timeout guard ---
+                    var connected = false
+                    // Start the blocking connect() in a child job
+                    val connectJob = launch(Dispatchers.IO) {
+                        socket.connect() // blocking call
+                        connected = true
+                    }
+                    // Start a guard that closes the socket if connect takes too long
+                    val guardJob = launch(Dispatchers.IO) {
+                        val to = tuning.connectTimeoutMs
+                        if (to > 0) {
+                            delay(to)
+                            if (!connected) {
+                                // Force the connect() to abort by closing the socket
+                                runCatching { socket.close() }
+                            }
                         }
                     }
+
+                    // Wait until either connect finishes or guard closes the socket
+                    connectJob.join()
+                    guardJob.cancel()
+
+                    // If connect failed, connect() would have thrown and we’d be in catch{}
+                    sppIn = socket.inputStream
+                    sppOut = socket.outputStream
+
+                    // Small settle delay before wiring the handler
+                    val settleDelay = maxOf(50L, tuning.interChunkDelayMs * 3)
+                    delay(settleDelay)
+
+                    _isConnecting.value = false
+                    _isConnected.value = true
+
+                    val name = safeDeviceName(device)
+                    val addr = safeDeviceAddress(device)
+                    _events.tryEmit(BluetoothEvent.Connected(name, addr))
+
+                    // Attach handler
+                    val driverSettings = FacadeDriverSettings(
+                        facade = settingsFacade,
+                        scope = scope,
+                        deviceAddress = addr,
+                        handlerNamespace = handler::class.simpleName ?: "Handler"
+                    )
+                    handler.attach(sppTransport, appCallbacks, driverSettings, dataProvider)
+                    handler.handleConnected(selectedUser)
+
+                    // Reader loop (idle-timeout via available()+delay)
+                    sppReaderJob = launch(Dispatchers.IO) {
+                        val buf = ByteArray(1024)
+                        var lastRx = SystemClock.elapsedRealtime()
+                        try {
+                            while (isActive) {
+                                val ins = sppIn ?: break
+                                val avail = runCatching { ins.available() }.getOrDefault(0)
+
+                                if (avail > 0) {
+                                    val n = ins.read(buf, 0, min(buf.size, avail))
+                                    if (n <= 0) break
+                                    lastRx = SystemClock.elapsedRealtime()
+                                    handler.handleNotification(ScaleDeviceHandler.CLASSIC_DATA_UUID, buf.copyOf(n))
+                                } else {
+                                    delay(50)
+                                    val idle = SystemClock.elapsedRealtime() - lastRx
+                                    if (tuning.readTimeoutMs > 0 && idle >= tuning.readTimeoutMs) {
+                                        sppTransport.disconnect()
+                                        break
+                                    }
+                                }
+                            }
+                        } catch (t: Throwable) {
+                            LogManager.w(TAG, "SPP read error: ${t.message}", t)
+                        } finally {
+                            withContext(Dispatchers.Main) {
+                                val da = safeDeviceAddress(device)
+                                _events.tryEmit(BluetoothEvent.Disconnected(da, "SPP stream closed"))
+                                lastDisconnectAtMs = SystemClock.elapsedRealtime()
+                                cleanup(da)
+                                doDisconnect()
+                            }
+                        }
+                    }
+
+                    // success → exit retry loop
+                    break
+                } catch (t: Throwable) {
+                    attempt++
+                    LogManager.e(TAG, "SPP connect failed (attempt $attempt/${tuning.common.maxRetries}): ${t.message}", t)
+
+                    if (attempt <= tuning.common.maxRetries) {
+                        _events.tryEmit(
+                            BluetoothEvent.DeviceMessage(
+                                context.getString(R.string.bt_info_reconnecting_try, attempt, tuning.common.maxRetries),
+                                address
+                            )
+                        )
+                        delay(tuning.common.retryBackoffMs)
+                        safeCancelDiscovery(adapter)
+                        continue
+                    } else {
+                        _events.tryEmit(BluetoothEvent.ConnectionFailed(address, t.message ?: "SPP connect failed"))
+                        lastDisconnectAtMs = SystemClock.elapsedRealtime()
+                        cleanup(address)
+                        doDisconnect()
+                        break
+                    }
                 }
-            } catch (t: Throwable) {
-                LogManager.e(TAG, "SPP connect failed: ${t.message}", t)
-                _events.tryEmit(BluetoothEvent.ConnectionFailed(address, t.message ?: "SPP connect failed"))
-                cleanup(address)
-                doDisconnect()
             }
         }
     }
+
 
     override fun doDisconnect() {
         sppReaderJob?.cancel(); sppReaderJob = null
@@ -169,9 +230,10 @@ class SppScaleAdapter(
         runCatching { handler.detach() }
         _isConnected.value = false
         _isConnecting.value = false
+        lastDisconnectAtMs = SystemClock.elapsedRealtime()
     }
 
-    // --- Transport exposed to the handler -------------------------------------
+    // --- Transport exposed to the handler --------------------------------------------------------
 
     private val sppTransport = object : ScaleDeviceHandler.Transport {
         override fun setNotifyOn(service: UUID, characteristic: UUID) {
@@ -179,16 +241,28 @@ class SppScaleAdapter(
         }
 
         override fun write(service: UUID, characteristic: UUID, payload: ByteArray, withResponse: Boolean) {
+            // RFCOMM is a stream; we still pace writes and chunk large payloads
             scope.launch(Dispatchers.IO) {
-                try {
-                    sppOut?.write(payload)
-                    sppOut?.flush()
-                } catch (t: Throwable) {
-                    appCallbacks.onWarn(
-                        R.string.bt_warn_write_failed_status,
-                        "SPP",
-                        t.message ?: "write failed"
-                    )
+                writeMutex.withLock {
+                    try {
+                        val chunk = maxOf(1, tuning.writeChunkBytes)
+                        var i = 0
+                        while (i < payload.size) {
+                            val end = min(i + chunk, payload.size)
+                            sppOut?.write(payload, i, end - i)
+                            sppOut?.flush()
+                            i = end
+                            if (i < payload.size && tuning.interChunkDelayMs > 0) {
+                                delay(tuning.interChunkDelayMs)
+                            }
+                        }
+                    } catch (t: Throwable) {
+                        appCallbacks.onWarn(
+                            R.string.bt_warn_write_failed_status,
+                            "SPP",
+                            t.message ?: "write failed"
+                        )
+                    }
                 }
             }
         }
@@ -202,7 +276,7 @@ class SppScaleAdapter(
         }
     }
 
-    // --- Small helpers with defensive permission handling ----------------------
+    // --- Helpers with defensive permission handling ---------------------------------------------
 
     @SuppressLint("MissingPermission")
     private fun safeCancelDiscovery(adapter: BluetoothAdapter) {

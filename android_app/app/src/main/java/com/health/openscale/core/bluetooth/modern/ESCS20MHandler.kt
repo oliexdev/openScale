@@ -93,7 +93,6 @@ class ESCS20mHandler : ScaleDeviceHandler() {
             displayName = "ES-CS20M",
             capabilities = caps,
             implemented  = caps,
-            bleTuning    = null,
             linkMode     = LinkMode.CONNECT_GATT
         )
     }

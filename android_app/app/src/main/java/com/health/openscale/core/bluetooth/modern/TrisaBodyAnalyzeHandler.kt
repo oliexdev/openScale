@@ -58,7 +58,6 @@ class TrisaBodyAnalyzeHandler : ScaleDeviceHandler() {
                 displayName = "Trisa Body Analyze 4.0",
                 capabilities = setOf(DeviceCapability.BODY_COMPOSITION, DeviceCapability.TIME_SYNC),
                 implemented  = setOf(DeviceCapability.BODY_COMPOSITION, DeviceCapability.TIME_SYNC),
-                bleTuning = null,
                 linkMode = LinkMode.CONNECT_GATT
             )
         } else null

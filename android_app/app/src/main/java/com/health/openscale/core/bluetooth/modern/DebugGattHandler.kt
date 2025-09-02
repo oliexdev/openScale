@@ -46,7 +46,7 @@ class DebugGattHandler : ScaleDeviceHandler() {
             displayName = "Debug",
             capabilities = emptySet(),   // no functional features
             implemented = emptySet(),
-            bleTuning = null,
+            tuningProfile = TuningProfile.Balanced,
             linkMode = LinkMode.CONNECT_GATT
         )
     }

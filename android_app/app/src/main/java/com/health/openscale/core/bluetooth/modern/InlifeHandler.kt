@@ -67,7 +67,6 @@ class InlifeHandler : ScaleDeviceHandler() {
             displayName = "Inlife",
             capabilities = caps,
             implemented = caps,
-            bleTuning = null,
             linkMode = LinkMode.CONNECT_GATT
         )
     }

@@ -18,21 +18,27 @@
 package com.health.openscale.core.bluetooth.modern
 
 import android.bluetooth.le.ScanResult
+import android.os.SystemClock
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.BluetoothEvent
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.facade.MeasurementFacade
 import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.core.facade.UserFacade
+import com.health.openscale.core.utils.LogManager
 import com.welie.blessed.BluetoothCentralManager
 import com.welie.blessed.BluetoothCentralManagerCallback
 import com.welie.blessed.BluetoothPeripheral
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.util.UUID
 
 // -------------------------------------------------------------------------------------------------
 // Broadcast adapter (no GATT)
-// - scans and forwards advertisements to handler.onAdvertisement()
-// - attaches handler with a no-op transport
+// - uses Blessed to scan for a specific address and forwards advertisements to handler.onAdvertisement()
+// - applies tuning: max scan window, retry/backoff, RSSI filter, packet de-dup, stabilization window
+// - attaches handler with a no-op transport immediately on start
 // -------------------------------------------------------------------------------------------------
 
 class BroadcastScaleAdapter(
@@ -40,32 +46,53 @@ class BroadcastScaleAdapter(
     settingsFacade: SettingsFacade,
     measurementFacade: MeasurementFacade,
     userFacade: UserFacade,
-    handler: ScaleDeviceHandler
+    handler: ScaleDeviceHandler,
+    profile: TuningProfile = TuningProfile.Balanced
 ) : ModernScaleAdapter(context, settingsFacade, measurementFacade, userFacade, handler) {
+
+    private val tuning: BleBroadcastTuning = profile.forBroadcast()
 
     private lateinit var central: BluetoothCentralManager
     private var broadcastAttached = false
+    private var scanTimeoutJob: Job? = null
+    private var attempt = 0
+    private var isScanning = false
+
+    // de-duplication: contentHash -> lastSeenMs
+    private val dedupSeen = LinkedHashMap<Int, Long>(64, 0.75f, true)
+    private var lastForwardAtMs = 0L
+
+    private fun now() = SystemClock.elapsedRealtime()
 
     private val centralCallback = object : BluetoothCentralManagerCallback() {
         override fun onDiscoveredPeripheral(peripheral: BluetoothPeripheral, scanResult: ScanResult) {
+            // Filter: only target MAC
             if (peripheral.address != targetAddress) return
 
-            if (!broadcastAttached) {
-                val driverSettings = FacadeDriverSettings(
-                    facade = settingsFacade,
-                    scope = scope,
-                    deviceAddress = peripheral.address,
-                    handlerNamespace = handler::class.simpleName ?: "Handler"
-                )
-                handler.attach(noopTransport, appCallbacks, driverSettings, dataProvider)
-                broadcastAttached = true
-                _events.tryEmit(BluetoothEvent.Listening(peripheral.address))
-            }
+            // Filter: optional RSSI threshold
+            val rssi = scanResult.rssi
+            tuning.minRssiDbm?.let { if (rssi < it) return }
+
+            // De-dup: collapse identical packets within packetDedupWindowMs
+            val bytes = scanResult.scanRecord?.bytes
+            val hash = contentHash(bytes, rssi)
+            val t = now()
+            val last = dedupSeen[hash]
+            if (last != null && (t - last) <= tuning.packetDedupWindowMs) return
+            dedupSeen[hash] = t
+            trimDedup(t)
+
+            // Attach handler as soon as we see the target device (if not already)
+            ensureAttached(peripheral.address)
+
+            // Optional stabilization: avoid forwarding bursts too quickly
+            if (t - lastForwardAtMs < tuning.stabilizeWindowMs) return
 
             val user = selectedUserSnapshot ?: return
             when (handler.onAdvertisement(scanResult, user)) {
                 BroadcastAction.IGNORED -> Unit
                 BroadcastAction.CONSUMED_KEEP_SCANNING -> {
+                    lastForwardAtMs = t
                     _events.tryEmit(
                         BluetoothEvent.DeviceMessage(
                             context.getString(R.string.bt_info_waiting_for_measurement),
@@ -74,13 +101,99 @@ class BroadcastScaleAdapter(
                     )
                 }
                 BroadcastAction.CONSUMED_STOP -> {
+                    lastForwardAtMs = t
                     _events.tryEmit(BluetoothEvent.BroadcastComplete(peripheral.address))
-                    doDisconnect()
+                    stopScanInternal(peripheral.address)
                     cleanup(peripheral.address)
                     broadcastAttached = false
                 }
             }
         }
+    }
+
+    private fun ensureCentral() {
+        if (!::central.isInitialized) {
+            central = BluetoothCentralManager(context, centralCallback, mainHandler)
+        }
+    }
+
+    private fun ensureAttached(address: String) {
+        if (broadcastAttached) return
+        val driverSettings = FacadeDriverSettings(
+            facade = settingsFacade,
+            scope = scope,
+            deviceAddress = address,
+            handlerNamespace = handler::class.simpleName ?: "Handler"
+        )
+        handler.attach(noopTransport, appCallbacks, driverSettings, dataProvider)
+        broadcastAttached = true
+        _events.tryEmit(BluetoothEvent.Listening(address))
+    }
+
+    private fun startScanAttempt(address: String) {
+        // reset per-attempt state
+        isScanning = true
+        lastForwardAtMs = 0
+        dedupSeen.clear()
+
+        // Blessed does not expose ScanSettings directly; we emulate tuning at our level
+        try {
+            central.scanForPeripheralsWithAddresses(arrayOf(address))
+            LogManager.d(TAG, "Broadcast scan started (attempt ${attempt + 1}/${tuning.common.maxRetries}) for $address")
+        } catch (e: Exception) {
+            LogManager.e(TAG, "Failed to start broadcast scan: ${e.message}", e)
+            _events.tryEmit(BluetoothEvent.ConnectionFailed(address, e.message ?: context.getString(R.string.bt_error_generic)))
+            cleanup(address)
+            return
+        }
+
+        // Arm scan timeout for this attempt
+        scanTimeoutJob?.cancel()
+        scanTimeoutJob = scope.launch {
+            delay(tuning.maxScanMs)
+            if (!isScanning) return@launch
+            LogManager.w(TAG, "Broadcast scan timed out for $address")
+            stopScanInternal(address)
+
+            attempt++
+            if (attempt <= tuning.common.maxRetries) {
+                delay(tuning.common.retryBackoffMs)
+                startScanAttempt(address)
+            } else {
+                cleanup(address)
+                // keep attached? we detach to be consistent with failure
+                runCatching { handler.handleDisconnected() }
+                runCatching { handler.detach() }
+                broadcastAttached = false
+            }
+        }
+    }
+
+    private fun stopScanInternal(address: String) {
+        scanTimeoutJob?.cancel(); scanTimeoutJob = null
+        runCatching { if (::central.isInitialized) central.stopScan() }
+        isScanning = false
+        lastDisconnectAtMs = now()
+    }
+
+    private fun trimDedup(t: Long) {
+        // simple time-based eviction
+        val it = dedupSeen.entries.iterator()
+        while (it.hasNext()) {
+            val e = it.next()
+            if (t - e.value > tuning.packetDedupWindowMs) it.remove()
+            else break // map is access-ordered, earliest first
+        }
+    }
+
+    private fun contentHash(bytes: ByteArray?, rssi: Int): Int {
+        if (bytes == null || bytes.isEmpty()) return rssi // fallback
+        // A lightweight rolling hash (faster than Arrays.hashCode in hot path)
+        var h = 1125899907
+        for (b in bytes) h = (h * 131) xor (b.toInt() and 0xFF)
+        // mix in coarse rssi bucket to avoid treating level-only jitter as new data
+        val bucket = (rssi / 3) // bucketize
+        return (h shl 1) xor bucket
     }
 
     private val noopTransport = object : ScaleDeviceHandler.Transport {
@@ -91,22 +204,22 @@ class BroadcastScaleAdapter(
     }
 
     override fun doConnect(address: String, selectedUser: ScaleUser) {
-        if (!::central.isInitialized) {
-            central = BluetoothCentralManager(context, centralCallback, mainHandler)
-        }
+        ensureCentral()
+
+        // Attach early so UI can show “Listening…”
+        ensureAttached(address)
+
         _isConnecting.value = false
         _isConnected.value = false
-        try {
-            central.scanForPeripheralsWithAddresses(arrayOf(address))
-        } catch (e: Exception) {
-            _events.tryEmit(BluetoothEvent.ConnectionFailed(address, e.message ?: context.getString(R.string.bt_error_generic)))
-            cleanup(address)
-        }
+
+        attempt = 0
+        startScanAttempt(address)
     }
 
     override fun doDisconnect() {
-        runCatching { if (::central.isInitialized) central.stopScan() }
+        stopScanInternal(targetAddress ?: "")
         runCatching { handler.handleDisconnected() }
         runCatching { handler.detach() }
+        broadcastAttached = false
     }
 }

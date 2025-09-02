@@ -53,10 +53,10 @@ class GattScaleAdapter(
     measurementFacade: MeasurementFacade,
     userFacade: UserFacade,
     handler: ScaleDeviceHandler,
-    bleTuning: BleTuning = BleTuningProfile.Balanced.asTuning()
+    profile: TuningProfile = TuningProfile.Balanced
 ) : ModernScaleAdapter(context, settingsFacade, measurementFacade, userFacade, handler) {
 
-    private val tuning = bleTuning
+    private val tuning = profile.forGatt()
 
     private lateinit var central: BluetoothCentralManager
     private var currentPeripheral: BluetoothPeripheral? = null
@@ -89,16 +89,16 @@ class GattScaleAdapter(
         override fun onConnectionFailed(peripheral: BluetoothPeripheral, status: HciStatus) {
             scope.launch {
                 LogManager.e(TAG, "Connection failed ${peripheral.address}: $status")
-                if (connectAttempts < tuning.maxRetries) {
+                if (connectAttempts < tuning.common.maxRetries) {
                     val nextTry = connectAttempts + 1
                     _events.tryEmit(
                         BluetoothEvent.DeviceMessage(
-                            context.getString(R.string.bt_info_reconnecting_try, nextTry, tuning.maxRetries),
+                            context.getString(R.string.bt_info_reconnecting_try, nextTry, tuning.common.maxRetries),
                             peripheral.address
                         )
                     )
                     connectAttempts = nextTry
-                    delay(tuning.retryBackoffMs)
+                    delay(tuning.common.retryBackoffMs)
                     runCatching { central.stopScan() }
                     central.scanForPeripheralsWithAddresses(arrayOf(peripheral.address))
                     _isConnecting.value = true
@@ -253,7 +253,7 @@ class GattScaleAdapter(
 
         // Respect a cooldown between disconnect and next connect attempt to avoid stack churn.
         val sinceLastDisconnect = SystemClock.elapsedRealtime() - lastDisconnectAtMs
-        val waitMs = (tuning.reconnectCooldownMs - sinceLastDisconnect).coerceAtLeast(0)
+        val waitMs = (tuning.common.reconnectCooldownMs - sinceLastDisconnect).coerceAtLeast(0)
 
         // Reset session-local counters/flags for this attempt.
         connectAttempts = 0

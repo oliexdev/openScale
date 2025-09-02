@@ -114,7 +114,6 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
             displayName = "Bluetooth Standard Weight Profile",
             capabilities = capabilities,
             implemented = capabilities,
-            bleTuning = null,
             linkMode = LinkMode.CONNECT_GATT
         )
     }

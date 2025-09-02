@@ -52,7 +52,7 @@ class CustomOpenScaleHandler : ScaleDeviceHandler() {
             displayName = "Custom openScale",
             capabilities = caps,
             implemented = caps,
-            bleTuning = null,
+            tuningProfile = TuningProfile.Balanced,
             linkMode = LinkMode.CONNECT_GATT
         )
     }

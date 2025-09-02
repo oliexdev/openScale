@@ -69,7 +69,6 @@ class SinocareHandler : ScaleDeviceHandler() {
             displayName = "Sinocare",
             capabilities = emptySet(),              // broadcast weight only
             implemented = emptySet(),
-            bleTuning = null,
             linkMode = LinkMode.BROADCAST_ONLY      // critical: broadcast flow
         )
     }

@@ -67,7 +67,6 @@ class DigooDGSO38HHandler : ScaleDeviceHandler() {
             displayName = if (name.equals("Mengii", true)) "Digoo DG-SO38H (Mengii)" else "Digoo DG-SO38H",
             capabilities = capabilities,
             implemented = implemented,
-            bleTuning = null,
             linkMode = LinkMode.CONNECT_GATT
         )
     }

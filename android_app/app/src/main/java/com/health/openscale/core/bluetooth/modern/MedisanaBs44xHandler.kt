@@ -81,7 +81,6 @@ class MedisanaBs44xHandler : ScaleDeviceHandler() {
             displayName = variant,
             capabilities = caps,
             implemented = caps,
-            bleTuning = null,
             linkMode = LinkMode.CONNECT_GATT
         )
     }

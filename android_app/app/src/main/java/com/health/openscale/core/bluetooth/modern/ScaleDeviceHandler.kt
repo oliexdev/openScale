@@ -36,14 +36,14 @@ import kotlin.math.min
  * @property displayName Human-friendly name shown in the UI (e.g., "Yunmai Mini").
  * @property capabilities Features the device *can* support in theory.
  * @property implemented  Features this handler actually implements today (may be a subset).
- * @property bleTuning    Optional link timing/retry preferences (see [BleTuning]).
+ * @property tuningProfile Optional link timing/retry preferences (see [TuningProfile]).
  * @property linkMode     Whether the device uses GATT or broadcast-only advertisements.
  */
 data class DeviceSupport(
     val displayName: String,
     val capabilities: Set<DeviceCapability>,
     val implemented: Set<DeviceCapability>,
-    val bleTuning: BleTuning? = null,
+    val tuningProfile: TuningProfile = TuningProfile.Balanced,
     val linkMode: LinkMode = LinkMode.CONNECT_GATT
 )
 

@@ -99,7 +99,6 @@ class OkOkHandler : ScaleDeviceHandler() {
             displayName = variantName,
             capabilities = capabilities,
             implemented = implemented,
-            bleTuning = null,
             linkMode = LinkMode.BROADCAST_ONLY
         )
     }

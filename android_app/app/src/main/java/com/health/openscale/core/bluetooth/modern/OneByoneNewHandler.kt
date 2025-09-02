@@ -85,7 +85,6 @@ class OneByoneNewHandler : ScaleDeviceHandler() {
             displayName = "1byone (new)",
             capabilities = caps,
             implemented = caps,
-            bleTuning = null,
             linkMode = LinkMode.CONNECT_GATT
         )
     }

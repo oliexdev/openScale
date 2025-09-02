@@ -70,7 +70,6 @@ class RenphoES26BBHandler : ScaleDeviceHandler() {
             displayName = "RENPHO ES-26BB-B",
             capabilities = capabilities,
             implemented = implemented,
-            bleTuning = null,
             linkMode = LinkMode.CONNECT_GATT
         )
     }

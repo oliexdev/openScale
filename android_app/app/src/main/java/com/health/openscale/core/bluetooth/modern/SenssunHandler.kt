@@ -79,7 +79,7 @@ class SenssunHandler : ScaleDeviceHandler() {
                     DeviceCapability.TIME_SYNC,
                     DeviceCapability.USER_SYNC
                 ),
-                bleTuning = BleTuningProfile.Balanced.asTuning(),
+                tuningProfile = TuningProfile.Balanced,
                 linkMode = LinkMode.CONNECT_GATT
             )
         } else null

@@ -52,7 +52,6 @@ class Yoda1Handler : ScaleDeviceHandler() {
             displayName = "Yoda1 Scale",
             capabilities = setOf(LIVE_WEIGHT_STREAM),
             implemented = setOf(LIVE_WEIGHT_STREAM),
-            bleTuning = null,
             linkMode = LinkMode.BROADCAST_ONLY
         )
     }

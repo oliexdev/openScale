@@ -120,7 +120,6 @@ class RenphoHandler : ScaleDeviceHandler() {
             displayName = "RENPHO ES-WBE28",
             capabilities = caps,
             implemented  = impl,
-            bleTuning    = null,
             linkMode     = LinkMode.CONNECT_GATT
         )
     }

@@ -127,7 +127,6 @@ class MiScaleHandler : ScaleDeviceHandler() {
             displayName = display,
             capabilities = capabilities,
             implemented = implemented,
-            bleTuning = null,
             linkMode = LinkMode.CONNECT_GATT
         )
     }

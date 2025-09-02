@@ -72,7 +72,6 @@ class ExcelvanCF36xHandler : ScaleDeviceHandler() {
             displayName = "Excelvan CF36xBLE",
             capabilities = theoretical,
             implemented = implemented,
-            bleTuning = null,
             linkMode = LinkMode.CONNECT_GATT
         )
     }
