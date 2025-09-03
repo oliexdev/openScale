@@ -25,6 +25,11 @@ import com.health.openscale.core.bluetooth.libs.MiScaleLib
 import com.health.openscale.core.data.GenderType
 import com.health.openscale.core.service.ScannedDeviceInfo
 import com.health.openscale.core.utils.ConverterUtils
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -32,42 +37,54 @@ import java.util.Locale
 import java.util.UUID
 
 /**
- * Modern handler for Xiaomi Mi Scale (v1/v2).
+ * Xiaomi Mi Scale (v1/v2) handler for the modern GATT stack.
  *
- * v1:
- *  - History (10-byte records) + time sync
- *  - No unit config over vendor cfg service (not present)
- *  - No impedance (no body composition)
+ * Goals:
+ * - Clean separation between v1 and v2 (primary service per variant).
+ * - Avoid duplicate writes/subscribes across services to reduce "not found" noise.
+ * - Add a history fallback for firmwares that ignore the "only last" marker.
+ * - Keep logic resilient (best-effort writes, clear logs).
  *
- * v2:
- *  - Live frames (13 bytes) — may include impedance → body composition via MiScaleLib
- *  - History (10-byte records) + time sync
- *  - Unit config via vendor config characteristic
+ * Empirical expectations:
+ * - v1 (Mi Scale): history/time under 0x181D (Weight Service).
+ * - v2 (Mi Body Composition Scale): history/time under 0x181B (Body Composition Service).
+ * - Vendor config (0x1530/0x1542) for unit setting exists only on v2.
+ * - 0x2A9D (Weight Measurement) is often absent on Mi → optional.
  */
 class MiScaleHandler : ScaleDeviceHandler() {
 
+    // ----- Variant detection -----
     private enum class Variant { V1, V2 }
+    private var variant: Variant = Variant.V1
 
-    // --- UUIDs ---
+    // GATT UUIDs
     private val SERVICE_BODY_COMP = uuid16(0x181B)
     private val SERVICE_WEIGHT    = uuid16(0x181D)
     private val CHAR_CURRENT_TIME = uuid16(0x2A2B)
-    private val CHAR_WEIGHT_MEAS  = uuid16(0x2A9D) // rarely used by Mi
+    private val CHAR_WEIGHT_MEAS  = uuid16(0x2A9D) // usually absent on Mi
 
+    // Mi vendor service (v2 only)
     private val SERVICE_MI_CFG    = UUID.fromString("00001530-0000-3512-2118-0009af100700")
     private val CHAR_MI_CONFIG    = UUID.fromString("00001542-0000-3512-2118-0009af100700")
+
+    // Mi history stream (notify + control)
     private val CHAR_MI_HISTORY   = UUID.fromString("00002a2f-0000-3512-2118-0009af100700")
 
-    // --- Protocol constants ---
+    // Protocol constants
     private val ENABLE_HISTORY_MAGIC = byteArrayOf(0x01, 0x96.toByte(), 0x8A.toByte(), 0xBD.toByte(), 0x62)
 
-    // --- Session state ---
-    private var variant: Variant = Variant.V1
+    // Session state
     private val histBuf = java.io.ByteArrayOutputStream()
     private var historyMode = false
     private var importedHistory = 0
     private var pendingHistoryCount = -1
     private var warnedHistoryStatusBits = false
+
+    // Timers
+    private val scope = CoroutineScope(Dispatchers.Main)
+    private var historyFallbackJob: Job? = null
+
+    // ----- Capability & detection -----
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         val name = device.name.uppercase(Locale.ROOT)
@@ -80,35 +97,13 @@ class MiScaleHandler : ScaleDeviceHandler() {
         }
         if (!isKnownName) return null
 
-        val looksV2 = when {
-            services.any { it == SERVICE_MI_CFG } -> true
-            name == "MIBCS" || name == "MIBFS"    -> true
-            else                                  -> false
-        }
+        val looksV2 = services.any { it == SERVICE_MI_CFG } ||
+                name == "MIBCS" || name == "MIBFS" || name == "MI SCALE2"
         variant = if (looksV2) Variant.V2 else Variant.V1
 
-        val display = when (variant) {
-            Variant.V1 -> "Xiaomi Mi Scale v1"
-            Variant.V2 -> "Xiaomi Mi Scale v2"
-        }
+        val display = if (variant == Variant.V2) "Xiaomi Mi Scale v2" else "Xiaomi Mi Scale v1"
 
-        // What the device *can* (capabilities) vs what we *implemented* (implemented)
         val capabilities = when (variant) {
-            Variant.V1 -> setOf(
-                DeviceCapability.LIVE_WEIGHT_STREAM,
-                DeviceCapability.HISTORY_READ,
-                DeviceCapability.TIME_SYNC
-            )
-            Variant.V2 -> setOf(
-                DeviceCapability.LIVE_WEIGHT_STREAM,
-                DeviceCapability.HISTORY_READ,
-                DeviceCapability.TIME_SYNC,
-                DeviceCapability.UNIT_CONFIG,
-                DeviceCapability.BODY_COMPOSITION
-            )
-        }
-
-        val implemented = when (variant) {
             Variant.V1 -> setOf(
                 DeviceCapability.LIVE_WEIGHT_STREAM,
                 DeviceCapability.HISTORY_READ,
@@ -126,55 +121,70 @@ class MiScaleHandler : ScaleDeviceHandler() {
         return DeviceSupport(
             displayName = display,
             capabilities = capabilities,
-            implemented = implemented,
+            implemented = capabilities,
             linkMode = LinkMode.CONNECT_GATT
         )
     }
 
-    override fun onAdvertisement(result: ScanResult, user: ScaleUser): BroadcastAction =
-        BroadcastAction.IGNORED // Mi scales are GATT
+    // ----- Connect sequence -----
 
     override fun onConnected(user: ScaleUser) {
         logI("Connected (${variant.name}); init sequence")
 
-        // v2: set unit (best-effort)
+        // Choose primary/alternate by variant to avoid cross-service chatter.
+        val svcPrimary   = if (variant == Variant.V2) SERVICE_BODY_COMP else SERVICE_WEIGHT
+        val svcAlternate = if (variant == Variant.V2) SERVICE_WEIGHT    else SERVICE_BODY_COMP
+
+        // v2: set unit via vendor cfg (best-effort).
         if (variant == Variant.V2) runCatching { sendUnitV2(user) }
 
-        // v1/v2: write current time (best-effort via both services)
-        runCatching { writeCurrentTime() }
+        // Current time: prefer primary, fallback to alternate.
+        writeCurrentTimePreferPrimary(svcPrimary, svcAlternate)
 
-        // Enable history notifications (both services to be robust across fw variants)
-        setNotifyOn(SERVICE_BODY_COMP, CHAR_MI_HISTORY)
-        setNotifyOn(SERVICE_WEIGHT,    CHAR_MI_HISTORY)
+        if (variant == Variant.V1) {
+            // ---- v1: match legacy order exactly ----
+            // 1) Magic first
+            writeTo(svcPrimary, CHAR_MI_HISTORY, ENABLE_HISTORY_MAGIC, withResponse = true)
+            // 2) Then subscribe history (and optional weight measurement)
+            setNotifyOn(svcPrimary, CHAR_MI_HISTORY)
+            runCatching { setNotifyOn(svcPrimary, CHAR_WEIGHT_MEAS) }
+            // 3) Request only-last
+            val uniq = unique16()
+            val onlyLast = byteArrayOf(
+                0x01, 0xFF.toByte(), 0xFF.toByte(),
+                (uniq shr 8).toByte(), (uniq and 0xFF).toByte()
+            )
+            writeTo(svcPrimary, CHAR_MI_HISTORY, onlyLast, withResponse = true)
+            // 4) Trigger transfer
+            writeTo(svcPrimary, CHAR_MI_HISTORY, byteArrayOf(0x02), withResponse = true)
 
-        // Enable history mode and request “only last” by unique marker
-        writeTo(SERVICE_BODY_COMP, CHAR_MI_HISTORY, ENABLE_HISTORY_MAGIC, withResponse = true)
-        val uniq = unique16()
-        val onlyLast = byteArrayOf(0x01, 0xFF.toByte(), 0xFF.toByte(), (uniq shr 8).toByte(), (uniq and 0xFF).toByte())
-        writeTo(SERVICE_BODY_COMP, CHAR_MI_HISTORY, onlyLast, withResponse = true)
-        writeTo(SERVICE_BODY_COMP, CHAR_MI_HISTORY, byteArrayOf(0x02), withResponse = true)
-        historyMode = true
+        } else {
+            // ---- v2: keep robust modern order (same as legacy v2 effectively) ----
+            setNotifyOn(svcPrimary, CHAR_MI_HISTORY)
+            runCatching { setNotifyOn(svcPrimary, CHAR_WEIGHT_MEAS) } // optional
+            writeTo(svcPrimary, CHAR_MI_HISTORY, ENABLE_HISTORY_MAGIC, withResponse = true)
 
-        // Rarely used by Mi, but harmless:
-        setNotifyOn(SERVICE_BODY_COMP, CHAR_WEIGHT_MEAS)
-        setNotifyOn(SERVICE_WEIGHT,    CHAR_WEIGHT_MEAS)
-
-        userInfo(R.string.bt_info_waiting_for_measurement)
-    }
-
-    override fun onNotification(characteristic: UUID, data: ByteArray, user: ScaleUser) {
-        if (characteristic == CHAR_CURRENT_TIME) return
-
-        if (characteristic == CHAR_MI_HISTORY) {
-            handleHistoryNotify(data, user)
-            return
+            val uniq = unique16()
+            val onlyLast = byteArrayOf(
+                0x01, 0xFF.toByte(), 0xFF.toByte(),
+                (uniq shr 8).toByte(), (uniq and 0xFF).toByte()
+            )
+            writeTo(svcPrimary, CHAR_MI_HISTORY, onlyLast, withResponse = true)
+            writeTo(svcPrimary, CHAR_MI_HISTORY, byteArrayOf(0x02), withResponse = true)
         }
 
-        // If any vendor/fw leaks data elsewhere, just log:
-        logD("Notify $characteristic len=${data.size} ${data.toHexPreview(24)}")
+        historyMode = true
+        pendingHistoryCount = -1
+        importedHistory = 0
+        warnedHistoryStatusBits = false
+        userInfo(R.string.bt_info_waiting_for_measurement)
+
+        // Arm fallback in case firmware ignores the "only last" count response.
+        armHistoryFallbackTimer(svcPrimary, svcAlternate)
     }
 
     override fun onDisconnected() {
+        historyFallbackJob?.cancel(); historyFallbackJob = null
         histBufReset()
         historyMode = false
         importedHistory = 0
@@ -182,8 +192,9 @@ class MiScaleHandler : ScaleDeviceHandler() {
         warnedHistoryStatusBits = false
     }
 
-    // --- Writes ---
+    // ----- Writes -----
 
+    /** v2-only: set unit via vendor config (ignore failures on clones). */
     private fun sendUnitV2(user: ScaleUser) {
         // [0x06, 0x04, 0x00, unit]
         val unit = user.scaleUnit.toInt().coerceIn(0, 2).toByte()
@@ -192,7 +203,8 @@ class MiScaleHandler : ScaleDeviceHandler() {
         logD("Unit set (v2): ${cmd.toHexPreview(16)}")
     }
 
-    private fun writeCurrentTime() {
+    /** Prefer writing Current Time to the primary service; fallback to alternate if needed. */
+    private fun writeCurrentTimePreferPrimary(primarySvc: UUID, alternateSvc: UUID) {
         val c = Calendar.getInstance()
         val year = c.get(Calendar.YEAR)
         val payload = byteArrayOf(
@@ -204,38 +216,63 @@ class MiScaleHandler : ScaleDeviceHandler() {
             c.get(Calendar.SECOND).toByte(),
             0x03, 0x00, 0x00
         )
-        // Try both services (firmware variants differ)
-        writeTo(SERVICE_BODY_COMP, CHAR_CURRENT_TIME, payload, withResponse = true)
-        writeTo(SERVICE_WEIGHT,    CHAR_CURRENT_TIME, payload, withResponse = true)
-        logD("Current time written: ${payload.toHexPreview(16)}")
+
+        val primaryOk = runCatching {
+            writeTo(primarySvc, CHAR_CURRENT_TIME, payload, withResponse = true)
+        }.isSuccess
+
+        if (!primaryOk) {
+            runCatching {
+                writeTo(alternateSvc, CHAR_CURRENT_TIME, payload, withResponse = true)
+            }.onSuccess {
+                logD("Current time written (alternate).")
+            }.onFailure {
+                logI("Current time write failed on both services: ${it.message}")
+            }
+        } else {
+            logD("Current time written (primary).")
+        }
     }
 
-    // --- History / live parsing ---
+    // ----- Notifications / parsing -----
+
+    override fun onNotification(characteristic: UUID, data: ByteArray, user: ScaleUser) {
+        if (data.isEmpty()) return
+        if (characteristic == CHAR_CURRENT_TIME) return // ignore echoes
+
+        if (characteristic == CHAR_MI_HISTORY) {
+            handleHistoryNotify(data, user)
+            return
+        }
+
+        // Some firmwares may leak data elsewhere; log a small preview.
+        logD("Notify $characteristic len=${data.size} ${data.toHexPreview(24)}")
+    }
 
     private fun handleHistoryNotify(d: ByteArray, user: ScaleUser) {
-        // STOP
+        // STOP (0x03)
         if (d.size == 1 && d[0] == 0x03.toByte()) {
             flushHistory()
 
-            // Ack stop + uniq
-            writeTo(SERVICE_BODY_COMP, CHAR_MI_HISTORY, byteArrayOf(0x03), withResponse = true)
+            // ACK stop + uniq; try both services to be service-agnostic.
+            writeToServiceOf(d, byteArrayOf(0x03))
             val uniq = unique16()
             val ack  = byteArrayOf(0x04, 0xFF.toByte(), 0xFF.toByte(), (uniq shr 8).toByte(), (uniq and 0xFF).toByte())
-            writeTo(SERVICE_BODY_COMP, CHAR_MI_HISTORY, ack, withResponse = true)
+            writeToServiceOf(d, ack)
 
             logI("History import done: $importedHistory record(s). Announced=$pendingHistoryCount")
             historyMode = false
             return
         }
 
-        // Response to “only last” request
+        // Response to “only last”: 0x01 <count> FF FF <uniqHi> <uniqLo>
         if (d.size >= 6 && d[0] == 0x01.toByte() && d[2] == 0xFF.toByte()) {
             pendingHistoryCount = d[1].toInt() and 0xFF
             logI("History count announced: $pendingHistoryCount")
             return
         }
 
-        // Live frames (13B) or two frames (26B)
+        // Live frames (13B) or combined (26B)
         if (d.size == 13 || d.size == 26) {
             if (d.size == 13) {
                 if (parseLive13(d, user) && historyMode) importedHistory++
@@ -249,11 +286,11 @@ class MiScaleHandler : ScaleDeviceHandler() {
             return
         }
 
-        // Otherwise: history chunks → 10-byte records
-        appendHistoryChunk(d, user)
+        // Otherwise treat as history chunk(s) → 10-byte aligned records.
+        appendHistoryChunk(d)
     }
 
-    // v2 live frame (13 bytes). With/without impedance.
+    /** v2 live frame (13 bytes). With/without impedance. Publishes stabilized frames only. */
     private fun parseLive13(d: ByteArray, user: ScaleUser): Boolean {
         if (d.size != 13) return false
 
@@ -303,7 +340,7 @@ class MiScaleHandler : ScaleDeviceHandler() {
         return true
     }
 
-    // History record (10 bytes): [status][weightLE(2)][yearLE(2)][mon][day][h][m][s]
+    /** History record (10 bytes): [status][weightLE(2)][yearLE(2)][mon][day][h][m][s] */
     private fun parseHistory10(d: ByteArray, user: ScaleUser): Boolean {
         if (d.size != 10) return false
         val status = d[0].toInt() and 0xFF
@@ -313,7 +350,7 @@ class MiScaleHandler : ScaleDeviceHandler() {
         val removed = (status and 0x80) != 0
         if (!stable || removed) return false
 
-        // warn once if unknown bits (1/2) show up (expected on some dumps, not harmful)
+        // Warn once if unknown bits show up (not harmful).
         if (!warnedHistoryStatusBits && ((status and 0x02) != 0 || (status and 0x04) != 0)) {
             logW("History status had unexpected bits (1/2) — ignoring (no impedance in 10B format).")
             warnedHistoryStatusBits = true
@@ -327,6 +364,7 @@ class MiScaleHandler : ScaleDeviceHandler() {
         val day    = d[6].toInt() and 0xFF
         val hour   = d[7].toInt() and 0xFF
         val minute = d[8].toInt() and 0xFF
+
         val dt = parseMinuteDate(year, month, day, hour, minute) ?: return false
         if (!plausible(dt)) return false
 
@@ -339,7 +377,7 @@ class MiScaleHandler : ScaleDeviceHandler() {
         return true
     }
 
-    private fun appendHistoryChunk(chunk: ByteArray, user: ScaleUser) {
+    private fun appendHistoryChunk(chunk: ByteArray) {
         if (chunk.size < 2) return
         histBuf.write(chunk, 0, chunk.size)
 
@@ -348,8 +386,9 @@ class MiScaleHandler : ScaleDeviceHandler() {
         if (full >= 10) {
             var ok = 0
             var off = 0
+            val user = currentAppUser()
             while (off < full) {
-                if (parseHistory10(buf.copyOfRange(off, off + 10), currentAppUser())) ok++
+                if (parseHistory10(buf.copyOfRange(off, off + 10), user)) ok++
                 off += 10
             }
             if (ok > 0) importedHistory += ok
@@ -363,8 +402,9 @@ class MiScaleHandler : ScaleDeviceHandler() {
         if (leftover.isNotEmpty() && leftover.size % 10 == 0) {
             var ok = 0
             var off = 0
+            val user = currentAppUser()
             while (off < leftover.size) {
-                if (parseHistory10(leftover.copyOfRange(off, off + 10), currentAppUser())) ok++
+                if (parseHistory10(leftover.copyOfRange(off, off + 10), user)) ok++
                 off += 10
             }
             if (ok > 0) importedHistory += ok
@@ -372,7 +412,7 @@ class MiScaleHandler : ScaleDeviceHandler() {
         histBufReset()
     }
 
-    // --- Helpers ---
+    // ----- Helpers -----
 
     private fun histBufReset() {
         try { histBuf.reset() } catch (_: Exception) {}
@@ -390,5 +430,44 @@ class MiScaleHandler : ScaleDeviceHandler() {
         val max = (now.clone() as Calendar).apply { add(Calendar.YEAR, years) }.time
         val min = (now.clone() as Calendar).apply { add(Calendar.YEAR, -years) }.time
         return date.after(min) && date.before(max)
+    }
+
+    /**
+     * Write a small payload back to the history characteristic, regardless of which service
+     * the firmware uses. Tries 0x181B first (v2 default), then 0x181D (v1 default).
+     * Avoids dependency on a GATT "hasChar" API.
+     */
+    private fun writeToServiceOf(_rx: ByteArray, payload: ByteArray) {
+        runCatching { writeTo(SERVICE_BODY_COMP, CHAR_MI_HISTORY, payload, withResponse = true) }
+            .onFailure {
+                runCatching { writeTo(SERVICE_WEIGHT, CHAR_MI_HISTORY, payload, withResponse = true) }
+            }
+    }
+
+    /** Arm one-shot fallback if 0x01<count> response did not arrive. */
+    private fun armHistoryFallbackTimer(svcPrimary: UUID, svcAlternate: UUID) {
+        historyFallbackJob?.cancel()
+        historyFallbackJob = scope.launch {
+            delay(1000)
+            if (!historyMode || pendingHistoryCount >= 0) return@launch
+
+            logW("No history count response on primary; attempting fallback (ALL records).")
+
+            val uniq2 = unique16()
+            val all = byteArrayOf(0x01, 0x00, 0x00, (uniq2 shr 8).toByte(), (uniq2 and 0xFF).toByte())
+
+            runCatching {
+                writeTo(svcPrimary, CHAR_MI_HISTORY, ENABLE_HISTORY_MAGIC, withResponse = true)
+                writeTo(svcPrimary, CHAR_MI_HISTORY, all, withResponse = true)
+                writeTo(svcPrimary, CHAR_MI_HISTORY, byteArrayOf(0x02), withResponse = true)
+            }.onFailure { logI("Primary fallback write failed: ${it.message}") }
+
+            runCatching {
+                setNotifyOn(svcAlternate, CHAR_MI_HISTORY)
+                writeTo(svcAlternate, CHAR_MI_HISTORY, ENABLE_HISTORY_MAGIC, withResponse = true)
+                writeTo(svcAlternate, CHAR_MI_HISTORY, all, withResponse = true)
+                writeTo(svcAlternate, CHAR_MI_HISTORY, byteArrayOf(0x02), withResponse = true)
+            }.onFailure { logI("Alternate fallback write failed: ${it.message}") }
+        }
     }
 }
