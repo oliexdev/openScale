@@ -96,13 +96,14 @@ class RenphoHandler : ScaleDeviceHandler() {
      * We keep this moderately strict to avoid grabbing unrelated scales.
      */
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
-        val name = device.name.lowercase(Locale.ROOT)
+        val nameLc = device.name.lowercase()
         val svc = device.serviceUuids.toSet()
 
-        val looksRenpho =
-            name.contains("Renpho-Scale".lowercase()) ||
-                    (svc.contains(SERV_WEIGHT_SCALE) && svc.contains(SERV_BODY_COMP))
+        val hasStdWeight = svc.contains(uuid16(0x181D)) || svc.contains(uuid16(0x181B))
+        val hasQN = svc.contains(uuid16(0xFFE0)) || svc.contains(uuid16(0xFFF0))
+        val looksRenphoByName = nameLc.contains("renpho-scale")
 
+        val looksRenpho = (hasStdWeight && looksRenphoByName) && !hasQN
         if (!looksRenpho) return null
 
         val caps = setOf(
@@ -110,17 +111,15 @@ class RenphoHandler : ScaleDeviceHandler() {
             DeviceCapability.USER_SYNC,
             DeviceCapability.BODY_COMPOSITION
         )
-
         val impl = setOf(
             DeviceCapability.TIME_SYNC,
-            DeviceCapability.USER_SYNC,
+            DeviceCapability.USER_SYNC
         )
-
         return DeviceSupport(
             displayName = "RENPHO ES-WBE28",
             capabilities = caps,
-            implemented  = impl,
-            linkMode     = LinkMode.CONNECT_GATT
+            implemented = impl,
+            linkMode = LinkMode.CONNECT_GATT
         )
     }
 

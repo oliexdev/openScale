@@ -17,6 +17,7 @@
  */
 package com.health.openscale.core.bluetooth.modern
 
+import android.R.attr.name
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
@@ -73,24 +74,24 @@ class QNHandler : ScaleDeviceHandler() {
     // ---- Capability discovery --------------------------------------------------
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
-        val uuids = device.serviceUuids
+        val uuids = device.serviceUuids.toSet()
 
-        val supports = device.name.startsWith("QN-Scale") && uuids.any { it == SVC_T1 || it == SVC_T2 }
-        if (!supports) return null
+        val hasQN = uuids.contains(uuid16(0xFFE0)) || uuids.contains(uuid16(0xFFF0))
 
-        // Remember a hint about which flavor we likely have
-        likelyUseType1 = uuids.contains(SVC_T1) && !uuids.contains(SVC_T2)
+        if (!hasQN) return null
+        if (!device.name.startsWith("QN-Scale")) return null
 
-        val capabilities = buildSet {
-            add(DeviceCapability.TIME_SYNC)
-            add(DeviceCapability.LIVE_WEIGHT_STREAM)
-            add(DeviceCapability.BODY_COMPOSITION) // derived via impedance
-        }
+        likelyUseType1 = uuids.contains(uuid16(0xFFE0)) && !uuids.contains(uuid16(0xFFF0))
 
+        val caps = setOf(
+            DeviceCapability.TIME_SYNC,
+            DeviceCapability.LIVE_WEIGHT_STREAM,
+            DeviceCapability.BODY_COMPOSITION
+        )
         return DeviceSupport(
             displayName = "QN Scale",
-            capabilities = capabilities,
-            implemented = capabilities,
+            capabilities = caps,
+            implemented = caps,
             linkMode = LinkMode.CONNECT_GATT
         )
     }
