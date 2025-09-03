@@ -97,22 +97,21 @@ class BluetoothFacade @Inject constructor(
         connection.clearUserInteractionEvent()
     }
 
-    val savedScaleAddress: StateFlow<String?> =
-        settingsFacade.savedBluetoothScaleAddress.stateIn(scope, SharingStarted.WhileSubscribed(5000), null)
-    val savedScaleName: StateFlow<String?> =
-        settingsFacade.savedBluetoothScaleName.stateIn(scope, SharingStarted.WhileSubscribed(5000), null)
+    val savedDevice: StateFlow<ScannedDeviceInfo?> =
+        settingsFacade.observeSavedDevice()
+            .stateIn(scope, SharingStarted.WhileSubscribed(5000), null)
 
     val savedTuningProfile: StateFlow<TuningProfile> =
-        combine(savedScaleAddress, settingsFacade.savedBluetoothTuneProfile) { addr, stored ->
-            if (addr.isNullOrEmpty()) TuningProfile.Balanced
+        combine(savedDevice, settingsFacade.savedBluetoothTuneProfile) { dev, stored ->
+            if (dev == null) TuningProfile.Balanced
             else runCatching { TuningProfile.valueOf(stored ?: "Balanced") }
                 .getOrDefault(TuningProfile.Balanced)
         }.stateIn(scope, SharingStarted.WhileSubscribed(5000), TuningProfile.Balanced)
 
     val savedDeviceSupport: StateFlow<DeviceSupport?> =
-        combine(savedScaleName, savedScaleAddress, savedTuningProfile) { name, addr, tuning ->
-            if (name.isNullOrEmpty() || addr.isNullOrEmpty()) return@combine null
-            val base = scaleFactory.getDeviceSupportFor(name, addr) ?: return@combine null
+        combine(savedDevice, savedTuningProfile) { dev, tuning ->
+            if (dev == null) return@combine null
+            val base = scaleFactory.getDeviceSupportFor(dev.name, dev.address) ?: return@combine null
             base.copy(tuningProfile = tuning)
         }.stateIn(scope, SharingStarted.WhileSubscribed(5000), null)
 
@@ -158,30 +157,28 @@ class BluetoothFacade @Inject constructor(
 
     fun stopScan() = scanner.stopScan()
 
-    fun connectTo(device: ScannedDeviceInfo) {
-        val (supported, handlerName) = scaleFactory.getSupportingHandlerInfo(device)
-        if (!supported) {
-            LogManager.w(TAG, "Device ${device.name} is not supported by this app")
-            return
-        }
-        device.isSupported = true
-        device.determinedHandlerDisplayName = handlerName
-        connection.connectToDevice(device)
-    }
-
     fun connectToSavedDevice() {
         scope.launch {
-            val address = savedScaleAddress.value
-            val name = savedScaleName.value
-            if (address == null || name == null) {
+            val dev = savedDevice.value
+            if (dev == null) {
+                LogManager.d(TAG, "No saved device snapshot found.")
                 return@launch
             }
-            val already = (connectionStatus.value == ConnectionStatus.CONNECTED || connectionStatus.value == ConnectionStatus.CONNECTING) &&
-                    connectedDeviceAddress.value == address
-            if (!already) {
-                val dev = ScannedDeviceInfo(name, address, 0, emptyList(), null, false, null)
-                connectTo(dev)
+
+            val already = (connectionStatus.value == ConnectionStatus.CONNECTED ||
+                    connectionStatus.value == ConnectionStatus.CONNECTING) &&
+                    connectedDeviceAddress.value == dev.address
+            if (already) return@launch
+
+            val (supported, handlerName) = scaleFactory.getSupportingHandlerInfo(dev)
+            if (!supported) {
+                LogManager.w(TAG, "Saved device '${dev.name}' is not recognized as supported anymore.")
+                return@launch
             }
+            dev.isSupported = true
+            dev.determinedHandlerDisplayName = handlerName
+
+            connection.connectToDevice(dev)
         }
     }
 
@@ -191,7 +188,7 @@ class BluetoothFacade @Inject constructor(
 
     fun saveAsPreferred(device: ScannedDeviceInfo) {
         scope.launch {
-            settingsFacade.saveBluetoothScale(device.address, device.name)
+            settingsFacade.saveSavedDevice(device)
         }
     }
 

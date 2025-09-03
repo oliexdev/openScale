@@ -35,6 +35,7 @@ import com.health.openscale.core.data.BodyFatFormulaOption
 import com.health.openscale.core.data.BodyWaterFormulaOption
 import com.health.openscale.core.data.LbmFormulaOption
 import com.health.openscale.core.data.SmoothingAlgorithm
+import com.health.openscale.core.service.ScannedDeviceInfo
 import com.health.openscale.core.utils.LogManager
 import dagger.Binds
 import dagger.Module
@@ -44,9 +45,12 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.io.IOException
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -69,8 +73,11 @@ object SettingsPreferenceKeys {
     val SELECTED_TYPES_TABLE = stringSetPreferencesKey("selected_types_table") // IDs of measurement types selected for the data table
 
     // Saved Bluetooth Scale
-    val SAVED_BLUETOOTH_SCALE_ADDRESS = stringPreferencesKey("saved_bluetooth_scale_address")
-    val SAVED_BLUETOOTH_SCALE_NAME = stringPreferencesKey("saved_bluetooth_scale_name")
+    val SAVED_BLUETOOTH_DEVICE_ADDRESS        = stringPreferencesKey("saved_bluetooth_device_address")
+    val SAVED_BLUETOOTH_DEVICE_NAME           = stringPreferencesKey("saved_bluetooth_device_name")
+    val SAVED_BLUETOOTH_DEVICE_RSSI           = intPreferencesKey("saved_bluetooth_device_rssi")
+    val SAVED_BLUETOOTH_DEVICE_SERVICE_UUIDS  = stringSetPreferencesKey("saved_bluetooth_device_service_uuids")
+    val SAVED_BLUETOOTH_DEVICE_HANDLER_HINT   = stringPreferencesKey("saved_bluetooth_device_handler_hint")
     val SAVED_BLUETOOTH_TUNE_PROFILE = stringPreferencesKey("saved_bluetooth_tune_profile")
 
     // Settings for chart
@@ -150,9 +157,8 @@ interface SettingsFacade {
     suspend fun saveSelectedTableTypeIds(typeIds: Set<String>)
 
     // Bluetooth scale settings
-    val savedBluetoothScaleAddress: Flow<String?>
-    val savedBluetoothScaleName: Flow<String?>
-    suspend fun saveBluetoothScale(address: String, name: String?)
+    fun observeSavedDevice(): Flow<ScannedDeviceInfo?>
+    suspend fun saveSavedDevice(device: ScannedDeviceInfo)
     suspend fun clearSavedBluetoothScale()
 
     val savedBluetoothTuneProfile: Flow<String?>
@@ -336,46 +342,63 @@ class SettingsFacadeImpl @Inject constructor(
         saveSetting(SettingsPreferenceKeys.SELECTED_TYPES_TABLE.name, typeIds)
     }
 
-    override val savedBluetoothScaleAddress: Flow<String?> = dataStore.data
-        .catch { exception ->
-            LogManager.e(TAG, "Error reading savedBluetoothScaleAddress from DataStore.", exception)
-            if (exception is IOException) {
-                emit(emptyPreferences())
-            } else {
-                throw exception
-            }
-        }
-        .map { preferences ->
-            preferences[SettingsPreferenceKeys.SAVED_BLUETOOTH_SCALE_ADDRESS]
-        }
-        .distinctUntilChanged()
+    override fun observeSavedDevice(): Flow<ScannedDeviceInfo?> {
+        val addrF  = observeSetting(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_ADDRESS.name,  null as String?)
+        val nameF  = observeSetting(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_NAME.name,     null as String?)
+        val rssiF  = observeSetting(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_RSSI.name,     0)
+        val uuidsF = observeSetting(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_SERVICE_UUIDS.name, emptySet<String>())
+        val hintF  = observeSetting(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_HANDLER_HINT.name,  null as String?)
 
-    override val savedBluetoothScaleName: Flow<String?> = dataStore.data
-        .catch { exception ->
-            LogManager.e(TAG, "Error reading savedBluetoothScaleName from DataStore.", exception)
-            if (exception is IOException) {
-                emit(emptyPreferences())
+        return combine(addrF, nameF, rssiF, uuidsF, hintF) { addr, name, rssi, uuidStrSet, hint ->
+            if (addr.isNullOrBlank() || name.isNullOrBlank()) {
+                null
             } else {
-                throw exception
-            }
-        }
-        .map { preferences ->
-            preferences[SettingsPreferenceKeys.SAVED_BLUETOOTH_SCALE_NAME]
-        }
-        .distinctUntilChanged()
+                // Convert to UUID list with stable ordering to keep distinctUntilChanged effective
+                val uuids = uuidStrSet
+                    .mapNotNull { runCatching { UUID.fromString(it) }.getOrNull() }
+                    .sortedBy { it.toString() }
 
-    override suspend fun saveBluetoothScale(address: String, name: String?) {
-        LogManager.i(TAG, "Saving Bluetooth scale: Address=$address, Name=$name")
-        dataStore.edit { preferences ->
-            preferences[SettingsPreferenceKeys.SAVED_BLUETOOTH_SCALE_ADDRESS] = address
-            if (name != null) {
-                preferences[SettingsPreferenceKeys.SAVED_BLUETOOTH_SCALE_NAME] = name
-            } else {
-                preferences.remove(SettingsPreferenceKeys.SAVED_BLUETOOTH_SCALE_NAME)
+                ScannedDeviceInfo(
+                    name = name,
+                    address = addr,
+                    rssi = rssi,
+                    serviceUuids = uuids,
+                    manufacturerData = null,
+                    isSupported = false,
+                    determinedHandlerDisplayName = hint
+                )
             }
+        }
+            .catch { e ->
+                LogManager.e("UserSettingsRepository", "observeSavedDevice failed", e)
+                emit(null)
+            }
+            .distinctUntilChanged()
+    }
+
+    override suspend fun saveSavedDevice(device: com.health.openscale.core.service.ScannedDeviceInfo) {
+        LogManager.i(TAG, "Saving device snapshot: addr=${device.address}, name=${device.name}, uuids=${device.serviceUuids.size}, hint=${device.determinedHandlerDisplayName}")
+        dataStore.edit { prefs ->
+            prefs[SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_ADDRESS]       = device.address
+            prefs[SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_NAME]          = device.name
+            prefs[SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_RSSI]          = device.rssi
+            prefs[SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_SERVICE_UUIDS] = device.serviceUuids.map(UUID::toString).toSet()
+            device.determinedHandlerDisplayName?.let {
+                prefs[SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_HANDLER_HINT] = it
+            } ?: prefs.remove(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_HANDLER_HINT)
         }
     }
 
+    override suspend fun clearSavedBluetoothScale() {
+        LogManager.i(TAG, "Clearing saved Bluetooth device snapshot.")
+        dataStore.edit { prefs ->
+            prefs.remove(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_ADDRESS)
+            prefs.remove(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_NAME)
+            prefs.remove(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_RSSI)
+            prefs.remove(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_SERVICE_UUIDS)
+            prefs.remove(SettingsPreferenceKeys.SAVED_BLUETOOTH_DEVICE_HANDLER_HINT)
+        }
+    }
 
     override val savedBluetoothTuneProfile: Flow<String?> = dataStore.data
         .catch { exception ->
@@ -399,14 +422,6 @@ class SettingsFacadeImpl @Inject constructor(
             } else {
                 preferences.remove(SettingsPreferenceKeys.SAVED_BLUETOOTH_TUNE_PROFILE)
             }
-        }
-    }
-
-    override suspend fun clearSavedBluetoothScale() {
-        LogManager.i(TAG, "Clearing saved Bluetooth scale information.")
-        dataStore.edit { preferences ->
-            preferences.remove(SettingsPreferenceKeys.SAVED_BLUETOOTH_SCALE_ADDRESS)
-            preferences.remove(SettingsPreferenceKeys.SAVED_BLUETOOTH_SCALE_NAME)
         }
     }
 
@@ -687,48 +702,81 @@ class SettingsFacadeImpl @Inject constructor(
 
     @Suppress("UNCHECKED_CAST")
     override fun <T> observeSetting(keyName: String, defaultValue: T): Flow<T> {
-        LogManager.v(TAG, "Observing setting: key='$keyName', type='${defaultValue!!::class.simpleName}'")
+        LogManager.v(
+            TAG,
+            "Observing setting: key='$keyName', type='${defaultValue?.let { it::class.simpleName } ?: "null"}'"
+        )
+
         return dataStore.data
             .catch { exception ->
                 LogManager.e(TAG, "Error reading setting '$keyName' from DataStore.", exception)
                 if (exception is IOException) {
-                    // IOExceptions are common if DataStore is corrupted or inaccessible
                     emit(emptyPreferences())
                 } else {
-                    // Rethrow other critical exceptions
                     throw exception
                 }
             }
             .map { preferences ->
-                val preferenceKey = when (defaultValue) {
-                    is Boolean -> booleanPreferencesKey(keyName)
-                    is Int -> intPreferencesKey(keyName)
-                    is Long -> longPreferencesKey(keyName)
-                    is Float -> floatPreferencesKey(keyName)
-                    is Double -> doublePreferencesKey(keyName)
-                    is String -> stringPreferencesKey(keyName)
+                when (defaultValue) {
+                    // Nullable String case (e.g., observeSetting(KEY, null as String?))
+                    null -> {
+                        val key = stringPreferencesKey(keyName)
+                        // May return null; that's intended for nullable String
+                        preferences[key] as T?
+                    }
+
+                    is Boolean -> {
+                        val key = booleanPreferencesKey(keyName)
+                        (preferences[key] ?: defaultValue) as T
+                    }
+
+                    is Int -> {
+                        val key = intPreferencesKey(keyName)
+                        (preferences[key] ?: defaultValue) as T
+                    }
+
+                    is Long -> {
+                        val key = longPreferencesKey(keyName)
+                        (preferences[key] ?: defaultValue) as T
+                    }
+
+                    is Float -> {
+                        val key = floatPreferencesKey(keyName)
+                        (preferences[key] ?: defaultValue) as T
+                    }
+
+                    is Double -> {
+                        val key = doublePreferencesKey(keyName)
+                        (preferences[key] ?: defaultValue) as T
+                    }
+
+                    is String -> {
+                        val key = stringPreferencesKey(keyName)
+                        (preferences[key] ?: defaultValue) as T
+                    }
+
                     is Set<*> -> {
-                        // Ensure all elements in the set are Strings, as DataStore only supports Set<String>
-                        if (defaultValue.all { it is String }) {
-                            stringSetPreferencesKey(keyName) as Preferences.Key<T>
-                        } else {
-                            val errorMsg = "Unsupported Set type for preference: $keyName. Only Set<String> is supported."
-                            LogManager.e(TAG, errorMsg)
-                            throw IllegalArgumentException(errorMsg)
+                        // only Set<String> is supported by DataStore
+                        if (!defaultValue.all { it is String }) {
+                            val msg = "Unsupported Set type for preference: $keyName. Only Set<String> is supported."
+                            LogManager.e(TAG, msg)
+                            throw IllegalArgumentException(msg)
                         }
+                        val key = stringSetPreferencesKey(keyName)
+                        @Suppress("UNCHECKED_CAST")
+                        (preferences[key] ?: defaultValue as Set<String>) as T
                     }
+
                     else -> {
-                        val errorMsg = "Unsupported type for preference: $keyName (Type: ${defaultValue::class.java.name})"
-                        LogManager.e(TAG, errorMsg)
-                        throw IllegalArgumentException(errorMsg)
+                        val msg = "Unsupported type for preference: $keyName (Type: ${defaultValue::class.java.name})"
+                        LogManager.e(TAG, msg)
+                        throw IllegalArgumentException(msg)
                     }
-                }
-                preferences[preferenceKey as Preferences.Key<T>] ?: defaultValue.also {
-                    LogManager.v(TAG, "Setting '$keyName' not found, returning default value: $it")
                 }
             }
-            .distinctUntilChanged()
+            .distinctUntilChanged() as Flow<T>
     }
+
 
     override suspend fun <T> saveSetting(keyName: String, value: T) {
         LogManager.v(TAG, "Saving setting: key='$keyName', value='$value', type='${value!!::class.simpleName}'")

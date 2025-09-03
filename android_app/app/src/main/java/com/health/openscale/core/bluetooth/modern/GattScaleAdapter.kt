@@ -243,6 +243,10 @@ class GattScaleAdapter(
         override fun disconnect() {
             currentPeripheral?.let { central.cancelConnection(it) }
         }
+
+        override fun getPeripheral(): BluetoothPeripheral? {
+            return currentPeripheral
+        }
     }
 
     override fun doConnect(address: String, selectedUser: ScaleUser) {

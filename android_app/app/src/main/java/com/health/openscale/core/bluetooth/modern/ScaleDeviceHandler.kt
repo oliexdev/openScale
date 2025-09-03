@@ -46,6 +46,7 @@ import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.service.ScannedDeviceInfo
 import com.health.openscale.core.utils.LogManager
+import com.welie.blessed.BluetoothPeripheral
 import java.util.UUID
 import kotlin.math.min
 
@@ -278,6 +279,9 @@ abstract class ScaleDeviceHandler {
     protected fun usersForDevice(): List<ScaleUser> = data.usersForDevice()
     protected fun lastMeasurementFor(userId: Int): ScaleMeasurement? = data.lastMeasurementFor(userId)
 
+    protected fun getPeripheral(): BluetoothPeripheral? {
+        return transport?.getPeripheral()
+    }
     // --- Logging shortcuts (route to LogManager under a single TAG) ------------
 
     protected fun logD(msg: String) = LogManager.d(TAG, msg)
@@ -325,6 +329,7 @@ abstract class ScaleDeviceHandler {
         fun write(service: UUID, characteristic: UUID, payload: ByteArray, withResponse: Boolean = true)
         fun read(service: UUID, characteristic: UUID)
         fun disconnect()
+        fun getPeripheral(): BluetoothPeripheral? = null
     }
 
     // ----- DataProvider: live app data the handler can query -----

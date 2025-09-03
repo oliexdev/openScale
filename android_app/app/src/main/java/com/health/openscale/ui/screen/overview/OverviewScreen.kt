@@ -323,10 +323,12 @@ fun OverviewScreen(
 
     // --- End of reverted chart selection logic ---
 
-    val savedDeviceAddress by bluetoothViewModel.savedScaleAddress.collectAsState()
+    val savedDevice by bluetoothViewModel.savedDevice.collectAsState()
     val connectionStatus by bluetoothViewModel.connectionStatus.collectAsState()
     val connectedDeviceAddr by bluetoothViewModel.connectedDeviceAddress.collectAsState()
-    val savedDeviceNameString by bluetoothViewModel.savedScaleName.collectAsState()
+
+    val savedDeviceNameString = savedDevice?.name.orEmpty()
+    val savedDeviceAddress    = savedDevice?.address
 
     val enableBluetoothLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()

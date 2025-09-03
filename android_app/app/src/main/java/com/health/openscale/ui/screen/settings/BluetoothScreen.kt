@@ -110,11 +110,10 @@ fun BluetoothScreen(
 
     // Observed state from ViewModel/facade
     val scannedDevices by bluetoothViewModel.scannedDevices.collectAsState()
+    val savedDevice by bluetoothViewModel.savedDevice.collectAsState()
     val isScanning by bluetoothViewModel.isScanning.collectAsState()
     val scanError by bluetoothViewModel.scanError.collectAsState()
     val connectionError by bluetoothViewModel.connectionError.collectAsState()
-    val savedDeviceAddress by bluetoothViewModel.savedScaleAddress.collectAsState()
-    val savedDeviceName by bluetoothViewModel.savedScaleName.collectAsState()
     val savedSupport by bluetoothViewModel.savedDeviceSupport.collectAsState()
 
     // Local UI state
@@ -124,7 +123,7 @@ fun BluetoothScreen(
     var showTuningMenu by remember { mutableStateOf(false) }
 
     // Simple flag: a saved name of "Debug" indicates debug mode is active.
-    val isDebugActive = (savedDeviceName == "Debug")
+    val isDebugActive = (savedDevice?.name.orEmpty() == "Debug")
 
     LaunchedEffect(Unit) {
         hasPermissions = hasBtPermissions(context)
@@ -222,7 +221,7 @@ fun BluetoothScreen(
             }
             else -> {
                 // --- SAVED DEVICE CARD (only if a device is actually saved) ---
-                val hasSaved = savedDeviceAddress != null && savedDeviceName != null
+                val hasSaved = savedDevice != null
                 if (hasSaved) {
                     OutlinedCard(modifier = Modifier.fillMaxWidth()) {
                         Row(
@@ -238,11 +237,11 @@ fun BluetoothScreen(
                                     color = MaterialTheme.colorScheme.primary
                                 )
                                 Text(
-                                        text = savedDeviceName ?: stringResource(R.string.unknown_device),
+                                        text = savedDevice?.name ?: stringResource(R.string.unknown_device),
                                         style = MaterialTheme.typography.titleSmall
                                 )
                                 Text(
-                                    text = savedDeviceAddress ?: "-",
+                                    text = savedDevice?.address ?: "-",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -349,7 +348,7 @@ fun BluetoothScreen(
                                                 }
                                             }
                                         )
-                                        if (!isDebugActive && savedDeviceAddress != null) {
+                                        if (!isDebugActive && savedDevice != null) {
                                             DropdownMenuItem(
                                                 text = { Text(stringResource(R.string.menu_enable_debug)) },
                                                 onClick = {
@@ -358,7 +357,7 @@ fun BluetoothScreen(
                                                     bluetoothViewModel.saveDeviceAsPreferred(
                                                         ScannedDeviceInfo(
                                                             name = "Debug",
-                                                            address = savedDeviceAddress!!,
+                                                            address = savedDevice?.name!!,
                                                             rssi = 0,
                                                             serviceUuids = emptyList(),
                                                             manufacturerData = null,
@@ -467,7 +466,7 @@ fun BluetoothScreen(
                     items(scannedDevices, key = { it.address }) { device ->
                         DeviceCardItem(
                             deviceInfo = device,
-                            savedAddress = savedDeviceAddress,
+                            savedAddress = savedDevice?.address,
                             onSavePreferred = {
                                 bluetoothViewModel.requestStopDeviceScan()
                                 if (device.isSupported) {

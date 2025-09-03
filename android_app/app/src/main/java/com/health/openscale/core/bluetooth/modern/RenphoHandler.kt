@@ -99,12 +99,12 @@ class RenphoHandler : ScaleDeviceHandler() {
         val nameLc = device.name.lowercase()
         val svc = device.serviceUuids.toSet()
 
-        val hasStdWeight = svc.contains(uuid16(0x181D)) || svc.contains(uuid16(0x181B))
         val hasQN = svc.contains(uuid16(0xFFE0)) || svc.contains(uuid16(0xFFF0))
         val looksRenphoByName = nameLc.contains("renpho-scale")
 
-        val looksRenpho = (hasStdWeight && looksRenphoByName) && !hasQN
-        if (!looksRenpho) return null
+        // Never claim Renpho when QN services are present
+        if (hasQN) return null
+        if (!looksRenphoByName) return null
 
         val caps = setOf(
             DeviceCapability.TIME_SYNC,

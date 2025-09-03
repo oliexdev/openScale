@@ -74,12 +74,14 @@ class QNHandler : ScaleDeviceHandler() {
     // ---- Capability discovery --------------------------------------------------
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
+        val nameLc = device.name.lowercase()
         val uuids = device.serviceUuids.toSet()
 
         val hasQN = uuids.contains(uuid16(0xFFE0)) || uuids.contains(uuid16(0xFFF0))
+        val nameIsQn = nameLc.contains("qn-scale") || nameLc.contains("renpho-scale")
 
-        if (!hasQN) return null
-        if (!device.name.startsWith("QN-Scale")) return null
+        // Require BOTH: QN services AND QN-typical name,
+        if (!((hasQN && nameIsQn))) return null
 
         likelyUseType1 = uuids.contains(uuid16(0xFFE0)) && !uuids.contains(uuid16(0xFFF0))
 

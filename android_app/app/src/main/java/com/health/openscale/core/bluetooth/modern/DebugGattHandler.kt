@@ -11,35 +11,46 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 package com.health.openscale.core.bluetooth.modern
 
+import android.bluetooth.BluetoothGattCharacteristic
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.service.ScannedDeviceInfo
-import com.health.openscale.core.utils.LogManager
+import java.util.Locale
 import java.util.UUID
+import kotlin.math.min
 
 /**
- * Debug GATT handler (migration of the old BluetoothDebug).
+ * ## DebugGattHandler
  *
- * Notes:
- * - The modern handler API does not expose a full service/descriptor dump, nor does it deliver
- *   READ responses back to the handler. This debug handler therefore focuses on:
- *      * subscribing to a few common characteristics (best effort),
- *      * reading some typical DIS/BAS fields (best effort),
- *      * logging any incoming NOTIFY frames verbosely.
- * - It activates ONLY if the UI/scan sets `name == "Debug"`
- * - It does not publish measurements; it’s for inspection/logging only.
+ * A pure **inspection** handler that:
+ *
+ * - Only activates when the scanned device name equals `"Debug"` (case-insensitive).
+ * - On connect, **dumps the full GATT table** (all services and characteristics) by
+ *   asking the adapter/transport for the current `BluetoothPeripheral`.
+ * - Optionally performs a few safe reads/subscriptions on common services to trigger
+ *   some traffic (helpful to verify notifications).
+ * - Logs **every incoming notification** with a compact hex & ASCII preview.
+ *
+ * This handler **never publishes measurements** and is intended solely for diagnostics.
+ *
+ * ### Adapter requirement
+ * The adapter/transport must expose `debugGetPeripheral(): BluetoothPeripheral?`.
+ * In `GattScaleAdapter`, implement it by returning the current `BluetoothPeripheral`.
+ *
+ * ### Why this lives here
+ * We keep all formatting, pretty-printing, and logging **inside this handler**, while
+ * the adapter stays minimal and unopinionated.
  */
 class DebugGattHandler : ScaleDeviceHandler() {
-
+    /**
+     * Only claim the device if the UI/scan explicitly selected the **Debug** handler.
+     * This prevents us from hijacking real devices during normal operation.
+     */
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
-        // Enable this handler only when explicitly requested as "Debug"
-        val name = device.name
-        if (!name.equals("debug", ignoreCase = true)) return null
+        val isDebug = device.name.equals("debug", ignoreCase = true)
+        if (!isDebug) return null
 
         return DeviceSupport(
             displayName = "Debug",
@@ -50,64 +61,139 @@ class DebugGattHandler : ScaleDeviceHandler() {
         )
     }
 
+    /**
+     * On connect:
+     * 1) Dump the **entire** GATT service/characteristic tree.
+     * 2) Optionally poke a few common characteristics (best-effort).
+     * 3) Arm light-weight subscriptions to typical measurement characteristics,
+     *    if present (best-effort; errors are logged).
+     */
     override fun onConnected(user: ScaleUser) {
-        logD("Connected in Debug mode. Subscribing/reading a few common characteristics…")
+        logD("Connected in Debug mode. Dumping full GATT services/characteristics…")
+        dumpAllGatt()
 
-        // Best-effort reads (will silently no-op if the service/char does not exist)
+        // --- Optional sanity probes (best-effort; they can fail silently) -----
         // Generic Access: Device Name
         readSafe(uuid16(0x1800), uuid16(0x2A00))
-        // Device Information: Manufacturer, Model, FW, SW
+        // Device Information: Manufacturer / Model / FW / SW
         readSafe(uuid16(0x180A), uuid16(0x2A29))
         readSafe(uuid16(0x180A), uuid16(0x2A24))
         readSafe(uuid16(0x180A), uuid16(0x2A26))
         readSafe(uuid16(0x180A), uuid16(0x2A28))
-        // Battery
+        // Battery Level
         readSafe(uuid16(0x180F), uuid16(0x2A19))
 
-        // Common weight/body-composition notifications (subscribe if present)
-        setNotifySafe(uuid16(0x181D), uuid16(0x2A9D)) // Weight Scale / Weight Measurement
-        setNotifySafe(uuid16(0x181B), uuid16(0x2A9C)) // Body Composition / Measurement
+        // Subscribe to common measurement characteristics if present
+        setNotifySafe(uuid16(0x181D), uuid16(0x2A9D)) // Weight Scale -> Weight Measurement
+        setNotifySafe(uuid16(0x181B), uuid16(0x2A9C)) // Body Comp   -> Body Composition Measurement
 
         logD("Debug handler armed. Incoming NOTIFY frames will be logged; no data is stored.")
-        // Keep the connection open to observe notifications.
     }
 
+    /**
+     * Every incoming notification is logged in a concise form:
+     * - Pretty UUID (16-bit when possible)
+     * - Hex preview (up to 64 bytes)
+     * - ASCII preview (non-printables as '?')
+     */
     override fun onNotification(characteristic: UUID, data: ByteArray, user: ScaleUser) {
         val hex = data.toHexPreview(64)
-        val text = data.decodePrintablePreview()
-        LogManager.d(
-            TAG,
-            "NOTIFY chr=${prettyUuid(characteristic)}  $hex  ascii=$text"
-        )
+        val ascii = data.toAsciiPreview(64)
+        logD("NOTIFY chr=${prettyUuid(characteristic)}  $hex  ascii=$ascii")
     }
 
-    // --- helpers ---------------------------------------------------------------
+    // ---------------------------------------------------------------------------------------------
+    // Dump utilities
+    // ---------------------------------------------------------------------------------------------
 
-    private fun setNotifySafe(service: UUID, chr: UUID) {
-        logD("→ setNotifyOn svc=${prettyUuid(service)} chr=${prettyUuid(chr)}")
-        runCatching { setNotifyOn(service, chr) }
+    /**
+     * Dump all discovered GATT services and their characteristics (with property flags).
+     * Uses the transport's `debugGetPeripheral()` hook to access the raw peripheral.
+     */
+    private fun dumpAllGatt() {
+        val peripheral = getPeripheral()
+        if (peripheral == null) {
+            logD("No peripheral available yet (transport.debugGetPeripheral() returned null).")
+            return
+        }
+
+        val services = peripheral.services ?: emptyList()
+        logD("=== GATT Service Dump BEGIN ===")
+        if (services.isEmpty()) {
+            logD( "(no services)")
+            logD( "=== GATT Service Dump END ===")
+            return
+        }
+
+        for (svc in services) {
+            logD( "Service ${prettyUuid(svc.uuid)}")
+            val chars = svc.characteristics ?: emptyList()
+            for (ch in chars) {
+                logD("  └─ Char ${prettyUuid(ch.uuid)} props=${propsToString(ch.properties)}"
+                )
+            }
+        }
+        logD("=== GATT Service Dump END ===")
     }
 
-    private fun readSafe(service: UUID, chr: UUID) {
-        // READ results are not delivered to handlers in the modern stack; this is for side-effects/logging
-        logD("→ read svc=${prettyUuid(service)} chr=${prettyUuid(chr)} (best effort)")
-        runCatching { readFrom(service, chr) }
+    // ---------------------------------------------------------------------------------------------
+    // Safe wrappers (never throw; best-effort operations)
+    // ---------------------------------------------------------------------------------------------
+
+    private fun setNotifySafe(service: UUID, characteristic: UUID) {
+        logD("→ setNotifyOn svc=${prettyUuid(service)} chr=${prettyUuid(characteristic)}")
+        runCatching { setNotifyOn(service, characteristic) }
+            .onFailure { logD("setNotifyOn failed: ${it.message ?: it::class.simpleName}") }
     }
 
+    private fun readSafe(service: UUID, characteristic: UUID) {
+        logD("→ read svc=${prettyUuid(service)} chr=${prettyUuid(characteristic)} (best effort)")
+        runCatching { readFrom(service, characteristic) }
+            .onFailure { logD("read failed: ${it.message ?: it::class.simpleName}") }
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    // Pretty-print helpers
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Convert a standard 128-bit UUID with the Bluetooth base into a compact **0xNNNN** form.
+     * Leaves full UUIDs intact for vendor/custom values.
+     */
     private fun prettyUuid(u: UUID): String {
-        // Compact 16-bit format when possible
-        val s = u.toString().lowercase()
+        val s = u.toString().lowercase(Locale.ROOT)
         return if (s.startsWith("0000") && s.endsWith("-0000-1000-8000-00805f9b34fb"))
             "0x" + s.substring(4, 8)
-        else s
+        else
+            s
     }
 
-    private fun ByteArray.decodePrintablePreview(max: Int = 64): String {
+    /**
+     * Turn Android GATT property flags into a readable pipe-separated string.
+     * Example: `READ|WRITE_NR|NOTIFY|INDICATE`
+     */
+    private fun propsToString(p: Int): String {
+        val flags = mutableListOf<String>()
+        if ((p and BluetoothGattCharacteristic.PROPERTY_READ) != 0) flags += "READ"
+        if ((p and BluetoothGattCharacteristic.PROPERTY_WRITE) != 0) flags += "WRITE"
+        if ((p and BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE) != 0) flags += "WRITE_NR"
+        if ((p and BluetoothGattCharacteristic.PROPERTY_NOTIFY) != 0) flags += "NOTIFY"
+        if ((p and BluetoothGattCharacteristic.PROPERTY_INDICATE) != 0) flags += "INDICATE"
+        if ((p and BluetoothGattCharacteristic.PROPERTY_SIGNED_WRITE) != 0) flags += "SIGNED"
+        if ((p and BluetoothGattCharacteristic.PROPERTY_BROADCAST) != 0) flags += "BROADCAST"
+        if ((p and BluetoothGattCharacteristic.PROPERTY_EXTENDED_PROPS) != 0) flags += "EXT"
+        return if (flags.isEmpty()) "0" else flags.joinToString("|")
+    }
+
+    /**
+     * ASCII preview of the first `max` bytes; non-printable bytes are rendered as '?'.
+     */
+    private fun ByteArray.toAsciiPreview(max: Int = 64): String {
         if (isEmpty()) return ""
-        val show = kotlin.math.min(size, max)
-        val sb = StringBuilder()
-        for (i in 0 until show) {
-            val ch = this[i].toInt().toChar()
+        val n = min(size, max)
+        val sb = StringBuilder(n)
+        for (i in 0 until n) {
+            val ch = (this[i].toInt() and 0xFF).toChar()
             sb.append(if (ch.isISOControl()) '?' else ch)
         }
         if (size > max) sb.append("…(+").append(size - max).append("b)")

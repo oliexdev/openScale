@@ -60,8 +60,7 @@ class BluetoothViewModel @Inject constructor(
     val connectionError = bt.connectionError
 
     val pendingUserInteractionEvent = bt.pendingUserInteractionEvent
-    val savedScaleAddress = bt.savedScaleAddress
-    val savedScaleName = bt.savedScaleName
+    val savedDevice = bt.savedDevice
     val savedDeviceSupport = bt.savedDeviceSupport
 
     // --- Snackbar events for UI ---
@@ -88,8 +87,6 @@ class BluetoothViewModel @Inject constructor(
     fun requestStopDeviceScan() = bt.stopScan()
 
     fun connectToSavedDevice() = bt.connectToSavedDevice()
-
-    fun connectTo(device: ScannedDeviceInfo) = bt.connectTo(device)
 
     fun disconnectDevice() = bt.disconnect()
 
