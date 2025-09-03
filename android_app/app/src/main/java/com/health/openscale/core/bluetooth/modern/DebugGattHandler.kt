@@ -31,16 +31,15 @@ import java.util.UUID
  *      * subscribing to a few common characteristics (best effort),
  *      * reading some typical DIS/BAS fields (best effort),
  *      * logging any incoming NOTIFY frames verbosely.
- * - It activates ONLY if the UI/scan sets `determinedHandlerDisplayName == "Debug"`, so it won’t
- *   steal devices from real drivers.
+ * - It activates ONLY if the UI/scan sets `name == "Debug"`
  * - It does not publish measurements; it’s for inspection/logging only.
  */
 class DebugGattHandler : ScaleDeviceHandler() {
 
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         // Enable this handler only when explicitly requested as "Debug"
-        val display = device.determinedHandlerDisplayName ?: return null // TODO set optional Debug on UI
-        if (!display.equals("Debug", ignoreCase = true)) return null
+        val name = device.name
+        if (!name.equals("debug", ignoreCase = true)) return null
 
         return DeviceSupport(
             displayName = "Debug",

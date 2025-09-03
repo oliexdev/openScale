@@ -266,6 +266,31 @@
     <string name="supported_label">Supported</string>
     <string name="not_supported_label">Not Supported</string>
     <string name="rssi_format">%1$d dBm</string>
+    <string name="menu_remove_saved_device">Remove saved device</string>
+    <string name="menu_enable_debug">Enable debug</string>
+    <string name="menu_save_as_preferred">Save as preferred</string>
+    <string name="menu_save_as_debug">Save as debug</string>
+    <string name="snackbar_saved_device_removed">Saved device removed.</string>
+    <string name="snackbar_debug_enable_logs">Debug enabled. Please enable log file: Settings → General → Enable log file.</string>
+    <string name="snackbar_debug_for_device_enable_logs">Debug enabled for this device. Please enable log file: Settings → General → Enable log file.</string>
+    <string name="debug_banner_active">Debug mode is active — no measurements will be saved.</string>
+    <string name="debug_banner_enable_logs_hint">Please enable log file: Settings → General → Enable log file.</string>
+    <string name="capabilities_header">Capabilities</string>
+    <string name="tuning_icon_desc">Tuning profile</string>
+    <string name="tuning_snackbar">Tuning: %1$s</string>
+    <string name="cap_body_composition">Body composition</string>
+    <string name="cap_time_sync">Time sync</string>
+    <string name="cap_user_sync">User sync</string>
+    <string name="cap_history_read">History read</string>
+    <string name="cap_live_weight">Live weight</string>
+    <string name="cap_unit_config">Unit config</string>
+    <string name="cap_battery">Battery</string>
+    <string name="cap_state_implemented">Implemented: %1$s</string>
+    <string name="cap_state_supported_only">Supported (not implemented): %1$s</string>
+    <string name="more_options_cd">More options</string>
+    <string name="tuning_balanced">Balanced</string>
+    <string name="tuning_conservative">Conservative</string>
+    <string name="tuning_aggressive">Aggressive</string>
 
     <!-- Bluetooth Connector -->
     <string name="bluetooth_connector_connected_to">Connected to %1$s</string>

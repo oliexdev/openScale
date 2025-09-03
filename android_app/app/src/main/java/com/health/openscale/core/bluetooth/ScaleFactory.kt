@@ -104,6 +104,10 @@ import com.health.openscale.core.facade.UserFacade
 import com.health.openscale.core.utils.LogManager
 import com.health.openscale.core.service.ScannedDeviceInfo
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -370,34 +374,52 @@ class ScaleFactory @Inject constructor(
     private fun createModernCommunicator(
         handler: ScaleDeviceHandler,
         support: DeviceSupport
-    ): ScaleCommunicator? = when (support.linkMode) {
-        LinkMode.CONNECT_GATT ->
-            GattScaleAdapter(
-                applicationContext,
-                settingsFacade,
-                measurementFacade,
-                userFacade,
-                handler,
-                support.tuningProfile
-            )
-        LinkMode.BROADCAST_ONLY ->
-            BroadcastScaleAdapter(
-                applicationContext,
-                settingsFacade,
-                measurementFacade,
-                userFacade,
-                handler,
-                support.tuningProfile
-            )
-        LinkMode.CLASSIC_SPP ->
-            SppScaleAdapter(
-                applicationContext,
-                settingsFacade,
-                measurementFacade,
-                userFacade,
-                handler,
-                support.tuningProfile
-            )
+    ): ScaleCommunicator? {
+        // Resolve effective tuning: prefer user-saved value, fall back to handler default
+        val effectiveTuning: TuningProfile = run {
+            val saved: String? = runCatching {
+                runBlocking(Dispatchers.IO) {
+                    withTimeout(250) {
+                        settingsFacade.savedBluetoothTuneProfile.firstOrNull()
+                    }
+                }
+            }.getOrNull()
+
+            saved?.let { runCatching { TuningProfile.valueOf(it) }.getOrNull() }
+                ?: support.tuningProfile
+        }
+
+        return when (support.linkMode) {
+            LinkMode.CONNECT_GATT ->
+                GattScaleAdapter(
+                    applicationContext,
+                    settingsFacade,
+                    measurementFacade,
+                    userFacade,
+                    handler,
+                    effectiveTuning
+                )
+
+            LinkMode.BROADCAST_ONLY ->
+                BroadcastScaleAdapter(
+                    applicationContext,
+                    settingsFacade,
+                    measurementFacade,
+                    userFacade,
+                    handler,
+                    effectiveTuning
+                )
+
+            LinkMode.CLASSIC_SPP ->
+                SppScaleAdapter(
+                    applicationContext,
+                    settingsFacade,
+                    measurementFacade,
+                    userFacade,
+                    handler,
+                    effectiveTuning
+                )
+        }
     }
 
     /**
@@ -436,6 +458,11 @@ class ScaleFactory @Inject constructor(
 
         LogManager.w(TAG, "No suitable communicator (neither modern nor legacy) found for device (name: '${deviceInfo.name}', address: '${deviceInfo.address}', handler hint: '${deviceInfo.determinedHandlerDisplayName}').")
         return null
+    }
+
+    fun getDeviceSupportFor(name: String, address: String): DeviceSupport? {
+        val info = ScannedDeviceInfo(name, address, 0, emptyList(), null)
+        return modernKotlinHandlers.firstNotNullOfOrNull { it.supportFor(info) }
     }
 
     /**

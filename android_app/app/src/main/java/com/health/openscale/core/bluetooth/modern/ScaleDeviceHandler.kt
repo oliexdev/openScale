@@ -20,6 +20,25 @@ package com.health.openscale.core.bluetooth.modern
 import android.bluetooth.le.ScanResult
 import android.os.Handler
 import androidx.annotation.StringRes
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AutoGraph
+import androidx.compose.material.icons.filled.BubbleChart
+import androidx.compose.material.icons.filled.Dashboard
+import androidx.compose.material.icons.filled.DonutSmall
+import androidx.compose.material.icons.filled.FitnessCenter
+import androidx.compose.material.icons.filled.Group
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.MonitorWeight
+import androidx.compose.material.icons.filled.Percent
+import androidx.compose.material.icons.filled.PieChart
+import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.SettingsApplications
+import androidx.compose.material.icons.filled.Spa
+import androidx.compose.material.icons.filled.StackedBarChart
+import androidx.compose.material.icons.filled.Timeline
+import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.outlined.BatteryStd
+import androidx.compose.ui.graphics.vector.ImageVector
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.BluetoothEvent
 import com.health.openscale.core.bluetooth.BluetoothEvent.UserInteractionType
@@ -48,14 +67,17 @@ data class DeviceSupport(
 )
 
 /** High-level capabilities a scale might offer. */
-enum class DeviceCapability {
-    BODY_COMPOSITION,   // fat / water / muscle / bone / ...
-    TIME_SYNC,          // set device clock
-    USER_SYNC,          // create/select users on the scale
-    HISTORY_READ,       // read stored measurements
-    LIVE_WEIGHT_STREAM, // live/unstable weight updates
-    UNIT_CONFIG,        // switch kg/lb/st on device
-    BATTERY_LEVEL       // read battery % / state
+enum class DeviceCapability(
+    @StringRes val labelRes: Int,
+    val icon: ImageVector
+) {
+    BODY_COMPOSITION( R.string.cap_body_composition, Icons.Filled.FitnessCenter ),
+    TIME_SYNC(        R.string.cap_time_sync,        Icons.Filled.Schedule ),
+    USER_SYNC(        R.string.cap_user_sync,        Icons.Filled.Group ),
+    HISTORY_READ(     R.string.cap_history_read,     Icons.Filled.History ),
+    LIVE_WEIGHT_STREAM(R.string.cap_live_weight,     Icons.Filled.AutoGraph ),
+    UNIT_CONFIG(      R.string.cap_unit_config,      Icons.Filled.Tune ),
+    BATTERY_LEVEL(    R.string.cap_battery,          Icons.Outlined.BatteryStd )
 }
 
 /**

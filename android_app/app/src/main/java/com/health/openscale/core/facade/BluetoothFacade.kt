@@ -27,6 +27,9 @@ import com.health.openscale.R
 import com.health.openscale.core.bluetooth.BluetoothEvent
 import com.health.openscale.core.bluetooth.ScaleFactory
 import com.health.openscale.core.bluetooth.data.ScaleUser
+import com.health.openscale.core.bluetooth.modern.DeviceSupport
+import com.health.openscale.core.bluetooth.modern.LinkMode
+import com.health.openscale.core.bluetooth.modern.TuningProfile
 import com.health.openscale.core.data.ConnectionStatus
 import com.health.openscale.core.data.User
 import com.health.openscale.core.database.DatabaseRepository
@@ -99,6 +102,26 @@ class BluetoothFacade @Inject constructor(
     val savedScaleName: StateFlow<String?> =
         settingsFacade.savedBluetoothScaleName.stateIn(scope, SharingStarted.WhileSubscribed(5000), null)
 
+    val savedTuningProfile: StateFlow<TuningProfile> =
+        combine(savedScaleAddress, settingsFacade.savedBluetoothTuneProfile) { addr, stored ->
+            if (addr.isNullOrEmpty()) TuningProfile.Balanced
+            else runCatching { TuningProfile.valueOf(stored ?: "Balanced") }
+                .getOrDefault(TuningProfile.Balanced)
+        }.stateIn(scope, SharingStarted.WhileSubscribed(5000), TuningProfile.Balanced)
+
+    val savedDeviceSupport: StateFlow<DeviceSupport?> =
+        combine(savedScaleName, savedScaleAddress, savedTuningProfile) { name, addr, tuning ->
+            if (name.isNullOrEmpty() || addr.isNullOrEmpty()) return@combine null
+            val base = scaleFactory.getDeviceSupportFor(name, addr) ?: return@combine null
+            base.copy(tuningProfile = tuning)
+        }.stateIn(scope, SharingStarted.WhileSubscribed(5000), null)
+
+    fun setSavedTuning(profile: TuningProfile) {
+        scope.launch {
+            settingsFacade.saveBluetoothTuneProfile(profile.name)
+        }
+    }
+
     // --- Current user context ---
     private val currentAppUser = MutableStateFlow<User?>(null)
     private val currentBtScaleUser = MutableStateFlow<ScaleUser?>(null)
@@ -168,8 +191,14 @@ class BluetoothFacade @Inject constructor(
 
     fun saveAsPreferred(device: ScannedDeviceInfo) {
         scope.launch {
-            val display = device.name ?: application.getString(R.string.unknown_device)
-            settingsFacade.saveBluetoothScale(device.address, display)
+            settingsFacade.saveBluetoothScale(device.address, device.name)
+        }
+    }
+
+    fun removeSavedDevice() {
+        scope.launch {
+            settingsFacade.clearSavedBluetoothScale()
+            settingsFacade.saveBluetoothTuneProfile(null)
         }
     }
 

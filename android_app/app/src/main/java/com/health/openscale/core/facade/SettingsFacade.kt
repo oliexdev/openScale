@@ -71,6 +71,7 @@ object SettingsPreferenceKeys {
     // Saved Bluetooth Scale
     val SAVED_BLUETOOTH_SCALE_ADDRESS = stringPreferencesKey("saved_bluetooth_scale_address")
     val SAVED_BLUETOOTH_SCALE_NAME = stringPreferencesKey("saved_bluetooth_scale_name")
+    val SAVED_BLUETOOTH_TUNE_PROFILE = stringPreferencesKey("saved_bluetooth_tune_profile")
 
     // Settings for chart
     val CHART_SHOW_DATA_POINTS = booleanPreferencesKey("chart_show_data_points")
@@ -153,6 +154,9 @@ interface SettingsFacade {
     val savedBluetoothScaleName: Flow<String?>
     suspend fun saveBluetoothScale(address: String, name: String?)
     suspend fun clearSavedBluetoothScale()
+
+    val savedBluetoothTuneProfile: Flow<String?>
+    suspend fun saveBluetoothTuneProfile(name: String?)
 
     val showChartDataPoints: Flow<Boolean>
     suspend fun setShowChartDataPoints(show: Boolean)
@@ -368,6 +372,32 @@ class SettingsFacadeImpl @Inject constructor(
                 preferences[SettingsPreferenceKeys.SAVED_BLUETOOTH_SCALE_NAME] = name
             } else {
                 preferences.remove(SettingsPreferenceKeys.SAVED_BLUETOOTH_SCALE_NAME)
+            }
+        }
+    }
+
+
+    override val savedBluetoothTuneProfile: Flow<String?> = dataStore.data
+        .catch { exception ->
+            LogManager.e(TAG, "Error reading savedBluetoothTuneProfile from DataStore.", exception)
+            if (exception is IOException) {
+                emit(emptyPreferences())
+            } else {
+                throw exception
+            }
+        }
+        .map { preferences ->
+            preferences[SettingsPreferenceKeys.SAVED_BLUETOOTH_TUNE_PROFILE]
+        }
+        .distinctUntilChanged()
+
+    override suspend fun saveBluetoothTuneProfile(name: String?) {
+        LogManager.i(TAG, "Saving Bluetooth tune profile: Name=$name")
+        dataStore.edit { preferences ->
+            if (name != null) {
+                preferences[SettingsPreferenceKeys.SAVED_BLUETOOTH_TUNE_PROFILE] = name
+            } else {
+                preferences.remove(SettingsPreferenceKeys.SAVED_BLUETOOTH_TUNE_PROFILE)
             }
         }
     }

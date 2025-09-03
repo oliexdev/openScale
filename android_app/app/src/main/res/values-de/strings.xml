@@ -263,6 +263,31 @@
     <string name="supported_label">Unterstützt</string>
     <string name="not_supported_label">Nicht unterstützt</string>
     <string name="rssi_format">%1$d dBm</string>
+    <string name="menu_remove_saved_device">Gespeichertes Gerät entfernen</string>
+    <string name="menu_enable_debug">Debug aktivieren</string>
+    <string name="menu_save_as_preferred">Als bevorzugtes Gerät speichern</string>
+    <string name="menu_save_as_debug">Als Debug speichern</string>
+    <string name="snackbar_saved_device_removed">Gespeichertes Gerät entfernt.</string>
+    <string name="snackbar_debug_enable_logs">Debug aktiviert. Bitte Log-Datei aktivieren: Einstellungen → Allgemein → Log-Datei aktivieren.</string>
+    <string name="snackbar_debug_for_device_enable_logs">Debug für dieses Gerät aktiviert. Bitte Log-Datei aktivieren: Einstellungen → Allgemein → Log-Datei aktivieren.</string>
+    <string name="debug_banner_active">Debug-Modus aktiv – es werden keine Messwerte gespeichert.</string>
+    <string name="debug_banner_enable_logs_hint">Bitte Log-Datei einschalten: Einstellungen → Allgemein → Log-Datei aktivieren.</string>
+    <string name="capabilities_header">Fähigkeiten</string>
+    <string name="tuning_icon_desc">Tuning-Profil</string>
+    <string name="tuning_snackbar">Tuning: %1$s</string>
+    <string name="cap_body_composition">Körperzusammensetzung</string>
+    <string name="cap_time_sync">Zeitsynchronisierung</string>
+    <string name="cap_user_sync">Benutzer-Sync</string>
+    <string name="cap_history_read">Verlauf lesen</string>
+    <string name="cap_live_weight">Live-Gewicht</string>
+    <string name="cap_unit_config">Einheit konfigurieren</string>
+    <string name="cap_battery">Batterie</string>
+    <string name="cap_state_implemented">Implementiert: %1$s</string>
+    <string name="cap_state_supported_only">Unterstützt (nicht implementiert): %1$s</string>
+    <string name="more_options_cd">Weitere Optionen</string>
+    <string name="tuning_balanced">Ausgewogen</string>
+    <string name="tuning_conservative">Konservativ</string>
+    <string name="tuning_aggressive">Aggressiv</string>
 
     <!-- Bluetooth Connector -->
     <string name="bluetooth_connector_connected_to">Verbunden mit %1$s</string>

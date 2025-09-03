@@ -21,6 +21,21 @@ import android.bluetooth.le.ScanSettings
 import android.os.Handler
 import android.os.Looper
 import androidx.annotation.StringRes
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.SettingsApplications
+import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.SignalCellularAlt
+import androidx.compose.material.icons.filled.SignalCellularAlt1Bar
+import androidx.compose.material.icons.filled.SignalCellularAlt2Bar
+import androidx.compose.material.icons.outlined.Balance
+import androidx.compose.material.icons.outlined.Equalizer
+import androidx.compose.material.icons.outlined.Scale
+import androidx.compose.material.icons.outlined.SignalCellularAlt1Bar
+import androidx.compose.material.icons.outlined.SignalCellularAlt2Bar
+import androidx.compose.material.icons.outlined.Straighten
+import androidx.compose.material.icons.outlined.Tune
+import androidx.compose.ui.graphics.vector.ImageVector
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.BluetoothEvent
 import com.health.openscale.core.bluetooth.ScaleCommunicator
@@ -98,8 +113,23 @@ data class BtSppTuning(
     val soKeepAlive: Boolean = true
 )
 
-enum class TuningProfile { Balanced, Conservative, Aggressive }
-
+enum class TuningProfile(
+    @StringRes val labelRes: Int,
+    val icon: ImageVector
+) {
+    Conservative(
+        labelRes = R.string.tuning_conservative,
+        icon = Icons.Filled.SignalCellularAlt1Bar
+    ),
+    Balanced(
+        labelRes = R.string.tuning_balanced,
+        icon = Icons.Outlined.SignalCellularAlt2Bar
+    ),
+    Aggressive(
+        labelRes = R.string.tuning_aggressive,
+        icon = Icons.Filled.SignalCellularAlt
+    )
+}
 fun TuningProfile.forGatt(): BleGattTuning = when (this) {
     TuningProfile.Balanced -> BleGattTuning(
         common = CommonTuning(2200, 1500, 3),

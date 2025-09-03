@@ -1,20 +1,10 @@
 /*
  * openScale
- * Copyright (C) 2025 olie.xdev <olie.xdeveloper@googlemail.com>
+ * Copyright (C) ...
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * GPLv3+
  */
+
 package com.health.openscale.ui.screen.settings
 
 import android.Manifest
@@ -25,12 +15,12 @@ import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -39,19 +29,34 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.BluetoothSearching
 import androidx.compose.material.icons.filled.BluetoothDisabled
+import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ErrorOutline
-import androidx.compose.material.icons.filled.HighlightOff
+import androidx.compose.material.icons.filled.Group
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.MonitorWeight
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.SettingsApplications
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Timeline
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.outlined.BatteryStd
+import androidx.compose.material.icons.outlined.Tune
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Divider
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.SnackbarDuration
@@ -67,26 +72,33 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.health.openscale.R
-import com.health.openscale.ui.shared.SharedViewModel
-import com.health.openscale.ui.screen.settings.BluetoothViewModel
+import com.health.openscale.core.bluetooth.modern.DeviceCapability
+import com.health.openscale.core.bluetooth.modern.DeviceSupport
+import com.health.openscale.core.bluetooth.modern.TuningProfile
 import com.health.openscale.core.service.ScannedDeviceInfo
+import com.health.openscale.ui.shared.SharedViewModel
 import kotlinx.coroutines.launch
 
 /**
- * Composable function for the Bluetooth screen.
- * It handles Bluetooth permissions, enabling Bluetooth, scanning for devices,
- * displaying scanned devices, and saving a preferred scale.
+ * Main Bluetooth settings screen.
  *
- * @param sharedViewModel The [SharedViewModel] for showing snackbars and accessing shared app functionalities.
- * @param bluetoothViewModel The [BluetoothViewModel] for managing Bluetooth state and operations.
+ * Responsibilities:
+ * - Permission and BT enable flow.
+ * - Start/stop scanning and show discovered devices.
+ * - Show the currently saved device (if any), with actions:
+ *     • Remove saved device
+ *     • Enable debug (sets saved name to "Debug"; overview connects via Debug handler)
+ * - Read-only display of DeviceSupport info for the saved device.
+ *
+ * Note: Connecting happens in the Overview via the BT icon, not here.
  */
 @Composable
 fun BluetoothScreen(
@@ -96,20 +108,29 @@ fun BluetoothScreen(
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
+    // Observed state from ViewModel/facade
     val scannedDevices by bluetoothViewModel.scannedDevices.collectAsState()
     val isScanning by bluetoothViewModel.isScanning.collectAsState()
     val scanError by bluetoothViewModel.scanError.collectAsState()
     val connectionError by bluetoothViewModel.connectionError.collectAsState()
-    var hasPermissions by remember { mutableStateOf(false) }
-    var pendingScan by remember { mutableStateOf(false) }
-
     val savedDeviceAddress by bluetoothViewModel.savedScaleAddress.collectAsState()
     val savedDeviceName by bluetoothViewModel.savedScaleName.collectAsState()
+    val savedSupport by bluetoothViewModel.savedDeviceSupport.collectAsState()
+
+    // Local UI state
+    var hasPermissions by remember { mutableStateOf(false) }
+    var pendingScan by remember { mutableStateOf(false) }
+    var showSavedMenu by remember { mutableStateOf(false) }
+    var showTuningMenu by remember { mutableStateOf(false) }
+
+    // Simple flag: a saved name of "Debug" indicates debug mode is active.
+    val isDebugActive = (savedDeviceName == "Debug")
 
     LaunchedEffect(Unit) {
         hasPermissions = hasBtPermissions(context)
     }
 
+    // Ensure scanning stops when leaving the screen
     DisposableEffect(Unit) {
         onDispose {
             pendingScan = false
@@ -117,6 +138,7 @@ fun BluetoothScreen(
         }
     }
 
+    // Launcher for enabling Bluetooth
     val enableBluetoothLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -124,9 +146,7 @@ fun BluetoothScreen(
             if (hasPermissions) {
                 if (pendingScan) {
                     bluetoothViewModel.clearAllErrors()
-                    if (!isScanning) {
-                        bluetoothViewModel.requestStartDeviceScan()
-                    }
+                    if (!isScanning) bluetoothViewModel.requestStartDeviceScan()
                     pendingScan = false
                 }
             } else {
@@ -147,6 +167,7 @@ fun BluetoothScreen(
         }
     }
 
+    // Launcher for runtime permissions
     val permissionsLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { map ->
@@ -173,113 +194,253 @@ fun BluetoothScreen(
         }
     }
 
-
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        val currentBluetoothEnabledStatus = bluetoothViewModel.isBluetoothEnabled()
+        val btEnabled = bluetoothViewModel.isBluetoothEnabled()
 
-        // Status and action area (Scan button or info cards)
-        if (!hasPermissions) {
-            PermissionRequestCard(onGrantPermissions = {
-                pendingScan = true
-                permissionsLauncher.launch(
-                    arrayOf(Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT)
-                )
-            })
-        } else if (!currentBluetoothEnabledStatus) {
-            EnableBluetoothCard(onEnableBluetooth = {
-                val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-                enableBluetoothLauncher.launch(enableBtIntent)
-            })
-        } else {
-            // DISPLAY SAVED SCALE (always visible if one is saved)
-            savedDeviceAddress?.let { address ->
-                Spacer(modifier = Modifier.height(16.dp))
-                OutlinedCard(modifier = Modifier.fillMaxWidth()) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = stringResource(R.string.saved_scale_label),
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                            Text(
-                                text = savedDeviceName ?: stringResource(R.string.unknown_device),
-                                style = MaterialTheme.typography.titleSmall
-                            )
-                            Text(
-                                text = address,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                }
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Scan button
-            Button(
-                onClick = {
-                    if (isScanning) {
-                        bluetoothViewModel.requestStopDeviceScan()
-                    } else {
-                        pendingScan = true
-                        bluetoothViewModel.clearAllErrors()
-                        when {
-                            !hasPermissions -> {
-                                permissionsLauncher.launch(arrayOf(
-                                    Manifest.permission.BLUETOOTH_SCAN,
-                                    Manifest.permission.BLUETOOTH_CONNECT
-                                ))
-                            }
-                            !bluetoothViewModel.isBluetoothEnabled() -> {
-                                enableBluetoothLauncher.launch(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
-                            }
-                            else -> {
-                                bluetoothViewModel.requestStartDeviceScan()
-                                pendingScan = false
-                            }
-                        }
-                    }
-                },
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                if (isScanning) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        strokeWidth = 2.dp
+        // Permission / power gates
+        when {
+            !hasPermissions -> {
+                PermissionRequestCard(onGrantPermissions = {
+                    pendingScan = true
+                    permissionsLauncher.launch(
+                        arrayOf(
+                            Manifest.permission.BLUETOOTH_SCAN,
+                            Manifest.permission.BLUETOOTH_CONNECT
+                        )
                     )
-                    Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                    Text(stringResource(R.string.stop_scan_button))
-                } else {
-                    Icon(Icons.Default.Search, contentDescription = stringResource(R.string.search_for_scales_button_desc))
-                    Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                    Text(stringResource(R.string.search_for_scales_button))
+                })
+            }
+            !btEnabled -> {
+                EnableBluetoothCard(onEnableBluetooth = {
+                    enableBluetoothLauncher.launch(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
+                })
+            }
+            else -> {
+                // --- SAVED DEVICE CARD (only if a device is actually saved) ---
+                val hasSaved = savedDeviceAddress != null && savedDeviceName != null
+                if (hasSaved) {
+                    OutlinedCard(modifier = Modifier.fillMaxWidth()) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = stringResource(R.string.saved_scale_label),
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                Text(
+                                        text = savedDeviceName ?: stringResource(R.string.unknown_device),
+                                        style = MaterialTheme.typography.titleSmall
+                                )
+                                Text(
+                                    text = savedDeviceAddress ?: "-",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+
+                            // Overflow anchored to the 3-dots icon (right side)
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    savedSupport?.let { support ->
+                                        val label = stringResource(support.tuningProfile.labelRes)
+
+                                        Box { // Anker für Icon + Dropdown
+                                            IconButton(onClick = { showTuningMenu = true }) {
+                                                Icon(
+                                                    imageVector = support.tuningProfile.icon,
+                                                    contentDescription = label,
+                                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                                )
+                                            }
+                                            DropdownMenu(
+                                                expanded = showTuningMenu,
+                                                onDismissRequest = { showTuningMenu = false }
+                                            ) {
+                                                DropdownMenuItem(
+                                                    text = { Text(stringResource(R.string.tuning_conservative)) },
+                                                    leadingIcon = {
+                                                        Icon(
+                                                            TuningProfile.Conservative.icon,
+                                                            null
+                                                        )
+                                                    },
+                                                    onClick = {
+                                                        showTuningMenu = false
+                                                        bluetoothViewModel.setSavedTuning(
+                                                            TuningProfile.Conservative
+                                                        )
+                                                    }
+                                                )
+                                                DropdownMenuItem(
+                                                    text = { Text(stringResource(R.string.tuning_balanced)) },
+                                                    leadingIcon = {
+                                                        Icon(
+                                                            TuningProfile.Balanced.icon,
+                                                            null
+                                                        )
+                                                    },
+                                                    onClick = {
+                                                        showTuningMenu = false
+                                                        bluetoothViewModel.setSavedTuning(
+                                                            TuningProfile.Balanced
+                                                        )
+                                                    }
+                                                )
+                                                DropdownMenuItem(
+                                                    text = { Text(stringResource(R.string.tuning_aggressive)) },
+                                                    leadingIcon = {
+                                                        Icon(
+                                                            TuningProfile.Aggressive.icon,
+                                                            null
+                                                        )
+                                                    },
+                                                    onClick = {
+                                                        showTuningMenu = false
+                                                        bluetoothViewModel.setSavedTuning(
+                                                            TuningProfile.Aggressive
+                                                        )
+                                                    }
+                                                )
+                                            }
+                                        }
+
+                                        Spacer(Modifier.width(6.dp))
+                                    }
+                                }
+
+                                Box {
+                                    IconButton(onClick = { showSavedMenu = true }) {
+                                        Icon(
+                                            imageVector = Icons.Default.MoreVert,
+                                            contentDescription = "More"
+                                        )
+                                    }
+                                    DropdownMenu(
+                                        expanded = showSavedMenu,
+                                        onDismissRequest = { showSavedMenu = false }
+                                    ) {
+                                        DropdownMenuItem(
+                                            text = { Text(stringResource(R.string.menu_remove_saved_device)) },
+                                            onClick = {
+                                                showSavedMenu = false
+                                                bluetoothViewModel.removeSavedDevice()
+                                                scope.launch {
+                                                    sharedViewModel.showSnackbar(
+                                                        message = context.getString(R.string.snackbar_saved_device_removed),
+                                                        duration = SnackbarDuration.Short
+                                                    )
+                                                }
+                                            }
+                                        )
+                                        if (!isDebugActive && savedDeviceAddress != null) {
+                                            DropdownMenuItem(
+                                                text = { Text(stringResource(R.string.menu_enable_debug)) },
+                                                onClick = {
+                                                    showSavedMenu = false
+                                                    // Persist a "Debug" placeholder for the same MAC
+                                                    bluetoothViewModel.saveDeviceAsPreferred(
+                                                        ScannedDeviceInfo(
+                                                            name = "Debug",
+                                                            address = savedDeviceAddress!!,
+                                                            rssi = 0,
+                                                            serviceUuids = emptyList(),
+                                                            manufacturerData = null,
+                                                            isSupported = true,
+                                                            determinedHandlerDisplayName = "Debug"
+                                                        )
+                                                    )
+                                                    scope.launch {
+                                                        sharedViewModel.showSnackbar(
+                                                            message = context.getString(R.string.snackbar_debug_enable_logs),
+                                                            duration = SnackbarDuration.Long
+                                                        )
+                                                    }
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // Debug banner below the header block
+                        if (isDebugActive) {
+                            DebugBanner()
+                        }
+
+                        // Read-only DeviceSupport details (compact icons)
+                        savedSupport?.let { support ->
+                            CapabilityIconsRow(
+                                support = support,
+                                onExplain = { label, implemented ->
+                                    // optional: kurzer Hinweis, was das Icon bedeutet
+                                    scope.launch {
+                                        sharedViewModel.showSnackbar(
+                                            message = if (implemented)
+                                                context.getString(R.string.cap_state_implemented, label)
+                                            else
+                                                context.getString(R.string.cap_state_supported_only, label),
+                                            duration = SnackbarDuration.Short
+                                        )
+                                    }
+                                }
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.size(16.dp))
                 }
+
+                // --- SCAN BUTTON ---
+                ScanButton(
+                    isScanning = isScanning,
+                    onToggle = {
+                        if (isScanning) {
+                            bluetoothViewModel.requestStopDeviceScan()
+                        } else {
+                            pendingScan = true
+                            bluetoothViewModel.clearAllErrors()
+                            when {
+                                !hasPermissions -> {
+                                    permissionsLauncher.launch(
+                                        arrayOf(
+                                            Manifest.permission.BLUETOOTH_SCAN,
+                                            Manifest.permission.BLUETOOTH_CONNECT
+                                        )
+                                    )
+                                }
+                                !bluetoothViewModel.isBluetoothEnabled() -> {
+                                    enableBluetoothLauncher.launch(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
+                                }
+                                else -> {
+                                    bluetoothViewModel.requestStartDeviceScan()
+                                    pendingScan = false
+                                }
+                            }
+                        }
+                    }
+                )
             }
         }
 
-        // Error display
-        if (hasPermissions && currentBluetoothEnabledStatus) {
+        // Combined scan/connection error presentation
+        if (hasPermissions && btEnabled) {
             val errorToShow = connectionError ?: scanError
-            errorToShow?.let { errorMsg ->
-                ErrorCard(errorMsg = errorMsg)
-            }
+            errorToShow?.let { ErrorCard(errorMsg = it) }
         }
 
-        // Device list
-        if (hasPermissions && currentBluetoothEnabledStatus && scanError == null) {
+        // --- DEVICE LIST ---
+        if (hasPermissions && btEnabled && scanError == null) {
             if (scannedDevices.isNotEmpty()) {
                 Text(
                     text = stringResource(R.string.found_devices_label),
@@ -289,39 +450,64 @@ fun BluetoothScreen(
                         .align(Alignment.Start)
                 )
                 LazyColumn(
-                    modifier = Modifier.weight(1f), // Takes up the remaining space
+                    modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(scannedDevices, key = { it.address }) { device ->
                         DeviceCardItem(
                             deviceInfo = device,
-                            isCurrentlySaved = device.address == savedDeviceAddress,
-                            onClick = {
-                                bluetoothViewModel.requestStopDeviceScan() // Stop scan before any action
+                            savedAddress = savedDeviceAddress,
+                            onSavePreferred = {
+                                bluetoothViewModel.requestStopDeviceScan()
                                 if (device.isSupported) {
-                                    // Save device as preferred scale
-                                    // (implicitly overwrites any previously saved scale)
                                     bluetoothViewModel.saveDeviceAsPreferred(device)
                                     scope.launch {
                                         sharedViewModel.showSnackbar(
-                                            context.getString(R.string.device_saved_as_preferred, device.name ?: context.getString(R.string.unknown_device)),
+                                            context.getString(
+                                                R.string.device_saved_as_preferred,
+                                                device.name ?: context.getString(R.string.unknown_device)
+                                            ),
                                             duration = SnackbarDuration.Short
                                         )
                                     }
-                                    // NO automatic connection attempt anymore
-                                } else { // Device is not supported
+                                } else {
                                     scope.launch {
                                         sharedViewModel.showSnackbar(
-                                            context.getString(R.string.device_not_supported, device.name ?: context.getString(R.string.unknown_device)),
+                                            context.getString(
+                                                R.string.device_not_supported,
+                                                device.name ?: context.getString(R.string.unknown_device)
+                                            ),
                                             duration = SnackbarDuration.Short
                                         )
                                     }
+                                }
+                            },
+                            onSaveDebug = {
+                                bluetoothViewModel.requestStopDeviceScan()
+                                // Save same MAC but with name "Debug" to force Debug handler on connect
+                                bluetoothViewModel.saveDeviceAsPreferred(
+                                    ScannedDeviceInfo(
+                                        name = "Debug",
+                                        address = device.address,
+                                        rssi = 0,
+                                        serviceUuids = emptyList(),
+                                        manufacturerData = null,
+                                        isSupported = true,
+                                        determinedHandlerDisplayName = "Debug"
+                                    )
+                                )
+                                scope.launch {
+                                    sharedViewModel.showSnackbar(
+                                        message = context.getString(R.string.snackbar_debug_for_device_enable_logs),
+                                        duration = SnackbarDuration.Long
+                                    )
                                 }
                             }
                         )
                     }
                 }
-            } else if (!isScanning) { // Only show empty state if not currently scanning and no devices found
+            } else if (!isScanning) {
+                // Only show empty state when not scanning and nothing was found
                 EmptyState(
                     icon = Icons.AutoMirrored.Filled.BluetoothSearching,
                     message = stringResource(R.string.no_devices_found_start_scan)
@@ -331,175 +517,145 @@ fun BluetoothScreen(
     }
 }
 
-/**
- * Composable that displays a card requesting Bluetooth permissions.
- *
- * @param onGrantPermissions Callback invoked when the user clicks the button to grant permissions.
- */
+/* ---------- Reusable bits below -------------------------------------------------------------- */
+
 @Composable
-fun PermissionRequestCard(onGrantPermissions: () -> Unit) {
-    OutlinedCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 16.dp),
+private fun ScanButton(
+    isScanning: Boolean,
+    onToggle: () -> Unit
+) {
+    Button(
+        onClick = onToggle,
+        modifier = Modifier.fillMaxWidth()
     ) {
-        Column(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
+        if (isScanning) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(24.dp),
+                color = MaterialTheme.colorScheme.onPrimary,
+                strokeWidth = 2.dp
+            )
+            Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+            Text(stringResource(R.string.stop_scan_button))
+        } else {
             Icon(
-                Icons.Default.ErrorOutline,
-                contentDescription = stringResource(R.string.permissions_required_icon_desc),
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(40.dp)
+                imageVector = Icons.Filled.Search,
+                contentDescription = stringResource(R.string.search_for_scales_button_desc)
             )
-            Text(stringResource(R.string.permissions_required_title), style = MaterialTheme.typography.titleMedium)
-            Text(
-                stringResource(R.string.permissions_required_message_bluetooth),
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.bodyMedium
-            )
-            Button(onClick = onGrantPermissions) {
-                Text(stringResource(R.string.grant_permissions_button))
-            }
+            Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+            Text(stringResource(R.string.search_for_scales_button))
         }
     }
 }
 
-/**
- * Composable that displays a card prompting the user to enable Bluetooth.
- *
- * @param onEnableBluetooth Callback invoked when the user clicks the button to enable Bluetooth.
- */
+/** Debug banner under the saved device card header. */
 @Composable
-fun EnableBluetoothCard(onEnableBluetooth: () -> Unit) {
-    OutlinedCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 16.dp),
-    ) {
-        Column(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Icon(
-                Icons.Default.BluetoothDisabled,
-                contentDescription = stringResource(R.string.bluetooth_disabled_icon_desc),
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(40.dp)
-            )
-            Text(stringResource(R.string.bluetooth_disabled_title), style = MaterialTheme.typography.titleMedium)
-            Text(
-                stringResource(R.string.bluetooth_disabled_message_enable_for_scan),
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.bodyMedium
-            )
-            Button(onClick = onEnableBluetooth) {
-                Text(stringResource(R.string.enable_bluetooth_button))
-            }
-        }
-    }
-}
-
-/**
- * Composable that displays an error message in a card.
- *
- * @param errorMsg The error message to display.
- */
-@Composable
-fun ErrorCard(errorMsg: String) {
+private fun DebugBanner() {
     Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
         modifier = Modifier
+            .padding(horizontal = 16.dp)
             .fillMaxWidth()
-            .padding(vertical = 8.dp) // Consistent padding
     ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                Icons.Filled.Warning,
-                contentDescription = stringResource(R.string.error_icon_desc), // Generic error description
-                tint = MaterialTheme.colorScheme.error
-            )
-            Spacer(Modifier.width(8.dp))
+        Column(Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Filled.Warning,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    text = stringResource(R.string.debug_banner_active),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+            Spacer(Modifier.size(6.dp))
             Text(
-                errorMsg, // Error messages from ViewModel are usually already localized or technical
-                color = MaterialTheme.colorScheme.onErrorContainer,
-                style = MaterialTheme.typography.bodyMedium
+                text = stringResource(R.string.debug_banner_enable_logs_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
 }
 
 /**
- * Composable that displays an empty state message with an icon.
- * Typically used when a list is empty.
- *
- * @param icon The [ImageVector] to display.
- * @param message The message to display below the icon.
+ * Compact, icon-only capability row:
+ * - Implemented features: normal tint (onSurface)
+ * - Supported-only (not implemented): reduced alpha (visibly "disabled")
+ * Tap an icon to show a short explanation via Snackbar.
  */
 @Composable
-fun EmptyState(icon: ImageVector, message: String) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+private fun CapabilityIconsRow(
+    support: DeviceSupport,
+    onExplain: (label: String, implemented: Boolean) -> Unit
+) {
+    val primary = MaterialTheme.colorScheme.onSurface
+    val disabled = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.45f)
+
+    // Iterate in a stable order; only show capabilities that are at least supported.
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth()
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null, // Decorative icon
-            modifier = Modifier.size(64.dp),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Spacer(Modifier.height(16.dp))
-        Text(
-            text = message,
-            style = MaterialTheme.typography.bodyLarge,
-            textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+        DeviceCapability.values().forEach { cap ->
+            if (support.capabilities.contains(cap)) {
+                val impl = support.implemented.contains(cap)
+                val tint = if (impl) primary else disabled
+                val label = stringResource(cap.labelRes)
+
+                IconButton(onClick = {
+                    onExplain(label, impl)
+                }) {
+                    Icon(
+                        imageVector = cap.icon,
+                        contentDescription = label,
+                        tint = tint
+                    )
+                }
+            }
+        }
     }
 }
 
 /**
- * Composable that displays a card for a scanned Bluetooth device.
- *
- * @param deviceInfo The [ScannedDeviceInfo] containing details about the device.
- * @param isCurrentlySaved Boolean indicating if this device is the currently saved preferred scale.
- * @param onClick Callback invoked when the card is clicked.
+ * Card item for a discovered Bluetooth device.
+ * - Name/MAC left, RSSI + ⋮-menu right (menu is anchored to the rightmost IconButton).
+ * - Menu offers:
+ *     • Save as preferred (if supported)
+ *     • Save as debug (always available)
  */
 @Composable
 fun DeviceCardItem(
     deviceInfo: ScannedDeviceInfo,
-    isCurrentlySaved: Boolean,
-    onClick: () -> Unit
+    savedAddress: String?,
+    onSavePreferred: () -> Unit,
+    onSaveDebug: () -> Unit
 ) {
-    val supportColor = if (deviceInfo.isSupported) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-    val unknownDeviceName = stringResource(R.string.unknown_device)
+    val supportColor =
+        if (deviceInfo.isSupported) MaterialTheme.colorScheme.primary
+        else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+    val isCurrentlySaved = (deviceInfo.address == savedAddress)
+
+    var showMenu by remember { mutableStateOf(false) }
 
     ElevatedCard(
-        onClick = onClick,
+        onClick = onSavePreferred, // tapping the card still does the "save preferred" flow if supported
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
             modifier = Modifier
+                .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Left: name + address + supported label
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = deviceInfo.name ?: unknownDeviceName,
+                        text = deviceInfo.name ?: stringResource(R.string.unknown_device),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Medium
                     )
@@ -518,36 +674,195 @@ fun DeviceCardItem(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 2.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
-                        imageVector = if (deviceInfo.isSupported) Icons.Filled.CheckCircle else Icons.Filled.HighlightOff,
-                        contentDescription = if (deviceInfo.isSupported) stringResource(R.string.supported_icon_desc) else stringResource(R.string.not_supported_icon_desc),
+                        imageVector = if (deviceInfo.isSupported) Icons.Filled.CheckCircle else Icons.Filled.ErrorOutline,
+                        contentDescription = if (deviceInfo.isSupported)
+                            stringResource(R.string.supported_icon_desc)
+                        else
+                            stringResource(R.string.not_supported_icon_desc),
                         tint = supportColor,
                         modifier = Modifier.size(18.dp)
                     )
-                    Spacer(Modifier.width(4.dp))
+                    Spacer(Modifier.width(6.dp))
                     Text(
-                        text = if (deviceInfo.isSupported) {
-                            deviceInfo.determinedHandlerDisplayName ?: stringResource(R.string.supported_label)
-                        } else {
-                            stringResource(R.string.not_supported_label)
-                        },
+                        text = if (deviceInfo.isSupported)
+                            (deviceInfo.determinedHandlerDisplayName ?: stringResource(R.string.supported_label))
+                        else
+                            stringResource(R.string.not_supported_label),
                         style = MaterialTheme.typography.labelMedium,
-                        color = supportColor,
-                        fontWeight = FontWeight.Normal
+                        color = supportColor
                     )
                 }
             }
-            Spacer(modifier = Modifier.width(8.dp))
-            Text( // RSSI value is technical, typically not translated directly but its unit could be.
-                text = stringResource(R.string.rssi_format, deviceInfo.rssi),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+
+            // Right: RSSI + ⋮ menu, anchored at the far right
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = stringResource(R.string.rssi_format, deviceInfo.rssi),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Box {
+                    IconButton(onClick = { showMenu = true }) {
+                        Icon(
+                            imageVector = Icons.Filled.MoreVert,
+                            contentDescription = stringResource(R.string.more_options_cd)
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = showMenu,
+                        onDismissRequest = { showMenu = false }
+                    ) {
+                        if (deviceInfo.isSupported) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.menu_save_as_preferred)) },
+                                onClick = {
+                                    showMenu = false
+                                    onSavePreferred()
+                                }
+                            )
+                        }
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.menu_save_as_debug)) },
+                            onClick = {
+                                showMenu = false
+                                onSaveDebug()
+                            }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+/** Permission request helper card. */
+@Composable
+fun PermissionRequestCard(onGrantPermissions: () -> Unit) {
+    OutlinedCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 16.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Icon(
+                Icons.Filled.ErrorOutline,
+                contentDescription = stringResource(R.string.permissions_required_icon_desc),
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(40.dp)
+            )
+            Text(
+                stringResource(R.string.permissions_required_title),
+                style = MaterialTheme.typography.titleMedium
+            )
+            Text(
+                stringResource(R.string.permissions_required_message_bluetooth),
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Button(onClick = onGrantPermissions) {
+                Text(stringResource(R.string.grant_permissions_button))
+            }
+        }
+    }
+}
+
+/** Bluetooth power-on helper card. */
+@Composable
+fun EnableBluetoothCard(onEnableBluetooth: () -> Unit) {
+    OutlinedCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 16.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Icon(
+                Icons.Filled.BluetoothDisabled,
+                contentDescription = stringResource(R.string.bluetooth_disabled_icon_desc),
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(40.dp)
+            )
+            Text(
+                stringResource(R.string.bluetooth_disabled_title),
+                style = MaterialTheme.typography.titleMedium
+            )
+            Text(
+                stringResource(R.string.bluetooth_disabled_message_enable_for_scan),
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Button(onClick = onEnableBluetooth) {
+                Text(stringResource(R.string.enable_bluetooth_button))
+            }
+        }
+    }
+}
+
+/** Error presentation card (scan/connection). */
+@Composable
+fun ErrorCard(errorMsg: String) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                Icons.Filled.Warning,
+                contentDescription = stringResource(R.string.error_icon_desc),
+                tint = MaterialTheme.colorScheme.error
+            )
+            Spacer(Modifier.width(8.dp))
+            Text(
+                errorMsg,
+                color = MaterialTheme.colorScheme.onErrorContainer,
+                style = MaterialTheme.typography.bodyMedium
             )
         }
     }
 }
 
+/** Empty state for when there are no scanned devices. */
+@Composable
+fun EmptyState(icon: ImageVector, message: String) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            modifier = Modifier.size(64.dp),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(Modifier.size(16.dp))
+        Text(
+            text = message,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+/** Runtime BT permission helper. */
 private fun hasBtPermissions(context: android.content.Context): Boolean {
     val scan = ContextCompat.checkSelfPermission(
         context, Manifest.permission.BLUETOOTH_SCAN

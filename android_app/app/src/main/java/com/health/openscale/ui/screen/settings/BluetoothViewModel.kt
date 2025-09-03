@@ -22,6 +22,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.BluetoothEvent
+import com.health.openscale.core.bluetooth.modern.TuningProfile
 import com.health.openscale.core.facade.BluetoothFacade
 import com.health.openscale.core.service.ScannedDeviceInfo
 import com.health.openscale.ui.shared.SnackbarEvent
@@ -61,6 +62,7 @@ class BluetoothViewModel @Inject constructor(
     val pendingUserInteractionEvent = bt.pendingUserInteractionEvent
     val savedScaleAddress = bt.savedScaleAddress
     val savedScaleName = bt.savedScaleName
+    val savedDeviceSupport = bt.savedDeviceSupport
 
     // --- Snackbar events for UI ---
     private val _snackbarEvents = MutableSharedFlow<SnackbarEvent>(replay = 0, extraBufferCapacity = 1)
@@ -94,6 +96,10 @@ class BluetoothViewModel @Inject constructor(
     fun isBluetoothEnabled(): Boolean = bt.isBluetoothEnabled()
 
     fun saveDeviceAsPreferred(device: ScannedDeviceInfo) = bt.saveAsPreferred(device)
+
+    fun removeSavedDevice() { bt.removeSavedDevice() }
+
+    fun setSavedTuning(profile: TuningProfile) = bt.setSavedTuning(profile)
 
     fun clearAllErrors() = bt.clearErrors()
 
