@@ -39,32 +39,23 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.BluetoothSearching
 import androidx.compose.material.icons.filled.BluetoothDisabled
-import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ErrorOutline
-import androidx.compose.material.icons.filled.Group
-import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.MonitorWeight
-import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.SettingsApplications
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.Timeline
-import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material.icons.outlined.BatteryStd
-import androidx.compose.material.icons.outlined.Tune
-import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
+import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -82,7 +73,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -276,6 +266,13 @@ fun BluetoothScreen(
                                                 expanded = showTuningMenu,
                                                 onDismissRequest = { showTuningMenu = false }
                                             ) {
+                                                Text(
+                                                    text = stringResource(R.string.tuning_title),
+                                                    style = MaterialTheme.typography.labelMedium,
+                                                    color = MaterialTheme.colorScheme.primary,
+                                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                                                )
+                                                HorizontalDivider()
                                                 DropdownMenuItem(
                                                     text = { Text(stringResource(R.string.tuning_conservative)) },
                                                     leadingIcon = {
@@ -383,11 +380,6 @@ fun BluetoothScreen(
                             }
                         }
 
-                        // Debug banner below the header block
-                        if (isDebugActive) {
-                            DebugBanner()
-                        }
-
                         // Read-only DeviceSupport details (compact icons)
                         savedSupport?.let { support ->
                             CapabilityIconsRow(
@@ -408,8 +400,17 @@ fun BluetoothScreen(
                         }
                     }
 
+                    // Debug banner below the header block
+                    if (isDebugActive) {
+                        Spacer(modifier = Modifier.size(16.dp))
+
+                        DebugBanner()
+                    }
+
+
                     Spacer(modifier = Modifier.size(16.dp))
                 }
+
 
                 // --- SCAN BUTTON ---
                 ScanButton(

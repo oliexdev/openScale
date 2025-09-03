@@ -266,7 +266,7 @@
     <string name="supported_label">Supported</string>
     <string name="not_supported_label">Not Supported</string>
     <string name="rssi_format">%1$d dBm</string>
-    <string name="menu_remove_saved_device">Remove saved device</string>
+    <string name="menu_remove_saved_device">Remove device</string>
     <string name="menu_enable_debug">Enable debug</string>
     <string name="menu_save_as_preferred">Save as preferred</string>
     <string name="menu_save_as_debug">Save as debug</string>
@@ -276,8 +276,8 @@
     <string name="debug_banner_active">Debug mode is active — no measurements will be saved.</string>
     <string name="debug_banner_enable_logs_hint">Please enable log file: Settings → General → Enable log file.</string>
     <string name="capabilities_header">Capabilities</string>
-    <string name="tuning_icon_desc">Tuning profile</string>
-    <string name="tuning_snackbar">Tuning: %1$s</string>
+    <string name="tuning_title">Bluetooth Tuning profile</string>
+    <string name="tuning_snackbar">Bluetooth Tuning: %1$s</string>
     <string name="cap_body_composition">Body composition</string>
     <string name="cap_time_sync">Time sync</string>
     <string name="cap_user_sync">User sync</string>

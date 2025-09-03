@@ -35,10 +35,15 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Info
@@ -106,6 +111,8 @@ fun GeneralSettingsScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+
+    val scrollState = rememberScrollState()
 
     val supportedLanguagesEnumEntries = remember { SupportedLanguage.entries }
 
@@ -272,7 +279,12 @@ fun GeneralSettingsScreen(
     }
 
     Column(
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(scrollState)
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .imePadding()
+            .navigationBarsPadding()
     ) {
         // --- Language ---
         Text(
@@ -659,7 +671,6 @@ fun SettingsGroup(
         }
 
         if (persistentContent != null) {
-            if (!checked)
             persistentContent()
         }
     }

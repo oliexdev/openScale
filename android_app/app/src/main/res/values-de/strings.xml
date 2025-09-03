@@ -263,7 +263,7 @@
     <string name="supported_label">Unterstützt</string>
     <string name="not_supported_label">Nicht unterstützt</string>
     <string name="rssi_format">%1$d dBm</string>
-    <string name="menu_remove_saved_device">Gespeichertes Gerät entfernen</string>
+    <string name="menu_remove_saved_device">Gerät entfernen</string>
     <string name="menu_enable_debug">Debug aktivieren</string>
     <string name="menu_save_as_preferred">Als bevorzugtes Gerät speichern</string>
     <string name="menu_save_as_debug">Als Debug speichern</string>
@@ -273,8 +273,8 @@
     <string name="debug_banner_active">Debug-Modus aktiv – es werden keine Messwerte gespeichert.</string>
     <string name="debug_banner_enable_logs_hint">Bitte Log-Datei einschalten: Einstellungen → Allgemein → Log-Datei aktivieren.</string>
     <string name="capabilities_header">Fähigkeiten</string>
-    <string name="tuning_icon_desc">Tuning-Profil</string>
-    <string name="tuning_snackbar">Tuning: %1$s</string>
+    <string name="tuning_title">Bluetooth Tuning-Profil</string>
+    <string name="tuning_snackbar">Bluetooth Tuning: %1$s</string>
     <string name="cap_body_composition">Körperzusammensetzung</string>
     <string name="cap_time_sync">Zeitsynchronisierung</string>
     <string name="cap_user_sync">Benutzer-Sync</string>
