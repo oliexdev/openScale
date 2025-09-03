@@ -23,6 +23,8 @@ import android.os.Build
 import android.os.LocaleList
 import androidx.activity.ComponentActivity
 import com.health.openscale.core.data.SupportedLanguage
+import com.health.openscale.core.data.UnitType
+import java.text.NumberFormat
 import java.util.Locale
 
 
@@ -35,6 +37,11 @@ import java.util.Locale
 object LocaleUtils {
 
     private const val TAG = "LanguageUtil"
+
+    @Volatile
+    private var appLocaleOverride: Locale? = null
+
+    private fun effectiveLocale(): Locale = appLocaleOverride ?: Locale.getDefault()
 
     /**
      * Updates the application's locale for the given activity.
@@ -78,6 +85,8 @@ object LocaleUtils {
             LogManager.i(TAG, "Using applyOverrideConfiguration for API ${Build.VERSION.SDK_INT} to set locale: ${newLocale.toLanguageTag()}")
             applyConfigurationToActivity(activity, newLocale, newLocaleList)
         }
+
+        appLocaleOverride = newLocale  // keep a cached copy for formatters
     }
 
     /**
@@ -102,5 +111,59 @@ object LocaleUtils {
         } else {
             LogManager.d(TAG, "Activity locale is already set to: ${newLocale.toLanguageTag()}. No configuration override needed.")
         }
+    }
+
+    /**
+     * Format a numeric *string* for display according to the given UnitType.
+     * - For ST, 'value' is expected to be decimal stones (e.g., "12.5") and will be shown as "12 st 7 lb".
+     * - For KG/LB, the number is localized and a short unit suffix is appended.
+     * - If includeSign = true, a '+' or '−' (Unicode minus) is prefixed based on the numeric sign.
+     * - Returns "" for blank input; returns the raw string if parsing fails.
+     */
+    @JvmStatic
+    fun formatValueForDisplay(
+        value: String,
+        unit: UnitType,
+        includeSign: Boolean = false,
+        locale: Locale = effectiveLocale(), // oder Locale.getDefault()
+    ): String {
+        if (value.isBlank()) return ""
+
+        val n = value.replace(',', '.').toDoubleOrNull() ?: return value
+        val signPrefix = when {
+            !includeSign -> ""
+            n > 0        -> "+"
+            n < 0        -> "−"
+            else         -> ""
+        }
+        val absVal = kotlin.math.abs(n)
+
+        return when (unit) {
+            UnitType.ST -> {
+                val (st, lb) = ConverterUtils.decimalStToStLb(absVal)
+                "$signPrefix$st st $lb lb"
+            }
+            UnitType.KG  -> "$signPrefix${formatNumber(absVal, maxFraction = 1, locale)} kg"
+            UnitType.LB  -> "$signPrefix${formatNumber(absVal, maxFraction = 1, locale)} lb"
+            UnitType.PERCENT -> "$signPrefix${formatNumber(absVal, maxFraction = 1, locale)} %"
+            UnitType.CM  -> "$signPrefix${formatNumber(absVal, maxFraction = 1, locale)} cm"
+            UnitType.INCH-> "$signPrefix${formatNumber(absVal, maxFraction = 2, locale)} in"
+            UnitType.KCAL-> "$signPrefix${formatNumber(absVal, maxFraction = 0, locale)} kcal"
+            UnitType.NONE-> signPrefix + formatNumber(absVal, maxFraction = 1, locale)
+        }
+    }
+
+    /**
+     * Locale-aware number formatting with clamped fraction digits.
+     * Returns the raw string if parsing fails.
+     */
+    @JvmStatic
+    fun formatNumber(value: Double, maxFraction: Int, locale: Locale): String {
+        val cleaned = if (kotlin.math.abs(value) < 1e-9) 0.0 else value // avoid "-0"
+        return NumberFormat.getNumberInstance(locale).apply {
+            minimumFractionDigits = 0
+            maximumFractionDigits = maxFraction
+            isGroupingUsed = false
+        }.format(cleaned)
     }
 }

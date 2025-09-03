@@ -20,13 +20,19 @@ package com.health.openscale.core.utils
 import com.health.openscale.core.data.MeasureUnit
 import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.data.WeightUnit
-
+import java.text.NumberFormat
+import java.util.Locale
+import kotlin.math.floor
+import kotlin.math.roundToInt
 
 
 object ConverterUtils {
     private const val KG_LB: Float = 2.20462f
     private const val KG_ST: Float = 0.157473f
     private const val CM_IN: Float = 0.393701f
+
+    private const val LB_PER_ST_DOUBLE: Double = 14.0
+
     @JvmStatic
     fun toKilogram(value: Float, unit: WeightUnit): Float {
         when (unit) {
@@ -59,6 +65,15 @@ object ConverterUtils {
             MeasureUnit.INCH -> return cm * CM_IN
             MeasureUnit.CM -> return cm
         }
+    }
+
+    @JvmStatic
+    fun decimalStToStLb(stDec: Double): Pair<Int, Int> {
+        val totalLb = stDec * LB_PER_ST_DOUBLE
+        var st = floor(totalLb / LB_PER_ST_DOUBLE).toInt()
+        var lb = (totalLb - st * LB_PER_ST_DOUBLE).roundToInt()
+        if (lb == 14) { st += 1; lb = 0 } // normalize carry
+        return st to lb
     }
 
     @JvmStatic

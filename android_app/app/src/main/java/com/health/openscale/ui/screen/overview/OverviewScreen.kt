@@ -112,6 +112,7 @@ import com.health.openscale.core.facade.SettingsPreferenceKeys
 import com.health.openscale.core.service.MeasurementEvaluator
 import com.health.openscale.core.model.UserEvaluationContext
 import com.health.openscale.core.model.ValueWithDifference
+import com.health.openscale.core.utils.LocaleUtils
 import com.health.openscale.ui.components.LinearGauge
 import com.health.openscale.ui.components.RoundMeasurementIcon
 import com.health.openscale.ui.navigation.Routes
@@ -923,8 +924,10 @@ fun MeasurementValueRow(
 
     // Localized display value for each input type
     val displayValue = when (type.inputType) {
-        InputFieldType.FLOAT -> originalValue.floatValue?.let { "%.1f".format(Locale.getDefault(), it) }
-        InputFieldType.INT   -> originalValue.intValue?.toString()
+        InputFieldType.FLOAT -> originalValue.floatValue
+            ?.let { LocaleUtils.formatValueForDisplay(it.toString(), type.unit) }
+        InputFieldType.INT   -> originalValue.intValue
+            ?.let { LocaleUtils.formatValueForDisplay(it.toString(), type.unit) }
         InputFieldType.TEXT  -> originalValue.textValue
         InputFieldType.DATE  -> originalValue.dateValue?.let {
             DateFormat.getDateInstance(DateFormat.SHORT, Locale.getDefault()).format(Date(it))
@@ -1039,12 +1042,15 @@ fun MeasurementValueRow(
                             Spacer(modifier = Modifier.width(3.dp))
                         }
                         Text(
-                            text = (if (difference > 0 && trend != Trend.NONE) "+" else "") +
-                                    when (type.inputType) {
-                                        InputFieldType.FLOAT -> "%.1f".format(Locale.getDefault(), difference)
-                                        InputFieldType.INT   -> difference.toInt().toString()
-                                        else                 -> ""
-                                    } + " $unitName",
+                            text = when (type.inputType) {
+                                InputFieldType.FLOAT, InputFieldType.INT ->
+                                    LocaleUtils.formatValueForDisplay(
+                                        value = difference.toString(),
+                                        unit = type.unit,
+                                        includeSign = (trend != Trend.NONE)
+                                    )
+                                else -> ""
+                            },
                             style = MaterialTheme.typography.bodySmall,
                             color = subtle
                         )
@@ -1062,7 +1068,7 @@ fun MeasurementValueRow(
             modifier = Modifier.padding(start = 8.dp)
         ) {
             Text(
-                text = "$displayValue $unitName",
+                text = displayValue,
                 style = MaterialTheme.typography.bodyLarge,
                 textAlign = TextAlign.End
             )

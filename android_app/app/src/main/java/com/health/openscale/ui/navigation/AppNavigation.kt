@@ -111,7 +111,6 @@ import com.health.openscale.core.utils.LogManager
 import com.health.openscale.ui.navigation.Routes.getIconForRoute
 import com.health.openscale.ui.shared.SharedViewModel
 import com.health.openscale.ui.screen.settings.BluetoothViewModel
-import com.health.openscale.ui.screen.components.TableScreen
 import com.health.openscale.ui.screen.graph.GraphScreen
 import com.health.openscale.ui.screen.overview.MeasurementDetailScreen
 import com.health.openscale.ui.screen.overview.OverviewScreen
@@ -127,6 +126,7 @@ import com.health.openscale.ui.screen.settings.SettingsViewModel
 import com.health.openscale.ui.screen.settings.UserDetailScreen
 import com.health.openscale.ui.screen.settings.UserSettingsScreen
 import com.health.openscale.ui.screen.statistics.StatisticsScreen
+import com.health.openscale.ui.screen.table.TableScreen
 import com.health.openscale.ui.theme.Black
 import com.health.openscale.ui.theme.Blue
 import com.health.openscale.ui.theme.White

@@ -58,6 +58,7 @@ import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.facade.SettingsPreferenceKeys
 import com.health.openscale.core.model.EnrichedMeasurement
+import com.health.openscale.core.utils.LocaleUtils
 import com.health.openscale.ui.components.RoundMeasurementIcon
 import com.health.openscale.ui.shared.SharedViewModel
 import com.health.openscale.ui.screen.components.LineChart
@@ -294,19 +295,13 @@ fun StatisticCard(
     statistics: MeasurementStatistics,
     screenContextForChart: String
 ) {
-    val unitSymbol = remember(measurementType.unit) { measurementType.unit.displayName }
-    // Decimal format for displaying values.
-    val decimalFormat = remember { DecimalFormat("#,##0.0#") }
+    val unit = remember(measurementType.unit) { measurementType.unit }
 
-    // Helper function to format a nullable Float value with its unit.
-    fun formatValueWithUnit(value: Float?, default: String = "-"): String {
-        return value?.let { "${decimalFormat.format(it)} $unitSymbol" } ?: default
-    }
+    fun fmt(value: Float?, default: String = "-"): String =
+        value?.let { LocaleUtils.formatValueForDisplay(it.toString(), unit) } ?: default
 
-    // Helper function to format a nullable Float value for the difference display (without unit initially).
-    fun formatValueForDiff(value: Float?, default: String = "-"): String {
-        return value?.let { decimalFormat.format(it) } ?: default
-    }
+    fun fmtDiff(value: Float?, default: String = "-"): String =
+        value?.let { LocaleUtils.formatValueForDisplay(it.toString(), unit, includeSign = true) } ?: default
 
     val contentDescIncrease = stringResource(id = R.string.statistics_content_desc_increase)
     val contentDescDecrease = stringResource(id = R.string.statistics_content_desc_decrease)
@@ -348,9 +343,9 @@ fun StatisticCard(
                 }
                 // Min/Max/Avg Values
                 Column(horizontalAlignment = Alignment.End) {
-                    Text("$statMinLabel: ${formatValueWithUnit(statistics.minValue)}", style = MaterialTheme.typography.bodySmall)
-                    Text("$statMaxLabel: ${formatValueWithUnit(statistics.maxValue)}", style = MaterialTheme.typography.bodySmall)
-                    Text("$statAvgLabel: ${formatValueWithUnit(statistics.averageValue)}", style = MaterialTheme.typography.bodySmall)
+                    Text("$statMinLabel: ${fmt(statistics.minValue)}", style = MaterialTheme.typography.bodySmall)
+                    Text("$statMaxLabel: ${fmt(statistics.maxValue)}", style = MaterialTheme.typography.bodySmall)
+                    Text("$statAvgLabel: ${fmt(statistics.averageValue)}", style = MaterialTheme.typography.bodySmall)
                 }
             }
 
@@ -378,7 +373,7 @@ fun StatisticCard(
             ) {
                 // First Value (left aligned)
                 Text(
-                    text = formatValueWithUnit(statistics.firstValue),
+                    text = fmt(statistics.firstValue),
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.weight(1f)
                 )
@@ -408,7 +403,7 @@ fun StatisticCard(
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             // Display difference with sign and unit
-                            text = "$diffPrefix${formatValueForDiff(diffValue)} $unitSymbol",
+                            text = fmtDiff(diffValue),
                             style = MaterialTheme.typography.bodySmall,
                         )
                     }
@@ -419,7 +414,7 @@ fun StatisticCard(
 
                 // Last Value (right aligned)
                 Text(
-                    text = formatValueWithUnit(statistics.lastValue),
+                    text = fmt(statistics.lastValue),
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.weight(1f),
                     textAlign = TextAlign.End

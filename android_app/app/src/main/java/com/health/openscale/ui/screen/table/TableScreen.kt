@@ -11,11 +11,8 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.health.openscale.ui.screen.components
+package com.health.openscale.ui.screen.table
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -62,34 +59,51 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.health.openscale.R
+import com.health.openscale.core.data.EvaluationState
 import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.Trend
-import com.health.openscale.core.service.MeasurementEvaluator
-import com.health.openscale.core.data.EvaluationState
+import com.health.openscale.core.data.UnitType
 import com.health.openscale.ui.navigation.Routes
+import com.health.openscale.ui.screen.components.MeasurementTypeFilterRow
 import com.health.openscale.ui.shared.SharedViewModel
+import com.health.openscale.core.utils.LocaleUtils
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
+import java.text.DateFormat
 import java.util.Date
 import java.util.Locale
 
 /**
  * Data for a single (non-date) table cell.
+ *
+ * We store **fully formatted display strings**, so UI rendering is trivial and
+ * unit formatting (incl. ST -> "X st Y lb") stays consistent across the app.
+ *
+ * @property typeId MeasurementType ID of this column.
+ * @property displayValue Final value string **including unit** (e.g., "72.4 kg", "12 st 7 lb", "22.5 %", or a free text).
+ * @property diffDisplay Optional difference string **including sign & unit** (e.g., "+0.7 kg", "−1 st 2 lb").
+ * @property trend Trend state that controls the arrow icon (UP/DOWN/NONE/NOT_APPLICABLE).
+ * @property evalState Optional evaluation state (LOW/NORMAL/HIGH) for the status dot/triangle.
+ * @property flagged When true, the cell is flagged (e.g., out of plausible range) and shown with error emphasis.
+ * @property unitType Optional unit type (useful for exports or a11y; not needed by the UI for rendering).
  */
 data class TableCellData(
     val typeId: Int,
     val displayValue: String,
-    val unit: String,
-    val difference: Float? = null,
+    val diffDisplay: String? = null,
     val trend: Trend = Trend.NOT_APPLICABLE,
-    val originalInputType: InputFieldType,
-    val evalState: EvaluationState? = null,  // computed evaluation state
-    val flagged: Boolean = false             // true => show "!" in error color
+    val evalState: EvaluationState? = null,
+    val flagged: Boolean = false,
+    val unitType: UnitType? = null
 )
 
 /**
  * A single row in the table.
+ *
+ * @property measurementId ID of the measurement (used for navigation).
+ * @property timestamp Epoch millis of the measurement.
+ * @property formattedTimestamp Preformatted date/time label for the fixed left column.
+ * @property values Map of column typeId -> [TableCellData] for this row.
  */
 data class TableRowDataInternal(
     val measurementId: Int,
@@ -100,6 +114,10 @@ data class TableRowDataInternal(
 
 /**
  * Table of measurements with a fixed date column and horizontally scrollable value columns.
+ *
+ * - Left column shows the date/time (fixed).
+ * - Right side contains user-selected measurement columns (scrollable).
+ * - Cells show a formatted value, an evaluation symbol, and (if present) a diff row with trend arrow.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -120,24 +138,18 @@ fun TableScreen(
             allAvailableTypesFromVM.filter { it.id in selectedColumnIdsFromFilter }
         }
 
-    // Transform enriched measurements -> table rows (compute eval state here).
+    // Transform measurements -> table rows (compute eval state & formatted strings here).
     val tableData = remember(enrichedMeasurements, displayedTypes, allAvailableTypesFromVM, userEvaluationContext) {
         if (enrichedMeasurements.isEmpty() || displayedTypes.isEmpty()) {
             emptyList()
         } else {
-            val dateFormatterDate = SimpleDateFormat.getDateInstance(
-                SimpleDateFormat.MEDIUM,
-                Locale.getDefault()
-            )
-            val dateFormatterTime = SimpleDateFormat.getTimeInstance(
-                SimpleDateFormat.SHORT,
-                Locale.getDefault()
-            )
+            val dateFormatterDate = DateFormat.getDateInstance(DateFormat.MEDIUM, Locale.getDefault())
+            val dateFormatterTime = DateFormat.getTimeInstance(DateFormat.SHORT, Locale.getDefault())
 
             enrichedMeasurements.map { enrichedItem ->
                 val ts = enrichedItem.measurementWithValues.measurement.timestamp
 
-                val cellValues = displayedTypes.associate { colType ->
+                val cellValues: Map<Int, TableCellData?> = displayedTypes.associate { colType ->
                     val typeId = colType.id
                     val valueWithTrend = enrichedItem.valuesWithTrend.find { it.currentValue.type.id == typeId }
 
@@ -145,25 +157,32 @@ fun TableScreen(
                         val originalMeasurementValue = valueWithTrend.currentValue.value
                         val actualType = valueWithTrend.currentValue.type
 
-                        val displayValueStr = when (actualType.inputType) {
-                            InputFieldType.FLOAT -> originalMeasurementValue.floatValue?.let { "%.1f".format(Locale.getDefault(), it) } ?: "-"
-                            InputFieldType.INT -> originalMeasurementValue.intValue?.toString() ?: "-"
+                        // Build the final value string for display (includes unit for numeric types).
+                        val displayValueStr: String = when (actualType.inputType) {
+                            InputFieldType.FLOAT -> originalMeasurementValue.floatValue?.let {
+                                LocaleUtils.formatValueForDisplay(it.toString(), actualType.unit)
+                            } ?: "-"
+                            InputFieldType.INT -> originalMeasurementValue.intValue?.let {
+                                LocaleUtils.formatValueForDisplay(it.toString(), actualType.unit)
+                            } ?: "-"
                             InputFieldType.TEXT -> originalMeasurementValue.textValue ?: "-"
-                            else -> originalMeasurementValue.textValue
-                                ?: originalMeasurementValue.floatValue?.toString()
-                                ?: originalMeasurementValue.intValue?.toString()
-                                ?: "-"
+                            else -> {
+                                // Fallback for any other input type: prefer text, then float, then int
+                                originalMeasurementValue.textValue
+                                    ?: originalMeasurementValue.floatValue?.toString()
+                                    ?: originalMeasurementValue.intValue?.toString()
+                                    ?: "-"
+                            }
                         }
 
-                        val unitStr = if (displayValueStr != "-") actualType.unit.displayName else ""
-
-                        // --- Compute evaluation state and flags (like in Overview) ---
+                        // Numeric value (only for evaluation flags).
                         val numeric: Float? = when (actualType.inputType) {
                             InputFieldType.FLOAT -> originalMeasurementValue.floatValue
-                            InputFieldType.INT   -> originalMeasurementValue.intValue?.toFloat()
-                            else                 -> null
+                            InputFieldType.INT -> originalMeasurementValue.intValue?.toFloat()
+                            else -> null
                         }
 
+                        // Compute evaluation state if possible (same logic as other screens).
                         val ctx = userEvaluationContext
                         val evalResult = if (ctx != null && numeric != null) {
                             sharedViewModel.evaluateMeasurement(
@@ -180,30 +199,39 @@ fun TableScreen(
                             if (numeric == null) {
                                 false
                             } else {
+                                // If there is no configured plausible range, use a % fallback for UnitType.PERCENT
                                 plausible?.let { numeric < it.start || numeric > it.endInclusive }
-                                    ?: (unitStr == "%" && (numeric < 0f || numeric > 100f))
+                                    ?: (actualType.unit == UnitType.PERCENT && (numeric < 0f || numeric > 100f))
                             }
+
+                        // Pre-format the diff (includes sign & unit). Only show "+" when trend != NONE.
+                        val diffDisplayStr = valueWithTrend.difference?.let { diff ->
+                            LocaleUtils.formatValueForDisplay(
+                                value = diff.toString(),
+                                unit = actualType.unit,
+                                includeSign = (valueWithTrend.trend != Trend.NONE)
+                            )
+                        }
 
                         typeId to TableCellData(
                             typeId = typeId,
                             displayValue = displayValueStr,
-                            unit = unitStr,
-                            difference = valueWithTrend.difference,
+                            diffDisplay = diffDisplayStr,
                             trend = valueWithTrend.trend,
-                            originalInputType = actualType.inputType,
                             evalState = evalResult?.state,
-                            flagged = noAgeBand || outOfPlausibleRange
+                            flagged = noAgeBand || outOfPlausibleRange,
+                            unitType = actualType.unit
                         )
                     } else {
+                        // No value for this type in this measurement -> placeholder cell.
                         typeId to TableCellData(
                             typeId = typeId,
                             displayValue = "-",
-                            unit = colType.unit.displayName,
-                            difference = null,
+                            diffDisplay = null,
                             trend = Trend.NOT_APPLICABLE,
-                            originalInputType = colType.inputType,
                             evalState = null,
-                            flagged = false
+                            flagged = false,
+                            unitType = colType.unit
                         )
                     }
                 }
@@ -239,13 +267,9 @@ fun TableScreen(
         // --- FILTER SELECTION ROW ---
         MeasurementTypeFilterRow(
             allMeasurementTypesProvider = { allAvailableTypesFromVM },
-            selectedTypeIdsFlowProvider = {
-                sharedViewModel.selectedTableTypeIds
-            },
+            selectedTypeIdsFlowProvider = { sharedViewModel.selectedTableTypeIds },
             onPersistSelectedTypeIds = { idsToSave ->
-                scope.launch {
-                    sharedViewModel.saveSelectedTableTypeIds(idsToSave)
-                }
+                scope.launch { sharedViewModel.saveSelectedTableTypeIds(idsToSave) }
             },
             filterLogic = { allTypes -> allTypes.filter { it.isEnabled } },
             defaultSelectionLogic = { availableFilteredTypes ->
@@ -398,7 +422,11 @@ fun TableScreen(
 }
 
 /**
- * Header cell.
+ * Header cell for a column.
+ *
+ * @param text Header label.
+ * @param modifier Layout modifier.
+ * @param alignment Text alignment within the header cell.
  */
 @Composable
 fun TableHeaderCellInternal(
@@ -420,7 +448,18 @@ fun TableHeaderCellInternal(
 }
 
 /**
- * Data cell (handles date or value; adds eval symbol near the value).
+ * Data cell renderer (handles both date cells and value cells).
+ *
+ * - For date cells, pass [fixedText] and set [isDateCell] = true.
+ * - For value cells, pass [cellData]; it shows:
+ *   - Line 1: formatted value + evaluation symbol.
+ *   - Line 2: formatted diff with a trend arrow (if present).
+ *
+ * @param cellData The cell payload (null for date column).
+ * @param modifier Layout modifier.
+ * @param alignment Text alignment in the value cell.
+ * @param fixedText Preformatted date/time string for the date column.
+ * @param isDateCell True if this is the fixed date column.
  */
 @Composable
 fun TableDataCellInternal(
@@ -430,13 +469,14 @@ fun TableDataCellInternal(
     fixedText: String? = null,
     isDateCell: Boolean = false
 ) {
-    val symbolColWidth = 18.dp // stable space for symbol
+    val symbolColWidth = 18.dp // stable space for the evaluation symbol
 
     Box(
         modifier = modifier.padding(horizontal = 8.dp, vertical = 6.dp),
         contentAlignment = if (isDateCell) Alignment.CenterStart else Alignment.TopEnd
     ) {
         if (isDateCell && fixedText != null) {
+            // Fixed left column (date/time)
             Text(
                 text = fixedText,
                 style = MaterialTheme.typography.bodyMedium,
@@ -449,15 +489,14 @@ fun TableDataCellInternal(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.End
             ) {
-                // --- Line 1: Value + Symbol in one Row ---
+                // --- Line 1: Value + evaluation symbol ---
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.End
                 ) {
-                    val unitPart = if (cellData.unit.isNotEmpty()) " ${cellData.unit}" else ""
                     Text(
-                        text = "${cellData.displayValue}$unitPart",
+                        text = cellData.displayValue, // already includes unit (if numeric)
                         style = MaterialTheme.typography.bodyLarge,
                         textAlign = alignment,
                         maxLines = 2,
@@ -482,7 +521,7 @@ fun TableDataCellInternal(
                         Box(
                             modifier = Modifier
                                 .width(symbolColWidth)
-                                .alignByBaseline(), // keep baseline alignment with value
+                                .alignByBaseline(), // baseline-align with value text
                             contentAlignment = Alignment.CenterEnd
                         ) {
                             Text(
@@ -496,8 +535,8 @@ fun TableDataCellInternal(
                     }
                 }
 
-                // --- Line 2: Diff stays under the value ---
-                if (cellData.difference != null && cellData.trend != Trend.NOT_APPLICABLE) {
+                // --- Line 2: Diff (with arrow) ---
+                if (!cellData.diffDisplay.isNullOrEmpty() && cellData.trend != Trend.NOT_APPLICABLE) {
                     Spacer(modifier = Modifier.height(1.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -524,16 +563,8 @@ fun TableDataCellInternal(
                                 )
                                 Spacer(modifier = Modifier.width(2.dp))
                             }
-                            val diffText =
-                                (if (cellData.difference > 0 && cellData.trend != Trend.NONE) "+" else "") +
-                                        when (cellData.originalInputType) {
-                                            InputFieldType.FLOAT -> "%.1f".format(Locale.getDefault(), cellData.difference)
-                                            InputFieldType.INT   -> cellData.difference.toInt().toString()
-                                            else                 -> ""
-                                        } +
-                                        (if (cellData.unit.isNotEmpty()) " ${cellData.unit}" else "")
                             Text(
-                                text = diffText,
+                                text = cellData.diffDisplay!!, // e.g., "+0.7 kg" or "−1 st 2 lb"
                                 style = MaterialTheme.typography.bodySmall,
                                 color = diffColor,
                                 textAlign = TextAlign.End
@@ -544,6 +575,7 @@ fun TableDataCellInternal(
                 }
             }
         } else {
+            // Empty value cell placeholder
             Text(
                 text = "-",
                 style = MaterialTheme.typography.bodyLarge,

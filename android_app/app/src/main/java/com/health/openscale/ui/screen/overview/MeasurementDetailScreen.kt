@@ -68,6 +68,7 @@ import com.health.openscale.core.data.MeasurementTypeIcon
 import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.data.UnitType
+import com.health.openscale.core.utils.LocaleUtils
 import com.health.openscale.ui.components.RoundMeasurementIcon
 import com.health.openscale.ui.shared.SharedViewModel
 import com.health.openscale.ui.screen.dialog.DateInputDialog
@@ -75,8 +76,6 @@ import com.health.openscale.ui.screen.dialog.NumberInputDialog
 import com.health.openscale.ui.screen.dialog.TextInputDialog
 import com.health.openscale.ui.screen.dialog.TimeInputDialog
 import com.health.openscale.ui.screen.dialog.UserInputDialog
-import com.health.openscale.ui.screen.dialog.decrementValue
-import com.health.openscale.ui.screen.dialog.incrementValue
 import com.health.openscale.ui.shared.TopBarAction
 import java.text.DateFormat
 import java.text.SimpleDateFormat
@@ -571,9 +570,9 @@ fun MeasurementValueEditRow(
         Spacer(modifier = Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(text = type.getDisplayName(context), style = MaterialTheme.typography.bodyLarge)
-            val unitDisplayString = if (type.inputType == InputFieldType.FLOAT || type.inputType == InputFieldType.INT) {
+            val displayText = if (type.inputType == InputFieldType.FLOAT || type.inputType == InputFieldType.INT) {
                 if (type.unit != UnitType.NONE) {
-                    " ${type.unit.displayName}" // Assumes UnitType.displayName is user-friendly
+                    LocaleUtils.formatValueForDisplay(value, type.unit)
                 } else {
                     "" // No unit if UnitType.NONE
                 }
@@ -581,7 +580,7 @@ fun MeasurementValueEditRow(
                 "" // No unit for non-numeric types
             }
             Text(
-                text = value + unitDisplayString,
+                text = displayText,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -604,5 +603,21 @@ fun MeasurementValueEditRow(
                 Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.content_desc_edit_value, type.getDisplayName(context)))
             }
         }
+    }
+}
+
+fun incrementValue(value: String, type: InputFieldType): String {
+    return when (type) {
+        InputFieldType.INT -> (value.toIntOrNull()?.plus(1) ?: 1).toString()
+        InputFieldType.FLOAT -> (value.toFloatOrNull()?.plus(1f) ?: 1f).toString()
+        else -> value
+    }
+}
+
+fun decrementValue(value: String, type: InputFieldType): String {
+    return when (type) {
+        InputFieldType.INT -> (value.toIntOrNull()?.minus(1) ?: 0).toString()
+        InputFieldType.FLOAT -> (value.toFloatOrNull()?.minus(1f) ?: 0f).toString()
+        else -> value
     }
 }

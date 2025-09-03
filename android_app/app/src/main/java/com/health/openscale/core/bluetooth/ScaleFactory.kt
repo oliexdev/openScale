@@ -487,7 +487,6 @@ class ScaleFactory @Inject constructor(
                 return true to legacyJavaDriver.driverName() // Assumes BluetoothCommunication has a driverName() method.
             }
         }
-        LogManager.d(TAG, "getSupportingHandlerInfo: No supporting handler found for ${deviceInfo.name}.")
         return false to null
     }
 }
