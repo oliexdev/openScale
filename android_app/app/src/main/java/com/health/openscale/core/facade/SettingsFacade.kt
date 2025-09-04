@@ -702,10 +702,10 @@ class SettingsFacadeImpl @Inject constructor(
 
     @Suppress("UNCHECKED_CAST")
     override fun <T> observeSetting(keyName: String, defaultValue: T): Flow<T> {
-        LogManager.v(
-            TAG,
-            "Observing setting: key='$keyName', type='${defaultValue?.let { it::class.simpleName } ?: "null"}'"
-        )
+        //LogManager.v(
+        //    TAG,
+        //    "Observing setting: key='$keyName', type='${defaultValue?.let { it::class.simpleName } ?: "null"}'"
+        //)
 
         return dataStore.data
             .catch { exception ->
@@ -779,7 +779,7 @@ class SettingsFacadeImpl @Inject constructor(
 
 
     override suspend fun <T> saveSetting(keyName: String, value: T) {
-        LogManager.v(TAG, "Saving setting: key='$keyName', value='$value', type='${value!!::class.simpleName}'")
+        //LogManager.v(TAG, "Saving setting: key='$keyName', value='$value', type='${value!!::class.simpleName}'")
         try {
             dataStore.edit { preferences ->
                 when (value) {
@@ -800,7 +800,7 @@ class SettingsFacadeImpl @Inject constructor(
                         }
                     }
                     else -> {
-                        val errorMsg = "Unsupported type for preference: $keyName (Type: ${value::class.java.name})"
+                        val errorMsg = "Unsupported type for preference: $keyName (Type: ${value!!::class.java.name})"
                         LogManager.e(TAG, errorMsg)
                         throw IllegalArgumentException(errorMsg) // This will be caught by the outer try-catch
                     }

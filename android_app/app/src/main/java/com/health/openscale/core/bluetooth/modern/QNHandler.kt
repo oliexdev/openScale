@@ -17,16 +17,13 @@
  */
 package com.health.openscale.core.bluetooth.modern
 
-import android.R.attr.name
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.data.ScaleMeasurement
 import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.TrisaBodyAnalyzeLib
 import com.health.openscale.core.data.WeightUnit
 import com.health.openscale.core.service.ScannedDeviceInfo
-import com.health.openscale.core.utils.LogManager
 import java.util.UUID
-import kotlin.math.min
 
 /**
  * QN / FITINDEX ES-26M style scales (vendor protocol on 0xFFE0/0xFFF0).
@@ -40,8 +37,6 @@ import kotlin.math.min
 class QNHandler : ScaleDeviceHandler() {
 
     companion object {
-        private const val TAG = "QNHandler"
-
         // Vendor “epoch”: seconds since 2000-01-01 00:00:00 UTC
         private const val SCALE_UNIX_TIMESTAMP_OFFSET = 946_702_800L
     }
@@ -158,7 +153,7 @@ class QNHandler : ScaleDeviceHandler() {
             CHR_T1_NOTIFY_WEIGHT_TIME, CHR_T2_NOTIFY_WEIGHT_TIME -> handleVendorPacket(data, user)
             CHR_T1_INDICATE_MISC -> {
                 // Not used currently, keep for completeness.
-                LogManager.d(TAG, "INDICATE_MISC: ${data.toHexPreview(24)}")
+                logD( "INDICATE_MISC: ${data.toHexPreview(24)}")
             }
         }
     }
@@ -173,7 +168,7 @@ class QNHandler : ScaleDeviceHandler() {
             0x12 -> handleScaleInfoFrame(data)         // scale factor setup
             0x21 -> { /* unknown/unused in current impl */ }
             0x23 -> { /* historical record frame (timestamp+impedance) – not implemented */ }
-            else -> LogManager.d(TAG, "QN: unhandled opcode=0x${(data[0].toInt() and 0xFF).toString(16)} ${data.toHexPreview(24)}")
+            else -> logD("QN: unhandled opcode=0x${(data[0].toInt() and 0xFF).toString(16)} ${data.toHexPreview(24)}")
         }
     }
 
@@ -182,6 +177,8 @@ class QNHandler : ScaleDeviceHandler() {
      * we parse weight and optional resistances (bytes [6..9]) and publish one result.
      */
     private fun handleLiveWeightFrame(data: ByteArray, user: ScaleUser) {
+        logD( "RAW notify: ${data.toHexString()}")
+
         // Need at least up to indices 9 to read resistances safely.
         if (data.size < 10) return
 
@@ -202,7 +199,7 @@ class QNHandler : ScaleDeviceHandler() {
         val r1 = u16be(data[6], data[7])
         val r2 = u16be(data[8], data[9])
 
-        LogManager.d(TAG, "QN weight=$weightKg kg, r1=$r1, r2=$r2 (scale=$weightScaleFactor)")
+        logD( "QN weight=$weightKg kg, r1=$r1, r2=$r2 (scale=$weightScaleFactor)")
 
         if (weightKg > 0f) {
             val m = ScaleMeasurement().apply {
@@ -237,7 +234,7 @@ class QNHandler : ScaleDeviceHandler() {
     private fun handleScaleInfoFrame(data: ByteArray) {
         if (data.size <= 10) return
         weightScaleFactor = if (data[10].toInt() == 1) 100.0f else 10.0f
-        LogManager.d(TAG, "QN set weightScaleFactor=$weightScaleFactor from opcode 0x12")
+        logD( "QN set weightScaleFactor=$weightScaleFactor from opcode 0x12")
     }
 
     // ---- Helpers ---------------------------------------------------------------

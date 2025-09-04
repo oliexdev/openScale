@@ -423,7 +423,7 @@ class MiScaleHandler : ScaleDeviceHandler() {
         try { histBuf.reset() } catch (_: Exception) {}
     }
 
-    private fun unique16(): Int = (System.currentTimeMillis() / 1000L).toInt() and 0xFFFF
+    private fun unique16(): Int = currentAppUser().id
 
     private fun parseMinuteDate(y: Int, m: Int, d: Int, h: Int, min: Int): Date? =
         runCatching {
