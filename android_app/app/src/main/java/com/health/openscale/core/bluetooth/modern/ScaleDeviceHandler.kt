@@ -260,26 +260,6 @@ abstract class ScaleDeviceHandler {
     protected fun resolveString(@StringRes resId: Int, vararg args: Any): String =
         callbacks?.resolveString(resId, *args) ?: "res:$resId"
 
-    protected fun saveUserIdForScaleIndex(scaleIndex: Int, appUserId: Int) {
-        settings.putInt("userMap/userIdByIndex/$scaleIndex", appUserId)
-    }
-    protected fun loadUserIdForScaleIndex(scaleIndex: Int): Int =
-        settings.getInt("userMap/userIdByIndex/$scaleIndex", -1)
-
-    protected fun loadScaleIndexForAppUser(appUserId: Int): Int =
-        settings.getInt("userMap/scaleIndexByAppUser/$appUserId", -1)
-
-    protected fun saveScaleIndexForAppUser(appUserId: Int, scaleIndex: Int) {
-        settings.putInt("userMap/scaleIndexByAppUser/$appUserId", scaleIndex)
-        settings.putInt("userMap/userIdByIndex/$scaleIndex", appUserId)
-    }
-
-    protected fun saveConsentForScaleIndex(scaleIndex: Int, consent: Int) {
-        settings.putInt("userMap/consentByIndex/$scaleIndex", consent)
-    }
-    protected fun loadConsentForScaleIndex(scaleIndex: Int): Int =
-        settings.getInt("userMap/consentByIndex/$scaleIndex", -1)
-
     protected fun settingsGetInt(key: String, default: Int = -1): Int = settings.getInt(key, default)
     protected fun settingsPutInt(key: String, value: Int) { settings.putInt(key, value) }
 

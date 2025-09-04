@@ -178,6 +178,19 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
 
     protected open fun transformBeforePublish(m: ScaleMeasurement): ScaleMeasurement = m
 
+    protected fun saveUserIdForScaleIndex(scaleIndex: Int, appUserId: Int) {
+        settingsPutInt("userMap/userIdByIndex/$scaleIndex", appUserId)
+    }
+    protected fun loadUserIdForScaleIndex(scaleIndex: Int): Int =
+        settingsGetInt("userMap/userIdByIndex/$scaleIndex", -1)
+
+    protected fun saveConsentForScaleIndex(scaleIndex: Int, consent: Int) {
+        settingsPutInt("userMap/consentByIndex/$scaleIndex", consent)
+    }
+    protected fun loadConsentForScaleIndex(scaleIndex: Int): Int =
+        settingsGetInt("userMap/consentByIndex/$scaleIndex", -1)
+
+
     private fun publishTransformed(m: ScaleMeasurement) = publish(transformBeforePublish(m))
 
     // ---- Auto-consent + UDS list ---------------------------------------------

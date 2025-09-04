@@ -32,6 +32,7 @@ import com.health.openscale.core.facade.MeasurementFacade
 import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.core.facade.UserFacade
 import com.health.openscale.core.utils.LogManager
+import com.welie.blessed.BluetoothPeripheral
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -273,6 +274,16 @@ class SppScaleAdapter(
 
         override fun disconnect() {
             doDisconnect()
+        }
+
+        override fun getPeripheral(): BluetoothPeripheral? = null
+
+        override fun hasCharacteristic(
+            service: UUID,
+            characteristic: UUID
+        ): Boolean {
+            // Not applicable for SPP
+            return false
         }
     }
 

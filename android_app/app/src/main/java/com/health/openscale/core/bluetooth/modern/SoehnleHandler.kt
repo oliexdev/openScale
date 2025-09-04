@@ -158,6 +158,19 @@ class SoehnleHandler : ScaleDeviceHandler() {
         }
     }
 
+    protected fun saveUserIdForScaleIndex(scaleIndex: Int, appUserId: Int) {
+        settingsPutInt("userMap/userIdByIndex/$scaleIndex", appUserId)
+    }
+    protected fun loadUserIdForScaleIndex(scaleIndex: Int): Int =
+        settingsGetInt("userMap/userIdByIndex/$scaleIndex", -1)
+
+    protected fun loadScaleIndexForAppUser(appUserId: Int): Int =
+        settingsGetInt("userMap/scaleIndexByAppUser/$appUserId", -1)
+
+    protected fun saveScaleIndexForAppUser(appUserId: Int, scaleIndex: Int) {
+        settingsPutInt("userMap/scaleIndexByAppUser/$appUserId", scaleIndex)
+        settingsPutInt("userMap/userIdByIndex/$scaleIndex", appUserId)
+    }
     // --- Handlers -------------------------------------------------------------
 
     private fun handleBattery(value: ByteArray) {
