@@ -1,6 +1,9 @@
 import java.io.FileInputStream
 import java.io.FileNotFoundException
+import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Properties
+import java.util.TimeZone
 
 plugins {
     alias(libs.plugins.android.application)
@@ -84,6 +87,11 @@ android {
     }
 
     buildTypes {
+        configureEach {
+            buildConfigField("String", "GIT_SHA", "\"${gitSha()}\"")
+            buildConfigField("String", "BUILD_TIME_UTC", "\"${buildTimeUtc()}\"")
+        }
+
         debug {
             applicationIdSuffix = ".debug"
             versionNameSuffix = "-debug"
@@ -210,4 +218,21 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     testImplementation(libs.junit)
     testImplementation(libs.truth)
+}
+
+fun safeExec(vararg cmd: String): String = try {
+    val p = ProcessBuilder(*cmd).redirectErrorStream(true).start()
+    p.inputStream.bufferedReader().use { it.readText() }.trim().ifEmpty { "unknown" }
+} catch (_: Exception) { "unknown" }
+
+fun gitSha(): String {
+    System.getenv("GIT_SHA")?.takeIf { it.isNotBlank() }?.let { return it }
+    return safeExec("git", "rev-parse", "--short", "HEAD")
+}
+
+fun buildTimeUtc(): String {
+    System.getenv("BUILD_TIME_UTC")?.takeIf { it.isNotBlank() }?.let { return it }
+    val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
+    sdf.timeZone = TimeZone.getTimeZone("UTC")
+    return sdf.format(Date())
 }
