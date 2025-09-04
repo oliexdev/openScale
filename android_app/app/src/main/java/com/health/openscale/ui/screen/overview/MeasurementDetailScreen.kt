@@ -570,14 +570,10 @@ fun MeasurementValueEditRow(
         Spacer(modifier = Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(text = type.getDisplayName(context), style = MaterialTheme.typography.bodyLarge)
-            val displayText = if (type.inputType == InputFieldType.FLOAT || type.inputType == InputFieldType.INT) {
-                if (type.unit != UnitType.NONE) {
-                    LocaleUtils.formatValueForDisplay(value, type.unit)
-                } else {
-                    "" // No unit if UnitType.NONE
-                }
-            } else {
-                "" // No unit for non-numeric types
+            val displayText = when (type.inputType) {
+                InputFieldType.FLOAT, InputFieldType.INT -> LocaleUtils.formatValueForDisplay(value, type.unit)
+                InputFieldType.TEXT, InputFieldType.USER, InputFieldType.DATE, InputFieldType.TIME -> value
+                else -> ""
             }
             Text(
                 text = displayText,
