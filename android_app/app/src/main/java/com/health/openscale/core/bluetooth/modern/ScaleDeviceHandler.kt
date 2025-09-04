@@ -242,6 +242,17 @@ abstract class ScaleDeviceHandler {
         transport?.disconnect()
     }
 
+    fun hasCharacteristic(service: UUID, characteristic: UUID): Boolean {
+        val hasUUID = transport?.hasCharacteristic(service, characteristic) ?: false
+        if (!hasUUID)
+            logD("hasCharacteristic: $service/$characteristic → false")
+        return hasUUID
+    }
+
+    protected fun getPeripheral(): BluetoothPeripheral? {
+        return transport?.getPeripheral()
+    }
+
     /** Helper to build a 16-bit Bluetooth Base UUID (e.g., `uuid16(0xFFE4)`). */
     protected fun uuid16(short: Int): UUID =
         UUID.fromString(String.format("0000%04x-0000-1000-8000-00805f9b34fb", short))
@@ -279,9 +290,6 @@ abstract class ScaleDeviceHandler {
     protected fun usersForDevice(): List<ScaleUser> = data.usersForDevice()
     protected fun lastMeasurementFor(userId: Int): ScaleMeasurement? = data.lastMeasurementFor(userId)
 
-    protected fun getPeripheral(): BluetoothPeripheral? {
-        return transport?.getPeripheral()
-    }
     // --- Logging shortcuts (route to LogManager under a single TAG) ------------
 
     protected fun logD(msg: String) = LogManager.d(TAG, msg)
@@ -330,6 +338,7 @@ abstract class ScaleDeviceHandler {
         fun read(service: UUID, characteristic: UUID)
         fun disconnect()
         fun getPeripheral(): BluetoothPeripheral? = null
+        fun hasCharacteristic(service: UUID, characteristic: UUID): Boolean
     }
 
     // ----- DataProvider: live app data the handler can query -----

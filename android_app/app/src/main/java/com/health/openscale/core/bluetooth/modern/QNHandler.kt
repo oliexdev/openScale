@@ -105,10 +105,15 @@ class QNHandler : ScaleDeviceHandler() {
         weightScaleFactor = 100.0f
 
         // Subscribe to both flavors; the adapter will ignore missing ones gracefully.
-        setNotifyOn(SVC_T1, CHR_T1_NOTIFY_WEIGHT_TIME)
-        setNotifyOn(SVC_T1, CHR_T1_INDICATE_MISC)
-        setNotifyOn(SVC_T2, CHR_T2_NOTIFY_WEIGHT_TIME)
-
+        if (hasCharacteristic(SVC_T1, CHR_T1_NOTIFY_WEIGHT_TIME)) {
+            setNotifyOn(SVC_T1, CHR_T1_NOTIFY_WEIGHT_TIME)
+        }
+        if (hasCharacteristic(SVC_T1, CHR_T1_INDICATE_MISC)) {
+            setNotifyOn(SVC_T1, CHR_T1_INDICATE_MISC)
+        }
+        if (hasCharacteristic(SVC_T2, CHR_T2_NOTIFY_WEIGHT_TIME)) {
+            setNotifyOn(SVC_T2, CHR_T2_NOTIFY_WEIGHT_TIME)
+        }
         // Configure unit on both flavors (the non-matching write will be ignored by the stack).
         val unitByte = when (user.scaleUnit) {
             WeightUnit.LB, WeightUnit.ST -> 0x02 // LB (vendor uses LB also for ST in their apps)
@@ -120,9 +125,12 @@ class QNHandler : ScaleDeviceHandler() {
         )
         cfg[cfg.lastIndex] = checksum(cfg, 0, cfg.lastIndex) // last byte = checksum
 
-        writeTo(SVC_T1, CHR_T1_WRITE_CONFIG, cfg)
-        writeTo(SVC_T2, CHR_T2_WRITE_SHARED, cfg)
-
+        if (hasCharacteristic(SVC_T1, CHR_T1_WRITE_CONFIG)) {
+            writeTo(SVC_T1, CHR_T1_WRITE_CONFIG, cfg, true)
+        }
+        if (hasCharacteristic(SVC_T2, CHR_T2_WRITE_SHARED)) {
+            writeTo(SVC_T2, CHR_T2_WRITE_SHARED, cfg, true)
+        }
         // Push current time (seconds since 2000-01-01).
         val epochSecs = (System.currentTimeMillis() / 1000L) - SCALE_UNIX_TIMESTAMP_OFFSET
         val t = epochSecs.toInt()
@@ -133,9 +141,12 @@ class QNHandler : ScaleDeviceHandler() {
             ((t ushr 16) and 0xFF).toByte(),
             ((t ushr 24) and 0xFF).toByte()
         )
-        writeTo(SVC_T1, CHR_T1_WRITE_TIME, timeMagic)
-        writeTo(SVC_T2, CHR_T2_WRITE_SHARED, timeMagic)
-
+        if (hasCharacteristic(SVC_T1, CHR_T1_WRITE_TIME)) {
+            writeTo(SVC_T1, CHR_T1_WRITE_TIME, timeMagic, true)
+        }
+        if (hasCharacteristic(SVC_T2, CHR_T2_WRITE_SHARED)) {
+            writeTo(SVC_T2, CHR_T2_WRITE_SHARED, timeMagic, true)
+        }
         // Tell the user to step on
         userInfo(R.string.bt_info_step_on_scale)
     }
@@ -158,7 +169,7 @@ class QNHandler : ScaleDeviceHandler() {
         if (data.isEmpty()) return
 
         when (data[0].toInt() and 0xFF) {
-            0x10 -> handleLiveWeightFrame(data, user)  // live / stable weight frame
+            0x10, 0x14 -> handleLiveWeightFrame(data, user)  // live / stable weight frame
             0x12 -> handleScaleInfoFrame(data)         // scale factor setup
             0x21 -> { /* unknown/unused in current impl */ }
             0x23 -> { /* historical record frame (timestamp+impedance) – not implemented */ }

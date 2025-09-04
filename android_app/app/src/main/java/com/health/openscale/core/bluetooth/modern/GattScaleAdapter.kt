@@ -247,6 +247,11 @@ class GattScaleAdapter(
         override fun getPeripheral(): BluetoothPeripheral? {
             return currentPeripheral
         }
+
+        override fun hasCharacteristic(service: UUID, characteristic: UUID): Boolean {
+            val p = currentPeripheral ?: return false
+            return p.getCharacteristic(service, characteristic) != null
+        }
     }
 
     override fun doConnect(address: String, selectedUser: ScaleUser) {
