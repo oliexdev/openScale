@@ -266,10 +266,15 @@ class MiScaleHandler : ScaleDeviceHandler() {
         }
 
         // Response to “only last”: 0x01 <count> FF FF <uniqHi> <uniqLo>
-        if (d.size >= 6 && d[0] == 0x01.toByte() && d[2] == 0xFF.toByte()) {
-            pendingHistoryCount = d[1].toInt() and 0xFF
-            logI("History count announced: $pendingHistoryCount")
-            return
+        if (d.size >= 6 && d[0] == 0x01.toByte()) {
+            val count = d[1].toInt() and 0xFF
+            // Accept FF FF and 00 00
+            val marker = (d[2].toInt() and 0xFF) shl 8 or (d[3].toInt() and 0xFF)
+            if (marker == 0xFFFF || marker == 0x0000) {
+                pendingHistoryCount = count
+                logI("History count announced (marker=${marker.toString(16)}): $pendingHistoryCount")
+                return
+            }
         }
 
         // Live frames (13B) or combined (26B)
