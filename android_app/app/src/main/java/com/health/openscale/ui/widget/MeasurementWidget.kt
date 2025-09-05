@@ -63,6 +63,7 @@ import kotlinx.coroutines.withContext
 import java.text.DecimalFormat
 import androidx.compose.ui.graphics.Color
 import androidx.glance.appwidget.state.updateAppWidgetState
+import com.health.openscale.core.data.IconResource
 
 class MeasurementWidget : GlanceAppWidget() {
     // Enable currentState<Preferences>() inside provideContent
@@ -306,8 +307,8 @@ private fun GlanceRoundMeasurementIcon(
     @DrawableRes fallbackDrawable: Int
 ) {
     val resId = when (val r = icon.resource) {
-        is MeasurementTypeIcon.IconResource.PainterResource -> r.id
-        is MeasurementTypeIcon.IconResource.VectorResource -> fallbackDrawable
+        is IconResource.PainterResource -> r.id
+        is IconResource.VectorResource -> fallbackDrawable
     }
     Box(
         modifier = GlanceModifier

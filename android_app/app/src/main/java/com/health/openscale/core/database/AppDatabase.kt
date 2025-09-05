@@ -28,6 +28,7 @@ import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.data.User
+import com.health.openscale.core.data.UserIcon
 import com.health.openscale.core.utils.LogManager
 import com.health.openscale.getDefaultMeasurementTypes
 import dagger.Module
@@ -45,7 +46,7 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(@ApplicationContext ctx: Context): AppDatabase =
         Room.databaseBuilder(ctx, AppDatabase::class.java, AppDatabase.Companion.DATABASE_NAME)
-            .addMigrations(MIGRATION_6_7)
+            .addMigrations(MIGRATION_6_7, MIGRATION_7_8)
             .build()
 
     @Provides
@@ -69,7 +70,7 @@ object DatabaseModule {
         MeasurementValue::class,
         MeasurementType::class
     ],
-    version = 7,
+    version = 8,
     exportSchema = true
 )
 @TypeConverters(DatabaseConverters::class)
@@ -80,44 +81,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun measurementValueDao(): MeasurementValueDao
     abstract fun measurementTypeDao(): MeasurementTypeDao
 
-    /**
-     * Closes the database connection and resets the singleton instance.
-     * This is typically not needed in normal app operation as Room handles lifecycle.
-     * Could be useful in specific scenarios like testing or explicit resource cleanup.
-     */
-    fun closeConnection() {
-        if (isOpen) {
-            try {
-                super.close() // Call RoomDatabase's close method
-                LogManager.i(TAG, "Database connection closed and INSTANCE reset.")
-            } catch (e: Exception) {
-                LogManager.e(TAG, "Error closing database connection.", e)
-            }
-        } else {
-            LogManager.w(TAG, "Attempted to close database connection, but it was already closed or not initialized.")
-        }
-    }
-
     companion object {
-        private const val TAG = "AppDatabase"
         const val DATABASE_NAME = "openScale.db"
-
-        /**
-         * Builds the Room database instance.
-         *
-         * @param appContext The application context.
-         * @return A new [AppDatabase] instance.
-         */
-        private fun buildDatabase(appContext: Context): AppDatabase {
-            LogManager.d(TAG, "Building new database instance: $DATABASE_NAME")
-            return Room.databaseBuilder(
-                appContext,
-                AppDatabase::class.java,
-                DATABASE_NAME
-            )
-                .addMigrations(MIGRATION_6_7)
-                .build()
-        }
     }
 }
 
@@ -292,6 +257,19 @@ val MIGRATION_6_7 = object : Migration(6, 7) {
         db.execSQL("DROP INDEX IF EXISTS `index_scaleMeasurements_userId_datetime`")
         db.execSQL("DROP TABLE IF EXISTS `scaleMeasurements`")
         db.execSQL("DROP TABLE IF EXISTS `scaleUsers`")
+
+        db.execSQL("PRAGMA foreign_keys=ON")
+    }
+}
+
+val MIGRATION_7_8 = object : Migration(7, 8) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("PRAGMA foreign_keys=OFF")
+
+        db.execSQL("""
+            ALTER TABLE `User`
+            ADD COLUMN `icon` TEXT NOT NULL DEFAULT '${UserIcon.IC_DEFAULT.name}'
+        """.trimIndent())
 
         db.execSQL("PRAGMA foreign_keys=ON")
     }

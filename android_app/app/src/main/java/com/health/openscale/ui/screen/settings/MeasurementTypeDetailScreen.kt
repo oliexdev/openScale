@@ -385,7 +385,7 @@ fun MeasurementTypeDetailScreen(
             modifier = Modifier.fillMaxWidth().clickable { showIconPicker = true },
             readOnly = true,
             enabled = false,
-            trailingIcon = { MeasurementIcon(icon = selectedIcon) },
+            trailingIcon = { MeasurementIcon(icon = selectedIcon.resource) },
             colors = TextFieldDefaults.colors(
                 disabledTextColor = LocalContentColor.current,
                 disabledIndicatorColor = MaterialTheme.colorScheme.outline,
@@ -540,7 +540,10 @@ fun MeasurementTypeDetailScreen(
     if (showIconPicker) {
         IconPickerDialog(
             iconBackgroundColor = Color(selectedColor),
-            onIconSelected = { selectedIcon = it; showIconPicker = false },
+            availableIcons = MeasurementTypeIcon.entries.map { it.resource },
+            onIconSelected =  { selectedResource ->
+                selectedIcon = MeasurementTypeIcon.entries.first { it.resource == selectedResource };
+                showIconPicker = false },
             onDismiss = { showIconPicker = false }
         )
     }

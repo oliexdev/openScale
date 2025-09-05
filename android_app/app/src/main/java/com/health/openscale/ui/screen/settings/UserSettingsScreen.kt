@@ -29,6 +29,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -37,16 +39,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.health.openscale.R
 import com.health.openscale.core.utils.CalculationUtils
+import com.health.openscale.ui.components.RoundMeasurementIcon
 import com.health.openscale.ui.shared.SharedViewModel
 import com.health.openscale.ui.shared.TopBarAction
 import kotlinx.coroutines.launch
-
-// import com.health.openscale.ui.screen.settings.SettingsViewModel // Already imported by IDE based on context
 
 /**
  * Composable screen that displays a list of users.
@@ -101,6 +103,14 @@ fun UserSettingsScreen(
             }
 
             ListItem(
+                leadingContent = {
+                    RoundMeasurementIcon(
+                        icon = user.icon.resource,
+                        size = 24.dp,
+                        backgroundTint = Color.Transparent,
+                        iconTint = LocalContentColor.current
+                    )
+                },
                 headlineContent = { Text(user.name) },
                 supportingContent = {
                     Text(

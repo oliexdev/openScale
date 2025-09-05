@@ -331,7 +331,7 @@ fun StatisticCard(
                     val iconMeasurementType = remember(measurementType.icon) { measurementType.icon }
 
                     RoundMeasurementIcon(
-                        icon = iconMeasurementType,
+                        icon = iconMeasurementType.resource,
                         backgroundTint = Color(measurementType.color),
                     )
                     Spacer(modifier = Modifier.width(8.dp))

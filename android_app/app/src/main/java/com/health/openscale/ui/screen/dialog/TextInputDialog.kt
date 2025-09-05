@@ -72,7 +72,7 @@ fun TextInputDialog(
         title = {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 RoundMeasurementIcon(
-                    icon = measurementIcon,
+                    icon = measurementIcon.resource,
                     backgroundTint = iconBackgroundColor,
                 )
                 Spacer(modifier = Modifier.width(12.dp))

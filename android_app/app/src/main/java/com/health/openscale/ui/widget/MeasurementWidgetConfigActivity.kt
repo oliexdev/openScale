@@ -270,7 +270,7 @@ private fun TypeRow(type: MeasurementType, selected: Boolean, onClick: () -> Uni
     ) {
         // Use existing RoundMeasurementIcon and colorize background with type.color if available
         RoundMeasurementIcon(
-            icon = type.icon ?: MeasurementTypeIcon.IC_DEFAULT,
+            icon = type.icon.resource,
             size = 24.dp,
             backgroundTint = if (type.color != 0) Color(type.color) else MaterialTheme.colorScheme.secondaryContainer
         )

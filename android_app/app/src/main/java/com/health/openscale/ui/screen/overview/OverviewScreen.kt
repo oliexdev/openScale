@@ -1010,7 +1010,7 @@ fun MeasurementValueRow(
             verticalAlignment = Alignment.CenterVertically
         ) {
             RoundMeasurementIcon(
-                icon = iconMeasurementType,
+                icon = iconMeasurementType.resource,
                 backgroundTint = Color(type.color)
             )
             Spacer(modifier = Modifier.width(12.dp))

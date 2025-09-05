@@ -58,7 +58,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.health.openscale.R
 import com.health.openscale.core.data.MeasurementTypeKey
-import com.health.openscale.ui.components.MeasurementIcon
 import com.health.openscale.ui.components.RoundMeasurementIcon
 import com.health.openscale.ui.shared.SharedViewModel
 import com.health.openscale.ui.shared.TopBarAction
@@ -151,7 +150,7 @@ fun MeasurementTypeSettingsScreen(
                         val iconMeasurementType = remember(type.icon) {type.icon }
 
                         RoundMeasurementIcon(
-                            icon = iconMeasurementType,
+                            icon = iconMeasurementType.resource,
                             iconTint = Color.Black.copy(alpha = iconTintAlpha),
                             backgroundTint = Color(type.color).copy(alpha = iconBackgroundAlpha),
                             modifier = Modifier.size(48.dp)

@@ -1,5 +1,6 @@
 package com.health.openscale.ui.components
 
+import android.R.attr.resource
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
@@ -16,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.health.openscale.core.data.IconResource
 import com.health.openscale.core.data.MeasurementTypeIcon
 
 /**
@@ -29,24 +31,24 @@ import com.health.openscale.core.data.MeasurementTypeIcon
  */
 @Composable
 fun MeasurementIcon(
-    icon: MeasurementTypeIcon,
+    icon: IconResource,
     modifier: Modifier = Modifier,
     size: Dp = 24.dp,
     tint: Color = LocalContentColor.current
 ) {
-    when (val resource = icon.resource) {
-        is MeasurementTypeIcon.IconResource.PainterResource -> {
+    when (icon) {
+        is IconResource.PainterResource -> {
             Icon(
-                painter = painterResource(id = resource.id),
-                contentDescription = icon.name,
+                painter = painterResource(id = icon.id),
+                contentDescription = icon.id.toString(),
                 modifier = modifier.size(size),
                 tint = tint
             )
         }
-        is MeasurementTypeIcon.IconResource.VectorResource -> {
+        is IconResource.VectorResource -> {
             Icon(
-                imageVector = resource.imageVector,
-                contentDescription = icon.name,
+                imageVector = icon.imageVector,
+                contentDescription = icon.imageVector.name,
                 modifier = modifier.size(size),
                 tint = tint
             )
@@ -65,7 +67,7 @@ fun MeasurementIcon(
  */
 @Composable
 fun RoundMeasurementIcon(
-    icon: MeasurementTypeIcon,
+    icon: IconResource,
     modifier: Modifier = Modifier,
     size: Dp = 28.dp,
     backgroundTint : Color = MaterialTheme.colorScheme.surfaceVariant,

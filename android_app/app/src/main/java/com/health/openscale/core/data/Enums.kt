@@ -30,16 +30,20 @@ import androidx.compose.material.icons.automirrored.filled.ShowChart
 import androidx.compose.material.icons.automirrored.filled.TrendingDown
 import androidx.compose.material.icons.automirrored.filled.TrendingFlat
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.Bloodtype
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.CheckCircleOutline
+import androidx.compose.material.icons.filled.ChildCare
 import androidx.compose.material.icons.filled.DeviceThermostat
 import androidx.compose.material.icons.filled.DirectionsWalk
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.Egg
+import androidx.compose.material.icons.filled.Face3
+import androidx.compose.material.icons.filled.Face6
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Flag
@@ -49,6 +53,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocalDining
 import androidx.compose.material.icons.filled.LocalDrink
 import androidx.compose.material.icons.filled.Medication
+import androidx.compose.material.icons.filled.Mood
 import androidx.compose.material.icons.filled.NightsStay
 import androidx.compose.material.icons.filled.OilBarrel
 import androidx.compose.material.icons.filled.Person
@@ -57,7 +62,9 @@ import androidx.compose.material.icons.filled.QuestionMark
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material.icons.filled.RemoveCircleOutline
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.SentimentSatisfied
 import androidx.compose.material.icons.filled.SentimentSatisfiedAlt
+import androidx.compose.material.icons.filled.SentimentVerySatisfied
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShowChart
 import androidx.compose.material.icons.filled.Speed
@@ -193,6 +200,22 @@ enum class MeasureUnit {
     }
 }
 
+sealed class IconResource {
+    data class PainterResource(@DrawableRes val id: Int) : IconResource()
+    data class VectorResource(val imageVector: ImageVector) : IconResource()
+}
+
+enum class UserIcon(val resource: IconResource) {
+    IC_DEFAULT(IconResource.VectorResource(Icons.Filled.AccountCircle)),
+    IC_MALE(IconResource.VectorResource(Icons.Filled.Face6)),
+    IC_FEMALE(IconResource.VectorResource(Icons.Filled.Face3)),
+    IC_CHILD(IconResource.VectorResource(Icons.Filled.ChildCare)),
+    IC_HAPPY_FACE(IconResource.VectorResource(Icons.Filled.SentimentSatisfied)),
+    IC_HAPPY_FACE_MOOD(IconResource.VectorResource(Icons.Filled.Mood)),
+    IC_HAPPY_FACE_ALT(IconResource.VectorResource(Icons.Filled.SentimentVerySatisfied))
+
+}
+
 enum class MeasurementTypeIcon(val resource: IconResource) {
     IC_DEFAULT(IconResource.VectorResource(Icons.Filled.QuestionMark)),
     IC_WEIGHT(IconResource.PainterResource(R.drawable.ic_weight)),
@@ -263,11 +286,6 @@ enum class MeasurementTypeIcon(val resource: IconResource) {
     IC_M_LIST(IconResource.VectorResource(Icons.AutoMirrored.Filled.List)),
     IC_M_LABEL(IconResource.VectorResource(Icons.AutoMirrored.Filled.Label)),
     IC_M_PERSON(IconResource.VectorResource(Icons.Filled.Person));
-
-    sealed class IconResource {
-        data class PainterResource(@DrawableRes val id: Int) : IconResource()
-        data class VectorResource(val imageVector: ImageVector) : IconResource()
-    }
 }
 
 enum class MeasurementTypeKey(

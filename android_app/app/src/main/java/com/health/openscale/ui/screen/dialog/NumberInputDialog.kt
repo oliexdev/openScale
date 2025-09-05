@@ -122,7 +122,7 @@ fun NumberInputDialog(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 // Measurement icon bubble on the left
                 RoundMeasurementIcon(
-                    icon = measurementIcon,
+                    icon = measurementIcon.resource,
                     backgroundTint = iconBackgroundColor,
                 )
                 Spacer(modifier = Modifier.width(8.dp))

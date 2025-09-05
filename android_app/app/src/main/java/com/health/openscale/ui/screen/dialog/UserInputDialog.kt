@@ -79,7 +79,7 @@ fun UserInputDialog(
         title = {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 RoundMeasurementIcon(
-                    icon = measurementIcon,
+                    icon = measurementIcon.resource,
                     backgroundTint = iconBackgroundColor
                 )
                 Spacer(Modifier.width(12.dp))

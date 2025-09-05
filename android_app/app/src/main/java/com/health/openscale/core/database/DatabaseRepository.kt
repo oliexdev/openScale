@@ -324,9 +324,6 @@ class DatabaseRepository @Inject constructor(
             }
         } else null
 
-        // Body fat is typically already in percentage
-        val bodyFatPercentage: Float? = bodyFatValue
-
         // Convert waist circumference to Centimeters (CM)
         val waistCm: Float? = if (waistValue != null && waistUnitType != null) {
             when (waistUnitType) {

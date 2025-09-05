@@ -17,6 +17,7 @@
  */
 package com.health.openscale.ui.navigation
 
+import android.R.attr.contentDescription
 import android.util.Pair
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
@@ -106,6 +107,7 @@ import androidx.navigation.navArgument
 import com.health.openscale.BuildConfig
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.BluetoothEvent.UserInteractionType
+import com.health.openscale.core.data.IconResource
 import com.health.openscale.core.data.User
 import com.health.openscale.core.utils.LogManager
 import com.health.openscale.ui.navigation.Routes.getIconForRoute
@@ -738,15 +740,23 @@ fun UserDropdownAsAction(
     }
 
     Box(modifier = modifier) { // Box is used to anchor the DropdownMenu.
-        IconButton(onClick = { expanded = true }) { // Icon to trigger the dropdown.
-            Icon(
-                imageVector = Icons.Filled.AccountCircle,
-                contentDescription = stringResource(
-                    R.string.content_desc_switch_user, // Dynamic content description.
-                    selectedUser?.name ?: stringResource(R.string.text_none) // Display selected user's name or "None".
-                ),
-                modifier = Modifier.size(28.dp) // Specific size for the icon.
-            )
+        IconButton(onClick = { expanded = true }) {
+            val iconResource = selectedUser?.icon?.resource ?: IconResource.VectorResource(Icons.Filled.AccountCircle)
+
+            when (iconResource) {
+                is IconResource.VectorResource -> {
+                    Icon(
+                        imageVector = iconResource.imageVector,
+                        contentDescription = null
+                    )
+                }
+                is IconResource.PainterResource -> {
+                    Image(
+                        painter = painterResource(id = iconResource.id),
+                        contentDescription = null
+                    )
+                }
+            }
         }
         DropdownMenu(
             expanded = expanded,

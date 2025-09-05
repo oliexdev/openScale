@@ -564,7 +564,7 @@ fun MeasurementValueEditRow(
             .clickable(onClick = onEditClick, enabled = !type.isDerived) // Clicking row triggers edit, disabled for derived
     ) {
         RoundMeasurementIcon(
-            icon = type.icon,
+            icon = type.icon.resource,
             backgroundTint = Color(type.color),
         )
         Spacer(modifier = Modifier.width(12.dp))

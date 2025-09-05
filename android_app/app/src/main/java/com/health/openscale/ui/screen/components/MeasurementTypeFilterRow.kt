@@ -224,7 +224,7 @@ fun MeasurementTypeFilterRow(
                     }
             ) {
                 RoundMeasurementIcon(
-                    icon = type.icon,
+                    icon = type.icon.resource,
                     backgroundTint = iconBackgroundColor,
                     iconTint = iconColor
                 )

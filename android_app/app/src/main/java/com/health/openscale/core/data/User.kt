@@ -24,6 +24,7 @@ import androidx.room.PrimaryKey
 data class User(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val name: String,
+    val icon: UserIcon = UserIcon.IC_DEFAULT,
     val birthDate: Long,
     val gender: GenderType,
     val heightCm: Float,

@@ -17,6 +17,7 @@
  */
 package com.health.openscale.ui.screen.settings
 
+import android.R.id.selectedIcon
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -40,6 +41,7 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
@@ -55,19 +57,26 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.constraintlayout.compose.DesignElements.map
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.health.openscale.R
 import com.health.openscale.core.data.ActivityLevel
 import com.health.openscale.core.data.GenderType
+import com.health.openscale.core.data.IconResource
+import com.health.openscale.core.data.MeasurementTypeIcon
 import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.data.User
+import com.health.openscale.core.data.UserIcon
 import com.health.openscale.core.utils.ConverterUtils
+import com.health.openscale.ui.components.RoundMeasurementIcon
+import com.health.openscale.ui.screen.dialog.IconPickerDialog
 import com.health.openscale.ui.shared.SharedViewModel
 import com.health.openscale.ui.shared.TopBarAction
 import kotlinx.coroutines.launch
@@ -104,6 +113,7 @@ fun UserDetailScreen(
         mutableStateOf(sharedViewModel.allUsers.value.find { it.id == userId })
     }
 
+    var selectedIcon by remember { mutableStateOf(user?.icon ?: UserIcon.IC_DEFAULT) }
     var name by remember { mutableStateOf(user?.name.orEmpty()) }
     var birthDate by remember {
         val initialBirthDate = user?.birthDate
@@ -205,6 +215,7 @@ fun UserDetailScreen(
                         id = user?.id
                             ?: 0, // Use existing ID if editing, or 0 for Room to auto-generate
                         name = name,
+                        icon = selectedIcon,
                         birthDate = birthDate,
                         gender = gender,
                         heightCm = finalHeightCm,
@@ -241,6 +252,13 @@ fun UserDetailScreen(
             .verticalScroll(scrollState),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
+        UserIconPicker(
+            selectedIcon = selectedIcon.resource,
+            onIconSelected = { selectedResource ->
+                selectedIcon = UserIcon.entries.first { it.resource == selectedResource }
+            }
+        )
+
         OutlinedTextField(
             value = name,
             onValueChange = { name = it },
@@ -360,5 +378,40 @@ fun UserDetailScreen(
             enabled = false, // Visually indicates it's not directly editable
             readOnly = true  // Ensures it's not directly editable
         )
+    }
+}
+
+@Composable
+fun UserIconPicker(
+    selectedIcon: IconResource,
+    iconBackgroundColor: Color = MaterialTheme.colorScheme.surfaceVariant,
+    onIconSelected: (IconResource) -> Unit
+) {
+    var showIconPicker by remember { mutableStateOf(false) }
+
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        RoundMeasurementIcon(
+            icon = selectedIcon,
+            size = 48.dp,
+            backgroundTint = iconBackgroundColor,
+            iconTint = LocalContentColor.current,
+            modifier = Modifier
+                .clickable { showIconPicker = true }
+        )
+
+        if (showIconPicker) {
+            IconPickerDialog(
+                iconBackgroundColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                availableIcons = UserIcon.entries.map { it.resource },
+                onIconSelected = {
+                    onIconSelected(it)
+                    showIconPicker = false
+                },
+                onDismiss = { showIconPicker = false }
+            )
+        }
     }
 }
