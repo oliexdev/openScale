@@ -217,7 +217,7 @@ class DatabaseRepository @Inject constructor(
     private val DERIVED_VALUES_TAG = "DerivedValues" // Specific tag for this complex logic
 
     /**
-     * Recalculates all derived measurement values (like BMI, LBM, etc.) for a given measurement.
+     * Recalculates all derived measurement values (like BMI, etc.) for a given measurement.
      * This method fetches the necessary base values and user data, then processes each calculation.
      *
      * @param measurementId The ID of the measurement for which to recalculate derived values.
@@ -252,7 +252,7 @@ class DatabaseRepository @Inject constructor(
                 val valueObject = currentMeasurementValues.find { it.typeId == measurementTypeObject.id }
                 val value = valueObject?.floatValue
                 val unit = measurementTypeObject.unit // The unit is defined in the MeasurementType object
-                LogManager.v(DERIVED_VALUES_TAG, "findValueAndUnit for $key (typeId: ${measurementTypeObject.id}, unit: $unit): ${value ?: "not found"}")
+               // LogManager.v(DERIVED_VALUES_TAG, "findValueAndUnit for $key (typeId: ${measurementTypeObject.id}, unit: $unit): ${value ?: "not found"}")
                 Pair(value, unit)
             }
         }
@@ -386,7 +386,6 @@ class DatabaseRepository @Inject constructor(
         // Pass the converted values (e.g., weightKg, waistCm) to the processing functions
 
         processBmiCalculation(weightKg, userHeightCm).also { saveOrUpdateDerivedValue(it, MeasurementTypeKey.BMI) }
-        processLbmCalculation(weightKg, bodyFatPercentage).also { saveOrUpdateDerivedValue(it, MeasurementTypeKey.LBM) }
         processWhrCalculation(waistCm, hipsCm).also { saveOrUpdateDerivedValue(it, MeasurementTypeKey.WHR) }
         processWhtrCalculation(waistCm, userHeightCm).also { saveOrUpdateDerivedValue(it, MeasurementTypeKey.WHTR) }
         processBmrCalculation(
@@ -420,23 +419,6 @@ class DatabaseRepository @Inject constructor(
             weightKg / (heightM * heightM)
         } else {
             LogManager.d(CALC_PROCESS_TAG, "BMI calculation skipped: Missing or invalid weight/height.")
-            null
-        }
-    }
-
-    private fun processLbmCalculation(weightKg: Float?, bodyFatPercentage: Float?): Float? {
-        LogManager.v(CALC_PROCESS_TAG, "Processing LBM: weight=$weightKg kg, bodyFat=$bodyFatPercentage %")
-        return if (weightKg != null && weightKg > 0f && bodyFatPercentage != null && bodyFatPercentage in 0f..100f) {
-            val fatMass = weightKg * (bodyFatPercentage / 100f)
-            weightKg - fatMass
-        } else {
-            if (bodyFatPercentage != null && bodyFatPercentage !in 0f..100f) {
-                LogManager.w(CALC_PROCESS_TAG, "Invalid body fat percentage for LBM calculation: $bodyFatPercentage%. Must be between 0 and 100.")
-            } else if (weightKg == null || weightKg <= 0f) {
-                LogManager.d(CALC_PROCESS_TAG, "LBM calculation skipped: Missing or invalid weight.")
-            } else {
-                LogManager.d(CALC_PROCESS_TAG, "LBM calculation skipped: Missing body fat percentage.")
-            }
             null
         }
     }
