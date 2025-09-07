@@ -199,18 +199,44 @@ class GattScaleAdapter(
             scope.launch {
                 ioMutex.withLock {
                     val p = currentPeripheral ?: run {
-                        appCallbacks.onWarn(R.string.bt_warn_no_peripheral_for_setnotify, characteristic.toString()); return@withLock
+                        appCallbacks.onWarn(R.string.bt_warn_no_peripheral_for_setnotify, characteristic.toString())
+                        return@withLock
                     }
+
                     val ch = p.getCharacteristic(service, characteristic) ?: run {
-                        appCallbacks.onWarn(R.string.bt_warn_characteristic_not_found, characteristic.toString()); return@withLock
+                        appCallbacks.onWarn(R.string.bt_warn_characteristic_not_found, characteristic.toString())
+                        return@withLock
                     }
-                    ioGap(tuning.notifySetupDelayMs)
-                    if (!p.setNotify(ch, true)) {
-                        appCallbacks.onWarn(R.string.bt_warn_notify_failed, characteristic.toString())
+
+                    val supportsNotify = (ch.properties and android.bluetooth.BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0
+                    val supportsIndicate = (ch.properties and android.bluetooth.BluetoothGattCharacteristic.PROPERTY_INDICATE) > 0
+                    val CLIENT_CHARACTERISTIC_CONFIG_UUID : UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
+                    val cccd = ch.getDescriptor(CLIENT_CHARACTERISTIC_CONFIG_UUID)
+
+                    if ((supportsNotify || supportsIndicate) && cccd != null) {
+                        ioGap(tuning.notifySetupDelayMs)
+                        try {
+                            if (!p.setNotify(ch, true)) {
+                                appCallbacks.onWarn(R.string.bt_warn_notify_failed, characteristic.toString())
+                                LogManager.w(TAG, "setNotifyOn: Call to peripheral.setNotify failed for characteristic $characteristic")
+                            } else {
+                                LogManager.d(TAG, "setNotifyOn: Successfully enabled notifications for characteristic $characteristic")
+                            }
+                        } catch (e: IllegalArgumentException) {
+                            LogManager.e(TAG, "setNotifyOn: IllegalArgumentException for characteristic $characteristic. This should have been caught by prior checks.", e)
+                        }
+                    } else {
+                        val reason = when {
+                            cccd == null -> "CCCD is missing"
+                            !supportsNotify && !supportsIndicate -> "Neither Notify nor Indicate property is set"
+                            else -> "Unknown reason for not supporting notifications"
+                        }
+                        LogManager.w(TAG, "setNotifyOn: Characteristic $characteristic does not support notifications or CCCD is missing. Reason: $reason")
                     }
                 }
             }
         }
+
 
         override fun write(service: UUID, characteristic: UUID, payload: ByteArray, withResponse: Boolean) {
             scope.launch {
