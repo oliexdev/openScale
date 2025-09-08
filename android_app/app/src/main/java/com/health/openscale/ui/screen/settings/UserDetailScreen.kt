@@ -404,7 +404,8 @@ fun UserIconPicker(
 
         if (showIconPicker) {
             IconPickerDialog(
-                iconBackgroundColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                iconTintColor = LocalContentColor.current,
+                iconBackgroundColor = iconBackgroundColor,
                 availableIcons = UserIcon.entries.map { it.resource },
                 onIconSelected = {
                     onIconSelected(it)

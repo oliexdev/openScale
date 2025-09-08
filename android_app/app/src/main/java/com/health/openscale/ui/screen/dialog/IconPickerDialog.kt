@@ -29,6 +29,7 @@ import com.health.openscale.ui.components.RoundMeasurementIcon
 
 @Composable
 fun IconPickerDialog(
+    iconTintColor: Color,
     iconBackgroundColor: Color,
     availableIcons: List<IconResource>,
     onIconSelected: (IconResource) -> Unit,
@@ -48,6 +49,7 @@ fun IconPickerDialog(
                     RoundMeasurementIcon(
                         icon = icon,
                         backgroundTint = iconBackgroundColor,
+                        iconTint = iconTintColor,
                         size = 28.dp,
                         modifier = Modifier.clickable { onIconSelected(icon) }
                     )

@@ -540,6 +540,7 @@ fun MeasurementTypeDetailScreen(
     if (showIconPicker) {
         IconPickerDialog(
             iconBackgroundColor = Color(selectedColor),
+            iconTintColor = Color.Black,
             availableIcons = MeasurementTypeIcon.entries.map { it.resource },
             onIconSelected =  { selectedResource ->
                 selectedIcon = MeasurementTypeIcon.entries.first { it.resource == selectedResource };
