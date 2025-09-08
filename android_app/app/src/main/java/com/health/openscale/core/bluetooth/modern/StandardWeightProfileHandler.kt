@@ -176,36 +176,66 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
         previousMeasurement = null
     }
 
-    protected open fun transformBeforePublish(m: ScaleMeasurement): ScaleMeasurement = m
+    protected open fun transformBeforePublish(m: ScaleMeasurement): ScaleMeasurement {
+        logD("transformBeforePublish called for measurement: $m")
+        return m
+    }
 
     protected fun saveUserIdForScaleIndex(scaleIndex: Int, appUserId: Int) {
+        logD("Saving appUserId=$appUserId for scaleIndex=$scaleIndex")
         settingsPutInt("userMap/userIdByIndex/$scaleIndex", appUserId)
     }
-    protected fun loadUserIdForScaleIndex(scaleIndex: Int): Int =
-        settingsGetInt("userMap/userIdByIndex/$scaleIndex", -1)
+
+    protected fun loadUserIdForScaleIndex(scaleIndex: Int): Int {
+        val userId = settingsGetInt("userMap/userIdByIndex/$scaleIndex", -1)
+        logD("Loaded appUserId=$userId for scaleIndex=$scaleIndex")
+        return userId
+    }
 
     protected fun saveConsentForScaleIndex(scaleIndex: Int, consent: Int) {
+        logD("Saving consent=$consent for scaleIndex=$scaleIndex")
         settingsPutInt("userMap/consentByIndex/$scaleIndex", consent)
     }
-    protected fun loadConsentForScaleIndex(scaleIndex: Int): Int =
-        settingsGetInt("userMap/consentByIndex/$scaleIndex", -1)
 
+    protected fun loadConsentForScaleIndex(scaleIndex: Int): Int {
+        val consent = settingsGetInt("userMap/consentByIndex/$scaleIndex", -1)
+        logD("Loaded consent=$consent for scaleIndex=$scaleIndex")
+        return consent
+    }
 
-    private fun publishTransformed(m: ScaleMeasurement) = publish(transformBeforePublish(m))
-
+    private fun publishTransformed(m: ScaleMeasurement) {
+        logD("Publishing measurement after transform: $m")
+        publish(transformBeforePublish(m))
+    }
     // ---- Auto-consent + UDS list ---------------------------------------------
 
     /** Try to send CONSENT immediately if a persisted mapping/consent exists. */
     private fun tryAutoConsent(user: ScaleUser): Boolean {
-        val idx = findKnownScaleIndexForAppUser(user.id) ?: return false
+        logD("tryAutoConsent called for appUserId=${user.id}")
+
+        val idx = findKnownScaleIndexForAppUser(user.id)
+        if (idx == null) {
+            logD("No known scale index found for appUserId=${user.id}, auto-consent cannot proceed")
+            return false
+        }
+
+        logD("Found known scale index=$idx for appUserId=${user.id}")
+
         val consent = loadConsentForScaleIndex(idx)
+        logD("Loaded consent=$consent for scaleIndex=$idx")
+
         userInfo(R.string.bt_info_using_existing_mapping, user.id, idx)
+
         if (consent == -1) {
+            logD("No consent previously stored for scaleIndex=$idx, requesting consent from user")
             userInfo(R.string.bt_info_consent_needed, idx)
             requestScaleUserConsent(user.id, idx)
         } else {
+            logD("Consent found for scaleIndex=$idx, sending consent automatically")
             sendConsent(idx, consent)
         }
+
+        logD("tryAutoConsent finished for appUserId=${user.id} with result=${consent != -1}")
         return true
     }
 
@@ -218,18 +248,22 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
 
     /** Show a CHOOSE_USER dialog with only a "Create new user…" option. */
     private fun presentCreateOnlyChoice() {
+        logD("Presenting user choice dialog with only 'Create new user' option")
         val items = arrayOf<CharSequence>(resolveString(R.string.bluetooth_scale_info_create_user_instruction))
         val indices = intArrayOf(-1)
         requestUserInteraction(UserInteractionType.CHOOSE_USER, Pair(items, indices))
+        logD("UserInteraction requested: CHOOSE_USER with items=${items.joinToString()} indices=${indices.joinToString()}")
     }
 
     /** Show a CHOOSE_USER dialog built from simple slot indices (+ "Create new"). */
     private fun presentChooseFromIndices(indicesList: List<Int>) {
+        logD("Presenting user choice dialog with existing scale slots: $indicesList and 'Create new'")
         val labels = indicesList.map { "P%02d".format(it) }.toMutableList<CharSequence>()
         val ids = indicesList.toMutableList()
         labels += resolveString(R.string.bluetooth_scale_info_create_user_instruction)
         ids += -1
         requestUserInteraction(UserInteractionType.CHOOSE_USER, Pair(labels.toTypedArray(), ids.toIntArray()))
+        logD("UserInteraction requested: CHOOSE_USER with labels=${labels.joinToString()} ids=${ids.joinToString()}")
     }
 
     // ---- Decoding & merge logic ----------------------------------------------
@@ -436,41 +470,53 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
     // ---- UDS: User Control Point + User data writes ---------------------------
 
     private fun handleUcpIndication(value: ByteArray) {
-        if (value.isEmpty()) return
-        val op = value[0].toInt() and 0xFF
-        if (op != UDS_CP_RESPONSE) {
-            logD("UCP non-response op=0x${op.toString(16)} data=${value.toHex()}")
+        if (value.isEmpty()) {
+            logW("UCP indication received with empty payload")
             return
         }
+
+        val op = value[0].toInt() and 0xFF
+        if (op != UDS_CP_RESPONSE) {
+            logD("UCP indication received with non-response opcode=0x${op.toString(16)} data=${value.toHex()}")
+            return
+        }
+
         if (value.size < 3) {
             logW("UCP response too short: ${value.toHex()}")
             return
         }
-        val reqOp   = value[1].toInt() and 0xFF
-        val result  = value[2].toInt() and 0xFF
+
+        val reqOp  = value[1].toInt() and 0xFF
+        val result = value[2].toInt() and 0xFF
+        logD("UCP response received: reqOp=0x${reqOp.toString(16)} result=$result fullData=${value.toHex()}")
 
         when (reqOp) {
             UDS_CP_REGISTER_NEW_USER -> {
                 if (result == UDS_CP_RESP_VALUE_SUCCESS && value.size >= 4) {
                     val newScaleIndex = value[3].toInt() and 0xFF
                     val appId = pendingAppUserId ?: currentAppUser().id
-                    logD("UDS REGISTER_NEW_USER: created scaleIndex=$newScaleIndex for appUserId=$appId")
+                    logD("UDS REGISTER_NEW_USER success: scaleIndex=$newScaleIndex for appUserId=$appId")
 
                     for (i in 0..255) {
                         if (i != newScaleIndex && loadUserIdForScaleIndex(i) == appId) {
                             saveUserIdForScaleIndex(i, -1)
+                            logD("Cleared previous mapping for scaleIndex=$i and appUserId=$appId")
                         }
                     }
-                    
-                    // Persist mapping & consent (we generated before sending REGISTER)
-                    saveUserIdForScaleIndex(newScaleIndex, appId)
-                    pendingConsentForNewUser?.let { saveConsentForScaleIndex(newScaleIndex, it) }
 
-                    // Push user attributes and consent now
+                    saveUserIdForScaleIndex(newScaleIndex, appId)
+                    pendingConsentForNewUser?.let {
+                        saveConsentForScaleIndex(newScaleIndex, it)
+                        logD("Saved pending consent $it for new scaleIndex=$newScaleIndex")
+                    }
+
+                    logD("Writing user data to scale for new user...")
                     writeUserDataToScale()
+
                     val consent = loadConsentForScaleIndex(newScaleIndex).takeIf { it != -1 }
                         ?: pendingConsentForNewUser ?: randomConsent().also {
                             saveConsentForScaleIndex(newScaleIndex, it)
+                            logD("Generated random consent $it for new scaleIndex=$newScaleIndex")
                         }
                     sendConsent(newScaleIndex, consent)
 
@@ -479,6 +525,7 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
                     pendingAppUserId = null
                     pendingConsentForNewUser = null
                 } else {
+                    logW("UDS REGISTER_NEW_USER failed with result=$result")
                     if (result == UDS_CP_RESP_OPERATION_FAILED) {
                         userWarn(R.string.bt_warn_slots_full)
                     } else {
@@ -489,57 +536,65 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
             }
 
             UDS_CP_CONSENT -> {
-                if (result == UDS_CP_RESP_VALUE_SUCCESS) {
-                    logD("UDS CONSENT: success")
-                    pendingAppUserId = null
-                    if (awaitingReferenceAfterRegister) {
-                        userInfo(R.string.bluetooth_scale_info_step_on_for_reference)
-                        awaitingReferenceAfterRegister = false
+                when (result) {
+                    UDS_CP_RESP_VALUE_SUCCESS -> {
+                        logD("UDS CONSENT success for appUserId=${pendingAppUserId ?: currentAppUser().id}")
+                        pendingAppUserId = null
+                        if (awaitingReferenceAfterRegister) {
+                            userInfo(R.string.bluetooth_scale_info_step_on_for_reference)
+                            awaitingReferenceAfterRegister = false
+                            logD("Prompted user to step on scale for reference measurement")
+                        }
+                        onRequestMeasurement()
+                        logD("onRequestMeasurement() triggered after successful consent")
                     }
-
-                    onRequestMeasurement()
-                } else if (result == UDS_CP_RESP_USER_NOT_AUTHORIZED) {
-                    userError(R.string.bt_error_ucp_not_authorized)
-                    val appId = pendingAppUserId ?: currentAppUser().id
-                    val idx = findKnownScaleIndexForAppUser(appId)
-                    idx?.let { userInfo(R.string.bt_info_consent_needed, it) }
-                } else {
-                    logW("UDS CONSENT: result=$result (unhandled)")
+                    UDS_CP_RESP_USER_NOT_AUTHORIZED -> {
+                        userError(R.string.bt_error_ucp_not_authorized)
+                        val appId = pendingAppUserId ?: currentAppUser().id
+                        val idx = findKnownScaleIndexForAppUser(appId)
+                        idx?.let { userInfo(R.string.bt_info_consent_needed, it) }
+                        logW("UDS CONSENT failed: User not authorized for appUserId=$appId")
+                    }
+                    else -> {
+                        logW("UDS CONSENT unhandled result=$result for appUserId=${pendingAppUserId ?: currentAppUser().id}")
+                    }
                 }
             }
 
             UDS_CP_LIST_ALL_USERS -> {
                 logD("UDS LIST_ALL_USERS response: ${value.toHex()} (result=$result)")
                 if (result == UDS_CP_RESP_VALUE_SUCCESS) {
-                    // Best-effort parsing: [20,04,01, count, idx0, idx1, ...]  (not standardized everywhere)
                     if (value.size >= 4) {
                         val count = value[3].toInt() and 0xFF
+                        logD("LIST_ALL_USERS: user count=$count")
                         if (count > 0 && value.size >= 4 + count) {
                             val indices = mutableListOf<Int>()
                             for (i in 0 until count) {
                                 indices += (value[4 + i].toInt() and 0xFF)
                             }
+                            logD("Available user slots: $indices")
                             presentChooseFromIndices(indices)
                         } else {
-                            // Success but empty → nur "Create new"
+                            logD("LIST_ALL_USERS success but no users found, defaulting to 'Create new'")
                             findKnownScaleIndexForAppUser(currentAppUser().id)?.let { idx ->
                                 saveUserIdForScaleIndex(idx, -1)
+                                logD("Cleared previous mapping for currentAppUserId at scaleIndex=$idx")
                             }
                             presentCreateOnlyChoice()
                         }
                     } else {
-                        // No payload → fallback
+                        logW("LIST_ALL_USERS payload too short, using fallback")
                         presentCreateOnlyChoice()
                     }
                 } else {
-                    // Not supported or failed → read-only Hinweis + nur "Create new"
+                    logW("LIST_ALL_USERS not supported or failed, switching to read-only mode")
                     userInfo(R.string.bt_info_read_only_mode_no_consent)
                     userInfo(R.string.bt_info_suggest_create_new_user)
                     presentCreateOnlyChoice()
                 }
             }
 
-            else -> logW("UCP response for reqOp=0x${reqOp.toString(16)} result=$result data=${value.toHex()}")
+            else -> logW("UCP response received for unknown reqOp=0x${reqOp.toString(16)} result=$result data=${value.toHex()}")
         }
     }
 
@@ -591,6 +646,8 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
         feedbackData: Any,
         uiHandler: Handler
     ) {
+        logD("UserInteractionFeedback received: type=$interactionType appUserId=$appUserId feedbackData=$feedbackData")
+
         when (interactionType) {
             UserInteractionType.CHOOSE_USER -> {
                 val scaleIndex = (feedbackData as? Int)
@@ -600,32 +657,43 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
                 }
 
                 pendingAppUserId = appUserId
+                logD("CHOOSE_USER selected: scaleIndex=$scaleIndex for appUserId=$appUserId")
+
                 if (scaleIndex == -1) {
                     // Create/register new user on the scale
                     val consent = randomConsent().also { pendingConsentForNewUser = it }
                     registeringNewUser = true
+                    logD("Starting registration of new user with appUserId=$appUserId and generated consent=$consent")
                     userInfo(R.string.bt_info_register_new_user_started)
                     sendRegisterNewUser(consent)
                 } else {
                     // Existing slot selected: persist mapping; use stored consent if available
+                    logD("Linking existing scale slot $scaleIndex to appUserId=$appUserId")
                     for (i in 0..255) {
                         if (i != scaleIndex && loadUserIdForScaleIndex(i) == appUserId) {
                             saveUserIdForScaleIndex(i, -1)
+                            logD("Cleared previous mapping for appUserId=$appUserId at scaleIndex=$i")
                         }
                     }
+
                     saveUserIdForScaleIndex(scaleIndex, appUserId)
                     userInfo(R.string.bt_info_linked_app_user_to_slot, appUserId, scaleIndex)
+
                     val consent = loadConsentForScaleIndex(scaleIndex)
                     if (consent == -1) {
+                        logD("No consent found for scaleIndex=$scaleIndex, requesting consent")
                         userInfo(R.string.bt_info_consent_needed, scaleIndex)
                         requestScaleUserConsent(appUserId, scaleIndex)
                     } else {
+                        logD("Found existing consent=$consent for scaleIndex=$scaleIndex, sending to scale")
                         sendConsent(scaleIndex, consent)
                     }
                 }
             }
 
             UserInteractionType.ENTER_CONSENT -> {
+                logD("ENTER_CONSENT feedback received: $feedbackData for appUserId=$appUserId")
+
                 var consent: Int? = null
                 var scaleIndex: Int? = null
 
@@ -642,19 +710,28 @@ open class StandardWeightProfileHandler : ScaleDeviceHandler() {
                     }
                 }
 
-                if (consent == null || consent == -1) return
+                if (consent == null || consent == -1) {
+                    logW("ENTER_CONSENT received invalid consent=$consent, ignoring")
+                    return
+                }
 
                 if (scaleIndex == null) {
                     scaleIndex = findKnownScaleIndexForAppUser(appUserId)
+                    logD("Resolved scaleIndex=$scaleIndex for appUserId=$appUserId from known mapping")
                 }
+
                 if (scaleIndex == null) {
+                    logW("Could not determine scaleIndex for appUserId=$appUserId, suggesting user creation")
                     userInfo(R.string.bt_info_suggest_create_new_user)
                     return
                 }
 
-                saveConsentForScaleIndex(scaleIndex, consent!!)
-                sendConsent(scaleIndex, consent!!)
+                logD("Saving consent=$consent for scaleIndex=$scaleIndex and sending to scale")
+                saveConsentForScaleIndex(scaleIndex, consent)
+                sendConsent(scaleIndex, consent)
             }
+
+            else -> logW("Unhandled UserInteractionType=$interactionType for appUserId=$appUserId")
         }
     }
 
