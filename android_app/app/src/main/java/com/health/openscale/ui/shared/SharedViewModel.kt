@@ -123,6 +123,7 @@ class SharedViewModel @Inject constructor(
     }
 
     private val didRunDerivedBackfill = AtomicBoolean(false)
+    private val _isInitialUserLoadComplete = MutableStateFlow(false)
 
     // --- Users (via UserFacade) ---
     val allUsers: StateFlow<List<User>> =
@@ -153,32 +154,62 @@ class SharedViewModel @Inject constructor(
     }
 
     val overviewUiState: StateFlow<UiState<List<EnrichedMeasurement>>> =
-        selectedUserId.flatMapLatest { uid ->
-            if (uid == null) flowOf(UiState.Success(emptyList()))
-            else measurementFacade.enrichedFlowForUser(uid, measurementTypes)
-                .map< List<EnrichedMeasurement>, UiState<List<EnrichedMeasurement>> > { UiState.Success(it) }
-                .onStart { emit(UiState.Loading) }
-             .catch { emit(UiState.Error(it.message)) }
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), UiState.Loading)
+        _isInitialUserLoadComplete
+            .flatMapLatest { initialAttemptDone ->
+                if (!initialAttemptDone) {
+                    flowOf(UiState.Loading)
+                } else {
+                    userFacade.observeSelectedUserId().flatMapLatest { uidFromFacade ->
+                        if (uidFromFacade == null) {
+                            flowOf(UiState.Success(emptyList()))
+                        } else {
+                            measurementFacade.enrichedFlowForUser(uidFromFacade, measurementTypes)
+                                .map<List<EnrichedMeasurement>, UiState<List<EnrichedMeasurement>>> {
+                                    UiState.Success(it)
+                                }
+                                .onStart { emit(UiState.Loading) }
+                                .catch { emit(UiState.Error(it.message)) }
+                        }
+                    }
+                }
+            }.stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = UiState.Loading
+            )
 
     val graphUiState: StateFlow<UiState<List<EnrichedMeasurement>>> =
-        selectedUserId
-            .flatMapLatest { uid ->
-                if (uid == null) flowOf(UiState.Success(emptyList()))
-                else measurementFacade.pipeline(
-                    userId = uid,
-                    measurementTypesFlow = measurementTypes,
-                    timeRangeFlow = selectedTimeRange,
-                    typesToSmoothFlow = typesToSmoothAndDisplay,
-                    algorithmFlow = selectedSmoothingAlgorithm,
-                    alphaFlow = smoothingAlpha,
-                    windowFlow = smoothingWindowSize
-                )
-                    .map< List<EnrichedMeasurement>, UiState<List<EnrichedMeasurement>> > { UiState.Success(it) }
-                    .onStart { emit(UiState.Loading) }
-                    .catch { emit(UiState.Error(it.message)) }
-            }
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), UiState.Loading)
+        _isInitialUserLoadComplete
+            .flatMapLatest { initialAttemptDone ->
+                if (!initialAttemptDone) {
+                    flowOf(UiState.Loading)
+                } else {
+                    userFacade.observeSelectedUserId().flatMapLatest { uidFromFacade ->
+                        if (uidFromFacade == null) {
+                            flowOf(UiState.Success(emptyList()))
+                        } else {
+                            measurementFacade.pipeline(
+                                userId = uidFromFacade,
+                                measurementTypesFlow = measurementTypes,
+                                timeRangeFlow = selectedTimeRange,
+                                typesToSmoothFlow = typesToSmoothAndDisplay,
+                                algorithmFlow = selectedSmoothingAlgorithm,
+                                alphaFlow = smoothingAlpha,
+                                windowFlow = smoothingWindowSize
+                            )
+                                .map<List<EnrichedMeasurement>, UiState<List<EnrichedMeasurement>>> {
+                                    UiState.Success(it)
+                                }
+                                .onStart { emit(UiState.Loading) }
+                                .catch { emit(UiState.Error(it.message)) }
+                        }
+                    }
+                }
+            }.stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5_000),
+                initialValue = UiState.Loading
+            )
 
     fun statisticsUiState(
         range: TimeRangeFilter
@@ -314,6 +345,7 @@ class SharedViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             userFacade.restoreOrSelectDefaultUser()
                 .onFailure { LogManager.e(TAG, "Failed to restore/select default user: ${it.message}") }
+                .also { _isInitialUserLoadComplete.value = true }
 
             maybeBackfillDerivedValues()
         }

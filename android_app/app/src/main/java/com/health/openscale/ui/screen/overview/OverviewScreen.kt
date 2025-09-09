@@ -427,131 +427,154 @@ fun OverviewScreen(
         sharedViewModel.setTopBarActions(actions)
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        if (selectedUserId == null) {
+    when {
+        // Case 1: Display a global loading indicator.
+        // This remains true as long as the ViewModel's overviewUiState is UiState.Loading.
+        overviewState is SharedViewModel.UiState.Loading ->  {
+            Box(
+                modifier = Modifier.fillMaxSize(), // Occupies the entire available space
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        }
+
+        // Case 2: User restoration is complete (overviewState is not Loading),
+        //         and no user is selected.
+        selectedUserId == null && overviewState !is SharedViewModel.UiState.Loading -> {
             Box(
                 modifier = Modifier
-                    .weight(1f)
-                    .fillMaxSize(),
+                    .fillMaxSize() // Occupies the entire available space
+                    .padding(16.dp),
                 contentAlignment = Alignment.Center
             ) {
                 NoUserSelectedCard(navController = navController)
             }
-            return@Column
         }
 
-        when (val state = overviewState) {
-            SharedViewModel.UiState.Loading -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
-            }
-
-            is SharedViewModel.UiState.Error -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(state.message ?: stringResource(R.string.error_loading_data))
-                }
-            }
-
-            is SharedViewModel.UiState.Success -> {
-                val items = state.data
-
-                if (items.isEmpty()) {
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        NoMeasurementsCard(
-                            navController = navController,
-                            selectedUserId = selectedUserId
-                        )
-                    }
-                } else {
-                    val topId = items.firstOrNull()?.measurementWithValues?.measurement?.id
-                    LaunchedEffect(topId) {
-                        if (topId != null && !listState.isScrollInProgress) {
-                            delay(60)
-                            listState.smartScrollTo(0)
-                        }
-                    }
-
-                    // Chart
-                    Box(modifier = Modifier.fillMaxWidth()) {
-                        LineChart(
-                            sharedViewModel = sharedViewModel,
-                            screenContextName = SettingsPreferenceKeys.OVERVIEW_SCREEN_CONTEXT,
-                            showFilterControls = true,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(200.dp)
-                                .padding(bottom = 8.dp),
-                            showYAxis = false,
-                            onPointSelected = { selectedTs ->
-                                val listForFind = items.map { it.measurementWithValues }
-                                sharedViewModel.findClosestMeasurement(selectedTs, listForFind)
-                                    ?.let { (targetIndex, mwv) ->
-                                        val targetId = mwv.measurement.id
-                                        scope.launch {
-                                            listState.smartScrollTo(
-                                                index = targetIndex
-                                            )
-                                            highlightedMeasurementId = targetId
-                                            delay(600)
-                                            if (highlightedMeasurementId == targetId) highlightedMeasurementId =
-                                                null
-                                        }
-                                    }
+        // Case 3: User restoration is complete (overviewState is not Loading),
+        //         and a user IS selected.
+        selectedUserId != null && overviewState !is SharedViewModel.UiState.Loading -> {
+            Column(modifier = Modifier.fillMaxSize()) {
+                when (val state = overviewState) {
+                    is SharedViewModel.UiState.Success -> {
+                        val items = state.data
+                        if (items.isEmpty()) {
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f) // Takes remaining space in the Column
+                                    .fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                NoMeasurementsCard(
+                                    navController = navController,
+                                    selectedUserId = selectedUserId // Not null here
+                                )
                             }
-                        )
-                    }
+                        } else {
+                            val topId = items.firstOrNull()?.measurementWithValues?.measurement?.id
+                            LaunchedEffect(topId, items.size) { // items.size added as a key
+                                if (topId != null && !listState.isScrollInProgress) {
+                                    delay(60)
+                                    listState.smartScrollTo(0)
+                                }
+                            }
 
-                    HorizontalDivider()
+                            // Chart
+                            Box(modifier = Modifier.fillMaxWidth()) {
+                                LineChart(
+                                    sharedViewModel = sharedViewModel,
+                                    screenContextName = SettingsPreferenceKeys.OVERVIEW_SCREEN_CONTEXT,
+                                    showFilterControls = true,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(200.dp)
+                                        .padding(bottom = 8.dp),
+                                    showYAxis = false,
+                                    onPointSelected = { selectedTs ->
+                                        val listForFind = items.map { it.measurementWithValues }
+                                        sharedViewModel.findClosestMeasurement(selectedTs, listForFind)
+                                            ?.let { (targetIndex, mwv) ->
+                                                val targetId = mwv.measurement.id
+                                                scope.launch {
+                                                    listState.smartScrollTo(
+                                                        index = targetIndex
+                                                    )
+                                                    highlightedMeasurementId = targetId
+                                                    delay(600)
+                                                    if (highlightedMeasurementId == targetId) highlightedMeasurementId =
+                                                        null
+                                                }
+                                            }
+                                    }
+                                )
+                            }
 
-                    LazyColumn(
-                        state = listState,
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxSize()
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        itemsIndexed(
-                            items = items,
-                            key = { _, item -> item.measurementWithValues.measurement.id }
-                        ) { _, enrichedItem ->
-                            MeasurementCard(
-                                sharedViewModel = sharedViewModel,
-                                measurementWithValues = enrichedItem.measurementWithValues,
-                                processedValuesForDisplay = enrichedItem.valuesWithTrend,
-                                userEvaluationContext = userEvalContext,
-                                onEdit = {
-                                    navController.navigate(
-                                        Routes.measurementDetail(
-                                            enrichedItem.measurementWithValues.measurement.id,
-                                            selectedUserId!!
-                                        )
+                            HorizontalDivider()
+
+                            LazyColumn(
+                                state = listState,
+                                modifier = Modifier
+                                    .weight(1f) // Takes remaining space in the Column
+                                    .fillMaxSize()
+                                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                itemsIndexed(
+                                    items = items,
+                                    key = { _, item -> item.measurementWithValues.measurement.id }
+                                ) { _, enrichedItem ->
+                                    MeasurementCard(
+                                        sharedViewModel = sharedViewModel,
+                                        measurementWithValues = enrichedItem.measurementWithValues,
+                                        processedValuesForDisplay = enrichedItem.valuesWithTrend,
+                                        userEvaluationContext = userEvalContext, // Ensure this is available
+                                        onEdit = {
+                                            navController.navigate(
+                                                Routes.measurementDetail(
+                                                    enrichedItem.measurementWithValues.measurement.id,
+                                                    selectedUserId!! // Not null here
+                                                )
+                                            )
+                                        },
+                                        onDelete = {
+                                            sharedViewModel.deleteMeasurement(enrichedItem.measurementWithValues.measurement)
+                                        },
+                                        isHighlighted = (highlightedMeasurementId == enrichedItem.measurementWithValues.measurement.id)
                                     )
-                                },
-                                onDelete = {
-                                    sharedViewModel.deleteMeasurement(enrichedItem.measurementWithValues.measurement)
-                                },
-                                isHighlighted = (highlightedMeasurementId == enrichedItem.measurementWithValues.measurement.id)
-                            )
+                                }
+                            }
+                        }
+                    }
+                    is SharedViewModel.UiState.Error -> {
+                        Box(
+                            modifier = Modifier
+                                .weight(1f) // Takes remaining space in the Column
+                                .fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(state.message ?: stringResource(R.string.error_loading_data))
+                        }
+                    }
+                    SharedViewModel.UiState.Loading -> {
+                        // This case should ideally not be reached if the outer 'when' condition is met,
+                        // or only very briefly if data for a specific user is loading.
+                        Box(
+                            modifier = Modifier
+                                .weight(1f) // Takes remaining space in the Column
+                                .fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
                         }
                     }
                 }
+            }
+        }
+        else -> {
+            // Fallback for any unhandled state combination.
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { // Occupies the entire available space
+                Text("Unexpected state")
             }
         }
     }

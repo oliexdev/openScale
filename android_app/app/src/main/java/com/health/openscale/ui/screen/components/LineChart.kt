@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -32,6 +33,7 @@ import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
 import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
@@ -143,6 +145,7 @@ fun LineChart(
     targetMeasurementTypeId: Int? = null,
     onPointSelected: (timestamp: Long) -> Unit = {}
 ) {
+    val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
     val showTypeFilterRowSetting by rememberContextualBooleanSetting(
@@ -190,22 +193,30 @@ fun LineChart(
         currentSelectedTypeIdsStrings.mapNotNull { stringId: String -> stringId.toIntOrNull() }.toSet()
     }
 
+    // Flows to provide current filter state to the ViewModel's data fetching logic
     val timeRangeFlow = remember { MutableStateFlow(uiSelectedTimeRange) }
-    LaunchedEffect(uiSelectedTimeRange) {
-        timeRangeFlow.value = uiSelectedTimeRange
-    }
+    LaunchedEffect(uiSelectedTimeRange) { timeRangeFlow.value = uiSelectedTimeRange }
 
     val typesToSmoothFlow = remember { MutableStateFlow(currentSelectedTypeIntIds) }
-    LaunchedEffect(currentSelectedTypeIntIds) {
-        typesToSmoothFlow.value = currentSelectedTypeIntIds
-    }
+    LaunchedEffect(currentSelectedTypeIntIds) { typesToSmoothFlow.value = currentSelectedTypeIntIds }
+
+    // State for managing chart data loading
+    var isChartDataLoading by remember { mutableStateOf(true) }
+    val initialChartDataValue = remember { emptyList<EnrichedMeasurement>() }
 
     val smoothedData by sharedViewModel
         .smoothedEnrichedMeasurements(
             timeRangeFlow = timeRangeFlow,
             typesToSmoothAndDisplayFlow = typesToSmoothFlow
         )
-        .collectAsStateWithLifecycle(initialValue = emptyList<EnrichedMeasurement>())
+        .collectAsStateWithLifecycle(initialValue = initialChartDataValue)
+
+    // Update loading state once data (or an empty list after loading) is received
+    LaunchedEffect(smoothedData) {
+        if (smoothedData !== initialChartDataValue) {
+            isChartDataLoading = false
+        }
+    }
 
     val fullyFilteredEnrichedMeasurements = remember(smoothedData, currentSelectedTypeIntIds) {
         sharedViewModel.filterEnrichedMeasurementsByTypes(smoothedData, currentSelectedTypeIntIds)
@@ -278,7 +289,6 @@ fun LineChart(
             )
         }
 
-
         if (showFilterTitle) {
             Row(
                 modifier = Modifier
@@ -296,7 +306,7 @@ fun LineChart(
                 Text(
                     text = stringResource(
                         R.string.line_chart_filter_title_template,
-                        uiSelectedTimeRange.getDisplayName(LocalContext.current),
+                        uiSelectedTimeRange.getDisplayName(context),
                         measurementsWithValues.size
                     ),
                     style = MaterialTheme.typography.bodyMedium,
@@ -305,43 +315,32 @@ fun LineChart(
             }
         }
 
-        // Early exit if there's absolutely nothing to do (no plotable types AND no data AND filter not visible)
-        // This is a general "empty state" for the chart area.
-        if (lineTypesToActuallyPlot.isEmpty() && measurementsWithValues.isEmpty() && !effectiveShowTypeFilterRow && targetMeasurementTypeId == null) {
-            Box(
-                modifier = Modifier
-                    .weight(1f) // Takes up available vertical space in the Column
-                    .fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    // Provide a more specific message if no types are plottable at all.
-                    if (allAvailableMeasurementTypes.none { it.isEnabled && (it.inputType == InputFieldType.FLOAT || it.inputType == InputFieldType.INT) })
-                        stringResource(R.string.line_chart_no_plottable_types)
-                    else stringResource(R.string.line_chart_no_data_to_display)
-                )
-            }
-            return@Column // Exits the Column Composable early
-        }else if (lineTypesToActuallyPlot.isEmpty() && measurementsWithValues.isEmpty() && targetMeasurementTypeId != null) {
-            // Specific empty state when a target type is specified, but no data exists for it.
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    stringResource(
+        var showNoDataMessage by remember { mutableStateOf(false) }
+        var noDataMessageText by remember { mutableStateOf("") }
+
+        LaunchedEffect(
+            isChartDataLoading, lineTypesToActuallyPlot, measurementsWithValues,
+            effectiveShowTypeFilterRow, targetMeasurementTypeId, allAvailableMeasurementTypes
+        ) {
+            if (!isChartDataLoading) {
+                if (lineTypesToActuallyPlot.isEmpty() && measurementsWithValues.isEmpty() && !effectiveShowTypeFilterRow && targetMeasurementTypeId == null) {
+                    showNoDataMessage = true
+                    noDataMessageText = if (allAvailableMeasurementTypes.none { it.isEnabled && (it.inputType == InputFieldType.FLOAT || it.inputType == InputFieldType.INT) })
+                        context.getString(R.string.line_chart_no_plottable_types)
+                    else context.getString(R.string.line_chart_no_data_to_display)
+                } else if (lineTypesToActuallyPlot.isEmpty() && measurementsWithValues.isEmpty() && targetMeasurementTypeId != null) {
+                    showNoDataMessage = true
+                    noDataMessageText = context.getString(
                         R.string.line_chart_no_data_for_type_in_range,
-                        allAvailableMeasurementTypes.find { it.id == targetMeasurementTypeId }?.getDisplayName(LocalContext.current)
-                            ?: stringResource(R.string.line_chart_this_type_placeholder)
-                    ),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center
-                )
+                        allAvailableMeasurementTypes.find { it.id == targetMeasurementTypeId }?.getDisplayName(context)
+                            ?: context.getString(R.string.line_chart_this_type_placeholder)
+                    )
+                } else {
+                    showNoDataMessage = false
+                }
+            } else {
+                showNoDataMessage = false
             }
-            return@Column
         }
 
         // State to hold the processed series data for the chart.
@@ -388,231 +387,222 @@ fun LineChart(
             }
         }
 
-        // Second check: if after processing, no series are available to plot (e.g., data existed but not for selected types).
-        if (seriesEntries.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .weight(1f) // Takes up available vertical space
-                    .fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                val message = if (lineTypesToActuallyPlot.isEmpty() && effectiveShowTypeFilterRow) {
-                    // Filter row is visible, but either nothing is selected or no data for selection.
-                    if (measurementsWithValues.isEmpty() && currentSelectedTypeIntIds.isNotEmpty()) stringResource(R.string.line_chart_no_data_for_selected_types)
-                    else if (measurementsWithValues.isEmpty()) stringResource(R.string.line_chart_no_data_to_display)
-                    else stringResource(R.string.line_chart_please_select_types)
-                } else if (lineTypesToActuallyPlot.isEmpty()) {
-                    // Filter not visible and no types to plot (likely because default is empty or no plottable types overall).
-                    if (allAvailableMeasurementTypes.none { it.isEnabled && (it.inputType == InputFieldType.FLOAT || it.inputType == InputFieldType.INT) })
-                        stringResource(R.string.line_chart_no_plottable_types)
-                    else stringResource(R.string.line_chart_no_data_or_types_to_select)
-                } else if (measurementsWithValues.isEmpty()){ // Types selected, but no data entries at all.
-                    stringResource(R.string.line_chart_no_data_to_display)
+        when {
+            isChartDataLoading -> {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
                 }
-                else { // Types selected, data exists, but not for these specific types.
-                    stringResource(R.string.line_chart_no_data_for_selected_types)
+            }
+            showNoDataMessage -> {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = noDataMessageText,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center
+                    )
                 }
-                Text(
-                    text = message,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center
-                )
             }
-            return@Column // Exits the Column Composable early
-        }
+            seriesEntries.isEmpty() -> {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    val message = if (lineTypesToActuallyPlot.isEmpty() && effectiveShowTypeFilterRow) {
+                        if (currentSelectedTypeIntIds.isNotEmpty() && smoothedData.none { m -> m.measurementWithValues.values.any { v -> v.type.id in currentSelectedTypeIntIds } }) {
+                            stringResource(R.string.line_chart_no_data_for_selected_types)
+                        } else if (currentSelectedTypeIntIds.isEmpty()){
+                            stringResource(R.string.line_chart_please_select_types)
+                        } else {
+                            stringResource(R.string.line_chart_no_data_to_display)
+                        }
+                    } else if (lineTypesToActuallyPlot.isEmpty()) {
+                        if (allAvailableMeasurementTypes.none { it.isEnabled && (it.inputType == InputFieldType.FLOAT || it.inputType == InputFieldType.INT) })
+                            stringResource(R.string.line_chart_no_plottable_types)
+                        else stringResource(R.string.line_chart_no_data_or_types_to_select)
+                    } else if (smoothedData.isEmpty() && measurementsWithValues.isEmpty() && currentSelectedTypeIntIds.isNotEmpty()){
+                        stringResource(R.string.line_chart_no_data_to_display)
+                    }
+                    else {
+                        stringResource(R.string.line_chart_no_data_for_selected_types)
+                    }
+                    Text(
+                        text = message,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+            else -> {
+                val seriesEntriesForStartAxis = remember(seriesEntries) {
+                    seriesEntries.filter { (type, _) -> !type.isOnRightYAxis }
+                }
+                val typeColorsForStartAxis = remember(seriesEntriesForStartAxis) {
+                    seriesEntriesForStartAxis.map { (type, _) -> if (type.color != 0) Color(type.color) else Color.Gray }
+                }
 
-        val seriesEntriesForStartAxis = remember(seriesEntries) {
-            seriesEntries.filter { (type, _) ->
-                !type.isOnRightYAxis
-            }
-        }
-        val typeColorsForStartAxis = remember(seriesEntriesForStartAxis) {
-            seriesEntriesForStartAxis.map { (type, _) ->
-                if (type.color != 0) Color(type.color) else Color.Gray
-            }
-        }
+                val seriesEntriesForEndAxis = remember(seriesEntries) {
+                    seriesEntries.filter { (type, _) -> type.isOnRightYAxis }
+                }
+                val typeColorsForEndAxis = remember(seriesEntriesForEndAxis) {
+                    seriesEntriesForEndAxis.map { (type, _) -> if (type.color != 0) Color(type.color) else Color.Gray }
+                }
 
-        val seriesEntriesForEndAxis = remember(seriesEntries) {
-            seriesEntries.filter { (type, _) ->
-                type.isOnRightYAxis
-            }
-        }
-        val typeColorsForEndAxis = remember(seriesEntriesForEndAxis) {
-            seriesEntriesForEndAxis.map { (type, _) ->
-                if (type.color != 0) Color(type.color) else Color.Gray
-            }
-        }
+                val modelProducer = remember { CartesianChartModelProducer() }
 
-        val modelProducer = remember { CartesianChartModelProducer() }
-
-        LaunchedEffect(seriesEntriesForStartAxis, seriesEntriesForEndAxis, xToDatesMapForStore) {
-            if (seriesEntriesForStartAxis.isNotEmpty() || seriesEntriesForEndAxis.isNotEmpty()) {
-                modelProducer.runTransaction {
-                    if (seriesEntriesForStartAxis.isNotEmpty()) {
-                        lineSeries {
-                            seriesEntriesForStartAxis.forEach { (_, sortedDateValuePairs) ->
-                                val xValues = sortedDateValuePairs.map { it.first.toEpochDay().toFloat() }
-                                val yValues = sortedDateValuePairs.map { it.second }
-                                if (xValues.isNotEmpty()) {
-                                    series(x = xValues, y = yValues)
+                LaunchedEffect(seriesEntriesForStartAxis, seriesEntriesForEndAxis, xToDatesMapForStore) {
+                    if (seriesEntriesForStartAxis.isNotEmpty() || seriesEntriesForEndAxis.isNotEmpty()) {
+                        modelProducer.runTransaction {
+                            if (seriesEntriesForStartAxis.isNotEmpty()) {
+                                lineSeries {
+                                    seriesEntriesForStartAxis.forEach { (_, sortedDateValuePairs) ->
+                                        val xValues = sortedDateValuePairs.map { it.first.toEpochDay().toFloat() }
+                                        val yValues = sortedDateValuePairs.map { it.second }
+                                        if (xValues.isNotEmpty()) series(x = xValues, y = yValues)
+                                    }
                                 }
                             }
-                        }
-                    }
-
-                    if (seriesEntriesForEndAxis.isNotEmpty()) {
-                        lineSeries {
-                            seriesEntriesForEndAxis.forEach { (_, sortedDateValuePairs) ->
-                                val xValues = sortedDateValuePairs.map { it.first.toEpochDay().toFloat() }
-                                val yValues = sortedDateValuePairs.map { it.second }
-                                if (xValues.isNotEmpty()) {
-                                    series(x = xValues, y = yValues)
+                            if (seriesEntriesForEndAxis.isNotEmpty()) {
+                                lineSeries {
+                                    seriesEntriesForEndAxis.forEach { (_, sortedDateValuePairs) ->
+                                        val xValues = sortedDateValuePairs.map { it.first.toEpochDay().toFloat() }
+                                        val yValues = sortedDateValuePairs.map { it.second }
+                                        if (xValues.isNotEmpty()) series(x = xValues, y = yValues)
+                                    }
                                 }
                             }
+                            extras { it[X_TO_DATE_MAP_KEY] = xToDatesMapForStore }
+                        }
+                    } else {
+                        modelProducer.runTransaction {
+                            lineSeries {} // Clear primary series
+                            lineSeries {} // Clear secondary series
+                            extras { it.remove(X_TO_DATE_MAP_KEY) }
                         }
                     }
-                    extras { it[X_TO_DATE_MAP_KEY] = xToDatesMapForStore }
                 }
-            } else {
-                modelProducer.runTransaction {
-                    lineSeries {}
-                    lineSeries {}
-                    extras { it.remove(X_TO_DATE_MAP_KEY) }
+
+                val scrollState = rememberVicoScrollState()
+                val zoomState = rememberVicoZoomState(zoomEnabled = true, initialZoom = Zoom.Content)
+                val xAxisValueFormatter = rememberXAxisValueFormatter(X_TO_DATE_MAP_KEY, DATE_FORMATTER)
+                val yAxisValueFormatter = CartesianValueFormatter.decimal()
+
+                val xAxis = if (targetMeasurementTypeId == null) {
+                    HorizontalAxis.rememberBottom(valueFormatter = xAxisValueFormatter, guideline = null)
+                } else null
+
+                val rangeProvider = remember {
+                    object : CartesianLayerRangeProvider {
+                        override fun getMinY(minY: Double, maxY: Double, extraStore: ExtraStore): Double {
+                            val r = maxY - minY
+                            return if (r == 0.0) minY - 1.0 else floor(minY - 0.1 * r)
+                        }
+                        override fun getMaxY(minY: Double, maxY: Double, extraStore: ExtraStore): Double {
+                            val r = maxY - minY
+                            return if (r == 0.0) maxY + 1.0 else ceil(maxY + 0.1 * r)
+                        }
+                    }
                 }
-            }
-        }
 
-        val scrollState = rememberVicoScrollState()
-        val zoomState = rememberVicoZoomState(
-            zoomEnabled = true,
-            initialZoom = Zoom.Content, // Zoom to fit content initially
-        )
+                val startYAxis = if (showYAxis) VerticalAxis.rememberStart(valueFormatter = yAxisValueFormatter) else null
+                val endYAxis = if (showYAxis) VerticalAxis.rememberEnd(valueFormatter = yAxisValueFormatter) else null
 
-        val xAxisValueFormatter = rememberXAxisValueFormatter(X_TO_DATE_MAP_KEY, DATE_FORMATTER)
-        val yAxisValueFormatter = CartesianValueFormatter.decimal() // Standard decimal formatting for Y-axis
-
-        // Conditionally create X-axis; hide if a specific targetMeasurementTypeId is set (for cleaner detail view).
-        val xAxis = if (targetMeasurementTypeId == null) {
-            HorizontalAxis.rememberBottom(
-                valueFormatter = xAxisValueFormatter,
-                guideline = null, // No guideline for X-axis for cleaner look
-            )
-        } else {
-            null // Hide X-axis when showing a single, targeted measurement type
-        }
-
-        val rangeProvider = remember {
-            object : CartesianLayerRangeProvider {
-                override fun getMinY(minY: Double, maxY: Double, extraStore: ExtraStore): Double {
-                    val r = maxY - minY
-                    return if (r == 0.0) minY - 1.0 else floor(minY - 0.1 * r)
+                val lineProviderForStartAxis = remember(seriesEntriesForStartAxis, typeColorsForStartAxis, showDataPointsSetting, targetMeasurementTypeId) {
+                    LineCartesianLayer.LineProvider.series(
+                        seriesEntriesForStartAxis.mapIndexedNotNull { index, _ ->
+                            if (index < typeColorsForStartAxis.size) {
+                                createLineSpec(typeColorsForStartAxis[index], targetMeasurementTypeId != null, showDataPointsSetting)
+                            } else null
+                        }
+                    )
                 }
-                override fun getMaxY(minY: Double, maxY: Double, extraStore: ExtraStore): Double {
-                    val r = maxY - minY
-                    return if (r == 0.0) maxY + 1.0 else ceil(maxY + 0.1 * r)
+                val lineLayerForStartAxis = if (seriesEntriesForStartAxis.isNotEmpty()) {
+                    rememberLineCartesianLayer(
+                        lineProvider = lineProviderForStartAxis,
+                        verticalAxisPosition = Axis.Position.Vertical.Start,
+                        rangeProvider = rangeProvider
+                    )
+                } else null
+
+                val lineProviderForEndAxis = remember(seriesEntriesForEndAxis, typeColorsForEndAxis, showDataPointsSetting, targetMeasurementTypeId) {
+                    LineCartesianLayer.LineProvider.series(
+                        seriesEntriesForEndAxis.mapIndexedNotNull { index, _ ->
+                            if (index < typeColorsForEndAxis.size) {
+                                createLineSpec(
+                                    color = typeColorsForEndAxis[index],
+                                    statisticsMode = targetMeasurementTypeId != null,
+                                    showPoints = showDataPointsSetting
+                                )
+                            } else null
+                        }
+                    )
                 }
-            }
-        }
+                val lineLayerForEndAxis = if (seriesEntriesForEndAxis.isNotEmpty()) {
+                    rememberLineCartesianLayer(
+                        lineProvider = lineProviderForEndAxis,
+                        verticalAxisPosition = Axis.Position.Vertical.End,
+                        rangeProvider = rangeProvider
+                    )
+                } else null
 
-        // Conditionally create Y-axis.
-        val startYAxis = if (showYAxis) {
-            VerticalAxis.rememberStart(valueFormatter = yAxisValueFormatter)
-        } else { null }
-
-        val endYAxis = if (showYAxis) {
-            VerticalAxis.rememberEnd(valueFormatter = yAxisValueFormatter)
-        } else { null }
-
-        val lineProviderForStartAxis = remember(seriesEntriesForStartAxis, typeColorsForStartAxis) {
-            LineCartesianLayer.LineProvider.series(
-                seriesEntriesForStartAxis.mapIndexedNotNull { index, _ ->
-                    if (index < typeColorsForStartAxis.size) {
-                        createLineSpec(
-                            color = typeColorsForStartAxis[index],
-                            statisticsMode = targetMeasurementTypeId != null,
-                            showPoints = showDataPointsSetting
-                        )
-                    } else null
+                val layers : List<LineCartesianLayer> = remember(lineLayerForStartAxis, lineLayerForEndAxis) {
+                    listOfNotNull(lineLayerForStartAxis, lineLayerForEndAxis)
                 }
-            )
-        }
-        val lineLayerForStartAxis = if (seriesEntriesForStartAxis.isNotEmpty()) {
-            rememberLineCartesianLayer(
-                lineProvider = lineProviderForStartAxis,
-                verticalAxisPosition = Axis.Position.Vertical.Start,
-                rangeProvider = rangeProvider
-            )
-        } else {
-            null
-        }
 
-        val lineProviderForEndAxis = remember(seriesEntriesForEndAxis, typeColorsForEndAxis) {
-            LineCartesianLayer.LineProvider.series(
-                seriesEntriesForEndAxis.mapIndexedNotNull { index, _ ->
-                    if (index < typeColorsForEndAxis.size) {
-                        createLineSpec(
-                            color = typeColorsForEndAxis[index],
-                            statisticsMode = targetMeasurementTypeId != null,
-                            showPoints = showDataPointsSetting
-                        )
-                    } else null
+                val lastX = remember { mutableStateOf<Float?>(null) }
+                val markerVisibilityListener = remember(xToDatesMapForStore, onPointSelected) {
+                    object : CartesianMarkerVisibilityListener {
+                        override fun onShown(marker: CartesianMarker, targets: List<CartesianMarker.Target>) {
+                            lastX.value = targets.lastOrNull()?.x?.toFloat()
+                        }
+                        override fun onUpdated(marker: CartesianMarker, targets: List<CartesianMarker.Target>) {
+                            lastX.value = targets.lastOrNull()?.x?.toFloat()
+                        }
+                        override fun onHidden(marker: CartesianMarker) {
+                            val x = lastX.value ?: return
+                            val date = xToDatesMapForStore[x] ?: LocalDate.ofEpochDay(x.toLong())
+                            val timestamp = date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                            onPointSelected(timestamp)
+                        }
+                    }
                 }
-            )
-        }
-        val lineLayerForEndAxis = if (seriesEntriesForEndAxis.isNotEmpty()) {
-            rememberLineCartesianLayer(
-                lineProvider = lineProviderForEndAxis,
-                verticalAxisPosition = Axis.Position.Vertical.End,
-                rangeProvider = rangeProvider
+
+                val chart = rememberCartesianChart(
+                    layers = layers.toTypedArray(),
+                    startAxis = startYAxis,
+                    bottomAxis = xAxis,
+                    endAxis = endYAxis,
+                    marker = rememberMarker(),
+                    markerVisibilityListener = markerVisibilityListener
                 )
-        } else {
-            null
-        }
 
-        val layers : List<LineCartesianLayer> = remember(lineLayerForStartAxis, lineLayerForEndAxis) {
-            listOfNotNull(lineLayerForStartAxis, lineLayerForEndAxis)
-        }
-
-        val lastX = remember { mutableStateOf<Float?>(null) }
-
-        val markerVisibilityListener = remember(xToDatesMapForStore) {
-            object : CartesianMarkerVisibilityListener {
-                override fun onShown(marker: CartesianMarker, targets: List<CartesianMarker.Target>) {
-                    lastX.value = targets.lastOrNull()?.x?.toFloat()
-                }
-                override fun onUpdated(marker: CartesianMarker, targets: List<CartesianMarker.Target>) {
-                    lastX.value = targets.lastOrNull()?.x?.toFloat()
-                }
-                override fun onHidden(marker: CartesianMarker) {
-                    val x = lastX.value ?: return
-                    val date = xToDatesMapForStore[x] ?: LocalDate.ofEpochDay(x.toLong())
-                    val timestamp = date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-                    onPointSelected(timestamp)
-                }
+                CartesianChartHost(
+                    chart = chart,
+                    modelProducer = modelProducer,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    scrollState = scrollState,
+                    zoomState = zoomState
+                )
             }
         }
-
-        val chart = rememberCartesianChart(
-            layers = layers.toTypedArray(),
-            startAxis = startYAxis, // left Y-axis
-            bottomAxis = xAxis,  // X-axis
-            endAxis = endYAxis, // right Y-axis
-            marker = rememberMarker(), // Interactive marker for data points
-            markerVisibilityListener = markerVisibilityListener
-        )
-
-        CartesianChartHost(
-            chart = chart,
-            modelProducer = modelProducer,
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f), // Occupy available vertical space
-            scrollState = scrollState,
-            zoomState = zoomState
-        )
     }
 }
+
 
 /**
  * Provides a [SharedViewModel.TopBarAction] for filtering the line chart.
