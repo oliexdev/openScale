@@ -28,5 +28,6 @@ data class User(
     val birthDate: Long,
     val gender: GenderType,
     val heightCm: Float,
-    val activityLevel: ActivityLevel
+    val activityLevel: ActivityLevel,
+    val useAssistedWeighing: Boolean
 )

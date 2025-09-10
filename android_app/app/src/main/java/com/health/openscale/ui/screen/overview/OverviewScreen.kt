@@ -18,6 +18,7 @@
 package com.health.openscale.ui.screen.overview
 
 import android.Manifest
+import android.R.id.message
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.content.Context
@@ -106,10 +107,11 @@ import com.health.openscale.R
 import com.health.openscale.core.data.ConnectionStatus
 import com.health.openscale.core.data.EvaluationState
 import com.health.openscale.core.data.InputFieldType
+import com.health.openscale.core.data.MeasurementTypeIcon
 import com.health.openscale.core.data.Trend
+import com.health.openscale.core.data.User
 import com.health.openscale.core.model.MeasurementWithValues
 import com.health.openscale.core.facade.SettingsPreferenceKeys
-import com.health.openscale.core.service.MeasurementEvaluator
 import com.health.openscale.core.model.UserEvaluationContext
 import com.health.openscale.core.model.ValueWithDifference
 import com.health.openscale.core.utils.LocaleUtils
@@ -120,12 +122,9 @@ import com.health.openscale.ui.shared.SharedViewModel
 import com.health.openscale.ui.screen.settings.BluetoothViewModel
 import com.health.openscale.ui.screen.components.LineChart
 import com.health.openscale.ui.screen.components.provideFilterTopBarAction
+import com.health.openscale.ui.screen.dialog.UserInputDialog
 import com.health.openscale.ui.shared.TopBarAction
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.drop
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import java.text.DateFormat
 import java.text.SimpleDateFormat
@@ -157,7 +156,9 @@ fun determineBluetoothTopBarAction(
     sharedViewModel: SharedViewModel,
     currentDeviceName: String?,
     permissionsLauncher: ManagedActivityResultLauncher<Array<String>, Map<String, @JvmSuppressWildcards Boolean>>,
-    enableBluetoothLauncher: ManagedActivityResultLauncher<Intent, ActivityResult>
+    enableBluetoothLauncher: ManagedActivityResultLauncher<Intent, ActivityResult>,
+    currentUserForAssistedWeighing: User?,
+    onShowReferenceDialog: (user: User) -> Unit
 ): TopBarAction? {
 
     val deviceNameForMessage = currentDeviceName ?: context.getString(R.string.fallback_device_name_saved_scale)
@@ -209,6 +210,7 @@ fun determineBluetoothTopBarAction(
             icon = Icons.Default.Bluetooth,
             contentDescription = context.getString(R.string.bluetooth_action_no_scale_saved_desc),
             onClick = {
+                sharedViewModel.setPendingReferenceUserForBle(null)
                 sharedViewModel.showSnackbar(
                     message = context.getString(R.string.snackbar_bluetooth_no_scale_saved),
                     duration = SnackbarDuration.Short
@@ -222,6 +224,7 @@ fun determineBluetoothTopBarAction(
             icon = Icons.Filled.BluetoothConnected,
             contentDescription = context.getString(R.string.bluetooth_action_disconnect_desc, deviceNameForMessage),
             onClick = {
+                sharedViewModel.setPendingReferenceUserForBle(null)
                 bluetoothViewModel.disconnectDevice()
                 sharedViewModel.showSnackbar(
                     message = context.getString(R.string.snackbar_bluetooth_disconnecting_from, deviceNameForMessage),
@@ -253,11 +256,18 @@ fun determineBluetoothTopBarAction(
                     return@onClick
                 }
 
-                sharedViewModel.showSnackbar(
-                    message = context.getString(R.string.snackbar_bluetooth_attempting_connection, deviceNameForMessage),
-                    duration = SnackbarDuration.Short
-                )
-                bluetoothViewModel.connectToSavedDevice()
+                if (currentUserForAssistedWeighing != null && currentUserForAssistedWeighing.useAssistedWeighing) {
+                    sharedViewModel.setPendingReferenceUserForBle(null)
+                    onShowReferenceDialog(currentUserForAssistedWeighing)
+                } else {
+                    sharedViewModel.setPendingReferenceUserForBle(null)
+
+                    sharedViewModel.showSnackbar(
+                        message = context.getString(R.string.snackbar_bluetooth_attempting_connection, deviceNameForMessage),
+                        duration = SnackbarDuration.Short
+                    )
+                    bluetoothViewModel.connectToSavedDevice()
+                }
             }
         )
 
@@ -266,6 +276,7 @@ fun determineBluetoothTopBarAction(
             icon = Icons.Default.Bluetooth,
             contentDescription = context.getString(R.string.bluetooth_action_check_settings_desc),
             onClick = {
+                sharedViewModel.setPendingReferenceUserForBle(null)
                 sharedViewModel.showSnackbar(
                     message = context.getString(R.string.snackbar_bluetooth_check_settings),
                     duration = SnackbarDuration.Short
@@ -321,6 +332,9 @@ fun OverviewScreen(
     }
 
     val userEvalContext by sharedViewModel.userEvaluationContext.collectAsState()
+    var showReferenceDialogForUser by remember { mutableStateOf<User?>(null) }
+    val allUsers by sharedViewModel.allUsers.collectAsState(initial = emptyList())
+    val currentSelectedUser by sharedViewModel.selectedUser.collectAsState()
 
     // --- End of reverted chart selection logic ---
 
@@ -373,7 +387,46 @@ fun OverviewScreen(
         }
     }
 
+    showReferenceDialogForUser?.let { currentTargetUser ->
+        val availableReferenceUsers = allUsers.filter { user ->
+            user.id != currentTargetUser.id && !user.useAssistedWeighing
+        }
+        if (availableReferenceUsers.isEmpty()) {
+            LaunchedEffect(currentTargetUser) {
+                sharedViewModel.showSnackbar(messageResId = R.string.error_no_reference_users_available)
+                showReferenceDialogForUser = null
+                sharedViewModel.setPendingReferenceUserForBle(null)
+            }
+        } else {
+            UserInputDialog(
+                title = stringResource(R.string.dialog_title_select_reference_user_for, currentTargetUser.name),
+                users = availableReferenceUsers,
+                initialSelectedId = availableReferenceUsers.firstOrNull()?.id,
+                measurementIcon = MeasurementTypeIcon.IC_USER,
+                iconBackgroundColor = MaterialTheme.colorScheme.primaryContainer,
+                onDismiss = {
+                    showReferenceDialogForUser = null
+                    sharedViewModel.setPendingReferenceUserForBle(null)
+                },
+                onConfirm = { selectedUserId ->
+                    showReferenceDialogForUser = null
+                    val selectedReferenceUser = availableReferenceUsers.find { it.id == selectedUserId }
+                    if (selectedReferenceUser != null) {
+                        sharedViewModel.setPendingReferenceUserForBle(selectedReferenceUser)
 
+                        val deviceNameForMessage = savedDeviceNameString
+                        sharedViewModel.showSnackbar(
+                            message = context.getString(R.string.snackbar_bluetooth_attempting_connection, deviceNameForMessage),
+                            duration = SnackbarDuration.Short
+                        )
+                        bluetoothViewModel.connectToSavedDevice()
+                    } else {
+                        sharedViewModel.setPendingReferenceUserForBle(null)
+                    }
+                }
+            )
+        }
+    }
 
     // Determine the Bluetooth action for the top bar
     val bluetoothTopBarAction = determineBluetoothTopBarAction(
@@ -386,7 +439,11 @@ fun OverviewScreen(
         sharedViewModel = sharedViewModel,
         currentDeviceName = savedDeviceNameString,
         permissionsLauncher = permissionsLauncher,
-        enableBluetoothLauncher = enableBluetoothLauncher
+        enableBluetoothLauncher = enableBluetoothLauncher,
+        currentUserForAssistedWeighing = currentSelectedUser,
+        onShowReferenceDialog = { user ->
+            showReferenceDialogForUser = user
+        }
     )
 
     // LaunchedEffect to configure the top bar based on the current state

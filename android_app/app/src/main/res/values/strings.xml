@@ -69,6 +69,10 @@
     <string name="gender_male">Male</string>
     <string name="gender_female">Female</string>
     <string name="user_detail_label_activity_level">Activity Level</string>
+    <string name="user_detail_label_assisted_weighting">Assisted Weighing</string>
+    <string name="dialog_title_select_reference_user_for">Select reference person for %1$s</string>
+    <string name="error_no_reference_users_available">No suitable reference persons available. Please create a user who does not use assisted weighing.</string>
+    <string name="error_assisted_weighing_reference_user_missing">A reference person must be selected for assisted weighing.</string>
     <string name="user_detail_label_birth_date">Birth Date</string>
     <string name="user_detail_error_invalid_data">Please enter valid data</string>
     <string name="height_value_cm">%.1f cm</string>

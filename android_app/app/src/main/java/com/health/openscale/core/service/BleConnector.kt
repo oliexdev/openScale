@@ -543,7 +543,7 @@ class BleConnector(
             }
 
             try {
-                val measurementId = measurementFacade.saveMeasurement(newDbMeasurement, values)
+                val measurementId = measurementFacade.saveMeasurementFromBleDevice(newDbMeasurement, values)
                 LogManager.i(
                     TAG,
                     "Measurement from $deviceName for User $currentAppUserId saved (ID: $measurementId). Values: ${values.size}"

@@ -46,6 +46,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
@@ -131,6 +132,7 @@ fun UserDetailScreen(
     val heightUnitsOptions = listOf(UnitType.CM, UnitType.INCH)
 
     var activityLevel by remember { mutableStateOf(user?.activityLevel ?: ActivityLevel.SEDENTARY) }
+    var useAssistedWeighing by remember(user) { mutableStateOf(user?.useAssistedWeighing ?: false) }
 
     val context = LocalContext.current
     val dateFormatter = remember {
@@ -219,7 +221,8 @@ fun UserDetailScreen(
                         birthDate = birthDate,
                         gender = gender,
                         heightCm = finalHeightCm,
-                        activityLevel = activityLevel
+                        activityLevel = activityLevel,
+                        useAssistedWeighing = useAssistedWeighing
                     )
                     settingsViewModel.viewModelScope.launch {
                         if (isEdit) {
@@ -366,6 +369,21 @@ fun UserDetailScreen(
                     )
                 }
             }
+        }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { useAssistedWeighing = !useAssistedWeighing }
+                .padding(vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(stringResource(R.string.user_detail_label_assisted_weighting))
+            Switch(
+                checked = useAssistedWeighing,
+                onCheckedChange = { useAssistedWeighing = it }
+            )
         }
 
         OutlinedTextField(

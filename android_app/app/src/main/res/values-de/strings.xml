@@ -68,6 +68,10 @@
     <string name="gender_male">Männlich</string>
     <string name="gender_female">Weiblich</string>
     <string name="user_detail_label_activity_level">Aktivitätslevel</string>
+    <string name="user_detail_label_assisted_weighting">Unterstütztes Wiegen</string>
+    <string name="dialog_title_select_reference_user_for">Referenzperson für %1$s auswählen</string>
+    <string name="error_no_reference_users_available">Keine geeigneten Referenzpersonen verfügbar. Bitte lege einen Benutzer an, der nicht assistiertes Wiegen nutzt.</string>
+    <string name="error_assisted_weighing_reference_user_missing">Für assistiertes Wiegen muss eine Referenzperson ausgewählt werden.</string>
     <string name="user_detail_label_birth_date">Geburtsdatum</string>
     <string name="user_detail_error_invalid_data">Bitte geben Sie gültige Daten ein</string>
     <string name="height_value_cm">%.1f cm</string>

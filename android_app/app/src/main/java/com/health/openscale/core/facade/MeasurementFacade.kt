@@ -17,12 +17,16 @@
  */
 package com.health.openscale.core.facade
 
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.type
+import androidx.core.graphics.values
 import com.health.openscale.core.data.Measurement
 import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.data.SmoothingAlgorithm
 import com.health.openscale.core.data.TimeRangeFilter
+import com.health.openscale.core.data.User
 import com.health.openscale.core.model.EnrichedMeasurement
 import com.health.openscale.core.service.MeasurementEnricher
 import com.health.openscale.core.usecase.MeasurementCrudUseCases
@@ -34,6 +38,7 @@ import com.health.openscale.core.model.MeasurementWithValues
 import com.health.openscale.core.model.UserEvaluationContext
 import com.health.openscale.core.usecase.MeasurementEvaluationUseCases
 import com.health.openscale.core.usecase.MeasurementTypeCrudUseCases
+import com.health.openscale.core.usecase.UserUseCases
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -58,8 +63,10 @@ class MeasurementFacade @Inject constructor(
     private val crud: MeasurementCrudUseCases,
     private val typeCrud: MeasurementTypeCrudUseCases,
     private val enricher: MeasurementEnricher,
-    private val evaluationUseCases: MeasurementEvaluationUseCases
+    private val evaluationUseCases: MeasurementEvaluationUseCases,
 ) {
+
+    private var pendingReferenceUser: User? = null
 
     fun getMeasurementsForUser(userId: Int): Flow<List<MeasurementWithValues>> {
         return query.getMeasurementsForUser(userId)
@@ -157,6 +164,48 @@ class MeasurementFacade @Inject constructor(
     ) = crud.saveMeasurement(measurement, values)
 
     /**
+     * Saves a measurement from a BLE device, with special handling for assisted weighing.
+     *
+     * If a `pendingReferenceUser` (e.g., a person or known reference weight) is set,
+     * calculates the target's weight (e.g., a pet or infant) by subtracting the
+     * `pendingReferenceUser`'s last known weight from the total weight received.
+     * It then saves only this calculated difference as the target's weight.
+     * The `typeId` for the saved weight is `MeasurementTypeKey.WEIGHT.id` and the
+     * value is stored directly in `floatValue` of a new [MeasurementValue].
+     *
+     * If no `pendingReferenceUser` is set, saves the [measurement] and [values] as is.
+     *
+     * @param measurement The [Measurement] object (for the target entity in assisted mode).
+     * @param values The list of [MeasurementValue] objects from the BLE device
+     *               (representing total weight in assisted mode).
+     */
+    suspend fun saveMeasurementFromBleDevice(
+        measurement: Measurement,
+        values: List<MeasurementValue>
+    ) {
+        val currentReferenceUser = pendingReferenceUser
+        val currentWeight = values.find { it.typeId == MeasurementTypeKey.WEIGHT.id }?.floatValue ?: 0f
+
+        if (currentReferenceUser != null) {
+            val lastReferenceMeasurement = query.getMeasurementsForUser(currentReferenceUser.id).first()
+            val lastReferenceWeight = lastReferenceMeasurement.firstNotNullOfOrNull { measurementWithValues ->
+                measurementWithValues.values.find { mv -> mv.type.key == MeasurementTypeKey.WEIGHT}?.value?.floatValue } ?: 0f
+
+            val diffWeight = currentWeight - lastReferenceWeight
+
+            val diffWeightMeasurementValue = MeasurementValue(
+                measurementId = measurement.id,
+                typeId = MeasurementTypeKey.WEIGHT.id,
+                floatValue = diffWeight,
+            )
+
+            crud.saveMeasurement(measurement, listOf(diffWeightMeasurementValue))
+        } else {
+            crud.saveMeasurement(measurement, values)
+        }
+    }
+
+    /**
      * Deletes a measurement.
      */
     suspend fun deleteMeasurement(
@@ -195,6 +244,17 @@ class MeasurementFacade @Inject constructor(
 
     fun observeSmoothingWindow(): Flow<Int> =
         smooth.observeWindow()
+
+    /**
+     * Sets or clears the pending reference user for the next BLE measurement
+     * that might require assisted weighing.
+     * Call with a User object to set, or null to clear.
+     *
+     * @param referenceUser The user selected as the reference, or null to clear the context.
+     */
+    fun setPendingReferenceUserForBle(referenceUser: User?) {
+        pendingReferenceUser = referenceUser
+    }
 
     /**
      * Create a new measurement type.

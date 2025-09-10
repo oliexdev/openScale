@@ -46,7 +46,7 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(@ApplicationContext ctx: Context): AppDatabase =
         Room.databaseBuilder(ctx, AppDatabase::class.java, AppDatabase.Companion.DATABASE_NAME)
-            .addMigrations(MIGRATION_6_7, MIGRATION_7_8)
+            .addMigrations(MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9)
             .build()
 
     @Provides
@@ -70,7 +70,7 @@ object DatabaseModule {
         MeasurementValue::class,
         MeasurementType::class
     ],
-    version = 8,
+    version = 9,
     exportSchema = true
 )
 @TypeConverters(DatabaseConverters::class)
@@ -269,6 +269,19 @@ val MIGRATION_7_8 = object : Migration(7, 8) {
         db.execSQL("""
             ALTER TABLE `User`
             ADD COLUMN `icon` TEXT NOT NULL DEFAULT '${UserIcon.IC_DEFAULT.name}'
+        """.trimIndent())
+
+        db.execSQL("PRAGMA foreign_keys=ON")
+    }
+}
+
+val MIGRATION_8_9 = object : Migration(8, 9) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("PRAGMA foreign_keys=OFF")
+
+        db.execSQL("""
+            ALTER TABLE `User`
+            ADD COLUMN `useAssistedWeighing` INTEGER NOT NULL DEFAULT 0
         """.trimIndent())
 
         db.execSQL("PRAGMA foreign_keys=ON")

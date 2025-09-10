@@ -340,6 +340,12 @@ class SharedViewModel @Inject constructor(
     fun findClosestMeasurement(selectedTimestamp: Long, items: List<MeasurementWithValues>) =
         measurementFacade.findClosestMeasurement(selectedTimestamp, items)
 
+    fun setPendingReferenceUserForBle(referenceUser: User?) {
+        viewModelScope.launch {
+            measurementFacade.setPendingReferenceUserForBle(referenceUser)
+        }
+    }
+
     // --- Init: restore last selected user or pick first (via UserFacade) ---
     init {
         viewModelScope.launch(Dispatchers.IO) {
