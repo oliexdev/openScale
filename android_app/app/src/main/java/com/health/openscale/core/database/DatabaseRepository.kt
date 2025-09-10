@@ -102,8 +102,13 @@ class DatabaseRepository @Inject constructor(
     suspend fun insertMeasurement(measurement: Measurement): Long {
         LogManager.d(TAG, "Inserting measurement for user id: ${measurement.userId}")
         val id = measurementDao.insert(measurement)
-        LogManager.d(TAG, "New measurement inserted with id: $id. Recalculating derived values.")
-        recalculateDerivedValuesForMeasurement(id.toInt())
+        if (id != -1L) {
+            LogManager.d(TAG,"New measurement inserted with id: $id. Recalculating derived values.")
+            recalculateDerivedValuesForMeasurement(id.toInt())
+        } else {
+            LogManager.i(TAG, "Measurement insertion ignored for user id: ${measurement.userId}, timestamp: ${measurement.timestamp} (likely a duplicate).")
+        }
+
         return id
     }
 
@@ -145,24 +150,32 @@ class DatabaseRepository @Inject constructor(
 
     /**
      * Inserts a list of measurements, each with its associated values,
-     * and returns the IDs of the newly inserted main Measurement records.
+     * and returns the IDs of the newly inserted main Measurement records and the ignored one with timestamps.
      */
-    suspend fun insertMeasurementsWithValues(measurementsData: List<Pair<Measurement, List<MeasurementValue>>>) : List<Long>  {
+    suspend fun insertMeasurementsWithValues(measurementsData: List<Pair<Measurement, List<MeasurementValue>>>) : Pair<List<Long>, List<Long>>  {
         val insertedIds = mutableListOf<Long>()
+        val ignoredIds = mutableListOf<Long>()
+
         LogManager.i(TAG, "Attempting to insert ${measurementsData.size} measurements with their values.")
         withContext(Dispatchers.IO) {
             measurementsData.forEachIndexed { index, (measurement, values) ->
                 try {
-                    LogManager.d(TAG, "Inserting measurement ${index + 1}/${measurementsData.size}, userId: ${measurement.userId}, with ${values.size} values.")
                     val newMeasurementId = measurementDao.insertSingleMeasurementWithItsValues(measurement, values)
-                    insertedIds.add(newMeasurementId)
+                    if (newMeasurementId != -1L) {
+                        insertedIds.add(newMeasurementId)
+                        LogManager.d(TAG,"Inserting measurement ${index + 1}/${measurementsData.size}, userId: ${measurement.userId}, with ${values.size} values.")
+                    }
+                    else {
+                        ignoredIds.add(measurement.timestamp)
+                        LogManager.d(TAG,"Ignored measurement ${index + 1}/${measurementsData.size}, userId: ${measurement.userId}, with ${values.size} values (duplicated timestamp).")
+                    }
                 } catch (e: Exception) {
                     LogManager.e(TAG, "Failed to insert measurement (userId: ${measurement.userId}, timestamp: ${measurement.timestamp}) and its values. Error: ${e.message}", e)
                 }
             }
         }
-        LogManager.i(TAG, "Finished inserting measurements. ${insertedIds.size} measurements successfully inserted.")
-        return insertedIds
+        LogManager.i(TAG, "Finished inserting measurements. ${insertedIds.size} measurements successfully inserted and ${ignoredIds.size} ignored due to duplicate timestamps.")
+        return Pair(insertedIds, ignoredIds)
     }
 
     suspend fun deleteMeasurementValueById(valueId: Int) {

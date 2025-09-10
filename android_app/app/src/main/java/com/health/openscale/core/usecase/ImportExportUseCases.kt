@@ -50,6 +50,7 @@ import javax.inject.Singleton
  */
 data class ImportReport(
     val importedMeasurementsCount: Int,
+    val ignoredMeasurementsCount: Int,
     val linesSkippedMissingDate: Int,
     val linesSkippedDateParseError: Int,
     val valuesSkippedParseError: Int,
@@ -193,6 +194,7 @@ class ImportExportUseCases @Inject constructor(
         var linesSkippedDateParseError = 0
         var valuesSkippedParseError = 0
         var importedMeasurementsCount = 0
+        var ignoredMeasurementsCount = 0
 
         val toInsert = mutableListOf<Pair<Measurement, List<MeasurementValue>>>()
 
@@ -347,9 +349,11 @@ class ImportExportUseCases @Inject constructor(
 
             if (toInsert.isNotEmpty()) {
                 val ids = repository.insertMeasurementsWithValues(toInsert)
-                importedMeasurementsCount = ids.size
+                importedMeasurementsCount = ids.first.size
+                ignoredMeasurementsCount = ids.second.size
+
                 // Recalc derived values for each inserted measurement (like in your VM)
-                ids.forEach { id ->
+                ids.first.forEach { id ->
                     try { repository.recalculateDerivedValuesForMeasurement(id.toInt()) }
                     catch (e: Exception) {
                         LogManager.e(TAG, "Derived recalculation failed for measurementId=$id", e)
@@ -360,6 +364,7 @@ class ImportExportUseCases @Inject constructor(
 
         ImportReport(
             importedMeasurementsCount = importedMeasurementsCount,
+            ignoredMeasurementsCount = ignoredMeasurementsCount,
             linesSkippedMissingDate = linesSkippedMissingDate,
             linesSkippedDateParseError = linesSkippedDateParseError,
             valuesSkippedParseError = valuesSkippedParseError

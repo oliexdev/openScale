@@ -531,9 +531,10 @@
     <string name="import_successful_records">"%1$d measurement records successfully imported."</string>
     <string name="import_successful_records_with_details">%1$d records successfully imported%2$s.</string> <!-- %2$s for detailed summary -->
     <string name="import_summary_details_base">"%1$d measurement records successfully imported."</string> <!-- Base for constructing summary -->
-    <string name="import_summary_skipped_missing_dates">" %1$d rows skipped due to missing dates."</string>
-    <string name="import_summary_skipped_date_parse_errors">" %1$d rows skipped due to date parsing errors."</string>
-    <string name="import_summary_values_skipped_parse_errors">" %1$d individual values could not be parsed."</string>
+    <string name="import_summary_ignored_duplicated_timestamp">"%1$d rows ignored (duplicated timestamp)."</string>
+    <string name="import_summary_skipped_missing_dates">"%1$d rows skipped due to missing dates."</string>
+    <string name="import_summary_skipped_date_parse_errors">"%1$d rows skipped due to date parsing errors."</string>
+    <string name="import_summary_values_skipped_parse_errors">"%1$d individual values could not be parsed."</string>
     <string name="import_error_no_valid_data">No valid data found in the CSV file, or all rows contained errors.</string>
     <string name="import_error_missing_date_column">Import failed: The mandatory column date is missing in the CSV header.</string>
     <string name="import_error_cannot_read_file">Import failed: Could not read the file.</string>

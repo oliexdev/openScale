@@ -284,6 +284,11 @@ val MIGRATION_8_9 = object : Migration(8, 9) {
             ADD COLUMN `useAssistedWeighing` INTEGER NOT NULL DEFAULT 0
         """.trimIndent())
 
+        db.execSQL("""
+            CREATE UNIQUE INDEX IF NOT EXISTS `index_Measurement_userId_timestamp` 
+            ON `Measurement` (`userId`, `timestamp`)
+        """.trimIndent())
+
         db.execSQL("PRAGMA foreign_keys=ON")
     }
 }

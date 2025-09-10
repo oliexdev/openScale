@@ -18,6 +18,7 @@
 package com.health.openscale.ui.screen.settings
 
 import android.content.ContentResolver
+import android.content.Context
 import android.net.Uri
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SnackbarDuration
@@ -36,6 +37,7 @@ import com.health.openscale.core.usecase.ReminderUseCase
 import com.health.openscale.core.utils.LogManager
 import com.health.openscale.ui.shared.SnackbarEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -55,6 +57,7 @@ import kotlinx.coroutines.launch
  */
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val userFacade: UserFacade,
     private val dataManagementFacade: DataManagementFacade,
     private val measurementFacade: MeasurementFacade,
@@ -253,11 +256,26 @@ class SettingsViewModel @Inject constructor(
             try {
                 val report: ImportReport = dataManagementFacade.importUserFromCsv(userId, uri, contentResolver).getOrThrow()
                 val details = buildString {
-                    var opened = false
-                    if (report.linesSkippedMissingDate > 0) { append(" (${report.linesSkippedMissingDate} rows missing date"); opened = true }
-                    if (report.linesSkippedDateParseError > 0) { append(if (opened) ", " else " (").append("${report.linesSkippedDateParseError} date parse errors"); opened = true }
-                    if (report.valuesSkippedParseError > 0) { append(if (opened) ", " else " (").append("${report.valuesSkippedParseError} values skipped"); opened = true }
-                    if (opened) append(")")
+                    val parts = mutableListOf<String>()
+
+                    if (report.ignoredMeasurementsCount > 0) {
+                        parts.add(context.getString(R.string.import_summary_ignored_duplicated_timestamp, report.ignoredMeasurementsCount).removeSuffix("."))
+                    }
+                    if (report.linesSkippedMissingDate > 0) {
+                        parts.add(context.getString(R.string.import_summary_skipped_missing_dates, report.linesSkippedMissingDate).removeSuffix("."))
+                    }
+                    if (report.linesSkippedDateParseError > 0) {
+                        parts.add(context.getString(R.string.import_summary_skipped_date_parse_errors, report.linesSkippedDateParseError).removeSuffix("."))
+                    }
+                    if (report.valuesSkippedParseError > 0) {
+                        parts.add(context.getString(R.string.import_summary_values_skipped_parse_errors, report.valuesSkippedParseError).removeSuffix("."))
+                    }
+
+                    if (parts.isNotEmpty()) {
+                        append(" (")
+                        append(parts.joinToString(", "))
+                        append(")")
+                    }
                 }
                 if (details.isNotEmpty())
                     showSnackbar(R.string.import_successful_records_with_details, listOf(report.importedMeasurementsCount, details))

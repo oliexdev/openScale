@@ -528,9 +528,10 @@
     <string name="import_successful_records">"%1$d Messdatensätze erfolgreich importiert."</string>
     <string name="import_successful_records_with_details">%1$d Datensätze erfolgreich importiert%2$s.</string> <!-- %2$s für detaillierte Zusammenfassung -->
     <string name="import_summary_details_base">"%1$d Messdatensätze erfolgreich importiert."</string> <!-- Basis zur Erstellung der Zusammenfassung -->
-    <string name="import_summary_skipped_missing_dates">" %1$d Zeilen wegen fehlender Daten übersprungen."</string>
-    <string name="import_summary_skipped_date_parse_errors">" %1$d Zeilen wegen Datums-Analysefehlern übersprungen."</string>
-    <string name="import_summary_values_skipped_parse_errors">" %1$d einzelne Werte konnten nicht analysiert werden."</string>
+    <string name="import_summary_ignored_duplicated_timestamp">"%1$d Zeilen ingoriert (doppelter Zeitstempel)."</string>
+    <string name="import_summary_skipped_missing_dates">"%1$d Zeilen wegen fehlender Daten übersprungen."</string>
+    <string name="import_summary_skipped_date_parse_errors">"%1$d Zeilen wegen Datums-Analysefehlern übersprungen."</string>
+    <string name="import_summary_values_skipped_parse_errors">"%1$d einzelne Werte konnten nicht analysiert werden."</string>
     <string name="import_error_no_valid_data">Keine gültigen Daten in der CSV-Datei gefunden oder alle Zeilen enthielten Fehler.</string>
     <string name="import_error_missing_date_column">Import fehlgeschlagen: Die obligatorische Spalte Datum fehlt in der CSV-Kopfzeile.</string>
     <string name="import_error_cannot_read_file">Import fehlgeschlagen: Datei konnte nicht gelesen werden.</string>

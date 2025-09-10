@@ -37,11 +37,13 @@ import kotlinx.coroutines.flow.Flow
 interface MeasurementDao {
 
     /**
-     * Inserts a measurement. If the measurement already exists based on its primary key, it's replaced.
+     * Inserts a measurement. If the measurement already exists based on its primary key and timestamp, it's ignored.
      * @param measurement The measurement to insert.
-     * @return The row ID of the newly inserted measurement.
+     * @return The row ID of the newly inserted measurement if the insertion was successful.
+     *         Returns `-1L` if the insertion was ignored due to a conflict with an existing
+     *         unique constraint (e.g., `userId` and `timestamp` combination already present).
      */
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(measurement: Measurement): Long
 
     /**
@@ -66,6 +68,10 @@ interface MeasurementDao {
     @Transaction
     suspend fun insertSingleMeasurementWithItsValues(measurement: Measurement, values: List<MeasurementValue>) : Long {
         val measurementId = insert(measurement) // Insert the main measurement to get its ID
+
+        if (measurementId == -1L) {
+            return -1L
+        }
 
         // Update each MeasurementValue with the correct measurementId
         val updatedValues = values.map { value ->

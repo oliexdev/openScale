@@ -28,7 +28,10 @@ import androidx.room.*
             onDelete = ForeignKey.CASCADE
         )
     ],
-    indices = [Index("userId")]
+    indices = [
+        Index("userId"),
+        Index(value = ["userId", "timestamp"], unique = true)
+    ]
 )
 data class Measurement(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
