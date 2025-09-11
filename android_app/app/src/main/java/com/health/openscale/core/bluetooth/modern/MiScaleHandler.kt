@@ -319,7 +319,9 @@ class MiScaleHandler : ScaleDeviceHandler() {
         val native = if (isLbs || isCatty) weightRaw / 100.0f else weightRaw / 200.0f
 
         val dt = parseMinuteDate(year, month, day, hour, minute) ?: return false
-        if (!plausible(dt)) return false
+        val ts = (dt.time / 1000).toInt()
+        val lastTs = getLastImportedTimestamp(user.id)
+        if (ts <= lastTs) return false
 
         val m = ScaleMeasurement().apply {
             dateTime = dt
@@ -342,6 +344,8 @@ class MiScaleHandler : ScaleDeviceHandler() {
         }
 
         publish(m)
+        updateLastImportedTimestamp(user.id, ts)
+
         return true
     }
 
@@ -373,12 +377,17 @@ class MiScaleHandler : ScaleDeviceHandler() {
         val dt = parseMinuteDate(year, month, day, hour, minute) ?: return false
         if (!plausible(dt)) return false
 
+        val ts = (dt.time / 1000).toInt()
+        val lastTs = getLastImportedTimestamp(user.id)
+        if (ts <= lastTs) return false
+
         val m = ScaleMeasurement().apply {
             dateTime = dt
             weight = ConverterUtils.toKilogram(native, user.scaleUnit)
             userId = user.id
         }
         publish(m)
+        updateLastImportedTimestamp(user.id, ts)
         return true
     }
 
@@ -474,5 +483,14 @@ class MiScaleHandler : ScaleDeviceHandler() {
                 writeTo(svcAlternate, CHAR_MI_HISTORY, byteArrayOf(0x02), withResponse = true)
             }.onFailure { logI("Alternate fallback write failed: ${it.message}") }
         }
+    }
+
+
+    private fun getLastImportedTimestamp(userId: Int): Int {
+        return settingsGetInt("last_imported_ts_$userId", 0)
+    }
+
+    private fun updateLastImportedTimestamp(userId: Int, timestamp: Int) {
+        settingsPutInt("last_imported_ts_$userId", timestamp)
     }
 }
