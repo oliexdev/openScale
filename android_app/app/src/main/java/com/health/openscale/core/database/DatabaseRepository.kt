@@ -236,6 +236,7 @@ class DatabaseRepository @Inject constructor(
      * @param measurementId The ID of the measurement for which to recalculate derived values.
      */
     suspend fun recalculateDerivedValuesForMeasurement(measurementId: Int) {
+        val startTime = System.nanoTime()
         LogManager.i(DERIVED_VALUES_TAG, "Starting recalculation of derived values for measurementId: $measurementId")
 
         val measurement = measurementDao.getMeasurementById(measurementId) ?: run {
@@ -286,9 +287,9 @@ class DatabaseRepository @Inject constructor(
                     // If derived value is null, delete any existing persisted value for it
                     if (existingDerivedValueObject != null) {
                         measurementValueDao.deleteById(existingDerivedValueObject.id)
-                        LogManager.d(DERIVED_VALUES_TAG, "Derived value for key ${derivedTypeObject.key} is null. Deleted existing value (ID: ${existingDerivedValueObject.id}).")
+                        //LogManager.d(DERIVED_VALUES_TAG, "Derived value for key ${derivedTypeObject.key} is null. Deleted existing value (ID: ${existingDerivedValueObject.id}).")
                     } else {
-                        LogManager.v(DERIVED_VALUES_TAG, "Derived value for key ${derivedTypeObject.key} is null. No existing value to delete.")
+                        //LogManager.v(DERIVED_VALUES_TAG, "Derived value for key ${derivedTypeObject.key} is null. No existing value to delete.")
                     }
                 } else {
                     // If derived value is not null, insert or update it
@@ -298,7 +299,7 @@ class DatabaseRepository @Inject constructor(
                             measurementValueDao.update(existingDerivedValueObject.copy(floatValue = roundedValue))
                          //   LogManager.d(DERIVED_VALUES_TAG, "Derived value for key ${derivedTypeObject.key} updated from ${existingDerivedValueObject.floatValue} to $roundedValue.")
                         } else {
-                            LogManager.v(DERIVED_VALUES_TAG, "Derived value for key ${derivedTypeObject.key} is $roundedValue (unchanged). No update needed.")
+                            //LogManager.v(DERIVED_VALUES_TAG, "Derived value for key ${derivedTypeObject.key} is $roundedValue (unchanged). No update needed.")
                         }
                     } else {
                         measurementValueDao.insert(
@@ -308,7 +309,7 @@ class DatabaseRepository @Inject constructor(
                                 floatValue = roundedValue
                             )
                         )
-                        LogManager.d(DERIVED_VALUES_TAG, "New derived value for key ${derivedTypeObject.key} inserted: $roundedValue.")
+                        //LogManager.d(DERIVED_VALUES_TAG, "New derived value for key ${derivedTypeObject.key} inserted: $roundedValue.")
                     }
                 }
             }
@@ -416,8 +417,9 @@ class DatabaseRepository @Inject constructor(
             gender = user.gender
         ).also { saveOrUpdateDerivedValue(it, MeasurementTypeKey.CALIPER) }
 
-        LogManager.i(DERIVED_VALUES_TAG, "Finished recalculation of derived values for measurementId: $measurementId")
-    }
+        val endTime = System.nanoTime()
+        val durationMillis = (endTime - startTime) / 1_000_000
+        LogManager.i(DERIVED_VALUES_TAG, "Finished recalculation of derived values for measurementId: $measurementId. Took $durationMillis ms.")    }
 
     // --- Private Calculation Helper Functions ---
     private val CALC_PROCESS_TAG = "DerivedValuesProcess"
@@ -428,7 +430,7 @@ class DatabaseRepository @Inject constructor(
             val heightM = heightCm / 100f
             weightKg / (heightM * heightM)
         } else {
-            LogManager.d(CALC_PROCESS_TAG, "BMI calculation skipped: Missing or invalid weight/height.")
+            //LogManager.d(CALC_PROCESS_TAG, "BMI calculation skipped: Missing or invalid weight/height.")
             null
         }
     }
@@ -438,7 +440,7 @@ class DatabaseRepository @Inject constructor(
         return if (waistCm != null && waistCm > 0f && hipsCm != null && hipsCm > 0f) {
             waistCm / hipsCm
         } else {
-            LogManager.d(CALC_PROCESS_TAG, "WHR calculation skipped: Missing or invalid waist/hips measurements.")
+            //LogManager.d(CALC_PROCESS_TAG, "WHR calculation skipped: Missing or invalid waist/hips measurements.")
             null
         }
     }
@@ -448,7 +450,7 @@ class DatabaseRepository @Inject constructor(
         return if (waistCm != null && waistCm > 0f && bodyHeightCm != null && bodyHeightCm > 0f) {
             waistCm / bodyHeightCm
         } else {
-            LogManager.d(CALC_PROCESS_TAG, "WHTR calculation skipped: Missing or invalid waist/body height measurements.")
+            //LogManager.d(CALC_PROCESS_TAG, "WHTR calculation skipped: Missing or invalid waist/body height measurements.")
             null
         }
     }
@@ -506,7 +508,7 @@ class DatabaseRepository @Inject constructor(
             caliper2Cm == null || caliper2Cm <= 0f ||
             caliper3Cm == null || caliper3Cm <= 0f
         ) {
-            LogManager.d(CALC_PROCESS_TAG, "Fat Caliper calculation skipped: One or more caliper values are missing or zero.")
+            //LogManager.d(CALC_PROCESS_TAG, "Fat Caliper calculation skipped: One or more caliper values are missing or zero.")
             return null
         }
 

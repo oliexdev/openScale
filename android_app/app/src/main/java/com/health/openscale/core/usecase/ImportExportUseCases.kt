@@ -96,12 +96,20 @@ class ImportExportUseCases @Inject constructor(
         LogManager.i(TAG, "CSV export for userId=$userId -> $uri")
 
         val allAppTypes: List<MeasurementType> = repository.getAllMeasurementTypes().first()
+
         val exportableValueTypes = allAppTypes.filter {
             it.key != MeasurementTypeKey.DATE &&
             it.key != MeasurementTypeKey.TIME &&
             it.key != MeasurementTypeKey.USER
         }
-        val valueColumnKeys = exportableValueTypes.map { it.key.name }.distinct()
+
+        val valueColumnKeys = exportableValueTypes.map {
+            if (it.key == MeasurementTypeKey.CUSTOM) {
+                it.name ?: it.key.name
+            } else {
+                it.key.name
+            }
+        }.distinct()
 
         val dateColumnKey = MeasurementTypeKey.DATE.name
         val timeColumnKey = MeasurementTypeKey.TIME.name
@@ -131,8 +139,14 @@ class ImportExportUseCases @Inject constructor(
                 val type = mwvSingle.type
                 val value = mwvSingle.value
 
+                val currentColumnKey = if (type.key == MeasurementTypeKey.CUSTOM) {
+                    type.name ?: type.key.name
+                } else {
+                    type.key.name
+                }
+
                 if (type.key != MeasurementTypeKey.DATE && type.key != MeasurementTypeKey.TIME &&
-                    valueColumnKeys.contains(type.key.name)
+                    valueColumnKeys.contains(currentColumnKey)
                 ) {
                     val s = when (type.inputType) {
                         InputFieldType.TEXT  -> value.textValue
@@ -146,7 +160,7 @@ class ImportExportUseCases @Inject constructor(
                         }
                         InputFieldType.USER -> null
                     }
-                    row[type.key.name] = s
+                    row[currentColumnKey] = s
                 }
             }
             rows.add(row)
