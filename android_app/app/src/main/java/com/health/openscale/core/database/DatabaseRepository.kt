@@ -239,7 +239,7 @@ class DatabaseRepository @Inject constructor(
         LogManager.i(DERIVED_VALUES_TAG, "Starting recalculation of derived values for measurementId: $measurementId")
 
         val measurement = measurementDao.getMeasurementById(measurementId) ?: run {
-            LogManager.w(DERIVED_VALUES_TAG, "Measurement with ID $measurementId not found. Cannot recalculate derived values.")
+            //LogManager.w(DERIVED_VALUES_TAG, "Measurement with ID $measurementId not found. Cannot recalculate derived values.")
             return
         }
         val userId = measurement.userId
@@ -248,12 +248,12 @@ class DatabaseRepository @Inject constructor(
         val currentMeasurementValues = measurementValueDao.getValuesForMeasurement(measurementId).first()
         val allGlobalTypes = measurementTypeDao.getAll().first() // These are MeasurementType objects, containing unit info
         val user = userDao.getById(userId).first() ?: run {
-            LogManager.w(DERIVED_VALUES_TAG, "User with ID $userId not found for measurement $measurementId. Cannot recalculate derived values.")
+           // LogManager.w(DERIVED_VALUES_TAG, "User with ID $userId not found for measurement $measurementId. Cannot recalculate derived values.")
             return
         }
 
-        LogManager.d(DERIVED_VALUES_TAG, "Fetched ${currentMeasurementValues.size} current values, " +
-                "${allGlobalTypes.size} global types, and user '${user.name}' for measurement $measurementId.")
+       // LogManager.d(DERIVED_VALUES_TAG, "Fetched ${currentMeasurementValues.size} current values, " +
+       //         "${allGlobalTypes.size} global types, and user '${user.name}' for measurement $measurementId.")
 
         // Helper to find a raw value and its unit from the persisted MeasurementValues and MeasurementTypes
         val findValueAndUnit = { key: MeasurementTypeKey ->
@@ -296,7 +296,7 @@ class DatabaseRepository @Inject constructor(
                     if (existingDerivedValueObject != null) {
                         if (existingDerivedValueObject.floatValue != roundedValue) {
                             measurementValueDao.update(existingDerivedValueObject.copy(floatValue = roundedValue))
-                            LogManager.d(DERIVED_VALUES_TAG, "Derived value for key ${derivedTypeObject.key} updated from ${existingDerivedValueObject.floatValue} to $roundedValue.")
+                         //   LogManager.d(DERIVED_VALUES_TAG, "Derived value for key ${derivedTypeObject.key} updated from ${existingDerivedValueObject.floatValue} to $roundedValue.")
                         } else {
                             LogManager.v(DERIVED_VALUES_TAG, "Derived value for key ${derivedTypeObject.key} is $roundedValue (unchanged). No update needed.")
                         }
@@ -423,7 +423,7 @@ class DatabaseRepository @Inject constructor(
     private val CALC_PROCESS_TAG = "DerivedValuesProcess"
 
     private fun processBmiCalculation(weightKg: Float?, heightCm: Float?): Float? {
-        LogManager.v(CALC_PROCESS_TAG, "Processing BMI: weight=$weightKg kg, height=$heightCm cm")
+        //LogManager.v(CALC_PROCESS_TAG, "Processing BMI: weight=$weightKg kg, height=$heightCm cm")
         return if (weightKg != null && weightKg > 0f && heightCm != null && heightCm > 0f) {
             val heightM = heightCm / 100f
             weightKg / (heightM * heightM)
@@ -434,7 +434,7 @@ class DatabaseRepository @Inject constructor(
     }
 
     private fun processWhrCalculation(waistCm: Float?, hipsCm: Float?): Float? {
-        LogManager.v(CALC_PROCESS_TAG, "Processing WHR: waist=$waistCm cm, hips=$hipsCm cm")
+       // LogManager.v(CALC_PROCESS_TAG, "Processing WHR: waist=$waistCm cm, hips=$hipsCm cm")
         return if (waistCm != null && waistCm > 0f && hipsCm != null && hipsCm > 0f) {
             waistCm / hipsCm
         } else {
@@ -444,7 +444,7 @@ class DatabaseRepository @Inject constructor(
     }
 
     private fun processWhtrCalculation(waistCm: Float?, bodyHeightCm: Float?): Float? {
-        LogManager.v(CALC_PROCESS_TAG, "Processing WHTR: waist=$waistCm cm, bodyHeight=$bodyHeightCm cm")
+       // LogManager.v(CALC_PROCESS_TAG, "Processing WHTR: waist=$waistCm cm, bodyHeight=$bodyHeightCm cm")
         return if (waistCm != null && waistCm > 0f && bodyHeightCm != null && bodyHeightCm > 0f) {
             waistCm / bodyHeightCm
         } else {
@@ -459,7 +459,7 @@ class DatabaseRepository @Inject constructor(
         ageYears: Int,
         gender: GenderType
     ): Float? {
-        LogManager.v(CALC_PROCESS_TAG, "Processing BMR: weight=$weightKg kg, height=$heightCm cm, age=$ageYears, gender=$gender")
+       // LogManager.v(CALC_PROCESS_TAG, "Processing BMR: weight=$weightKg kg, height=$heightCm cm, age=$ageYears, gender=$gender")
 
         if (weightKg == null || weightKg <= 0f ||
             heightCm == null || heightCm <= 0f ||
@@ -476,7 +476,7 @@ class DatabaseRepository @Inject constructor(
     }
 
     private fun processTDEECalculation(bmr: Float?, activityLevel: ActivityLevel?): Float? {
-        LogManager.v(CALC_PROCESS_TAG, "Processing TDEE: BMR=$bmr, ActivityLevel=$activityLevel")
+       // LogManager.v(CALC_PROCESS_TAG, "Processing TDEE: BMR=$bmr, ActivityLevel=$activityLevel")
         if (bmr == null || bmr <= 0f || activityLevel == null) {
             LogManager.d(CALC_PROCESS_TAG, "TDEE calculation skipped: Missing or invalid BMR or activity level.")
             return null
@@ -500,10 +500,7 @@ class DatabaseRepository @Inject constructor(
         ageYears: Int,
         gender: GenderType
     ): Float? {
-        LogManager.v(
-            CALC_PROCESS_TAG,
-            "Processing Fat Caliper: c1=$caliper1Cm cm, c2=$caliper2Cm cm, c3=$caliper3Cm cm, age=$ageYears, gender=$gender"
-        )
+       // LogManager.v(CALC_PROCESS_TAG, "Processing Fat Caliper: c1=$caliper1Cm cm, c2=$caliper2Cm cm, c3=$caliper3Cm cm, age=$ageYears, gender=$gender")
 
         if (caliper1Cm == null || caliper1Cm <= 0f ||
             caliper2Cm == null || caliper2Cm <= 0f ||
@@ -520,7 +517,7 @@ class DatabaseRepository @Inject constructor(
 
         // Sum of skinfolds in millimeters
         val sumSkinfoldsMm = (caliper1Cm + caliper2Cm + caliper3Cm) * 10.0f
-        LogManager.v(CALC_PROCESS_TAG, "Sum of skinfolds (S): $sumSkinfoldsMm mm")
+        // LogManager.v(CALC_PROCESS_TAG, "Sum of skinfolds (S): $sumSkinfoldsMm mm")
 
         // Choose constants based on gender
         val k0: Float
@@ -545,7 +542,7 @@ class DatabaseRepository @Inject constructor(
 
         val bodyDensity =
             k0 - (k1 * sumSkinfoldsMm) + (k2 * sumSkinfoldsMm * sumSkinfoldsMm) - (ka * ageYears)
-        LogManager.v(CALC_PROCESS_TAG, "Calculated Body Density (BD): $bodyDensity")
+        //LogManager.v(CALC_PROCESS_TAG, "Calculated Body Density (BD): $bodyDensity")
 
         if (bodyDensity <= 0f) {
             LogManager.w(CALC_PROCESS_TAG, "Invalid Body Density calculated: $bodyDensity.")
@@ -553,10 +550,10 @@ class DatabaseRepository @Inject constructor(
         }
 
         val fatPercentage = (4.95f / bodyDensity - 4.5f) * 100.0f
-        LogManager.v(CALC_PROCESS_TAG, "Calculated Fat Percentage from BD: $fatPercentage %")
+        //LogManager.v(CALC_PROCESS_TAG, "Calculated Fat Percentage from BD: $fatPercentage %")
 
         return fatPercentage.takeIf { it in 1.0f..70.0f } ?: run {
-            LogManager.w(CALC_PROCESS_TAG, "Calculated Fat Percentage ($fatPercentage%) is outside the expected physiological range (1–70%).")
+            //LogManager.w(CALC_PROCESS_TAG, "Calculated Fat Percentage ($fatPercentage%) is outside the expected physiological range (1–70%).")
             fatPercentage
         }
     }
