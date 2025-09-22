@@ -18,7 +18,6 @@
 package com.health.openscale.ui.screen.overview
 
 import android.Manifest
-import android.R.id.message
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.content.Context
@@ -37,6 +36,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -47,6 +47,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
@@ -65,6 +67,7 @@ import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.PersonSearch
+import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -110,8 +113,10 @@ import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.MeasurementTypeIcon
 import com.health.openscale.core.data.Trend
 import com.health.openscale.core.data.User
+import com.health.openscale.core.data.UserGoals
 import com.health.openscale.core.model.MeasurementWithValues
 import com.health.openscale.core.facade.SettingsPreferenceKeys
+import com.health.openscale.core.model.EnrichedMeasurement
 import com.health.openscale.core.model.UserEvaluationContext
 import com.health.openscale.core.model.ValueWithDifference
 import com.health.openscale.core.utils.LocaleUtils
@@ -121,16 +126,21 @@ import com.health.openscale.ui.navigation.Routes
 import com.health.openscale.ui.shared.SharedViewModel
 import com.health.openscale.ui.screen.settings.BluetoothViewModel
 import com.health.openscale.ui.screen.components.LineChart
+import com.health.openscale.ui.screen.components.UserGoalChip
 import com.health.openscale.ui.screen.components.provideFilterTopBarAction
+import com.health.openscale.ui.screen.dialog.UserGoalDialog
 import com.health.openscale.ui.screen.dialog.UserInputDialog
 import com.health.openscale.ui.shared.TopBarAction
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.DateFormat
-import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import kotlin.collections.filter
+import kotlin.collections.find
+import kotlin.collections.firstOrNull
+import kotlin.collections.isNotEmpty
+import kotlin.math.abs
 
 /**
  * Determines the appropriate top bar action based on the Bluetooth connection status.
@@ -319,6 +329,13 @@ fun OverviewScreen(
 
     // --- Chart selection logic reverted to local state management ---
     val allMeasurementTypes by sharedViewModel.measurementTypes.collectAsState()
+    val goalDialogContextData by sharedViewModel.userGoalDialogContext.collectAsState()
+    val userGoals by if (selectedUserId != null && selectedUserId != 0) {
+        sharedViewModel.getAllGoalsForUser(selectedUserId!!).collectAsState(initial = emptyList())
+    } else {
+        remember { mutableStateOf(emptyList<UserGoals>()) }
+    }
+    var isGoalsSectionExpanded by rememberSaveable { mutableStateOf(false) }
 
     val localSelectedOverviewGraphTypeIntIds = remember { mutableStateListOf<Int>() }
 
@@ -335,6 +352,23 @@ fun OverviewScreen(
     var showReferenceDialogForUser by remember { mutableStateOf<User?>(null) }
     val allUsers by sharedViewModel.allUsers.collectAsState(initial = emptyList())
     val currentSelectedUser by sharedViewModel.selectedUser.collectAsState()
+    var currentSelectedMeasurementId by rememberSaveable { mutableStateOf<Int?>(null) }
+
+    val goalReferenceMeasurement: MeasurementWithValues? = remember(currentSelectedMeasurementId, overviewState) {
+        val currentData = if (overviewState is SharedViewModel.UiState.Success) {
+            (overviewState as SharedViewModel.UiState.Success<List<EnrichedMeasurement>>).data
+        } else {
+            emptyList()
+        }
+        if (currentSelectedMeasurementId != null && currentData.isNotEmpty()) {
+            currentData.find { it.measurementWithValues.measurement.id == currentSelectedMeasurementId }
+                ?.measurementWithValues
+        } else if (currentData.isNotEmpty()) {
+            currentData.firstOrNull()?.measurementWithValues
+        } else {
+            null
+        }
+    }
 
     // --- End of reverted chart selection logic ---
 
@@ -558,6 +592,7 @@ fun OverviewScreen(
                                                         index = targetIndex
                                                     )
                                                     highlightedMeasurementId = targetId
+                                                    currentSelectedMeasurementId = targetId
                                                     delay(600)
                                                     if (highlightedMeasurementId == targetId) highlightedMeasurementId =
                                                         null
@@ -567,7 +602,126 @@ fun OverviewScreen(
                                 )
                             }
 
-                            HorizontalDivider()
+                            HorizontalDivider(Modifier.padding(bottom = 8.dp))
+
+                            // Goals Section
+                            if (userGoals.isNotEmpty()) {
+                                Column(modifier = Modifier.padding(bottom = 8.dp)) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable {
+                                                isGoalsSectionExpanded = !isGoalsSectionExpanded
+                                            }
+                                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                    ) {
+                                        Box(
+                                            modifier = Modifier.weight(1f),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Text(
+                                                    text = stringResource(R.string.my_goals_label),
+                                                    style = MaterialTheme.typography.titleMedium
+                                                )
+                                                if (!isGoalsSectionExpanded && userGoals.isNotEmpty()) {
+                                                    Spacer(Modifier.width(6.dp))
+                                                    Text(
+                                                        text = "(${userGoals.size})",
+                                                        style = MaterialTheme.typography.titleMedium,
+                                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                    )
+                                                }
+                                            }
+                                        }
+                                        Icon(
+                                            imageVector = if (isGoalsSectionExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                                            contentDescription = if (isGoalsSectionExpanded) stringResource(
+                                                R.string.action_show_less_desc
+                                            ) else stringResource(R.string.action_show_more_desc),
+                                        )
+                                    }
+
+                                    AnimatedVisibility(visible = isGoalsSectionExpanded) {
+                                        Column {
+                                            if (userGoals.isNotEmpty()) {
+                                                LazyRow(
+                                                    modifier = Modifier.fillMaxWidth(),
+                                                    contentPadding = PaddingValues(
+                                                        horizontal = 16.dp,
+                                                        vertical = 8.dp
+                                                    ),
+                                                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                                ) {
+                                                    items(
+                                                        userGoals,
+                                                        key = { goal -> "${goal.userId}_${goal.measurementTypeId}" }) { goal ->
+                                                        if (goal.userId == currentSelectedUser!!.id) {
+                                                            val measurementType =
+                                                                allMeasurementTypes.find { it.id == goal.measurementTypeId }
+                                                            if (measurementType != null) {
+                                                                UserGoalChip(
+                                                                    userGoal = goal,
+                                                                    measurementType = measurementType,
+                                                                    referenceMeasurement = goalReferenceMeasurement,
+                                                                    onClick = {
+                                                                        if (currentSelectedUser!!.id != 0 && goal.userId == currentSelectedUser!!.id) {
+                                                                            sharedViewModel.showUserGoalDialogWithContext(
+                                                                                type = measurementType,
+                                                                                existingGoal = goal
+                                                                            )
+                                                                        }
+                                                                    }
+                                                                )
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+
+                                            if (goalReferenceMeasurement?.measurement?.timestamp != null) {
+                                                Row(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .padding(
+                                                            top = 4.dp,
+                                                            bottom = 4.dp,
+                                                            end = 16.dp
+                                                        ),
+                                                    horizontalArrangement = Arrangement.End,
+                                                    verticalAlignment = Alignment.CenterVertically
+                                                ) {
+                                                    val shortDateTimeFormatter = remember {
+                                                        DateFormat.getDateTimeInstance(
+                                                            DateFormat.MEDIUM,
+                                                            DateFormat.SHORT,
+                                                            Locale.getDefault()
+                                                        )
+                                                    }
+                                                    Icon(
+                                                        imageVector = Icons.Outlined.Link,
+                                                        contentDescription = stringResource(R.string.my_goals_label),
+                                                        modifier = Modifier.size(14.dp),
+                                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                                    )
+                                                    Spacer(Modifier.width(4.dp))
+                                                    Text(
+                                                        text = shortDateTimeFormatter.format(
+                                                            Date(
+                                                                goalReferenceMeasurement.measurement.timestamp
+                                                            )
+                                                        ),
+                                                        style = MaterialTheme.typography.bodySmall,
+                                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                    HorizontalDivider()
+                                }
+                            }
 
                             LazyColumn(
                                 state = listState,
@@ -586,6 +740,9 @@ fun OverviewScreen(
                                         measurementWithValues = enrichedItem.measurementWithValues,
                                         processedValuesForDisplay = enrichedItem.valuesWithTrend,
                                         userEvaluationContext = userEvalContext, // Ensure this is available
+                                        onClick = {
+                                            currentSelectedMeasurementId = enrichedItem.measurementWithValues.measurement.id
+                                        },
                                         onEdit = {
                                             navController.navigate(
                                                 Routes.measurementDetail(
@@ -635,10 +792,73 @@ fun OverviewScreen(
             }
         }
     }
+
+    if (goalDialogContextData.showDialog) {
+        val dialogContext = goalDialogContextData
+
+        val userIdForDialogDisplay = currentSelectedUser?.id
+
+        if (dialogContext.typeForDialog == null || userIdForDialogDisplay == null || userIdForDialogDisplay == 0) {
+            LaunchedEffect(goalDialogContextData.showDialog) {
+                sharedViewModel.dismissUserGoalDialogWithContext()
+            }
+        } else {
+            UserGoalDialog(
+                navController = navController,
+                existingUserGoal = dialogContext.existingGoalForDialog,
+                allMeasurementTypes = allMeasurementTypes,
+                allGoalsOfCurrentUser = userGoals,
+                onDismiss = {
+                    sharedViewModel.dismissUserGoalDialogWithContext()
+                },
+                onConfirm = { measurementTypeId, goalValueString ->
+                    val finalGoalValueFloat = goalValueString.replace(',', '.').toFloatOrNull()
+                    if (finalGoalValueFloat != null) {
+                        val goalToProcess = UserGoals(
+                            userId = userIdForDialogDisplay,
+                            measurementTypeId = measurementTypeId,
+                            goalValue = finalGoalValueFloat
+                        )
+                        if (dialogContext.existingGoalForDialog != null) {
+                            sharedViewModel.updateUserGoal(goalToProcess)
+                        } else {
+                            sharedViewModel.insertUserGoal(goalToProcess)
+                        }
+                    } else if (goalValueString.isBlank() && dialogContext.existingGoalForDialog != null) {
+                        return@UserGoalDialog
+                    } else if (goalValueString.isBlank()) {
+                        Toast.makeText(
+                            context,
+                            R.string.toast_goal_value_cannot_be_empty,
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        return@UserGoalDialog
+                    } else {
+                        val typeName = allMeasurementTypes.find { it.id == measurementTypeId }
+                            ?.getDisplayName(context) ?: "Value"
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.toast_invalid_number_format_short, typeName),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        return@UserGoalDialog
+                    }
+                    sharedViewModel.dismissUserGoalDialogWithContext()
+                },
+                onDelete = { _, measurementTypeIdToDelete ->
+                    sharedViewModel.deleteUserGoal(
+                        userIdForDialogDisplay,
+                        measurementTypeIdToDelete
+                    )
+                    Toast.makeText(context, R.string.toast_goal_deleted, Toast.LENGTH_SHORT).show()
+                    sharedViewModel.dismissUserGoalDialogWithContext()
+                })
+        }
+    }
 }
 
 suspend fun LazyListState.smartScrollTo(index: Int) {
-    val dist = kotlin.math.abs(firstVisibleItemIndex - index)
+    val dist = abs(firstVisibleItemIndex - index)
     if (dist > 20) scrollToItem(index) else animateScrollToItem(index)
 }
 
@@ -779,6 +999,7 @@ fun NoMeasurementsCard(navController: NavController, selectedUserId: Int?) {
  * @param measurementWithValues The [MeasurementWithValues] object containing the measurement data and its associated values.
  * @param processedValuesForDisplay A list of [ValueWithDifference] objects, derived from the measurement,
  *                                  including trend information and formatted for display.
+ * @param onClick Callback function triggered when the measurement card is selected.
  * @param onEdit Callback function triggered when the edit action is selected.
  * @param onDelete Callback function triggered when the delete action is selected.
  */
@@ -788,6 +1009,7 @@ fun MeasurementCard(
     measurementWithValues: MeasurementWithValues,
     processedValuesForDisplay: List<ValueWithDifference>,
     userEvaluationContext: UserEvaluationContext?,
+    onClick : () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
     isHighlighted: Boolean = false
@@ -803,9 +1025,12 @@ fun MeasurementCard(
     val measuredAtMillis = measurementWithValues.measurement.timestamp
     val expandedTypeIds = remember { mutableStateMapOf<Int, Boolean>() }
 
-    val dateFormatted = remember(measurementWithValues.measurement.timestamp) {
-        SimpleDateFormat("E, dd.MM.yyyy HH:mm", Locale.getDefault())
-            .format(Date(measurementWithValues.measurement.timestamp))
+    val dateFormatted = remember(measurementWithValues.measurement.timestamp, Locale.getDefault()) {
+        val timestamp = measurementWithValues.measurement.timestamp
+        val currentLocale = Locale.getDefault()
+        val dateFormatter = DateFormat.getDateInstance(DateFormat.MEDIUM, currentLocale)
+        val timeFormatter = DateFormat.getTimeInstance(DateFormat.SHORT, currentLocale)
+        "${dateFormatter.format(Date(timestamp))} ${timeFormatter.format(Date(timestamp))}"
     }
 
     var isExpanded by rememberSaveable { mutableStateOf(false) }
@@ -822,7 +1047,9 @@ fun MeasurementCard(
         processedValuesForDisplay.filter { it.currentValue.type.isEnabled }
     }
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
         border = if (isHighlighted) highlightBorder else null,
         colors = if (isHighlighted) {
             CardDefaults.cardColors(containerColor = highlightColor)

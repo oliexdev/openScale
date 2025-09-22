@@ -17,20 +17,23 @@
  */
 package com.health.openscale.ui.screen.settings
 
-import android.R.id.selectedIcon
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.UnfoldMore
 import androidx.compose.material3.DatePicker
@@ -52,6 +55,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -64,20 +68,22 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.constraintlayout.compose.DesignElements.map
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.health.openscale.R
 import com.health.openscale.core.data.ActivityLevel
 import com.health.openscale.core.data.GenderType
 import com.health.openscale.core.data.IconResource
-import com.health.openscale.core.data.MeasurementTypeIcon
+import com.health.openscale.core.data.InputFieldType
 import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.data.User
+import com.health.openscale.core.data.UserGoals
 import com.health.openscale.core.data.UserIcon
 import com.health.openscale.core.utils.ConverterUtils
 import com.health.openscale.ui.components.RoundMeasurementIcon
+import com.health.openscale.ui.screen.components.UserGoalChip
 import com.health.openscale.ui.screen.dialog.IconPickerDialog
+import com.health.openscale.ui.screen.dialog.UserGoalDialog
 import com.health.openscale.ui.shared.SharedViewModel
 import com.health.openscale.ui.shared.TopBarAction
 import kotlinx.coroutines.launch
@@ -143,6 +149,14 @@ fun UserDetailScreen(
     val datePickerState = rememberDatePickerState(initialSelectedDateMillis = birthDate)
     var showDatePicker by remember { mutableStateOf(false) }
     var activityLevelExpanded by remember { mutableStateOf(false) }
+
+    val allMeasurementTypes by sharedViewModel.measurementTypes.collectAsState()
+    val goalDialogContextData by sharedViewModel.userGoalDialogContext.collectAsState()
+    val userGoals by if (user?.id != 0) {
+        sharedViewModel.getAllGoalsForUser(user?.id ?: -1).collectAsState(initial = emptyList())
+    } else {
+        remember { mutableStateOf(emptyList<UserGoals>()) }
+    }
 
     if (showDatePicker) {
         DatePickerDialog(
@@ -396,7 +410,112 @@ fun UserDetailScreen(
             enabled = false, // Visually indicates it's not directly editable
             readOnly = true  // Ensures it's not directly editable
         )
+
+        // My Goals
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = stringResource(R.string.my_goals_label),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
+                IconButton(onClick = {
+                    val firstTargetableType = allMeasurementTypes.firstOrNull {
+                        (it.inputType == InputFieldType.FLOAT || it.inputType == InputFieldType.INT) && !it.isDerived &&
+                                userGoals.none { ug -> ug.measurementTypeId == it.id }
+                    }
+                    if (firstTargetableType != null) {
+                        sharedViewModel.showUserGoalDialogWithContext(
+                            type = firstTargetableType,
+                            existingGoal = null,
+                        )
+                    }
+                }) {
+                    Icon(
+                        imageVector = Icons.Filled.AddCircleOutline,
+                        contentDescription = stringResource(R.string.action_add_measurement_desc),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+
+            if (userGoals.isNotEmpty()) {
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    contentPadding = PaddingValues(vertical = 4.dp)
+                ) {
+                    items(userGoals, key = { it.userId.toString() + "_" + it.measurementTypeId.toString() }) { goal ->
+                        val measurementType = allMeasurementTypes.find { it.id == goal.measurementTypeId }
+                        if (measurementType != null) {
+                            UserGoalChip(
+                                userGoal = goal,
+                                measurementType = measurementType,
+                                referenceMeasurement = null,
+                                onClick = {
+                                    sharedViewModel.showUserGoalDialogWithContext(
+                                        type = measurementType,
+                                        existingGoal = goal
+                                    )
+                                },
+                            )
+                        }
+                    }
+                }
+            } else {
+                Text(
+                    text = stringResource(R.string.text_none),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(start = 8.dp, top = 4.dp)
+                )
+            }
+        }
     }
+
+    if (goalDialogContextData.showDialog) {
+
+        UserGoalDialog(
+            navController = navController,
+            existingUserGoal = goalDialogContextData.existingGoalForDialog,
+            allMeasurementTypes = allMeasurementTypes,
+            allGoalsOfCurrentUser = userGoals,
+            onDismiss = { sharedViewModel.dismissUserGoalDialogWithContext() },
+            onConfirm = { measurementTypeIdFromDialog, newGoalValueString ->
+                val finalGoalValueFloat = newGoalValueString.replace(',', '.').toFloatOrNull()
+
+                if (finalGoalValueFloat != null) {
+                    val goalToProcess = UserGoals(
+                        userId = user?.id ?: -1,
+                        measurementTypeId = if (goalDialogContextData.existingGoalForDialog != null) goalDialogContextData.existingGoalForDialog!!.measurementTypeId else measurementTypeIdFromDialog,
+                        goalValue = finalGoalValueFloat
+                    )
+                    if (goalDialogContextData.existingGoalForDialog != null) {
+                        sharedViewModel.updateUserGoal(goalToProcess)
+                    } else {
+                        sharedViewModel.insertUserGoal(goalToProcess)
+                    }
+                } else {
+                    if (goalDialogContextData.existingGoalForDialog != null && !newGoalValueString.isBlank()){
+                       sharedViewModel.showSnackbar(messageResId = R.string.toast_invalid_number_format)
+                    }
+                }
+                sharedViewModel.dismissUserGoalDialogWithContext()
+            },
+            onDelete = { userIdToDelete, measurementTypeIdToDelete ->
+                settingsViewModel.viewModelScope.launch {
+                    sharedViewModel.deleteUserGoal(userIdToDelete, measurementTypeIdToDelete)
+                }
+                Toast.makeText(context, R.string.toast_goal_deleted, Toast.LENGTH_SHORT).show()
+                sharedViewModel.dismissUserGoalDialogWithContext()
+            }
+        )
+    }
+
 }
 
 @Composable

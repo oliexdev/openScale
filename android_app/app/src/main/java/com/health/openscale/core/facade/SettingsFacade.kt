@@ -338,7 +338,7 @@ class SettingsFacadeImpl @Inject constructor(
     }
 
     override suspend fun saveSelectedTableTypeIds(typeIds: Set<String>) {
-        LogManager.d(TAG, "Saving selected table type IDs: $typeIds")
+        // LogManager.d(TAG, "Saving selected table type IDs: $typeIds")
         saveSetting(SettingsPreferenceKeys.SELECTED_TYPES_TABLE.name, typeIds)
     }
 
@@ -806,7 +806,7 @@ class SettingsFacadeImpl @Inject constructor(
                     }
                 }
             }
-            LogManager.d(TAG, "Successfully saved setting: key='$keyName'")
+           // LogManager.d(TAG, "Successfully saved setting: key='$keyName'")
         } catch (e: Exception) {
             LogManager.e(TAG, "Failed to save setting: key='$keyName', value='$value'", e)
             // Depending on the app's needs, you might want to rethrow or handle specific exceptions differently.

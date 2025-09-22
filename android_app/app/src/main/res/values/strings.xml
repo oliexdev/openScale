@@ -167,6 +167,17 @@
     <string name="measurement_type_label_color">Color</string>
     <string name="measurement_type_label_icon">Icon</string>
     <string name="measurement_type_label_unit">Unit</string>
+    <string name="measurement_type_label_goal">Goal</string>
+    <string name="my_goals_label">My Goals</string>
+    <string name="delete_button_label">Delete</string>
+    <string name="dialog_title_edit_goal">Edit Goal: %1$s</string>
+    <string name="dialog_title_add_goal">Set Goal: %1$s</string>
+    <string name="info_no_targetable_types">No types available for setting goals.</string>
+    <string name="placeholder_select_type">Select type</string>
+    <string name="measurement_type_label_goal_value_for">Goal value for %1$s</string>
+    <string name="toast_goal_value_cannot_be_empty">Goal value cannot be empty for a new goal.</string>
+    <string name="toast_select_measurement_type">Please select a measurement type first.</string>
+    <string name="toast_goal_deleted">Goal deleted</string>
     <string name="measurement_type_label_input_type">Input Type</string>
     <string name="measurement_type_label_pinned">Pinned</string>
     <string name="measurement_type_label_on_right_y_axis">On right Y-axis</string>

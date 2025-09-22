@@ -29,7 +29,7 @@ import com.health.openscale.core.data.MeasurementType
 import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.data.User
 import com.health.openscale.core.data.UserIcon
-import com.health.openscale.core.utils.LogManager
+import com.health.openscale.core.data.UserGoals
 import com.health.openscale.getDefaultMeasurementTypes
 import dagger.Module
 import dagger.Provides
@@ -46,11 +46,13 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(@ApplicationContext ctx: Context): AppDatabase =
         Room.databaseBuilder(ctx, AppDatabase::class.java, AppDatabase.Companion.DATABASE_NAME)
-            .addMigrations(MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9)
+            .addMigrations(MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10)
             .build()
 
     @Provides
     fun provideUserDao(db: AppDatabase): UserDao = db.userDao()
+    @Provides
+    fun provideUserGoalsDao(db: AppDatabase): UserGoalsDao = db.userGoalsDao()
     @Provides
     fun provideMeasurementDao(db: AppDatabase): MeasurementDao = db.measurementDao()
     @Provides
@@ -66,17 +68,19 @@ object DatabaseModule {
 @Database(
     entities = [
         User::class,
+        UserGoals::class,
         Measurement::class,
         MeasurementValue::class,
-        MeasurementType::class
+        MeasurementType::class,
     ],
-    version = 9,
+    version = 10,
     exportSchema = true
 )
 @TypeConverters(DatabaseConverters::class)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun userDao(): UserDao
+    abstract fun userGoalsDao(): UserGoalsDao
     abstract fun measurementDao(): MeasurementDao
     abstract fun measurementValueDao(): MeasurementValueDao
     abstract fun measurementTypeDao(): MeasurementTypeDao
@@ -290,5 +294,22 @@ val MIGRATION_8_9 = object : Migration(8, 9) {
         """.trimIndent())
 
         db.execSQL("PRAGMA foreign_keys=ON")
+    }
+}
+
+val MIGRATION_9_10 = object : Migration(9, 10) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("""
+            CREATE TABLE IF NOT EXISTS `user_goals` (
+                `userId` INTEGER NOT NULL,
+                `measurementTypeId` INTEGER NOT NULL,
+                `goalValue` REAL NOT NULL,
+                PRIMARY KEY(`userId`, `measurementTypeId`),
+                FOREIGN KEY(`userId`) REFERENCES `User`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE,
+                FOREIGN KEY(`measurementTypeId`) REFERENCES `MeasurementType`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE
+            )
+        """.trimIndent())
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_user_goals_userId` ON `user_goals` (`userId`)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_user_goals_measurementTypeId` ON `user_goals` (`measurementTypeId`)")
     }
 }

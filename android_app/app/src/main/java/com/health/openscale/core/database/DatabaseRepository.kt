@@ -26,6 +26,7 @@ import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.data.UnitType
 import com.health.openscale.core.data.User
+import com.health.openscale.core.data.UserGoals
 import com.health.openscale.core.data.WeightUnit
 import com.health.openscale.core.model.MeasurementWithValues
 import com.health.openscale.core.utils.CalculationUtils
@@ -46,6 +47,7 @@ import javax.inject.Singleton
 class DatabaseRepository @Inject constructor(
     private val database: AppDatabase,
     private val userDao: UserDao,
+    private val userGoalsDao: UserGoalsDao,
     private val measurementDao: MeasurementDao,
     private val measurementTypeDao: MeasurementTypeDao,
     private val measurementValueDao: MeasurementValueDao
@@ -86,6 +88,26 @@ class DatabaseRepository @Inject constructor(
     suspend fun deleteUser(user: User) {
         LogManager.d(TAG, "Deleting user with id: ${user.id}")
         userDao.delete(user)
+    }
+
+    // --- User Goals Operations ---
+    suspend fun insertUserGoal(goal: UserGoals): Long {
+        LogManager.d(TAG, "Inserting user goal for userId: ${goal.userId}, typeId: ${goal.measurementTypeId}")
+        return userGoalsDao.insert(goal)
+    }
+
+    suspend fun updateUserGoal(goal: UserGoals) {
+        LogManager.d(TAG, "Updating user goal for userId: ${goal.userId}, typeId: ${goal.measurementTypeId}")
+        userGoalsDao.update(goal)
+    }
+
+    suspend fun deleteUserGoal(userId: Int, measurementTypeId: Int) {
+        LogManager.d(TAG, "Deleting user goal for userId: $userId, typeId: $measurementTypeId")
+        userGoalsDao.delete(userId, measurementTypeId)
+    }
+
+    fun getAllGoalsForUser(userId: Int): Flow<List<UserGoals>> {
+        return userGoalsDao.getAllForUser(userId)
     }
 
     // --- Measurement Operations ---

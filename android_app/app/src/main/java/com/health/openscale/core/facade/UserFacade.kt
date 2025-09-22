@@ -18,7 +18,9 @@
 package com.health.openscale.core.facade
 
 import com.health.openscale.core.data.User
+import com.health.openscale.core.data.UserGoals
 import com.health.openscale.core.model.UserEvaluationContext
+import com.health.openscale.core.usecase.UserGoalsUseCases
 import com.health.openscale.core.usecase.UserUseCases
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
@@ -30,7 +32,8 @@ import javax.inject.Singleton
  */
 @Singleton
 class UserFacade @Inject constructor(
-    private val userUseCases: UserUseCases
+    private val userUseCases: UserUseCases,
+    private val userGoalsUseCases: UserGoalsUseCases
 ) {
     // --- Observables ---
 
@@ -79,6 +82,22 @@ class UserFacade @Inject constructor(
      */
     suspend fun deleteUser(user: User, reseatSelection: Boolean = true): Result<Int?> =
         userUseCases.deleteUser(user, reseatSelection)
+
+    suspend fun insertUserGoal(goal: UserGoals): Long {
+        return userGoalsUseCases.insertUserGoal(goal)
+    }
+
+    suspend fun updateUserGoal(goal: UserGoals) {
+        userGoalsUseCases.updateUserGoal(goal)
+    }
+
+    suspend fun deleteUserGoal(userId: Int, measurementTypeId: Int) {
+        userGoalsUseCases.deleteUserGoal(userId, measurementTypeId)
+    }
+
+    fun getAllGoalsForUser(userId: Int): Flow<List<UserGoals>> {
+        return userGoalsUseCases.getAllGoalsForUser(userId)
+    }
 
     /** Persist application language code. */
     suspend fun setAppLanguageCode(code: String): Result<Unit> = runCatching {

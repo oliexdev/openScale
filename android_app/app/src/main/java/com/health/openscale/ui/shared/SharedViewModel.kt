@@ -29,6 +29,7 @@ import com.health.openscale.core.data.MeasurementValue
 import com.health.openscale.core.data.SmoothingAlgorithm
 import com.health.openscale.core.data.TimeRangeFilter
 import com.health.openscale.core.data.User
+import com.health.openscale.core.data.UserGoals
 import com.health.openscale.core.facade.MeasurementFacade
 import com.health.openscale.core.facade.SettingsFacade
 import com.health.openscale.core.facade.UserFacade
@@ -49,6 +50,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -137,6 +139,58 @@ class SharedViewModel @Inject constructor(
     val selectedUser: StateFlow<User?> =
         userFacade.observeSelectedUser()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    // --- User Goals ---
+    data class UserGoalDialogContext(
+        val showDialog: Boolean = false,
+        val typeForDialog: MeasurementType? = null,
+        val existingGoalForDialog: UserGoals? = null,
+    )
+
+    private val _userGoalDialogContext = MutableStateFlow(UserGoalDialogContext())
+    val userGoalDialogContext: StateFlow<UserGoalDialogContext> = _userGoalDialogContext.asStateFlow()
+
+    fun showUserGoalDialogWithContext(type: MeasurementType, existingGoal: UserGoals? = null) {
+        _userGoalDialogContext.value = UserGoalDialogContext(
+            showDialog = true,
+            typeForDialog = type,
+            existingGoalForDialog = existingGoal,
+        )
+    }
+
+    fun dismissUserGoalDialogWithContext() {
+        if (_userGoalDialogContext.value.showDialog) { // Only update if it was shown
+            _userGoalDialogContext.value = UserGoalDialogContext(showDialog = false) // Reset to default hidden state
+        }
+    }
+
+    fun getAllGoalsForUser(userId: Int): Flow<List<UserGoals>> {
+        if (userId == 0) {
+            return flowOf(emptyList())
+        }
+        return userFacade.getAllGoalsForUser(userId)
+            .catch { exception ->
+                emit(emptyList())
+            }
+    }
+
+    fun insertUserGoal(goal: UserGoals) {
+        viewModelScope.launch {
+            userFacade.insertUserGoal(goal)
+        }
+    }
+
+    fun updateUserGoal(goal: UserGoals) {
+        viewModelScope.launch {
+            userFacade.updateUserGoal(goal)
+        }
+    }
+
+    fun deleteUserGoal(userId: Int, measurementTypeId: Int) {
+        viewModelScope.launch {
+            userFacade.deleteUserGoal(userId, measurementTypeId)
+        }
+    }
 
     val userEvaluationContext: StateFlow<UserEvaluationContext?> =
         userFacade.observeUserEvaluationContext()
